@@ -13,7 +13,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             var target = new AdditionalTimeoutMsInput();
             target.HelpText.ShouldBe(@"A timeout is calculated based on the initial unit test run before mutating.
 To prevent infinite loops stryker cancels a testrun if it runs longer than the timeout value.
-If you experience a lot of timeout you might need to increase the timeout value. | default: 5000");
+If you experience a lot of timeout you might need to increase the timeout value. | default: '5000'");
         }
 
         [Fact]

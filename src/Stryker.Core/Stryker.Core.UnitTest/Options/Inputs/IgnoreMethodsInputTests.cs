@@ -8,6 +8,13 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class IgnoreMethodsInputTests
     {
         [Fact]
+        public void ShouldHaveHelptext()
+        {
+            var target = new IgnoreMethodsInput();
+            target.HelpText.ShouldBe(@"Ignore mutations on method parameters. | default: []");
+        }
+
+        [Fact]
         public void ShouldReturnRegex()
         {
             var target = new IgnoreMethodsInput { SuppliedInput = new[] { "Dispose" } };

@@ -7,6 +7,13 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class WithBaselineInputTests
     {
         [Fact]
+        public void ShouldHaveHelptext()
+        {
+            var target = new WithBaselineInput();
+            target.HelpText.ShouldBe(@"EXPERIMENTAL: Use results stored in stryker dashboard to only test new mutants. | default: 'False'");
+        }
+
+        [Fact]
         public void ShouldBeEnabledWhenTrue()
         {
             var target = new WithBaselineInput { SuppliedInput = true };

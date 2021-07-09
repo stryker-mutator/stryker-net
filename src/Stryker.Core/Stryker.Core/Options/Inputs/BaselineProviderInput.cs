@@ -11,7 +11,7 @@ namespace Stryker.Core.Options.Inputs
         public override string Default => "disk";
 
         protected override string Description => "Choose a storage location for dashboard compare. Set to Dashboard provider when the dashboard reporter is turned on.";
-        protected override string HelpOptions => FormatEnumHelpOptions();
+        protected override IEnumerable<string> AllowedOptions => EnumToStrings(typeof(BaselineProvider));
 
         public BaselineProvider Validate(IEnumerable<Reporter> reporters)
         {

@@ -10,6 +10,14 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class IgnoreMutationsInputTests
     {
         [Fact]
+        public void ShouldHaveHelptext()
+        {
+            var target = new IgnoreMutationsInput();
+            target.HelpText.ShouldBe(@"The given mutators will be excluded for this mutation testrun.
+    This argument takes a json array as value. Example: ['string', 'logical'] | default: []");
+        }
+
+        [Fact]
         public void ShouldValidateExcludedMutation()
         {
             var target = new IgnoreMutationsInput { SuppliedInput = new[] { "gibberish" } };

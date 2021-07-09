@@ -8,6 +8,13 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class TestProjectsInputTests
     {
         [Fact]
+        public void ShouldHaveHelptext()
+        {
+            var target = new TestProjectsInput();
+            target.HelpText.ShouldBe(@"Specify the test projects. | default: []");
+        }
+
+        [Fact]
         public void ShouldUseDefaultWhenNull()
         {
             var input = new TestProjectsInput { SuppliedInput = null };

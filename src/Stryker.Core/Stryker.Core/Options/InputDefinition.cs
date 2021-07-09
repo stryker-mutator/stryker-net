@@ -30,35 +30,78 @@ namespace Stryker.Core.Options
     public abstract class InputDefinition<TInput, TValue> : IInputDefinition<TInput>
     {
         /// <summary>
-        /// The default value for the option when no custom value has been supplied
+        /// The default value for the option when no custom value has been supplied, will also be displayed formatted in the help text
         /// </summary>
         public abstract TInput Default { get; }
+        public string HelpText => Description + DefaultText + AllowedOptionsText;
+        public string DefaultText => FormatDefaultText();
+        public string AllowedOptionsText => FormatAllowedInputText();
 
-        public string HelpText => Description + HelpOptions;
+        /// <summary>
+        /// The description will be displayed in the help text
+        /// </summary>
         protected abstract string Description { get; }
-        protected virtual string HelpOptions => $"{ (Default is not null ? $" | default: { Default }" : "") }";
+        /// <summary>
+        /// The allowed options will be displayed in the help text
+        /// </summary>
+        protected virtual IEnumerable<string> AllowedOptions => Enumerable.Empty<string>();
 
         /// <summary>
         /// The user supplied input value
         /// </summary>
         public TInput SuppliedInput { get; set; } = default;
 
-        protected string FormatEnumHelpOptions() => FormatEnumHelpOptions(new List<string> { Default.ToString() }, typeof(TValue));
-        protected string FormatEnumHelpOptions(IEnumerable<string> defaultInputs, Type enumType) => FormatHelpOptions(defaultInputs, Enum.GetNames(enumType).Select(e => e.ToString()));
+        protected IEnumerable<string> EnumToStrings(Type enumType) => Enum.GetNames(enumType).Select(e => e.ToString());
 
-        protected string FormatHelpOptions(string allowedInput) => FormatHelpOptions(new List<string> { Default.ToString() }, new List<string> { allowedInput });
-        protected string FormatHelpOptions(string defaultInputs, IEnumerable<string> allowedInputs) => FormatHelpOptions(new List<string> { defaultInputs }, allowedInputs);
-
-        protected string FormatHelpOptions(IEnumerable<string> defaultInputs, IEnumerable<string> allowedInputs)
+        private string FormatAllowedInputText()
         {
-            var optionsString = new StringBuilder();
+            if (AllowedOptions.Any())
+            {
+                var nonDefaultOptions = string.Join(", ", AllowedOptions);
 
-            optionsString.Append($" | default: ({string.Join(", ", defaultInputs)}), ");
-            var nonDefaultOptions = string.Join(", ", allowedInputs.Where(o => !defaultInputs.Any(d => d.ToString() == o.ToString())));
+                if (!string.IsNullOrWhiteSpace(nonDefaultOptions))
+                {
+                    return " | allowed: " + nonDefaultOptions;
+                }
+            }
 
-            optionsString.Append(string.Join(", ", nonDefaultOptions));
+            return "";
+        }
 
-            return optionsString.ToString();
+        private string FormatDefaultText()
+        {
+            if (Default is not null)
+            {
+                var optionsString = new StringBuilder();
+                optionsString.Append(" | default: ");
+
+                var enumerable = Default as IEnumerable<object>;
+                if (Default is not string && enumerable is not null)
+                {
+
+                    optionsString.Append("[");
+                    var count = 0;
+                    foreach (var item in enumerable)
+                    {
+                        optionsString.Append("'");
+                        optionsString.Append(item);
+                        optionsString.Append("'");
+                        if (++count < enumerable.Count())
+                        {
+                            optionsString.Append(", ");
+                        }
+                    }
+
+                    optionsString.Append("]");
+
+                    return optionsString.ToString();
+                }
+                optionsString.Append("'");
+                optionsString.Append(Default.ToString());
+                optionsString.Append("'");
+                return optionsString.ToString();
+            }
+            return "";
         }
     }
 }

@@ -11,7 +11,7 @@ namespace Stryker.Core.Options.Inputs
         public override IEnumerable<string> Default => new List<string>() { "Progress", "Html" };
 
         protected override string Description => "Reporters inform about various stages in the mutation testrun.";
-        protected override string HelpOptions => FormatEnumHelpOptions(Default, typeof(Reporter));
+        protected override IEnumerable<string> AllowedOptions => EnumToStrings(typeof(Reporter));
 
         public IEnumerable<Reporter> Validate()
         {

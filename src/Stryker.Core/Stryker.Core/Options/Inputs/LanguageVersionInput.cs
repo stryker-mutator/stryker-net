@@ -11,7 +11,7 @@ namespace Stryker.Core.Options.Inputs
         public override string Default => "latest";
 
         protected override string Description => $"The c# version used in compilation.";
-        protected override string HelpOptions => FormatHelpOptions(Default, Enum.GetNames(Default.GetType()).Where(l => LanguageVersion.CSharp1.ToString() != l));
+        protected override IEnumerable<string> AllowedOptions => Enum.GetNames(typeof(LanguageVersion)).Where(l => LanguageVersion.CSharp1.ToString() != l);
 
         public LanguageVersion Validate()
         {

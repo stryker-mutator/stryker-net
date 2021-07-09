@@ -13,7 +13,6 @@ namespace Stryker.Core.Options.Inputs
     Use '!' at the start of a pattern to exclude all matched files.
     Use '{<start>..<end>}' at the end of a pattern to specify spans of text in files to in- or exclude.
     Example: ['**/*Service.cs','!**/MySpecialService.cs', '**/MyOtherService.cs{1..10}{32..45}']";
-        protected override string HelpOptions => $" | default ({_defaultInput})";
 
         public IEnumerable<FilePattern> Validate()
         {

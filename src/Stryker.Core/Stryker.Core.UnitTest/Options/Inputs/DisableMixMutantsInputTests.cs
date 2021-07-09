@@ -7,6 +7,13 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 {
     public class DisableMixMutantsInputTests
     {
+        [Fact]
+        public void ShouldHaveHelptext()
+        {
+            var target = new DisableMixMutantsInput();
+            target.HelpText.ShouldBe(@"Test each mutation in an isolated test run. | default: 'False'");
+        }
+
         [Theory]
         [InlineData(false, OptimizationModes.NoOptimization)]
         [InlineData(true, OptimizationModes.DisableMixMutants)]

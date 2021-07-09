@@ -15,7 +15,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             target.HelpText.ShouldBe(@"The url for the Azure File Storage, only needed when the azure baseline provider is selected. 
 The url should look something like this: 
 https://STORAGE_NAME.file.core.windows.net/FILE_SHARE_NAME 
-Note, the url might be different depending on where your file storage is hosted. | default: ");
+Note, the url might be different depending on where your file storage is hosted. | default: ''");
         }
 
         [Fact]

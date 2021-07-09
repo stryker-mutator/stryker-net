@@ -7,6 +7,13 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 {
     public class ThresholdBreakInputTests
     {
+        [Fact]
+        public void ShouldHaveHelptext()
+        {
+            var target = new ThresholdBreakInput();
+            target.HelpText.ShouldBe(@"Anything below this mutation score will return a non-zero exit code. Must be less than or equal to threshold low. | default: '0' | allowed: 0 - 100");
+        }
+
         [Theory]
         [InlineData(-1, "Threshold break must be between 0 and 100.")]
         [InlineData(101, "Threshold break must be between 0 and 100.")]

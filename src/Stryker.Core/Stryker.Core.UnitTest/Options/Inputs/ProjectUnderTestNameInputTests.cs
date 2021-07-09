@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
@@ -12,6 +7,13 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 {
     public class ProjectUnderTestNameInputTests
     {
+        [Fact]
+        public void ShouldHaveHelptext()
+        {
+            var target = new ProjectUnderTestNameInput();
+            target.HelpText.ShouldBe(@"Used to find the project to test in the project references of the test project. Example: ""ExampleProject.csproj"" | default: ''");
+        }
+
         [Fact]
         public void ShouldReturnName()
         {

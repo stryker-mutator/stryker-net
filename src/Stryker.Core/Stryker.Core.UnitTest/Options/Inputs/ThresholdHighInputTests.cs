@@ -7,6 +7,13 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 {
     public class ThresholdHighInputTests
     {
+        [Fact]
+        public void ShouldHaveHelptext()
+        {
+            var target = new ThresholdHighInput();
+            target.HelpText.ShouldBe(@"Minimum good mutation score. Must be higher than or equal to threshold low. | default: '80' | allowed: 1 - 100");
+        }
+
         [Theory]
         [InlineData(0, "Threshold high must be between 1 and 100.")]
         [InlineData(101, "Threshold high must be between 1 and 100.")]

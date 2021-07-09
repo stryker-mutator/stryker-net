@@ -12,7 +12,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         public void ShouldHaveHelptext()
         {
             var target = new AzureFileStorageSasInput();
-            target.HelpText.ShouldBe(@"A Shared Access Signature for Azure File Storage is required when Azure File Storage is used for dashboard compare. For more information: https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview | default: ");
+            target.HelpText.ShouldBe(@"A Shared Access Signature for Azure File Storage is required when Azure File Storage is used for dashboard compare. For more information: https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview | default: ''");
         }
 
         [Fact]

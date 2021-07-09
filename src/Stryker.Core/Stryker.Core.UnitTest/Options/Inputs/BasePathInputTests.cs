@@ -13,7 +13,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         public void ShouldHaveHelptext()
         {
             var target = new BasePathInput();
-            target.HelpText.ShouldBe(@$"The path from which stryker is started. | default: {Directory.GetCurrentDirectory()}");
+            target.HelpText.ShouldBe(@$"The path from which stryker is started. | default: '{Directory.GetCurrentDirectory()}'");
         }
 
         [Fact]

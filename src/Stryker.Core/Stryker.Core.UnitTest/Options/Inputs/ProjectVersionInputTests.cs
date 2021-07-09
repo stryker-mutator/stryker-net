@@ -8,6 +8,13 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 {
     public class ProjectVersionInputTests
     {
+        [Fact]
+        public void ShouldHaveHelptext()
+        {
+            var target = new ProjectVersionInput();
+            target.HelpText.ShouldBe(@"Project version used in reporters. | default: ''");
+        }
+
         [Theory]
         [InlineData(null)]
         [InlineData("")]

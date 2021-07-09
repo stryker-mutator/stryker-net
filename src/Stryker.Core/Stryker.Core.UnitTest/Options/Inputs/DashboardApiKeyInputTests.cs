@@ -14,6 +14,13 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         const string StrykerDashboardApiKey = "STRYKER_DASHBOARD_API_KEY";
 
         [Fact]
+        public void ShouldHaveHelptext()
+        {
+            var target = new DashboardApiKeyInput();
+            target.HelpText.ShouldBe(@"Api key for dashboard reporter.");
+        }
+
+        [Fact]
         public void ShouldThrowWhenNull()
         {
             var key = Environment.GetEnvironmentVariable(StrykerDashboardApiKey);

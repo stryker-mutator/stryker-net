@@ -8,6 +8,17 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 {
     public class OptimizationModeInputTests
     {
+        [Fact]
+        public void ShouldHaveHelptext()
+        {
+            var target = new CoverageAnalysisInput();
+            target.HelpText.ShouldBe(@"Use coverage info to speed up execution. Possible values are: off, all, perTest, perIsolatedTest.
+    - off: coverage data is not captured.
+    - perTest (Default): capture the list of mutations covered by each test. For every mutation that has tests, only the tests that cover this mutation are tested. Fastest option.
+    - all: capture the list of mutations covered by each test. Test only these mutations. Fast option.
+    - perTestInIsolation: like 'perTest', but running each test in an isolated run. Slowest fast option. | default: 'perTest'");
+        }
+
         [Theory]
         [InlineData(null, OptimizationModes.CaptureCoveragePerTest)]
         [InlineData("pertestinisolation", OptimizationModes.CoverageBasedTest, OptimizationModes.CaptureCoveragePerTest)]

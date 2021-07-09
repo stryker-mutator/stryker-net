@@ -8,6 +8,13 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class SinceTargetInputTests
     {
         [Fact]
+        public void ShouldHaveHelptext()
+        {
+            var target = new SinceTargetInput();
+            target.HelpText.ShouldBe(@"The target branch/commit to compare with the current codebase when the since feature is enabled. | default: 'master'");
+        }
+
+        [Fact]
         public void ShouldUseSuppliedInputWhenSinceEnabled()
         {
             var suppliedInput = "develop";

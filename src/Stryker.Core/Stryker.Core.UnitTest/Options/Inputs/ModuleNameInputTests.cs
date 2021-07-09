@@ -8,6 +8,13 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class ModuleNameInputTests
     {
         [Fact]
+        public void ShouldHaveHelptext()
+        {
+            var target = new ModuleNameInput();
+            target.HelpText.ShouldBe(@"Module name used by reporters. Usually a project in your solution would be a module. | default: ''");
+        }
+
+        [Fact]
         public void ShouldHaveDefault()
         {
             var target = new ModuleNameInput { SuppliedInput = null };

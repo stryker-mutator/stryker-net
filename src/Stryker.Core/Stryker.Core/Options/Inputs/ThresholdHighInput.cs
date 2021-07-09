@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
@@ -7,7 +8,7 @@ namespace Stryker.Core.Options.Inputs
         public override int? Default => 80;
 
         protected override string Description => "Minimum good mutation score. Must be higher than or equal to threshold low.";
-        protected override string HelpOptions => FormatHelpOptions("1 - 100");
+        protected override IEnumerable<string> AllowedOptions => new[] { "1 - 100" };
 
         public int Validate(int? low)
         {

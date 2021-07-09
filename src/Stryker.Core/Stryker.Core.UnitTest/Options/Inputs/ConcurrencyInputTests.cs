@@ -23,7 +23,7 @@ Reasons you might want to lower this setting:
 
     - Your test runner starts a browser (another CPU-intensive process)
     - You're running on a shared server
-    - You are running stryker in the background while doing other work | default: 4");
+    - You are running stryker in the background while doing other work | default: '4'");
         }
 
         [Fact]

@@ -12,6 +12,13 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class LanguageVersionInputTests
     {
         [Fact]
+        public void ShouldHaveHelptext()
+        {
+            var target = new LanguageVersionInput();
+            target.HelpText.ShouldBe(@"The c# version used in compilation. | default: 'latest' | allowed: Default, CSharp2, CSharp3, CSharp4, CSharp5, CSharp6, CSharp7, CSharp7_1, CSharp7_2, CSharp7_3, CSharp8, CSharp9, LatestMajor, Preview, Latest");
+        }
+
+        [Fact]
         public void ShouldHaveDefault()
         {
             var target = new LanguageVersionInput { SuppliedInput = null };

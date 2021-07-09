@@ -8,6 +8,13 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class LogToFileInputTests
     {
         [Fact]
+        public void ShouldHaveHelptext()
+        {
+            var target = new LogToFileInput();
+            target.HelpText.ShouldBe(@"Makes the logger write to a file. Logging to file always uses loglevel trace. | default: 'False'");
+        }
+
+        [Fact]
         public void ShouldThrowIfTrueAndNoOutputPath()
         {
             var target = new LogToFileInput { SuppliedInput = true };

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
 
@@ -8,7 +9,7 @@ namespace Stryker.Core.Options.Inputs
         public override string Default => "info";
 
         protected override string Description => "The verbosity (loglevel) for output to the console.";
-        protected override string HelpOptions => FormatEnumHelpOptions();
+        protected override IEnumerable<string> AllowedOptions => new[] { "error", "warning", "info", "debug", "trace" };
 
         public LogEventLevel Validate()
         {
