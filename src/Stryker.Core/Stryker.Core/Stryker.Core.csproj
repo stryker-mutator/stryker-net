@@ -36,7 +36,7 @@
 
   <ItemGroup>
     <PackageReference Include="Crayon" Version="2.0.62" />
-    <PackageReference Include="LibGit2Sharp" Version="0.27.0-preview-0096" />
+    <PackageReference Include="LibGit2Sharp" Version="0.27.0-preview-0102" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="3.10.0" />
     <PackageReference Include="DotNet.Glob" Version="3.1.2" />
     <PackageReference Include="Buildalyzer" Version="3.2.2" />
@@ -48,7 +48,7 @@
     <PackageReference Include="Microsoft.TestPlatform.Portable" Version="$(MicrosoftTestPlatform)" /> 						<!-- From Directory.Build.props -->
     <PackageReference Include="Microsoft.TestPlatform.TranslationLayer" Version="$(MicrosoftTestPlatform)" /> 				<!-- From Directory.Build.props -->
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.113" />
-    <PackageReference Include="Mono.Cecil" Version="0.11.3" />
+    <PackageReference Include="Mono.Cecil" Version="0.11.4" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="Serilog" Version="2.10.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="3.0.1" />

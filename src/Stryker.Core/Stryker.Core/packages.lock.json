@@ -35,9 +35,9 @@
       },
       "LibGit2Sharp": {
         "type": "Direct",
-        "requested": "[0.27.0-preview-0096, )",
-        "resolved": "0.27.0-preview-0096",
-        "contentHash": "ANrnLBCGLtKSA0PSN4YdBo20FzE79GecdZeo6sRSWhMkI4BbENtzLSUqL1uzmNsahoepcXplQPHyMfzkGuYV1A==",
+        "requested": "[0.27.0-preview-0102, )",
+        "resolved": "0.27.0-preview-0102",
+        "contentHash": "TNqHDQOqXgfogMiVqdKBIxxUPCxh03medG8wPN8gDl6N3m2zTk7etZeR1fCTNC5mMzQVNL/xadR65slENBi31Q==",
         "dependencies": {
           "LibGit2Sharp.NativeBinaries": "[2.0.312]"
         }
@@ -129,9 +129,9 @@
       },
       "Mono.Cecil": {
         "type": "Direct",
-        "requested": "[0.11.3, )",
-        "resolved": "0.11.3",
-        "contentHash": "DNYE+io5XfEE8+E+5padThTPHJARJHbz1mhbhMPNrrWGKVKKqj/KEeLvbawAmbIcT73NuxLV7itHZaYCZcVWGg=="
+        "requested": "[0.11.4, )",
+        "resolved": "0.11.4",
+        "contentHash": "IC1h5g0NeJGHIUgzM1P82ld57knhP0IcQfrYITDPXlNpMYGUrsG5TxuaWTjaeqDNQMBDNZkB8L0rBnwsY6JHuQ=="
       },
       "Newtonsoft.Json": {
         "type": "Direct",
