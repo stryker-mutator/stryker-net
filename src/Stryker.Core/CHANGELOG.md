@@ -1,3 +1,12 @@
+## [0.22.6](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.5...stryker@0.22.6) (2021-06-30)
+
+
+### Bug Fixes
+
+* **Conversion operator:** Stryker won't break anymore when using conversion operator ([#1613](https://github.com/stryker-mutator/stryker-net/issues/1613)) ([a09f2cc](https://github.com/stryker-mutator/stryker-net/commit/a09f2cc8c55f76ffcab8964e477334ff3ca75882))
+
+
+
 ## [0.22.5](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.4...stryker@0.22.5) (2021-06-22)
 
 
