@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "dependencies": {
+    ".NETFramework,Version=v4.6.1": {
+      "MSTest.TestAdapter": {
+        "type": "Direct",
+        "requested": "[2.2.5, 2.2.5]",
+        "resolved": "2.2.5",
+        "contentHash": "FvY/n4fEhtqTdLR7xzgfb6UDa9g+9QeKNlH8zA7gqor9cuZ9gNCeHsx1GqKmDyeLA4ZpxAgjIdzp/vGWISA3iw=="
+      },
+      "MSTest.TestFramework": {
+        "type": "Direct",
+        "requested": "[2.2.5, 2.2.5]",
+        "resolved": "2.2.5",
+        "contentHash": "7PQH0yJoQO6bp6kHgVoTowtQZyQilftL64/pxeDzi15vm3UewzRZz74QssTaOi1otA6j2/lxFTEMJk/+HY/apQ=="
+      }
+    }
+  }
+}
