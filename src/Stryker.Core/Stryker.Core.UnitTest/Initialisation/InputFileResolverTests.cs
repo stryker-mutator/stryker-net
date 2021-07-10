@@ -119,7 +119,9 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: projectUnderTestPath).Object);
+                    projectFilePath: projectUnderTestPath,
+                    properties: new Dictionary<string, string>(){ { "Language", "C#" } }
+                ).Object);
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
             var result = target.ResolveInput(_options);
@@ -155,7 +157,9 @@ namespace Stryker.Core.UnitTest.Initialisation
                 projectReferences: new List<string> { projectUnderTestPath },
                 targetFramework: "netcoreapp2.1",
                 projectFilePath: projectUnderTestPath,
-                sourceFiles: fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray()).Object);
+                sourceFiles: fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray(),
+                properties: new Dictionary<string, string>(){ { "Language", "C#" } }
+                ).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -193,7 +197,9 @@ namespace Stryker.Core.UnitTest.Initialisation
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: projectUnderTestPath,
-                    sourceFiles: fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray()).Object);
+                    sourceFiles: fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray(),
+                    properties: new Dictionary<string, string>(){ { "Language", "C#" } }
+                ).Object);
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
             var result = target.ResolveInput(_options);
@@ -246,7 +252,9 @@ using System.Reflection;
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: projectUnderTestPath,
-                    sourceFiles: fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray()).Object);
+                    sourceFiles: fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray(),
+                    properties: new Dictionary<string, string>(){ { "Language", "C#" } }
+                ).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -287,7 +295,9 @@ using System.Reflection;
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: projectUnderTestPath).Object);
+                    projectFilePath: projectUnderTestPath,
+                    properties: new Dictionary<string, string>(){ { "Language", "C#" } }
+                ).Object);
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
             var result = target.ResolveInput(_options);
@@ -348,7 +358,8 @@ using System.Reflection;
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: projectUnderTestPath,
-                    properties: new Dictionary<string, string>()).Object);
+                    properties: new Dictionary<string, string>(){ { "Language", "C#" } }
+                ).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -399,7 +410,8 @@ using System.Reflection;
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: projectUnderTestPath,
-                    properties: new Dictionary<string, string>()).Object);
+                    properties: new Dictionary<string, string>(){ { "Language", "C#" } }
+                ).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -475,7 +487,8 @@ using System.Reflection;
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: projectUnderTestPath,
-                    properties: new Dictionary<string, string>()).Object);
+                    properties: new Dictionary<string, string>(){ { "Language", "C#" } }
+                ).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -528,7 +541,8 @@ using System.Reflection;
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: projectUnderTestPath,
-                    properties: new Dictionary<string, string>()).Object);
+                    properties: new Dictionary<string, string>(){ { "Language", "C#" } }
+                ).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -587,6 +601,7 @@ using System.Reflection;
                     properties: new Dictionary<string, string>()
                     {
                         { "SharedDir", "SharedProject" },
+                        { "Language", "C#" }
                     }).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
@@ -643,7 +658,8 @@ using System.Reflection;
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: projectUnderTestPath,
-                    properties: new Dictionary<string, string>() { }).Object);
+                    properties: new Dictionary<string, string>(){ { "Language", "C#" } }
+                ).Object);
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
             var exception = Assert.Throws<InputException>(() => target.ResolveInput(_options));
@@ -671,7 +687,8 @@ using System.Reflection;
                     projectReferences: new List<string> { projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: testProjectPath,
-                    references: new string[] { "" }).Object);
+                    references: new string[] { "" },
+                    properties: new Dictionary<string, string>() { { "Language", "C#" } }).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -840,12 +857,13 @@ Please specify a test project name filter that results in one project.
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string> { projectUnderTestPath },
                     projectFilePath: testProjectPath,
-                    properties: new Dictionary<string, string>(),
+                    properties: new Dictionary<string, string>() { { "Language", "C#" } },
                     references: new string[] { "" }).Object);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     projectFilePath: projectUnderTestPath,
+                    properties: new Dictionary<string, string>() { { "Language", "C#" } },
                     references: new string[0]).Object);
 
             // Act
@@ -874,7 +892,9 @@ Please specify a test project name filter that results in one project.
                     projectReferences: new List<string> { projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: testProjectPath,
-                    references: new string[] { "Microsoft.VisualStudio.QualityTools.UnitTestFramework" }).Object);
+                    references: new string[] { "Microsoft.VisualStudio.QualityTools.UnitTestFramework" },
+                    properties: new Dictionary<string, string>(){ { "Language", "C#" } }
+                ).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -912,7 +932,8 @@ Please specify a test project name filter that results in one project.
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: projectUnderTestPath,
-                    properties: new Dictionary<string, string>()).Object);
+                    properties: new Dictionary<string, string>(){ { "Language", "C#" } }
+                ).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -939,14 +960,15 @@ Please specify a test project name filter that results in one project.
                     projectReferences: new List<string> { projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: Path.Combine(_filesystemRoot, "TestProject1", "ExampleProject.csproj"),
-                    properties: new Dictionary<string, string>(),
-                    references: new string[0]).Object);
+                    properties: new Dictionary<string, string>() { { "Language", "C#" } }).Object);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>() { "" },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"),
-                    references: new string[0]).Object);
+                    references: new string[0],
+                    properties: new Dictionary<string, string>(){ { "Language", "C#" } }
+                ).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
             var options = new StrykerOptions()

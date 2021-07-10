@@ -124,6 +124,19 @@
         "resolved": "2.3.3",
         "contentHash": "I7L5UMvHYms1KAJr2lSeuC11p+rfAewSCwTAmxsR/LMKi4i9ld9s/91LuvJ1+FJnz9EaWvnOr8XX78M9Xo5H7Q=="
       },
+      "FSharp.Compiler.Service": {
+        "type": "Transitive",
+        "resolved": "38.0.0",
+        "contentHash": "yS5FphrcFOIKcpa/R59U6iRmjkxHE4pVXOu5x/I/skbFe0MmzWPdYgo/4ysWBhxLVcj+G25LKfc5jWojXMZ3yg==",
+        "dependencies": {
+          "FSharp.Core": "[5.0.0]"
+        }
+      },
+      "FSharp.Core": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "iHoYXA0VaSQUONGENB1aVafjDDZDZpwu39MtaRCTrmwFW/cTcK0b2yKNVYneFHJMc3ChtsSoM9lNtJ1dYXkHfA=="
+      },
       "LibGit2Sharp": {
         "type": "Transitive",
         "resolved": "0.27.0-preview-0096",
@@ -2048,6 +2061,7 @@
           "Buildalyzer": "3.2.1",
           "Crayon": "2.0.60",
           "DotNet.Glob": "3.1.2",
+          "FSharp.Compiler.Service": "38.0.0",
           "LibGit2Sharp": "0.27.0-preview-0096",
           "Microsoft.CodeAnalysis.CSharp": "3.9.0",
           "Microsoft.Extensions.Configuration": "5.0.0",

@@ -4,13 +4,14 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Instrumentation
 {
     /// <summary>
     /// Injects 'return default(...)' statement at the end of a method
     /// </summary>
-    internal class EndingReturnEngine: BaseEngine<BaseMethodDeclarationSyntax>
+    internal class EndingReturnEngine : BaseEngine<BaseMethodDeclarationSyntax>
     {
         public EndingReturnEngine(string markerId) : base(markerId)
         {

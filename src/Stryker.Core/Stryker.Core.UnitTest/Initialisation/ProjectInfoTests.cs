@@ -34,7 +34,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var expectedPath = FilePathUtils.NormalizePathSeparators("/test/bin/Debug/AppToTest.dll");
             target.GetInjectionFilePath(target.TestProjectAnalyzerResults.FirstOrDefault()).ShouldBe(expectedPath);
         }
-        
+
         [Fact]
         public void ShouldGenerateProperDefaultCompilationOptions()
         {

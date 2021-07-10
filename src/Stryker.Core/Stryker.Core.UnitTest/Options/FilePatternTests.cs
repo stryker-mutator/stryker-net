@@ -1,8 +1,9 @@
-﻿using System;
-using System.Linq;
-using DotNet.Globbing;
+﻿using DotNet.Globbing;
 using Microsoft.CodeAnalysis.Text;
 using Shouldly;
+using Stryker.Core.Options;
+using System;
+using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Options
@@ -24,7 +25,7 @@ namespace Stryker.Core.UnitTest.Options
         {
             // Arrange
             var textSpan = new TextSpan(0, 1);
-            var sut = new FilePattern(Glob.Parse(glob), false, new[] {textSpan});
+            var sut = new FilePattern(Glob.Parse(glob), false, new[] { textSpan });
 
             // Act
             var result = sut.IsMatch(file, textSpan);
@@ -55,7 +56,7 @@ namespace Stryker.Core.UnitTest.Options
         }
 
         [Theory]
-        [InlineData("**/*.cs{10..20}", "**/*.cs",false, new []{10, 20})]
+        [InlineData("**/*.cs{10..20}", "**/*.cs", false, new[] { 10, 20 })]
         [InlineData("**/*.cs{10..20}{20..30}", "**/*.cs", false, new[] { 10, 30 })]
         [InlineData("**/*.cs{10..20}{30..40}", "**/*.cs", false, new[] { 10, 20, 30, 40 })]
         [InlineData("!**/*.cs", "**/*.cs", true, new[] { 0, int.MaxValue })]

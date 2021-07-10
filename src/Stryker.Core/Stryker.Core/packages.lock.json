@@ -33,6 +33,15 @@
         "resolved": "3.1.2",
         "contentHash": "U3iLJ1jRmnJ4n/LUkpX3iz1XD2us40v720qoaHVkn0souR5rspvPB7TTKUeGUz438vl6MkfynrGCnKMtAwmZnQ=="
       },
+      "FSharp.Compiler.Service": {
+        "type": "Direct",
+        "requested": "[38.0.0, )",
+        "resolved": "38.0.0",
+        "contentHash": "yS5FphrcFOIKcpa/R59U6iRmjkxHE4pVXOu5x/I/skbFe0MmzWPdYgo/4ysWBhxLVcj+G25LKfc5jWojXMZ3yg==",
+        "dependencies": {
+          "FSharp.Core": "[5.0.0]"
+        }
+      },
       "LibGit2Sharp": {
         "type": "Direct",
         "requested": "[0.27.0-preview-0096, )",
@@ -206,6 +215,11 @@
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         }
+      },
+      "FSharp.Core": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "iHoYXA0VaSQUONGENB1aVafjDDZDZpwu39MtaRCTrmwFW/cTcK0b2yKNVYneFHJMc3ChtsSoM9lNtJ1dYXkHfA=="
       },
       "LibGit2Sharp.NativeBinaries": {
         "type": "Transitive",

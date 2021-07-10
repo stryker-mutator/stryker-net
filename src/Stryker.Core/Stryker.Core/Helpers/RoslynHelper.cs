@@ -37,7 +37,7 @@ namespace Stryker.Core.Helpers
                 MethodDeclarationSyntax method => !(method.ReturnType is PredefinedTypeSyntax predefinedType &&
                                                     predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword)),
                 OperatorDeclarationSyntax _ => true,
-                ConversionOperatorDeclarationSyntax _=> true,
+                ConversionOperatorDeclarationSyntax _ => true,
                 _ => false
             };
 

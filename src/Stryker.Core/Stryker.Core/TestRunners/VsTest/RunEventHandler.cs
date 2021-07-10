@@ -171,7 +171,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
             }
 
-            ResultsUpdated?.Invoke(this, EventArgs.Empty);  
+            ResultsUpdated?.Invoke(this, EventArgs.Empty);
 
             if (testRunCompleteArgs.Error != null)
             {
@@ -182,7 +182,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
                 else if (testRunCompleteArgs.Error.InnerException is IOException sock)
                 {
-                    _logger.LogWarning(sock,$"{_runnerId}: Test session ended unexpectedly.");
+                    _logger.LogWarning(sock, $"{_runnerId}: Test session ended unexpectedly.");
                 }
                 else if (!CancelRequested)
                 {

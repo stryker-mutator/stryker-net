@@ -1,10 +1,10 @@
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.MutantFilters
 {
@@ -39,10 +39,8 @@ namespace Stryker.Core.MutantFilters
                     return options.IgnoredMethods.Any(r => r.IsMatch(member.Name.ToString()));
                 // Check if the current node is an object creation syntax (constructor invocation).
                 case ObjectCreationExpressionSyntax creation:
-                {
                     var methodName = creation.Type + ".ctor";
                     return options.IgnoredMethods.Any(r => r.IsMatch(methodName));
-                }
             }
 
             // Traverse the tree upwards

@@ -52,7 +52,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 SyntaxTriviaList.Empty);
 
             var mutant = new Mutant
-                { Mutation = new Mutation { OriginalNode = SyntaxFactory.IdentifierName(syntaxToken) } };
+            { Mutation = new Mutation { OriginalNode = SyntaxFactory.IdentifierName(syntaxToken) } };
 
             var sut = new FilePatternMutantFilter(options);
 

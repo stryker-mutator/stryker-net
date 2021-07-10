@@ -8,7 +8,6 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Json;
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading;

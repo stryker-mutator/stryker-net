@@ -198,7 +198,7 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
                 //_testsProgressLogger.Verify(x => x.StartLog(It.IsAny<string>(),
                 //It.Is<object[]>(loggerParams => loggerParams.SequenceEqual(new object[] { progressBar, tested, total, percentage, estimate }))));
             }
-            
+
         }
     }
 }
