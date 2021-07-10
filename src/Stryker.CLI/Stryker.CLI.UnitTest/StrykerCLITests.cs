@@ -19,21 +19,23 @@ namespace Stryker.CLI.UnitTest
 {
     public class StrykerCLITests
     {
-        private IStrykerInputs inputs;
-        private StrykerOptions options;
-        private StrykerRunResult runResults;
-        private Mock<IStrykerRunner> strykerRunnerMock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-        private StrykerCLI target;
+        private IStrykerInputs _inputs;
+        private readonly StrykerCLI _target;
+        private readonly StrykerOptions _options;
+        private readonly StrykerRunResult _runResults;
+        private readonly Mock<IStrykerRunner> _strykerRunnerMock = new (MockBehavior.Strict);
+        private readonly Mock<IStrykerNugetFeedClient> _nugetClientMock = new (MockBehavior.Strict);
 
         public StrykerCLITests()
         {
-            options = new StrykerOptions() { Thresholds = new Thresholds { Break = 0 } };
-            runResults = new StrykerRunResult(options, 0.3);
-            strykerRunnerMock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
-                .Callback<IStrykerInputs, IEnumerable<LogMessage>>((c, m) => inputs = c)
-                .Returns(runResults)
+            _options = new StrykerOptions() { Thresholds = new Thresholds { Break = 0 } };
+            _runResults = new StrykerRunResult(_options, 0.3);
+            _strykerRunnerMock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
+                .Callback<IStrykerInputs, IEnumerable<LogMessage>>((c, m) => _inputs = c)
+                .Returns(_runResults)
                 .Verifiable();
-            target = new StrykerCLI(strykerRunnerMock.Object);
+            _nugetClientMock.Setup(x => x.GetMaxVersion()).Returns(Task.FromResult(new SemanticVersion(10, 0, 0)));
+            _target = new StrykerCLI(_strykerRunnerMock.Object, _nugetClientMock.Object);
         }
 
         [Fact]
@@ -42,7 +44,9 @@ namespace Stryker.CLI.UnitTest
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var target = new StrykerCLI(mock.Object);
 
-            using (var sw = new StringWriter())
+            using var sw = new StringWriter();
+            var originalOut = Console.Out;
+            try
             {
                 Console.SetOut(sw);
 
@@ -57,6 +61,10 @@ Usage: Stryker [options]
 Options:";
                 sw.ToString().ShouldStartWith(expected);
             }
+            finally
+            {
+                Console.SetOut(originalOut);
+            }
         }
 
         [Fact]
@@ -64,7 +72,7 @@ Options:";
         {
             var strykerRunnerMock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var nugetClientMock = new Mock<IStrykerNugetFeedClient>(MockBehavior.Strict);
-            var strykerRunResult = new StrykerRunResult(options, 0.3);
+            var strykerRunResult = new StrykerRunResult(_options, 0.3);
 
             strykerRunnerMock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
                 .Returns(strykerRunResult)
@@ -73,7 +81,9 @@ Options:";
 
             var target = new StrykerCLI(strykerRunnerMock.Object, nugetClientMock.Object);
 
-            using (var sw = new StringWriter())
+            using var sw = new StringWriter();
+            var originalOut = Console.Out;
+            try
             {
                 Console.SetOut(sw);
 
@@ -93,6 +103,10 @@ Options:";
                 sw.ToString().ShouldContain(expected);
                 sw.ToString().ShouldContain("Version:");
                 sw.ToString().ShouldContain("A new version of Stryker.NET (10.0.0) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker");
+            }
+            finally
+            {
+                Console.SetOut(originalOut);
             }
         }
 
@@ -157,7 +171,7 @@ Options:";
             var strykerRunResult = new StrykerRunResult(options, double.NaN);
             mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(strykerRunResult).Verifiable();
 
-            var target = new StrykerCLI(mock.Object);
+            var target = new StrykerCLI(mock.Object, _nugetClientMock.Object);
             var result = target.Run(new string[] { });
 
             mock.Verify();
@@ -208,7 +222,7 @@ Options:";
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Throws(new Exception("Initial testrun failed")).Verifiable();
 
-            var target = new StrykerCLI(mock.Object);
+            var target = new StrykerCLI(mock.Object, _nugetClientMock.Object);
             Assert.Throws<Exception>(() => target.Run(new string[] { }));
         }
 
@@ -217,12 +231,12 @@ Options:";
         [InlineData("-r")]
         public void ShouldPassReporterArgumentsToStryker_WithReporterArgument(string argName)
         {
-            target.Run(new string[] { argName, Reporter.Html.ToString(), argName, Reporter.Dots.ToString() });
+            _target.Run(new string[] { argName, Reporter.Html.ToString(), argName, Reporter.Dots.ToString() });
 
-            strykerRunnerMock.VerifyAll();
+            _strykerRunnerMock.VerifyAll();
 
-            inputs.ReportersInput.SuppliedInput.ShouldContain(Reporter.Html.ToString());
-            inputs.ReportersInput.SuppliedInput.ShouldContain(Reporter.Dots.ToString());
+            _inputs.ReportersInput.SuppliedInput.ShouldContain(Reporter.Html.ToString());
+            _inputs.ReportersInput.SuppliedInput.ShouldContain(Reporter.Dots.ToString());
         }
 
         [Theory]
@@ -230,11 +244,11 @@ Options:";
         [InlineData("-p")]
         public void ShouldPassProjectArgumentsToStryker_WithProjectArgument(string argName)
         {
-            target.Run(new string[] { argName, "SomeProjectName.csproj" });
+            _target.Run(new string[] { argName, "SomeProjectName.csproj" });
 
-            strykerRunnerMock.VerifyAll();
+            _strykerRunnerMock.VerifyAll();
 
-            inputs.ProjectUnderTestNameInput.SuppliedInput.ShouldBe("SomeProjectName.csproj");
+            _inputs.ProjectUnderTestNameInput.SuppliedInput.ShouldBe("SomeProjectName.csproj");
         }
 
         [Theory]
@@ -242,11 +256,11 @@ Options:";
         [InlineData("-s")]
         public void ShouldPassSolutionArgumentPlusBasePathToStryker_WithSolutionArgument(string argName)
         {
-            target.Run(new string[] { argName, "SomeSolutionPath.sln" });
+            _target.Run(new string[] { argName, "SomeSolutionPath.sln" });
 
-            strykerRunnerMock.VerifyAll();
+            _strykerRunnerMock.VerifyAll();
 
-            inputs.SolutionInput.SuppliedInput.ShouldBe("SomeSolutionPath.sln");
+            _inputs.SolutionInput.SuppliedInput.ShouldBe("SomeSolutionPath.sln");
         }
 
         [Theory]
@@ -254,11 +268,11 @@ Options:";
         [InlineData("-V")]
         public void ShouldPassLogConsoleArgumentsToStryker_WithLogConsoleArgument(string argName)
         {
-            target.Run(new[] { argName, "Debug" });
+            _target.Run(new[] { argName, "Debug" });
 
-            strykerRunnerMock.VerifyAll();
+            _strykerRunnerMock.VerifyAll();
 
-            inputs.VerbosityInput.SuppliedInput.ShouldBe(LogEventLevel.Debug.ToString());
+            _inputs.VerbosityInput.SuppliedInput.ShouldBe(LogEventLevel.Debug.ToString());
         }
 
         [Theory]
@@ -266,22 +280,22 @@ Options:";
         [InlineData("-L")]
         public void ShouldPassLogFileArgumentsToStryker_WithLogLevelFileArgument(string argName)
         {
-            target.Run(new string[] { argName });
+            _target.Run(new string[] { argName });
 
-            strykerRunnerMock.VerifyAll();
+            _strykerRunnerMock.VerifyAll();
 
-            inputs.LogToFileInput.SuppliedInput.Value.ShouldBeTrue();
+            _inputs.LogToFileInput.SuppliedInput.Value.ShouldBeTrue();
         }
 
         [Theory]
         [InlineData("--dev-mode")]
         public void WithDevModeArgument_ShouldPassDevModeArgumentsToStryker(string argName)
         {
-            target.Run(new string[] { argName });
+            _target.Run(new string[] { argName });
 
-            strykerRunnerMock.VerifyAll();
+            _strykerRunnerMock.VerifyAll();
 
-            inputs.DevModeInput.SuppliedInput.Value.ShouldBeTrue();
+            _inputs.DevModeInput.SuppliedInput.Value.ShouldBeTrue();
         }
 
         [Theory]
@@ -289,11 +303,11 @@ Options:";
         [InlineData("-c")]
         public void WithMaxConcurrentTestrunnerArgument_ShouldPassValidatedConcurrentTestrunnersToStryker(string argName)
         {
-            target.Run(new string[] { argName, "4" });
+            _target.Run(new string[] { argName, "4" });
 
-            strykerRunnerMock.VerifyAll();
+            _strykerRunnerMock.VerifyAll();
 
-            inputs.ConcurrencyInput.SuppliedInput.Value.ShouldBe(4);
+            _inputs.ConcurrencyInput.SuppliedInput.Value.ShouldBe(4);
         }
 
         [Theory]
@@ -301,11 +315,11 @@ Options:";
         [InlineData("-b")]
         public void WithCustomThresholdBreakParameter_ShouldPassThresholdBreakToStryker(string argName)
         {
-            target.Run(new string[] { argName, "20" });
+            _target.Run(new string[] { argName, "20" });
 
-            strykerRunnerMock.VerifyAll();
+            _strykerRunnerMock.VerifyAll();
 
-            inputs.ThresholdBreakInput.SuppliedInput.ShouldBe(20);
+            _inputs.ThresholdBreakInput.SuppliedInput.ShouldBe(20);
         }
 
         [Theory]
@@ -317,11 +331,11 @@ Options:";
             var secondFileToExclude = "!**/MySpecialService.cs";
             var thirdFileToExclude = "**/MyOtherService.cs{1..10}{32..45}";
 
-            target.Run(new[] { argName, firstFileToExclude, argName, secondFileToExclude, argName, thirdFileToExclude });
+            _target.Run(new[] { argName, firstFileToExclude, argName, secondFileToExclude, argName, thirdFileToExclude });
 
-            strykerRunnerMock.VerifyAll();
+            _strykerRunnerMock.VerifyAll();
 
-            var filePatterns = inputs.MutateInput.SuppliedInput.ToArray();
+            var filePatterns = _inputs.MutateInput.SuppliedInput.ToArray();
             filePatterns.Length.ShouldBe(3);
             filePatterns.ShouldContain(firstFileToExclude);
             filePatterns.ShouldContain(secondFileToExclude);
@@ -333,11 +347,11 @@ Options:";
         [InlineData("-since")]
         public void ShouldEnableDiffFeatureWhenPassed(string argName)
         {
-            target.Run(new string[] { argName });
+            _target.Run(new string[] { argName });
 
-            strykerRunnerMock.VerifyAll();
+            _strykerRunnerMock.VerifyAll();
 
-            inputs.SinceInput.SuppliedInput.Value.ShouldBeTrue();
+            _inputs.SinceInput.SuppliedInput.Value.ShouldBeTrue();
         }
 
         [Theory]
@@ -345,12 +359,12 @@ Options:";
         [InlineData("-since")]
         public void ShouldSetGitDiffTargetWhenPassed(string argName)
         {
-            target.Run(new string[] { $"{argName}:development" });
+            _target.Run(new string[] { $"{argName}:development" });
 
-            strykerRunnerMock.VerifyAll();
+            _strykerRunnerMock.VerifyAll();
 
-            inputs.SinceInput.SuppliedInput.Value.ShouldBeTrue();
-            inputs.SinceTargetInput.SuppliedInput.ShouldBe("development");
+            _inputs.SinceInput.SuppliedInput.Value.ShouldBeTrue();
+            _inputs.SinceTargetInput.SuppliedInput.ShouldBe("development");
         }
 
         [Theory]
@@ -358,9 +372,9 @@ Options:";
         [InlineData("-l")]
         public void ShouldSetMutationLevelWhenPassed(string argName)
         {
-            target.Run(new string[] { argName, "Advanced" });
+            _target.Run(new string[] { argName, "Advanced" });
 
-            inputs.MutationLevelInput.SuppliedInput.ShouldBe(MutationLevel.Advanced.ToString());
+            _inputs.MutationLevelInput.SuppliedInput.ShouldBe(MutationLevel.Advanced.ToString());
         }
 
         [Theory]
@@ -368,44 +382,44 @@ Options:";
         [InlineData("-v", "master")]
         public void ShouldEnableDiffCompareToDashboardFeatureWhenPassed(params string[] argName)
         {
-            target.Run(argName);
+            _target.Run(argName);
 
-            strykerRunnerMock.VerifyAll();
+            _strykerRunnerMock.VerifyAll();
 
-            inputs.ProjectVersionInput.SuppliedInput.ShouldBe("master");
+            _inputs.ProjectVersionInput.SuppliedInput.ShouldBe("master");
         }
 
         [Theory]
         [InlineData("--dashboard-api-key", "1234567890")]
         public void ShouldSupplyDashboardApiKeyWhenPassed(params string[] argName)
         {
-            target.Run(argName);
+            _target.Run(argName);
 
-            strykerRunnerMock.VerifyAll();
+            _strykerRunnerMock.VerifyAll();
 
-            inputs.DashboardApiKeyInput.SuppliedInput.ShouldBe("1234567890");
+            _inputs.DashboardApiKeyInput.SuppliedInput.ShouldBe("1234567890");
         }
 
         [Theory]
         [InlineData("--with-baseline")]
         public void ShouldSupplyWithBaselineWhenPassed(params string[] argName)
         {
-            target.Run(argName);
+            _target.Run(argName);
 
-            strykerRunnerMock.VerifyAll();
+            _strykerRunnerMock.VerifyAll();
 
-            inputs.WithBaselineInput.SuppliedInput.Value.ShouldBeTrue();
+            _inputs.WithBaselineInput.SuppliedInput.Value.ShouldBeTrue();
         }
 
         [Theory]
         [InlineData("--azure-fileshare-sas", "sas")]
         public void ShouldSupplyAzureFileshareSasWhenPassed(params string[] argName)
         {
-            target.Run(argName);
+            _target.Run(argName);
 
-            strykerRunnerMock.VerifyAll();
+            _strykerRunnerMock.VerifyAll();
 
-            inputs.AzureFileStorageSasInput.SuppliedInput.ShouldBe("sas");
+            _inputs.AzureFileStorageSasInput.SuppliedInput.ShouldBe("sas");
         }
     }
 }

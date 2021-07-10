@@ -52,21 +52,30 @@ namespace Stryker.CLI
             {
                 var strykerInput = GetStrykerInput(cliInput);
 
-                // the switch expression must return a value, as a workaround, return a bool and discard
-                _ = cliInput.OptionType switch
+                switch(cliInput.OptionType)
                 {
-                    CommandOptionType.NoValue => HandleNoValue((IInputDefinition<bool?>)strykerInput),
-                    CommandOptionType.MultipleValue => HandleMultiValue(cliInput, (IInputDefinition<IEnumerable<string>>)strykerInput),
-                    CommandOptionType.SingleOrNoValue => HandleSingleOrNoValue(strykerInput, cliInput, inputs),
-                    _ => true
+                    case CommandOptionType.NoValue:
+                        HandleNoValue((IInputDefinition<bool?>)strykerInput);
+                        break;
+                    case CommandOptionType.MultipleValue:
+                        HandleMultiValue(cliInput, (IInputDefinition<IEnumerable<string>>)strykerInput);
+                        break;
+                    case CommandOptionType.SingleOrNoValue:
+                        HandleSingleOrNoValue(strykerInput, cliInput, inputs);
+                        break;
                 };
 
-                _ = strykerInput switch
+                switch(strykerInput)
                 {
-                    IInputDefinition inputDefinition when inputDefinition.GetType().BaseType.GetGenericArguments()[0] == typeof(string) => HandleSingleStringValue(cliInput, (IInputDefinition<string>)inputDefinition),
-                    IInputDefinition inputDefinition when inputDefinition.GetType().BaseType.GetGenericArguments()[0] == typeof(int?) => HandleSingleIntValue(cliInput, (IInputDefinition<int?>)inputDefinition),
-                    IInputDefinition inputDefinition when inputDefinition.GetType().BaseType.GetGenericArguments()[0] == typeof(int) => HandleSingleIntValue(cliInput, (IInputDefinition<int?>)inputDefinition),
-                    _ => true
+                    case IInputDefinition<string> stringInput:
+                        HandleSingleStringValue(cliInput, stringInput);
+                        break;
+                    case IInputDefinition<int?> nullableIntInput:
+                        HandleSingleIntValue(cliInput, nullableIntInput);
+                        break;
+                    case IInputDefinition<int> intInput:
+                        HandleSingleIntValue(cliInput, (IInputDefinition<int?>)intInput);
+                        break;
                 };
             }
         }
