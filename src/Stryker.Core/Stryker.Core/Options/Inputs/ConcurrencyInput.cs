@@ -34,7 +34,7 @@ Reasons you might want to lower this setting:
                     "This might have an impact on performance.", SuppliedInput, Default);
             }
 
-            logger.LogInformation("Stryker will use a max of {concurrency} parallel testsessions", SuppliedInput.Value);
+            logger.LogInformation("Stryker will use a max of {concurrency} parallel testsessions.", SuppliedInput.Value);
 
             if (SuppliedInput is 1)
             {

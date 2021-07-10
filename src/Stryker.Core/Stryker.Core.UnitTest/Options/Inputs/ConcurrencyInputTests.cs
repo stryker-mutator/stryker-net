@@ -49,10 +49,12 @@ Reasons you might want to lower this setting:
 
             var safeProcessorCount = Math.Max(Environment.ProcessorCount / 2, 1);
 
+            var formattedMessage = string.Format("Stryker will use a max of {0} parallel testsessions.", concurrentTestRunners);
+            _loggerMock.Verify(LogLevel.Information, formattedMessage, Times.Once);
+
             if (concurrentTestRunners > safeProcessorCount)
             {
-                var formattedMessage = string.Format("Using a concurrency of {0} which is more than recommended {1} for normal system operation. This might have an impact on performance.", concurrentTestRunners, safeProcessorCount);
-
+                formattedMessage = string.Format("Using a concurrency of {0} which is more than recommended {1} for normal system operation. This might have an impact on performance.", concurrentTestRunners, safeProcessorCount);
                 _loggerMock.Verify(expectedLoglevel, formattedMessage, Times.Once);
             }
             _loggerMock.VerifyNoOtherCalls();
@@ -65,6 +67,7 @@ Reasons you might want to lower this setting:
 
             validatedInput.ShouldBe(1);
 
+            _loggerMock.Verify(LogLevel.Information, "Stryker will use a max of 1 parallel testsessions.", Times.Once);
             _loggerMock.Verify(LogLevel.Warning, "Stryker is running in single threaded mode due to concurrency being set to 1.", Times.Once);
             _loggerMock.VerifyNoOtherCalls();
         }
