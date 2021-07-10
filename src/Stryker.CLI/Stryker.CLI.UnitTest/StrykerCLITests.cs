@@ -63,6 +63,7 @@ Options:";
             }
             finally
             {
+                //reset the console to prevent object disposed exceptions in other tests
                 Console.SetOut(originalOut);
             }
         }
@@ -106,6 +107,7 @@ Options:";
             }
             finally
             {
+                //reset the console to prevent object disposed exceptions in other tests
                 Console.SetOut(originalOut);
             }
         }

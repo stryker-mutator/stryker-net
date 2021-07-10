@@ -34,6 +34,8 @@ Reasons you might want to lower this setting:
                     "This might have an impact on performance.", SuppliedInput, Default);
             }
 
+            logger.LogInformation("Stryker will use a max of {concurrency} parallel testsessions", SuppliedInput.Value);
+
             if (SuppliedInput is 1)
             {
                 logger.LogWarning("Stryker is running in single threaded mode due to concurrency being set to 1.");
