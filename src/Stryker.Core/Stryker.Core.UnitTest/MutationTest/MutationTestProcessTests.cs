@@ -84,7 +84,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var mockMutants = new Collection<Mutant>() { new() { Mutation = new Mutation() }, mutantToBeSkipped };
 
             // create mocks
-            var orchestratorMock = new Mock<MutantOrchestrator<SyntaxNode>>(MockBehavior.Strict);
+            var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict);
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             var coverageAnalyzerMock = new Mock<ICoverageAnalyser>(MockBehavior.Strict);
@@ -103,6 +103,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 reporterMock.Object,
                 mutationTestExecutorMock.Object,
                 orchestratorMock.Object,
+                fSharpOrchestrator: null,
                 fileSystem,
                 new BroadcastMutantFilter(Enumerable.Empty<IMutantFilter>()),
                 coverageAnalyzerMock.Object,
@@ -165,7 +166,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var mockMutants = new Collection<Mutant>() { new Mutant() { Mutation = new Mutation() }, mutantToBeSkipped, compileErrorMutant };
 
             // create mocks
-            var orchestratorMock = new Mock<MutantOrchestrator<SyntaxNode>>(MockBehavior.Strict);
+            var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict);
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Strict);
@@ -192,6 +193,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 reporterMock.Object,
                 mutationTestExecutorMock.Object,
                 orchestratorMock.Object,
+                fSharpOrchestrator: null,
                 fileSystem,
                 new BroadcastMutantFilter(new[] { mutantFilterMock.Object }),
                 coverageAnalyzerMock.Object,
@@ -209,6 +211,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             inputFile.Mutants.ShouldContain(mutantToBeSkipped);
             mutantToBeSkipped.ResultStatus.ShouldBe(MutantStatus.Ignored);
         }
+
 
         [Fact]
         public void MutateShouldWriteToDisk_IfCompilationIsSuccessful()
@@ -250,7 +253,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var mockMutants = new Collection<Mutant>() { new Mutant() { Mutation = new Mutation() } };
 
             // create mocks
-            var orchestratorMock = new Mock<MutantOrchestrator<SyntaxNode>>(MockBehavior.Strict);
+            var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict);
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             var coverageAnalyzerMock = new Mock<ICoverageAnalyser>(MockBehavior.Strict);
@@ -268,6 +271,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 reporterMock.Object,
                 mutationTestExecutorMock.Object,
                 orchestratorMock.Object,
+                fSharpOrchestrator: null,
                 fileSystem,
                 new BroadcastMutantFilter(Enumerable.Empty<IMutantFilter>()),
                 coverageAnalyzerMock.Object,
@@ -495,7 +499,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" }
+                            { "TargetFileName", "TestName.dll" },
+                            { "Language", "C#" }
                         }).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -547,7 +552,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             });
 
             var projectUnderTest = TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>() { { "Language", "F#" } }).Object;
+                    properties: new Dictionary<string, string>() { { "Language", "C#" } }).Object;
             var input = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo(new MockFileSystem())
@@ -597,7 +602,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             });
 
             var projectUnderTest = TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>() { { "Language", "F#" } }).Object;
+                    properties: new Dictionary<string, string>() { { "Language", "C#" } }).Object;
             var input = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo(new MockFileSystem())

@@ -62,7 +62,7 @@ namespace Stryker.Core.UnitTest.Mutators
         public void Mutator_ShouldNotCallApplyMutations_OnWrongType2()
         {
             // the type AssignmentExpressionSyntax should NOT be mutated
-            var originalNode = SyntaxFactory.AssignmentExpression(SyntaxKind.SimpleAssignmentExpression, 
+            var originalNode = SyntaxFactory.AssignmentExpression(SyntaxKind.SimpleAssignmentExpression,
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(100)),
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(5)));
 

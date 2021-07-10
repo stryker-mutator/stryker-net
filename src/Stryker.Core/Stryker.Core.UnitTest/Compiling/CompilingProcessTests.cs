@@ -56,7 +56,7 @@ namespace ExampleProject
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
 
-            var target = new CompilingProcess(input, rollbackProcessMock.Object);
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
             using (var ms = new MemoryStream())
             {
@@ -109,13 +109,13 @@ namespace ExampleProject
                                 Compilation = compilation
                             });
 
-            var target = new CompilingProcess(input, rollbackProcessMock.Object);
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
             using (var ms = new MemoryStream())
             {
                 Should.Throw<CompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false));
             }
-            rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), false,false),
+            rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), false, false),
                 Times.AtLeast(2));
         }
 
@@ -156,7 +156,7 @@ namespace ExampleProject
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
 
-            var target = new CompilingProcess(input, rollbackProcessMock.Object);
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
             using (var ms = new MemoryStream())
             {
@@ -207,7 +207,7 @@ namespace ExampleProject
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
 
-            var target = new CompilingProcess(input, rollbackProcessMock.Object);
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
             using (var ms = new MemoryStream())
             {
@@ -261,7 +261,7 @@ namespace ExampleProject
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
 
-            var target = new CompilingProcess(input, rollbackProcessMock.Object);
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
             using (var ms = new MemoryStream())
             {
@@ -309,7 +309,7 @@ namespace ExampleProject
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
 
-            var target = new CompilingProcess(input, rollbackProcessMock.Object);
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
             using (var ms = new MemoryStream())
             {

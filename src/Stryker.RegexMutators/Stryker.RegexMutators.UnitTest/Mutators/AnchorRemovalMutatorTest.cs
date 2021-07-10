@@ -1,5 +1,4 @@
-﻿using RegexParser;
-using RegexParser.Nodes;
+﻿using RegexParser.Nodes;
 using RegexParser.Nodes.AnchorNodes;
 using RegexParser.Nodes.GroupNodes;
 using Shouldly;

@@ -1,10 +1,10 @@
+using DotNet.Globbing;
+using Microsoft.CodeAnalysis.Text;
+using Stryker.Core.ProjectComponents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using DotNet.Globbing;
-using Microsoft.CodeAnalysis.Text;
-using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core
 {

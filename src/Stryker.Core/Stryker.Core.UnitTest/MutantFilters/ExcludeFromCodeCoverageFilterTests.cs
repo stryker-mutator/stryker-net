@@ -1,10 +1,10 @@
-using System;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Shouldly;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using System;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
@@ -35,7 +35,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             var sut = new ExcludeFromCodeCoverageFilter() as IMutantFilter;
 
             // Act
-            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerOptions());
+            var results = sut.FilterMutants(new[] { mutant }, null, new StrykerOptions());
 
             // Assert
             results.ShouldNotContain(mutant);
@@ -55,12 +55,12 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             var sut = new ExcludeFromCodeCoverageFilter() as IMutantFilter;
 
             // Act
-            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerOptions());
+            var results = sut.FilterMutants(new[] { mutant }, null, new StrykerOptions());
 
             // Assert
             results.ShouldNotContain(mutant);
         }
-        
+
         [Fact]
         public static void OnClass()
         {
@@ -78,12 +78,12 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             var sut = new ExcludeFromCodeCoverageFilter();
 
             // Act
-            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerOptions());
+            var results = sut.FilterMutants(new[] { mutant }, null, new StrykerOptions());
 
             // Assert
             results.ShouldNotContain(mutant);
         }
-        
+
         [Fact]
         public static void Not()
         {
@@ -100,12 +100,12 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             var sut = new ExcludeFromCodeCoverageFilter();
 
             // Act
-            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerOptions());
+            var results = sut.FilterMutants(new[] { mutant }, null, new StrykerOptions());
 
             // Assert
             results.ShouldContain(mutant);
         }
-        
+
         [Theory]
         [InlineData("System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute")]
         [InlineData("ExcludeFromCodeCoverageAttribute")]
@@ -126,13 +126,13 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             var sut = new ExcludeFromCodeCoverageFilter();
 
             // Act
-            var results = sut.FilterMutants(new[] {mutant}, null, new StrykerOptions());
+            var results = sut.FilterMutants(new[] { mutant }, null, new StrykerOptions());
 
             // Assert
             results.ShouldNotContain(mutant);
         }
-        
-        
+
+
         private static Mutant Create(string source, string search)
         {
             var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();

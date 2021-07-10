@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.CodeAnalysis;
+﻿using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
+using System;
+using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators
 {
@@ -14,7 +14,7 @@ namespace Stryker.Core.Mutators
 
         /// <summary> Dictionary which maps original linq expressions to the target mutation </summary>
         private static Dictionary<LinqExpression, LinqExpression> KindsToMutate { get; }
-       /// <summary> Dictionary which maps original linq expressions to the target mutation </summary>
+        /// <summary> Dictionary which maps original linq expressions to the target mutation </summary>
         private static HashSet<LinqExpression> RequireArguments { get; }
 
         static LinqMutator()
@@ -78,7 +78,7 @@ namespace Stryker.Core.Mutators
 
         private static IEnumerable<Mutation> FindMutableMethodCalls(ExpressionSyntax node, ExpressionSyntax original)
         {
-            while(node is ConditionalAccessExpressionSyntax conditional)
+            while (node is ConditionalAccessExpressionSyntax conditional)
             {
                 foreach (var subMutants in FindMutableMethodCalls(conditional.Expression, original))
                 {
@@ -87,7 +87,7 @@ namespace Stryker.Core.Mutators
                 node = conditional.WhenNotNull;
             }
 
-            for (;;)
+            for (; ; )
             {
                 ExpressionSyntax next = null;
                 if (!(node is InvocationExpressionSyntax invocationExpression))

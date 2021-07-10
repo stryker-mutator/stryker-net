@@ -43,11 +43,12 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var result = target.ApplyMutations(originalNode).ToList();
 
-            if(expectedOutput.Count() == 1)
+            if (expectedOutput.Count() == 1)
             {
                 // there should be only one mutation
                 result.ShouldHaveSingleItem();
-            } else
+            }
+            else
             {
                 // there should be two mutations
                 result.Count.ShouldBe(2, "Two mutations should have been made");
