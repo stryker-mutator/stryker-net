@@ -80,19 +80,17 @@ namespace Stryker.CLI
             }
         }
 
-        private bool HandleNoValue(IInputDefinition<bool?> strykerInput)
+        private static void HandleNoValue(IInputDefinition<bool?> strykerInput)
         {
             strykerInput.SuppliedInput = true;
-            return true;
         }
 
-        private bool HandleSingleStringValue(CommandOption cliInput, IInputDefinition<string> strykerInput)
+        private static void HandleSingleStringValue(CommandOption cliInput, IInputDefinition<string> strykerInput)
         {
             strykerInput.SuppliedInput = cliInput.Value();
-            return true;
         }
 
-        private bool HandleSingleIntValue(CommandOption cliInput, IInputDefinition<int?> strykerInput)
+        private static void HandleSingleIntValue(CommandOption cliInput, IInputDefinition<int?> strykerInput)
         {
             if (int.TryParse(cliInput.Value(), out var value))
             {
@@ -101,10 +99,9 @@ namespace Stryker.CLI
             {
                 throw new InputException($"Unexpected value for argument {cliInput.LongName}:{cliInput.Value()}. Expected type to be integer");
             }
-            return true;
         }
 
-        private bool HandleSingleOrNoValue(IInputDefinition strykerInput, CommandOption cliInput, IStrykerInputs inputs)
+        private static void HandleSingleOrNoValue(IInputDefinition strykerInput, CommandOption cliInput, IStrykerInputs inputs)
         {
             switch (strykerInput)
             {
@@ -118,14 +115,11 @@ namespace Stryker.CLI
                     inputs.BaselineProviderInput.SuppliedInput = cliInput.Value();
                     break;
             }
-            return true;
         }
 
-        private bool HandleMultiValue(CommandOption cliInput, IInputDefinition<IEnumerable<string>> strykerInput)
+        private static void HandleMultiValue(CommandOption cliInput, IInputDefinition<IEnumerable<string>> strykerInput)
         {
             strykerInput.SuppliedInput = cliInput.Values;
-
-            return true;
         }
 
         private IInputDefinition GetStrykerInput(CommandOption cliInput) => _cliInputs[cliInput.LongName].Input;
