@@ -103,7 +103,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             return Path.ChangeExtension(analyzerResult.GetAssemblyName(), ".pdb");
         }
 
-        public static IEnumerable<ISourceGenerator> GetSourceGenerators(this IAnalyzerResult analyzerResult)
+        public static IEnumerable<ISourceGenerator> GetSourceGenerators(this IAnalyzerResult analyzerResult, ILogger logger = null)
         {
             var generators = new List<ISourceGenerator>();
             foreach (var analyzer in analyzerResult.AnalyzerReferences)
@@ -120,9 +120,12 @@ namespace Stryker.Core.Initialisation.Buildalyzer
                         }
                     }
                 }
-                catch
+                catch (Exception e)
                 {
-                    // many framework analyzers won't be loadable
+                    logger?.LogWarning(e,
+                        $"Analyzer assembly {analyzer} could not be loaded. \n" +
+                        $"Generated source code may be missing.");
+
                     continue;
                 }
             }
