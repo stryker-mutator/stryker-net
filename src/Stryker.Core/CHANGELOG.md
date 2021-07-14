@@ -1,6 +1,9 @@
 ## [0.22.7](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.6...stryker@0.22.7) (2021-07-10)
 
 
+### Bug Fixes
+
+* **Diff feature:** Coverage analysis filter overwrites Ignored mutant statuses while it should ignore them ([#1586](https://github.com/stryker-mutator/stryker-net/issues/1586))
 
 ## [0.22.6](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.5...stryker@0.22.6) (2021-06-30)
 
