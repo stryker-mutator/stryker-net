@@ -1,3 +1,7 @@
+## [0.22.7](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.6...dotnet-stryker@0.22.7) (2021-07-10)
+
+
+
 ## [0.22.6](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.5...dotnet-stryker@0.22.6) (2021-06-30)
 
 

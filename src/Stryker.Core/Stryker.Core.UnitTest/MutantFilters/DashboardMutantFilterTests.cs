@@ -305,5 +305,47 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             baselineMutantHelper.Verify();
         }
+
+        [Fact]
+        public void ShouldNotUpdateMutantsWithBaselineIfFileNotInBaseline()
+        {
+            // Arrange
+            var branchProvider = new Mock<IGitInfoProvider>();
+            var baselineProvider = new Mock<IBaselineProvider>();
+            var baselineMutantHelper = new Mock<IBaselineMutantHelper>();
+
+            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
+
+            var file = new ReadOnlyFileLeaf(new CsharpFileLeaf
+            {
+                RelativePath = "foo.cs"
+            });
+
+            var mutants = new List<Mutant>
+            {
+                new Mutant()
+            };
+
+            var jsonMutants = new HashSet<JsonMutant>
+            {
+                new JsonMutant()
+            };
+
+            // Setup Mocks
+
+            var jsonFileComponents = new Dictionary<string, JsonReportFileComponent>();
+
+            var baseline = new MockJsonReport(null, jsonFileComponents);
+
+            baselineProvider.Setup(mock => mock.Load(It.IsAny<string>())).Returns(Task.FromResult((JsonReport)baseline));
+
+            // Act
+            var target = new DashboardMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
+
+            var results = target.FilterMutants(mutants, file, options);
+
+            // Assert
+            results.ShouldHaveSingleItem();
+        }
     }
 }
