@@ -24,9 +24,9 @@ namespace Stryker.Core.Reporters.Html
             _consoleWriter = consoleWriter ?? Console.Out;
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent mutationTree)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
         {
-            var mutationReport = JsonReport.Build(_options, mutationTree);
+            var mutationReport = JsonReport.Build(_options, reportComponent);
 
             var reportPath = Path.Combine(_options.OutputPath, "reports", "mutation-report.html");
 
