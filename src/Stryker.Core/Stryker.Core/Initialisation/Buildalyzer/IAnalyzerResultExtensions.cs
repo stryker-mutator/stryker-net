@@ -123,7 +123,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
                 catch (Exception e)
                 {
                     logger?.LogWarning(e,
-                        $"Analyzer assembly {analyzer} could not be loaded. \n" +
+                        $"Analyzer assembly {analyzer} could not be loaded. {Environment.NewLine}" +
                         $"Generated source code may be missing.");
 
                     continue;
