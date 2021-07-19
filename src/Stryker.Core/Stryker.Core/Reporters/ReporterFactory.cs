@@ -48,7 +48,7 @@ namespace Stryker.Core.Reporters
                 { Reporter.ConsoleProgressDots, Reporter.Dots },
                 { Reporter.ConsoleReport, Reporter.ClearText }
             };
-            if (enabledReporters.Where(deprecated => replacementFor.Any(replacement => replacement.Key == deprecated)).ToList() is var deprecatedReporters && deprecatedReporters.Count() > 0)
+            if (enabledReporters.Where(deprecated => replacementFor.Any(replacement => replacement.Key == deprecated)).ToList() is var deprecatedReporters && deprecatedReporters.Count > 0)
             {
                 var logger = Logging.ApplicationLogging.LoggerFactory.CreateLogger(nameof(ReporterFactory));
                 foreach (var deprecatedReporter in deprecatedReporters)
