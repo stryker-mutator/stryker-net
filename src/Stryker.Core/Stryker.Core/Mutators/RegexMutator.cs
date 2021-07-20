@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
@@ -29,7 +29,7 @@ namespace Stryker.Core.Mutators
             if (name == typeof(Regex).Name || name == typeof(Regex).FullName)
             {
                 var arguments = node.ArgumentList.Arguments;
-                var namedArgument = arguments.Where(argument => argument.NameColon?.Name.Identifier.ValueText == PatternArgumentName).FirstOrDefault();
+                var namedArgument = arguments.FirstOrDefault(argument => argument.NameColon?.Name.Identifier.ValueText == PatternArgumentName);
                 var patternArgument = namedArgument ?? node.ArgumentList.Arguments.FirstOrDefault();
                 var patternExpression = patternArgument?.Expression;
 

@@ -9,7 +9,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInitialBuildProcess
     {
-        void InitialBuild(bool fullFramework, string path, string solutionPath);
+        void InitialBuild(bool fullFramework, string projectPath, string solutionPath);
     }
 
     public class InitialBuildProcess : IInitialBuildProcess
