@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
@@ -57,24 +58,7 @@ namespace Stryker.Core.Compiling
             RollbackProcessResult rollbackProcessResult;
 
             // C# source generators must be executed before compilation
-            var generators = analyzerResult.GetSourceGenerators(_logger);
-            if (generators.Any())
-            {
-                _ = CSharpGeneratorDriver
-                    .Create(generators)
-                    .RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
-
-                foreach (var diagnostic in diagnostics)
-                {
-                    if (diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None)
-                    {
-                        _logger.LogError("Failed to generate source code for mutated assembly: {0}", diagnostic);
-                        throw new StrykerCompilationException("Source Generator Failure");
-                    }
-                }
-
-                compilation = outputCompilation as CSharpCompilation;
-            }
+            compilation = RunSourceGenerators(analyzerResult, compilation);
 
             // first try compiling
             EmitResult emitResult;
@@ -111,6 +95,25 @@ namespace Stryker.Core.Compiling
                 _logger.LogWarning($"{emitResultDiagnostic}");
             }
             throw new StrykerCompilationException("Failed to restore build able state.");
+        }
+
+        private CSharpCompilation RunSourceGenerators(IAnalyzerResult analyzerResult, CSharpCompilation compilation)
+        {
+            var generators = analyzerResult.GetSourceGenerators(_logger);
+            _ = CSharpGeneratorDriver
+                .Create(generators)
+                .RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
+
+            var errors = diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None);
+            if (errors.Any())
+            {
+                foreach (var diagnostic in errors)
+                {
+                    _logger.LogError("Failed to generate source code for mutated assembly: {0}", diagnostic);
+                }
+                throw new StrykerCompilationException("Source Generator Failure");
+            }
+            return outputCompilation as CSharpCompilation;
         }
 
         private (RollbackProcessResult, EmitResult, int) TryCompilation(
