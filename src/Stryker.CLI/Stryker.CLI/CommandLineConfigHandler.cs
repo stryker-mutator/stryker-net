@@ -138,8 +138,8 @@ namespace Stryker.CLI
             AddCliInput(inputs.LogToFileInput, "log-to-file", "L", optionType: CommandOptionType.NoValue);
             AddCliInput(inputs.VerbosityInput, "verbosity", "V");
 
-            AddCliInput(inputs.SinceInput, "since", "since", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
-            AddCliInput(inputs.WithBaselineInput, "with-baseline", "baseline", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
+            AddCliInput(inputs.SinceInput, "since", "", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
+            AddCliInput(inputs.WithBaselineInput, "with-baseline", "", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish");
 
             AddCliInput(inputs.DashboardApiKeyInput, "dashboard-api-key", null);
             AddCliInput(inputs.AzureFileStorageSasInput, "azure-fileshare-sas", null);
