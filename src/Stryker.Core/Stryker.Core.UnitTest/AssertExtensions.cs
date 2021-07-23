@@ -13,7 +13,7 @@ namespace Stryker.Core.UnitTest
     public static class AssertionExtensions
     {
         /// <summary>
-        /// Compares two code strings and asserts equality 
+        /// Compares two code strings and asserts equality
         /// </summary>
         /// <param name="actual">Resulted code</param>
         /// <param name="expected">Expected code</param>
@@ -23,7 +23,7 @@ namespace Stryker.Core.UnitTest
         }
 
         /// <summary>
-        /// Compares two syntax trees and asserts equality 
+        /// Compares two syntax trees and asserts equality
         /// </summary>
         /// <param name="actual">Resulted code</param>
         /// <param name="expected">Expected code</param>

@@ -91,20 +91,10 @@ Options:";
 
                 target.Run(new string[] { });
 
-                string expected = @"
-   _____ _              _               _   _ ______ _______  
-  / ____| |            | |             | \ | |  ____|__   __| 
- | (___ | |_ _ __ _   _| | _____ _ __  |  \| | |__     | |    
-  \___ \| __| '__| | | | |/ / _ \ '__| | . ` |  __|    | |    
-  ____) | |_| |  | |_| |   <  __/ |    | |\  | |____   | |    
- |_____/ \__|_|   \__, |_|\_\___|_| (_)|_| \_|______|  |_|    
-                   __/ |                                      
-                  |___/                                       
-";
+                var consoleOutput = sw.GetStringBuilder().ToString();
 
-                sw.ToString().ShouldContain(expected);
-                sw.ToString().ShouldContain("Version:");
-                sw.ToString().ShouldContain("A new version of Stryker.NET (10.0.0) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker");
+                consoleOutput.ShouldContain("Version:");
+                consoleOutput.ShouldContain("A new version of Stryker.NET (10.0.0) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker");
             }
             finally
             {

@@ -53,9 +53,9 @@ namespace Stryker.Core.UnitTest.Initialisation
             var testProjectAnalyzerResultMock = new Mock<IAnalyzerResult>(MockBehavior.Strict);
             var projectUnderTestProjectFileMock = new Mock<IProjectFile>(MockBehavior.Strict);
             var testProjectProjectFileMock = new Mock<IProjectFile>(MockBehavior.Strict);
-            var testProjectPackagereferenceMock = new Mock<IPackageReference>();
+            var testProjectPackageReferenceMock = new Mock<IPackageReference>();
 
-            // when a solutionpath is given and it's inside the current directory (basepath)
+            // when a solutionPath is given and it's inside the current directory (basePath)
             var options = new StrykerOptions
             {
                 BasePath = "C:/MyProject",
@@ -87,7 +87,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             projectUnderTestAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "False" }, { "ProjectTypeGuids", "not testproject" } });
             projectUnderTestAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns("C:/projectundertest/projectundertest.csproj");
             testProjectProjectFileMock.Setup(x => x.PackageReferences).Returns(new List<IPackageReference>() {
-                testProjectPackagereferenceMock.Object
+                testProjectPackageReferenceMock.Object
             });
             testProjectProjectFileMock.Setup(x => x.Path).Returns("C:/testproject/");
 

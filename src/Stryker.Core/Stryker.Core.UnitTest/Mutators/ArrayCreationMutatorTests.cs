@@ -9,7 +9,7 @@ namespace Stryker.Core.UnitTest.Mutators
     public class ArrayCreationMutatorTests
     {
         [Fact]
-        public void ShouldBeMutationlevelStandard()
+        public void ShouldBeMutationLevelStandard()
         {
             var target = new ArrayCreationMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);

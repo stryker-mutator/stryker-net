@@ -70,9 +70,9 @@ namespace Stryker.Core.Baseline.Providers
 
             if (existingReport == null)
             {
-                var succesfullyCreatedDirectories = await CreateDirectories(fileUrl);
+                var successfullyCreatedDirectories = await CreateDirectories(fileUrl);
 
-                if (!succesfullyCreatedDirectories)
+                if (!successfullyCreatedDirectories)
                 {
                     return;
                 }

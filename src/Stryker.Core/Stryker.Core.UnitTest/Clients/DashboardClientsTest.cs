@@ -21,7 +21,7 @@ namespace Stryker.Core.UnitTest.Clients
         [Fact]
         public async Task DashboardClient_Logs_And_Returns_Null_On_Publish_Report_Does_Not_Return_200()
         {
-            // Arrange 
+            // Arrange
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
@@ -65,7 +65,7 @@ namespace Stryker.Core.UnitTest.Clients
         [Fact]
         public async Task DashboardClient_Calls_With_Right_URL()
         {
-            // Arrange 
+            // Arrange
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
@@ -116,7 +116,7 @@ namespace Stryker.Core.UnitTest.Clients
         [Fact]
         public async Task DashboardClient_Calls_With_Right_URL_With_Module_Appended()
         {
-            // Arrange 
+            // Arrange
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
@@ -168,7 +168,7 @@ namespace Stryker.Core.UnitTest.Clients
         [Fact]
         public async Task DashboardClient_Get_With_Right_URL()
         {
-            // Arrange 
+            // Arrange
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
@@ -226,7 +226,7 @@ namespace Stryker.Core.UnitTest.Clients
         [Fact]
         public async Task DashboardClient_Get_With_Right_URL_with_module_name()
         {
-            // Arrange 
+            // Arrange
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
@@ -283,9 +283,9 @@ namespace Stryker.Core.UnitTest.Clients
         }
 
         [Fact]
-        public async Task DashboardClient_Get_Returns_Null_When_Statuscode_Not_200()
+        public async Task DashboardClient_Get_Returns_Null_When_StatusCode_Not_200()
         {
-            // Arrange 
+            // Arrange
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
