@@ -10,6 +10,7 @@ using Xunit;
 
 namespace Stryker.CLI.UnitTest
 {
+    [Collection("StaticConfigBuilder")]
     public class ConfigFileTests
     {
         [Fact]

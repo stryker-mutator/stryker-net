@@ -17,6 +17,7 @@ using Xunit;
 
 namespace Stryker.CLI.UnitTest
 {
+    [Collection("StaticConfigBuilder")]
     public class StrykerCLITests
     {
         private IStrykerInputs _inputs;
