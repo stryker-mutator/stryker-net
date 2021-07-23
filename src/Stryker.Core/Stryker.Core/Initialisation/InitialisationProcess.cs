@@ -10,7 +10,7 @@ using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.Initialisation
 {
-    // For mocking perposes
+    // For mocking purposes
     public interface IInitialisationProcessProvider
     {
         IInitialisationProcess Provide();

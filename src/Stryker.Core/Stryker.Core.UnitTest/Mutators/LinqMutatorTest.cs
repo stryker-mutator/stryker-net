@@ -11,7 +11,7 @@ namespace Stryker.Core.UnitTest.Mutators
     public class LinqMutatorTest
     {
         /// <summary>
-        ///     Generator for different Linqexpressions
+        ///     Generator for different Linq expressions
         /// </summary>
         /// <param name="expression"></param>
         /// <returns></returns>
@@ -23,7 +23,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
- 
+
 namespace TestApplication
 {{
     class Program
@@ -45,7 +45,7 @@ namespace TestApplication
         }
 
         [Fact]
-        public void ShouldBeMutationlevelAdvanced()
+        public void ShouldBeMutationLevelAdvanced()
         {
             var target = new LinqMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
@@ -126,7 +126,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
- 
+
 namespace TestApplication
 {
     class Program

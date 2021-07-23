@@ -65,6 +65,11 @@ namespace Stryker.Core.MutantFilters
 
         private void UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file)
         {
+            if(!_baseline.Files.ContainsKey(FilePathUtils.NormalizePathSeparators(file.RelativePath)))
+            {
+                return;
+            }
+
             JsonReportFileComponent baselineFile = _baseline.Files[FilePathUtils.NormalizePathSeparators(file.RelativePath)];
 
             if (baselineFile is { })

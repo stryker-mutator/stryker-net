@@ -35,7 +35,7 @@ namespace Stryker.Core.UnitTest.Mutators
         [Fact]
         public void Mutator_ShouldCallApplyMutations_OnExpectedType()
         {
-            // the type BinaryExpressionSyntax should be mutated by the examplemutator
+            // the type BinaryExpressionSyntax should be mutated by the example mutator
             var originalNode = SyntaxFactory.BinaryExpression(SyntaxKind.AddExpression,
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(8)));

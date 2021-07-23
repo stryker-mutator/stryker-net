@@ -17,7 +17,7 @@ namespace Stryker.Core
             }
             else
             {
-                // Of the directory separator char and its alternative are the same, every valid path is already normalized.
+                // If the directory separator char and its alternative are the same, every valid path is already normalized.
                 return filePath;
             }
         }

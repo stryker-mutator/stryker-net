@@ -19,7 +19,7 @@ namespace Stryker.Core.Compiling
 
     /// <summary>
     /// This process is in control of compiling the assembly and rolling back mutations that cannot compile
-    /// Compiles the given input onto the memorystream
+    /// Compiles the given input onto the memory stream
     public class CsharpCompilingProcess : ICompilingProcess
     {
         private readonly MutationTestInput _input;
@@ -38,7 +38,7 @@ namespace Stryker.Core.Compiling
             _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetAssemblyName();
 
         /// <summary>
-        /// Compiles the given input onto the memorystream
+        /// Compiles the given input onto the memory stream
         /// The compiling process is closely related to the rollback process. When the initial compilation fails, the rollback process will be executed.
         /// <param name="syntaxTrees">The syntax trees to compile</param>
         /// <param name="ilStream">The memory stream to store the compilation result onto</param>

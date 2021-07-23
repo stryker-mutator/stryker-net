@@ -29,7 +29,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         private readonly string testProjectPath;
         private readonly string projectUnderTestPath;
         private readonly string defaultTestProjectFileContents;
-        private readonly string defaultProjectUndertestFileContents;
+        private readonly string defaultProjectUnderTestFileContents;
         private readonly StrykerOptions _options;
 
         public InputFileResolverTests()
@@ -59,7 +59,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
     </ItemGroup>
 </Project>";
-            defaultProjectUndertestFileContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
+            defaultProjectUnderTestFileContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.0</TargetFramework>
         <IsPackable>false</IsPackable>
@@ -78,6 +78,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         [InlineData("net452", Framework.DotNetClassic, 4, 5, 2)]
         [InlineData("net5.0", Framework.DotNet, 5, 0, null)]
         [InlineData("net5.0-windows", Framework.DotNet, 5, 0, null)]
+        [InlineData("net5", Framework.DotNet, 5, 0, null)]
         public void ProjectAnalyzerShouldDecodeFramework(string version, Framework framework, int major, int minor, int? patch)
         {
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -130,7 +131,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Fact]
-        public void InitializeShouldUseBuildAlyzerResult()
+        public void InitializeShouldUseBuildalyzerResult()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
@@ -330,7 +331,7 @@ using System.Reflection;
 
     <ItemGroup>
     </ItemGroup>
-               
+
      <Import Project=""../SharedProject/Example.projitems"" Label=""Shared"" />
 
 </Project>";
@@ -382,7 +383,7 @@ using System.Reflection;
 
     <ItemGroup>
     </ItemGroup>
-               
+
      <Import Project=""../NonSharedProject/Example.props"" Label=""Shared"" />
 
 </Project>";
@@ -456,7 +457,7 @@ using System.Reflection;
 
     <ItemGroup>
     </ItemGroup>
-               
+
      <Import Project=""../SharedProject1/Example.projitems"" Label=""Shared"" />
      <Import Project=""../SharedProject2/Example.projitems"" Label=""Shared"" />
 
@@ -511,7 +512,7 @@ using System.Reflection;
 
     <ItemGroup>
     </ItemGroup>
-               
+
      <Import Project=""../SharedProject/Example.projitems"" Label=""Shared"" />
 
     <ItemGroup>
@@ -947,7 +948,7 @@ Please specify a test project name filter that results in one project.
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
-                    { projectUnderTestPath, new MockFileData(defaultProjectUndertestFileContents)},
+                    { projectUnderTestPath, new MockFileData(defaultProjectUnderTestFileContents)},
                     { Path.Combine(_filesystemRoot, "ExampleProject", "myFile.cs"), new MockFileData(sourceFile)},
                     { Path.Combine(_filesystemRoot, "TestProject1", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents) },
                     { Path.Combine(_filesystemRoot, "TestProject2", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents) },

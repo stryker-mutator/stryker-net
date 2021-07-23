@@ -134,7 +134,7 @@ namespace Stryker.Core.UnitTest.Mutants
         }
 
         [Fact]
-        public void ShouldInjectInitalizersAndRestore()
+        public void ShouldInjectInitializersAndRestore()
         {
             var source = "class Test {bool Method(out int x) {x=0;}}";
             var expected = "class Test {bool Method(out int x) {{x = default(int);}x=0;}}";
@@ -170,7 +170,7 @@ static TestClass()=> Value-='a';}";
             // Remove marker
             var restored= MutantPlacer.RemoveMutant(node);
             actualNode = actualNode.ReplaceNode(node, restored);
-            
+
             // remove mutation
             node = actualNode.DescendantNodes().First(t => t.Kind() == SyntaxKind.IfStatement);
             restored = MutantPlacer.RemoveMutant(node);
