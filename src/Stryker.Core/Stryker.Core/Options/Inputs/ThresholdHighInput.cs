@@ -17,7 +17,7 @@ namespace Stryker.Core.Options.Inputs
                 var high = SuppliedInput.Value;
                 if (high > 100 || high < 1)
                 {
-                    throw new InputException("Threshold high must be between 1 and 100.");
+                    throw new InputException("Threshold high must be in range 2 to 100.");
                 }
 
                 if (low > high)

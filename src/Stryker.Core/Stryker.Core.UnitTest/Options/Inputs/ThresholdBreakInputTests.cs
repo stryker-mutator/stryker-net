@@ -47,8 +47,15 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Fact]
         public void ShouldAllow100PercentBreak()
         {
-            var result = new ThresholdBreakInput { SuppliedInput = 100 }.Validate(100);
+            var result = new ThresholdBreakInput { SuppliedInput = 100 }.Validate(low: 100);
             result.ShouldBe(100, "because some people will not allow any mutations in their projects.");
+        }
+
+        [Fact]
+        public void ShouldAllow0PercentBreak()
+        {
+            var result = new ThresholdBreakInput { SuppliedInput = 0 }.Validate(low: 100);
+            result.ShouldBe(0, "because should be able to be turned off.");
         }
 
         [Fact]

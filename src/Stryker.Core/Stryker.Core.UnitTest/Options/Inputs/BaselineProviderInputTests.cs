@@ -1,5 +1,6 @@
 using Shouldly;
 using Stryker.Core.Baseline.Providers;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
 using Stryker.Core.Reporters;
 using Xunit;
@@ -8,6 +9,13 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 {
     public class BaselineProviderInputTests
     {
+        [Fact]
+        public void ShouldHaveHelptext()
+        {
+            var target = new BaselineProviderInput();
+            target.HelpText.ShouldBe("Choose a storage location for dashboard compare. Set to Dashboard provider when the dashboard reporter is turned on. | default: 'disk' | allowed: Dashboard, Disk, AzureFileStorage");
+        }
+
         [Fact]
         public void ShouldHaveDefault()
         {
@@ -63,6 +71,16 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             var result = target.Validate(new[] { Reporter.Dashboard });
 
             result.ShouldBe(BaselineProvider.AzureFileStorage);
+        }
+
+        [Fact]
+        public void ShouldThrowException_OnInvalidInput()
+        {
+            var target = new BaselineProviderInput { SuppliedInput = "invalid" };
+
+            var exception = Should.Throw<InputException>(() => target.Validate(new[] { Reporter.Dashboard }));
+
+            exception.Message.ShouldBe("Baseline storage provider 'invalid' does not exist");
         }
     }
 }

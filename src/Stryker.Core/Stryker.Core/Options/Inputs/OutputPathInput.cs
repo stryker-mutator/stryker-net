@@ -16,7 +16,7 @@ namespace Stryker.Core.Options.Inputs
         {
             if (string.IsNullOrWhiteSpace(basepath))
             {
-                throw new InputException("The basepath cannot be empty.");
+                throw new ArgumentNullException(nameof(basepath));
             }
 
             var strykerDir = string.IsNullOrWhiteSpace(SuppliedInput) ? "StrykerOutput" : SuppliedInput;
@@ -25,7 +25,7 @@ namespace Stryker.Core.Options.Inputs
             fileSystem.Directory.CreateDirectory(FilePathUtils.NormalizePathSeparators(outputPath));
 
             // Create output dir with gitignore
-            var gitignorePath = FilePathUtils.NormalizePathSeparators(Path.Combine(basepath, "StrykerOutput", ".gitignore"));
+            var gitignorePath = FilePathUtils.NormalizePathSeparators(Path.Combine(basepath, strykerDir, ".gitignore"));
 
             if (!fileSystem.File.Exists(gitignorePath))
             {
