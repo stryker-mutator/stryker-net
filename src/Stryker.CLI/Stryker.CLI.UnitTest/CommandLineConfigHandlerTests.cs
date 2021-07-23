@@ -34,7 +34,7 @@ namespace Stryker.CLI.UnitTest
         [Fact]
         public void ShouldHandleSingleValue()
         {
-            _target.ReadCommandLineConfig(new[] { "--concurrency", "4" }, _app, _inputs);
+            _target.ReadCommandLineConfig(new[] { "--concurrency 4" }, _app, _inputs);
 
             _inputs.ConcurrencyInput.SuppliedInput.ShouldBe(4);
         }
