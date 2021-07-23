@@ -337,7 +337,6 @@ Options:";
 
         [Theory]
         [InlineData("--since")]
-        [InlineData("-since")]
         public void ShouldEnableDiffFeatureWhenPassed(string argName)
         {
             _target.Run(new string[] { argName });
@@ -349,7 +348,6 @@ Options:";
 
         [Theory]
         [InlineData("--since")]
-        [InlineData("-since")]
         public void ShouldSetGitDiffTargetWhenPassed(string argName)
         {
             _target.Run(new string[] { $"{argName}:development" });

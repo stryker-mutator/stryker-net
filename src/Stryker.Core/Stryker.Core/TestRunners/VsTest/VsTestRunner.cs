@@ -454,25 +454,36 @@ namespace Stryker.Core.TestRunners.VsTest
             return RunTestSession(mutantTestsMap, true, runSettings, updateHandler, ++retries);
         }
 
+        private ConsoleParameters DetermineConsoleParameters()
+        {
+            if (_options.LogOptions.LogToFile)
+            {
+                var vsTestLogPath = Path.Combine(_options.OutputPath, "logs", "VsTest-log.txt");
+                _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(vsTestLogPath));
+
+                _logger.LogTrace("{1}: Logging VsTest output to: {0}", vsTestLogPath, RunnerId);
+                return new ConsoleParameters
+                {
+                    TraceLevel = DetermineTraceLevel(),
+                    LogFilePath = vsTestLogPath
+                };
+            }
+
+            return new ConsoleParameters();
+        }
+
         private TraceLevel DetermineTraceLevel()
         {
-            var traceLevel = TraceLevel.Off;
-            switch (_options.LogOptions.LogLevel)
+            var traceLevel = _options.LogOptions.LogToFile ? _options.LogOptions.LogLevel switch
             {
-                case LogEventLevel.Debug:
-                case LogEventLevel.Verbose:
-                    traceLevel = TraceLevel.Verbose;
-                    break;
-                case LogEventLevel.Error:
-                case LogEventLevel.Fatal:
-                    break;
-                case LogEventLevel.Warning:
-                    traceLevel = TraceLevel.Warning;
-                    break;
-                case LogEventLevel.Information:
-                    traceLevel = TraceLevel.Info;
-                    break;
-            }
+                LogEventLevel.Debug => TraceLevel.Verbose,
+                LogEventLevel.Verbose => TraceLevel.Verbose,
+                LogEventLevel.Error => TraceLevel.Error,
+                LogEventLevel.Fatal => TraceLevel.Error,
+                LogEventLevel.Warning => TraceLevel.Warning,
+                LogEventLevel.Information => TraceLevel.Info,
+                _ => TraceLevel.Off
+            } : TraceLevel.Off;
 
             _logger.LogTrace("{0}: VsTest logging set to {1}", RunnerId, traceLevel);
             return traceLevel;
@@ -523,8 +534,6 @@ $@"<RunSettings>
 
         private IVsTestConsoleWrapper PrepareVsTestConsole()
         {
-            var vsTestLogPath = Path.Combine(_options.OutputPath, "logs", "VsTest-log.txt");
-            _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(vsTestLogPath));
             if (_vsTestConsole != null)
             {
                 try
@@ -535,13 +544,7 @@ $@"<RunSettings>
                 _vsTestConsole = null;
             }
 
-            _logger.LogTrace("{1}: Logging VsTest output to: {0}", vsTestLogPath, RunnerId);
-
-            return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), new ConsoleParameters
-            {
-                TraceLevel = DetermineTraceLevel(),
-                LogFilePath = vsTestLogPath
-            });
+            return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), DetermineConsoleParameters());
         }
 
         private void InitializeVsTestConsole()

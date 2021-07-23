@@ -30,7 +30,7 @@ namespace Stryker.Core.Options
         MutationLevelInput MutationLevelInput { get; init; }
         OutputPathInput OutputPathInput { get; init; }
         ProjectNameInput ProjectNameInput { get; init; }
-        ProjectNameInput ProjectUnderTestNameInput { get; init; }
+        ProjectUnderTestNameInput ProjectUnderTestNameInput { get; init; }
         ProjectVersionInput ProjectVersionInput { get; init; }
         ReportersInput ReportersInput { get; init; }
         SinceInput SinceInput { get; init; }
@@ -71,7 +71,7 @@ namespace Stryker.Core.Options
         public AdditionalTimeoutMsInput AdditionalTimeoutMsInput { get; init; }
         public LanguageVersionInput LanguageVersionInput { get; init; }
         public ConcurrencyInput ConcurrencyInput { get; init; }
-        public ProjectNameInput ProjectUnderTestNameInput { get; init; }
+        public ProjectUnderTestNameInput ProjectUnderTestNameInput { get; init; }
         public TestProjectsInput TestProjectsInput { get; init; }
         public WithBaselineInput WithBaselineInput { get; init; }
         public ReportersInput ReportersInput { get; init; }
@@ -96,12 +96,16 @@ namespace Stryker.Core.Options
 
         public StrykerOptions ValidateAll()
         {
+            var basePath = BasePathInput.Validate(_fileSystem);
+            var outputPath = OutputPathInput.Validate(_logger, _fileSystem, basePath);
             var reporters = ReportersInput.Validate();
             var baselineProvider = BaselineProviderInput.Validate(reporters);
             var sinceEnabled = SinceInput.Validate(WithBaselineInput.SuppliedInput);
 
             _strykerOptionsCache ??= new StrykerOptions()
             {
+                BasePath = basePath,
+                OutputPath = outputPath,
                 Concurrency = ConcurrencyInput.Validate(_logger),
                 MutationLevel = MutationLevelInput.Validate(),
                 DevMode = DevModeInput.Validate(),
@@ -109,7 +113,7 @@ namespace Stryker.Core.Options
                 LogOptions = new LogOptions
                 {
                     LogLevel = VerbosityInput.Validate(),
-                    LogToFile = LogToFileInput.Validate(OutputPathInput.SuppliedInput)
+                    LogToFile = LogToFileInput.Validate(outputPath)
                 },
                 Thresholds = new Thresholds
                 {
@@ -118,7 +122,7 @@ namespace Stryker.Core.Options
                     Break = ThresholdBreakInput.Validate(ThresholdLowInput.SuppliedInput),
                 },
                 Reporters = reporters,
-                ProjectUnderTestName = ProjectUnderTestNameInput.Validate(reporters),
+                ProjectUnderTestName = ProjectUnderTestNameInput.Validate(),
                 AdditionalTimeoutMS = AdditionalTimeoutMsInput.Validate(),
                 ExcludedMutations = ExcludedMutationsInput.Validate(),
                 IgnoredMethods = IgnoredMethodsInput.Validate(),
@@ -138,9 +142,7 @@ namespace Stryker.Core.Options
                 BaselineProvider = baselineProvider,
                 FallbackVersion = FallbackVersionInput.Validate(SinceTargetInput.SuppliedInput, WithBaselineInput.SuppliedInput),
                 Since = sinceEnabled,
-                SinceTarget = SinceTargetInput.Validate(sinceEnabled),
-                BasePath = BasePathInput.Validate(_fileSystem),
-                OutputPath = OutputPathInput.Validate(_logger, _fileSystem, BasePathInput.SuppliedInput)
+                SinceTarget = SinceTargetInput.Validate(sinceEnabled)
             };
             return _strykerOptionsCache;
         }
