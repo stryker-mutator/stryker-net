@@ -8,16 +8,16 @@ namespace Stryker.Core.Options.Inputs
         public override int? Default => 80;
 
         protected override string Description => "Minimum good mutation score. Must be higher than or equal to threshold low.";
-        protected override IEnumerable<string> AllowedOptions => new[] { "1 - 100" };
+        protected override IEnumerable<string> AllowedOptions => new[] { "0 - 100" };
 
         public int Validate(int? low)
         {
             if (SuppliedInput is not null)
             {
                 var high = SuppliedInput.Value;
-                if (high > 100 || high < 1)
+                if (high > 100 || high < 0)
                 {
-                    throw new InputException("Threshold high must be in range 2 to 100.");
+                    throw new InputException("Threshold high must be between 0 and 100.");
                 }
 
                 if (low > high)

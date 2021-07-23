@@ -11,19 +11,19 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         public void ShouldHaveHelptext()
         {
             var target = new ThresholdHighInput();
-            target.HelpText.ShouldBe(@"Minimum good mutation score. Must be higher than or equal to threshold low. | default: '80' | allowed: 1 - 100");
+            target.HelpText.ShouldBe(@"Minimum good mutation score. Must be higher than or equal to threshold low. | default: '80' | allowed: 0 - 100");
         }
 
         [Theory]
-        [InlineData(0)]
+        [InlineData(-1)]
         [InlineData(101)]
-        public void MustBeBetween1and100(int thresholdHigh)
+        public void MustBeBetween0and100(int thresholdHigh)
         {
             var ex = Assert.Throws<InputException>(() =>
             {
-                var options = new ThresholdHighInput { SuppliedInput = thresholdHigh }.Validate(low: 60);
+                var options = new ThresholdHighInput { SuppliedInput = thresholdHigh }.Validate(low: 0);
             });
-            ex.Message.ShouldBe("Threshold high must be in range 2 to 100.");
+            ex.Message.ShouldBe("Threshold high must be between 0 and 100.");
         }
 
         [Fact]
@@ -45,10 +45,10 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         }
 
         [Fact]
-        public void ShouldAllow2()
+        public void ShouldAllow0()
         {
-            var input = 2;
-            var options = new ThresholdHighInput { SuppliedInput = input }.Validate(low: 1);
+            var input = 0;
+            var options = new ThresholdHighInput { SuppliedInput = input }.Validate(low: 0);
             options.ShouldBe(input);
         }
 

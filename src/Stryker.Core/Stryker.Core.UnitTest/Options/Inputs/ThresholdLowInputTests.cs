@@ -23,7 +23,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             {
                 var options = new ThresholdLowInput { SuppliedInput = thresholdLow }.Validate(@break: 0, high: 100);
             });
-            ex.Message.ShouldBe("Threshold low must be in range 1 to 100.");
+            ex.Message.ShouldBe("Threshold low must be between 0 and 100.");
         }
 
         [Fact]
@@ -63,10 +63,10 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         }
 
         [Fact]
-        public void ShouldAllow2()
+        public void ShouldAllow0()
         {
-            var input = 2;
-            var options = new ThresholdLowInput { SuppliedInput = input }.Validate(@break: 0, high: 60);
+            var input = 0;
+            var options = new ThresholdLowInput { SuppliedInput = input }.Validate(@break: 0, high: 100);
             options.ShouldBe(input);
         }
 
