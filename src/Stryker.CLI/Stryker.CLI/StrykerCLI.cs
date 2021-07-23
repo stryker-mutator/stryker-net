@@ -130,7 +130,7 @@ namespace Stryker.CLI
 
         private void RunStryker(StrykerOptions options)
         {
-            PrintStykerASCIIName();
+            PrintStrykerASCIIName();
             _ = PrintStrykerVersionInformationAsync();
 
             StrykerRunResult result = _stryker.RunMutationTest(options, _logBuffer.GetMessages());
@@ -158,7 +158,7 @@ namespace Stryker.CLI
             }
         }
 
-        private void PrintStykerASCIIName()
+        private void PrintStrykerASCIIName()
         {
             // Crayon does not support background coloring (yet)
             Console.WriteLine(Output.Yellow().Text(@"

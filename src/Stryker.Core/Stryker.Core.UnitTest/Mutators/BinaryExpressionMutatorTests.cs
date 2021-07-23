@@ -10,7 +10,7 @@ namespace Stryker.Core.UnitTest.Mutators
     public class BinaryExpressionMutatorTests
     {
         [Fact]
-        public void ShouldBeMutationlevelBasic()
+        public void ShouldBeMutationLevelBasic()
         {
             var target = new BinaryExpressionMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Basic);

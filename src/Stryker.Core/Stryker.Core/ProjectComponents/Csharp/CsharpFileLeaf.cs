@@ -9,7 +9,7 @@ namespace Stryker.Core.ProjectComponents
         public string SourceCode { get; set; }
 
         /// <summary>
-        /// The original unmutated syntaxtree
+        /// The original unmutated syntax tree
         /// </summary>
         public SyntaxTree SyntaxTree { get; set; }
 

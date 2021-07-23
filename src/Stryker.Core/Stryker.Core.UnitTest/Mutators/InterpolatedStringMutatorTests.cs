@@ -15,7 +15,7 @@ namespace Stryker.Core.UnitTest.Mutators
         }
 
         [Fact]
-        public void ShouldBeMutationlevelStandard()
+        public void ShouldBeMutationLevelStandard()
         {
             var target = new InterpolatedStringMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);

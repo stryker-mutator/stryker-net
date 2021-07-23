@@ -39,7 +39,7 @@ namespace Stryker.Core.Options
         public int AdditionalTimeoutMS { get; }
         public IEnumerable<Mutator> ExcludedMutations { get; }
         public IEnumerable<Regex> IgnoredMethods { get; }
-        public int ConcurrentTestrunners { get; }
+        public int ConcurrentTestRunners { get; }
         public Threshold Thresholds { get; }
         public TestRunner TestRunner { get; set; }
         public IEnumerable<FilePattern> FilePatterns { get; }
@@ -121,7 +121,7 @@ namespace Stryker.Core.Options
             ExcludedMutations = ValidateExcludedMutations(excludedMutations).ToList();
             LogOptions = new LogOptions(ValidateLogLevel(logLevel), logToFile, outputPath);
             DevMode = devMode;
-            ConcurrentTestrunners = ValidateConcurrentTestrunners(maxConcurrentTestRunners);
+            ConcurrentTestRunners = ValidateConcurrentTestRunners(maxConcurrentTestRunners);
             Optimizations = ValidateMode(coverageAnalysis) | (abortTestOnFail ? OptimizationFlags.AbortTestOnKill : 0) | (disableSimultaneousTesting ? OptimizationFlags.DisableTestMix : 0);
             Thresholds = ValidateThresholds(thresholdHigh, thresholdLow, thresholdBreak);
             FilePatterns = ValidateFilePatterns(mutate, filesToExclude);
@@ -192,7 +192,7 @@ namespace Stryker.Core.Options
             ExcludedMutations = excludedMutations;
             LogOptions = logOptions;
             DevMode = devMode;
-            ConcurrentTestrunners = concurrentTestRunners;
+            ConcurrentTestRunners = concurrentTestRunners;
             Thresholds = thresholds;
             FilePatterns = filePatterns;
             TestRunner = testRunner;
@@ -235,7 +235,7 @@ namespace Stryker.Core.Options
                 Thresholds,
                 DevMode,
                 OptimizationMode,
-                ConcurrentTestrunners,
+                ConcurrentTestRunners,
                 FilePatterns,
                 TestRunner,
                 SolutionPath,
@@ -303,7 +303,7 @@ namespace Stryker.Core.Options
             }
         }
 
-        private (string DashboardApiKey, string ProjectName) ValidateDashboardReporter(string dashboadApiKey, string projectName)
+        private (string DashboardApiKey, string ProjectName) ValidateDashboardReporter(string dashboardApiKey, string projectName)
         {
             if (!Reporters.Contains(Reporter.Dashboard))
             {
@@ -311,12 +311,12 @@ namespace Stryker.Core.Options
             }
 
             var errorStrings = new StringBuilder();
-            if (string.IsNullOrWhiteSpace(dashboadApiKey))
+            if (string.IsNullOrWhiteSpace(dashboardApiKey))
             {
                 var environmentApiKey = Environment.GetEnvironmentVariable("STRYKER_DASHBOARD_API_KEY");
                 if (!string.IsNullOrWhiteSpace(environmentApiKey))
                 {
-                    dashboadApiKey = environmentApiKey;
+                    dashboardApiKey = environmentApiKey;
                 }
                 else
                 {
@@ -334,7 +334,7 @@ namespace Stryker.Core.Options
                 throw new StrykerInputException(errorStrings.ToString());
             }
 
-            return (dashboadApiKey, projectName);
+            return (dashboardApiKey, projectName);
         }
 
         private string ValidateGitDiffTarget(string gitDiffTarget)
@@ -436,7 +436,7 @@ namespace Stryker.Core.Options
                 }
                 catch (IOException e)
                 {
-                    _logger.LogWarning("Could't create gitignore file because of error {error}. \n" +
+                    _logger.LogWarning("Couldn't create gitignore file because of error {error}. \n" +
                         "If you use any diff compare features this may mean that stryker logs show up as changes.", e.Message);
                 }
             }
@@ -534,7 +534,7 @@ namespace Stryker.Core.Options
             }
         }
 
-        private int ValidateConcurrentTestrunners(int? maxConcurrentTestRunners)
+        private int ValidateConcurrentTestRunners(int? maxConcurrentTestRunners)
         {
             var safeProcessorCount = Math.Max(Environment.ProcessorCount / 2, 1);
 

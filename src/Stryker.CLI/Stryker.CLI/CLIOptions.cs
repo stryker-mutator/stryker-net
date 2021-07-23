@@ -198,7 +198,7 @@ namespace Stryker.CLI
         - Your test runner starts a browser (another CPU-intensive process)
         - You're running on a shared server
         - You are running stryker in the background while doing other work",
-            DefaultValue = _defaultOptions.ConcurrentTestrunners,
+            DefaultValue = _defaultOptions.ConcurrentTestRunners,
             JsonKey = "max-concurrent-test-runners"
         };
 
