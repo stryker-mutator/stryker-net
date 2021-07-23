@@ -156,7 +156,7 @@ namespace Stryker.Core
             {
                 var rootComponent = new FolderComposite
                 {
-                    FullPath = options.BasePath // in case of a solution run the basepath will be where the solution file is
+                    FullPath = options.BasePath // in case of a solution run the basePath will be where the solution file is
                 };
                 rootComponent.AddRange(projectComponents);
                 return rootComponent;

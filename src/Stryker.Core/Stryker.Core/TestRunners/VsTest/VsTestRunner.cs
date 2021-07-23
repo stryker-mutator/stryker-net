@@ -498,12 +498,12 @@ namespace Stryker.Core.TestRunners.VsTest
             // TODO: get proper timeout
             var timeoutSettings = timeout!=null ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>" + Environment.NewLine : string.Empty;
             // we need to block parallel run to capture coverage and when testing multiple mutants in a single run
-            var optionsConcurrentTestrunners = (forCoverage || !_options.Optimizations.HasFlag(OptimizationFlags.DisableTestMix)) ? 1 : _options.ConcurrentTestrunners;
+            var optionsConcurrentTestRunners = (forCoverage || !_options.Optimizations.HasFlag(OptimizationFlags.DisableTestMix)) ? 1 : _options.ConcurrentTestRunners;
             var runSettings =
 $@"<RunSettings>
  <RunConfiguration>
 {(targetFramework == Framework.DotNetClassic ? "<DisableAppDomain>true</DisableAppDomain>" : "")}
-  <MaxCpuCount>{optionsConcurrentTestrunners}</MaxCpuCount>
+  <MaxCpuCount>{optionsConcurrentTestRunners}</MaxCpuCount>
 {timeoutSettings}
 {settingsForCoverage}
 <DesignMode>false</DesignMode>

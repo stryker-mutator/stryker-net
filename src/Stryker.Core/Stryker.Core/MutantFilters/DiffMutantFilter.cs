@@ -80,7 +80,7 @@ namespace Stryker.Core.MutantFilters
 
         private IEnumerable<Mutant> SetNotRunMutantsToIgnored(IEnumerable<Mutant> mutants)
         {
-            foreach (var mutant in mutants.Where(m => m.ResultStatus == MutantStatus.NotRun))
+            foreach (var mutant in mutants.Where(m => m.ResultStatus == MutantStatus.NotRun || m.ResultStatus == MutantStatus.NoCoverage))
             {
                 mutant.ResultStatus = MutantStatus.Ignored;
                 mutant.ResultStatusReason = "Mutant not changed compared to target commit";
@@ -91,7 +91,7 @@ namespace Stryker.Core.MutantFilters
 
         private IEnumerable<Mutant> SetMutantStatusForFileChanged(IEnumerable<Mutant> mutants)
         {
-            foreach (var mutant in mutants)
+            foreach (var mutant in mutants.Where(m => m.ResultStatus != MutantStatus.NoCoverage))
             {
                 mutant.ResultStatus = MutantStatus.NotRun;
                 mutant.ResultStatusReason = "Mutant changed compared to target commit";
@@ -102,7 +102,7 @@ namespace Stryker.Core.MutantFilters
 
         private IEnumerable<Mutant> SetMutantStatusForNonCSharpFileChanged(IEnumerable<Mutant> mutants)
         {
-            foreach (var mutant in mutants)
+            foreach (var mutant in mutants.Where(m => m.ResultStatus != MutantStatus.NoCoverage))
             {
                 mutant.ResultStatus = MutantStatus.NotRun;
                 mutant.ResultStatusReason = "Non-CSharp files in test project were changed";
@@ -120,7 +120,7 @@ namespace Stryker.Core.MutantFilters
                 var coveringTests = _tests.Extract(mutant.CoveringTests.GetGuids());
 
                 if (coveringTests != null
-                    && (coveringTests.Any(coveringTest => _diffResult.ChangedTestFiles.Any(changedTestFile => coveringTest.TestFilePath == changedTestFile))))
+                    && coveringTests.Any(coveringTest => _diffResult.ChangedTestFiles.Any(changedTestFile => coveringTest.TestFilePath == changedTestFile)))
                 {
                     mutant.ResultStatus = MutantStatus.NotRun;
                     mutant.ResultStatusReason = "One or more covering tests changed";

@@ -54,7 +54,7 @@ namespace Stryker.Core.UnitTest.Options
         }
 
         [Fact]
-        public void Constructor_WithIncorrectSettings_ShoudThrowWithDetails()
+        public void Constructor_WithIncorrectSettings_ShouldThrowWithDetails()
         {
             var logLevel = "incorrect";
 

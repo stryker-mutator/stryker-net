@@ -141,7 +141,7 @@ namespace Stryker.Core.MutationTest
         {
             var mutantGroups = BuildMutantGroupsForTest(mutantsToTest.ToList());
 
-            var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.ConcurrentTestrunners };
+            var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.ConcurrentTestRunners };
 
             var testsFailingInitialy = Input.InitialTestRun.Result.FailingTests.GetGuids().ToHashSet();
 

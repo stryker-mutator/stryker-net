@@ -10,7 +10,7 @@ namespace Stryker.Core.UnitTest.Mutators
     public class StringEmptyMutatorTests
     {
         [Fact]
-        public void ShouldBeMutationlevelStandard()
+        public void ShouldBeMutationLevelStandard()
         {
             var target = new StringEmptyMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
