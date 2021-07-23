@@ -29,5 +29,20 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 
             exception.Message.ShouldBe("When the stryker dashboard is enabled the project version is required. Please provide a project version.");
         }
+
+        [Theory]
+        [InlineData("test")]
+        [InlineData("myversion")]
+        public void FallbackVersionCannotBeInput(string value)
+        {
+            var input = new ProjectVersionInput { };
+            input.SuppliedInput = value;
+
+            var exception = Should.Throw<InputException>(() => {
+                input.Validate(value, reporters: new[] { Reporter.Dashboard }, true);
+            });
+
+            exception.Message.ShouldBe("Project version cannot be the same as the fallback version. Please provide a different version for one of them.");
+        }
     }
 }

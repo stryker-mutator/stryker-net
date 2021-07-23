@@ -1,7 +1,8 @@
 {
   "stryker-config": {
     "mutate": [
-      "!/Testing/"
+      "!/Testing/**",
+      "!/Logging/**"
     ],
     "dashboard-project": "github.com/stryker-mutator/stryker-net",
     "dashboard-version": "master",
