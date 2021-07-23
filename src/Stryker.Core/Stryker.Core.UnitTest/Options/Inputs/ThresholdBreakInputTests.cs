@@ -15,15 +15,15 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         }
 
         [Theory]
-        [InlineData(-1, "Threshold break must be between 0 and 100.")]
-        [InlineData(101, "Threshold break must be between 0 and 100.")]
-        public void ShouldValidateThresholdBreak(int thresholdBreak, string message)
+        [InlineData(-1)]
+        [InlineData(101)]
+        public void ShouldValidateThresholdBreak(int thresholdBreak)
         {
             var ex = Assert.Throws<InputException>(() =>
             {
                 new ThresholdBreakInput { SuppliedInput = thresholdBreak }.Validate(low: 50);
             });
-            ex.Message.ShouldBe(message);
+            ex.Message.ShouldBe("Threshold break must be in range 0 to 100.");
         }
 
         [Fact]
