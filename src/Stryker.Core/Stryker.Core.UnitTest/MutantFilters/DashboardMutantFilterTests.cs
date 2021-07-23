@@ -97,6 +97,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             // Act
             var target = new DashboardMutantFilter(options, gitInfoProvider: gitInfoProvider.Object, baselineProvider: baselineProvider.Object);
+
+            // Assert
+            baselineProvider.Verify(x => x.Load("dashboard-compare/refs/heads/master"), Times.Once);
+            baselineProvider.Verify(x => x.Load("fallback/version"), Times.Never);
         }
 
         [Fact]
