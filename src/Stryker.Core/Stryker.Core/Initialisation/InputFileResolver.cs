@@ -85,7 +85,7 @@ namespace Stryker.Core.Initialisation
             IProjectComponent inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
             projectInfo.ProjectContents = inputFiles;
 
-            ValidateTestProjectsCanBeExecuted(projectInfo, options);
+            ValidateTestProjectsCanBeExecuted(projectInfo);
             _logger.LogInformation("Analysis complete.");
 
             return projectInfo;
@@ -159,7 +159,7 @@ namespace Stryker.Core.Initialisation
             return projectUnderTestPath;
         }
 
-        private void ValidateTestProjectsCanBeExecuted(ProjectInfo projectInfo, StrykerOptions options)
+        private void ValidateTestProjectsCanBeExecuted(ProjectInfo projectInfo)
         {
             // if references contains Microsoft.VisualStudio.QualityTools.UnitTestFramework 
             // we have detected usage of mstest V1 and should exit
