@@ -38,7 +38,7 @@ namespace Stryker.CLI
                 CoverageAnalysisInput = new CoverageAnalysisInput(),
                 OutputPathInput = new OutputPathInput(),
                 ProjectNameInput = new ProjectNameInput(),
-                ProjectUnderTestNameInput = new ProjectNameInput(),
+                ProjectUnderTestNameInput = new ProjectUnderTestNameInput(),
                 ProjectVersionInput = new ProjectVersionInput(),
                 ReportersInput = new ReportersInput(),
                 SinceInput = new SinceInput(),
