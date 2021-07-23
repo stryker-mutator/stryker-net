@@ -1,3 +1,4 @@
+using System.IO;
 using System.Linq;
 using Shouldly;
 using Stryker.Core.Options.Inputs;
@@ -26,33 +27,33 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             var result = target.Validate();
 
             var item = result.ShouldHaveSingleItem();
-            item.Glob.ToString().ShouldBe("**\\*");
+            item.Glob.ToString().ShouldBe(Path.Combine("**", "*"));
             item.IsExclude.ShouldBeFalse();
         }
 
         [Fact]
         public void ShouldReturnFiles()
         {
-            var target = new MutateInput { SuppliedInput = new[] { "**\\*.cs" } };
+            var target = new MutateInput { SuppliedInput = new[] { Path.Combine("**", "*.cs") } };
 
             var result = target.Validate();
 
             var item = result.ShouldHaveSingleItem();
-            item.Glob.ToString().ShouldBe("**\\*.cs");
+            item.Glob.ToString().ShouldBe(Path.Combine("**", "*.cs"));
             item.IsExclude.ShouldBeFalse();
         }
 
         [Fact]
         public void ShouldExcludeAll()
         {
-            var target = new MutateInput { SuppliedInput = new[] { "!**\\Test.cs" } };
+            var target = new MutateInput { SuppliedInput = new[] { "!" + Path.Combine("**", "Test.cs") } };
 
             var result = target.Validate();
 
             result.Count().ShouldBe(2);
-            result.First().Glob.ToString().ShouldBe("**\\Test.cs");
+            result.First().Glob.ToString().ShouldBe(Path.Combine("**", "Test.cs"));
             result.First().IsExclude.ShouldBeTrue();
-            result.Last().Glob.ToString().ShouldBe("**\\*");
+            result.Last().Glob.ToString().ShouldBe(Path.Combine("**", "*"));
             result.Last().IsExclude.ShouldBeFalse();
         }
 
