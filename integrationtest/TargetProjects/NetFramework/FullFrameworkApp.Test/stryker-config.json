@@ -6,6 +6,6 @@
     "reporters": [
       "Json"
     ],
-    "solution-path": "../FullFrameworkApp.sln"
+    "solution": "../FullFrameworkApp.sln"
   }
 }
