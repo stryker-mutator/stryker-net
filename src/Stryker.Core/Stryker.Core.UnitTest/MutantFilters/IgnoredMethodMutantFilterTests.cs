@@ -102,7 +102,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
 {
     private void TestMethod()
     {
-        var t = Enumerable.Range(0, 9)?.Select(x => x)?.Where(x => x < 5).ToList();
+        var t = Enumerable.Range(0, 9)?.Where(x => x < 5).ToList();
     }
 }";
             var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
@@ -207,7 +207,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
     }
 }";
             var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
-            var originalNode = baseSyntaxTree.FindNode(new TextSpan(source.IndexOf('D'), 1));
+            var originalNode = baseSyntaxTree.FindNode(new TextSpan(source.IndexOf("Dispose"), 1));
 
             var mutant = new Mutant
             {
