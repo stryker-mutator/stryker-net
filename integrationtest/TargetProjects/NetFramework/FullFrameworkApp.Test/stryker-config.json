@@ -1,6 +1,6 @@
 {
   "stryker-config": {
-    "excluded-mutations": [
+    "ignore-mutations": [
       "string"
     ],
     "log-file": "true",
