@@ -3,8 +3,6 @@
     "ignore-mutations": [
       "string"
     ],
-    "log-file": "true",
-    "log-level": "trace",
     "reporters": [
       "Json"
     ],
