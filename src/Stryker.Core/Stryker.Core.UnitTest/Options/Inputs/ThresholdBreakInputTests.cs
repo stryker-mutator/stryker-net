@@ -23,7 +23,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             {
                 new ThresholdBreakInput { SuppliedInput = thresholdBreak }.Validate(low: 50);
             });
-            ex.Message.ShouldBe("Threshold break must be in range 0 to 100.");
+            ex.Message.ShouldBe("Threshold break must be between 0 and 100.");
         }
 
         [Fact]
@@ -55,7 +55,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         public void ShouldAllow0PercentBreak()
         {
             var result = new ThresholdBreakInput { SuppliedInput = 0 }.Validate(low: 100);
-            result.ShouldBe(0, "because should be able to be turned off.");
+            result.ShouldBe(0, "because some users will want to break only on literally 0.00 percent score.");
         }
 
         [Fact]

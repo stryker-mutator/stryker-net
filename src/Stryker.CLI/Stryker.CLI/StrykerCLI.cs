@@ -79,10 +79,9 @@ namespace Stryker.CLI
                 logger.LogWarning("Final mutation score is below threshold break. Crashing...");
 
                 Console.WriteLine(Output.Red($@"
- The mutation score is lower than the configured break threshold of {thresholdBreak:P0}.
- If you're running in a CI environment, this means your pipeline will now fail."));
+ The mutation score is lower than the configured break threshold of {thresholdBreak:P0}."));
 
-                Console.WriteLine(Output.Green(" Looks like you've got some work to do :)"));
+                Console.WriteLine(Output.Red(" Looks like you've got some work to do :)"));
 
                 ExitCode = 1;
             }

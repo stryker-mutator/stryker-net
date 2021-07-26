@@ -40,7 +40,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Fact]
-        public void ShouldHandleSingleOrNoValue1()
+        public void ShouldHandleSingleOrNoValueWithNoValue()
         {
             _target.ReadCommandLineConfig(new[] { "--since" }, _app, _inputs);
 
@@ -49,9 +49,9 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Fact]
-        public void ShouldHandleSingleOrNoValue2()
+        public void ShouldHandleSingleOrNoValueWithValue()
         {
-            _target.ReadCommandLineConfig(new[] { "--since test" }, _app, _inputs);
+            _target.ReadCommandLineConfig(new[] { "--since:test" }, _app, _inputs);
 
             _inputs.SinceInput.SuppliedInput.ShouldBe(true);
             _inputs.SinceTargetInput.SuppliedInput.ShouldBe("test");
