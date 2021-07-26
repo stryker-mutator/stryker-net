@@ -5,7 +5,7 @@ using Stryker.Core.Options;
 
 namespace Stryker.CLI
 {
-    public class JsonConfigHandler
+    public static class JsonConfigHandler
     {
         public static void DeserializeConfig(string configFilePath, IStrykerInputs inputs)
         {

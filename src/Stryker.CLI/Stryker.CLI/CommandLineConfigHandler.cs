@@ -61,7 +61,7 @@ namespace Stryker.CLI
                     case CommandOptionType.SingleOrNoValue:
                         HandleSingleOrNoValue(strykerInput, cliInput, inputs);
                         break;
-                };
+                }
 
                 switch(strykerInput)
                 {
@@ -74,7 +74,7 @@ namespace Stryker.CLI
                     case IInputDefinition<int> intInput:
                         HandleSingleIntValue(cliInput, (IInputDefinition<int?>)intInput);
                         break;
-                };
+                }
             }
         }
 
@@ -175,7 +175,7 @@ namespace Stryker.CLI
             return cliOption;
         }
 
-        private CliInput AddCliInput(IInputDefinition input, string argumentName, string argumentShortName,
+        private void AddCliInput(IInputDefinition input, string argumentName, string argumentShortName,
             CommandOptionType optionType = CommandOptionType.SingleValue, string argumentHint = null)
         {
             var cliOption = new CliInput
@@ -189,8 +189,6 @@ namespace Stryker.CLI
             };
 
             _cliInputs[argumentName] = cliOption;
-
-            return cliOption;
         }
     }
 }

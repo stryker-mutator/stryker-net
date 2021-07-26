@@ -6,7 +6,7 @@ namespace Stryker.Core.Options
     [Flags]
     public enum OptimizationModes
     {
-        NoOptimization = 0,
+        None = 0,
         SkipUncoveredMutants = 1,
         CoverageBasedTest = 2,
         DisableBail = 4,

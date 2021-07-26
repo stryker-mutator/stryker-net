@@ -110,7 +110,7 @@ namespace Stryker.Core.UnitTest
             inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
             {
                 BasePath = "C:/test",
-                OptimizationMode = OptimizationModes.NoOptimization,
+                OptimizationMode = OptimizationModes.None,
                 LogOptions = new LogOptions()
             });
 

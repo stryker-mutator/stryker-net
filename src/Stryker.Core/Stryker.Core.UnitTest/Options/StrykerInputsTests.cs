@@ -103,7 +103,7 @@ namespace Stryker.Core.UnitTest.Options
 
             var result = _target.ValidateAll();
 
-            result.OptimizationMode.HasFlag(OptimizationModes.NoOptimization).ShouldBeTrue();
+            result.OptimizationMode.HasFlag(OptimizationModes.None).ShouldBeTrue();
         }
 
         [Fact]

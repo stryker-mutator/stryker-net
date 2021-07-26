@@ -6,7 +6,7 @@ using Stryker.Core.Reporters;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class BaselineProviderInput : InputDefinition<string, BaselineProvider>
+    public class BaselineProviderInput : InputDefinition<string>
     {
         public override string Default => "disk";
 

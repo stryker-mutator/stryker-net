@@ -1,6 +1,6 @@
 namespace Stryker.Core.Options.Inputs
 {
-    public class DisableBailInput : InputDefinition<bool?, OptimizationModes>
+    public class DisableBailInput : InputDefinition<bool?>
     {
         public override bool? Default => false;
 
@@ -10,9 +10,9 @@ namespace Stryker.Core.Options.Inputs
         {
             if (SuppliedInput is { })
             {
-                return SuppliedInput.Value ? OptimizationModes.DisableBail : OptimizationModes.NoOptimization;
+                return SuppliedInput.Value ? OptimizationModes.DisableBail : OptimizationModes.None;
             }
-            return OptimizationModes.NoOptimization;
+            return OptimizationModes.None;
         }
     }
 }

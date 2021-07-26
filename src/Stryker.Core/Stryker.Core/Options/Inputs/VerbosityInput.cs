@@ -4,7 +4,7 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class VerbosityInput : InputDefinition<string, LogEventLevel>
+    public class VerbosityInput : InputDefinition<string>
     {
         public override string Default => "info";
 

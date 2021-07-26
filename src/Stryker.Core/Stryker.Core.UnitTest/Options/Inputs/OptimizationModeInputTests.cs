@@ -24,7 +24,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [InlineData("pertestinisolation", OptimizationModes.CoverageBasedTest, OptimizationModes.CaptureCoveragePerTest)]
         [InlineData("pertest", OptimizationModes.CoverageBasedTest)]
         [InlineData("all", OptimizationModes.SkipUncoveredMutants)]
-        [InlineData("off", OptimizationModes.NoOptimization)]
+        [InlineData("off", OptimizationModes.None)]
         public void ShouldSetFlags(string value, params OptimizationModes[] expectedFlags)
         {
             var target = new CoverageAnalysisInput { SuppliedInput = value };

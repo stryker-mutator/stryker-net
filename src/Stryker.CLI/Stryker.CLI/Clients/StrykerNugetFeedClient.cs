@@ -14,6 +14,8 @@ namespace Stryker.CLI.Clients
 
     public class StrykerNugetFeedClient : IStrykerNugetFeedClient
     {
+        private const string NugetStrykerFeed = "https://api.nuget.org/v3-flatcontainer/dotnet-stryker/index.json";
+
         public class StrykerNugetFeed
         {
             [JsonProperty("versions")]
@@ -25,7 +27,7 @@ namespace Stryker.CLI.Clients
             using var httpclient = new HttpClient();
             try
             {
-                var json = await httpclient.GetStringAsync("https://api.nuget.org/v3-flatcontainer/dotnet-stryker/index.json");
+                var json = await httpclient.GetStringAsync(NugetStrykerFeed);
                 var instance = JsonConvert.DeserializeObject<StrykerNugetFeed>(json);
                 return instance.Versions.Max(v => SemanticVersion.Parse(v));
             }

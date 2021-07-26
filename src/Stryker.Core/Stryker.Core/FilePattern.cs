@@ -11,7 +11,7 @@ namespace Stryker.Core
     /// <summary>
     /// Contains information about which files and which parts of a file should be in- or excluded.
     /// </summary>
-    public class FilePattern
+    public sealed class FilePattern
     {
         private static readonly Regex _textSpanGroupRegex = new Regex("(\\{(\\d+)\\.\\.(\\d+)\\})+$");
         private static readonly Regex _textSpanRegex = new Regex("\\{(\\d+)\\.\\.(\\d+)\\}");
@@ -144,9 +144,15 @@ namespace Stryker.Core
             unchecked
             {
                 var hashCode = Glob != null ? Glob.GetHashCode() : 0;
-                hashCode = hashCode * 397 ^ IsExclude.GetHashCode();
-                hashCode = hashCode * 397 ^ (TextSpans != null ? TextSpans.Select(t => t.GetHashCode()).Sum() : 0);
+                hashCode = (hashCode * 397) ^ IsExclude.GetHashCode();
+                hashCode = (hashCode * 397) ^ (TextSpans != null ? UncheckedSum(TextSpans.Select(t => t.GetHashCode())) : 0);
                 return hashCode;
+            }
+
+            static int UncheckedSum(IEnumerable<int> a)
+            {
+                // regular sum is always checked, even when used in unchecked statement
+                return a.Aggregate((sum, i) => unchecked(sum + i));
             }
         }
     }

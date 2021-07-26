@@ -14,12 +14,9 @@ Example: If the current branch is based on the master branch, set 'master' as th
 
         public string Validate(string sinceTarget, bool? dashboardEnabled)
         {
-            if (dashboardEnabled.IsNotNullAndTrue())
+            if (dashboardEnabled.IsNotNullAndTrue() && SuppliedInput == sinceTarget)
             {
-                if (SuppliedInput == sinceTarget)
-                {
-                    throw new InputException("Fallback version cannot be set to the same value as the dashboard-version, please provide a different fallback version");
-                }
+                throw new InputException("Fallback version cannot be set to the same value as the dashboard-version, please provide a different fallback version");
             }
 
             return SuppliedInput;

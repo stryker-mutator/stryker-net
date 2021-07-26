@@ -13,7 +13,7 @@ namespace Stryker.Core.Options.Inputs
                 return true;
             }
 
-            return SuppliedInput.HasValue ? SuppliedInput.Value : false;
+            return SuppliedInput ?? false;
         }
     }
 }

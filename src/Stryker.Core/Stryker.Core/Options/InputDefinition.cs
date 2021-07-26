@@ -15,19 +15,11 @@ namespace Stryker.Core.Options
     }
 
     /// <summary>
-    /// Definition for options that have the same type for the input and the option 
-    /// </summary>
-    /// <typeparam name="TValue">The type of the option</typeparam>
-    public abstract class InputDefinition<TValue> : InputDefinition<TValue, TValue>
-    {
-    }
-
-    /// <summary>
     /// Definition for options that have a different type for the input and the option
     /// </summary>
     /// <typeparam name="TInput">The type of the input</typeparam>
     /// <typeparam name="TValue">The type of the option</typeparam>
-    public abstract class InputDefinition<TInput, TValue> : IInputDefinition<TInput>
+    public abstract class InputDefinition<TInput> : IInputDefinition<TInput>
     {
         /// <summary>
         /// The default value for the option when no custom value has been supplied, will also be displayed formatted in the help text

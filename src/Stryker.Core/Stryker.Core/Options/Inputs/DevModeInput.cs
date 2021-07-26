@@ -9,7 +9,7 @@ namespace Stryker.Core.Options.Inputs
 
         public bool Validate()
         {
-            return SuppliedInput.HasValue ? SuppliedInput.Value : false;
+            return SuppliedInput ?? false;
         }
     }
 }

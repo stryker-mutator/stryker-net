@@ -15,9 +15,9 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         }
 
         [Theory]
-        [InlineData(false, OptimizationModes.NoOptimization)]
+        [InlineData(false, OptimizationModes.None)]
         [InlineData(true, OptimizationModes.DisableMixMutants)]
-        [InlineData(null, OptimizationModes.NoOptimization)]
+        [InlineData(null, OptimizationModes.None)]
         public void ShouldValidate(bool? input, OptimizationModes expected)
         {
             var target = new DisableMixMutantsInput { SuppliedInput = input };
