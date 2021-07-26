@@ -1,0 +1,12 @@
+{
+  "stryker-config": {
+    "reporters": [
+      "Dots",
+      "Json"
+    ],
+    "test-projects": [
+      "../NetCoreTestProject.XUnit/NetCoreTestProject.XUnit.csproj",
+      "../NetCoreTestProject.NUnit/NetCoreTestProject.NUnit.csproj"
+    ]
+  }
+}
