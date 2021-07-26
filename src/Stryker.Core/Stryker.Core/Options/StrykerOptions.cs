@@ -388,6 +388,11 @@ namespace Stryker.Core.Options
             return mappedDiffIgnoreFiles;
         }
 
+        /// <summary>
+        /// This method returns regexes that are equivalent to the provided method patterns.
+        /// In a method pattern the wildcard ('*') matches zero-or-more characters that are not periods ('.').
+        /// The regexes check from either the beginning of a method name or immediately after a period ('.'), whether the rest of the method name matches the method pattern.
+        /// </summary>
         private static IEnumerable<Regex> ValidateIgnoredMethods(IEnumerable<string> methodPatterns) =>
             methodPatterns
                 .Where(x => !string.IsNullOrEmpty(x))
