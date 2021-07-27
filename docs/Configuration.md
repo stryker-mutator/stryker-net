@@ -293,8 +293,8 @@ dotnet stryker -m "['MyFolder/MyService.cs{10..100}']"
 If you would like to ignore some mutations that are passed as method parameters, you can do so by specifying which methods to ignore:
 
 ```
-dotnet stryker --ignore-methods "['ToString', 'ConfigureAwait', '*Exception.ctor']"
-dotnet stryker -im "['ToString', 'ConfigureAwait', '*Exception.ctor']"
+dotnet stryker --ignore-methods "['ToString', 'ConfigureAwait', '*Exception.ctor', 'Console.Write*']"
+dotnet stryker -im "['ToString', 'ConfigureAwait', '*Exception.ctor', 'Console.Write*']"
 ```
 
 Ignore methods will only affect mutations in directly passed parameters.
@@ -318,6 +318,10 @@ Both, method names and constructor names, support wildcards.
 dotnet stryker -im "['*Log']" // Ignores all methods ending with Log
 dotnet stryker -im "['*Exception.ctor']" // Ignores all exception constructors
 ```
+
+You can also qualify method names.
+
+`dotnet stryker -im "['Console.Write']" // Ignores Console.Write, but not Stream.Write`
 
 Default: `[]`
 

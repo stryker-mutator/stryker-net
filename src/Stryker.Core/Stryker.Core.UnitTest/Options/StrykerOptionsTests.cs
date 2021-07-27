@@ -296,5 +296,19 @@ namespace Stryker.Core.UnitTest.Options
 
             target.DiffEnabled.ShouldBeTrue();
         }
+
+        [Theory]
+        [InlineData("Foo", @"^(?:[^.]*\.)*Foo$")]
+        [InlineData("Foo*", @"^(?:[^.]*\.)*Foo[^.]*$")]
+        [InlineData("Bar.Foo", @"^(?:[^.]*\.)*Bar\.Foo$")]
+        [InlineData("B*r.Foo", @"^(?:[^.]*\.)*B[^.]*r\.Foo$")]
+        [InlineData("*.Foo", @"^(?:[^.]*\.)*[^.]*\.Foo$")]
+        [InlineData("Bar.*", @"^(?:[^.]*\.)*Bar\.[^.]*$")]
+        [InlineData("Quux.Bar.Foo", @"^(?:[^.]*\.)*Quux\.Bar\.Foo$")]
+        public void Should_Validate_Ignored_Methods(string methodPattern, string regex)
+        {
+            var target = new StrykerOptions(ignoredMethods: new[] { methodPattern });
+            target.IgnoredMethods.Single().ToString().ShouldBe(regex);
+        }
     }
 }
