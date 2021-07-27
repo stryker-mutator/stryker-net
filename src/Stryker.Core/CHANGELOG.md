@@ -1,3 +1,12 @@
+## [0.22.8](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.7...stryker@0.22.8) (2021-07-26)
+
+
+### Bug Fixes
+
+* **Compiling:** Added support for C# source generators. ([#1617](https://github.com/stryker-mutator/stryker-net/issues/1617)) ([98c7669](https://github.com/stryker-mutator/stryker-net/commit/98c7669d8f643c2b51ca176952d6339fb3e80acf))
+
+
+
 ## [0.22.7](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.6...stryker@0.22.7) (2021-07-10)
 
 
