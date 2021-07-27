@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Shouldly;
@@ -388,6 +389,37 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
 
             // Assert
             filteredMutants.ShouldContain(mutant);
+        }
+
+        [Fact]
+        public void MutantFilters_DoesNotIgnoreOtherMutantsInFile()
+        {
+            // Arrange
+            var source = @"
+public class MutantFilters_DoNotIgnoreOtherMutantsInFile
+{
+    private void TestMethod()
+    {
+        Foo(true);
+        Bar(""A Mutation"");
+        Quux(42);
+    }
+}";
+            var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
+            var mutants = new[] { "true", @"""A Mutation""", "42"}.Select(GetOriginalNode).Select(node => new Mutant { Mutation = new Mutation { OriginalNode = node } }).ToArray();
+            var options = new StrykerOptions(ignoredMethods: new[] { "Bar" });
+            var sut = new IgnoredMethodMutantFilter();
+
+            // Act
+            var filteredMutants = sut.FilterMutants(mutants, null, options);
+
+            // Assert
+            filteredMutants.ShouldContain(mutants[0]); // Foo(true);
+            filteredMutants.ShouldNotContain(mutants[1]); // Bar(""A Mutation"");
+            filteredMutants.ShouldContain(mutants[2]); // Quux(42);
+
+            Microsoft.CodeAnalysis.SyntaxNode GetOriginalNode(string node) =>
+                baseSyntaxTree.FindNode(new TextSpan(source.IndexOf(node, StringComparison.OrdinalIgnoreCase), node.Length));
         }
     }
 }
