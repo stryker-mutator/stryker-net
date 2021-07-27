@@ -114,7 +114,7 @@ namespace Stryker.CLI
 
             var latestVersion = await _nugetClient.GetMaxVersion();
 
-            if (latestVersion != null && latestVersion != currentVersion)
+            if (latestVersion > currentVersion)
             {
                 Console.WriteLine(Output.Yellow($@" A new version of Stryker.NET ({latestVersion}) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker`"));
                 Console.WriteLine();

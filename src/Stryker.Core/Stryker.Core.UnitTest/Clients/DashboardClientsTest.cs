@@ -177,7 +177,7 @@ namespace Stryker.Core.UnitTest.Clients
             var options = new StrykerOptions
             {
                 DashboardUrl = "http://www.example.com",
-                DashboardApiKey = "Acces_Token",
+                DashboardApiKey = "Access_Token",
                 ProjectName = "github.com/JohnDoe/project",
                 ProjectVersion = "test/version",
                 Reporters = reporters
@@ -235,7 +235,7 @@ namespace Stryker.Core.UnitTest.Clients
             var options = new StrykerOptions
             {
                 DashboardUrl = "http://www.example.com",
-                DashboardApiKey = "Acces_Token",
+                DashboardApiKey = "Access_Token",
                 ProjectName = "github.com/JohnDoe/project",
                 ProjectVersion = "test/version",
                 ModuleName = "moduleName",
@@ -294,7 +294,7 @@ namespace Stryker.Core.UnitTest.Clients
             var options = new StrykerOptions
             {
                 DashboardUrl = "http://www.example.com",
-                DashboardApiKey = "Acces_Token",
+                DashboardApiKey = "Access_Token",
                 ProjectName = "github.com/JohnDoe/project",
                 ProjectVersion = "test/version",
                 Reporters = reporters

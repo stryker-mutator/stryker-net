@@ -33,7 +33,7 @@ namespace Stryker.CLI.Clients
             }
             catch
             {
-                return null;
+                return new SemanticVersion(0, 0, 0);
             }
         }
     }
