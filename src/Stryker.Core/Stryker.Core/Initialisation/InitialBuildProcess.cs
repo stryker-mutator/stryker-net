@@ -57,7 +57,7 @@ namespace Stryker.Core.Initialisation
 
         private void CheckBuildResult(ProcessResult result, string buildCommand, string buildPath)
         {
-            _logger.LogDebug("Initial build output {0}", result.Output);
+            _logger.LogTrace("Initial build output {0}", result.Output);
             if (result.ExitCode != 0)
             {
                 // Initial build failed

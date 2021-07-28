@@ -78,26 +78,26 @@ namespace Stryker.Core.Initialisation
         private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
         {
             // dump all properties as it can help diagnosing build issues for user project.
-            _logger.LogDebug("**** Buildalyzer result ****");
+            _logger.LogTrace("**** Buildalyzer result ****");
 
-            _logger.LogDebug("Project: {0}", analyzerResult.ProjectFilePath);
-            _logger.LogDebug("TargetFramework: {0}", analyzerResult.TargetFramework);
+            _logger.LogTrace("Project: {0}", analyzerResult.ProjectFilePath);
+            _logger.LogTrace("TargetFramework: {0}", analyzerResult.TargetFramework);
 
             foreach (var property in analyzerResult?.Properties ?? new Dictionary<string, string>())
             {
-                _logger.LogDebug("Property {0}={1}", property.Key, property.Value);
+                _logger.LogTrace("Property {0}={1}", property.Key, property.Value);
             }
             foreach (var sourceFile in analyzerResult?.SourceFiles ?? Enumerable.Empty<string>())
             {
-                _logger.LogDebug("SourceFile {0}", sourceFile);
+                _logger.LogTrace("SourceFile {0}", sourceFile);
             }
             foreach (var reference in analyzerResult?.References ?? Enumerable.Empty<string>())
             {
-                _logger.LogDebug("References: {0}", reference);
+                _logger.LogTrace("References: {0}", reference);
             }
-            _logger.LogDebug("Succeeded: {0}", analyzerResult.Succeeded);
+            _logger.LogTrace("Succeeded: {0}", analyzerResult.Succeeded);
 
-            _logger.LogDebug("**** Buildalyzer result ****");
+            _logger.LogTrace("**** Buildalyzer result ****");
         }
     }
 }
