@@ -6,7 +6,7 @@ using Stryker.Core.Reporters;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class ReportersInput : InputDefinition<IEnumerable<string>>
+    public class ReportersInput : Input<IEnumerable<string>>
     {
         public override IEnumerable<string> Default => new List<string>() { "Progress", "Html" };
 

@@ -1,6 +1,6 @@
 namespace Stryker.Core.Options.Inputs
 {
-    public class DisableMixMutantsInput : InputDefinition<bool?>
+    public class DisableMixMutantsInput : Input<bool?>
     {
         public override bool? Default => false;
 

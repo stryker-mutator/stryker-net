@@ -18,7 +18,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         private Mock<ILogger> _loggerMock = new Mock<ILogger>();
 
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new OutputPathInput();
             target.HelpText.ShouldBe(@"");

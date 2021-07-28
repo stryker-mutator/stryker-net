@@ -8,7 +8,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class DashboardUrlInputTests
     {
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new DashboardUrlInput();
             target.HelpText.ShouldBe(@"Alternative url for Stryker Dashboard. | default: 'https://dashboard.stryker-mutator.io'");
@@ -35,7 +35,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         }
 
         [Fact]
-        public void ShouldThrowOnInvalideUri()
+        public void ShouldThrowOnInvalidUri()
         {
             var target = new DashboardUrlInput { SuppliedInput = "test" };
 

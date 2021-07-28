@@ -3,7 +3,7 @@ using System.IO.Abstractions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class SolutionInput : InputDefinition<string>
+    public class SolutionInput : Input<string>
     {
         public override string Default => null;
 

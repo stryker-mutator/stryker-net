@@ -4,7 +4,7 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class BasePathInput : InputDefinition<string>
+    public class BasePathInput : Input<string>
     {
         protected override string Description => "The path from which stryker is started.";
 

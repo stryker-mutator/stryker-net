@@ -10,7 +10,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class BaselineProviderInputTests
     {
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new BaselineProviderInput();
             target.HelpText.ShouldBe("Choose a storage location for dashboard compare. Set to Dashboard provider when the dashboard reporter is turned on. | default: 'disk' | allowed: Dashboard, Disk, AzureFileStorage");

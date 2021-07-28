@@ -8,7 +8,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class TestProjectsInputTests
     {
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new TestProjectsInput();
             target.HelpText.ShouldBe(@"Specify the test projects. | default: []");

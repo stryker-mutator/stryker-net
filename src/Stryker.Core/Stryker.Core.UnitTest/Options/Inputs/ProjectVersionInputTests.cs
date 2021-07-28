@@ -9,10 +9,10 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class ProjectVersionInputTests
     {
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new ProjectVersionInput();
-            target.HelpText.ShouldBe(@"Project version used in reporters. | default: ''");
+            target.HelpText.ShouldBe(@"Project version used in dashboard reporter and baseline feature. | default: ''");
         }
 
         [Theory]
@@ -33,7 +33,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Theory]
         [InlineData("test")]
         [InlineData("myversion")]
-        public void FallbackVersionCannotBeInput(string value)
+        public void ProjectVersionCannotBeFallbackVersion(string value)
         {
             var input = new ProjectVersionInput { };
             input.SuppliedInput = value;

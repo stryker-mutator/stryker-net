@@ -9,7 +9,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class ProjectNameInputTests
     {
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new ProjectNameInput();
             target.HelpText.ShouldBe(@"The organizational name for your project. Required when dashboard reporter is turned on.

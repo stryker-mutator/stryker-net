@@ -9,7 +9,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class OptimizationModeInputTests
     {
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new CoverageAnalysisInput();
             target.HelpText.ShouldBe(@"Use coverage info to speed up execution. Possible values are: off, all, perTest, perIsolatedTest.
@@ -20,7 +20,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         }
 
         [Theory]
-        [InlineData(null, OptimizationModes.CaptureCoveragePerTest)]
+        [InlineData(null, OptimizationModes.CoverageBasedTest)]
         [InlineData("pertestinisolation", OptimizationModes.CoverageBasedTest, OptimizationModes.CaptureCoveragePerTest)]
         [InlineData("pertest", OptimizationModes.CoverageBasedTest)]
         [InlineData("all", OptimizationModes.SkipUncoveredMutants)]
@@ -42,9 +42,9 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             var target = new CoverageAnalysisInput { SuppliedInput = "gibberish" };
 
-            var ex = Assert.Throws<InputException>(() => target.Validate());
+            var exception = Assert.Throws<InputException>(() => target.Validate());
 
-            ex.Message.ShouldBe($"Incorrect coverageAnalysis option (gibberish). The options are [Off, All, PerTest or PerTestInIsolation].");
+            exception.Message.ShouldBe($"Incorrect coverageAnalysis option (gibberish). The options are [Off, All, PerTest or PerTestInIsolation].");
         }
     }
 }

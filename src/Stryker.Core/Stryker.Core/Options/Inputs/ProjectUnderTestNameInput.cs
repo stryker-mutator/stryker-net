@@ -2,7 +2,7 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class ProjectUnderTestNameInput : InputDefinition<string>
+    public class ProjectUnderTestNameInput : Input<string>
     {
         public override string Default => string.Empty;
 

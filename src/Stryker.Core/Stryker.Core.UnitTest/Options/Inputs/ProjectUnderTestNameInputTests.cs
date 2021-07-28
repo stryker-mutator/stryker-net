@@ -8,7 +8,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class ProjectUnderTestNameInputTests
     {
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new ProjectUnderTestNameInput();
             target.HelpText.ShouldBe(@"Used to find the project to test in the project references of the test project. Example: ""ExampleProject.csproj"" | default: ''");

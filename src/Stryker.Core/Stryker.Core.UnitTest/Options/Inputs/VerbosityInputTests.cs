@@ -9,7 +9,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class VerbosityInputTests
     {
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new VerbosityInput();
             target.HelpText.ShouldBe(@"The verbosity (loglevel) for output to the console. | default: 'info' | allowed: error, warning, info, debug, trace");

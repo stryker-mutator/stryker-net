@@ -7,7 +7,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class SinceInputTests
     {
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new SinceInput();
             target.HelpText.ShouldBe(@"Enables diff compare. Only test changed files. | default: 'False'");

@@ -3,7 +3,7 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class DashboardUrlInput : InputDefinition<string>
+    public class DashboardUrlInput : Input<string>
     {
         public static readonly string DefaultUrl = "https://dashboard.stryker-mutator.io";
         public override string Default => DefaultUrl;

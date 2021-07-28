@@ -5,7 +5,7 @@ using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class MutationLevelInput : InputDefinition<string>
+    public class MutationLevelInput : Input<string>
     {
         public override string Default => MutationLevel.Standard.ToString();
 

@@ -2,7 +2,7 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class ModuleNameInput : InputDefinition<string>
+    public class ModuleNameInput : Input<string>
     {
         protected override string Description => "Module name used by reporters. Usually a project in your solution would be a module.";
 

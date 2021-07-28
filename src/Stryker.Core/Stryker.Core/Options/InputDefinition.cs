@@ -5,11 +5,12 @@ using System.Text;
 
 namespace Stryker.Core.Options
 {
-    public interface IInputDefinition
+    public interface IInput
     {
         string HelpText { get; }
     }
-    public interface IInputDefinition<T> : IInputDefinition
+
+    public interface IInput<T> : IInput
     {
         T SuppliedInput { get; set; }
     }
@@ -19,7 +20,7 @@ namespace Stryker.Core.Options
     /// </summary>
     /// <typeparam name="TInput">The type of the input</typeparam>
     /// <typeparam name="TValue">The type of the option</typeparam>
-    public abstract class InputDefinition<TInput> : IInputDefinition<TInput>
+    public abstract class Input<TInput> : IInput<TInput>
     {
         /// <summary>
         /// The default value for the option when no custom value has been supplied, will also be displayed formatted in the help text

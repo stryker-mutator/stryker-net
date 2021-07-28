@@ -14,7 +14,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         private Mock<ILogger<StrykerOptions>> _loggerMock = new Mock<ILogger<StrykerOptions>>();
 
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new ConcurrencyInput();
             target.HelpText.ShouldBe($@"By default Stryker tries to make the most of your CPU, by spawning as many parallel processes as you have CPU cores.

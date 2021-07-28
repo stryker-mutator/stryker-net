@@ -10,7 +10,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class IgnoreMutationsInputTests
     {
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new IgnoreMutationsInput();
             target.HelpText.ShouldBe(@"The given mutators will be excluded for this mutation testrun.

@@ -9,7 +9,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class MutationLevelInputTests
     {
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new MutationLevelInput();
             target.HelpText.ShouldBe(@"Specify which mutation levels to place. Every higher level includes the mutations from the lower levels. | default: 'Standard' | allowed: Basic, Standard, Advanced, Complete");

@@ -1,11 +1,10 @@
-using Microsoft.Extensions.Logging;
-using Stryker.Core.DashboardCompare;
+using System.Collections.Generic;
+using System.Linq;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Html;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Progress;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Stryker.Core.Reporters
 {

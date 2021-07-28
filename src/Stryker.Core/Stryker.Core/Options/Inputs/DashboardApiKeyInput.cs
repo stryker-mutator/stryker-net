@@ -4,7 +4,7 @@ using Stryker.Core.Reporters;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class DashboardApiKeyInput : InputDefinition<string>
+    public class DashboardApiKeyInput : Input<string>
     {
         protected override string Description => "Api key for dashboard reporter.";
 

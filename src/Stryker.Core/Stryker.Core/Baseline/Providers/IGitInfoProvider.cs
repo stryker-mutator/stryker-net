@@ -1,6 +1,6 @@
-﻿using LibGit2Sharp;
+using LibGit2Sharp;
 
-namespace Stryker.Core.DashboardCompare
+namespace Stryker.Core.Baseline.Providers
 {
     public interface IGitInfoProvider
     {

@@ -5,7 +5,7 @@ using Stryker.Core.Reporters;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class ProjectNameInput : InputDefinition<string>
+    public class ProjectNameInput : Input<string>
     {
 
         protected override string Description => @"The organizational name for your project. Required when dashboard reporter is turned on.

@@ -1,11 +1,11 @@
-using LibGit2Sharp;
-using Stryker.Core.DashboardCompare;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using LibGit2Sharp;
+using Stryker.Core.Baseline.Providers;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Mutants;
+using Stryker.Core.Options;
 
 namespace Stryker.Core.DiffProviders
 {

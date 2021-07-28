@@ -1,6 +1,6 @@
 namespace Stryker.Core.Options.Inputs
 {
-    public class DevModeInput : InputDefinition<bool?>
+    public class DevModeInput : Input<bool?>
     {
         public override bool? Default => false;
 

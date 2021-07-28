@@ -8,7 +8,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class IgnoreMethodsInputTests
     {
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new IgnoreMethodsInput();
             target.HelpText.ShouldBe(@"Ignore mutations on method parameters. | default: []");

@@ -45,7 +45,7 @@ namespace Stryker.CLI
             var inputs = InputBuilder.InitializeInputs(_logBuffer);
             var cmdConfigHandler = new CommandLineConfigHandler();
 
-            cmdConfigHandler.RegisterCommandlineOptions(app, inputs);
+            cmdConfigHandler.RegisterCommandLineOptions(app, inputs);
 
             app.OnExecute(() =>
             {
