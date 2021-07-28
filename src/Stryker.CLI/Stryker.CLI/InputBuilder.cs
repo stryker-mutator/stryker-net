@@ -61,7 +61,7 @@ namespace Stryker.CLI
             // basepath gets a default value without user input, but can be overwritten
             Inputs.BasePathInput.SuppliedInput = basePath;
 
-            var configFilePath = Path.Combine(basePath, cmdConfigHandler.ConfigFilePath(args, app));
+            var configFilePath = Path.Combine(basePath, cmdConfigHandler.GetConfigFilePath(args, app));
             if (File.Exists(configFilePath))
             {
                 JsonConfigHandler.DeserializeConfig(configFilePath, Inputs);

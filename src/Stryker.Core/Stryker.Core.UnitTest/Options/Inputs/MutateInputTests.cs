@@ -9,7 +9,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class MutateInputTests
     {
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new MutateInput();
             target.HelpText.ShouldBe(@"Allows to specify file that should in- or excluded for the mutations.

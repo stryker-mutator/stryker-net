@@ -1,6 +1,6 @@
 namespace Stryker.Core.Options.Inputs
 {
-    public class DisableBailInput : InputDefinition<bool?>
+    public class DisableBailInput : Input<bool?>
     {
         public override bool? Default => false;
 

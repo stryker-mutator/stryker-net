@@ -6,7 +6,7 @@ using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class IgnoreMutationsInput : InputDefinition<IEnumerable<string>>
+    public class IgnoreMutationsInput : Input<IEnumerable<string>>
     {
         public override IEnumerable<string> Default => Enumerable.Empty<string>();
 

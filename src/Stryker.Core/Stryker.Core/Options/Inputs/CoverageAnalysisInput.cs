@@ -2,7 +2,7 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class CoverageAnalysisInput : InputDefinition<string>
+    public class CoverageAnalysisInput : Input<string>
     {
         public override string Default => "perTest";
 
@@ -14,20 +14,14 @@ namespace Stryker.Core.Options.Inputs
 
         public OptimizationModes Validate()
         {
-            if (SuppliedInput is { })
+            return (SuppliedInput ?? Default).ToLower() switch
             {
-                var optimization = SuppliedInput.ToLower() switch
-                {
-                    "pertestinisolation" => OptimizationModes.CoverageBasedTest | OptimizationModes.CaptureCoveragePerTest,
-                    "pertest" => OptimizationModes.CoverageBasedTest,
-                    "all" => OptimizationModes.SkipUncoveredMutants,
-                    "off" => OptimizationModes.None,
-                    _ => throw new InputException($"Incorrect coverageAnalysis option ({SuppliedInput}). The options are [Off, All, PerTest or PerTestInIsolation].")
-                };
-
-                return optimization;
-            }
-            return OptimizationModes.CaptureCoveragePerTest;
+                "pertestinisolation" => OptimizationModes.CoverageBasedTest | OptimizationModes.CaptureCoveragePerTest,
+                "pertest" => OptimizationModes.CoverageBasedTest,
+                "all" => OptimizationModes.SkipUncoveredMutants,
+                "off" => OptimizationModes.None,
+                _ => throw new InputException($"Incorrect coverageAnalysis option ({SuppliedInput}). The options are [Off, All, PerTest or PerTestInIsolation].")
+            };
         }
     }
 }

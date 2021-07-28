@@ -371,7 +371,7 @@ Options:";
         [Theory]
         [InlineData("--version", "master")]
         [InlineData("-v", "master")]
-        public void ShouldEnableDiffCompareToDashboardFeatureWhenPassed(params string[] argName)
+        public void ShouldSetProjectVersionFeatureWhenPassed(params string[] argName)
         {
             _target.Run(argName);
 

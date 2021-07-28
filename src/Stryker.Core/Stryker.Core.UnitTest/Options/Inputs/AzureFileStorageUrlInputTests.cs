@@ -9,10 +9,10 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class AzureFileStorageUrlInputTests
     {
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new AzureFileStorageUrlInput();
-            target.HelpText.ShouldBe(@"The url for the Azure File Storage, only needed when the azure baseline provider is selected. 
+            target.HelpText.ShouldBe(@"The url for the Azure File Storage is only needed when the Azure baseline provider is selected. 
 The url should look something like this: 
 https://STORAGE_NAME.file.core.windows.net/FILE_SHARE_NAME 
 Note, the url might be different depending on where your file storage is hosted. | default: ''");
@@ -45,7 +45,7 @@ Note, the url might be different depending on where your file storage is hosted.
 
             var exception = Should.Throw<InputException>(() => target.Validate(BaselineProvider.AzureFileStorage));
 
-            exception.Message.ShouldBe(@"The azure file storage url is required when Azure File Storage is used for dashboard compare.");
+            exception.Message.ShouldBe(@"The Azure File Storage url is required when Azure File Storage is used for dashboard compare.");
         }
 
         [Fact]
@@ -55,7 +55,7 @@ Note, the url might be different depending on where your file storage is hosted.
 
             var exception = Should.Throw<InputException>(() => target.Validate(BaselineProvider.AzureFileStorage));
 
-            exception.Message.ShouldBe("The azure file storage url is not a valid Uri: test");
+            exception.Message.ShouldBe("The Azure File Storage url is not a valid Uri: test");
         }
     }
 }

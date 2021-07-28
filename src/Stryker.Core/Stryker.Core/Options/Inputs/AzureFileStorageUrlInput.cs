@@ -4,9 +4,9 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class AzureFileStorageUrlInput : InputDefinition<string>
+    public class AzureFileStorageUrlInput : Input<string>
     {
-        protected override string Description => @"The url for the Azure File Storage, only needed when the azure baseline provider is selected. 
+        protected override string Description => @"The url for the Azure File Storage is only needed when the Azure baseline provider is selected. 
 The url should look something like this: 
 https://STORAGE_NAME.file.core.windows.net/FILE_SHARE_NAME 
 Note, the url might be different depending on where your file storage is hosted.";
@@ -19,12 +19,12 @@ Note, the url might be different depending on where your file storage is hosted.
             {
                 if (SuppliedInput is null)
                 {
-                    throw new InputException("The azure file storage url is required when Azure File Storage is used for dashboard compare.");
+                    throw new InputException("The Azure File Storage url is required when Azure File Storage is used for dashboard compare.");
                 }
 
                 if (!Uri.IsWellFormedUriString(SuppliedInput, UriKind.Absolute))
                 {
-                    throw new InputException($"The azure file storage url is not a valid Uri: {SuppliedInput}");
+                    throw new InputException($"The Azure File Storage url is not a valid Uri: {SuppliedInput}");
                 }
 
                 return SuppliedInput;

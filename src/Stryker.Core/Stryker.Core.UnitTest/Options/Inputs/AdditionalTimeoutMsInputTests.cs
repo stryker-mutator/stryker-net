@@ -8,12 +8,12 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class AdditionalTimeoutMsInputTests
     {
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new AdditionalTimeoutMsInput();
             target.HelpText.ShouldBe(@"A timeout is calculated based on the initial unit test run before mutating.
-To prevent infinite loops stryker cancels a testrun if it runs longer than the timeout value.
-If you experience a lot of timeout you might need to increase the timeout value. | default: '5000'");
+To prevent infinite loops Stryker cancels a testrun if it runs longer than the timeout value.
+If you experience a lot of timeouts you might need to increase the timeout value. | default: '5000'");
         }
 
         [Fact]
@@ -53,7 +53,7 @@ If you experience a lot of timeout you might need to increase the timeout value.
 
             var exception = Should.Throw<InputException>(() => target.Validate());
 
-            exception.Message.ShouldBe("Timeout cannot be negative");
+            exception.Message.ShouldBe("Timeout cannot be negative.");
         }
     }
 }

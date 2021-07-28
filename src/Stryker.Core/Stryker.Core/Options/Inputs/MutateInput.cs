@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class MutateInput : InputDefinition<IEnumerable<string>>
+    public class MutateInput : Input<IEnumerable<string>>
     {
         private readonly string _defaultInput = "**/*";
         public override IEnumerable<string> Default => new List<string> { _defaultInput };

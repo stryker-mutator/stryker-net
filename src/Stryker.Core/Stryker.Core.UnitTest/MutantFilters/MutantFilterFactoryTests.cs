@@ -3,7 +3,6 @@ using System.Linq;
 using Moq;
 using Shouldly;
 using Stryker.Core.Baseline.Providers;
-using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Options;

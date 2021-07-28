@@ -1,16 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using DotNet.Globbing;
 using LibGit2Sharp;
-using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
-using Stryker.Core.DashboardCompare;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
-using System;
-using System.Collections.Generic;
-using System.IO.Abstractions.TestingHelpers;
-using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.DiffProviders

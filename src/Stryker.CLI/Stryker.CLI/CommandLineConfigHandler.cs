@@ -7,16 +7,6 @@ using Stryker.Core.Options.Inputs;
 
 namespace Stryker.CLI
 {
-    public class CliInput
-    {
-        public IInputDefinition Input { get; set; }
-        public string ArgumentName { get; set; }
-        public string ArgumentShortName { get; set; }
-        public string ArgumentHint { get; set; }
-        public string Description { get; set; }
-        public CommandOptionType OptionType { get; set; }
-    }
-
     public class CommandLineConfigHandler
     {
         private readonly IDictionary<string, CliInput> _cliInputs = new Dictionary<string, CliInput>();
@@ -27,7 +17,7 @@ namespace Stryker.CLI
             _configFileInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. | default: stryker-config.json", argumentHint: "file-path");
         }
 
-        public void RegisterCommandlineOptions(CommandLineApplication app, IStrykerInputs inputs)
+        public void RegisterCommandLineOptions(CommandLineApplication app, IStrykerInputs inputs)
         {
             PrepareCliOptions(inputs);
 
@@ -37,7 +27,7 @@ namespace Stryker.CLI
             }
         }
 
-        public string ConfigFilePath(string[] args, CommandLineApplication app)
+        public string GetConfigFilePath(string[] args, CommandLineApplication app)
         {
             var commands = app.Parse(args);
             var option = commands.SelectedCommand.Options.SingleOrDefault(o => o.LongName == _configFileInput.ArgumentName);
@@ -53,10 +43,10 @@ namespace Stryker.CLI
                 switch(cliInput.OptionType)
                 {
                     case CommandOptionType.NoValue:
-                        HandleNoValue((IInputDefinition<bool?>)strykerInput);
+                        HandleNoValue((IInput<bool?>)strykerInput);
                         break;
                     case CommandOptionType.MultipleValue:
-                        HandleMultiValue(cliInput, (IInputDefinition<IEnumerable<string>>)strykerInput);
+                        HandleMultiValue(cliInput, (IInput<IEnumerable<string>>)strykerInput);
                         break;
                     case CommandOptionType.SingleOrNoValue:
                         HandleSingleOrNoValue(strykerInput, cliInput, inputs);
@@ -65,30 +55,30 @@ namespace Stryker.CLI
 
                 switch(strykerInput)
                 {
-                    case IInputDefinition<string> stringInput:
+                    case IInput<string> stringInput:
                         HandleSingleStringValue(cliInput, stringInput);
                         break;
-                    case IInputDefinition<int?> nullableIntInput:
+                    case IInput<int?> nullableIntInput:
                         HandleSingleIntValue(cliInput, nullableIntInput);
                         break;
-                    case IInputDefinition<int> intInput:
-                        HandleSingleIntValue(cliInput, (IInputDefinition<int?>)intInput);
+                    case IInput<int> intInput:
+                        HandleSingleIntValue(cliInput, (IInput<int?>)intInput);
                         break;
                 }
             }
         }
 
-        private static void HandleNoValue(IInputDefinition<bool?> strykerInput)
+        private static void HandleNoValue(IInput<bool?> strykerInput)
         {
             strykerInput.SuppliedInput = true;
         }
 
-        private static void HandleSingleStringValue(CommandOption cliInput, IInputDefinition<string> strykerInput)
+        private static void HandleSingleStringValue(CommandOption cliInput, IInput<string> strykerInput)
         {
             strykerInput.SuppliedInput = cliInput.Value();
         }
 
-        private static void HandleSingleIntValue(CommandOption cliInput, IInputDefinition<int?> strykerInput)
+        private static void HandleSingleIntValue(CommandOption cliInput, IInput<int?> strykerInput)
         {
             if (int.TryParse(cliInput.Value(), out var value))
             {
@@ -99,7 +89,7 @@ namespace Stryker.CLI
             }
         }
 
-        private static void HandleSingleOrNoValue(IInputDefinition strykerInput, CommandOption cliInput, IStrykerInputs inputs)
+        private static void HandleSingleOrNoValue(IInput strykerInput, CommandOption cliInput, IStrykerInputs inputs)
         {
             switch (strykerInput)
             {
@@ -115,12 +105,12 @@ namespace Stryker.CLI
             }
         }
 
-        private static void HandleMultiValue(CommandOption cliInput, IInputDefinition<IEnumerable<string>> strykerInput)
+        private static void HandleMultiValue(CommandOption cliInput, IInput<IEnumerable<string>> strykerInput)
         {
             strykerInput.SuppliedInput = cliInput.Values;
         }
 
-        private IInputDefinition GetStrykerInput(CommandOption cliInput) => _cliInputs[cliInput.LongName].Input;
+        private IInput GetStrykerInput(CommandOption cliInput) => _cliInputs[cliInput.LongName].Input;
 
         private void PrepareCliOptions(IStrykerInputs inputs)
         {
@@ -175,7 +165,7 @@ namespace Stryker.CLI
             return cliOption;
         }
 
-        private void AddCliInput(IInputDefinition input, string argumentName, string argumentShortName,
+        private void AddCliInput(IInput input, string argumentName, string argumentShortName,
             CommandOptionType optionType = CommandOptionType.SingleValue, string argumentHint = null)
         {
             var cliOption = new CliInput

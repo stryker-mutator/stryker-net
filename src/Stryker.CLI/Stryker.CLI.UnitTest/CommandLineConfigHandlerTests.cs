@@ -20,7 +20,7 @@ namespace Stryker.CLI.UnitTest
 
         public CommandLineConfigHandlerTests()
         {
-            _target.RegisterCommandlineOptions(_app, _inputs);
+            _target.RegisterCommandLineOptions(_app, _inputs);
         }
 
         [Fact]

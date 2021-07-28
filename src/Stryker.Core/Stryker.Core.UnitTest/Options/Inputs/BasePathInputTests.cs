@@ -10,7 +10,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class BasePathInputTests
     {
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new BasePathInput();
             target.HelpText.ShouldBe(@$"The path from which stryker is started. | default: '{Directory.GetCurrentDirectory()}'");
@@ -29,7 +29,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         }
 
         [Fact]
-        public void ShouldThrowOnNonexistingDir()
+        public void ShouldThrowOnNonexistentDir()
         {
             var target = new BasePathInput { SuppliedInput = "C:/MyDir/" };
             var fileSystemMock = new MockFileSystem();

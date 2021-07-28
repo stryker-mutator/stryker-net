@@ -6,7 +6,6 @@ using Moq;
 using Shouldly;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Baseline.Utils;
-using Stryker.Core.DashboardCompare;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;

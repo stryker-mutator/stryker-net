@@ -1,17 +1,16 @@
-using LibGit2Sharp;
-using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
-using Shouldly;
-using Stryker.Core.DashboardCompare;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
+using LibGit2Sharp;
+using Moq;
+using Shouldly;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Options;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.DashboardCompare
 {
     using Microsoft.Extensions.Logging;
+    using Stryker.Core.Baseline.Providers;
 
     public class GitInfoProviderTests
     {

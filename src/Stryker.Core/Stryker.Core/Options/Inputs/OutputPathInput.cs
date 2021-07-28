@@ -6,7 +6,7 @@ using System.IO.Abstractions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class OutputPathInput : InputDefinition<string>
+    public class OutputPathInput : Input<string>
     {
         protected override string Description => string.Empty;
 

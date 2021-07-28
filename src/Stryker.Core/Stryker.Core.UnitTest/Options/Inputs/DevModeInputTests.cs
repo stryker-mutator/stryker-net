@@ -7,7 +7,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class DevModeInputTests
     {
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new DevModeInput();
             target.HelpText.ShouldBe(@"Stryker automatically removes all mutations from a method if a failed mutation could not be rolled back

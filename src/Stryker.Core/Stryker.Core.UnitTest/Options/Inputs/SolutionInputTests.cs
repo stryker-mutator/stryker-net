@@ -9,7 +9,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class SolutionInputTests
     {
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new SolutionInput();
             target.HelpText.ShouldBe(@"Full path to your solution file. Required on dotnet framework.");

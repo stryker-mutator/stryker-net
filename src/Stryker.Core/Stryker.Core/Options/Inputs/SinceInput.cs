@@ -1,6 +1,6 @@
 namespace Stryker.Core.Options.Inputs
 {
-    public class SinceInput : InputDefinition<bool?>
+    public class SinceInput : Input<bool?>
     {
         public override bool? Default => false;
 

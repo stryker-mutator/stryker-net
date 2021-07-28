@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using Moq;
 using Shouldly;
-using Stryker.Core.DashboardCompare;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Html;

@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Stryker.Core.Baseline.Providers;
-using Stryker.Core.DashboardCompare;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;

@@ -3,7 +3,7 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using System;
 
-namespace Stryker.Core.DashboardCompare
+namespace Stryker.Core.Baseline.Providers
 {
     using Logging;
     using Microsoft.Extensions.Logging;

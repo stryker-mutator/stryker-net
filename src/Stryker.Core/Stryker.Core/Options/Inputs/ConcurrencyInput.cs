@@ -4,7 +4,7 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class ConcurrencyInput : InputDefinition<int?>
+    public class ConcurrencyInput : Input<int?>
     {
         protected override string Description => @"By default Stryker tries to make the most of your CPU, by spawning as many parallel processes as you have CPU cores.
 This setting allows you to override this default behavior.

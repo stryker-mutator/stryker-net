@@ -13,7 +13,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     public class DisableBailInputTests
     {
         [Fact]
-        public void ShouldHaveHelptext()
+        public void ShouldHaveHelpText()
         {
             var target = new DisableBailInput();
             target.HelpText.ShouldBe(@"Disable abort unit testrun as soon as the first unit test fails. | default: 'False'");

@@ -140,7 +140,7 @@ namespace Stryker.Core.Options
                 AzureFileStorageUrl = AzureFileStorageUrlInput.Validate(baselineProvider),
                 WithBaseline = WithBaselineInput.Validate(),
                 BaselineProvider = baselineProvider,
-                FallbackVersion = FallbackVersionInput.Validate(SinceTargetInput.SuppliedInput, WithBaselineInput.SuppliedInput),
+                FallbackVersion = FallbackVersionInput.Validate(ProjectVersionInput.SuppliedInput, WithBaselineInput.SuppliedInput),
                 Since = sinceEnabled,
                 SinceTarget = SinceTargetInput.Validate(sinceEnabled)
             };
