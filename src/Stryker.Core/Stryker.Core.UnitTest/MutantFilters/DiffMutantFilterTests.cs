@@ -33,7 +33,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public void ShouldNotMutateUnchangedFiles()
         {
             // Arrange
-            var options = new StrykerOptions(diff: true);
+            var options = new StrykerOptions()
+            {
+                Since = false
+            };
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
 
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
@@ -60,8 +63,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public void ShouldOnlyMutateChangedFiles()
         {
             // Arrange
-            var options = new StrykerOptions(diff: true);
-
+            var options = new StrykerOptions()
+            {
+                Since = false
+            };
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
 
             string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
@@ -226,7 +231,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Arrange
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
 
-            var options = new StrykerOptions(compareToDashboard: false, projectVersion: "version");
+            var options = new StrykerOptions()
+            {
+                WithBaseline = false,
+                ProjectVersion = "version"
+            };
 
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
             {
@@ -266,7 +275,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Arrange
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
 
-            var options = new StrykerOptions(compareToDashboard: false, projectVersion: "version");
+            var options = new StrykerOptions()
+            {
+                WithBaseline = false,
+                ProjectVersion = "version"
+            };
 
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
             {
@@ -293,7 +306,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public void Should_ReturnAllMutants_When_NonSourceCodeFile_In_Tests_Has_Changed()
         {
             // Arrange
-            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
+            var options = new StrykerOptions()
+            {
+                WithBaseline = true,
+                ProjectVersion = "version"
+            };
 
             var diffProviderMock = new Mock<IDiffProvider>();
 

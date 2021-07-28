@@ -6,11 +6,11 @@ using Moq;
 using Shouldly;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Baseline.Utils;
-using Stryker.Core.DashboardCompare;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.UnitTest.Reporters;
 using Xunit;
@@ -42,16 +42,15 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var gitInfoProvider = new Mock<IGitInfoProvider>();
             var baselineMutantHelperMock = new Mock<IBaselineMutantHelper>();
 
-            var reporters = new string[1];
-            reporters[0] = "dashboard";
-
-            var options = new StrykerOptions(
-                compareToDashboard: true,
-               dashboardApiKey: "Access_Token",
-               projectName: "github.com/JohnDoe/project",
-               projectVersion: "version/human/readable",
-               reporters: reporters,
-               fallbackVersion: "fallback/version");
+            var options = new StrykerOptions()
+            {
+                WithBaseline = true,
+                DashboardApiKey = "Acces_Token",
+                ProjectName = "github.com/JohnDoe/project",
+                ProjectVersion = "version/human/readable",
+                Reporters = new[] { Reporter.Dashboard },
+                FallbackVersion = "fallback/version"
+            };
 
             var inputComponent = new Mock<IReadOnlyProjectComponent>().Object;
 
@@ -77,16 +76,15 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var baselineProvider = new Mock<IBaselineProvider>();
             var gitInfoProvider = new Mock<IGitInfoProvider>();
 
-            var reporters = new string[1];
-            reporters[0] = "dashboard";
-
-            var options = new StrykerOptions(
-                compareToDashboard: true,
-               dashboardApiKey: "Access_Token",
-               projectName: "github.com/JohnDoe/project",
-               projectVersion: "version/human/readable",
-               reporters: reporters,
-               fallbackVersion: "fallback/version");
+            var options = new StrykerOptions()
+            {
+                WithBaseline = true,
+                DashboardApiKey = "Access_Token",
+                ProjectName = "github.com/JohnDoe/project",
+                ProjectVersion = "version/human/readable",
+                Reporters = new[] { Reporter.Dashboard },
+                FallbackVersion = "fallback/version"
+            };
 
             var inputComponent = new Mock<IReadOnlyProjectComponent>().Object;
 
@@ -111,7 +109,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var baselineProvider = new Mock<IBaselineProvider>();
             var branchProvider = new Mock<IGitInfoProvider>();
 
-            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
+            var options = new StrykerOptions()
+            {
+                WithBaseline = true,
+                ProjectVersion = "version",
+            };
 
             var target = new DashboardMutantFilter(options, baselineProvider.Object, branchProvider.Object);
 
@@ -139,8 +141,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var baselineProvider = new Mock<IBaselineProvider>();
             var baselineMutantHelper = new Mock<IBaselineMutantHelper>();
 
-            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
-
+            var options = new StrykerOptions()
+            {
+                WithBaseline = true,
+                ProjectVersion = "version",
+            };
             var file = new ReadOnlyFileLeaf(new CsharpFileLeaf
             {
                 RelativePath = "foo.cs"
@@ -188,8 +193,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var baselineProvider = new Mock<IBaselineProvider>();
             var baselineMutantHelper = new Mock<IBaselineMutantHelper>();
 
-            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
-
+            var options = new StrykerOptions()
+            {
+                WithBaseline = true,
+                ProjectVersion = "version",
+            };
             var file = new ReadOnlyFileLeaf(new CsharpFileLeaf
             {
                 RelativePath = "foo.cs"
@@ -248,8 +256,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var baselineProvider = new Mock<IBaselineProvider>();
             var baselineMutantHelper = new Mock<IBaselineMutantHelper>();
 
-            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
-
+            var options = new StrykerOptions()
+            {
+                WithBaseline = true,
+                ProjectVersion = "version",
+            };
             var file = new ReadOnlyFileLeaf(new CsharpFileLeaf
             {
                 RelativePath = "foo.cs"
@@ -318,7 +329,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var baselineProvider = new Mock<IBaselineProvider>();
             var baselineMutantHelper = new Mock<IBaselineMutantHelper>();
 
-            var options = new StrykerOptions(compareToDashboard: true, projectVersion: "version");
+            var options = new StrykerOptions
+            {
+                WithBaseline = true,
+                ProjectVersion = "version"
+            };
 
             var file = new ReadOnlyFileLeaf(new CsharpFileLeaf
             {

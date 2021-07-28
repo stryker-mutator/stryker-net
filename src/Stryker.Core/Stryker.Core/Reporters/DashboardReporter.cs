@@ -14,12 +14,12 @@ namespace Stryker.Core.Reporters
 {
     public partial class DashboardReporter : IReporter
     {
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly IDashboardClient _dashboardClient;
         private readonly ILogger<DashboardReporter> _logger;
         private readonly TextWriter _consoleWriter;
 
-        public DashboardReporter(IStrykerOptions options, IDashboardClient dashboardClient = null, ILogger<DashboardReporter> logger = null, TextWriter consoleWriter = null)
+        public DashboardReporter(StrykerOptions options, IDashboardClient dashboardClient = null, ILogger<DashboardReporter> logger = null, TextWriter consoleWriter = null)
         {
             _options = options;
             _dashboardClient = dashboardClient ?? new DashboardClient(options);

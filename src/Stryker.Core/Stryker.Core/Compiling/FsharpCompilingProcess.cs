@@ -83,7 +83,7 @@ namespace Stryker.Core.Compiling
 
             // compiling failed
             _logger.LogError("Failed to restore the project to a buildable state. Please report the issue. Stryker can not proceed further");
-            throw new StrykerCompilationException("Failed to restore build able state.");
+            throw new CompilationException("Failed to restore build able state.");
         }
 
         private (bool, FSharpErrorInfo[]) TryCompilation(FSharpChecker checker, FSharpList<ParsedInput> trees, List<string> pathlist, FSharpList<string> dependencies)

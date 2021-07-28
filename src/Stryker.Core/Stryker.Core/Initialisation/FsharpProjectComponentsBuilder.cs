@@ -96,7 +96,7 @@ namespace Stryker.Core.Initialisation
                 else
                 {
                     var message = $"Cannot make Fsharp SyntaxTree from .fsi filetype (SyntaxTree.ParsedImplFileInput class wanted)";
-                    throw new StrykerInputException(message);
+                    throw new InputException(message);
                 }
             }
             return inputFiles;
@@ -230,7 +230,7 @@ namespace Stryker.Core.Initialisation
                 else
                 {
                     var message = $"Cannot make Fsharp SyntaxTree from .fsi filetype (SyntaxTree.ParsedImplFileInput class wanted)";
-                    throw new StrykerInputException(message);
+                    throw new InputException(message);
                 }
             }
 

@@ -22,7 +22,7 @@ namespace Stryker.Core.MutationTest
 {
     public interface IMutationTestProcessProvider
     {
-        IMutationTestProcess Provide(MutationTestInput mutationTestInput, IReporter reporter, IMutationTestExecutor mutationTestExecutor, IStrykerOptions options);
+        IMutationTestProcess Provide(MutationTestInput mutationTestInput, IReporter reporter, IMutationTestExecutor mutationTestExecutor, StrykerOptions options);
     }
 
     public class MutationTestProcessProvider : IMutationTestProcessProvider
@@ -30,7 +30,7 @@ namespace Stryker.Core.MutationTest
         public IMutationTestProcess Provide(MutationTestInput mutationTestInput,
             IReporter reporter,
             IMutationTestExecutor mutationTestExecutor,
-            IStrykerOptions options)
+            StrykerOptions options)
         {
             return new MutationTestProcess(mutationTestInput, reporter, mutationTestExecutor, options: options);
         }
@@ -56,7 +56,7 @@ namespace Stryker.Core.MutationTest
         private readonly BaseMutantOrchestrator _orchestrator;
         private readonly IReporter _reporter;
         private readonly ICoverageAnalyser _coverageAnalyser;
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly Language _language;
         private  IMutationProcess _mutationProcess;
 
@@ -68,7 +68,7 @@ namespace Stryker.Core.MutationTest
             IFileSystem fileSystem = null,
             IMutantFilter mutantFilter = null,
             ICoverageAnalyser coverageAnalyser = null,
-            IStrykerOptions options = null)
+            StrykerOptions options = null)
         {
             Input = mutationTestInput;
             _projectContents = mutationTestInput.ProjectInfo.ProjectContents;
@@ -84,7 +84,7 @@ namespace Stryker.Core.MutationTest
             SetupMutationTestProcess(mutantFilter);
         }
 
-        private BaseMutantOrchestrator ChooseOrchestrator(IStrykerOptions options)
+        private BaseMutantOrchestrator ChooseOrchestrator(StrykerOptions options)
         {
             if (_language == Language.Fsharp)
             {
@@ -141,7 +141,7 @@ namespace Stryker.Core.MutationTest
         {
             var mutantGroups = BuildMutantGroupsForTest(mutantsToTest.ToList());
 
-            var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.ConcurrentTestRunners };
+            var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.Concurrency };
 
             var testsFailingInitialy = Input.InitialTestRun.Result.FailingTests.GetGuids().ToHashSet();
 
@@ -151,8 +151,8 @@ namespace Stryker.Core.MutationTest
 
                 bool testUpdateHandler(IReadOnlyList<Mutant> testedMutants, ITestGuids failedTests, ITestGuids ranTests, ITestGuids timedOutTest)
                 {
-                    var continueTestRun = !_options.Optimizations.HasFlag(OptimizationFlags.AbortTestOnKill);
-                    if (testsFailingInitialy.Count>0 && failedTests.GetGuids().Any( id => testsFailingInitialy.Contains(id)))
+                    var continueTestRun = _options.OptimizationMode.HasFlag(OptimizationModes.DisableBail);
+                    if (testsFailingInitialy.Count > 0 && failedTests.GetGuids().Any( id => testsFailingInitialy.Contains(id)))
                     {
                         // some of the failing tests where failing without any mutation
                         // we discard those tests
@@ -217,7 +217,8 @@ namespace Stryker.Core.MutationTest
 
         private IEnumerable<List<Mutant>> BuildMutantGroupsForTest(IReadOnlyCollection<Mutant> mutantsNotRun)
         {
-            if (_options.Optimizations.HasFlag(OptimizationFlags.DisableTestMix) || !_options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
+
+            if (_options.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants) || !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
             {
                 return mutantsNotRun.Select(x => new List<Mutant> { x });
             }

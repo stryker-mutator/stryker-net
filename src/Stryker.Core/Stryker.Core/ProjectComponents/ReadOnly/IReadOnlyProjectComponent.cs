@@ -1,7 +1,7 @@
-﻿using Stryker.Core.Mutants;
-using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
+using Stryker.Core.Mutants;
+using Stryker.Core.Options;
 
 namespace Stryker.Core.ProjectComponents
 {
@@ -28,7 +28,7 @@ namespace Stryker.Core.ProjectComponents
 
         double GetMutationScore();
 
-        Health CheckHealth(Threshold threshold);
+        Health CheckHealth(Thresholds threshold);
     }
 
     public delegate void Display(IReadOnlyProjectComponent current);

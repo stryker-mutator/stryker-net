@@ -1,4 +1,4 @@
-﻿using LibGit2Sharp;
+using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
@@ -9,10 +9,6 @@ using MSLogLevel = Microsoft.Extensions.Logging.LogLevel;
 
 namespace Stryker.Core.Logging
 {
-
-
-
-
     public static class ApplicationLogging
     {
         private static readonly Dictionary<LibGitLogLevel, MSLogLevel> LogLevelMap = new Dictionary<LibGitLogLevel, MSLogLevel>
@@ -28,14 +24,14 @@ namespace Stryker.Core.Logging
 
         private static ILoggerFactory _factory = null;
 
-        public static void ConfigureLogger(LogOptions options, IEnumerable<LogMessage> initialLogMessages = null)
+        public static void ConfigureLogger(LogOptions options, string outputPath, IEnumerable<LogMessage> initialLogMessages = null)
         {
             LoggerFactory.AddSerilog(new LoggerConfiguration().MinimumLevel.Is(options.LogLevel).Enrich.FromLogContext().WriteTo.Console().CreateLogger());
 
             if (options.LogToFile)
             {
                 // log on the lowest level to the log file
-                var logFilesPath = Path.Combine(options.OutputPath, "logs");
+                var logFilesPath = Path.Combine(outputPath, "logs");
                 LoggerFactory.AddFile(logFilesPath + "/log-{Date}.txt", MSLogLevel.Trace);
             }
 

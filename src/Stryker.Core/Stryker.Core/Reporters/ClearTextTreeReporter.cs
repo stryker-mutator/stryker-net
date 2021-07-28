@@ -20,10 +20,10 @@ namespace Stryker.Core.Reporters
         private const string BranchLine = "├── ";
         private const string FinalBranchLine = "└── ";
 
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly TextWriter _consoleWriter;
 
-        public ClearTextTreeReporter(IStrykerOptions strykerOptions, TextWriter consoleWriter = null)
+        public ClearTextTreeReporter(StrykerOptions strykerOptions, TextWriter consoleWriter = null)
         {
             _options = strykerOptions;
             _consoleWriter = consoleWriter ?? Console.Out;
@@ -162,7 +162,7 @@ namespace Stryker.Core.Reporters
             // Convert the threshold integer values to decimal values
             _consoleWriter.Write($" [{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
 
-            if (inputComponent.IsComponentExcluded(_options.FilePatterns))
+            if (inputComponent.IsComponentExcluded(_options.Mutate))
             {
                 _consoleWriter.Write(Output.Bright.Black("(Excluded)"));
             }

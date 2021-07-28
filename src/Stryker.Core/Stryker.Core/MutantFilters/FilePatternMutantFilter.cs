@@ -15,13 +15,13 @@ namespace Stryker.Core.MutantFilters
         private readonly IEnumerable<FilePattern> _includePattern;
         private readonly IEnumerable<FilePattern> _excludePattern;
 
-        public FilePatternMutantFilter(IStrykerOptions options)
+        public FilePatternMutantFilter(StrykerOptions options)
         {
-            _includePattern = options.FilePatterns.Where(x => !x.IsExclude).ToList();
-            _excludePattern = options.FilePatterns.Where(x => x.IsExclude).ToList();
+            _includePattern = options.Mutate.Where(x => !x.IsExclude).ToList();
+            _excludePattern = options.Mutate.Where(x => x.IsExclude).ToList();
         }
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, IStrykerOptions options)
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
         {
             return mutants.Where(IsMutantIncluded);
 

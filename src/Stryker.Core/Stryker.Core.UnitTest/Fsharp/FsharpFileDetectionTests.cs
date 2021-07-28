@@ -63,10 +63,10 @@ namespace Stryker.Core.UnitTest.Fsharp
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, "fsharp"))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences : new List<string>() { _projectUnderTestPath },
-                    targetFramework : "netcoreapp2.1",
-                    projectFilePath : _testProjectPath,
-                    references : new string[] { "" }).Object);
+                    projectReferences: new List<string>() { _projectUnderTestPath },
+                    targetFramework: "netcoreapp2.1",
+                    projectFilePath: _testProjectPath,
+                    references: new string[] { "" }).Object);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(_projectUnderTestPath, null, "fsharp"))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>() { _projectUnderTestPath },
@@ -74,7 +74,7 @@ namespace Stryker.Core.UnitTest.Fsharp
                     projectFilePath: _projectUnderTestPath,
                     properties: new Dictionary<string, string>() { { "Language", "F#" } }).Object);
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
-            var result = target.ResolveInput(new StrykerOptions(fileSystem: fileSystem, basePath: _basePath));
+            var result = target.ResolveInput(new StrykerOptions());
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }

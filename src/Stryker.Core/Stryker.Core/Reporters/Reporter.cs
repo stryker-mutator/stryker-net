@@ -4,12 +4,9 @@ namespace Stryker.Core.Reporters
     {
         All,
         Progress,
-        ConsoleProgressBar,
         Dots,
-        ConsoleProgressDots,
         ClearText,
         ClearTextTree,
-        ConsoleReport,
         Json,
         Html,
         Dashboard,

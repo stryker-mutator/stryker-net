@@ -222,7 +222,8 @@ All files [0/1 ({0:P2})]
             };
 
             var textWriter = new StringWriter();
-            var target = new ClearTextTreeReporter(new StrykerOptions(thresholdHigh: 80, thresholdLow: 70, thresholdBreak: 0), textWriter);
+            var options = new StrykerOptions { Thresholds = new Thresholds { High = 80, Low = 70, Break = 0 } };
+            var target = new ClearTextTreeReporter(options, textWriter);
 
             var folder = new CsharpFolderComposite()
             {
@@ -263,7 +264,8 @@ All files [0/1 ({0:P2})]
             };
 
             var textWriter = new StringWriter();
-            var target = new ClearTextTreeReporter(new StrykerOptions(thresholdHigh: 90, thresholdLow: 70, thresholdBreak: 0), textWriter);
+            var options = new StrykerOptions { Thresholds = new Thresholds { High = 90, Low = 70, Break = 0 } };
+            var target = new ClearTextReporter(options, textWriter);
 
             var folder = new CsharpFolderComposite()
             {

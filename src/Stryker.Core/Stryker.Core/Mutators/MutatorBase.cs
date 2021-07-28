@@ -22,7 +22,7 @@ namespace Stryker.Core.Mutators
 
         public abstract MutationLevel MutationLevel { get; }
 
-        public IEnumerable<Mutation> Mutate(SyntaxNode node, IStrykerOptions options)
+        public IEnumerable<Mutation> Mutate(SyntaxNode node, StrykerOptions options)
         {
             if (MutationLevel <= options.MutationLevel && node is T tNode)
             {

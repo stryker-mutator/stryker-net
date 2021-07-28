@@ -15,7 +15,7 @@ namespace Stryker.Core.Mutants
         private readonly FsharpCoreOrchestrator _base;
 
         //the current implementation only has the orchestrators and does not keep track of mutants or mutators
-        public FsharpMutantOrchestrator(IEnumerable<IMutator> mutators = null, IStrykerOptions options = null) : base(options)
+        public FsharpMutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerOptions options = null) : base(options)
         {
             Mutants = new Collection<Mutant>();
             _base = new FsharpCoreOrchestrator();

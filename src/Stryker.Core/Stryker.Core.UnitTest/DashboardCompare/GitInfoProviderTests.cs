@@ -1,17 +1,16 @@
-﻿using LibGit2Sharp;
-using Microsoft.Extensions.Logging.Abstractions;
-using Moq;
-using Shouldly;
-using Stryker.Core.DashboardCompare;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
+using LibGit2Sharp;
+using Moq;
+using Shouldly;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Options;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.DashboardCompare
 {
     using Microsoft.Extensions.Logging;
+    using Stryker.Core.Baseline.Providers;
 
     public class GitInfoProviderTests
     {
@@ -20,7 +19,11 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         {
             var repository = new Mock<IRepository>(MockBehavior.Strict);
 
-            var target = new GitInfoProvider(new StrykerOptions(diff: true), repository.Object, "path", Mock.Of<ILogger<GitInfoProvider>>());
+            var options = new StrykerOptions()
+            {
+                Since = true,
+            };
+            var target = new GitInfoProvider(options, repository.Object, "path", Mock.Of<ILogger<GitInfoProvider>>());
 
             target.RepositoryPath.ShouldBe("path");
         }
@@ -30,8 +33,10 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         {
             var repository = new Mock<IRepository>(MockBehavior.Strict);
 
-            var options = new StrykerOptions(diff: false);
-
+            var options = new StrykerOptions()
+            {
+                Since = false,
+            };
             var target = new GitInfoProvider(options, repository.Object, null);
 
             target.Repository.ShouldBe(null);
@@ -40,7 +45,10 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         [Fact]
         public void DoesNotCreateNewRepositoryWhenPassedIntoConstructor()
         {
-            var options = new StrykerOptions(basePath: "C:\\", logger: new NullLogger<StrykerOptions>());
+            var options = new StrykerOptions()
+            {
+                BasePath = "C:\\",
+            };
 
             var repository = new Mock<IRepository>(MockBehavior.Strict);
 
@@ -67,14 +75,17 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             Action result = () => target.GetCurrentBranchName();
 
             // Assert
-            result.ShouldThrow<StrykerInputException>();
+            result.ShouldThrow<InputException>();
         }
 
         [Fact]
         public void ReturnsCurrentBranch()
         {
             // Arrange
-            var options = new StrykerOptions(diff: true);
+            var options = new StrykerOptions()
+            {
+                Since = true,
+            };
             var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
 
             var branchCollectionMock = new Mock<BranchCollection>(MockBehavior.Strict);
@@ -118,7 +129,10 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         public void ReturnsCurrentBranchWhenMultipleBranches()
         {
             // Arrange
-            var options = new StrykerOptions(diff: true);
+            var options = new StrykerOptions()
+            {
+                Since = true,
+            };
             var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
 
             var branchCollectionMock = new Mock<BranchCollection>(MockBehavior.Strict);
@@ -170,17 +184,23 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         [Fact]
         public void CreateRepository_Throws_InputException_When_RepositoryPath_Empty()
         {
-            static void act() => new GitInfoProvider(new StrykerOptions(diff: true), repositoryPath: string.Empty);
+            static void act() => new GitInfoProvider(new StrykerOptions()
+            {
+                Since = true,
+            }, repositoryPath: string.Empty);
 
-            Should.Throw<StrykerInputException>(act)
+            Should.Throw<InputException>(act)
                 .Message.ShouldBe("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the --diff feature.");
         }
 
         [Fact]
         public void DetermineCommitThrowsStrykerInputException()
         {
-            var strykerOptions = new StrykerOptions(gitDiffTarget: "master", diff: true);
-
+            var options = new StrykerOptions()
+            {
+                Since = true,
+                SinceTarget = "main"
+            };
             var repository = new Mock<IRepository>();
 
             var branchCollectionMock = new Mock<BranchCollection>();
@@ -192,12 +212,12 @@ namespace Stryker.Core.UnitTest.DashboardCompare
 
             repository.SetupGet(x => x.Branches).Returns(branchCollectionMock.Object);
 
-            var target = new GitInfoProvider(strykerOptions, repository.Object);
+            var target = new GitInfoProvider(options, repository.Object);
 
 
             void act() => target.DetermineCommit();
 
-            Should.Throw<StrykerInputException>(act);
+            Should.Throw<InputException>(act);
         }
 
         [Fact]
@@ -205,8 +225,11 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         {
             // Arrange
             string sha = "5a6940131b31f6958007ecbc0c51cbc35177f4e0";
-            var strykerOptions = new StrykerOptions(gitDiffTarget: sha, diff: true);
-
+            var options = new StrykerOptions()
+            {
+                Since = true,
+                SinceTarget = sha
+            };
             var commitMock = new Mock<Commit>();
             var repositoryMock = new Mock<IRepository>();
             var branchCollectionMock = new Mock<BranchCollection>();
@@ -218,7 +241,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             repositoryMock.SetupGet(x => x.Branches).Returns(branchCollectionMock.Object);
             repositoryMock.Setup(x => x.Lookup(It.IsAny<ObjectId>())).Returns(commitMock.Object);
 
-            var target = new GitInfoProvider(strykerOptions, repositoryMock.Object);
+            var target = new GitInfoProvider(options, repositoryMock.Object);
 
             // Act
             Commit result = target.DetermineCommit();
@@ -232,7 +255,11 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         public void ReturnsTip_When_Canonical_Name_Is_GitSource()
         {
             // Arrange
-            var options = new StrykerOptions(gitDiffTarget: "origin/master", diff: true);
+            var options = new StrykerOptions()
+            {
+                Since = true,
+                SinceTarget = "origin/master"
+            };
             var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
 
             var branchCollectionMock = new Mock<BranchCollection>(MockBehavior.Strict);
@@ -280,7 +307,11 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         public void GetTargetCommit_Does_Not_Throw_NullReferenceException_When_Branch_Is_Null()
         {
             // Arrange
-            var options = new StrykerOptions(gitDiffTarget: "origin/master", diff: true);
+            var options = new StrykerOptions()
+            {
+                Since = true,
+                SinceTarget = "origin/master"
+            };
             var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
 
             var branchCollectionMock = new Mock<BranchCollection>(MockBehavior.Strict);
@@ -303,14 +334,18 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             void act() => target.DetermineCommit();
 
             // Assert
-            Should.Throw<StrykerInputException>(act);
+            Should.Throw<InputException>(act);
         }
 
         [Fact]
         public void ReturnsTip_When_Friendly_Name_Is_GitSource()
         {
             // Arrange
-            var options = new StrykerOptions(gitDiffTarget: "master", diff: true);
+            var options = new StrykerOptions()
+            {
+                Since = true,
+                SinceTarget = "master"
+            };
             var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
 
             var branchCollectionMock = new Mock<BranchCollection>(MockBehavior.Strict);
@@ -358,7 +393,11 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         public void ReturnsTip_When_Upstream_Branch_Canonical_Name_Is_GitSource()
         {
             // Arrange
-            var options = new StrykerOptions(gitDiffTarget: "refs/heads/master", diff: true);
+            var options = new StrykerOptions()
+            {
+                Since = true,
+                SinceTarget = "refs/heads/master"
+            };
             var repositoryMock = new Mock<IRepository>(MockBehavior.Strict);
 
             var branchCollectionMock = new Mock<BranchCollection>(MockBehavior.Strict);

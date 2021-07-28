@@ -1,3 +1,8 @@
+---
+title: Testing Frameworks
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/technical-reference/testing-frameworks.md
+---
+
 # Testing Frameworks undocumented
 This document captures the discoveries made about the various testing frameworks while working on Stryker. 
 This can help understanding the design and logic of the mutation test classes.

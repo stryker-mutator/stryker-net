@@ -1,5 +1,4 @@
 using Microsoft.CodeAnalysis.Text;
-using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -1,20 +1,21 @@
 [
-  "stryker-net/Introduction",
-  "stryker-net/Getting-started",
-  "stryker-net/Configuration",
-  "stryker-net/Mutators",
-  "stryker-net/RegexMutators",
-  "stryker-net/Reporters",
-  "stryker-net/Stryker-in-pipeline",
+  "stryker-net/introduction",
+  "stryker-net/getting-started",
+  "stryker-net/configuration",
+  "stryker-net/mutators",
+  "stryker-net/regex-mutators",
+  "stryker-net/reporters",
+  "stryker-net/stryker-in-pipeline",
+  "stryker-net/updating",
   {
     "Technical reference": [
-      "stryker-net/technical-reference/Introduction",
-      "stryker-net/technical-reference/Research",
-      "stryker-net/technical-reference/Mutant-schemata",
-      "stryker-net/technical-reference/ProjectComponents",
-      "stryker-net/technical-reference/fsharp/Classes",
-      "stryker-net/technical-reference/fsharp/CurrentState",
-      "stryker-net/technical-reference/fsharp/Packages"
+      "stryker-net/technical-reference/introduction",
+      "stryker-net/technical-reference/research",
+      "stryker-net/technical-reference/mutant-schemata",
+      "stryker-net/technical-reference/project-components",
+      "stryker-net/technical-reference/fsharp/classes",
+      "stryker-net/technical-reference/fsharp/current-state",
+      "stryker-net/technical-reference/fsharp/packages"
     ]
   }
 ]

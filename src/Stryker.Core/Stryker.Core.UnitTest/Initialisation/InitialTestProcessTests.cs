@@ -20,7 +20,10 @@ namespace Stryker.Core.UnitTest.Initialisation
         public InitialTestProcessTests()
         {
             _target = new InitialTestProcess();
-            _options = new StrykerOptions(additionalTimeoutMS:0);
+            _options = new StrykerOptions
+            {
+                AdditionalTimeout = 0
+            };
         }
 
         [Fact]
@@ -36,7 +39,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(new TestRunResult(true));
             testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
 
-            Assert.Throws<StrykerInputException>(() => _target.InitialTest(_options, testRunnerMock.Object));
+            Assert.Throws<InputException>(() => _target.InitialTest(_options, testRunnerMock.Object));
         }
 
         [Fact]

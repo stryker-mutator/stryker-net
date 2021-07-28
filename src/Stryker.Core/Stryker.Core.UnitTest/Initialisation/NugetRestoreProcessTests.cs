@@ -80,7 +80,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new NugetRestoreProcess(processExecutorMock.Object);
 
-            var exception = Should.Throw<StrykerInputException>(() =>
+            var exception = Should.Throw<InputException>(() =>
             {
                 target.RestorePackages(solutionPath);
             });

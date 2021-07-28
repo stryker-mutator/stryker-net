@@ -98,7 +98,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             }
             catch (ArgumentException)
             {
-                throw new StrykerInputException($"Unable to parse framework version string {analyzerResult.TargetFramework}. Please fix the framework version in the csproj.");
+                throw new InputException($"Unable to parse framework version string {analyzerResult.TargetFramework}. Please fix the framework version in the csproj.");
             }
         }
 
@@ -119,7 +119,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             }
             catch (ArgumentException)
             {
-                throw new StrykerInputException($"Unable to parse framework version string {analyzerResult.TargetFramework}. Please fix the framework version in the csproj.");
+                throw new InputException($"Unable to parse framework version string {analyzerResult.TargetFramework}. Please fix the framework version in the csproj.");
             }
         }
 

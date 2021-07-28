@@ -89,39 +89,44 @@ if(Environment.GetEnvironmentVariable(""ActiveMutation"") == ""1"") {
     [Fact]
     public void ShouldRollbackIssueInExpression()
     {
-               var syntaxTree = CSharpSyntaxTree.ParseText(@"
-    using System;
-    using System.Collections.Generic;
-    using System.Linq;
+        var syntaxTree = CSharpSyntaxTree.ParseText(@"
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
-    namespace ExampleProject
+namespace ExampleProject
+{
+    public class Test
     {
-       public class Test
-       {
-           public void SomeLinq()
-           {
-               var list = new List<List<double>>();
-               int[] listProjected = list.Select(l => l.Count()).ToArray();
-           }
-       }
-    }");
-       var mutator = new CsharpMutantOrchestrator(options: new StrykerOptions(mutationLevel: MutationLevel.Complete.ToString(), devMode:true));
-       var helpers = new List<SyntaxTree>();
-       foreach (var (name, code) in CodeInjection.MutantHelpers)
-       {
-           helpers.Add(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32));
-       }
+        public void SomeLinq()
+        {
+            var list = new List<List<double>>();
+            int[] listProjected = list.Select(l => l.Count()).ToArray();
+        }   
+    }
+}");
+        var options = new StrykerOptions
+        {
+            MutationLevel = MutationLevel.Complete,
+            DevMode = true
+        };
+        var mutator = new CsharpMutantOrchestrator(options: options);
+        var helpers = new List<SyntaxTree>();
+        foreach (var (name, code) in CodeInjection.MutantHelpers)
+        {
+            helpers.Add(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32));
+        }
 
-       var mutant = mutator.Mutate(syntaxTree.GetRoot());
-       helpers.Add(mutant.SyntaxTree);
-       var references = new List<PortableExecutableReference>() {
-               MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-               MetadataReference.CreateFromFile(typeof(List<string>).Assembly.Location),
-               MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-               MetadataReference.CreateFromFile(typeof(PipeStream).Assembly.Location),
-           };
+        var mutant = mutator.Mutate(syntaxTree.GetRoot());
+        helpers.Add(mutant.SyntaxTree);
+        var references = new List<PortableExecutableReference>() {
+            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(List<string>).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
+            MetadataReference.CreateFromFile(typeof(PipeStream).Assembly.Location),
+        };
 
-       Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(MetadataReference.CreateFromFile(Assembly.Load(a).Location)));
+        Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(MetadataReference.CreateFromFile(Assembly.Load(a).Location)));
 
        var input = new MutationTestInput()
        {
@@ -624,12 +629,12 @@ namespace ExampleProject
         var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false,false);
 
         var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
-
-        rollbackedResult.Success.ShouldBeFalse();
-        rollbackedResult.Diagnostics.ShouldHaveSingleItem();
-        Should.Throw<StrykerCompilationException>(() => {target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false,true);});
-    }
-}
+                
+                rollbackedResult.Success.ShouldBeFalse();
+                rollbackedResult.Diagnostics.ShouldHaveSingleItem();
+                Should.Throw<CompilationException>(() => {target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false,true);});
+            }
+        }
 
 [Fact]
 public void RollbackProcess_ShouldRollbackError_RollbackedCompilationShouldCompileWhenUriIsEmpty()
@@ -718,9 +723,9 @@ namespace ExampleProject
     {
         var compileResult = compiler.Emit(ms);
 
-        Should.NotThrow(() => target.Start(compiler, compileResult.Diagnostics, false, false));
-        Should.Throw<StrykerCompilationException>(() => target.Start(compiler, compileResult.Diagnostics, true, false));
-    }
-}
+                Should.NotThrow(() => target.Start(compiler, compileResult.Diagnostics, false, false));
+                Should.Throw<CompilationException>(() => target.Start(compiler, compileResult.Diagnostics, true, false));
+            }
+        }
     }
 }

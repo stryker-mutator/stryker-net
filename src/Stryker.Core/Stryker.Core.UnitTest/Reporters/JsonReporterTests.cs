@@ -19,8 +19,15 @@ namespace Stryker.Core.UnitTest.Reporters
     {
         public JsonReporterTests()
         {
-            ApplicationLogging.ConfigureLogger(new LogOptions(Serilog.Events.LogEventLevel.Fatal, false, null));
+            var logOptions = new LogOptions
+            {
+                LogLevel = Serilog.Events.LogEventLevel.Fatal,
+                LogToFile = false
+            };
+            ApplicationLogging.ConfigureLogger(logOptions, null);
             ApplicationLogging.LoggerFactory.CreateLogger<JsonReporterTests>();
+            // clear report cache before each test
+            JsonReport.ReportCache = null;
         }
 
         [Fact]
@@ -148,7 +155,11 @@ namespace Stryker.Core.UnitTest.Reporters
         public void JsonReporter_OnAllMutantsTestedShouldWriteJsonToFile()
         {
             var mockFileSystem = new MockFileSystem();
-            var options = new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60);
+            var options = new StrykerOptions
+            {
+                Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 },
+                OutputPath = Directory.GetCurrentDirectory()
+            };
             var reporter = new JsonReporter(options, mockFileSystem);
 
             reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());

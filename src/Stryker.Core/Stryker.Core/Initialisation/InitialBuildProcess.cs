@@ -33,7 +33,7 @@ namespace Stryker.Core.Initialisation
             {
                 if (string.IsNullOrEmpty(solutionPath))
                 {
-                    throw new StrykerInputException("Stryker could not build your project as no solution file was presented. Please pass the solution path using --solution-path \"..\\my_solution.sln\"");
+                    throw new InputException("Stryker could not build your project as no solution file was presented. Please pass the solution path using --solution-path \"..\\my_solution.sln\"");
                 }
                 solutionPath = Path.GetFullPath(solutionPath);
                 var solutionDir = Path.GetDirectoryName(solutionPath);
@@ -57,11 +57,11 @@ namespace Stryker.Core.Initialisation
 
         private void CheckBuildResult(ProcessResult result, string buildCommand, string buildPath)
         {
-            _logger.LogDebug("Initial build output {0}", result.Output);
+            _logger.LogTrace("Initial build output {0}", result.Output);
             if (result.ExitCode != 0)
             {
                 // Initial build failed
-                throw new StrykerInputException(result.Output, $"Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"{buildCommand} {buildPath}\"");
+                throw new InputException(result.Output, $"Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"{buildCommand} {buildPath}\"");
             }
             _logger.LogDebug("Initial build successful");
         }

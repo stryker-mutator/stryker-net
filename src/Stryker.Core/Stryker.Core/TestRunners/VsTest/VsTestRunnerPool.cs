@@ -15,7 +15,7 @@ namespace Stryker.Core.TestRunners.VsTest
 {
     public class VsTestRunnerPool : ITestRunner
     {
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new ConcurrentBag<VsTestRunner>();
         private readonly IDictionary<Guid, VsTestDescription> _vsTests;
@@ -23,7 +23,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly VsTestHelper _helper = new();
         private readonly ILogger _logger;
 
-        public VsTestRunnerPool(IStrykerOptions options, ProjectInfo projectInfo)
+        public VsTestRunnerPool(StrykerOptions options, ProjectInfo projectInfo)
         {
             _options = options;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
@@ -31,7 +31,7 @@ namespace Stryker.Core.TestRunners.VsTest
             (_vsTests, _tests) = runner.DiscoverTests(null);
             _availableRunners.Add(runner);
 
-            Parallel.For(1, options.ConcurrentTestRunners, (i, loopState) =>
+            Parallel.For(1, options.Concurrency, (i, loopState) =>
             {
                 _availableRunners.Add(new VsTestRunner(options, projectInfo, _vsTests, _tests, helper: _helper));
             });
@@ -72,8 +72,8 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants)
         {
-            var needCoverage = _options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest) || _options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants);
-            if (needCoverage && _options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
+            var needCoverage = _options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) || _options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants);
+            if (needCoverage && _options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
             {
                 return CaptureCoveragePerIsolatedTests(mutants);
             }

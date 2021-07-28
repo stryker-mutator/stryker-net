@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Stryker.Core.Baseline.Providers;
-using Stryker.Core.DashboardCompare;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -10,11 +9,11 @@ namespace Stryker.Core.Reporters
 {
     public class GitBaselineReporter : IReporter
     {
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly IBaselineProvider _baselineProvider;
         private readonly IGitInfoProvider _gitInfoProvider;
 
-        public GitBaselineReporter(IStrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
+        public GitBaselineReporter(StrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
         {
             _options = options;
             _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
