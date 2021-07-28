@@ -222,7 +222,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             {
                 BasePath = basePath,
                 SinceTarget = "d670460b4b4aece5915caf5c68d12f560a9fe3e4",
-                DiffIgnoreFilePatterns = diffIgnoreFiles
+                DiffIgnoreChanges = diffIgnoreFiles
             };
             var gitInfoMock = new Mock<IGitInfoProvider>();
             var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
@@ -298,7 +298,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             {
                 BasePath = basePath,
                 SinceTarget = "d670460b4b4aece5915caf5c68d12f560a9fe3e4",
-                DiffIgnoreFilePatterns = diffIgnoreFiles
+                DiffIgnoreChanges = diffIgnoreFiles
             };
             var gitInfoMock = new Mock<IGitInfoProvider>();
             var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
@@ -374,7 +374,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             {
                 BasePath = basePath,
                 SinceTarget = "d670460b4b4aece5915caf5c68d12f560a9fe3e4",
-                DiffIgnoreFilePatterns = diffIgnoreFiles
+                DiffIgnoreChanges = diffIgnoreFiles
             };
             var gitInfoMock = new Mock<IGitInfoProvider>();
             var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
@@ -450,7 +450,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             {
                 BasePath = basePath,
                 SinceTarget = "d670460b4b4aece5915caf5c68d12f560a9fe3e4",
-                DiffIgnoreFilePatterns = diffIgnoreFiles
+                DiffIgnoreChanges = diffIgnoreFiles
             };
             var gitInfoMock = new Mock<IGitInfoProvider>();
             var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);

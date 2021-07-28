@@ -21,7 +21,7 @@ namespace Stryker.Core.Options
         public MutationLevel MutationLevel { get; init; }
         public Thresholds Thresholds { get; init; } = new Thresholds() { Break = 0, Low = 60, High = 80 };
 
-        public int AdditionalTimeoutMS { get; init; }
+        public int AdditionalTimeout { get; init; }
         public LanguageVersion LanguageVersion { get; init; }
 
         public int Concurrency { get; init; }
@@ -41,7 +41,7 @@ namespace Stryker.Core.Options
 
         public bool Since { get; init; }
         public string SinceTarget { get; init; }
-        public IEnumerable<FilePattern> DiffIgnoreFilePatterns { get; init; } = Enumerable.Empty<FilePattern>();
+        public IEnumerable<FilePattern> DiffIgnoreChanges { get; init; } = Enumerable.Empty<FilePattern>();
 
         public string FallbackVersion { get; init; }
         public string ProjectVersion { get; init; }
@@ -57,7 +57,7 @@ namespace Stryker.Core.Options
         {
             return new StrykerOptions()
             {
-                AdditionalTimeoutMS = AdditionalTimeoutMS,
+                AdditionalTimeout = AdditionalTimeout,
                 AzureFileStorageSas = AzureFileStorageSas,
                 AzureFileStorageUrl = AzureFileStorageUrl,
                 BaselineProvider = BaselineProvider,
@@ -67,7 +67,7 @@ namespace Stryker.Core.Options
                 DashboardUrl = DashboardUrl,
                 DevMode = DevMode,
                 Since = Since,
-                DiffIgnoreFilePatterns = DiffIgnoreFilePatterns,
+                DiffIgnoreChanges = DiffIgnoreChanges,
                 ExcludedMutations = ExcludedMutations,
                 FallbackVersion = FallbackVersion,
                 IgnoredMethods = IgnoredMethods,

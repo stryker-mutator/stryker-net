@@ -7,7 +7,7 @@ namespace Stryker.Core.Options
 {
     public interface IStrykerInputs
     {
-        AdditionalTimeoutMsInput AdditionalTimeoutMsInput { get; init; }
+        AdditionalTimeoutInput AdditionalTimeoutInput { get; init; }
         AzureFileStorageSasInput AzureFileStorageSasInput { get; init; }
         AzureFileStorageUrlInput AzureFileStorageUrlInput { get; init; }
         BaselineProviderInput BaselineProviderInput { get; init; }
@@ -17,7 +17,7 @@ namespace Stryker.Core.Options
         DashboardApiKeyInput DashboardApiKeyInput { get; init; }
         DashboardUrlInput DashboardUrlInput { get; init; }
         DevModeInput DevModeInput { get; init; }
-        DiffIgnoreFilePatternsInput DiffIgnoreFilePatternsInput { get; init; }
+        DiffIgnoreChangesInput DiffIgnoreChangesInput { get; init; }
         DisableBailInput DisableBailInput { get; set; }
         DisableMixMutantsInput DisableMixMutantsInput { get; set; }
         IgnoreMutationsInput ExcludedMutationsInput { get; init; }
@@ -68,7 +68,7 @@ namespace Stryker.Core.Options
         public ThresholdBreakInput ThresholdBreakInput { get; init; }
         public ThresholdHighInput ThresholdHighInput { get; init; }
         public ThresholdLowInput ThresholdLowInput { get; init; }
-        public AdditionalTimeoutMsInput AdditionalTimeoutMsInput { get; init; }
+        public AdditionalTimeoutInput AdditionalTimeoutInput { get; init; }
         public LanguageVersionInput LanguageVersionInput { get; init; }
         public ConcurrencyInput ConcurrencyInput { get; init; }
         public ProjectUnderTestNameInput ProjectUnderTestNameInput { get; init; }
@@ -83,7 +83,7 @@ namespace Stryker.Core.Options
         public ProjectNameInput ProjectNameInput { get; init; }
         public SinceInput SinceInput { get; init; }
         public SinceTargetInput SinceTargetInput { get; init; }
-        public DiffIgnoreFilePatternsInput DiffIgnoreFilePatternsInput { get; init; }
+        public DiffIgnoreChangesInput DiffIgnoreChangesInput { get; init; }
         public FallbackVersionInput FallbackVersionInput { get; init; }
         public ProjectVersionInput ProjectVersionInput { get; init; }
         public ModuleNameInput ModuleNameInput { get; init; }
@@ -123,7 +123,7 @@ namespace Stryker.Core.Options
                 },
                 Reporters = reporters,
                 ProjectUnderTestName = ProjectUnderTestNameInput.Validate(),
-                AdditionalTimeoutMS = AdditionalTimeoutMsInput.Validate(),
+                AdditionalTimeout = AdditionalTimeoutInput.Validate(),
                 ExcludedMutations = ExcludedMutationsInput.Validate(),
                 IgnoredMethods = IgnoredMethodsInput.Validate(),
                 Mutate = MutateInput.Validate(),
@@ -135,7 +135,7 @@ namespace Stryker.Core.Options
                 ProjectName = ProjectNameInput.Validate(reporters),
                 ModuleName = ModuleNameInput.Validate(),
                 ProjectVersion = ProjectVersionInput.Validate(FallbackVersionInput.SuppliedInput, reporters, WithBaselineInput.SuppliedInput),
-                DiffIgnoreFilePatterns = DiffIgnoreFilePatternsInput.Validate(),
+                DiffIgnoreChanges = DiffIgnoreChangesInput.Validate(),
                 AzureFileStorageSas = AzureFileStorageSasInput.Validate(baselineProvider),
                 AzureFileStorageUrl = AzureFileStorageUrlInput.Validate(baselineProvider),
                 WithBaseline = WithBaselineInput.Validate(),

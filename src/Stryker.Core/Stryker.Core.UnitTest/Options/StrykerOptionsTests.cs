@@ -18,7 +18,7 @@ namespace Stryker.Core.UnitTest.Options
         {
             var target = new StrykerOptions()
             {
-                AdditionalTimeoutMS = 1,
+                AdditionalTimeout = 1,
                 AzureFileStorageSas = "sas",
                 AzureFileStorageUrl = "url",
                 BaselineProvider = Core.Baseline.Providers.BaselineProvider.AzureFileStorage,
@@ -28,7 +28,7 @@ namespace Stryker.Core.UnitTest.Options
                 DashboardUrl = "url",
                 DevMode = true,
                 Since = true,
-                DiffIgnoreFilePatterns = new[] { new FilePattern(Glob.Parse("**"), true, null) },
+                DiffIgnoreChanges = new[] { new FilePattern(Glob.Parse("**"), true, null) },
                 ExcludedMutations = new[] { Mutator.Bitwise },
                 FallbackVersion = "main",
                 IgnoredMethods = new[] { new Regex("") },
@@ -50,7 +50,7 @@ namespace Stryker.Core.UnitTest.Options
 
             var result = target.Copy("C://Dev//Test", "test", new[] { "project1" });
 
-            result.AdditionalTimeoutMS.ShouldBe(1);
+            result.AdditionalTimeout.ShouldBe(1);
         }
     }
 }

@@ -66,7 +66,7 @@ namespace Stryker.CLI.UnitTest
 
             mock.VerifyAll();
 
-            actualInputs.AdditionalTimeoutMsInput.SuppliedInput.ShouldBe(9999);
+            actualInputs.AdditionalTimeoutInput.SuppliedInput.ShouldBe(9999);
             actualInputs.VerbosityInput.SuppliedInput.ShouldBe("trace");
             actualInputs.ProjectUnderTestNameInput.SuppliedInput.ShouldBe("ExampleProject.csproj");
             actualInputs.ReportersInput.SuppliedInput.ShouldHaveSingleItem();

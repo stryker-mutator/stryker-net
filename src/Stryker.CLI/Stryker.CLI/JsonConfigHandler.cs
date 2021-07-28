@@ -23,13 +23,13 @@ namespace Stryker.CLI
                 (jsonConfig.Baseline.Enabled.HasValue && jsonConfig.Baseline.Enabled.Value);
 
             inputs.BaselineProviderInput.SuppliedInput = jsonConfig.Baseline?.Provider;
-            inputs.DiffIgnoreFilePatternsInput.SuppliedInput = jsonConfig.Since?.IgnoreChangesIn;
+            inputs.DiffIgnoreChangesInput.SuppliedInput = jsonConfig.Since?.IgnoreChangesIn;
             inputs.FallbackVersionInput.SuppliedInput = jsonConfig.Baseline?.FallbackVersion;
             inputs.AzureFileStorageUrlInput.SuppliedInput = jsonConfig.Baseline?.AzureFileShareUrl;
             inputs.CoverageAnalysisInput.SuppliedInput = jsonConfig.CoverageAnalysis;
             inputs.DisableBailInput.SuppliedInput = jsonConfig.DisableBail;
             inputs.DisableMixMutantsInput.SuppliedInput = jsonConfig.DisableMixMutants;
-            inputs.AdditionalTimeoutMsInput.SuppliedInput = jsonConfig.AdditionalTimeout;
+            inputs.AdditionalTimeoutInput.SuppliedInput = jsonConfig.AdditionalTimeout;
             inputs.MutateInput.SuppliedInput = jsonConfig.Mutate;
             inputs.MutationLevelInput.SuppliedInput = jsonConfig.MutationLevel;
             inputs.ProjectNameInput.SuppliedInput = jsonConfig.ProjectInfo?.Name;

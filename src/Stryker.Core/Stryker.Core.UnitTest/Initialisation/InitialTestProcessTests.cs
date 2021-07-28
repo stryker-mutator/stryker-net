@@ -22,7 +22,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             _target = new InitialTestProcess();
             _options = new StrykerOptions
             {
-                AdditionalTimeoutMS = 0
+                AdditionalTimeout = 0
             };
         }
 

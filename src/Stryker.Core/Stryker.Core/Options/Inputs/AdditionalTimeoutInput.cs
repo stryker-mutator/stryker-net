@@ -2,7 +2,7 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class AdditionalTimeoutMsInput : InputDefinition<int?>
+    public class AdditionalTimeoutInput : InputDefinition<int?>
     {
         public override int? Default => 5000;
 

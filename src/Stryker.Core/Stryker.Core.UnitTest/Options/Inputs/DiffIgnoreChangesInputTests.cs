@@ -5,12 +5,12 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
-    public class DiffIgnoreFilePatternsInputTests
+    public class DiffIgnoreChangesInputTests
     {
         [Fact]
         public void ShouldHaveHelptext()
         {
-            var target = new DiffIgnoreFilePatternsInput();
+            var target = new DiffIgnoreChangesInput();
             target.HelpText.ShouldBe(@"Allows to specify an array of C# files which should be ignored if present in the diff.
 Any non-excluded files will trigger all mutants to be tested because we cannot determine what mutants are affected by these files. 
 This feature is only recommended when you are sure these files will not affect results, or when you are prepared to sacrifice accuracy for perfomance.
@@ -22,7 +22,7 @@ Example: ['**/*Assets.json','**/favicon.ico'] | default: []");
         [Fact]
         public void ShouldAcceptGlob()
         {
-            var target = new DiffIgnoreFilePatternsInput { SuppliedInput = new[] { "*" } };
+            var target = new DiffIgnoreChangesInput { SuppliedInput = new[] { "*" } };
 
             var result = target.Validate();
 
@@ -32,7 +32,7 @@ Example: ['**/*Assets.json','**/favicon.ico'] | default: []");
         [Fact]
         public void ShouldParseAll()
         {
-            var target = new DiffIgnoreFilePatternsInput { SuppliedInput = new[] { "*", "MyFile.cs" } };
+            var target = new DiffIgnoreChangesInput { SuppliedInput = new[] { "*", "MyFile.cs" } };
 
             var result = target.Validate();
 
@@ -45,7 +45,7 @@ Example: ['**/*Assets.json','**/favicon.ico'] | default: []");
         [Fact]
         public void ShouldHaveDefault()
         {
-            var target = new DiffIgnoreFilePatternsInput { SuppliedInput = null };
+            var target = new DiffIgnoreChangesInput { SuppliedInput = null };
 
             var result = target.Validate();
 
