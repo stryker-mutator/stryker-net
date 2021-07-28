@@ -58,7 +58,7 @@ namespace Stryker.Core.Initialisation
                 }
             }
 
-            TimeoutValueCalculator = new TimeoutValueCalculator(options.AdditionalTimeoutMS,
+            TimeoutValueCalculator = new TimeoutValueCalculator(options.AdditionalTimeout,
                 (int)stopwatch.ElapsedMilliseconds - (int)_initTestRunResult.Duration.TotalMilliseconds ,
                 (int)stopwatch.ElapsedMilliseconds);
 

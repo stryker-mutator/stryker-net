@@ -14,7 +14,7 @@ namespace Stryker.CLI
         {
             Inputs = new StrykerInputs(logger)
             {
-                AdditionalTimeoutMsInput = new AdditionalTimeoutMsInput(),
+                AdditionalTimeoutInput = new AdditionalTimeoutInput(),
                 AzureFileStorageSasInput = new AzureFileStorageSasInput(),
                 AzureFileStorageUrlInput = new AzureFileStorageUrlInput(),
                 BaselineProviderInput = new BaselineProviderInput(),
@@ -23,7 +23,7 @@ namespace Stryker.CLI
                 DashboardApiKeyInput = new DashboardApiKeyInput(),
                 DashboardUrlInput = new DashboardUrlInput(),
                 DevModeInput = new DevModeInput(),
-                DiffIgnoreFilePatternsInput = new DiffIgnoreFilePatternsInput(),
+                DiffIgnoreChangesInput = new DiffIgnoreChangesInput(),
                 DisableBailInput = new DisableBailInput(),
                 DisableMixMutantsInput = new DisableMixMutantsInput(),
                 ExcludedMutationsInput = new IgnoreMutationsInput(),

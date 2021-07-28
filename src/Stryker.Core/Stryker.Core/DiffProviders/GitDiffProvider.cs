@@ -68,7 +68,7 @@ namespace Stryker.Core.DiffProviders
 
         private void RemoveFilteredOutFiles(DiffResult diffResult)
         {
-            foreach (FilePattern filePattern in _options.DiffIgnoreFilePatterns)
+            foreach (FilePattern filePattern in _options.DiffIgnoreChanges)
             {
                 diffResult.ChangedSourceFiles = diffResult.ChangedSourceFiles.Where(diffResultFile => !filePattern.Glob.IsMatch(diffResultFile)).ToList();
                 diffResult.ChangedTestFiles = diffResult.ChangedTestFiles.Where(diffResultFile => !filePattern.Glob.IsMatch(diffResultFile)).ToList();
