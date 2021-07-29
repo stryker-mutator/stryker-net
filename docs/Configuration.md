@@ -387,8 +387,8 @@ This feature is only recommended when you are sure these files will not affect r
 Use [globbing syntax](https://en.wikipedia.org/wiki/Glob_(programming)) for wildcards. Example: ['**/*Assets.json','**/favicon.ico']
 
 ```
-dotnet stryker --diff-ignore-files ['**/*.ts']
-dotnet stryker -diff-ignore-files ['**/*.ts']
+dotnet stryker --diff-ignore-files "['**/*.ts']"
+dotnet stryker -diff-ignore-files "['**/*.ts']"
 ```
 
 Default: `[]`
