@@ -140,4 +140,4 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `a^b` | `~(a^b)` |
 
 ## Regular Expressions
-For the full list of all available regex mutations, see the [regex mutator docs](./RegexMutators.md).
+For the full list of all available regex mutations, see the [regex mutator docs](./regex-mutations.md).

@@ -128,7 +128,7 @@ Default: `null`
 Command line: `N/A`  
 Config file: `"project-info": { "name": 'github.com/stryker-mutator/stryker-net' }`
 
-The name registered with the [Stryker dashboard](#reporters.md#dashboard-reporter). It is in the form of `gitProvider/organization/repository`. At the moment the dashboard backend only supports github.com as a git provider, but we want to also support gitlab.com/bitbucket.org etc in the future. It can have an indefinite number of levels. Slashes (/) in this name are not escaped. For example `github.com/stryker-mutator/stryker-net`.
+The name registered with the [Stryker dashboard](./reporters.md#dashboard-reporter). It is in the form of `gitProvider/organization/repository`. At the moment the dashboard backend only supports github.com as a git provider, but we want to also support gitlab.com/bitbucket.org etc in the future. It can have an indefinite number of levels. Slashes (/) in this name are not escaped. For example `github.com/stryker-mutator/stryker-net`.
 
 ### `project-info.module` <`string`>
 
@@ -138,7 +138,7 @@ Config file: `"project-info": { "module": 'stryker-core' }`
 
 If you want to store multiple reports for a given version you can use this option to separate them logically. For example in a mono-repo setup where each package (or project or module) delivers a separate report. The Stryker dashboard will combine all module reports for a given version into one complete project report.
 
-See [Stryker dashboard](#reporters.md#dashboard-reporter)
+See [Stryker dashboard](./reporters.md#dashboard-reporter)
 
 ### `project-info.version` <`comittish`>
 
@@ -148,7 +148,7 @@ Config file: `"project-info": { "version": 'feat/logging' }`
 
 The version of the report. This should be filled with the branch name, git tag or git sha (although no validation is done). You can override a report of a specific version, like docker tags. Slashes in the version should not be encoded. For example, it's valid to use "feat/logging".
 
-See [Stryker dashboard](#reporters.md#dashboard-reporter)
+See [Stryker dashboard](./reporters.md#dashboard-reporter)
 
 ## Control flow
 
