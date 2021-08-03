@@ -1,3 +1,12 @@
+## [0.22.9](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.8...stryker@0.22.9) (2021-08-03)
+
+
+### Bug Fixes
+
+* **Ignore methods:** Allow ignoring mutants of fully qualified method names ([#1635](https://github.com/stryker-mutator/stryker-net/issues/1635)) ([ddfc72f](https://github.com/stryker-mutator/stryker-net/commit/ddfc72f1c95f1302fb6f0bab7cf3e48b7b85b505))
+
+
+
 ## [0.22.8](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.7...stryker@0.22.8) (2021-07-26)
 
 
