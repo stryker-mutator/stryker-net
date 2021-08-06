@@ -10,18 +10,12 @@ namespace Stryker.Core.Options.Inputs
 
         protected override string Description => @"Ignore mutations on method parameters.";
 
-        public IEnumerable<Regex> Validate()
-        {
-            if (SuppliedInput is { })
-            {
-                var ignoredMethodPatterns = new List<Regex>();
-                foreach (var methodPattern in SuppliedInput.Where(pattern => !string.IsNullOrWhiteSpace(pattern)))
-                {
-                    ignoredMethodPatterns.Add(new Regex("^" + Regex.Escape(methodPattern).Replace("\\*", ".*") + "$", RegexOptions.IgnoreCase));
-                }
-                return ignoredMethodPatterns;
-            }
-            return Enumerable.Empty<Regex>();
-        }
+        public IEnumerable<Regex> Validate() => SuppliedInput is not null ? ParseRegex(SuppliedInput) : ParseRegex(Default);
+
+        private static IEnumerable<Regex> ParseRegex(IEnumerable<string> methodPatterns) =>
+            methodPatterns
+                .Where(x => !string.IsNullOrEmpty(x))
+                .Select(methodPattern => new Regex("^(?:[^.]*\\.)*" + Regex.Escape(methodPattern).Replace("\\*", "[^.]*") + "$", RegexOptions.IgnoreCase))
+                .ToList();
     }
 }

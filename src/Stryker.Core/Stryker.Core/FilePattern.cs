@@ -114,10 +114,7 @@ namespace Stryker.Core
             return false;
         }
 
-        protected bool Equals(FilePattern other)
-        {
-            return Glob.ToString() == other.Glob.ToString() && IsExclude == other.IsExclude && TextSpans.SequenceEqual(other.TextSpans);
-        }
+        public bool Equals(FilePattern other) => Glob.ToString() == other.Glob.ToString() && IsExclude == other.IsExclude && TextSpans.SequenceEqual(other.TextSpans);
 
         public override bool Equals(object obj)
         {

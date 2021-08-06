@@ -72,7 +72,7 @@ namespace Stryker.Core.UnitTest.Options
             var result = _target.ValidateAll();
             
             result.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants).ShouldBeTrue();
-            result.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeTrue();
+            result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
         }
 
         [Fact]
@@ -83,7 +83,7 @@ namespace Stryker.Core.UnitTest.Options
             var result = _target.ValidateAll();
             
             result.OptimizationMode.HasFlag(OptimizationModes.DisableBail).ShouldBeTrue();
-            result.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeTrue();
+            result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
         }
 
         [Fact]
@@ -107,13 +107,13 @@ namespace Stryker.Core.UnitTest.Options
         }
 
         [Fact]
-        public void OptimizationFlagsShouldHaveDefault()
+        public void OptimizationFlagsShouldHaveDefaultCoverageBasedTest()
         {
             _target.CoverageAnalysisInput.SuppliedInput = null;
 
             var result = _target.ValidateAll();
 
-            result.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeTrue();
+            result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
         }
     }
 }
