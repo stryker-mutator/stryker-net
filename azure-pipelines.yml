@@ -239,7 +239,6 @@ stages:
       parameters:
         testName: 'macos-netcore-multi-test-project'
         workingDirectory: 'integrationtest/TargetProjects/TargetProject'
-        strykerCommands: --test-projects "['../NetCoreTestProject.XUnit/NetCoreTestProject.XUnit.csproj', '../NetCoreTestProject.NUnit/NetCoreTestProject.NUnit.csproj']"
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:
