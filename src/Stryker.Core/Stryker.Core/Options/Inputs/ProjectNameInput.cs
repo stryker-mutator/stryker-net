@@ -21,10 +21,9 @@ For example: Your project might be called 'consumer-loans' and it might contains
                 {
                     throw new InputException("When the stryker dashboard is enabled the project name is required.");
                 }
-
-                return SuppliedInput;
             }
-            return Default;
+
+            return SuppliedInput ?? Default;
         }
     }
 }
