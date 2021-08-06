@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
 using Stryker.Core;
-using Stryker.Core.Logging;
+using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Xunit;
@@ -29,7 +30,7 @@ namespace Stryker.CLI.UnitTest
             var currentDirectory = Directory.GetCurrentDirectory();
             Directory.SetCurrentDirectory($"..{Path.DirectorySeparatorChar}");
             var runResults = new StrykerRunResult(options, 0.3);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>())).Returns(runResults).Verifiable();
+            mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>())).Returns(runResults).Verifiable();
             var target = new StrykerCLI(mock.Object);
 
             target.Run(new string[] { });
@@ -55,8 +56,8 @@ namespace Stryker.CLI.UnitTest
             var runResults = new StrykerRunResult(options, 0.3);
 
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<IEnumerable<LogMessage>>()))
-                .Callback<IStrykerInputs, IEnumerable<LogMessage>>((c, m) => actualInputs = c)
+            mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>()))
+                .Callback<IStrykerInputs, ILoggerFactory, IProjectOrchestrator>((c, l, p) => actualInputs = c)
                 .Returns(runResults)
                 .Verifiable();
 

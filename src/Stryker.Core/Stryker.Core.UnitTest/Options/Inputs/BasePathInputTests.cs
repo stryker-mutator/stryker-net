@@ -13,7 +13,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         public void ShouldHaveHelpText()
         {
             var target = new BasePathInput();
-            target.HelpText.ShouldBe(@$"The path from which stryker is started. | default: '{Directory.GetCurrentDirectory()}'");
+            target.HelpText.ShouldBe(@$"The path from which stryker is started.");
         }
 
         [Fact]
@@ -47,7 +47,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 
             var exception = Should.Throw<InputException>(() => target.Validate(fileSystemMock));
 
-            exception.Message.ShouldBe("Base path cannot be null.");
+            exception.Message.ShouldBe("Base path can't be null or empty.");
         }
     }
 }

@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Logging;
 
 namespace Stryker.Core.Options.Inputs
 {
@@ -16,8 +17,10 @@ Reasons you might want to lower this setting:
 
         public override int? Default => Environment.ProcessorCount / 2;
 
-        public int Validate(ILogger logger)
+        public int Validate(ILogger<ConcurrencyInput> logger = null)
         {
+            logger ??= ApplicationLogging.LoggerFactory.CreateLogger<ConcurrencyInput>();
+
             if (SuppliedInput == null)
             {
                 return Default.Value;

@@ -19,12 +19,7 @@ namespace Stryker.Core.UnitTest.Reporters
     {
         public JsonReporterTests()
         {
-            var logOptions = new LogOptions
-            {
-                LogLevel = Serilog.Events.LogEventLevel.Fatal,
-                LogToFile = false
-            };
-            ApplicationLogging.ConfigureLogger(logOptions, null);
+            ApplicationLogging.LoggerFactory = new LoggerFactory();
             ApplicationLogging.LoggerFactory.CreateLogger<JsonReporterTests>();
             // clear report cache before each test
             JsonReport.ReportCache = null;

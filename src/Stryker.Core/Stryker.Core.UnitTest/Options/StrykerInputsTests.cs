@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Shouldly;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
@@ -11,7 +6,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Options
 {
-    public class StrykerInputsTests
+    public class StrykerInputsTests : LoggingTestBase
     {
         private StrykerInputs _target = new StrykerInputs()
         {
@@ -38,7 +33,7 @@ namespace Stryker.Core.UnitTest.Options
             MutateInput = new MutateInput(),
             MutationLevelInput = new MutationLevelInput(),
             CoverageAnalysisInput = new CoverageAnalysisInput(),
-            OutputPathInput = new OutputPathInput(),
+            OutputPathInput = new OutputPathInput() { SuppliedInput = Directory.GetCurrentDirectory() },
             ProjectNameInput = new ProjectNameInput(),
             ProjectUnderTestNameInput = new ProjectUnderTestNameInput(),
             ProjectVersionInput = new ProjectVersionInput(),
@@ -72,7 +67,7 @@ namespace Stryker.Core.UnitTest.Options
             var result = _target.ValidateAll();
             
             result.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants).ShouldBeTrue();
-            result.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeTrue();
+            result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
         }
 
         [Fact]
@@ -83,7 +78,7 @@ namespace Stryker.Core.UnitTest.Options
             var result = _target.ValidateAll();
             
             result.OptimizationMode.HasFlag(OptimizationModes.DisableBail).ShouldBeTrue();
-            result.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeTrue();
+            result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
         }
 
         [Fact]
@@ -113,7 +108,7 @@ namespace Stryker.Core.UnitTest.Options
 
             var result = _target.ValidateAll();
 
-            result.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeTrue();
+            result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
         }
     }
 }

@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
 {
-    public class MutantPlacerTests
+    public class MutantPlacerTests : LoggingTestBase
     {
         [Theory]
         [InlineData(0)]

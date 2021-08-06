@@ -11,7 +11,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 {
     public class ConcurrencyInputTests
     {
-        private Mock<ILogger<StrykerOptions>> _loggerMock = new Mock<ILogger<StrykerOptions>>();
+        private Mock<ILogger<ConcurrencyInput>> _loggerMock = new Mock<ILogger<ConcurrencyInput>>();
 
         [Fact]
         public void ShouldHaveHelpText()

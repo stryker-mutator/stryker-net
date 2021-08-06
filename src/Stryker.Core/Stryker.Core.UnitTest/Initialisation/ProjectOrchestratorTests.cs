@@ -16,7 +16,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
-    public class ProjectOrchestratorTests
+    public class ProjectOrchestratorTests : LoggingTestBase
     {
         private readonly Mock<IBuildalyzerProvider> _buildalyzerProviderMock = new Mock<IBuildalyzerProvider>(MockBehavior.Strict);
         private readonly Mock<IMutationTestProcess> _mutationTestProcessMock = new Mock<IMutationTestProcess>(MockBehavior.Strict);

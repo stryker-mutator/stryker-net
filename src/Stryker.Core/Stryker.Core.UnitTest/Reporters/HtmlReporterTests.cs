@@ -14,8 +14,7 @@ namespace Stryker.Core.UnitTest.Reporters
     {
         public HtmlReporterTests()
         {
-            var options = new LogOptions { LogLevel = Serilog.Events.LogEventLevel.Fatal, LogToFile = false };
-            ApplicationLogging.ConfigureLogger(options, null);
+            ApplicationLogging.LoggerFactory = new LoggerFactory();
             ApplicationLogging.LoggerFactory.CreateLogger<HtmlReporterTests>();
         }
 

@@ -18,19 +18,19 @@ namespace Stryker.Core
 {
     public interface IStrykerRunner
     {
-        StrykerRunResult RunMutationTest(IStrykerInputs input, IEnumerable<LogMessage> initialLogMessages = null);
+        StrykerRunResult RunMutationTest(IStrykerInputs input, ILoggerFactory loggerFactory, IProjectOrchestrator projectOrchestrator = null);
     }
 
     public class StrykerRunner : IStrykerRunner
     {
-        private readonly IProjectOrchestrator _projectOrchestrator;
+        private IProjectOrchestrator _projectOrchestrator;
         private IEnumerable<IMutationTestProcess> _mutationTestProcesses;
         private ILogger _logger;
-        private readonly IReporterFactory _reporterFactory;
+        private IReporterFactory _reporterFactory;
 
-        public StrykerRunner(IProjectOrchestrator projectOrchestrator = null, IEnumerable<IMutationTestProcess> mutationTestProcesses = null, IReporterFactory reporterFactory = null)
+        public StrykerRunner(IEnumerable<IMutationTestProcess> mutationTestProcesses = null,
+            IReporterFactory reporterFactory = null)
         {
-            _projectOrchestrator = projectOrchestrator ?? new ProjectOrchestrator();
             _mutationTestProcesses = mutationTestProcesses ?? new List<IMutationTestProcess>();
             _reporterFactory = reporterFactory ?? new ReporterFactory();
         }
@@ -38,22 +38,24 @@ namespace Stryker.Core
         /// <summary>
         /// Starts a mutation test run
         /// </summary>
-        /// <exception cref="InputException">For managed exceptions</exception>
         /// <param name="options">The user options</param>
-        /// <param name="initialLogMessages">
-        /// Allows to pass log messages that occured before the mutation test.
-        /// The messages will be written to the logger after it was configured.
-        /// </param>
-        public StrykerRunResult RunMutationTest(IStrykerInputs input, IEnumerable<LogMessage> initialLogMessages = null)
+        /// <param name="loggerFactory">This loggerfactory will be used to create loggers during the stryker run</param>
+        /// <exception cref="InputException">For managed exceptions</exception>
+        public StrykerRunResult RunMutationTest(IStrykerInputs inputs, ILoggerFactory loggerFactory, IProjectOrchestrator projectOrchestrator = null)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var options = input.ValidateAll();
+            SetupLogging(loggerFactory);
+
+            // Setup project orchestrator can't be done sooner since it needs logging
+            _projectOrchestrator = projectOrchestrator ?? new ProjectOrchestrator();
+
+            var options = inputs.ValidateAll();
+            _logger.LogDebug("Stryker started with options: {0}", JsonConvert.SerializeObject(options, new StringEnumConverter()));
 
             var reporters = _reporterFactory.Create(options);
 
-            SetupLogging(options, initialLogMessages);
 
             try
             {
@@ -123,14 +125,11 @@ namespace Stryker.Core
             }
         }
 
-        private void SetupLogging(StrykerOptions options, IEnumerable<LogMessage> initialLogMessages = null)
+        private void SetupLogging(ILoggerFactory loggerFactory)
         {
             // setup logging
-            ApplicationLogging.ConfigureLogger(options.LogOptions, options.OutputPath, initialLogMessages);
+            ApplicationLogging.LoggerFactory = loggerFactory;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerRunner>();
-
-            _logger.LogDebug("Stryker started with options: {0}",
-                JsonConvert.SerializeObject(options, new StringEnumConverter()));
         }
 
         private void AnalyseCoverage(StrykerOptions options)

@@ -1,6 +1,4 @@
 using System.IO.Abstractions;
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Logging;
 using Stryker.Core.Options.Inputs;
 
 namespace Stryker.Core.Options
@@ -49,13 +47,11 @@ namespace Stryker.Core.Options
     public class StrykerInputs : IStrykerInputs
     {
         private StrykerOptions _strykerOptionsCache;
-        private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
-        public StrykerInputs(ILogger logger = null, IFileSystem fileSystem = null)
+        public StrykerInputs(IFileSystem fileSystem = null)
         {
             _fileSystem = fileSystem ?? new FileSystem();
-            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<StrykerInputs>();
         }
 
         public DevModeInput DevModeInput { get; init; }
@@ -97,7 +93,7 @@ namespace Stryker.Core.Options
         public StrykerOptions ValidateAll()
         {
             var basePath = BasePathInput.Validate(_fileSystem);
-            var outputPath = OutputPathInput.Validate(_logger, _fileSystem, basePath);
+            var outputPath = OutputPathInput.Validate(_fileSystem);
             var reporters = ReportersInput.Validate();
             var baselineProvider = BaselineProviderInput.Validate(reporters);
             var sinceEnabled = SinceInput.Validate(WithBaselineInput.SuppliedInput);
@@ -106,15 +102,10 @@ namespace Stryker.Core.Options
             {
                 BasePath = basePath,
                 OutputPath = outputPath,
-                Concurrency = ConcurrencyInput.Validate(_logger),
+                Concurrency = ConcurrencyInput.Validate(),
                 MutationLevel = MutationLevelInput.Validate(),
                 DevMode = DevModeInput.Validate(),
                 SolutionPath = SolutionInput.Validate(_fileSystem),
-                LogOptions = new LogOptions
-                {
-                    LogLevel = VerbosityInput.Validate(),
-                    LogToFile = LogToFileInput.Validate(outputPath)
-                },
                 Thresholds = new Thresholds
                 {
                     High = ThresholdHighInput.Validate(ThresholdLowInput.SuppliedInput),
@@ -122,6 +113,11 @@ namespace Stryker.Core.Options
                     Break = ThresholdBreakInput.Validate(ThresholdLowInput.SuppliedInput),
                 },
                 Reporters = reporters,
+                LogOptions = new LogOptions
+                {
+                    LogLevel = VerbosityInput.Validate(),
+                    LogToFile = LogToFileInput.Validate(outputPath)
+                },
                 ProjectUnderTestName = ProjectUnderTestNameInput.Validate(),
                 AdditionalTimeout = AdditionalTimeoutInput.Validate(),
                 ExcludedMutations = ExcludedMutationsInput.Validate(),

@@ -1,8 +1,5 @@
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
-using System;
-using System.IO;
 using System.IO.Abstractions;
+using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
@@ -12,34 +9,17 @@ namespace Stryker.Core.Options.Inputs
 
         public override string Default => null;
 
-        public string Validate(ILogger logger, IFileSystem fileSystem, string basepath)
+        public string Validate(IFileSystem fileSystem)
         {
-            if (string.IsNullOrWhiteSpace(basepath))
+            if (string.IsNullOrWhiteSpace(SuppliedInput))
             {
-                throw new ArgumentNullException(nameof(basepath));
+                throw new InputException("Outputpath can't be null or whitespace");
             }
-
-            var strykerDir = string.IsNullOrWhiteSpace(SuppliedInput) ? "StrykerOutput" : SuppliedInput;
-
-            var outputPath = Path.Combine(basepath, strykerDir, DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
-            fileSystem.Directory.CreateDirectory(FilePathUtils.NormalizePathSeparators(outputPath));
-
-            // Create output dir with gitignore
-            var gitignorePath = FilePathUtils.NormalizePathSeparators(Path.Combine(basepath, strykerDir, ".gitignore"));
-
-            if (!fileSystem.File.Exists(gitignorePath))
+            if (!fileSystem.Directory.Exists(SuppliedInput))
             {
-                try
-                {
-                    fileSystem.File.WriteAllText(gitignorePath, "*");
-                }
-                catch (IOException e)
-                {
-                    logger.LogWarning("Could't create gitignore file because of error {error}. \n" +
-                        "If you use any diff compare features this may mean that stryker logs show up as changes.", e.Message);
-                }
+                throw new InputException("Outputpath should exist");
             }
-            return outputPath;
+            return SuppliedInput;
         }
     }
 }

@@ -1,6 +1,9 @@
+using System;
 using System.IO;
+using System.IO.Abstractions;
 using McMaster.Extensions.CommandLineUtils;
-using Microsoft.Extensions.Logging;
+using Stryker.CLI.Logging;
+using Stryker.Core;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
 
@@ -8,11 +11,13 @@ namespace Stryker.CLI
 {
     public static class InputBuilder
     {
-        public static IStrykerInputs Inputs { get; private set; }
-
-        public static IStrykerInputs InitializeInputs(ILogger logger)
+        /// <summary>
+        /// Initializes all stryker inputs.
+        /// </summary>
+        /// <returns></returns>
+        public static IStrykerInputs InitializeInputs()
         {
-            Inputs = new StrykerInputs(logger)
+            var inputs = new StrykerInputs()
             {
                 AdditionalTimeoutInput = new AdditionalTimeoutInput(),
                 AzureFileStorageSasInput = new AzureFileStorageSasInput(),
@@ -51,24 +56,74 @@ namespace Stryker.CLI
                 WithBaselineInput = new WithBaselineInput()
             };
 
-            return Inputs;
+            return inputs;
         }
 
-        public static IStrykerInputs Build(string[] args, CommandLineApplication app, CommandLineConfigHandler cmdConfigHandler)
+        /// <summary>
+        /// Reads all config from json and console to fill stryker inputs
+        /// </summary>
+        /// <param name="args">Console app arguments</param>
+        /// <param name="app">The console application containing all argument information</param>
+        /// <param name="cmdConfigHandler">Mock console config handler</param>
+        /// <returns>Filled stryker inputs (except output path)</returns>
+        public static IStrykerInputs Build(IStrykerInputs inputs, string[] args, CommandLineApplication app, CommandLineConfigHandler cmdConfigHandler)
         {
+            // set basepath
             var basePath = Directory.GetCurrentDirectory();
+            inputs.BasePathInput.SuppliedInput = basePath;
 
-            // basepath gets a default value without user input, but can be overwritten
-            Inputs.BasePathInput.SuppliedInput = basePath;
-
+            // read config from json and commandline
             var configFilePath = Path.Combine(basePath, cmdConfigHandler.GetConfigFilePath(args, app));
             if (File.Exists(configFilePath))
             {
-                JsonConfigHandler.DeserializeConfig(configFilePath, Inputs);
+                JsonConfigHandler.DeserializeConfig(configFilePath, inputs);
             }
-            cmdConfigHandler.ReadCommandLineConfig(args, app, Inputs);
+            cmdConfigHandler.ReadCommandLineConfig(args, app, inputs);
 
-            return Inputs;
+            return inputs;
+        }
+
+        /// <summary>
+        /// Creates the needed paths for logging and initializes the logger factory
+        /// </summary>
+        /// <param name="fileSystem">Mock filesystem</param>
+        public static void SetupLogOptions(IStrykerInputs inputs, IFileSystem fileSystem = null)
+        {
+            fileSystem ??= new FileSystem();
+            var basePath = inputs.BasePathInput.SuppliedInput;
+
+            var outputPath = CreateOutputPath(basePath, fileSystem);
+            inputs.OutputPathInput.SuppliedInput = outputPath;
+
+            var logLevel = inputs.VerbosityInput.Validate();
+            var logToFile = inputs.LogToFileInput.Validate(outputPath);
+
+            ApplicationLogging.ConfigureLogger(logLevel, logToFile, outputPath);
+        }
+
+        private static string CreateOutputPath(string basePath, IFileSystem fileSystem)
+        {
+            var strykerDir = "StrykerOutput";
+
+            var outputPath = Path.Combine(basePath, strykerDir, DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
+            // outputpath should always be created
+            fileSystem.Directory.CreateDirectory(FilePathUtils.NormalizePathSeparators(outputPath));
+
+            // add gitignore if it didn't exist yet
+            var gitignorePath = FilePathUtils.NormalizePathSeparators(Path.Combine(basePath, strykerDir, ".gitignore"));
+            if (!fileSystem.File.Exists(gitignorePath))
+            {
+                try
+                {
+                    fileSystem.File.WriteAllText(gitignorePath, "*");
+                }
+                catch (IOException e)
+                {
+                    Console.WriteLine($"Could't create gitignore file because of error {e.Message}. \n" +
+                        "If you use any diff compare features this may mean that stryker logs show up as changes.");
+                }
+            }
+            return outputPath;
         }
     }
 }

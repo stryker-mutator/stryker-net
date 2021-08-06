@@ -1,6 +1,6 @@
 using Serilog.Events;
 
-namespace Stryker.Core.Logging
+namespace Stryker.Core.Options
 {
     public class LogOptions
     {

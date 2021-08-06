@@ -17,7 +17,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Compiling
 {
-    public class CompilingProcessTests
+    public class CompilingProcessTests : LoggingTestBase
     {
         [Fact]
         public void CompilingProcessTests_ShouldCompile()
