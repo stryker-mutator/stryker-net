@@ -24,10 +24,8 @@ namespace Stryker.Core.Options.Inputs
                 {
                     throw new InputException("Project version cannot be the same as the fallback version. Please provide a different version for one of them.");
                 }
-
-                return SuppliedInput;
             }
-            return Default;
+            return SuppliedInput ?? Default;
         }
     }
 }

@@ -88,8 +88,7 @@ namespace Stryker.CLI
 
         private void PrintStrykerASCIIName()
         {
-            // Crayon does not support background coloring (yet)
-            Console.WriteLine(Output.Yellow().Text(@"
+            Console.WriteLine(Output.Yellow(@"
    _____ _              _               _   _ ______ _______  
   / ____| |            | |             | \ | |  ____|__   __| 
  | (___ | |_ _ __ _   _| | _____ _ __  |  \| | |__     | |    

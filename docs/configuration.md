@@ -273,7 +273,7 @@ The mutants of the ignored types will not be tested. They will show up in your r
 
 Default: `null`  
 Command line: `N/A`  
-Config file: `"ignore-methods": ['ToString', 'ConfigureAwait', '*Exception.ctor']`
+Config file: `"ignore-methods": ['ToString', 'ConfigureAwait', '*Exception.ctor', 'Console.Write*']`
 
 Skip specified method signatures from being mutated. 
 
@@ -288,11 +288,18 @@ ConfigureAwait(t);
 
 You can also ignore constructors by specifying the type and adding the `.ctor` suffix.
 
+You can also qualify method names by (partial) class name.
+
 Both, method names and constructor names support wildcards.
 
 ```json
-"['*Log']" // Ignores all methods ending with Log
-"['*Exception.ctor']" // Ignores all exception constructors
+"stryker-config": {
+    "ignore-methods": [
+        "*Log", // Ignores all methods ending with Log
+        "Console.Write*", // Ignores all methods starting with Write in the class Console
+        "*Exception.ctor" // Ignores all exception constructors
+    ]
+}
 ```
 
 ## Optimization

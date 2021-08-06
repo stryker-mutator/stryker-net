@@ -21,7 +21,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 
             var result = target.Validate();
 
-            result.ShouldHaveSingleItem().ToString().ShouldBe("^Dispose$");
+            result.ShouldHaveSingleItem().ToString().ShouldBe(@"^(?:[^.]*\.)*Dispose$");
         }
 
         [Fact]
@@ -32,8 +32,8 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             var result = target.Validate();
 
             result.Count().ShouldBe(2);
-            result.First().ToString().ShouldBe("^Dispose$");
-            result.Last().ToString().ShouldBe("^Test$");
+            result.First().ToString().ShouldBe(@"^(?:[^.]*\.)*Dispose$");
+            result.Last().ToString().ShouldBe(@"^(?:[^.]*\.)*Test$");
         }
 
         [Fact]

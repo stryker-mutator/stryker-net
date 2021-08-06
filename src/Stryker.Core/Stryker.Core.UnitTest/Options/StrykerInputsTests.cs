@@ -102,7 +102,7 @@ namespace Stryker.Core.UnitTest.Options
         }
 
         [Fact]
-        public void OptimizationFlagsShouldHaveDefault()
+        public void OptimizationFlagsShouldHaveDefaultCoverageBasedTest()
         {
             _target.CoverageAnalysisInput.SuppliedInput = null;
 
