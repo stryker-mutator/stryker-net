@@ -20,7 +20,7 @@ using Stryker.Core.Initialisation.Buildalyzer;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
-    public class InputFileResolverTests : LoggingTestBase
+    public class InputFileResolverTests : TestBase
     {
         private readonly string _currentDirectory;
         private readonly string _filesystemRoot;

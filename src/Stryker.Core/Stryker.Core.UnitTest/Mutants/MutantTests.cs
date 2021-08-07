@@ -1,16 +1,11 @@
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
 using Moq;
 using Shouldly;
 using Stryker.Core.Mutants;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
 {
-    public class MutantTests
+    public class MutantTests : TestBase
     {
         [Fact]
         public void ShouldHaveDisplayName()

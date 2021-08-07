@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Baseline.Providers
 {
-    public class DiskBaselineProviderTests : LoggingTestBase
+    public class DiskBaselineProviderTests : TestBase
     {
         [Fact]
         public async Task ShouldWriteToDiskAsync()

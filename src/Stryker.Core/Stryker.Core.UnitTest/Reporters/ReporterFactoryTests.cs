@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class ReporterFactoryTests
+    public class ReporterFactoryTests : TestBase
     {
         private Mock<IGitInfoProvider> _branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
 

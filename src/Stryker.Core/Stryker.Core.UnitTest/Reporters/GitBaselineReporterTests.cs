@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class GitBaselineReporterTests
+    public class GitBaselineReporterTests : TestBase
     {
         [Fact]
         public void Doesnt_Use_ProjectVersion_When_CurrentBranch_Is_Not_Null()

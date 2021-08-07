@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
-    public class ThresholdHighInputTests
+    public class ThresholdHighInputTests : TestBase
     {
         [Fact]
         public void ShouldHaveHelpText()

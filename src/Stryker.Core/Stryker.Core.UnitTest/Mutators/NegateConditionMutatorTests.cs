@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
-    public class NegateConditionMutatorTests
+    public class NegateConditionMutatorTests : TestBase
     {
         [Fact]
         public void ShouldBeMutationLevelStandard()

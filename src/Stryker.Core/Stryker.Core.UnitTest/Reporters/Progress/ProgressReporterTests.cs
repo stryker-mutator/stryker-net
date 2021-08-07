@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters.Progress
 {
-    public class ProgressReporterTests
+    public class ProgressReporterTests : TestBase
     {
         private readonly Mock<IProgressBarReporter> _progressBarReporter;
 

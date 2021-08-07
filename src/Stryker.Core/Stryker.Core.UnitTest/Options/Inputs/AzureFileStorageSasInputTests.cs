@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
-    public class AzureFileStorageSasInputTests
+    public class AzureFileStorageSasInputTests : TestBase
     {
         [Fact]
         public void ShouldHaveHelpText()

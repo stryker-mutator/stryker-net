@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Options
 {
-    public class StrykerInputsTests : LoggingTestBase
+    public class StrykerInputsTests : TestBase
     {
         private StrykerInputs _target = new StrykerInputs()
         {

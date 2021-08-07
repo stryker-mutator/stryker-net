@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
 {
-    public class CoverageCaptureTests
+    public class CoverageCaptureTests : TestBase
     {
         private static bool WaitFor(object lck, Func<bool> predicate, int timeout)
         {

@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest
 {
-    public class StrykerRunnerTests
+    public class StrykerRunnerTests : TestBase
     {
         [Fact]
         public void Stryker_ShouldInvokeAllProcesses()

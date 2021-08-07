@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
-    public class LogToFileInputTests
+    public class LogToFileInputTests : TestBase
     {
         [Fact]
         public void ShouldHaveHelpText()

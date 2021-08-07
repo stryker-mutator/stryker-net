@@ -4,10 +4,11 @@ using Stryker.Core.Logging;
 
 namespace Stryker.Core.UnitTest
 {
-    public abstract class LoggingTestBase
+    public abstract class TestBase
     {
-        protected LoggingTestBase()
+        protected TestBase()
         {
+            // initialize loggerfactory to prevent exceptions
             ApplicationLogging.LoggerFactory = new LoggerFactory();
         }
     }

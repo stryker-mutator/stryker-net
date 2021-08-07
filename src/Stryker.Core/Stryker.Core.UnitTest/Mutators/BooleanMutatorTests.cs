@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.Mutators;
@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
-    public class BooleanMutatorTest
+    public class BooleanMutatorTests : TestBase
     {
         [Fact]
         public void ShouldBeMutationLevelStandard()

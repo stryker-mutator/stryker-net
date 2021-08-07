@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
-    public class ReportersInputTests
+    public class ReportersInputTests : TestBase
     {
         [Fact]
         public void ShouldHaveHelpText()

@@ -1,4 +1,3 @@
-using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using Shouldly;
 using Stryker.Core.Exceptions;
@@ -7,7 +6,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
-    public class BasePathInputTests
+    public class BasePathInputTests : TestBase
     {
         [Fact]
         public void ShouldHaveHelpText()

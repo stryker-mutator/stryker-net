@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
-    public class IgnoredMethodMutantFilterTests
+    public class IgnoredMethodMutantFilterTests : TestBase
     {
         [Fact]
         public static void ShouldHaveName()

@@ -24,7 +24,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Compiling
 {
-    public class RollbackProcessTests
+    public class RollbackProcessTests : TestBase
     {
         private readonly SyntaxAnnotation _ifEngineMarker = new("Injector", "IfInstrumentationEngine");
         private readonly SyntaxAnnotation _conditionalEngineMarker = new("Injector", "ConditionalInstrumentationEngine");

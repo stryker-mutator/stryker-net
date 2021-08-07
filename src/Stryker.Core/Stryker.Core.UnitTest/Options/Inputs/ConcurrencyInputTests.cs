@@ -1,15 +1,14 @@
+using System;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
-using System;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
-    public class ConcurrencyInputTests
+    public class ConcurrencyInputTests : TestBase
     {
         private Mock<ILogger<ConcurrencyInput>> _loggerMock = new Mock<ILogger<ConcurrencyInput>>();
 

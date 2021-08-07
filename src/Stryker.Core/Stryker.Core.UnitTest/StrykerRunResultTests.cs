@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest
 {
-    public class StrykerRunResultTests
+    public class StrykerRunResultTests : TestBase
     {
         [Theory]
         [InlineData(1, 80)]

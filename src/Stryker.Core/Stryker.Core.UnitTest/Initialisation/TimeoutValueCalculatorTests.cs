@@ -4,7 +4,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
-    public class TimeoutValueCalculatorTests
+    public class TimeoutValueCalculatorTests : TestBase
     {
         [Theory]
         [InlineData(1000, 0, 1500)]

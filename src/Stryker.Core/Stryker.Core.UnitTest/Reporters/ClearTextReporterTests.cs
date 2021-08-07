@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class ClearTextReporterTests
+    public class ClearTextReporterTests : TestBase
     {
 
         [Fact]

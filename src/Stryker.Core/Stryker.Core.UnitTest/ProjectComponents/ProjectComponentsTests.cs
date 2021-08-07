@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.ProjectComponents
 {
-    public class ProjectComponentsTests
+    public class ProjectComponentsTests : TestBase
     {
         [Fact]
         public void ShouldGet100MutationScore()

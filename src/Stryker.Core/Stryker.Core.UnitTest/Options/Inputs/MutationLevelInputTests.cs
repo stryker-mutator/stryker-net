@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
-    public class MutationLevelInputTests
+    public class MutationLevelInputTests : TestBase
     {
         [Fact]
         public void ShouldHaveHelpText()

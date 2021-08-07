@@ -1,14 +1,13 @@
-﻿using DotNet.Globbing;
-using Microsoft.CodeAnalysis.Text;
-using Shouldly;
-using Stryker.Core.Options;
 using System;
 using System.Linq;
+using DotNet.Globbing;
+using Microsoft.CodeAnalysis.Text;
+using Shouldly;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Options
 {
-    public class FilePatternTests
+    public class FilePatternTests : TestBase
     {
         [Theory]
         [InlineData("file.cs", "file.cs", true)]

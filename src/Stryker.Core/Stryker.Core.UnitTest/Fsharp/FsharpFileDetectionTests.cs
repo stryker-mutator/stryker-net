@@ -12,11 +12,10 @@ using Microsoft.Extensions.Logging;
 
 namespace Stryker.Core.UnitTest.Fsharp
 {
-    public class FsharpFileDetectionTests
+    public class FsharpFileDetectionTests : TestBase
     {
         private readonly string _currentDirectory;
         private readonly string _filesystemRoot;
-        private readonly string _basePath;
         private readonly string _sourceFile;
         private readonly string _testProjectPath;
         private readonly string _projectUnderTestPath;
@@ -27,7 +26,6 @@ namespace Stryker.Core.UnitTest.Fsharp
         {
             _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             _filesystemRoot = Path.GetPathRoot(_currentDirectory);
-            _basePath = Path.Combine(_filesystemRoot, "TestProject");
 
             _sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/FsharpExampleSourceFile.fs");
             _testProjectPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "TestProject", "TestProject.fsproj"));

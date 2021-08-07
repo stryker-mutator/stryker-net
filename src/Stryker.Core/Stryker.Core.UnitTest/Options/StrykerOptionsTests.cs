@@ -3,15 +3,13 @@ using DotNet.Globbing;
 using Microsoft.CodeAnalysis.CSharp;
 using Serilog.Events;
 using Shouldly;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Options
 {
-    public class StrykerOptionsTests
+    public class StrykerOptionsTests : TestBase
     {
         [Fact]
         public void ShouldCopyValues()

@@ -24,7 +24,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.MutationTest
 {
-    public class MutationTestProcessTests
+    public class MutationTestProcessTests : TestBase
     {
         private string CurrentDirectory { get; }
         private string FilesystemRoot { get; }

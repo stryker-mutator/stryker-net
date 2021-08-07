@@ -9,17 +9,17 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
-    public static class ExcludeFromCodeCoverageFilterTests
+    public class ExcludeFromCodeCoverageFilterTests : TestBase
     {
         [Fact]
-        public static void ShouldHaveName()
+        public void ShouldHaveName()
         {
             var target = new ExcludeFromCodeCoverageFilter() as IMutantFilter;
             target.DisplayName.ShouldBe("exclude from code coverage filter");
         }
 
         [Fact]
-        public static void OnMethod()
+        public void OnMethod()
         {
             // Arrange
             var mutant = Create(@"
@@ -42,7 +42,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
         }
 
         [Fact]
-        public static void OnProperty()
+        public void OnProperty()
         {
             // Arrange
             var mutant = Create(@"
@@ -62,7 +62,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
         }
 
         [Fact]
-        public static void OnClass()
+        public void OnClass()
         {
             // Arrange
             var mutant = Create(@"
@@ -85,7 +85,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
         }
 
         [Fact]
-        public static void Not()
+        public void Not()
         {
             // Arrange
             var mutant = Create(@"
@@ -110,7 +110,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
         [InlineData("System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute")]
         [InlineData("ExcludeFromCodeCoverageAttribute")]
         [InlineData("ExcludeFromCodeCoverage")]
-        public static void Writings(string attr)
+        public void Writings(string attr)
         {
             // Arrange
             var mutant = Create($@"
@@ -133,7 +133,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
         }
 
 
-        private static Mutant Create(string source, string search)
+        private Mutant Create(string source, string search)
         {
             var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
             var originalNode =

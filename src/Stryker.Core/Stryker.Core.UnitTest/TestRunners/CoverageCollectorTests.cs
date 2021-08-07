@@ -22,7 +22,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
     }
 
-    public class CoverageCollectorShould
+    public class CoverageCollectorTests : TestBase
     {
         [Fact]
         public void ProperlyCaptureParams()

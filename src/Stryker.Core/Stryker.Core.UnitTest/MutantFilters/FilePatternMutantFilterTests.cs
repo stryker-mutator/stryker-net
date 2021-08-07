@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
-    public class FilePatternMutantFilterTests
+    public class FilePatternMutantFilterTests : TestBase
     {
         [Fact]
         public static void ShouldHaveName()

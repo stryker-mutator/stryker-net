@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
-    public class DisableMixMutantsInputTests
+    public class DisableMixMutantsInputTests : TestBase
     {
         [Fact]
         public void ShouldHaveHelpText()

@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.MutationTest
 {
-    public class MutationTestExecutorTests : LoggingTestBase
+    public class MutationTestExecutorTests : TestBase
     {
         [Fact]
         public void MutationTestExecutor_NoFailedTestShouldBeSurvived()

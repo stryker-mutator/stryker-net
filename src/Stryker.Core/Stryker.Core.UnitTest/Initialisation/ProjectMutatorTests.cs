@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
-    public class ProjectMutatorTests
+    public class ProjectMutatorTests : TestBase
     {
         private readonly Mock<IInitialisationProcessProvider> _initialisationProcessProviderMock = new Mock<IInitialisationProcessProvider>(MockBehavior.Strict);
         private readonly Mock<IMutationTestProcessProvider> _mutationTestProcessProviderMock = new Mock<IMutationTestProcessProvider>(MockBehavior.Strict);

@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class JsonReporterTests
+    public class JsonReporterTests : TestBase
     {
         public JsonReporterTests()
         {

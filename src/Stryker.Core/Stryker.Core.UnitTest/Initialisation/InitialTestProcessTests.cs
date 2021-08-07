@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
-    public class InitialTestProcessTests
+    public class InitialTestProcessTests : TestBase
     {
         private readonly InitialTestProcess _target;
         private readonly StrykerOptions _options;

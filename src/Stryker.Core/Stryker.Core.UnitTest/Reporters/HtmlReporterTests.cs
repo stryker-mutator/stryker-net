@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class HtmlReporterTests
+    public class HtmlReporterTests : TestBase
     {
         public HtmlReporterTests()
         {
