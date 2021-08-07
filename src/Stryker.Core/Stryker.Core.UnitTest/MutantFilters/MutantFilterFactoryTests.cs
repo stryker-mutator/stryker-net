@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
-    public class MutantFilterFactoryTests
+    public class MutantFilterFactoryTests : LoggingTestBase
     {
         [Fact]
         public void MutantFilterFactory_Creates_of_type_BroadcastFilter()

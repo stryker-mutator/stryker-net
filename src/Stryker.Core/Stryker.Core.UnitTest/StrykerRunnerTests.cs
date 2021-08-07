@@ -6,7 +6,6 @@ using Moq;
 using Shouldly;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
@@ -74,7 +73,7 @@ namespace Stryker.Core.UnitTest
 
             var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
 
-            target.RunMutationTest(inputsMock.Object, null, projectOrchestratorMock.Object);
+            target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object);
 
             projectOrchestratorMock.Verify(x => x.MutateProjects(It.Is<StrykerOptions>(x => x.BasePath == "C:/test"), It.IsAny<IReporter>()), Times.Once);
             mutationTestProcessMock.Verify(x => x.GetCoverage(), Times.Once);
@@ -127,7 +126,7 @@ namespace Stryker.Core.UnitTest
 
             var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
 
-            var result = target.RunMutationTest(inputsMock.Object, null, projectOrchestratorMock.Object);
+            var result = target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object);
 
             result.MutationScore.ShouldBe(double.NaN);
 
