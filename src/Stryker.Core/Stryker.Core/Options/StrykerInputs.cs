@@ -54,41 +54,41 @@ namespace Stryker.Core.Options
             _fileSystem = fileSystem ?? new FileSystem();
         }
 
-        public DevModeInput DevModeInput { get; init; }
-        public BasePathInput BasePathInput { get; init; }
-        public OutputPathInput OutputPathInput { get; init; }
-        public SolutionInput SolutionInput { get; init; }
-        public VerbosityInput VerbosityInput { get; init; }
-        public LogToFileInput LogToFileInput { get; init; }
-        public MutationLevelInput MutationLevelInput { get; init; }
-        public ThresholdBreakInput ThresholdBreakInput { get; init; }
-        public ThresholdHighInput ThresholdHighInput { get; init; }
-        public ThresholdLowInput ThresholdLowInput { get; init; }
-        public AdditionalTimeoutInput AdditionalTimeoutInput { get; init; }
-        public LanguageVersionInput LanguageVersionInput { get; init; }
-        public ConcurrencyInput ConcurrencyInput { get; init; }
-        public ProjectUnderTestNameInput ProjectUnderTestNameInput { get; init; }
-        public TestProjectsInput TestProjectsInput { get; init; }
-        public WithBaselineInput WithBaselineInput { get; init; }
-        public ReportersInput ReportersInput { get; init; }
-        public BaselineProviderInput BaselineProviderInput { get; init; }
-        public AzureFileStorageUrlInput AzureFileStorageUrlInput { get; init; }
-        public AzureFileStorageSasInput AzureFileStorageSasInput { get; init; }
-        public DashboardUrlInput DashboardUrlInput { get; init; }
-        public DashboardApiKeyInput DashboardApiKeyInput { get; init; }
-        public ProjectNameInput ProjectNameInput { get; init; }
-        public SinceInput SinceInput { get; init; }
-        public SinceTargetInput SinceTargetInput { get; init; }
-        public DiffIgnoreChangesInput DiffIgnoreChangesInput { get; init; }
-        public FallbackVersionInput FallbackVersionInput { get; init; }
-        public ProjectVersionInput ProjectVersionInput { get; init; }
-        public ModuleNameInput ModuleNameInput { get; init; }
-        public MutateInput MutateInput { get; init; }
-        public IgnoreMethodsInput IgnoredMethodsInput { get; init; }
-        public IgnoreMutationsInput ExcludedMutationsInput { get; init; }
-        public CoverageAnalysisInput CoverageAnalysisInput { get; init; }
-        public DisableBailInput DisableBailInput { get; set; }
-        public DisableMixMutantsInput DisableMixMutantsInput { get; set; }
+        public DevModeInput DevModeInput { get; init; } = new();
+        public BasePathInput BasePathInput { get; init; } = new();
+        public OutputPathInput OutputPathInput { get; init; } = new();
+        public SolutionInput SolutionInput { get; init; } = new();
+        public VerbosityInput VerbosityInput { get; init; } = new();
+        public LogToFileInput LogToFileInput { get; init; } = new();
+        public MutationLevelInput MutationLevelInput { get; init; } = new();
+        public ThresholdBreakInput ThresholdBreakInput { get; init; } = new();
+        public ThresholdHighInput ThresholdHighInput { get; init; } = new();
+        public ThresholdLowInput ThresholdLowInput { get; init; } = new();
+        public AdditionalTimeoutInput AdditionalTimeoutInput { get; init; } = new();
+        public LanguageVersionInput LanguageVersionInput { get; init; } = new();
+        public ConcurrencyInput ConcurrencyInput { get; init; } = new();
+        public ProjectUnderTestNameInput ProjectUnderTestNameInput { get; init; } = new();
+        public TestProjectsInput TestProjectsInput { get; init; } = new();
+        public WithBaselineInput WithBaselineInput { get; init; } = new();
+        public ReportersInput ReportersInput { get; init; } = new();
+        public BaselineProviderInput BaselineProviderInput { get; init; } = new();
+        public AzureFileStorageUrlInput AzureFileStorageUrlInput { get; init; } = new();
+        public AzureFileStorageSasInput AzureFileStorageSasInput { get; init; } = new();
+        public DashboardUrlInput DashboardUrlInput { get; init; } = new();
+        public DashboardApiKeyInput DashboardApiKeyInput { get; init; } = new();
+        public ProjectNameInput ProjectNameInput { get; init; } = new();
+        public SinceInput SinceInput { get; init; } = new();
+        public SinceTargetInput SinceTargetInput { get; init; } = new();
+        public DiffIgnoreChangesInput DiffIgnoreChangesInput { get; init; } = new();
+        public FallbackVersionInput FallbackVersionInput { get; init; } = new();
+        public ProjectVersionInput ProjectVersionInput { get; init; } = new();
+        public ModuleNameInput ModuleNameInput { get; init; } = new();
+        public MutateInput MutateInput { get; init; } = new();
+        public IgnoreMethodsInput IgnoredMethodsInput { get; init; } = new();
+        public IgnoreMutationsInput ExcludedMutationsInput { get; init; } = new();
+        public CoverageAnalysisInput CoverageAnalysisInput { get; init; } = new();
+        public DisableBailInput DisableBailInput { get; set; } = new();
+        public DisableMixMutantsInput DisableMixMutantsInput { get; set; } = new();
 
         public StrykerOptions ValidateAll()
         {

@@ -3,11 +3,12 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Text;
 using Shouldly;
+using Stryker.CLI.Logging;
+using Stryker.Core.Options;
 using Xunit;
 
 namespace Stryker.CLI.UnitTest
 {
-    [Collection("StaticConfigBuilder")]
     public class InputBuilderTests
     {
         [Fact]
@@ -15,10 +16,11 @@ namespace Stryker.CLI.UnitTest
         {
             var fileSystemMock = new MockFileSystem();
             var basePath = Directory.GetCurrentDirectory();
+            var target = new LoggingInitializer();
 
-            var inputs = InputBuilder.InitializeInputs();
+            var inputs = new StrykerInputs();
             inputs.BasePathInput.SuppliedInput = basePath;
-            InputBuilder.SetupLogOptions(inputs, fileSystemMock);
+            target.SetupLogOptions(inputs, fileSystemMock);
 
             var gitIgnoreFile = fileSystemMock.AllFiles.FirstOrDefault(x => x.EndsWith(Path.Combine("StrykerOutput", ".gitignore")));
             gitIgnoreFile.ShouldNotBeNull();

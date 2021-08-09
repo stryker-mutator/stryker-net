@@ -12,12 +12,6 @@ namespace Stryker.Core.UnitTest.Reporters
 {
     public class HtmlReporterTests : TestBase
     {
-        public HtmlReporterTests()
-        {
-            ApplicationLogging.LoggerFactory = new LoggerFactory();
-            ApplicationLogging.LoggerFactory.CreateLogger<HtmlReporterTests>();
-        }
-
         [Fact]
         public void ShouldWriteJsonToFile()
         {

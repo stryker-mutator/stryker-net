@@ -19,8 +19,6 @@ namespace Stryker.Core.UnitTest.Reporters
     {
         public JsonReporterTests()
         {
-            ApplicationLogging.LoggerFactory = new LoggerFactory();
-            ApplicationLogging.LoggerFactory.CreateLogger<JsonReporterTests>();
             // clear report cache before each test
             JsonReport.ReportCache = null;
         }

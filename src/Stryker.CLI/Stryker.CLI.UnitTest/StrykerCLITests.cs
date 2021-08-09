@@ -8,6 +8,7 @@ using NuGet.Versioning;
 using Serilog.Events;
 using Shouldly;
 using Stryker.CLI.Clients;
+using Stryker.CLI.Logging;
 using Stryker.Core;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutators;
@@ -17,15 +18,15 @@ using Xunit;
 
 namespace Stryker.CLI.UnitTest
 {
-    [Collection("StaticConfigBuilder")]
     public class StrykerCLITests
     {
         private IStrykerInputs _inputs;
-        private readonly StrykerCLI _target;
+        private readonly StrykerCli _target;
         private readonly StrykerOptions _options;
         private readonly StrykerRunResult _runResults;
         private readonly Mock<IStrykerRunner> _strykerRunnerMock = new (MockBehavior.Strict);
         private readonly Mock<IStrykerNugetFeedClient> _nugetClientMock = new (MockBehavior.Strict);
+        private readonly Mock<ILoggingInitializer> _loggingInitializerMock = new ();
 
         public StrykerCLITests()
         {
@@ -36,14 +37,14 @@ namespace Stryker.CLI.UnitTest
                 .Returns(_runResults)
                 .Verifiable();
             _nugetClientMock.Setup(x => x.GetMaxVersion()).Returns(Task.FromResult(new SemanticVersion(10, 0, 0)));
-            _target = new StrykerCLI(_strykerRunnerMock.Object, _nugetClientMock.Object);
+            _target = new StrykerCli(_strykerRunnerMock.Object, null, _loggingInitializerMock.Object, _nugetClientMock.Object);
         }
 
         [Fact]
         public void ShouldDisplayInfoOnHelp()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            var target = new StrykerCLI(mock.Object);
+            var target = new StrykerCli(mock.Object);
 
             using var sw = new StringWriter();
             var originalOut = Console.Out;
@@ -81,7 +82,7 @@ Options:";
                 .Verifiable();
             nugetClientMock.Setup(x => x.GetMaxVersion()).Returns(Task.FromResult(new SemanticVersion(10, 0, 0)));
 
-            var target = new StrykerCLI(strykerRunnerMock.Object, nugetClientMock.Object);
+            var target = new StrykerCli(strykerRunnerMock.Object, null, _loggingInitializerMock.Object, nugetClientMock.Object);
 
             using var sw = new StringWriter();
             var originalOut = Console.Out;
@@ -121,7 +122,7 @@ Options:";
                 .Returns(strykerRunResult)
                 .Verifiable();
             
-            var target = new StrykerCLI(mock.Object);
+            var target = new StrykerCli(mock.Object);
             var result = target.Run(new string[] { });
 
             mock.Verify();
@@ -145,7 +146,7 @@ Options:";
                 .Returns(strykerRunResult)
                 .Verifiable();
 
-            var target = new StrykerCLI(mock.Object);
+            var target = new StrykerCli(mock.Object);
             var result = target.Run(new string[] { });
 
             mock.Verify();
@@ -169,7 +170,7 @@ Options:";
                 .Returns(strykerRunResult)
                 .Verifiable();
 
-            var target = new StrykerCLI(mock.Object, _nugetClientMock.Object);
+            var target = new StrykerCli(mock.Object, null, _loggingInitializerMock.Object, _nugetClientMock.Object);
             var result = target.Run(new string[] { });
 
             mock.Verify();
@@ -192,7 +193,7 @@ Options:";
 
             mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>())).Returns(strykerRunResult).Verifiable();
 
-            var target = new StrykerCLI(mock.Object);
+            var target = new StrykerCli(mock.Object);
             var result = target.Run(new string[] { });
 
             mock.Verify();
@@ -207,7 +208,7 @@ Options:";
         public void ShouldNotStartStryker_WithHelpArgument(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            var target = new StrykerCLI(mock.Object);
+            var target = new StrykerCli(mock.Object);
 
             target.Run(new string[] { argName });
 
@@ -222,7 +223,7 @@ Options:";
                 .Throws(new Exception("Initial testrun failed"))
                 .Verifiable();
 
-            var target = new StrykerCLI(mock.Object, _nugetClientMock.Object);
+            var target = new StrykerCli(mock.Object, null, _loggingInitializerMock.Object, _nugetClientMock.Object);
             Assert.Throws<Exception>(() => target.Run(new string[] { }));
         }
 

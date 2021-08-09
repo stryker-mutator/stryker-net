@@ -11,18 +11,24 @@ using Stryker.Core.Options;
 
 namespace Stryker.CLI
 {
-    public class StrykerCLI
+    public class StrykerCli
     {
         private readonly IStrykerRunner _stryker;
+        private readonly IConfigReader _inputBuilder;
+        private readonly ILoggingInitializer _loggingInitializer;
         private readonly IStrykerNugetFeedClient _nugetClient;
 
-        public int ExitCode { get; private set; }
+        public int ExitCode { get; private set; } = 0;
 
-        public StrykerCLI(IStrykerRunner stryker = null, IStrykerNugetFeedClient nugetClient = null)
+        public StrykerCli(IStrykerRunner stryker = null,
+            IConfigReader inputBuilder = null,
+            ILoggingInitializer loggingInitializer = null,
+            IStrykerNugetFeedClient nugetClient = null)
         {
             _stryker = stryker ?? new StrykerRunner();
+            _inputBuilder = inputBuilder ?? new ConfigReader();
+            _loggingInitializer = loggingInitializer ?? new LoggingInitializer();
             _nugetClient = nugetClient ?? new StrykerNugetFeedClient();
-            ExitCode = 0;
         }
 
         /// <summary>
@@ -40,7 +46,7 @@ namespace Stryker.CLI
             };
             app.HelpOption();
 
-            var inputs = InputBuilder.InitializeInputs();
+            var inputs = new StrykerInputs();
             var cmdConfigHandler = new CommandLineConfigHandler();
 
             cmdConfigHandler.RegisterCommandLineOptions(app, inputs);
@@ -50,8 +56,8 @@ namespace Stryker.CLI
                 // app started
                 PrintStrykerASCIIName();
 
-                InputBuilder.Build(inputs, args, app, cmdConfigHandler);
-                InputBuilder.SetupLogOptions(inputs);
+                _inputBuilder.Build(inputs, args, app, cmdConfigHandler);
+                _loggingInitializer.SetupLogOptions(inputs);
 
                 PrintStrykerVersionInformationAsync();
                 RunStryker(inputs);
@@ -62,14 +68,14 @@ namespace Stryker.CLI
 
         private void RunStryker(IStrykerInputs inputs)
         {
-            StrykerRunResult result = _stryker.RunMutationTest(inputs, ApplicationLogging.LoggerFactory);
+            var result = _stryker.RunMutationTest(inputs, ApplicationLogging.LoggerFactory);
 
             HandleStrykerRunResult(inputs, result);
         }
 
         private void HandleStrykerRunResult(IStrykerInputs inputs, StrykerRunResult result)
         {
-            var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCLI>();
+            var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCli>();
 
             logger.LogInformation("The final mutation score is {MutationScore:P2}", result.MutationScore);
             if (result.ScoreIsLowerThanThresholdBreak())
@@ -101,6 +107,7 @@ namespace Stryker.CLI
             Console.WriteLine();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Bug", "S3168:\"async\" methods should not return \"void\"", Justification = "This is a fire and forget method")]
         private async void PrintStrykerVersionInformationAsync()
         {
             var assembly = Assembly.GetExecutingAssembly();

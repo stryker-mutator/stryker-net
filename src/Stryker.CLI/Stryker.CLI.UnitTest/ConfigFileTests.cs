@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.IO;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -11,7 +10,6 @@ using Xunit;
 
 namespace Stryker.CLI.UnitTest
 {
-    [Collection("StaticConfigBuilder")]
     public class ConfigFileTests
     {
         [Fact]
@@ -31,7 +29,7 @@ namespace Stryker.CLI.UnitTest
             Directory.SetCurrentDirectory($"..{Path.DirectorySeparatorChar}");
             var runResults = new StrykerRunResult(options, 0.3);
             mock.Setup(x => x.RunMutationTest(It.IsAny<StrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>())).Returns(runResults).Verifiable();
-            var target = new StrykerCLI(mock.Object);
+            var target = new StrykerCli(mock.Object);
 
             target.Run(new string[] { });
 
@@ -61,7 +59,7 @@ namespace Stryker.CLI.UnitTest
                 .Returns(runResults)
                 .Verifiable();
 
-            var target = new StrykerCLI(mock.Object);
+            var target = new StrykerCli(mock.Object);
 
             target.Run(new string[] { argName, "filled-stryker-config.json" });
 
