@@ -18,7 +18,7 @@ namespace Stryker.Core
 {
     public interface IStrykerRunner
     {
-        StrykerRunResult RunMutationTest(IStrykerInputs input, ILoggerFactory loggerFactory, IProjectOrchestrator projectOrchestrator = null);
+        StrykerRunResult RunMutationTest(IStrykerInputs inputs, ILoggerFactory loggerFactory, IProjectOrchestrator projectOrchestrator = null);
     }
 
     public class StrykerRunner : IStrykerRunner
