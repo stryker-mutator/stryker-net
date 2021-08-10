@@ -23,10 +23,9 @@ namespace Stryker.Core
 
     public class StrykerRunner : IStrykerRunner
     {
-        private IProjectOrchestrator _projectOrchestrator;
         private IEnumerable<IMutationTestProcess> _mutationTestProcesses;
         private ILogger _logger;
-        private IReporterFactory _reporterFactory;
+        private readonly IReporterFactory _reporterFactory;
 
         public StrykerRunner(IEnumerable<IMutationTestProcess> mutationTestProcesses = null,
             IReporterFactory reporterFactory = null)
@@ -49,7 +48,7 @@ namespace Stryker.Core
             SetupLogging(loggerFactory);
 
             // Setup project orchestrator can't be done sooner since it needs logging
-            _projectOrchestrator = projectOrchestrator ?? new ProjectOrchestrator();
+            projectOrchestrator ??= new ProjectOrchestrator();
 
             var options = inputs.ValidateAll();
             _logger.LogDebug("Stryker started with options: {0}", JsonConvert.SerializeObject(options, new StringEnumConverter()));
@@ -60,7 +59,7 @@ namespace Stryker.Core
             try
             {
                 // Mutate
-                _mutationTestProcesses = _projectOrchestrator.MutateProjects(options, reporters).ToList();
+                _mutationTestProcesses = projectOrchestrator.MutateProjects(options, reporters).ToList();
 
                 var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.ProjectInfo.ProjectContents).ToList(), options);
 

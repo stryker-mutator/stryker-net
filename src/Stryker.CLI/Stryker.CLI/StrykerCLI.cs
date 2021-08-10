@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using Crayon;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
@@ -59,7 +60,7 @@ namespace Stryker.CLI
                 _configReader.Build(inputs, args, app, cmdConfigHandler);
                 _loggingInitializer.SetupLogOptions(inputs);
 
-                PrintStrykerVersionInformationAsync();
+                Task.Run(PrintStrykerVersionInformationAsync);
                 RunStryker(inputs);
                 return ExitCode;
             });
@@ -107,8 +108,7 @@ namespace Stryker.CLI
             Console.WriteLine();
         }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Bug", "S3168:\"async\" methods should not return \"void\"", Justification = "This is a fire and forget method")]
-        private async void PrintStrykerVersionInformationAsync()
+        private async Task PrintStrykerVersionInformationAsync()
         {
             var assembly = Assembly.GetExecutingAssembly();
             var assemblyVersion = assembly.GetName().Version;
