@@ -21,12 +21,12 @@ namespace Stryker.CLI
         public int ExitCode { get; private set; } = 0;
 
         public StrykerCli(IStrykerRunner stryker = null,
-            IConfigReader inputBuilder = null,
+            IConfigReader configReader = null,
             ILoggingInitializer loggingInitializer = null,
             IStrykerNugetFeedClient nugetClient = null)
         {
             _stryker = stryker ?? new StrykerRunner();
-            _configReader = inputBuilder ?? new ConfigReader();
+            _configReader = configReader ?? new ConfigReader();
             _loggingInitializer = loggingInitializer ?? new LoggingInitializer();
             _nugetClient = nugetClient ?? new StrykerNugetFeedClient();
         }
