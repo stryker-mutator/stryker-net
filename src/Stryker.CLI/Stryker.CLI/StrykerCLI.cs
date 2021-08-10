@@ -14,7 +14,7 @@ namespace Stryker.CLI
     public class StrykerCli
     {
         private readonly IStrykerRunner _stryker;
-        private readonly IConfigReader _inputBuilder;
+        private readonly IConfigReader _configReader;
         private readonly ILoggingInitializer _loggingInitializer;
         private readonly IStrykerNugetFeedClient _nugetClient;
 
@@ -26,7 +26,7 @@ namespace Stryker.CLI
             IStrykerNugetFeedClient nugetClient = null)
         {
             _stryker = stryker ?? new StrykerRunner();
-            _inputBuilder = inputBuilder ?? new ConfigReader();
+            _configReader = inputBuilder ?? new ConfigReader();
             _loggingInitializer = loggingInitializer ?? new LoggingInitializer();
             _nugetClient = nugetClient ?? new StrykerNugetFeedClient();
         }
@@ -56,7 +56,7 @@ namespace Stryker.CLI
                 // app started
                 PrintStrykerASCIIName();
 
-                _inputBuilder.Build(inputs, args, app, cmdConfigHandler);
+                _configReader.Build(inputs, args, app, cmdConfigHandler);
                 _loggingInitializer.SetupLogOptions(inputs);
 
                 PrintStrykerVersionInformationAsync();
