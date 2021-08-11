@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -91,6 +92,9 @@ Options:";
                 Console.SetOut(sw);
 
                 target.Run(new string[] { });
+
+                // wait 20ms to let the getVersion call be handled
+                Thread.Sleep(20);
 
                 var consoleOutput = sw.GetStringBuilder().ToString();
 
