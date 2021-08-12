@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
-    public class InitialBuildProcessTests
+    public class InitialBuildProcessTests : TestBase
     {
         [Fact]
         public void InitialBuildProcess_ShouldThrowStrykerInputExceptionOnFail()

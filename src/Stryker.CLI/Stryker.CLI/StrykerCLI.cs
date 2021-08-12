@@ -1,30 +1,35 @@
 using System;
 using System.Reflection;
+using System.Threading.Tasks;
 using Crayon;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 using Stryker.CLI.Clients;
+using Stryker.CLI.Logging;
 using Stryker.Core;
-using Stryker.Core.Logging;
 using Stryker.Core.Options;
 
 namespace Stryker.CLI
 {
-    public class StrykerCLI
+    public class StrykerCli
     {
         private readonly IStrykerRunner _stryker;
+        private readonly IConfigReader _configReader;
+        private readonly ILoggingInitializer _loggingInitializer;
         private readonly IStrykerNugetFeedClient _nugetClient;
-        private readonly LogBuffer _logBuffer;
-        public int ExitCode { get; private set; }
 
-        public StrykerCLI(IStrykerRunner stryker = null, IStrykerNugetFeedClient nugetClient = null)
+        public int ExitCode { get; private set; } = 0;
+
+        public StrykerCli(IStrykerRunner stryker = null,
+            IConfigReader configReader = null,
+            ILoggingInitializer loggingInitializer = null,
+            IStrykerNugetFeedClient nugetClient = null)
         {
             _stryker = stryker ?? new StrykerRunner();
+            _configReader = configReader ?? new ConfigReader();
+            _loggingInitializer = loggingInitializer ?? new LoggingInitializer();
             _nugetClient = nugetClient ?? new StrykerNugetFeedClient();
-            // Create a log buffer to buffer log messages until the logging is configured.
-            _logBuffer = new LogBuffer();
-            ExitCode = 0;
         }
 
         /// <summary>
@@ -42,7 +47,7 @@ namespace Stryker.CLI
             };
             app.HelpOption();
 
-            var inputs = InputBuilder.InitializeInputs(_logBuffer);
+            var inputs = new StrykerInputs();
             var cmdConfigHandler = new CommandLineConfigHandler();
 
             cmdConfigHandler.RegisterCommandLineOptions(app, inputs);
@@ -51,10 +56,11 @@ namespace Stryker.CLI
             {
                 // app started
                 PrintStrykerASCIIName();
+
+                _configReader.Build(inputs, args, app, cmdConfigHandler);
+                _loggingInitializer.SetupLogOptions(inputs);
+
                 PrintStrykerVersionInformationAsync();
-
-                var inputs = InputBuilder.Build(args, app, cmdConfigHandler);
-
                 RunStryker(inputs);
                 return ExitCode;
             });
@@ -63,14 +69,14 @@ namespace Stryker.CLI
 
         private void RunStryker(IStrykerInputs inputs)
         {
-            StrykerRunResult result = _stryker.RunMutationTest(inputs, _logBuffer.GetMessages());
+            var result = _stryker.RunMutationTest(inputs, ApplicationLogging.LoggerFactory);
 
             HandleStrykerRunResult(inputs, result);
         }
 
         private void HandleStrykerRunResult(IStrykerInputs inputs, StrykerRunResult result)
         {
-            var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCLI>();
+            var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCli>();
 
             logger.LogInformation("The final mutation score is {MutationScore:P2}", result.MutationScore);
             if (result.ScoreIsLowerThanThresholdBreak())
@@ -102,20 +108,21 @@ namespace Stryker.CLI
             Console.WriteLine();
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Bug", "S3168:\"async\" methods should not return \"void\"", Justification = "This method is fire and forget. Task.Run also doesn't work in unit tests")]
         private async void PrintStrykerVersionInformationAsync()
         {
             var assembly = Assembly.GetExecutingAssembly();
             var assemblyVersion = assembly.GetName().Version;
             var currentVersion = SemanticVersion.Parse($"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}");
 
-            Console.WriteLine($" Version: {Output.Green(currentVersion.ToString())} (beta)");
+            Console.WriteLine($"Version: {Output.Green(currentVersion.ToString())} (beta)");
             Console.WriteLine();
 
             var latestVersion = await _nugetClient.GetMaxVersion();
 
             if (latestVersion > currentVersion)
             {
-                Console.WriteLine(Output.Yellow($@" A new version of Stryker.NET ({latestVersion}) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker`"));
+                Console.WriteLine(Output.Yellow($@"A new version of Stryker.NET ({latestVersion}) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker`"));
                 Console.WriteLine();
             }
         }

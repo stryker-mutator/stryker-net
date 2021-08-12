@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class DashboardReporterTests
+    public class DashboardReporterTests : TestBase
     {
         [Fact]
         public void ShouldUploadHumanReadableWhenCompareToDashboardEnabled()

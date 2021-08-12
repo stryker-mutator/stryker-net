@@ -12,7 +12,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
     using Microsoft.Extensions.Logging;
     using Stryker.Core.Baseline.Providers;
 
-    public class GitInfoProviderTests
+    public class GitInfoProviderTests : TestBase
     {
         [Fact]
         public void WhenProvidedReturnsRepositoryPath()

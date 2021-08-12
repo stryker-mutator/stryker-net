@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions.TestingHelpers;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest
 {
-    public class StrykerRunnerTests
+    public class StrykerRunnerTests : TestBase
     {
         [Fact]
         public void Stryker_ShouldInvokeAllProcesses()
@@ -71,9 +71,9 @@ namespace Stryker.Core.UnitTest
             mutationTestProcessMock.InSequence(seq).Setup(x => x.FilterMutants());
             reporterMock.InSequence(seq).Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()));
 
-            var target = new StrykerRunner(projectOrchestratorMock.Object, reporterFactory: reporterFactoryMock.Object);
+            var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
 
-            target.RunMutationTest(inputsMock.Object);
+            target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object);
 
             projectOrchestratorMock.Verify(x => x.MutateProjects(It.Is<StrykerOptions>(x => x.BasePath == "C:/test"), It.IsAny<IReporter>()), Times.Once);
             mutationTestProcessMock.Verify(x => x.GetCoverage(), Times.Once);
@@ -124,9 +124,9 @@ namespace Stryker.Core.UnitTest
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()));
             reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IEnumerable<IReadOnlyMutant>>()));
 
-            var target = new StrykerRunner(projectOrchestratorMock.Object, reporterFactory: reporterFactoryMock.Object);
+            var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
 
-            var result = target.RunMutationTest(inputsMock.Object);
+            var result = target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object);
 
             result.MutationScore.ShouldBe(double.NaN);
 

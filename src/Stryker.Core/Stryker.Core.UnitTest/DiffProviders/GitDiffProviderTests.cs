@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.DiffProviders
 {
-    public class GitDiffProviderTests
+    public class GitDiffProviderTests : TestBase
     {
         [Fact]
         public void DoesNotCreateNewRepositoryWhenPassedIntoConstructor()

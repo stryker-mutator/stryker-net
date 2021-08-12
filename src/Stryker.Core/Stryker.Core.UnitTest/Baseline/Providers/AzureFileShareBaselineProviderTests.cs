@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Baseline.Providers
 {
-    public class AzureFileShareBaselineProviderTests
+    public class AzureFileShareBaselineProviderTests : TestBase
     {
         [Fact]
         public async Task Load_Calls_Correct_URL()

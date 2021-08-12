@@ -1,9 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Shouldly;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
@@ -11,7 +6,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Options
 {
-    public class StrykerInputsTests
+    public class StrykerInputsTests : TestBase
     {
         private StrykerInputs _target = new StrykerInputs()
         {
@@ -38,7 +33,7 @@ namespace Stryker.Core.UnitTest.Options
             MutateInput = new MutateInput(),
             MutationLevelInput = new MutationLevelInput(),
             CoverageAnalysisInput = new CoverageAnalysisInput(),
-            OutputPathInput = new OutputPathInput(),
+            OutputPathInput = new OutputPathInput() { SuppliedInput = Directory.GetCurrentDirectory() },
             ProjectNameInput = new ProjectNameInput(),
             ProjectUnderTestNameInput = new ProjectUnderTestNameInput(),
             ProjectVersionInput = new ProjectVersionInput(),

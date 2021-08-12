@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
-    public class ExcludeMutationMutantFilterTests
+    public class ExcludeMutationMutantFilterTests : TestBase
     {
         [Fact]
         public static void ShouldHaveName()

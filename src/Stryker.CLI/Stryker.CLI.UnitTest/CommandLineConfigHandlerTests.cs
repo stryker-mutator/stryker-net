@@ -8,15 +8,15 @@ namespace Stryker.CLI.UnitTest
 {
     public class CommandLineConfigHandlerTests
     {
-        private CommandLineApplication _app = new CommandLineApplication
+        private readonly CommandLineApplication _app = new CommandLineApplication
         {
             Name = "Stryker",
             FullName = "Stryker: Stryker mutator for .Net",
             Description = "Stryker mutator for .Net",
             ExtendedHelpText = "Welcome to Stryker for .Net! Run dotnet stryker to kick off a mutation test run"
         };
-        private IStrykerInputs _inputs = InputBuilder.InitializeInputs(null);
-        private CommandLineConfigHandler _target = new CommandLineConfigHandler();
+        private readonly IStrykerInputs _inputs = new StrykerInputs();
+        private readonly CommandLineConfigHandler _target = new CommandLineConfigHandler();
 
         public CommandLineConfigHandlerTests()
         {

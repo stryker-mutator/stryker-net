@@ -40,6 +40,15 @@
           "System.Memory": "4.5.4"
         }
       },
+      "System.IO.Abstractions.TestingHelpers": {
+        "type": "Direct",
+        "requested": "[13.2.41, )",
+        "resolved": "13.2.41",
+        "contentHash": "ONDLa49sfmk2xrF6Ju/CACAijDHItIV7CJ3hMZUzLALVaAx2/diIU7iAdSmSptHNuosrHeoC6HWPVICxbO9DCA==",
+        "dependencies": {
+          "System.IO.Abstractions": "13.2.41"
+        }
+      },
       "xunit": {
         "type": "Direct",
         "requested": "[2.4.1, )",

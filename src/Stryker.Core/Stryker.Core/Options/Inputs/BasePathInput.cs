@@ -8,13 +8,13 @@ namespace Stryker.Core.Options.Inputs
     {
         protected override string Description => "The path from which stryker is started.";
 
-        public override string Default => Directory.GetCurrentDirectory();
+        public override string Default => null;
 
         public string Validate(IFileSystem fileSystem)
         {
             if (string.IsNullOrWhiteSpace(SuppliedInput))
             {
-                throw new InputException("Base path cannot be null.");
+                throw new InputException("Base path can't be null or empty.");
             }
 
             if (!fileSystem.Directory.Exists(SuppliedInput)) // validate base path is valid path

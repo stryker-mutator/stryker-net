@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
-    public class DisableBailInputTests
+    public class DisableBailInputTests : TestBase
     {
         [Fact]
         public void ShouldHaveHelpText()

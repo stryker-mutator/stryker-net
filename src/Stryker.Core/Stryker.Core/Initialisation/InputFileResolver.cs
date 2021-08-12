@@ -31,14 +31,14 @@ namespace Stryker.Core.Initialisation
         private readonly IProjectFileReader _projectFileReader;
         private readonly ILogger _logger;
 
-        public InputFileResolver(IFileSystem fileSystem, IProjectFileReader projectFileReader)
+        public InputFileResolver(IFileSystem fileSystem, IProjectFileReader projectFileReader, ILogger<InputFileResolver> logger = null)
         {
             _fileSystem = fileSystem;
             _projectFileReader = projectFileReader ?? new ProjectFileReader();
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<InputFileResolver>();
+            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<InputFileResolver>();
         }
 
-        public InputFileResolver() : this(new FileSystem(), new ProjectFileReader()) { }
+        public InputFileResolver() : this(new FileSystem(), new ProjectFileReader(), null) { }
 
         /// <summary>
         /// Finds the referencedProjects and looks for all files that should be mutated in those projects

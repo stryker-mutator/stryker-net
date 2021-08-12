@@ -15,7 +15,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
-    public class InitialisationProcessTests
+    public class InitialisationProcessTests : TestBase
     {
         [Fact]
         public void InitialisationProcess_ShouldCallNeededResolvers()

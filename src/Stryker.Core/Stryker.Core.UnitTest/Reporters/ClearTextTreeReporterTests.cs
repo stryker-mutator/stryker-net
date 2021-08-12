@@ -13,7 +13,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class ClearTextTreeReporterTests
+    public class ClearTextTreeReporterTests : TestBase
     {
         [Fact]
         public void ClearTextTreeReporter_ShouldPrintFullTree()

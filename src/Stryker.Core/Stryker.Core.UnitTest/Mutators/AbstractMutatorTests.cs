@@ -12,7 +12,7 @@ using Xunit;
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace Stryker.Core.UnitTest.Mutators
 {
-    public class AbstractMutatorTests
+    public class AbstractMutatorTests : TestBase
     {
         // This class is needed for the tests in this file
         // Using Moq the ExampleMutator will be mocked to test the functionality in the abstract Mutator class

@@ -15,17 +15,10 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class JsonReporterTests
+    public class JsonReporterTests : TestBase
     {
         public JsonReporterTests()
         {
-            var logOptions = new LogOptions
-            {
-                LogLevel = Serilog.Events.LogEventLevel.Fatal,
-                LogToFile = false
-            };
-            ApplicationLogging.ConfigureLogger(logOptions, null);
-            ApplicationLogging.LoggerFactory.CreateLogger<JsonReporterTests>();
             // clear report cache before each test
             JsonReport.ReportCache = null;
         }

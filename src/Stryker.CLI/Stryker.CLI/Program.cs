@@ -5,13 +5,13 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.CLI
 {
-    public class Program
+    public static class Program
     {
         public static int Main(string[] args)
         {
             try
             {
-                var app = new StrykerCLI();
+                var app = new StrykerCli();
                 return app.Run(args);
             }
             catch (InputException strEx)

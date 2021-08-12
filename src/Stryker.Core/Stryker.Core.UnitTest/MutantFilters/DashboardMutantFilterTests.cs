@@ -17,7 +17,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
-    public class DashboardMutantFilterTests
+    public class DashboardMutantFilterTests : TestBase
     {
         [Fact]
         public static void ShouldHaveName()

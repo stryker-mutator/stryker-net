@@ -1,15 +1,13 @@
 using System;
-using System.Collections.Generic;
 using Shouldly;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
 using Stryker.Core.Reporters;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
-    public class DashboardApiKeyInputTests
+    public class DashboardApiKeyInputTests : TestBase
     {
         const string StrykerDashboardApiKey = "STRYKER_DASHBOARD_API_KEY";
 

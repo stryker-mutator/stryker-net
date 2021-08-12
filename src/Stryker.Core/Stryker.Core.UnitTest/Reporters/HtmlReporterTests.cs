@@ -10,15 +10,8 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class HtmlReporterTests
+    public class HtmlReporterTests : TestBase
     {
-        public HtmlReporterTests()
-        {
-            var options = new LogOptions { LogLevel = Serilog.Events.LogEventLevel.Fatal, LogToFile = false };
-            ApplicationLogging.ConfigureLogger(options, null);
-            ApplicationLogging.LoggerFactory.CreateLogger<HtmlReporterTests>();
-        }
-
         [Fact]
         public void ShouldWriteJsonToFile()
         {

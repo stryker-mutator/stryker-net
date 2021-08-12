@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
-    public class StatementMutatorTests
+    public class StatementMutatorTests : TestBase
     {
         [Fact]
         public void ShouldBeMutationlevelStandard()

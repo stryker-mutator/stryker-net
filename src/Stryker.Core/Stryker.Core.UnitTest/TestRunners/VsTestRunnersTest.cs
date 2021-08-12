@@ -35,7 +35,7 @@ namespace Stryker.Core.UnitTest.TestRunners
     /// This class hosts the VsTestRunner related tests. The design of VsTest implies the creation of many mocking objects, so the tests may be hard to read.
     /// This is sad but expected. Please use caution when changing/creating tests.
     /// </summary>
-    public class VsTestRunnersTest
+    public class VsTestRunnersTest : TestBase
     {
         private readonly string _testAssemblyPath;
         private readonly ProjectInfo _targetProject;

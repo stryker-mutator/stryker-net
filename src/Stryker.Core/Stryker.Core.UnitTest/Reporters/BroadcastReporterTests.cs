@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class BroadcastReporterTests
+    public class BroadcastReporterTests : TestBase
     {
         [Fact]
         public void BroadcastReporter_ShouldInvokeSameMethodWithSameObject_OnAllMutantsTested()

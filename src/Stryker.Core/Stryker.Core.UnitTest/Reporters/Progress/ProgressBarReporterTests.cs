@@ -1,11 +1,11 @@
-﻿using Moq;
+using Moq;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Progress;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters.Progress
 {
-    public class FixedClock : IStopWatchProvider
+    public class FixedClock : TestBase, IStopWatchProvider
     {
         public void Start()
         {

@@ -16,7 +16,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Clients
 {
-    public class DashboardClientsTest
+    public class DashboardClientsTest : TestBase
     {
         [Fact]
         public async Task DashboardClient_Logs_And_Returns_Null_On_Publish_Report_Does_Not_Return_200()
