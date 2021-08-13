@@ -17,32 +17,33 @@ namespace Stryker.Core.Options.Inputs
         {
             if (SuppliedInput is { } && SuppliedInput.Any(w => w.ToLower().StartsWith("linq")))
             {
-                var excluded = new List<LinqExpression>();
+                var excludedLinqExpressions = new List<LinqExpression>();
 
                 // Get all LinqExpression
                 var linqExpressions = Enum.GetValues(typeof(LinqExpression))
-                    .Cast<LinqExpression>();
+                    .Cast<LinqExpression>()
+                    .Where(w => w != LinqExpression.None);
 
-                var linqMethodsInput = SuppliedInput
+                var linqExpressionsInput = SuppliedInput
                                         .Select(s => s.Split("."))
                                         .Where(s => s.Length == 2);
 
-                if (!linqMethodsInput.Any())
+                if (!linqExpressionsInput.Any())
                     throw new InputException($"Invalid excluded linq expression. The excluded linq expression options are [{string.Join(", ", linqExpressions.Select(x => "linq."+ x.ToString()))}]");
 
 
-                foreach (var mutatorToExclude in linqMethodsInput)
+                foreach (var linqExpressionToExclude in linqExpressionsInput)
                 {
                     // Find any LinqExpression that matches the name passed by the user
-                    var linqMethod = linqExpressions.FirstOrDefault(
-                        x => x.ToString().ToLower().Equals(mutatorToExclude[1].ToLower()));
-                    if (linqMethod != LinqExpression.None)
-                        excluded.Add(linqMethod);
+                    var linqExpression = linqExpressions.FirstOrDefault(
+                        x => x.ToString().ToLower().Equals(linqExpressionToExclude[1].ToLower()));
+                    if (linqExpression != LinqExpression.None)
+                        excludedLinqExpressions.Add(linqExpression);
                     else
-                        throw new InputException($"Invalid excluded linq expression ({mutatorToExclude[1]}). The excluded linq expression options are [{string.Join(", ", linqExpressions.Select(x => x.ToString()))}]");
+                        throw new InputException($"Invalid excluded linq expression ({linqExpressionToExclude[1]}). The excluded linq expression options are [{string.Join(", ", linqExpressions.Select(x => x.ToString()))}]");
                 }
 
-               return excluded;
+               return excludedLinqExpressions;
             }
             return Enumerable.Empty<LinqExpression>();
         }

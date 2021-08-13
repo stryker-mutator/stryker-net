@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Shouldly;
 using Stryker.Core.Exceptions;
@@ -10,6 +11,10 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 {
     public class IgnoreLinqExpressionInputTests : TestBase
     {
+        private IEnumerable<LinqExpression> AllLinqExpressions { get; } = Enum.GetValues(typeof(LinqExpression))
+                    .Cast<LinqExpression>()
+                    .Where(w => w != LinqExpression.None);
+
         [Fact]
         public void ShouldHaveHelpText()
         {
@@ -39,7 +44,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 
             var ex = Should.Throw<InputException>(() => target.Validate());
 
-            ex.Message.ShouldBe($"Invalid excluded linq expression ({method.Split(".").Last()}). The excluded linq expression options are [{string.Join(", ", Enum.GetNames<LinqExpression>())}]");
+            ex.Message.ShouldBe($"Invalid excluded linq expression ({method.Split(".").Last()}). The excluded linq expression options are [{string.Join(", ", AllLinqExpressions)}]");
         }
 
         [Fact]
