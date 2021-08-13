@@ -47,6 +47,7 @@ namespace Stryker.CLI
             inputs.LanguageVersionInput.SuppliedInput = jsonConfig.LanguageVersion;
             inputs.TestProjectsInput.SuppliedInput = jsonConfig.TestProjects;
             inputs.ExcludedMutationsInput.SuppliedInput = jsonConfig.IgnoreMutations;
+            inputs.ExcludedLinqExpressionInput.SuppliedInput = jsonConfig.IgnoreMutations;
         }
 
         private static FileBasedInput LoadJsonConfig(string configFilePath)

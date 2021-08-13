@@ -19,6 +19,7 @@ namespace Stryker.Core.Options
         DisableBailInput DisableBailInput { get; set; }
         DisableMixMutantsInput DisableMixMutantsInput { get; set; }
         IgnoreMutationsInput ExcludedMutationsInput { get; init; }
+        IgnoreLinqExpressionInput ExcludedLinqExpressionInput { get; init; }
         FallbackVersionInput FallbackVersionInput { get; init; }
         IgnoreMethodsInput IgnoredMethodsInput { get; init; }
         LanguageVersionInput LanguageVersionInput { get; init; }
@@ -86,6 +87,7 @@ namespace Stryker.Core.Options
         public MutateInput MutateInput { get; init; } = new();
         public IgnoreMethodsInput IgnoredMethodsInput { get; init; } = new();
         public IgnoreMutationsInput ExcludedMutationsInput { get; init; } = new();
+        public IgnoreLinqExpressionInput ExcludedLinqExpressionInput { get; init; } = new();  
         public CoverageAnalysisInput CoverageAnalysisInput { get; init; } = new();
         public DisableBailInput DisableBailInput { get; set; } = new();
         public DisableMixMutantsInput DisableMixMutantsInput { get; set; } = new();
@@ -121,6 +123,7 @@ namespace Stryker.Core.Options
                 ProjectUnderTestName = ProjectUnderTestNameInput.Validate(),
                 AdditionalTimeout = AdditionalTimeoutInput.Validate(),
                 ExcludedMutations = ExcludedMutationsInput.Validate(),
+                ExcludedLinqExpressions = ExcludedLinqExpressionInput.Validate(),
                 IgnoredMethods = IgnoredMethodsInput.Validate(),
                 Mutate = MutateInput.Validate(),
                 LanguageVersion = LanguageVersionInput.Validate(),

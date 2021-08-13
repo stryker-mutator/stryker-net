@@ -1,0 +1,64 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Stryker.Core.Mutants;
+using Stryker.Core.Mutators;
+using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
+
+namespace Stryker.Core.MutantFilters
+{
+    /// <summary>
+    /// Checks if the mutation type of the mutant should be excluded.
+    /// </summary>
+    /// <seealso cref="IMutantFilter" />
+    public class ExcludeLinqExpressionFilter : IMutantFilter
+    {
+        public string DisplayName => "linq expression filter";
+        private SyntaxTriviaRemover _triviaRemover { get; init; } = new SyntaxTriviaRemover();
+
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
+        {
+            return options.ExcludedLinqExpressions.Any() ?
+                    mutants.Where(m => m.Mutation.Type != Mutator.Linq || !IsIgnoreExpression(m.Mutation.OriginalNode, options)) :
+                    mutants;
+        }
+
+        private bool IsIgnoreExpression(SyntaxNode syntaxNode, StrykerOptions options)
+        {
+            switch (syntaxNode)
+            {
+                case InvocationExpressionSyntax invocation:
+                    return MatchesAnIgnoredExpression(_triviaRemover.Visit(invocation.Expression).ToString(), options);
+                    break;
+                case ObjectCreationExpressionSyntax creation:
+                    return MatchesAnIgnoredExpression(_triviaRemover.Visit(creation.Type) + ".ctor", options);
+                    break;
+                case SyntaxNode node when node.Parent != null:
+                    return IsIgnoreExpression(syntaxNode.Parent, options);
+                    break;
+                default:
+                    return false;
+                    break;
+            }
+
+        }
+
+
+        private static bool MatchesAnIgnoredExpression(string expressionString, StrykerOptions options)
+        {
+            return options.ExcludedLinqExpressions.Any(r => expressionString.EndsWith(Enum.GetName(r)));
+        }
+
+        /// <summary>
+        /// Removes comments, whitespace, and other junk from a syntax tree.
+        /// </summary>
+        private sealed class SyntaxTriviaRemover : CSharpSyntaxRewriter
+        {
+            public override SyntaxTrivia VisitTrivia(SyntaxTrivia trivia) => default;
+        }
+    }
+}
