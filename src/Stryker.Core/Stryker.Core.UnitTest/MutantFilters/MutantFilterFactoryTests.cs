@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Moq;
 using Shouldly;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
+using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Xunit;
 
@@ -78,6 +80,30 @@ namespace Stryker.Core.UnitTest.MutantFilters
             resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(5);
 
             resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(DiffMutantFilter)).Count().ShouldBe(1);
+        }
+
+        [Fact]
+        public void MutantFilterFactory_Creates_ExcludeLinqExpressionFilter_When_ExcludedLinqExpressions_IsNotEmpty()
+        {
+            // Arrange
+            var options = new StrykerOptions()
+            {
+                ExcludedLinqExpressions = new List<LinqExpression>() { LinqExpression.Any }
+            };
+
+            var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
+            var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
+            var baselineProvider = new Mock<IBaselineProvider>(MockBehavior.Loose);
+
+            // Act
+            var result = MutantFilterFactory.Create(options, null, diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
+
+            // Assert
+            var resultAsBroadcastFilter = result as BroadcastMutantFilter;
+
+            resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(5);
+
+            resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(ExcludeLinqExpressionFilter)).Count().ShouldBe(1);
         }
 
         [Fact]
