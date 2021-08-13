@@ -108,14 +108,14 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [InlineData(LinqExpression.Intersect, LinqExpression.Union)]
         [InlineData(LinqExpression.Concat, LinqExpression.Except)]
         [InlineData(LinqExpression.Except, LinqExpression.Concat)]
-        public void ShouldNotRemoveLinqExpression(LinqExpression expression, LinqExpression excludedExpression)
+        public void ShouldNotRemoveLinqExpression(LinqExpression exp, LinqExpression excludedExp)
         {
             // Arrange
             var target = new LinqMutator();
 
-            var exp = GenerateExpressions(expression.ToString());
+            var expression = GenerateExpressions(exp.ToString());
 
-            var result = target.ApplyMutations(exp).ToList();
+            var result = target.ApplyMutations(expression).ToList();
 
             var mutants = result.Select(s => new Mutant() { ResultStatus = MutantStatus.Survived, Mutation = s });
 
@@ -126,7 +126,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             {
                 ExcludedLinqExpressions = new List<LinqExpression>()
                 {
-                    excludedExpression
+                    excludedExp
                 }
             });
 

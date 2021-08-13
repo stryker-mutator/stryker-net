@@ -19,7 +19,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         }
 
         [Fact]
-        public void ShouldValidateOnlyLinqOptions()
+        public void ShouldReturnEmptyWithNonLinqOptions()
         {
             var target = new IgnoreLinqExpressionInput { SuppliedInput = new[] { "gibberish" } };
             var result = target.Validate();
@@ -30,7 +30,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Theory]
         [InlineData("linq.nothing")]
         [InlineData("linq.test")]
-        public void ShouldValidateExcludedLinqMutation(string method)
+        public void ShouldValidateExcludedLinqExpression(string method)
         {
             var target = new IgnoreLinqExpressionInput
             {
@@ -53,7 +53,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         }
 
         [Fact]
-        public void ShouldReturnMultipleMutators()
+        public void ShouldReturnMultipleLinqExpressions()
         {
             var target = new IgnoreLinqExpressionInput
             {
