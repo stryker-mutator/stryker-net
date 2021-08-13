@@ -19,7 +19,7 @@ namespace Stryker.Core.Options.Inputs
             {
                 var excluded = new List<LinqExpression>();
 
-                // Get all mutatorTypes and their descriptions
+                // Get all LinqExpression
                 var linqExpressions = Enum.GetValues(typeof(LinqExpression))
                     .Cast<LinqExpression>();
 
@@ -33,7 +33,7 @@ namespace Stryker.Core.Options.Inputs
 
                 foreach (var mutatorToExclude in linqMethodsInput)
                 {
-                    // Find any mutatorType that matches the name passed by the user
+                    // Find any LinqExpression that matches the name passed by the user
                     var linqMethod = linqExpressions.FirstOrDefault(
                         x => x.ToString().ToLower().Equals(mutatorToExclude[1].ToLower()));
                     if (linqMethod != LinqExpression.None)

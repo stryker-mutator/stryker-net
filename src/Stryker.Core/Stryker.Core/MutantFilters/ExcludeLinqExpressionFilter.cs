@@ -12,7 +12,7 @@ using Stryker.Core.ProjectComponents;
 namespace Stryker.Core.MutantFilters
 {
     /// <summary>
-    /// Checks if the mutation type of the mutant should be excluded.
+    /// Checks if the linq expression of the mutant should be excluded.
     /// </summary>
     /// <seealso cref="IMutantFilter" />
     public class ExcludeLinqExpressionFilter : IMutantFilter
