@@ -20,38 +20,26 @@ namespace Stryker.Core.MutantFilters
         public string DisplayName => "linq expression filter";
         private SyntaxTriviaRemover _triviaRemover { get; init; } = new SyntaxTriviaRemover();
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
-        {
-            return options.ExcludedLinqExpressions.Any() ?
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options) => options.ExcludedLinqExpressions.Any() ?
                     mutants.Where(m => m.Mutation.Type != Mutator.Linq || !IsIgnoreExpression(m.Mutation.OriginalNode, options)) :
                     mutants;
-        }
 
-        private bool IsIgnoreExpression(SyntaxNode syntaxNode, StrykerOptions options)
-        {
-            switch (syntaxNode)
+        private bool IsIgnoreExpression(SyntaxNode syntaxNode, StrykerOptions options) =>
+            syntaxNode switch
             {
-                case InvocationExpressionSyntax invocation:
-                    return MatchesAnIgnoredExpression(_triviaRemover.Visit(invocation.Expression).ToString(), options);
-                    break;
-                case ObjectCreationExpressionSyntax creation:
-                    return MatchesAnIgnoredExpression(_triviaRemover.Visit(creation.Type) + ".ctor", options);
-                    break;
-                case SyntaxNode node when node.Parent != null:
-                    return IsIgnoreExpression(syntaxNode.Parent, options);
-                    break;
-                default:
-                    return false;
-                    break;
-            }
+                // Check if the current node is an invocation. This will also ignore invokable properties like `Func<bool> MyProp { get;}`
+                InvocationExpressionSyntax invocation => MatchesAnIgnoredExpression(_triviaRemover.Visit(invocation.Expression).ToString(), options),
 
-        }
+                // Check if the current node is an object creation syntax (constructor invocation).
+                ObjectCreationExpressionSyntax creation => MatchesAnIgnoredExpression(_triviaRemover.Visit(creation.Type) + ".ctor", options),
+
+                // Traverse the tree upwards.
+                SyntaxNode node when node.Parent != null => IsIgnoreExpression(syntaxNode.Parent, options),
+                _ => false,
+            };
 
 
-        private static bool MatchesAnIgnoredExpression(string expressionString, StrykerOptions options)
-        {
-            return options.ExcludedLinqExpressions.Any(r => expressionString.EndsWith(Enum.GetName(r)));
-        }
+        private static bool MatchesAnIgnoredExpression(string expressionString, StrykerOptions options) => options.ExcludedLinqExpressions.Any(r => expressionString.EndsWith(Enum.GetName(r)));
 
         /// <summary>
         /// Removes comments, whitespace, and other junk from a syntax tree.
