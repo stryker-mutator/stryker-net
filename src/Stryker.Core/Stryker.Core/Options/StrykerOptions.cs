@@ -70,6 +70,7 @@ namespace Stryker.Core.Options
                 Since = Since,
                 DiffIgnoreChanges = DiffIgnoreChanges,
                 ExcludedMutations = ExcludedMutations,
+                ExcludedLinqExpressions = ExcludedLinqExpressions,
                 FallbackVersion = FallbackVersion,
                 IgnoredMethods = IgnoredMethods,
                 LanguageVersion = LanguageVersion,
