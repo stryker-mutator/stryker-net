@@ -15,7 +15,7 @@ namespace Stryker.Core.Options.Inputs
 
         public IEnumerable<LinqExpression> Validate()
         {
-            if (SuppliedInput is { } && SuppliedInput.Any(w => w.ToLower().StartsWith("linq")))
+            if (SuppliedInput is { } && SuppliedInput.Any(w => w.ToLower().StartsWith("linq.")))
             {
                 var excludedLinqExpressions = new List<LinqExpression>();
 

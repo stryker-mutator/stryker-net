@@ -38,6 +38,16 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         }
 
         [Fact]
+        public void ShouldIgnoreMutatorWithOptions()
+        {
+            var target = new IgnoreMutationsInput { SuppliedInput = new string[] { "linq.Sum", "string.empty", "logical.equal" } };
+
+            var result = target.Validate();
+
+            result.ShouldBeEmpty();
+        }
+
+        [Fact]
         public void ShouldReturnMultipleMutators()
         {
             var target = new IgnoreMutationsInput { SuppliedInput = new[] {
