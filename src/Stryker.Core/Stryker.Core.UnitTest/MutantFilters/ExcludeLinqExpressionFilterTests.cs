@@ -134,6 +134,55 @@ namespace Stryker.Core.UnitTest.MutantFilters
             mutations.ShouldNotBeEmpty();
         }
 
+        [Theory]
+        [InlineData(LinqExpression.FirstOrDefault)]
+        [InlineData(LinqExpression.First)]
+        [InlineData(LinqExpression.SingleOrDefault)]
+        [InlineData(LinqExpression.Single)]
+        [InlineData(LinqExpression.Last)]
+        [InlineData(LinqExpression.All)]
+        [InlineData(LinqExpression.Any)]
+        [InlineData(LinqExpression.Skip)]
+        [InlineData(LinqExpression.Take)]
+        [InlineData(LinqExpression.SkipWhile)]
+        [InlineData(LinqExpression.TakeWhile)]
+        [InlineData(LinqExpression.Min)]
+        [InlineData(LinqExpression.Max)]
+        [InlineData(LinqExpression.Sum)]
+        [InlineData(LinqExpression.Average)]
+        [InlineData(LinqExpression.OrderBy)]
+        [InlineData(LinqExpression.OrderByDescending)]
+        [InlineData(LinqExpression.ThenBy)]
+        [InlineData(LinqExpression.ThenByDescending)]
+        [InlineData(LinqExpression.Reverse)]
+        [InlineData(LinqExpression.AsEnumerable)]
+        [InlineData(LinqExpression.Union)]
+        [InlineData(LinqExpression.Intersect)]
+        [InlineData(LinqExpression.Concat)]
+        [InlineData(LinqExpression.Except)]
+        public void ShouldNotFilterMutationsWhenFilterIsEmpty(LinqExpression exp)
+        {
+            // Arrange
+            var target = new LinqMutator();
+
+            var expression = GenerateExpressions(exp.ToString());
+
+            var result = target.ApplyMutations(expression).ToList();
+
+            var mutants = result.Select(s => new Mutant() { ResultStatus = MutantStatus.Survived, Mutation = s });
+
+            var sut = new ExcludeLinqExpressionFilter();
+
+            // Act
+            var mutations = sut.FilterMutants(mutants, null, new StrykerOptions()
+            {
+                ExcludedLinqExpressions = Enumerable.Empty<LinqExpression>()
+            });
+
+            // Assert
+            mutations.ShouldNotBeEmpty();
+        }
+
 
         private InvocationExpressionSyntax GenerateExpressions(string expression)
         {

@@ -15,52 +15,46 @@ namespace Stryker.Core.UnitTest.Options.Inputs
                     .Cast<LinqExpression>()
                     .Where(w => w != LinqExpression.None);
 
-        [Fact]
-        public void ShouldHaveHelpText()
-        {
-            var target = new IgnoreLinqExpressionInput();
-            target.HelpText.ShouldBe(@"The given linq expression will be excluded for this mutation testrun.
-    This argument takes a json array as value. Example: ['linq.FirstOrDefault', 'linq.First'] | default: []");
-        }
 
         [Fact]
         public void ShouldReturnEmptyWithNonLinqOptions()
         {
-            var target = new IgnoreLinqExpressionInput { SuppliedInput = new[] { "gibberish" } };
-            var result = target.Validate();
-            result.ShouldBeEmpty();
+            var target = new IgnoreMutationsInput { SuppliedInput = new[] { "gibberish" } };
+            var linqExpressions = target.ValidateLinqExpressions();
+            linqExpressions.ShouldBeEmpty();
         }
 
 
         [Theory]
         [InlineData("linq.nothing")]
         [InlineData("linq.test")]
+        [InlineData("linq.first.default")]
         public void ShouldValidateExcludedLinqExpression(string method)
         {
-            var target = new IgnoreLinqExpressionInput
+            var target = new IgnoreMutationsInput
             {
                 SuppliedInput = new[] { method }
             };
 
-            var ex = Should.Throw<InputException>(() => target.Validate());
+            var ex = Should.Throw<InputException>(() => target.ValidateLinqExpressions());
 
-            ex.Message.ShouldBe($"Invalid excluded linq expression ({method.Split(".").Last()}). The excluded linq expression options are [{string.Join(", ", AllLinqExpressions)}]");
+            ex.Message.ShouldBe($"Invalid excluded linq expression ({string.Join(".", method.Split(".").Skip(1))}). The excluded linq expression options are [{string.Join(", ", AllLinqExpressions)}]");
         }
 
         [Fact]
         public void ShouldHaveDefault()
         {
-            var target = new IgnoreLinqExpressionInput { SuppliedInput = new string[] { } };
+            var target = new IgnoreMutationsInput { SuppliedInput = new string[] { } };
 
-            var result = target.Validate();
+            var linqExpressions = target.ValidateLinqExpressions();
 
-            result.ShouldBeEmpty();
+            linqExpressions.ShouldBeEmpty();
         }
 
         [Fact]
         public void ShouldReturnMultipleLinqExpressions()
         {
-            var target = new IgnoreLinqExpressionInput
+            var target = new IgnoreMutationsInput
             {
                 SuppliedInput = new[] {
                 "linq.FirstOrDefault",
@@ -68,11 +62,30 @@ namespace Stryker.Core.UnitTest.Options.Inputs
                 }
             };
 
-            var result = target.Validate();
+            var linqExpressions = target.ValidateLinqExpressions();
 
-            result.Count().ShouldBe(2);
-            result.First().ShouldBe(LinqExpression.FirstOrDefault);
-            result.Last().ShouldBe(LinqExpression.First);
+            linqExpressions.Count().ShouldBe(2);
+            linqExpressions.First().ShouldBe(LinqExpression.FirstOrDefault);
+            linqExpressions.Last().ShouldBe(LinqExpression.First);
+        }
+
+        [Fact]
+        public void ShouldOnlyValidateInputStartingWithLinq()
+        {
+            var target = new IgnoreMutationsInput
+            {
+                SuppliedInput = new[] {
+                "linq.Max",
+                "linq.Sum",
+                "test",
+                }
+            };
+
+            var linqExpressions = target.ValidateLinqExpressions();
+
+            linqExpressions.Count().ShouldBe(2);
+            linqExpressions.First().ShouldBe(LinqExpression.Max);
+            linqExpressions.Last().ShouldBe(LinqExpression.Sum);
         }
     }
 }
