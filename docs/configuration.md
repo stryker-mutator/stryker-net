@@ -272,7 +272,10 @@ Turn off mutations that are not currently relevant to your project.
 It's possible to disable specific linq expressions using:
 ```json
 "stryker-config": {
-    "ignore-mutations": ["linq.First", "linq.Sum"]
+    "ignore-mutations": [
+        "linq.First",
+        "linq.Sum"
+    ]
 }
 ```
 
