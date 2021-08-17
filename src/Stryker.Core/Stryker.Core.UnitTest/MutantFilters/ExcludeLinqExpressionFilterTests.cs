@@ -69,7 +69,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var sut = new ExcludeLinqExpressionFilter();
 
             // Act
-            var results = sut.FilterMutants(mutants, null, new StrykerOptions()
+            var mutations = sut.FilterMutants(mutants, null, new StrykerOptions()
             {
                 ExcludedLinqExpressions = new List<LinqExpression>()
                 {
@@ -78,7 +78,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             });
 
             // Assert
-            results.ShouldBeEmpty();
+            mutations.ShouldBeEmpty();
         }
 
 
@@ -122,7 +122,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var sut = new ExcludeLinqExpressionFilter();
 
             // Act
-            var results = sut.FilterMutants(mutants, null, new StrykerOptions()
+            var mutations = sut.FilterMutants(mutants, null, new StrykerOptions()
             {
                 ExcludedLinqExpressions = new List<LinqExpression>()
                 {
@@ -131,7 +131,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             });
 
             // Assert
-            results.ShouldNotBeEmpty();
+            mutations.ShouldNotBeEmpty();
         }
 
 
