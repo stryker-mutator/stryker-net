@@ -128,7 +128,7 @@ namespace Stryker.Core.Options
                 TestProjects = TestProjectsInput.Validate(),
                 DashboardUrl = DashboardUrlInput.Validate(),
                 DashboardApiKey = DashboardApiKeyInput.Validate(WithBaselineInput.SuppliedInput),
-                ProjectName = ProjectNameInput.Validate(reporters),
+                ProjectName = ProjectNameInput.Validate(),
                 ModuleName = ModuleNameInput.Validate(),
                 ProjectVersion = ProjectVersionInput.Validate(FallbackVersionInput.SuppliedInput, reporters, WithBaselineInput.SuppliedInput),
                 DiffIgnoreChanges = DiffIgnoreChangesInput.Validate(),

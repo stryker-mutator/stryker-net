@@ -15,11 +15,6 @@ namespace Stryker.Core.Options.Inputs
         {
             if (reporters.Contains(Reporter.Dashboard))
             {
-                if (string.IsNullOrWhiteSpace(SuppliedInput))
-                {
-                    throw new InputException("When the stryker dashboard is enabled the project version is required. Please provide a project version.");
-                }
-
                 if (dashboardCompareEnabled.IsNotNullAndTrue() && fallbackVersion == SuppliedInput)
                 {
                     throw new InputException("Project version cannot be the same as the fallback version. Please provide a different version for one of them.");

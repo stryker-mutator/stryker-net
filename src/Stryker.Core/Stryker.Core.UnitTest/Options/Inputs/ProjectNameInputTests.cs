@@ -21,32 +21,17 @@ For example: Your project might be called 'consumer-loans' and it might contains
         {
             var input = new ProjectNameInput { SuppliedInput = "name" };
 
-            var result = input.Validate(new[] { Reporter.Dashboard });
+            var result = input.Validate();
 
             result.ShouldBe("name");
-        }
-
-        [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void ShouldThrowOnEmptyValue(string value)
-        {
-            var input = new ProjectNameInput { SuppliedInput = value };
-
-            var exception = Should.Throw<InputException>(() =>
-            {
-                input.Validate(new[] { Reporter.Dashboard });
-            });
-
-            exception.Message.ShouldBe("When the stryker dashboard is enabled the project name is required.");
         }
 
         [Fact]
         public void ShouldHaveDefault()
         {
             var input = new ProjectNameInput { SuppliedInput = null };
-            
-            var result = input.Validate(new Reporter[] { });
+
+            var result = input.Validate();
 
             result.ShouldBe(string.Empty);
         }

@@ -16,21 +16,6 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         }
 
         [Theory]
-        [InlineData(null)]
-        [InlineData("")]
-        public void ProjectVersionCannotBeEmpty(string value)
-        {
-            var input = new ProjectVersionInput { };
-            input.SuppliedInput = value;
-
-            var exception = Should.Throw<InputException>(() => {
-                input.Validate(null, reporters: new[] { Reporter.Dashboard }, true);
-            });
-
-            exception.Message.ShouldBe("When the stryker dashboard is enabled the project version is required. Please provide a project version.");
-        }
-
-        [Theory]
         [InlineData("test")]
         [InlineData("myversion")]
         public void ProjectVersionCannotBeFallbackVersion(string value)
