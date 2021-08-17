@@ -55,7 +55,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [InlineData(LinqExpression.Intersect)]
         [InlineData(LinqExpression.Concat)]
         [InlineData(LinqExpression.Except)]
-        public void ShouldRemoveLinqExpression(LinqExpression exp)
+        public void ShouldRemoveLinqExpressionWhenFilterIsCorrect(LinqExpression exp)
         {
             // Arrange
             var target = new LinqMutator();
