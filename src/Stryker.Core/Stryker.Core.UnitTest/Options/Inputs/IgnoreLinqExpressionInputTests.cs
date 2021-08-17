@@ -70,7 +70,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         }
 
         [Fact]
-        public void ShouldOnlyValidateInputStartingWithLinq()
+        public void ShouldOnlyValidateCorrectFormat()
         {
             var target = new IgnoreMutationsInput
             {
