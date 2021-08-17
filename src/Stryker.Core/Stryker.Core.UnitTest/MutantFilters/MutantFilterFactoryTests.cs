@@ -99,7 +99,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var result = MutantFilterFactory.Create(options, null, diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
 
             // Assert
-            var resultAsBroadcastFilter = result as BroadcastMutantFilter;
+            var resultAsBroadcastFilter = result.ShouldBeOfType<BroadcastMutantFilter>();
 
             resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(5);
 
