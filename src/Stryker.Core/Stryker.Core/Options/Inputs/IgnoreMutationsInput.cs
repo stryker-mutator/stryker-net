@@ -24,7 +24,7 @@ namespace Stryker.Core.Options.Inputs
                     .Cast<Mutator>()
                     .ToDictionary(x => x, x => x.GetDescription());
 
-                foreach (var mutatorToExclude in SuppliedInput.Where(w => !w.ToLower().Contains(".")))
+                foreach (var mutatorToExclude in SuppliedInput.Where(w => !w.Contains(".")))
                 {
                     // Find any mutatorType that matches the name passed by the user
                     var mutatorDescriptor = typeDescriptions.FirstOrDefault(
