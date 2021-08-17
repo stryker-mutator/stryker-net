@@ -7,17 +7,13 @@ using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
-    /// <summary>
-    /// Handles Methods/properties' accessors/constructors and finalizers.
-    /// </summary>
-    /// <typeparam name="T"></typeparam>
-    internal class BaseMethodDeclarationOrchestrator<T> : NodeSpecificOrchestrator<T, BaseMethodDeclarationSyntax> where T: BaseMethodDeclarationSyntax
+    internal class LocalFunctionStatementOrchestrator : NodeSpecificOrchestrator<LocalFunctionStatementSyntax, LocalFunctionStatementSyntax>
     {
-        protected override bool NewContext => true;
+        public LocalFunctionStatementOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
+        {
+        }
 
-        /// <inheritdoc/>
-        /// Inject mutations and convert expression body to block body if required.
-        protected override BaseMethodDeclarationSyntax InjectMutations(T sourceNode, BaseMethodDeclarationSyntax targetNode,
+        protected override LocalFunctionStatementSyntax InjectMutations(LocalFunctionStatementSyntax sourceNode, LocalFunctionStatementSyntax targetNode,
             MutationContext context)
         {
             // find out parameters
@@ -29,7 +25,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                     sourceNode.ParameterList.Parameters.Where(p =>
                         p.Modifiers.Any(m => m.Kind() == SyntaxKind.OutKeyword))));
                 // add a return in case we changed the control flow
-                return MutantPlacer.AddEndingReturn(targetNode) as T;
+                return MutantPlacer.AddEndingReturn(targetNode);
             }
 
             if (!context.HasStatementLevelMutant)
@@ -39,10 +35,6 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 
             // we need to move to a body version of the method
             targetNode = MutantPlacer.ConvertExpressionToBody(targetNode);
-
-            targetNode = targetNode.WithBody(MutantPlacer.AddDefaultInitializers(targetNode.Body,
-                sourceNode.ParameterList.Parameters.Where(p =>
-                    p.Modifiers.Any(m => m.Kind() == SyntaxKind.OutKeyword))));
 
             StatementSyntax mutatedBlock = targetNode.Body;
 
@@ -60,10 +52,6 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             context.StatementLevelControlledMutations.Clear();
             return targetNode.ReplaceNode(targetNode.Body!,
                 SyntaxFactory.Block(mutatedBlock));
-        }
-
-        public BaseMethodDeclarationOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)
-        {
         }
     }
 }

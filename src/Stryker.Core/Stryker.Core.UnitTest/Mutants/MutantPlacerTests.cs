@@ -104,6 +104,16 @@ namespace Stryker.Core.UnitTest.Mutants
         }
 
         [Theory]
+        [InlineData("void TestClass(){ void LocalFunction() => Value-='a';}","void TestClass(){ void LocalFunction() {Value-='a';};}}")]
+        public void ShouldConvertExpressionBodyBackLocalFunctionAndForth(string original, string injected)
+        {
+            var source = $"class Test {{{original}}}";
+            var expectedCode = $"class Test {{{injected}}}";
+
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<LocalFunctionStatementSyntax>(source, expectedCode, MutantPlacer.ConvertExpressionToBody);
+        }
+
+        [Theory]
         [InlineData("public int X { get => 1;}", "public int X { get {return 1;}}")]
         [InlineData("public int X { get => 1; set { }}", "public int X { get {return 1;} set { }}")]
         [InlineData("public int X { set => value++;}", "public int X { set { value++;}}")]
@@ -139,8 +149,19 @@ namespace Stryker.Core.UnitTest.Mutants
             var source = "class Test {bool Method(out int x) {x=0;}}";
             var expected = "class Test {bool Method(out int x) {{x = default(int);}x=0;}}";
 
-            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BaseMethodDeclarationSyntax>(source, expected,
-                (n)=> MutantPlacer.AddDefaultInitialization(n, SyntaxFactory.Identifier("x"), SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword))));
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BlockSyntax>(source, expected,
+                (n)=> MutantPlacer.AddDefaultInitializers(n,
+                    new[]{SyntaxFactory.Parameter(SyntaxFactory.Identifier("x")).WithType(SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword))
+                    )}));
+        }
+
+        [Fact]
+        public void ShouldInjectReturnToLocalFunctionAndRestore()
+        {
+            var source = "class Test {void Method(){ bool Method() {x++;};}}";
+            var expected = "class Test {void Method(){ bool Method() {x++;return default(bool);};}}";
+
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<LocalFunctionStatementSyntax>(source, expected, MutantPlacer.AddEndingReturn);
         }
 
         [Fact]
