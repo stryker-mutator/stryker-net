@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
@@ -22,12 +21,17 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         {
             // find out parameters
             targetNode = base.InjectMutations(sourceNode, targetNode, context);
-            if (targetNode.Body != null)
+
+            var sourceExpression = sourceNode.ExpressionBody?.Expression;
+            var targetNodeBody = targetNode.Body;
+
+            var parameters = sourceNode.ParameterList.Parameters.Where(p =>
+                p.Modifiers.Any(m => m.Kind() == SyntaxKind.OutKeyword));
+
+            if (targetNodeBody != null)
             {
                 // inject initialization to default for all out parameters
-                targetNode = sourceNode.WithBody(MutantPlacer.AddDefaultInitializers(targetNode.Body,
-                    sourceNode.ParameterList.Parameters.Where(p =>
-                        p.Modifiers.Any(m => m.Kind() == SyntaxKind.OutKeyword))));
+                targetNode = sourceNode.WithBody(MutantPlacer.AddDefaultInitializers(targetNodeBody, parameters));
                 // add a return in case we changed the control flow
                 return MutantPlacer.AddEndingReturn(targetNode) as T;
             }
@@ -39,27 +43,22 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 
             // we need to move to a body version of the method
             targetNode = MutantPlacer.ConvertExpressionToBody(targetNode);
-
-            targetNode = targetNode.WithBody(MutantPlacer.AddDefaultInitializers(targetNode.Body,
-                sourceNode.ParameterList.Parameters.Where(p =>
-                    p.Modifiers.Any(m => m.Kind() == SyntaxKind.OutKeyword))));
-
-            StatementSyntax mutatedBlock = targetNode.Body;
+            targetNodeBody = MutantPlacer.AddDefaultInitializers(targetNode.Body,
+                parameters);
 
             var converter = targetNode.NeedsReturn()
-                ? (Func<Mutation, StatementSyntax>) ((toConvert) =>
-                    SyntaxFactory.ReturnStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert)))
-                : (toConvert) =>
-                    SyntaxFactory.ExpressionStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert));
+                ? (Func<Mutation, StatementSyntax>) (toConvert =>
+                    SyntaxFactory.ReturnStatement(sourceExpression.InjectMutation(toConvert)))
+                : toConvert =>
+                    SyntaxFactory.ExpressionStatement(sourceExpression.InjectMutation(toConvert));
 
-            mutatedBlock =
-                MutantPlacer.PlaceStatementControlledMutations(mutatedBlock,
+            var  targetStatement =
+                MutantPlacer.PlaceStatementControlledMutations(targetNodeBody,
                     context.StatementLevelControlledMutations.Union(context.BlockLevelControlledMutations).
                         Select( m => (m.Id, converter(m.Mutation))));
             context.BlockLevelControlledMutations.Clear();
             context.StatementLevelControlledMutations.Clear();
-            return targetNode.ReplaceNode(targetNode.Body!,
-                SyntaxFactory.Block(mutatedBlock));
+            return targetNode.WithBody(SyntaxFactory.Block(targetStatement)).WithExpressionBody(null);
         }
 
         public BaseMethodDeclarationOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) : base(mutantOrchestrator)

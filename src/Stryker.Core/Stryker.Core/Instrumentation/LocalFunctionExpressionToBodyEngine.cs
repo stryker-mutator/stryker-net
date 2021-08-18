@@ -40,10 +40,8 @@ namespace Stryker.Core.Instrumentation
                 statementLine = SyntaxFactory.ExpressionStatement(function!.ExpressionBody!.Expression);
             }
             // do we need add return to the expression body?
-            var statement = SyntaxFactory.Block(statementLine);
+            return function.WithBody(SyntaxFactory.Block(statementLine)).WithExpressionBody(null).WithAdditionalAnnotations(Marker);
 
-            return function.Update(function.AttributeLists, function.Modifiers, function.ReturnType, function.Identifier, function.TypeParameterList, function.ParameterList, function.ConstraintClauses
-                , statement, null, function.SemicolonToken).WithAdditionalAnnotations(Marker);
         }
 
         protected override SyntaxNode Revert(LocalFunctionStatementSyntax node)
@@ -56,10 +54,7 @@ namespace Stryker.Core.Instrumentation
                 _ => throw new InvalidOperationException($"Can't extract original expression from {node.Body}")
             });
 
-
-            return node.Update(node.AttributeLists, node.Modifiers, node.ReturnType, node.Identifier,
-                node.TypeParameterList, node.ParameterList, node.ConstraintClauses, null, expression,
-                node.SemicolonToken);
+            return node.WithBody(null).WithExpressionBody(expression).WithoutAnnotations(Marker);
         }
     }
 }

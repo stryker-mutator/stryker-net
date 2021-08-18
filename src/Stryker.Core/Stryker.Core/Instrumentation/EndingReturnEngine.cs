@@ -1,25 +1,24 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Instrumentation
 {
     /// <summary>
     /// Injects 'return default(...)' statement at the end of a method
     /// </summary>
-    internal class EndingReturnEngine: BaseEngine<BaseMethodDeclarationSyntax>
+    internal class EndingReturnEngine: BaseEngine<BlockSyntax>
     {
         public EndingReturnEngine(string markerId) : base(markerId)
         {
         }
 
-        public BaseMethodDeclarationSyntax InjectReturn(BaseMethodDeclarationSyntax method)
+        public BlockSyntax InjectReturn(BlockSyntax block, TypeSyntax type, SyntaxTokenList modifiers)
         {
-            var newBody = EngineHelpers.InjectReturn(method.Body, method.ReturnType(), method.Modifiers);
+            var newBody = EngineHelpers.InjectReturn(block, type, modifiers);
 
-            return newBody == null ? method : method.WithBody(newBody).WithAdditionalAnnotations(Marker);
+            return newBody == null ? block : newBody.WithAdditionalAnnotations(Marker);
         }
 
-        protected override SyntaxNode Revert(BaseMethodDeclarationSyntax node) => node.WithBody(EngineHelpers.RemoveReturn(node.Body)).WithoutAnnotations(Marker);
+        protected override SyntaxNode Revert(BlockSyntax node) => EngineHelpers.RemoveReturn(node).WithoutAnnotations(Marker);
     }
 }

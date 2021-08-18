@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
@@ -18,11 +17,15 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
         {
             // find out parameters
             targetNode = base.InjectMutations(sourceNode, targetNode, context);
-            if (targetNode.Body != null)
+
+            var fullTargetBody = targetNode.Body;
+            var sourceNodeParameterList = sourceNode.ParameterList;
+
+            if (fullTargetBody != null)
             {
                 // inject initialization to default for all out parameters
-                targetNode = sourceNode.WithBody(MutantPlacer.AddDefaultInitializers(targetNode.Body,
-                    sourceNode.ParameterList.Parameters.Where(p =>
+                targetNode = sourceNode.WithBody(MutantPlacer.AddDefaultInitializers(fullTargetBody,
+                    sourceNodeParameterList.Parameters.Where(p =>
                         p.Modifiers.Any(m => m.Kind() == SyntaxKind.OutKeyword))));
                 // add a return in case we changed the control flow
                 return MutantPlacer.AddEndingReturn(targetNode);
@@ -36,22 +39,19 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             // we need to move to a body version of the method
             targetNode = MutantPlacer.ConvertExpressionToBody(targetNode);
 
-            StatementSyntax mutatedBlock = targetNode.Body;
-
             var converter = targetNode.NeedsReturn()
-                ? (Func<Mutation, StatementSyntax>) ((toConvert) =>
+                ? (Func<Mutation, StatementSyntax>) (toConvert =>
                     SyntaxFactory.ReturnStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert)))
                 : (toConvert) =>
                     SyntaxFactory.ExpressionStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert));
-
-            mutatedBlock =
-                MutantPlacer.PlaceStatementControlledMutations(mutatedBlock,
+            
+            var mutatedBlock =
+                MutantPlacer.PlaceStatementControlledMutations(targetNode.Body,
                     context.StatementLevelControlledMutations.Union(context.BlockLevelControlledMutations).
                         Select( m => (m.Id, converter(m.Mutation))));
             context.BlockLevelControlledMutations.Clear();
             context.StatementLevelControlledMutations.Clear();
-            return targetNode.ReplaceNode(targetNode.Body!,
-                SyntaxFactory.Block(mutatedBlock));
+            return targetNode.WithBody(SyntaxFactory.Block(mutatedBlock));
         }
     }
 }
