@@ -48,7 +48,9 @@ namespace Stryker.Core.MutantFilters
                 enabledFilters.Add(new DiffMutantFilter(_diffProvider));
             }
             if (options.ExcludedLinqExpressions.Any())
+            {
                 enabledFilters.Add(new ExcludeLinqExpressionFilter());
+            }
 
             return enabledFilters;
         }
