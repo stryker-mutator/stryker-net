@@ -66,7 +66,9 @@ namespace Stryker.Core.Options.Inputs
                 {
                     // Validate if the input is a valid LinqExpression
                     if (!linqExpressions.Any(x => x.ToString().ToLower().Equals(linqExpressionToExclude.ToLower())))
+                    {
                         throw new InputException($"Invalid excluded linq expression ({linqExpressionToExclude}). The excluded linq expression options are [{string.Join(", ", linqExpressions.Select(x => x.ToString()))}]");
+                    }
 
                     // Find the LinqExpression that matches the name passed by the user
                     var linqExpression = linqExpressions.FirstOrDefault(x => x.ToString().ToLower().Equals(linqExpressionToExclude.ToLower()));
