@@ -121,6 +121,7 @@ namespace Stryker.Core.Options
                 ProjectUnderTestName = ProjectUnderTestNameInput.Validate(),
                 AdditionalTimeout = AdditionalTimeoutInput.Validate(),
                 ExcludedMutations = ExcludedMutationsInput.Validate(),
+                ExcludedLinqExpressions = ExcludedMutationsInput.ValidateLinqExpressions(),
                 IgnoredMethods = IgnoredMethodsInput.Validate(),
                 Mutate = MutateInput.Validate(),
                 LanguageVersion = LanguageVersionInput.Validate(),

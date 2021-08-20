@@ -78,6 +78,7 @@ namespace Stryker.CLI.UnitTest
             actualInputs.MutateInput.SuppliedInput.ShouldContain("!**/Test.cs{1..100}{200..300}");
             actualInputs.CoverageAnalysisInput.SuppliedInput.ShouldBe("perTest");
             actualInputs.DisableBailInput.SuppliedInput.ShouldBe(true);
+            actualInputs.ExcludedMutationsInput.SuppliedInput.ShouldContain("linq.FirstOrDefault");
         }
     }
 }

@@ -25,7 +25,7 @@
       ""
     ],
     "ignore-mutations": [
-      ""
+      "linq.FirstOrDefault",
     ],
     "ignore-methods": [
       ""
