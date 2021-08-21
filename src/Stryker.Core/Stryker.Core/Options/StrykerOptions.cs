@@ -87,6 +87,7 @@ namespace Stryker.Core.Options
                 SinceTarget = SinceTarget,
                 SolutionPath = SolutionPath,
                 TestProjects = testProjects,
+                TestCaseFilter = TestCaseFilter,
                 Thresholds = Thresholds,
                 WithBaseline = WithBaseline
             };
