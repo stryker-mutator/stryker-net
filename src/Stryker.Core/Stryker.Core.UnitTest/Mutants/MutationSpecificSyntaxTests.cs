@@ -1,11 +1,52 @@
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
+using Stryker.Core.InjectedHelpers;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
 {
     public class MutationSpecificSyntaxTests: MutantOrchestratorTestsBase
     {
+
+
+        [Fact]
+        public void ShouldMutateInterfaces()
+        {
+            var actual = @"using System;
+using System.Collections.Generic;
+using System.Text;
+namespace StrykerNet.UnitTest.Mutants.TestResources
+{
+    interface TestClass
+    {
+        int A {get; set;}
+        int B {get; set;}
+        void MethodA();
+    }
+}";
+
+            var expected = @"using System;
+using System.Collections.Generic;
+using System.Text;
+namespace StrykerNet.UnitTest.Mutants.TestResources
+{
+    interface TestClass
+    {
+        int A {get; set;}
+        int B {get; set;}
+        void MethodA();
+    }
+}";
+            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(actual).GetRoot());
+            actual = actualNode.ToFullString();
+            actual = actual.Replace(CodeInjection.HelperNamespace, "StrykerNamespace");
+            actualNode = CSharpSyntaxTree.ParseText(actual).GetRoot();
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
+        }
+
         [Theory]
         [InlineData("=> Value = \"Hello, World!\";")]
         [InlineData("{Value = \"Hello, World!\";}")]

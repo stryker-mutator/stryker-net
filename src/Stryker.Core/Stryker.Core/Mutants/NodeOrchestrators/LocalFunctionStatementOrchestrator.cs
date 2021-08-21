@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -23,6 +22,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 
             if (fullTargetBody != null)
             {
+                // the function is in the body form
                 // inject initialization to default for all out parameters
                 targetNode = sourceNode.WithBody(MutantPlacer.AddDefaultInitializers(fullTargetBody,
                     sourceNodeParameterList.Parameters.Where(p =>
@@ -30,28 +30,15 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
                 // add a return in case we changed the control flow
                 return MutantPlacer.AddEndingReturn(targetNode);
             }
-
+            // nothing to do if there is now pending statement mutations
             if (!context.HasStatementLevelMutant)
             {
                 return targetNode;
             }
 
-            // we need to move to a body version of the method
+            // we need to move to a body version of the function to inject pending mutations
             targetNode = MutantPlacer.ConvertExpressionToBody(targetNode);
-
-            var converter = targetNode.NeedsReturn()
-                ? (Func<Mutation, StatementSyntax>) (toConvert =>
-                    SyntaxFactory.ReturnStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert)))
-                : (toConvert) =>
-                    SyntaxFactory.ExpressionStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert));
-            
-            var mutatedBlock =
-                MutantPlacer.PlaceStatementControlledMutations(targetNode.Body,
-                    context.StatementLevelControlledMutations.Union(context.BlockLevelControlledMutations).
-                        Select( m => (m.Id, converter(m.Mutation))));
-            context.BlockLevelControlledMutations.Clear();
-            context.StatementLevelControlledMutations.Clear();
-            return targetNode.WithBody(SyntaxFactory.Block(mutatedBlock));
+            return targetNode.WithBody(SyntaxFactory.Block(context.InjectBlockLevelExpressionMutation(targetNode.Body, sourceNode.ExpressionBody.Expression, sourceNode.NeedsReturn())));
         }
     }
 }

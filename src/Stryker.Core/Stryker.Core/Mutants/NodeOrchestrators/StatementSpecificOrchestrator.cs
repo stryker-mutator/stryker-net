@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
@@ -19,13 +19,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 
         /// <inheritdoc/>
         /// <remarks>Inject pending mutations that are controlled with 'if' statements.</remarks>
-        protected override StatementSyntax InjectMutations(T sourceNode, StatementSyntax targetNode, MutationContext context)
-        {
-            var mutated = MutantPlacer.PlaceStatementControlledMutations(targetNode,
-                context.StatementLevelControlledMutations.Select( m => (m.Id, (sourceNode as StatementSyntax).InjectMutation(m.Mutation))));
-            context.StatementLevelControlledMutations.Clear();
-            return mutated;
-        }
+        protected override StatementSyntax InjectMutations(T sourceNode, StatementSyntax targetNode, MutationContext context) => context.InjectStatementLevel(targetNode, sourceNode);
 
         /// <inheritdoc/>
         /// <remarks>Mutations are stored ath statement level.</remarks>
@@ -33,7 +27,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             IEnumerable<Mutant> mutations,
             MutationContext context)
         {
-            context.StatementLevelControlledMutations.AddRange(mutations);
+            context.AddStatementLevel(mutations);
             return context;
         }
     }
