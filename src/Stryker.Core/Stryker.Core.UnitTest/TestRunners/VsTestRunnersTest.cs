@@ -210,9 +210,10 @@ namespace Stryker.Core.UnitTest.TestRunners
                 x.RunTestsWithCustomTestHost(
                     It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
                     It.Is<string>(settings => settings.Contains("<Coverage")),
+                    It.Is<TestPlatformOptions>(o => o != null && o.TestCaseFilter == null),
                     It.IsAny<ITestRunEventsHandler>(),
                     It.IsAny<ITestHostLauncher>())).Callback(
-                (IEnumerable<string> _, string _, ITestRunEventsHandler testRunEvents,
+                (IEnumerable<string> _, string _, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
                     ITestHostLauncher _) =>
                 {
                     // generate test results
@@ -245,9 +246,10 @@ namespace Stryker.Core.UnitTest.TestRunners
                 x.RunTestsWithCustomTestHost(
                     It.IsAny<IEnumerable<TestCase>>(),
                     It.Is<string>(s => !s.Contains("<Coverage")),
+                    It.Is<TestPlatformOptions>(o => o != null && o.TestCaseFilter == null),
                     It.IsAny<ITestRunEventsHandler>(),
                     It.IsAny<ITestHostLauncher>())).Callback(
-                (IEnumerable<TestCase> sources, string settings, ITestRunEventsHandler testRunEvents,
+                (IEnumerable<TestCase> sources, string settings, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
                     ITestHostLauncher _) =>
                 {
                     var collector = new CoverageCollector();
@@ -299,9 +301,10 @@ namespace Stryker.Core.UnitTest.TestRunners
                 x.RunTestsWithCustomTestHost(
                     It.IsAny<IEnumerable<TestCase>>(),
                     It.IsAny<string>(),
+                    It.Is<TestPlatformOptions>(o => o != null && o.TestCaseFilter == null),
                     It.IsAny<ITestRunEventsHandler>(),
                     It.IsAny<ITestHostLauncher>())).Callback(
-                (IEnumerable<TestCase> sources, string settings, ITestRunEventsHandler testRunEvents,
+                (IEnumerable<TestCase> sources, string settings, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
                     ITestHostLauncher _) =>
                 {
                     var collector = new CoverageCollector();
