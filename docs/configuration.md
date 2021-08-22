@@ -67,7 +67,15 @@ Config file: `"test-projects": ['../MyProject.UnitTests/MyProject.UnitTests.cspr
 
 When you have multiple test projects covering one project under test you may specify all relevant test projects in the config file. You must run stryker from the project under test instead of the test project directory when using multiple test projects.
 
-### `mutate` <`glob[]`]
+### `test-case-filter` <`string`>
+
+Default: `""`  
+Command line: `N/A`  
+Config file: `"test-case-filter": "(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1"`
+
+Filter expression to run selective tests. Uses `dotnet test --filter` option syntax, [detailed here](https://docs.microsoft.com/en-us/dotnet/core/testing/selective-unit-tests). Use this option if you wish to run stryker only on a selective subset of tests from your test suite.
+
+### `mutate` <`glob[]`>
 
 Default: `*`  
 Command line: `[-m|--mutate] "**/*Services.cs" -m "!**/*.Generated.cs"`  
