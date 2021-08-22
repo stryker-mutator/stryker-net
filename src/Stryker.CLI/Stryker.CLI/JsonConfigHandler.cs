@@ -36,7 +36,7 @@ namespace Stryker.CLI
             inputs.ModuleNameInput.SuppliedInput = jsonConfig.ProjectInfo?.Module;
             inputs.ProjectVersionInput.SuppliedInput = jsonConfig.ProjectInfo?.Version;
             inputs.ReportersInput.SuppliedInput = jsonConfig.Reporters;
-            
+
             inputs.SinceTargetInput.SuppliedInput = jsonConfig.Since?.Target;
             inputs.SolutionInput.SuppliedInput = jsonConfig.Solution;
             inputs.ProjectUnderTestNameInput.SuppliedInput = jsonConfig.Project;
@@ -46,6 +46,7 @@ namespace Stryker.CLI
             inputs.VerbosityInput.SuppliedInput = jsonConfig.Verbosity;
             inputs.LanguageVersionInput.SuppliedInput = jsonConfig.LanguageVersion;
             inputs.TestProjectsInput.SuppliedInput = jsonConfig.TestProjects;
+            inputs.TestCaseFilterInput.SuppliedInput = jsonConfig.TestCaseFilter;
             inputs.ExcludedMutationsInput.SuppliedInput = jsonConfig.IgnoreMutations;
         }
 

@@ -126,8 +126,6 @@ namespace Stryker.CLI
             AddCliInput(inputs.ProjectUnderTestNameInput, "project", "p", argumentHint: "project-name.csproj");
             AddCliInput(inputs.MutationLevelInput, "mutation-level", "l");
 
-            AddCliInput(inputs.TestCaseFilterInput, "filter", "");
-
             AddCliInput(inputs.LogToFileInput, "log-to-file", "L", optionType: CommandOptionType.NoValue);
             AddCliInput(inputs.VerbosityInput, "verbosity", "V");
 

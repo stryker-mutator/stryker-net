@@ -55,10 +55,13 @@ namespace Stryker.CLI
 
         [JsonProperty(PropertyName = "test-projects")]
         public string[] TestProjects { get; set; }
-        
+
+        [JsonProperty(PropertyName = "test-case-filter")]
+        public string TestCaseFilter { get; set; }
+
         [JsonProperty(PropertyName = "ignore-mutations")]
         public string[] IgnoreMutations { get; set; }
-        
+
         [JsonProperty(PropertyName = "ignore-methods")]
         public string[] IgnoreMethods { get; set; }
     }
