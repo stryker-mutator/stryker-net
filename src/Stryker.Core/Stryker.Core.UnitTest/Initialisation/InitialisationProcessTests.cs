@@ -61,7 +61,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var options = new StrykerOptions();
 
-            var result = target.Initialize(options);
+            var result = target.Initialize(options, dashboardReporter: null);
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);
         }
@@ -106,7 +106,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 assemblyReferenceResolverMock.Object);
             var options = new StrykerOptions();
 
-            target.Initialize(options);
+            target.Initialize(options, dashboardReporter: null);
             Assert.Throws<InputException>(() => target.InitialTest(options));
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);
