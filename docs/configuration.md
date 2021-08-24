@@ -267,6 +267,19 @@ Config file: `"ignore-mutations": ['string', 'logical']`
 
 Turn off mutations that are not currently relevant to your project. 
 
+#### `Linq expressions`
+
+It's possible to disable specific linq expressions using:
+```json
+"stryker-config": {
+    "ignore-mutations": [
+        "linq.First",
+        "linq.Sum"
+    ]
+}
+```
+
+
 The mutants of the ignored types will not be tested. They will show up in your reports as `Ignored`.
 
 ### `ignore-methods` <`string[]`>

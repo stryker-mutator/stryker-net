@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutationTest;
@@ -45,6 +46,10 @@ namespace Stryker.Core.MutantFilters
             if (options.Since || options.WithBaseline)
             {
                 enabledFilters.Add(new DiffMutantFilter(_diffProvider));
+            }
+            if (options.ExcludedLinqExpressions.Any())
+            {
+                enabledFilters.Add(new ExcludeLinqExpressionFilter());
             }
 
             return enabledFilters;

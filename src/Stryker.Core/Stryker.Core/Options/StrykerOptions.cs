@@ -50,6 +50,7 @@ namespace Stryker.Core.Options
         public IEnumerable<FilePattern> Mutate { get; init; } = new[] { FilePattern.Parse("**/*") };
         public IEnumerable<Regex> IgnoredMethods { get; init; } = Enumerable.Empty<Regex>();
         public IEnumerable<Mutator> ExcludedMutations { get; init; } = Enumerable.Empty<Mutator>();
+        public IEnumerable<LinqExpression> ExcludedLinqExpressions { get; init; } = Enumerable.Empty<LinqExpression>();
 
         public OptimizationModes OptimizationMode { get; init; }
 
@@ -69,6 +70,7 @@ namespace Stryker.Core.Options
                 Since = Since,
                 DiffIgnoreChanges = DiffIgnoreChanges,
                 ExcludedMutations = ExcludedMutations,
+                ExcludedLinqExpressions = ExcludedLinqExpressions,
                 FallbackVersion = FallbackVersion,
                 IgnoredMethods = IgnoredMethods,
                 LanguageVersion = LanguageVersion,
