@@ -151,15 +151,37 @@ namespace Stryker.Core.UnitTest.Options
         }
 
         [Theory]
+        [InlineData(100, 90, 80)]
+        [InlineData(100, 90, 90)]
+        [InlineData(100, 100, 90)]
+        [InlineData(100, 100, 100)]
+        public void ShouldValidateThresholdsCorrect(int high, int low, int @break)
+        {
+            _ = new StrykerOptions(thresholdHigh: high, thresholdLow: low, thresholdBreak: @break);
+        }
+
+        [Theory]
         [InlineData(101, "The thresholds must be between 0 and 100")]
         [InlineData(1000, "The thresholds must be between 0 and 100")]
         [InlineData(-1, "The thresholds must be between 0 and 100")]
-        [InlineData(59, "The values of your thresholds are incorrect. Change `--threshold-break` to the lowest value and `--threshold-high` to the highest.")]
-        public void ShouldValidateThresholdsIncorrect(int thresholdHigh, string message)
+        public void ShouldValidateThresholdsIncorrectOutOfRange(int thresholdHigh, string message)
         {
             var ex = Assert.Throws<StrykerInputException>(() =>
             {
                 var options = new StrykerOptions(thresholdHigh: thresholdHigh, thresholdLow: 60, thresholdBreak: 60);
+            });
+            ex.Details.ShouldBe(message);
+        }
+
+        [Theory]
+        [InlineData(90, 100, 80, "Threshold high must be higher than or equal to threshold low. Current high: 90, low: 100.")]
+        [InlineData(90, 80, 100, "Threshold high must be higher than or equal to threshold break. Current high: 90, break: 100.")]
+        [InlineData(100, 80, 90, "Threshold low must be higher than or equal to threshold break. Current low: 80, break: 90.")]
+        public void ShouldValidateThresholdsIncorrectInRegardsToEachOther(int high, int low, int @break, string message)
+        {
+            var ex = Assert.Throws<StrykerInputException>(() =>
+            {
+                var options = new StrykerOptions(thresholdHigh: high, thresholdLow: low, thresholdBreak: @break);
             });
             ex.Details.ShouldBe(message);
         }

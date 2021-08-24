@@ -577,12 +577,25 @@ namespace Stryker.Core.Options
                     "The thresholds must be between 0 and 100");
             }
 
-            // ThresholdLow and ThresholdHigh can be the same value
-            if (thresholdBreak >= thresholdLow || thresholdLow > thresholdHigh)
+            if (thresholdLow > thresholdHigh)
             {
                 throw new StrykerInputException(
                     ErrorMessage,
-                    "The values of your thresholds are incorrect. Change `--threshold-break` to the lowest value and `--threshold-high` to the highest.");
+                    $"Threshold high must be higher than or equal to threshold low. Current high: {thresholdHigh}, low: {thresholdLow}.");
+            }
+
+            if (thresholdBreak > thresholdHigh)
+            {
+                throw new StrykerInputException(
+                    ErrorMessage,
+                    $"Threshold high must be higher than or equal to threshold break. Current high: {thresholdHigh}, break: {thresholdBreak}.");
+            }
+
+            if (thresholdBreak > thresholdLow)
+            {
+                throw new StrykerInputException(
+                    ErrorMessage,
+                    $"Threshold low must be higher than or equal to threshold break. Current low: {thresholdLow}, break: {thresholdBreak}.");
             }
 
             return new Threshold(thresholdHigh, thresholdLow, thresholdBreak);
