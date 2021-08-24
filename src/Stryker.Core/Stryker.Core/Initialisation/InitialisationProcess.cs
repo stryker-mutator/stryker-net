@@ -120,7 +120,7 @@ namespace Stryker.Core.Initialisation
 
                 if (!projectInfo.ProjectUnderTestAnalyzerResult.Properties.TryGetValue("TargetPath", out var targetPath))
                 {
-                    throw new StrykerInputException($"Can't read {subject.ToLowerInvariant()} because the TargetPath property was not found in {projectFilePath}");
+                    throw new InputException($"Can't read {subject.ToLowerInvariant()} because the TargetPath property was not found in {projectFilePath}");
                 }
 
                 _logger.LogTrace("{Subject} missing for the dashboard reporter, reading it from {TargetPath}. " +
@@ -144,9 +144,9 @@ namespace Stryker.Core.Initialisation
                         _logger.LogDebug("Using {ProjectVersion} as project version for the dashboard reporter. (Read from the AssemblyInformationalVersion assembly attribute of {TargetName})", dashboardReporter.ProjectVersion, targetName);
                     }
                 }
-                catch (Exception e) when (e is not StrykerInputException)
+                catch (Exception e) when (e is not InputException)
                 {
-                    throw new StrykerInputException($"Failed to read {subject.ToLowerInvariant()} from {targetPath}", e);
+                    throw new InputException($"Failed to read {subject.ToLowerInvariant()} from {targetPath} because of error {e.Message}");
                 }
             }
         }
@@ -160,14 +160,14 @@ namespace Stryker.Core.Initialisation
 
             if (repositoryUrl == null)
             {
-                throw new StrykerInputException($"Failed to retrieve the RepositoryUrl from the AssemblyMetadataAttribute of {module.FileName}", details);
+                throw new InputException($"Failed to retrieve the RepositoryUrl from the AssemblyMetadataAttribute of {module.FileName}", details);
             }
 
             const string schemeSeparator = "://";
             var indexOfScheme = repositoryUrl.IndexOf(schemeSeparator, StringComparison.Ordinal);
             if (indexOfScheme < 0)
             {
-                throw new StrykerInputException($"Failed to compute the project name from the repository URL ({repositoryUrl}) because it doesn't contain a scheme ({schemeSeparator})", details);
+                throw new InputException($"Failed to compute the project name from the repository URL ({repositoryUrl}) because it doesn't contain a scheme ({schemeSeparator})", details);
             }
 
             return repositoryUrl.Substring(indexOfScheme + schemeSeparator.Length);
@@ -181,7 +181,7 @@ namespace Stryker.Core.Initialisation
 
             if (assemblyInformationalVersion == null)
             {
-                throw new StrykerInputException($"Failed to retrieve the AssemblyInformationalVersionAttribute of {module.FileName}", details);
+                throw new InputException($"Failed to retrieve the AssemblyInformationalVersionAttribute of {module.FileName}", details);
             }
 
             return assemblyInformationalVersion;
