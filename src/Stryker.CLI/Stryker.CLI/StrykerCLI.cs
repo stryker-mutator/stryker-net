@@ -154,7 +154,7 @@ namespace Stryker.CLI
 
                 Console.WriteLine(Output.Green(" Looks like you've got some work to do :)"));
 
-                ExitCode = 42;
+                ExitCode = ExitCodes.BreakThresholdViolated;
             }
         }
 
