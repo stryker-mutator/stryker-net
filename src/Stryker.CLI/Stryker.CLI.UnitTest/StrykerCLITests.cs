@@ -312,7 +312,7 @@ namespace Stryker.CLI.UnitTest
         }
 
         [Fact]
-        public void StrykerCLI_OnMutationScoreBelowThresholdBreak_ShouldReturnExitCode1()
+        public void StrykerCLI_OnMutationScoreBelowThresholdBreak_ShouldReturnExitCode42()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions(thresholdBreak: 40);
@@ -324,8 +324,8 @@ namespace Stryker.CLI.UnitTest
             var result = target.Run(new string[] { });
 
             mock.Verify();
-            target.ExitCode.ShouldBe(1);
-            result.ShouldBe(1);
+            target.ExitCode.ShouldBe(42);
+            result.ShouldBe(42);
         }
 
         [Fact]
