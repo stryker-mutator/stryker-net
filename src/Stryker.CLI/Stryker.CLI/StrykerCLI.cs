@@ -24,7 +24,7 @@ namespace Stryker.CLI
             _stryker = stryker;
             // Create a log buffer to buffer log messages until the logging is configured.
             _logBuffer = new LogBuffer();
-            ExitCode = 0;
+            ExitCode = ExitCodes.Success;
         }
 
         /// <summary>
@@ -154,7 +154,7 @@ namespace Stryker.CLI
 
                 Console.WriteLine(Output.Green(" Looks like you've got some work to do :)"));
 
-                ExitCode = ErrorCodes.BreakThresholdViolated;
+                ExitCode = ExitCodes.BreakThresholdViolated;
             }
         }
 
