@@ -1,14 +1,14 @@
 namespace Stryker.CLI
 {
     /// <summary>
-    /// Known Stryker exit codes.
+    /// Known Stryker error codes.
     /// </summary>
-    public static class ExitCodes
+    public static class ErrorCodes
     {
         /// <summary>
-        /// Stryker is executed against .NET Framework but no solution file is given.
+        /// Anything bad happened for reasons besides the ones specified below.
         /// </summary>
-        public static int NoSolutionFileSpecified = 1;
+        public static int OtherError = 1;
 
         /// <summary>
         /// Mutation score is below the break threshold.
