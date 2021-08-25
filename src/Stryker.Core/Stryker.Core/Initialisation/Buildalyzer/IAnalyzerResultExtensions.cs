@@ -122,11 +122,18 @@ namespace Stryker.Core.Initialisation.Buildalyzer
                 }
                 catch (Exception e)
                 {
-                    logger?.LogWarning(e,
-                        $"Analyzer assembly {analyzer} could not be loaded. {Environment.NewLine}" +
-                        $"Generated source code may be missing.");
-
-                    continue;
+                    if (e is FileNotFoundException exc && exc?.FileName?.Contains("Microsoft.CodeAnalysis") == true)
+                    {
+                        logger?.LogDebug(e,
+                            $"Analyzer assembly {analyzer} could not be loaded. {Environment.NewLine}" +
+                            "Generated source code may be missing.");
+                    }
+                    else
+                    {
+                        logger?.LogWarning(e,
+                        $"Analyzer/Generator assembly {analyzer} could not be loaded. {Environment.NewLine}" +
+                        "Generated source code may be missing.");
+                    }
                 }
             }
             return generators;
