@@ -264,24 +264,19 @@ stages:
         custom: 'restore'
         arguments: '--packages ./.vstest/'
         workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
-    - task: DotNetCoreCLI@2 # Microsoft broke implicit restore on build so let's just keep this here..
-      displayName: 'Restore'
-      inputs:
-        command: 'restore'
-        projects: 'src/Stryker.CLI/Stryker.CLI.sln'
     - task: DotNetCoreCLI@2
       displayName: 'Pack Stryker.CLI'
       inputs:
         command: custom
         custom: pack
-        arguments: --output $(Build.ArtifactStagingDirectory)/release --configuration Release
+        arguments: --output $(Build.ArtifactStagingDirectory)/release
         workingDirectory: 'src/Stryker.CLI/Stryker.CLI'
     - task: DotNetCoreCLI@2
       displayName: 'Pack Stryker.Core'
       inputs:
         command: custom
         custom: pack
-        arguments: --output $(Build.ArtifactStagingDirectory)/release --configuration Release
+        arguments: --output $(Build.ArtifactStagingDirectory)/release
         workingDirectory: 'src/Stryker.Core/Stryker.Core'
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: release'
@@ -307,25 +302,17 @@ stages:
         custom: 'restore'
         arguments: '--packages ./.vstest/'
         workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
-    - task: DotNetCoreCLI@2 # Microsoft broke implicit restore on build so let's just keep this here..
-      displayName: 'Restore'
-      inputs:
-        command: 'restore'
-        projects: 'src/Stryker.CLI/Stryker.CLI.sln'
-    - task: DotNetCoreCLI@2
+    - script: dotnet pack --output $(Build.ArtifactStagingDirectory)/release
       displayName: 'Pack Stryker.CLI'
-      inputs:
-        command: custom
-        custom: pack
-        arguments: --output $(Build.ArtifactStagingDirectory)/release --configuration Debug
-        workingDirectory: 'src/Stryker.CLI/Stryker.CLI'
-    - task: DotNetCoreCLI@2
+      workingDirectory: 'src/Stryker.CLI/Stryker.CLI'
+    - script: dotnet pack --output $(Build.ArtifactStagingDirectory)/release
       displayName: 'Pack Stryker.Core'
+      workingDirectory: 'src/Stryker.Core/Stryker.Core'
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: release'
       inputs:
-        command: custom
-        custom: pack
-        arguments: --output $(Build.ArtifactStagingDirectory)/release --configuration Debug
-        workingDirectory: 'src/Stryker.Core/Stryker.Core'
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/release'
+        ArtifactName: release
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: release'
       inputs:
