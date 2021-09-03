@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
 using System.Collections.Generic;
@@ -46,7 +46,7 @@ namespace Stryker.Core.ToolHelpers
                     var vsWhereCommand = "-latest -requires Microsoft.Component.MSBuild -products * -find MSBuild\\**\\Bin\\MSBuild.exe";
                     var vsWhereResult = _processExecutor.Start(visualStudioPath, vsWherePath, vsWhereCommand);
 
-                    if (vsWhereResult.ExitCode == 0)
+                    if (vsWhereResult.ExitCode == ExitCodes.Success)
                     {
                         var msBuildPath = vsWhereResult.Output.Trim();
                         if (_fileSystem.File.Exists(msBuildPath))

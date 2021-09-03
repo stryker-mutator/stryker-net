@@ -18,7 +18,7 @@ namespace Stryker.CLI
             {
                 Output.Yellow("Stryker.NET failed to mutate your project. For more information see the logs below:");
                 Console.WriteLine(strEx.ToString());
-                return 1;
+                return ExitCodes.OtherError;
             }
         }
     }
