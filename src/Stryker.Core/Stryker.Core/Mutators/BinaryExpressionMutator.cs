@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
@@ -38,14 +38,14 @@ namespace Stryker.Core.Mutators
         public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node)
         {
             // skip string additions
-            if (node.Kind() == SyntaxKind.AddExpression && (node.Left.IsAStringExpression()|| node.Right.IsAStringExpression()))
+            if (node.Kind() == SyntaxKind.AddExpression && (node.Left.IsAStringExpression() || node.Right.IsAStringExpression()))
             {
                 yield break;
             }
 
-            if(_kindsToMutate.ContainsKey(node.Kind()))
+            if (_kindsToMutate.ContainsKey(node.Kind()))
             {
-                foreach(var mutationKind in _kindsToMutate[node.Kind()])
+                foreach (var mutationKind in _kindsToMutate[node.Kind()])
                 {
                     var replacementNode = SyntaxFactory.BinaryExpression(mutationKind, node.Left, node.Right);
                     // make sure the trivia stays in place for displaying
@@ -76,8 +76,8 @@ namespace Stryker.Core.Mutators
                 return Mutator.Logical;
             }
 
-            if (kindString.Contains("Equals") 
-                || kindString.Contains("Greater") 
+            if (kindString.Contains("Equals")
+                || kindString.Contains("Greater")
                 || kindString.Contains("Less"))
             {
                 return Mutator.Equality;

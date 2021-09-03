@@ -9,28 +9,32 @@ namespace Stryker.Core.MutantFilters
     /// <summary>
     /// Checks if the mutation should be skipped depending on the file and position of the mutation.
     /// </summary>
-    /// <seealso cref="Stryker.Core.MutantFilters.IMutantFilter" />
     public class FilePatternMutantFilter : IMutantFilter
     {
         public string DisplayName => "file filter";
+        private readonly IEnumerable<FilePattern> _includePattern;
+        private readonly IEnumerable<FilePattern> _excludePattern;
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, IStrykerOptions options)
+        public FilePatternMutantFilter(StrykerOptions options)
         {
-            var includePattern = options.FilePatterns.Where(x => !x.IsExclude).ToList();
-            var excludePattern = options.FilePatterns.Where(x => x.IsExclude).ToList();
+            _includePattern = options.Mutate.Where(x => !x.IsExclude).ToList();
+            _excludePattern = options.Mutate.Where(x => x.IsExclude).ToList();
+        }
 
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
+        {
             return mutants.Where(IsMutantIncluded);
 
             bool IsMutantIncluded(Mutant mutant)
             {
                 // Check if the the mutant is included.
-                if (!includePattern.Any(MatchesPattern))
+                if (!_includePattern.Any(MatchesPattern))
                 {
                     return false;
                 }
 
                 // Check if the mutant is excluded.
-                if (excludePattern.Any(MatchesPattern))
+                if (_excludePattern.Any(MatchesPattern))
                 {
                     return false;
                 }
@@ -41,7 +45,7 @@ namespace Stryker.Core.MutantFilters
                 {
                     // We check both the full and the relative path to allow for relative paths.
                     return pattern.IsMatch(file.FullPath, mutant.Mutation.OriginalNode.Span) ||
-                           pattern.IsMatch(file.RelativePathToProjectFile, mutant.Mutation.OriginalNode.Span);
+                           pattern.IsMatch(file.RelativePath, mutant.Mutation.OriginalNode.Span);
                 }
             }
         }

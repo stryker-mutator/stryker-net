@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
 using System.Collections.Generic;
@@ -35,7 +35,8 @@ namespace Stryker.Core.ToolHelpers
                 return @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe";
             }
             // See if any MSBuild.exe can be found in visual studio installation folder
-            foreach (string drive in Directory.GetLogicalDrives()) {
+            foreach (string drive in Directory.GetLogicalDrives())
+            {
                 var visualStudioPath = Path.Combine(drive, "Program Files (x86)", "Microsoft Visual Studio");
                 if (_fileSystem.Directory.Exists(visualStudioPath))
                 {
@@ -45,7 +46,7 @@ namespace Stryker.Core.ToolHelpers
                     var vsWhereCommand = "-latest -requires Microsoft.Component.MSBuild -products * -find MSBuild\\**\\Bin\\MSBuild.exe";
                     var vsWhereResult = _processExecutor.Start(visualStudioPath, vsWherePath, vsWhereCommand);
 
-                    if (vsWhereResult.ExitCode == 0)
+                    if (vsWhereResult.ExitCode == ExitCodes.Success)
                     {
                         var msBuildPath = vsWhereResult.Output.Trim();
                         if (_fileSystem.File.Exists(msBuildPath))

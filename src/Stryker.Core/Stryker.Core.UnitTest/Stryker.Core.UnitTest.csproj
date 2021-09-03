@@ -1,22 +1,17 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-  </PropertyGroup>
 
-  <PropertyGroup>
-    <xunit>2.4.1</xunit>
-  </PropertyGroup>
-  
   <ItemGroup>
     <Compile Remove="TestResources\ExampleSourceFile.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="TestResources\StrongNameKeyFile.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="TestResources\FsharpExampleSourceFile.fs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="TestResources\StrongNameKeyFile.snk">
@@ -29,22 +24,27 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeCoverage" Version="$(MicrosoftTestPlatform)" /> 				<!-- From Directory.Build.props -->
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestPlatform)" /> 				<!-- From Directory.Build.props -->
-    <PackageReference Include="Moq" Version="4.15.2" />
+    <Content Include="TestResources\FsharpExampleSourceFile.fs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeCoverage" Version="$(MicrosoftTestPlatform)" />  <!-- From Directory.Build.props -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestPlatform)" />  <!-- From Directory.Build.props -->
+    <PackageReference Include="Moq" Version="4.16.1" />
     <PackageReference Include="Shouldly" Version="4.0.3" />
-    <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="$(SystemIOAbstractions)" /> 	<!-- From Directory.Build.props -->
-    <PackageReference Include="xunit" Version="$(xunit)" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="$(xunit)" />
+    <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="$(SystemIOAbstractions)" />  <!-- From Directory.Build.props -->
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" PrivateAssets="all"/>
     <PackageReference Include="Xunit.SkippableFact" Version="1.4.13" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Stryker.Core\Stryker.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+    <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="MutantFilters\" />
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
 </Project>

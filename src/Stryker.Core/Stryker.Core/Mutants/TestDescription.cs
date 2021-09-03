@@ -1,64 +1,36 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using System;
 
 namespace Stryker.Core.Mutants
 {
     public sealed class TestDescription
     {
-        private static readonly TestDescription AllTestsDescription;
-        private static readonly string AllTestsGuid = "-1";
-
-        public TestDescription(string guid, string name, string testfilePath)
+        public TestDescription(Guid id, string name, string testFilePath)
         {
-            Guid = guid;
+            Id = id;
             Name = name;
-            TestfilePath = testfilePath;
+            TestFilePath = testFilePath;
         }
 
-        static TestDescription()
-        {
-            AllTestsDescription = new TestDescription(AllTestsGuid, "All Tests", "");
-        }
-
-        /// <summary>
-        /// Returns an 'all tests' description for test runners that does not support test selection.
-        /// </summary>
-        public static TestDescription AllTests()
-        {
-            return AllTestsDescription;
-        }
-
-        public string Guid { get; }
+        public Guid Id { get; }
 
         public string Name { get; }
 
-        public bool IsAllTests => Guid == AllTestsGuid;
-
-        public string TestfilePath { get; }
-
-
+        public string TestFilePath { get; }
 
         private bool Equals(TestDescription other)
         {
-            return string.Equals(Guid, other.Guid) || IsAllTests || other.IsAllTests;
+            return Id == other.Id;
         }
-
-        public static implicit operator TestDescription(TestCase test)
-        {
-            return new TestDescription(test.Id.ToString(), test.FullyQualifiedName, test.CodeFilePath);
-        }
-
         public override bool Equals(object obj)
         {
-            if (ReferenceEquals(null, obj)) return false;
+            if (obj is null) return false;
             if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == this.GetType() && Equals((TestDescription) obj);
+            return obj.GetType() == GetType() && Equals((TestDescription) obj);
         }
 
         public override int GetHashCode()
         {
-            return (Guid != null ? Guid.GetHashCode() : 0);
+            return Id.GetHashCode();
         }
     }
 }

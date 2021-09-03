@@ -1,4 +1,4 @@
-﻿using Buildalyzer;
+using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Moq;
@@ -11,12 +11,13 @@ using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.IO.Abstractions.TestingHelpers;
 using System.Reflection;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Compiling
 {
-    public class CompilingProcessTests
+    public class CompilingProcessTests : TestBase
     {
         [Fact]
         public void CompilingProcessTests_ShouldCompile()
@@ -35,7 +36,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo()
+                ProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -55,7 +56,7 @@ namespace ExampleProject
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
 
-            var target = new CompilingProcess(input, rollbackProcessMock.Object);
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
             using (var ms = new MemoryStream())
             {
@@ -82,7 +83,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo()
+                ProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -108,13 +109,13 @@ namespace ExampleProject
                                 Compilation = compilation
                             });
 
-            var target = new CompilingProcess(input, rollbackProcessMock.Object);
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
             using (var ms = new MemoryStream())
             {
-                Should.Throw<StrykerCompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false));
+                Should.Throw<CompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false));
             }
-            rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), false,false),
+            rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), false, false),
                 Times.AtLeast(2));
         }
 
@@ -135,7 +136,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo()
+                ProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -155,7 +156,7 @@ namespace ExampleProject
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
 
-            var target = new CompilingProcess(input, rollbackProcessMock.Object);
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
             using (var ms = new MemoryStream())
             {
@@ -182,7 +183,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo()
+                ProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -206,7 +207,7 @@ namespace ExampleProject
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
 
-            var target = new CompilingProcess(input, rollbackProcessMock.Object);
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
             using (var ms = new MemoryStream())
             {
@@ -236,7 +237,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo()
+                ProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -260,11 +261,11 @@ namespace ExampleProject
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
 
-            var target = new CompilingProcess(input, rollbackProcessMock.Object);
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
             using (var ms = new MemoryStream())
             {
-                Should.Throw<StrykerCompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false));
+                Should.Throw<CompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false));
             }
         }
 
@@ -285,7 +286,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo()
+                ProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         properties: new Dictionary<string, string>()
@@ -308,7 +309,7 @@ namespace ExampleProject
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
 
-            var target = new CompilingProcess(input, rollbackProcessMock.Object);
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
             using (var ms = new MemoryStream())
             {

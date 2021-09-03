@@ -1,29 +1,24 @@
-﻿using Crayon;
+using System;
+using Crayon;
 using Stryker.Core;
 using Stryker.Core.Exceptions;
-using System;
 
 namespace Stryker.CLI
 {
-    public class Program
+    public static class Program
     {
-        static int Main(string[] args)
+        public static int Main(string[] args)
         {
             try
             {
-                var stryker = new StrykerRunner();
-                var app = new StrykerCLI(stryker);
+                var app = new StrykerCli();
                 return app.Run(args);
             }
-            catch (StrykerInputException strEx)
+            catch (InputException strEx)
             {
                 Output.Yellow("Stryker.NET failed to mutate your project. For more information see the logs below:");
                 Console.WriteLine(strEx.ToString());
-                return 1;
-            }
-            catch (Exception)
-            {
-                return 1;
+                return ExitCodes.OtherError;
             }
         }
     }

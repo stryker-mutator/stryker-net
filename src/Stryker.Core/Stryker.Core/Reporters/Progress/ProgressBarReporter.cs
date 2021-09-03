@@ -1,72 +1,90 @@
-﻿using System;
-using System.Text;
+using System;
+using System.IO;
+using Crayon;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Reporters.Progress
 {
     public interface IProgressBarReporter
     {
-        void ReportInitialState(int totalNumberOfMutants);
-        void ReportRunTest();
+        void ReportInitialState(int mutantsToBeTested);
+        void ReportRunTest(IReadOnlyMutant mutantTestResult);
+        void ReportFinalState();
     }
 
-    public class ProgressBarReporter : IProgressBarReporter
+    public class ProgressBarReporter : IProgressBarReporter, IDisposable
     {
-        private const int MaxProgressBar = 10;
-        private const char ProgressBarDoneToken = '\u2588';
-        private const char ProgressBarLeftToken = '-';
-        private const string LoggingFormat = "Testing mutant | {0} | {1} / {2} | {3} % | {4} |";
+        private const string LoggingFormat = "│ Testing mutant {0} / {1} │ K {2} │ S {3} │ T {4} │ {5} │";
 
-        private readonly IConsoleOneLineLogger _testsProgressLogger;
+        private readonly IProgressBar _progressBar;
         private readonly IStopWatchProvider _stopWatch;
+        private readonly TextWriter _consoleWriter;
 
-        private int _totalNumberOfMutants;
-        private int _numberOfMutantsRun;
+        private int _mutantsToBeTested;
+        private int _numberOfMutantsRan;
+        private bool _disposedValue;
 
-        public ProgressBarReporter(IConsoleOneLineLogger testsProgressLogger, IStopWatchProvider stopWatch)
+        private int _mutantsKilledCount;
+        private int _mutantsSurvivedCount;
+        private int _mutantsTimeoutCount;
+
+        public ProgressBarReporter(IProgressBar progressBar, IStopWatchProvider stopWatch, TextWriter consoleWriter = null)
         {
-            _testsProgressLogger = testsProgressLogger;
+            _progressBar = progressBar;
             _stopWatch = stopWatch;
+            _consoleWriter = consoleWriter ?? Console.Out;
         }
 
-        public void ReportInitialState(int totalNumberOfMutants)
+        public void ReportInitialState(int mutantsToBeTested)
         {
             _stopWatch.Start();
-            _totalNumberOfMutants = totalNumberOfMutants;
+            _mutantsToBeTested = mutantsToBeTested;
 
-            _testsProgressLogger.StartLog(LoggingFormat,
-                                        GenerateProgressBar(0),
-                                        0,
-                                        _totalNumberOfMutants,
-                                        0,
-                                        RemainingTime());
+            _progressBar.Start(_mutantsToBeTested, string.Format(LoggingFormat, 0, _mutantsToBeTested, _mutantsKilledCount, _mutantsSurvivedCount, _mutantsTimeoutCount, RemainingTime()));
         }
 
-        public void ReportRunTest()
+        public void ReportRunTest(IReadOnlyMutant mutantTestResult)
         {
-            _numberOfMutantsRun++;
+            _numberOfMutantsRan++;
 
-            var totalNumberOfTestsPercentage = _numberOfMutantsRun * 100 / _totalNumberOfMutants;
-            var progressBarCount = totalNumberOfTestsPercentage / 10;
+            switch (mutantTestResult.ResultStatus)
+            {
+                case MutantStatus.Killed:
+                    _mutantsKilledCount++;
+                    break;
+                case MutantStatus.Survived:
+                    _mutantsSurvivedCount++;
+                    break;
+                case MutantStatus.Timeout:
+                    _mutantsTimeoutCount++;
+                    break;
+            };
 
-            var stringBuilder = GenerateProgressBar(progressBarCount);
+            _progressBar.Tick(string.Format(LoggingFormat, _numberOfMutantsRan, _mutantsToBeTested, _mutantsKilledCount, _mutantsSurvivedCount, _mutantsTimeoutCount, RemainingTime()));
+        }
 
-            _testsProgressLogger.ReplaceLog(LoggingFormat,
-                                            stringBuilder,
-                                            _numberOfMutantsRun,
-                                            _totalNumberOfMutants,
-                                            totalNumberOfTestsPercentage,
-                                            RemainingTime());
+        public void ReportFinalState()
+        {
+            _progressBar.Tick(string.Format(LoggingFormat, _numberOfMutantsRan, _mutantsToBeTested, _mutantsKilledCount, _mutantsSurvivedCount, _mutantsTimeoutCount, RemainingTime()));
+            Dispose();
+
+            var length = _mutantsToBeTested.ToString().Length;
+
+            _consoleWriter.WriteLine();
+            _consoleWriter.WriteLine($"Killed:   {Output.Bright.Magenta(_mutantsKilledCount.ToString().PadLeft(length))}");
+            _consoleWriter.WriteLine($"Survived: {Output.Bright.Magenta(_mutantsSurvivedCount.ToString().PadLeft(length))}");
+            _consoleWriter.WriteLine($"Timeout:  {Output.Bright.Magenta(_mutantsTimeoutCount.ToString().PadLeft(length))}");
         }
 
         private string RemainingTime()
         {
-            if (_totalNumberOfMutants == 0 || _numberOfMutantsRun == 0)
+            if (_mutantsToBeTested == 0 || _numberOfMutantsRan == 0)
             {
                 return "NA";
             }
 
             var elapsed = _stopWatch.GetElapsedMillisecond();
-            var remaining = (_totalNumberOfMutants - _numberOfMutantsRun) * elapsed / _numberOfMutantsRun;
+            var remaining = (_mutantsToBeTested - _numberOfMutantsRan) * elapsed / _numberOfMutantsRan;
 
             return MillisecondsToText(remaining);
         }
@@ -87,21 +105,24 @@ namespace Stryker.Core.Reporters.Progress
             return span.ToString(@"\~m\m\ ss\s");
         }
 
-        private string GenerateProgressBar(int progressBarCount)
+        protected virtual void Dispose(bool disposing)
         {
-            var stringBuilder = new StringBuilder();
-            for (int i = 0; i < MaxProgressBar; i++)
+            if (!_disposedValue)
             {
-                if (i < progressBarCount)
+                if (disposing)
                 {
-                    stringBuilder.Append(ProgressBarDoneToken);
-                    continue;
+                    _stopWatch?.Stop();
+                    _progressBar?.Stop();
                 }
 
-                stringBuilder.Append(ProgressBarLeftToken);
+                _disposedValue = true;
             }
+        }
 
-            return stringBuilder.ToString();
+        public void Dispose()
+        {
+            Dispose(disposing: true);
+            GC.SuppressFinalize(this);
         }
     }
 }

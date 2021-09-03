@@ -7,6 +7,6 @@ namespace Stryker.Core.Mutators
 {
     public interface IMutator
     {
-        IEnumerable<Mutation> Mutate(SyntaxNode node, IStrykerOptions options);
+        IEnumerable<Mutation> Mutate(SyntaxNode node, StrykerOptions options);
     }
 }

@@ -1,6 +1,9 @@
-﻿using Stryker.Core.Mutants;
-using Stryker.Core.ProjectComponents;
+using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Reporters
 {
@@ -18,11 +21,16 @@ namespace Stryker.Core.Reporters
             Reporters = reporters;
         }
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent inputComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
         {
             foreach (var reporter in Reporters)
             {
-                reporter.OnMutantsCreated(inputComponent);
+                reporter.OnMutantsCreated(reportComponent);
+            }
+            // todo: refactor to lifecycle event
+            if ((reportComponent.Mutants ?? Enumerable.Empty<IReadOnlyMutant>()).Any())
+            {
+                new FilteredMutantsLogger().OnMutantsCreated(reportComponent);
             }
         }
 
@@ -45,11 +53,14 @@ namespace Stryker.Core.Reporters
             }
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent inputComponent)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
         {
+            // make sure all other console caches are flushed before writing final reports
+            Thread.Sleep(TimeSpan.FromSeconds(1));
+
             foreach (var reporter in Reporters)
             {
-                reporter.OnAllMutantsTested(inputComponent);
+                reporter.OnAllMutantsTested(reportComponent);
             }
         }
     }

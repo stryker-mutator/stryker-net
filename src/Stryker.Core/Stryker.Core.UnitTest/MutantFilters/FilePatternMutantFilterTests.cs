@@ -11,12 +11,12 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
-    public class FilePatternMutantFilterTests
+    public class FilePatternMutantFilterTests : TestBase
     {
         [Fact]
         public static void ShouldHaveName()
         {
-            var target = new FilePatternMutantFilter() as IMutantFilter;
+            var target = new FilePatternMutantFilter(new StrykerOptions()) as IMutantFilter;
             target.DisplayName.ShouldBe("file filter");
         }
 
@@ -42,8 +42,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
             bool shouldKeepFile)
         {
             // Arrange
-            var options = new StrykerOptions(mutate: patterns);
-            var file = new FileLeaf { RelativePath = filePath, FullPath = Path.Combine("C:/test/", filePath) };
+            var options = new StrykerOptions() { Mutate = patterns.Select(FilePattern.Parse) };
+            var file = new CsharpFileLeaf { RelativePath = filePath, FullPath = Path.Combine("C:/test/", filePath) };
 
             // Create token with the correct text span
             var syntaxToken = SyntaxFactory.Identifier(
@@ -52,12 +52,12 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 SyntaxTriviaList.Empty);
 
             var mutant = new Mutant
-                { Mutation = new Mutation { OriginalNode = SyntaxFactory.IdentifierName(syntaxToken) } };
+            { Mutation = new Mutation { OriginalNode = SyntaxFactory.IdentifierName(syntaxToken) } };
 
-            var sut = new FilePatternMutantFilter();
+            var sut = new FilePatternMutantFilter(options);
 
             // Act
-            var result = sut.FilterMutants(new[] { mutant }, file.ToReadOnly(), options);
+            var result = sut.FilterMutants(new[] { mutant }, file.ToReadOnly(), null);
 
             // Assert
             result.Contains(mutant).ShouldBe(shouldKeepFile);

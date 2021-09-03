@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
@@ -8,10 +8,10 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
-    public class CheckedMutatorTests
+    public class CheckedMutatorTests : TestBase
     {
         [Fact]
-        public void ShouldBeMutationlevelComplete()
+        public void ShouldBeMutationLevelComplete()
         {
             var target = new CheckedMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
@@ -34,12 +34,12 @@ namespace Stryker.Core.UnitTest.Mutators
 
         [Theory]
         [InlineData(SyntaxKind.UncheckedExpression)]
-        public void ShouldNotMutate(SyntaxKind orginal)
+        public void ShouldNotMutate(SyntaxKind original)
         {
             var target = new CheckedMutator();
 
             ExpressionSyntax es = SyntaxFactory.ParseExpression("4 + 2");
-            var result = target.ApplyMutations(SyntaxFactory.CheckedExpression(orginal, es)).ToList();
+            var result = target.ApplyMutations(SyntaxFactory.CheckedExpression(original, es)).ToList();
 
             result.ShouldBeEmpty();
         }

@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class BroadcastReporterTests
+    public class BroadcastReporterTests : TestBase
     {
         [Fact]
         public void BroadcastReporter_ShouldInvokeSameMethodWithSameObject_OnAllMutantsTested()
@@ -15,7 +15,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>()));
 
-            var exampleInputComponent = new ReadOnlyFileLeaf(new FileLeaf());
+            var exampleInputComponent = new ReadOnlyFileLeaf(new CsharpFileLeaf());
             var exampleMutant = new Mutant();
 
             var reporters = new Collection<IReporter>()
@@ -35,7 +35,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()));
 
-            var exampleInputComponent = new FileLeaf().ToReadOnlyInputComponent();
+            var exampleInputComponent = new CsharpFileLeaf().ToReadOnlyInputComponent();
             var exampleMutant = new Mutant();
 
             var reporters = new Collection<IReporter>()
@@ -55,7 +55,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
 
-            var exampleInputComponent = new FileLeaf();
+            var exampleInputComponent = new CsharpFileLeaf();
             var exampleMutant = new Mutant();
 
             var reporters = new Collection<IReporter>()
@@ -77,7 +77,7 @@ namespace Stryker.Core.UnitTest.Reporters
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()));
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
 
-            var exampleInputComponent = new ReadOnlyFileLeaf(new FileLeaf());
+            var exampleInputComponent = new ReadOnlyFileLeaf(new CsharpFileLeaf());
             var exampleMutant = new Mutant();
 
             var reporters = new Collection<IReporter>()
@@ -101,7 +101,7 @@ namespace Stryker.Core.UnitTest.Reporters
         {
             var reporters = new Collection<IReporter>() { };
 
-            var exampleInputComponent = new ReadOnlyFileLeaf(new FileLeaf());
+            var exampleInputComponent = new ReadOnlyFileLeaf(new CsharpFileLeaf());
             var exampleMutant = new Mutant();
 
             var target = new BroadcastReporter(reporters);

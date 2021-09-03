@@ -1,4 +1,4 @@
-﻿// Copyright (c) .NET Foundation and contributors. All rights reserved.
+// Copyright (c) .NET Foundation and contributors. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project root for full license information.
 // Source: https://github.com/dotnet/cli/blob/master/test/Microsoft.DotNet.Tools.Tests.Utilities/Extensions/ProcessExtensions.cs 
 
@@ -57,7 +57,7 @@ namespace Stryker.Core.Testing
                 timeout,
                 out stdout);
 
-            if (exitCode == 0 && !string.IsNullOrEmpty(stdout))
+            if (exitCode == ExitCodes.Success && !string.IsNullOrEmpty(stdout))
             {
                 using (var reader = new StringReader(stdout))
                 {

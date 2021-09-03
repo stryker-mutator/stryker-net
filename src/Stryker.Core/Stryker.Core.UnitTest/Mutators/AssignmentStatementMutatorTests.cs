@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.Mutators;
@@ -7,10 +7,10 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
-    public class AssignmentStatementMutatorTests
+    public class AssignmentStatementMutatorTests : TestBase
     {
         [Fact]
-        public void ShouldBeMutationlevelStandard()
+        public void ShouldBeMutationLevelStandard()
         {
             var target = new AssignmentExpressionMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
@@ -49,7 +49,7 @@ namespace Stryker.Core.UnitTest.Mutators
                 var mutation = result.ShouldHaveSingleItem();
                 mutation.ReplacementNode.IsKind(expectedOutput).ShouldBeTrue();
             }
-            foreach(var mutation in result)
+            foreach (var mutation in result)
             {
                 mutation.Type.ShouldBe(Mutator.Assignment);
                 mutation.DisplayName.ShouldBe($"{input} to {mutation.ReplacementNode.Kind()} mutation");

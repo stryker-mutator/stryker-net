@@ -1,16 +1,18 @@
-﻿using System.ComponentModel.DataAnnotations;
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Shouldly;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
+using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
 {
-    public class MutantPlacerTests
+    public class MutantPlacerTests : TestBase
     {
         [Theory]
         [InlineData(0)]
@@ -39,6 +41,26 @@ namespace Stryker.Core.UnitTest.Mutants
             var removedResult = MutantPlacer.RemoveMutant(result);
 
             removedResult.ToString().ShouldBeSemantically(originalNode.ToString());
+        }
+
+        private void CheckMutantPlacerProperlyPlaceAndRemoveHelpers<T>(string sourceCode, string expectedCode,
+            Func<T, T> placer, Predicate<T> condition = null) where T : SyntaxNode
+        {
+            var actualNode = CSharpSyntaxTree.ParseText(sourceCode).GetRoot();
+
+            var node = actualNode.DescendantNodes().First(t => t is T syntaxNode && (condition == null || condition(syntaxNode))) as T;
+            // inject helper
+            var newNode = placer(node);
+            actualNode = actualNode.ReplaceNode(node, newNode);
+            actualNode.ToFullString().ShouldBeSemantically(expectedCode);
+
+            node = actualNode.DescendantNodes().First(t => t is T {ContainsAnnotations: true}) as T;
+            // Remove helper
+            var restored = MutantPlacer.RemoveMutant(node);
+            actualNode = actualNode.ReplaceNode(node, restored);
+            actualNode.ToFullString().ShouldBeSemantically(sourceCode);
+            // try to remove again
+            Should.Throw<InvalidOperationException>(() => MutantPlacer.RemoveMutant(restored));
         }
 
         [Theory]
@@ -76,19 +98,59 @@ namespace Stryker.Core.UnitTest.Mutants
         public void ShouldConvertExpressionBodyBackAndForth(string original, string injected)
         {
             var source = $"class Test {{{original}}}";
+            var expectedCode = $"class Test {{{injected}}}";
 
-            var actualNode = CSharpSyntaxTree.ParseText(source).GetRoot();
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BaseMethodDeclarationSyntax>(source, expectedCode, MutantPlacer.ConvertExpressionToBody);
+        }
 
-            var node = actualNode.DescendantNodes().First(t => t is BaseMethodDeclarationSyntax) as BaseMethodDeclarationSyntax;
-            actualNode = actualNode.ReplaceNode(node, MutantPlacer.ConvertExpressionToBody(node));
-            actualNode.ToFullString().ShouldBeSemantically($"class Test {{{injected}}}");
+        [Theory]
+        [InlineData("public int X { get => 1;}", "public int X { get {return 1;}}")]
+        [InlineData("public int X { get => 1; set { }}", "public int X { get {return 1;} set { }}")]
+        [InlineData("public int X { set => value++;}", "public int X { set { value++;}}")]
+        public void ShouldConvertAccessorExpressionBodyBackAndForth(string original, string injected)
+        {
+            var source = $"class Test {{{original}}}";
+            var expectedCode = $"class Test {{{injected}}}";
 
-            node =
-                actualNode.DescendantNodes().First(t => t is BaseMethodDeclarationSyntax) as BaseMethodDeclarationSyntax;
-            // Remove marker
-            var restored= MutantPlacer.RemoveMutant(node);
-            actualNode = actualNode.ReplaceNode(node, restored);
-            actualNode.ToFullString().ShouldBeSemantically(source);
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<AccessorDeclarationSyntax>(source, expectedCode, MutantPlacer.ConvertExpressionToBody);
+        }
+
+        [Fact]
+        public void ShouldConvertPropertyExpressionBodyBackAndForth()
+        {
+            var source = "class Test {public int X => 1;}";
+            var expected = "class Test {public int X {get{return 1;}}}";
+
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<PropertyDeclarationSyntax>(source, expected, MutantPlacer.ConvertPropertyExpressionToBodyAccessor);
+        }
+
+        [Fact]
+        public void ShouldInjectReturnAndRestore()
+        {
+            var source = "class Test {bool Method() {x++;}}";
+            var expected = "class Test {bool Method() {x++;return default(bool);}}";
+
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BaseMethodDeclarationSyntax>(source, expected, MutantPlacer.AddEndingReturn);
+        }
+
+        [Fact]
+        public void ShouldInjectInitializersAndRestore()
+        {
+            var source = "class Test {bool Method(out int x) {x=0;}}";
+            var expected = "class Test {bool Method(out int x) {{x = default(int);}x=0;}}";
+
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BaseMethodDeclarationSyntax>(source, expected,
+                (n)=> MutantPlacer.AddDefaultInitialization(n, SyntaxFactory.Identifier("x"), SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword))));
+        }
+
+        [Fact]
+        public void ShouldStaticMarkerInStaticFieldInitializers()
+        {
+            var source = "class Test {static int x = 2;}";
+            var expected = $"class Test {{static int x = {CodeInjection.HelperNamespace}.MutantContext.TrackValue(()=>2);}}";
+
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<ExpressionSyntax>(source, expected,
+                MutantPlacer.PlaceStaticContextMarker, syntax => syntax.Kind() == SyntaxKind.NumericLiteralExpression);
         }
 
         [Fact]
@@ -97,7 +159,10 @@ namespace Stryker.Core.UnitTest.Mutants
             var source = @"class Test {
 static TestClass()=> Value-='a';}";
 
-            var orchestrator = new MutantOrchestrator(options: new StrykerOptions());
+            var orchestrator = new CsharpMutantOrchestrator(options: new StrykerOptions {
+                OptimizationMode = OptimizationModes.CoverageBasedTest,
+                MutationLevel = MutationLevel.Complete
+            });
             var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
 
             var node = actualNode.DescendantNodes().First(t => t is BlockSyntax);
@@ -105,7 +170,7 @@ static TestClass()=> Value-='a';}";
             // Remove marker
             var restored= MutantPlacer.RemoveMutant(node);
             actualNode = actualNode.ReplaceNode(node, restored);
-            
+
             // remove mutation
             node = actualNode.DescendantNodes().First(t => t.Kind() == SyntaxKind.IfStatement);
             restored = MutantPlacer.RemoveMutant(node);
@@ -121,6 +186,5 @@ static TestClass()=> Value-='a';}";
             actualNode.ShouldBeSemantically(expectedNode);
             actualNode.ShouldNotContainErrors();
         }
-
     }
 }

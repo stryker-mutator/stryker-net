@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
@@ -6,10 +6,10 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
-    public class ArrayCreationMutatorTests
+    public class ArrayCreationMutatorTests : TestBase
     {
         [Fact]
-        public void ShouldBeMutationlevelStandard()
+        public void ShouldBeMutationLevelStandard()
         {
             var target = new ArrayCreationMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);

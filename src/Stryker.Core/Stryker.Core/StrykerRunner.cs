@@ -18,19 +18,18 @@ namespace Stryker.Core
 {
     public interface IStrykerRunner
     {
-        StrykerRunResult RunMutationTest(StrykerOptions options, IEnumerable<LogMessage> initialLogMessages = null);
+        StrykerRunResult RunMutationTest(IStrykerInputs inputs, ILoggerFactory loggerFactory, IProjectOrchestrator projectOrchestrator = null);
     }
 
     public class StrykerRunner : IStrykerRunner
     {
-        private readonly IProjectOrchestrator _projectOrchestrator;
         private IEnumerable<IMutationTestProcess> _mutationTestProcesses;
         private ILogger _logger;
         private readonly IReporterFactory _reporterFactory;
 
-        public StrykerRunner(IProjectOrchestrator projectOrchestrator = null, IEnumerable<IMutationTestProcess> mutationTestProcesses = null, IReporterFactory reporterFactory = null)
+        public StrykerRunner(IEnumerable<IMutationTestProcess> mutationTestProcesses = null,
+            IReporterFactory reporterFactory = null)
         {
-            _projectOrchestrator = projectOrchestrator ?? new ProjectOrchestrator();
             _mutationTestProcesses = mutationTestProcesses ?? new List<IMutationTestProcess>();
             _reporterFactory = reporterFactory ?? new ReporterFactory();
         }
@@ -38,32 +37,44 @@ namespace Stryker.Core
         /// <summary>
         /// Starts a mutation test run
         /// </summary>
-        /// <exception cref="StrykerInputException">For managed exceptions</exception>
         /// <param name="options">The user options</param>
-        /// <param name="initialLogMessages">
-        /// Allows to pass log messages that occured before the mutation test.
-        /// The messages will be written to the logger after it was configured.
-        /// </param>
-        public StrykerRunResult RunMutationTest(StrykerOptions options, IEnumerable<LogMessage> initialLogMessages = null)
+        /// <param name="loggerFactory">This loggerfactory will be used to create loggers during the stryker run</param>
+        /// <exception cref="InputException">For managed exceptions</exception>
+        public StrykerRunResult RunMutationTest(IStrykerInputs inputs, ILoggerFactory loggerFactory, IProjectOrchestrator projectOrchestrator = null)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
+            SetupLogging(loggerFactory);
+
+            // Setup project orchestrator can't be done sooner since it needs logging
+            projectOrchestrator ??= new ProjectOrchestrator();
+
+            var options = inputs.ValidateAll();
+            _logger.LogDebug("Stryker started with options: {0}", JsonConvert.SerializeObject(options, new StringEnumConverter()));
+
             var reporters = _reporterFactory.Create(options);
 
-            SetupLogging(options, initialLogMessages);
 
             try
             {
-                _mutationTestProcesses = _projectOrchestrator.MutateProjects(options, reporters).ToList();
+                // Mutate
+                _mutationTestProcesses = projectOrchestrator.MutateProjects(options, reporters).ToList();
 
-                IParentComponent rootComponent = new FolderComposite();
-                rootComponent.AddRange(_mutationTestProcesses.Select(x => x.Input.ProjectInfo.ProjectContents));
+                var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.ProjectInfo.ProjectContents).ToList(), options);
 
-                _logger.LogInformation("{0} mutants ready for test", rootComponent.Mutants.Count());
+                _logger.LogInformation("{0} mutants created", rootComponent.Mutants.Count());
 
                 AnalyseCoverage(options);
                 var readOnlyInputComponent = rootComponent.ToReadOnlyInputComponent();
+
+                // Filter
+                foreach (var project in _mutationTestProcesses)
+                {
+                    project.FilterMutants();
+                }
+
+                // Report
                 reporters.OnMutantsCreated(readOnlyInputComponent);
 
                 var allMutants = rootComponent.Mutants.ToList();
@@ -86,19 +97,21 @@ namespace Stryker.Core
                     return new StrykerRunResult(options, double.NaN);
                 }
 
+                // Report
                 reporters.OnStartMutantTestRun(mutantsNotRun);
 
+                // Test
                 foreach (var project in _mutationTestProcesses)
                 {
-                    // test mutations
                     project.Test(project.Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
+                    project.Restore();
                 }
 
                 reporters.OnAllMutantsTested(readOnlyInputComponent);
 
                 return new StrykerRunResult(options, readOnlyInputComponent.GetMutationScore());
             }
-            catch (Exception ex) when (!(ex is StrykerInputException))
+            catch (Exception ex) when (!(ex is InputException))
             {
                 _logger.LogError(ex, "An error occurred during the mutation test run ");
                 throw;
@@ -111,19 +124,16 @@ namespace Stryker.Core
             }
         }
 
-        private void SetupLogging(StrykerOptions options, IEnumerable<LogMessage> initialLogMessages = null)
+        private void SetupLogging(ILoggerFactory loggerFactory)
         {
             // setup logging
-            ApplicationLogging.ConfigureLogger(options.LogOptions, initialLogMessages);
+            ApplicationLogging.LoggerFactory = loggerFactory;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerRunner>();
-
-            _logger.LogDebug("Stryker started with options: {0}",
-                JsonConvert.SerializeObject(options, new StringEnumConverter()));
         }
 
         private void AnalyseCoverage(StrykerOptions options)
         {
-            if (options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants) || options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
+            if (options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) || options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
             {
                 _logger.LogInformation($"Capture mutant coverage using '{options.OptimizationMode}' mode.");
 
@@ -131,6 +141,29 @@ namespace Stryker.Core
                 {
                     project.GetCoverage();
                 }
+            }
+        }
+
+        /// <summary>
+        /// In the case of multiple projects we wrap them inside a wrapper root component. Otherwise the only project root will be the root component.
+        /// </summary>
+        /// <param name="projectComponents">A list of all project root components</param>
+        /// <param name="options">The current stryker options</param>
+        /// <returns>The root folder component</returns>
+        private IProjectComponent AddRootFolderIfMultiProject(IEnumerable<IProjectComponent> projectComponents, StrykerOptions options)
+        {
+            if (projectComponents.Count() > 1)
+            {
+                var rootComponent = new FolderComposite
+                {
+                    FullPath = options.BasePath // in case of a solution run the basePath will be where the solution file is
+                };
+                rootComponent.AddRange(projectComponents);
+                return rootComponent;
+            }
+            else
+            {
+                return projectComponents.FirstOrDefault();
             }
         }
     }

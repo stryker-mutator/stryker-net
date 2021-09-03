@@ -1,21 +1,17 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
+using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
-    public class LinqMutatorTest
+    public class LinqMutatorTest : TestBase
     {
         /// <summary>
-        ///     Generator for different Linqexpressions
+        ///     Generator for different Linq expressions
         /// </summary>
         /// <param name="expression"></param>
         /// <returns></returns>
@@ -27,7 +23,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
- 
+
 namespace TestApplication
 {{
     class Program
@@ -49,7 +45,7 @@ namespace TestApplication
         }
 
         [Fact]
-        public void ShouldBeMutationlevelAdvanced()
+        public void ShouldBeMutationLevelAdvanced()
         {
             var target = new LinqMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
@@ -130,7 +126,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
- 
+
 namespace TestApplication
 {
     class Program

@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
@@ -16,59 +16,128 @@ namespace Stryker.Core.TestRunners.VsTest
         List<TestResult> TestResults { get; }
         IReadOnlyList<TestCase> TestsInTimeout { get; }
     }
+    internal class TestRun
+    {
+        private readonly VsTestDescription _testDescription;
+        private readonly IList<TestResult> _results;
+
+        public TestRun(VsTestDescription testDescription)
+        {
+            _testDescription = testDescription;
+            _results = new List<TestResult>(testDescription.NbSubCases);
+        }
+
+        public bool AddResult(TestResult result)
+        {
+            _results.Add(result);
+            return _results.Count >= _testDescription.NbSubCases;
+        }
+
+        public bool IsComplete()
+        {
+            return _results.Count >= _testDescription.NbSubCases;
+        }
+
+        public TestResult Result()
+        {
+            var result = _results.Aggregate((TestResult) null, (acc, next) =>
+            {
+                if (acc == null)
+                {
+                    return next;
+                }
+                if (next.Outcome == TestOutcome.Failed || acc.Outcome == TestOutcome.None)
+                {
+                    acc.Outcome = next.Outcome;
+                }
+                if (acc.StartTime > next.StartTime)
+                {
+                    acc.StartTime = next.StartTime;
+                }
+                if (acc.EndTime < next.EndTime)
+                {
+                    acc.EndTime = next.EndTime;
+                }
+
+                foreach (var message in next.Messages)
+                {
+                    acc.Messages.Add(message);
+                }
+
+                acc.Duration = acc.EndTime - acc.StartTime;
+                return acc;
+            });
+            return result;
+        }
+    }
 
     public class RunEventHandler : ITestRunEventsHandler, IDisposable, IRunResults
     {
         private readonly AutoResetEvent _waitHandle;
         private readonly ILogger _logger;
         private readonly string _runnerId;
-        private readonly List<TestCase> _inProgress = new List<TestCase>();
-
+        private readonly IDictionary<Guid, VsTestDescription> _vsTests;
+        private readonly IDictionary<Guid, TestRun> _runs = new Dictionary<Guid, TestRun>();
+        private readonly Dictionary<Guid, TestCase> _inProgress = new Dictionary<Guid, TestCase>();
         public event EventHandler VsTestFailed;
         public event EventHandler ResultsUpdated;
 
         public List<TestResult> TestResults { get; }
-
         public IReadOnlyList<TestCase> TestsInTimeout { get; private set; }
-
         public bool TimeOut { get; private set; }
         public bool CancelRequested { get; set; }
 
-        public RunEventHandler(ILogger logger, string runnerId)
+        public RunEventHandler(IDictionary<Guid, VsTestDescription> vsTests, ILogger logger, string runnerId)
         {
             _waitHandle = new AutoResetEvent(false);
             TestResults = new List<TestResult>();
+            _vsTests = vsTests;
             _logger = logger;
             _runnerId = runnerId;
         }
-        
+
         private void CaptureTestResults(IEnumerable<TestResult> results)
         {
             var testResults = results as TestResult[] ?? results.ToArray();
             foreach (var testResult in testResults)
             {
-                var index = _inProgress.FindIndex(t => t.Id == testResult.TestCase.Id);
-                if (index < 0)
+                var id = testResult.TestCase.Id;
+                if (!_runs.ContainsKey(id))
                 {
-                    continue;
+                    if (_vsTests.ContainsKey(id))
+                    {
+                        _runs[id] = new TestRun(_vsTests[id]);
+                    }
+                    else
+                    {
+                        // unknown id. Probable cause: test name has changed due to some parameter having changed
+                        _runs[id] = new TestRun(new VsTestDescription(testResult.TestCase));
+                    }
                 }
-                _inProgress.RemoveAt(index);
-            }
-            TestResults.AddRange(testResults);
-        }
 
+                if (_runs[id].AddResult(testResult))
+                {
+                    TestResults.Add(_runs[id].Result());
+                    _inProgress.Remove(id);
+                }
+            }
+        }
 
         public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
         {
             if (testRunChangedArgs.ActiveTests != null)
             {
-                _inProgress.AddRange(testRunChangedArgs.ActiveTests);
+                foreach (var activeTest in testRunChangedArgs.ActiveTests)
+                {
+                    _inProgress[activeTest.Id] = activeTest;
+                }
             }
 
-            if (testRunChangedArgs.NewTestResults == null)
+            if (testRunChangedArgs.NewTestResults == null || !testRunChangedArgs.NewTestResults.Any())
             {
                 return;
             }
+            
             CaptureTestResults(testRunChangedArgs.NewTestResults);
             ResultsUpdated?.Invoke(this, EventArgs.Empty);
         }
@@ -79,32 +148,41 @@ namespace Stryker.Core.TestRunners.VsTest
             ICollection<AttachmentSet> runContextAttachments,
             ICollection<string> executorUris)
         {
+            if (lastChunkArgs?.ActiveTests != null)
+            {
+                foreach (var activeTest in lastChunkArgs.ActiveTests)
+                {
+                    _inProgress[activeTest.Id] = activeTest;
+                }
+            }
+
             if (lastChunkArgs?.NewTestResults != null)
             {
                 CaptureTestResults(lastChunkArgs.NewTestResults);
             }
 
-            if (_inProgress.Any() && !testRunCompleteArgs.IsCanceled)
+            if (!testRunCompleteArgs.IsCanceled && (_inProgress.Any() || _runs.Values.Any(t => !t.IsComplete())))
             {
-                TestsInTimeout = _inProgress.Where(t => lastChunkArgs?.NewTestResults.Any(res => res.TestCase.Id == t.Id) != true).ToList();
+                // report ongoing tests and test case with missing results as timeouts.
+                TestsInTimeout = _inProgress.Values.Union(_runs.Values.Where(t => !t.IsComplete()).Select(t => t.Result().TestCase)).ToList();
                 if (TestsInTimeout.Count > 0)
                 {
                     TimeOut = true;
                 }
             }
 
-            ResultsUpdated?.Invoke(this, EventArgs.Empty);  
+            ResultsUpdated?.Invoke(this, EventArgs.Empty);
 
             if (testRunCompleteArgs.Error != null)
             {
                 if (testRunCompleteArgs.Error.GetType() == typeof(TransationLayerException))
                 {
-                    _logger.LogDebug(testRunCompleteArgs.Error, $"{_runnerId}: VsTest may have crashed, triggering vstest restart!");
+                    _logger.LogDebug(testRunCompleteArgs.Error, $"{_runnerId}: VsTest may have crashed, triggering VsTest restart!");
                     VsTestFailed?.Invoke(this, EventArgs.Empty);
                 }
                 else if (testRunCompleteArgs.Error.InnerException is IOException sock)
                 {
-                    _logger.LogWarning(sock,$"{_runnerId}: Test session ended unexpectedly.");
+                    _logger.LogWarning(sock, $"{_runnerId}: Test session ended unexpectedly.");
                 }
                 else if (!CancelRequested)
                 {
@@ -132,21 +210,13 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public void HandleLogMessage(TestMessageLevel level, string message)
         {
-            LogLevel levelFinal;
-            switch (level)
+            LogLevel levelFinal = level switch
             {
-                case TestMessageLevel.Informational:
-                    levelFinal = LogLevel.Debug;
-                    break;
-                case TestMessageLevel.Warning:
-                    levelFinal = LogLevel.Warning;
-                    break;
-                case TestMessageLevel.Error:
-                    levelFinal = LogLevel.Error;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(level), level, null);
-            }
+                TestMessageLevel.Informational => LogLevel.Debug,
+                TestMessageLevel.Warning => LogLevel.Warning,
+                TestMessageLevel.Error => LogLevel.Error,
+                _ => throw new ArgumentOutOfRangeException(nameof(level), level, null)
+            };
             _logger.LogTrace($"{_runnerId}: [{levelFinal}] {message}");
         }
 

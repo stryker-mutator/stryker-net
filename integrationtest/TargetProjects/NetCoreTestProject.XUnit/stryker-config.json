@@ -6,11 +6,13 @@
       "Html",
       "Json"
     ],
-    "log-level": "trace",
-    "log-file": "true",
-    "project-file": "TargetProject.csproj",
-    "excluded-mutations": [
+    "verbosity": "trace",
+    "project": "TargetProject.csproj",
+    "ignore-mutations": [
       "string"
+    ],
+    "mutate": [
+      "!Person.cs"
     ]
   }
 }

@@ -1,3 +1,81 @@
+## [0.22.10](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.9...dotnet-stryker@0.22.10) (2021-08-25)
+
+
+### Bug Fixes
+
+* Return exit code 2 for threshold break violations ([#1673](https://github.com/stryker-mutator/stryker-net/issues/1673)) ([6da4e7d](https://github.com/stryker-mutator/stryker-net/commit/6da4e7d16e00aa90860e59a3875539c18bbbe757))
+
+
+
+## [0.22.9](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.8...dotnet-stryker@0.22.9) (2021-08-03)
+
+
+
+## [0.22.8](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.7...dotnet-stryker@0.22.8) (2021-07-26)
+
+
+
+## [0.22.7](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.6...dotnet-stryker@0.22.7) (2021-07-10)
+
+
+
+## [0.22.6](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.5...dotnet-stryker@0.22.6) (2021-06-30)
+
+
+
+## [0.22.5](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.4...dotnet-stryker@0.22.5) (2021-06-22)
+
+
+### Bug Fixes
+
+* **Ignore method:** Ignore method when not called on an object ([#1579](https://github.com/stryker-mutator/stryker-net/issues/1579)) ([eb87d07](https://github.com/stryker-mutator/stryker-net/commit/eb87d0702081848304cb679b6f1f9a2b85d3962a))
+
+
+
+## [0.22.4](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.2...dotnet-stryker@0.22.4) (2021-05-14)
+
+
+
+## [0.22.3](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.2...dotnet-stryker@0.22.3) (2021-04-17)
+
+
+
+## [0.22.2](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.1...dotnet-stryker@0.22.2) (2021-04-15)
+
+
+
+## [0.22.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.0...dotnet-stryker@0.22.1) (2021-03-22)
+
+
+
+# [0.22.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.21.1...dotnet-stryker@0.22.0) (2021-03-05)
+
+
+### Bug Fixes
+
+* Support newer operating systems with git diff ([#1459](https://github.com/stryker-mutator/stryker-net/issues/1459)) ([48a1ae2](https://github.com/stryker-mutator/stryker-net/commit/48a1ae224b6c19bb954de4d69e86e17d277e7bfd))
+
+
+### Features
+
+* **json report:** Add absolute path to json report [#1154](https://github.com/stryker-mutator/stryker-net/issues/1154) ([#1267](https://github.com/stryker-mutator/stryker-net/issues/1267)) ([8b72975](https://github.com/stryker-mutator/stryker-net/commit/8b72975f7dc215998bdc222a29fd6126fe0ece28))
+* **progressbar reporter:**  Switch to ShellProgressBar for console progress bar report ([#1286](https://github.com/stryker-mutator/stryker-net/issues/1286)) ([3fa0c68](https://github.com/stryker-mutator/stryker-net/commit/3fa0c687aa7fcf5be801aace2ef164844a0dade3))
+
+
+
+## [0.21.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.21.0...dotnet-stryker@0.21.1) (2021-01-23)
+
+
+
+# [0.21.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.20.0...dotnet-stryker@0.21.0) (2021-01-20)
+
+
+### Features
+
+* **Multi project runs:** Multi project runs using solution file ([#1039](https://github.com/stryker-mutator/stryker-net/issues/1039)) ([e1b4bf3](https://github.com/stryker-mutator/stryker-net/commit/e1b4bf3b031fac3462196df553ac8a1f13392302))
+
+
+
 # [0.20.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.19.0...dotnet-stryker@0.20.0) (2020-10-19)
 
 

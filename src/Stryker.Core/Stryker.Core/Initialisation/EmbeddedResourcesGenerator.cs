@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
 using System;
@@ -10,20 +10,18 @@ namespace Stryker.Core.Initialisation
 {
     public static class EmbeddedResourcesGenerator
     {
-        private static IDictionary<string, IList<ResourceDescription>> _resourceDescriptions = new Dictionary<string, IList<ResourceDescription>>();
+        private static readonly IDictionary<string, IList<ResourceDescription>> _resourceDescriptions = new Dictionary<string, IList<ResourceDescription>>();
 
         public static IEnumerable<ResourceDescription> GetManifestResources(string assemblyPath, ILogger logger)
         {
             if (!_resourceDescriptions.ContainsKey(assemblyPath))
             {
-                using (var module = LoadModule(assemblyPath, logger))
+                using var module = LoadModule(assemblyPath, logger);
+                if (module is null)
                 {
-                    if (module is null)
-                    {
-                        yield break;
-                    }
-                    _resourceDescriptions.Add(assemblyPath, ReadResourceDescriptionsFromModule(module).ToList());
+                    yield break;
                 }
+                _resourceDescriptions.Add(assemblyPath, ReadResourceDescriptionsFromModule(module).ToList());
             }
 
             foreach (var description in _resourceDescriptions[assemblyPath])
@@ -41,12 +39,13 @@ namespace Stryker.Core.Initialisation
                     new ReaderParameters(ReadingMode.Immediate)
                     {
                         InMemory = true,
-                        ReadWrite = false
+                        ReadWrite = false,
+                        AssemblyResolver = new CrossPlatformAssemblyResolver()
                     });
             }
             catch (Exception e)
             {
-                logger.LogWarning(e,
+                logger?.LogWarning(e,
                     $"Original project under test {assemblyPath} could not be loaded. \n" +
                     $"Embedded Resources might be missing.");
 
@@ -61,7 +60,7 @@ namespace Stryker.Core.Initialisation
                 var stream = moduleResource.GetResourceStream();
 
                 var bytes = new byte[stream.Length];
-                stream.Read(bytes, 0, bytes.Length);
+                _ = stream.Read(bytes, 0, bytes.Length);
 
                 var ms = new MemoryStream();
                 ms.Write(bytes, 0, bytes.Length);

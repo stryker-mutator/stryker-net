@@ -8,12 +8,14 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.TestRunners;
 using System.Collections.Generic;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+using Stryker.Core.Mutants;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
-    public class InitialisationProcessTests
+    public class InitialisationProcessTests : TestBase
     {
         [Fact]
         public void InitialisationProcess_ShouldCallNeededResolvers()
@@ -24,28 +26,19 @@ namespace Stryker.Core.UnitTest.Initialisation
             var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
             var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), null, null))
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<ITimeoutValueCalculator>(), null, null))
                 .Returns(new TestRunResult(true)); // testrun is successful
-            testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(999);
+            testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
             testRunnerMock.Setup(x => x.Dispose());
-            var projectContents = new FolderComposite();
-            projectContents.Add(new FileLeaf
-            {
-                Name = "SomeFile.cs"
-            });
-            var folder = new FolderComposite
-            {
-                Name = "ProjectRoot"
-            };
+            var projectContents = new CsharpFolderComposite();
+            projectContents.Add(new CsharpFileLeaf());
+            var folder = new CsharpFolderComposite();
             folder.AddRange(new Collection<IProjectComponent>
                 {
-                    new FileLeaf
-                    {
-                        Name = "SomeFile.cs"
-                    }
+                    new CsharpFileLeaf()
                 });
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<IStrykerOptions>()))
-                .Returns(new ProjectInfo
+            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>()))
+                .Returns(new ProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         references: new string[0]).Object,
@@ -54,7 +47,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     },
                     ProjectContents = folder
                 });
-            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<ITestRunner>())).Returns(999);
+            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<ITestRunner>())).Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(1)));
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
             assemblyReferenceResolverMock.Setup(x => x.LoadProjectReferences(It.IsAny<string[]>()))
                 .Returns(Enumerable.Empty<PortableExecutableReference>());
@@ -68,9 +61,9 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var options = new StrykerOptions();
 
-            var result = target.Initialize(options);
+            var result = target.Initialize(options, dashboardReporter: null);
 
-            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<IStrykerOptions>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);
         }
 
         [Fact]
@@ -82,18 +75,12 @@ namespace Stryker.Core.UnitTest.Initialisation
             var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
             var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<int>(), null, null));
-            var folder = new FolderComposite
-            {
-                Name = "ProjectRoot"
-            };
-            folder.Add(new FileLeaf
-            {
-                Name = "SomeFile.cs"
-            });
+            testRunnerMock.Setup(x => x.RunAll(It.IsAny<ITimeoutValueCalculator>(), null, null));
+            var folder = new CsharpFolderComposite();
+            folder.Add(new CsharpFileLeaf());
 
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<IStrykerOptions>())).Returns(
-                new ProjectInfo
+            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>())).Returns(
+                new ProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         references: new string[0]).Object,
@@ -104,9 +91,9 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
-            testRunnerMock.Setup(x => x.DiscoverNumberOfTests()).Returns(999);
+            testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
             testRunnerMock.Setup(x => x.Dispose());
-            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<ITestRunner>())).Throws(new StrykerInputException("")); // failing test
+            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(),It.IsAny<ITestRunner>())).Throws(new InputException("")); // failing test
             assemblyReferenceResolverMock.Setup(x => x.LoadProjectReferences(It.IsAny<string[]>()))
                 .Returns(Enumerable.Empty<PortableExecutableReference>())
                 .Verifiable();
@@ -119,12 +106,12 @@ namespace Stryker.Core.UnitTest.Initialisation
                 assemblyReferenceResolverMock.Object);
             var options = new StrykerOptions();
 
-            target.Initialize(options);
-            Assert.Throws<StrykerInputException>(() => target.InitialTest(options));
+            target.Initialize(options, dashboardReporter: null);
+            Assert.Throws<InputException>(() => target.InitialTest(options));
 
-            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<IStrykerOptions>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);
             assemblyReferenceResolverMock.Verify();
-            initialTestProcessMock.Verify(x => x.InitialTest(testRunnerMock.Object), Times.Once);
+            initialTestProcessMock.Verify(x => x.InitialTest(It.IsAny<StrykerOptions>(),testRunnerMock.Object), Times.Once);
         }
     }
 }

@@ -1,11 +1,11 @@
-﻿using Crayon;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Crayon;
+using Stryker.Core.Mutants;
+using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Reporters
 {
@@ -14,10 +14,10 @@ namespace Stryker.Core.Reporters
     /// </summary>
     public class ClearTextReporter : IReporter
     {
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly TextWriter _consoleWriter;
 
-        public ClearTextReporter(IStrykerOptions strykerOptions, TextWriter consoleWriter = null)
+        public ClearTextReporter(StrykerOptions strykerOptions, TextWriter consoleWriter = null)
         {
             _options = strykerOptions;
             _consoleWriter = consoleWriter ?? Console.Out;
@@ -44,12 +44,12 @@ namespace Stryker.Core.Reporters
 
             ReadOnlyFolderComposite rootFolder = null;
 
-            reportComponent.DisplayFolder = (int _, IReadOnlyProjectComponent current) =>
+            reportComponent.DisplayFolder = (IReadOnlyProjectComponent current) =>
             {
                 rootFolder ??= (ReadOnlyFolderComposite)current;
             };
 
-            reportComponent.DisplayFile = (int _, IReadOnlyProjectComponent current) =>
+            reportComponent.DisplayFile = (IReadOnlyProjectComponent current) =>
             {
                 files.Add((ReadOnlyFileLeaf)current);
             };
@@ -60,9 +60,9 @@ namespace Stryker.Core.Reporters
             _consoleWriter.WriteLine("All mutants have been tested, and your mutation score has been calculated");
 
             // start recursive invocation of handlers
-            reportComponent.Display(0);
+            reportComponent.Display();
 
-            var filePathLength = Math.Max(9, files.Max(f => f.RelativePathToProjectFile?.Length ?? 0) + 1);
+            var filePathLength = Math.Max(9, files.Max(f => f.RelativePath?.Length ?? 0) + 1);
 
             _consoleWriter.WriteLine($"┌─{new string('─', filePathLength)}┬──────────┬──────────┬───────────┬────────────┬──────────┬─────────┐");
             _consoleWriter.WriteLine($"│ File{new string(' ', filePathLength - 4)}│  % score │ # killed │ # timeout │ # survived │ # no cov │ # error │");
@@ -80,17 +80,17 @@ namespace Stryker.Core.Reporters
 
         private void DisplayComponent(IReadOnlyProjectComponent inputComponent, int filePathLength)
         {
-            _consoleWriter.Write($"│ {(inputComponent.RelativePathToProjectFile ?? "All files").PadRight(filePathLength)}│ ");
+            _consoleWriter.Write($"│ {(inputComponent.RelativePath ?? "All files").PadRight(filePathLength)}│ ");
 
             var mutationScore = inputComponent.GetMutationScore();
 
-            if (inputComponent is ReadOnlyFileLeaf && inputComponent.IsComponentExcluded(_options.FilePatterns))
+            if (inputComponent is ReadOnlyFileLeaf && inputComponent.IsComponentExcluded(_options.Mutate))
             {
-                _consoleWriter.Write(Output.BrightBlack("Excluded"));
+                _consoleWriter.Write(Output.Bright.Black("Excluded"));
             }
             else if (double.IsNaN(mutationScore))
             {
-                _consoleWriter.Write(Output.BrightBlack("     N/A"));
+                _consoleWriter.Write(Output.Bright.Black("     N/A"));
             }
             else
             {

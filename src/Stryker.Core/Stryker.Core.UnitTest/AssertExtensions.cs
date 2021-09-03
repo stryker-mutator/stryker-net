@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using System;
@@ -13,7 +13,7 @@ namespace Stryker.Core.UnitTest
     public static class AssertionExtensions
     {
         /// <summary>
-        /// Compares two code strings and asserts equality 
+        /// Compares two code strings and asserts equality
         /// </summary>
         /// <param name="actual">Resulted code</param>
         /// <param name="expected">Expected code</param>
@@ -23,10 +23,12 @@ namespace Stryker.Core.UnitTest
         }
 
         /// <summary>
-        /// Compares two syntax trees and asserts equality 
+        /// Compares two syntax trees and asserts equality
         /// </summary>
         /// <param name="actual">Resulted code</param>
         /// <param name="expected">Expected code</param>
+        /// <remarks>Warning: this code tries to pinpoint the first different lines, but it will work on string comparison, so it may pinpoint spaces
+        /// or new line variations, hiding the real differences.</remarks>
         public static void ShouldBeSemantically(this SyntaxNode actual, SyntaxNode expected)
         {
             // for some reason, nodes can be different while being textually the same
@@ -39,17 +41,17 @@ namespace Stryker.Core.UnitTest
             if (!isSame)
             {
                 // find the different
-                var actuaLines = actual.ToString().Split(Environment.NewLine);
+                var actualLines = actual.ToString().Split(Environment.NewLine);
                 var expectedLines = expected.ToString().Split(Environment.NewLine);
-                for (var i = 0; i < actuaLines.Length; i++)
+                for (var i = 0; i < actualLines.Length; i++)
                 {
-                    if (expectedLines.Length<=i)
+                    if (expectedLines.Length <= i)
                     {
-                        isSame.ShouldBeTrue($"AST's are not equivalent. Line[{i + 1}]{Environment.NewLine}actual:{actuaLines[i]}{Environment.NewLine}expect: nothing{Environment.NewLine}Actual(full):{Environment.NewLine}{actual}{Environment.NewLine}, expected:{Environment.NewLine}{expected}");
+                        isSame.ShouldBeTrue($"AST's are not equivalent. Line[{i + 1}]{Environment.NewLine}actual:{actualLines[i]}{Environment.NewLine}expect: nothing{Environment.NewLine}Actual(full):{Environment.NewLine}{actual}{Environment.NewLine}, expected:{Environment.NewLine}{expected}");
                     }
-                    if (actuaLines[i] != expectedLines[i])
+                    if (actualLines[i] != expectedLines[i])
                     {
-                        isSame.ShouldBeTrue($"AST's are not equivalent. Line[{i + 1}]{Environment.NewLine}actual:{actuaLines[i]}{Environment.NewLine}expect:{expectedLines[i]}{Environment.NewLine}Actual(full):{Environment.NewLine}{actual}{Environment.NewLine}, expected:{Environment.NewLine}{expected}");
+                        isSame.ShouldBeTrue($"AST's are not equivalent. Line[{i + 1}]{Environment.NewLine}actual:{actualLines[i]}{Environment.NewLine}expect:{expectedLines[i]}{Environment.NewLine}Actual(full):{Environment.NewLine}{actual}{Environment.NewLine}, expected:{Environment.NewLine}{expected}");
                     }
                 }
             }

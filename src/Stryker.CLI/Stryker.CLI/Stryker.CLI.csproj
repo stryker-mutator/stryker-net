@@ -1,7 +1,7 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <RootNamespace>Stryker.CLI</RootNamespace>
     <AssemblyName>Stryker.CLI</AssemblyName>
     <OutputType>Exe</OutputType>
@@ -10,7 +10,8 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <VersionPrefix>0.20.0</VersionPrefix>
+    <VersionPrefix>1.0.0</VersionPrefix>
+    <VersionSuffix>rc1</VersionSuffix>
     <PackageId>dotnet-stryker</PackageId>
     <Authors>Richard Werkman, Rouke Broersma</Authors>
     <Product>Mutation Testing</Product>
@@ -27,9 +28,9 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="3.0.0" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="3.1.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="$(MicrosoftExtensionsConfiguration)" /> <!-- From Directory.Build.props -->
-    <PackageReference Include="NuGet.Versioning" Version="5.5.0" />
+    <PackageReference Include="NuGet.Versioning" Version="5.10.0" />
   </ItemGroup>
 
   <ItemGroup>
@@ -42,5 +43,7 @@
 
   <ItemGroup>
     <None Include="..\..\..\.editorconfig" Link="Properties\.editorconfig" />
+    <None Include="..\..\Directory.Build.props" Link="Properties\Directory.Build.props" />
+    <None Include="..\..\Directory.Build.targets" Link="Properties\Directory.Build.targets" />
   </ItemGroup>
 </Project>

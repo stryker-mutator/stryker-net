@@ -16,8 +16,8 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             // Arrange
             var foo = new List<RegexNode>
             {
-                new CharacterNode('f'), 
-                new CharacterNode('o'), 
+                new CharacterNode('f'),
+                new CharacterNode('o'),
                 new CharacterNode('o')
             };
             var lookaroundGroupNode = new LookaroundGroupNode(false, true, foo);
@@ -35,15 +35,15 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.DisplayName.ShouldBe("Regex greedy quantifier quantity mutation");
             mutation.Description.ShouldBe("Quantifier \"(?<=foo)\" was replaced with \"(?<!foo)\" at offset 0.");
         }
-        
+
         [Fact]
         public void FlipsNegativeLookAheadToPositiveLookAhead()
         {
             // Arrange
             var foo = new List<RegexNode>
             {
-                new CharacterNode('f'), 
-                new CharacterNode('o'), 
+                new CharacterNode('f'),
+                new CharacterNode('o'),
                 new CharacterNode('o')
             };
             var lookaroundGroupNode = new LookaroundGroupNode(true, false, foo);

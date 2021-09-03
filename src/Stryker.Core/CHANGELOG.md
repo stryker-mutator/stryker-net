@@ -1,3 +1,152 @@
+## [0.22.10](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.9...stryker@0.22.10) (2021-08-25)
+
+
+### Bug Fixes
+
+* Allow setting threshold break to 100 ([#1674](https://github.com/stryker-mutator/stryker-net/issues/1674)) ([4cd1945](https://github.com/stryker-mutator/stryker-net/commit/4cd1945621da08a9c6794ff9415096e68c306216))
+* Return exit code 2 for threshold break violations ([#1673](https://github.com/stryker-mutator/stryker-net/issues/1673)) ([6da4e7d](https://github.com/stryker-mutator/stryker-net/commit/6da4e7d16e00aa90860e59a3875539c18bbbe757))
+
+
+
+## [0.22.9](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.8...stryker@0.22.9) (2021-08-03)
+
+
+### Bug Fixes
+
+* **Ignore methods:** Allow ignoring mutants of fully qualified method names ([#1635](https://github.com/stryker-mutator/stryker-net/issues/1635)) ([ddfc72f](https://github.com/stryker-mutator/stryker-net/commit/ddfc72f1c95f1302fb6f0bab7cf3e48b7b85b505))
+
+
+
+## [0.22.8](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.7...stryker@0.22.8) (2021-07-26)
+
+
+### Bug Fixes
+
+* **Compiling:** Added support for C# source generators. ([#1617](https://github.com/stryker-mutator/stryker-net/issues/1617)) ([98c7669](https://github.com/stryker-mutator/stryker-net/commit/98c7669d8f643c2b51ca176952d6339fb3e80acf))
+
+
+
+## [0.22.7](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.6...stryker@0.22.7) (2021-07-10)
+
+
+### Bug Fixes
+
+* **Diff feature:** Coverage analysis filter overwrites Ignored mutant statuses while it should ignore them ([#1586](https://github.com/stryker-mutator/stryker-net/issues/1586))
+
+## [0.22.6](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.5...stryker@0.22.6) (2021-06-30)
+
+
+### Bug Fixes
+
+* **Conversion operator:** Stryker won't break anymore when using conversion operator ([#1613](https://github.com/stryker-mutator/stryker-net/issues/1613)) ([a09f2cc](https://github.com/stryker-mutator/stryker-net/commit/a09f2cc8c55f76ffcab8964e477334ff3ca75882))
+
+
+
+## [0.22.5](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.4...stryker@0.22.5) (2021-06-22)
+
+
+### Bug Fixes
+
+* **Dotnet 5 support:** net5.0 version parsing ([#1592](https://github.com/stryker-mutator/stryker-net/issues/1592)) ([a92fa86](https://github.com/stryker-mutator/stryker-net/commit/a92fa86b65402cdcdb6a27cf1c55d2f0c8f0b684))
+* **Ignore method:** Ignore method when not called on an object ([#1579](https://github.com/stryker-mutator/stryker-net/issues/1579)) ([eb87d07](https://github.com/stryker-mutator/stryker-net/commit/eb87d0702081848304cb679b6f1f9a2b85d3962a))
+
+
+
+## [0.22.4](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.2...stryker@0.22.4) (2021-05-14)
+
+
+### Bug Fixes
+
+* Improve reliability of embedded resources resolving ([#1564](https://github.com/stryker-mutator/stryker-net/issues/1564)) ([6991b60](https://github.com/stryker-mutator/stryker-net/commit/6991b60d1206f1427cdf312a95c79d880402d0f5))
+* **baseline:** Allow valid version strings like 2.0.0 ([#1514](https://github.com/stryker-mutator/stryker-net/issues/1514)) ([b740bba](https://github.com/stryker-mutator/stryker-net/commit/b740bba44fab7e6e4673743d1d46fcc45da28cd5))
+* **baseline:** Azure fileshare uses projectname as output path if specified ([#1526](https://github.com/stryker-mutator/stryker-net/issues/1526)) ([de8940a](https://github.com/stryker-mutator/stryker-net/commit/de8940aba22489eb51ff063c0a2fd5a587a83679))
+* **filtered mutants reporter:** OnMutantsCreated was executed before filtering mutants ([64b4ace](https://github.com/stryker-mutator/stryker-net/commit/64b4ace60b324156305e96af4be7f071ffd8c83a))
+* **mutation orchestration:** rollback of helpers and faulty array initializers to prevent unrecoverable compile errors ([#1530](https://github.com/stryker-mutator/stryker-net/issues/1530)) ([2b6af15](https://github.com/stryker-mutator/stryker-net/commit/2b6af15a951a50d5271f8f58848d7b7e6b14097d))
+* **rollback:** rollback mutation in expressions that cause build error(s) ([#1539](https://github.com/stryker-mutator/stryker-net/issues/1539)) ([83a8082](https://github.com/stryker-mutator/stryker-net/commit/83a80829edb23b1a816d1537927f05a098d1e284))
+* Automatically disable DiffEngine when running tests ([#1523](https://github.com/stryker-mutator/stryker-net/issues/1523)) ([c37fafc](https://github.com/stryker-mutator/stryker-net/commit/c37fafc8b1ecf0a6ef119514b1bbdc1e225568ae))
+
+
+
+## [0.22.3](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.2...stryker@0.22.3) (2021-04-17)
+
+
+### Bug Fixes
+
+* **baseline:** Allow valid version strings like 2.0.0 ([#1514](https://github.com/stryker-mutator/stryker-net/issues/1514)) ([b740bba](https://github.com/stryker-mutator/stryker-net/commit/b740bba44fab7e6e4673743d1d46fcc45da28cd5))
+
+
+
+## [0.22.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.1...stryker@0.22.2) (2021-04-15)
+
+
+### Bug Fixes
+
+* **mutating:** Place yield return instead of yield return default(type) for yield break ([f791ad6](https://github.com/stryker-mutator/stryker-net/commit/f791ad6562ad162c3b067a7d02f6d3179303e90b))
+* Default vstest extensions are no longer required on the filesystem ([#1500](https://github.com/stryker-mutator/stryker-net/issues/1500)) ([554bc38](https://github.com/stryker-mutator/stryker-net/commit/554bc38afc147983a23118b8b2b6128a842bbadb))
+
+
+
+## [0.22.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.0...stryker@0.22.1) (2021-03-22)
+
+
+### Bug Fixes
+
+* **solution run:** Fix NPE on solution runs ([#1479](https://github.com/stryker-mutator/stryker-net/issues/1479)) ([5cdac27](https://github.com/stryker-mutator/stryker-net/commit/5cdac275167ebc6b5016535db22af2cae0c4377b))
+* local declaration mutations are promoted from statement to block level mutations ([#1427](https://github.com/stryker-mutator/stryker-net/issues/1427)) ([c440de0](https://github.com/stryker-mutator/stryker-net/commit/c440de05aaf5c37270e60aa009c49a5742cde33e)), closes [#1368](https://github.com/stryker-mutator/stryker-net/issues/1368) [#1423](https://github.com/stryker-mutator/stryker-net/issues/1423)
+
+
+
+# [0.22.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.21.1...stryker@0.22.0) (2021-03-05)
+
+
+### Bug Fixes
+
+* Support newer operating systems with git diff ([#1459](https://github.com/stryker-mutator/stryker-net/issues/1459)) ([48a1ae2](https://github.com/stryker-mutator/stryker-net/commit/48a1ae224b6c19bb954de4d69e86e17d277e7bfd))
+* **Diff feature:** Diff feature could not be enabled ([#1458](https://github.com/stryker-mutator/stryker-net/issues/1458)) ([782302f](https://github.com/stryker-mutator/stryker-net/commit/782302fd79ac1c8cceb88e64cf0e934cbdda51e3))
+* **mutation placing:** mutations may leak between body formed methods/properties ([#1389](https://github.com/stryker-mutator/stryker-net/issues/1389)) ([91dbb8b](https://github.com/stryker-mutator/stryker-net/commit/91dbb8b8e7cdee0b10b6481b3dd3169efc768c1f))
+* **reporting:** report on mutations to test after filtering out mutations we should not test ([#1398](https://github.com/stryker-mutator/stryker-net/issues/1398)) ([1523a01](https://github.com/stryker-mutator/stryker-net/commit/1523a012bdfd9b9ea81f91442849f695518474c4))
+
+
+### Features
+
+* **Clickable file paths:** filepaths will be detected by supported terminals ([#1403](https://github.com/stryker-mutator/stryker-net/issues/1403)) ([f24d55c](https://github.com/stryker-mutator/stryker-net/commit/f24d55c5e7401175ca31d1ba33528438fe7406dd))
+* **Filtered mutant reporter:** Move FilterMutations status logging to reporter so the logging can be turned off ([#1275](https://github.com/stryker-mutator/stryker-net/issues/1275)) ([68591ec](https://github.com/stryker-mutator/stryker-net/commit/68591ecd1ad293ef6a330f654bb32366059a5cf0))
+* **json report:** Add absolute path to json report [#1154](https://github.com/stryker-mutator/stryker-net/issues/1154) ([#1267](https://github.com/stryker-mutator/stryker-net/issues/1267)) ([8b72975](https://github.com/stryker-mutator/stryker-net/commit/8b72975f7dc215998bdc222a29fd6126fe0ece28))
+* **progressbar reporter:**  Switch to ShellProgressBar for console progress bar report ([#1286](https://github.com/stryker-mutator/stryker-net/issues/1286)) ([3fa0c68](https://github.com/stryker-mutator/stryker-net/commit/3fa0c687aa7fcf5be801aace2ef164844a0dade3))
+
+
+
+## [0.21.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.21.0...stryker@0.21.1) (2021-01-23)
+
+
+### Bug Fixes
+
+* **MutantFilters:** Fix mutant filters were not being called ([#1378](https://github.com/stryker-mutator/stryker-net/issues/1378)) ([4314bad](https://github.com/stryker-mutator/stryker-net/commit/4314bada0d8aa5817ea71a265ecc1c7d519a8f13))
+
+
+
+# [0.21.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.20.0...stryker@0.21.0) (2021-01-20)
+
+
+### Bug Fixes
+
+* **dashboard compare:** prevent NPE for compiler error mutants ([#1293](https://github.com/stryker-mutator/stryker-net/issues/1293)) ([7d4d023](https://github.com/stryker-mutator/stryker-net/commit/7d4d0231a9de4d137133d45814d9418cdff0ca73))
+* **dashboard compare:** verify the name of target branch ([#1305](https://github.com/stryker-mutator/stryker-net/issues/1305)) ([528bff6](https://github.com/stryker-mutator/stryker-net/commit/528bff6be1fd6f2dcd62f2be6b94526cc66a3eb8)), closes [#1303](https://github.com/stryker-mutator/stryker-net/issues/1303)
+* **diff:** improve the change test filter ([#1306](https://github.com/stryker-mutator/stryker-net/issues/1306)) ([eccb48f](https://github.com/stryker-mutator/stryker-net/commit/eccb48fe8278ebaf5dbbd0d0badc2453ae430893)), closes [#1304](https://github.com/stryker-mutator/stryker-net/issues/1304)
+* **filter mutants:** do not pass Compile Error mutants to filters ([#1295](https://github.com/stryker-mutator/stryker-net/issues/1295)) ([#1298](https://github.com/stryker-mutator/stryker-net/issues/1298)) ([21197a4](https://github.com/stryker-mutator/stryker-net/commit/21197a4cdf56a97bbaa6e8af6eef1111f066d1ee))
+
+
+### Features
+
+* **initial-build:** Allow solutionpath for dotnet core ([#1362](https://github.com/stryker-mutator/stryker-net/issues/1362)) ([6a051c9](https://github.com/stryker-mutator/stryker-net/commit/6a051c9aa32daa8e8705ef9139310babc4db0b7b))
+* add expression to body conversion for properties ([#1324](https://github.com/stryker-mutator/stryker-net/issues/1324)) ([be43d22](https://github.com/stryker-mutator/stryker-net/commit/be43d2274cc64fdace916cbc5dea2b8e455a5d0c)), closes [#1039](https://github.com/stryker-mutator/stryker-net/issues/1039) [#1348](https://github.com/stryker-mutator/stryker-net/issues/1348) [#1351](https://github.com/stryker-mutator/stryker-net/issues/1351) [#1350](https://github.com/stryker-mutator/stryker-net/issues/1350) [#1353](https://github.com/stryker-mutator/stryker-net/issues/1353) [#1352](https://github.com/stryker-mutator/stryker-net/issues/1352) [#1356](https://github.com/stryker-mutator/stryker-net/issues/1356) [#1355](https://github.com/stryker-mutator/stryker-net/issues/1355) [#1359](https://github.com/stryker-mutator/stryker-net/issues/1359) [#1361](https://github.com/stryker-mutator/stryker-net/issues/1361) [#1364](https://github.com/stryker-mutator/stryker-net/issues/1364)
+* **Html reporter:** Enable dark mode for html report ([#1287](https://github.com/stryker-mutator/stryker-net/issues/1287)) ([d84072a](https://github.com/stryker-mutator/stryker-net/commit/d84072a39da6c4566e7bafc68a76eea86c9d9fa9))
+* **initial-build:** Improve error message when initial build fails ([#1364](https://github.com/stryker-mutator/stryker-net/issues/1364)) ([91ae959](https://github.com/stryker-mutator/stryker-net/commit/91ae9599e8f06571737e43ca5b8844549008b0c1))
+* **Multi project runs:** Multi project runs using solution file ([#1039](https://github.com/stryker-mutator/stryker-net/issues/1039)) ([e1b4bf3](https://github.com/stryker-mutator/stryker-net/commit/e1b4bf3b031fac3462196df553ac8a1f13392302))
+* **mutation orchestration:** Improve mutation orchestration and rollback logic ([#1236](https://github.com/stryker-mutator/stryker-net/issues/1236)) ([ffc4860](https://github.com/stryker-mutator/stryker-net/commit/ffc4860a105fae836a4e98ba83cf0138d941e128))
+
+
+
 # [0.20.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.19.0...stryker@0.20.0) (2020-10-19)
 
 
