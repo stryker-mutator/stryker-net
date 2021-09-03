@@ -11,7 +11,7 @@ namespace Stryker.Core.Options
 {
     public class StrykerOptions
     {
-        public string MsbuildPath { get; init; }
+        public string MsBuildPath { get; init; }
         public bool DevMode { get; init; }
 
         public string BasePath { get; init; }
