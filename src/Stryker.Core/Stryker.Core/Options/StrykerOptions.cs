@@ -55,42 +55,40 @@ namespace Stryker.Core.Options
 
         public OptimizationModes OptimizationMode { get; init; }
 
-        public StrykerOptions Copy(string basePath, string projectUnderTest, IEnumerable<string> testProjects)
+        public StrykerOptions Copy(string basePath, string projectUnderTest, IEnumerable<string> testProjects) => new()
         {
-            return new StrykerOptions()
-            {
-                AdditionalTimeout = AdditionalTimeout,
-                AzureFileStorageSas = AzureFileStorageSas,
-                AzureFileStorageUrl = AzureFileStorageUrl,
-                BaselineProvider = BaselineProvider,
-                BasePath = basePath,
-                Concurrency = Concurrency,
-                DashboardApiKey = DashboardApiKey,
-                DashboardUrl = DashboardUrl,
-                DevMode = DevMode,
-                Since = Since,
-                DiffIgnoreChanges = DiffIgnoreChanges,
-                ExcludedMutations = ExcludedMutations,
-                ExcludedLinqExpressions = ExcludedLinqExpressions,
-                FallbackVersion = FallbackVersion,
-                IgnoredMethods = IgnoredMethods,
-                LanguageVersion = LanguageVersion,
-                LogOptions = LogOptions,
-                ModuleName = ModuleName,
-                Mutate = Mutate,
-                MutationLevel = MutationLevel,
-                OptimizationMode = OptimizationMode,
-                OutputPath = OutputPath,
-                ProjectName = ProjectName,
-                ProjectUnderTestName = projectUnderTest,
-                ProjectVersion = ProjectVersion,
-                Reporters = Reporters,
-                SinceTarget = SinceTarget,
-                SolutionPath = SolutionPath,
-                TestProjects = testProjects,
-                Thresholds = Thresholds,
-                WithBaseline = WithBaseline
-            };
-        }
+            AdditionalTimeout = AdditionalTimeout,
+            AzureFileStorageSas = AzureFileStorageSas,
+            AzureFileStorageUrl = AzureFileStorageUrl,
+            BaselineProvider = BaselineProvider,
+            BasePath = basePath,
+            Concurrency = Concurrency,
+            DashboardApiKey = DashboardApiKey,
+            DashboardUrl = DashboardUrl,
+            DevMode = DevMode,
+            Since = Since,
+            DiffIgnoreChanges = DiffIgnoreChanges,
+            ExcludedMutations = ExcludedMutations,
+            ExcludedLinqExpressions = ExcludedLinqExpressions,
+            FallbackVersion = FallbackVersion,
+            IgnoredMethods = IgnoredMethods,
+            LanguageVersion = LanguageVersion,
+            LogOptions = LogOptions,
+            ModuleName = ModuleName,
+            Mutate = Mutate,
+            MutationLevel = MutationLevel,
+            MsBuildPath = MsBuildPath,
+            OptimizationMode = OptimizationMode,
+            OutputPath = OutputPath,
+            ProjectName = ProjectName,
+            ProjectUnderTestName = projectUnderTest,
+            ProjectVersion = ProjectVersion,
+            Reporters = Reporters,
+            SinceTarget = SinceTarget,
+            SolutionPath = SolutionPath,
+            TestProjects = testProjects,
+            Thresholds = Thresholds,
+            WithBaseline = WithBaseline
+        };
     }
 }
