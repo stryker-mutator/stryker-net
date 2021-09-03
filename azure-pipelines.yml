@@ -275,14 +275,14 @@ stages:
         command: custom
         custom: pack
         arguments: --output $(Build.ArtifactStagingDirectory)/release
-        workingDirectory: 'src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj'
+        workingDirectory: 'src/Stryker.CLI/Stryker.CLI'
     - task: DotNetCoreCLI@2
       displayName: 'Pack Stryker.Core'
       inputs:
         command: custom
         custom: pack
         arguments: --output $(Build.ArtifactStagingDirectory)/release
-        workingDirectory: 'src/Stryker.Core/Stryker.Core/Stryker.Core.csproj'
+        workingDirectory: 'src/Stryker.Core/Stryker.Core'
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: release'
       inputs:
