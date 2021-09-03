@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
@@ -50,7 +50,7 @@ namespace Stryker.Core.Initialisation
             // Locate MSBuild.exe
             var msbuildPath = new MsBuildHelper().GetMsBuildPath(_processExecutor);
             var msBuildVersionOutput = _processExecutor.Start(solutionDir, msbuildPath, "-version /nologo");
-            if (msBuildVersionOutput.ExitCode != 0)
+            if (msBuildVersionOutput.ExitCode != ExitCodes.Success)
             {
                 _logger.LogError("Unable to detect msbuild version");
             }
@@ -64,7 +64,7 @@ namespace Stryker.Core.Initialisation
             try
             {
                 var nugetRestoreResult = _processExecutor.Start(solutionDir, nugetPath, nugetRestoreCommand, timeoutMs: 120000);
-                if (nugetRestoreResult.ExitCode != 0)
+                if (nugetRestoreResult.ExitCode != ExitCodes.Success)
                 {
                     throw new InputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.", nugetRestoreResult.Output);
                 }

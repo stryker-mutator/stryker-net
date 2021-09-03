@@ -1,3 +1,12 @@
+## [0.22.10](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.9...dotnet-stryker@0.22.10) (2021-08-25)
+
+
+### Bug Fixes
+
+* Return exit code 2 for threshold break violations ([#1673](https://github.com/stryker-mutator/stryker-net/issues/1673)) ([6da4e7d](https://github.com/stryker-mutator/stryker-net/commit/6da4e7d16e00aa90860e59a3875539c18bbbe757))
+
+
+
 ## [0.22.9](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.8...dotnet-stryker@0.22.9) (2021-08-03)
 
 

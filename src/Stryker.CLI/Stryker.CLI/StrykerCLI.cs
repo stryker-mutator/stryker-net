@@ -19,7 +19,7 @@ namespace Stryker.CLI
         private readonly ILoggingInitializer _loggingInitializer;
         private readonly IStrykerNugetFeedClient _nugetClient;
 
-        public int ExitCode { get; private set; } = 0;
+        public int ExitCode { get; private set; } = ExitCodes.Success;
 
         public StrykerCli(IStrykerRunner stryker = null,
             IConfigReader configReader = null,
@@ -89,7 +89,7 @@ namespace Stryker.CLI
 
                 Console.WriteLine(Output.Red(" Looks like you've got some work to do :)"));
 
-                ExitCode = 1;
+                ExitCode = ExitCodes.BreakThresholdViolated;
             }
         }
 
