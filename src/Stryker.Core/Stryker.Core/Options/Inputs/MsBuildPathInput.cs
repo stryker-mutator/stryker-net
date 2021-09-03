@@ -17,9 +17,13 @@ namespace Stryker.Core.Options.Inputs
         {
             if (SuppliedInput is not null)
             {
+                if(string.IsNullOrWhiteSpace(SuppliedInput))
+                {
+                    throw new InputException("MsBuild path cannot be empty. Either provide a valid msbuild path or let stryker locate msbuild automatically.");
+                }
                 if(!fileSystem.File.Exists(SuppliedInput))
                 {
-                    throw new InputException($"Given msbuild path '{SuppliedInput}' does not exist. Please provide a valid msbuild path or let stryker locate msbuild automatically. ");
+                    throw new InputException($"Given MsBuild path '{SuppliedInput}' does not exist. Either provide a valid msbuild path or let stryker locate msbuild automatically.");
                 }
                 return SuppliedInput;
             }
