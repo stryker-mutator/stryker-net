@@ -270,11 +270,19 @@ stages:
         command: 'restore'
         projects: 'src/Stryker.CLI/Stryker.CLI.sln'
     - task: DotNetCoreCLI@2
-      displayName: 'Pack release package'
+      displayName: 'Pack Stryker.CLI'
       inputs:
-        command: pack
-        packagesToPack: $(ProjectsToPack)
-        packDirectory: $(Build.ArtifactStagingDirectory)/release
+        command: custom
+        custom: pack
+        arguments: --output $(Build.ArtifactStagingDirectory)/release
+        workingDirectory: 'src/Stryker.CLI/Stryker.CLI'
+    - task: DotNetCoreCLI@2
+      displayName: 'Pack Stryker.Core'
+      inputs:
+        command: custom
+        custom: pack
+        arguments: --output $(Build.ArtifactStagingDirectory)/release
+        workingDirectory: 'src/Stryker.Core/Stryker.Core'
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: release'
       inputs:
