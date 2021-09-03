@@ -23,8 +23,8 @@ pr:
     - '.github/*'
   
 variables:
-  PackageVersion: '0.22.10'
-  VersionBuildNumber: $[counter('0.22.10', 1)]
+  PackageVersion: '1.0.0'
+  VersionBuildNumber: $[counter('1.0.0', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
@@ -251,7 +251,7 @@ stages:
   dependsOn: 
     - Analysis
     - IntegrationTests
-  condition: and(not(failed()), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: and(not(failed()), ne(variables['Build.Reason'], 'PullRequest'))
   jobs:
   - job: PublishRelease
     displayName: Publish Release Artifacts
