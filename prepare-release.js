@@ -55,8 +55,8 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
     });
 
     console.log('Updating azure-pipelines.yml');
-    replaceVersionNumber('./azure-pipelines.yml', `VersionBuildNumber: $[counter('${oldVersionNumber}', 1)]`, `VersionBuildNumber: $[counter('${newVersionNumber}', 1)]`);
-    replaceVersionNumber('./azure-pipelines.yml', `PackageVersion: '${oldVersionNumber}'`, `PackageVersion: '${newVersionNumber}'`);
+    replaceVersionNumber('./azure-pipelines.yml', `VersionBuildNumber: $[counter('${oldVersionNumber}', 1)]`, `VersionBuildNumber: $[counter('${versionPrefix}', 1)]`);
+    replaceVersionNumber('./azure-pipelines.yml', `PackageVersion: '${oldVersionNumber}'`, `PackageVersion: '${versionPrefix}'`);
 
     console.log(`Creating commit`);
     exec('git add .');
