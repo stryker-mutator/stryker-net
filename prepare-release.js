@@ -47,24 +47,28 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
         replaceVersionNumber(package.csproj, `<VersionPrefix>${oldVersionPrefix}</VersionPrefix>`, `<VersionPrefix>${versionPrefix}</VersionPrefix>`);
         replaceVersionNumber(package.csproj, `<VersionSuffix>${oldVersionSuffix}</VersionSuffix>`, `<VersionSuffix>${versionSuffix}</VersionSuffix>`);
 
-        console.log(`Updating changelog for ${package.name}`);
-        exec(`npx conventional-changelog-cli -p angular --infile "${package.path}/CHANGELOG.md" --same-file --commit-path ${package.path} --tag-prefix "${package.name}@"`);
-        commitMessageLines.push(`- ${package.name}@${newVersionNumber}`);
+        if (!versionSuffix) {
+            console.log(`Updating changelog for ${package.name}`);
+            exec(`npx conventional-changelog-cli -p angular --infile "${package.path}/CHANGELOG.md" --same-file --commit-path ${package.path} --tag-prefix "${package.name}@"`);
+            commitMessageLines.push(`- ${package.name}@${newVersionNumber}`);
+        }
     });
 
-    // console.log('Updating azure-pipelines.yml');
-    // replaceVersionNumber('./azure-pipelines.yml', `VersionBuildNumber: $[counter('${oldVersionNumber}', 1)]`, `VersionBuildNumber: $[counter('${newVersionNumber}', 1)]`);
-    // replaceVersionNumber('./azure-pipelines.yml', `PackageVersion: '${oldVersionNumber}'`, `PackageVersion: '${newVersionNumber}'`);
+    console.log('Updating azure-pipelines.yml');
+    replaceVersionNumber('./azure-pipelines.yml', `VersionBuildNumber: $[counter('${oldVersionNumber}', 1)]`, `VersionBuildNumber: $[counter('${newVersionNumber}', 1)]`);
+    replaceVersionNumber('./azure-pipelines.yml', `PackageVersion: '${oldVersionNumber}'`, `PackageVersion: '${newVersionNumber}'`);
 
-    // console.log(`Creating commit`);
-    // exec('git add .');
-    // exec(`git commit ${commitMessageLines.map(entry => `-m "${entry}"`).join(' ')}`);
+    console.log(`Creating commit`);
+    exec('git add .');
+    exec(`git commit ${commitMessageLines.map(entry => `-m "${entry}"`).join(' ')}`);
     
-    // console.log('Tagging commit');
-    // packages.forEach(package => exec(`git tag -a ${package.name}@${newVersionNumber} -m "${package.name}@${newVersionNumber}"`));
+    if (!versionSuffix) {
+        console.log('Tagging commit');
+        packages.forEach(package => exec(`git tag -a ${package.name}@${newVersionNumber} -m "${package.name}@${newVersionNumber}"`));
+    }
 
-    // console.log('Pushing commit and tags');
-    // exec('git push --follow-tags');
+    console.log(`Pushing commit ${versionSuffix?'':' and tags'}`);
+    exec('git push --follow-tags');
     rl.close();
 });
 
