@@ -559,3 +559,11 @@ Config file: `"dashboard-url": 'https://dev-dashboard.stryker-mutator.io'`
 
 If you're not using the official Stryker Dashboard you can set a custom dashboard url.  
 This can be used during Stryker development to not pollute the production dashboard or if you self-host a custom dashboard that adheres to the Stryker Dashboard API.
+
+### `msbuild-path` <`path`>
+
+Default: `null`  
+Command line: `--msbuild-path "c://MsBuild/MsBuild.exe"`  
+Config file: `N/A`  
+
+By default stryker tries to autodiscover msbuild on your system. If stryker fails to discover msbuild you may supply the path to msbuild manually with this option.

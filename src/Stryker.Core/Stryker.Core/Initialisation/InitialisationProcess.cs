@@ -74,7 +74,8 @@ namespace Stryker.Core.Initialisation
                 _initialBuildProcess.InitialBuild(
                     testProjects[i].GetTargetFramework() == Framework.DotNetClassic,
                     testProjects[i].ProjectFilePath,
-                    options.SolutionPath);
+                    options.SolutionPath,
+                    options.MsBuildPath);
             }
 
             InitializeDashboardReporter(dashboardReporter, projectInfo);

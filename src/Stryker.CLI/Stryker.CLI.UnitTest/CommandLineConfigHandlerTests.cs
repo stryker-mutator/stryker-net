@@ -16,7 +16,7 @@ namespace Stryker.CLI.UnitTest
             ExtendedHelpText = "Welcome to Stryker for .Net! Run dotnet stryker to kick off a mutation test run"
         };
         private readonly IStrykerInputs _inputs = new StrykerInputs();
-        private readonly CommandLineConfigHandler _target = new CommandLineConfigHandler();
+        private readonly CommandLineConfigHandler _target = new();
 
         public CommandLineConfigHandlerTests()
         {

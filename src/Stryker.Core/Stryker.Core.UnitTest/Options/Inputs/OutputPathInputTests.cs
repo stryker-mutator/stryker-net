@@ -49,6 +49,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Theory]
         [InlineData(null)]
         [InlineData("")]
+        [InlineData("   ")]
         public void ShouldThrowOnEmptyValue(string value)
         {
             var target = new OutputPathInput { SuppliedInput = value };
