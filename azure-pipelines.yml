@@ -294,7 +294,7 @@ stages:
   dependsOn: 
     - Analysis
     - IntegrationTests
-  condition: and(not(failed()), and(ne(variables['Build.Reason'], 'PullRequest'), eq(variables['Build.SourceBranch'], 'refs/heads/master')))
+  condition: and(not(failed()), and(ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.SourceBranch'], 'refs/heads/master')))
   jobs:
   - job: PublishRelease
     displayName: Publish Release Artifacts
