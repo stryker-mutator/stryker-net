@@ -1,7 +1,5 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.NodeOrchestrators
 {
@@ -13,14 +11,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     {
         /// <inheritdoc/>
         /// <remarks>Inject all pending mutations controlled with conditional operator(s).</remarks>
-        protected override ExpressionSyntax InjectMutations(T sourceNode, ExpressionSyntax targetNode, MutationContext context)
-        {
-            var result = MutantPlacer.PlaceExpressionControlledMutations(
-                targetNode,
-                context.ExpressionLevelMutations.Select(m => (m.Id, (ExpressionSyntax) sourceNode.InjectMutation(m.Mutation)))) as T;
-            context.ExpressionLevelMutations.Clear();
-            return result;
-        }
+        protected override ExpressionSyntax InjectMutations(T sourceNode, ExpressionSyntax targetNode, MutationContext context) => context.InjectExpressionLevel(targetNode, sourceNode);
 
         protected override MutationContext StoreMutations(T node,
             IEnumerable<Mutant> mutations,
@@ -29,11 +20,11 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
             // if the expression contains a declaration, it must be controlled at the block level.
             if (!node.ContainsDeclarations())
             {
-                context.ExpressionLevelMutations.AddRange(mutations);
+                context.AddExpressionLevel(mutations);
             }
             else
             {
-                context.BlockLevelControlledMutations.AddRange(mutations);
+                context.AddBlockLevel(mutations);
             }
             return context;
         }

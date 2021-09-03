@@ -7,7 +7,6 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     /// </summary>
     internal class LocalDeclarationOrchestrator : StatementSpecificOrchestrator<LocalDeclarationStatementSyntax>
     {
-
         /// <inheritdoc/>
         /// <remarks>We cannot mutate constants (for the time being)</remarks>
         protected override StatementSyntax OrchestrateChildrenMutation(LocalDeclarationStatementSyntax node, MutationContext context)
@@ -20,8 +19,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
 
             var result = base.OrchestrateChildrenMutation(node, context);
             // statement level mutations need to be changed to block level
-            context.BlockLevelControlledMutations.AddRange(context.StatementLevelControlledMutations);
-            context.StatementLevelControlledMutations.Clear();
+            context.PromoteToBlockLevel();
             return result;
         }
 
