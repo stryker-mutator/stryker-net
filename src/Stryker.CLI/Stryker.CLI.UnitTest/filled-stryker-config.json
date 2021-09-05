@@ -6,7 +6,7 @@
     "verbosity": "trace",
     "coverage-analysis": "perTest",
     "disable-bail": true,
-    "disable-mix-mutants":  true,
+    "disable-mix-mutants": true,
     "additional-timeout": 9999,
     "project": "ExampleProject.csproj",
     "concurrency": 1,
@@ -25,7 +25,7 @@
       ""
     ],
     "ignore-mutations": [
-      "linq.FirstOrDefault",
+      "linq.FirstOrDefault"
     ],
     "ignore-methods": [
       ""
@@ -44,10 +44,11 @@
       "module": "cli"
     },
     "baseline": {
-      "enabled":  false,
+      "enabled": false,
       "fallback-version": "master",
       "azure-fileshare-url": "",
       "provider": ""
-    }
+    },
+    "test-case-filter": "(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1"
   }
 }
