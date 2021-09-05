@@ -25,13 +25,22 @@ namespace Stryker.Core.Reporters
             _dashboardClient = dashboardClient ?? new DashboardClient(options);
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
             _consoleWriter = consoleWriter ?? Console.Out;
+            ProjectVersion = _options.ProjectVersion;
         }
+
+        public string ProjectName
+        {
+            get => _dashboardClient.ProjectName;
+            set => _dashboardClient.ProjectName = value;
+        }
+
+        public string ProjectVersion { get; set; }
 
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
         {
             var mutationReport = JsonReport.Build(_options, reportComponent);
 
-            var reportUrl = _dashboardClient.PublishReport(mutationReport.ToJson(), _options.ProjectVersion).Result;
+            var reportUrl = _dashboardClient.PublishReport(mutationReport.ToJson(), ProjectVersion).Result;
 
             if (reportUrl != null)
             {

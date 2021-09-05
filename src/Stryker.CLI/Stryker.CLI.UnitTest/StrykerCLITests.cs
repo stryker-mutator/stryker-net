@@ -109,7 +109,7 @@ Options:";
         }
 
         [Fact]
-        public void OnMutationScoreBelowThresholdBreak_ShouldReturnExitCode1()
+        public void OnMutationScoreBelowThresholdBreak_ShouldReturn_ExitCodeBreakThresholdViolated()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions()
@@ -130,8 +130,8 @@ Options:";
             var result = target.Run(new string[] { });
 
             mock.Verify();
-            target.ExitCode.ShouldBe(1);
-            result.ShouldBe(1);
+            target.ExitCode.ShouldBe(ExitCodes.BreakThresholdViolated);
+            result.ShouldBe(ExitCodes.BreakThresholdViolated);
         }
 
         [Fact]

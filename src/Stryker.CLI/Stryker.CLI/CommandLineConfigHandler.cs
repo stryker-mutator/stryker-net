@@ -115,6 +115,7 @@ namespace Stryker.CLI
 
         private void PrepareCliOptions(IStrykerInputs inputs)
         {
+            AddCliInput(inputs.MsBuildPathInput, "msbuild-path", null);
             AddCliInput(inputs.DevModeInput, "dev-mode", null, optionType: CommandOptionType.NoValue);
             AddCliInput(inputs.ConcurrencyInput, "concurrency", "c", argumentHint: "number");
             AddCliInput(inputs.SolutionInput, "solution", "s", argumentHint: "file-path");

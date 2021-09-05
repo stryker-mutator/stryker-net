@@ -20,8 +20,9 @@ const packages = [
     { name: 'dotnet-stryker', path: './src/Stryker.CLI', csproj: './src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj' }
 ];
 
-const oldVersionNumber = packagejson.version;
-console.log(`Current package version is ${oldVersionNumber}`);
+const oldVersionPrefix = packagejson.versionPrefix;
+const oldVersionSuffix = packagejson.versionSuffix;
+console.log(`Current package version is ${oldVersionPrefix}${oldVersionSuffix?'-':''}${oldVersionSuffix}`);
 const rl = readline.createInterface({
     input: process.stdin,
     output: process.stdout
@@ -29,29 +30,44 @@ const rl = readline.createInterface({
 
 rl.question('What should the new package version be? ', (newVersionNumber) => {
     let commitMessageLines = ['Publish', '', ''];
+    let versionPrefix = newVersionNumber;
+    let versionSuffix = '';
+
+    if (newVersionNumber.indexOf('-')) {
+        versionPrefix = newVersionNumber.split('-')[0];
+        versionSuffix = newVersionNumber.split('-')[1];
+    }
+
     console.log('Updating package.json');
-    replaceVersionNumber('./package.json', `"version": "${oldVersionNumber}",`, `"version": "${newVersionNumber}",`);
+    replaceVersionNumber('./package.json', `"versionPrefix": "${oldVersionPrefix}",`, `"versionPrefix": "${versionPrefix}",`);
+    replaceVersionNumber('./package.json', `"versionSuffix": "${oldVersionSuffix}",`, `"versionSuffix": "${versionSuffix}",`);
 
     packages.forEach(package => {
-        console.log(`Updating version number in ${package.csproj}`);
-        replaceVersionNumber(package.csproj, `<VersionPrefix>${oldVersionNumber}</VersionPrefix>`, `<VersionPrefix>${newVersionNumber}</VersionPrefix>`);
-        console.log(`Updating changelog for ${package.name}`);
-        exec(`npx conventional-changelog-cli -p angular --infile "${package.path}/CHANGELOG.md" --same-file --commit-path ${package.path} --tag-prefix "${package.name}@"`);
-        commitMessageLines.push(`- ${package.name}@${newVersionNumber}`);
+        console.log(`Updating version numbers in ${package.csproj}`);
+        replaceVersionNumber(package.csproj, `<VersionPrefix>${oldVersionPrefix}</VersionPrefix>`, `<VersionPrefix>${versionPrefix}</VersionPrefix>`);
+        replaceVersionNumber(package.csproj, `<VersionSuffix>${oldVersionSuffix}</VersionSuffix>`, `<VersionSuffix>${versionSuffix}</VersionSuffix>`);
+
+        if (!versionSuffix) {
+            console.log(`Updating changelog for ${package.name}`);
+            exec(`npx conventional-changelog-cli -p angular --infile "${package.path}/CHANGELOG.md" --same-file --commit-path ${package.path} --tag-prefix "${package.name}@"`);
+            commitMessageLines.push(`- ${package.name}@${newVersionNumber}`);
+        }
     });
 
     console.log('Updating azure-pipelines.yml');
-    replaceVersionNumber('./azure-pipelines.yml', `VersionBuildNumber: $[counter('${oldVersionNumber}', 1)]`, `VersionBuildNumber: $[counter('${newVersionNumber}', 1)]`);
-    replaceVersionNumber('./azure-pipelines.yml', `PackageVersion: '${oldVersionNumber}'`, `PackageVersion: '${newVersionNumber}'`);
+    replaceVersionNumber('./azure-pipelines.yml', `VersionBuildNumber: $[counter('${oldVersionNumber}', 1)]`, `VersionBuildNumber: $[counter('${versionPrefix}', 1)]`);
+    replaceVersionNumber('./azure-pipelines.yml', `PackageVersion: '${oldVersionNumber}'`, `PackageVersion: '${versionPrefix}'`);
 
     console.log(`Creating commit`);
     exec('git add .');
     exec(`git commit ${commitMessageLines.map(entry => `-m "${entry}"`).join(' ')}`);
     
-    console.log('Tagging commit');
-    packages.forEach(package => exec(`git tag -a ${package.name}@${newVersionNumber} -m "${package.name}@${newVersionNumber}"`));
+    if (!versionSuffix) {
+        console.log('Tagging commit');
+        packages.forEach(package => exec(`git tag -a ${package.name}@${newVersionNumber} -m "${package.name}@${newVersionNumber}"`));
+    }
 
-    console.log('Pushing commit and tags');
+    console.log(`Pushing commit ${versionSuffix?'':' and tags'}`);
     exec('git push --follow-tags');
     rl.close();
 });

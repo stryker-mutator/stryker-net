@@ -48,7 +48,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectContents = folder
                 });
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<ITestRunner>())).Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(1)));
-            initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>()));
+            initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
             assemblyReferenceResolverMock.Setup(x => x.LoadProjectReferences(It.IsAny<string[]>()))
                 .Returns(Enumerable.Empty<PortableExecutableReference>());
 
@@ -61,7 +61,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var options = new StrykerOptions();
 
-            var result = target.Initialize(options);
+            var result = target.Initialize(options, dashboardReporter: null);
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);
         }
@@ -90,7 +90,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectContents = folder
                 });
 
-            initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>()));
+            initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
             testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
             testRunnerMock.Setup(x => x.Dispose());
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(),It.IsAny<ITestRunner>())).Throws(new InputException("")); // failing test
@@ -106,7 +106,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 assemblyReferenceResolverMock.Object);
             var options = new StrykerOptions();
 
-            target.Initialize(options);
+            target.Initialize(options, dashboardReporter: null);
             Assert.Throws<InputException>(() => target.InitialTest(options));
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);

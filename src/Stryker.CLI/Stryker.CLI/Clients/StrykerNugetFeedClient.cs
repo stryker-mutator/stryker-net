@@ -29,7 +29,10 @@ namespace Stryker.CLI.Clients
             {
                 var json = await httpclient.GetStringAsync(NugetStrykerFeed);
                 var instance = JsonConvert.DeserializeObject<StrykerNugetFeed>(json);
-                return instance.Versions.Max(v => SemanticVersion.Parse(v));
+
+                // Prereleases shouldn't show as an available update
+                var versions = instance.Versions.Select(v => SemanticVersion.Parse(v)).Where(x => !x.IsPrerelease);
+                return versions.Max();
             }
             catch
             {

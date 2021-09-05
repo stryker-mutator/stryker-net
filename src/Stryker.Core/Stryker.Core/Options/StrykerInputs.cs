@@ -26,6 +26,7 @@ namespace Stryker.Core.Options
         ModuleNameInput ModuleNameInput { get; init; }
         MutateInput MutateInput { get; init; }
         MutationLevelInput MutationLevelInput { get; init; }
+        MsBuildPathInput MsBuildPathInput { get; init; }
         OutputPathInput OutputPathInput { get; init; }
         ProjectNameInput ProjectNameInput { get; init; }
         ProjectUnderTestNameInput ProjectUnderTestNameInput { get; init; }
@@ -91,6 +92,7 @@ namespace Stryker.Core.Options
         public CoverageAnalysisInput CoverageAnalysisInput { get; init; } = new();
         public DisableBailInput DisableBailInput { get; set; } = new();
         public DisableMixMutantsInput DisableMixMutantsInput { get; set; } = new();
+        public MsBuildPathInput MsBuildPathInput { get; init; } = new();
 
         public StrykerOptions ValidateAll()
         {
@@ -107,6 +109,7 @@ namespace Stryker.Core.Options
                 Concurrency = ConcurrencyInput.Validate(),
                 MutationLevel = MutationLevelInput.Validate(),
                 DevMode = DevModeInput.Validate(),
+                MsBuildPath = MsBuildPathInput.Validate(_fileSystem),
                 SolutionPath = SolutionInput.Validate(_fileSystem),
                 Thresholds = new Thresholds
                 {
@@ -132,7 +135,7 @@ namespace Stryker.Core.Options
                 TestCaseFilter = TestCaseFilterInput.Validate(),
                 DashboardUrl = DashboardUrlInput.Validate(),
                 DashboardApiKey = DashboardApiKeyInput.Validate(WithBaselineInput.SuppliedInput),
-                ProjectName = ProjectNameInput.Validate(reporters),
+                ProjectName = ProjectNameInput.Validate(),
                 ModuleName = ModuleNameInput.Validate(),
                 ProjectVersion = ProjectVersionInput.Validate(FallbackVersionInput.SuppliedInput, reporters, WithBaselineInput.SuppliedInput),
                 DiffIgnoreChanges = DiffIgnoreChangesInput.Validate(),
