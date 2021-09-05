@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
@@ -136,7 +137,7 @@ namespace Stryker.Core.TestRunners.VsTest
                         return new TestRunResult(TestsGuidList.NoTest(), TestsGuidList.NoTest(), TestsGuidList.NoTest(), "Mutants are not covered by any test!", TimeSpan.Zero);
                     }
 
-                    if (timeoutCalc != null && testCases!= null)
+                    if (timeoutCalc != null && testCases != null)
                     {
                         // compute time out
                         var duration = (int)testCases.Select(id => _vsTests[id].InitialRunTime.TotalMilliseconds).Sum();
@@ -168,8 +169,8 @@ namespace Stryker.Core.TestRunners.VsTest
                     return;
                 }
                 var tests = handlerTestResults.Count == DiscoverTests().Count
-                    ? (ITestGuids) TestsGuidList.EveryTest()
-                    : new WrappedGuidsEnumeration(handlerTestResults.Select(t =>t.TestCase.Id));
+                    ? (ITestGuids)TestsGuidList.EveryTest()
+                    : new WrappedGuidsEnumeration(handlerTestResults.Select(t => t.TestCase.Id));
                 var failedTest = new WrappedGuidsEnumeration(handlerTestResults.Where(tr => tr.Outcome == TestOutcome.Failed)
                     .Select(t => t.TestCase.Id));
                 var timedOutTest = new WrappedGuidsEnumeration(handler.TestsInTimeout?.Select(t => t.Id));
@@ -306,7 +307,7 @@ namespace Stryker.Core.TestRunners.VsTest
             // since we analyze mutant coverage, mutants are assumed as not covered
             var seenTestCases = new HashSet<Guid>();
             var dynamicTestCases = new HashSet<Guid>();
-            var mutantCount = mutants.Max(m=> m.Id) + 1;
+            var mutantCount = mutants.Max(m => m.Id) + 1;
             var map = new List<ICollection<TestDescription>>(mutantCount);
             var staticMutantLists = new HashSet<int>();
             // initialize the map
@@ -404,7 +405,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public void CoverageForOneTest(Guid test, IEnumerable<Mutant> mutants)
         {
             _logger.LogDebug($"{RunnerId}: Capturing coverage for {_vsTests[test].Case.FullyQualifiedName}.");
-            var map = new Dictionary<int, ITestGuids>(1) {[-1] = new WrappedGuidsEnumeration(new []{test})};
+            var map = new Dictionary<int, ITestGuids>(1) { [-1] = new WrappedGuidsEnumeration(new[] { test }) };
             var testResults = RunTestSession(map, true, GenerateRunSettings(null, false, true, null));
             ParseResultsForCoverage(testResults.TestResults.Where(x => x.TestCase.Id == test), mutants);
         }
@@ -424,15 +425,16 @@ namespace Stryker.Core.TestRunners.VsTest
             eventHandler.ResultsUpdated += HandlerUpdate;
 
             _aborted = false;
+            var options = new TestPlatformOptions { TestCaseFilter = _options.TestCaseFilter };
             if (runAllTests)
             {
-                _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, eventHandler,
+                _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, options, eventHandler,
                     strykerVsTestHostLauncher);
             }
             else
             {
-                _vsTestConsole.RunTestsWithCustomTestHost(mutantTestsMap.SelectMany( m => m.Value.GetGuids()).Select(t => _vsTests[t].Case), runSettings,
-                    eventHandler, strykerVsTestHostLauncher);
+                _vsTestConsole.RunTestsWithCustomTestHost(mutantTestsMap.SelectMany(m => m.Value.GetGuids()).Select(t => _vsTests[t].Case), runSettings,
+                    options, eventHandler, strykerVsTestHostLauncher);
             }
 
             // Test host exited signal comes after the run completed
@@ -494,7 +496,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var projectAnalyzerResult = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault();
             var targetFramework = projectAnalyzerResult.GetTargetFramework();
             var needCoverage = forCoverage && NeedCoverage();
-            var dataCollectorSettings = (forMutantTesting || forCoverage) ? CoverageCollector.GetVsTestSettings(needCoverage, mutantTestsMap?.Select( e => (e.Key, e.Value.GetGuids() as IEnumerable<Guid>)), CodeInjection.HelperNamespace) : "";
+            var dataCollectorSettings = (forMutantTesting || forCoverage) ? CoverageCollector.GetVsTestSettings(needCoverage, mutantTestsMap?.Select(e => (e.Key, e.Value.GetGuids() as IEnumerable<Guid>)), CodeInjection.HelperNamespace) : "";
             var settingsForCoverage = string.Empty;
 
             if (_testFramework.HasFlag(TestFramework.nUnit))
@@ -507,7 +509,11 @@ namespace Stryker.Core.TestRunners.VsTest
                 settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
             }
             // TODO: get proper timeout
-            var timeoutSettings = timeout!=null ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>" + Environment.NewLine : string.Empty;
+            var timeoutSettings = timeout != null ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>" + Environment.NewLine : string.Empty;
+
+            var testCaseFilter = string.IsNullOrWhiteSpace(_options.TestCaseFilter) ?
+                string.Empty : $"<TestCaseFilter>{_options.TestCaseFilter}</TestCaseFilter>" + Environment.NewLine;
+
             // we need to block parallel run to capture coverage and when testing multiple mutants in a single run
             var optionsConcurrentTestRunners = (forCoverage || !_options.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants)) ? 1 : _options.Concurrency;
             var runSettings =
@@ -519,6 +525,7 @@ $@"<RunSettings>
 {settingsForCoverage}
 <DesignMode>false</DesignMode>
 <BatchSize>1</BatchSize>
+{testCaseFilter}
  </RunConfiguration>
 {dataCollectorSettings}
 </RunSettings>";

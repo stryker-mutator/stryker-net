@@ -79,6 +79,7 @@ namespace Stryker.CLI.UnitTest
             actualInputs.CoverageAnalysisInput.SuppliedInput.ShouldBe("perTest");
             actualInputs.DisableBailInput.SuppliedInput.ShouldBe(true);
             actualInputs.ExcludedMutationsInput.SuppliedInput.ShouldContain("linq.FirstOrDefault");
+            actualInputs.TestCaseFilterInput.SuppliedInput.ShouldBe("(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1");
         }
     }
 }

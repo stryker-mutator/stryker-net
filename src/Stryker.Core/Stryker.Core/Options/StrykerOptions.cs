@@ -3,7 +3,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Baseline.Providers;
-using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 using Stryker.Core.Reporters;
 
@@ -28,6 +27,7 @@ namespace Stryker.Core.Options
         public int Concurrency { get; init; }
         public string ProjectUnderTestName { get; init; }
         public IEnumerable<string> TestProjects { get; init; } = Enumerable.Empty<string>();
+        public string TestCaseFilter { get; init; }
 
         public bool WithBaseline { get; init; }
         public IEnumerable<Reporter> Reporters { get; init; } = Enumerable.Empty<Reporter>();
@@ -77,7 +77,6 @@ namespace Stryker.Core.Options
             ModuleName = ModuleName,
             Mutate = Mutate,
             MutationLevel = MutationLevel,
-            MsBuildPath = MsBuildPath,
             OptimizationMode = OptimizationMode,
             OutputPath = OutputPath,
             ProjectName = ProjectName,
@@ -87,6 +86,7 @@ namespace Stryker.Core.Options
             SinceTarget = SinceTarget,
             SolutionPath = SolutionPath,
             TestProjects = testProjects,
+            TestCaseFilter = TestCaseFilter,
             Thresholds = Thresholds,
             WithBaseline = WithBaseline
         };

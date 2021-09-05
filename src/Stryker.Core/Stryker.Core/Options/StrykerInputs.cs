@@ -36,6 +36,7 @@ namespace Stryker.Core.Options
         SinceTargetInput SinceTargetInput { get; init; }
         SolutionInput SolutionInput { get; init; }
         TestProjectsInput TestProjectsInput { get; init; }
+        TestCaseFilterInput TestCaseFilterInput { get; init; }
         ThresholdBreakInput ThresholdBreakInput { get; init; }
         ThresholdHighInput ThresholdHighInput { get; init; }
         ThresholdLowInput ThresholdLowInput { get; init; }
@@ -70,6 +71,7 @@ namespace Stryker.Core.Options
         public ConcurrencyInput ConcurrencyInput { get; init; } = new();
         public ProjectUnderTestNameInput ProjectUnderTestNameInput { get; init; } = new();
         public TestProjectsInput TestProjectsInput { get; init; } = new();
+        public TestCaseFilterInput TestCaseFilterInput { get; init; } = new();
         public WithBaselineInput WithBaselineInput { get; init; } = new();
         public ReportersInput ReportersInput { get; init; } = new();
         public BaselineProviderInput BaselineProviderInput { get; init; } = new();
@@ -130,6 +132,7 @@ namespace Stryker.Core.Options
                 LanguageVersion = LanguageVersionInput.Validate(),
                 OptimizationMode = CoverageAnalysisInput.Validate() | DisableBailInput.Validate() | DisableMixMutantsInput.Validate(),
                 TestProjects = TestProjectsInput.Validate(),
+                TestCaseFilter = TestCaseFilterInput.Validate(),
                 DashboardUrl = DashboardUrlInput.Validate(),
                 DashboardApiKey = DashboardApiKeyInput.Validate(WithBaselineInput.SuppliedInput),
                 ProjectName = ProjectNameInput.Validate(),

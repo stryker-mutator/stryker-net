@@ -40,7 +40,7 @@ namespace Stryker.CLI
             {
                 var strykerInput = GetStrykerInput(cliInput);
 
-                switch(cliInput.OptionType)
+                switch (cliInput.OptionType)
                 {
                     case CommandOptionType.NoValue:
                         HandleNoValue((IInput<bool?>)strykerInput);
@@ -53,7 +53,7 @@ namespace Stryker.CLI
                         break;
                 }
 
-                switch(strykerInput)
+                switch (strykerInput)
                 {
                     case IInput<string> stringInput:
                         HandleSingleStringValue(cliInput, stringInput);
@@ -83,7 +83,8 @@ namespace Stryker.CLI
             if (int.TryParse(cliInput.Value(), out var value))
             {
                 strykerInput.SuppliedInput = value;
-            } else
+            }
+            else
             {
                 throw new InputException($"Unexpected value for argument {cliInput.LongName}:{cliInput.Value()}. Expected type to be integer");
             }
