@@ -1,4 +1,4 @@
-﻿using Moq;
+using Moq;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
-    public class NugetRestoreProcessTests
+    public class NugetRestoreProcessTests : TestBase
     {
         private const string solutionPath = @"..\MySolution.sln";
         private const string CProgramFilesX86MicrosoftVisualStudio = "C:\\Program Files (x86)\\Microsoft Visual Studio";
@@ -80,7 +80,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new NugetRestoreProcess(processExecutorMock.Object);
 
-            var exception = Should.Throw<StrykerInputException>(() =>
+            var exception = Should.Throw<InputException>(() =>
             {
                 target.RestorePackages(solutionPath);
             });

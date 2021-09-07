@@ -1,4 +1,4 @@
-﻿using Crayon;
+using Crayon;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
 using System;
@@ -19,9 +19,9 @@ namespace Stryker.Core.Reporters
             _consoleWriter = consoleWriter ?? Console.Out;
         }
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent inputComponent) { }
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent) { }
 
-        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> m)
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
         {
         }
 
@@ -41,6 +41,6 @@ namespace Stryker.Core.Reporters
             };
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent inputComponent) { }
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent) { }
     }
 }

@@ -1,25 +1,27 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using DotNet.Globbing;
 using LibGit2Sharp;
-using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
-using Stryker.Core.DashboardCompare;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
-using System;
-using System.Collections.Generic;
-using System.IO.Abstractions.TestingHelpers;
-using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.DiffProviders
 {
-    public class GitDiffProviderTests
+    public class GitDiffProviderTests : TestBase
     {
         [Fact]
         public void DoesNotCreateNewRepositoryWhenPassedIntoConstructor()
         {
-            var options = new StrykerOptions(basePath: "C:\\", logger: new NullLogger<StrykerOptions>());
+            var options = new StrykerOptions()
+            {
+                BasePath = "C:\\"
+            };
 
             var gitInfoProvider = new Mock<IGitInfoProvider>(MockBehavior.Strict);
 
@@ -32,15 +34,19 @@ namespace Stryker.Core.UnitTest.DiffProviders
 
 
         /**
-         * Libgit2sharp has most of its contructors sealed. 
+         * Libgit2sharp has most of its constructors sealed.
          * Because of that we are unable to make the repository mock return a explicit object and are only able to use mocks.
         **/
         [Fact]
-        public void ScanDiffReturnsListofFiles()
+        public void ScanDiffReturnsListOfFiles()
         {
             // Arrange
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
-            var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem());
+            var options = new StrykerOptions()
+            {
+                BasePath = "C:\\",
+                SinceTarget = "d670460b4b4aece5915caf5c68d12f560a9fe3e4"
+            };
 
             var gitInfoMock = new Mock<IGitInfoProvider>();
             var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
@@ -97,12 +103,15 @@ namespace Stryker.Core.UnitTest.DiffProviders
         }
 
         [Fact]
-        public void ScanDiffReturnsListofFiles_IgnoreFolderWithSameStartName()
+        public void ScanDiffReturnsListOfFiles_IgnoreFolderWithSameStartName()
         {
             // Arrange
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
-            var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem());
-
+            var options = new StrykerOptions()
+            {
+                BasePath = "C:\\",
+                SinceTarget = "d670460b4b4aece5915caf5c68d12f560a9fe3e4"
+            };
             var gitInfoMock = new Mock<IGitInfoProvider>();
             var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
             var commitMock = new Mock<Commit>(MockBehavior.Loose);
@@ -160,8 +169,10 @@ namespace Stryker.Core.UnitTest.DiffProviders
         [Fact]
         public void ScanDiff_Throws_Stryker_Input_Exception_When_Commit_null()
         {
-            var options = new StrykerOptions(gitDiffTarget: "branch");
-
+            var options = new StrykerOptions()
+            {
+                SinceTarget = "branch"
+            };
             var repositoryMock = new Mock<IRepository>();
             var branchCollectionMock = new Mock<BranchCollection>();
             var branchMock = new Mock<Branch>();
@@ -195,18 +206,22 @@ namespace Stryker.Core.UnitTest.DiffProviders
             gitInfoMock.SetupGet(x => x.Repository).Returns(repositoryMock.Object);
             var target = new GitDiffProvider(options, null, gitInfoMock.Object);
 
-            Should.Throw<StrykerInputException>(() => target.ScanDiff());
+            Should.Throw<InputException>(() => target.ScanDiff());
         }
 
         [Fact]
-        public void ScanDiffReturnsListofFiles_ExcludingTestFilesInDiffIgnoreFiles()
+        public void ScanDiffReturnsListOfFiles_ExcludingTestFilesInDiffIgnoreFiles()
         {
             // Arrange
-            var diffIgnoreFiles = new[] { "/c/Users/JohnDoe/Project/Tests/Test.cs" };
+            var diffIgnoreFiles = new[] { new FilePattern(Glob.Parse("/c/Users/JohnDoe/Project/Tests/Test.cs"), false, null) };
 
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
-            var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem(), diffIgnoreFiles: diffIgnoreFiles);
-
+            var options = new StrykerOptions()
+            {
+                BasePath = basePath,
+                SinceTarget = "d670460b4b4aece5915caf5c68d12f560a9fe3e4",
+                DiffIgnoreChanges = diffIgnoreFiles
+            };
             var gitInfoMock = new Mock<IGitInfoProvider>();
             var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
             var commitMock = new Mock<Commit>(MockBehavior.Loose);
@@ -271,14 +286,18 @@ namespace Stryker.Core.UnitTest.DiffProviders
         }
 
         [Fact]
-        public void ScanDiffReturnsListofFiles_ExcludingTestFilesInDiffIgnoreFiles_Single_Asterisk()
+        public void ScanDiffReturnsListOfFiles_ExcludingTestFilesInDiffIgnoreFiles_Single_Asterisk()
         {
             // Arrange
-            var diffIgnoreFiles = new[] { "/c/Users/JohnDoe/Project/*/Test.cs" };
+            var diffIgnoreFiles = new[] { new FilePattern(Glob.Parse("/c/Users/JohnDoe/Project/*/Test.cs"), false, null) };
 
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
-            var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem(), diffIgnoreFiles: diffIgnoreFiles);
-
+            var options = new StrykerOptions()
+            {
+                BasePath = basePath,
+                SinceTarget = "d670460b4b4aece5915caf5c68d12f560a9fe3e4",
+                DiffIgnoreChanges = diffIgnoreFiles
+            };
             var gitInfoMock = new Mock<IGitInfoProvider>();
             var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
             var commitMock = new Mock<Commit>(MockBehavior.Loose);
@@ -343,15 +362,18 @@ namespace Stryker.Core.UnitTest.DiffProviders
         }
 
         [Fact]
-        public void ScanDiffReturnsListofFiles_ExcludingTestFilesInDiffIgnoreFiles_Multi_Asterisk()
+        public void ScanDiffReturnsListOfFiles_ExcludingTestFilesInDiffIgnoreFiles_Multi_Asterisk()
         {
             // Arrange
-            var diffIgnoreFiles = new string[1];
-            diffIgnoreFiles[0] = "**/Test.cs";
+            var diffIgnoreFiles = new[] { new FilePattern(Glob.Parse("**/Test.cs"), false, null) };
 
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
-            var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem(), diffIgnoreFiles: diffIgnoreFiles);
-
+            var options = new StrykerOptions()
+            {
+                BasePath = basePath,
+                SinceTarget = "d670460b4b4aece5915caf5c68d12f560a9fe3e4",
+                DiffIgnoreChanges = diffIgnoreFiles
+            };
             var gitInfoMock = new Mock<IGitInfoProvider>();
             var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
             var commitMock = new Mock<Commit>(MockBehavior.Loose);
@@ -416,15 +438,18 @@ namespace Stryker.Core.UnitTest.DiffProviders
         }
 
         [Fact]
-        public void ScanDiffReturnsListofFiles_ExcludingFilesInDiffIgnoreFiles_Multi_Asterisk()
+        public void ScanDiffReturnsListOfFiles_ExcludingFilesInDiffIgnoreFiles_Multi_Asterisk()
         {
             // Arrange
-            var diffIgnoreFiles = new string[1];
-            diffIgnoreFiles[0] = "**/file.cs";
+            var diffIgnoreFiles = new[] { new FilePattern(Glob.Parse("**/file.cs"), false, null) };
 
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
-            var options = new StrykerOptions(gitDiffTarget: "d670460b4b4aece5915caf5c68d12f560a9fe3e4", basePath: basePath, fileSystem: new MockFileSystem(), diffIgnoreFiles: diffIgnoreFiles);
-
+            var options = new StrykerOptions()
+            {
+                BasePath = basePath,
+                SinceTarget = "d670460b4b4aece5915caf5c68d12f560a9fe3e4",
+                DiffIgnoreChanges = diffIgnoreFiles
+            };
             var gitInfoMock = new Mock<IGitInfoProvider>();
             var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
             var commitMock = new Mock<Commit>(MockBehavior.Loose);

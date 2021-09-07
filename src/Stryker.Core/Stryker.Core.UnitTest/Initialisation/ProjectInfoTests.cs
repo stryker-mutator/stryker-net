@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
-    public class ProjectInfoTests
+    public class ProjectInfoTests : TestBase
     {
         [Fact]
         public void ShouldGenerateInjectionPath()

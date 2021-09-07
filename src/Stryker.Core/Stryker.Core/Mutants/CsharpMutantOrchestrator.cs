@@ -30,7 +30,7 @@ namespace Stryker.Core.Mutants
         /// <summary>
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
         /// </summary>
-        public CsharpMutantOrchestrator(IEnumerable<IMutator> mutators = null, IStrykerOptions options = null) : base(options)
+        public CsharpMutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerOptions options = null) : base(options)
         {
             Mutators = mutators ?? new List<IMutator>
             {

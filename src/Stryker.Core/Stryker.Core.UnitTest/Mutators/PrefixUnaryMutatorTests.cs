@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.Mutators;
@@ -7,10 +7,10 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
-    public class PrefixUnaryMutatorTests
+    public class PrefixUnaryMutatorTests : TestBase
     {
         [Fact]
-        public void ShouldBeMutationlevelStandard()
+        public void ShouldBeMutationLevelStandard()
         {
             var target = new PrefixUnaryMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
@@ -78,11 +78,11 @@ namespace Stryker.Core.UnitTest.Mutators
         [Theory]
         [InlineData(SyntaxKind.AddressOfExpression)]
         [InlineData(SyntaxKind.PointerIndirectionExpression)]
-        public void ShouldNotMutate(SyntaxKind orginal)
+        public void ShouldNotMutate(SyntaxKind original)
         {
             var target = new PrefixUnaryMutator();
 
-            var originalNode = SyntaxFactory.PrefixUnaryExpression(orginal, SyntaxFactory.IdentifierName("a"));
+            var originalNode = SyntaxFactory.PrefixUnaryExpression(original, SyntaxFactory.IdentifierName("a"));
             var result = target.ApplyMutations(originalNode).ToList();
 
             result.ShouldBeEmpty();

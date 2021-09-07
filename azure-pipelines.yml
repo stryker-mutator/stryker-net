@@ -23,8 +23,8 @@ pr:
     - '.github/*'
   
 variables:
-  PackageVersion: '0.22.4'
-  VersionBuildNumber: $[counter('0.22.4', 1)]
+  PackageVersion: '1.0.0'
+  VersionBuildNumber: $[counter('1.0.0', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
@@ -239,7 +239,6 @@ stages:
       parameters:
         testName: 'macos-netcore-multi-test-project'
         workingDirectory: 'integrationtest/TargetProjects/TargetProject'
-        strykerCommands: --test-projects "['../NetCoreTestProject.XUnit/NetCoreTestProject.XUnit.csproj', '../NetCoreTestProject.NUnit/NetCoreTestProject.NUnit.csproj']"
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:
@@ -247,7 +246,7 @@ stages:
         projects: '**/Validation.csproj'
         arguments: --filter Traits=MultipleTestProjects
 
-- stage: PublishReleaseArtifact
+- stage: PublishMasterReleaseArtifact
   displayName: Publish Release Artifact
   dependsOn: 
     - Analysis
@@ -265,17 +264,55 @@ stages:
         custom: 'restore'
         arguments: '--packages ./.vstest/'
         workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
-    - task: DotNetCoreCLI@2 # Microsoft broke implicit restore on build so let's just keep this here..
-      displayName: 'Restore'
-      inputs:
-        command: 'restore'
-        projects: 'src/Stryker.CLI/Stryker.CLI.sln'
     - task: DotNetCoreCLI@2
-      displayName: 'Pack release package'
+      displayName: 'Pack Stryker.CLI'
       inputs:
-        command: pack
-        packagesToPack: $(ProjectsToPack)
-        packDirectory: $(Build.ArtifactStagingDirectory)/release
+        command: custom
+        custom: pack
+        arguments: --output $(Build.ArtifactStagingDirectory)/release
+        workingDirectory: 'src/Stryker.CLI/Stryker.CLI'
+    - task: DotNetCoreCLI@2
+      displayName: 'Pack Stryker.Core'
+      inputs:
+        command: custom
+        custom: pack
+        arguments: --output $(Build.ArtifactStagingDirectory)/release
+        workingDirectory: 'src/Stryker.Core/Stryker.Core'
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: release'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/release'
+        ArtifactName: release
+
+- stage: PublishBranchReleaseArtifact
+  displayName: Publish Release Artifact
+  dependsOn: 
+    - Analysis
+    - IntegrationTests
+  condition: and(not(failed()), and(ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.SourceBranch'], 'refs/heads/master')))
+  jobs:
+  - job: PublishRelease
+    displayName: Publish Release Artifacts
+    steps:
+    - template: pipeline-templates/populate-cache-steps.yml
+    - task: DotNetCoreCLI@2
+      displayName: 'Restore vstest binaries'
+      inputs:
+        command: 'custom'
+        custom: 'restore'
+        arguments: '--packages ./.vstest/'
+        workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
+    - script: dotnet pack --output $(Build.ArtifactStagingDirectory)/release
+      displayName: 'Pack Stryker.CLI'
+      workingDirectory: 'src/Stryker.CLI/Stryker.CLI'
+    - script: dotnet pack --output $(Build.ArtifactStagingDirectory)/release
+      displayName: 'Pack Stryker.Core'
+      workingDirectory: 'src/Stryker.Core/Stryker.Core'
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Artifact: release'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/release'
+        ArtifactName: release
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: release'
       inputs:

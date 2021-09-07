@@ -8,17 +8,17 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
-    public class NegateConditionMutatorTests
+    public class NegateConditionMutatorTests : TestBase
     {
         [Fact]
-        public void ShouldBeMutationlevelStandard()
+        public void ShouldBeMutationLevelStandard()
         {
             var target = new NegateConditionMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
         }
 
         /// <summary>
-        ///     Generator for different Linqexpressions
+        ///     Generator for different Linq expressions
         /// </summary>
         /// <param name="expression"></param>
         /// <returns></returns>
@@ -26,7 +26,7 @@ namespace Stryker.Core.UnitTest.Mutators
         {
             SyntaxTree tree = CSharpSyntaxTree.ParseText($@"
 using System;
- 
+
 namespace TestApplication
 {{
     class Program

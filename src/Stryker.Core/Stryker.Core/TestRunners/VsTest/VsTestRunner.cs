@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
@@ -29,7 +30,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private IVsTestConsoleWrapper _vsTestConsole;
         private readonly IFileSystem _fileSystem;
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly ProjectInfo _projectInfo;
         private readonly Func<int, IStrykerTestHostLauncher> _hostBuilder;
         private readonly IVsTestHelper _vsTestHelper;
@@ -47,7 +48,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly TestSet _tests;
         private string RunnerId => $"Runner {_id}";
 
-        public VsTestRunner(IStrykerOptions options,
+        public VsTestRunner(StrykerOptions options,
             ProjectInfo projectInfo,
             IDictionary<Guid, VsTestDescription> tests,
             TestSet testSet,
@@ -94,9 +95,9 @@ namespace Stryker.Core.TestRunners.VsTest
             return BuildTestRunResult(testResults, int.MaxValue, false);
         }
 
-        public TestRunResult RunAll(ITimeoutValueCalculator timeoutMs, Mutant mutant, TestUpdateHandler update)
+        public TestRunResult RunAll(ITimeoutValueCalculator timeoutMs, Mutant activeMutant, TestUpdateHandler update)
         {
-            return TestMultipleMutants(timeoutMs, mutant == null ? null : new List<Mutant> { mutant }, update);
+            return TestMultipleMutants(timeoutMs, activeMutant == null ? null : new List<Mutant> { activeMutant }, update);
         }
 
         public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
@@ -109,13 +110,13 @@ namespace Stryker.Core.TestRunners.VsTest
             if (mutants != null)
             {
                 // if we optimize the number of tests to run
-                if (_options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest))
+                if (_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
                 {
                     needAll = false;
                     foreach (var mutant in mutants)
                     {
                         ITestListDescription tests;
-                        if ((mutant.IsStaticValue && !_options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest)) || mutant.MustRunAgainstAllTests)
+                        if ((mutant.IsStaticValue && !_options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest)) || mutant.MustRunAgainstAllTests)
                         {
                             tests = TestsGuidList.EveryTest();
                             needAll = true;
@@ -136,7 +137,7 @@ namespace Stryker.Core.TestRunners.VsTest
                         return new TestRunResult(TestsGuidList.NoTest(), TestsGuidList.NoTest(), TestsGuidList.NoTest(), "Mutants are not covered by any test!", TimeSpan.Zero);
                     }
 
-                    if (timeoutCalc != null && testCases!= null)
+                    if (timeoutCalc != null && testCases != null)
                     {
                         // compute time out
                         var duration = (int)testCases.Select(id => _vsTests[id].InitialRunTime.TotalMilliseconds).Sum();
@@ -168,8 +169,8 @@ namespace Stryker.Core.TestRunners.VsTest
                     return;
                 }
                 var tests = handlerTestResults.Count == DiscoverTests().Count
-                    ? (ITestGuids) TestsGuidList.EveryTest()
-                    : new WrappedGuidsEnumeration(handlerTestResults.Select(t =>t.TestCase.Id));
+                    ? (ITestGuids)TestsGuidList.EveryTest()
+                    : new WrappedGuidsEnumeration(handlerTestResults.Select(t => t.TestCase.Id));
                 var failedTest = new WrappedGuidsEnumeration(handlerTestResults.Where(tr => tr.Outcome == TestOutcome.Failed)
                     .Select(t => t.TestCase.Id));
                 var timedOutTest = new WrappedGuidsEnumeration(handler.TestsInTimeout?.Select(t => t.Id));
@@ -209,7 +210,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             var message = string.Join(Environment.NewLine,
                 resultAsArray.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage))
-                    .Select(tr => tr.ErrorMessage));
+                    .Select(tr => $"{tr.DisplayName}{Environment.NewLine}{Environment.NewLine}{tr.ErrorMessage}"));
             var failedTestsDescription = new WrappedGuidsEnumeration(failedTests);
             var timedOutTests = new WrappedGuidsEnumeration(testResults.TestsInTimeout?.Select(t => t.Id));
             return timeout
@@ -306,7 +307,7 @@ namespace Stryker.Core.TestRunners.VsTest
             // since we analyze mutant coverage, mutants are assumed as not covered
             var seenTestCases = new HashSet<Guid>();
             var dynamicTestCases = new HashSet<Guid>();
-            var mutantCount = mutants.Max(m=> m.Id) + 1;
+            var mutantCount = mutants.Max(m => m.Id) + 1;
             var map = new List<ICollection<TestDescription>>(mutantCount);
             var staticMutantLists = new HashSet<int>();
             // initialize the map
@@ -358,7 +359,7 @@ namespace Stryker.Core.TestRunners.VsTest
                             ? Enumerable.Empty<int>()
                             : parts[0].Split(',').Select(int.Parse);
                         // we identify mutants that are part of static code, unless we performed pertest capture
-                        var staticMutants = (parts.Length == 1 || string.IsNullOrEmpty(parts[1]) || _options.Optimizations.HasFlag(OptimizationFlags.CaptureCoveragePerTest))
+                        var staticMutants = (parts.Length == 1 || string.IsNullOrEmpty(parts[1]) || _options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
                             ? Enumerable.Empty<int>()
                             : parts[1].Split(',').Select(int.Parse);
 
@@ -404,7 +405,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public void CoverageForOneTest(Guid test, IEnumerable<Mutant> mutants)
         {
             _logger.LogDebug($"{RunnerId}: Capturing coverage for {_vsTests[test].Case.FullyQualifiedName}.");
-            var map = new Dictionary<int, ITestGuids>(1) {[-1] = new WrappedGuidsEnumeration(new []{test})};
+            var map = new Dictionary<int, ITestGuids>(1) { [-1] = new WrappedGuidsEnumeration(new[] { test }) };
             var testResults = RunTestSession(map, true, GenerateRunSettings(null, false, true, null));
             ParseResultsForCoverage(testResults.TestResults.Where(x => x.TestCase.Id == test), mutants);
         }
@@ -424,15 +425,16 @@ namespace Stryker.Core.TestRunners.VsTest
             eventHandler.ResultsUpdated += HandlerUpdate;
 
             _aborted = false;
+            var options = new TestPlatformOptions { TestCaseFilter = _options.TestCaseFilter };
             if (runAllTests)
             {
-                _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, eventHandler,
+                _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, options, eventHandler,
                     strykerVsTestHostLauncher);
             }
             else
             {
-                _vsTestConsole.RunTestsWithCustomTestHost(mutantTestsMap.SelectMany( m => m.Value.GetGuids()).Select(t => _vsTests[t].Case), runSettings,
-                    eventHandler, strykerVsTestHostLauncher);
+                _vsTestConsole.RunTestsWithCustomTestHost(mutantTestsMap.SelectMany(m => m.Value.GetGuids()).Select(t => _vsTests[t].Case), runSettings,
+                    options, eventHandler, strykerVsTestHostLauncher);
             }
 
             // Test host exited signal comes after the run completed
@@ -454,25 +456,36 @@ namespace Stryker.Core.TestRunners.VsTest
             return RunTestSession(mutantTestsMap, true, runSettings, updateHandler, ++retries);
         }
 
+        private ConsoleParameters DetermineConsoleParameters()
+        {
+            if (_options.LogOptions.LogToFile)
+            {
+                var vsTestLogPath = Path.Combine(_options.OutputPath, "logs", "VsTest-log.txt");
+                _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(vsTestLogPath));
+
+                _logger.LogTrace("{1}: Logging VsTest output to: {0}", vsTestLogPath, RunnerId);
+                return new ConsoleParameters
+                {
+                    TraceLevel = DetermineTraceLevel(),
+                    LogFilePath = vsTestLogPath
+                };
+            }
+
+            return new ConsoleParameters();
+        }
+
         private TraceLevel DetermineTraceLevel()
         {
-            var traceLevel = TraceLevel.Off;
-            switch (_options.LogOptions.LogLevel)
+            var traceLevel = _options.LogOptions.LogToFile ? _options.LogOptions.LogLevel switch
             {
-                case LogEventLevel.Debug:
-                case LogEventLevel.Verbose:
-                    traceLevel = TraceLevel.Verbose;
-                    break;
-                case LogEventLevel.Error:
-                case LogEventLevel.Fatal:
-                    break;
-                case LogEventLevel.Warning:
-                    traceLevel = TraceLevel.Warning;
-                    break;
-                case LogEventLevel.Information:
-                    traceLevel = TraceLevel.Info;
-                    break;
-            }
+                LogEventLevel.Debug => TraceLevel.Verbose,
+                LogEventLevel.Verbose => TraceLevel.Verbose,
+                LogEventLevel.Error => TraceLevel.Error,
+                LogEventLevel.Fatal => TraceLevel.Error,
+                LogEventLevel.Warning => TraceLevel.Warning,
+                LogEventLevel.Information => TraceLevel.Info,
+                _ => TraceLevel.Off
+            } : TraceLevel.Off;
 
             _logger.LogTrace("{0}: VsTest logging set to {1}", RunnerId, traceLevel);
             return traceLevel;
@@ -483,7 +496,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var projectAnalyzerResult = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault();
             var targetFramework = projectAnalyzerResult.GetTargetFramework();
             var needCoverage = forCoverage && NeedCoverage();
-            var dataCollectorSettings = (forMutantTesting || forCoverage) ? CoverageCollector.GetVsTestSettings(needCoverage, mutantTestsMap?.Select( e => (e.Key, e.Value.GetGuids() as IEnumerable<Guid>)), CodeInjection.HelperNamespace) : "";
+            var dataCollectorSettings = (forMutantTesting || forCoverage) ? CoverageCollector.GetVsTestSettings(needCoverage, mutantTestsMap?.Select(e => (e.Key, e.Value.GetGuids() as IEnumerable<Guid>)), CodeInjection.HelperNamespace) : "";
             var settingsForCoverage = string.Empty;
 
             if (_testFramework.HasFlag(TestFramework.nUnit))
@@ -496,18 +509,23 @@ namespace Stryker.Core.TestRunners.VsTest
                 settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
             }
             // TODO: get proper timeout
-            var timeoutSettings = timeout!=null ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>" + Environment.NewLine : string.Empty;
+            var timeoutSettings = timeout != null ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>" + Environment.NewLine : string.Empty;
+
+            var testCaseFilter = string.IsNullOrWhiteSpace(_options.TestCaseFilter) ?
+                string.Empty : $"<TestCaseFilter>{_options.TestCaseFilter}</TestCaseFilter>" + Environment.NewLine;
+
             // we need to block parallel run to capture coverage and when testing multiple mutants in a single run
-            var optionsConcurrentTestrunners = (forCoverage || !_options.Optimizations.HasFlag(OptimizationFlags.DisableTestMix)) ? 1 : _options.ConcurrentTestrunners;
+            var optionsConcurrentTestRunners = (forCoverage || !_options.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants)) ? 1 : _options.Concurrency;
             var runSettings =
 $@"<RunSettings>
  <RunConfiguration>
 {(targetFramework == Framework.DotNetClassic ? "<DisableAppDomain>true</DisableAppDomain>" : "")}
-  <MaxCpuCount>{optionsConcurrentTestrunners}</MaxCpuCount>
+  <MaxCpuCount>{optionsConcurrentTestRunners}</MaxCpuCount>
 {timeoutSettings}
 {settingsForCoverage}
 <DesignMode>false</DesignMode>
 <BatchSize>1</BatchSize>
+{testCaseFilter}
  </RunConfiguration>
 {dataCollectorSettings}
 </RunSettings>";
@@ -518,13 +536,11 @@ $@"<RunSettings>
 
         private bool NeedCoverage()
         {
-            return _options.Optimizations.HasFlag(OptimizationFlags.CoverageBasedTest) || _options.Optimizations.HasFlag(OptimizationFlags.SkipUncoveredMutants);
+            return _options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) || _options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants);
         }
 
         private IVsTestConsoleWrapper PrepareVsTestConsole()
         {
-            var vsTestLogPath = Path.Combine(_options.OutputPath, "logs", "VsTest-log.txt");
-            _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(vsTestLogPath));
             if (_vsTestConsole != null)
             {
                 try
@@ -535,13 +551,7 @@ $@"<RunSettings>
                 _vsTestConsole = null;
             }
 
-            _logger.LogTrace("{1}: Logging VsTest output to: {0}", vsTestLogPath, RunnerId);
-
-            return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), new ConsoleParameters
-            {
-                TraceLevel = DetermineTraceLevel(),
-                LogFilePath = vsTestLogPath
-            });
+            return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), DetermineConsoleParameters());
         }
 
         private void InitializeVsTestConsole()
@@ -558,7 +568,7 @@ $@"<RunSettings>
                 }
 
                 testBinariesLocations.Add(Path.GetDirectoryName(path));
-                _sources.Add(FilePathUtils.NormalizePathSeparators(path));
+                _sources.Add(path);
             }
 
             try

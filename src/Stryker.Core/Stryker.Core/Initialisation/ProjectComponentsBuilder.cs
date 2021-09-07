@@ -73,7 +73,7 @@ namespace Stryker.Core.Initialisation
                     }
 
                     var message = $"Missing MSBuild property ({property}) in project reference ({projectReference}). Please check your project file ({projectAnalyzerResult.ProjectFilePath}) and try again.";
-                    throw new StrykerInputException(message);
+                    throw new InputException(message);
                 });
         }
     }

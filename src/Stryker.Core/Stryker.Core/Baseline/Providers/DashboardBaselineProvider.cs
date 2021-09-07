@@ -8,7 +8,7 @@ namespace Stryker.Core.Baseline.Providers
     public class DashboardBaselineProvider : IBaselineProvider
     {
         private readonly IDashboardClient _client;
-        public DashboardBaselineProvider(IStrykerOptions options, IDashboardClient client = null)
+        public DashboardBaselineProvider(StrykerOptions options, IDashboardClient client = null)
         {
             _client = client ?? new DashboardClient(options);
         }

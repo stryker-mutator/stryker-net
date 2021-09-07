@@ -9,7 +9,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInitialBuildProcess
     {
-        void InitialBuild(bool fullFramework, string path, string solutionPath);
+        void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string msbuildPath = null);
     }
 
     public class InitialBuildProcess : IInitialBuildProcess
@@ -23,7 +23,7 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialBuildProcess>();
         }
 
-        public void InitialBuild(bool fullFramework, string projectPath, string solutionPath)
+        public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string msbuildPath = null)
         {
             _logger.LogDebug("Started initial build using {0}", fullFramework ? "msbuild.exe" : "dotnet build");
 
@@ -33,11 +33,11 @@ namespace Stryker.Core.Initialisation
             {
                 if (string.IsNullOrEmpty(solutionPath))
                 {
-                    throw new StrykerInputException("Stryker could not build your project as no solution file was presented. Please pass the solution path using --solution-path \"..\\my_solution.sln\"");
+                    throw new InputException("Stryker could not build your project as no solution file was presented. Please pass the solution path to stryker.");
                 }
                 solutionPath = Path.GetFullPath(solutionPath);
                 var solutionDir = Path.GetDirectoryName(solutionPath);
-                var msbuildPath = new MsBuildHelper().GetMsBuildPath(_processExecutor);
+                msbuildPath ??= new MsBuildHelper().GetMsBuildPath(_processExecutor);
 
                 // Build project with MSBuild.exe
                 result = _processExecutor.Start(solutionDir, msbuildPath, $"\"{solutionPath}\"");
@@ -57,11 +57,11 @@ namespace Stryker.Core.Initialisation
 
         private void CheckBuildResult(ProcessResult result, string buildCommand, string buildPath)
         {
-            _logger.LogDebug("Initial build output {0}", result.Output);
-            if (result.ExitCode != 0)
+            _logger.LogTrace("Initial build output {0}", result.Output);
+            if (result.ExitCode != ExitCodes.Success)
             {
                 // Initial build failed
-                throw new StrykerInputException(result.Output, $"Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"{buildCommand} {buildPath}\"");
+                throw new InputException(result.Output, $"Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"{buildCommand} {buildPath}\"");
             }
             _logger.LogDebug("Initial build successful");
         }

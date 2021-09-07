@@ -1,6 +1,5 @@
 using Moq;
 using Stryker.Core.Baseline.Providers;
-using Stryker.Core.DashboardCompare;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
@@ -9,7 +8,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class GitBaselineReporterTests
+    public class GitBaselineReporterTests : TestBase
     {
         [Fact]
         public void Doesnt_Use_ProjectVersion_When_CurrentBranch_Is_Not_Null()
@@ -20,7 +19,11 @@ namespace Stryker.Core.UnitTest.Reporters
             var readOnlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose);
             readOnlyInputComponent.Setup(s => s.FullPath).Returns("/home/usr/dev/project");
 
-            var options = new StrykerOptions(projectVersion: "new-feature", gitDiffTarget: "master", compareToDashboard: true);
+            var options = new StrykerOptions {
+                ProjectVersion = "new-feature",
+                SinceTarget = "master",
+                WithBaseline = true
+            };
 
             gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns("new-feature");
 

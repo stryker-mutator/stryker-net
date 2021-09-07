@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Baseline.Providers
 {
-    public class DashboardBaselineProviderTests
+    public class DashboardBaselineProviderTests : TestBase
     {
         [Fact]
         public async Task Load_Calls_DashboardClient_With_version()

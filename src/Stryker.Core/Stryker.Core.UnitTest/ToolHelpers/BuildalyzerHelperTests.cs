@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.ToolHelpers
 {
-    public class BuildalyzerHelperTests
+    public class BuildalyzerHelperTests : TestBase
     {
         [Theory]
         [InlineData("DEBUG;TRACE")]

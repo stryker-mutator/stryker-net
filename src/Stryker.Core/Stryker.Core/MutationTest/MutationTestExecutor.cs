@@ -14,7 +14,7 @@ namespace Stryker.Core.MutationTest
     public interface IMutationTestExecutor
     {
         ITestRunner TestRunner { get; }
-        void Test(IList<Mutant> mutant, ITimeoutValueCalculator timeoutMs, TestUpdateHandler updateHandler);
+        void Test(IList<Mutant> mutantsToTest, ITimeoutValueCalculator timeoutMs, TestUpdateHandler updateHandler);
     }
 
     public class MutationTestExecutor : IMutationTestExecutor

@@ -9,14 +9,17 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Baseline.Providers
 {
-    public class DiskBaselineProviderTests
+    public class DiskBaselineProviderTests : TestBase
     {
         [Fact]
         public async Task ShouldWriteToDiskAsync()
         {
             // Arrange
             var fileSystemMock = new MockFileSystem();
-            var options = new StrykerOptions(basePath: @"C:/Users/JohnDoe/Project/TestFolder", fileSystem: fileSystemMock);
+            var options = new StrykerOptions()
+            {
+                BasePath = @"C:/Users/JohnDoe/Project/TestFolder"
+            };
             var sut = new DiskBaselineProvider(options, fileSystemMock);
 
             // Act
@@ -34,8 +37,8 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
         {
             // Arrange
             var fileSystemMock = new MockFileSystem();
-
-            var sut = new DiskBaselineProvider(new StrykerOptions(), fileSystemMock);
+            var options = new StrykerOptions { BasePath = "C:/Dev" };
+            var sut = new DiskBaselineProvider(options, fileSystemMock);
 
             // Act
             var result = await sut.Load("testversion");
@@ -48,8 +51,10 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
         {
             // Arrange
             var fileSystemMock = new MockFileSystem();
-            var options = new StrykerOptions(basePath: @"C:/Users/JohnDoe/Project/TestFolder", fileSystem: fileSystemMock);
-
+            var options = new StrykerOptions()
+            {
+                BasePath = @"C:/Users/JohnDoe/Project/TestFolder"
+            };
             var report = JsonReport.Build(options, JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
 
             fileSystemMock.AddFile("C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/Baselines/version/stryker-report.json", report.ToJson());

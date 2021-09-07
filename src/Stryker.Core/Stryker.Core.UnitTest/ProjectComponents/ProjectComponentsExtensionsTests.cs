@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis.Text;
+using Microsoft.CodeAnalysis.Text;
 using Shouldly;
 using Stryker.Core.ProjectComponents;
 using System;
@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.ProjectComponents
 {
-    public class ProjectComponentsExtensionsTests
+    public class ProjectComponentsExtensionsTests : TestBase
     {
         [Theory]
         [InlineData(new int[0], new int[0])]

@@ -16,7 +16,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
-    public class ProjectOrchestratorTests
+    public class ProjectOrchestratorTests : TestBase
     {
         private readonly Mock<IBuildalyzerProvider> _buildalyzerProviderMock = new Mock<IBuildalyzerProvider>(MockBehavior.Strict);
         private readonly Mock<IMutationTestProcess> _mutationTestProcessMock = new Mock<IMutationTestProcess>(MockBehavior.Strict);
@@ -28,7 +28,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         public ProjectOrchestratorTests()
         {
             _mutationTestProcessMock.Setup(x => x.Mutate());
-            _projectMutatorMock.Setup(x => x.MutateProject(It.IsAny<IStrykerOptions>(), It.IsAny<IReporter>()))
+            _projectMutatorMock.Setup(x => x.MutateProject(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>()))
                 .Returns(new Mock<IMutationTestProcess>().Object);
 
             _mutationTestInput = new MutationTestInput()
@@ -53,14 +53,18 @@ namespace Stryker.Core.UnitTest.Initialisation
             var testProjectAnalyzerResultMock = new Mock<IAnalyzerResult>(MockBehavior.Strict);
             var projectUnderTestProjectFileMock = new Mock<IProjectFile>(MockBehavior.Strict);
             var testProjectProjectFileMock = new Mock<IProjectFile>(MockBehavior.Strict);
-            var testProjectPackagereferenceMock = new Mock<IPackageReference>();
+            var testProjectPackageReferenceMock = new Mock<IPackageReference>();
 
-            // when a solutionpath is given and it's inside the current directory (basepath)
-            var options = new StrykerOptions(basePath: "C:/MyProject", solutionPath: "C:/MyProject/MyProject.sln");
+            // when a solutionPath is given and it's inside the current directory (basePath)
+            var options = new StrykerOptions
+            {
+                BasePath = "C:/MyProject",
+                SolutionPath = "C:/MyProject/MyProject.sln"
+            };
             var target = new ProjectOrchestrator(_buildalyzerProviderMock.Object, _projectMutatorMock.Object);
 
-            _initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<IStrykerOptions>())).Returns(_mutationTestInput);
-            _initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<IStrykerOptions>())).Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(5)));
+            _initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>(), It.IsAny<DashboardReporter>())).Returns(_mutationTestInput);
+            _initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>())).Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(5)));
             _buildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<string>(), It.IsAny<AnalyzerManagerOptions>())).Returns(buildalyzerAnalyzerManagerMock.Object);
             // The analyzer finds two projects
             buildalyzerAnalyzerManagerMock.Setup(x => x.Projects)
@@ -83,7 +87,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             projectUnderTestAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "False" }, { "ProjectTypeGuids", "not testproject" } });
             projectUnderTestAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns("C:/projectundertest/projectundertest.csproj");
             testProjectProjectFileMock.Setup(x => x.PackageReferences).Returns(new List<IPackageReference>() {
-                testProjectPackagereferenceMock.Object
+                testProjectPackageReferenceMock.Object
             });
             testProjectProjectFileMock.Setup(x => x.Path).Returns("C:/testproject/");
 

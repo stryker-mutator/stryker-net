@@ -1,10 +1,11 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
 using Shouldly;
 using Stryker.Core.Clients;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Json;
 using System;
 using System.Net.Http;
@@ -15,12 +16,12 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Clients
 {
-    public class DashboardClientsTest
+    public class DashboardClientsTest : TestBase
     {
         [Fact]
         public async Task DashboardClient_Logs_And_Returns_Null_On_Publish_Report_Does_Not_Return_200()
         {
-            // Arrange 
+            // Arrange
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
@@ -38,12 +39,13 @@ namespace Stryker.Core.UnitTest.Clients
                 .Verifiable();
 
             var httpClient = new HttpClient(handlerMock.Object);
+            var options = new StrykerOptions
+            {
+                DashboardUrl = "http://www.example.com/",
+                DashboardApiKey = "Access_Token"
+            };
 
-
-            var target = new DashboardClient(new StrykerOptions(
-                dashboardUrl: "http://www.example.com/",
-                dashboardApiKey: "Acces_Token"
-                ), httpClient, loggerMock.Object);
+            var target = new DashboardClient(options, httpClient, loggerMock.Object);
 
             // Act
             var result = await target.PublishReport("string_json", "version");
@@ -63,7 +65,7 @@ namespace Stryker.Core.UnitTest.Clients
         [Fact]
         public async Task DashboardClient_Calls_With_Right_URL()
         {
-            // Arrange 
+            // Arrange
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
@@ -82,16 +84,15 @@ namespace Stryker.Core.UnitTest.Clients
 
             var httpClient = new HttpClient(handlerMock.Object);
 
-            var reporters = new String[1];
-            reporters[0] = "dashboard";
+            var reporters = new[] { Reporter.Dashboard };
 
-            var options = new StrykerOptions(
-                dashboardUrl: "http://www.example.com",
-                dashboardApiKey: "Acces_Token",
-                projectName: "github.com/JohnDoe/project",
-                projectVersion: "test/version",
-                reporters: reporters
-                );
+            var options = new StrykerOptions {
+                DashboardUrl = "http://www.example.com",
+                DashboardApiKey = "Access_Token",
+                ProjectName = "github.com/JohnDoe/project",
+                ProjectVersion = "test/version",
+                Reporters = reporters
+            };
 
             var target = new DashboardClient(options, httpClient, loggerMock.Object);
 
@@ -115,7 +116,7 @@ namespace Stryker.Core.UnitTest.Clients
         [Fact]
         public async Task DashboardClient_Calls_With_Right_URL_With_Module_Appended()
         {
-            // Arrange 
+            // Arrange
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
@@ -134,18 +135,17 @@ namespace Stryker.Core.UnitTest.Clients
 
             var httpClient = new HttpClient(handlerMock.Object);
 
-            var reporters = new String[1];
-            reporters[0] = "dashboard";
+            var reporters = new[] { Reporter.Dashboard };
 
-            var options = new StrykerOptions(
-                dashboardUrl: "http://www.example.com",
-                dashboardApiKey: "Acces_Token",
-                projectName: "github.com/JohnDoe/project",
-                projectVersion: "test/version",
-                reporters: reporters,
-                moduleName: "moduleName"
-                );
-
+            var options = new StrykerOptions
+            {
+                DashboardUrl = "http://www.example.com",
+                DashboardApiKey = "Access_Token",
+                ProjectName = "github.com/JohnDoe/project",
+                ProjectVersion = "test/version",
+                ModuleName = "moduleName",
+                Reporters = reporters
+            };
             var target = new DashboardClient(options, httpClient, loggerMock.Object);
 
 
@@ -168,20 +168,20 @@ namespace Stryker.Core.UnitTest.Clients
         [Fact]
         public async Task DashboardClient_Get_With_Right_URL()
         {
-            // Arrange 
+            // Arrange
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
-            var reporters = new string[1];
-            reporters[0] = "dashboard";
+            var reporters = new[] { Reporter.Dashboard };
 
-            var options = new StrykerOptions(
-                dashboardUrl: "http://www.example.com",
-                dashboardApiKey: "Acces_Token",
-                projectName: "github.com/JohnDoe/project",
-                projectVersion: "test/version",
-                reporters: reporters
-                );
+            var options = new StrykerOptions
+            {
+                DashboardUrl = "http://www.example.com",
+                DashboardApiKey = "Access_Token",
+                ProjectName = "github.com/JohnDoe/project",
+                ProjectVersion = "test/version",
+                Reporters = reporters
+            };
 
             var readonlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose).Object;
 
@@ -226,21 +226,21 @@ namespace Stryker.Core.UnitTest.Clients
         [Fact]
         public async Task DashboardClient_Get_With_Right_URL_with_module_name()
         {
-            // Arrange 
+            // Arrange
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
-            var reporters = new string[1];
-            reporters[0] = "dashboard";
+            var reporters = new[] { Reporter.Dashboard };
 
-            var options = new StrykerOptions(
-                dashboardUrl: "http://www.example.com",
-                dashboardApiKey: "Acces_Token",
-                projectName: "github.com/JohnDoe/project",
-                projectVersion: "test/version",
-                reporters: reporters,
-                moduleName: "moduleName"
-                );
+            var options = new StrykerOptions
+            {
+                DashboardUrl = "http://www.example.com",
+                DashboardApiKey = "Access_Token",
+                ProjectName = "github.com/JohnDoe/project",
+                ProjectVersion = "test/version",
+                ModuleName = "moduleName",
+                Reporters = reporters
+            };
 
             var readonlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose).Object;
 
@@ -283,25 +283,22 @@ namespace Stryker.Core.UnitTest.Clients
         }
 
         [Fact]
-        public async Task DashboardClient_Get_Returns_Null_When_Statuscode_Not_200()
+        public async Task DashboardClient_Get_Returns_Null_When_StatusCode_Not_200()
         {
-            // Arrange 
+            // Arrange
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
-            var reporters = new string[] {
-                "dashboard"
+            var reporters = new[] { Reporter.Dashboard };
+
+            var options = new StrykerOptions
+            {
+                DashboardUrl = "http://www.example.com",
+                DashboardApiKey = "Access_Token",
+                ProjectName = "github.com/JohnDoe/project",
+                ProjectVersion = "test/version",
+                Reporters = reporters
             };
-
-
-            var options = new StrykerOptions(
-                dashboardUrl: "http://www.example.com",
-                dashboardApiKey: "Acces_Token",
-                projectName: "github.com/JohnDoe/project",
-                projectVersion: "test/version",
-                reporters: reporters
-                );
-
 
             handlerMock
                 .Protected()

@@ -15,9 +15,9 @@ namespace Stryker.Core.Reporters.Json
         public IDictionary<string, JsonReportFileComponent> Files { get; private set; } = new Dictionary<string, JsonReportFileComponent>();
 
         [JsonIgnore]
-        private static IStrykerOptions _options;
+        private static StrykerOptions _options;
         [JsonIgnore]
-        private static JsonReport _report = null;
+        internal static JsonReport ReportCache = null;
 
         [JsonConstructor]
         private JsonReport()
@@ -25,7 +25,7 @@ namespace Stryker.Core.Reporters.Json
 
         }
 
-        private JsonReport(IStrykerOptions options, IReadOnlyProjectComponent mutationReport)
+        private JsonReport(StrykerOptions options, IReadOnlyProjectComponent mutationReport)
         {
             _options = options;
 
@@ -44,22 +44,17 @@ namespace Stryker.Core.Reporters.Json
             Files = files ?? Files;
         }
 
-        public static JsonReport Build(IStrykerOptions options, IReadOnlyProjectComponent mutationReport)
+        public static JsonReport Build(StrykerOptions options, IReadOnlyProjectComponent mutationReport)
         {
-            // This should really only happen in unit tests.
-            // We need this construct because in a unit test
-            // we want to be able to generate different reports with different settings
-            _report = _options == options ? _report : null;
-
             // If the report was already generated, return the existing report
-            _report ??= new JsonReport(options, mutationReport);
+            ReportCache ??= new JsonReport(options, mutationReport);
 
-            return _report;
+            return ReportCache;
         }
 
         public string ToJson()
         {
-            var json = JsonConvert.SerializeObject(_report, new JsonSerializerSettings
+            var json = JsonConvert.SerializeObject(ReportCache, new JsonSerializerSettings
             {
                 ContractResolver = new DefaultContractResolver
                 {

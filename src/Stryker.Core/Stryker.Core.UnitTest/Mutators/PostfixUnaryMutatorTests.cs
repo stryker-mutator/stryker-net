@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.Mutators;
@@ -7,10 +7,10 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
-    public class PostfixUnaryMutatorTests
+    public class PostfixUnaryMutatorTests : TestBase
     {
         [Fact]
-        public void ShouldBeMutationlevelStandard()
+        public void ShouldBeMutationLevelStandard()
         {
             var target = new PostfixUnaryMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);

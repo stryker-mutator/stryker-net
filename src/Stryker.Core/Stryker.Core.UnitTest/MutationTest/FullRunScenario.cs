@@ -100,7 +100,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var test = new TestDescription(Guid.NewGuid(), name ?? $"test {id}", file);
             _tests[id] = test;
-            TestSet.RegisterTests(new []{test});
+            TestSet.RegisterTests(new[] { test });
             return test;
         }
 

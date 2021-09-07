@@ -1,3 +1,57 @@
+## [0.22.10](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.9...stryker@0.22.10) (2021-08-25)
+
+
+### Bug Fixes
+
+* Allow setting threshold break to 100 ([#1674](https://github.com/stryker-mutator/stryker-net/issues/1674)) ([4cd1945](https://github.com/stryker-mutator/stryker-net/commit/4cd1945621da08a9c6794ff9415096e68c306216))
+* Return exit code 2 for threshold break violations ([#1673](https://github.com/stryker-mutator/stryker-net/issues/1673)) ([6da4e7d](https://github.com/stryker-mutator/stryker-net/commit/6da4e7d16e00aa90860e59a3875539c18bbbe757))
+
+
+
+## [0.22.9](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.8...stryker@0.22.9) (2021-08-03)
+
+
+### Bug Fixes
+
+* **Ignore methods:** Allow ignoring mutants of fully qualified method names ([#1635](https://github.com/stryker-mutator/stryker-net/issues/1635)) ([ddfc72f](https://github.com/stryker-mutator/stryker-net/commit/ddfc72f1c95f1302fb6f0bab7cf3e48b7b85b505))
+
+
+
+## [0.22.8](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.7...stryker@0.22.8) (2021-07-26)
+
+
+### Bug Fixes
+
+* **Compiling:** Added support for C# source generators. ([#1617](https://github.com/stryker-mutator/stryker-net/issues/1617)) ([98c7669](https://github.com/stryker-mutator/stryker-net/commit/98c7669d8f643c2b51ca176952d6339fb3e80acf))
+
+
+
+## [0.22.7](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.6...stryker@0.22.7) (2021-07-10)
+
+
+### Bug Fixes
+
+* **Diff feature:** Coverage analysis filter overwrites Ignored mutant statuses while it should ignore them ([#1586](https://github.com/stryker-mutator/stryker-net/issues/1586))
+
+## [0.22.6](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.5...stryker@0.22.6) (2021-06-30)
+
+
+### Bug Fixes
+
+* **Conversion operator:** Stryker won't break anymore when using conversion operator ([#1613](https://github.com/stryker-mutator/stryker-net/issues/1613)) ([a09f2cc](https://github.com/stryker-mutator/stryker-net/commit/a09f2cc8c55f76ffcab8964e477334ff3ca75882))
+
+
+
+## [0.22.5](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.4...stryker@0.22.5) (2021-06-22)
+
+
+### Bug Fixes
+
+* **Dotnet 5 support:** net5.0 version parsing ([#1592](https://github.com/stryker-mutator/stryker-net/issues/1592)) ([a92fa86](https://github.com/stryker-mutator/stryker-net/commit/a92fa86b65402cdcdb6a27cf1c55d2f0c8f0b684))
+* **Ignore method:** Ignore method when not called on an object ([#1579](https://github.com/stryker-mutator/stryker-net/issues/1579)) ([eb87d07](https://github.com/stryker-mutator/stryker-net/commit/eb87d0702081848304cb679b6f1f9a2b85d3962a))
+
+
+
 ## [0.22.4](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.2...stryker@0.22.4) (2021-05-14)
 
 

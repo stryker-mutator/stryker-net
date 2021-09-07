@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.ProjectComponents
 {
-    public class ProjectComponentTests
+    public class ProjectComponentTests : TestBase
     {
         [Fact]
         public void ReportComponent_ShouldCalculateMutationScore_NoMutations()

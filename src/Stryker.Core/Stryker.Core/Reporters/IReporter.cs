@@ -1,6 +1,6 @@
-﻿using Stryker.Core.Mutants;
-using Stryker.Core.ProjectComponents;
 using System.Collections.Generic;
+using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Reporters
 {

@@ -12,26 +12,30 @@ namespace Stryker.Core.Clients
 {
     public interface IDashboardClient
     {
+        string ProjectName { get; set; }
         Task<string> PublishReport(string json, string version);
         Task<JsonReport> PullReport(string version);
     }
 
     public class DashboardClient : IDashboardClient
     {
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly ILogger<DashboardClient> _logger;
         private readonly HttpClient _httpClient;
 
-        public DashboardClient(IStrykerOptions options, HttpClient httpClient = null, ILogger<DashboardClient> logger = null)
+        public DashboardClient(StrykerOptions options, HttpClient httpClient = null, ILogger<DashboardClient> logger = null)
         {
             _options = options;
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DashboardClient>();
             _httpClient = httpClient ?? new HttpClient();
+            ProjectName = _options.ProjectName;
         }
+
+        public string ProjectName { get; set; }
 
         public async Task<string> PublishReport(string json, string version)
         {
-            var url = new Uri($"{_options.DashboardUrl}/api/reports/{_options.ProjectName}/{version}");
+            var url = new Uri($"{_options.DashboardUrl}/api/reports/{ProjectName}/{version}");
 
             if (_options.ModuleName != null)
             {
@@ -65,7 +69,7 @@ namespace Stryker.Core.Clients
 
         public async Task<JsonReport> PullReport(string version)
         {
-            var url = new Uri($"{_options.DashboardUrl}/api/reports/{_options.ProjectName}/{version}");
+            var url = new Uri($"{_options.DashboardUrl}/api/reports/{ProjectName}/{version}");
 
             if (_options.ModuleName != null)
             {

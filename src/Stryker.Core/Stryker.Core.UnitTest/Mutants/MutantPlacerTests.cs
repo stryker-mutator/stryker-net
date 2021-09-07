@@ -6,12 +6,13 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
+using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
 {
-    public class MutantPlacerTests
+    public class MutantPlacerTests : TestBase
     {
         [Theory]
         [InlineData(0)]
@@ -133,7 +134,7 @@ namespace Stryker.Core.UnitTest.Mutants
         }
 
         [Fact]
-        public void ShouldInjectInitalizersAndRestore()
+        public void ShouldInjectInitializersAndRestore()
         {
             var source = "class Test {bool Method(out int x) {x=0;}}";
             var expected = "class Test {bool Method(out int x) {{x = default(int);}x=0;}}";
@@ -158,7 +159,10 @@ namespace Stryker.Core.UnitTest.Mutants
             var source = @"class Test {
 static TestClass()=> Value-='a';}";
 
-            var orchestrator = new CsharpMutantOrchestrator(options: new StrykerOptions());
+            var orchestrator = new CsharpMutantOrchestrator(options: new StrykerOptions {
+                OptimizationMode = OptimizationModes.CoverageBasedTest,
+                MutationLevel = MutationLevel.Complete
+            });
             var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
 
             var node = actualNode.DescendantNodes().First(t => t is BlockSyntax);
@@ -166,7 +170,7 @@ static TestClass()=> Value-='a';}";
             // Remove marker
             var restored= MutantPlacer.RemoveMutant(node);
             actualNode = actualNode.ReplaceNode(node, restored);
-            
+
             // remove mutation
             node = actualNode.DescendantNodes().First(t => t.Kind() == SyntaxKind.IfStatement);
             restored = MutantPlacer.RemoveMutant(node);

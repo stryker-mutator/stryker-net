@@ -19,14 +19,14 @@ namespace Stryker.Core.MutationTest
     {
         private readonly ProjectComponent<ParsedInput> _projectInfo;
         private readonly ILogger _logger;
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly FsharpCompilingProcess _compilingProcess;
         private readonly BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>> _orchestrator;
 
         public FsharpMutationProcess(MutationTestInput mutationTestInput,
             BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>> orchestrator = null,
             IFileSystem fileSystem = null,
-            IStrykerOptions options = null)
+            StrykerOptions options = null)
         {
             MutationTestInput input = mutationTestInput;
             _projectInfo = (ProjectComponent<ParsedInput>)input.ProjectInfo.ProjectContents;

@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.InjectedHelpers;
@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.InjectedHelpers
 {
-    public class InjectedHelperTests
+    public class InjectedHelperTests : TestBase
     {
         [Theory]
         [InlineData(LanguageVersion.CSharp2)]

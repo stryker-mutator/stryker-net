@@ -3,12 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Baseline.Utils;
-using Stryker.Core.DashboardCompare;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
@@ -25,12 +22,12 @@ namespace Stryker.Core.MutantFilters
         private readonly ILogger<DashboardMutantFilter> _logger;
         private readonly IBaselineMutantHelper _baselineMutantHelper;
 
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly JsonReport _baseline;
 
         public string DisplayName => "dashboard filter";
 
-        public DashboardMutantFilter(IStrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null, IBaselineMutantHelper baselineMutantHelper = null)
+        public DashboardMutantFilter(StrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null, IBaselineMutantHelper baselineMutantHelper = null)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<DashboardMutantFilter>();
             _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
@@ -39,16 +36,16 @@ namespace Stryker.Core.MutantFilters
 
             _options = options;
 
-            if (options.CompareToDashboard)
+            if (options.WithBaseline)
             {
                 _baseline = GetBaselineAsync().Result;
             }
         }
         
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, IStrykerOptions options)
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
         {
-            if (options.CompareToDashboard)
+            if (options.WithBaseline)
             {
                 if (_baseline == null)
                 {
@@ -65,6 +62,11 @@ namespace Stryker.Core.MutantFilters
 
         private void UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file)
         {
+            if(!_baseline.Files.ContainsKey(FilePathUtils.NormalizePathSeparators(file.RelativePath)))
+            {
+                return;
+            }
+
             JsonReportFileComponent baselineFile = _baseline.Files[FilePathUtils.NormalizePathSeparators(file.RelativePath)];
 
             if (baselineFile is { })

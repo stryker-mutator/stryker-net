@@ -18,7 +18,7 @@ namespace Stryker.Core.MutationTest
     {
         private readonly ProjectComponent<SyntaxTree> _projectInfo;
         private readonly ILogger _logger;
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly CsharpCompilingProcess _compilingProcess;
         private readonly IFileSystem _fileSystem;
         private readonly MutationTestInput _input;
@@ -28,7 +28,7 @@ namespace Stryker.Core.MutationTest
 
         public CsharpMutationProcess(MutationTestInput mutationTestInput,
             IFileSystem fileSystem = null,
-            IStrykerOptions options = null,
+            StrykerOptions options = null,
             IMutantFilter mutantFilter = null,
             BaseMutantOrchestrator<SyntaxNode> orchestrator = null)
         {

@@ -19,7 +19,7 @@ namespace Stryker.Core.Compiling
 
     /// <summary>
     /// This process is in control of compiling the assembly and rolling back mutations that cannot compile
-    /// Compiles the given input onto the memorystream
+    /// Compiles the given input onto the memory stream
     public class CsharpCompilingProcess : ICompilingProcess
     {
         private readonly MutationTestInput _input;
@@ -38,7 +38,7 @@ namespace Stryker.Core.Compiling
             _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetAssemblyName();
 
         /// <summary>
-        /// Compiles the given input onto the memorystream
+        /// Compiles the given input onto the memory stream
         /// The compiling process is closely related to the rollback process. When the initial compilation fails, the rollback process will be executed.
         /// <param name="syntaxTrees">The syntax trees to compile</param>
         /// <param name="ilStream">The memory stream to store the compilation result onto</param>
@@ -57,6 +57,26 @@ namespace Stryker.Core.Compiling
                 references: _input.AssemblyReferences);
             RollbackProcessResult rollbackProcessResult;
 
+            // C# source generators must be executed before compilation
+            var generators = analyzerResult.GetSourceGenerators(_logger);
+            if (generators.Any())
+            {
+                _ = CSharpGeneratorDriver
+                    .Create(generators)
+                    .RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
+
+                foreach (var diagnostic in diagnostics)
+                {
+                    if (diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None)
+                    {
+                        _logger.LogError("Failed to generate source code for mutated assembly: {0}", diagnostic);
+                        throw new CompilationException("Source Generator Failure");
+                    }
+                }
+
+                compilation = outputCompilation as CSharpCompilation;
+            }
+
             // first try compiling
             EmitResult emitResult;
             var retryCount = 1;
@@ -67,7 +87,7 @@ namespace Stryker.Core.Compiling
             {
                 _logger.LogError("Failed to build the mutated assembly due to unrecoverable error: {0}",
                     emitResult.Diagnostics.First(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error));
-                throw new StrykerCompilationException("General Build Failure detected.");
+                throw new CompilationException("General Build Failure detected.");
             }
 
             const int maxAttempt = 50;
@@ -91,7 +111,7 @@ namespace Stryker.Core.Compiling
             {
                 _logger.LogWarning($"{emitResultDiagnostic}");
             }
-            throw new StrykerCompilationException("Failed to restore build able state.");
+            throw new CompilationException("Failed to restore build able state.");
         }
 
         private (RollbackProcessResult, EmitResult, int) TryCompilation(

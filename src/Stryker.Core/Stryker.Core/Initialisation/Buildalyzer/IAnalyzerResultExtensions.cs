@@ -90,6 +90,42 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             return Path.ChangeExtension(analyzerResult.GetAssemblyName(), ".pdb");
         }
 
+        public static IEnumerable<ISourceGenerator> GetSourceGenerators(this IAnalyzerResult analyzerResult, ILogger logger = null)
+        {
+            var generators = new List<ISourceGenerator>();
+            foreach (var analyzer in analyzerResult.AnalyzerReferences)
+            {
+                try
+                {
+                    var assembly = System.Reflection.Assembly.LoadFile(analyzer);
+                    foreach (var type in assembly.ExportedTypes)
+                    {
+                        if (type.GetInterface("ISourceGenerator") != null)
+                        {
+                            var generator = type.GetConstructor(Type.EmptyTypes).Invoke(null);
+                            generators.Add(generator as ISourceGenerator);
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    if (e is FileNotFoundException exc && exc?.FileName?.Contains("Microsoft.CodeAnalysis") == true)
+                    {
+                        logger?.LogDebug(e,
+                            $"Analyzer assembly {analyzer} could not be loaded. {Environment.NewLine}" +
+                            "Generated source code may be missing.");
+                    }
+                    else
+                    {
+                        logger?.LogWarning(e,
+                        $"Analyzer/Generator assembly {analyzer} could not be loaded. {Environment.NewLine}" +
+                        "Generated source code may be missing.");
+                    }
+                }
+            }
+            return generators;
+        }
+
         public static Framework GetTargetFramework(this IAnalyzerResult analyzerResult)
         {
             try
@@ -98,7 +134,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             }
             catch (ArgumentException)
             {
-                throw new StrykerInputException($"Unable to parse framework version string {analyzerResult.TargetFramework}. Please fix the framework version in the csproj.");
+                throw new InputException($"Unable to parse framework version string {analyzerResult.TargetFramework}. Please fix the framework version in the csproj.");
             }
         }
 
@@ -119,7 +155,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             }
             catch (ArgumentException)
             {
-                throw new StrykerInputException($"Unable to parse framework version string {analyzerResult.TargetFramework}. Please fix the framework version in the csproj.");
+                throw new InputException($"Unable to parse framework version string {analyzerResult.TargetFramework}. Please fix the framework version in the csproj.");
             }
         }
 
@@ -163,15 +199,13 @@ namespace Stryker.Core.Initialisation.Buildalyzer
                 var version = analysis.Groups["version"].Value;
                 if (!version.Contains('.'))
                 {
-                    if (version.Length == 2)
-                    // we have a aggregated version id
+                    version = version.Length switch
                     {
-                        version = $"{version[0]}.{version.Substring(1)}";
-                    }
-                    else if (version.Length == 3)
-                    {
-                        version = $"{version[0]}.{version[1]}.{version[2]}";
-                    }
+                        1 => $"{version}.0",
+                        2 => $"{version[0]}.{version.Substring(1)}",
+                        3 => $"{version[0]}.{version[1]}.{version[2]}",
+                        _ => throw new ArgumentException("invalid version")
+                    };
                 }
                 return new Version(version);
             }

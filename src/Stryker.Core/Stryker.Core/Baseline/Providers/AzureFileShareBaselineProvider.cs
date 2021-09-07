@@ -17,12 +17,12 @@ namespace Stryker.Core.Baseline.Providers
         private const string DefaultOutputDirectoryName = "StrykerOutput";
         private const string BaselinesDirectoryName = "Baselines";
 
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly HttpClient _httpClient;
         private readonly ILogger<AzureFileShareBaselineProvider> _logger;
         private readonly string _outputPath;
 
-        public AzureFileShareBaselineProvider(IStrykerOptions options, HttpClient httpClient = null)
+        public AzureFileShareBaselineProvider(StrykerOptions options, HttpClient httpClient = null)
         {
             _options = options;
             _httpClient = httpClient ?? new HttpClient();
@@ -38,7 +38,7 @@ namespace Stryker.Core.Baseline.Providers
         public async Task<JsonReport> Load(string version)
         {
             var fileUrl = $"{_options.AzureFileStorageUrl}/{_outputPath}/{version}/stryker-report.json";
-            var url = new Uri($"{fileUrl}?sv={_options.AzureSAS}");
+            var url = new Uri($"{fileUrl}?sv={_options.AzureFileStorageSas}");
 
             using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
 
@@ -60,7 +60,7 @@ namespace Stryker.Core.Baseline.Providers
         public async Task Save(JsonReport report, string version)
         {
             var fileUrl = $"{_options.AzureFileStorageUrl}/{_outputPath}/{version}/stryker-report.json";
-            var url = new Uri($"{fileUrl}?comp=range&sv={_options.AzureSAS}");
+            var url = new Uri($"{fileUrl}?comp=range&sv={_options.AzureFileStorageSas}");
 
             var existingReport = await Load(version);
 
@@ -70,9 +70,9 @@ namespace Stryker.Core.Baseline.Providers
 
             if (existingReport == null)
             {
-                var succesfullyCreatedDirectories = await CreateDirectories(fileUrl);
+                var successfullyCreatedDirectories = await CreateDirectories(fileUrl);
 
-                if (!succesfullyCreatedDirectories)
+                if (!successfullyCreatedDirectories)
                 {
                     return;
                 }
@@ -118,7 +118,7 @@ namespace Stryker.Core.Baseline.Providers
         {
             _logger.LogDebug("Creating directory {0}", fileUrl);
 
-            var url = new Uri($"{fileUrl}?restype=directory&sv={_options.AzureSAS}");
+            var url = new Uri($"{fileUrl}?restype=directory&sv={_options.AzureFileStorageSas}");
 
             using var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
 
@@ -145,7 +145,7 @@ namespace Stryker.Core.Baseline.Providers
         {
             _logger.LogDebug("Allocating storage for file {0}", fileUrl);
 
-            var url = new Uri($"{fileUrl}?sv={_options.AzureSAS}");
+            var url = new Uri($"{fileUrl}?sv={_options.AzureFileStorageSas}");
 
             using var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
 
@@ -205,7 +205,7 @@ namespace Stryker.Core.Baseline.Providers
 
         private string ToSafeResponseMessage(string responseMessage)
         {
-            return responseMessage.Replace(_options.AzureFileStorageUrl, "xxxxxxxxxx").Replace(_options.AzureSAS, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+            return responseMessage.Replace(_options.AzureFileStorageUrl, "xxxxxxxxxx").Replace(_options.AzureFileStorageSas, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
         }
     }
 }

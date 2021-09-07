@@ -1,11 +1,10 @@
-using Microsoft.Extensions.Logging;
-using Stryker.Core.DashboardCompare;
+using System.Collections.Generic;
+using System.Linq;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Html;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Progress;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Stryker.Core.Reporters
 {
@@ -21,7 +20,7 @@ namespace Stryker.Core.Reporters
             return new BroadcastReporter(DetermineEnabledReporters(options.Reporters.ToList(), CreateReporters(options)));
         }
 
-        private IDictionary<Reporter, IReporter> CreateReporters(IStrykerOptions options)
+        private IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options)
         {
             return new Dictionary<Reporter, IReporter>
             {
@@ -31,7 +30,7 @@ namespace Stryker.Core.Reporters
                 { Reporter.ClearTextTree, new ClearTextTreeReporter(options) },
                 { Reporter.Json, new JsonReporter(options) },
                 { Reporter.Html, new HtmlReporter(options) },
-                { Reporter.Dashboard, new DashboardReporter(options)},
+                { Reporter.Dashboard, new DashboardReporter(options) },
                 { Reporter.Baseline, new GitBaselineReporter(options) }
             };
         }
@@ -41,22 +40,6 @@ namespace Stryker.Core.Reporters
             if (enabledReporters.Contains(Reporter.All))
             {
                 return possibleReporters.Values;
-            }
-            var replacementFor = new Dictionary<Reporter, Reporter>
-            {
-                { Reporter.ConsoleProgressBar, Reporter.Progress },
-                { Reporter.ConsoleProgressDots, Reporter.Dots },
-                { Reporter.ConsoleReport, Reporter.ClearText }
-            };
-            if (enabledReporters.Where(deprecated => replacementFor.Any(replacement => replacement.Key == deprecated)).ToList() is var deprecatedReporters && deprecatedReporters.Count() > 0)
-            {
-                var logger = Logging.ApplicationLogging.LoggerFactory.CreateLogger(nameof(ReporterFactory));
-                foreach (var deprecatedReporter in deprecatedReporters)
-                {
-                    logger.LogWarning($"Reporter {deprecatedReporter} is deprecated. Please use {replacementFor[deprecatedReporter]} instead.");
-
-                    enabledReporters.Add(replacementFor[deprecatedReporter]);
-                }
             }
 
             return possibleReporters.Where(reporter => enabledReporters.Contains(reporter.Key))
