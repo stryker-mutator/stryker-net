@@ -27,10 +27,7 @@ namespace Stryker.Core.Mutants
         public ICollection<Mutant> Mutants { get; set; }
         public int MutantCount { get; set; }
 
-        protected MutantOrchestrator(IStrykerOptions options)
-        {
-            _options = options;
-        }
+        protected MutantOrchestrator(IStrykerOptions options) => _options = options;
 
         /// <summary>
         /// Gets the stored mutants and resets the mutant list to an empty collection

@@ -1,3 +1,31 @@
+## [0.22.10](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.9...stryker@0.22.10) (2021-08-25)
+
+
+### Bug Fixes
+
+* Allow setting threshold break to 100 ([#1674](https://github.com/stryker-mutator/stryker-net/issues/1674)) ([4cd1945](https://github.com/stryker-mutator/stryker-net/commit/4cd1945621da08a9c6794ff9415096e68c306216))
+* Return exit code 2 for threshold break violations ([#1673](https://github.com/stryker-mutator/stryker-net/issues/1673)) ([6da4e7d](https://github.com/stryker-mutator/stryker-net/commit/6da4e7d16e00aa90860e59a3875539c18bbbe757))
+
+
+
+## [0.22.9](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.8...stryker@0.22.9) (2021-08-03)
+
+
+### Bug Fixes
+
+* **Ignore methods:** Allow ignoring mutants of fully qualified method names ([#1635](https://github.com/stryker-mutator/stryker-net/issues/1635)) ([ddfc72f](https://github.com/stryker-mutator/stryker-net/commit/ddfc72f1c95f1302fb6f0bab7cf3e48b7b85b505))
+
+
+
+## [0.22.8](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.7...stryker@0.22.8) (2021-07-26)
+
+
+### Bug Fixes
+
+* **Compiling:** Added support for C# source generators. ([#1617](https://github.com/stryker-mutator/stryker-net/issues/1617)) ([98c7669](https://github.com/stryker-mutator/stryker-net/commit/98c7669d8f643c2b51ca176952d6339fb3e80acf))
+
+
+
 ## [0.22.7](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.6...stryker@0.22.7) (2021-07-10)
 
 

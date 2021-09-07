@@ -2,6 +2,18 @@
   "version": 1,
   "dependencies": {
     ".NETCoreApp,Version=v3.1": {
+      "DotNet.ReproducibleBuilds": {
+        "type": "Direct",
+        "requested": "[0.1.66, )",
+        "resolved": "0.1.66",
+        "contentHash": "B35VA6YhenOi0OdQTGDrFYkiJnKeTKt2JnF3MTnwt7NYPZJV1APRvkDBPeM418BhgRri16T3pIWsrY/f/sthOg==",
+        "dependencies": {
+          "Microsoft.SourceLink.AzureRepos.Git": "1.0.0",
+          "Microsoft.SourceLink.Bitbucket.Git": "1.0.0",
+          "Microsoft.SourceLink.GitHub": "1.0.0",
+          "Microsoft.SourceLink.GitLab": "1.0.0"
+        }
+      },
       "Microsoft.CodeCoverage": {
         "type": "Direct",
         "requested": "[16.10.0, )",
@@ -42,11 +54,11 @@
       },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[13.2.41, )",
-        "resolved": "13.2.41",
-        "contentHash": "ONDLa49sfmk2xrF6Ju/CACAijDHItIV7CJ3hMZUzLALVaAx2/diIU7iAdSmSptHNuosrHeoC6HWPVICxbO9DCA==",
+        "requested": "[13.2.43, )",
+        "resolved": "13.2.43",
+        "contentHash": "xgmYDZfEJkqzR0uWv08xwG347iALtuSLzSoSfcazfHA9ufGN1zi0q7uvWMpybwTy07KsAtH7awgqPwQ2waUR7w==",
         "dependencies": {
-          "System.IO.Abstractions": "13.2.41"
+          "System.IO.Abstractions": "13.2.43"
         }
       },
       "xunit": {
@@ -202,6 +214,11 @@
           "System.Threading.Tasks.Dataflow": "4.9.0"
         }
       },
+      "Microsoft.Build.Tasks.Git": {
+        "type": "Transitive",
+        "resolved": "1.0.0",
+        "contentHash": "z2fpmmt+1Jfl+ZnBki9nSP08S1/tbEOxFdsK1rSR+LBehIJz1Xv9/6qOOoGNqlwnAGGVGis1Oj6S8Kt9COEYlQ=="
+      },
       "Microsoft.Build.Utilities.Core": {
         "type": "Transitive",
         "resolved": "16.5.0",
@@ -220,8 +237,8 @@
       },
       "Microsoft.CodeAnalysis.Common": {
         "type": "Transitive",
-        "resolved": "3.10.0",
-        "contentHash": "Htsk5pJmKjTgUwAP5oyuIODX/b6Zl4RD0tpM62NEncxne/LiQvP50j9g8h+qFtp4lS4AmAYTVPBbXgBuC5zcQA==",
+        "resolved": "3.11.0",
+        "contentHash": "FDKSkRRXnaEWMa2ONkLMo0ZAt/uiV1XIXyodwKIgP1AMIKA7JJKXx/OwFVsvkkUT4BeobLwokoxFw70fICahNg==",
         "dependencies": {
           "Microsoft.CodeAnalysis.Analyzers": "3.3.2",
           "System.Collections.Immutable": "5.0.0",
@@ -234,10 +251,10 @@
       },
       "Microsoft.CodeAnalysis.CSharp": {
         "type": "Transitive",
-        "resolved": "3.10.0",
-        "contentHash": "GM83V29l0zsOLReyxpFs32Ujss3wkrVbWFTVjGANXxceycWmi7aLBNL4TQ3r3ZiG4m2b+/LIqwIVkDvZpjOnuw==",
+        "resolved": "3.11.0",
+        "contentHash": "aDRRb7y/sXoJyDqFEQ3Il9jZxyUMHkShzZeCRjQf3SS84n2J0cTEi3TbwVZE9XJvAeMJhGfVVxwOdjYBg6ljmw==",
         "dependencies": {
-          "Microsoft.CodeAnalysis.Common": "[3.10.0]"
+          "Microsoft.CodeAnalysis.Common": "[3.11.0]"
         }
       },
       "Microsoft.CSharp": {
@@ -397,6 +414,47 @@
         "type": "Transitive",
         "resolved": "1.1.0",
         "contentHash": "aOZA3BWfz9RXjpzt0sRJJMjAscAUm3Hoa4UWAfceV9UTYxgwZ1lZt5nO2myFf+/jetYQo4uTP7zS8sJY67BBxg=="
+      },
+      "Microsoft.SourceLink.AzureRepos.Git": {
+        "type": "Transitive",
+        "resolved": "1.0.0",
+        "contentHash": "KqaJ7iLXKDwBZn0HiT/gdyElvq0Tf96iHEUSdeT9mFf5bfF7XjVrLLoSVYc9cB2MZ+EY1YTfqkBqbkM4qcqWLA==",
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "1.0.0",
+          "Microsoft.SourceLink.Common": "1.0.0"
+        }
+      },
+      "Microsoft.SourceLink.Bitbucket.Git": {
+        "type": "Transitive",
+        "resolved": "1.0.0",
+        "contentHash": "V3mISChctXdaVmhNKnvKEmVPte1Nsc/q+RGs6KE4iP6osnyzjPVS2BXLynnqlJm7OXbp0ZhvUgAMMYQjSFQD/Q==",
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "1.0.0",
+          "Microsoft.SourceLink.Common": "1.0.0"
+        }
+      },
+      "Microsoft.SourceLink.Common": {
+        "type": "Transitive",
+        "resolved": "1.0.0",
+        "contentHash": "G8DuQY8/DK5NN+3jm5wcMcd9QYD90UV7MiLmdljSJixi3U/vNaeBKmmXUqI4DJCOeWizIUEh4ALhSt58mR+5eg=="
+      },
+      "Microsoft.SourceLink.GitHub": {
+        "type": "Transitive",
+        "resolved": "1.0.0",
+        "contentHash": "aZyGyGg2nFSxix+xMkPmlmZSsnGQ3w+mIG23LTxJZHN+GPwTQ5FpPgDo7RMOq+Kcf5D4hFWfXkGhoGstawX13Q==",
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "1.0.0",
+          "Microsoft.SourceLink.Common": "1.0.0"
+        }
+      },
+      "Microsoft.SourceLink.GitLab": {
+        "type": "Transitive",
+        "resolved": "1.0.0",
+        "contentHash": "0KpcS/YahCaOMKpxxPQh8VwtHzSSJi2MAeBvFeiNAMIx9nIDB4X8bItWEWRmhTUhWAzHlcomLpx3EsXD+slEMw==",
+        "dependencies": {
+          "Microsoft.Build.Tasks.Git": "1.0.0",
+          "Microsoft.SourceLink.Common": "1.0.0"
+        }
       },
       "Microsoft.TestPlatform": {
         "type": "Transitive",
@@ -1178,8 +1236,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "13.2.41",
-        "contentHash": "+Sc0dp4Ew5Yba3CcS6hfqFup7WHthKDmC8/N1qNTuSEqEoE/RNiKFqXdb/RNuGPbuI61LzvUoaX9RZ5Tkbw2WQ==",
+        "resolved": "13.2.43",
+        "contentHash": "zLg00Lon8k0ao7BmkkELKoXnNDhf/c+PKtz2QM2zBwzvqt4IVKe6/DIjZGav77O9/aBpmEkp9yWdCWbkq4yhFg==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "4.7.0"
         }
@@ -2036,7 +2094,7 @@
           "Crayon": "2.0.62",
           "DotNet.Glob": "3.1.2",
           "LibGit2Sharp": "0.27.0-preview-0102",
-          "Microsoft.CodeAnalysis.CSharp": "3.10.0",
+          "Microsoft.CodeAnalysis.CSharp": "3.11.0",
           "Microsoft.Extensions.Configuration": "5.0.0",
           "Microsoft.Extensions.Configuration.Json": "5.0.0",
           "Microsoft.Extensions.Logging": "5.0.0",
@@ -2052,9 +2110,9 @@
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "4.0.0",
           "ShellProgressBar": "5.1.0",
-          "Stryker.DataCollector": "0.22.7",
-          "Stryker.RegexMutators": "0.22.7",
-          "System.IO.Abstractions": "13.2.41"
+          "Stryker.DataCollector": "1.0.0",
+          "Stryker.RegexMutators": "1.0.0",
+          "System.IO.Abstractions": "13.2.43"
         }
       },
       "stryker.datacollector": {

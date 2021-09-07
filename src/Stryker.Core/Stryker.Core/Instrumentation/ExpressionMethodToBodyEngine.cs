@@ -34,9 +34,6 @@ namespace Stryker.Core.Instrumentation
             switch (method)
             {
                 case MethodDeclarationSyntax actualMethod when actualMethod.NeedsReturn():
-                    statementLine = SyntaxFactory.ReturnStatement(method.ExpressionBody.Expression.WithLeadingTrivia(SyntaxFactory.Space));
-                    break;
-
                 case ConversionOperatorDeclarationSyntax _:
                 case OperatorDeclarationSyntax _:
                     statementLine = SyntaxFactory.ReturnStatement(method.ExpressionBody.Expression.WithLeadingTrivia(SyntaxFactory.Space));
@@ -48,31 +45,8 @@ namespace Stryker.Core.Instrumentation
             }
 
             // do we need add return to the expression body?
-            var statement = SyntaxFactory.Block(statementLine);
 
-            BaseMethodDeclarationSyntax result = method switch
-            {
-                MethodDeclarationSyntax actualMethod => actualMethod.Update(actualMethod.AttributeLists,
-                    actualMethod.Modifiers, actualMethod.ReturnType, actualMethod.ExplicitInterfaceSpecifier,
-                    actualMethod.Identifier, actualMethod.TypeParameterList, actualMethod.ParameterList,
-                    actualMethod.ConstraintClauses, statement, null, SyntaxFactory.Token(SyntaxKind.None)),
-                OperatorDeclarationSyntax operatorDeclaration => operatorDeclaration.Update(
-                    operatorDeclaration.AttributeLists, operatorDeclaration.Modifiers, operatorDeclaration.ReturnType,
-                    operatorDeclaration.OperatorKeyword, operatorDeclaration.OperatorToken,
-                    operatorDeclaration.ParameterList, statement, SyntaxFactory.Token(SyntaxKind.None)),
-                ConversionOperatorDeclarationSyntax conversion => conversion.Update(conversion.AttributeLists,
-                    conversion.Modifiers, conversion.ImplicitOrExplicitKeyword, conversion.OperatorKeyword,
-                    conversion.Type, conversion.ParameterList, statement, null, SyntaxFactory.Token(SyntaxKind.None)),
-                DestructorDeclarationSyntax destructor => destructor.Update(destructor.AttributeLists,
-                    destructor.Modifiers, destructor.TildeToken, destructor.Identifier, destructor.ParameterList,
-                    statement, SyntaxFactory.Token(SyntaxKind.None)),
-                ConstructorDeclarationSyntax constructor => constructor.Update(constructor.AttributeLists,
-                    constructor.Modifiers, constructor.Identifier, constructor.ParameterList, constructor.Initializer,
-                    statement, SyntaxFactory.Token(SyntaxKind.None)),
-                _ => method
-            };
-
-            return result.WithAdditionalAnnotations(Marker) as T;
+            return method.WithBody(SyntaxFactory.Block(statementLine)).WithExpressionBody(null).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.None)).WithAdditionalAnnotations(Marker) as T;
         }
 
         protected override SyntaxNode Revert(BaseMethodDeclarationSyntax node)
@@ -80,33 +54,13 @@ namespace Stryker.Core.Instrumentation
             // get expression
             var expression = SyntaxFactory.ArrowExpressionClause(node.Body?.Statements[0] switch
             {
-                ReturnStatementSyntax returnStatement => returnStatement.Expression,
-                ExpressionStatementSyntax expressionStatement => expressionStatement.Expression,
+                ReturnStatementSyntax returnStatement => returnStatement.Expression!,
+                ExpressionStatementSyntax expressionStatement => expressionStatement.Expression!,
                 _ => throw new InvalidOperationException($"Can't extract original expression from {node.Body}")
             });
 
-            return node switch
-            {
-                MethodDeclarationSyntax actualMethod => actualMethod.Update(actualMethod.AttributeLists,
-                    actualMethod.Modifiers, actualMethod.ReturnType, actualMethod.ExplicitInterfaceSpecifier,
-                    actualMethod.Identifier, actualMethod.TypeParameterList, actualMethod.ParameterList,
-                    actualMethod.ConstraintClauses, null, expression, SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
-                OperatorDeclarationSyntax operatorDeclaration => operatorDeclaration.Update(
-                    operatorDeclaration.AttributeLists, operatorDeclaration.Modifiers, operatorDeclaration.ReturnType,
-                    operatorDeclaration.OperatorKeyword, operatorDeclaration.OperatorToken,
-                    operatorDeclaration.ParameterList, null, expression, SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
-                ConversionOperatorDeclarationSyntax conversion => conversion.Update(conversion.AttributeLists,
-                    conversion.Modifiers, conversion.ImplicitOrExplicitKeyword, conversion.OperatorKeyword,
-                    conversion.Type, conversion.ParameterList, null, expression,
-                    SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
-                DestructorDeclarationSyntax destructor => destructor.Update(destructor.AttributeLists,
-                    destructor.Modifiers, destructor.TildeToken, destructor.Identifier, destructor.ParameterList,
-                    null, expression, SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
-                ConstructorDeclarationSyntax constructor => constructor.Update(constructor.AttributeLists,
-                    constructor.Modifiers, constructor.Identifier, constructor.ParameterList, constructor.Initializer,
-                    null, expression, SyntaxFactory.Token(SyntaxKind.SemicolonToken)),
-                _ => node
-            };
+            return node.WithBody(null).WithExpressionBody(expression)
+                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken)).WithoutAnnotations(Marker);
         }
 
     }

@@ -10,9 +10,8 @@ namespace Stryker.Core.Helpers
     internal static class RoslynHelper
     {
         // gets the return type of a method (incl. constructor, destructor...)
-        public static TypeSyntax ReturnType(this BaseMethodDeclarationSyntax baseMethod)
-        {
-            return baseMethod switch
+        public static TypeSyntax ReturnType(this BaseMethodDeclarationSyntax baseMethod) =>
+            baseMethod switch
             {
                 ConstructorDeclarationSyntax _ => null,
                 ConversionOperatorDeclarationSyntax conversion => conversion.Type,
@@ -21,11 +20,9 @@ namespace Stryker.Core.Helpers
                 OperatorDeclarationSyntax operatorSyntax => operatorSyntax.ReturnType,
                 _ => null
             };
-        }
 
-        public static bool NeedsReturn(this BaseMethodDeclarationSyntax baseMethod)
-        {
-            return baseMethod switch
+        public static bool NeedsReturn(this BaseMethodDeclarationSyntax baseMethod) =>
+            baseMethod switch
             {
                 MethodDeclarationSyntax method => !(method.ReturnType is PredefinedTypeSyntax predefinedType &&
                                                     predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword)),
@@ -33,18 +30,20 @@ namespace Stryker.Core.Helpers
                 ConversionOperatorDeclarationSyntax _=> true,
                 _ => false
             };
-        }
 
-        public static bool IsStatic(this MemberDeclarationSyntax node) => node.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword);
-
-        public static bool NeedsReturn(this AccessorDeclarationSyntax baseMethod)
-        {
-            return baseMethod.Keyword.Text switch
+        public static bool NeedsReturn(this AccessorDeclarationSyntax baseMethod) =>
+            baseMethod.Keyword.Text switch
             {
                 "get" => true,
                 _ => false
             };
-        }
+
+        public static bool NeedsReturn(this LocalFunctionStatementSyntax localFunction) =>
+            !localFunction.ReturnType.IsVoid();
+
+        public static bool IsVoid(this TypeSyntax type) => type is PredefinedTypeSyntax predefinedType &&
+                                                      predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword);
+        public static bool IsStatic(this MemberDeclarationSyntax node) => node.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword);
 
         public static T InjectMutation<T>(this T original, Mutation mutation) where T:SyntaxNode
         {
@@ -59,6 +58,6 @@ namespace Stryker.Core.Helpers
         public static AccessorDeclarationSyntax GetAccessor(this PropertyDeclarationSyntax propertyDeclaration)
             => propertyDeclaration?.AccessorList?.Accessors.FirstOrDefault(a => a.Keyword.Text == "get");
 
-        public static ExpressionSyntax BuildDefaultExpression(this TypeSyntax type) => SyntaxFactory.DefaultExpression(type.WithoutTrailingTrivia()).WithLeadingTrivia(SyntaxFactory.Space);
+        public static ExpressionSyntax BuildDefaultExpression(this TypeSyntax type) => SyntaxFactory.DefaultExpression(type.WithoutTrivia()).WithLeadingTrivia(SyntaxFactory.Space);
     }
 }

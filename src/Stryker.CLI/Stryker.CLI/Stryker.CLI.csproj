@@ -10,7 +10,7 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <VersionPrefix>0.22.7</VersionPrefix>
+    <VersionPrefix>0.22.10</VersionPrefix>
     <PackageId>dotnet-stryker</PackageId>
     <Authors>Richard Werkman, Rouke Broersma</Authors>
     <Product>Mutation Testing</Product>
@@ -42,5 +42,7 @@
 
   <ItemGroup>
     <None Include="..\..\..\.editorconfig" Link="Properties\.editorconfig" />
+    <None Include="..\..\Directory.Build.props" Link="Properties\Directory.Build.props" />
+    <None Include="..\..\Directory.Build.targets" Link="Properties\Directory.Build.targets" />
   </ItemGroup>
 </Project>
