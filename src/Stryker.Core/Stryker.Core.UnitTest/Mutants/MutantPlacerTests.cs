@@ -46,6 +46,12 @@ namespace Stryker.Core.UnitTest.Mutants
         private void CheckMutantPlacerProperlyPlaceAndRemoveHelpers<T>(string sourceCode, string expectedCode,
             Func<T, T> placer) where T : SyntaxNode
         {
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<T, T>(sourceCode, expectedCode, placer);
+        }
+
+        private void CheckMutantPlacerProperlyPlaceAndRemoveHelpers<T, TU>(string sourceCode, string expectedCode,
+            Func<T, T> placer) where T : SyntaxNode where TU: SyntaxNode
+        {
             var actualNode = CSharpSyntaxTree.ParseText(sourceCode).GetRoot();
 
             var node = actualNode.DescendantNodes().First(t => t is T) as T;
@@ -53,11 +59,19 @@ namespace Stryker.Core.UnitTest.Mutants
             actualNode = actualNode.ReplaceNode(node, placer(node));
             actualNode.ToFullString().ShouldBeSemantically(expectedCode);
 
-            node =
-                actualNode.DescendantNodes().First(t => t is T) as T;
+            TU newNode ;
+            if (typeof(TU) == typeof(T))
+            {
+                newNode = actualNode.DescendantNodes().First(t => t is T) as TU;
+            }
+            else
+            {
+                newNode = actualNode.DescendantNodes().First(t => t is T).DescendantNodes().First(t => t is TU) as TU;
+            }
+
             // Remove helper
-            var restored= MutantPlacer.RemoveMutant(node);
-            actualNode = actualNode.ReplaceNode(node, restored);
+            var restored= MutantPlacer.RemoveMutant(newNode);
+            actualNode = actualNode.ReplaceNode(newNode, restored);
             actualNode.ToFullString().ShouldBeSemantically(sourceCode);
             // try to remove again
             Should.Throw<InvalidOperationException>(() => MutantPlacer.RemoveMutant(restored));
@@ -104,6 +118,16 @@ namespace Stryker.Core.UnitTest.Mutants
         }
 
         [Theory]
+        [InlineData("void TestClass(){ void LocalFunction() => Value-='a';}","void TestClass(){ void LocalFunction() {Value-='a';};}}")]
+        public void ShouldConvertExpressionBodyBackLocalFunctionAndForth(string original, string injected)
+        {
+            var source = $"class Test {{{original}}}";
+            var expectedCode = $"class Test {{{injected}}}";
+
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<LocalFunctionStatementSyntax>(source, expectedCode, MutantPlacer.ConvertExpressionToBody);
+        }
+
+        [Theory]
         [InlineData("public int X { get => 1;}", "public int X { get {return 1;}}")]
         [InlineData("public int X { get => 1; set { }}", "public int X { get {return 1;} set { }}")]
         [InlineData("public int X { set => value++;}", "public int X { set { value++;}}")]
@@ -130,7 +154,7 @@ namespace Stryker.Core.UnitTest.Mutants
             var source = "class Test {bool Method() {x++;}}";
             var expected = "class Test {bool Method() {x++;return default(bool);}}";
 
-            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BaseMethodDeclarationSyntax>(source, expected, MutantPlacer.AddEndingReturn);
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BaseMethodDeclarationSyntax, BlockSyntax>(source, expected, MutantPlacer.AddEndingReturn);
         }
 
         [Fact]
@@ -139,8 +163,19 @@ namespace Stryker.Core.UnitTest.Mutants
             var source = "class Test {bool Method(out int x) {x=0;}}";
             var expected = "class Test {bool Method(out int x) {{x = default(int);}x=0;}}";
 
-            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BaseMethodDeclarationSyntax>(source, expected,
-                (n)=> MutantPlacer.AddDefaultInitialization(n, SyntaxFactory.Identifier("x"), SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword))));
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BlockSyntax>(source, expected,
+                (n)=> MutantPlacer.AddDefaultInitializers(n,
+                    new[]{SyntaxFactory.Parameter(SyntaxFactory.Identifier("x")).WithType(SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword))
+                    )}));
+        }
+
+        [Fact]
+        public void ShouldInjectReturnToLocalFunctionAndRestore()
+        {
+            var source = "class Test {void Method(){ bool Method() {x++;};}}";
+            var expected = "class Test {void Method(){ bool Method() {x++;return default(bool);};}}";
+
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<LocalFunctionStatementSyntax, BlockSyntax>(source, expected, MutantPlacer.AddEndingReturn);
         }
 
         [Fact]

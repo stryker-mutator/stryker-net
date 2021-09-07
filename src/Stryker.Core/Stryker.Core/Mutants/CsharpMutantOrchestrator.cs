@@ -64,6 +64,7 @@ namespace Stryker.Core.Mutants
                 new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>(this),
                 new AccessorSyntaxOrchestrator(this),
                 new LocalDeclarationOrchestrator(this),
+                new LocalFunctionStatementOrchestrator(this),
                 new StatementSpecificOrchestrator<StatementSyntax>(this),
                 new BlockOrchestrator(this),
                 new ExpressionSpecificOrchestrator<ExpressionSyntax>(this),

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
@@ -16,10 +16,7 @@ namespace Stryker.Core.Mutants.NodeOrchestrators
     {
         protected CsharpMutantOrchestrator MutantOrchestrator;
 
-        protected NodeSpecificOrchestrator(CsharpMutantOrchestrator mutantOrchestrator)
-        {
-            MutantOrchestrator = mutantOrchestrator;
-        }
+        protected NodeSpecificOrchestrator(CsharpMutantOrchestrator mutantOrchestrator) => MutantOrchestrator = mutantOrchestrator;
 
         /// <summary>
         /// Get if this class this a new context.
