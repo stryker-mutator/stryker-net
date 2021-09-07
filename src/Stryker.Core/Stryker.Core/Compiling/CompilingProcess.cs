@@ -58,24 +58,7 @@ namespace Stryker.Core.Compiling
             RollbackProcessResult rollbackProcessResult;
 
             // C# source generators must be executed before compilation
-            var generators = analyzerResult.GetSourceGenerators(_logger);
-            if (generators.Any())
-            {
-                _ = CSharpGeneratorDriver
-                    .Create(generators)
-                    .RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
-
-                foreach (var diagnostic in diagnostics)
-                {
-                    if (diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None)
-                    {
-                        _logger.LogError("Failed to generate source code for mutated assembly: {0}", diagnostic);
-                        throw new StrykerCompilationException("Source Generator Failure");
-                    }
-                }
-
-                compilation = outputCompilation as CSharpCompilation;
-            }
+            compilation = RunSourceGenerators(analyzerResult, compilation);
 
             // first try compiling
             EmitResult emitResult;
