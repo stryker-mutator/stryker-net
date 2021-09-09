@@ -119,6 +119,7 @@ namespace Stryker.CLI
             AddCliInput(inputs.DevModeInput, "dev-mode", null, optionType: CommandOptionType.NoValue);
             AddCliInput(inputs.ConcurrencyInput, "concurrency", "c", argumentHint: "number");
             AddCliInput(inputs.SolutionInput, "solution", "s", argumentHint: "file-path");
+            AddCliInput(inputs.TargetFrameworkInput, "target-framework", "t", CommandOptionType.SingleValue);
 
             AddCliInput(inputs.ReportersInput, "reporter", "r", optionType: CommandOptionType.MultipleValue);
             AddCliInput(inputs.MutateInput, "mutate", "m", optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern");

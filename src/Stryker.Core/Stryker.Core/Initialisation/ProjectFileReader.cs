@@ -14,7 +14,7 @@ namespace Stryker.Core.Initialisation
         IAnalyzerResult AnalyzeProject(
             string projectFilePath,
             string solutionFilePath,
-            string targetFramework = null);
+            string targetFramework);
     }
 
     public class ProjectFileReader : IProjectFileReader
@@ -52,7 +52,8 @@ namespace Stryker.Core.Initialisation
             }
 
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
-            var analyzerResult = manager.GetProject(projectFilePath).Build(targetFramework).First();
+            var analyzerResults = manager.GetProject(projectFilePath).Build();
+            var analyzerResult = SelectAnalyzerResult(analyzerResults, targetFramework);
 
             LogAnalyzerResult(analyzerResult);
 
@@ -98,6 +99,29 @@ namespace Stryker.Core.Initialisation
             _logger.LogTrace("Succeeded: {0}", analyzerResult.Succeeded);
 
             _logger.LogTrace("**** Buildalyzer result ****");
+        }
+
+        private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
+        {
+            if (targetFramework == null)
+            {
+                return analyzerResults.First();
+            }
+
+            var analyzerResultForFramework = analyzerResults.SingleOrDefault(result => result.TargetFramework == targetFramework);
+            if (analyzerResultForFramework != null)
+            {
+                return analyzerResultForFramework;
+            }
+            else
+            {
+                var firstAnalyzerResult = analyzerResults.First();
+                _logger.LogWarning(
+                    $"The project cannot be built against the framework {targetFramework}. " +
+                    $"It will be built against the first framework available " +
+                    $"which is {firstAnalyzerResult.TargetFramework}.");
+                return firstAnalyzerResult;
+            }
         }
     }
 }
