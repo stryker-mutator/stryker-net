@@ -39,6 +39,8 @@ namespace Stryker.CLI
 
             inputs.SinceTargetInput.SuppliedInput = jsonConfig.Since?.Target;
             inputs.SolutionInput.SuppliedInput = jsonConfig.Solution;
+            inputs.TargetFrameworkInput.SuppliedInput = jsonConfig.TargetFramework;
+
             inputs.ProjectUnderTestNameInput.SuppliedInput = jsonConfig.Project;
             inputs.ThresholdBreakInput.SuppliedInput = jsonConfig.Thresholds?.Break;
             inputs.ThresholdHighInput.SuppliedInput = jsonConfig.Thresholds?.High;
