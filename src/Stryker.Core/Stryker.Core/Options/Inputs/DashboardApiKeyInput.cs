@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Reporters;
 
@@ -10,11 +13,15 @@ namespace Stryker.Core.Options.Inputs
 
         public override string Default => null;
 
-        public string Validate(bool? dashboardEnabled)
+        public string Validate(bool? withBaseline, BaselineProvider baselineProvider, IEnumerable<Reporter> reporters)
         {
-            if (!dashboardEnabled.IsNotNullAndTrue())
+            /* the dashboard is only required if 
+             * 1: Is the dashboard reporter enabled
+             * 2: Is the dasboard storage location is enabled for the with-baseline feature AND is the with-baseline feature enabled
+             */
+            var dashboardEnabled = (withBaseline.IsNotNullAndTrue() && baselineProvider == BaselineProvider.Dashboard) || reporters.Any(x => x == Reporter.Dashboard);
+            if (!dashboardEnabled)
             {
-                // this input is not needed when dashboard is not enabled
                 return Default;
             }
             if (string.IsNullOrWhiteSpace(SuppliedInput))
