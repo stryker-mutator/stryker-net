@@ -15,9 +15,9 @@ namespace Stryker.Core.Options.Inputs
 
         public string Validate(bool? withBaseline, BaselineProvider baselineProvider, IEnumerable<Reporter> reporters)
         {
-            /* the dashboard is only required if 
-             * 1: Is the dashboard reporter enabled
-             * 2: Is the dasboard storage location is enabled for the with-baseline feature AND is the with-baseline feature enabled
+            /* the dashboard api key is required if 
+             * 1: The dashboard reporter is enabled
+             * 2: The dasboard storage location is chosen for the with-baseline feature AND the with-baseline feature is enabled
              */
             var dashboardEnabled = (withBaseline.IsNotNullAndTrue() && baselineProvider == BaselineProvider.Dashboard) || reporters.Any(x => x == Reporter.Dashboard);
             if (!dashboardEnabled)
