@@ -16,6 +16,7 @@ namespace Stryker.Core.Options
         public string BasePath { get; init; }
         public string OutputPath { get; init; }
         public string SolutionPath { get; init; }
+        public string TargetFramework { get; init; }
 
         public LogOptions LogOptions { get; init; }
         public MutationLevel MutationLevel { get; init; }
@@ -85,6 +86,7 @@ namespace Stryker.Core.Options
             Reporters = Reporters,
             SinceTarget = SinceTarget,
             SolutionPath = SolutionPath,
+            TargetFramework = TargetFramework,
             TestProjects = testProjects,
             TestCaseFilter = TestCaseFilter,
             Thresholds = Thresholds,

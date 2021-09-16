@@ -130,6 +130,14 @@ Valid language versions:
 
 *\* Csharp version 1 is not allowed because stryker injects helper code that uses csharp 2 language features.*
 
+### `target-framework` <`string`>
+
+Default: randomly selected
+Command line: `N/A`  
+Config file: `"target-framework": "netcoreapp3.1"`
+
+If the project targets multiple frameworks, this way you can specify the particular framework to build against. If you specify a non-existent target, Stryker will build the project against a random one (or the only one if so).
+
 ### `project-info.name` <`string`>
 
 Default: `null`  

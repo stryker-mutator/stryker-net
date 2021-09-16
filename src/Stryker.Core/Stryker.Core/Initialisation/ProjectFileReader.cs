@@ -14,17 +14,21 @@ namespace Stryker.Core.Initialisation
         IAnalyzerResult AnalyzeProject(
             string projectFilePath,
             string solutionFilePath,
-            string targetFramework = null);
+            string targetFramework);
     }
 
     public class ProjectFileReader : IProjectFileReader
     {
         private readonly INugetRestoreProcess _nugetRestoreProcess;
+        private IAnalyzerManager _manager;
         private readonly ILogger _logger;
 
-        public ProjectFileReader(INugetRestoreProcess nugetRestoreProcess = null)
+        public ProjectFileReader(
+            INugetRestoreProcess nugetRestoreProcess = null,
+            IAnalyzerManager manager = null)
         {
             _nugetRestoreProcess = nugetRestoreProcess ?? new NugetRestoreProcess();
+            _manager = manager ?? new AnalyzerManager();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
         }
 
@@ -33,17 +37,12 @@ namespace Stryker.Core.Initialisation
             string solutionFilePath,
             string targetFramework)
         {
-            AnalyzerManager manager;
-            if (solutionFilePath == null)
-            {
-                manager = new AnalyzerManager();
-            }
-            else
+            if (solutionFilePath != null)
             {
                 _logger.LogDebug("Analyzing solution file {0}", solutionFilePath);
                 try
                 {
-                    manager = new AnalyzerManager(solutionFilePath);
+                    _manager = new AnalyzerManager(solutionFilePath);
                 }
                 catch (InvalidProjectFileException)
                 {
@@ -52,7 +51,8 @@ namespace Stryker.Core.Initialisation
             }
 
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
-            var analyzerResult = manager.GetProject(projectFilePath).Build(targetFramework).First();
+            var analyzerResults = _manager.GetProject(projectFilePath).Build();
+            var analyzerResult = SelectAnalyzerResult(analyzerResults, targetFramework);
 
             LogAnalyzerResult(analyzerResult);
 
@@ -63,7 +63,7 @@ namespace Stryker.Core.Initialisation
                     // buildalyzer failed to find restored packages, retry after nuget restore
                     _logger.LogDebug("Project analyzer result not successful, restoring packages");
                     _nugetRestoreProcess.RestorePackages(solutionFilePath);
-                    analyzerResult = manager.GetProject(projectFilePath).Build(targetFramework).First();
+                    analyzerResult = _manager.GetProject(projectFilePath).Build(targetFramework).First();
                 }
                 else
                 {
@@ -98,6 +98,30 @@ namespace Stryker.Core.Initialisation
             _logger.LogTrace("Succeeded: {0}", analyzerResult.Succeeded);
 
             _logger.LogTrace("**** Buildalyzer result ****");
+        }
+
+        private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
+        {
+            if (targetFramework == null)
+            {
+                return analyzerResults.First();
+            }
+
+            var analyzerResultForFramework = analyzerResults.SingleOrDefault(result => result.TargetFramework == targetFramework);
+            if (analyzerResultForFramework != null)
+            {
+                return analyzerResultForFramework;
+            }
+            else
+            {
+                var firstAnalyzerResult = analyzerResults.First();
+                _logger.LogWarning(
+                    "The configured target framework '{0}' isn't available for this project. " +
+                    "It will be built against the first framework available " +
+                    "which is {1}.", targetFramework, firstAnalyzerResult.TargetFramework);
+
+                return firstAnalyzerResult;
+            }
         }
     }
 }

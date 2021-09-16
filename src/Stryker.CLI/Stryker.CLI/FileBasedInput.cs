@@ -29,6 +29,9 @@ namespace Stryker.CLI
 
         public string Solution { get; set; }
 
+        [JsonProperty(PropertyName = "target-framework")]
+        public string TargetFramework { get; set; }
+
         public string Project { get; set; }
 
         [JsonProperty(PropertyName = "coverage-analysis")]
