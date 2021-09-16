@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Buildalyzer;
 using Moq;
+using Shouldly;
 using Stryker.Core.Initialisation;
 using Xunit;
 
@@ -49,7 +50,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             };
 
             var result = _projectFileReader.AnalyzeProject(null, null, null);
-            Assert.Equal("X", result.TargetFramework);
+            result.TargetFramework.ShouldBe("X");
         }
 
         [Fact]
@@ -68,7 +69,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             };
 
             var result = _projectFileReader.AnalyzeProject(null, null, "Y");
-            Assert.Equal("Y", result.TargetFramework);
+            result.TargetFramework.ShouldBe("Y");
         }
 
         [Fact]
@@ -87,7 +88,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             };
 
             var result = _projectFileReader.AnalyzeProject(null, null, "Z");
-            Assert.Equal("X", result.TargetFramework);
+            result.TargetFramework.ShouldBe("X");
         }
     }
 }
