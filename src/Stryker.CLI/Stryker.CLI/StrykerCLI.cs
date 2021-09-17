@@ -185,7 +185,6 @@ namespace Stryker.CLI
             var client = new StrykerNugetFeedClient();
 
             var latestVersion = await client.GetLatestVersionAsync();
-
             if (latestVersion > currentVersion)
             {
                 Console.WriteLine(Output.Yellow($@"A new version of Stryker.NET ({latestVersion}) is available. Please consider upgrading!"));
