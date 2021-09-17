@@ -1,12 +1,11 @@
 using System;
 using System.IO;
 using System.Reflection;
-using System.Threading.Tasks;
 using Crayon;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
-using Stryker.CLI.NuGet;
+using Stryker.CLI.Clients;
 using Stryker.Core;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
@@ -131,9 +130,9 @@ namespace Stryker.CLI
         private void RunStryker(StrykerOptions options)
         {
             PrintStrykerASCIIName();
-            _ = PrintStrykerVersionInformationAsync();
+            PrintStrykerVersionInformationAsync();
 
-            StrykerRunResult result = _stryker.RunMutationTest(options, _logBuffer.GetMessages());
+            var result = _stryker.RunMutationTest(options, _logBuffer.GetMessages());
 
             HandleStrykerRunResult(options, result);
         }
@@ -173,21 +172,31 @@ namespace Stryker.CLI
             Console.WriteLine();
         }
 
-        private async Task PrintStrykerVersionInformationAsync()
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Bug", "S3168:\"async\" methods should not return \"void\"", Justification = "This method is fire and forget. Task.Run also doesn't work in unit tests")]
+        private async void PrintStrykerVersionInformationAsync()
         {
             var assembly = Assembly.GetExecutingAssembly();
             var assemblyVersion = assembly.GetName().Version;
             var currentVersion = SemanticVersion.Parse($"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}");
 
-            Console.WriteLine($" Version: {Output.Green(currentVersion.ToString())} (beta)");
+            Console.WriteLine($"Version: {Output.Green(currentVersion.ToString())}");
             Console.WriteLine();
 
-            var nugetInfo = await StrykerNugetFeedInfo.Create();
-            var latestVersion = nugetInfo?.LatestVersion;
+            var client = new StrykerNugetFeedClient();
 
-            if (latestVersion != null && latestVersion != currentVersion)
+            var latestVersion = await client.GetLatestVersionAsync();
+            if (latestVersion > currentVersion)
             {
-                Console.WriteLine(Output.Yellow($@" A new version of Stryker.NET ({latestVersion}) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker`"));
+                Console.WriteLine(Output.Yellow($@"A new version of Stryker.NET ({latestVersion}) is available. Please consider upgrading!"));
+                Console.WriteLine();
+            }
+
+            var previewVersion = await client.GetPreviewVersionAsync();
+            if(previewVersion > currentVersion)
+            {
+                Console.WriteLine(Output.Cyan($@"A preview version of Stryker.NET ({previewVersion}) is available.
+If you would like to try out this preview version you can install it with `dotnet tool update -g dotnet-stryker --version {previewVersion}`
+Since this is a preview feature things might not work as expected! Please report any findings on GitHub!"));
                 Console.WriteLine();
             }
         }
