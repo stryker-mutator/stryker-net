@@ -188,7 +188,7 @@ namespace Stryker.Core.Initialisation
             }
             else if (projectReferencesMatchingNameFilter.Count() > 1)
             {
-                stringBuilder.Append("More than one project reference matched your --project=");
+                stringBuilder.Append("More than one project reference matched the given project filter ");
                 stringBuilder.Append(projectUnderTestNameFilter);
                 stringBuilder.AppendLine(" argument to specify the project to mutate, please specify the name more detailed.");
                 stringBuilder.Append(referenceChoice);
