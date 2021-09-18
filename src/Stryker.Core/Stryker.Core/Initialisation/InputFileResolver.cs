@@ -179,7 +179,7 @@ namespace Stryker.Core.Initialisation
             var projectReferencesMatchingNameFilter = projectReferences.Where(x => x.Contains(projectUnderTestNameFilter, StringComparison.OrdinalIgnoreCase));
             if (!projectReferencesMatchingNameFilter.Any())
             {
-                stringBuilder.Append("No project reference matched your --project=");
+                stringBuilder.Append("No project reference matched the given project filter");
                 stringBuilder.AppendLine(projectUnderTestNameFilter);
                 stringBuilder.Append(referenceChoice);
                 AppendExampleIfPossible(stringBuilder, projectReferences, projectUnderTestNameFilter);
