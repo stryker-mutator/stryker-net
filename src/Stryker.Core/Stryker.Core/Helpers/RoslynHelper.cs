@@ -42,19 +42,19 @@ namespace Stryker.Core.Helpers
             };
 
         /// <summary>
-        /// Checks if a member is static
-        /// </summary>
-        /// <param name="node">Member to analyze</param>
-        /// <returns>true if it is a static method, properties, fields...</returns>
-        public static bool IsStatic(this MemberDeclarationSyntax node) => node.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword);
-
-        /// <summary>
         /// Checks if an accessor is a getter and needs to end with a return
         /// </summary>
         /// <param name="baseMethod"></param>
         /// <returns>true if this is a getter</returns>
         public static bool NeedsReturn(this AccessorDeclarationSyntax baseMethod) =>
             baseMethod.Keyword.Text == "get";
+
+        /// <summary>
+        /// Checks if a member is static
+        /// </summary>
+        /// <param name="node">Member to analyze</param>
+        /// <returns>true if it is a static method, properties, fields...</returns>
+        public static bool IsStatic(this MemberDeclarationSyntax node) => node.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword);
 
         /// <summary>
         /// Build a mutated version of a <see cref="SyntaxNode"/>.
@@ -65,7 +65,7 @@ namespace Stryker.Core.Helpers
         /// <returns>A copy of <see cref="original"/> with the mutation applied.</returns>
         /// <exception cref="InvalidOperationException">when mutation does not belong to this node.</exception>
         /// <remarks><paramref name="original"/> can be any node that includes the original, non mutated node described in the mutation.</remarks>
-        public static T InjectMutation<T>(this T original, Mutation mutation) where T:SyntaxNode
+        public static T InjectMutation<T>(this T original, Mutation mutation) where T : SyntaxNode
         {
             if (!original.Contains(mutation.OriginalNode))
             {

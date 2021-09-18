@@ -6,7 +6,7 @@ namespace Stryker.Core.Mutants
 {
     public class WrappedGuidsEnumeration : ITestGuids
     {
-        private IEnumerable<Guid> _guids;
+        private readonly IEnumerable<Guid> _guids;
         public ICollection<TestDescription> Tests => throw new NotImplementedException();
         public int Count => _guids.Count();
         public bool IsEmpty => _guids == null || !_guids.Any();

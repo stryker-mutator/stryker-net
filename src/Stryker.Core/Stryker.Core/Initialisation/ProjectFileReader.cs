@@ -35,7 +35,7 @@ namespace Stryker.Core.Initialisation
         public IAnalyzerResult AnalyzeProject(
             string projectFilePath,
             string solutionFilePath,
-            string targetFramework)
+            string targetFramework = null)
         {
             if (solutionFilePath != null)
             {
