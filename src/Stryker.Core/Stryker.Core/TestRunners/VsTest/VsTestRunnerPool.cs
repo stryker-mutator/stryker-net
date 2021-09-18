@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -13,7 +12,7 @@ using Stryker.Core.ToolHelpers;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
-    public class VsTestRunnerPool : ITestRunner
+    public sealed class VsTestRunnerPool : ITestRunner
     {
         private readonly StrykerOptions _options;
         private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
@@ -113,7 +112,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
             });
 
-            return new TestRunResult (true);
+            return new TestRunResult(true);
         }
 
         private VsTestRunner TakeRunner()

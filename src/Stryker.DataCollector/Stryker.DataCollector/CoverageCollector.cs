@@ -1,12 +1,12 @@
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
 
 namespace Stryker.DataCollector
 {
@@ -24,7 +24,6 @@ namespace Stryker.DataCollector
         private string _controlClassName;
         private Type _controller;
         private FieldInfo _activeMutantField;
-        private FieldInfo _coverageControlField;
 
         private MethodInfo _getCoverageData;
         private IList<int> _mutationCoveredOutsideTests;
@@ -121,12 +120,12 @@ namespace Stryker.DataCollector
             }
 
             _activeMutantField = _controller.GetField("ActiveMutant");
-            _coverageControlField = _controller.GetField("CaptureCoverage");
+            var coverageControlField = _controller.GetField("CaptureCoverage");
             _getCoverageData = _controller.GetMethod("GetCoverageData");
 
             if (_coverageOn)
             {
-                _coverageControlField.SetValue(null, true);
+                coverageControlField.SetValue(null, true);
             }
             _activeMutantField.SetValue(null, _activeMutation);
         }
@@ -174,7 +173,7 @@ namespace Stryker.DataCollector
             }
 
             var nameSpaceNode = node.SelectSingleNode("//Parameters/MutantControl");
-            if (nameSpaceNode != null && nameSpaceNode.Attributes!=null)
+            if (nameSpaceNode != null && nameSpaceNode.Attributes != null)
             {
                 _controlClassName = nameSpaceNode.Attributes["name"].Value;
             }
@@ -244,7 +243,7 @@ namespace Stryker.DataCollector
 
         public IList<int>[] RetrieveCoverData()
         {
-            return (IList<int>[]) _getCoverageData.Invoke(null, new object[]{});
+            return (IList<int>[])_getCoverageData.Invoke(null, new object[] { });
         }
 
         public void TestSessionEnd(TestSessionEndArgs testSessionEndArgs)

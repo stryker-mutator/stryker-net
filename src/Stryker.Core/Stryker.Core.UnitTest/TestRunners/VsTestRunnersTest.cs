@@ -111,7 +111,6 @@ namespace Stryker.Core.UnitTest.TestRunners
                     }).Object,
                 ProjectContents = _projectContents
             };
-            //CodeInjection.HelperNamespace = "Stryker.Core.UnitTest.TestRunners";
 
             _testCases = new List<TestCase> { firstTest, secondTest };
         }
@@ -123,7 +122,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 ContinueWith((_, u) => discoveryEventsHandler.HandleDiscoveryComplete((int)u, null, aborted), tests.Count);
         }
 
-        private TestCase BuildCase(string name) => new TestCase(name, _executorUri, _testAssemblyPath) { Id = new Guid() };
+        private TestCase BuildCase(string name) => new TestCase(name, _executorUri, _testAssemblyPath) { Id = Guid.NewGuid() };
 
         private TestCase FindOrBuildCase(string testResultId) => _testCases.FirstOrDefault(@t => t.FullyQualifiedName == testResultId) ?? BuildCase(testResultId);
 
@@ -384,7 +383,6 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             using var endProcess = new EventWaitHandle(true, EventResetMode.ManualReset);
             BuildVsTestRunner(new StrykerOptions(), endProcess, out var runner);
-            var tests = runner.DiscoverTests();
             // make sure we have discovered first and second tests
             runner.DiscoverTests().Count.ShouldBe(_testCases.Count);
         }

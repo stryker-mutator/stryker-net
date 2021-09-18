@@ -24,7 +24,7 @@ using Framework = Stryker.Core.Initialisation.Framework;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
-    public class VsTestRunner : ITestRunner
+    public sealed class VsTestRunner : ITestRunner
     {
         private static int count;
 
@@ -100,12 +100,12 @@ namespace Stryker.Core.TestRunners.VsTest
             return TestMultipleMutants(timeoutMs, activeMutant == null ? null : new List<Mutant> { activeMutant }, update);
         }
 
-        public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
+        public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutMs, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var mutantTestsMap = new Dictionary<int, ITestGuids>();
             var needAll = true;
             ICollection<Guid> testCases;
-            int? timeOutMs = timeoutCalc?.DefaultTimeout;
+            int? timeOutMs = timeoutMs?.DefaultTimeout;
 
             if (mutants != null)
             {
@@ -137,11 +137,11 @@ namespace Stryker.Core.TestRunners.VsTest
                         return new TestRunResult(TestsGuidList.NoTest(), TestsGuidList.NoTest(), TestsGuidList.NoTest(), "Mutants are not covered by any test!", TimeSpan.Zero);
                     }
 
-                    if (timeoutCalc != null && testCases != null)
+                    if (timeoutMs != null && testCases != null)
                     {
                         // compute time out
                         var duration = (int)testCases.Select(id => _vsTests[id].InitialRunTime.TotalMilliseconds).Sum();
-                        timeOutMs = timeoutCalc.CalculateTimeoutValue(duration);
+                        timeOutMs = timeoutMs.CalculateTimeoutValue(duration);
                     }
                 }
                 else
@@ -150,7 +150,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     {
                         throw new GeneralStrykerException("Internal error: trying to test multiple mutants simultaneously without 'perTest' coverage analysis.");
                     }
-                    mutantTestsMap.Add(mutants.FirstOrDefault().Id, TestsGuidList.EveryTest());
+                    mutantTestsMap.Add(mutants[0].Id, TestsGuidList.EveryTest());
                     testCases = null;
                 }
             }
@@ -159,7 +159,8 @@ namespace Stryker.Core.TestRunners.VsTest
                 testCases = null;
             }
 
-            var expectedTests = needAll ? DiscoverTests().Count : testCases.Count;
+            var numberTestCases = testCases == null ? 0 : testCases.Count;
+            var expectedTests = needAll ? DiscoverTests().Count : numberTestCases;
 
             void HandleUpdate(IRunResults handler)
             {
@@ -197,7 +198,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var resultAsArray = testResults.TestResults.ToArray();
             var testCases = resultAsArray.Select(t => t.TestCase.Id).Distinct();
             var ranTestsCount = testCases.Count();
-            var timeout = (!_aborted && ranTestsCount < expectedTests);
+            var timeout = !_aborted && ranTestsCount < expectedTests;
             var ranTests = (compressAll && ranTestsCount >= DiscoverTests().Count) ? (ITestGuids)TestsGuidList.EveryTest() : new WrappedGuidsEnumeration(testCases);
             var failedTests = resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(t => t.TestCase.Id);
 
@@ -229,7 +230,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return DiscoverTests(null).Item2;
         }
 
-        public (IDictionary<Guid, VsTestDescription>, TestSet) DiscoverTests(string runSettings = null)
+        public (IDictionary<Guid, VsTestDescription>, TestSet) DiscoverTests(string runSettings)
         {
             if (_vsTests != null)
             {
@@ -416,7 +417,7 @@ namespace Stryker.Core.TestRunners.VsTest
             Action<RunEventHandler> updateHandler = null,
             int retries = 0)
         {
-            using var eventHandler = new RunEventHandler(_vsTests, _logger, RunnerId);
+            var eventHandler = new RunEventHandler(_vsTests, _logger, RunnerId);
             void HandlerVsTestFailed(object sender, EventArgs e) => _vsTestFailed = true;
             void HandlerUpdate(object sender, EventArgs e) => updateHandler?.Invoke(eventHandler);
             var strykerVsTestHostLauncher = _hostBuilder(_id);
@@ -450,6 +451,8 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 return eventHandler;
             }
+
+            eventHandler.Dispose();
             _vsTestConsole = PrepareVsTestConsole();
             _vsTestFailed = false;
 
@@ -496,7 +499,9 @@ namespace Stryker.Core.TestRunners.VsTest
             var projectAnalyzerResult = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault();
             var targetFramework = projectAnalyzerResult.GetTargetFramework();
             var needCoverage = forCoverage && NeedCoverage();
-            var dataCollectorSettings = (forMutantTesting || forCoverage) ? CoverageCollector.GetVsTestSettings(needCoverage, mutantTestsMap?.Select(e => (e.Key, e.Value.GetGuids() as IEnumerable<Guid>)), CodeInjection.HelperNamespace) : "";
+            var dataCollectorSettings = (forMutantTesting || forCoverage) ?
+                CoverageCollector.GetVsTestSettings(needCoverage, mutantTestsMap?.Select(e => (e.Key, e.Value.GetGuids())), CodeInjection.HelperNamespace)
+                : "";
             var settingsForCoverage = string.Empty;
 
             if (_testFramework.HasFlag(TestFramework.nUnit))
@@ -508,7 +513,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
             }
-            // TODO: get proper timeout
+
             var timeoutSettings = timeout != null ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>" + Environment.NewLine : string.Empty;
 
             var testCaseFilter = string.IsNullOrWhiteSpace(_options.TestCaseFilter) ?
