@@ -161,7 +161,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         }
 
         protected virtual void RestoreContext(MutationContext context)
-        { }
+        {}
 
         /// <summary>
         /// Mutates a node and its children. Update the mutation context with mutations needed to be injected in a higher level node.

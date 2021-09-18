@@ -37,7 +37,8 @@ namespace Stryker.CLI.UnitTest
                 .Callback<IStrykerInputs, ILoggerFactory, IProjectOrchestrator>((c, l, p) => _inputs = c)
                 .Returns(_runResults)
                 .Verifiable();
-            _nugetClientMock.Setup(x => x.GetMaxVersion()).Returns(Task.FromResult(new SemanticVersion(10, 0, 0)));
+            _nugetClientMock.Setup(x => x.GetLatestVersionAsync()).Returns(Task.FromResult(new SemanticVersion(10, 0, 0)));
+            _nugetClientMock.Setup(x => x.GetPreviewVersionAsync()).Returns(Task.FromResult(new SemanticVersion(20, 0, 0)));
             _target = new StrykerCli(_strykerRunnerMock.Object, null, _loggingInitializerMock.Object, _nugetClientMock.Object);
         }
 
@@ -75,15 +76,13 @@ Options:";
         public void ShouldDisplayLogo()
         {
             var strykerRunnerMock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            var nugetClientMock = new Mock<IStrykerNugetFeedClient>(MockBehavior.Strict);
             var strykerRunResult = new StrykerRunResult(_options, 0.3);
 
             strykerRunnerMock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>()))
                 .Returns(strykerRunResult)
                 .Verifiable();
-            nugetClientMock.Setup(x => x.GetMaxVersion()).Returns(Task.FromResult(new SemanticVersion(10, 0, 0)));
 
-            var target = new StrykerCli(strykerRunnerMock.Object, null, _loggingInitializerMock.Object, nugetClientMock.Object);
+            var target = new StrykerCli(strykerRunnerMock.Object, null, _loggingInitializerMock.Object, _nugetClientMock.Object);
 
             using var sw = new StringWriter();
             var originalOut = Console.Out;

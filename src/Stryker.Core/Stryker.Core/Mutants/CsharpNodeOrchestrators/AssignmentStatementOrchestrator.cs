@@ -13,7 +13,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
             IEnumerable<Mutant> mutations,
             MutationContext context)
         {
-            context.Store.StoreMutations(mutations, MutationControl.Statement);
+            context.AddStatementLevel(mutations);
             return context;
         }
     }
