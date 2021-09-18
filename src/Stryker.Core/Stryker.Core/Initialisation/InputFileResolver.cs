@@ -179,7 +179,7 @@ namespace Stryker.Core.Initialisation
             var projectReferencesMatchingNameFilter = projectReferences.Where(x => x.Contains(projectUnderTestNameFilter, StringComparison.OrdinalIgnoreCase));
             if (!projectReferencesMatchingNameFilter.Any())
             {
-                stringBuilder.Append("No project reference matched your --project-file=");
+                stringBuilder.Append("No project reference matched your --project=");
                 stringBuilder.AppendLine(projectUnderTestNameFilter);
                 stringBuilder.Append(referenceChoice);
                 AppendExampleIfPossible(stringBuilder, projectReferences, projectUnderTestNameFilter);
@@ -188,7 +188,7 @@ namespace Stryker.Core.Initialisation
             }
             else if (projectReferencesMatchingNameFilter.Count() > 1)
             {
-                stringBuilder.Append("More than one project reference matched your --project-file=");
+                stringBuilder.Append("More than one project reference matched your --project=");
                 stringBuilder.Append(projectUnderTestNameFilter);
                 stringBuilder.AppendLine(" argument to specify the project to mutate, please specify the name more detailed.");
                 stringBuilder.Append(referenceChoice);
@@ -245,7 +245,7 @@ namespace Stryker.Core.Initialisation
             }
 
             builder.AppendLine("");
-            builder.AppendLine($"Example: --project-file={otherProjectReference}");
+            builder.AppendLine($"Example: --project={otherProjectReference}");
         }
 
         private StringBuilder BuildReferenceChoice(IEnumerable<string> projectReferences)

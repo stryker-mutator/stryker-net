@@ -1025,7 +1025,7 @@ Please specify a test project name filter that results in one project.
             });
 
             ex.Message.ShouldBe("Project reference issue.");
-            ex.Details.ShouldContain("--project-file");
+            ex.Details.ShouldContain("--project");
         }
 
         [Theory]
