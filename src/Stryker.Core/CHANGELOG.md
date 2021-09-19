@@ -1,3 +1,25 @@
+## [0.22.11](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.10...stryker@0.22.11) (2021-09-17)
+
+
+### Bug Fixes
+
+* downgrade some exceptions to reduce noise due to analyzes ([#1678](https://github.com/stryker-mutator/stryker-net/issues/1678)) ([1cba077](https://github.com/stryker-mutator/stryker-net/commit/1cba07748cb2121429b03dce9d59d8137702b309))
+
+## [0.22.10](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.9...stryker@0.22.10) (2021-08-25)
+
+
+### Bug Fixes
+
+* Allow setting threshold break to 100 ([#1674](https://github.com/stryker-mutator/stryker-net/issues/1674)) ([4cd1945](https://github.com/stryker-mutator/stryker-net/commit/4cd1945621da08a9c6794ff9415096e68c306216))
+* Return exit code 2 for threshold break violations ([#1673](https://github.com/stryker-mutator/stryker-net/issues/1673)) ([6da4e7d](https://github.com/stryker-mutator/stryker-net/commit/6da4e7d16e00aa90860e59a3875539c18bbbe757))
+
+
+### Features
+
+* **mutation engine:** Add full support for local functions ([#1664](https://github.com/stryker-mutator/stryker-net/issues/1664)) ([b689358](https://github.com/stryker-mutator/stryker-net/commit/b6893581edfbcffb5b752c262b391b19b4bf89ac))
+
+
+
 ## [0.22.10](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.9...stryker@0.22.10) (2021-08-25)
 
 

@@ -24,7 +24,6 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                 return result;
             }
 
-            // we need to inject static marker
             if (result.Body == null)
             {
                 result = MutantPlacer.ConvertExpressionToBody(result);
@@ -32,12 +31,13 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 
             var converter = sourceNode.NeedsReturn()
                 ? (Func<Mutation, StatementSyntax>)(toConvert =>
-                   SyntaxFactory.ReturnStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert)))
+                    SyntaxFactory.ReturnStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert)))
                 : (toConvert) =>
                     SyntaxFactory.ExpressionStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert));
 
             var newBody = context.Store.PlaceBlockMutations(result.Body, converter);
             return result.WithBody(SyntaxFactory.Block(newBody));
+
         }
     }
 }

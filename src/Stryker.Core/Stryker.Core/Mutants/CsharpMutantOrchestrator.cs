@@ -10,7 +10,6 @@ using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Stryker.Core.Mutants
@@ -69,6 +68,7 @@ namespace Stryker.Core.Mutants
                 new StaticConstructorOrchestrator(),
                 new PropertyDeclarationOrchestrator(),
                 new ArrayInitializerOrchestrator(),
+                new LocalFunctionStatementOrchestrator(),
                 new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>(),
                 new AccessorSyntaxOrchestrator(),
                 new LocalDeclarationOrchestrator(),

@@ -17,21 +17,16 @@ namespace Stryker.Core.Instrumentation
         /// Injects an if statement with the original code or the mutated one, depending on condition's result.
         /// </summary>
         /// <param name="condition">Expression for the condition.</param>
-        /// <param name="original">Original code</param>
-        /// <param name="mutated">Mutated code</param>
+        /// <param name="originalNode">Original code</param>
+        /// <param name="mutatedNode">Mutated code</param>
         /// <returns>A statement containing the expected construct.</returns>
         /// <remarks>This method works with statement and block.</remarks>
-        public IfStatementSyntax InjectIf(ExpressionSyntax condition, StatementSyntax originalNode, StatementSyntax mutatedNode)
-        {
-            return SyntaxFactory.IfStatement(condition,
+        public IfStatementSyntax InjectIf(ExpressionSyntax condition, StatementSyntax originalNode, StatementSyntax mutatedNode) =>
+            SyntaxFactory.IfStatement(condition, 
                 AsBlock(mutatedNode),
                 SyntaxFactory.ElseClause(AsBlock(originalNode))).WithAdditionalAnnotations(Marker);
-        }
 
-        private static BlockSyntax AsBlock(StatementSyntax code)
-        {
-            return (code as BlockSyntax) ?? SyntaxFactory.Block(code);
-        }
+        private static BlockSyntax AsBlock(StatementSyntax code) => code as BlockSyntax ?? SyntaxFactory.Block(code);
 
         /// <summary>
         /// Returns the original code.

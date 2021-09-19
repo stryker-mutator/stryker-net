@@ -1,4 +1,3 @@
-using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -41,25 +40,21 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
             BasePropertyDeclarationSyntax targetNode, MutationContext context)
         {
             var result = base.InjectMutations(sourceNode, targetNode, context);
-            if (!context.Store.HasBlockLevel)
-            {
-                return result;
-            }
             var mutated = result as PropertyDeclarationSyntax;
-
-            if (mutated?.ExpressionBody == null)
+            // if there is no statement level mutations or this is not an expression property declaration, we can stop
+            if (!context.HasStatementLevelMutant || mutated?.ExpressionBody == null)
             {
                 return result;
             }
 
+            // we need to convert the expression property to a regular property
             mutated = MutantPlacer.ConvertPropertyExpressionToBodyAccessor(mutated);
             var getter = mutated.GetAccessor();
 
-            var converter = (Func<Mutation, StatementSyntax>)(toConvert =>
-                SyntaxFactory.ReturnStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert)));
-
-            result = mutated.ReplaceNode(getter.Body!, SyntaxFactory.Block( context.Store.PlaceBlockMutations(getter.Body, converter)))
-                .WithSemicolonToken(SyntaxFactory.MissingToken(SyntaxKind.SemicolonToken));
+            // and inject pending mutations in the getter's body.
+            result = mutated.ReplaceNode(getter.Body!,
+                    SyntaxFactory.Block( context.InjectBlockLevelExpressionMutation( getter.Body, sourceNode.ExpressionBody!.Expression, true)))
+                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.None));
             return result;
         }
     }

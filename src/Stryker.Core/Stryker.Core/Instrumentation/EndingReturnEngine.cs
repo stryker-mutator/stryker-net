@@ -4,66 +4,62 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
-using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Instrumentation
 {
     /// <summary>
     /// Injects 'return default(...)' statement at the end of a method
     /// </summary>
-    internal class EndingReturnEngine : BaseEngine<BaseMethodDeclarationSyntax>
+    internal class EndingReturnEngine: BaseEngine<BlockSyntax>
     {
         public EndingReturnEngine(string markerId) : base(markerId)
         {
         }
 
-        public BaseMethodDeclarationSyntax InjectReturn(BaseMethodDeclarationSyntax method)
+        public BlockSyntax InjectReturn(BlockSyntax block, TypeSyntax type, SyntaxTokenList modifiers)
         {
-            // if we had no body or the the last statement was a return, no need to add one
-            if (method.Body == null || method.Body.Statements.Count == 0 || method.Body!.Statements.Last().Kind() == SyntaxKind.ReturnStatement || !method.NeedsReturn())
+            var returnType = type;
+            BlockSyntax ret;
+            // if we had no body or the the last statement was a return, no need to add one, or this is an iterator method
+            if (block == null
+                || returnType == null
+                || block.Statements.Count == 0
+                || block!.Statements.Last().Kind() == SyntaxKind.ReturnStatement
+                || returnType.IsVoid()
+                || block.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.YieldReturnStatement)|| x.IsKind(SyntaxKind.YieldBreakStatement), false))
             {
-                return method;
+                ret = null;
             }
-
-            // we can also skip iterator methods, as they don't need to end with return
-            if (method.Body.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.YieldReturnStatement) || x.IsKind(SyntaxKind.YieldBreakStatement), false))
+            else
             {
-                // not need to add yield return at the end of an enumeration method
-                return method;
-            }
-
-            var returnType = method.ReturnType();
-
-            // the GenericNameSyntax node can be encapsulated by QualifiedNameSyntax nodes
-            var genericReturn = returnType.DescendantNodesAndSelf().OfType<GenericNameSyntax>().FirstOrDefault();
-            if (method.Modifiers.Any(x => x.IsKind(SyntaxKind.AsyncKeyword)))
-            {
-                if (genericReturn != null)
+                var genericReturn = returnType.DescendantNodesAndSelf().OfType<GenericNameSyntax>().FirstOrDefault();
+                if (modifiers.Any(x => x.IsKind(SyntaxKind.AsyncKeyword)))
                 {
-                    // if the method is async and returns a generic task, make the return default return the underlying type
-                    returnType = genericReturn.TypeArgumentList.Arguments.First();
+                    returnType = genericReturn?.TypeArgumentList.Arguments.First();
+                }
+
+                if (returnType != null)
+                {
+                    ret = block.AddStatements(
+                        SyntaxFactory.ReturnStatement(returnType.BuildDefaultExpression()));
                 }
                 else
                 {
-                    // if the method is async but returns a non-generic task, don't add the return default
-                    return method;
+                    ret = null;
                 }
             }
 
-            method = method.WithBody(method.Body!.AddStatements(
-                    SyntaxFactory.ReturnStatement(returnType.BuildDefaultExpression()))).WithAdditionalAnnotations(Marker);
-
-            return method;
+            return ret == null ? block : ret.WithAdditionalAnnotations(Marker);
         }
 
-        protected override SyntaxNode Revert(BaseMethodDeclarationSyntax node)
+        protected override SyntaxNode Revert(BlockSyntax node)
         {
-            if (node.Body?.Statements.Last().IsKind(SyntaxKind.ReturnStatement) != true)
+            if (node?.Statements.Last().IsKind(SyntaxKind.ReturnStatement) != true)
             {
-                throw new InvalidOperationException($"No return at the end of: {node.Body}");
+                throw new InvalidOperationException($"No return at the end of: {node}");
             }
 
-            return node.WithBody(node.Body.WithStatements(node.Body.Statements.Remove(node.Body.Statements.Last()))).WithoutAnnotations(Marker);
+            return node.WithStatements(node.Statements.Remove(node.Statements.Last())).WithoutAnnotations(Marker);
         }
     }
 }

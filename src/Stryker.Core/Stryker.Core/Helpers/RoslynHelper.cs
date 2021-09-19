@@ -41,6 +41,9 @@ namespace Stryker.Core.Helpers
                 _ => false
             };
 
+        public static bool NeedsReturn(this LocalFunctionStatementSyntax localFunction) =>
+            !localFunction.ReturnType.IsVoid();
+
         /// <summary>
         /// Checks if a member is static
         /// </summary>
@@ -55,6 +58,15 @@ namespace Stryker.Core.Helpers
         /// <returns>true if this is a getter</returns>
         public static bool NeedsReturn(this AccessorDeclarationSyntax baseMethod) =>
             baseMethod.Keyword.Text == "get";
+
+
+        /// <summary>
+        /// Returns true if the given type is 'void'.
+        /// </summary>
+        /// <param name="type">type syntax</param>
+        /// <returns>type == typeof(void)</returns>
+        public static bool IsVoid(this TypeSyntax type) => type is PredefinedTypeSyntax predefinedType &&
+                                                           predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword);
 
         /// <summary>
         /// Build a mutated version of a <see cref="SyntaxNode"/>.
