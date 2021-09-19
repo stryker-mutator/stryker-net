@@ -10,7 +10,6 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
     /// <typeparam name="T">Statement syntax type. Must inherit from <see cref="StatementSyntax"/></typeparam>
     internal class StatementSpecificOrchestrator<T> : NodeSpecificOrchestrator<T, StatementSyntax> where T : StatementSyntax
     {
-
         protected override MutationContext PrepareContext(T node, MutationContext context) => base.PrepareContext(node, context).Enter(MutationControl.Statement);
 
         protected override void RestoreContext(MutationContext context) => context.Leave(MutationControl.Statement);
