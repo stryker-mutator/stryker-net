@@ -19,14 +19,8 @@ namespace Stryker.Core.Mutants
     /// </summary>
     internal class MutationContext
     {
-        private static readonly ILogger Logger;
         private readonly CsharpMutantOrchestrator _mainOrchestrator;
         public MutationStore Store = new();
-
-        static MutationContext()
-        {
-            Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationContext>();
-        }
 
         public MutationContext(CsharpMutantOrchestrator mutantOrchestrator) => _mainOrchestrator = mutantOrchestrator;
 
