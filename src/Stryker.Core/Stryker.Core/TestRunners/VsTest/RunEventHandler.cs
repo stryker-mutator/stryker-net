@@ -41,32 +41,32 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestResult Result()
         {
             var result = _results.Aggregate((TestResult)null, (acc, next) =>
-           {
-               if (acc == null)
-               {
-                   return next;
-               }
-               if (next.Outcome == TestOutcome.Failed || acc.Outcome == TestOutcome.None)
-               {
-                   acc.Outcome = next.Outcome;
-               }
-               if (acc.StartTime > next.StartTime)
-               {
-                   acc.StartTime = next.StartTime;
-               }
-               if (acc.EndTime < next.EndTime)
-               {
-                   acc.EndTime = next.EndTime;
-               }
+            {
+                if (acc == null)
+                {
+                    return next;
+                }
+                if (next.Outcome == TestOutcome.Failed || acc.Outcome == TestOutcome.None)
+                {
+                    acc.Outcome = next.Outcome;
+                }
+                if (acc.StartTime > next.StartTime)
+                {
+                    acc.StartTime = next.StartTime;
+                }
+                if (acc.EndTime < next.EndTime)
+                {
+                    acc.EndTime = next.EndTime;
+                }
 
-               foreach (var message in next.Messages)
-               {
-                   acc.Messages.Add(message);
-               }
+                foreach (var message in next.Messages)
+                {
+                    acc.Messages.Add(message);
+                }
 
-               acc.Duration = acc.EndTime - acc.StartTime;
-               return acc;
-           });
+                acc.Duration = acc.EndTime - acc.StartTime;
+                return acc;
+            });
             return result;
         }
     }
