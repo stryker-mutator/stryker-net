@@ -36,13 +36,13 @@ namespace Stryker.Core.TestRunners.VsTest
             });
         }
 
-        public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutMs, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
+        public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var runner = TakeRunner();
 
             try
             {
-                return mutants == null ? runner.RunAll(timeoutMs, null, update) : runner.TestMultipleMutants(timeoutMs, mutants, update);
+                return mutants == null ? runner.RunAll(timeoutCalc, null, update) : runner.TestMultipleMutants(timeoutCalc, mutants, update);
             }
             finally
             {

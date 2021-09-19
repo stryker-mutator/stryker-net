@@ -122,7 +122,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 ContinueWith((_, u) => discoveryEventsHandler.HandleDiscoveryComplete((int)u, null, aborted), tests.Count);
         }
 
-        private TestCase BuildCase(string name) => new TestCase(name, _executorUri, _testAssemblyPath) { Id = Guid.NewGuid() };
+        private TestCase BuildCase(string name) => new TestCase(name, _executorUri, _testAssemblyPath) { Id = new Guid() };
 
         private TestCase FindOrBuildCase(string testResultId) => _testCases.FirstOrDefault(@t => t.FullyQualifiedName == testResultId) ?? BuildCase(testResultId);
 

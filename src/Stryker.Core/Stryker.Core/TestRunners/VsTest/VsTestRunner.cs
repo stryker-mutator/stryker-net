@@ -100,12 +100,12 @@ namespace Stryker.Core.TestRunners.VsTest
             return TestMultipleMutants(timeoutMs, activeMutant == null ? null : new List<Mutant> { activeMutant }, update);
         }
 
-        public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutMs, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
+        public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var mutantTestsMap = new Dictionary<int, ITestGuids>();
             var needAll = true;
             ICollection<Guid> testCases;
-            int? timeOutMs = timeoutMs?.DefaultTimeout;
+            int? timeOutMs = timeoutCalc?.DefaultTimeout;
 
             if (mutants != null)
             {
@@ -137,11 +137,11 @@ namespace Stryker.Core.TestRunners.VsTest
                         return new TestRunResult(TestsGuidList.NoTest(), TestsGuidList.NoTest(), TestsGuidList.NoTest(), "Mutants are not covered by any test!", TimeSpan.Zero);
                     }
 
-                    if (timeoutMs != null && testCases != null)
+                    if (timeoutCalc != null && testCases != null)
                     {
                         // compute time out
                         var duration = (int)testCases.Select(id => _vsTests[id].InitialRunTime.TotalMilliseconds).Sum();
-                        timeOutMs = timeoutMs.CalculateTimeoutValue(duration);
+                        timeOutMs = timeoutCalc.CalculateTimeoutValue(duration);
                     }
                 }
                 else
