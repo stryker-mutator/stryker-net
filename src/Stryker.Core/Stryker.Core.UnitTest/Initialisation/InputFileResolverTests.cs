@@ -1026,7 +1026,6 @@ Please specify a test project name filter that results in one project.
             ex.Message.ShouldBe("Project reference issue.");
             ex.Details.ShouldContain("Test project contains more than one project reference. Please set the project option");
             ex.Details.ShouldContain("Choose one of the following references:");
-            ex.Details.ShouldContain("Example: --project=../ExampleProject/ExampleProject.csproj");
         }
 
         [Theory]
