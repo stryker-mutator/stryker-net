@@ -32,13 +32,17 @@
         "requested": "[3.1.2, )",
         "resolved": "3.1.2",
         "contentHash": "U3iLJ1jRmnJ4n/LUkpX3iz1XD2us40v720qoaHVkn0souR5rspvPB7TTKUeGUz438vl6MkfynrGCnKMtAwmZnQ=="
-      },      "FSharp.Compiler.Service": {
+      },
+      "DotNet.ReproducibleBuilds": {
         "type": "Direct",
-        "requested": "[38.0.0, )",
-        "resolved": "38.0.0",
-        "contentHash": "yS5FphrcFOIKcpa/R59U6iRmjkxHE4pVXOu5x/I/skbFe0MmzWPdYgo/4ysWBhxLVcj+G25LKfc5jWojXMZ3yg==",
+        "requested": "[0.1.66, )",
+        "resolved": "0.1.66",
+        "contentHash": "B35VA6YhenOi0OdQTGDrFYkiJnKeTKt2JnF3MTnwt7NYPZJV1APRvkDBPeM418BhgRri16T3pIWsrY/f/sthOg==",
         "dependencies": {
-          "FSharp.Core": "[5.0.0]"
+          "Microsoft.SourceLink.AzureRepos.Git": "1.0.0",
+          "Microsoft.SourceLink.Bitbucket.Git": "1.0.0",
+          "Microsoft.SourceLink.GitHub": "1.0.0",
+          "Microsoft.SourceLink.GitLab": "1.0.0"
         }
       },
       "FSharp.Compiler.Service": {
@@ -50,16 +54,6 @@
           "FSharp.Core": "[5.0.0]"
         }
       },
-      "FSharp.Compiler.Service": {
-        "type": "Direct",
-        "requested": "[38.0.0, )",
-        "resolved": "38.0.0",
-        "contentHash": "yS5FphrcFOIKcpa/R59U6iRmjkxHE4pVXOu5x/I/skbFe0MmzWPdYgo/4ysWBhxLVcj+G25LKfc5jWojXMZ3yg==",
-        "dependencies": {
-          "FSharp.Core": "[5.0.0]"
-        }
-      },
-
       "LibGit2Sharp": {
         "type": "Direct",
         "requested": "[0.27.0-preview-0102, )",
