@@ -42,7 +42,8 @@ namespace Stryker.CLI
                 Name = "Stryker",
                 FullName = "Stryker: Stryker mutator for .Net",
                 Description = "Stryker mutator for .Net",
-                ExtendedHelpText = "Welcome to Stryker for .Net! Run dotnet stryker to kick off a mutation test run"
+                ExtendedHelpText = "Welcome to Stryker for .Net! Run dotnet stryker to kick off a mutation test run",
+                HelpTextGenerator = new GroupedHelpTextGenerator()
             };
             app.HelpOption();
 
