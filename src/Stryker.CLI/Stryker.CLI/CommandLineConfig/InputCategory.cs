@@ -1,12 +1,11 @@
 ﻿namespace Stryker.CLI
 {
-    public enum OptionCategory
+    public enum InputCategory
     {
         Generic,
         Build,
         Mutation,
-        Execution,
-        Storage,
-        Dashboard
+        Reporting,
+        Misc
     }
 }

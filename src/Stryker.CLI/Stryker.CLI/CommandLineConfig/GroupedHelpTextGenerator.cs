@@ -16,11 +16,11 @@ namespace Stryker.CLI
                 output.WriteLine("Options:");
                 var outputFormat = $"  {{0, -{firstColumnWidth}}}{{1}}";
 
-                var visibleCategorizedOptions = application.Options.OfType<CategoryCommandOption>().Intersect(visibleOptions);
+                var visibleCategorizedOptions = application.Options.OfType<StrykerInputOption>().Intersect(visibleOptions);
 
-                foreach (var group in visibleCategorizedOptions.Cast<CategoryCommandOption>().GroupBy(c => c.Category).OrderBy(g => g.Key))
+                foreach (var group in visibleCategorizedOptions.Cast<StrykerInputOption>().GroupBy(c => c.Category).OrderBy(g => g.Key))
                 {
-                    if (group.Key != OptionCategory.Generic)
+                    if (group.Key != InputCategory.Generic)
                     {
                         output.WriteLine();
                         output.WriteLine($"{group.Key} options:");
