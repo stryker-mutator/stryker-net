@@ -17,8 +17,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         /// <inheritdoc/>
         /// <remarks>Inject pending mutations that are controlled with 'if' statements.</remarks>
         protected override StatementSyntax InjectMutations(T sourceNode, StatementSyntax targetNode, MutationContext context) =>
-            context.Store.PlaceStatementMutations(targetNode,
-                m => (sourceNode as StatementSyntax).InjectMutation(m));
+            context.InjectStatementLevel(targetNode, sourceNode);
 
         /// <inheritdoc/>
         /// <remarks>Mutations are stored ath statement level.</remarks>
@@ -26,7 +25,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
             IEnumerable<Mutant> mutations,
             MutationContext context)
         {
-            context.Store.StoreMutations(mutations, MutationControl.Statement);
+            context.AddStatementLevel(mutations);
             return context;
         }
     }

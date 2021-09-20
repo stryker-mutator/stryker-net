@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 {
@@ -14,7 +13,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         /// <remarks>Ensure we returns a block after mutants are injected.</remarks>
         protected override StatementSyntax InjectMutations(BlockSyntax sourceNode, StatementSyntax targetNode, MutationContext context)
         {
-            var mutated = context.Store.PlaceBlockMutations(targetNode, m => (sourceNode as StatementSyntax).InjectMutation(m));
+            var mutated = context.InjectBlockLevel(targetNode, sourceNode);
             // ensure we still return a block!
             return mutated is BlockSyntax ? mutated : SyntaxFactory.Block(mutated);
         }
@@ -31,7 +30,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
             IEnumerable<Mutant> mutations,
             MutationContext context)
         {
-            context.Store.StoreMutations(mutations, MutationControl.Block);
+            context.AddBlockLevel(mutations);
             return context;
         }
     }
