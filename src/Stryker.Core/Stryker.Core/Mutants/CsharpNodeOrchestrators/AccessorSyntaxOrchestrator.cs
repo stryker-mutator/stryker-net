@@ -1,4 +1,3 @@
-using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -19,7 +18,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                 return result;
             }
 
-            if (!context.Store.HasBlockLevel)
+            if (!context.HasStatementLevelMutant)
             {
                 return result;
             }
@@ -29,15 +28,8 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                 result = MutantPlacer.ConvertExpressionToBody(result);
             }
 
-            var converter = sourceNode.NeedsReturn()
-                ? (Func<Mutation, StatementSyntax>)(toConvert =>
-                    SyntaxFactory.ReturnStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert)))
-                : (toConvert) =>
-                    SyntaxFactory.ExpressionStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert));
-
-            var newBody = context.Store.PlaceBlockMutations(result.Body, converter);
+            var newBody = context.InjectBlockLevelExpressionMutation(result.Body, sourceNode.ExpressionBody!.Expression, sourceNode.NeedsReturn());
             return result.WithBody(SyntaxFactory.Block(newBody));
-
         }
     }
 }
