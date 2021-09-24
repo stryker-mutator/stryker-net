@@ -17,12 +17,6 @@ namespace Stryker.Core.UnitTest.Reporters
 {
     public class JsonReporterTests : TestBase
     {
-        public JsonReporterTests()
-        {
-            // clear report cache before each test
-            JsonReport.ReportCache = null;
-        }
-
         [Fact]
         public void JsonMutantPositionLine_ThrowsArgumentExceptionWhenSetToLessThan1()
         {
@@ -130,18 +124,6 @@ namespace Stryker.Core.UnitTest.Reporters
             var report = JsonReport.Build(new StrykerOptions(), folderComponent.ToReadOnlyInputComponent());
 
             report.ProjectRoot.ShouldBe("/home/user/src/project/");
-        }
-
-        [Fact]
-        public void JsonReport_BuildReportReturnsSingletonJsonReport()
-        {
-            var folderComponent = JsonReportTestHelper.CreateProjectWith();
-            var options = new StrykerOptions();
-
-            var firstReport = JsonReport.Build(options, folderComponent.ToReadOnlyInputComponent());
-            var secondReport = JsonReport.Build(options, folderComponent.ToReadOnlyInputComponent());
-
-            secondReport.ShouldBe(firstReport);
         }
 
         [Fact]

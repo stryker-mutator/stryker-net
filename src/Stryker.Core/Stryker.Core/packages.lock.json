@@ -217,6 +217,12 @@
           "System.IO.FileSystem.AccessControl": "5.0.0"
         }
       },
+      "System.Net.Http.Json": {
+        "type": "Direct",
+        "requested": "[5.0.0, )",
+        "resolved": "5.0.0",
+        "contentHash": "3CPSQpCzEmI9o+1G79TnPCjF40omCdnoXj2Rg76BDwGj5+LZnFPjV+t35eedlvl+uthmholk/XXxXTYgJWSexw=="
+      },
       "Buildalyzer.Logger": {
         "type": "Transitive",
         "resolved": "3.2.2",

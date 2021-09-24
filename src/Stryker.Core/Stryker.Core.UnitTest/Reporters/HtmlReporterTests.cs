@@ -1,9 +1,6 @@
-using Microsoft.Extensions.Logging;
 using Shouldly;
-using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Html;
-using Stryker.Core.Reporters.Json;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using Xunit;
@@ -63,7 +60,9 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var fileContents = mockFileSystem.GetFile(reportPath).TextContents;
 
-            JsonReport.ReportCache.ToJson().ShouldBeSubsetOf(fileContents);
+            fileContents.ShouldContain(@"""thresholds"": {");
+            fileContents.ShouldContain(@"""high"": 80");
+            fileContents.ShouldContain(@"""low"": 60");
         }
     }
 }

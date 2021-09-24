@@ -1,9 +1,8 @@
-using Newtonsoft.Json;
 using NuGet.Versioning;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 
 namespace Stryker.CLI.Clients
@@ -18,12 +17,6 @@ namespace Stryker.CLI.Clients
     {
         private const string _nugetStrykerFeed = "https://api.nuget.org/v3-flatcontainer/dotnet-stryker/index.json";
         private StrykerNugetFeed _instance;
-
-        public class StrykerNugetFeed
-        {
-            [JsonProperty("versions")]
-            public readonly List<string> Versions = default;
-        }
 
         public async Task<SemanticVersion> GetLatestVersionAsync()
         {
@@ -54,10 +47,15 @@ namespace Stryker.CLI.Clients
             using var httpclient = new HttpClient();
             try
             {
-                var json = await httpclient.GetStringAsync(_nugetStrykerFeed);
-                return JsonConvert.DeserializeObject<StrykerNugetFeed>(json);
+                var feed = await httpclient.GetFromJsonAsync<StrykerNugetFeed>(_nugetStrykerFeed);
+                return feed;
             }
             catch { return null; }
+        }
+
+        private class StrykerNugetFeed
+        {
+            public IEnumerable<string> Versions { get; init; }
         }
     }
 }
