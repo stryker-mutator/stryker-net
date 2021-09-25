@@ -19,6 +19,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 
             var result = base.OrchestrateChildrenMutation(node, context);
             // statement level mutations need to be changed to block level
+            //context.PromoteToBlockLevel();
             return result;
         }
         // we don't inject mutations here, we want them promoted at block level

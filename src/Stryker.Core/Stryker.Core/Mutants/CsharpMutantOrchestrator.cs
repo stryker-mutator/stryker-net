@@ -68,6 +68,7 @@ namespace Stryker.Core.Mutants
                 new StaticConstructorOrchestrator(),
                 new PropertyDeclarationOrchestrator(),
                 new ArrayInitializerOrchestrator(),
+                new LocalFunctionStatementOrchestrator(),
                 new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>(),
                 new AccessorSyntaxOrchestrator(),
                 new LocalDeclarationOrchestrator(),

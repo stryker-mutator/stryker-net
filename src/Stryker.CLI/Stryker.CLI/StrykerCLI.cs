@@ -1,6 +1,5 @@
 using System;
 using System.Reflection;
-using System.Threading.Tasks;
 using Crayon;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
@@ -118,11 +117,20 @@ namespace Stryker.CLI
             Console.WriteLine($"Version: {Output.Green(currentVersion.ToString())}");
             Console.WriteLine();
 
-            var latestVersion = await _nugetClient.GetMaxVersion();
 
+            var latestVersion = await _nugetClient.GetLatestVersionAsync();
             if (latestVersion > currentVersion)
             {
                 Console.WriteLine(Output.Yellow($@"A new version of Stryker.NET ({latestVersion}) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker`"));
+                Console.WriteLine();
+            }
+
+            var previewVersion = await _nugetClient.GetPreviewVersionAsync();
+            if(previewVersion > currentVersion)
+            {
+                Console.WriteLine(Output.Cyan($@"A preview version of Stryker.NET ({previewVersion}) is available.
+If you would like to try out this preview version you can install it with `dotnet tool update -g dotnet-stryker --version {previewVersion}`
+Since this is a preview feature things might not work as expected! Please report any findings on GitHub!"));
                 Console.WriteLine();
             }
         }

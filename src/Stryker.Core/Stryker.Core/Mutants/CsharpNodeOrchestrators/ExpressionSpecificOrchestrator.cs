@@ -12,15 +12,21 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
     {
         /// <inheritdoc/>
         /// <remarks>Inject all pending mutations controlled with conditional operator(s).</remarks>
-        protected override ExpressionSyntax InjectMutations(T sourceNode, ExpressionSyntax targetNode, MutationContext context) => context.Store.PlaceExpressionMutations(targetNode, m => sourceNode.InjectMutation(m));
+        protected override ExpressionSyntax InjectMutations(T sourceNode, ExpressionSyntax targetNode, MutationContext context) => context.InjectExpressionLevel(targetNode, sourceNode);
 
         protected override MutationContext StoreMutations(T node,
             IEnumerable<Mutant> mutations,
             MutationContext context)
         {
             // if the expression contains a declaration, it must be controlled at the block level.
-            context.Store.StoreMutations(mutations,
-                !node.ContainsDeclarations() ? MutationControl.Expression : MutationControl.Block);
+            if (node.ContainsDeclarations())
+            {
+                context.AddBlockLevel(mutations);
+            }
+            else
+            {
+                context.AddExpressionLevel(mutations);
+            }
             return context;
         }
     }

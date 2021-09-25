@@ -25,6 +25,7 @@ namespace Stryker.Core.Mutants
         protected Stack<List<Mutant>> _blockMutants = new();
 
         public bool HasBlockLevel => _blockMutants.Count > 0 && _blockMutants.Peek().Count > 0;
+        public bool HasStatementLevel => (_statementMutants.Count > 0 && _statementMutants.Peek().Count > 0) || HasBlockLevel;
 
         public void StoreMutations(IEnumerable<Mutant> proposedMutations, MutationControl control)
         {
