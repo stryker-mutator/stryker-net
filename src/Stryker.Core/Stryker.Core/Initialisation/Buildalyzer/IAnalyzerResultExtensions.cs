@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 
@@ -110,33 +112,33 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             {
                 try
                 {
-                    var assembly = System.Reflection.Assembly.LoadFile(analyzer);
-                    foreach (var type in assembly.ExportedTypes)
+                    var analyzerFileReference = new AnalyzerFileReference(analyzer, AnalyzerAssemblyLoader.Instance);
+                    analyzerFileReference.AnalyzerLoadFailed += (sender, e) => throw e.Exception ?? new InvalidOperationException(e.Message);
+                    foreach (var generator in analyzerFileReference.GetGenerators(LanguageNames.CSharp))
                     {
-                        if (type.GetInterface("ISourceGenerator") != null)
-                        {
-                            var generator = type.GetConstructor(Type.EmptyTypes).Invoke(null);
-                            generators.Add(generator as ISourceGenerator);
-                        }
+                        generators.Add(generator);
                     }
                 }
                 catch (Exception e)
                 {
-                    if (e is FileNotFoundException exc && exc?.FileName?.Contains("Microsoft.CodeAnalysis") == true)
-                    {
-                        logger?.LogDebug(e,
-                            $"Analyzer assembly {analyzer} could not be loaded. {Environment.NewLine}" +
-                            "Generated source code may be missing.");
-                    }
-                    else
-                    {
-                        logger?.LogWarning(e,
-                        $"Analyzer/Generator assembly {analyzer} could not be loaded. {Environment.NewLine}" +
-                        "Generated source code may be missing.");
-                    }
+                    logger?.LogWarning(e,
+                    $"Analyzer/Generator assembly {analyzer} could not be loaded. {Environment.NewLine}" +
+                    "Generated source code may be missing.");
                 }
             }
+
             return generators;
+        }
+
+        private sealed class AnalyzerAssemblyLoader : IAnalyzerAssemblyLoader
+        {
+            public static IAnalyzerAssemblyLoader Instance = new AnalyzerAssemblyLoader();
+
+            private AnalyzerAssemblyLoader() { }
+
+            public void AddDependencyLocation(string fullPath) { }
+
+            public Assembly LoadFromPath(string fullPath) => Assembly.LoadFrom(fullPath);
         }
 
         public static Framework GetTargetFramework(this IAnalyzerResult analyzerResult)
