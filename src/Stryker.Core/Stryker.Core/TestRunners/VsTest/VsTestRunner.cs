@@ -417,7 +417,7 @@ namespace Stryker.Core.TestRunners.VsTest
             Action<RunEventHandler> updateHandler = null,
             int retries = 0)
         {
-            var eventHandler = new RunEventHandler(_vsTests, _logger, RunnerId);
+            using var eventHandler = new RunEventHandler(_vsTests, _logger, RunnerId);
             void HandlerVsTestFailed(object sender, EventArgs e) => _vsTestFailed = true;
             void HandlerUpdate(object sender, EventArgs e) => updateHandler?.Invoke(eventHandler);
             var strykerVsTestHostLauncher = _hostBuilder(_id);
@@ -451,8 +451,6 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 return eventHandler;
             }
-
-            eventHandler.Dispose();
             _vsTestConsole = PrepareVsTestConsole();
             _vsTestFailed = false;
 
