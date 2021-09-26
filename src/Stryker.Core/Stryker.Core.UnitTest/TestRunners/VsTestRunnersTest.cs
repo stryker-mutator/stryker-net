@@ -111,7 +111,6 @@ namespace Stryker.Core.UnitTest.TestRunners
                     }).Object,
                 ProjectContents = _projectContents
             };
-            //CodeInjection.HelperNamespace = "Stryker.Core.UnitTest.TestRunners";
 
             _testCases = new List<TestCase> { firstTest, secondTest };
         }
@@ -384,7 +383,6 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             using var endProcess = new EventWaitHandle(true, EventResetMode.ManualReset);
             BuildVsTestRunner(new StrykerOptions(), endProcess, out var runner);
-            var tests = runner.DiscoverTests();
             // make sure we have discovered first and second tests
             runner.DiscoverTests().Count.ShouldBe(_testCases.Count);
         }

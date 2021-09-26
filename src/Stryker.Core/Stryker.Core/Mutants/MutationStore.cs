@@ -19,15 +19,10 @@ namespace Stryker.Core.Mutants
     /// </summary>
     public class MutationStore
     {
-        private static readonly ILogger _logger;
+        private static readonly ILogger _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationStore>();
         protected List<Mutant> _expressionMutants = new();
         protected Stack<List<Mutant>> _statementMutants = new();
         protected Stack<List<Mutant>> _blockMutants = new();
-
-        static MutationStore()
-        {
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationStore>();
-        }
 
         public bool HasBlockLevel => _blockMutants.Count > 0 && _blockMutants.Peek().Count > 0;
         public bool HasStatementLevel => (_statementMutants.Count > 0 && _statementMutants.Peek().Count > 0) || HasBlockLevel;
@@ -73,7 +68,7 @@ namespace Stryker.Core.Mutants
 
         public StatementSyntax PlaceBlockMutations(StatementSyntax block, Func<Mutation, StatementSyntax> mutationFunc)
         {
-            var result=
+            var result =
                 MutantPlacer.PlaceStatementControlledMutations(block,
                     _blockMutants.Peek()
                         .Select(m => (m.Id, mutationFunc(m.Mutation))));
@@ -83,7 +78,7 @@ namespace Stryker.Core.Mutants
 
         public StatementSyntax PlaceStatementMutations(StatementSyntax block, Func<Mutation, StatementSyntax> mutationFunc)
         {
-            var result=
+            var result =
                 MutantPlacer.PlaceStatementControlledMutations(block,
                     _statementMutants.Peek()
                         .Select(m => (m.Id, mutationFunc(m.Mutation))));
@@ -94,7 +89,7 @@ namespace Stryker.Core.Mutants
         public ExpressionSyntax PlaceExpressionMutations(ExpressionSyntax expression,
             Func<Mutation, ExpressionSyntax> converter)
         {
-            var result= MutantPlacer.PlaceExpressionControlledMutations(expression,
+            var result = MutantPlacer.PlaceExpressionControlledMutations(expression,
                 _expressionMutants.Select(m => (m.Id, converter(m.Mutation))));
             _expressionMutants.Clear();
             return result;

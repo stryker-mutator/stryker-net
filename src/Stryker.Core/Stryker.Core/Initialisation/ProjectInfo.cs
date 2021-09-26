@@ -9,9 +9,9 @@ namespace Stryker.Core.Initialisation
 {
     public class ProjectInfo
     {
-        private IFileSystem _fileSystem;
+        private readonly IFileSystem _fileSystem;
 
-        public ProjectInfo() : this(null){}
+        public ProjectInfo() : this(null) { }
 
         public ProjectInfo(IFileSystem fileSystem)
         {
@@ -35,7 +35,7 @@ namespace Stryker.Core.Initialisation
 
         public virtual void RestoreOriginalAssembly()
         {
-            foreach(var testProject in TestProjectAnalyzerResults)
+            foreach (var testProject in TestProjectAnalyzerResults)
             {
                 var injectionPath = GetInjectionFilePath(testProject);
                 _fileSystem.File.Move(GetBackupName(injectionPath), injectionPath, true);
@@ -43,7 +43,7 @@ namespace Stryker.Core.Initialisation
         }
         public virtual void BackupOriginalAssembly()
         {
-            foreach(var testProject in TestProjectAnalyzerResults)
+            foreach (var testProject in TestProjectAnalyzerResults)
             {
                 var injectionPath = GetInjectionFilePath(testProject);
                 var destFileName = GetBackupName(injectionPath);
