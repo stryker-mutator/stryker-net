@@ -1,13 +1,13 @@
-using Microsoft.Extensions.Logging;
-using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Logging;
+using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -40,7 +40,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestResult Result()
         {
-            var result = _results.Aggregate((TestResult) null, (acc, next) =>
+            var result = _results.Aggregate((TestResult)null, (acc, next) =>
             {
                 if (acc == null)
                 {
@@ -71,7 +71,7 @@ namespace Stryker.Core.TestRunners.VsTest
         }
     }
 
-    public class RunEventHandler : ITestRunEventsHandler, IDisposable, IRunResults
+    public sealed class RunEventHandler : ITestRunEventsHandler, IDisposable, IRunResults
     {
         private readonly AutoResetEvent _waitHandle;
         private readonly ILogger _logger;
@@ -137,7 +137,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 return;
             }
-            
+
             CaptureTestResults(testRunChangedArgs.NewTestResults);
             ResultsUpdated?.Invoke(this, EventArgs.Empty);
         }
@@ -195,7 +195,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo)
         {
-            throw new NotImplementedException();
+            throw new NotSupportedException();
         }
 
         public void HandleRawMessage(string rawMessage)

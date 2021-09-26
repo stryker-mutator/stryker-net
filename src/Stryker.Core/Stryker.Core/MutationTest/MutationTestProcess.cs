@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
@@ -58,7 +57,7 @@ namespace Stryker.Core.MutationTest
         private readonly ICoverageAnalyser _coverageAnalyser;
         private readonly StrykerOptions _options;
         private readonly Language _language;
-        private  IMutationProcess _mutationProcess;
+        private IMutationProcess _mutationProcess;
 
         public MutationTestProcess(MutationTestInput mutationTestInput,
             IReporter reporter,
@@ -152,7 +151,7 @@ namespace Stryker.Core.MutationTest
                 bool testUpdateHandler(IReadOnlyList<Mutant> testedMutants, ITestGuids failedTests, ITestGuids ranTests, ITestGuids timedOutTest)
                 {
                     var continueTestRun = _options.OptimizationMode.HasFlag(OptimizationModes.DisableBail);
-                    if (testsFailingInitialy.Count > 0 && failedTests.GetGuids().Any( id => testsFailingInitialy.Contains(id)))
+                    if (testsFailingInitialy.Count > 0 && failedTests.GetGuids().Any(id => testsFailingInitialy.Contains(id)))
                     {
                         // some of the failing tests where failing without any mutation
                         // we discard those tests
@@ -246,7 +245,7 @@ namespace Stryker.Core.MutationTest
                     }
                     // add this mutant to the block
                     nextBlock.Add(currentMutant);
-                    // remove the mutant from the todo list
+                    // remove the mutant from the list of mutants to group
                     mutantsToGroup.RemoveAt(j--);
                     // add this mutant tests
                     usedTests = usedTests.Merge(nextSet);
