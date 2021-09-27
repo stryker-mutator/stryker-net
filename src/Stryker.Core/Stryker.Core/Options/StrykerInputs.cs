@@ -35,6 +35,7 @@ namespace Stryker.Core.Options
         SinceInput SinceInput { get; init; }
         SinceTargetInput SinceTargetInput { get; init; }
         SolutionInput SolutionInput { get; init; }
+        TargetFrameworkInput TargetFrameworkInput { get; init; }
         TestProjectsInput TestProjectsInput { get; init; }
         TestCaseFilterInput TestCaseFilterInput { get; init; }
         ThresholdBreakInput ThresholdBreakInput { get; init; }
@@ -60,6 +61,7 @@ namespace Stryker.Core.Options
         public BasePathInput BasePathInput { get; init; } = new();
         public OutputPathInput OutputPathInput { get; init; } = new();
         public SolutionInput SolutionInput { get; init; } = new();
+        public TargetFrameworkInput TargetFrameworkInput { get; init; } = new();
         public VerbosityInput VerbosityInput { get; init; } = new();
         public LogToFileInput LogToFileInput { get; init; } = new();
         public MutationLevelInput MutationLevelInput { get; init; } = new();
@@ -111,6 +113,7 @@ namespace Stryker.Core.Options
                 DevMode = DevModeInput.Validate(),
                 MsBuildPath = MsBuildPathInput.Validate(_fileSystem),
                 SolutionPath = SolutionInput.Validate(_fileSystem),
+                TargetFramework = TargetFrameworkInput.Validate(),
                 Thresholds = new Thresholds
                 {
                     High = ThresholdHighInput.Validate(ThresholdLowInput.SuppliedInput),
@@ -134,7 +137,7 @@ namespace Stryker.Core.Options
                 TestProjects = TestProjectsInput.Validate(),
                 TestCaseFilter = TestCaseFilterInput.Validate(),
                 DashboardUrl = DashboardUrlInput.Validate(),
-                DashboardApiKey = DashboardApiKeyInput.Validate(WithBaselineInput.SuppliedInput),
+                DashboardApiKey = DashboardApiKeyInput.Validate(WithBaselineInput.SuppliedInput, baselineProvider, reporters),
                 ProjectName = ProjectNameInput.Validate(),
                 ModuleName = ModuleNameInput.Validate(),
                 ProjectVersion = ProjectVersionInput.Validate(FallbackVersionInput.SuppliedInput, reporters, WithBaselineInput.SuppliedInput),

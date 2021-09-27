@@ -9,14 +9,8 @@ namespace Stryker.Core.Mutants
     {
         private readonly ISet<Guid> _testsGuid;
 
-        private static readonly TestsGuidList EveryTests;
-        private static readonly TestsGuidList NoTestAtAll;
-
-        static TestsGuidList()
-        {
-            EveryTests = new TestsGuidList();
-            NoTestAtAll = new TestsGuidList(Array.Empty<Guid>());
-        }
+        private static readonly TestsGuidList EveryTests = new TestsGuidList();
+        private static readonly TestsGuidList NoTestAtAll = new TestsGuidList(Array.Empty<Guid>());
 
         private TestsGuidList()
         {

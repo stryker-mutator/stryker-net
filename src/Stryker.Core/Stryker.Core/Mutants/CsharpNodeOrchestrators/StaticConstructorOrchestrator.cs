@@ -24,6 +24,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
             {
                 return mutated;
             }
+
             if (mutated.ExpressionBody != null)
             {
                 // we need a body to place the marker

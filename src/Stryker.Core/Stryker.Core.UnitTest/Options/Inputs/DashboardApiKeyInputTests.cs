@@ -1,5 +1,6 @@
 using System;
 using Shouldly;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
 using Stryker.Core.Reporters;
@@ -29,7 +30,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 
                 var ex = Should.Throw<InputException>(() =>
                 {
-                    target.Validate(true);
+                    target.Validate(true, BaselineProvider.Dashboard, new[] { Reporter.Dashboard });
                 });
                 ex.Message.ShouldContain($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {DashboardUrlInput.DefaultUrl}");
             }
@@ -48,7 +49,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             {
                 Environment.SetEnvironmentVariable(StrykerDashboardApiKey, string.Empty);
 
-                var result = target.Validate(false);
+                var result = target.Validate(false, BaselineProvider.Disk, new[] { Reporter.ClearText });
 
                 result.ShouldBeNull();
             }
@@ -67,7 +68,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             {
                 Environment.SetEnvironmentVariable(StrykerDashboardApiKey, "my key");
 
-                var result = target.Validate(true);
+                var result = target.Validate(true, BaselineProvider.Dashboard, new[] { Reporter.Dashboard });
 
                 result.ShouldBe("my key");
             }
@@ -87,7 +88,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             {
                 Environment.SetEnvironmentVariable(StrykerDashboardApiKey, "not my key");
 
-                var result = target.Validate(true);
+                var result = target.Validate(true, BaselineProvider.Dashboard, new[] { Reporter.Dashboard });
 
                 result.ShouldBe("my key");
             }

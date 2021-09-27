@@ -1,9 +1,9 @@
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
-using Stryker.Core.TestRunners;
-using System.Diagnostics;
 using Stryker.Core.Options;
+using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.Initialisation
 {
@@ -15,7 +15,6 @@ namespace Stryker.Core.Initialisation
     public class InitialTestProcess : IInitialTestProcess
     {
         private readonly ILogger _logger;
-        private TestRunResult _initTestRunResult;
 
         public InitialTestProcess()
         {
@@ -42,27 +41,27 @@ namespace Stryker.Core.Initialisation
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            _initTestRunResult = testRunner.InitialTest();
+            var initTestRunResult = testRunner.InitialTest();
             // Stop stopwatch immediately after testrun
             stopwatch.Stop();
 
             // timings
-            _logger.LogDebug("Initial testrun output: {0}.", _initTestRunResult.ResultMessage);
-            if (!_initTestRunResult.FailingTests.IsEmpty)
+            _logger.LogDebug("Initial testrun output: {0}.", initTestRunResult.ResultMessage);
+            if (!initTestRunResult.FailingTests.IsEmpty)
             {
-                var failingTestsCount = _initTestRunResult.FailingTests.Count;
+                var failingTestsCount = initTestRunResult.FailingTests.Count;
                 _logger.LogWarning($"{failingTestsCount} tests are failing. Stryker will continue but outcome will be impacted.");
-                if (((double)failingTestsCount) / _initTestRunResult.RanTests.Count >= .5)
+                if (((double)failingTestsCount) / initTestRunResult.RanTests.Count >= .5)
                 {
-                    throw new InputException("Initial testrun has more han 50% failing tests.", _initTestRunResult.ResultMessage);
+                    throw new InputException("Initial testrun has more han 50% failing tests.", initTestRunResult.ResultMessage);
                 }
             }
 
             TimeoutValueCalculator = new TimeoutValueCalculator(options.AdditionalTimeout,
-                (int)stopwatch.ElapsedMilliseconds - (int)_initTestRunResult.Duration.TotalMilliseconds ,
+                (int)stopwatch.ElapsedMilliseconds - (int)initTestRunResult.Duration.TotalMilliseconds,
                 (int)stopwatch.ElapsedMilliseconds);
 
-            return new InitialTestRun(_initTestRunResult, TimeoutValueCalculator);
+            return new InitialTestRun(initTestRunResult, TimeoutValueCalculator);
         }
     }
 }

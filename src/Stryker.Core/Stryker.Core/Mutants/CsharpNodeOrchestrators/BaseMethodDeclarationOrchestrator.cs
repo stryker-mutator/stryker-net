@@ -1,6 +1,4 @@
-using System;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
@@ -26,36 +24,42 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         protected override BaseMethodDeclarationSyntax InjectMutations(T sourceNode, BaseMethodDeclarationSyntax targetNode,
             MutationContext context)
         {
-            // find out parameters
             targetNode = base.InjectMutations(sourceNode, targetNode, context);
-            if (targetNode.Body != null)
+
+            if (targetNode.Body == null)
             {
-                // inject initialization to default for all out parameters
-                targetNode = sourceNode.ParameterList.Parameters.Where(p => p.Modifiers.Any(m => m.Kind() == SyntaxKind.OutKeyword))
-                    .Aggregate(targetNode, (current, parameter) => MutantPlacer.AddDefaultInitialization(current, parameter.Identifier, parameter.Type));
-                // add a return in case we changed the control flow
-                return MutantPlacer.AddEndingReturn(targetNode) as T;
+                if (targetNode.ExpressionBody == null)
+                {
+                    // only a definition (eg interface)
+                    return targetNode;
+                }
+
+                // this is an expression body method
+                if (!context.HasStatementLevelMutant)
+                {
+                    // there is no statement or block level mutant, so the method control flow is not changed by mutations
+                    // there is no need to change the method in any may
+                    return targetNode;
+                }
+
+                // we need to convert it to expression body form
+                targetNode = MutantPlacer.ConvertExpressionToBody(targetNode);
+
+                // we need to inject pending block (and statement) level mutations
+                targetNode = targetNode.WithBody(
+                    SyntaxFactory.Block(context.InjectBlockLevelExpressionMutation(targetNode.Body,
+                        sourceNode.ExpressionBody?.Expression, sourceNode.NeedsReturn())));
+            }
+            else
+            {
+                // we add an ending rreturn, just in case
+                targetNode = MutantPlacer.AddEndingReturn(targetNode);
             }
 
-            if (!context.Store.HasBlockLevel)
-            {
-                return targetNode;
-            }
-
-            // we need to move to a body version of the method
-            targetNode = MutantPlacer.ConvertExpressionToBody(targetNode);
-
-            StatementSyntax mutatedBlock = targetNode.Body;
-
-            var converter = targetNode.NeedsReturn()
-                ? (Func<Mutation, StatementSyntax>)((toConvert) =>
-                   SyntaxFactory.ReturnStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert)))
-                : (toConvert) =>
-                    SyntaxFactory.ExpressionStatement(sourceNode.ExpressionBody!.Expression.InjectMutation(toConvert));
-
-            mutatedBlock = context.Store.PlaceBlockMutations(mutatedBlock, converter);
-            return targetNode.ReplaceNode(targetNode.Body!,
-                SyntaxFactory.Block(mutatedBlock));
+            // inject initialization to default for all out parameters
+            targetNode = targetNode.WithBody(MutantPlacer.AddDefaultInitializers(targetNode.Body, sourceNode.ParameterList.Parameters.Where(p =>
+                p.Modifiers.Any(m => m.Kind() == SyntaxKind.OutKeyword))));
+            return targetNode;
         }
     }
 }

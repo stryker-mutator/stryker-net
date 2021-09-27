@@ -1,8 +1,3 @@
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Logging;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -10,6 +5,11 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using Buildalyzer;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Logging;
+using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Initialisation
 {
@@ -62,7 +62,7 @@ namespace Stryker.Core.Initialisation
             foreach (var testProjectFile in testProjectFiles)
             {
                 // Analyze the test project
-                testProjectAnalyzerResults.Add(_projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath));
+                testProjectAnalyzerResults.Add(_projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework));
             }
             projectInfo.TestProjectAnalyzerResults = testProjectAnalyzerResults;
 
@@ -79,7 +79,7 @@ namespace Stryker.Core.Initialisation
             _logger.LogInformation("The project {0} will be mutated.", projectUnderTest);
 
             // Analyze project under test
-            projectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath);
+            projectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath, options.TargetFramework);
 
             //to test Fsharp support you would need to create a FsharpProjectComponentsBuilder
             IProjectComponent inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
@@ -179,20 +179,18 @@ namespace Stryker.Core.Initialisation
             var projectReferencesMatchingNameFilter = projectReferences.Where(x => x.Contains(projectUnderTestNameFilter, StringComparison.OrdinalIgnoreCase));
             if (!projectReferencesMatchingNameFilter.Any())
             {
-                stringBuilder.Append("No project reference matched your --project-file=");
+                stringBuilder.Append("No project reference matched the given project filter");
                 stringBuilder.AppendLine(projectUnderTestNameFilter);
                 stringBuilder.Append(referenceChoice);
-                AppendExampleIfPossible(stringBuilder, projectReferences, projectUnderTestNameFilter);
 
                 throw new InputException(ErrorMessage, stringBuilder.ToString());
             }
             else if (projectReferencesMatchingNameFilter.Count() > 1)
             {
-                stringBuilder.Append("More than one project reference matched your --project-file=");
-                stringBuilder.Append(projectUnderTestNameFilter);
-                stringBuilder.AppendLine(" argument to specify the project to mutate, please specify the name more detailed.");
+                stringBuilder.Append("More than one project reference matched the given project filter ");
+                stringBuilder.Append($"'{projectUnderTestNameFilter}'");
+                stringBuilder.AppendLine(", please specify the full name of the project reference.");
                 stringBuilder.Append(referenceChoice);
-                AppendExampleIfPossible(stringBuilder, projectReferences, projectUnderTestNameFilter);
 
                 throw new InputException(ErrorMessage, stringBuilder.ToString());
             }
@@ -209,7 +207,6 @@ namespace Stryker.Core.Initialisation
             {
                 stringBuilder.AppendLine("Test project contains more than one project reference. Please set the project option (https://stryker-mutator.io/docs/stryker-net/configuration#project-file-name) to specify which project to mutate.");
                 stringBuilder.Append(referenceChoice);
-                AppendExampleIfPossible(stringBuilder, projectReferences);
 
                 throw new InputException(ErrorMessage, stringBuilder.ToString());
             }
@@ -232,23 +229,7 @@ namespace Stryker.Core.Initialisation
             return projectReferences;
         }
 
-        #region string helper methods
-
-        private void AppendExampleIfPossible(StringBuilder builder, IEnumerable<string> projectReferences, string filter = null)
-        {
-            var otherProjectReference = projectReferences.FirstOrDefault(
-                o => !string.Equals(o, filter, StringComparison.OrdinalIgnoreCase));
-            if (otherProjectReference is null)
-            {
-                //not possible to find somethig different.
-                return;
-            }
-
-            builder.AppendLine("");
-            builder.AppendLine($"Example: --project-file={otherProjectReference}");
-        }
-
-        private StringBuilder BuildReferenceChoice(IEnumerable<string> projectReferences)
+        private static StringBuilder BuildReferenceChoice(IEnumerable<string> projectReferences)
         {
             var builder = new StringBuilder();
             builder.AppendLine($"Choose one of the following references:");
@@ -261,7 +242,5 @@ namespace Stryker.Core.Initialisation
             }
             return builder;
         }
-
-        #endregion
     }
 }

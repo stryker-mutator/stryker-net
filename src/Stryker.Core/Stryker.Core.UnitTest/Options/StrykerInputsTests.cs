@@ -54,7 +54,7 @@ namespace Stryker.Core.UnitTest.Options
             _target.CoverageAnalysisInput.SuppliedInput = "perTestInIsolation";
 
             var result = _target.ValidateAll();
-            
+
             result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
             result.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeTrue();
         }
@@ -65,7 +65,7 @@ namespace Stryker.Core.UnitTest.Options
             _target.DisableMixMutantsInput.SuppliedInput = true;
 
             var result = _target.ValidateAll();
-            
+
             result.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants).ShouldBeTrue();
             result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
         }
@@ -76,7 +76,7 @@ namespace Stryker.Core.UnitTest.Options
             _target.DisableBailInput.SuppliedInput = true;
 
             var result = _target.ValidateAll();
-            
+
             result.OptimizationMode.HasFlag(OptimizationModes.DisableBail).ShouldBeTrue();
             result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
         }
@@ -109,6 +109,45 @@ namespace Stryker.Core.UnitTest.Options
             var result = _target.ValidateAll();
 
             result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void UsingDashboardReporterShouldEnableDashboardApiKey()
+        {
+            _target.DashboardApiKeyInput.SuppliedInput = "dashboard_api_key";
+            _target.ReportersInput.SuppliedInput = new[] { "dashboard" };
+
+            var result = _target.ValidateAll();
+
+            result.DashboardApiKey.ShouldBe("dashboard_api_key");
+        }
+
+        [Fact]
+        public void UsingDashboardBaselineStorageWithBaselineShouldEnableDashboardApiKey()
+        {
+            _target.DashboardApiKeyInput.SuppliedInput = "dashboard_api_key";
+            _target.ReportersInput.SuppliedInput = new[] { "html" };
+            _target.BaselineProviderInput.SuppliedInput = "dashboard";
+            _target.WithBaselineInput.SuppliedInput = true;
+            _target.FallbackVersionInput.SuppliedInput = "develop";
+
+            var result = _target.ValidateAll();
+
+            result.DashboardApiKey.ShouldBe("dashboard_api_key");
+        }
+
+        [Fact]
+        public void NotUsingDashboardBaselineStorageWithBaselineOrDashboardReporterShouldDisableDashboardApiKey()
+        {
+            _target.DashboardApiKeyInput.SuppliedInput = "dashboard_api_key";
+            _target.ReportersInput.SuppliedInput = new[] { "html" };
+            _target.BaselineProviderInput.SuppliedInput = "disk";
+            _target.WithBaselineInput.SuppliedInput = true;
+            _target.FallbackVersionInput.SuppliedInput = "develop";
+
+            var result = _target.ValidateAll();
+
+            result.DashboardApiKey.ShouldBeNull();
         }
     }
 }

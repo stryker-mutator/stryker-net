@@ -6,8 +6,12 @@
   </PropertyGroup>
 
   <PropertyGroup>
-	<MicrosoftTestPlatform>16.10.0</MicrosoftTestPlatform>
-	<SystemIOAbstractions>13.2.43</SystemIOAbstractions>
-	<MicrosoftExtensionsConfiguration>5.0.0</MicrosoftExtensionsConfiguration>
+	  <MicrosoftTestPlatform>16.10.0</MicrosoftTestPlatform>
+	  <SystemIOAbstractions>13.2.43</SystemIOAbstractions>
+	  <MicrosoftExtensionsConfiguration>5.0.0</MicrosoftExtensionsConfiguration>
   </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="DotNet.ReproducibleBuilds" Version="0.1.66" PrivateAssets="All"/>
+  </ItemGroup>
 </Project>
