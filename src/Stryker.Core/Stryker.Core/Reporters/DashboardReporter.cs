@@ -40,7 +40,7 @@ namespace Stryker.Core.Reporters
         {
             var mutationReport = JsonReport.Build(_options, reportComponent);
 
-            var reportUrl = _dashboardClient.PublishReport(mutationReport.ToJson(), ProjectVersion).Result;
+            var reportUrl = _dashboardClient.PublishReport(mutationReport, ProjectVersion).Result;
 
             if (reportUrl != null)
             {

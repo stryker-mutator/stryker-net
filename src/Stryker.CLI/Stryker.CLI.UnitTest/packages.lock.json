@@ -1446,6 +1446,11 @@
           "runtime.native.System.Security.Cryptography.OpenSsl": "4.3.2"
         }
       },
+      "System.Net.Http.Json": {
+        "type": "Transitive",
+        "resolved": "5.0.0",
+        "contentHash": "3CPSQpCzEmI9o+1G79TnPCjF40omCdnoXj2Rg76BDwGj5+LZnFPjV+t35eedlvl+uthmholk/XXxXTYgJWSexw=="
+      },
       "System.Net.Primitives": {
         "type": "Transitive",
         "resolved": "4.3.0",
@@ -2104,7 +2109,7 @@
           "McMaster.Extensions.CommandLineUtils": "3.1.0",
           "Microsoft.Extensions.Configuration.Binder": "5.0.0",
           "NuGet.Versioning": "5.10.0",
-          "stryker": "1.0.0-rc2"
+          "stryker": "1.0.0-rc3"
         }
       },
       "stryker": {
@@ -2133,7 +2138,8 @@
           "ShellProgressBar": "5.1.0",
           "Stryker.DataCollector": "1.0.0",
           "Stryker.RegexMutators": "1.0.0",
-          "System.IO.Abstractions": "13.2.43"
+          "System.IO.Abstractions": "13.2.43",
+          "System.Net.Http.Json": "5.0.0"
         }
       },
       "stryker.datacollector": {
