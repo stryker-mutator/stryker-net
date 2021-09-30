@@ -48,7 +48,7 @@ namespace Stryker.Core.Clients
 
             try
             {
-                using var response = await _httpClient.PutAsJsonAsync(url, report);
+                using var response = await _httpClient.PutAsJsonAsync(url, report, JsonReportSerialization.Options);
                 var result = await response.Content.ReadFromJsonAsync<DashboardResult>();
                 return result?.Href;
             }
@@ -66,7 +66,7 @@ namespace Stryker.Core.Clients
             _logger.LogDebug("Sending GET to {DashboardUrl}", url);
             try
             {
-                var report = await _httpClient.GetFromJsonAsync<JsonReport>(url);
+                var report = await _httpClient.GetFromJsonAsync<JsonReport>(url, JsonReportSerialization.Options);
                 return report;
             }
             catch (Exception exception)

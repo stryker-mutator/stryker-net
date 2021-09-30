@@ -1,103 +1,155 @@
-using Newtonsoft.Json;
-using Stryker.Core.Options;
+using System.Collections.Generic;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Stryker.CLI
 {
-    public class FileBasedInputOuter
+    public interface IExtraData
     {
-        [JsonProperty(PropertyName = "stryker-config")]
-        public FileBasedInput Input { get; set; }
+        Dictionary<string, JsonElement> ExtraData { get; init; }
     }
 
-    public class FileBasedInput
+    public class FileBasedInputOuter : IExtraData
     {
-        [JsonProperty(PropertyName = "project-info")]
-        public ProjectInfo ProjectInfo { get; set; }
+        [JsonPropertyName("stryker-config")]
+        public FileBasedInput Input { get; init; }
 
-        public int? Concurrency { get; set; }
-
-        [JsonProperty(PropertyName = "mutation-level")]
-        public string MutationLevel { get; set; }
-
-        [JsonProperty(PropertyName = "language-version")]
-        public string LanguageVersion { get; set; }
-
-        [JsonProperty(PropertyName = "additional-timeout")]
-        public int AdditionalTimeout { get; set; }
-
-        public string[] Mutate { get; set; }
-
-        public string Solution { get; set; }
-
-        [JsonProperty(PropertyName = "target-framework")]
-        public string TargetFramework { get; set; }
-
-        public string Project { get; set; }
-
-        [JsonProperty(PropertyName = "coverage-analysis")]
-        public string CoverageAnalysis { get; set; }
-
-        [JsonProperty(PropertyName = "disable-bail")]
-        public bool DisableBail { get; set; }
-
-        [JsonProperty(PropertyName = "disable-mix-mutants")]
-        public bool DisableMixMutants { get; set; }
-
-        public Thresholds Thresholds { get; set; }
-
-        public string Verbosity { get; set; }
-
-        public string[] Reporters { get; set; }
-
-        public Since Since { get; set; }
-
-        public Baseline Baseline { get; set; }
-
-        [JsonProperty(PropertyName = "dashboard-url")]
-        public string DashboardUrl { get; set; }
-
-        [JsonProperty(PropertyName = "test-projects")]
-        public string[] TestProjects { get; set; }
-
-        [JsonProperty(PropertyName = "test-case-filter")]
-        public string TestCaseFilter { get; set; }
-
-        [JsonProperty(PropertyName = "ignore-mutations")]
-        public string[] IgnoreMutations { get; set; }
-
-        [JsonProperty(PropertyName = "ignore-methods")]
-        public string[] IgnoreMethods { get; set; }
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement> ExtraData { get; init; }
     }
 
-    public class Since
+    public class FileBasedInput : IExtraData
     {
-        public bool? Enabled { get; set; }
+        [JsonPropertyName("project-info")]
+        public ProjectInfo ProjectInfo { get; init; }
 
-        [JsonProperty(PropertyName = "ignore-changes-in")]
-        public string[] IgnoreChangesIn { get; set; }
+        [JsonPropertyName("concurrency")]
+        public int? Concurrency { get; init; }
 
-        [JsonProperty(PropertyName = "target")]
-        public string Target { get; set; }
+        [JsonPropertyName("mutation-level")]
+        public string MutationLevel { get; init; }
+
+        [JsonPropertyName("language-version")]
+        public string LanguageVersion { get; init; }
+
+        [JsonPropertyName("additional-timeout")]
+        public int? AdditionalTimeout { get; init; }
+
+        [JsonPropertyName("mutate")]
+        public string[] Mutate { get; init; }
+
+        [JsonPropertyName("solution")]
+        public string Solution { get; init; }
+
+        [JsonPropertyName("target-framework")]
+        public string TargetFramework { get; init; }
+
+        [JsonPropertyName("project")]
+        public string Project { get; init; }
+
+        [JsonPropertyName("coverage-analysis")]
+        public string CoverageAnalysis { get; init; }
+
+        [JsonPropertyName("disable-bail")]
+        public bool? DisableBail { get; init; }
+
+        [JsonPropertyName("disable-mix-mutants")]
+        public bool? DisableMixMutants { get; init; }
+
+        [JsonPropertyName("thresholds")]
+        public Thresholds Thresholds { get; init; }
+
+        [JsonPropertyName("verbosity")]
+        public string Verbosity { get; init; }
+
+        [JsonPropertyName("reporters")]
+        public string[] Reporters { get; init; }
+
+        [JsonPropertyName("since")]
+        public Since Since { get; init; }
+
+        [JsonPropertyName("baseline")]
+        public Baseline Baseline { get; init; }
+
+        [JsonPropertyName("dashboard-url")]
+        public string DashboardUrl { get; init; }
+
+        [JsonPropertyName("test-projects")]
+        public string[] TestProjects { get; init; }
+
+        [JsonPropertyName("test-case-filter")]
+        public string TestCaseFilter { get; init; }
+
+        [JsonPropertyName("ignore-mutations")]
+        public string[] IgnoreMutations { get; init; }
+
+        [JsonPropertyName("ignore-methods")]
+        public string[] IgnoreMethods { get; init; }
+
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement> ExtraData { get; init; }
     }
 
-    public class Baseline
+    public class Since : IExtraData
     {
-        public bool? Enabled { get; set; }
+        [JsonPropertyName("enabled")]
+        public bool? Enabled { get; init; }
 
-        [JsonProperty(PropertyName = "provider")]
-        public string Provider { get; set; }
+        [JsonPropertyName("ignore-changes-in")]
+        public string[] IgnoreChangesIn { get; init; }
 
-        [JsonProperty(PropertyName = "azure-fileshare-url")]
-        public string AzureFileShareUrl { get; set; }
+        [JsonPropertyName("target")]
+        public string Target { get; init; }
 
-        [JsonProperty(PropertyName = "fallback-version")]
-        public string FallbackVersion { get; set; }
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement> ExtraData { get; init; }
     }
 
-    public class ProjectInfo
+    public class Baseline : IExtraData
     {
-        public string Name { get; set; }
-        public string Module { get; set; }
-        public string Version { get; set; }
+        [JsonPropertyName("enabled")]
+        public bool? Enabled { get; init; }
+
+        [JsonPropertyName("provider")]
+        public string Provider { get; init; }
+
+        [JsonPropertyName("azure-fileshare-url")]
+        public string AzureFileShareUrl { get; init; }
+
+        [JsonPropertyName("fallback-version")]
+        public string FallbackVersion { get; init; }
+
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement> ExtraData { get; init; }
+    }
+
+    public class ProjectInfo : IExtraData
+    {
+        [JsonPropertyName("name")]
+        public string Name { get; init; }
+
+        [JsonPropertyName("module")]
+        public string Module { get; init; }
+
+        [JsonPropertyName("version")]
+        public string Version { get; init; }
+
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement> ExtraData { get; init; }
+    }
+
+    public class Thresholds : IExtraData
+    {
+        [JsonPropertyName("high")]
+        public int? High { get; init; }
+
+        [JsonPropertyName("low")]
+        public int? Low { get; init; }
+
+        [JsonPropertyName("break")]
+        public int? Break { get; init; }
+
+        [JsonExtensionData]
+        public Dictionary<string, JsonElement> ExtraData { get; init; }
     }
 }
