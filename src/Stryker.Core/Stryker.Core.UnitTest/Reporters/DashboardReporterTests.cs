@@ -3,6 +3,7 @@ using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Clients;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
+using Stryker.Core.Reporters.Json;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
@@ -24,7 +25,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var dashboardClientMock = new Mock<IDashboardClient>();
 
-            dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<string>(), "version/human/readable"));
+            dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<JsonReport>(), "version/human/readable"));
             var branchProviderMock = new Mock<IGitInfoProvider>();
 
             var target = new DashboardReporter(options, dashboardClient: dashboardClientMock.Object);
@@ -33,7 +34,7 @@ namespace Stryker.Core.UnitTest.Reporters
             target.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
 
             // Assert
-            dashboardClientMock.Verify(x => x.PublishReport(It.IsAny<string>(), "version/human/readable"), Times.Once);
+            dashboardClientMock.Verify(x => x.PublishReport(It.IsAny<JsonReport>(), "version/human/readable"), Times.Once);
         }
     }
 }

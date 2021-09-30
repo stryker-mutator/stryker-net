@@ -7,6 +7,7 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Json;
+using Stryker.Core.UnitTest.Reporters;
 using System;
 using System.Net.Http;
 using System.Text;
@@ -48,7 +49,7 @@ namespace Stryker.Core.UnitTest.Clients
             var target = new DashboardClient(options, httpClient, loggerMock.Object);
 
             // Act
-            var result = await target.PublishReport("string_json", "version");
+            var result = await target.PublishReport(new MockJsonReport(null, null), "version");
 
             loggerMock.Verify(
                 x => x.Log(
@@ -69,6 +70,7 @@ namespace Stryker.Core.UnitTest.Clients
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
+            var href = "http://www.example.com/api/projectName/version";
             handlerMock
                 .Protected()
                 .Setup<Task<HttpResponseMessage>>(
@@ -78,7 +80,7 @@ namespace Stryker.Core.UnitTest.Clients
                 .ReturnsAsync(new HttpResponseMessage()
                 {
                     StatusCode = System.Net.HttpStatusCode.OK,
-                    Content = new StringContent("{\"Href\": \"http://www.example.com/api/projectName/version\"}", Encoding.UTF8, "text/html")
+                    Content = new StringContent($"{{\"Href\": \"{href}\"}}", Encoding.UTF8, "text/html")
                 })
                 .Verifiable();
 
@@ -98,7 +100,7 @@ namespace Stryker.Core.UnitTest.Clients
 
 
             // Act
-            await target.PublishReport("string_json", "version");
+            var result = await target.PublishReport(new MockJsonReport(null, null), "version");
 
             var expectedUri = new Uri("http://www.example.com/api/reports/github.com/JohnDoe/project/version");
 
@@ -111,6 +113,8 @@ namespace Stryker.Core.UnitTest.Clients
                     ),
                 ItExpr.IsAny<CancellationToken>()
                 );
+
+            result.ShouldBe(href);
         }
 
         [Fact]
@@ -120,6 +124,7 @@ namespace Stryker.Core.UnitTest.Clients
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
+            var href = "http://www.example.com/api/projectName/version";
             handlerMock
                 .Protected()
                 .Setup<Task<HttpResponseMessage>>(
@@ -129,7 +134,7 @@ namespace Stryker.Core.UnitTest.Clients
                 .ReturnsAsync(new HttpResponseMessage()
                 {
                     StatusCode = System.Net.HttpStatusCode.OK,
-                    Content = new StringContent("{\"Href\": \"http://www.example.com/api/projectName/version\"}", Encoding.UTF8, "text/html")
+                    Content = new StringContent($"{{\"Href\": \"{href}\"}}", Encoding.UTF8, "text/html")
                 })
                 .Verifiable();
 
@@ -150,7 +155,7 @@ namespace Stryker.Core.UnitTest.Clients
 
 
             // Act
-            await target.PublishReport("string_json", "version");
+            var result = await target.PublishReport(new MockJsonReport(null, null), "version");
 
             var expectedUri = new Uri("http://www.example.com/api/reports/github.com/JohnDoe/project/version?module=moduleName");
 
@@ -163,6 +168,8 @@ namespace Stryker.Core.UnitTest.Clients
                     ),
                 ItExpr.IsAny<CancellationToken>()
                 );
+
+            result.ShouldBe(href);
         }
 
         [Fact]
@@ -186,6 +193,7 @@ namespace Stryker.Core.UnitTest.Clients
             var readonlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose).Object;
 
             var jsonReport = JsonReport.Build(options, readonlyInputComponent);
+            var json = jsonReport.ToJson();
 
             handlerMock
                 .Protected()
@@ -196,7 +204,7 @@ namespace Stryker.Core.UnitTest.Clients
                 .ReturnsAsync(new HttpResponseMessage()
                 {
                     StatusCode = System.Net.HttpStatusCode.OK,
-                    Content = new StringContent(jsonReport.ToJson(), Encoding.UTF8, "application/json")
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
                 })
                 .Verifiable();
 
@@ -220,7 +228,8 @@ namespace Stryker.Core.UnitTest.Clients
                 ItExpr.IsAny<CancellationToken>()
                 );
 
-            result.ToJson().Equals(jsonReport.ToJson());
+            result.ShouldNotBeNull();
+            result.ToJson().ShouldBe(json);
         }
 
         [Fact]
@@ -245,6 +254,7 @@ namespace Stryker.Core.UnitTest.Clients
             var readonlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose).Object;
 
             var jsonReport = JsonReport.Build(options, readonlyInputComponent);
+            var json = jsonReport.ToJson();
 
             handlerMock
                 .Protected()
@@ -255,7 +265,7 @@ namespace Stryker.Core.UnitTest.Clients
                 .ReturnsAsync(new HttpResponseMessage()
                 {
                     StatusCode = System.Net.HttpStatusCode.OK,
-                    Content = new StringContent(jsonReport.ToJson(), Encoding.UTF8, "application/json")
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
                 })
                 .Verifiable();
 
@@ -279,7 +289,8 @@ namespace Stryker.Core.UnitTest.Clients
                 ItExpr.IsAny<CancellationToken>()
                 );
 
-            result.ToJson().Equals(jsonReport.ToJson());
+            result.ShouldNotBeNull();
+            result.ToJson().ShouldBe(json);
         }
 
         [Fact]

@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using Crayon;
 using McMaster.Extensions.CommandLineUtils;
@@ -63,7 +64,24 @@ namespace Stryker.CLI
                 RunStryker(inputs);
                 return ExitCode;
             });
-            return app.Execute(args);
+
+            try
+            {
+                return app.Execute(args);
+            }
+            catch (CommandParsingException ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+
+                if (ex is UnrecognizedCommandParsingException uex && uex.NearestMatches.Any())
+                {
+                    Console.Error.WriteLine();
+                    Console.Error.WriteLine("Did you mean this?");
+                    Console.Error.WriteLine("    " + uex.NearestMatches.First());
+                }
+
+                return ExitCodes.OtherError;
+            }
         }
 
         private void RunStryker(IStrykerInputs inputs)

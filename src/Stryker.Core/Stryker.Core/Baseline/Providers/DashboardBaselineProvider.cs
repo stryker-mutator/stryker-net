@@ -20,7 +20,7 @@ namespace Stryker.Core.Baseline.Providers
 
         public async Task Save(JsonReport report, string version)
         {
-            await _client.PublishReport(report.ToJson(), version);
+            await _client.PublishReport(report, version);
         }
     }
 }

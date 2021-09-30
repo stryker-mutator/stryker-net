@@ -1,11 +1,10 @@
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Json;
 using System;
 using System.Net.Http;
-using System.Text;
+using System.Net.Http.Json;
 using System.Threading.Tasks;
 
 namespace Stryker.Core.Clients
@@ -13,7 +12,7 @@ namespace Stryker.Core.Clients
     public interface IDashboardClient
     {
         string ProjectName { get; set; }
-        Task<string> PublishReport(string json, string version);
+        Task<string> PublishReport(JsonReport json, string version);
         Task<JsonReport> PullReport(string version);
     }
 
@@ -27,48 +26,58 @@ namespace Stryker.Core.Clients
         {
             _options = options;
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DashboardClient>();
-            _httpClient = httpClient ?? new HttpClient();
+            if (httpClient != null)
+            {
+                _httpClient = httpClient;
+            }
+            else
+            {
+                _httpClient = new HttpClient();
+                _httpClient.DefaultRequestHeaders.Add("X-Api-Key", _options.DashboardApiKey);
+            }
             ProjectName = _options.ProjectName;
         }
 
         public string ProjectName { get; set; }
 
-        public async Task<string> PublishReport(string json, string version)
+        public async Task<string> PublishReport(JsonReport report, string version)
         {
-            var url = new Uri($"{_options.DashboardUrl}/api/reports/{ProjectName}/{version}");
+            var url = GetUrl(version);
 
-            if (_options.ModuleName != null)
+            _logger.LogDebug("Sending PUT to {DashboardUrl}", url);
+
+            try
             {
-                url = new Uri(url, $"?module={_options.ModuleName}");
+                using var response = await _httpClient.PutAsJsonAsync(url, report);
+                var result = await response.Content.ReadFromJsonAsync<DashboardResult>();
+                return result?.Href;
             }
-
-
-            using var requestMessage = new HttpRequestMessage(HttpMethod.Put, url)
+            catch(Exception exception)
             {
-                Content = new StringContent(json, Encoding.UTF8, "application/json")
-            };
-
-            requestMessage.Headers.Add("X-Api-Key", _options.DashboardApiKey);
-
-            _logger.LogDebug("Sending POST to {0}", url);
-            using var response = await _httpClient.SendAsync(requestMessage);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var jsonResponse = await response.Content.ReadAsStringAsync();
-
-                return JsonConvert.DeserializeAnonymousType(jsonResponse, new { Href = "" }).Href;
-            }
-            else
-            {
-                _logger.LogError("Dashboard upload failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), await response.Content.ReadAsStringAsync());
+                _logger.LogError(exception, "Failed to upload report to the dashboard");
                 return null;
             }
-
         }
 
         public async Task<JsonReport> PullReport(string version)
         {
+            var url = GetUrl(version);
+
+            _logger.LogDebug("Sending GET to {DashboardUrl}", url);
+            try
+            {
+                var report = await _httpClient.GetFromJsonAsync<JsonReport>(url);
+                return report;
+            }
+            catch (Exception exception)
+            {
+                _logger.LogError(exception, "Failed to retrieve the report at {DashboardUrl}", url);
+                return null;
+            }
+        }
+
+        private Uri GetUrl(string version)
+        {
             var url = new Uri($"{_options.DashboardUrl}/api/reports/{ProjectName}/{version}");
 
             if (_options.ModuleName != null)
@@ -76,23 +85,12 @@ namespace Stryker.Core.Clients
                 url = new Uri(url, $"?module={_options.ModuleName}");
             }
 
-            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
+            return url;
+        }
 
-            requestMessage.Headers.Add("X-Api-Key", _options.DashboardApiKey);
-
-            _logger.LogDebug("Sending GET to {0}", url);
-            using var response = await _httpClient.SendAsync(requestMessage);
-
-            if (response.IsSuccessStatusCode)
-            {
-                var jsonResponse = await response.Content.ReadAsStringAsync();
-
-                return JsonConvert.DeserializeObject<JsonReport>(jsonResponse);
-            }
-            else
-            {
-                return null;
-            }
+        private class DashboardResult
+        {
+            public string Href { get; init; }
         }
     }
 }
