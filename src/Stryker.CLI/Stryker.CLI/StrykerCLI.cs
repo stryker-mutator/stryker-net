@@ -111,8 +111,21 @@ namespace Stryker.CLI
         private async void PrintStrykerVersionInformationAsync()
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var assemblyVersion = assembly.GetName().Version;
-            var currentVersion = SemanticVersion.Parse($"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}");
+            var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+            if (!SemanticVersion.TryParse(version, out var currentVersion))
+            {
+                var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCli>();
+                if (string.IsNullOrEmpty(version))
+                {
+                    logger.LogWarning("{Attribute} is missing in {Assembly} at {AssemblyLocation}", nameof(AssemblyInformationalVersionAttribute), assembly, assembly.Location);
+                }
+                else
+                {
+                    logger.LogWarning("Failed to parse version {Version} as a semantic version", version);
+                }
+                return;
+            }
 
             Console.WriteLine($"Version: {Output.Green(currentVersion.ToString())}");
             Console.WriteLine();
