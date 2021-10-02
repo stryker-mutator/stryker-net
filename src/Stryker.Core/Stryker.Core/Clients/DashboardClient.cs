@@ -45,6 +45,7 @@ namespace Stryker.Core.Clients
             try
             {
                 using var response = await _httpClient.PutAsJsonAsync(url, report);
+                response.EnsureSuccessStatusCode();
                 var result = await response.Content.ReadFromJsonAsync<DashboardResult>();
                 return result?.Href;
             }
