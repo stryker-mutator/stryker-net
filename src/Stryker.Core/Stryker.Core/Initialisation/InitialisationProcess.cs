@@ -9,7 +9,6 @@ using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
-using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
 
@@ -29,7 +28,7 @@ namespace Stryker.Core.Initialisation
 
     public interface IInitialisationProcess
     {
-        MutationTestInput Initialize(StrykerOptions options, DashboardReporter dashboardReporter);
+        MutationTestInput Initialize(StrykerOptions options);
         InitialTestRun InitialTest(StrykerOptions options);
     }
 
@@ -57,7 +56,7 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
         }
 
-        public MutationTestInput Initialize(StrykerOptions options, DashboardReporter dashboardReporter)
+        public MutationTestInput Initialize(StrykerOptions options)
         {
             // resolve project info
             var projectInfo = _inputFileResolver.ResolveInput(options);
@@ -78,7 +77,7 @@ namespace Stryker.Core.Initialisation
                     options.MsBuildPath);
             }
 
-            InitializeDashboardReporter(dashboardReporter, projectInfo);
+            InitializeDashboardReporter(options, projectInfo);
 
             if (_testRunner == null)
             {
@@ -99,16 +98,11 @@ namespace Stryker.Core.Initialisation
             // initial test
             _initialTestProcess.InitialTest(options, _testRunner);
 
-        private void InitializeDashboardReporter(DashboardReporter dashboardReporter, ProjectInfo projectInfo)
+        private void InitializeDashboardReporter(StrykerOptions options, ProjectInfo projectInfo)
         {
-            if (dashboardReporter == null)
-            {
-                return;
-            }
-
             // try to read the repository URL + version for the dashboard report
-            var missingProjectName = string.IsNullOrEmpty(dashboardReporter.ProjectName);
-            var missingProjectVersion = string.IsNullOrEmpty(dashboardReporter.ProjectVersion);
+            var missingProjectName = string.IsNullOrEmpty(options.ProjectName);
+            var missingProjectVersion = string.IsNullOrEmpty(options.ProjectVersion);
             if (missingProjectName || missingProjectVersion)
             {
                 var subject = missingProjectName switch
@@ -135,14 +129,14 @@ namespace Stryker.Core.Initialisation
                     var details = $"To solve this issue, either specify the {subject.ToLowerInvariant()} in the stryker configuration or configure [SourceLink](https://github.com/dotnet/sourcelink#readme) in {projectFilePath}";
                     if (missingProjectName)
                     {
-                        dashboardReporter.ProjectName = ReadProjectName(module, details);
-                        _logger.LogDebug("Using {ProjectName} as project name for the dashboard reporter. (Read from the AssemblyMetadata/RepositoryUrl assembly attribute of {TargetName})", dashboardReporter.ProjectName, targetName);
+                        options.ProjectName = ReadProjectName(module, details);
+                        _logger.LogDebug("Using {ProjectName} as project name for the dashboard reporter. (Read from the AssemblyMetadata/RepositoryUrl assembly attribute of {TargetName})", options.ProjectName, targetName);
                     }
 
                     if (missingProjectVersion)
                     {
-                        dashboardReporter.ProjectVersion = ReadProjectVersion(module, details);
-                        _logger.LogDebug("Using {ProjectVersion} as project version for the dashboard reporter. (Read from the AssemblyInformationalVersion assembly attribute of {TargetName})", dashboardReporter.ProjectVersion, targetName);
+                        options.ProjectVersion = ReadProjectVersion(module, details);
+                        _logger.LogDebug("Using {ProjectVersion} as project version for the dashboard reporter. (Read from the AssemblyInformationalVersion assembly attribute of {TargetName})", options.ProjectVersion, targetName);
                     }
                 }
                 catch (Exception e) when (e is not InputException)
