@@ -1,8 +1,8 @@
-﻿using Stryker.Core.Mutants;
-using Stryker.Core.Options;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Stryker.Core.Mutants;
+using Stryker.Core.Options;
 
 namespace Stryker.Core.ProjectComponents
 {
@@ -44,7 +44,7 @@ namespace Stryker.Core.ProjectComponents
             return killedCount / totalCount;
         }
 
-        public Health CheckHealth(Threshold threshold)
+        public Health CheckHealth(Thresholds threshold)
         {
             var mutationScore = GetMutationScore();
             if (double.IsNaN(mutationScore))

@@ -1,23 +1,36 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 
 namespace Stryker.Core.Initialisation
 {
-    public class TimeoutValueCalculator
+    public interface ITimeoutValueCalculator
     {
-        private ILogger _logger { get; set; }
+        int CalculateTimeoutValue(int initialTestrunDurationMS);
+        int DefaultTimeout { get; }
+    }
 
-        public TimeoutValueCalculator()
+    public class TimeoutValueCalculator : ITimeoutValueCalculator
+    {
+        private readonly int _extraMs;
+        private readonly int _initTimeMs;
+        private readonly int _totalTestTime;
+        private const double Ratio = 1.5;
+
+        public TimeoutValueCalculator(int extraMS)
         {
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<TimeoutValueCalculator>();
+            _extraMs = extraMS;
         }
 
-        public int CalculateTimeoutValue(int initialTestRunDurationMs, int extraMs)
+        public TimeoutValueCalculator(int extraMs, int initTimeMs, int totalTestTime)
         {
-            var timeout = (int)(initialTestRunDurationMs * 1.5) + extraMs;
-
-            _logger.LogInformation("Using {0} ms as testrun timeout", timeout);
-            return timeout;
+            _extraMs = extraMs;
+            _initTimeMs = initTimeMs;
+            _totalTestTime = totalTestTime;
         }
+        
+        public int DefaultTimeout => Compute(_totalTestTime);
+
+        private int Compute(int time) => (int)(time * Ratio) + _extraMs;
+        public int CalculateTimeoutValue(int initialTestrunDurationMS) => Compute(_initTimeMs + initialTestrunDurationMS);
     }
 }

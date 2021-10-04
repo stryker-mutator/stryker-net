@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO.Abstractions.TestingHelpers;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
-using Stryker.Core.DashboardCompare;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
@@ -14,7 +15,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest
 {
-    public class StrykerRunnerTests
+    public class StrykerRunnerTests : TestBase
     {
         [Fact]
         public void Stryker_ShouldInvokeAllProcesses()
@@ -23,6 +24,7 @@ namespace Stryker.Core.UnitTest
             var mutationTestProcessMock = new Mock<IMutationTestProcess>(MockBehavior.Strict);
             var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
+            var inputsMock = new Mock<IStrykerInputs>(MockBehavior.Strict);
             var fileSystemMock = new MockFileSystem();
 
             var folder = new CsharpFolderComposite();
@@ -31,16 +33,22 @@ namespace Stryker.Core.UnitTest
                 Mutants = new List<Mutant> { new Mutant { Id = 1 } }
             });
 
+            var projectInfo = Mock.Of<ProjectInfo>();
+            projectInfo.ProjectContents = folder;
+            Mock.Get(projectInfo).Setup(p => p.RestoreOriginalAssembly());
             var mutationTestInput = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo()
-                {
-                    ProjectContents = folder
-                },
+                ProjectInfo = projectInfo
             };
-            var options = new StrykerOptions(basePath: "c:/test", fileSystem: fileSystemMock);
 
-            projectOrchestratorMock.Setup(x => x.MutateProjects(options, It.IsAny<IReporter>()))
+            inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
+            {
+                BasePath = "C:/test",
+                LogOptions = new LogOptions(),
+                OptimizationMode = OptimizationModes.SkipUncoveredMutants
+            });
+
+            projectOrchestratorMock.Setup(x => x.MutateProjects(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>()))
                 .Returns(new List<IMutationTestProcess>()
                 {
                     mutationTestProcessMock.Object
@@ -55,6 +63,7 @@ namespace Stryker.Core.UnitTest
             mutationTestProcessMock.Setup(x => x.GetCoverage());
             mutationTestProcessMock.Setup(x => x.Test(It.IsAny<IEnumerable<Mutant>>()))
                 .Returns(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<double>()));
+            mutationTestProcessMock.Setup(x => x.Restore());
 
             // Set up sequence-critical methods:
             // * FilterMutants must be called before OnMutantsCreated to get valid reports
@@ -62,11 +71,11 @@ namespace Stryker.Core.UnitTest
             mutationTestProcessMock.InSequence(seq).Setup(x => x.FilterMutants());
             reporterMock.InSequence(seq).Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()));
 
-            var target = new StrykerRunner(projectOrchestratorMock.Object, reporterFactory: reporterFactoryMock.Object);
+            var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
 
-            target.RunMutationTest(options);
+            target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object);
 
-            projectOrchestratorMock.Verify(x => x.MutateProjects(options, It.IsAny<IReporter>()), Times.Once);
+            projectOrchestratorMock.Verify(x => x.MutateProjects(It.Is<StrykerOptions>(x => x.BasePath == "C:/test"), It.IsAny<IReporter>()), Times.Once);
             mutationTestProcessMock.Verify(x => x.GetCoverage(), Times.Once);
             mutationTestProcessMock.Verify(x => x.Test(It.IsAny<IEnumerable<Mutant>>()), Times.Once);
             reporterMock.Verify(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()), Times.Once);
@@ -81,6 +90,7 @@ namespace Stryker.Core.UnitTest
             var mutationTestProcessMock = new Mock<IMutationTestProcess>(MockBehavior.Strict);
             var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
+            var inputsMock = new Mock<IStrykerInputs>(MockBehavior.Strict);
             var fileSystemMock = new MockFileSystem();
 
             var folder = new CsharpFolderComposite();
@@ -90,14 +100,20 @@ namespace Stryker.Core.UnitTest
             });
             var mutationTestInput = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo()
+                ProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
                     ProjectContents = folder
                 }
             };
-            var options = new StrykerOptions(basePath: "c:/test", fileSystem: fileSystemMock, coverageAnalysis: "off");
 
-            projectOrchestratorMock.Setup(x => x.MutateProjects(options, It.IsAny<IReporter>()))
+            inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
+            {
+                BasePath = "C:/test",
+                OptimizationMode = OptimizationModes.None,
+                LogOptions = new LogOptions()
+            });
+
+            projectOrchestratorMock.Setup(x => x.MutateProjects(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>()))
                 .Returns(new List<IMutationTestProcess>() { mutationTestProcessMock.Object });
 
             mutationTestProcessMock.Setup(x => x.FilterMutants());
@@ -108,9 +124,9 @@ namespace Stryker.Core.UnitTest
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()));
             reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IEnumerable<IReadOnlyMutant>>()));
 
-            var target = new StrykerRunner(projectOrchestratorMock.Object, reporterFactory: reporterFactoryMock.Object);
+            var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
 
-            var result = target.RunMutationTest(options);
+            var result = target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object);
 
             result.MutationScore.ShouldBe(double.NaN);
 

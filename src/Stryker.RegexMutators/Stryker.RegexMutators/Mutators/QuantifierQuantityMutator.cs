@@ -1,7 +1,7 @@
 ﻿using RegexParser.Nodes;
+using RegexParser.Nodes.QuantifierNodes;
 using System.Collections.Generic;
 using System.Linq;
-using RegexParser.Nodes.QuantifierNodes;
 
 namespace Stryker.RegexMutators.Mutators
 {
@@ -16,14 +16,14 @@ namespace Stryker.RegexMutators.Mutators
                 (node.N, node.M - 1),
                 (node.N, node.M + 1)
             };
-        
+
             foreach (var (from, to) in quantityVariations)
             {
                 if (from < 0 || to < 0 || from > to)
                 {
                     continue;
                 }
-                
+
                 yield return QuantityVariation(node, root, from, to);
             }
         }

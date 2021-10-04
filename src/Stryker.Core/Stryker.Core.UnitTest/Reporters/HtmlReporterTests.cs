@@ -1,28 +1,22 @@
-﻿using Microsoft.Extensions.Logging;
 using Shouldly;
-using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Html;
-using Stryker.Core.Reporters.Json;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class HtmlReporterTests
+    public class HtmlReporterTests : TestBase
     {
-        public HtmlReporterTests()
-        {
-            ApplicationLogging.ConfigureLogger(new LogOptions(Serilog.Events.LogEventLevel.Fatal, false, null));
-            ApplicationLogging.LoggerFactory.CreateLogger<HtmlReporterTests>();
-        }
-
         [Fact]
-        public void JsonReporter_OnAllMutantsTestedShouldWriteJsonToFile()
+        public void ShouldWriteJsonToFile()
         {
             var mockFileSystem = new MockFileSystem();
-            var options = new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60);
+            var options = new StrykerOptions {
+                Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 },
+                OutputPath = Directory.GetCurrentDirectory()
+            };
             var reporter = new HtmlReporter(options, mockFileSystem);
 
             reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
@@ -31,10 +25,13 @@ namespace Stryker.Core.UnitTest.Reporters
         }
 
         [Fact]
-        public void JsonReporter_OnAllMutantsTestedShouldReplacePlaceholdersInHtmlFile()
+        public void ShouldReplacePlaceholdersInHtmlFile()
         {
             var mockFileSystem = new MockFileSystem();
-            var options = new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60);
+            var options = new StrykerOptions {
+                Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 },
+                OutputPath = Directory.GetCurrentDirectory()
+            };
             var reporter = new HtmlReporter(options, mockFileSystem);
 
             reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
@@ -42,25 +39,30 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var fileContents = mockFileSystem.GetFile(reportPath).TextContents;
 
-            fileContents.ShouldSatisfyAllConditions(
-                () => fileContents.ShouldNotContain("##REPORT_JS##"),
-                () => fileContents.ShouldNotContain("##REPORT_TITLE##"),
-                () => fileContents.ShouldNotContain("##REPORT_JSON##"));
+            fileContents.ShouldNotContain("##REPORT_JS##");
+            fileContents.ShouldNotContain("##REPORT_TITLE##");
+            fileContents.ShouldNotContain("##REPORT_JSON##");
         }
 
         [Fact]
-        public void JsonReporter_OnAllMutantsTestedShouldContainJsonReport()
+        public void ShouldContainJsonInHtmlReportFile()
         {
             var mockFileSystem = new MockFileSystem();
-            var options = new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60);
+            var options = new StrykerOptions {
+                Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 },
+                OutputPath = Directory.GetCurrentDirectory()
+            };
             var reporter = new HtmlReporter(options, mockFileSystem);
+            var mutationTree = JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent();
 
-            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
+            reporter.OnAllMutantsTested(mutationTree);
             var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.html");
 
             var fileContents = mockFileSystem.GetFile(reportPath).TextContents;
 
-            JsonReport.Build(options, null).ToJson().ShouldBeSubsetOf(fileContents);
+            fileContents.ShouldContain(@"""thresholds"": {");
+            fileContents.ShouldContain(@"""high"": 80");
+            fileContents.ShouldContain(@"""low"": 60");
         }
     }
 }

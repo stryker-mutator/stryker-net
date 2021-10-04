@@ -6,11 +6,12 @@ using Shouldly;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using Stryker.Core.Options.Inputs;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
-    public class IgnoredMethodMutantFilterTests
+    public class IgnoredMethodMutantFilterTests : TestBase
     {
         [Fact]
         public static void ShouldHaveName()
@@ -59,7 +60,10 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerOptions(ignoredMethods: new[] { ignoredMethodName });
+            var options = new StrykerOptions
+            {
+                IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { ignoredMethodName } }.Validate()
+            };
 
             var sut = new IgnoredMethodMutantFilter();
 
@@ -117,7 +121,10 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerOptions(ignoredMethods: new[] { ignoredMethodName });
+            var options = new StrykerOptions
+            {
+                IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { ignoredMethodName } }.Validate()
+            };
 
             var sut = new IgnoredMethodMutantFilter();
 
@@ -165,7 +172,10 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerOptions(ignoredMethods: new[] { ignoredMethodName });
+            var options = new StrykerOptions
+            {
+                IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { ignoredMethodName } }.Validate()
+            };
 
             var sut = new IgnoredMethodMutantFilter();
 
@@ -218,7 +228,10 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerOptions(ignoredMethods: new[] { ignoredMethodName });
+            var options = new StrykerOptions
+            {
+                IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { ignoredMethodName } }.Validate()
+            };
 
             var sut = new IgnoredMethodMutantFilter();
 
@@ -276,7 +289,10 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerOptions(ignoredMethods: new[] { ignoredMethodName });
+            var options = new StrykerOptions
+            {
+                IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { ignoredMethodName } }.Validate()
+            };
 
             var sut = new IgnoredMethodMutantFilter();
 
@@ -352,7 +368,10 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerOptions(ignoredMethods: new []{ "M.ctor" });
+            var options = new StrykerOptions
+            {
+                IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { "M.ctor" } }.Validate()
+            };
 
             var sut = new IgnoredMethodMutantFilter();
 
@@ -380,7 +399,10 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerOptions(ignoredMethods: new[] { "Fact" });
+            var options = new StrykerOptions
+            {
+                IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { "Fact" } }.Validate()
+            };
 
             var sut = new IgnoredMethodMutantFilter();
 
@@ -407,7 +429,10 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
 }";
             var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
             var mutants = new[] { "true", @"""A Mutation""", "42"}.Select(GetOriginalNode).Select(node => new Mutant { Mutation = new Mutation { OriginalNode = node } }).ToArray();
-            var options = new StrykerOptions(ignoredMethods: new[] { "Bar" });
+            var options = new StrykerOptions
+            {
+                IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { "Bar" } }.Validate()
+            };
             var sut = new IgnoredMethodMutantFilter();
 
             // Act

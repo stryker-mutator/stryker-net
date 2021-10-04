@@ -35,7 +35,7 @@ namespace Stryker.Core.Instrumentation
                 var genericReturn = returnType.DescendantNodesAndSelf().OfType<GenericNameSyntax>().FirstOrDefault();
                 if (modifiers.Any(x => x.IsKind(SyntaxKind.AsyncKeyword)))
                 {
-                    returnType = genericReturn != null ? genericReturn.TypeArgumentList.Arguments.First() : null;
+                    returnType = genericReturn?.TypeArgumentList.Arguments.First();
                 }
 
                 if (returnType != null)

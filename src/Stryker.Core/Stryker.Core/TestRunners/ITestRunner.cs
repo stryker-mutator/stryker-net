@@ -1,28 +1,25 @@
 using System;
 using System.Collections.Generic;
+using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 
 namespace Stryker.Core.TestRunners
 {
     public delegate bool TestUpdateHandler(IReadOnlyList<Mutant> testedMutants,
-        ITestListDescription failedTests,
-        ITestListDescription ranTests,
-        ITestListDescription timedOutTests);
+        ITestGuids failedTests,
+        ITestGuids ranTests,
+        ITestGuids timedOutTests);
 
     public interface ITestRunner : IDisposable
     {
-        TestRunResult RunAll(int? timeoutMs, Mutant activeMutant, TestUpdateHandler update);
+        TestRunResult RunAll(ITimeoutValueCalculator timeoutMs, Mutant activeMutant, TestUpdateHandler update);
 
-        int DiscoverNumberOfTests();
+        TestSet DiscoverTests();
 
-        TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants, bool cantUseAppDomain, bool cantUsePipe);
+        TestRunResult InitialTest();
 
-        IEnumerable<TestDescription> Tests { get; }
+        TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants);
 
-    }
-
-    public interface IMultiTestRunner : ITestRunner
-    {
-        TestRunResult TestMultipleMutants(int? timeoutMs, IReadOnlyList<Mutant> mutants, TestUpdateHandler update);
+        TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update);
     }
 }

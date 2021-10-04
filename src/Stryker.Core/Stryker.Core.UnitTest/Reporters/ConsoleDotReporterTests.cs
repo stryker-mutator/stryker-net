@@ -1,4 +1,4 @@
-﻿using Shouldly;
+using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters;
 using System.IO;
@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class ConsoleDotReporterTests
+    public class ConsoleDotReporterTests : TestBase
     {
         [Theory]
         [InlineData(MutantStatus.Killed, ".", "default")]
@@ -21,7 +21,7 @@ namespace Stryker.Core.UnitTest.Reporters
             {
                 ResultStatus = givenStatus
             });
-            
+
             if (color == "default")
             {
                 textWriter.AnyForegroundColorSpanCount().ShouldBe(0);

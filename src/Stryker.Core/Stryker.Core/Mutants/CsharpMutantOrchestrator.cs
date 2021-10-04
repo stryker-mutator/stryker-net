@@ -1,15 +1,15 @@
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Helpers;
 using Stryker.Core.Logging;
-using Stryker.Core.Mutants.NodeOrchestrators;
+using Stryker.Core.Mutants.CsharpNodeOrchestrators;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Linq;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Stryker.Core.Mutants
@@ -18,16 +18,18 @@ namespace Stryker.Core.Mutants
     /// Mutates abstract syntax trees using mutators and places all mutations inside the abstract syntax tree.
     /// Orchestrator: to arrange or manipulate, especially by means of clever or thorough planning or maneuvering.
     /// </summary>
-    public class CsharpMutantOrchestrator : MutantOrchestrator<SyntaxNode>
+    public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxNode>
     {
         private readonly TypeBasedStrategy<SyntaxNode, INodeMutator> _specificOrchestrator =
-            new TypeBasedStrategy<SyntaxNode, INodeMutator>();
+            new();
 
         public IEnumerable<IMutator> Mutators { get; }
         private ILogger Logger { get; }
 
+        /// <summary>
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
-        public CsharpMutantOrchestrator(IEnumerable<IMutator> mutators = null, IStrykerOptions options = null) : base(options)
+        /// </summary>
+        public CsharpMutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerOptions options = null) : base(options)
         {
             Mutators = mutators ?? new List<IMutator>
             {
@@ -46,6 +48,7 @@ namespace Stryker.Core.Mutants
                 new InitializerMutator(),
                 new ObjectCreationMutator(),
                 new ArrayCreationMutator(),
+                new StatementMutator(),
                 new RegexMutator()
             };
             Mutants = new Collection<Mutant>();
@@ -53,83 +56,51 @@ namespace Stryker.Core.Mutants
 
             _specificOrchestrator.RegisterHandlers(new List<INodeMutator>
             {
-                new ForStatementOrchestrator(this),
-                new AssignmentStatementOrchestrator(this),
-                new PostfixUnaryExpressionOrchestrator(this),
-                new StaticFieldDeclarationOrchestrator(this),
-                new StaticConstructorOrchestrator(this),
-                new PropertyDeclarationOrchestrator(this),
-                new ArrayInitializerOrchestrator(this),
-                new MemberDeclarationOrchestrator<MemberDeclarationSyntax, MemberDeclarationSyntax>(this),
-                new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>(this),
-                new AccessorSyntaxOrchestrator(this),
-                new LocalDeclarationOrchestrator(this),
-                new LocalFunctionStatementOrchestrator(this),
-                new StatementSpecificOrchestrator<StatementSyntax>(this),
-                new BlockOrchestrator(this),
-                new ExpressionSpecificOrchestrator<ExpressionSyntax>(this),
-                new SyntaxNodeOrchestrator(this)
+                new DontMutateOrchestrator<AttributeListSyntax>(),
+                new DontMutateOrchestrator<ParameterListSyntax>(),
+                new DontMutateOrchestrator<EnumMemberDeclarationSyntax>(),
+                new DontMutateOrchestrator<RecursivePatternSyntax>(),
+                new DontMutateOrchestrator<FieldDeclarationSyntax>(
+                    (t) => t.Modifiers.Any(x => x.Kind() == SyntaxKind.ConstKeyword)),
+                new AssignmentStatementOrchestrator(),
+                new PostfixUnaryExpressionOrchestrator(),
+                new StaticFieldDeclarationOrchestrator(),
+                new StaticConstructorOrchestrator(),
+                new PropertyDeclarationOrchestrator(),
+                new ArrayInitializerOrchestrator(),
+                new LocalFunctionStatementOrchestrator(),
+                new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>(),
+                new AccessorSyntaxOrchestrator(),
+                new LocalDeclarationOrchestrator(),
+                new StatementSpecificOrchestrator<StatementSyntax>(),
+                new BlockOrchestrator(),
+                new ExpressionSpecificOrchestrator<ExpressionSyntax>(),
+                new SyntaxNodeOrchestrator()
             });
         }
 
         /// <summary>
         /// Recursively mutates a single SyntaxNode
         /// </summary>
-        /// <param name="currentNode">The current root node</param>
+        /// <param name="input">The current root node</param>
         /// <returns>Mutated node</returns>
-        public override SyntaxNode Mutate(SyntaxNode input)
-        {
-            var mutationContext = new MutationContext(this);
-            var mutation = Mutate(input, mutationContext);
-            return mutation;
-        }
-
-        // recursive version
-        public SyntaxNode Mutate(SyntaxNode currentNode, MutationContext context)
-        {
-            // don't mutate immutable nodes
-            if (!SyntaxHelper.CanBeMutated(currentNode))
-            {
-                return currentNode;
-            }
-
+        public override SyntaxNode Mutate(SyntaxNode input) =>
             // search for node specific handler
-            var nodeHandler = _specificOrchestrator.FindHandler(currentNode);
-            return nodeHandler.Mutate(currentNode, context);
-        }
+            GetHandler(input).Mutate(input, new MutationContext(this));
 
-        public IEnumerable<Mutant> GenerateMutationsForNode(SyntaxNode current, MutationContext context)
+        internal INodeMutator GetHandler(SyntaxNode currentNode) => _specificOrchestrator.FindHandler(currentNode);
+
+        internal IEnumerable<Mutant> GenerateMutationsForNode(SyntaxNode current, MutationContext context)
         {
             var mutations = new List<Mutant>();
             foreach (var mutator in Mutators)
             {
                 foreach (var mutation in mutator.Mutate(current, _options))
                 {
-                    var id = MutantCount;
-                    Logger.LogDebug("Mutant {0} created {1} -> {2} using {3}", id, mutation.OriginalNode,
-                        mutation.ReplacementNode, mutator.GetType());
-                    var newMutant = new Mutant
-                    {
-                        Id = id,
-                        Mutation = mutation,
-                        ResultStatus = MutantStatus.NotRun,
-                        IsStaticValue = context.InStaticValue
-                    };
-                    var duplicate = false;
-                    // check if we have a duplicate
-                    foreach (var mutant in Mutants)
-                    {
-                        if (mutant.Mutation.OriginalNode != mutation.OriginalNode ||
-                            !SyntaxFactory.AreEquivalent(mutant.Mutation.ReplacementNode, newMutant.Mutation.ReplacementNode))
-                        {
-                            continue;
-                        }
-                        Logger.LogDebug($"Mutant {id} discarded as it is a duplicate of {mutant.Id}");
-                        duplicate = true;
-                        break;
-                    }
+                    var newMutant = CreateNewMutant(mutation, mutator, context);
 
-                    if (duplicate)
+                    // Skip if the mutant is a duplicate
+                    if (IsMutantDuplicate(newMutant, mutation))
                     {
                         continue;
                     }
@@ -141,6 +112,44 @@ namespace Stryker.Core.Mutants
             }
 
             return mutations;
+        }
+
+        /// <summary>
+        /// Creates a new mutant for the given mutation, mutator and context. Returns null if the mutant
+        /// is a duplicate.
+        /// </summary>
+        private Mutant CreateNewMutant(Mutation mutation, IMutator mutator, MutationContext context)
+        {
+            var id = MutantCount;
+            Logger.LogDebug("Mutant {0} created {1} -> {2} using {3}", id, mutation.OriginalNode,
+                mutation.ReplacementNode, mutator.GetType());
+            var mutantIgnored = context.FilteredMutators?.Contains(mutation.Type) ?? false;
+            return new Mutant
+            {
+                Id = id,
+                Mutation = mutation,
+                ResultStatus = mutantIgnored ? MutantStatus.Ignored : MutantStatus.NotRun,
+                IsStaticValue = context.InStaticValue,
+                ResultStatusReason = mutantIgnored ? context.FilterComment : "not run"
+            };
+        }
+
+        /// <summary>
+        /// Returns true if the new mutant is a duplicate of a mutant already listed in Mutants.
+        /// </summary>
+        private bool IsMutantDuplicate(Mutant newMutant, Mutation mutation)
+        {
+            foreach (var mutant in Mutants)
+            {
+                if (mutant.Mutation.OriginalNode != mutation.OriginalNode ||
+                    !SyntaxFactory.AreEquivalent(mutant.Mutation.ReplacementNode, newMutant.Mutation.ReplacementNode))
+                {
+                    continue;
+                }
+                Logger.LogDebug("Mutant {newMutant} discarded as it is a duplicate of {mutant}", newMutant.Id, mutant.Id);
+                return true;
+            }
+            return false;
         }
     }
 }

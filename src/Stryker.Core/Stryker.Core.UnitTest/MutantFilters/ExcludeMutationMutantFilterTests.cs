@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
-    public class ExcludeMutationMutantFilterTests
+    public class ExcludeMutationMutantFilterTests : TestBase
     {
         [Fact]
         public static void ShouldHaveName()
@@ -19,7 +19,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Theory]
         [InlineData(Mutator.Arithmetic, true)]
         [InlineData(Mutator.Assignment, false)]
-        public void MutantFilter_ShouldSkipMutationsForExcludedMutatorType(Mutator excludedMutator, bool skipped)
+        public void MutantFilter_ShouldSkipMutationsForExcludedMutatorType(Mutator excludedMutation, bool skipped)
         {
             // Arrange
             var mutant = new Mutant
@@ -32,11 +32,16 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var sut = new ExcludeMutationMutantFilter();
 
+            var options = new StrykerOptions
+            {
+                ExcludedMutations = new[] { excludedMutation }
+            };
+
             // Act
             var filteredMutants = sut.FilterMutants(
                 new[] { mutant },
                 null,
-                new StrykerOptions(excludedMutations: new[] { excludedMutator.ToString() }));
+                options);
 
             // Assert
             if (skipped)

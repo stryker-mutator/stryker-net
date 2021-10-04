@@ -9,13 +9,13 @@ namespace Stryker.Core.UnitTest.Mutants
     /// <summary>
     /// This base class provides helper to test source file mutation
     /// </summary>
-    public class MutantOrchestratorTestsBase
+    public class MutantOrchestratorTestsBase : TestBase
     {
         protected CsharpMutantOrchestrator _target;
 
         public MutantOrchestratorTestsBase()
         {
-            _target = new CsharpMutantOrchestrator(options: new StrykerOptions(mutationLevel: MutationLevel.Complete.ToString()));
+            _target = new CsharpMutantOrchestrator(options: new StrykerOptions(){MutationLevel = MutationLevel.Complete, OptimizationMode = OptimizationModes.CoverageBasedTest});
         }
 
         protected void ShouldMutateSourceToExpected(string actual, string expected)

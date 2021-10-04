@@ -19,9 +19,10 @@ namespace Stryker.Core.Mutants
         private const string MutationMarker = "Mutation";
         private const string Injector = "Injector";
 
-        private static readonly StaticInstrumentationEngine StaticEngine;
+        private static readonly StaticInstrumentationEngine staticEngine;
+        private static readonly StaticInitializerMarkerEngine staticInitializerEngine;
         private static readonly IfInstrumentationEngine IfEngine;
-        private static readonly ConditionalInstrumentationEngine ConditionalEngine;
+        private static readonly ConditionalInstrumentationEngine conditionalEngine;
         private static readonly ExpressionMethodToBodyEngine expressionMethodEngine;
         private static readonly LocalFunctionExpressionToBodyEngine localFunctionExpressionToBodyEngine;
         private static readonly AccessorExpressionToBodyEngine accessorExpressionToBodyEngine;
@@ -37,12 +38,12 @@ namespace Stryker.Core.Mutants
 
         static MutantPlacer()
         {
-            StaticEngine = new StaticInstrumentationEngine(Injector);
-            RegisterEngine(StaticEngine);
+            staticEngine = new StaticInstrumentationEngine(Injector);
+            RegisterEngine(staticEngine);
             IfEngine = new IfInstrumentationEngine(Injector);
             RegisterEngine(IfEngine);
-            ConditionalEngine = new ConditionalInstrumentationEngine(Injector);
-            RegisterEngine(ConditionalEngine);
+            conditionalEngine = new ConditionalInstrumentationEngine(Injector);
+            RegisterEngine(conditionalEngine);
             expressionMethodEngine = new ExpressionMethodToBodyEngine(Injector);
             RegisterEngine(expressionMethodEngine);
             accessorExpressionToBodyEngine = new AccessorExpressionToBodyEngine(Injector);
@@ -53,6 +54,8 @@ namespace Stryker.Core.Mutants
             RegisterEngine(endingReturnEngine);
             defaultInitializationEngine = new DefaultInitializationEngine(Injector);
             RegisterEngine(defaultInitializationEngine);
+            staticInitializerEngine = new StaticInitializerMarkerEngine(Injector);
+            RegisterEngine(staticInitializerEngine);
             localFunctionExpressionToBodyEngine = new LocalFunctionExpressionToBodyEngine(Injector);
             RegisterEngine(localFunctionExpressionToBodyEngine);
         }
@@ -79,7 +82,10 @@ namespace Stryker.Core.Mutants
         public static LocalFunctionStatementSyntax AddEndingReturn(LocalFunctionStatementSyntax function) => function.WithBody(endingReturnEngine.InjectReturn(function.Body, function.ReturnType, function.Modifiers));
 
         public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block) => 
-            StaticEngine.PlaceStaticContextMarker(block);
+            staticEngine.PlaceStaticContextMarker(block);
+
+        public static ExpressionSyntax PlaceStaticContextMarker(ExpressionSyntax expression) =>
+            staticInitializerEngine.PlaceValueMarker(expression);
 
         public static BlockSyntax AddDefaultInitializers(BlockSyntax block, IEnumerable<ParameterSyntax> parameters) =>
             defaultInitializationEngine.AddDefaultInitializers(block, parameters);
@@ -95,7 +101,7 @@ namespace Stryker.Core.Mutants
             ExpressionSyntax modified, 
             IEnumerable<(int id, ExpressionSyntax mutation)> mutations) =>
             mutations.Aggregate(modified, (current, mutation) => 
-                ConditionalEngine.PlaceWithConditionalExpression(GetBinaryExpression(mutation.id), current, mutation.mutation)
+                conditionalEngine.PlaceWithConditionalExpression(GetBinaryExpression(mutation.id), current, mutation.mutation)
                     // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later
                     .WithAdditionalAnnotations(new SyntaxAnnotation(MutationMarker, mutation.id.ToString())));
 
@@ -107,7 +113,7 @@ namespace Stryker.Core.Mutants
                 return InstrumentEngines[engine].RemoveInstrumentation(nodeToRemove);
             }
 
-            throw new InvalidOperationException($"Unable to find an engine to remove injection from this node: '{nodeToRemove}' ");
+            throw new InvalidOperationException($"Unable to find an engine to remove injection from this node: '{nodeToRemove}'");
         }
 
         public static (string engine, int id) FindEngine(SyntaxNode node)

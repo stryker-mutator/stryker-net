@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 
 namespace Stryker.Core.Mutators
 {
@@ -70,7 +69,6 @@ namespace Stryker.Core.Mutators
             {
                 return WillBeMutatedByOtherMutators(parenthesized.Expression);
             }
-
             if (node is BinaryExpressionSyntax binary)
             {
                 return binary.Kind() == SyntaxKind.EqualsExpression || binary.Kind() == SyntaxKind.NotEqualsExpression;

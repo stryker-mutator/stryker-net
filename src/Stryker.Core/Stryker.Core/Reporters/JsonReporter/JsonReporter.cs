@@ -11,20 +11,20 @@ namespace Stryker.Core.Reporters.Json
 {
     public partial class JsonReporter : IReporter
     {
-        private readonly IStrykerOptions _options;
+        private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
         private readonly TextWriter _consoleWriter;
 
-        public JsonReporter(IStrykerOptions options, IFileSystem fileSystem = null, TextWriter consoleWriter = null)
+        public JsonReporter(StrykerOptions options, IFileSystem fileSystem = null, TextWriter consoleWriter = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
             _consoleWriter = consoleWriter ?? Console.Out;
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent mutationTree)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
         {
-            var mutationReport = JsonReport.Build(_options, mutationTree);
+            var mutationReport = JsonReport.Build(_options, reportComponent);
 
             var reportPath = Path.Combine(_options.OutputPath, "reports", "mutation-report.json");
 

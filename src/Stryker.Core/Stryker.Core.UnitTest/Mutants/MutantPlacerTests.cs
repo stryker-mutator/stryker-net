@@ -6,12 +6,13 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
+using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
 {
-    public class MutantPlacerTests
+    public class MutantPlacerTests : TestBase
     {
         [Theory]
         [InlineData(0)]
@@ -42,19 +43,16 @@ namespace Stryker.Core.UnitTest.Mutants
             removedResult.ToString().ShouldBeSemantically(originalNode.ToString());
         }
 
-
         private void CheckMutantPlacerProperlyPlaceAndRemoveHelpers<T>(string sourceCode, string expectedCode,
-            Func<T, T> placer) where T : SyntaxNode
-        {
-            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<T, T>(sourceCode, expectedCode, placer);
-        }
+            Func<T, T> placer, Predicate<T> condition = null) where T : SyntaxNode =>
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<T, T>(sourceCode, expectedCode, placer, condition);
 
         private void CheckMutantPlacerProperlyPlaceAndRemoveHelpers<T, TU>(string sourceCode, string expectedCode,
-            Func<T, T> placer) where T : SyntaxNode where TU: SyntaxNode
+            Func<T, T> placer, Predicate<T> condition = null) where T : SyntaxNode where TU: SyntaxNode
         {
             var actualNode = CSharpSyntaxTree.ParseText(sourceCode).GetRoot();
 
-            var node = actualNode.DescendantNodes().First(t => t is T) as T;
+            var node = actualNode.DescendantNodes().First(t => t is T ct && (condition == null || condition(ct))) as T;
             // inject helper
             actualNode = actualNode.ReplaceNode(node, placer(node));
             actualNode.ToFullString().ShouldBeSemantically(expectedCode);
@@ -62,11 +60,11 @@ namespace Stryker.Core.UnitTest.Mutants
             TU newNode ;
             if (typeof(TU) == typeof(T))
             {
-                newNode = actualNode.DescendantNodes().First(t => t is T) as TU;
+                newNode = actualNode.DescendantNodes().First(t => t is TU && t.ContainsAnnotations) as TU;
             }
             else
             {
-                newNode = actualNode.DescendantNodes().First(t => t is T).DescendantNodes().First(t => t is TU) as TU;
+                newNode = actualNode.DescendantNodes().First(t => t is T).DescendantNodes().First(t => t is TU && t.ContainsAnnotations) as TU;
             }
 
             // Remove helper
@@ -179,12 +177,25 @@ namespace Stryker.Core.UnitTest.Mutants
         }
 
         [Fact]
+        public void ShouldStaticMarkerInStaticFieldInitializers()
+        {
+            var source = "class Test {static int x = 2;}";
+            var expected = $"class Test {{static int x = {CodeInjection.HelperNamespace}.MutantContext.TrackValue(()=>2);}}";
+
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<ExpressionSyntax>(source, expected,
+                MutantPlacer.PlaceStaticContextMarker, syntax => syntax.Kind() == SyntaxKind.NumericLiteralExpression);
+        }
+
+        [Fact]
         public void ShouldRollBackFailedConstructor()
         {
             var source = @"class Test {
 static TestClass()=> Value-='a';}";
 
-            var orchestrator = new CsharpMutantOrchestrator(options: new StrykerOptions());
+            var orchestrator = new CsharpMutantOrchestrator(options: new StrykerOptions {
+                OptimizationMode = OptimizationModes.CoverageBasedTest,
+                MutationLevel = MutationLevel.Complete
+            });
             var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
 
             var node = actualNode.DescendantNodes().First(t => t is BlockSyntax);

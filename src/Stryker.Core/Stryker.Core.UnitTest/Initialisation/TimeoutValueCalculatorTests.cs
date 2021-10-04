@@ -1,39 +1,20 @@
-﻿using Shouldly;
+using Shouldly;
 using Stryker.Core.Initialisation;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
-    public class TimeoutValueCalculatorTests
+    public class TimeoutValueCalculatorTests : TestBase
     {
-        [Fact]
-        public void Calculator_ShouldCalculateTimeoutValueNoExtra()
+        [Theory]
+        [InlineData(1000, 0, 1500)]
+        [InlineData(1000, 2000, 3500)]
+        [InlineData(4000, 2000, 8000)]
+        public void Calculator_ShouldCalculateTimeoutValueNoExtra(int baseTime, int extra, int expected)
         {
-            var target = new TimeoutValueCalculator();
+            var target = new TimeoutValueCalculator(extra);
 
-            var result = target.CalculateTimeoutValue(1000, 0);
-
-            result.ShouldBe(1500);
-        }
-
-        [Fact]
-        public void Calculator_ShouldCalculateTimeoutValue1000()
-        {
-            var target = new TimeoutValueCalculator();
-
-            var result = target.CalculateTimeoutValue(1000, 2000);
-
-            result.ShouldBe(3500);
-        }
-
-        [Fact]
-        public void Calculator_ShouldCalculateTimeoutValue4000()
-        {
-            var target = new TimeoutValueCalculator();
-
-            var result = target.CalculateTimeoutValue(4000, 2000);
-
-            result.ShouldBe(8000);
+            target.CalculateTimeoutValue(baseTime).ShouldBe(expected);
         }
     }
 }

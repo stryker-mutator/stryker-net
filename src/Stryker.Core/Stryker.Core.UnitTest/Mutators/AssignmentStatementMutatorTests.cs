@@ -7,7 +7,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
-    public class AssignmentStatementMutatorTests
+    public class AssignmentStatementMutatorTests : TestBase
     {
         [Fact]
         public void ShouldBeMutationLevelStandard()
@@ -49,7 +49,7 @@ namespace Stryker.Core.UnitTest.Mutators
                 var mutation = result.ShouldHaveSingleItem();
                 mutation.ReplacementNode.IsKind(expectedOutput).ShouldBeTrue();
             }
-            foreach(var mutation in result)
+            foreach (var mutation in result)
             {
                 mutation.Type.ShouldBe(Mutator.Assignment);
                 mutation.DisplayName.ShouldBe($"{input} to {mutation.ReplacementNode.Kind()} mutation");

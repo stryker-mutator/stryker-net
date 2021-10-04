@@ -1,13 +1,14 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
 using Shouldly;
 using Stryker.Core.Clients;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Json;
+using Stryker.Core.UnitTest.Reporters;
 using System;
-using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Threading;
@@ -16,7 +17,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Clients
 {
-    public class DashboardClientsTest
+    public class DashboardClientsTest : TestBase
     {
         [Fact]
         public async Task DashboardClient_Logs_And_Returns_Null_On_Publish_Report_Does_Not_Return_200()
@@ -39,15 +40,16 @@ namespace Stryker.Core.UnitTest.Clients
                 .Verifiable();
 
             var httpClient = new HttpClient(handlerMock.Object);
+            var options = new StrykerOptions
+            {
+                DashboardUrl = "http://www.example.com/",
+                DashboardApiKey = "Access_Token"
+            };
 
-
-            var target = new DashboardClient(new StrykerOptions(
-                dashboardUrl: "http://www.example.com/",
-                dashboardApiKey: "Access_Token"
-                ), httpClient, loggerMock.Object);
+            var target = new DashboardClient(options, httpClient, loggerMock.Object);
 
             // Act
-            var result = await target.PublishReport("string_json", "version");
+            var result = await target.PublishReport(new MockJsonReport(null, null), "version");
 
             loggerMock.Verify(
                 x => x.Log(
@@ -68,6 +70,7 @@ namespace Stryker.Core.UnitTest.Clients
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
+            var href = "http://www.example.com/api/projectName/version";
             handlerMock
                 .Protected()
                 .Setup<Task<HttpResponseMessage>>(
@@ -77,28 +80,27 @@ namespace Stryker.Core.UnitTest.Clients
                 .ReturnsAsync(new HttpResponseMessage()
                 {
                     StatusCode = System.Net.HttpStatusCode.OK,
-                    Content = new StringContent("{\"Href\": \"http://www.example.com/api/projectName/version\"}", Encoding.UTF8, "text/html")
+                    Content = new StringContent($"{{\"Href\": \"{href}\"}}", Encoding.UTF8, "text/html")
                 })
                 .Verifiable();
 
             var httpClient = new HttpClient(handlerMock.Object);
 
-            var reporters = new String[1];
-            reporters[0] = "dashboard";
+            var reporters = new[] { Reporter.Dashboard };
 
-            var options = new StrykerOptions(
-                dashboardUrl: "http://www.example.com",
-                dashboardApiKey: "Access_Token",
-                projectName: "github.com/JohnDoe/project",
-                projectVersion: "test/version",
-                reporters: reporters
-                );
+            var options = new StrykerOptions {
+                DashboardUrl = "http://www.example.com",
+                DashboardApiKey = "Access_Token",
+                ProjectName = "github.com/JohnDoe/project",
+                ProjectVersion = "test/version",
+                Reporters = reporters
+            };
 
             var target = new DashboardClient(options, httpClient, loggerMock.Object);
 
 
             // Act
-            await target.PublishReport("string_json", "version");
+            var result = await target.PublishReport(new MockJsonReport(null, null), "version");
 
             var expectedUri = new Uri("http://www.example.com/api/reports/github.com/JohnDoe/project/version");
 
@@ -111,6 +113,8 @@ namespace Stryker.Core.UnitTest.Clients
                     ),
                 ItExpr.IsAny<CancellationToken>()
                 );
+
+            result.ShouldBe(href);
         }
 
         [Fact]
@@ -120,6 +124,7 @@ namespace Stryker.Core.UnitTest.Clients
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
+            var href = "http://www.example.com/api/projectName/version";
             handlerMock
                 .Protected()
                 .Setup<Task<HttpResponseMessage>>(
@@ -129,29 +134,28 @@ namespace Stryker.Core.UnitTest.Clients
                 .ReturnsAsync(new HttpResponseMessage()
                 {
                     StatusCode = System.Net.HttpStatusCode.OK,
-                    Content = new StringContent("{\"Href\": \"http://www.example.com/api/projectName/version\"}", Encoding.UTF8, "text/html")
+                    Content = new StringContent($"{{\"Href\": \"{href}\"}}", Encoding.UTF8, "text/html")
                 })
                 .Verifiable();
 
             var httpClient = new HttpClient(handlerMock.Object);
 
-            var reporters = new String[1];
-            reporters[0] = "dashboard";
+            var reporters = new[] { Reporter.Dashboard };
 
-            var options = new StrykerOptions(
-                dashboardUrl: "http://www.example.com",
-                dashboardApiKey: "Access_Token",
-                projectName: "github.com/JohnDoe/project",
-                projectVersion: "test/version",
-                reporters: reporters,
-                moduleName: "moduleName"
-                );
-
+            var options = new StrykerOptions
+            {
+                DashboardUrl = "http://www.example.com",
+                DashboardApiKey = "Access_Token",
+                ProjectName = "github.com/JohnDoe/project",
+                ProjectVersion = "test/version",
+                ModuleName = "moduleName",
+                Reporters = reporters
+            };
             var target = new DashboardClient(options, httpClient, loggerMock.Object);
 
 
             // Act
-            await target.PublishReport("string_json", "version");
+            var result = await target.PublishReport(new MockJsonReport(null, null), "version");
 
             var expectedUri = new Uri("http://www.example.com/api/reports/github.com/JohnDoe/project/version?module=moduleName");
 
@@ -164,6 +168,8 @@ namespace Stryker.Core.UnitTest.Clients
                     ),
                 ItExpr.IsAny<CancellationToken>()
                 );
+
+            result.ShouldBe(href);
         }
 
         [Fact]
@@ -173,20 +179,21 @@ namespace Stryker.Core.UnitTest.Clients
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
-            var reporters = new string[1];
-            reporters[0] = "dashboard";
+            var reporters = new[] { Reporter.Dashboard };
 
-            var options = new StrykerOptions(
-                dashboardUrl: "http://www.example.com",
-                dashboardApiKey: "Access_Token",
-                projectName: "github.com/JohnDoe/project",
-                projectVersion: "test/version",
-                reporters: reporters
-                );
+            var options = new StrykerOptions
+            {
+                DashboardUrl = "http://www.example.com",
+                DashboardApiKey = "Access_Token",
+                ProjectName = "github.com/JohnDoe/project",
+                ProjectVersion = "test/version",
+                Reporters = reporters
+            };
 
             var readonlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose).Object;
 
             var jsonReport = JsonReport.Build(options, readonlyInputComponent);
+            var json = jsonReport.ToJson();
 
             handlerMock
                 .Protected()
@@ -197,7 +204,7 @@ namespace Stryker.Core.UnitTest.Clients
                 .ReturnsAsync(new HttpResponseMessage()
                 {
                     StatusCode = System.Net.HttpStatusCode.OK,
-                    Content = new StringContent(jsonReport.ToJson(), Encoding.UTF8, "application/json")
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
                 })
                 .Verifiable();
 
@@ -221,7 +228,8 @@ namespace Stryker.Core.UnitTest.Clients
                 ItExpr.IsAny<CancellationToken>()
                 );
 
-            result.ToJson().Equals(jsonReport.ToJson());
+            result.ShouldNotBeNull();
+            result.ToJson().ShouldBe(json);
         }
 
         [Fact]
@@ -231,21 +239,22 @@ namespace Stryker.Core.UnitTest.Clients
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
-            var reporters = new string[1];
-            reporters[0] = "dashboard";
+            var reporters = new[] { Reporter.Dashboard };
 
-            var options = new StrykerOptions(
-                dashboardUrl: "http://www.example.com",
-                dashboardApiKey: "Access_Token",
-                projectName: "github.com/JohnDoe/project",
-                projectVersion: "test/version",
-                reporters: reporters,
-                moduleName: "moduleName"
-                );
+            var options = new StrykerOptions
+            {
+                DashboardUrl = "http://www.example.com",
+                DashboardApiKey = "Access_Token",
+                ProjectName = "github.com/JohnDoe/project",
+                ProjectVersion = "test/version",
+                ModuleName = "moduleName",
+                Reporters = reporters
+            };
 
             var readonlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose).Object;
 
             var jsonReport = JsonReport.Build(options, readonlyInputComponent);
+            var json = jsonReport.ToJson();
 
             handlerMock
                 .Protected()
@@ -256,7 +265,7 @@ namespace Stryker.Core.UnitTest.Clients
                 .ReturnsAsync(new HttpResponseMessage()
                 {
                     StatusCode = System.Net.HttpStatusCode.OK,
-                    Content = new StringContent(jsonReport.ToJson(), Encoding.UTF8, "application/json")
+                    Content = new StringContent(json, Encoding.UTF8, "application/json")
                 })
                 .Verifiable();
 
@@ -280,7 +289,8 @@ namespace Stryker.Core.UnitTest.Clients
                 ItExpr.IsAny<CancellationToken>()
                 );
 
-            result.ToJson().Equals(jsonReport.ToJson());
+            result.ShouldNotBeNull();
+            result.ToJson().ShouldBe(json);
         }
 
         [Fact]
@@ -290,19 +300,16 @@ namespace Stryker.Core.UnitTest.Clients
             var loggerMock = new Mock<ILogger<DashboardClient>>(MockBehavior.Loose);
             var handlerMock = new Mock<HttpMessageHandler>(MockBehavior.Strict);
 
-            var reporters = new string[] {
-                "dashboard"
+            var reporters = new[] { Reporter.Dashboard };
+
+            var options = new StrykerOptions
+            {
+                DashboardUrl = "http://www.example.com",
+                DashboardApiKey = "Access_Token",
+                ProjectName = "github.com/JohnDoe/project",
+                ProjectVersion = "test/version",
+                Reporters = reporters
             };
-
-
-            var options = new StrykerOptions(
-                dashboardUrl: "http://www.example.com",
-                dashboardApiKey: "Access_Token",
-                projectName: "github.com/JohnDoe/project",
-                projectVersion: "test/version",
-                reporters: reporters
-                );
-
 
             handlerMock
                 .Protected()

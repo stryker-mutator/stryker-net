@@ -10,11 +10,8 @@ namespace Stryker.Core.Instrumentation
     /// </summary>
     internal class StaticInstrumentationEngine : BaseEngine<BlockSyntax>
     {
-        private readonly ExpressionSyntax _cachedMarker = SyntaxFactory.ParseExpression(CodeInjection.StaticMarker);
-
         public StaticInstrumentationEngine(string annotation) : base(annotation)
-        {
-        }
+        {}
 
         /// <summary>
         /// injects a 'using' block with static marker class used by coverage logic.
@@ -23,8 +20,8 @@ namespace Stryker.Core.Instrumentation
         /// <returns></returns>
         public BlockSyntax PlaceStaticContextMarker(BlockSyntax block) =>
             SyntaxFactory.Block( 
-                SyntaxFactory.UsingStatement(null, _cachedMarker, block)).WithAdditionalAnnotations(Marker);
-
+                SyntaxFactory.UsingStatement(null, CodeInjection.GetContextClassConstructor(), block)).WithAdditionalAnnotations(Marker);
+ 
         protected override SyntaxNode Revert(BlockSyntax node)
         {
             if ( node.Statements.Count == 1 && node.Statements[0] is UsingStatementSyntax usingStatement)
@@ -34,7 +31,5 @@ namespace Stryker.Core.Instrumentation
 
             return node;
         }
-
-
     }
 }

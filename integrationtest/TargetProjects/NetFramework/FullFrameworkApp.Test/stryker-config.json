@@ -1,13 +1,11 @@
 {
   "stryker-config": {
-    "excluded-mutations": [
+    "ignore-mutations": [
       "string"
     ],
-    "log-file": "true",
-    "log-level": "trace",
     "reporters": [
       "Json"
     ],
-    "solution-path": "../FullFrameworkApp.sln"
+    "solution": "../FullFrameworkApp.sln"
   }
 }

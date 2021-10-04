@@ -33,7 +33,7 @@ namespace Stryker.Core.Initialisation
             _logger.LogInformation("Restoring nuget packages using {0}", "nuget.exe");
             if (string.IsNullOrWhiteSpace(solutionPath))
             {
-                throw new StrykerInputException("Solution path is required on .net framework projects. Please provide your solution path using --solution-path ...");
+                throw new InputException("Solution path is required on .net framework projects. Please provide your solution path using --solution-path ...");
             }
             solutionPath = Path.GetFullPath(solutionPath);
             string solutionDir = Path.GetDirectoryName(solutionPath);
@@ -42,7 +42,7 @@ namespace Stryker.Core.Initialisation
             var nugetWhereExeResult = _processExecutor.Start(solutionDir, "where.exe", "nuget.exe");
             if (!nugetWhereExeResult.Output.ToLowerInvariant().Contains("nuget.exe"))
             {
-                throw new StrykerInputException("Nuget.exe should be installed to restore .net framework nuget packages. Install nuget.exe and make sure it's included in your path.");
+                throw new InputException("Nuget.exe should be installed to restore .net framework nuget packages. Install nuget.exe and make sure it's included in your path.");
             }
             // Get the first nuget.exe path from the where.exe output
             var nugetPath = nugetWhereExeResult.Output.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault().Trim();
@@ -66,13 +66,13 @@ namespace Stryker.Core.Initialisation
                 var nugetRestoreResult = _processExecutor.Start(solutionDir, nugetPath, nugetRestoreCommand, timeoutMs: 120000);
                 if (nugetRestoreResult.ExitCode != ExitCodes.Success)
                 {
-                    throw new StrykerInputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.", nugetRestoreResult.Output);
+                    throw new InputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.", nugetRestoreResult.Output);
                 }
                 _logger.LogDebug("Restored packages using nuget.exe, output: {0}", nugetRestoreResult.Output);
             }
             catch (OperationCanceledException)
             {
-                throw new StrykerInputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.");
+                throw new InputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.");
             }
         }
     }

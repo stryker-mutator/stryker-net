@@ -18,12 +18,12 @@ namespace Stryker.Core.MutantFilters
         public string DisplayName => "method filter";
         private readonly SyntaxTriviaRemover _triviaRemover = new SyntaxTriviaRemover();
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, IStrykerOptions options) =>
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options) =>
             options.IgnoredMethods.Any() ?
                     mutants.Where(m => !IsPartOfIgnoredMethodCall(m.Mutation.OriginalNode, options)) :
                     mutants;
 
-        private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, IStrykerOptions options) =>
+        private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, StrykerOptions options) =>
             syntaxNode switch
             {
                 // Check if the current node is an invocation. This will also ignore invokable properties like `Func<bool> MyProp { get;}`
@@ -37,7 +37,7 @@ namespace Stryker.Core.MutantFilters
                 _ => false,
             };
 
-        private static bool MatchesAnIgnoredMethod(string expressionString, IStrykerOptions options) => options.IgnoredMethods.Any(r => r.IsMatch(expressionString));
+        private static bool MatchesAnIgnoredMethod(string expressionString, StrykerOptions options) => options.IgnoredMethods.Any(r => r.IsMatch(expressionString));
 
         /// <summary>
         /// Removes comments, whitespace, and other junk from a syntax tree.

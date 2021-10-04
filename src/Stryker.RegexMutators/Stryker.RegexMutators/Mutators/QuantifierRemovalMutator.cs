@@ -1,6 +1,5 @@
 ﻿using RegexParser.Nodes;
 using RegexParser.Nodes.QuantifierNodes;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 

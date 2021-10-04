@@ -15,14 +15,8 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class JsonReporterTests
+    public class JsonReporterTests : TestBase
     {
-        public JsonReporterTests()
-        {
-            ApplicationLogging.ConfigureLogger(new LogOptions(Serilog.Events.LogEventLevel.Fatal, false, null));
-            ApplicationLogging.LoggerFactory.CreateLogger<JsonReporterTests>();
-        }
-
         [Fact]
         public void JsonMutantPositionLine_ThrowsArgumentExceptionWhenSetToLessThan1()
         {
@@ -133,22 +127,14 @@ namespace Stryker.Core.UnitTest.Reporters
         }
 
         [Fact]
-        public void JsonReport_BuildReportReturnsSingletonJsonReport()
-        {
-            var folderComponent = JsonReportTestHelper.CreateProjectWith();
-            var options = new StrykerOptions();
-
-            var firstReport = JsonReport.Build(options, folderComponent.ToReadOnlyInputComponent());
-            var secondReport = JsonReport.Build(options, folderComponent.ToReadOnlyInputComponent());
-
-            secondReport.ShouldBe(firstReport);
-        }
-
-        [Fact]
         public void JsonReporter_OnAllMutantsTestedShouldWriteJsonToFile()
         {
             var mockFileSystem = new MockFileSystem();
-            var options = new StrykerOptions(thresholdBreak: 0, thresholdHigh: 80, thresholdLow: 60);
+            var options = new StrykerOptions
+            {
+                Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 },
+                OutputPath = Directory.GetCurrentDirectory()
+            };
             var reporter = new JsonReporter(options, mockFileSystem);
 
             reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());

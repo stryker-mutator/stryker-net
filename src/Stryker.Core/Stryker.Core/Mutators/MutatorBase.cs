@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using System.Collections.Generic;
@@ -22,17 +22,15 @@ namespace Stryker.Core.Mutators
 
         public abstract MutationLevel MutationLevel { get; }
 
-        public IEnumerable<Mutation> Mutate(SyntaxNode node, IStrykerOptions options)
+        public IEnumerable<Mutation> Mutate(SyntaxNode node, StrykerOptions options)
         {
             if (MutationLevel <= options.MutationLevel && node is T tNode)
             {
                 // the node was of the expected type, so invoke the mutation method
                 return ApplyMutations(tNode);
             }
-            else
-            {
-                return Enumerable.Empty<Mutation>();
-            }
+
+            return Enumerable.Empty<Mutation>();
         }
     }
 }

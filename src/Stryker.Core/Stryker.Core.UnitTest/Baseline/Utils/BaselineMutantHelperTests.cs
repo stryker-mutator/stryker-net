@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Baseline.Utils
 {
-    public class BaselineMutantHelperTests
+    public class BaselineMutantHelperTests : TestBase
     {
         [Fact]
         public void GetMutantSourceShouldReturnMutantSource()

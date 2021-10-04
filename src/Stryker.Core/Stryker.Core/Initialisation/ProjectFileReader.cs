@@ -11,42 +11,48 @@ namespace Stryker.Core.Initialisation
 {
     public interface IProjectFileReader
     {
-        IAnalyzerResult AnalyzeProject(string projectFilePath, string solutionFilePath);
+        IAnalyzerResult AnalyzeProject(
+            string projectFilePath,
+            string solutionFilePath,
+            string targetFramework);
     }
 
     public class ProjectFileReader : IProjectFileReader
     {
         private readonly INugetRestoreProcess _nugetRestoreProcess;
+        private IAnalyzerManager _manager;
         private readonly ILogger _logger;
 
-        public ProjectFileReader(INugetRestoreProcess nugetRestoreProcess = null)
+        public ProjectFileReader(
+            INugetRestoreProcess nugetRestoreProcess = null,
+            IAnalyzerManager manager = null)
         {
             _nugetRestoreProcess = nugetRestoreProcess ?? new NugetRestoreProcess();
+            _manager = manager ?? new AnalyzerManager();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
         }
 
-        public IAnalyzerResult AnalyzeProject(string projectFilePath, string solutionFilePath)
+        public IAnalyzerResult AnalyzeProject(
+            string projectFilePath,
+            string solutionFilePath,
+            string targetFramework)
         {
-            AnalyzerManager manager;
-            if (solutionFilePath == null)
-            {
-                manager = new AnalyzerManager();
-            }
-            else
+            if (solutionFilePath != null)
             {
                 _logger.LogDebug("Analyzing solution file {0}", solutionFilePath);
                 try
                 {
-                    manager = new AnalyzerManager(solutionFilePath);
+                    _manager = new AnalyzerManager(solutionFilePath);
                 }
                 catch (InvalidProjectFileException)
                 {
-                    throw new StrykerInputException($"Incorrect solution path \"{solutionFilePath}\". Solution file not found. Please review your solution path setting.");
+                    throw new InputException($"Incorrect solution path \"{solutionFilePath}\". Solution file not found. Please review your solution path setting.");
                 }
             }
 
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
-            var analyzerResult = manager.GetProject(projectFilePath).Build().First();
+            var analyzerResults = _manager.GetProject(projectFilePath).Build();
+            var analyzerResult = SelectAnalyzerResult(analyzerResults, targetFramework);
 
             LogAnalyzerResult(analyzerResult);
 
@@ -57,7 +63,7 @@ namespace Stryker.Core.Initialisation
                     // buildalyzer failed to find restored packages, retry after nuget restore
                     _logger.LogDebug("Project analyzer result not successful, restoring packages");
                     _nugetRestoreProcess.RestorePackages(solutionFilePath);
-                    analyzerResult = manager.GetProject(projectFilePath).Build().First();
+                    analyzerResult = _manager.GetProject(projectFilePath).Build(targetFramework).First();
                 }
                 else
                 {
@@ -72,26 +78,50 @@ namespace Stryker.Core.Initialisation
         private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
         {
             // dump all properties as it can help diagnosing build issues for user project.
-            _logger.LogDebug("**** Buildalyzer result ****");
+            _logger.LogTrace("**** Buildalyzer result ****");
 
-            _logger.LogDebug("Project: {0}", analyzerResult.ProjectFilePath);
-            _logger.LogDebug("TargetFramework: {0}", analyzerResult.TargetFramework);
+            _logger.LogTrace("Project: {0}", analyzerResult.ProjectFilePath);
+            _logger.LogTrace("TargetFramework: {0}", analyzerResult.TargetFramework);
 
             foreach (var property in analyzerResult?.Properties ?? new Dictionary<string, string>())
             {
-                _logger.LogDebug("Property {0}={1}", property.Key, property.Value);
+                _logger.LogTrace("Property {0}={1}", property.Key, property.Value);
             }
             foreach (var sourceFile in analyzerResult?.SourceFiles ?? Enumerable.Empty<string>())
             {
-                _logger.LogDebug("SourceFile {0}", sourceFile);
+                _logger.LogTrace("SourceFile {0}", sourceFile);
             }
             foreach (var reference in analyzerResult?.References ?? Enumerable.Empty<string>())
             {
-                _logger.LogDebug("References: {0}", reference);
+                _logger.LogTrace("References: {0}", reference);
             }
-            _logger.LogDebug("Succeeded: {0}", analyzerResult.Succeeded);
+            _logger.LogTrace("Succeeded: {0}", analyzerResult.Succeeded);
 
-            _logger.LogDebug("**** Buildalyzer result ****");
+            _logger.LogTrace("**** Buildalyzer result ****");
+        }
+
+        private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
+        {
+            if (targetFramework == null)
+            {
+                return analyzerResults.First();
+            }
+
+            var analyzerResultForFramework = analyzerResults.SingleOrDefault(result => result.TargetFramework == targetFramework);
+            if (analyzerResultForFramework != null)
+            {
+                return analyzerResultForFramework;
+            }
+            else
+            {
+                var firstAnalyzerResult = analyzerResults.First();
+                _logger.LogWarning(
+                    "The configured target framework '{0}' isn't available for this project. " +
+                    "It will be built against the first framework available " +
+                    "which is {1}.", targetFramework, firstAnalyzerResult.TargetFramework);
+
+                return firstAnalyzerResult;
+            }
         }
     }
 }

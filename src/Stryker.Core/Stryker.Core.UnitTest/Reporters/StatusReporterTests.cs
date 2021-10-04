@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
 using Stryker.Core.Mutants;
@@ -12,7 +12,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class StatusReporterTests
+    public class StatusReporterTests : TestBase
     {
         private Mock<ILogger<FilteredMutantsLogger>> _loggerMock = new Mock<ILogger<FilteredMutantsLogger>>();
 

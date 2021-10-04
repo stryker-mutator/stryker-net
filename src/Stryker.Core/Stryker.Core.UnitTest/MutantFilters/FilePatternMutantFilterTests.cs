@@ -11,7 +11,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
-    public class FilePatternMutantFilterTests
+    public class FilePatternMutantFilterTests : TestBase
     {
         [Fact]
         public static void ShouldHaveName()
@@ -42,7 +42,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             bool shouldKeepFile)
         {
             // Arrange
-            var options = new StrykerOptions(mutate: patterns);
+            var options = new StrykerOptions() { Mutate = patterns.Select(FilePattern.Parse) };
             var file = new CsharpFileLeaf { RelativePath = filePath, FullPath = Path.Combine("C:/test/", filePath) };
 
             // Create token with the correct text span
@@ -52,12 +52,12 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 SyntaxTriviaList.Empty);
 
             var mutant = new Mutant
-                { Mutation = new Mutation { OriginalNode = SyntaxFactory.IdentifierName(syntaxToken) } };
+            { Mutation = new Mutation { OriginalNode = SyntaxFactory.IdentifierName(syntaxToken) } };
 
             var sut = new FilePatternMutantFilter(options);
 
             // Act
-            var result = sut.FilterMutants(new[] { mutant }, file.ToReadOnly(), new StrykerOptions());
+            var result = sut.FilterMutants(new[] { mutant }, file.ToReadOnly(), null);
 
             // Assert
             result.Contains(mutant).ShouldBe(shouldKeepFile);

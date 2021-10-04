@@ -9,28 +9,21 @@ namespace Stryker.Core.Reporters.Json
 {
     public class JsonReport
     {
-        public string SchemaVersion { get; } = "1";
-        public IDictionary<string, int> Thresholds { get; } = new Dictionary<string, int>();
-        public string ProjectRoot { get; }
-        public IDictionary<string, JsonReportFileComponent> Files { get; private set; } = new Dictionary<string, JsonReportFileComponent>();
-
-        [JsonIgnore]
-        private static IStrykerOptions _options;
-        [JsonIgnore]
-        private static JsonReport _report = null;
+        public string SchemaVersion { get; init; } = "1";
+        public IDictionary<string, int> Thresholds { get; init; } = new Dictionary<string, int>();
+        public string ProjectRoot { get; init; }
+        public IDictionary<string, JsonReportFileComponent> Files { get; init; } = new Dictionary<string, JsonReportFileComponent>();
 
         [JsonConstructor]
-        private JsonReport()
+        public JsonReport()
         {
 
         }
 
-        private JsonReport(IStrykerOptions options, IReadOnlyProjectComponent mutationReport)
+        private JsonReport(StrykerOptions options, IReadOnlyProjectComponent mutationReport)
         {
-            _options = options;
-
-            Thresholds.Add("high", _options.Thresholds.High);
-            Thresholds.Add("low", _options.Thresholds.Low);
+            Thresholds.Add("high", options.Thresholds.High);
+            Thresholds.Add("low", options.Thresholds.Low);
 
             ProjectRoot = mutationReport.FullPath;
 
@@ -44,22 +37,14 @@ namespace Stryker.Core.Reporters.Json
             Files = files ?? Files;
         }
 
-        public static JsonReport Build(IStrykerOptions options, IReadOnlyProjectComponent mutationReport)
+        public static JsonReport Build(StrykerOptions options, IReadOnlyProjectComponent mutationReport)
         {
-            // This should really only happen in unit tests.
-            // We need this construct because in a unit test
-            // we want to be able to generate different reports with different settings
-            _report = _options == options ? _report : null;
-
-            // If the report was already generated, return the existing report
-            _report ??= new JsonReport(options, mutationReport);
-
-            return _report;
+            return new JsonReport(options, mutationReport);
         }
 
         public string ToJson()
         {
-            var json = JsonConvert.SerializeObject(_report, new JsonSerializerSettings
+            var json = JsonConvert.SerializeObject(this, new JsonSerializerSettings
             {
                 ContractResolver = new DefaultContractResolver
                 {

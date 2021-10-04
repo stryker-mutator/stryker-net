@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -9,6 +9,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="TestResources\StrongNameKeyFile.snk" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="TestResources\FsharpExampleSourceFile.fs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="TestResources\StrongNameKeyFile.snk">
@@ -21,11 +24,16 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.CodeCoverage" Version="$(MicrosoftTestPlatform)" /> 				<!-- From Directory.Build.props -->
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestPlatform)" /> 				<!-- From Directory.Build.props -->
+    <Content Include="TestResources\FsharpExampleSourceFile.fs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeCoverage" Version="$(MicrosoftTestPlatform)" />  <!-- From Directory.Build.props -->
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestPlatform)" />  <!-- From Directory.Build.props -->
     <PackageReference Include="Moq" Version="4.16.1" />
     <PackageReference Include="Shouldly" Version="4.0.3" />
-    <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="$(SystemIOAbstractions)" /> 	<!-- From Directory.Build.props -->
+    <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="$(SystemIOAbstractions)" />  <!-- From Directory.Build.props -->
     <PackageReference Include="xunit" Version="2.4.1" />
     <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" PrivateAssets="all"/>
     <PackageReference Include="Xunit.SkippableFact" Version="1.4.13" />

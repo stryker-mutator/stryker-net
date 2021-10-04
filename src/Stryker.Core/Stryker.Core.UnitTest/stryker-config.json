@@ -1,7 +1,9 @@
 {
   "stryker-config": {
     "mutate": [
-      "!/Testing/"
+      "!Testing/**",
+      "!Logging/**",
+      "!**/FSharp*.*"
     ],
     "dashboard-project": "github.com/stryker-mutator/stryker-net",
     "dashboard-version": "master",

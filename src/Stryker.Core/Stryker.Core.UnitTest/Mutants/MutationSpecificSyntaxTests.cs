@@ -119,7 +119,7 @@ static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
 static string Value {get;} = """";}";
 
             var expected = @"class Test {
-static string Value {get;} = (StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":"""");}";
+static string Value {get;} = StrykerNamespace.MutantContext.TrackValue(()=>(StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":""""));}}}";
             ShouldMutateSourceToExpected(source, expected);
             _target.Mutants.Count.ShouldBe(1);
             _target.Mutants.First().IsStaticValue.ShouldBeTrue();
@@ -274,12 +274,12 @@ public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable)
       {
         foreach (var o in enumerable)
         {
-            yield return value;
+if(StrykerNamespace.MutantControl.IsActive(0)){;}else{            yield return value;}
         }
       }
 public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable)
       {
-        yield break;
+if(StrykerNamespace.MutantControl.IsActive(1)){;}else{        yield break;}
       }";
             ShouldMutateSourceToExpected(source, expected);
         }

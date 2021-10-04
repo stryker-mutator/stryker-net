@@ -1,20 +1,23 @@
-using LibGit2Sharp;
-using Stryker.Core.DashboardCompare;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using LibGit2Sharp;
+using Stryker.Core.Baseline.Providers;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Mutants;
+using Stryker.Core.Options;
 
 namespace Stryker.Core.DiffProviders
 {
     public class GitDiffProvider : IDiffProvider
     {
-        private readonly IStrykerOptions _options;
+        public TestSet Tests { get; }
+        private readonly StrykerOptions _options;
         private readonly IGitInfoProvider _gitInfoProvider;
 
-        public GitDiffProvider(IStrykerOptions options, IGitInfoProvider gitInfoProvider = null)
+        public GitDiffProvider(StrykerOptions options, TestSet tests, IGitInfoProvider gitInfoProvider = null)
         {
+            Tests = tests;
             _options = options;
             _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
         }
@@ -33,7 +36,7 @@ namespace Stryker.Core.DiffProviders
 
             if (commit == null)
             {
-                throw new StrykerInputException("Could not determine a commit to check for diff. Please check you have provided the correct value for --git-source");
+                throw new InputException("Could not determine a commit to check for diff. Please check you have provided the correct value for --git-source");
             }
 
             foreach (var patchChanges in repository.Diff.Compare<Patch>(commit.Tree, DiffTargets.WorkingDirectory))
@@ -65,7 +68,7 @@ namespace Stryker.Core.DiffProviders
 
         private void RemoveFilteredOutFiles(DiffResult diffResult)
         {
-            foreach (FilePattern filePattern in _options.DiffIgnoreFiles)
+            foreach (FilePattern filePattern in _options.DiffIgnoreChanges)
             {
                 diffResult.ChangedSourceFiles = diffResult.ChangedSourceFiles.Where(diffResultFile => !filePattern.Glob.IsMatch(diffResultFile)).ToList();
                 diffResult.ChangedTestFiles = diffResult.ChangedTestFiles.Where(diffResultFile => !filePattern.Glob.IsMatch(diffResultFile)).ToList();

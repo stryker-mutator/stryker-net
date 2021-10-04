@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
-    public class CheckedMutatorTests
+    public class CheckedMutatorTests : TestBase
     {
         [Fact]
         public void ShouldBeMutationLevelComplete()

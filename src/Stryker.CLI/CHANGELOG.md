@@ -1,9 +1,11 @@
-## [0.22.11](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.10...dotnet-stryker@0.22.11) (2021-09-17)
+## [0.22.10](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.9...dotnet-stryker@0.22.10) (2021-08-25)
+### Bug Fixes
+* **update check:** Preview features should not trigger new version message ([#1695](https://github.com/stryker-mutator/stryker-net/issues/1695)) ([bf3c580](https://github.com/stryker-mutator/stryker-net/commit/bf3c580f72cb746157fc6ea5bd27cdd909882465))
 
 
 ### Bug Fixes
 
-* **update check:** Preview features should not trigger new version message ([#1695](https://github.com/stryker-mutator/stryker-net/issues/1695)) ([bf3c580](https://github.com/stryker-mutator/stryker-net/commit/bf3c580f72cb746157fc6ea5bd27cdd909882465))
+* Return exit code 2 for threshold break violations ([#1673](https://github.com/stryker-mutator/stryker-net/issues/1673)) ([6da4e7d](https://github.com/stryker-mutator/stryker-net/commit/6da4e7d16e00aa90860e59a3875539c18bbbe757))
 
 
 

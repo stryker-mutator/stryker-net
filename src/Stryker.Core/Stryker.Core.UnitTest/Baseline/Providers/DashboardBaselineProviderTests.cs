@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Baseline.Providers
 {
-    public class DashboardBaselineProviderTests
+    public class DashboardBaselineProviderTests : TestBase
     {
         [Fact]
         public async Task Load_Calls_DashboardClient_With_version()
@@ -34,13 +34,13 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
 
             var dashboardClient = new Mock<IDashboardClient>();
 
-            dashboardClient.Setup(x => x.PublishReport(It.IsAny<string>(), It.IsAny<string>()));
+            dashboardClient.Setup(x => x.PublishReport(It.IsAny<JsonReport>(), It.IsAny<string>()));
 
             var target = new DashboardBaselineProvider(strykerOptions, dashboardClient.Object);
 
             await target.Save(JsonReport.Build(strykerOptions, JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent()), "version");
 
-            dashboardClient.Verify(x => x.PublishReport(It.IsAny<string>(), It.Is<string>(x => x == "version")), Times.Once);
+            dashboardClient.Verify(x => x.PublishReport(It.IsAny<JsonReport>(), It.Is<string>(x => x == "version")), Times.Once);
         }
     }
 }

@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.InjectedHelpers;
@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.InjectedHelpers
 {
-    public class InjectedHelperTests
+    public class InjectedHelperTests : TestBase
     {
         [Theory]
         [InlineData(LanguageVersion.CSharp2)]
@@ -31,7 +31,7 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
 
-            var needed = new[] {".CoreLib", ".Runtime", "System.IO.Pipes", ".Collections", ".Console"};
+            var needed = new[] { ".CoreLib", ".Runtime", "System.IO.Pipes", ".Collections", ".Console" };
             var references = new List<MetadataReference>();
             var hack = new NamedPipeClientStream("test");
             foreach (var assembly in assemblies)
@@ -57,6 +57,6 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
 
             compilation.GetDiagnostics().ShouldNotContain(diag => diag.Severity == DiagnosticSeverity.Error,
                 $"errors :{string.Join(Environment.NewLine, compilation.GetDiagnostics().Where(x => x.Severity == DiagnosticSeverity.Error).Select(diag => $"'{diag.GetMessage()}' at {diag.Location.SourceTree.FilePath}, {diag.Location.GetLineSpan().StartLinePosition.Line}:{diag.Location.GetLineSpan().StartLinePosition.Character}"))}");
-    }
+        }
     }
 }

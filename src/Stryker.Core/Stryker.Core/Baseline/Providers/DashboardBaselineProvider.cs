@@ -8,7 +8,7 @@ namespace Stryker.Core.Baseline.Providers
     public class DashboardBaselineProvider : IBaselineProvider
     {
         private readonly IDashboardClient _client;
-        public DashboardBaselineProvider(IStrykerOptions options, IDashboardClient client = null)
+        public DashboardBaselineProvider(StrykerOptions options, IDashboardClient client = null)
         {
             _client = client ?? new DashboardClient(options);
         }
@@ -20,7 +20,7 @@ namespace Stryker.Core.Baseline.Providers
 
         public async Task Save(JsonReport report, string version)
         {
-            await _client.PublishReport(report.ToJson(), version);
+            await _client.PublishReport(report, version);
         }
     }
 }

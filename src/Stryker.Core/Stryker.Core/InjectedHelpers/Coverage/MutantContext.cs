@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -21,6 +21,14 @@ namespace Stryker
         public static bool InStatic()
         {
             return depth > 0;
+        }
+
+        public static T TrackValue<T>(Func<T> builder)
+        {
+            using (MutantContext context = new MutantContext())
+            {
+                return builder();
+            }
         }
     }
 }
