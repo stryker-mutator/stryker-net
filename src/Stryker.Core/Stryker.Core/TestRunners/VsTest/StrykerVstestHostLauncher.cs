@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
 using Stryker.Core.Logging;
@@ -90,6 +90,8 @@ namespace Stryker.Core.TestRunners.VsTest
                     Monitor.Wait(_lck, 5000);
                 }
             }
+
+            _currentProcess.Dispose();
             return true;
         }
 
