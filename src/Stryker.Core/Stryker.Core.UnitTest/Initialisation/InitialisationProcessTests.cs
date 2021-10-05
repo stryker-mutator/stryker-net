@@ -59,9 +59,13 @@ namespace Stryker.Core.UnitTest.Initialisation
                 testRunnerMock.Object,
                 assemblyReferenceResolverMock.Object);
 
-            var options = new StrykerOptions();
+            var options = new StrykerOptions
+            {
+                ProjectName = "TheProjectName",
+                ProjectVersion = "TheProjectVersion"
+            };
 
-            var result = target.Initialize(options, dashboardReporter: null);
+            var result = target.Initialize(options);
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);
         }
@@ -104,9 +108,13 @@ namespace Stryker.Core.UnitTest.Initialisation
                 initialTestProcessMock.Object,
                 testRunnerMock.Object,
                 assemblyReferenceResolverMock.Object);
-            var options = new StrykerOptions();
+            var options = new StrykerOptions
+            {
+                ProjectName = "TheProjectName",
+                ProjectVersion = "TheProjectVersion"
+            };
 
-            target.Initialize(options, dashboardReporter: null);
+            target.Initialize(options);
             Assert.Throws<InputException>(() => target.InitialTest(options));
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);
