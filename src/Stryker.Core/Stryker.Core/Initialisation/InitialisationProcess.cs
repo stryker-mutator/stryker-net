@@ -4,11 +4,13 @@ using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
+using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
 
@@ -77,7 +79,7 @@ namespace Stryker.Core.Initialisation
                     options.MsBuildPath);
             }
 
-            InitializeDashboardReporter(options, projectInfo);
+            InitializeDashboardProjectInformation(options, projectInfo);
 
             if (_testRunner == null)
             {
@@ -98,9 +100,17 @@ namespace Stryker.Core.Initialisation
             // initial test
             _initialTestProcess.InitialTest(options, _testRunner);
 
-        private void InitializeDashboardReporter(StrykerOptions options, ProjectInfo projectInfo)
+        private void InitializeDashboardProjectInformation(StrykerOptions options, ProjectInfo projectInfo)
         {
-            // try to read the repository URL + version for the dashboard report
+            var dashboardReporterEnabled = options.Reporters.Contains(Reporter.Dashboard) || options.Reporters.Contains(Reporter.All);
+            var dashboardBaselineEnabled = options.WithBaseline && options.BaselineProvider == BaselineProvider.Dashboard;
+            var requiresProjectInformation = dashboardReporterEnabled || dashboardBaselineEnabled;
+            if (!requiresProjectInformation)
+            {
+                return;
+            }
+
+            // try to read the repository URL + version for the dashboard report or dashboard baseline
             var missingProjectName = string.IsNullOrEmpty(options.ProjectName);
             var missingProjectVersion = string.IsNullOrEmpty(options.ProjectVersion);
             if (missingProjectName || missingProjectVersion)
