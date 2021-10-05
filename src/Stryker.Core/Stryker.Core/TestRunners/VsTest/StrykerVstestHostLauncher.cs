@@ -93,6 +93,8 @@ namespace Stryker.Core.TestRunners.VsTest
                     Monitor.Wait(_lck, 500);
                 }
             }
+
+            _currentProcess.Dispose();
             return true;
         }
 
