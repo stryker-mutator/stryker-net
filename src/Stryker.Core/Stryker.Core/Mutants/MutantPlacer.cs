@@ -20,7 +20,6 @@ namespace Stryker.Core.Mutants
         public readonly static string Injector = "Injector";
 
         private static readonly StaticInstrumentationEngine staticEngine = new ();
-        private static readonly BlockInstrumentationEngine blockEngine = new ();
         private static readonly StaticInitializerMarkerEngine staticInitializerEngine = new ();
         private static readonly IfInstrumentationEngine IfEngine = new ();
         private static readonly ConditionalInstrumentationEngine conditionalEngine = new ();
@@ -40,7 +39,6 @@ namespace Stryker.Core.Mutants
         static MutantPlacer()
         {
             RegisterEngine(staticEngine);
-            RegisterEngine(blockEngine);
             RegisterEngine(IfEngine);
             RegisterEngine(conditionalEngine);
             RegisterEngine(expressionMethodEngine);
