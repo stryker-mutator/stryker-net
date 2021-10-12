@@ -518,7 +518,22 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
 			ShouldMutateSourceToExpected(source, expected);
 		}
 
-		[Fact]
+        [Fact]
+        public void ShouldMutateBlockStatements()
+        {
+            string source = @"private void Move()
+		{
+			;
+		}";
+            string expected = @"private bool Move()
+		{if (StrykerNamespace.MutantControl.IsActive(0)){} else {
+			;
+		}";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
 		public void ShouldMutateReturnStatements()
 		{
 			string source = @"private bool Move()

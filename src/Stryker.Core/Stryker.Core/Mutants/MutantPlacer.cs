@@ -17,18 +17,19 @@ namespace Stryker.Core.Mutants
     public static class MutantPlacer
     {
         private const string MutationMarker = "Mutation";
-        private const string Injector = "Injector";
+        public readonly static string Injector = "Injector";
 
-        private static readonly StaticInstrumentationEngine staticEngine;
-        private static readonly StaticInitializerMarkerEngine staticInitializerEngine;
-        private static readonly IfInstrumentationEngine IfEngine;
-        private static readonly ConditionalInstrumentationEngine conditionalEngine;
-        private static readonly ExpressionMethodToBodyEngine expressionMethodEngine;
-        private static readonly LocalFunctionExpressionToBodyEngine localFunctionExpressionToBodyEngine;
-        private static readonly AccessorExpressionToBodyEngine accessorExpressionToBodyEngine;
-        private static readonly PropertyExpressionToBodyEngine propertyExpressionToBodyEngine;
-        private static readonly EndingReturnEngine endingReturnEngine;
-        private static readonly DefaultInitializationEngine defaultInitializationEngine;
+        private static readonly StaticInstrumentationEngine staticEngine = new ();
+        private static readonly BlockInstrumentationEngine blockEngine = new ();
+        private static readonly StaticInitializerMarkerEngine staticInitializerEngine = new ();
+        private static readonly IfInstrumentationEngine IfEngine = new ();
+        private static readonly ConditionalInstrumentationEngine conditionalEngine = new ();
+        private static readonly ExpressionMethodToBodyEngine expressionMethodEngine = new();
+        private static readonly LocalFunctionExpressionToBodyEngine localFunctionExpressionToBodyEngine = new();
+        private static readonly AccessorExpressionToBodyEngine accessorExpressionToBodyEngine = new();
+        private static readonly PropertyExpressionToBodyEngine propertyExpressionToBodyEngine = new();
+        private static readonly EndingReturnEngine endingReturnEngine = new();
+        private static readonly DefaultInitializationEngine defaultInitializationEngine = new();
         private static ExpressionSyntax _binaryExpression;
         private static SyntaxNode _placeHolderNode;
         
@@ -38,25 +39,16 @@ namespace Stryker.Core.Mutants
 
         static MutantPlacer()
         {
-            staticEngine = new StaticInstrumentationEngine(Injector);
             RegisterEngine(staticEngine);
-            IfEngine = new IfInstrumentationEngine(Injector);
+            RegisterEngine(blockEngine);
             RegisterEngine(IfEngine);
-            conditionalEngine = new ConditionalInstrumentationEngine(Injector);
             RegisterEngine(conditionalEngine);
-            expressionMethodEngine = new ExpressionMethodToBodyEngine(Injector);
             RegisterEngine(expressionMethodEngine);
-            accessorExpressionToBodyEngine = new AccessorExpressionToBodyEngine(Injector);
             RegisterEngine(accessorExpressionToBodyEngine);
-            propertyExpressionToBodyEngine = new PropertyExpressionToBodyEngine(Injector);
             RegisterEngine(propertyExpressionToBodyEngine);
-            endingReturnEngine = new EndingReturnEngine(Injector);
             RegisterEngine(endingReturnEngine);
-            defaultInitializationEngine = new DefaultInitializationEngine(Injector);
             RegisterEngine(defaultInitializationEngine);
-            staticInitializerEngine = new StaticInitializerMarkerEngine(Injector);
             RegisterEngine(staticInitializerEngine);
-            localFunctionExpressionToBodyEngine = new LocalFunctionExpressionToBodyEngine(Injector);
             RegisterEngine(localFunctionExpressionToBodyEngine);
         }
 

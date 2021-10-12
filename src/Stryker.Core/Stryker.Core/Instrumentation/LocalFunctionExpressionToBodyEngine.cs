@@ -11,10 +11,6 @@ namespace Stryker.Core.Instrumentation
     /// </summary>
     internal class LocalFunctionExpressionToBodyEngine : BaseEngine<LocalFunctionStatementSyntax>
     {
-        public LocalFunctionExpressionToBodyEngine(string markerId) : base(markerId)
-        {
-        }
-
         /// <summary>
         /// Converts the given local function from expression to body form.
         /// </summary>
