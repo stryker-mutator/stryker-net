@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Stryker.Core.Logging;
 using Stryker.Core.ProjectComponents;
 using System.Collections.Generic;
@@ -8,16 +7,12 @@ namespace Stryker.Core.Reporters.Json
 {
     public class JsonReportFileComponent
     {
-        public string Language { get; }
-        public string Source { get; }
-        public ISet<JsonMutant> Mutants { get; }
+        public string Language { get; init; }
+        public string Source { get; init; }
+        public ISet<JsonMutant> Mutants { get; init; }
 
-        [JsonConstructor]
-        protected JsonReportFileComponent(string language, string source, ISet<JsonMutant> mutants)
+        public JsonReportFileComponent()
         {
-            Language = language;
-            Source = source;
-            Mutants = mutants;
         }
 
         public JsonReportFileComponent(ReadOnlyFileLeaf file, ILogger logger = null)
