@@ -7,7 +7,6 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
-using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
@@ -140,6 +139,10 @@ namespace Stryker.Core.UnitTest.Reporters
             reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
             var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.json");
             mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
+            var fileContents = mockFileSystem.File.ReadAllText(reportPath);
+            fileContents.ShouldContain(@"""thresholds"": {");
+            fileContents.ShouldContain(@"""high"": 80");
+            fileContents.ShouldContain(@"""low"": 60");
         }
     }
 }
