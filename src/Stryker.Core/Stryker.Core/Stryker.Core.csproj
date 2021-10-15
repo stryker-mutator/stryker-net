@@ -11,7 +11,7 @@
     <StartupObject />
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
     <VersionPrefix>1.0.0</VersionPrefix>
-    <VersionSuffix>rc2</VersionSuffix>
+    <VersionSuffix>rc3</VersionSuffix>
     <PackageId>stryker</PackageId>
     <Description>All stryker mutation test logic is contained in this library. This package does not include a runner. Use this package if you want to extend stryker with your own runner.</Description>
     <PackageProjectUrl>https://stryker-mutator.io/</PackageProjectUrl>
@@ -57,6 +57,7 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.0" />
     <PackageReference Include="ShellProgressBar" Version="5.1.0" />
     <PackageReference Include="System.IO.Abstractions" Version="$(SystemIOAbstractions)" /> <!-- From Directory.Build.props -->
+    <PackageReference Include="System.Net.Http.Json" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>

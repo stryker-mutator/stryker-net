@@ -20,6 +20,6 @@ namespace Stryker.Core.TestRunners
 
         TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants);
 
-        TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutMs, IReadOnlyList<Mutant> mutants, TestUpdateHandler update);
+        TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update);
     }
 }

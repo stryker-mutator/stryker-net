@@ -22,8 +22,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
     /// the given type. They can still embark some readonly options/parameters, as kong as they remain constant during parsing.</remarks>
     internal abstract class NodeSpecificOrchestrator<TNode, TBase> : INodeMutator where TBase : SyntaxNode where TNode : TBase
     {
-        private static readonly Regex _pattern =
-            new("^\\s*\\/\\/\\s*Stryker", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex _pattern = new("^\\s*\\/\\/\\s*Stryker", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex _parser = new("^\\s*\\/\\/\\s*Stryker\\s*(disable|restore)\\s*(once|)\\s*([^:]*)\\s*:?(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly ILogger _logger = ApplicationLogging.LoggerFactory.CreateLogger<NodeSpecificOrchestrator<TNode, TBase>>();
@@ -96,10 +95,6 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 
         protected virtual MutationContext PrepareContext(TNode node, MutationContext context)
         {
-            const int modeGroup = 1;
-            const int onceGroup = 2;
-            const int mutatorsGroup = 3;
-            const int commentGroup = 4;
             foreach (var commentTrivia in node.GetLeadingTrivia().Where(t => t.IsKind(SyntaxKind.SingleLineCommentTrivia) || t.IsKind(SyntaxKind.MultiLineCommentTrivia)).Select(t => t.ToString()))
             {
                 // perform a quick pattern check to see if it is a 'Stryker comment'
@@ -111,47 +106,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                 if (match.Success)
                 {
                     // this is a Stryker comments, now we parse it
-                    bool disable;
-                    // get the ignore comment
-                    var comment = match.Groups[commentGroup].Value.Trim();
-                    if (string.IsNullOrEmpty(comment))
-                    {
-                        comment = "Ignored via code comment.";
-                    }
-                    switch (match.Groups[modeGroup].Value.ToLower())
-                    {
-                        case "disable":
-                            disable = true;
-                            break;
-                        default:
-                            disable = false;
-                            break;
-                    }
-
-                    Mutator[] filteredMutators;
-                    if (match.Groups[mutatorsGroup].Value.ToLower() == "all")
-                    {
-                        filteredMutators = Enum.GetValues<Mutator>();
-                    }
-                    else
-                    {
-                        var labels = match.Groups[mutatorsGroup].Value.ToLower().Split(',');
-                        filteredMutators = new Mutator[labels.Length];
-                        for (var i = 0; i < labels.Length; i++)
-                        {
-                            if (Enum.TryParse<Mutator>(labels[i], true, out var value))
-                            {
-                                filteredMutators[i] = value;
-                            }
-                            else
-                            {
-                                _logger.LogError(
-                                    $"{labels[i]} not recognized as a mutator at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}. Legal values are {string.Join(',', Enum.GetValues<Mutator>())}.");
-                            }
-                        }
-                    }
-
-                    context = context.FilterMutators(disable, filteredMutators, match.Groups[onceGroup].Value.ToLower() == "once", comment);
+                    context = ParseStrykerComment(context, match, node);
                     break;
                 }
 
@@ -160,8 +115,53 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
             return context;
         }
 
-        protected virtual void RestoreContext(MutationContext context)
-        {}
+        private static MutationContext ParseStrykerComment(MutationContext context, Match match, TNode node)
+        {
+            const int ModeGroup = 1;
+            const int OnceGroup = 2;
+            const int MutatorsGroup = 3;
+            const int CommentGroup = 4;
+
+            // get the ignore comment
+            var comment = match.Groups[CommentGroup].Value.Trim();
+            if (string.IsNullOrEmpty(comment))
+            {
+                comment = "Ignored via code comment.";
+            }
+
+            var disable = match.Groups[ModeGroup].Value.ToLower() switch
+            {
+                "disable" => true,
+                _ => false,
+            };
+
+            Mutator[] filteredMutators;
+            if (match.Groups[MutatorsGroup].Value.ToLower() == "all")
+            {
+                filteredMutators = Enum.GetValues<Mutator>();
+            }
+            else
+            {
+                var labels = match.Groups[MutatorsGroup].Value.ToLower().Split(',');
+                filteredMutators = new Mutator[labels.Length];
+                for (var i = 0; i < labels.Length; i++)
+                {
+                    if (Enum.TryParse<Mutator>(labels[i], true, out var value))
+                    {
+                        filteredMutators[i] = value;
+                    }
+                    else
+                    {
+                        _logger.LogError(
+                            $"{labels[i]} not recognized as a mutator at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}. Legal values are {string.Join(',', Enum.GetValues<Mutator>())}.");
+                    }
+                }
+            }
+
+            return context.FilterMutators(disable, filteredMutators, match.Groups[OnceGroup].Value.ToLower() == "once", comment);
+        }
+
+        protected virtual void RestoreContext(MutationContext context) { }
 
         /// <summary>
         /// Mutates a node and its children. Update the mutation context with mutations needed to be injected in a higher level node.

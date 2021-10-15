@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Reflection;
 using Crayon;
 using McMaster.Extensions.CommandLineUtils;
@@ -64,7 +65,24 @@ namespace Stryker.CLI
                 RunStryker(inputs);
                 return ExitCode;
             });
-            return app.Execute(args);
+
+            try
+            {
+                return app.Execute(args);
+            }
+            catch (CommandParsingException ex)
+            {
+                Console.Error.WriteLine(ex.Message);
+
+                if (ex is UnrecognizedCommandParsingException uex && uex.NearestMatches.Any())
+                {
+                    Console.Error.WriteLine();
+                    Console.Error.WriteLine("Did you mean this?");
+                    Console.Error.WriteLine("    " + uex.NearestMatches.First());
+                }
+
+                return ExitCodes.OtherError;
+            }
         }
 
         private void RunStryker(IStrykerInputs inputs)
@@ -112,8 +130,21 @@ namespace Stryker.CLI
         private async void PrintStrykerVersionInformationAsync()
         {
             var assembly = Assembly.GetExecutingAssembly();
-            var assemblyVersion = assembly.GetName().Version;
-            var currentVersion = SemanticVersion.Parse($"{assemblyVersion.Major}.{assemblyVersion.Minor}.{assemblyVersion.Build}");
+            var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
+
+            if (!SemanticVersion.TryParse(version, out var currentVersion))
+            {
+                var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCli>();
+                if (string.IsNullOrEmpty(version))
+                {
+                    logger.LogWarning("{Attribute} is missing in {Assembly} at {AssemblyLocation}", nameof(AssemblyInformationalVersionAttribute), assembly, assembly.Location);
+                }
+                else
+                {
+                    logger.LogWarning("Failed to parse version {Version} as a semantic version", version);
+                }
+                return;
+            }
 
             Console.WriteLine($"Version: {Output.Green(currentVersion.ToString())}");
             Console.WriteLine();

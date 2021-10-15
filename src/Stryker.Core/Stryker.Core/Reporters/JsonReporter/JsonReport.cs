@@ -9,28 +9,21 @@ namespace Stryker.Core.Reporters.Json
 {
     public class JsonReport
     {
-        public string SchemaVersion { get; } = "1";
-        public IDictionary<string, int> Thresholds { get; } = new Dictionary<string, int>();
-        public string ProjectRoot { get; }
-        public IDictionary<string, JsonReportFileComponent> Files { get; private set; } = new Dictionary<string, JsonReportFileComponent>();
-
-        [JsonIgnore]
-        private static StrykerOptions _options;
-        [JsonIgnore]
-        internal static JsonReport ReportCache = null;
+        public string SchemaVersion { get; init; } = "1";
+        public IDictionary<string, int> Thresholds { get; init; } = new Dictionary<string, int>();
+        public string ProjectRoot { get; init; }
+        public IDictionary<string, JsonReportFileComponent> Files { get; init; } = new Dictionary<string, JsonReportFileComponent>();
 
         [JsonConstructor]
-        private JsonReport()
+        public JsonReport()
         {
 
         }
 
         private JsonReport(StrykerOptions options, IReadOnlyProjectComponent mutationReport)
         {
-            _options = options;
-
-            Thresholds.Add("high", _options.Thresholds.High);
-            Thresholds.Add("low", _options.Thresholds.Low);
+            Thresholds.Add("high", options.Thresholds.High);
+            Thresholds.Add("low", options.Thresholds.Low);
 
             ProjectRoot = mutationReport.FullPath;
 
@@ -46,15 +39,12 @@ namespace Stryker.Core.Reporters.Json
 
         public static JsonReport Build(StrykerOptions options, IReadOnlyProjectComponent mutationReport)
         {
-            // If the report was already generated, return the existing report
-            ReportCache ??= new JsonReport(options, mutationReport);
-
-            return ReportCache;
+            return new JsonReport(options, mutationReport);
         }
 
         public string ToJson()
         {
-            var json = JsonConvert.SerializeObject(ReportCache, new JsonSerializerSettings
+            var json = JsonConvert.SerializeObject(this, new JsonSerializerSettings
             {
                 ContractResolver = new DefaultContractResolver
                 {

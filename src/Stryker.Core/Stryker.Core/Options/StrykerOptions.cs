@@ -39,14 +39,12 @@ namespace Stryker.Core.Options
 
         public string DashboardUrl { get; init; }
         public string DashboardApiKey { get; init; }
-        public string ProjectName { get; init; }
 
         public bool Since { get; init; }
         public string SinceTarget { get; init; }
         public IEnumerable<FilePattern> DiffIgnoreChanges { get; init; } = Enumerable.Empty<FilePattern>();
 
         public string FallbackVersion { get; init; }
-        public string ProjectVersion { get; init; }
         public string ModuleName { get; init; }
 
         public IEnumerable<FilePattern> Mutate { get; init; } = new[] { FilePattern.Parse("**/*") };
@@ -56,8 +54,40 @@ namespace Stryker.Core.Options
 
         public OptimizationModes OptimizationMode { get; init; }
 
+        private string _projectName;
+        public string ProjectName
+        {
+            get => _projectName;
+            set
+            {
+                _projectName = value;
+                if (_parentOptions is not null)
+                {
+                    _parentOptions.ProjectName = value;
+                }
+            }
+        }
+
+        private string _projectVersion;
+        public string ProjectVersion
+        {
+            get => _projectVersion;
+            set
+            {
+                _projectVersion = value;
+                if (_parentOptions is not null)
+                {
+                    _parentOptions.ProjectVersion = value;
+                }
+            }
+        }
+
+        // Keep a reference on the parent instance in order to flow get/set properties (ProjectName and ProjectVersion) up to the parent
+        private StrykerOptions _parentOptions;
+
         public StrykerOptions Copy(string basePath, string projectUnderTest, IEnumerable<string> testProjects) => new()
         {
+            _parentOptions = this,
             AdditionalTimeout = AdditionalTimeout,
             AzureFileStorageSas = AzureFileStorageSas,
             AzureFileStorageUrl = AzureFileStorageUrl,

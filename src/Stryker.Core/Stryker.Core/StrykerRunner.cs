@@ -1,10 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
@@ -51,7 +48,7 @@ namespace Stryker.Core
             projectOrchestrator ??= new ProjectOrchestrator();
 
             var options = inputs.ValidateAll();
-            _logger.LogDebug("Stryker started with options: {0}", JsonConvert.SerializeObject(options, new StringEnumConverter()));
+            _logger.LogDebug("Stryker started with options: {@Options}", options);
 
             var reporters = _reporterFactory.Create(options);
 
