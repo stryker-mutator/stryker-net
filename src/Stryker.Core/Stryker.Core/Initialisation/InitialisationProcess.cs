@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
@@ -29,7 +30,7 @@ namespace Stryker.Core.Initialisation
 
     public interface IInitialisationProcess
     {
-        MutationTestInput Initialize(StrykerOptions options, DashboardReporter dashboardReporter);
+        MutationTestInput Initialize(StrykerOptions options);
         InitialTestRun InitialTest(StrykerOptions options);
     }
 
@@ -57,7 +58,7 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
         }
 
-        public MutationTestInput Initialize(StrykerOptions options, DashboardReporter dashboardReporter)
+        public MutationTestInput Initialize(StrykerOptions options)
         {
             // resolve project info
             var projectInfo = _inputFileResolver.ResolveInput(options);
@@ -78,7 +79,7 @@ namespace Stryker.Core.Initialisation
                     options.MsBuildPath);
             }
 
-            InitializeDashboardReporter(dashboardReporter, projectInfo);
+            InitializeDashboardProjectInformation(options, projectInfo);
 
             if (_testRunner == null)
             {
@@ -99,16 +100,19 @@ namespace Stryker.Core.Initialisation
             // initial test
             _initialTestProcess.InitialTest(options, _testRunner);
 
-        private void InitializeDashboardReporter(DashboardReporter dashboardReporter, ProjectInfo projectInfo)
+        private void InitializeDashboardProjectInformation(StrykerOptions options, ProjectInfo projectInfo)
         {
-            if (dashboardReporter == null)
+            var dashboardReporterEnabled = options.Reporters.Contains(Reporter.Dashboard) || options.Reporters.Contains(Reporter.All);
+            var dashboardBaselineEnabled = options.WithBaseline && options.BaselineProvider == BaselineProvider.Dashboard;
+            var requiresProjectInformation = dashboardReporterEnabled || dashboardBaselineEnabled;
+            if (!requiresProjectInformation)
             {
                 return;
             }
 
-            // try to read the repository URL + version for the dashboard report
-            var missingProjectName = string.IsNullOrEmpty(dashboardReporter.ProjectName);
-            var missingProjectVersion = string.IsNullOrEmpty(dashboardReporter.ProjectVersion);
+            // try to read the repository URL + version for the dashboard report or dashboard baseline
+            var missingProjectName = string.IsNullOrEmpty(options.ProjectName);
+            var missingProjectVersion = string.IsNullOrEmpty(options.ProjectVersion);
             if (missingProjectName || missingProjectVersion)
             {
                 var subject = missingProjectName switch
@@ -135,14 +139,14 @@ namespace Stryker.Core.Initialisation
                     var details = $"To solve this issue, either specify the {subject.ToLowerInvariant()} in the stryker configuration or configure [SourceLink](https://github.com/dotnet/sourcelink#readme) in {projectFilePath}";
                     if (missingProjectName)
                     {
-                        dashboardReporter.ProjectName = ReadProjectName(module, details);
-                        _logger.LogDebug("Using {ProjectName} as project name for the dashboard reporter. (Read from the AssemblyMetadata/RepositoryUrl assembly attribute of {TargetName})", dashboardReporter.ProjectName, targetName);
+                        options.ProjectName = ReadProjectName(module, details);
+                        _logger.LogDebug("Using {ProjectName} as project name for the dashboard reporter. (Read from the AssemblyMetadata/RepositoryUrl assembly attribute of {TargetName})", options.ProjectName, targetName);
                     }
 
                     if (missingProjectVersion)
                     {
-                        dashboardReporter.ProjectVersion = ReadProjectVersion(module, details);
-                        _logger.LogDebug("Using {ProjectVersion} as project version for the dashboard reporter. (Read from the AssemblyInformationalVersion assembly attribute of {TargetName})", dashboardReporter.ProjectVersion, targetName);
+                        options.ProjectVersion = ReadProjectVersion(module, details);
+                        _logger.LogDebug("Using {ProjectVersion} as project version for the dashboard reporter. (Read from the AssemblyInformationalVersion assembly attribute of {TargetName})", options.ProjectVersion, targetName);
                     }
                 }
                 catch (Exception e) when (e is not InputException)

@@ -27,8 +27,7 @@ namespace Stryker.Core.Initialisation
             // get a new instance of InitialisationProcess for each project
             var initialisationProcess = _initialisationProcessProvider.Provide();
             // initialize
-            var dashboardReporter = GetDashboardReporter(reporters);
-            var input = initialisationProcess.Initialize(options, dashboardReporter);
+            var input = initialisationProcess.Initialize(options);
 
             var process = _mutationTestProcessProvider.Provide(
                 mutationTestInput: input,
@@ -43,16 +42,6 @@ namespace Stryker.Core.Initialisation
             process.Mutate();
 
             return process;
-        }
-
-        private static DashboardReporter GetDashboardReporter(IReporter reporters)
-        {
-            if (reporters is BroadcastReporter broadcastReporter)
-            {
-                return broadcastReporter.Reporters.OfType<DashboardReporter>().FirstOrDefault();
-            }
-
-            return reporters as DashboardReporter;
         }
     }
 }
