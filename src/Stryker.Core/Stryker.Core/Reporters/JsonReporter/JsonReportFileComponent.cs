@@ -28,11 +28,11 @@ namespace Stryker.Core.Reporters.Json
                 var jsonMutant = new JsonMutant
                 {
                     Id = mutant.Id.ToString(),
-                    MutatorName = mutant.Mutation.DisplayName,
+                    MutatorName = mutant.Mutation.DisplayName ?? "",
                     Replacement = mutant.Mutation.ReplacementNode.ToFullString(),
                     Location = new JsonMutantLocation(mutant.Mutation.OriginalNode.GetLocation().GetMappedLineSpan()),
                     Status = mutant.ResultStatus.ToString(),
-                    Description = mutant.Mutation.Description
+                    Description = mutant.Mutation.Description ?? ""
                 };
 
                 if (!Mutants.Add(jsonMutant))

@@ -11,7 +11,6 @@ namespace Stryker.Core.Clients
 {
     public interface IDashboardClient
     {
-        string ProjectName { get; set; }
         Task<string> PublishReport(JsonReport json, string version);
         Task<JsonReport> PullReport(string version);
     }
@@ -35,10 +34,7 @@ namespace Stryker.Core.Clients
                 _httpClient = new HttpClient();
                 _httpClient.DefaultRequestHeaders.Add("X-Api-Key", _options.DashboardApiKey);
             }
-            ProjectName = _options.ProjectName;
         }
-
-        public string ProjectName { get; set; }
 
         public async Task<string> PublishReport(JsonReport report, string version)
         {
@@ -49,6 +45,8 @@ namespace Stryker.Core.Clients
             try
             {
                 using var response = await _httpClient.PutAsJsonAsync(url, report, JsonReportSerialization.Options);
+                response.EnsureSuccessStatusCode();
+
                 var result = await response.Content.ReadFromJsonAsync<DashboardResult>();
                 return result?.Href;
             }
@@ -78,7 +76,7 @@ namespace Stryker.Core.Clients
 
         private Uri GetUrl(string version)
         {
-            var url = new Uri($"{_options.DashboardUrl}/api/reports/{ProjectName}/{version}");
+            var url = new Uri($"{_options.DashboardUrl}/api/reports/{_options.ProjectName}/{version}");
 
             if (_options.ModuleName != null)
             {
