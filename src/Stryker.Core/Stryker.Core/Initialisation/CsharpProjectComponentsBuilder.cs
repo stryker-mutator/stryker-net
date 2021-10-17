@@ -24,14 +24,16 @@ namespace Stryker.Core.Initialisation
         private readonly StrykerOptions _options;
         private readonly string[] _foldersToExclude;
         private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
         private readonly INugetHelper _nugetHelper;
 
-        public CsharpProjectComponentsBuilder(ProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem, INugetHelper nugetHelper) : base(fileSystem)
+        public CsharpProjectComponentsBuilder(ProjectInfo projectInfo, IStrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem, INugetHelper nugetHelper)
         {
             _projectInfo = projectInfo;
             _options = options;
             _foldersToExclude = foldersToExclude;
             _logger = logger;
+            _fileSystem = fileSystem;
             _nugetHelper = nugetHelper;
         }
 
