@@ -152,6 +152,14 @@ namespace Stryker.Core.Initialisation.Buildalyzer
         }
 
         /// <summary>
+        /// Checks if source project use Xamarin.Forms
+        /// </summary>
+        /// <param name="analyzerResult"></param>
+        /// <returns></returns>
+        public static bool IsXamarinFormsProject(this IAnalyzerResult analyzerResult) =>
+            analyzerResult.PackageReferences?.Any(r => r.Key.Contains("Xamarin.Forms")) ?? false;
+
+        /// <summary>
         /// Extracts a target <c>Framework</c> and <c>Version</c> from the MSBuild property TargetFramework
         /// </summary>
         /// <returns>

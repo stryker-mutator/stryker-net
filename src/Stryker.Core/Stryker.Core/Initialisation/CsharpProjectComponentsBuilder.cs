@@ -17,6 +17,7 @@ using Stryker.Core.InjectedHelpers;
 using Stryker.Core.MutantFilters.Extensions;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ToolHelpers;
 
 namespace Stryker.Core.Initialisation
 {
@@ -27,19 +28,24 @@ namespace Stryker.Core.Initialisation
         private readonly string[] _foldersToExclude;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
+        private readonly INugetHelper _nugetHelper;
 
-        public CsharpProjectComponentsBuilder(ProjectInfo projectInfo, IStrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem)
+        public CsharpProjectComponentsBuilder(ProjectInfo projectInfo, IStrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem, INugetHelper nugetHelper)
         {
             _projectInfo = projectInfo;
             _options = options;
             _foldersToExclude = foldersToExclude;
             _logger = logger;
             _fileSystem = fileSystem;
+            _nugetHelper = nugetHelper;
         }
 
         public IProjectComponent Build()
         {
             CsharpFolderComposite inputFiles;
+
+            ParseSpecificIntegrations();
+
             if (_projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles != null && _projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
             {
                 inputFiles = FindProjectFilesUsingBuildalyzer(_projectInfo.ProjectUnderTestAnalyzerResult, _options);
@@ -50,6 +56,18 @@ namespace Stryker.Core.Initialisation
                 inputFiles = FindProjectFilesScanningProjectFolders(_projectInfo.ProjectUnderTestAnalyzerResult, _options);
             }
             return inputFiles;
+        }
+
+        private void ParseSpecificIntegrations()
+        {
+            // Xamarin Forms integration
+            if (_projectInfo.ProjectUnderTestAnalyzerResult.IsXamarinFormsProject())
+            {
+                _logger.LogInformation($"Xamarin Forms project detected. Starting integration process.");
+
+                if (!_nugetHelper.CopyPackageTo("Xamarin.Forms.Xaml", Directory.GetCurrentDirectory()))
+                    _logger.LogWarning("CsharpProjectComponentsBuilder could not find Xamarin.Forms.Xaml nuget. This probably will break the Xamarin integration. Please report an issue at github.");
+            }
         }
 
         // Deprecated method, should not be maintained
@@ -92,12 +110,6 @@ namespace Stryker.Core.Initialisation
 
             foreach (var sourceFile in analyzerResult.SourceFiles)
             {
-                // Skip xamarin UI generated files
-                if (sourceFile.EndsWith(".xaml.cs"))
-                {
-                    continue;
-                }
-
                 var relativePath = Path.GetRelativePath(projectUnderTestDir, sourceFile);
                 var folderComposite = GetOrBuildFolderComposite(cache, Path.GetDirectoryName(relativePath), projectUnderTestDir, projectUnderTestFolderComposite);
 
