@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Json;
@@ -31,31 +30,27 @@ namespace Stryker.Core.Baseline.Providers
 
             if (_fileSystem.File.Exists(reportPath))
             {
-                using StreamReader inputReader = _fileSystem.File.OpenText(reportPath);
+                await using var reportStream = _fileSystem.File.OpenRead(reportPath);
 
-                var reportJson = await inputReader.ReadToEndAsync();
-
-                return JsonConvert.DeserializeObject<JsonReport>(reportJson);
+                return await reportStream.DeserializeJsonReportAsync();
             }
 
-            _logger.LogDebug("No baseline was found at {0}", reportPath.ToString());
+            _logger.LogDebug("No baseline was found at {ReportPath}", reportPath);
             return null;
         }
 
         public async Task Save(JsonReport report, string version)
         {
-            var reportPath = FilePathUtils.NormalizePathSeparators(
+            var reportDirectory = FilePathUtils.NormalizePathSeparators(
                 Path.Combine(_options.BasePath, _outputPath, version));
 
-            var reportJson = report.ToJson();
+            _fileSystem.Directory.CreateDirectory(reportDirectory);
 
-            _fileSystem.Directory.CreateDirectory(reportPath);
+            var reportPath = Path.Combine(reportDirectory, "stryker-report.json");
+            await using var reportStream = _fileSystem.File.Create(reportPath);
+            await report.SerializeAsync(reportStream);
 
-            await using StreamWriter outputWriter = _fileSystem.File.CreateText(Path.Combine(reportPath, $"stryker-report.json"));
-
-            await outputWriter.WriteAsync(reportJson);
-
-            _logger.LogDebug($"Baseline report has been saved to {Path.Combine(reportPath, $"stryker-report.json")}");
+            _logger.LogDebug("Baseline report has been saved to {ReportPath}", reportPath);
         }
     }
 }

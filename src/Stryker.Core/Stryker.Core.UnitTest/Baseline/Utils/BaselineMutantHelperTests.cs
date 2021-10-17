@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Text;
-using Moq;
 using Shouldly;
 using Stryker.Core.Baseline.Utils;
 using Stryker.Core.Reporters.Json;
@@ -24,16 +20,19 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
 
             var jsonMutant = new JsonMutant
             {
-                Location = new JsonMutantLocation(new JsonMutantPosition
+                Location = new JsonMutantLocation
                 {
-                    Column = 17,
-                    Line = 17
-                },
-                new JsonMutantPosition
-                {
-                    Column = 62,
-                    Line = 17
-                }),
+                    Start = new JsonMutantPosition
+                    {
+                        Column = 17,
+                        Line = 17
+                    },
+                    End = new JsonMutantPosition
+                    {
+                        Column = 62,
+                        Line = 17
+                    }
+                }
             };
 
             var target = new BaselineMutantHelper();
@@ -57,16 +56,19 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
 
             var jsonMutant = new JsonMutant
             {
-                Location = new JsonMutantLocation(new JsonMutantPosition
+                Location = new JsonMutantLocation
                 {
-                    Column = 13,
-                    Line = 24
-                },
-                new JsonMutantPosition
-                {
-                    Column = 38,
-                    Line = 26
-                }),
+                    Start = new JsonMutantPosition
+                    {
+                        Column = 13,
+                        Line = 24
+                    },
+                    End = new JsonMutantPosition
+                    {
+                        Column = 38,
+                        Line = 26
+                    }
+                }
             };
 
             var target = new BaselineMutantHelper();
@@ -92,16 +94,19 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
 
             var jsonMutant = new JsonMutant
             {
-                Location = new JsonMutantLocation(new JsonMutantPosition
+                Location = new JsonMutantLocation
                 {
-                    Column = 30,
-                    Line = 34
-                },
-                new JsonMutantPosition
-                {
-                    Column = 34,
-                    Line = 34
-                }),
+                    Start = new JsonMutantPosition
+                    {
+                        Column = 30,
+                        Line = 34
+                    },
+                    End = new JsonMutantPosition
+                    {
+                        Column = 34,
+                        Line = 34
+                    }
+                }
             };
 
             var target = new BaselineMutantHelper();

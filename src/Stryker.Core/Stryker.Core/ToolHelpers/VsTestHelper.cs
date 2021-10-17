@@ -22,14 +22,16 @@ namespace Stryker.Core.ToolHelpers
     {
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
+        private readonly INugetHelper _nugetHelper;
         private readonly Dictionary<OSPlatform, string> _vstestPaths = new Dictionary<OSPlatform, string>();
         private string _platformVsTestToolPath;
         private object _lck = new object();
 
-        public VsTestHelper(IFileSystem fileSystem = null, ILogger logger = null)
+        public VsTestHelper(IFileSystem fileSystem = null, ILogger logger = null, INugetHelper nugetHelper = null)
         {
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestHelper>();
             _fileSystem = fileSystem ?? new FileSystem();
+            _nugetHelper = nugetHelper ?? new NugetHelper();
         }
 
         public string GetCurrentPlatformVsTestToolPath()
@@ -67,7 +69,7 @@ namespace Stryker.Core.ToolHelpers
                 return _vstestPaths;
             }
 
-            var nugetPackageFolders = CollectNugetPackageFolders();
+            var nugetPackageFolders = _nugetHelper.CollectNugetPackageFolders();
 
             if (SearchNugetPackageFolders(nugetPackageFolders) is var nugetAssemblies
                 && nugetAssemblies.Any(p => RuntimeInformation.IsOSPlatform(p.Key)))
@@ -154,28 +156,6 @@ namespace Stryker.Core.ToolHelpers
             return vsTestPaths;
         }
 
-        private IEnumerable<string> CollectNugetPackageFolders()
-        {
-            var userProfilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            var path = Path.Combine(userProfilePath, ".nuget", "packages");
-            if (_fileSystem.Directory.Exists(path))
-            {
-                yield return path;
-            }
-
-            static bool TryGetNonEmptyEnvironmentVariable(string variable, out string value)
-            {
-                value = Environment.GetEnvironmentVariable(variable);
-                return !string.IsNullOrWhiteSpace(value);
-            }
-
-            if (TryGetNonEmptyEnvironmentVariable("NUGET_PACKAGES", out var nugetPackagesLocation)
-                && _fileSystem.Directory.Exists(nugetPackagesLocation))
-            {
-                yield return nugetPackagesLocation;
-            }
-        }
-
         private string DeployEmbeddedVsTestBinaries()
         {
             var vstestZip = typeof(VsTestHelper).Assembly
@@ -208,7 +188,7 @@ namespace Stryker.Core.ToolHelpers
 
         public void Cleanup(int tries = 5)
         {
-            var nugetPackageFolders = CollectNugetPackageFolders();
+            var nugetPackageFolders = _nugetHelper.CollectNugetPackageFolders();
 
             try
             {

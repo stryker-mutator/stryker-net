@@ -1,5 +1,4 @@
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Json;
@@ -48,9 +47,9 @@ namespace Stryker.Core.Baseline.Providers
 
             if (response.StatusCode == HttpStatusCode.OK)
             {
-                var content = await response.Content.ReadAsStringAsync();
+                var stream = await response.Content.ReadAsStreamAsync();
 
-                return JsonConvert.DeserializeObject<JsonReport>(content);
+                return await stream.DeserializeJsonReportAsync();
             }
 
             _logger.LogDebug("No baseline was found at {0}", fileUrl);
