@@ -148,8 +148,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var nugetHelperMock = new Mock<INugetHelper>(MockBehavior.Strict);
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            var nugetHelperMock = new Mock<INugetHelper>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: new List<string> { projectUnderTestPath },
                 targetFramework: "netcoreapp2.1",
