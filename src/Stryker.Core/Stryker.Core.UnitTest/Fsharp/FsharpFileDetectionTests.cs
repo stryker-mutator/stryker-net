@@ -9,6 +9,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.IO;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.ToolHelpers;
 
 namespace Stryker.Core.UnitTest.Fsharp
 {
@@ -60,6 +61,8 @@ namespace Stryker.Core.UnitTest.Fsharp
                     { Path.Combine(_filesystemRoot, "ExampleProject", "node_modules", "Some package"), new MockFileData("bla") }, // node_modules should be excluded
                 });
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            var nugetHelperMock = new Mock<INugetHelper>(MockBehavior.Strict);
+
             projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, "fsharp"))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>() { _projectUnderTestPath },
@@ -72,7 +75,7 @@ namespace Stryker.Core.UnitTest.Fsharp
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: _projectUnderTestPath,
                     properties: new Dictionary<string, string>() { { "Language", "F#" } }).Object);
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, loggerMock.Object);
+            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, nugetHelperMock.Object, loggerMock.Object);
 
             var result = target.ResolveInput(new StrykerOptions());
 

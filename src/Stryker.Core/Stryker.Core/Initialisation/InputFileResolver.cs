@@ -10,6 +10,7 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ToolHelpers;
 
 namespace Stryker.Core.Initialisation
 {
@@ -30,15 +31,17 @@ namespace Stryker.Core.Initialisation
         private readonly IFileSystem _fileSystem;
         private readonly IProjectFileReader _projectFileReader;
         private readonly ILogger _logger;
+        private readonly INugetHelper _nugetHelper;
 
-        public InputFileResolver(IFileSystem fileSystem, IProjectFileReader projectFileReader, ILogger<InputFileResolver> logger = null)
+        public InputFileResolver(IFileSystem fileSystem, IProjectFileReader projectFileReader, INugetHelper nugetHelper, ILogger<InputFileResolver> logger = null)
         {
             _fileSystem = fileSystem;
             _projectFileReader = projectFileReader ?? new ProjectFileReader();
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<InputFileResolver>();
+            _nugetHelper = nugetHelper;
         }
 
-        public InputFileResolver() : this(new FileSystem(), new ProjectFileReader(), null) { }
+        public InputFileResolver() : this(new FileSystem(), new ProjectFileReader(), new NugetHelper(), null) { }
 
         /// <summary>
         /// Finds the referencedProjects and looks for all files that should be mutated in those projects
@@ -74,7 +77,7 @@ namespace Stryker.Core.Initialisation
             projectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath, options.TargetFramework);
 
             //to test Fsharp support you would need to create a FsharpProjectComponentsBuilder
-            IProjectComponent inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
+            IProjectComponent inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem, _nugetHelper).Build();
             projectInfo.ProjectContents = inputFiles;
 
             ValidateTestProjectsCanBeExecuted(projectInfo);
