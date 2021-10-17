@@ -150,6 +150,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var nugetHelperMock = new Mock<INugetHelper>(MockBehavior.Strict);
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
+            var nugetHelperMock = new Mock<INugetHelper>(MockBehavior.Strict);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: new List<string> { projectUnderTestPath },
@@ -164,7 +165,6 @@ namespace Stryker.Core.UnitTest.Initialisation
                 sourceFiles: fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray(),
                 properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object);
-
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, nugetHelperMock.Object);
             var result = target.ResolveInput(_options);
