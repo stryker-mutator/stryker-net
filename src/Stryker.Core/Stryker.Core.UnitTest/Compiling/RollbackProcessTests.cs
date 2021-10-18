@@ -102,7 +102,7 @@ namespace ExampleProject
         {
             var list = new List<List<double>>();
             int[] listProjected = list.Select(l => l.Count()).ToArray();
-        }   
+        }
     }
 }");
         var options = new StrykerOptions
@@ -128,26 +128,26 @@ namespace ExampleProject
 
         Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(MetadataReference.CreateFromFile(Assembly.Load(a).Location)));
 
-       var input = new MutationTestInput()
-       {
-           ProjectInfo = new ProjectInfo(new MockFileSystem())
-           {
-               ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                   {
-                       { "TargetDir", "" },
-                       { "AssemblyName", "AssemblyName"},
-                       { "TargetFileName", "TargetFileName.dll"},
-                       { "SignAssembly", "true" },
-                       { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
-                   },
-                  projectFilePath: "TestResources").Object,
-               TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                   {
-                       { "AssemblyName", "AssemblyName"},
-                   }).Object
-               }
-           },
-           AssemblyReferences = references
+        var input = new MutationTestInput()
+        {
+            ProjectInfo = new ProjectInfo(new MockFileSystem())
+            {
+                ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    {
+                        { "TargetDir", "" },
+                        { "AssemblyName", "AssemblyName"},
+                        { "TargetFileName", "TargetFileName.dll"},
+                        { "SignAssembly", "true" },
+                        { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
+                    },
+                    projectFilePath: "TestResources").Object,
+                TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    {
+                        { "AssemblyName", "AssemblyName"},
+                    }).Object
+                }
+            },
+            AssemblyReferences = references
        };
 
        var rollbackProcess = new RollbackProcess();

@@ -1,27 +1,13 @@
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
-using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
-using Stryker.Core.Options;
-using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
 {
-	public class CsharpMutantOrchestratorTests : TestBase
-	{
-		private readonly CsharpMutantOrchestrator _target;
-
-		public CsharpMutantOrchestratorTests()
-		{
-			var options = new StrykerOptions {
-				MutationLevel = MutationLevel.Complete,
-				OptimizationMode = OptimizationModes.CoverageBasedTest
-			};
-			_target = new CsharpMutantOrchestrator(options: options);
-		}
-
+    public class CsharpMutantOrchestratorTests : MutantOrchestratorTestsBase
+    {
 		[Fact]
 		public void IfStatementsShouldBeNested()
 		{
@@ -518,22 +504,7 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(0)
 			ShouldMutateSourceToExpected(source, expected);
 		}
 
-        [Fact]
-        public void ShouldMutateBlockStatements()
-        {
-            string source = @"private void Move()
-		{
-			;
-		}";
-            string expected = @"private bool Move()
-		{if (StrykerNamespace.MutantControl.IsActive(0)){} else {
-			;
-		}";
-
-            ShouldMutateSourceToExpected(source, expected);
-        }
-
-        [Fact]
+		[Fact]
 		public void ShouldMutateReturnStatements()
 		{
 			string source = @"private bool Move()
@@ -1194,32 +1165,6 @@ string Value => Generator(out var x) ? """" :""test"";
 int GetId(string input) {if(StrykerNamespace.MutantControl.IsActive(0)){return!(int.TryParse(input, out var result) )? result : 0;}else{return int.TryParse(input, out var result) ? result : 0;}}
 string Value {get{if(StrykerNamespace.MutantControl.IsActive(1)){return!(Generator(out var x) )? """" :""test"";}else{return Generator(out var x) ? (StrykerNamespace.MutantControl.IsActive(2)?""Stryker was here!"":"""" ):(StrykerNamespace.MutantControl.IsActive(3)?"""":""test"");}}}}}}";
 			ShouldMutateSourceToExpected(source, expected);
-		}
-
-		private void ShouldMutateSourceToExpected(string actual, string expected)
-		{
-			actual = @"using System;
-using System.Collections.Generic;
-			using System.Text;
-namespace StrykerNet.UnitTest.Mutants.TestResources
-	{
-		class TestClass
-		{" + actual + "}}";
-
-			expected = @"using System;
-using System.Collections.Generic;
-			using System.Text;
-namespace StrykerNet.UnitTest.Mutants.TestResources
-	{
-		class TestClass
-		{" + expected + "}}";
-			var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(actual).GetRoot());
-			actual = actualNode.ToFullString();
-			actual = actual.Replace(CodeInjection.HelperNamespace, "StrykerNamespace");
-			actualNode = CSharpSyntaxTree.ParseText(actual).GetRoot();
-			var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
-			actualNode.ShouldBeSemantically(expectedNode);
-			actualNode.ShouldNotContainErrors();
 		}
 	}
 }

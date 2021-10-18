@@ -69,6 +69,19 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 |`new Collection<int> { 1, 2 };`           | `new Collection<int> { };`           |
 |`new Dictionary<int, int> { { 1, 1 } };`  | `new Dictionary<int, int> { };`      |
 
+## Removal mutators
+|    Original   |   Mutated  | 
+| ------------- | ---------- | 
+| `void Function() { Age++; }`	| `void Function() {} (block emptied)`|
+| `int Function() { Age++; return Age; }` 	| `void Function() { return default; } (block emptied)`|
+| `return statement` 	| `removed` |
+| `break statement` 	| `removed` |
+| `continue statement` 	| `removed` |
+| `goto statement` 	| `removed` |
+| `throw statement` 	| `removed` |
+| `yield return statement` 	| `removed` |
+| `yield break statement` 	| `removed` |
+
 ## Unary Operators
 |    Original   |   Mutated  | 
 | ------------- | ---------- | 
@@ -105,7 +118,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `TakeWhile()`        | `SkipWhile()`        |
 | `Min()`               | `Max()`               |
 | `Max()`               | `Min()`               |
-| `Sum()`               | `Max()`*               |
+| `Sum()`               | `Max()`               |
 | `Count()`             | `Sum()`               |
 | `Average()`           | `Min()`               |
 | `OrderBy()`           | `OrderByDescending()` |
@@ -118,8 +131,6 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `Intersect()`        | `Union()`             |
 | `Concat()`           | `Except()`            |
 | `Except()`           | `Concat()`            |
-
-`* Sum() was mutated to Count() in previous versions; this change reduces compilation errors.`
 
 ## String Literals and Constants
 | Original | Mutated |

@@ -78,7 +78,7 @@ namespace Stryker.Core.Compiling
             };
         }
 
-        // search is this node is within a mutation
+        // search is this node contains or is within a mutation
         private (SyntaxNode, int) FindMutationIfAndId(SyntaxNode startNode)
         {
             var id = ExtractMutationIfAndId(startNode);
@@ -86,10 +86,15 @@ namespace Stryker.Core.Compiling
             {
                 return (startNode, id.Value);
             }
+            var descendantMutations = startNode.DescendantNodes().Select(x => (x, ExtractMutationIfAndId(x))).Where(x => x.Item2.HasValue);
+            if (descendantMutations.Any())
+            {
+                return ((SyntaxNode, int))descendantMutations.First();
+            }
             for (var node = startNode; node != null; node = node.Parent)
             {
                 id = ExtractMutationIfAndId(node);
-                if (id != null) 
+                if (id != null)
                 {
                     return (node, id.Value);
                 }
@@ -105,7 +110,7 @@ namespace Stryker.Core.Compiling
             foreach (var node in startNode.ChildNodes())
             {
                 var id = ExtractMutationIfAndId(node);
-                if (id != null) 
+                if (id != null)
                 {
                     return (node, id.Value);
                 }
