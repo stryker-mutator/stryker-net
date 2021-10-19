@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text;
 using Mono.Cecil;
+using Stryker.Core.ToolHelpers;
 
 namespace Stryker.Core.Initialisation
 {
@@ -26,6 +28,12 @@ namespace Stryker.Core.Initialisation
 
         private List<string> _gacPaths;
         public event AssemblyResolveEventHandler ResolveFailure;
+
+        public CrossPlatformAssemblyResolver(INugetHelper nugetHelper)
+        {
+            var nugetFolders = nugetHelper.CollectNugetPackageFolders();
+            _directories.AddRange(nugetFolders);
+        }
 
         public virtual AssemblyDefinition Resolve(AssemblyNameReference name) => Resolve(name, new ReaderParameters());
 
@@ -175,7 +183,11 @@ namespace Stryker.Core.Initialisation
                     var file = Path.Combine(directory, name.Name + extension);
                     if (!File.Exists(file))
                     {
-                        continue;
+                        var innerFiles = Directory.GetFiles(directory, "*"+extension, SearchOption.AllDirectories);
+                        file = innerFiles.FirstOrDefault(f => f.EndsWith(name.Name + extension));
+
+                        if(string.IsNullOrWhiteSpace(file) || !File.Exists(file))
+                            continue;
                     }
 
                     try

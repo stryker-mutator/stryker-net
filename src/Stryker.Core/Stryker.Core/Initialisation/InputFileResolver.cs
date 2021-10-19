@@ -31,17 +31,15 @@ namespace Stryker.Core.Initialisation
         private readonly IFileSystem _fileSystem;
         private readonly IProjectFileReader _projectFileReader;
         private readonly ILogger _logger;
-        private readonly INugetHelper _nugetHelper;
 
-        public InputFileResolver(IFileSystem fileSystem, IProjectFileReader projectFileReader, INugetHelper nugetHelper)
+        public InputFileResolver(IFileSystem fileSystem, IProjectFileReader projectFileReader, ILogger<InputFileResolver> logger = null)
         {
             _fileSystem = fileSystem;
             _projectFileReader = projectFileReader ?? new ProjectFileReader();
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<InputFileResolver>();
-            _nugetHelper = nugetHelper;
+            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<InputFileResolver>();
         }
 
-        public InputFileResolver() : this(new FileSystem(), new ProjectFileReader(), new NugetHelper()) { }
+        public InputFileResolver() : this(new FileSystem(), new ProjectFileReader(), null) { }
 
         /// <summary>
         /// Finds the referencedProjects and looks for all files that should be mutated in those projects
@@ -76,7 +74,8 @@ namespace Stryker.Core.Initialisation
             // Analyze project under test
             projectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath, options.TargetFramework);
 
-            IProjectComponent inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem, _nugetHelper).Build();
+            //to test Fsharp support you would need to create a FsharpProjectComponentsBuilder
+            IProjectComponent inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
             projectInfo.ProjectContents = inputFiles;
 
             ValidateTestProjectsCanBeExecuted(projectInfo);

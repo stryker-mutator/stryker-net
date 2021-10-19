@@ -10,6 +10,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
+using Stryker.Core.ToolHelpers;
 
 namespace Stryker.Core.Initialisation.Buildalyzer
 {
@@ -27,9 +28,9 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             return FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["AssemblyName"]);
         }
 
-        public static IEnumerable<ResourceDescription> GetResources(this IAnalyzerResult analyzerResult, ILogger logger)
+        public static IEnumerable<ResourceDescription> GetResources(this IAnalyzerResult analyzerResult, INugetHelper nugetHelper, ILogger logger)
         {
-            return EmbeddedResourcesGenerator.GetManifestResources(GetAssemblyPath(analyzerResult), logger);
+            return EmbeddedResourcesGenerator.GetManifestResources(GetAssemblyPath(analyzerResult), nugetHelper, logger);
         }
 
         public static CSharpCompilationOptions GetCompilationOptions(this IAnalyzerResult analyzerResult)

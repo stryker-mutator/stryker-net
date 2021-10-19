@@ -10,6 +10,7 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
+using Stryker.Core.ToolHelpers;
 
 namespace Stryker.Core.Compiling
 {
@@ -25,14 +26,17 @@ namespace Stryker.Core.Compiling
     {
         private readonly MutationTestInput _input;
         private readonly IRollbackProcess _rollbackProcess;
+        private readonly INugetHelper _nugetHelper;
         private readonly ILogger _logger;
 
         public CsharpCompilingProcess(MutationTestInput input,
-            IRollbackProcess rollbackProcess)
+            IRollbackProcess rollbackProcess,
+            INugetHelper nugetHelper)
         {
             _input = input;
             _rollbackProcess = rollbackProcess;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpCompilingProcess>();
+            _nugetHelper = nugetHelper;
         }
 
         private string AssemblyName =>
@@ -146,7 +150,7 @@ namespace Stryker.Core.Compiling
             var emitResult = compilation.Emit(
                 ms,
                 symbolStream,
-                manifestResources: _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetResources(_logger),
+                manifestResources: _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetResources(_nugetHelper, _logger),
                 win32Resources: compilation.CreateDefaultWin32Resources(
                     true, // Important!
                     false,

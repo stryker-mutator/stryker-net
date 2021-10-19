@@ -24,24 +24,18 @@ namespace Stryker.Core.Initialisation
         private readonly StrykerOptions _options;
         private readonly string[] _foldersToExclude;
         private readonly ILogger _logger;
-        private readonly IFileSystem _fileSystem;
-        private readonly INugetHelper _nugetHelper;
 
-        public CsharpProjectComponentsBuilder(ProjectInfo projectInfo, IStrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem, INugetHelper nugetHelper)
+        public CsharpProjectComponentsBuilder(ProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) : base(fileSystem)
         {
             _projectInfo = projectInfo;
             _options = options;
             _foldersToExclude = foldersToExclude;
             _logger = logger;
-            _fileSystem = fileSystem;
-            _nugetHelper = nugetHelper;
         }
 
         public override IProjectComponent Build()
         {
             CsharpFolderComposite inputFiles;
-
-            ParseSpecificIntegrations();
 
             if (_projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles != null && _projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
             {
@@ -53,18 +47,6 @@ namespace Stryker.Core.Initialisation
                 inputFiles = FindProjectFilesScanningProjectFolders(_projectInfo.ProjectUnderTestAnalyzerResult, _options);
             }
             return inputFiles;
-        }
-
-        private void ParseSpecificIntegrations()
-        {
-            // Xamarin Forms integration
-            if (_projectInfo.ProjectUnderTestAnalyzerResult.IsXamarinFormsProject())
-            {
-                _logger.LogInformation($"Xamarin Forms project detected. Starting integration process.");
-
-                if (!_nugetHelper.CopyPackageTo("Xamarin.Forms.Xaml", Directory.GetCurrentDirectory()))
-                    _logger.LogWarning("CsharpProjectComponentsBuilder could not find Xamarin.Forms.Xaml nuget. This probably will break the Xamarin integration. Please report an issue at github.");
-            }
         }
 
         // Deprecated method, should not be maintained
