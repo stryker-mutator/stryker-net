@@ -10,7 +10,6 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.ToolHelpers;
 
 namespace Stryker.Core.Initialisation
 {

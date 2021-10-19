@@ -153,7 +153,7 @@ namespace ExampleProject
        };
 
        var rollbackProcess = new RollbackProcess();
-       var nugetHelperMock = new Mock<NugetHelper>(MockBehavior.Strict);
+       var nugetHelperMock = new Mock<INugetHelper>(MockBehavior.Strict);
 
        var target = new CsharpCompilingProcess(input, rollbackProcess, nugetHelperMock.Object);
 

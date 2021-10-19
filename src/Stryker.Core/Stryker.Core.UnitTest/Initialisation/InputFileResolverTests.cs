@@ -719,7 +719,7 @@ Please specify a test project name filter that results in one project.
                 { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
             });
 
-            var target = new InputFileResolver(fileSystem, null, null);
+            var target = new InputFileResolver(fileSystem, null);
 
             var actual = target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject"));
 
@@ -735,7 +735,7 @@ Please specify a test project name filter that results in one project.
                 { Path.Combine(_filesystemRoot, "ExampleProject", "TestProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
                 { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
             });
-            var target = new InputFileResolver(fileSystem, null, null);
+            var target = new InputFileResolver(fileSystem, null);
 
             var actual = target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject", "TestProject.csproj"));
 
@@ -750,7 +750,7 @@ Please specify a test project name filter that results in one project.
                 { Path.Combine(_filesystemRoot, "ExampleProject", "AlternateProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
                 { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
             });
-            var target = new InputFileResolver(fileSystem, null, null);
+            var target = new InputFileResolver(fileSystem, null);
 
             var exception = Assert.Throws<InputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject", "GivenTestProject.csproj")));
             exception.Message.ShouldStartWith("No .csproj file found, please check your project directory at");
@@ -765,7 +765,7 @@ Please specify a test project name filter that results in one project.
                 { Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
                 { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
             });
-            var target = new InputFileResolver(fileSystem, null, null);
+            var target = new InputFileResolver(fileSystem, null);
 
             var actual = target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj"));
 
@@ -781,7 +781,7 @@ Please specify a test project name filter that results in one project.
                 { Path.Combine(_filesystemRoot, "ExampleProject","SubFolder", "TestProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
                 { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
             });
-            var target = new InputFileResolver(fileSystem, null, null);
+            var target = new InputFileResolver(fileSystem, null);
 
             var actual = target.FindTestProject(Path.Combine(_filesystemRoot,
                 FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder"))));
@@ -864,6 +864,7 @@ Please specify a test project name filter that results in one project.
             ex.Message.ShouldBe("Please upgrade to MsTest V2. Stryker.NET uses VSTest which does not support MsTest V1.");
             ex.Details.ShouldBe(@"See https://devblogs.microsoft.com/devops/upgrade-to-mstest-v2/ for upgrade instructions.");
         }
+
 
         [Fact]
         public void ShouldSkipXamlFiles()
