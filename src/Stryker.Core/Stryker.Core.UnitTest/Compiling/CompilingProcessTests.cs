@@ -7,6 +7,7 @@ using Stryker.Core.Compiling;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutationTest;
+using Stryker.Core.ToolHelpers;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
@@ -55,8 +56,9 @@ namespace ExampleProject
                 }
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
+            var nugetHelperMock = new Mock<NugetHelper>(MockBehavior.Strict);
 
-            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, nugetHelperMock.Object);
 
             using (var ms = new MemoryStream())
             {
@@ -102,6 +104,7 @@ namespace ExampleProject
                 }
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
+            var nugetHelperMock = new Mock<NugetHelper>(MockBehavior.Strict);
             rollbackProcessMock.Setup(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>(), false))
                             .Returns((CSharpCompilation compilation, ImmutableArray<Diagnostic> diagnostics, bool devMode, bool _) =>
                             new RollbackProcessResult()
@@ -109,7 +112,7 @@ namespace ExampleProject
                                 Compilation = compilation
                             });
 
-            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, nugetHelperMock.Object);
 
             using (var ms = new MemoryStream())
             {
@@ -155,8 +158,9 @@ namespace ExampleProject
                 }
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
+            var nugetHelperMock = new Mock<NugetHelper>(MockBehavior.Strict);
 
-            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object,  nugetHelperMock.Object);
 
             using (var ms = new MemoryStream())
             {
@@ -206,8 +210,9 @@ namespace ExampleProject
 
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
+            var nugetHelperMock = new  Mock<NugetHelper>(MockBehavior.Strict);
 
-            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, nugetHelperMock.Object);
 
             using (var ms = new MemoryStream())
             {
@@ -260,8 +265,9 @@ namespace ExampleProject
 
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
+            var nugetHelperMock = new Mock<NugetHelper>(MockBehavior.Strict);
 
-            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, nugetHelperMock.Object);
 
             using (var ms = new MemoryStream())
             {
@@ -308,8 +314,9 @@ namespace ExampleProject
                 }
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
+            var nugetHelperMock = new Mock<NugetHelper>(MockBehavior.Strict);
 
-            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, nugetHelperMock.Object);
 
             using (var ms = new MemoryStream())
             {

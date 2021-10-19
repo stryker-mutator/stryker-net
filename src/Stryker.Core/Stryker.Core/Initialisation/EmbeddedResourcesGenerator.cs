@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
+using Stryker.Core.ToolHelpers;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -12,11 +13,11 @@ namespace Stryker.Core.Initialisation
     {
         private static readonly IDictionary<string, IList<ResourceDescription>> _resourceDescriptions = new Dictionary<string, IList<ResourceDescription>>();
 
-        public static IEnumerable<ResourceDescription> GetManifestResources(string assemblyPath, ILogger logger)
+        public static IEnumerable<ResourceDescription> GetManifestResources(string assemblyPath, INugetHelper nugetHelper, ILogger logger)
         {
             if (!_resourceDescriptions.ContainsKey(assemblyPath))
             {
-                using var module = LoadModule(assemblyPath, logger);
+                using var module = LoadModule(assemblyPath, nugetHelper, logger);
                 if (module is null)
                 {
                     yield break;
@@ -30,7 +31,7 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private static ModuleDefinition LoadModule(string assemblyPath, ILogger logger)
+        private static ModuleDefinition LoadModule(string assemblyPath, INugetHelper nugetHelper, ILogger logger)
         {
             try
             {
@@ -40,7 +41,7 @@ namespace Stryker.Core.Initialisation
                     {
                         InMemory = true,
                         ReadWrite = false,
-                        AssemblyResolver = new CrossPlatformAssemblyResolver()
+                        AssemblyResolver = new CrossPlatformAssemblyResolver(nugetHelper)
                     });
             }
             catch (Exception e)

@@ -11,6 +11,7 @@ using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ToolHelpers;
 
 namespace Stryker.Core.MutationTest
 {
@@ -36,7 +37,7 @@ namespace Stryker.Core.MutationTest
             _projectInfo = (ProjectComponent<SyntaxTree>)mutationTestInput.ProjectInfo.ProjectContents;
             _options = options;
             _orchestrator = orchestrator ?? new CsharpMutantOrchestrator(options: _options);
-            _compilingProcess = new CsharpCompilingProcess(mutationTestInput, new RollbackProcess());
+            _compilingProcess = new CsharpCompilingProcess(mutationTestInput, new RollbackProcess(), new NugetHelper());
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
 

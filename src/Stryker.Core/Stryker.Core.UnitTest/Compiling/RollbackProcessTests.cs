@@ -21,6 +21,8 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Xunit;
+using Moq;
+using Stryker.Core.ToolHelpers;
 
 namespace Stryker.Core.UnitTest.Compiling
 {
@@ -151,8 +153,9 @@ namespace ExampleProject
        };
 
        var rollbackProcess = new RollbackProcess();
+       var nugetHelperMock = new Mock<NugetHelper>(MockBehavior.Strict);
 
-       var target = new CsharpCompilingProcess(input, rollbackProcess);
+       var target = new CsharpCompilingProcess(input, rollbackProcess, nugetHelperMock.Object);
 
        using (var ms = new MemoryStream())
        {
