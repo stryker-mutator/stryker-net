@@ -86,11 +86,6 @@ namespace Stryker.Core.Compiling
             {
                 return (startNode, id.Value);
             }
-            var descendantMutations = startNode.DescendantNodes().Select(x => (x, ExtractMutationIfAndId(x))).Where(x => x.Item2.HasValue);
-            if (descendantMutations.Any())
-            {
-                return ((SyntaxNode, int))descendantMutations.First();
-            }
             for (var node = startNode; node != null; node = node.Parent)
             {
                 id = ExtractMutationIfAndId(node);

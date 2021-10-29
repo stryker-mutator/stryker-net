@@ -101,7 +101,8 @@ namespace ExampleProject
         public void SomeLinq()
         {
             var list = new List<List<double>>();
-            int[] listProjected = list.Select(l => l.Count()).ToArray();
+            var four = 1 + 3;
+            int[] listProjected = list.Select(l => l.Max()).ToArray();
         }
     }
 }");
@@ -157,7 +158,7 @@ namespace ExampleProject
        using (var ms = new MemoryStream())
        {
            var result = target.Compile(helpers,  ms, null, true);
-           result.RollbackResult.RollbackedIds.Count().ShouldBe(1);
+           result.RollbackResult.RollbackedIds.Count().ShouldBe(1); 
        }
     }
 
