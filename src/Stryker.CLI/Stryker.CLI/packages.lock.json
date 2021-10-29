@@ -34,9 +34,9 @@
       },
       "NuGet.Versioning": {
         "type": "Direct",
-        "requested": "[5.10.0, )",
-        "resolved": "5.10.0",
-        "contentHash": "kXB4moY6JVjvv8InTlrDFpPEGZYLlK7e3bVrSn8NPbtrWhEdU3MlPagPjE2zsbjL7Oq80RNEnogNv6QkdUB+Rw=="
+        "requested": "[5.11.0, )",
+        "resolved": "5.11.0",
+        "contentHash": "mCv/GzvMk5iatWoZY41PoIShEbwVxq9CDCc1fV/uqPFKZ4DD/1JuKZ5AL/FJJRsTanvMR3EOXKYCLdQ7PFYn8Q=="
       },
       "Buildalyzer": {
         "type": "Transitive",
@@ -71,8 +71,8 @@
       },
       "DotNet.Glob": {
         "type": "Transitive",
-        "resolved": "3.1.2",
-        "contentHash": "U3iLJ1jRmnJ4n/LUkpX3iz1XD2us40v720qoaHVkn0souR5rspvPB7TTKUeGUz438vl6MkfynrGCnKMtAwmZnQ=="
+        "resolved": "3.1.3",
+        "contentHash": "hOfHw7MLJw/tbXaFwR1oiDb+dIXDp8URTxp5Pco42OOhiw77wrUNx6v6syNygHZbWwYdXQocL2Mo1l5FnfDVjg=="
       },
       "FSharp.Compiler.Service": {
         "type": "Transitive",
@@ -1574,7 +1574,7 @@
         "dependencies": {
           "Buildalyzer": "3.2.2",
           "Crayon": "2.0.62",
-          "DotNet.Glob": "3.1.2",
+          "DotNet.Glob": "3.1.3",
           "FSharp.Compiler.Service": "38.0.0",
           "LibGit2Sharp": "0.27.0-preview-0102",
           "Microsoft.CodeAnalysis.CSharp": "3.11.0",

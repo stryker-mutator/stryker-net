@@ -1,5 +1,6 @@
 ---
-title: Project Components
+title: Project components
+sidebar_position: 40
 custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/technical-reference/project-components.md
 ---
 

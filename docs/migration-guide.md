@@ -1,4 +1,10 @@
-# Migration Guide
+---
+title: Migration guide
+sidebar_position: 90
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/migration-guide.md
+---
+
+# Migration guide
 
 This guide instructs how to update major versions of Stryker.NET.
 
