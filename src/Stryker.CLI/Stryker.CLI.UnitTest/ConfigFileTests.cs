@@ -81,6 +81,7 @@ namespace Stryker.CLI.UnitTest
             actualInputs.IgnoreMutationsInput.SuppliedInput.ShouldContain("linq.FirstOrDefault");
             actualInputs.IgnoredMethodsInput.SuppliedInput.ShouldContain("Log*");
             actualInputs.TestCaseFilterInput.SuppliedInput.ShouldBe("(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1");
+            actualInputs.DashboardUrlInput.SuppliedInput.ShouldBe("https://alternative-stryker-dashboard.io");
         }
     }
 }

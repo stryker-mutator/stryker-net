@@ -54,6 +54,7 @@ namespace Stryker.CLI
             inputs.LanguageVersionInput.SuppliedInput = jsonConfig.LanguageVersion;
             inputs.TestProjectsInput.SuppliedInput = jsonConfig.TestProjects;
             inputs.TestCaseFilterInput.SuppliedInput = jsonConfig.TestCaseFilter;
+            inputs.DashboardUrlInput.SuppliedInput = jsonConfig.DashboardUrl;
             inputs.IgnoreMutationsInput.SuppliedInput = jsonConfig.IgnoreMutations;
             inputs.IgnoredMethodsInput.SuppliedInput = jsonConfig.IgnoreMethods;
         }
