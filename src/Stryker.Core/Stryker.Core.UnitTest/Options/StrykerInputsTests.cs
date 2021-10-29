@@ -23,7 +23,7 @@ namespace Stryker.Core.UnitTest.Options
             DiffIgnoreChangesInput = new DiffIgnoreChangesInput(),
             DisableBailInput = new DisableBailInput(),
             DisableMixMutantsInput = new DisableMixMutantsInput(),
-            ExcludedMutationsInput = new IgnoreMutationsInput(),
+            IgnoreMutationsInput = new IgnoreMutationsInput(),
             FallbackVersionInput = new FallbackVersionInput(),
             IgnoredMethodsInput = new IgnoreMethodsInput(),
             LanguageVersionInput = new LanguageVersionInput(),
