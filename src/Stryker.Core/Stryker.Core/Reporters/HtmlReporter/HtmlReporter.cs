@@ -7,21 +7,25 @@ using Crayon;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.Reporters.HtmlReporter.ProcessWrapper;
 using Stryker.Core.Reporters.Json;
 
-namespace Stryker.Core.Reporters.Html
+namespace Stryker.Core.Reporters.Html.reporter
 {
     public class HtmlReporter : IReporter
     {
         private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
         private readonly TextWriter _consoleWriter;
+        private readonly IProcessWrapper _processWrapper;
 
-        public HtmlReporter(StrykerOptions options, IFileSystem fileSystem = null, TextWriter consoleWriter = null)
+        public HtmlReporter(StrykerOptions options, IFileSystem fileSystem = null,
+            TextWriter consoleWriter = null, IProcessWrapper processWrapper = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
             _consoleWriter = consoleWriter ?? Console.Out;
+            _processWrapper = processWrapper ?? new ProcessWrapper();
         }
 
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
@@ -38,6 +42,13 @@ namespace Stryker.Core.Reporters.Html
             _consoleWriter.Write(Output.Green($"\nYour html report has been generated at: \n " +
                 $"file://{clickablePath} \n" +
                 $"You can open it in your browser of choice. \n"));
+
+            if (_options.OpenReporter == Options.Inputs.ReportType.HTMLReport)
+            {
+                clickablePath = clickablePath.Remove(0, 1);
+
+                _processWrapper.Start("file://" + clickablePath);
+            }
         }
 
         private void WriteHtmlReport(string filePath, string mutationReport)

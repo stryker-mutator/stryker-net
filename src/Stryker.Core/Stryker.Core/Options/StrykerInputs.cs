@@ -27,6 +27,7 @@ namespace Stryker.Core.Options
         MutateInput MutateInput { get; init; }
         MutationLevelInput MutationLevelInput { get; init; }
         MsBuildPathInput MsBuildPathInput { get; init; }
+        OpenReporterInput OpenReporterInput { get; init; }
         OutputPathInput OutputPathInput { get; init; }
         ProjectNameInput ProjectNameInput { get; init; }
         ProjectUnderTestNameInput ProjectUnderTestNameInput { get; init; }
@@ -95,6 +96,7 @@ namespace Stryker.Core.Options
         public DisableBailInput DisableBailInput { get; set; } = new();
         public DisableMixMutantsInput DisableMixMutantsInput { get; set; } = new();
         public MsBuildPathInput MsBuildPathInput { get; init; } = new();
+        public OpenReporterInput OpenReporterInput { get; init; } = new();
 
         public StrykerOptions ValidateAll()
         {
@@ -148,7 +150,8 @@ namespace Stryker.Core.Options
                 BaselineProvider = baselineProvider,
                 FallbackVersion = FallbackVersionInput.Validate(ProjectVersionInput.SuppliedInput, WithBaselineInput.SuppliedInput),
                 Since = sinceEnabled,
-                SinceTarget = SinceTargetInput.Validate(sinceEnabled)
+                SinceTarget = SinceTargetInput.Validate(sinceEnabled),
+                OpenReporter = OpenReporterInput.Validate()
             };
             return _strykerOptionsCache;
         }

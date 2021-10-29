@@ -45,9 +45,11 @@ namespace Stryker.CLI
                     case CommandOptionType.NoValue:
                         HandleNoValue((IInput<bool?>)strykerInput);
                         break;
+
                     case CommandOptionType.MultipleValue:
                         HandleMultiValue(cliInput, (IInput<IEnumerable<string>>)strykerInput);
                         break;
+
                     case CommandOptionType.SingleOrNoValue:
                         HandleSingleOrNoValue(strykerInput, cliInput, inputs);
                         break;
@@ -58,9 +60,11 @@ namespace Stryker.CLI
                     case IInput<string> stringInput:
                         HandleSingleStringValue(cliInput, stringInput);
                         break;
+
                     case IInput<int?> nullableIntInput:
                         HandleSingleIntValue(cliInput, nullableIntInput);
                         break;
+
                     case IInput<int> intInput:
                         HandleSingleIntValue(cliInput, (IInput<int?>)intInput);
                         break;
@@ -99,6 +103,7 @@ namespace Stryker.CLI
                     sinceInput.SuppliedInput = true;
                     inputs.SinceTargetInput.SuppliedInput = cliInput.Value();
                     break;
+
                 case WithBaselineInput withBaselineInput:
                     withBaselineInput.SuppliedInput = true;
                     inputs.BaselineProviderInput.SuppliedInput = cliInput.Value();
@@ -136,6 +141,8 @@ namespace Stryker.CLI
             AddCliInput(inputs.DashboardApiKeyInput, "dashboard-api-key", null);
             AddCliInput(inputs.AzureFileStorageSasInput, "azure-fileshare-sas", null);
             AddCliInput(inputs.ProjectVersionInput, "version", "v");
+
+            AddCliInput(inputs.OpenReporterInput, "open-report", "o", CommandOptionType.SingleOrNoValue, argumentHint: "HTMLReport");
         }
 
         private void RegisterCliInput(CommandLineApplication app, CliInput option)

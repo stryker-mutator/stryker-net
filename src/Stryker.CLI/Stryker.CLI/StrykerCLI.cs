@@ -148,7 +148,6 @@ namespace Stryker.CLI
             Console.WriteLine($"Version: {Output.Green(currentVersion.ToString())}");
             Console.WriteLine();
 
-
             var latestVersion = await _nugetClient.GetLatestVersionAsync();
             if (latestVersion > currentVersion)
             {
@@ -157,7 +156,7 @@ namespace Stryker.CLI
             }
 
             var previewVersion = await _nugetClient.GetPreviewVersionAsync();
-            if(previewVersion > currentVersion)
+            if (previewVersion > currentVersion)
             {
                 Console.WriteLine(Output.Cyan($@"A preview version of Stryker.NET ({previewVersion}) is available.
 If you would like to try out this preview version you can install it with `dotnet tool update -g dotnet-stryker --version {previewVersion}`
