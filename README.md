@@ -9,11 +9,13 @@
 *William Stryker: Oh, they serve their purpose... as long as they can be controlled.*
 
 # Introduction
+
 Stryker offers mutation testing for your .NET Core and .NET Framework projects. It allows you to test your tests by temporarily inserting bugs in your source code
 
 For an introduction to mutation testing and Stryker's features, see [stryker-mutator.io](https://stryker-mutator.io/). Looking for mutation testing in [JavaScript & Typescript](https://stryker-mutator.github.io/stryker) or [Scala](https://stryker-mutator.github.io/stryker4s)?
 
 # Compatibility
+
  - dotnet core 1.1 or newer
  - dotnet framework 4.5 or newer
 
@@ -28,7 +30,12 @@ dotnet stryker
 For more information read our [getting started](https://stryker-mutator.io/docs/stryker-net/Getting-started)
 
 ## Documentation
+
 For the full documentation on how to use Stryker.NET, see our [configuration docs](https://stryker-mutator.io/docs/stryker-net/Configuration)
+
+## Migrating
+
+Coming from Stryker.NET V0.x? Take a look at our [migration guide](https://stryker-mutator.io/docs/stryker-net/migration-guide).
 
 # Supported Mutators
 
@@ -39,6 +46,7 @@ For the full list of all available mutations, see the [mutator docs](https://str
 For the full list of all available reporters, see the [reporter docs](https://stryker-mutator.io/docs/stryker-net/Reporters).
 
 # Contributing
+
 Want to help develop Stryker.NET? Check out our [contribution guide](/CONTRIBUTING.md).
 
 Issues for the HTML report should be issued at https://github.com/stryker-mutator/mutation-testing-elements

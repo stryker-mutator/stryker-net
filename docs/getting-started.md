@@ -17,16 +17,20 @@ Make sure NuGet targets and build tasks are installed. You can install them with
 
 [NuGet targets and build tasks feature](./images/install-nuget-targets.png)
 
+## Migrating
+
+Coming from Stryker.NET V0.x? Take a look at our [migration guide](https://stryker-mutator.io/docs/stryker-net/migration-guide).
+
 # Install stryker
 
 Stryker can be installed globally for your whole system or locally for a specific project.
 
-### Install globally
+## Install globally
 ```bash
 dotnet tool install -g dotnet-stryker
 ```
 
-### Install in project
+## Install in project
 Create a file called dotnet-tools.json in your project folder if this is your first local tool.
 
 ```bash
@@ -80,7 +84,7 @@ Do this by adding a `stryker-config.json` file to your run location. Now add you
 
 For all available configuration see [our configuration page](https://stryker-mutator.io/docs/stryker-net/Configuration).
 
-### Troubleshooting
+# Troubleshooting
 Have troubles running Stryker? Try running with trace logging.
 
 ```bash
