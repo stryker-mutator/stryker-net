@@ -28,7 +28,7 @@
       "linq.FirstOrDefault"
     ],
     "ignore-methods": [
-      ""
+      "Log*"
     ],
     "thresholds": {
       "high": 40,
