@@ -2,6 +2,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
+using System;
 using System.Linq;
 using Xunit;
 
@@ -31,6 +32,18 @@ namespace Stryker.Core.UnitTest.Mutators
             mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>()
                 .Token.Value.ShouldBe(expected);
             mutation.DisplayName.ShouldBe("String mutation");
+        }
+
+        [Fact]
+        public void ShouldNotMutateOnRegexExpression()
+        {
+            var x = SyntaxFactory.ParseExpression("new Regex(\"myregex\"");
+            var y = (LiteralExpressionSyntax)x.DescendantNodes().First(node => node.Kind() == SyntaxKind.StringLiteralExpression);
+
+            var mutator = new StringMutator();
+            var result = mutator.ApplyMutations(y).ToList();
+
+            result.ShouldBeEmpty();
         }
     }
 }
