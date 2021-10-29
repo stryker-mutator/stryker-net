@@ -137,8 +137,8 @@
       },
       "DotNet.Glob": {
         "type": "Transitive",
-        "resolved": "3.1.2",
-        "contentHash": "U3iLJ1jRmnJ4n/LUkpX3iz1XD2us40v720qoaHVkn0souR5rspvPB7TTKUeGUz438vl6MkfynrGCnKMtAwmZnQ=="
+        "resolved": "3.1.3",
+        "contentHash": "hOfHw7MLJw/tbXaFwR1oiDb+dIXDp8URTxp5Pco42OOhiw77wrUNx6v6syNygHZbWwYdXQocL2Mo1l5FnfDVjg=="
       },
       "EmptyFiles": {
         "type": "Transitive",
@@ -2162,7 +2162,7 @@
           "McMaster.Extensions.CommandLineUtils": "3.1.0",
           "Microsoft.Extensions.Configuration.Binder": "5.0.0",
           "NuGet.Versioning": "5.10.0",
-          "stryker": "1.0.0-rc3"
+          "stryker": "1.0.0"
         }
       },
       "stryker": {
@@ -2170,7 +2170,7 @@
         "dependencies": {
           "Buildalyzer": "3.2.2",
           "Crayon": "2.0.62",
-          "DotNet.Glob": "3.1.2",
+          "DotNet.Glob": "3.1.3",
           "FSharp.Compiler.Service": "38.0.0",
           "LibGit2Sharp": "0.27.0-preview-0102",
           "Microsoft.CodeAnalysis.CSharp": "3.11.0",
