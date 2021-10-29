@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Text;
 using Stryker.Core.Reporters.Json;
 
 namespace Stryker.Core.UnitTest.Reporters
@@ -11,9 +9,11 @@ namespace Stryker.Core.UnitTest.Reporters
             string language,
             string source,
             ISet<JsonMutant> mutants
-        ) : base(language, source, mutants)
+        )
         {
-
+            Language = language;
+            Source = source;
+            Mutants = mutants;
         }
     }
 }

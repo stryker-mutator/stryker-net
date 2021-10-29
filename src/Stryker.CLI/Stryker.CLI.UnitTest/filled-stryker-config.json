@@ -20,7 +20,7 @@
       ]
     },
     "language-version": "",
-    "dashboard-url": "",
+    "dashboard-url": "https://alternative-stryker-dashboard.io",
     "test-projects": [
       ""
     ],
@@ -28,7 +28,7 @@
       "linq.FirstOrDefault"
     ],
     "ignore-methods": [
-      ""
+      "Log*"
     ],
     "thresholds": {
       "high": 40,

@@ -8,9 +8,11 @@ namespace Stryker.Core.UnitTest.Reporters
         public MockJsonReport(
             IDictionary<string, int> thresholds,
             IDictionary<string, JsonReportFileComponent> files
-        ) : base("1.3", thresholds, files)
+        )
         {
-
+            SchemaVersion = "1.3";
+            Thresholds = thresholds;
+            Files = files;
         }
     }
 }

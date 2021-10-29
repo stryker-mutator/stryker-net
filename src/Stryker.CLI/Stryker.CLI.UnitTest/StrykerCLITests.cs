@@ -31,7 +31,7 @@ namespace Stryker.CLI.UnitTest
 
         public StrykerCLITests()
         {
-            _options = new StrykerOptions() { Thresholds = new Thresholds { Break = 0 } };
+            _options = new StrykerOptions() { Thresholds = new Stryker.Core.Options.Thresholds { Break = 0 } };
             _runResults = new StrykerRunResult(_options, 0.3);
             _strykerRunnerMock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>()))
                 .Callback<IStrykerInputs, ILoggerFactory, IProjectOrchestrator>((c, l, p) => _inputs = c)
@@ -113,7 +113,7 @@ Options:";
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions()
             {
-                Thresholds = new Thresholds
+                Thresholds = new Stryker.Core.Options.Thresholds
                 {
                     Break = 40
                 }
@@ -124,7 +124,7 @@ Options:";
                 .Callback<IStrykerInputs, ILoggerFactory, IProjectOrchestrator>((c, l, p) => Core.Logging.ApplicationLogging.LoggerFactory = l)
                 .Returns(strykerRunResult)
                 .Verifiable();
-            
+
             var target = new StrykerCli(mock.Object);
             var result = target.Run(new string[] { });
 
@@ -139,7 +139,7 @@ Options:";
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions()
             {
-                Thresholds = new Thresholds
+                Thresholds = new Stryker.Core.Options.Thresholds
                 {
                     Break = 0
                 }
@@ -163,7 +163,7 @@ Options:";
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions()
             {
-                Thresholds = new Thresholds
+                Thresholds = new Stryker.Core.Options.Thresholds
                 {
                     Break = 40
                 }
@@ -187,7 +187,7 @@ Options:";
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions()
             {
-                Thresholds = new Thresholds
+                Thresholds = new Stryker.Core.Options.Thresholds
                 {
                     Break = 0
                 }

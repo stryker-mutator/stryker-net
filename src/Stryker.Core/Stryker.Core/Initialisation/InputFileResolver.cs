@@ -48,7 +48,6 @@ namespace Stryker.Core.Initialisation
             var projectInfo = new ProjectInfo(_fileSystem);
             // Determine test projects
             var testProjectFiles = new List<string>();
-            string projectUnderTest = null;
             if (options.TestProjects != null && options.TestProjects.Any())
             {
                 testProjectFiles = options.TestProjects.Select(FindTestProject).ToList();
@@ -67,14 +66,7 @@ namespace Stryker.Core.Initialisation
             projectInfo.TestProjectAnalyzerResults = testProjectAnalyzerResults;
 
             // Determine project under test
-            if (options.TestProjects != null && options.TestProjects.Any())
-            {
-                projectUnderTest = FindProjectFile(options.BasePath);
-            }
-            else
-            {
-                projectUnderTest = FindProjectUnderTest(projectInfo.TestProjectAnalyzerResults, options.ProjectUnderTestName);
-            }
+            var projectUnderTest = FindProjectUnderTest(projectInfo.TestProjectAnalyzerResults, options.ProjectUnderTestName);
 
             _logger.LogInformation("The project {0} will be mutated.", projectUnderTest);
 

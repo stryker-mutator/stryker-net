@@ -1,5 +1,10 @@
+using System;
+using System.Collections.Generic;
 using System.IO;
-using Newtonsoft.Json;
+using System.Linq;
+using System.Reflection;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 
@@ -49,25 +54,59 @@ namespace Stryker.CLI
             inputs.LanguageVersionInput.SuppliedInput = jsonConfig.LanguageVersion;
             inputs.TestProjectsInput.SuppliedInput = jsonConfig.TestProjects;
             inputs.TestCaseFilterInput.SuppliedInput = jsonConfig.TestCaseFilter;
-            inputs.ExcludedMutationsInput.SuppliedInput = jsonConfig.IgnoreMutations;
+            inputs.DashboardUrlInput.SuppliedInput = jsonConfig.DashboardUrl;
+            inputs.IgnoreMutationsInput.SuppliedInput = jsonConfig.IgnoreMutations;
+            inputs.IgnoredMethodsInput.SuppliedInput = jsonConfig.IgnoreMethods;
         }
 
         private static FileBasedInput LoadJsonConfig(string configFilePath)
         {
-            var json = new StreamReader(configFilePath).ReadToEnd();
-
+            using var streamReader = new StreamReader(configFilePath);
+            var json = streamReader.ReadToEnd();
+            FileBasedInput input;
             try
             {
-                var settings = new JsonSerializerSettings()
+                var root = JsonSerializer.Deserialize<FileBasedInputOuter>(json);
+                if (root == null)
                 {
-                    MissingMemberHandling = MissingMemberHandling.Error
-                };
-
-                return JsonConvert.DeserializeObject<FileBasedInputOuter>(json, settings).Input;
+                    throw new InputException($"The config file at \"{configFilePath}\" could not be parsed.");
+                }
+                IReadOnlyCollection<string> extraKeys = root.ExtraData != null ? root.ExtraData.Keys : Array.Empty<string>();
+                if (extraKeys.Any())
+                {
+                    var description = extraKeys.Count == 1 ? $"\"{extraKeys.First()}\" was found" : $"several were found: {{ \"{string.Join("\", \"", extraKeys)}\" }}";
+                    throw new InputException($"The config file at \"{configFilePath}\" must contain a single \"stryker-config\" root object but {description}.");
+                }
+                input = root.Input ?? throw new InputException($"The config file at \"{configFilePath}\" must contain a single \"stryker-config\" root object.");
             }
-            catch (JsonSerializationException ex)
+            catch (JsonException jsonException)
             {
-                throw new InputException(@$"There was a problem with one of the json properties in your stryker config. Path ""{ex.Path}"", message: ""{ex.Message}""");
+                throw new InputException($"The config file at \"{configFilePath}\" could not be parsed.", jsonException.Message);
+            }
+
+            EnsureCorrectKeys(configFilePath, input, "stryker-config");
+
+            return input;
+        }
+
+        private static void EnsureCorrectKeys(string configFilePath, IExtraData @object, string namePath)
+        {
+            var properties = @object.GetType().GetProperties().Where(e => e.GetCustomAttribute<JsonPropertyNameAttribute>() != null).ToList();
+            foreach (var property in properties.Where(property => property.PropertyType.IsAssignableTo(typeof(IExtraData))))
+            {
+                var child = (IExtraData)property.GetValue(@object);
+                if (child != null)
+                {
+                    EnsureCorrectKeys(configFilePath, child, $"{namePath}.{property.GetCustomAttribute<JsonPropertyNameAttribute>()!.Name}");
+                }
+            }
+            var extraData = @object.ExtraData;
+            IReadOnlyCollection<string> extraKeys = extraData != null ? extraData.Keys : Array.Empty<string>();
+            if (extraKeys.Any())
+            {
+                var allowedKeys = properties.Select(e => e.GetCustomAttribute<JsonPropertyNameAttribute>()!.Name).OrderBy(e => e);
+                var description = extraKeys.Count == 1 ? $"\"{extraKeys.First()}\" was found" : $"others were found (\"{string.Join("\", \"", extraKeys)}\")";
+                throw new InputException($"The allowed keys for the \"{namePath}\" object are {{ \"{string.Join("\", \"", allowedKeys)}\" }} but {description} in the config file at \"{configFilePath}\"");
             }
         }
     }

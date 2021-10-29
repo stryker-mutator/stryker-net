@@ -18,7 +18,7 @@ namespace Stryker.CLI.UnitTest
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions()
             {
-                Thresholds = new Thresholds()
+                Thresholds = new Stryker.Core.Options.Thresholds()
                 {
                     High = 80,
                     Low = 60,
@@ -78,8 +78,10 @@ namespace Stryker.CLI.UnitTest
             actualInputs.MutateInput.SuppliedInput.ShouldContain("!**/Test.cs{1..100}{200..300}");
             actualInputs.CoverageAnalysisInput.SuppliedInput.ShouldBe("perTest");
             actualInputs.DisableBailInput.SuppliedInput.ShouldBe(true);
-            actualInputs.ExcludedMutationsInput.SuppliedInput.ShouldContain("linq.FirstOrDefault");
+            actualInputs.IgnoreMutationsInput.SuppliedInput.ShouldContain("linq.FirstOrDefault");
+            actualInputs.IgnoredMethodsInput.SuppliedInput.ShouldContain("Log*");
             actualInputs.TestCaseFilterInput.SuppliedInput.ShouldBe("(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1");
+            actualInputs.DashboardUrlInput.SuppliedInput.ShouldBe("https://alternative-stryker-dashboard.io");
         }
     }
 }
