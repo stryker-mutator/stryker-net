@@ -55,7 +55,7 @@ dotnet tool restore
 
 Make sure the working directory for your console is set to the *unit test* project dir.
 
-## Let's kill some mutants
+# Let's kill some mutants
 For most projects no configuration is needed. Simply run stryker and it will find your source project to mutate.
 
 ```bash

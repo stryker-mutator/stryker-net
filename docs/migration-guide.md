@@ -72,5 +72,5 @@ Options migration overview:
 | dashboard-compare             | with-baseline                               | dashboard-compare             | baseline                     |
 | git-diff-target               | \--since ...                                | git-diff-target               | since.target                 |
 | azure-storage-sas             | azure-fileshare-sas                         | azure-storage-sas             | ❌                           |
-| files-to-exclude              | ❌                                          | ❌                            | ❌                           |
-| test-runner                   | ❌                                          | ❌                            | ❌                           |
+| files-to-exclude              | ❌                                          | files-to-exclude                            | ❌                           |
+| test-runner                   | ❌                                          | test-runner                            | ❌                           |
