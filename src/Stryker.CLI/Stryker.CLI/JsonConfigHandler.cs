@@ -55,6 +55,7 @@ namespace Stryker.CLI
             inputs.TestProjectsInput.SuppliedInput = jsonConfig.TestProjects;
             inputs.TestCaseFilterInput.SuppliedInput = jsonConfig.TestCaseFilter;
             inputs.ExcludedMutationsInput.SuppliedInput = jsonConfig.IgnoreMutations;
+            inputs.DashboardUrlInput.SuppliedInput = jsonConfig.DashboardUrl;
         }
 
         private static FileBasedInput LoadJsonConfig(string configFilePath)
