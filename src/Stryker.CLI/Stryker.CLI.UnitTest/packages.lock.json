@@ -54,11 +54,11 @@
       },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[13.2.41, )",
-        "resolved": "13.2.41",
-        "contentHash": "ONDLa49sfmk2xrF6Ju/CACAijDHItIV7CJ3hMZUzLALVaAx2/diIU7iAdSmSptHNuosrHeoC6HWPVICxbO9DCA==",
+        "requested": "[13.2.47, )",
+        "resolved": "13.2.47",
+        "contentHash": "pi6rVI4B0aB/QtpJuYXmcSQEGLOGK58mgsOWnf94syBQgNZ2KjJTduStR7RfKWY5EK9u42SJRi/mVRiyAEjqiw==",
         "dependencies": {
-          "System.IO.Abstractions": "13.2.41"
+          "System.IO.Abstractions": "13.2.47"
         }
       },
       "xunit": {
@@ -1296,8 +1296,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "13.2.43",
-        "contentHash": "zLg00Lon8k0ao7BmkkELKoXnNDhf/c+PKtz2QM2zBwzvqt4IVKe6/DIjZGav77O9/aBpmEkp9yWdCWbkq4yhFg==",
+        "resolved": "13.2.47",
+        "contentHash": "t1hPTax+QnZscqwCY2Xuszm+qGm9qPDFvDPOjB31nR1XBtKDbt/RE5s0gBTOvQ9EP//jfrg2HEQUQyN5asFocg==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "5.0.0"
         }
@@ -2162,7 +2162,7 @@
           "McMaster.Extensions.CommandLineUtils": "3.1.0",
           "Microsoft.Extensions.Configuration.Binder": "5.0.0",
           "NuGet.Versioning": "5.10.0",
-          "stryker": "1.0.0-rc3"
+          "stryker": "1.0.0"
         }
       },
       "stryker": {
@@ -2190,7 +2190,7 @@
           "ShellProgressBar": "5.1.0",
           "Stryker.DataCollector": "1.0.0",
           "Stryker.RegexMutators": "1.0.0",
-          "System.IO.Abstractions": "13.2.43",
+          "System.IO.Abstractions": "13.2.47",
           "System.Net.Http.Json": "5.0.0"
         }
       },
