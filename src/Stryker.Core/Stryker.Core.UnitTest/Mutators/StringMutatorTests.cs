@@ -37,11 +37,10 @@ namespace Stryker.Core.UnitTest.Mutators
         [Fact]
         public void ShouldNotMutateOnRegexExpression()
         {
-            var x = SyntaxFactory.ParseExpression("new Regex(\"myregex\"");
-            var y = (LiteralExpressionSyntax)x.DescendantNodes().First(node => node.Kind() == SyntaxKind.StringLiteralExpression);
-
+            var expressionSyntax = SyntaxFactory.ParseExpression("new Regex(\"myregex\")");
+            var literalExpression = expressionSyntax.DescendantNodes().OfType<LiteralExpressionSyntax>().First();
             var mutator = new StringMutator();
-            var result = mutator.ApplyMutations(y).ToList();
+            var result = mutator.ApplyMutations(literalExpression).ToList();
 
             result.ShouldBeEmpty();
         }
