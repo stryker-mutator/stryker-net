@@ -1,4 +1,4 @@
 label: 'Technical reference'
-position: 80 # float position is supported
+position: 9999 # float position is supported
 collapsible: true # make the category collapsible
 collapsed: true # closes by default
