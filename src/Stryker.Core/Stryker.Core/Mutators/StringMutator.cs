@@ -14,7 +14,8 @@ namespace Stryker.Core.Mutators
         public override IEnumerable<Mutation> ApplyMutations(LiteralExpressionSyntax node)
         {
             var kind = node.Kind();
-            var root = node.SyntaxTree.GetRoot();
+            // Get objectCreationSyntax to check if it contains a regex type.
+            var root = node.Parent?.Parent?.Parent;
 
             if (!(root is ObjectCreationExpressionSyntax parsedRoot && IsRegexType(parsedRoot))
                 && kind == SyntaxKind.StringLiteralExpression

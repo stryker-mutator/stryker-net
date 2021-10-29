@@ -43,5 +43,25 @@ namespace Stryker.Core.UnitTest.Mutators
 
             result.ShouldBeEmpty();
         }
+
+        [Fact]
+        public void ShouldNotMutateOnRegularExpressionInClass()
+        {
+            var syntaxTree = CSharpSyntaxTree.ParseText(@"using System.Text.RegularExpressions;
+namespace Stryker.Core.UnitTest.Mutators
+{
+    public class Test {
+        public Regex GetRegex(){
+            return new Regex(""myregex"");
+        }
+    }
+}
+");
+            var literalExpression = syntaxTree.GetRoot().DescendantNodes().OfType<LiteralExpressionSyntax>().First();
+            var mutator = new StringMutator();
+            var result = mutator.ApplyMutations(literalExpression).ToList();
+
+            result.ShouldBeEmpty();
+        }
     }
 }
