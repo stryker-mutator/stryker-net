@@ -1,0 +1,4 @@
+label: 'FSharp'
+position: 100 # float position is supported
+collapsible: true # make the category collapsible
+collapsed: true # closes by default
