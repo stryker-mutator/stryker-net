@@ -54,11 +54,11 @@
       },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[13.2.43, )",
-        "resolved": "13.2.43",
-        "contentHash": "xgmYDZfEJkqzR0uWv08xwG347iALtuSLzSoSfcazfHA9ufGN1zi0q7uvWMpybwTy07KsAtH7awgqPwQ2waUR7w==",
+        "requested": "[13.2.47, )",
+        "resolved": "13.2.47",
+        "contentHash": "pi6rVI4B0aB/QtpJuYXmcSQEGLOGK58mgsOWnf94syBQgNZ2KjJTduStR7RfKWY5EK9u42SJRi/mVRiyAEjqiw==",
         "dependencies": {
-          "System.IO.Abstractions": "13.2.43"
+          "System.IO.Abstractions": "13.2.47"
         }
       },
       "xunit": {
@@ -147,8 +147,8 @@
       },
       "DotNet.Glob": {
         "type": "Transitive",
-        "resolved": "3.1.2",
-        "contentHash": "U3iLJ1jRmnJ4n/LUkpX3iz1XD2us40v720qoaHVkn0souR5rspvPB7TTKUeGUz438vl6MkfynrGCnKMtAwmZnQ=="
+        "resolved": "3.1.3",
+        "contentHash": "hOfHw7MLJw/tbXaFwR1oiDb+dIXDp8URTxp5Pco42OOhiw77wrUNx6v6syNygHZbWwYdXQocL2Mo1l5FnfDVjg=="
       },
       "EmptyFiles": {
         "type": "Transitive",
@@ -1288,8 +1288,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "13.2.43",
-        "contentHash": "zLg00Lon8k0ao7BmkkELKoXnNDhf/c+PKtz2QM2zBwzvqt4IVKe6/DIjZGav77O9/aBpmEkp9yWdCWbkq4yhFg==",
+        "resolved": "13.2.47",
+        "contentHash": "t1hPTax+QnZscqwCY2Xuszm+qGm9qPDFvDPOjB31nR1XBtKDbt/RE5s0gBTOvQ9EP//jfrg2HEQUQyN5asFocg==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "5.0.0"
         }
@@ -2158,7 +2158,7 @@
         "dependencies": {
           "Buildalyzer": "3.2.2",
           "Crayon": "2.0.62",
-          "DotNet.Glob": "3.1.2",
+          "DotNet.Glob": "3.1.3",
           "FSharp.Compiler.Service": "38.0.0",
           "LibGit2Sharp": "0.27.0-preview-0102",
           "Microsoft.CodeAnalysis.CSharp": "3.11.0",
@@ -2178,7 +2178,7 @@
           "ShellProgressBar": "5.1.0",
           "Stryker.DataCollector": "1.0.0",
           "Stryker.RegexMutators": "1.0.0",
-          "System.IO.Abstractions": "13.2.43",
+          "System.IO.Abstractions": "13.2.47",
           "System.Net.Http.Json": "5.0.0"
         }
       },

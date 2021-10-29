@@ -1,5 +1,6 @@
 ---
 title: Research
+sidebar_position: 20
 custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/technical-reference/research.md
 ---
 

@@ -1,4 +1,6 @@
 ---
+title: Configuration
+sidebar_position: 30
 custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/configuration.md
 ---
 

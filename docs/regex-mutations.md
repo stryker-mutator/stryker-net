@@ -1,5 +1,6 @@
 ---
 title: Regex mutations
+sidebar_position: 50
 custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/regex-mutations.md
 ---
 

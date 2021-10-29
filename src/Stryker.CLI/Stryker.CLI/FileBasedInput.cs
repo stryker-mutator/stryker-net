@@ -57,7 +57,7 @@ namespace Stryker.CLI
         public bool? DisableMixMutants { get; init; }
 
         [JsonPropertyName("thresholds")]
-        public Thresholds Thresholds { get; init; }
+        public ThresholdsConfig Thresholds { get; init; }
 
         [JsonPropertyName("verbosity")]
         public string Verbosity { get; init; }
@@ -138,7 +138,7 @@ namespace Stryker.CLI
         public Dictionary<string, JsonElement> ExtraData { get; init; }
     }
 
-    public class Thresholds : IExtraData
+    public class ThresholdsConfig : IExtraData
     {
         [JsonPropertyName("high")]
         public int? High { get; init; }

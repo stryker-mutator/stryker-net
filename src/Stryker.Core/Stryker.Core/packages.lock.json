@@ -29,9 +29,9 @@
       },
       "DotNet.Glob": {
         "type": "Direct",
-        "requested": "[3.1.2, )",
-        "resolved": "3.1.2",
-        "contentHash": "U3iLJ1jRmnJ4n/LUkpX3iz1XD2us40v720qoaHVkn0souR5rspvPB7TTKUeGUz438vl6MkfynrGCnKMtAwmZnQ=="
+        "requested": "[3.1.3, )",
+        "resolved": "3.1.3",
+        "contentHash": "hOfHw7MLJw/tbXaFwR1oiDb+dIXDp8URTxp5Pco42OOhiw77wrUNx6v6syNygHZbWwYdXQocL2Mo1l5FnfDVjg=="
       },
       "DotNet.ReproducibleBuilds": {
         "type": "Direct",
@@ -204,9 +204,9 @@
       },
       "System.IO.Abstractions": {
         "type": "Direct",
-        "requested": "[13.2.43, )",
-        "resolved": "13.2.43",
-        "contentHash": "zLg00Lon8k0ao7BmkkELKoXnNDhf/c+PKtz2QM2zBwzvqt4IVKe6/DIjZGav77O9/aBpmEkp9yWdCWbkq4yhFg==",
+        "requested": "[13.2.47, )",
+        "resolved": "13.2.47",
+        "contentHash": "t1hPTax+QnZscqwCY2Xuszm+qGm9qPDFvDPOjB31nR1XBtKDbt/RE5s0gBTOvQ9EP//jfrg2HEQUQyN5asFocg==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "5.0.0"
         }
