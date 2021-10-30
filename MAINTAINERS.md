@@ -67,9 +67,9 @@ You may choose to do zero or more of these at their discretion:
 1. Participate in the decision-making process
 
 ### About "Owners"
-Some maintainers will have full admin rights to the stryker-mutator organization and/or will have access to publish to npm.
+Some maintainers will have full admin rights to the stryker-mutator organization and/or will have access to publish to nuget.
 
-1. Those with publishing access are expected to use npm's 2FA.
+1. Those with publishing access are expected to use nuget's 2FA.
 1. This level of access will be granted by the current owners to those maintainers who have earned the project's trust.
 1. Add new maintainers to the team.
 
@@ -93,7 +93,7 @@ We’re also using [conventional commits](https://www.conventionalcommits.org/en
 Some examples:
 
 ✅ A feature without breaking change.
-> feat(karma-runner): resolve local karma and ng version
+> feat(Regex mutations): Add regex mutations. Not enabled by default.
 > 
 > Require `karma` or `@angular/cli` from the current working directory, instead of from `@stryker-mutator/karma-runner/src/util.js` (where the old `requireModule` function lived).
 
@@ -103,21 +103,17 @@ Some examples:
 ✅ A feature with a breaking change
 > feat(jest-runner): remove deprecated project types
 > 
-> Remove deprecated project types.
-> * `react` --> `create-react-app`
-> * `react-ts` --> `create-react-app-ts`
->
-> BREAKING CHANGE: Project types `react` and `react-ts` have been removed. Please use `create-react-app` and `create-react-app-ts` respectively
+> BREAKING CHANGE: All options have been reworked. Your existing commandline and json config will most likely no longer work.   
 
 ❌ Comment message has to be present tense
 > ~~ feat(karma-runner): resolved local karma and ng version ~~
 
 ❌ Format issues:
-> ~~ feat(karma-runner) resolved local karma and ng version ~~
-> ~~ feat resolved local karma and ng version (#2622) ~~
+> ~~ feat(Html reporter) Add html reporter ~~ // missing :
+> ~~ feat: Add html reporter (#2622) ~~ // missing subject
 
 ❌ Scope too vague
-> ~~feat(stryker): allow for coverageAnalysis "all" in jest-runner~~
+> ~~feat(stryker): changed option~~
 
 
 It is important to note that these message are **not necessary when contributing a PR**, only when **squash merging them** (we only care about commit messages on the master branch).
@@ -156,5 +152,3 @@ The Stryker Mutator initiative consists of 3 main mutation testing frameworks:
 * StrykerJS (for JavaScript and friends)
 * Stryker.NET (for C# and maybe other .NET languages)
 * Stryker4s (for scala and maybe other JVM languages)
-
-Since Stryker began only for JavaScript and friends, it started with the name "Stryker", but we since migrated to "StrykerJS". 
