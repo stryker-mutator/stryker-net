@@ -195,9 +195,6 @@ namespace Stryker.CLI
     {
         public InputCategory Category { get; private set; }
 
-        public StrykerInputOption(string template, CommandOptionType optionType, InputCategory category) : base(template, optionType)
-        {
-            this.Category = category;
-        }
+        public StrykerInputOption(string template, CommandOptionType optionType, InputCategory category) : base(template, optionType) => Category = category;
     }
 }
