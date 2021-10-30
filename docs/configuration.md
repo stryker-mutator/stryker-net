@@ -224,6 +224,10 @@ The available reporter options are
 
 You can find a description for every reporter in the [reporter docs](./reporters.md)
 
+### Automatically open report
+
+Some text here
+
 ### `additional-timeout` <`number`>
 
 Default: `5000`  
