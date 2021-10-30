@@ -4,14 +4,13 @@ about: Create a report to help us improve
 title: ''
 labels: "\U0001F41B Bug"
 assignees: ''
-
 ---
 
 **Describe the bug**
 A clear and concise description of what the bug is.
 
 **Logs**
-For us to best assist you in diagnosing the problem we would ask you to run stryker with the option `--log-file` and to attach the resulting logs to the issue.
+For us to best assist you in diagnosing the problem we would ask you to run stryker with the option `--log-to-file` or `-L` and to attach the resulting logs to the issue.
 
 **Expected behavior**
 A clear and concise description of what you expected to happen.
