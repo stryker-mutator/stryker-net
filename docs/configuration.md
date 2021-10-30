@@ -585,3 +585,10 @@ Command line: `--msbuild-path "c://MsBuild/MsBuild.exe"`
 Config file: `N/A`  
 
 By default stryker tries to autodiscover msbuild on your system. If stryker fails to discover msbuild you may supply the path to msbuild manually with this option.
+
+### `output-html-report-name` <`string`>
+
+Default: `mutation-report.html`
+Config file: `output-html-report-name`
+
+If HTML reporting is being used, this sets the filename of the output HTML file. If the name provided does not contain a .html extension, a .html extension will be appended.

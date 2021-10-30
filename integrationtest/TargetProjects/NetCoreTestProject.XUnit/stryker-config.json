@@ -7,6 +7,7 @@
       "Json"
     ],
     "verbosity": "trace",
+    "output-html-report-name": "x",
     "project": "TargetProject.csproj",
     "ignore-mutations": [
       "string"
