@@ -15,7 +15,7 @@ namespace Stryker.Core.Options.Inputs
             {
                 return "mutation-report.html";
             }
-            if(!SuppliedInput.Contains('.'))
+            if(!SuppliedInput.EndsWith(".html"))
             {
                 return SuppliedInput + ".html";
             }
