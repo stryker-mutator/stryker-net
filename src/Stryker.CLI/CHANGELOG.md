@@ -1,3 +1,42 @@
+# [](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.11...dotnet-stryker@) (2021-10-30)
+
+
+### Bug Fixes
+
+* **Dashboard option:** Dashboard url option was not read from config file ([#1743](https://github.com/stryker-mutator/stryker-net/issues/1743)) ([b74b6d8](https://github.com/stryker-mutator/stryker-net/commit/b74b6d81af6e51a61c23e5134c8a499d85b23bed))
+* Ignore methods input was not read from config file ([#1742](https://github.com/stryker-mutator/stryker-net/issues/1742)) ([4924379](https://github.com/stryker-mutator/stryker-net/commit/4924379db5ad532af8e222fd53e80529c7ed9a72))
+* Improve errors messages when configuration contains invalid config keys ([#1707](https://github.com/stryker-mutator/stryker-net/issues/1707)) ([89d6379](https://github.com/stryker-mutator/stryker-net/commit/89d63792f4984c9ede7635a42cdb8bf0720c12d6)), closes [/github.com/microsoft/vstest/issues/2488#issuecomment-932036883](https://github.com//github.com/microsoft/vstest/issues/2488/issues/issuecomment-932036883)
+* Show full version number at startup ([#1705](https://github.com/stryker-mutator/stryker-net/issues/1705)) ([83bec04](https://github.com/stryker-mutator/stryker-net/commit/83bec04c54082825cce68c1de89cda0df4dc1d43))
+
+
+### Features
+
+* **Allow failing tests:** Failing tests are now allowed during the initial testrun ([#1542](https://github.com/stryker-mutator/stryker-net/issues/1542)) ([2a26b2b](https://github.com/stryker-mutator/stryker-net/commit/2a26b2bd6098f0115005f24a52d3d5dbc9a7622c))
+* **Block removal mutator:** Add block removal mutator ([#1717](https://github.com/stryker-mutator/stryker-net/issues/1717)) ([13ed1ab](https://github.com/stryker-mutator/stryker-net/commit/13ed1abe95bdfd296a4bc5b86a98796024ea4cd3))
+* **filtering:** Mutation can be controlled at the source code level ([#1583](https://github.com/stryker-mutator/stryker-net/issues/1583)) ([bd3fc4e](https://github.com/stryker-mutator/stryker-net/commit/bd3fc4e6b0500bb42224b54b95e08f1465b2fa09))
+* **ignore-mutations:** Allow ignoring specific linq mutations ([#1660](https://github.com/stryker-mutator/stryker-net/issues/1660)) ([84d3995](https://github.com/stryker-mutator/stryker-net/commit/84d3995ff3bdda530922c165aaf8e19af8cd8701))
+* **initial-build:** Allow custom msbuild path ([#1363](https://github.com/stryker-mutator/stryker-net/issues/1363)) ([64c99ee](https://github.com/stryker-mutator/stryker-net/commit/64c99ee4f6732632fd880c177392ac9e11c1316d))
+* **options:** CLI Options are now grouped in categories ([#1699](https://github.com/stryker-mutator/stryker-net/issues/1699)) ([978c939](https://github.com/stryker-mutator/stryker-net/commit/978c939925fe0f81b43a0937e8c2eb45493665be))
+* Rework how stryker consumes options ([#1273](https://github.com/stryker-mutator/stryker-net/issues/1273)) ([35d8c24](https://github.com/stryker-mutator/stryker-net/commit/35d8c2450b8472c86efd6f7991dc30d0c9738c87))
+* Show commandline hint when unrecognized option is used ([#1704](https://github.com/stryker-mutator/stryker-net/issues/1704)) ([240ae5a](https://github.com/stryker-mutator/stryker-net/commit/240ae5ae91c1c9b5bedb3667ed7b7b3a6b1141a7)), closes [/github.com/natemcmaster/CommandLineUtils/blob/v3.1.0/src/CommandLineUtils/CommandLineApplication.Execute.cs#L74-L93](https://github.com//github.com/natemcmaster/CommandLineUtils/blob/v3.1.0/src/CommandLineUtils/CommandLineApplication.Execute.cs/issues/L74-L93)
+* **target-framework:** Add an option to specify target framework ([#1684](https://github.com/stryker-mutator/stryker-net/issues/1684)) ([83d2beb](https://github.com/stryker-mutator/stryker-net/commit/83d2bebe9a64f8c555e599b77f40da6b323ca95c))
+* **testrunner:** Filter which unit tests are used during mutation test ([#1669](https://github.com/stryker-mutator/stryker-net/issues/1669)) ([7e74862](https://github.com/stryker-mutator/stryker-net/commit/7e74862e6eba2b9b9c19f4524d381bc5ebe35e30))
+* update targetframework from netcoreapp3.1 to net5.0 ([#1462](https://github.com/stryker-mutator/stryker-net/issues/1462)) ([b02a0bb](https://github.com/stryker-mutator/stryker-net/commit/b02a0bb3559d6afa8f201f5b692b96db6c572d96))
+
+
+### BREAKING CHANGES
+
+* All options have been reworked. Your existing commandline and json config will most likely no longer work.
+
+Co-authored-by: Caspar van Doornmalen <casparvandoornmalen@gmail.com>
+Co-authored-by: Richard Werkman <Richard.Werkman@infosupport.com>
+Co-authored-by: Richard Werkman <s1084402@student.windesheim.nl>
+Co-authored-by: Sakari Bergen <s@beatwaves.net>
+Co-authored-by: Peter Semkin <psfinaki@users.noreply.github.com>
+Co-authored-by: Richard Werkman <Richard1158@gmail.com>
+
+
+
 ## [0.22.10](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.9...dotnet-stryker@0.22.10) (2021-08-25)
 ### Bug Fixes
 * **update check:** Preview features should not trigger new version message ([#1695](https://github.com/stryker-mutator/stryker-net/issues/1695)) ([bf3c580](https://github.com/stryker-mutator/stryker-net/commit/bf3c580f72cb746157fc6ea5bd27cdd909882465))
