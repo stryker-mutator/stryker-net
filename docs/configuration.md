@@ -586,9 +586,9 @@ Config file: `N/A`
 
 By default stryker tries to autodiscover msbuild on your system. If stryker fails to discover msbuild you may supply the path to msbuild manually with this option.
 
-### `output-html-report-name` <`string`>
+### `report-file-name` <`string`>
 
-Default: `mutation-report.html`
-Config file: `output-html-report-name`
+Default: `mutation-report`
+Config file: `report-file-name`
 
-If HTML reporting is being used, this sets the filename of the output HTML file. If the name provided does not contain a .html extension, a .html extension will be appended.
+If HTML or JSON reporting is being used, this sets the filename of the output file.

@@ -58,7 +58,7 @@ namespace Stryker.CLI
             inputs.IgnoreMutationsInput.SuppliedInput = jsonConfig.IgnoreMutations;
             inputs.IgnoredMethodsInput.SuppliedInput = jsonConfig.IgnoreMethods;
 
-            inputs.OutputHtmlReportNameInput.SuppliedInput = jsonConfig.OutputHtmlReportName;
+            inputs.ReportFileNameInput.SuppliedInput = jsonConfig.ReportFileName;
         }
 
         private static FileBasedInput LoadJsonConfig(string configFilePath)
