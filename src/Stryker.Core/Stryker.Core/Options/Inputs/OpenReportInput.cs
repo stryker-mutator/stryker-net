@@ -21,17 +21,25 @@ namespace Stryker.Core.Options.Inputs
 
         public ReportType Validate(bool enabled)
         {
-            if (SuppliedInput is { })
+            if (enabled)
             {
-                if (Enum.TryParse(SuppliedInput, true, out ReportType result))
+                if (SuppliedInput is null)
                 {
-                    return result;
+                    return ReportType.Html;
                 }
                 else
                 {
-                    throw new InputException($"The given report type ({SuppliedInput}) is invalid. Valid options are: [{string.Join(", ", ((IEnumerable<ReportType>)Enum.GetValues(typeof(ReportType))).Where(item => item != ReportType.None))}]");
+                    if (Enum.TryParse(SuppliedInput, true, out ReportType result))
+                    {
+                        return result;
+                    }
+                    else
+                    {
+                        throw new InputException($"The given report type ({SuppliedInput}) is invalid. Valid options are: [{string.Join(", ", ((IEnumerable<ReportType>)Enum.GetValues(typeof(ReportType))).Where(item => item != ReportType.None))}]");
+                    }
                 }
             }
+
             return ReportType.None;
         }
     }

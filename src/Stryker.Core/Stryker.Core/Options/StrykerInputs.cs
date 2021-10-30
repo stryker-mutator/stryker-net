@@ -27,7 +27,6 @@ namespace Stryker.Core.Options
         MutateInput MutateInput { get; init; }
         MutationLevelInput MutationLevelInput { get; init; }
         MsBuildPathInput MsBuildPathInput { get; init; }
-        OpenReportInput OpenReportInput { get; init; }
         OutputPathInput OutputPathInput { get; init; }
         ProjectNameInput ProjectNameInput { get; init; }
         ProjectUnderTestNameInput ProjectUnderTestNameInput { get; init; }
@@ -44,6 +43,8 @@ namespace Stryker.Core.Options
         ThresholdLowInput ThresholdLowInput { get; init; }
         VerbosityInput VerbosityInput { get; init; }
         WithBaselineInput WithBaselineInput { get; init; }
+        OpenReportInput OpenReportInput { get; init; }
+        OpenReportEnabledInput OpenReportEnabledInput { get; init; }
 
         StrykerOptions ValidateAll();
     }
@@ -97,6 +98,7 @@ namespace Stryker.Core.Options
         public DisableMixMutantsInput DisableMixMutantsInput { get; set; } = new();
         public MsBuildPathInput MsBuildPathInput { get; init; } = new();
         public OpenReportInput OpenReportInput { get; init; } = new();
+        public OpenReportEnabledInput OpenReportEnabledInput { get; init; } = new();
 
         public StrykerOptions ValidateAll()
         {
@@ -151,7 +153,7 @@ namespace Stryker.Core.Options
                 FallbackVersion = FallbackVersionInput.Validate(ProjectVersionInput.SuppliedInput, WithBaselineInput.SuppliedInput),
                 Since = sinceEnabled,
                 SinceTarget = SinceTargetInput.Validate(sinceEnabled),
-                ReportTypeToOpen = OpenReportInput.Validate(sinceEnabled)
+                ReportTypeToOpen = OpenReportInput.Validate(OpenReportEnabledInput.Validate())
             };
             return _strykerOptionsCache;
         }

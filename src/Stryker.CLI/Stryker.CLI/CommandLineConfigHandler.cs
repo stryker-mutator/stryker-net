@@ -110,8 +110,8 @@ namespace Stryker.CLI
                     break;
 
                 case OpenReportInput openReportInput:
-                    openReportInput.SuppliedInput = "Html";
-                    inputs.OpenReportInput.SuppliedInput = cliInput.Value();
+                    inputs.OpenReportEnabledInput.SuppliedInput = true;
+                    openReportInput.SuppliedInput = cliInput.Value();
                     break;
             }
         }
