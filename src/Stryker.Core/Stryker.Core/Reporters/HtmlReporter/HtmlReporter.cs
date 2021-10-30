@@ -43,7 +43,7 @@ namespace Stryker.Core.Reporters.Html.reporter
                 $"file://{clickablePath} \n" +
                 $"You can open it in your browser of choice. \n"));
 
-            if (_options.OpenReporter == Options.Inputs.ReportType.HTMLReport)
+            if (_options.ReportTypeToOpen == Options.Inputs.ReportType.Html)
             {
                 clickablePath = clickablePath.Remove(0, 1);
 

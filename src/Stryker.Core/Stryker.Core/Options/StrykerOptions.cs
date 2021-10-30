@@ -47,7 +47,7 @@ namespace Stryker.Core.Options
 
         public string FallbackVersion { get; init; }
         public string ModuleName { get; init; }
-        public ReportType OpenReporter { get; init; }
+        public ReportType ReportTypeToOpen { get; init; }
 
         public IEnumerable<FilePattern> Mutate { get; init; } = new[] { FilePattern.Parse("**/*") };
         public IEnumerable<Regex> IgnoredMethods { get; init; } = Enumerable.Empty<Regex>();
@@ -110,7 +110,7 @@ namespace Stryker.Core.Options
             LanguageVersion = LanguageVersion,
             LogOptions = LogOptions,
             ModuleName = ModuleName,
-            OpenReporter = OpenReporter,
+            ReportTypeToOpen = ReportTypeToOpen,
             Mutate = Mutate,
             MutationLevel = MutationLevel,
             OptimizationMode = OptimizationMode,

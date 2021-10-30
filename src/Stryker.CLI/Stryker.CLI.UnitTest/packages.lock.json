@@ -1802,7 +1802,7 @@
           "McMaster.Extensions.CommandLineUtils": "3.1.0",
           "Microsoft.Extensions.Configuration.Binder": "5.0.0",
           "NuGet.Versioning": "5.11.0",
-          "stryker": "1.0.0"
+          "stryker": "1.0.0-rc3"
         }
       },
       "stryker": {

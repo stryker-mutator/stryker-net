@@ -80,7 +80,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var mockFileSystem = new MockFileSystem();
             var options = new StrykerOptions
             {
-                OpenReporter = Core.Options.Inputs.ReportType.HTMLReport,
+                ReportTypeToOpen = Core.Options.Inputs.ReportType.Html,
                 OutputPath = Directory.GetCurrentDirectory()
             };
 
@@ -93,7 +93,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var clickablePath = reportPath.Replace("\\", "/");
 
             // Check if browser open action is invoked
-            mockProcess.Verify(m => m.Start("/" + clickablePath));
+            mockProcess.Verify(m => m.Start("file://" + clickablePath));
         }
 
         [Fact]

@@ -108,6 +108,11 @@ namespace Stryker.CLI
                     withBaselineInput.SuppliedInput = true;
                     inputs.BaselineProviderInput.SuppliedInput = cliInput.Value();
                     break;
+
+                case OpenReportInput openReportInput:
+                    openReportInput.SuppliedInput = "Html";
+                    inputs.OpenReportInput.SuppliedInput = cliInput.Value();
+                    break;
             }
         }
 
@@ -142,7 +147,7 @@ namespace Stryker.CLI
             AddCliInput(inputs.AzureFileStorageSasInput, "azure-fileshare-sas", null);
             AddCliInput(inputs.ProjectVersionInput, "version", "v");
 
-            AddCliInput(inputs.OpenReporterInput, "open-report", "o", CommandOptionType.SingleOrNoValue, argumentHint: "HTMLReport");
+            AddCliInput(inputs.OpenReportInput, "open-report", "o", CommandOptionType.SingleOrNoValue, argumentHint: "report-type");
         }
 
         private void RegisterCliInput(CommandLineApplication app, CliInput option)
