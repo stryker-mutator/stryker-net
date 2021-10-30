@@ -13,13 +13,10 @@ namespace Stryker.Core.Mutators
 
         public override IEnumerable<Mutation> ApplyMutations(LiteralExpressionSyntax node)
         {
-            var kind = node.Kind();
             // Get objectCreationSyntax to check if it contains a regex type.
             var root = node.Parent?.Parent?.Parent;
 
-            if (!(root is ObjectCreationExpressionSyntax parsedRoot && IsRegexType(parsedRoot))
-                && kind == SyntaxKind.StringLiteralExpression
-                && !(node.Parent is ConstantPatternSyntax))
+            if (!IsRegexType(root) && IsStringLiteral(node))
             {
                 var currentValue = (string)node.Token.Value;
                 var replacementValue = currentValue == "" ? "Stryker was here!" : "";
@@ -33,10 +30,22 @@ namespace Stryker.Core.Mutators
             }
         }
 
-        private bool IsRegexType(ObjectCreationExpressionSyntax root)
+        private bool IsStringLiteral(LiteralExpressionSyntax node)
         {
-            var type = root.Type.ToString();
-            return type == typeof(Regex).Name || type == typeof(Regex).FullName;
+            var kind = node.Kind();
+            return kind == SyntaxKind.StringLiteralExpression
+                && !(node.Parent is ConstantPatternSyntax);
+        }
+
+        private bool IsRegexType(SyntaxNode root)
+        {
+            if (root is ObjectCreationExpressionSyntax parsedRoot)
+            {
+                var type = parsedRoot.Type.ToString();
+                return type == typeof(Regex).Name || type == typeof(Regex).FullName;
+            }
+
+            return false;
         }
     }
 }

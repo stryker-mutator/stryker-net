@@ -45,6 +45,17 @@ namespace Stryker.Core.UnitTest.Mutators
         }
 
         [Fact]
+        public void ShouldNotMutateOnFullyDefinedRegexExpression()
+        {
+            var expressionSyntax = SyntaxFactory.ParseExpression("new System.Text.RegularExpressions.Regex(\"myregex\")");
+            var literalExpression = expressionSyntax.DescendantNodes().OfType<LiteralExpressionSyntax>().First();
+            var mutator = new StringMutator();
+            var result = mutator.ApplyMutations(literalExpression).ToList();
+
+            result.ShouldBeEmpty();
+        }
+
+        [Fact]
         public void ShouldNotMutateOnRegularExpressionInClass()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System.Text.RegularExpressions;
