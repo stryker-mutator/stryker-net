@@ -32,5 +32,47 @@ namespace Stryker.Core.UnitTest.Mutators
                 .Token.Value.ShouldBe(expected);
             mutation.DisplayName.ShouldBe("String mutation");
         }
+
+        [Fact]
+        public void ShouldNotMutateOnRegexExpression()
+        {
+            var expressionSyntax = SyntaxFactory.ParseExpression("new Regex(\"myregex\")");
+            var literalExpression = expressionSyntax.DescendantNodes().OfType<LiteralExpressionSyntax>().First();
+            var mutator = new StringMutator();
+            var result = mutator.ApplyMutations(literalExpression).ToList();
+
+            result.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void ShouldNotMutateOnFullyDefinedRegexExpression()
+        {
+            var expressionSyntax = SyntaxFactory.ParseExpression("new System.Text.RegularExpressions.Regex(\"myregex\")");
+            var literalExpression = expressionSyntax.DescendantNodes().OfType<LiteralExpressionSyntax>().First();
+            var mutator = new StringMutator();
+            var result = mutator.ApplyMutations(literalExpression).ToList();
+
+            result.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void ShouldNotMutateOnRegularExpressionInClass()
+        {
+            var syntaxTree = CSharpSyntaxTree.ParseText(@"using System.Text.RegularExpressions;
+namespace Stryker.Core.UnitTest.Mutators
+{
+    public class Test {
+        public Regex GetRegex(){
+            return new Regex(""myregex"");
+        }
+    }
+}
+");
+            var literalExpression = syntaxTree.GetRoot().DescendantNodes().OfType<LiteralExpressionSyntax>().First();
+            var mutator = new StringMutator();
+            var result = mutator.ApplyMutations(literalExpression).ToList();
+
+            result.ShouldBeEmpty();
+        }
     }
 }

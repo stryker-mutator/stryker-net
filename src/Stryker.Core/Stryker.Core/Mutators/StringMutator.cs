@@ -1,7 +1,9 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Mutators
 {
@@ -11,8 +13,10 @@ namespace Stryker.Core.Mutators
 
         public override IEnumerable<Mutation> ApplyMutations(LiteralExpressionSyntax node)
         {
-            var kind = node.Kind();
-            if (kind == SyntaxKind.StringLiteralExpression && !(node.Parent is ConstantPatternSyntax))
+            // Get objectCreationSyntax to check if it contains a regex type.
+            var root = node.Parent?.Parent?.Parent;
+
+            if (!IsRegexType(root) && IsStringLiteral(node))
             {
                 var currentValue = (string)node.Token.Value;
                 var replacementValue = currentValue == "" ? "Stryker was here!" : "";
@@ -24,6 +28,24 @@ namespace Stryker.Core.Mutators
                     Type = Mutator.String
                 };
             }
+        }
+
+        private bool IsStringLiteral(LiteralExpressionSyntax node)
+        {
+            var kind = node.Kind();
+            return kind == SyntaxKind.StringLiteralExpression
+                && !(node.Parent is ConstantPatternSyntax);
+        }
+
+        private bool IsRegexType(SyntaxNode root)
+        {
+            if (root is ObjectCreationExpressionSyntax parsedRoot)
+            {
+                var type = parsedRoot.Type.ToString();
+                return type == typeof(Regex).Name || type == typeof(Regex).FullName;
+            }
+
+            return false;
         }
     }
 }
