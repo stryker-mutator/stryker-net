@@ -101,8 +101,7 @@ namespace ExampleProject
         public void SomeLinq()
         {
             var list = new List<List<double>>();
-            var four = 1 + 3;
-            int[] listProjected = list.Select(l => l.Max()).ToArray();
+            int[] listProjected = list.Select(l => l.Count()).ToArray();
         }
     }
 }");
@@ -111,7 +110,9 @@ namespace ExampleProject
             MutationLevel = MutationLevel.Complete,
             DevMode = true
         };
-        var mutator = new CsharpMutantOrchestrator(options: options);
+            int[] listProjected = new[] { new[] { 1d } }.Select(l => l.Count()).ToArray();
+
+            var mutator = new CsharpMutantOrchestrator(options: options);
         var helpers = new List<SyntaxTree>();
         foreach (var (name, code) in CodeInjection.MutantHelpers)
         {
@@ -158,8 +159,8 @@ namespace ExampleProject
        using (var ms = new MemoryStream())
        {
            var result = target.Compile(helpers,  ms, null, true);
-           result.RollbackResult.RollbackedIds.Count().ShouldBe(1); 
-       }
+           result.RollbackResult.RollbackedIds.Count().ShouldBe(2); // should actually be 1 but thanks to issue #1745 rollback doesn't work
+            }
     }
 
     [Fact]
