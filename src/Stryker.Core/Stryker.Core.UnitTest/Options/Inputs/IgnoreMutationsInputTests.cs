@@ -26,7 +26,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 
             var ex = Should.Throw<InputException>(() => target.Validate());
 
-            ex.Message.ShouldBe($"Invalid excluded mutation (gibberish). The excluded mutations options are [Arithmetic, Equality, Boolean, Logical, Assignment, Unary, Update, Checked, Linq, String, Statement, Bitwise, Initializer, Regex]");
+            ex.Message.ShouldBe($"Invalid excluded mutation (gibberish). The excluded mutations options are [Arithmetic, Block, Equality, Boolean, Logical, Assignment, Unary, Update, Checked, Linq, String, Statement, Bitwise, Initializer, Regex]");
         }
 
         [Fact]

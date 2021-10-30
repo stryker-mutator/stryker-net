@@ -1,5 +1,6 @@
 using System;
 using Microsoft.CodeAnalysis;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Instrumentation
 {
@@ -11,9 +12,9 @@ namespace Stryker.Core.Instrumentation
     /// <remarks>Multiple helpers can work on the same type of constructs.</remarks>
     internal abstract class BaseEngine<T>: IInstrumentCode where T: SyntaxNode
     {
-        protected BaseEngine(string markerId)
+        protected BaseEngine()
         {
-            Marker = new SyntaxAnnotation(markerId, InstrumentEngineID);
+            Marker = new SyntaxAnnotation(MutantPlacer.Injector, InstrumentEngineID);
         }
 
         /// <summary>

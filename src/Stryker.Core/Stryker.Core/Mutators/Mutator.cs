@@ -9,6 +9,8 @@ namespace Stryker.Core.Mutators
     {
         [Description("Arithmetic operators")]
         Arithmetic,
+        [Description("Block statements")]
+        Block,
         [Description("Equality operators")]
         Equality,
         [Description("Boolean literals")]

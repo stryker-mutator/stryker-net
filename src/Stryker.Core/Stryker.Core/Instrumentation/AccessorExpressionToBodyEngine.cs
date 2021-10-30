@@ -10,10 +10,6 @@ namespace Stryker.Core.Instrumentation
     /// </summary>
     internal class AccessorExpressionToBodyEngine : BaseEngine<AccessorDeclarationSyntax>
     {
-        public AccessorExpressionToBodyEngine(string markerId) : base(markerId)
-        {
-        }
-
         /// <summary>
         /// Convert an expression accessor to the body form.
         /// </summary>

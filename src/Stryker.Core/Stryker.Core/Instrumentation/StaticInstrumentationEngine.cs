@@ -10,9 +10,6 @@ namespace Stryker.Core.Instrumentation
     /// </summary>
     internal class StaticInstrumentationEngine : BaseEngine<BlockSyntax>
     {
-        public StaticInstrumentationEngine(string annotation) : base(annotation)
-        {}
-
         /// <summary>
         /// injects a 'using' block with static marker class used by coverage logic.
         /// </summary>
