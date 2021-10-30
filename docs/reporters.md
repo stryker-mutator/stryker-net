@@ -1,4 +1,6 @@
 ---
+title: Reporters
+sidebar_position: 60
 custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/reporters.md
 ---
 

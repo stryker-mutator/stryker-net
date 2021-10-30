@@ -1,4 +1,6 @@
 ---
+title: Mutations
+sidebar_position: 40
 custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/mutators.md
 ---
 
