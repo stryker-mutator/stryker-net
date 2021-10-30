@@ -7,21 +7,21 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
-    public class OutputHTMLReportNameInputTests : TestBase
+    public class OutputHtmlReportNameInputTests : TestBase
     {
         private string DefaultName = "mutation-report.html";
 
         [Fact]
         public void ShouldHaveHelpText()
         {
-            var target = new OutputHTMLReportNameInput();
+            var target = new OutputHtmlReportNameInput();
             target.HelpText.ShouldBe(@"");
         }
 
         [Fact]
         public void ShouldDefaultToMutationReportFilenameIfEmptyString()
         {
-            var target = new OutputHTMLReportNameInput() { SuppliedInput = string.Empty };
+            var target = new OutputHtmlReportNameInput() { SuppliedInput = string.Empty };
             var result = target.Validate();
 
             Assert.True(EndsInHTML(result));
@@ -29,9 +29,9 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         }
 
         [Fact]
-        public void ShouldDefaultToMutationReportFilenameIfNull()
+        public void ShouldUseDefaultFilenameIfNull()
         {
-            var target = new OutputHTMLReportNameInput() { SuppliedInput = null };
+            var target = new OutputHtmlReportNameInput() { SuppliedInput = null };
             var result = target.Validate();
 
             Assert.True(EndsInHTML(result));
@@ -41,7 +41,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Fact]
         public void ShouldDefaultToMutationReportFilenameIfWhitespace()
         {
-            var target = new OutputHTMLReportNameInput() { SuppliedInput = "  " };
+            var target = new OutputHtmlReportNameInput() { SuppliedInput = "  " };
             var result = target.Validate();
 
             Assert.True(EndsInHTML(result));
@@ -51,7 +51,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Fact]
         public void ShouldAppendExtensionIfMissingExtension()
         {
-            var target = new OutputHTMLReportNameInput() { SuppliedInput = "report" };
+            var target = new OutputHtmlReportNameInput() { SuppliedInput = "report" };
             var result = target.Validate();
 
             Assert.True(EndsInHTML(result));
@@ -61,19 +61,19 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Fact]
         public void ShouldNotAppendExtensionIfExtensionExists()
         {
-            var target = new OutputHTMLReportNameInput() { SuppliedInput = "report.html" };
+            var target = new OutputHtmlReportNameInput() { SuppliedInput = "report.html" };
             var result = target.Validate();
 
             Assert.True(EndsInHTML(result));
             result.ShouldBe("report.html");
         }
 
-        //[Fact]
-        //public void ShouldNotAllowInvalidFilenames()
-        //{
-        //    var target = new OutputHTMLReportNameInput() { SuppliedInput = new string(Path.GetInvalidPathChars()) };
-        //    Assert.Throws<InputException>(() => target.Validate());
-        //}
+        [Fact]
+        public void ShouldNotAllowInvalidFilenames()
+        {
+            var target = new OutputHtmlReportNameInput() { SuppliedInput = new string(Path.GetInvalidPathChars()) };
+            Assert.Throws<InputException>(() => target.Validate());
+        }
 
         private bool EndsInHTML(string filename)
         {

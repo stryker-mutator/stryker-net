@@ -5,7 +5,7 @@ using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
-    public class OutputHTMLReportNameInput : Input<string>
+    public class OutputHtmlReportNameInput : Input<string>
     {
         protected override string Description => string.Empty;
 
@@ -17,11 +17,11 @@ namespace Stryker.Core.Options.Inputs
             {
                 return "mutation-report.html";
             }
-            if(SuppliedInput.IndexOfAny(Path.GetInvalidPathChars()) != -1 )
+            if (SuppliedInput.IndexOfAny(Path.GetInvalidPathChars()) != -1)
             {
                 throw new InputException("Invalid HTML Report Name supplied");
             }
-            if(!SuppliedInput.EndsWith(".html"))
+            if (!SuppliedInput.EndsWith(".html"))
             {
                 return SuppliedInput + ".html";
             }

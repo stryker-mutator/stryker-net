@@ -15,7 +15,7 @@ namespace Stryker.Core.Options
 
         public string BasePath { get; init; }
         public string OutputPath { get; init; }
-        public string OutputHTMLReportName { get; init; }
+        public string OutputHtmlReportName { get; init; }
         public string SolutionPath { get; init; }
         public string TargetFramework { get; init; }
 
@@ -111,7 +111,7 @@ namespace Stryker.Core.Options
             MutationLevel = MutationLevel,
             OptimizationMode = OptimizationMode,
             OutputPath = OutputPath,
-            OutputHTMLReportName = OutputHTMLReportName,
+            OutputHtmlReportName = OutputHtmlReportName,
             ProjectName = ProjectName,
             ProjectUnderTestName = projectUnderTest,
             ProjectVersion = ProjectVersion,
