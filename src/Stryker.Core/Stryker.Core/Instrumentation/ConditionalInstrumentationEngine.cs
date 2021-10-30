@@ -10,11 +10,6 @@ namespace Stryker.Core.Instrumentation
     /// </summary>
     internal class ConditionalInstrumentationEngine : BaseEngine<ParenthesizedExpressionSyntax>
     {
-
-        public ConditionalInstrumentationEngine(string marker): base(marker)
-        {
-        }
-
         /// <summary>
         /// Injects a conditional operator with the original code or the mutated one, depending on condition's result.
         /// </summary>
