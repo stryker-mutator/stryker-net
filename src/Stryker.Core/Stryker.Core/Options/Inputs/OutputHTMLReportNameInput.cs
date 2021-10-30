@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions;
 using Stryker.Core.Exceptions;
 
@@ -14,6 +16,10 @@ namespace Stryker.Core.Options.Inputs
             if (string.IsNullOrWhiteSpace(SuppliedInput))
             {
                 return "mutation-report.html";
+            }
+            if(SuppliedInput.IndexOfAny(Path.GetInvalidPathChars()) != -1 )
+            {
+                throw new InputException("Invalid HTML Report Name supplied");
             }
             if(!SuppliedInput.EndsWith(".html"))
             {

@@ -1,3 +1,4 @@
+using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using Shouldly;
 using Stryker.Core.Exceptions;
@@ -66,6 +67,13 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             Assert.True(EndsInHTML(result));
             result.ShouldBe("report.html");
         }
+
+        //[Fact]
+        //public void ShouldNotAllowInvalidFilenames()
+        //{
+        //    var target = new OutputHTMLReportNameInput() { SuppliedInput = new string(Path.GetInvalidPathChars()) };
+        //    Assert.Throws<InputException>(() => target.Validate());
+        //}
 
         private bool EndsInHTML(string filename)
         {
