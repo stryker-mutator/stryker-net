@@ -11,10 +11,6 @@ namespace Stryker.Core.Instrumentation
     /// </summary>
     internal class PropertyExpressionToBodyEngine : BaseEngine<PropertyDeclarationSyntax>
     {
-        public PropertyExpressionToBodyEngine(string markerId) : base(markerId)
-        {
-        }
-
         /// <summary>
         /// Convert a property from arrow form to the body form.
         /// </summary>

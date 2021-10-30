@@ -4,15 +4,15 @@
     ".NETFramework,Version=v4.6.1": {
       "MSTest.TestAdapter": {
         "type": "Direct",
-        "requested": "[2.2.5, 2.2.5]",
-        "resolved": "2.2.5",
-        "contentHash": "FvY/n4fEhtqTdLR7xzgfb6UDa9g+9QeKNlH8zA7gqor9cuZ9gNCeHsx1GqKmDyeLA4ZpxAgjIdzp/vGWISA3iw=="
+        "requested": "[2.2.7, 2.2.7]",
+        "resolved": "2.2.7",
+        "contentHash": "E8seWhOKGEz4Aq6IaX6dUZGRSVYwLVy+6ZI9nq0TyHRuv54Id4Y7y/CB0KGiOUrqtygfooQm5wmpnDOW28N9Ug=="
       },
       "MSTest.TestFramework": {
         "type": "Direct",
-        "requested": "[2.2.5, 2.2.5]",
-        "resolved": "2.2.5",
-        "contentHash": "7PQH0yJoQO6bp6kHgVoTowtQZyQilftL64/pxeDzi15vm3UewzRZz74QssTaOi1otA6j2/lxFTEMJk/+HY/apQ=="
+        "requested": "[2.2.7, 2.2.7]",
+        "resolved": "2.2.7",
+        "contentHash": "qroVMzabIcbqwxtlDZriZflqs3nKpmqSVoM/Nfw9fg+F6885rrgo9R4gwmK7xxPPd8gpDrmNqqwpnyh6GMoN9g=="
       }
     }
   }

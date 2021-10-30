@@ -35,6 +35,7 @@ namespace Stryker.Core.Mutants
             {
                 // the default list of mutators
                 new BinaryExpressionMutator(),
+                new BlockMutator(),
                 new BooleanMutator(),
                 new AssignmentExpressionMutator(),
                 new PrefixUnaryMutator(),
