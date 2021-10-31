@@ -48,7 +48,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Fact]
         public void ShouldNotAllowInvalidFilenames()
         {
-            var target = new ReportFileNameInput() { SuppliedInput = new string(Path.GetInvalidPathChars()) };
+            var target = new ReportFileNameInput() { SuppliedInput = new string(Path.GetInvalidFileNameChars()) };
             Should.Throw<InputException>(() => target.Validate());
         }
     }
