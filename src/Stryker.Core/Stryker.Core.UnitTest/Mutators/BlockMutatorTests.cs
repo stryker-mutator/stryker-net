@@ -57,6 +57,32 @@ struct Program
         }
 
         [Fact]
+        private void ShouldMutateLocalFunctionsInStructConstructors()
+        {
+            var source = @"
+struct Program
+{
+    int mustBeInitialized;
+
+    Program(int value)
+    {
+        int CalculateValue()
+        {
+            int value;
+            value = 42; // Try to fool with this assignment
+            return value;
+        }
+
+        this.mustBeInitialized = CalculateValue();
+    }
+}";
+
+            GetMutations(source).Count().ShouldBe(
+                1,
+                "Should mutate the local function and only the local function");
+        }
+
+        [Fact]
         private void ShouldMutateStructConstructorNonAssignmentsAtRoot()
         {
             var source = @"

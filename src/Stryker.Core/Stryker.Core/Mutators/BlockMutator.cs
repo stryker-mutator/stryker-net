@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
@@ -19,9 +18,23 @@ namespace Stryker.Core.Mutators
             // Note: using local functions below so that the check order can be easily reordered,
             // if a need to optimize arises at some point.
 
-            bool IsInStructConstructor() => node.Ancestors()
-                .OfType<ConstructorDeclarationSyntax>()
-                .Any(constructor => constructor.Parent is StructDeclarationSyntax);
+            bool IsInStructConstructor()
+            {
+                foreach (var ancestor in node.Ancestors())
+                {
+                    switch (ancestor)
+                    {
+                        // Don't count local functions as being part of the constructor.
+                        // They can't assign to members, so they can be mutated.
+                        case LocalFunctionStatementSyntax:
+                            return false;
+                        case ConstructorDeclarationSyntax { Parent: StructDeclarationSyntax }:
+                            return true;
+                    }
+                }
+
+                return false;
+            }
 
             bool ContainsAssignments() => node
                 .ChildNodes()
