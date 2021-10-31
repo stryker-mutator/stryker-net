@@ -17,7 +17,7 @@ namespace Stryker.Core.Options.Inputs
             {
                 return "mutation-report";
             }
-            if (SuppliedInput.IndexOfAny(Path.GetInvalidPathChars()) != -1)
+            if (SuppliedInput.IndexOfAny(Path.GetInvalidFileNameChars()) != -1)
             {
                 throw new InputException("Invalid HTML Report Name supplied");
             }

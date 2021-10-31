@@ -9,7 +9,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 {
     public class ReportFileNameInputTests : TestBase
     {
-        private string DefaultName = "mutation-report";
+        private const string DefaultName = "mutation-report";
 
         [Fact]
         public void ShouldHaveHelpText()
@@ -49,7 +49,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         public void ShouldNotAllowInvalidFilenames()
         {
             var target = new ReportFileNameInput() { SuppliedInput = new string(Path.GetInvalidPathChars()) };
-            Assert.Throws<InputException>(() => target.Validate());
+            Should.Throw<InputException>(() => target.Validate());
         }
     }
 }
