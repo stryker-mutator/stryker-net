@@ -4,7 +4,7 @@ schedules:
 - cron: "0 1 * * *"
   displayName: Nightly
   branches:
-    include: 
+    include:
     - master
   always: true
 
@@ -21,7 +21,7 @@ pr:
     exclude:
     - 'docs/*'
     - '.github/*'
-  
+
 variables:
   PackageVersion: '1.0.0'
   VersionBuildNumber: $[counter('1.0.0', 1)]
@@ -175,8 +175,8 @@ stages:
       inputs:
         delayForMinutes: '1'
 
-- stage: IntegrationTests 
-  dependsOn: 
+- stage: IntegrationTests
+  dependsOn:
     - Analysis
     - DeployIntegrationtestPackage
   condition: not(failed())
@@ -248,7 +248,7 @@ stages:
 
 - stage: PublishMasterReleaseArtifact
   displayName: Publish Release Artifact
-  dependsOn: 
+  dependsOn:
     - Analysis
     - IntegrationTests
   condition: and(not(failed()), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
@@ -286,7 +286,7 @@ stages:
 
 - stage: PublishBranchReleaseArtifact
   displayName: Publish Release Artifact
-  dependsOn: 
+  dependsOn:
     - Analysis
     - IntegrationTests
   condition: and(not(failed()), and(ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.SourceBranch'], 'refs/heads/master')))

@@ -22,6 +22,7 @@ const packages = [
 
 const oldVersionPrefix = packagejson.versionPrefix;
 const oldVersionSuffix = packagejson.versionSuffix;
+const oldVersion = oldVersionPrefix + (oldVersionSuffix ?'-':'') + oldVersionSuffix;
 console.log(`Current package version is ${oldVersionPrefix}${oldVersionSuffix?'-':''}${oldVersionSuffix}`);
 const rl = readline.createInterface({
     input: process.stdin,
@@ -55,13 +56,13 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
     });
 
     console.log('Updating azure-pipelines.yml');
-    replaceVersionNumber('./azure-pipelines.yml', `VersionBuildNumber: $[counter('${oldVersionNumber}', 1)]`, `VersionBuildNumber: $[counter('${versionPrefix}', 1)]`);
-    replaceVersionNumber('./azure-pipelines.yml', `PackageVersion: '${oldVersionNumber}'`, `PackageVersion: '${versionPrefix}'`);
+    replaceVersionNumber('./azure-pipelines.yml', `VersionBuildNumber: $[counter('${oldVersion}', 1)]`, `VersionBuildNumber: $[counter('${versionPrefix}', 1)]`);
+    replaceVersionNumber('./azure-pipelines.yml', `PackageVersion: '${oldVersion}'`, `PackageVersion: '${versionPrefix}'`);
 
     console.log(`Creating commit`);
     exec('git add .');
     exec(`git commit ${commitMessageLines.map(entry => `-m "${entry}"`).join(' ')}`);
-    
+
     if (!versionSuffix) {
         console.log('Tagging commit');
         packages.forEach(package => exec(`git tag -a ${package.name}@${newVersionNumber} -m "${package.name}@${newVersionNumber}"`));
