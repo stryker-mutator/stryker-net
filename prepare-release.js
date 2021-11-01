@@ -15,17 +15,6 @@ const replaceVersionNumber = (path, oldString, newString) => {
     fs.writeFileSync(path, updatedFileContent, { encoding: 'UTF-8' });
 };
 
-const removeVersionNumber = (path, oldString, newString) => {
-    const fileContent = fs.readFileSync(path, { encoding: 'UTF-8' });
-    if (!fileContent.includes(oldString)) {
-        throw new Error(`The file at ${path} did not contain ${oldString}!`);
-    }
-    const oldStringStart = fileContent.indexOf(oldString);
-    const oldStringEnd = oldStringStart + oldString.length;
-    const updatedFileContent = fileContent.substr(0, oldStringStart) + newString + fileContent.substr(oldStringEnd);
-    fs.writeFileSync(path, updatedFileContent, { encoding: 'UTF-8' });
-};
-
 const packages = [
     { name: 'stryker', path: './src/Stryker.Core', csproj: './src/Stryker.Core/Stryker.Core/Stryker.Core.csproj' },
     { name: 'dotnet-stryker', path: './src/Stryker.CLI', csproj: './src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj' }
@@ -61,28 +50,28 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
         replaceVersionNumber(package.csproj, `<VersionPrefix>${oldVersionPrefix}</VersionPrefix>`, `<VersionPrefix>${versionPrefix}</VersionPrefix>`);
         replaceVersionNumber(package.csproj, `<VersionSuffix>${oldVersionSuffix}</VersionSuffix>`, `<VersionSuffix>${versionSuffix}</VersionSuffix>`);
 
-        // if (!versionSuffix) {
-        //     console.log(`Updating changelog for ${package.name}`);
-        //     exec(`npx conventional-changelog-cli -p angular --infile "${package.path}/CHANGELOG.md" --same-file --commit-path ${package.path} --tag-prefix "${package.name}@"`);
-        //     commitMessageLines.push(`- ${package.name}@${newVersionNumber}`);
-        // }
+        if (!versionSuffix) {
+            console.log(`Updating changelog for ${package.name}`);
+            exec(`npx conventional-changelog-cli -p angular --infile "${package.path}/CHANGELOG.md" --same-file --commit-path ${package.path} --tag-prefix "${package.name}@"`);
+            commitMessageLines.push(`- ${package.name}@${newVersionNumber}`);
+        }
     });
 
-    // console.log('Updating azure-pipelines.yml');
-    // replaceVersionNumber('./azure-pipelines.yml', `VersionBuildNumber: $[counter('${oldVersion}', 1)]`, `VersionBuildNumber: $[counter('${versionPrefix}', 1)]`);
-    // replaceVersionNumber('./azure-pipelines.yml', `PackageVersion: '${oldVersion}'`, `PackageVersion: '${versionPrefix}'`);
+    console.log('Updating azure-pipelines.yml');
+    replaceVersionNumber('./azure-pipelines.yml', `VersionBuildNumber: $[counter('${oldVersion}', 1)]`, `VersionBuildNumber: $[counter('${versionPrefix}', 1)]`);
+    replaceVersionNumber('./azure-pipelines.yml', `PackageVersion: '${oldVersion}'`, `PackageVersion: '${versionPrefix}'`);
 
-    // console.log(`Creating commit`);
-    // exec('git add .');
-    // exec(`git commit ${commitMessageLines.map(entry => `-m "${entry}"`).join(' ')}`);
+    console.log(`Creating commit`);
+    exec('git add .');
+    exec(`git commit ${commitMessageLines.map(entry => `-m "${entry}"`).join(' ')}`);
 
-    // if (!versionSuffix) {
-    //     console.log('Tagging commit');
-    //     packages.forEach(package => exec(`git tag -a ${package.name}@${newVersionNumber} -m "${package.name}@${newVersionNumber}"`));
-    // }
+    if (!versionSuffix) {
+        console.log('Tagging commit');
+        packages.forEach(package => exec(`git tag -a ${package.name}@${newVersionNumber} -m "${package.name}@${newVersionNumber}"`));
+    }
 
-    // console.log(`Pushing commit ${versionSuffix?'':' and tags'}`);
-    // exec('git push --follow-tags');
+    console.log(`Pushing commit ${versionSuffix?'':' and tags'}`);
+    exec('git push --follow-tags');
     rl.close();
 });
 
