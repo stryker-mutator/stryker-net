@@ -36,7 +36,7 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
 
     if (newVersionNumber.indexOf('-')) {
         versionPrefix = newVersionNumber.split('-')[0];
-        versionSuffix = newVersionNumber.split('-')[1];
+        versionSuffix = newVersionNumber.split('-')[1] ?? '';
     }
 
     console.log('Updating package.json');
