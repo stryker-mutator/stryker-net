@@ -141,5 +141,21 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             linqExpressions.First().ShouldBe(LinqExpression.Max);
             linqExpressions.Last().ShouldBe(LinqExpression.Sum);
         }
+
+        /// <summary>
+        /// This test is needed as other mutators also have "statement" in their name. It should pick the right mutator.
+        /// </summary>
+        [Fact]
+        public void ShouldIgnoreStatementMutator()
+        {
+            var target = new IgnoreMutationsInput
+            {
+                SuppliedInput = new[] { "statement" }
+            };
+
+            var mutators = target.Validate();
+
+            mutators.ShouldHaveSingleItem().ShouldBe(Mutator.Statement);
+        }
     }
 }
