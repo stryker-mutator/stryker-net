@@ -76,13 +76,16 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | ------------- | ---------- | 
 | `void Function() { Age++; }`	| `void Function() {} (block emptied)`|
 | `int Function() { Age++; return Age; }` 	| `void Function() { return default; } (block emptied)`|
-| `return statement` 	| `removed` |
-| `break statement` 	| `removed` |
-| `continue statement` 	| `removed` |
-| `goto statement` 	| `removed` |
-| `throw statement` 	| `removed` |
-| `yield return statement` 	| `removed` |
-| `yield break statement` 	| `removed` |
+| `return;` 	| `removed` |
+| `return value;` 	| `removed` |
+| `break;` 	| `removed` |
+| `continue;` 	| `removed` |
+| `goto;` 	| `removed` |
+| `throw;` 	| `removed` |
+| `throw exception;` 	| `removed` |
+| `yield return value;` 	| `removed` |
+| `yield break;` 	| `removed` |
+| `MyMethodCall();` 	| `removed` |
 
 ## Unary Operators
 |    Original   |   Mutated  | 
