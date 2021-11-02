@@ -1,3 +1,14 @@
+# [](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.0.0...stryker@) (2021-11-02)
+
+
+### Bug Fixes
+
+* **block mutator:** Prevent false positives from block mutations ([#1759](https://github.com/stryker-mutator/stryker-net/issues/1759)) ([769ee79](https://github.com/stryker-mutator/stryker-net/commit/769ee797e0141d24e2901a472641c4c0abcd6bc3))
+* **Ignore mutations:** Ignoring statement mutations is now possible ([#1764](https://github.com/stryker-mutator/stryker-net/issues/1764)) ([42a0a7e](https://github.com/stryker-mutator/stryker-net/commit/42a0a7e59a666fc99692e1eb736f0e3396032f22))
+* **version undefined:** Remove version suffix "undefined" from stryker version ([#1765](https://github.com/stryker-mutator/stryker-net/issues/1765)) ([e4d4f9d](https://github.com/stryker-mutator/stryker-net/commit/e4d4f9dec7ff2ca92082a300a68733bcba043ad8))
+
+
+
 # [](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.11...stryker@) (2021-10-30)
 
 
