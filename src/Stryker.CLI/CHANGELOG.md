@@ -1,3 +1,12 @@
+# [](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.0.0...dotnet-stryker@) (2021-11-02)
+
+
+### Bug Fixes
+
+* **version undefined:** Remove version suffix "undefined" from stryker version ([#1765](https://github.com/stryker-mutator/stryker-net/issues/1765)) ([e4d4f9d](https://github.com/stryker-mutator/stryker-net/commit/e4d4f9dec7ff2ca92082a300a68733bcba043ad8))
+
+
+
 # [](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.11...dotnet-stryker@) (2021-10-30)
 
 
