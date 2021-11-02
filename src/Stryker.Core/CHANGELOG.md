@@ -1,4 +1,4 @@
-# [](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.0.0...stryker@) (2021-11-02)
+# [1.0.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.0.0...stryker@) (2021-11-02)
 
 
 ### Bug Fixes
@@ -9,7 +9,7 @@
 
 
 
-# [](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.11...stryker@) (2021-10-30)
+# [1.0.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.11...stryker@) (2021-10-30)
 
 
 ### Bug Fixes
