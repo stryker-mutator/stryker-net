@@ -160,8 +160,6 @@ namespace Stryker.Core.UnitTest.Initialisation
                 projectFilePath: projectUnderTestPath,
                 sourceFiles: fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray()).Object);
 
-            var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, nugetHelperMock.Object);
-
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
             var result = target.ResolveInput(_options);
 

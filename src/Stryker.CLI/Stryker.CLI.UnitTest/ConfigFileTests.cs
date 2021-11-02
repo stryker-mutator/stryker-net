@@ -45,7 +45,7 @@ namespace Stryker.CLI.UnitTest
         {
             IStrykerInputs actualInputs = null;
             var options = new StrykerOptions() {
-                Thresholds = new Stryker.Core.Options.Thresholds() {
+                Thresholds = new Thresholds() {
                     High = 80,
                     Low = 60,
                     Break = 0
