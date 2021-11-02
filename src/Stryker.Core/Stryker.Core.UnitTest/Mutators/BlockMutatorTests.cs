@@ -217,6 +217,26 @@ class Program
             GetMutations(source).ShouldBeEmpty();
         }
 
+        [Fact]
+        private void ShouldNotMutateInfiniteWhileLoops()
+        {
+            var source = @"
+class Program
+{
+    void Method()
+    {
+        while (true)
+        {
+            // Should not be mutated or it will always time out
+            break; // Just to make this more realistic...
+        }
+    }
+}";
+            GetMutations(source)
+                .Where(mutation => mutation.OriginalNode.Parent is WhileStatementSyntax)
+                .ShouldBeEmpty();
+        }
+
         private static IEnumerable<Mutation> GetMutations(string source)
         {
             var statements = CSharpSyntaxTree

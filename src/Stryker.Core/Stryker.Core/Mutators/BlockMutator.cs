@@ -15,7 +15,9 @@ namespace Stryker.Core.Mutators
 
         public override IEnumerable<Mutation> ApplyMutations(BlockSyntax node)
         {
-            if (!node.ChildNodes().Any() || (IsInStructConstructor(node) && ContainsAssignments(node)))
+            if (IsEmptyBlock(node) ||
+                IsInfiniteWhileLoop(node) ||
+                (IsInStructConstructor(node) && ContainsAssignments(node)))
             {
                 yield break;
             }
@@ -41,6 +43,12 @@ namespace Stryker.Core.Mutators
                 };
             }
         }
+
+        private static bool IsEmptyBlock(BlockSyntax node) => !node.ChildNodes().Any();
+
+        private static bool IsInfiniteWhileLoop(BlockSyntax node) =>
+            node.Parent is WhileStatementSyntax { Condition: LiteralExpressionSyntax cond } &&
+            cond.Kind() == SyntaxKind.TrueLiteralExpression;
 
         private static bool ContainsReturns(BlockSyntax node) => node
             .ChildNodes()
