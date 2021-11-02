@@ -15,53 +15,12 @@ namespace Stryker.Core.Mutators
 
         public override IEnumerable<Mutation> ApplyMutations(BlockSyntax node)
         {
-            // Note: using local functions below so that the check order can be easily reordered,
-            // if a need to optimize arises at some point.
-
-            bool IsInStructConstructor()
-            {
-                foreach (var ancestor in node.Ancestors())
-                {
-                    switch (ancestor)
-                    {
-                        // Don't count local functions as being part of the constructor.
-                        // They can't assign to members, so they can be mutated.
-                        case LocalFunctionStatementSyntax:
-                            return false;
-                        case ConstructorDeclarationSyntax { Parent: StructDeclarationSyntax }:
-                            return true;
-                    }
-                }
-
-                return false;
-            }
-
-            bool ContainsAssignments() => node
-                .ChildNodes()
-                .OfType<ExpressionStatementSyntax>()
-                .Any(expressionSyntax => expressionSyntax.Expression is AssignmentExpressionSyntax);
-
-            bool FirstReturnTypedAncestorReturnsNonVoid() => node
-                    .Ancestors()
-                    .FirstOrDefault(ancestor =>
-                        ancestor is MethodDeclarationSyntax or LocalFunctionStatementSyntax) switch
-                {
-                    MethodDeclarationSyntax method => !method.ReturnType.IsVoid(),
-                    LocalFunctionStatementSyntax localFunction => !localFunction.ReturnType.IsVoid(),
-                    _ => false,
-                };
-
-            bool ContainsReturns() => node
-                .ChildNodes()
-                .OfType<ReturnStatementSyntax>()
-                .Any();
-
-            if (!node.ChildNodes().Any() || (IsInStructConstructor() && ContainsAssignments()))
+            if (!node.ChildNodes().Any() || (IsInStructConstructor(node) && ContainsAssignments(node)))
             {
                 yield break;
             }
 
-            if (FirstReturnTypedAncestorReturnsNonVoid() && ContainsReturns())
+            if (FirstReturnTypedAncestorReturnsNonVoid(node) && ContainsReturns(node))
             {
                 yield return new Mutation()
                 {
@@ -81,6 +40,43 @@ namespace Stryker.Core.Mutators
                     Type = Mutator.Block
                 };
             }
+        }
+
+        private static bool ContainsReturns(BlockSyntax node) => node
+            .ChildNodes()
+            .OfType<ReturnStatementSyntax>()
+            .Any();
+
+        private static bool ContainsAssignments(BlockSyntax node) => node
+            .ChildNodes()
+            .OfType<ExpressionStatementSyntax>()
+            .Any(expressionSyntax => expressionSyntax.Expression is AssignmentExpressionSyntax);
+
+        private static bool FirstReturnTypedAncestorReturnsNonVoid(BlockSyntax node) => node
+                .Ancestors()
+                .FirstOrDefault(ancestor => ancestor is MethodDeclarationSyntax or LocalFunctionStatementSyntax) switch
+            {
+                MethodDeclarationSyntax method => !method.ReturnType.IsVoid(),
+                LocalFunctionStatementSyntax localFunction => !localFunction.ReturnType.IsVoid(),
+                _ => false,
+            };
+
+        private static bool IsInStructConstructor(BlockSyntax node)
+        {
+            foreach (var ancestor in node.Ancestors())
+            {
+                switch (ancestor)
+                {
+                    // Don't count local functions as being part of the constructor.
+                    // They can't assign to members, so they can be mutated.
+                    case LocalFunctionStatementSyntax:
+                        return false;
+                    case ConstructorDeclarationSyntax { Parent: StructDeclarationSyntax }:
+                        return true;
+                }
+            }
+
+            return false;
         }
     }
 }
