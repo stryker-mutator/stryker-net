@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
@@ -158,9 +157,12 @@ namespace Stryker.Core.UnitTest.Initialisation
                 projectReferences: new List<string> { projectUnderTestPath },
                 targetFramework: "netcoreapp2.1",
                 projectFilePath: projectUnderTestPath,
-                sourceFiles: fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray()).Object);
+                sourceFiles: fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray(),
+                properties: new Dictionary<string, string>() { { "Language", "C#" } }
+                ).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
+
             var result = target.ResolveInput(_options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
