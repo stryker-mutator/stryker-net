@@ -144,9 +144,11 @@ class Program
             var mutations = GetMutations(source).ToList();
             mutations.Count.ShouldBe(3);
 
-            AssertDefaultReturn(mutations[0]); // Whole method
-            mutations[1].ReplacementNode.ChildNodes().ShouldBeEmpty(); // First if
-            AssertDefaultReturn(mutations[2]); // Second if
+            var (methodBlock, firstIfBlock, secondIfBlock) = (mutations[0], mutations[1], mutations[2]);
+
+            AssertDefaultReturn(methodBlock);
+            firstIfBlock.ReplacementNode.ChildNodes().ShouldBeEmpty();
+            AssertDefaultReturn(secondIfBlock);
         }
 
         [Fact]
