@@ -1,7 +1,7 @@
 {
     "private": true,
-    "versionPrefix": "1.0.0",
-    "versionSuffix": "undefined",
+    "versionPrefix": "1.0.1",
+    "versionSuffix": "",
     "scripts": {
         "prepare-release": "node prepare-release.js"
     }
