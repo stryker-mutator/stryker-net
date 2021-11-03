@@ -1,7 +1,7 @@
 ---
-title: Mutators
+title: Mutations
 sidebar_position: 40
-custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/mutators.md
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/mutations.md
 ---
 
 Stryker supports a variety of mutators, which are listed below. In parentheses the names of correspondent mutations are specified, which you might need for the `exclude-mutations` section of the configuration.
@@ -158,4 +158,4 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `a^b` | `~(a^b)` |
 
 ## Regular Expressions (_regex_)
-For the full list of all available regex mutators, see the [regex mutator docs](./regex-mutators.md).
+For the full list of all available regex mutations, see the [regex mutator docs](./regex-mutations.md).

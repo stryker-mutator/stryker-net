@@ -1,7 +1,7 @@
 ---
-title: Regex mutators
+title: Regex mutations
 sidebar_position: 50
-custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/regex-mutators.md
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/regex-mutations.md
 ---
 
 Stryker supports a variety of regular expression mutators, which are listed below. Do you have a suggestion for a (new) mutator? Feel free to create an [issue](https://github.com/stryker-mutator/stryker-net/issues)!
