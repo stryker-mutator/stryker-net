@@ -15,7 +15,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         public void ShouldHaveHelpText()
         {
             var target = new ReportFileNameInput();
-            target.HelpText.ShouldBe(@"");
+            target.HelpText.ShouldBe(@$" | default: '{target.Default}'");
         }
 
         [Fact]
@@ -49,6 +49,13 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         public void ShouldNotAllowInvalidFilenames()
         {
             var target = new ReportFileNameInput() { SuppliedInput = new string(Path.GetInvalidFileNameChars()) };
+            Should.Throw<InputException>(() => target.Validate());
+        }
+
+        [Fact]
+        public void ShouldNotAllowExtensions()
+        {
+            var target = new ReportFileNameInput() { SuppliedInput = "mutationReport.html" };
             Should.Throw<InputException>(() => target.Validate());
         }
     }

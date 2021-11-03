@@ -591,4 +591,4 @@ By default stryker tries to autodiscover msbuild on your system. If stryker fail
 Default: `mutation-report`
 Config file: `report-file-name`
 
-If HTML or JSON reporting is being used, this sets the filename of the output file.
+If HTML or JSON reporting is being used, this sets the filename of the output file. The filename should not end with an extension.
