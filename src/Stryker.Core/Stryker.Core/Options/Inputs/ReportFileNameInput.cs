@@ -21,9 +21,14 @@ namespace Stryker.Core.Options.Inputs
             {
                 throw new InputException("Invalid Report Name supplied");
             }
-            if(Path.GetExtension(SuppliedInput) != string.Empty)
+            string Extension = Path.GetExtension(SuppliedInput);
+            if (Extension == ".json")
             {
-                throw new InputException("Filenames cannot contain an extension");
+                SuppliedInput = SuppliedInput.Replace(".json", "");
+            }
+            else if (Extension == ".html")
+            {
+                SuppliedInput = SuppliedInput.Replace(".html", "");
             }
             return SuppliedInput;
         }

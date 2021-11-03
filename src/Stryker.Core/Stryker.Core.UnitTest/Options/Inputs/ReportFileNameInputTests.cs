@@ -53,10 +53,20 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         }
 
         [Fact]
-        public void ShouldNotAllowExtensions()
+        public void ShouldStripHtmlAndJsonFileExtensions()
         {
-            var target = new ReportFileNameInput() { SuppliedInput = "mutationReport.html" };
-            Should.Throw<InputException>(() => target.Validate());
+            var target = new ReportFileNameInput() { SuppliedInput = $"{DefaultName}.html" };
+            target.Validate().ShouldBe(DefaultName);
+            target = new ReportFileNameInput() { SuppliedInput = $"{DefaultName}.json" };
+            target.Validate().ShouldBe(DefaultName);
+        }
+
+        [Fact]
+        public void ShouldNotStripNoneHtmlAndJsonFileExtensions()
+        {
+            string input = $"{DefaultName}.project";
+            var target = new ReportFileNameInput() { SuppliedInput = input };
+            target.Validate().ShouldBe(input);
         }
     }
 }
