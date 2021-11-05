@@ -1,12 +1,14 @@
 ---
 title: Mutations
 sidebar_position: 40
-custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/mutators.md
+custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/mutations.md
 ---
 
-Stryker supports a variety of mutators, which are listed below. Do you have a suggestion for a (new) mutator? Feel free to create an [issue](https://github.com/stryker-mutator/stryker-net/issues)!
+Stryker supports a variety of mutators, which are listed below. In parentheses the names of correspondent mutations are specified, which you might need for the `exclude-mutations` section of the configuration.
 
-## Arithmetic Operators
+Do you have a suggestion for a (new) mutator? Feel free to create an [issue](https://github.com/stryker-mutator/stryker-net/issues)!
+
+## Arithmetic Operators (_arithmetic_)
 | Original | Mutated | 
 | ------------- | ------------- | 
 | `+` | `-` |
@@ -15,7 +17,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `/` | `*` |
 | `%` | `*` |
 
-## Equality Operators
+## Equality Operators (_equality_)
 | Original | Mutated | 
 | ------------- | ------------- |
 | `>` | `<` |
@@ -29,14 +31,14 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `==` | `!=` |
 | `!=` | `==` |
 
-## Logical Operators
+## Logical Operators (_logical_)
 | Original | Mutated | 
 | ------------- | ------------- | 
 | `&&` | `\|\|` | 
 | `\|\|` | `&&` |
 | `^` | `==` |
 
-## Boolean Literals
+## Boolean Literals (_boolean_)
 | Original | Mutated | 
 | ------------- | ------------- | 
 | `true`	| `false` |
@@ -45,7 +47,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `if(person.IsAdult())` | `if(!person.IsAdult())` |
 | `while(person.IsAdult())` | `while(!person.IsAdult())` |
 
-## Assignment Statements
+## Assignment Statements (_assignment_)
 | Original | Mutated | 
 | ------------- | ------------- | 
 |`+= ` | `-= ` |
@@ -62,7 +64,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 |`^= ` | `\|= `|
 |`^= ` | `&= ` |
 
-## Collection initialization
+## Collection initialization (_initializer_)
 | Original | Mutated | 
 | ---------------------------------------- | ------------------------------------ |
 |`new int[] { 1, 2 };`                     | `new int[] { };`                     |
@@ -71,7 +73,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 |`new Collection<int> { 1, 2 };`           | `new Collection<int> { };`           |
 |`new Dictionary<int, int> { { 1, 1 } };`  | `new Dictionary<int, int> { };`      |
 
-## Removal mutators
+## Removal mutators (_statement_, _block_)
 |    Original   |   Mutated  | 
 | ------------- | ---------- | 
 | `void Function() { Age++; }`	| `void Function() {} (block emptied)`|
@@ -87,14 +89,14 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `yield break;` 	| `removed` |
 | `MyMethodCall();` 	| `removed` |
 
-## Unary Operators
+## Unary Operators (_unary_)
 |    Original   |   Mutated  | 
 | ------------- | ---------- | 
 | `-variable`	| `+variable`|
 | `+variable` 	| `-variable`|
 | `~variable` 	| `variable` |
 
-## Update Operators
+## Update Operators (_update_)
 |    Original   |   Mutated  | 
 | ------------- | ---------- | 
 | `variable++`	| `variable--` |
@@ -102,12 +104,12 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `++variable`	| `--variable` |
 | `--variable`	| `++variable` |
 
-## Checked Statements
+## Checked Statements (_checked_)
 | Original | Mutated |
 | ------------- | ------------- | 
 | `checked(2 + 4)` | `2 + 4` |
 
-## Linq Methods
+## Linq Methods (_linq_)
 |      Original         |       Mutated         |
 | --------------------- | --------------------- |
 | `SingleOrDefault()`  | `Single()`             |
@@ -137,7 +139,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `Concat()`           | `Except()`            |
 | `Except()`           | `Concat()`            |
 
-## String Literals and Constants
+## String Literals and Constants (_string_)
 | Original | Mutated |
 | ------------- | ------------- | 
 | `"foo"` | `""` |
@@ -146,7 +148,7 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `@"foo"` | `@""` |
 | `string.Empty` | `"Stryker was here!"` |
 
-## Bitwise Operators
+## Bitwise Operators (_bitwise_)
 | Original | Mutated |
 | ------------- | ------------- | 
 | `<<` | `>>` |
@@ -155,5 +157,5 @@ Stryker supports a variety of mutators, which are listed below. Do you have a su
 | `\|` | `&` |
 | `a^b` | `~(a^b)` |
 
-## Regular Expressions
+## Regular Expressions (_regex_)
 For the full list of all available regex mutations, see the [regex mutator docs](./regex-mutations.md).
