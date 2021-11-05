@@ -68,6 +68,17 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
     		    }}";
 
             ShouldMutateSourceToExpected(source, expected);
+
+            source = @"private int Move()
+			{
+				;
+			}";
+            expected = @"private int Move()
+    {if(StrykerNamespace.MutantControl.IsActive(1)){}else		    {
+    			    ;
+    		    } return default(int);}";
+
+            ShouldMutateSourceToExpected(source, expected);
         }
 
         [Theory]

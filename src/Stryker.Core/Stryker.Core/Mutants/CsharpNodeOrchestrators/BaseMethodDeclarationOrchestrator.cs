@@ -52,7 +52,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
             }
             else
             {
-                // we add an ending rreturn, just in case
+                // we add an ending return, just in case
                 targetNode = MutantPlacer.AddEndingReturn(targetNode);
             }
 

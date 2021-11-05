@@ -13,26 +13,13 @@ namespace Stryker.Core.Mutators
 
         public override IEnumerable<Mutation> ApplyMutations(BlockSyntax node)
         {
-            if (node.Parent is MethodDeclarationSyntax methodDeclaration && methodDeclaration.ReturnType.ToString() != "void")
+            yield return new Mutation()
             {
-                yield return new Mutation()
-                {
-                    OriginalNode = node,
-                    ReplacementNode = SyntaxFactory.Block(SyntaxFactory.ReturnStatement(SyntaxFactory.LiteralExpression(SyntaxKind.DefaultLiteralExpression))),
-                    DisplayName = MutationName,
-                    Type = Mutator.Block
-                };
-            }
-            else
-            {
-                yield return new Mutation()
-                {
-                    OriginalNode = node,
-                    ReplacementNode = SyntaxFactory.Block(),
-                    DisplayName = MutationName,
-                    Type = Mutator.Block
-                };
-            }
+                OriginalNode = node,
+                ReplacementNode = SyntaxFactory.Block(),
+                DisplayName = MutationName,
+                Type = Mutator.Block
+            };
         }
     }
 }

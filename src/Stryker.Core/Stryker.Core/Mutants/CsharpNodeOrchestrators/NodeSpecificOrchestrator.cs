@@ -136,7 +136,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
             };
 
             Mutator[] filteredMutators;
-            if (match.Groups[MutatorsGroup].Value.ToLower() == "all")
+            if (match.Groups[MutatorsGroup].Value.ToLower().Trim() == "all")
             {
                 filteredMutators = Enum.GetValues<Mutator>();
             }
