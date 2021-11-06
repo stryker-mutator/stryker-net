@@ -1,4 +1,6 @@
 
+using System.Collections.Generic;
+
 namespace Stryker.Core.Reporters.Json
 {
     public class JsonMutant
@@ -11,10 +13,10 @@ namespace Stryker.Core.Reporters.Json
         public SourceLocation Location { get; set; }
 
         public string Status { get; set; }
-        public bool IsStatic { get; set; }
+        public bool Static { get; set; }
 
-        public string[] CoveredBy { get; set; }
-        public string[] KilledBy { get; set; }
+        public IEnumerable<string> CoveredBy { get; set; }
+        public IEnumerable<string> KilledBy { get; set; }
         public int TestsCompleted { get; set; }
 
         public int Duration { get; set; }

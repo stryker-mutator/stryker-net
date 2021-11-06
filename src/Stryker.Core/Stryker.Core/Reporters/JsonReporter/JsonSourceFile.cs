@@ -2,6 +2,7 @@ using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.ProjectComponents;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.Reporters.Json
 {
@@ -32,7 +33,9 @@ namespace Stryker.Core.Reporters.Json
                     Replacement = mutant.Mutation.ReplacementNode.ToFullString(),
                     Location = new SourceLocation(mutant.Mutation.OriginalNode.GetLocation().GetMappedLineSpan()),
                     Status = mutant.ResultStatus.ToString(),
-                    Description = mutant.Mutation.Description ?? ""
+                    Description = mutant.Mutation.Description ?? "",
+                    Static = mutant.IsStaticValue,
+                    CoveredBy = mutant.CoveringTests.GetGuids().Select(t => t.ToString())
                 };
 
                 if (!Mutants.Add(jsonMutant))

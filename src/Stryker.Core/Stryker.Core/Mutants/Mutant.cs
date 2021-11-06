@@ -12,9 +12,10 @@ namespace Stryker.Core.Mutants
         MutantStatus ResultStatus { get; }
         string ResultStatusReason { get; }
         ITestListDescription CoveringTests { get; }
-        int? Line { get; }
         bool CountForStats { get; }
         bool MustRunAgainstAllTests { get; }
+        int? Line { get; }
+        bool IsStaticValue { get; }
     }
 
     /// <summary>
@@ -25,14 +26,11 @@ namespace Stryker.Core.Mutants
         public int Id { get; set; }
         public Mutation Mutation { get; set; }
         public MutantStatus ResultStatus { get; set; }
-        public ITestListDescription CoveringTests { get; set; } = TestsGuidList.EveryTest();
         public string ResultStatusReason { get; set; }
+        public ITestListDescription CoveringTests { get; set; } = TestsGuidList.EveryTest();
         public bool CountForStats => ResultStatus != MutantStatus.CompileError && ResultStatus != MutantStatus.Ignored;
 
-        public bool MustRunAgainstAllTests
-        {
-            get => CoveringTests.IsEveryTest;
-        }
+        public bool MustRunAgainstAllTests => CoveringTests.IsEveryTest;
 
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
         public int? Line => Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
