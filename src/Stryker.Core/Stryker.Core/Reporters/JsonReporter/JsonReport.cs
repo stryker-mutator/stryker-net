@@ -11,6 +11,7 @@ namespace Stryker.Core.Reporters.Json
         public IDictionary<string, int> Thresholds { get; init; } = new Dictionary<string, int>();
         public string ProjectRoot { get; init; }
         public IDictionary<string, JsonSourceFile> Files { get; init; } = new Dictionary<string, JsonSourceFile>();
+        public IDictionary<string, JsonTestFile> TestFiles { get; set; } = new Dictionary<string, JsonTestFile>();
 
         public JsonReport()
         {
