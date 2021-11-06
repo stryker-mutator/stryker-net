@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 
 namespace Stryker.Core.Reporters.Json
 {
-    public class JsonMutantPosition
+    public class SourcePosition
     {
         private int _line;
         public int Line

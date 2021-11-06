@@ -19,15 +19,15 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void JsonMutantPositionLine_ThrowsArgumentExceptionWhenSetToLessThan1()
         {
-            Should.Throw<ArgumentException>(() => new JsonMutantPosition().Line = -1);
-            Should.Throw<ArgumentException>(() => new JsonMutantPosition().Line = 0);
+            Should.Throw<ArgumentException>(() => new SourcePosition().Line = -1);
+            Should.Throw<ArgumentException>(() => new SourcePosition().Line = 0);
         }
 
         [Fact]
         public void JsonMutantPositionColumn_ThrowsArgumentExceptionWhenSetToLessThan1()
         {
-            Should.Throw<ArgumentException>(() => new JsonMutantPosition().Column = -1);
-            Should.Throw<ArgumentException>(() => new JsonMutantPosition().Column = 0);
+            Should.Throw<ArgumentException>(() => new SourcePosition().Column = -1);
+            Should.Throw<ArgumentException>(() => new SourcePosition().Column = 0);
         }
 
         [Fact]
@@ -38,7 +38,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 new LinePosition(2, 2),
                 new LinePosition(4, 5));
 
-            var jsonMutantLocation = new JsonMutantLocation(lineSpan);
+            var jsonMutantLocation = new SourceLocation(lineSpan);
 
             jsonMutantLocation.Start.Line.ShouldBe(3);
             jsonMutantLocation.Start.Column.ShouldBe(3);

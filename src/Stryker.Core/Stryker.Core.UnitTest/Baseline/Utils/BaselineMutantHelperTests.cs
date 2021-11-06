@@ -20,14 +20,14 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
 
             var jsonMutant = new JsonMutant
             {
-                Location = new JsonMutantLocation
+                Location = new SourceLocation
                 {
-                    Start = new JsonMutantPosition
+                    Start = new SourcePosition
                     {
                         Column = 17,
                         Line = 17
                     },
-                    End = new JsonMutantPosition
+                    End = new SourcePosition
                     {
                         Column = 62,
                         Line = 17
@@ -56,14 +56,14 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
 
             var jsonMutant = new JsonMutant
             {
-                Location = new JsonMutantLocation
+                Location = new SourceLocation
                 {
-                    Start = new JsonMutantPosition
+                    Start = new SourcePosition
                     {
                         Column = 13,
                         Line = 24
                     },
-                    End = new JsonMutantPosition
+                    End = new SourcePosition
                     {
                         Column = 38,
                         Line = 26
@@ -94,14 +94,14 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
 
             var jsonMutant = new JsonMutant
             {
-                Location = new JsonMutantLocation
+                Location = new SourceLocation
                 {
-                    Start = new JsonMutantPosition
+                    Start = new SourcePosition
                     {
                         Column = 30,
                         Line = 34
                     },
-                    End = new JsonMutantPosition
+                    End = new SourcePosition
                     {
                         Column = 34,
                         Line = 34
