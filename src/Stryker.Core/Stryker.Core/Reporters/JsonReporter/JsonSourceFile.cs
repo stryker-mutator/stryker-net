@@ -35,7 +35,7 @@ namespace Stryker.Core.Reporters.Json
                     Status = mutant.ResultStatus.ToString(),
                     Description = mutant.Mutation.Description ?? "",
                     Static = mutant.IsStaticValue,
-                    CoveredBy = mutant.CoveringTests.GetGuids().Select(t => t.ToString())
+                    CoveredBy = mutant.CoveringTests?.GetGuids()?.Select(t => t.ToString())
                 };
 
                 if (!Mutants.Add(jsonMutant))

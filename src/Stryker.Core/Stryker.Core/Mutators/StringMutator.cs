@@ -24,7 +24,7 @@ namespace Stryker.Core.Mutators
                 {
                     OriginalNode = node,
                     ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(replacementValue)),
-                    DisplayName = @"String mutation",
+                    DisplayName = "String mutation",
                     Type = Mutator.String
                 };
             }
