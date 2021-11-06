@@ -3,7 +3,7 @@ using Stryker.Core.Reporters.Json;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class MockJsonReportFileComponent : JsonReportFileComponent
+    public class MockJsonReportFileComponent : JsonSourceFile
     {
         public MockJsonReportFileComponent(
             string language,

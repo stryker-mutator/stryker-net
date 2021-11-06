@@ -10,7 +10,7 @@ namespace Stryker.Core.Reporters.Json
         public string SchemaVersion { get; init; } = "1";
         public IDictionary<string, int> Thresholds { get; init; } = new Dictionary<string, int>();
         public string ProjectRoot { get; init; }
-        public IDictionary<string, JsonReportFileComponent> Files { get; init; } = new Dictionary<string, JsonReportFileComponent>();
+        public IDictionary<string, JsonSourceFile> Files { get; init; } = new Dictionary<string, JsonSourceFile>();
 
         public JsonReport()
         {
@@ -26,14 +26,11 @@ namespace Stryker.Core.Reporters.Json
             Merge(Files, GenerateReportComponents(mutationReport));
         }
 
-        public static JsonReport Build(StrykerOptions options, IReadOnlyProjectComponent mutationReport)
-        {
-            return new JsonReport(options, mutationReport);
-        }
+        public static JsonReport Build(StrykerOptions options, IReadOnlyProjectComponent mutationReport) => new(options, mutationReport);
 
-        private IDictionary<string, JsonReportFileComponent> GenerateReportComponents(IReadOnlyProjectComponent component)
+        private IDictionary<string, JsonSourceFile> GenerateReportComponents(IReadOnlyProjectComponent component)
         {
-            var files = new Dictionary<string, JsonReportFileComponent>();
+            var files = new Dictionary<string, JsonSourceFile>();
             if (component is ReadOnlyFolderComposite folder)
             {
                 Merge(files, GenerateFolderReportComponents(folder));
@@ -46,9 +43,9 @@ namespace Stryker.Core.Reporters.Json
             return files;
         }
 
-        private IDictionary<string, JsonReportFileComponent> GenerateFolderReportComponents(ReadOnlyFolderComposite folderComponent)
+        private IDictionary<string, JsonSourceFile> GenerateFolderReportComponents(ReadOnlyFolderComposite folderComponent)
         {
-            var files = new Dictionary<string, JsonReportFileComponent>();
+            var files = new Dictionary<string, JsonSourceFile>();
             foreach (var child in folderComponent.Children)
             {
                 Merge(files, GenerateReportComponents(child));
@@ -57,9 +54,9 @@ namespace Stryker.Core.Reporters.Json
             return files;
         }
 
-        private IDictionary<string, JsonReportFileComponent> GenerateFileReportComponents(ReadOnlyFileLeaf fileComponent)
+        private IDictionary<string, JsonSourceFile> GenerateFileReportComponents(ReadOnlyFileLeaf fileComponent)
         {
-            return new Dictionary<string, JsonReportFileComponent> { { fileComponent.RelativePath, new JsonReportFileComponent(fileComponent) } };
+            return new Dictionary<string, JsonSourceFile> { { fileComponent.RelativePath, new JsonSourceFile(fileComponent) } };
         }
 
         private void Merge<TTo, TFrom>(IDictionary<TTo, TFrom> to, IDictionary<TTo, TFrom> from)

@@ -5,19 +5,19 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.Reporters.Json
 {
-    public class JsonReportFileComponent
+    public class JsonSourceFile
     {
         public string Language { get; init; }
         public string Source { get; init; }
         public ISet<JsonMutant> Mutants { get; init; }
 
-        public JsonReportFileComponent()
+        public JsonSourceFile()
         {
         }
 
-        public JsonReportFileComponent(ReadOnlyFileLeaf file, ILogger logger = null)
+        public JsonSourceFile(ReadOnlyFileLeaf file, ILogger logger = null)
         {
-            logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<JsonReportFileComponent>();
+            logger ??= ApplicationLogging.LoggerFactory.CreateLogger<JsonSourceFile>();
 
             Source = file.SourceCode;
             Language = "cs";
@@ -30,7 +30,7 @@ namespace Stryker.Core.Reporters.Json
                     Id = mutant.Id.ToString(),
                     MutatorName = mutant.Mutation.DisplayName ?? "",
                     Replacement = mutant.Mutation.ReplacementNode.ToFullString(),
-                    Location = new JsonMutantLocation(mutant.Mutation.OriginalNode.GetLocation().GetMappedLineSpan()),
+                    Location = new SourceLocation(mutant.Mutation.OriginalNode.GetLocation().GetMappedLineSpan()),
                     Status = mutant.ResultStatus.ToString(),
                     Description = mutant.Mutation.Description ?? ""
                 };
@@ -46,15 +46,9 @@ namespace Stryker.Core.Reporters.Json
 
         private class UniqueJsonMutantComparer : EqualityComparer<JsonMutant>
         {
-            public override bool Equals(JsonMutant left, JsonMutant right)
-            {
-                return left.Id == right.Id;
-            }
+            public override bool Equals(JsonMutant left, JsonMutant right) => left.Id == right.Id;
 
-            public override int GetHashCode(JsonMutant jsonMutant)
-            {
-                return jsonMutant.Id.GetHashCode();
-            }
+            public override int GetHashCode(JsonMutant jsonMutant) => jsonMutant.Id.GetHashCode();
         }
     }
 }
