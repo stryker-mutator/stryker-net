@@ -29,12 +29,13 @@ namespace Stryker.Core.Reporters.Json
                 var jsonMutant = new JsonMutant
                 {
                     Id = mutant.Id.ToString(),
-                    MutatorName = mutant.Mutation.DisplayName ?? "",
+                    MutatorName = mutant.Mutation.DisplayName,
                     Replacement = mutant.Mutation.ReplacementNode.ToFullString(),
                     Location = new SourceLocation(mutant.Mutation.OriginalNode.GetLocation().GetMappedLineSpan()),
                     Status = mutant.ResultStatus.ToString(),
-                    Description = mutant.Mutation.Description ?? "",
-                    Static = mutant.IsStaticValue,
+                    StatusReason = mutant.ResultStatusReason == "not run" ? null : mutant.ResultStatusReason,
+                    Description = mutant.Mutation.Description,
+                    Static = mutant.IsStaticValue ? mutant.IsStaticValue : null,
                     CoveredBy = mutant.CoveringTests?.GetGuids()?.Select(t => t.ToString())
                 };
 
