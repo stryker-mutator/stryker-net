@@ -62,11 +62,11 @@ stages:
       displayName: 'Restore'
       inputs:
         command: 'restore'
-        projects: 'src/Stryker.CLI/Stryker.CLI.sln'
+        projects: 'src/Stryker.sln'
     - task: DotNetCoreCLI@2
       inputs:
         command: 'build'
-        projects: 'src/Stryker.CLI/Stryker.CLI.sln'
+        projects: 'src/Stryker.sln'
     - task: DotNetCoreCLI@2
       displayName: 'Run unit tests'
       inputs:
@@ -140,7 +140,7 @@ stages:
             displayName: 'Restore'
             inputs:
               command: 'restore'
-              projects: 'src/Stryker.CLI/Stryker.CLI.sln'
+              projects: 'src/Stryker.sln'
           - task: DotNetCoreCLI@2
             displayName: 'Pack integrationtest packages'
             inputs:
