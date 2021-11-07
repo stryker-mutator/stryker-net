@@ -20,6 +20,10 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 
             if (!context.HasStatementLevelMutant)
             {
+                if (result.Body!=null &&  sourceNode.NeedsReturn())
+                {
+                    result = MutantPlacer.AddEndingReturn(result, sourceNode.ReturnType());
+                }
                 return result;
             }
 
@@ -29,7 +33,12 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
             }
 
             var newBody = context.InjectBlockLevelExpressionMutation(result.Body, sourceNode.ExpressionBody!.Expression, sourceNode.NeedsReturn());
-            return result.WithBody(SyntaxFactory.Block(newBody));
+            result = result.WithBody(SyntaxFactory.Block(newBody));
+            if (sourceNode.NeedsReturn())
+            {
+                result = MutantPlacer.AddEndingReturn(result, sourceNode.ReturnType());
+            }
+            return result;
         }
     }
 }

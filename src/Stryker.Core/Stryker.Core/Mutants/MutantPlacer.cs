@@ -17,7 +17,7 @@ namespace Stryker.Core.Mutants
     public static class MutantPlacer
     {
         private const string MutationMarker = "Mutation";
-        public readonly static string Injector = "Injector";
+        public static readonly string Injector = "Injector";
 
         private static readonly StaticInstrumentationEngine staticEngine = new ();
         private static readonly StaticInitializerMarkerEngine staticInitializerEngine = new ();
@@ -27,6 +27,7 @@ namespace Stryker.Core.Mutants
         private static readonly LocalFunctionExpressionToBodyEngine localFunctionExpressionToBodyEngine = new();
         private static readonly AccessorExpressionToBodyEngine accessorExpressionToBodyEngine = new();
         private static readonly PropertyExpressionToBodyEngine propertyExpressionToBodyEngine = new();
+        private static readonly AnonymousFunctionExpressionToBodyEngine anonymousFunctionExpressionToBodyEngine = new();
         private static readonly EndingReturnEngine endingReturnEngine = new();
         private static readonly DefaultInitializationEngine defaultInitializationEngine = new();
         private static ExpressionSyntax _binaryExpression;
@@ -44,6 +45,7 @@ namespace Stryker.Core.Mutants
             RegisterEngine(expressionMethodEngine);
             RegisterEngine(accessorExpressionToBodyEngine);
             RegisterEngine(propertyExpressionToBodyEngine);
+            RegisterEngine(anonymousFunctionExpressionToBodyEngine);
             RegisterEngine(endingReturnEngine);
             RegisterEngine(defaultInitializationEngine);
             RegisterEngine(staticInitializerEngine);
@@ -68,8 +70,17 @@ namespace Stryker.Core.Mutants
         public static PropertyDeclarationSyntax ConvertPropertyExpressionToBodyAccessor(PropertyDeclarationSyntax property) =>
             propertyExpressionToBodyEngine.ConvertExpressionToBody(property);
 
-        public static BaseMethodDeclarationSyntax AddEndingReturn(BaseMethodDeclarationSyntax method) => method.WithBody(endingReturnEngine.InjectReturn(method.Body, method.ReturnType(), method.Modifiers));
-        public static LocalFunctionStatementSyntax AddEndingReturn(LocalFunctionStatementSyntax function) => function.WithBody(endingReturnEngine.InjectReturn(function.Body, function.ReturnType, function.Modifiers));
+        public static AnonymousFunctionExpressionSyntax ConvertExpressionToBody(AnonymousFunctionExpressionSyntax property) =>
+            anonymousFunctionExpressionToBodyEngine.ConvertToBody(property);
+
+        public static BaseMethodDeclarationSyntax AddEndingReturn(BaseMethodDeclarationSyntax method) =>
+            method.WithBody(endingReturnEngine.InjectReturn(method.Body, method.ReturnType(), method.Modifiers));
+        public static AccessorDeclarationSyntax AddEndingReturn(AccessorDeclarationSyntax method, TypeSyntax propertyType) =>
+            method.WithBody(endingReturnEngine.InjectReturn(method.Body, propertyType, method.Modifiers));
+        public static LocalFunctionStatementSyntax AddEndingReturn(LocalFunctionStatementSyntax function) =>
+            function.WithBody(endingReturnEngine.InjectReturn(function.Body, function.ReturnType, function.Modifiers));
+        public static AnonymousFunctionExpressionSyntax AddEndingReturn(AnonymousFunctionExpressionSyntax function) =>
+            function.WithBlock(endingReturnEngine.InjectReturn(function.Block, function.Modifiers));
 
         public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block) => 
             staticEngine.PlaceStaticContextMarker(block);

@@ -48,6 +48,26 @@ namespace Stryker.Core.Instrumentation
             return ret == null ? block : ret.WithAdditionalAnnotations(Marker);
         }
 
+        public BlockSyntax InjectReturn(BlockSyntax block, SyntaxTokenList modifiers)
+        {
+            BlockSyntax ret;
+            // if we had no body or the the last statement was a return, no need to add one, or this is an iterator method
+            if (block == null
+                || block.Statements.Count == 0
+                || block!.Statements.Last().Kind() == SyntaxKind.ReturnStatement
+                || block.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.YieldReturnStatement)|| x.IsKind(SyntaxKind.YieldBreakStatement), false))
+            {
+                ret = null;
+            }
+            else
+            {
+                ret = block.AddStatements(
+                    SyntaxFactory.ReturnStatement(SyntaxFactory.LiteralExpression(SyntaxKind.DefaultLiteralExpression).WithLeadingTrivia(SyntaxFactory.Space)));
+            }
+
+            return ret == null ? block : ret.WithAdditionalAnnotations(Marker);
+        }
+
         protected override SyntaxNode Revert(BlockSyntax node)
         {
             if (node?.Statements.Last().IsKind(SyntaxKind.ReturnStatement) != true)

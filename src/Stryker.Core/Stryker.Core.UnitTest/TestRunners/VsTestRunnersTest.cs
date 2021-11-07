@@ -516,6 +516,25 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         [Fact]
+        public void WorksWhenAllMutantsAreIgnored()
+        {
+            var options = new StrykerOptions
+            {
+                OptimizationMode = OptimizationModes.SkipUncoveredMutants
+            };
+
+            using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
+            {
+                var mockVsTest = BuildVsTestRunner(options, endProcess, out var runner);
+                // test 0 and 1 cover mutant 1
+                SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = ";", ["T1"] = ";" }, endProcess);
+
+                runner.CaptureCoverage(Enumerable.Empty<Mutant>());
+               _mutant.CoveringTests.Count.ShouldBe(0);
+            }
+        }
+
+        [Fact]
         public void RunOnlyUsefulTest()
         {
             var options = new StrykerOptions

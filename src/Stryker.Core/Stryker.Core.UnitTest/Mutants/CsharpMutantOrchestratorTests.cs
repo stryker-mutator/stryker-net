@@ -733,7 +733,7 @@ if(StrykerNamespace.MutantControl.IsActive(2)){    x*=2;
         {
             string source = @"public void SomeMethod() {
 	var x = 0;
-// Stryker disable Update,Statement: comment
+// Stryker disable Update , Statement : comment
 	x++;
 // Stryker restore all
 	x/=2;
@@ -872,6 +872,7 @@ static Mutator_Flag_MutatedStatics()
 			if(StrykerNamespace.MutantControl.IsActive(4)){;}else{
 				request.Headers.TryAddWithoutValidation((StrykerNamespace.MutantControl.IsActive(5)?"""":""Date""), date);
 			}
+            return default;
 		}, ensureSuccessStatusCode: (StrykerNamespace.MutantControl.IsActive(6)?true:false));
 	}
 }";
@@ -1101,7 +1102,7 @@ string Value {get => Out(out var x)? ""empty"": """";}
 static TestClass(){}}";
 
             var expected = @"class Test {
-string Value {get {if(StrykerNamespace.MutantControl.IsActive(0)){return!(Out(out var x))? ""empty"": """";}else{return Out(out var x)? (StrykerNamespace.MutantControl.IsActive(1)?"""":""empty""): (StrykerNamespace.MutantControl.IsActive(2)?""Stryker was here!"":"""");}}}
+string Value {get {if(StrykerNamespace.MutantControl.IsActive(0)){return!(Out(out var x))? ""empty"": """";}else{return Out(out var x)? (StrykerNamespace.MutantControl.IsActive(1)?"""":""empty""): (StrykerNamespace.MutantControl.IsActive(2)?""Stryker was here!"":"""");}return default(string);}}
 static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
 
             ShouldMutateSourceToExpected(source, expected);

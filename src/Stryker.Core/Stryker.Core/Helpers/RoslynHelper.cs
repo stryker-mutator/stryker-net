@@ -27,6 +27,30 @@ namespace Stryker.Core.Helpers
             };
 
         /// <summary>
+        /// Gets the return type of a (get accessor)
+        /// </summary>
+        /// <param name="accessor">accessor</param>
+        /// <returns>method returns type. Null if this not relevant</returns>
+        public static TypeSyntax ReturnType(this AccessorDeclarationSyntax accessor)
+        {
+            if (accessor.Keyword.Text == "get" && accessor.Parent is AccessorListSyntax accessorList && accessorList.Parent is PropertyDeclarationSyntax propertyDeclaration)
+            {
+                return propertyDeclaration.Type;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// True if the block does not contain any statement.
+        /// </summary>
+        /// <param name="blockSyntax">block to test</param>
+        /// <returns>true when the block contains no statement.</returns>
+        public static bool IsEmpty(this BlockSyntax blockSyntax) => blockSyntax.Statements.Count == 0;
+
+        /// <summary>
         /// Checks if a method ends with return.
         /// </summary>
         /// <param name="baseMethod">method to analyze.</param>
