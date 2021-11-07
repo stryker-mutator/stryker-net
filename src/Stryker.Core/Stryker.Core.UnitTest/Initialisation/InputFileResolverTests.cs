@@ -867,7 +867,7 @@ Please specify a test project name filter that results in one project.
 
 
         [Fact]
-        public void ShouldSkipXamlFiles()
+        public void ShouldSkipXamlFilesAsMutable()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {

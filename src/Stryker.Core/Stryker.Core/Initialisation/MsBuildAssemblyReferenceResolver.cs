@@ -14,6 +14,7 @@
 #region --[Namespaces]----------------------------------------------------
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Mono.Cecil;
 #endregion
@@ -24,6 +25,7 @@ namespace Stryker.Core.Initialisation
     /// Resolves assemblies and imports member references
     /// using the list of assembly references supplied by MSBuild through Buildalyzer.
     /// </summary>
+    [ExcludeFromCodeCoverage] // This is not our code
     public class MSBuildAssemblyReferenceResolver : IAssemblyResolver, IMetadataImporterProvider, IReflectionImporterProvider
     {
         #region --[Fields: Private]---------------------------------------

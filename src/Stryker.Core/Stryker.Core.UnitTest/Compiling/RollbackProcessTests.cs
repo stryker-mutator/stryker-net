@@ -125,7 +125,7 @@ namespace ExampleProject
         helpers.Add(mutant.SyntaxTree);
         var references = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic).Select(a => MetadataReference.CreateFromFile(a.Location));
 
-            var input = new MutationTestInput()
+        var input = new MutationTestInput()
         {
             ProjectInfo = new ProjectInfo(new MockFileSystem())
             {
