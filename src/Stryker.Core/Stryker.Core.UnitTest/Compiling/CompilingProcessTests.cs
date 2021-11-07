@@ -21,7 +21,7 @@ namespace Stryker.Core.UnitTest.Compiling
 {
     public class PortableReferencesFixture
     {
-        public IEnumerable<PortableExecutableReference> References = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic).Select(a => MetadataReference.CreateFromFile(a.Location));
+        public IEnumerable<PortableExecutableReference> References = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic && File.Exists(a.Location)).Select(a => MetadataReference.CreateFromFile(a.Location));
     }
 
     public class CompilingProcessTests : TestBase, IClassFixture<PortableReferencesFixture>

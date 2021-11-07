@@ -123,7 +123,7 @@ namespace ExampleProject
 
         var mutant = mutator.Mutate(syntaxTree.GetRoot());
         helpers.Add(mutant.SyntaxTree);
-        var references = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic).Select(a => MetadataReference.CreateFromFile(a.Location));
+        var references = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic && File.Exists(a.Location)).Select(a => MetadataReference.CreateFromFile(a.Location));
 
         var input = new MutationTestInput()
         {
