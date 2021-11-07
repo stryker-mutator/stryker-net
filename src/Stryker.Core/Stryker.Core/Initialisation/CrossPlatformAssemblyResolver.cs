@@ -21,7 +21,7 @@ namespace Stryker.Core.Initialisation
     public class CrossPlatformAssemblyResolver : IAssemblyResolver
     {
         private static readonly bool _onMono = Type.GetType("Mono.Runtime") != null;
-        private static readonly List<string> _directories = new List<string>(2) { ".", "bin" };
+        private static readonly List<string> _directories = new(2) { ".", "bin" };
 
         // Maps file names of available trusted platform assemblies to their full paths.
         private static readonly Lazy<Dictionary<string, string>> TrustedPlatformAssemblies = new Lazy<Dictionary<string, string>>(CreateTrustedPlatformAssemblyMap);
@@ -183,11 +183,13 @@ namespace Stryker.Core.Initialisation
                     var file = Path.Combine(directory, name.Name + extension);
                     if (!File.Exists(file))
                     {
-                        var innerFiles = Directory.GetFiles(directory, "*"+extension, SearchOption.AllDirectories);
+                        var innerFiles = Directory.GetFiles(directory, "*" + extension, SearchOption.AllDirectories);
                         file = innerFiles.FirstOrDefault(f => f.EndsWith(name.Name + extension));
 
-                        if(string.IsNullOrWhiteSpace(file) || !File.Exists(file))
+                        if (string.IsNullOrWhiteSpace(file) || !File.Exists(file))
+                        {
                             continue;
+                        }
                     }
 
                     try
