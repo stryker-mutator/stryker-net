@@ -123,16 +123,9 @@ namespace ExampleProject
 
         var mutant = mutator.Mutate(syntaxTree.GetRoot());
         helpers.Add(mutant.SyntaxTree);
-        var references = new List<PortableExecutableReference>() {
-            MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(List<string>).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(PipeStream).Assembly.Location),
-        };
+        var references = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic).Select(a => MetadataReference.CreateFromFile(a.Location));
 
-        Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(MetadataReference.CreateFromFile(Assembly.Load(a).Location)));
-
-        var input = new MutationTestInput()
+            var input = new MutationTestInput()
         {
             ProjectInfo = new ProjectInfo(new MockFileSystem())
             {
@@ -155,9 +148,8 @@ namespace ExampleProject
        };
 
        var rollbackProcess = new RollbackProcess();
-       var nugetHelperMock = new Mock<INugetHelper>(MockBehavior.Strict);
 
-       var target = new CsharpCompilingProcess(input, rollbackProcess, nugetHelperMock.Object);
+       var target = new CsharpCompilingProcess(input, rollbackProcess);
 
        using (var ms = new MemoryStream())
        {

@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using Mono.Cecil;
 
 namespace Stryker.Core.Initialisation
 {

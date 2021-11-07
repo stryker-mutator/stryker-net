@@ -28,9 +28,9 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             return FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["AssemblyName"]);
         }
 
-        public static IEnumerable<ResourceDescription> GetResources(this IAnalyzerResult analyzerResult, INugetHelper nugetHelper, ILogger logger)
+        public static IEnumerable<ResourceDescription> GetResources(this IAnalyzerResult analyzerResult, IEnumerable<MetadataReference> references, ILogger logger)
         {
-            return EmbeddedResourcesGenerator.GetManifestResources(GetAssemblyPath(analyzerResult), nugetHelper, logger);
+            return EmbeddedResourcesGenerator.GetManifestResources(GetAssemblyPath(analyzerResult), references, logger);
         }
 
         public static CSharpCompilationOptions GetCompilationOptions(this IAnalyzerResult analyzerResult)

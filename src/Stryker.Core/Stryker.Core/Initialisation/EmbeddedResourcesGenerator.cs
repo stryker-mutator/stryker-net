@@ -13,11 +13,11 @@ namespace Stryker.Core.Initialisation
     {
         private static readonly IDictionary<string, IList<ResourceDescription>> _resourceDescriptions = new Dictionary<string, IList<ResourceDescription>>();
 
-        public static IEnumerable<ResourceDescription> GetManifestResources(string assemblyPath, INugetHelper nugetHelper, ILogger logger)
+        public static IEnumerable<ResourceDescription> GetManifestResources(string assemblyPath, IEnumerable<MetadataReference> references, ILogger logger)
         {
             if (!_resourceDescriptions.ContainsKey(assemblyPath))
             {
-                using var module = LoadModule(assemblyPath, nugetHelper, logger);
+                using var module = LoadModule(assemblyPath, references, logger);
                 if (module is null)
                 {
                     yield break;
@@ -31,18 +31,29 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private static ModuleDefinition LoadModule(string assemblyPath, INugetHelper nugetHelper, ILogger logger)
+        private static ModuleDefinition LoadModule(string assemblyPath, IEnumerable<MetadataReference> references, ILogger logger)
         {
+            var assemblyNameReferences = new Dictionary<string, AssemblyNameReference>();
+            foreach(var reference in references)
+            {
+                var module = ModuleDefinition.ReadModule(reference.Display);
+                assemblyNameReferences[reference.Display] = module.Assembly.Name;
+            }
+
+            var readerParameters = new ReaderParameters(ReadingMode.Immediate)
+            {
+                InMemory = true,
+                ReadWrite = false
+            };
+            var resolver = new MSBuildAssemblyReferenceResolver(assemblyNameReferences, readerParameters);
+            
+            readerParameters = resolver.WithProviders(readerParameters);
             try
             {
                 return ModuleDefinition.ReadModule(
                     assemblyPath,
-                    new ReaderParameters(ReadingMode.Immediate)
-                    {
-                        InMemory = true,
-                        ReadWrite = false,
-                        AssemblyResolver = new CrossPlatformAssemblyResolver(nugetHelper)
-                    });
+                    readerParameters
+                );
             }
             catch (Exception e)
             {
