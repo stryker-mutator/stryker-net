@@ -10,12 +10,15 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.Initialisation
 {
     public interface IInputFileResolver
     {
-        ProjectInfo ResolveInput(StrykerOptions options);
+        SourceProjectInfo ResolveInput(StrykerOptions options);
+        TestProjectsInfo ResolveTestProjects(ISet<IAnalyzerResult> testProjects);
     }
 
     /// <summary>
@@ -43,9 +46,9 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Finds the referencedProjects and looks for all files that should be mutated in those projects
         /// </summary>
-        public ProjectInfo ResolveInput(StrykerOptions options)
+        public SourceProjectInfo ResolveInput(StrykerOptions options)
         {
-            var projectInfo = new ProjectInfo(_fileSystem);
+            var projectInfo = new SourceProjectInfo(_fileSystem);
             // Determine test projects
             var testProjectFiles = new List<string>();
             if (options.TestProjects != null && options.TestProjects.Any())
@@ -57,7 +60,7 @@ namespace Stryker.Core.Initialisation
                 testProjectFiles.Add(FindTestProject(options.BasePath));
             }
 
-            var testProjectAnalyzerResults = new List<IAnalyzerResult>();
+            var testProjectAnalyzerResults = new HashSet<IAnalyzerResult>();
             foreach (var testProjectFile in testProjectFiles)
             {
                 // Analyze the test project
@@ -81,6 +84,33 @@ namespace Stryker.Core.Initialisation
             _logger.LogInformation("Analysis complete.");
 
             return projectInfo;
+        }
+
+        public TestProjectsInfo ResolveTestProjects(ISet<IAnalyzerResult> testProjects)
+        {
+            var testProjectsInfo = new TestProjectsInfo();
+
+            foreach(var testProject in testProjects)
+            {
+                var testFiles = new HashSet<TestFile>();
+
+                foreach(var file in testProject.SourceFiles)
+                {
+                    testFiles.Add(new TestFile
+                    {
+                        FilePath = file,
+                        Source = _fileSystem.File.ReadAllText(file)
+                    });
+                }
+
+                testProjectsInfo.TestProjects.Add(new TestProject
+                {
+                    TestProjectAnalyzerResult = testProject,
+                    TestFiles = testFiles
+                });
+            }
+
+            return testProjectsInfo;
         }
 
         public string FindTestProject(string path)
@@ -151,7 +181,7 @@ namespace Stryker.Core.Initialisation
             return projectUnderTestPath;
         }
 
-        private void ValidateTestProjectsCanBeExecuted(ProjectInfo projectInfo)
+        private void ValidateTestProjectsCanBeExecuted(SourceProjectInfo projectInfo)
         {
             // if references contains Microsoft.VisualStudio.QualityTools.UnitTestFramework 
             // we have detected usage of mstest V1 and should exit

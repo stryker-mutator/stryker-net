@@ -22,6 +22,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
@@ -38,7 +39,7 @@ namespace Stryker.Core.UnitTest.TestRunners
     public class VsTestRunnersTest : TestBase
     {
         private readonly string _testAssemblyPath;
-        private readonly ProjectInfo _targetProject;
+        private readonly SourceProjectInfo _targetProject;
         private readonly MockFileSystem _fileSystem;
         private readonly Mutant _mutant;
         private readonly List<TestCase> _testCases;
@@ -93,9 +94,9 @@ namespace Stryker.Core.UnitTest.TestRunners
             _otherMutant = new Mutant { Id = 1 };
             _projectContents = content;
             _projectContents.Add(new CsharpFileLeaf { Mutants = new[] { _otherMutant, _mutant } });
-            _targetProject = new ProjectInfo(_fileSystem)
+            _targetProject = new SourceProjectInfo(_fileSystem)
             {
-                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
+                TestProjectAnalyzerResults = new HashSet<IAnalyzerResult> {
                     TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", Path.GetDirectoryName(_testAssemblyPath) },
@@ -595,7 +596,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
                 var input = new MutationTestInput
                 {
-                    ProjectInfo = _targetProject,
+                    SourceProjectInfo = _targetProject,
                     TestRunner = runner,
                     InitialTestRun = new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500))
                 };

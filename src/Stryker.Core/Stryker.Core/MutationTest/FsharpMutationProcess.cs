@@ -29,7 +29,7 @@ namespace Stryker.Core.MutationTest
             StrykerOptions options = null)
         {
             MutationTestInput input = mutationTestInput;
-            _projectInfo = (ProjectComponent<ParsedInput>)input.ProjectInfo.ProjectContents;
+            _projectInfo = (ProjectComponent<ParsedInput>)input.SourceProjectInfo.ProjectContents;
 
             _options = options;
             _orchestrator = orchestrator ?? new FsharpMutantOrchestrator(options: _options);

@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis;
 using Shouldly;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
@@ -15,9 +16,9 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void ShouldGenerateInjectionPath()
         {
-            var target = new ProjectInfo(new MockFileSystem())
+            var target = new SourceProjectInfo(new MockFileSystem())
             {
-                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
+                TestProjectAnalyzerResults = new HashSet<IAnalyzerResult> {
                     TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", "/test/bin/Debug/" },
@@ -38,9 +39,9 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void ShouldGenerateProperDefaultCompilationOptions()
         {
-            var target = new ProjectInfo(new MockFileSystem())
+            var target = new SourceProjectInfo(new MockFileSystem())
             {
-                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
+                TestProjectAnalyzerResults = new HashSet<IAnalyzerResult> {
                     TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", "/test/bin/Debug/" },
@@ -69,9 +70,9 @@ namespace Stryker.Core.UnitTest.Initialisation
         [InlineData("AppContainerExe", OutputKind.WindowsRuntimeApplication)]
         public void ShouldGenerateProperCompilationOptions(string kindParam, OutputKind output)
         {
-            var target = new ProjectInfo(new MockFileSystem())
+            var target = new SourceProjectInfo(new MockFileSystem())
             {
-                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
+                TestProjectAnalyzerResults = new HashSet<IAnalyzerResult> {
                     TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", "/test/bin/Debug/" },
@@ -100,9 +101,9 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void ShouldGenerateTestBinariesPath()
         {
-            var target = new ProjectInfo(new MockFileSystem())
+            var target = new SourceProjectInfo(new MockFileSystem())
             {
-                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
+                TestProjectAnalyzerResults = new HashSet<IAnalyzerResult> {
                     TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", "/test/bin/Debug/" },

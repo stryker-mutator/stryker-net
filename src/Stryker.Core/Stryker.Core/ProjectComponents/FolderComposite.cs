@@ -42,7 +42,7 @@ namespace Stryker.Core.ProjectComponents
         }
 
         public override IEnumerable<IProjectComponent> GetAllFiles() => Children.SelectMany(x => x.GetAllFiles());
-        public ReadOnlyFolderComposite ToReadOnly() => new ReadOnlyFolderComposite(this, MutatedSyntaxTrees.Any());
+        public ReadOnlyFolderComposite ToReadOnly() => new(this, MutatedSyntaxTrees.Any());
         public override IReadOnlyProjectComponent ToReadOnlyInputComponent() => ToReadOnly();
     }
 

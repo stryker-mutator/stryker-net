@@ -7,6 +7,7 @@ using Crayon;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
 
 namespace Stryker.Core.Reporters.Html
@@ -24,9 +25,9 @@ namespace Stryker.Core.Reporters.Html
             _consoleWriter = consoleWriter ?? Console.Out;
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
-            var mutationReport = JsonReport.Build(_options, reportComponent);
+            var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
             var filename = _options.ReportFileName + ".html";
             var reportPath = Path.Combine(_options.OutputPath, "reports", filename);
 

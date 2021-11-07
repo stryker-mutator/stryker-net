@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
@@ -9,7 +10,9 @@ using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
+using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core
 {
@@ -58,7 +61,7 @@ namespace Stryker.Core
                 // Mutate
                 _mutationTestProcesses = projectOrchestrator.MutateProjects(options, reporters).ToList();
 
-                var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.ProjectInfo.ProjectContents).ToList(), options);
+                var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.SourceProjectInfo.ProjectContents).ToList(), options);
 
                 _logger.LogInformation("{0} mutants created", rootComponent.Mutants.Count());
 
@@ -100,11 +103,33 @@ namespace Stryker.Core
                 // Test
                 foreach (var project in _mutationTestProcesses)
                 {
-                    project.Test(project.Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
+                    project.Test(project.Input.SourceProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
                     project.Restore();
                 }
 
-                reporters.OnAllMutantsTested(readOnlyInputComponent);
+                var combinedTestProjectsInfo = _mutationTestProcesses.Select(mtp => mtp.Input.TestProjectsInfo).Aggregate((a, b) => a + b);
+                var testRunnerPools = _mutationTestProcesses.Select(mtp => mtp.Input.TestRunner).Cast<VsTestRunnerPool>();
+
+                foreach(var testRunner in testRunnerPools)
+                {
+                    foreach(var (_, vsTestDescription) in testRunner.VsTests)
+                    {
+                        var vsTestCase = vsTestDescription.Case;
+                        var testFile = combinedTestProjectsInfo.TestFiles.SingleOrDefault(t => t.FilePath == vsTestCase.CodeFilePath);
+                        if(testFile is not null)
+                        {
+                            testFile.Tests.Add(new TestCase
+                            {
+                                Id = vsTestCase.Id,
+                                Name = vsTestCase.FullyQualifiedName,
+                                Source = null,
+                                Line = vsTestCase.LineNumber
+                            });
+                        }
+                    }
+                }
+
+                reporters.OnAllMutantsTested(readOnlyInputComponent, combinedTestProjectsInfo);
 
                 return new StrykerRunResult(options, readOnlyInputComponent.GetMutationScore());
             }

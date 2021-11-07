@@ -1,7 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.Reporters.Json
 {
@@ -17,7 +20,7 @@ namespace Stryker.Core.Reporters.Json
         {
         }
 
-        private JsonReport(StrykerOptions options, IReadOnlyProjectComponent mutationReport)
+        private JsonReport(StrykerOptions options, IReadOnlyProjectComponent mutationReport, TestProjectsInfo testProjectsInfo)
         {
             Thresholds.Add("high", options.Thresholds.High);
             Thresholds.Add("low", options.Thresholds.Low);
@@ -25,9 +28,21 @@ namespace Stryker.Core.Reporters.Json
             ProjectRoot = mutationReport.FullPath;
 
             Merge(Files, GenerateReportComponents(mutationReport));
+            AddTestFiles(testProjectsInfo);
         }
 
-        public static JsonReport Build(StrykerOptions options, IReadOnlyProjectComponent mutationReport) => new(options, mutationReport);
+        public static JsonReport Build(StrykerOptions options, IReadOnlyProjectComponent mutationReport, TestProjectsInfo testProjectsInfo = null) => new(options, mutationReport, testProjectsInfo);
+
+        private void AddTestFiles(TestProjectsInfo testProjectsInfo)
+        {
+            if (testProjectsInfo is not null)
+            {
+                foreach (var testFile in testProjectsInfo?.TestFiles)
+                {
+                    TestFiles.Add(testFile.FilePath, new JsonTestFile(testFile));
+                }
+            }
+        }
 
         private IDictionary<string, JsonSourceFile> GenerateReportComponents(IReadOnlyProjectComponent component)
         {
@@ -55,12 +70,12 @@ namespace Stryker.Core.Reporters.Json
             return files;
         }
 
-        private IDictionary<string, JsonSourceFile> GenerateFileReportComponents(ReadOnlyFileLeaf fileComponent)
+        private static IDictionary<string, JsonSourceFile> GenerateFileReportComponents(ReadOnlyFileLeaf fileComponent)
         {
             return new Dictionary<string, JsonSourceFile> { { fileComponent.RelativePath, new JsonSourceFile(fileComponent) } };
         }
 
-        private void Merge<TTo, TFrom>(IDictionary<TTo, TFrom> to, IDictionary<TTo, TFrom> from)
+        private static void Merge<TTo, TFrom>(IDictionary<TTo, TFrom> to, IDictionary<TTo, TFrom> from)
         {
             from.ToList().ForEach(x => to[x.Key] = x.Value);
         }

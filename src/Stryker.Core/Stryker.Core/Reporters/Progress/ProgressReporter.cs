@@ -1,5 +1,6 @@
-﻿using Stryker.Core.Mutants;
+using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -27,7 +28,7 @@ namespace Stryker.Core.Reporters.Progress
             _progressBarReporter.ReportRunTest(result);
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo = null)
         {
             _progressBarReporter.ReportFinalState();
         }

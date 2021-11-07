@@ -1,10 +1,11 @@
-﻿using Crayon;
+using Crayon;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Clients;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
 using System;
 using System.Collections.Generic;
@@ -27,9 +28,9 @@ namespace Stryker.Core.Reporters
             _consoleWriter = consoleWriter ?? Console.Out;
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo = null)
         {
-            var mutationReport = JsonReport.Build(_options, reportComponent);
+            var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
 
             var reportUrl = _dashboardClient.PublishReport(mutationReport, _options.ProjectVersion).Result;
 

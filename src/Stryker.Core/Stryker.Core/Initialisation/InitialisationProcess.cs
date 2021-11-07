@@ -10,6 +10,7 @@ using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
@@ -61,16 +62,16 @@ namespace Stryker.Core.Initialisation
         public MutationTestInput Initialize(StrykerOptions options)
         {
             // resolve project info
-            var projectInfo = _inputFileResolver.ResolveInput(options);
+            var sourceProjectInfo = _inputFileResolver.ResolveInput(options);
 
             // initial build
-            var testProjects = projectInfo.TestProjectAnalyzerResults.ToList();
+            var testProjects = sourceProjectInfo.TestProjectAnalyzerResults.ToList();
             for (var i = 0; i < testProjects.Count; i++)
             {
                 _logger.LogInformation(
                     "Building test project {ProjectFilePath} ({CurrentTestProject}/{OfTotalTestProjects})",
                     testProjects[i].ProjectFilePath, i + 1,
-                    projectInfo.TestProjectAnalyzerResults.Count());
+                    sourceProjectInfo.TestProjectAnalyzerResults.Count());
 
                 _initialBuildProcess.InitialBuild(
                     testProjects[i].GetTargetFramework() == Framework.DotNetClassic,
@@ -79,17 +80,18 @@ namespace Stryker.Core.Initialisation
                     options.MsBuildPath);
             }
 
-            InitializeDashboardProjectInformation(options, projectInfo);
+            InitializeDashboardProjectInformation(options, sourceProjectInfo);
 
             if (_testRunner == null)
             {
-                _testRunner = new VsTestRunnerPool(options, projectInfo);
+                _testRunner = new VsTestRunnerPool(options, sourceProjectInfo);
             }
 
             var input = new MutationTestInput
             {
-                ProjectInfo = projectInfo,
-                AssemblyReferences = _assemblyReferenceResolver.LoadProjectReferences(projectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
+                SourceProjectInfo = sourceProjectInfo,
+                TestProjectsInfo = _inputFileResolver.ResolveTestProjects(sourceProjectInfo.TestProjectAnalyzerResults),
+                AssemblyReferences = _assemblyReferenceResolver.LoadProjectReferences(sourceProjectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
                 TestRunner = _testRunner,
             };
 
@@ -100,7 +102,7 @@ namespace Stryker.Core.Initialisation
             // initial test
             _initialTestProcess.InitialTest(options, _testRunner);
 
-        private void InitializeDashboardProjectInformation(StrykerOptions options, ProjectInfo projectInfo)
+        private void InitializeDashboardProjectInformation(StrykerOptions options, SourceProjectInfo projectInfo)
         {
             var dashboardReporterEnabled = options.Reporters.Contains(Reporter.Dashboard) || options.Reporters.Contains(Reporter.All);
             var dashboardBaselineEnabled = options.WithBaseline && options.BaselineProvider == BaselineProvider.Dashboard;

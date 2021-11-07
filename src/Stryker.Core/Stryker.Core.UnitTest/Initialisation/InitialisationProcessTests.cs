@@ -12,6 +12,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Stryker.Core.Mutants;
 using Xunit;
+using Stryker.Core.ProjectComponents.SourceProjects;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
@@ -38,11 +39,11 @@ namespace Stryker.Core.UnitTest.Initialisation
                     new CsharpFileLeaf()
                 });
             inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>()))
-                .Returns(new ProjectInfo(new MockFileSystem())
+                .Returns(new SourceProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         references: new string[0]).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(
+                    TestProjectAnalyzerResults = new HashSet<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(
                         projectFilePath: "C://Example/Dir/ProjectFolder").Object
                     },
                     ProjectContents = folder
@@ -84,11 +85,11 @@ namespace Stryker.Core.UnitTest.Initialisation
             folder.Add(new CsharpFileLeaf());
 
             inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>())).Returns(
-                new ProjectInfo(new MockFileSystem())
+                new SourceProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         references: new string[0]).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(
+                    TestProjectAnalyzerResults = new HashSet<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(
                         projectFilePath: "C://Example/Dir/ProjectFolder").Object
                     },
                     ProjectContents = folder

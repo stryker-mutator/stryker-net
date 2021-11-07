@@ -34,7 +34,7 @@ namespace Stryker.Core.CoverageAnalysis
                 return;
             }
             var mutantsToScan =
-                _input.ProjectInfo.ProjectContents.Mutants
+                _input.SourceProjectInfo.ProjectContents.Mutants
                     .Where(x => x.ResultStatus == MutantStatus.NotRun)
                     .ToList();
             foreach (var mutant in mutantsToScan)

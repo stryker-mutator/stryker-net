@@ -33,7 +33,7 @@ namespace Stryker.Core.MutationTest
             BaseMutantOrchestrator<SyntaxNode> orchestrator = null)
         {
             _input = mutationTestInput;
-            _projectInfo = (ProjectComponent<SyntaxTree>)mutationTestInput.ProjectInfo.ProjectContents;
+            _projectInfo = (ProjectComponent<SyntaxTree>)mutationTestInput.SourceProjectInfo.ProjectContents;
             _options = options;
             _orchestrator = orchestrator ?? new CsharpMutantOrchestrator(options: _options);
             _compilingProcess = new CsharpCompilingProcess(mutationTestInput, new RollbackProcess());
@@ -73,9 +73,9 @@ namespace Stryker.Core.MutationTest
             // compile the mutated syntax trees
             var compileResult = _compilingProcess.Compile(_projectInfo.CompilationSyntaxTrees, ms, msForSymbols, _options.DevMode);
 
-            foreach (var testProject in _input.ProjectInfo.TestProjectAnalyzerResults)
+            foreach (var testProject in _input.SourceProjectInfo.TestProjectAnalyzerResults)
             {
-                var injectionPath = _input.ProjectInfo.GetInjectionFilePath(testProject);
+                var injectionPath = _input.SourceProjectInfo.GetInjectionFilePath(testProject);
                 if (!_fileSystem.Directory.Exists(Path.GetDirectoryName(injectionPath)))
                 {
                     _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(injectionPath));
@@ -90,7 +90,7 @@ namespace Stryker.Core.MutationTest
                 {
                     // inject the debug symbols into the test project
                     using var symbolDestination = _fileSystem.File.Create(Path.Combine(Path.GetDirectoryName(injectionPath),
-                        _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetSymbolFileName()));
+                        _input.SourceProjectInfo.ProjectUnderTestAnalyzerResult.GetSymbolFileName()));
                     msForSymbols.Position = 0;
                     msForSymbols.CopyTo(symbolDestination);
                 }

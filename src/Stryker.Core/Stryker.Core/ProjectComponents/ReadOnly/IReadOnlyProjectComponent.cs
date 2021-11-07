@@ -6,7 +6,7 @@ using Stryker.Core.Options;
 namespace Stryker.Core.ProjectComponents
 {
     /// <summary>
-    /// This interface should only contain readonly properties to ensure that others than the mutation test process cannot modify components.
+    /// This interface should only contain readonly properties to ensure that only the mutation test process modifies components.
     /// </summary>
     public interface IReadOnlyProjectComponent : IEquatable<IReadOnlyProjectComponent>
     {
@@ -32,5 +32,4 @@ namespace Stryker.Core.ProjectComponents
     }
 
     public delegate void Display(IReadOnlyProjectComponent current);
-
 }

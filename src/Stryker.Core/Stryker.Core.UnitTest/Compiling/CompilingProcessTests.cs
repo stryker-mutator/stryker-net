@@ -7,6 +7,7 @@ using Stryker.Core.Compiling;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutationTest;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
@@ -36,7 +37,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new SourceProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -44,7 +45,7 @@ namespace ExampleProject
                             { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
                         }).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new HashSet<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "AssemblyName", "TargetFileName"},
                         }).Object
@@ -83,7 +84,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new SourceProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -91,7 +92,7 @@ namespace ExampleProject
                             { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
                         }).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new HashSet<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "AssemblyName", "TargetFileName"},
                         }).Object
@@ -136,7 +137,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new SourceProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -144,7 +145,7 @@ namespace ExampleProject
                             { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
                         }).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new HashSet<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "AssemblyName", "TargetFileName"},
                         }).Object
@@ -183,7 +184,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new SourceProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -194,7 +195,7 @@ namespace ExampleProject
                             { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
                         },
                         projectFilePath: "TestResources").Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new HashSet<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "AssemblyName", "AssemblyName"},
                         }).Object
@@ -237,7 +238,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new SourceProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -248,7 +249,7 @@ namespace ExampleProject
                             { "AssemblyOriginatorKeyFile", "DoesNotExist.snk" }
                         },
                         projectFilePath: "project.csproj").Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new HashSet<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "AssemblyName", "AssemblyName"},
                         }).Object
@@ -286,7 +287,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new SourceProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         properties: new Dictionary<string, string>()
@@ -295,7 +296,7 @@ namespace ExampleProject
                             { "TargetFileName", "TargetFileName.dll" },
                             { "AssemblyName", "AssemblyName"},
                         }).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new HashSet<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
                             { "TargetFileName", "TargetFileName.dll" },

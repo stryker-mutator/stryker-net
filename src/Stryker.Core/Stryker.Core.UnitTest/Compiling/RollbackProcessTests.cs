@@ -21,6 +21,7 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Xunit;
+using Stryker.Core.ProjectComponents.SourceProjects;
 
 namespace Stryker.Core.UnitTest.Compiling
 {
@@ -132,7 +133,7 @@ namespace ExampleProject
 
         var input = new MutationTestInput()
         {
-            ProjectInfo = new ProjectInfo(new MockFileSystem())
+            SourceProjectInfo = new SourceProjectInfo(new MockFileSystem())
             {
                 ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                     {
@@ -143,7 +144,7 @@ namespace ExampleProject
                         { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
                     },
                     projectFilePath: "TestResources").Object,
-                TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                TestProjectAnalyzerResults = new HashSet<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                     {
                         { "AssemblyName", "AssemblyName"},
                     }).Object

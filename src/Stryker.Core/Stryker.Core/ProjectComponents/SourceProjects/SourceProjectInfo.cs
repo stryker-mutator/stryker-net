@@ -3,22 +3,19 @@ using System.IO;
 using System.IO.Abstractions;
 using Buildalyzer;
 using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.ProjectComponents;
 
-namespace Stryker.Core.Initialisation
+namespace Stryker.Core.ProjectComponents.SourceProjects
 {
-    public class ProjectInfo
+    public class SourceProjectInfo
     {
         private readonly IFileSystem _fileSystem;
 
-        public ProjectInfo() : this(null) { }
-
-        public ProjectInfo(IFileSystem fileSystem)
+        public SourceProjectInfo(IFileSystem fileSystem = null)
         {
             _fileSystem = fileSystem ?? new FileSystem();
         }
 
-        public IEnumerable<IAnalyzerResult> TestProjectAnalyzerResults { get; set; }
+        public ISet<IAnalyzerResult> TestProjectAnalyzerResults { get; set; }
         public IAnalyzerResult ProjectUnderTestAnalyzerResult { get; set; }
 
         /// <summary>
@@ -61,12 +58,4 @@ namespace Stryker.Core.Initialisation
 
         private static string GetBackupName(string injectionPath) => injectionPath + ".stryker-unchanged";
     }
-
-    public enum Framework
-    {
-        DotNetClassic,
-        DotNet,
-        DotNetStandard,
-        Unknown
-    };
 }

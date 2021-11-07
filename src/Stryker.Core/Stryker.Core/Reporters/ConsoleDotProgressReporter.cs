@@ -1,6 +1,7 @@
 using Crayon;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -41,6 +42,6 @@ namespace Stryker.Core.Reporters
             };
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent) { }
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo = null) { }
     }
 }

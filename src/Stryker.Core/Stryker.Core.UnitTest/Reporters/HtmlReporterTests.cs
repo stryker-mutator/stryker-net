@@ -1,5 +1,7 @@
+using Moq;
 using Shouldly;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Html;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
@@ -20,7 +22,7 @@ namespace Stryker.Core.UnitTest.Reporters
             };
             var reporter = new HtmlReporter(options, mockFileSystem);
 
-            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
+            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent(), It.IsAny<TestProjectsInfo>());
             var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.html");
             mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
         }
@@ -36,7 +38,7 @@ namespace Stryker.Core.UnitTest.Reporters
             };
             var reporter = new HtmlReporter(options, mockFileSystem);
 
-            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
+            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent(), It.IsAny<TestProjectsInfo>());
             var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.html");
 
             var fileContents = mockFileSystem.GetFile(reportPath).TextContents;
@@ -58,7 +60,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var reporter = new HtmlReporter(options, mockFileSystem);
             var mutationTree = JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent();
 
-            reporter.OnAllMutantsTested(mutationTree);
+            reporter.OnAllMutantsTested(mutationTree, It.IsAny<TestProjectsInfo>());
             var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.html");
 
             var fileContents = mockFileSystem.GetFile(reportPath).TextContents;

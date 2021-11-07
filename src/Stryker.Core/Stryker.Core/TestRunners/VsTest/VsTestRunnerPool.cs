@@ -8,6 +8,7 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ToolHelpers;
 
 namespace Stryker.Core.TestRunners.VsTest
@@ -17,22 +18,22 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly StrykerOptions _options;
         private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new ConcurrentBag<VsTestRunner>();
-        private readonly IDictionary<Guid, VsTestDescription> _vsTests;
         private readonly TestSet _tests;
         private readonly VsTestHelper _helper = new();
         private readonly ILogger _logger;
+        public IDictionary<Guid, VsTestDescription> VsTests { get; }
 
-        public VsTestRunnerPool(StrykerOptions options, ProjectInfo projectInfo)
+        public VsTestRunnerPool(StrykerOptions options, SourceProjectInfo projectInfo)
         {
             _options = options;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
             using var runner = new VsTestRunner(options, projectInfo, null, new TestSet(), helper: _helper);
-            (_vsTests, _tests) = runner.DiscoverTests(null);
+            (VsTests, _tests) = runner.DiscoverTests(null);
             _availableRunners.Add(runner);
 
             Parallel.For(1, options.Concurrency, (i, loopState) =>
             {
-                _availableRunners.Add(new VsTestRunner(options, projectInfo, _vsTests, _tests, helper: _helper));
+                _availableRunners.Add(new VsTestRunner(options, projectInfo, VsTests, _tests, helper: _helper));
             });
         }
 
@@ -95,7 +96,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var options = new ParallelOptions { MaxDegreeOfParallelism = _availableRunners.Count };
 
-            Parallel.ForEach(_vsTests.Keys, options, testCase =>
+            Parallel.ForEach(VsTests.Keys, options, testCase =>
             {
                 var runner = TakeRunner();
                 try

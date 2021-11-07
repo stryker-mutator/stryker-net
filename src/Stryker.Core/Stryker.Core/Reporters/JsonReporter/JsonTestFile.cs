@@ -1,7 +1,10 @@
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
+using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.Reporters.Json
 {
@@ -11,14 +14,20 @@ namespace Stryker.Core.Reporters.Json
         public string Source { get; init; }
         public ISet<JsonTest> Tests { get; set; }
 
-        public JsonTestFile()
+        public JsonTestFile(TestFile testFile)
         {
-        }
-
-        public JsonTestFile(ReadOnlyFileLeaf file)
-        {
-            Source = file.SourceCode;
+            Source = testFile.Source;
             Language = "cs";
+            Tests = new HashSet<JsonTest>();
+
+            foreach (var test in testFile.Tests)
+            {
+                Tests.Add(new JsonTest
+                {
+                    Id = test.Id.ToString(),
+                    Name = test.Name
+                });
+            }
         }
     }
 }
