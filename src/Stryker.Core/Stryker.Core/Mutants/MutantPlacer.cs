@@ -67,11 +67,11 @@ namespace Stryker.Core.Mutants
         public static LocalFunctionStatementSyntax ConvertExpressionToBody(LocalFunctionStatementSyntax method) =>
             localFunctionExpressionToBodyEngine.ConvertToBody(method);
 
-        public static PropertyDeclarationSyntax ConvertPropertyExpressionToBodyAccessor(PropertyDeclarationSyntax property) =>
-            propertyExpressionToBodyEngine.ConvertExpressionToBody(property);
-
         public static AnonymousFunctionExpressionSyntax ConvertExpressionToBody(AnonymousFunctionExpressionSyntax property) =>
             anonymousFunctionExpressionToBodyEngine.ConvertToBody(property);
+
+        public static PropertyDeclarationSyntax ConvertPropertyExpressionToBodyAccessor(PropertyDeclarationSyntax property) =>
+            propertyExpressionToBodyEngine.ConvertExpressionToBody(property);
 
         public static BaseMethodDeclarationSyntax AddEndingReturn(BaseMethodDeclarationSyntax method) =>
             method.WithBody(endingReturnEngine.InjectReturn(method.Body, method.ReturnType(), method.Modifiers));

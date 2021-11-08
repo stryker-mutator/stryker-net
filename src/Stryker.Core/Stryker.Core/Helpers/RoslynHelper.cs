@@ -9,7 +9,6 @@ namespace Stryker.Core.Helpers
 {
     internal static class RoslynHelper
     {
-
         /// <summary>
         /// Gets the return type of a method (incl. constructor, destructor...)
         /// </summary>
@@ -33,14 +32,12 @@ namespace Stryker.Core.Helpers
         /// <returns>method returns type. Null if this not relevant</returns>
         public static TypeSyntax ReturnType(this AccessorDeclarationSyntax accessor)
         {
-            if (accessor.Keyword.Text == "get" && accessor.Parent is AccessorListSyntax accessorList && accessorList.Parent is PropertyDeclarationSyntax propertyDeclaration)
+            if (accessor.IsGetter() && accessor.Parent is AccessorListSyntax accessorList && accessorList.Parent is PropertyDeclarationSyntax propertyDeclaration)
             {
                 return propertyDeclaration.Type;
             }
-            else
-            {
-                return null;
-            }
+
+            return null;
         }
 
         /// <summary>
@@ -60,11 +57,16 @@ namespace Stryker.Core.Helpers
             {
                 MethodDeclarationSyntax method => !(method.ReturnType is PredefinedTypeSyntax predefinedType &&
                                                     predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword)),
-                OperatorDeclarationSyntax _ => true,
-                ConversionOperatorDeclarationSyntax _ => true,
+                OperatorDeclarationSyntax => true,
+                ConversionOperatorDeclarationSyntax => true,
                 _ => false
             };
 
+        /// <summary>
+        /// Checks if a local function returns a value.
+        /// </summary>
+        /// <param name="localFunction">local function to evaluate</param>
+        /// <returns>true is the method as non void return value</returns>
         public static bool NeedsReturn(this LocalFunctionStatementSyntax localFunction) =>
             !localFunction.ReturnType.IsVoid();
 
@@ -80,9 +82,7 @@ namespace Stryker.Core.Helpers
         /// </summary>
         /// <param name="baseMethod"></param>
         /// <returns>true if this is a getter</returns>
-        public static bool NeedsReturn(this AccessorDeclarationSyntax baseMethod) =>
-            baseMethod.Keyword.Text == "get";
-
+        public static bool NeedsReturn(this AccessorDeclarationSyntax baseMethod) => baseMethod.IsGetter();
 
         /// <summary>
         /// Returns true if the given type is 'void'.
@@ -117,7 +117,14 @@ namespace Stryker.Core.Helpers
         /// <param name="propertyDeclaration">Property.</param>
         /// <returns>Get accessor for the property, or null if none.</returns>
         public static AccessorDeclarationSyntax GetAccessor(this PropertyDeclarationSyntax propertyDeclaration)
-            => propertyDeclaration?.AccessorList?.Accessors.FirstOrDefault(a => a.Keyword.Text == "get");
+            => propertyDeclaration?.AccessorList?.Accessors.FirstOrDefault(IsGetter);
+
+        /// <summary>
+        /// Checks if the accessor is a getter.
+        /// </summary>
+        /// <param name="accessor">accessor to evaluate</param>
+        /// <returns>true if <paramref name="accessor"/> is a getter.</returns>
+        public static bool IsGetter(this AccessorDeclarationSyntax accessor) => accessor.Keyword.IsKind(SyntaxKind.GetKeyword);
 
         /// <summary>
         /// Return a default(type) expression.

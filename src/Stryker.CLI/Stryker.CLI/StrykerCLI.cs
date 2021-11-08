@@ -70,7 +70,7 @@ namespace Stryker.CLI
             {
                 return app.Execute(args);
             }
-            catch (CommandParsingException ex)  
+            catch (CommandParsingException ex)
             {
                 Console.Error.WriteLine(ex.Message);
 
