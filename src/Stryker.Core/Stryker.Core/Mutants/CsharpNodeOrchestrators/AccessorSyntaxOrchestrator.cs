@@ -20,7 +20,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 
             if (!context.HasStatementLevelMutant)
             {
-                if (result.Body!=null &&  sourceNode.NeedsReturn())
+                if (result.Body != null && sourceNode.NeedsReturn())
                 {
                     result = MutantPlacer.AddEndingReturn(result, sourceNode.ReturnType());
                 }

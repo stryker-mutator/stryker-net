@@ -55,7 +55,7 @@ namespace Stryker.Core.Instrumentation
             if (block == null
                 || block.Statements.Count == 0
                 || block!.Statements.Last().Kind() == SyntaxKind.ReturnStatement
-                || block.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.YieldReturnStatement)|| x.IsKind(SyntaxKind.YieldBreakStatement), false))
+                || block.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.YieldReturnStatement) || x.IsKind(SyntaxKind.YieldBreakStatement), false))
             {
                 ret = null;
             }
