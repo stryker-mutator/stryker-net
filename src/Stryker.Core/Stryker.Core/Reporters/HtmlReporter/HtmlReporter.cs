@@ -31,8 +31,8 @@ namespace Stryker.Core.Reporters.Html.reporter
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
         {
             var mutationReport = JsonReport.Build(_options, reportComponent);
-
-            var reportPath = Path.Combine(_options.OutputPath, "reports", "mutation-report.html");
+            var filename = _options.ReportFileName + ".html";
+            var reportPath = Path.Combine(_options.OutputPath, "reports", filename);
 
             WriteHtmlReport(reportPath, mutationReport.ToJsonHtmlSafe());
 

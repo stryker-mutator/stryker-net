@@ -86,6 +86,9 @@ namespace Stryker.CLI
         [JsonPropertyName("ignore-methods")]
         public string[] IgnoreMethods { get; init; }
 
+        [JsonPropertyName("report-file-name")]
+        public string ReportFileName { get; init; }
+
         [JsonExtensionData]
         public Dictionary<string, JsonElement> ExtraData { get; init; }
     }

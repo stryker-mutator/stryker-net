@@ -1,21 +1,21 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 17
-VisualStudioVersion = 17.0.31903.59
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.28729.10
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.CLI", "Stryker.CLI\Stryker.CLI.csproj", "{7B35D5F5-F983-4034-8A15-952E8C415010}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.CLI", "Stryker.CLI\Stryker.CLI\Stryker.CLI.csproj", "{7B35D5F5-F983-4034-8A15-952E8C415010}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.CLI.UnitTest", "Stryker.CLI.UnitTest\Stryker.CLI.UnitTest.csproj", "{1776E249-31B3-4357-94C8-13B86BEFD662}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.CLI.UnitTest", "Stryker.CLI\Stryker.CLI.UnitTest\Stryker.CLI.UnitTest.csproj", "{1776E249-31B3-4357-94C8-13B86BEFD662}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Core", "..\Stryker.Core\Stryker.Core\Stryker.Core.csproj", "{FC692334-8360-4A94-8692-5768ADC5DD04}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Core", "Stryker.Core\Stryker.Core\Stryker.Core.csproj", "{FC692334-8360-4A94-8692-5768ADC5DD04}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Core.UnitTest", "..\Stryker.Core\Stryker.Core.UnitTest\Stryker.Core.UnitTest.csproj", "{DBF2BA4B-39BE-48BF-B220-9891608B014F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Core.UnitTest", "Stryker.Core\Stryker.Core.UnitTest\Stryker.Core.UnitTest.csproj", "{DBF2BA4B-39BE-48BF-B220-9891608B014F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.DataCollector", "..\Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj", "{C5C14231-5DA6-4E3C-802C-6D76C0222FE4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.DataCollector", "Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj", "{C5C14231-5DA6-4E3C-802C-6D76C0222FE4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.RegexMutators", "..\Stryker.RegexMutators\Stryker.RegexMutators\Stryker.RegexMutators.csproj", "{4E6E67F9-1890-4A6A-885B-CD6D55B2FC49}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.RegexMutators", "Stryker.RegexMutators\Stryker.RegexMutators\Stryker.RegexMutators.csproj", "{4E6E67F9-1890-4A6A-885B-CD6D55B2FC49}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.RegexMutators.UnitTest", "..\Stryker.RegexMutators\Stryker.RegexMutators.UnitTest\Stryker.RegexMutators.UnitTest.csproj", "{7C8C7670-4636-4C56-9E3E-22B987337EF2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.RegexMutators.UnitTest", "Stryker.RegexMutators\Stryker.RegexMutators.UnitTest\Stryker.RegexMutators.UnitTest.csproj", "{7C8C7670-4636-4C56-9E3E-22B987337EF2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

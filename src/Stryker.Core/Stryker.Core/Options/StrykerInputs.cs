@@ -28,6 +28,7 @@ namespace Stryker.Core.Options
         MutationLevelInput MutationLevelInput { get; init; }
         MsBuildPathInput MsBuildPathInput { get; init; }
         OutputPathInput OutputPathInput { get; init; }
+        ReportFileNameInput ReportFileNameInput { get; init; }
         ProjectNameInput ProjectNameInput { get; init; }
         ProjectUnderTestNameInput ProjectUnderTestNameInput { get; init; }
         ProjectVersionInput ProjectVersionInput { get; init; }
@@ -62,6 +63,7 @@ namespace Stryker.Core.Options
         public DevModeInput DevModeInput { get; init; } = new();
         public BasePathInput BasePathInput { get; init; } = new();
         public OutputPathInput OutputPathInput { get; init; } = new();
+        public ReportFileNameInput ReportFileNameInput { get; init; } = new();
         public SolutionInput SolutionInput { get; init; } = new();
         public TargetFrameworkInput TargetFrameworkInput { get; init; } = new();
         public VerbosityInput VerbosityInput { get; init; } = new();
@@ -104,6 +106,7 @@ namespace Stryker.Core.Options
         {
             var basePath = BasePathInput.Validate(_fileSystem);
             var outputPath = OutputPathInput.Validate(_fileSystem);
+            var reportFileNameInput = ReportFileNameInput.Validate();
             var reporters = ReportersInput.Validate();
             var baselineProvider = BaselineProviderInput.Validate(reporters);
             var sinceEnabled = SinceInput.Validate(WithBaselineInput.SuppliedInput);
@@ -112,6 +115,7 @@ namespace Stryker.Core.Options
             {
                 BasePath = basePath,
                 OutputPath = outputPath,
+                ReportFileName = reportFileNameInput,
                 Concurrency = ConcurrencyInput.Validate(),
                 MutationLevel = MutationLevelInput.Validate(),
                 DevMode = DevModeInput.Validate(),

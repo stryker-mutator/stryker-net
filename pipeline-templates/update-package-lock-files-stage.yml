@@ -18,7 +18,7 @@ stages:
         command: 'custom'
         custom: 'restore'
         arguments: --locked-mode --force-evaluate
-        workingDirectory: 'src/Stryker.CLI/'
+        workingDirectory: 'src/'
     - task: DotNetCoreCLI@2
       displayName: 'Update integrationtest lock files'
       inputs:

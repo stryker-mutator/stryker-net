@@ -19,7 +19,8 @@ namespace Stryker.Core.UnitTest.Reporters
             var options = new StrykerOptions
             {
                 Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 },
-                OutputPath = Directory.GetCurrentDirectory()
+                OutputPath = Directory.GetCurrentDirectory(),
+                ReportFileName = "mutation-report"
             };
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
 
@@ -36,7 +37,8 @@ namespace Stryker.Core.UnitTest.Reporters
             var options = new StrykerOptions
             {
                 Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 },
-                OutputPath = Directory.GetCurrentDirectory()
+                OutputPath = Directory.GetCurrentDirectory(),
+                ReportFileName = "mutation-report"
             };
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
 
@@ -58,7 +60,8 @@ namespace Stryker.Core.UnitTest.Reporters
             var options = new StrykerOptions
             {
                 Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 },
-                OutputPath = Directory.GetCurrentDirectory()
+                OutputPath = Directory.GetCurrentDirectory(),
+                ReportFileName = "mutation-report"
             };
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
             var mutationTree = JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent();
