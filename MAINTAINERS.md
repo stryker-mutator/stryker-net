@@ -3,9 +3,9 @@
 ## Introduction
 We've written this document for:
 
-1. Active maintainers of Stryker-net
-1. Prospective maintainers of Stryker-net
-1. Anyone curious about how Stryker-net's maintainers maintain Stryker-net
+1. Active maintainers of Stryker.NET
+1. Prospective maintainers of Stryker.NET
+1. Anyone curious about how Stryker.NET's maintainers maintain Stryker.NET
 
 The purpose of this document is to _describe our processes_. We want to avoid conflicts and confusion around "unwritten rules". In our opinion, the most straightforward way to address this is to _write them down_. This _also_ happens to be the most straightforward way to change them!
 
@@ -21,7 +21,6 @@ A "contributor" is any individual who has given back in some way to the project 
 1. Reviewing code on pull requests
 1. Providing design assets
 1. Posting a tutorial on a personal blog or blogging site
-1. Suggesting usages for project funds
 1. Organizing a "Stryker" event or workshop
 1. Spreading the love for mutation testing and test quality in general.
 1. Recruiting more contributors! Don't spam.
@@ -30,15 +29,15 @@ A "contributor" is any individual who has given back in some way to the project 
 A contributor is usually a user as well, but this isn't a hard-and-fast rule. A contributor is also expected to adhere to the [Code of conduct](https://github.com/stryker-mutator/stryker-net/blob/master/CODE_OF_CONDUCT.md) as a user would.
 
 ## Maintainer 
-A maintainer has certain "rights" (or "permissions") to the Stryker-net project and other projects under the stryker-mutator organization. These rights come with increased responsibilities.
+A maintainer has certain "rights" (or "permissions") to the Stryker.NET project and other projects under the stryker-mutator organization. These rights come with increased responsibilities.
 
-However, **there is no expectation of a standard of technical ability** to be a maintainer of Stryker-net. This doesn't imply a lack of technical oversight--every pull request will eventually be reviewed.
+However, **there is no expectation of a standard of technical ability** to be a maintainer of Stryker.NET. This doesn't imply a lack of technical oversight--every pull request will eventually be reviewed.
 
-**If you think you aren't experienced enough to maintain a project like Stryker-net, you are incorrect.** The only requirements are the above responsibilities and a desire to help the project. It bears repeating:
+**If you think you aren't experienced enough to maintain a project like Stryker.NET, you are incorrect.** The only requirements are the above responsibilities and a desire to help the project. It bears repeating:
 
 **You don't have to write code to be a maintainer!**
 
-> A maintainer is synonymous with "Collaborator" and/or "Owner" in GitHub parlance.
+> A maintainer is synonymous with "Collaborator" in GitHub parlance.
 
 ### The Responsibilities of a Maintainer
 As a maintainer, you are expected to not just "follow" the code of conduct, but embody its values. Your public behavior, whether in the physical or virtual world, reflects upon the project and other maintainers.
@@ -48,7 +47,7 @@ As a maintainer, you are expected to not just "follow" the code of conduct, but 
 Furthermore, a maintainer is a contributor who contributes regularly, or expresses a desire to do so. That could be every day--but it might be once a week, or even once a month. Your boss doesn't work here; contribute as often as you wish. We are all people with Real Lives, and for many of us, contributing to OSS is just a hobby!
 
 Finally, a maintainer must help define what makes Stryker "Stryker". At a minimum, a maintainer must understand the current definition (if a maintainer is not interested in decision-making). Some of these questions include:
-* What's the scope of Stryker-net?
+* What's the scope of Stryker.NET?
 * Where should we focus our efforts?
 * What's urgent, what can wait?
 * What can we break? What's off-limits?
@@ -74,19 +73,17 @@ Some maintainers will have full admin rights to the stryker-mutator organization
 1. Add new maintainers to the team.
 
 ## Reaching decisions 
-Stryker-net follows a [consensus-seeking decision-making](https://en.wikipedia.org/wiki/Consensus-seeking_decision-making) process. In other words, all maintainers attempt to come to an agreement. If that fails, owners will decide.
+Stryker.NET follows a [consensus-seeking decision-making](https://en.wikipedia.org/wiki/Consensus-seeking_decision-making) process. In other words, all maintainers attempt to come to an agreement. If that fails, owners will decide.
 
 Active maintainers will make an effort to solicit feedback from others before making important or potentially controversial decisions. Given the varying geographical distribution and availability of the maintenance team, we resolve to do the best we can to solicit feedback.
 
 In other words, to have your opinion heard, participate regularly. The rest of the team won't wait on feedback that isn't necessarily forthcoming!
 
 ### Communication
-Maintainers will mainly gather in [the stryker channel on slack]([Slack](https://join.slack.com/t/stryker-mutator/shared_invite/enQtOTUyMTYyNTg1NDQ0LTU4ODNmZDlmN2I3MmEyMTVhYjZlYmJkOThlNTY3NTM1M2QxYmM5YTM3ODQxYmJjY2YyYzllM2RkMmM1NjNjZjM)). This is a _public_ channel, and _anyone_ can join.
-
-Video conference (or audio) calls may happen on a regular or irregular basis, as schedules allow. This is mainly because we have Real Lives and time zones suck.
+Maintainers will mainly gather in [the stryker-net channel on slack]([Slack](https://join.slack.com/t/stryker-mutator/shared_invite/enQtOTUyMTYyNTg1NDQ0LTU4ODNmZDlmN2I3MmEyMTVhYjZlYmJkOThlNTY3NTM1M2QxYmM5YTM3ODQxYmJjY2YyYzllM2RkMmM1NjNjZjM)). This is a _public_ channel, and _anyone_ can join.
 
 ### Working with Issues & Pull Requests
-All new issues will need to be triaged, and pull requests must be examined. Maintainers must understand [Semantic Versioning](http://semver.org) ("SemVer"), as Stryker-net follows it semi-strictly.
+All new issues will need to be triaged, and pull requests must be examined. Maintainers must understand [Semantic Versioning](http://semver.org) ("SemVer"), as Stryker.NET follows it semi-strictly.
 
 We’re also using [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) (or see [summary here](https://gist.github.com/joshbuchea/6f47e86d2510bce28f8e7f42ae84c716)). This means that the **commit message decides the next release version number** as well as the **annotation in the changelog**. This why it is important to always _squash merge_ PR’s and decide on a good commit message.
 
@@ -94,19 +91,17 @@ Some examples:
 
 ✅ A feature without breaking change.
 > feat(Regex mutations): Add regex mutations. Not enabled by default.
-> 
-> Require `karma` or `@angular/cli` from the current working directory, instead of from `@stryker-mutator/karma-runner/src/util.js` (where the old `requireModule` function lived).
 
 ✅ Fix something in the docs (won’t appear in changelog)
 > docs(plugins): fix dead link
 
 ✅ A feature with a breaking change
-> feat(jest-runner): remove deprecated project types
+> feat(options): Standardize stryker CLI options
 > 
 > BREAKING CHANGE: All options have been reworked. Your existing commandline and json config will most likely no longer work.   
 
 ❌ Comment message has to be present tense
-> ~~ feat(karma-runner): resolved local karma and ng version ~~
+> ~~ feat(vstest): fixed cleanup of vstest from temp ~~
 
 ❌ Format issues:
 > ~~ feat(Html reporter) Add html reporter ~~ // missing :
@@ -123,7 +118,7 @@ Once more: **Only use squash merge to the master branch**.
 ### Commenting on Issues and Reviewing Pull Requests
 **All maintainers should be courteous and kind.** Thank the external contributor for the pull request, even if it is not merged. If the pull request has been opened (and subsequently closed) without discussion in a corresponding issue, let them know that by creating an issue first, they could have saved wasted effort. _Clearly and objectively_ explain the reasoning for rejecting any PR.
 
-If you need more information on an issue, nicely ask the user to provide it. Remind them to use the issue/PR templates if they have not. If the user never gets around to it, the "stalebot" will close it eventually anyhow.
+If you need more information on an issue, nicely ask the user to provide it. Remind them to use the issue/PR templates if they have not.
 
 #### Reviewing Code
 Use GitHub's code review features. Requesting a review from another maintainer _may or may not_ actually result in a review; don't wait on it. If the PR cannot move forward without input from a certain maintainer, _assign them to the PR_. If you’re waiting on someone, send them a direct message on Slack.
@@ -132,7 +127,7 @@ Use GitHub's code review features. Requesting a review from another maintainer _
 There will be jerks.
 
 #### Rude or Entitled People
-These are users who feel the Stryker-net project and its maintainers _owe them_ time or support. This is incorrect.
+These are users who feel the Stryker.NET project and its maintainers _owe them_ time or support. This is incorrect.
 
 However, this behavior is often indicative of someone who is "new" to open source. Many just don't know better. It is not your _responsibility_ to educate them (again, you owe them nothing).
 
@@ -145,7 +140,7 @@ Here are some suggestions:
 1. If someone is _repeatedly_ rude and does not correct their mistakes, you may ban them from participating in the `stryker-mutator` org. If you do not have permission to do so, contact someone who does (an "owner").
 
 ### When do we release?
-We release when we feel like it. However, we don’t want to overwhelm users with new versions. That’s why we’ve decided to release major versions a maximum of 2 times a year. Furthermore, we might decide to group features together, in order to not release multiple minor versions in a short period of time.
+We release when we feel like it. However, we don’t want to overwhelm users with new versions. We might decide to group features together, in order to not release multiple minor versions in a short period of time.
 
 ## Scope of Stryker
 The Stryker Mutator initiative consists of 3 main mutation testing frameworks:
