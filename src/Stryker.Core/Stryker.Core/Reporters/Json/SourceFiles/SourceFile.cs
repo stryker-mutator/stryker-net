@@ -17,7 +17,7 @@ namespace Stryker.Core.Reporters.Json.SourceFiles
 
         public SourceFile(ReadOnlyFileLeaf file, ILogger logger = null)
         {
-            logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<SourceFile>();
+            logger ??= ApplicationLogging.LoggerFactory.CreateLogger<SourceFile>();
 
             Source = file.SourceCode;
             Language = "cs";
@@ -28,11 +28,11 @@ namespace Stryker.Core.Reporters.Json.SourceFiles
                 var jsonMutant = new JsonMutant
                 {
                     Id = mutant.Id.ToString(),
-                    MutatorName = mutant.Mutation.DisplayName ?? "",
+                    MutatorName = mutant.Mutation.DisplayName,
                     Replacement = mutant.Mutation.ReplacementNode.ToFullString(),
                     Location = new Location(mutant.Mutation.OriginalNode.GetLocation().GetMappedLineSpan()),
                     Status = mutant.ResultStatus.ToString(),
-                    Description = mutant.Mutation.Description ?? ""
+                    Description = mutant.Mutation.Description
                 };
 
                 if (!Mutants.Add(jsonMutant))
