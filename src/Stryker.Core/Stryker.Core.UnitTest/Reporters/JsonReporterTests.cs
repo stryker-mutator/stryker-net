@@ -20,15 +20,15 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void JsonMutantPositionLine_ThrowsArgumentExceptionWhenSetToLessThan1()
         {
-            Should.Throw<ArgumentException>(() => new JsonMutantPosition().Line = -1);
-            Should.Throw<ArgumentException>(() => new JsonMutantPosition().Line = 0);
+            Should.Throw<ArgumentException>(() => new Position().Line = -1);
+            Should.Throw<ArgumentException>(() => new Position().Line = 0);
         }
 
         [Fact]
         public void JsonMutantPositionColumn_ThrowsArgumentExceptionWhenSetToLessThan1()
         {
-            Should.Throw<ArgumentException>(() => new JsonMutantPosition().Column = -1);
-            Should.Throw<ArgumentException>(() => new JsonMutantPosition().Column = 0);
+            Should.Throw<ArgumentException>(() => new Position().Column = -1);
+            Should.Throw<ArgumentException>(() => new Position().Column = 0);
         }
 
         [Fact]
