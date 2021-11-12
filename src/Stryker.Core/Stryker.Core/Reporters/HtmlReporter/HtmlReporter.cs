@@ -39,16 +39,17 @@ namespace Stryker.Core.Reporters.Html.reporter
             WriteHtmlReport(reportPath, mutationReport.ToJsonHtmlSafe());
 
             // to make path clickable it should always start with: file:///
-            var clickableUri = reportPath.StartsWith("/") ? reportPath : "/" + reportPath;
-            clickableUri = "file://" + clickableUri;
+            var reportUri = reportPath.Replace("\\", "/");
+            reportUri = reportUri.StartsWith("/") ? reportUri : "/" + reportUri;
+            reportUri = "file://" + reportUri;
 
             _consoleWriter.Write(Output.Green($"\nYour html report has been generated at: \n " +
-                $"{clickableUri} \n" +
+                $"{reportUri} \n" +
                 $"You can open it in your browser of choice. \n"));
 
             if (_options.ReportTypeToOpen == Options.Inputs.ReportType.Html)
             {
-                _processWrapper.Start(clickableUri);
+                _processWrapper.Start(reportUri);
             }
         }
 
