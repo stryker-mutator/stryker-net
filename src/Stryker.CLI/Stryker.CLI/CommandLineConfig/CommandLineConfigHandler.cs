@@ -45,9 +45,11 @@ namespace Stryker.CLI
                     case CommandOptionType.NoValue:
                         HandleNoValue((IInput<bool?>)strykerInput);
                         break;
+
                     case CommandOptionType.MultipleValue:
                         HandleMultiValue(cliInput, (IInput<IEnumerable<string>>)strykerInput);
                         break;
+
                     case CommandOptionType.SingleOrNoValue:
                         HandleSingleOrNoValue(strykerInput, cliInput, inputs);
                         break;
@@ -58,9 +60,11 @@ namespace Stryker.CLI
                     case IInput<string> stringInput:
                         HandleSingleStringValue(cliInput, stringInput);
                         break;
+
                     case IInput<int?> nullableIntInput:
                         HandleSingleIntValue(cliInput, nullableIntInput);
                         break;
+
                     case IInput<int> intInput:
                         HandleSingleIntValue(cliInput, (IInput<int?>)intInput);
                         break;
@@ -99,9 +103,15 @@ namespace Stryker.CLI
                     sinceInput.SuppliedInput = true;
                     inputs.SinceTargetInput.SuppliedInput = cliInput.Value();
                     break;
+
                 case WithBaselineInput withBaselineInput:
                     withBaselineInput.SuppliedInput = true;
                     inputs.BaselineProviderInput.SuppliedInput = cliInput.Value();
+                    break;
+
+                case OpenReportInput openReportInput:
+                    inputs.OpenReportEnabledInput.SuppliedInput = true;
+                    openReportInput.SuppliedInput = cliInput.Value();
                     break;
             }
         }
@@ -134,8 +144,10 @@ namespace Stryker.CLI
             AddCliInput(inputs.ProjectVersionInput, "version", "v", category: InputCategory.Reporting);
             AddCliInput(inputs.DashboardApiKeyInput, "dashboard-api-key", null, category: InputCategory.Reporting);
             AddCliInput(inputs.AzureFileStorageSasInput, "azure-fileshare-sas", null, category: InputCategory.Reporting);
+            AddCliInput(inputs.OpenReportInput, "open-report", "o", CommandOptionType.SingleOrNoValue, argumentHint: "report-type", category: InputCategory.Reporting);
 
             AddCliInput(inputs.DevModeInput, "dev-mode", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
+
         }
 
         private void RegisterCliInput(CommandLineApplication app, CliInput option)
