@@ -4,7 +4,7 @@ schedules:
 - cron: "0 1 * * *"
   displayName: Nightly
   branches:
-    include: 
+    include:
     - master
   always: true
 
@@ -21,10 +21,10 @@ pr:
     exclude:
     - 'docs/*'
     - '.github/*'
-  
+
 variables:
-  PackageVersion: '1.0.0'
-  VersionBuildNumber: $[counter('1.0.0', 1)]
+  PackageVersion: '1.0.1'
+  VersionBuildNumber: $[counter('1.0.1', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
@@ -62,11 +62,11 @@ stages:
       displayName: 'Restore'
       inputs:
         command: 'restore'
-        projects: 'src/Stryker.CLI/Stryker.CLI.sln'
+        projects: 'src/Stryker.sln'
     - task: DotNetCoreCLI@2
       inputs:
         command: 'build'
-        projects: 'src/Stryker.CLI/Stryker.CLI.sln'
+        projects: 'src/Stryker.sln'
     - task: DotNetCoreCLI@2
       displayName: 'Run unit tests'
       inputs:
@@ -140,7 +140,7 @@ stages:
             displayName: 'Restore'
             inputs:
               command: 'restore'
-              projects: 'src/Stryker.CLI/Stryker.CLI.sln'
+              projects: 'src/Stryker.sln'
           - task: DotNetCoreCLI@2
             displayName: 'Pack integrationtest packages'
             inputs:
@@ -175,8 +175,8 @@ stages:
       inputs:
         delayForMinutes: '1'
 
-- stage: IntegrationTests 
-  dependsOn: 
+- stage: IntegrationTests
+  dependsOn:
     - Analysis
     - DeployIntegrationtestPackage
   condition: not(failed())
@@ -248,7 +248,7 @@ stages:
 
 - stage: PublishMasterReleaseArtifact
   displayName: Publish Release Artifact
-  dependsOn: 
+  dependsOn:
     - Analysis
     - IntegrationTests
   condition: and(not(failed()), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
@@ -286,7 +286,7 @@ stages:
 
 - stage: PublishBranchReleaseArtifact
   displayName: Publish Release Artifact
-  dependsOn: 
+  dependsOn:
     - Analysis
     - IntegrationTests
   condition: and(not(failed()), and(ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.SourceBranch'], 'refs/heads/master')))

@@ -9,10 +9,6 @@ namespace Stryker.Core.Instrumentation
     /// </summary>
     internal class IfInstrumentationEngine: BaseEngine<IfStatementSyntax>
     {
-        public IfInstrumentationEngine(string annotation) : base(annotation)
-        {
-        }
-
         /// <summary>
         /// Injects an if statement with the original code or the mutated one, depending on condition's result.
         /// </summary>

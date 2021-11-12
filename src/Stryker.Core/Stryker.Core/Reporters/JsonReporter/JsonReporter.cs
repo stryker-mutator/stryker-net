@@ -25,8 +25,8 @@ namespace Stryker.Core.Reporters.Json
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
         {
             var mutationReport = JsonReport.Build(_options, reportComponent);
-
-            var reportPath = Path.Combine(_options.OutputPath, "reports", "mutation-report.json");
+            var filename = _options.ReportFileName + ".json";
+            var reportPath = Path.Combine(_options.OutputPath, "reports", filename);
 
             WriteReportToJsonFile(reportPath, mutationReport);
 

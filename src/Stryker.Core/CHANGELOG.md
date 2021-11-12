@@ -1,3 +1,61 @@
+# [1.0.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.0.0...stryker@) (2021-11-02)
+
+
+### Bug Fixes
+
+* **block mutator:** Prevent false positives from block mutations ([#1759](https://github.com/stryker-mutator/stryker-net/issues/1759)) ([769ee79](https://github.com/stryker-mutator/stryker-net/commit/769ee797e0141d24e2901a472641c4c0abcd6bc3))
+* **Ignore mutations:** Ignoring statement mutations is now possible ([#1764](https://github.com/stryker-mutator/stryker-net/issues/1764)) ([42a0a7e](https://github.com/stryker-mutator/stryker-net/commit/42a0a7e59a666fc99692e1eb736f0e3396032f22))
+* **version undefined:** Remove version suffix "undefined" from stryker version ([#1765](https://github.com/stryker-mutator/stryker-net/issues/1765)) ([e4d4f9d](https://github.com/stryker-mutator/stryker-net/commit/e4d4f9dec7ff2ca92082a300a68733bcba043ad8))
+
+
+
+# [1.0.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.11...stryker@) (2021-10-30)
+
+
+### Bug Fixes
+
+* Dashboard baseline project name and version are not set ([#1710](https://github.com/stryker-mutator/stryker-net/issues/1710)) ([e2523e4](https://github.com/stryker-mutator/stryker-net/commit/e2523e4472d9abd68ae48c0951cded3a83f56d28))
+* Disable copying to clipboard when using Verify framework ([#1709](https://github.com/stryker-mutator/stryker-net/issues/1709)) ([ccfb1a2](https://github.com/stryker-mutator/stryker-net/commit/ccfb1a2049a88bc75ffbab0a8fee78929ef6d0f6))
+* Ignore methods input was not read from config file ([#1742](https://github.com/stryker-mutator/stryker-net/issues/1742)) ([4924379](https://github.com/stryker-mutator/stryker-net/commit/4924379db5ad532af8e222fd53e80529c7ed9a72))
+* Improve errors messages when configuration contains invalid config keys ([#1707](https://github.com/stryker-mutator/stryker-net/issues/1707)) ([89d6379](https://github.com/stryker-mutator/stryker-net/commit/89d63792f4984c9ede7635a42cdb8bf0720c12d6)), closes [/github.com/microsoft/vstest/issues/2488#issuecomment-932036883](https://github.com//github.com/microsoft/vstest/issues/2488/issues/issuecomment-932036883)
+* **initialization:** allow running stryker on the project under test from an unrelated working directory ([#1708](https://github.com/stryker-mutator/stryker-net/issues/1708)) ([b7884f8](https://github.com/stryker-mutator/stryker-net/commit/b7884f8622dae61bc27e9727a47dc15ea9b1086b)), closes [#1039](https://github.com/stryker-mutator/stryker-net/issues/1039)
+* Loading Source Generators no longer leads to errors on loading unrelated Analyzers ([#1703](https://github.com/stryker-mutator/stryker-net/issues/1703)) ([60a3eaf](https://github.com/stryker-mutator/stryker-net/commit/60a3eafabb6b0ba2d21840c3720c595cb67105ff))
+* **options:** change logic that determines if the dashboard is enable… ([#1688](https://github.com/stryker-mutator/stryker-net/issues/1688)) ([e7b1dfa](https://github.com/stryker-mutator/stryker-net/commit/e7b1dfa4b27655d7f2c32f62123134a286489c35))
+* Set the project name option if input is supplied even if the dashboard reporter is not turned on ([6c982b2](https://github.com/stryker-mutator/stryker-net/commit/6c982b2f54ebf5d2f2f719fe75ef040da93bc05f))
+* Set the project version option if input is supplied even if the dashboard reporter is not turned on ([9e5579f](https://github.com/stryker-mutator/stryker-net/commit/9e5579f98cbe16879aa37f8364a0eac61cd12904))
+
+
+### Features
+
+* **Allow failing tests:** Failing tests are now allowed during the initial testrun ([#1542](https://github.com/stryker-mutator/stryker-net/issues/1542)) ([2a26b2b](https://github.com/stryker-mutator/stryker-net/commit/2a26b2bd6098f0115005f24a52d3d5dbc9a7622c))
+* **Block removal mutator:** Add block removal mutator ([#1717](https://github.com/stryker-mutator/stryker-net/issues/1717)) ([13ed1ab](https://github.com/stryker-mutator/stryker-net/commit/13ed1abe95bdfd296a4bc5b86a98796024ea4cd3))
+* Cache and restore unmutated assembly so rebuild is not needed after mutation test ([#1516](https://github.com/stryker-mutator/stryker-net/issues/1516)) ([2987df5](https://github.com/stryker-mutator/stryker-net/commit/2987df53580f013b33dcb08c74863cc91d6cb236))
+* **dashboard reporter:** Retrieve the project name and version from the project under test using source link ([#1663](https://github.com/stryker-mutator/stryker-net/issues/1663)) ([6eec110](https://github.com/stryker-mutator/stryker-net/commit/6eec110a57febfd16a026165bc2f7f2f7aad6e9d))
+* **filtering:** Mutation can be controlled at the source code level ([#1583](https://github.com/stryker-mutator/stryker-net/issues/1583)) ([bd3fc4e](https://github.com/stryker-mutator/stryker-net/commit/bd3fc4e6b0500bb42224b54b95e08f1465b2fa09))
+* **ignore-mutations:** Allow ignoring specific linq mutations ([#1660](https://github.com/stryker-mutator/stryker-net/issues/1660)) ([84d3995](https://github.com/stryker-mutator/stryker-net/commit/84d3995ff3bdda530922c165aaf8e19af8cd8701))
+* **initial-build:** Allow custom msbuild path ([#1363](https://github.com/stryker-mutator/stryker-net/issues/1363)) ([64c99ee](https://github.com/stryker-mutator/stryker-net/commit/64c99ee4f6732632fd880c177392ac9e11c1316d))
+* **multi-target:** Prepare project analyzer for multi-target support ([#1495](https://github.com/stryker-mutator/stryker-net/issues/1495)) ([9f443b9](https://github.com/stryker-mutator/stryker-net/commit/9f443b9e8e68f994d13d12ab98767bcae77cb4ef))
+* Rework how stryker consumes options ([#1273](https://github.com/stryker-mutator/stryker-net/issues/1273)) ([35d8c24](https://github.com/stryker-mutator/stryker-net/commit/35d8c2450b8472c86efd6f7991dc30d0c9738c87))
+* **statement mutator:** Add mutator that removes statements ([#1472](https://github.com/stryker-mutator/stryker-net/issues/1472)) ([feacbc9](https://github.com/stryker-mutator/stryker-net/commit/feacbc925ec9418728860431c1fdee682bd95249)), closes [#1470](https://github.com/stryker-mutator/stryker-net/issues/1470) [#1470](https://github.com/stryker-mutator/stryker-net/issues/1470) [#1470](https://github.com/stryker-mutator/stryker-net/issues/1470) [#1470](https://github.com/stryker-mutator/stryker-net/issues/1470)
+* **String mutations:** Don't mutate strings as string literal when they contain regex ([#1746](https://github.com/stryker-mutator/stryker-net/issues/1746)) ([f6662d4](https://github.com/stryker-mutator/stryker-net/commit/f6662d43b5a589a2852e41d95bff49cc8b6c4bb9))
+* **target-framework:** Add an option to specify target framework ([#1684](https://github.com/stryker-mutator/stryker-net/issues/1684)) ([83d2beb](https://github.com/stryker-mutator/stryker-net/commit/83d2bebe9a64f8c555e599b77f40da6b323ca95c))
+* **testrunner:** Filter which unit tests are used during mutation test ([#1669](https://github.com/stryker-mutator/stryker-net/issues/1669)) ([7e74862](https://github.com/stryker-mutator/stryker-net/commit/7e74862e6eba2b9b9c19f4524d381bc5ebe35e30))
+* update targetframework from netcoreapp3.1 to net5.0 ([#1462](https://github.com/stryker-mutator/stryker-net/issues/1462)) ([b02a0bb](https://github.com/stryker-mutator/stryker-net/commit/b02a0bb3559d6afa8f201f5b692b96db6c572d96))
+
+
+### BREAKING CHANGES
+
+* All options have been reworked. Your existing commandline and json config will most likely no longer work.
+
+Co-authored-by: Caspar van Doornmalen <casparvandoornmalen@gmail.com>
+Co-authored-by: Richard Werkman <Richard.Werkman@infosupport.com>
+Co-authored-by: Richard Werkman <s1084402@student.windesheim.nl>
+Co-authored-by: Sakari Bergen <s@beatwaves.net>
+Co-authored-by: Peter Semkin <psfinaki@users.noreply.github.com>
+Co-authored-by: Richard Werkman <Richard1158@gmail.com>
+
+
+
 ## [0.22.11](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.10...stryker@0.22.11) (2021-09-17)
 
 

@@ -13,10 +13,6 @@ namespace Stryker.Core.Instrumentation
     {
         private const string MutantContextValueTrackName = "TrackValue";
 
-        public StaticInitializerMarkerEngine(string markerId) : base(markerId)
-        {
-        }
-
         public ExpressionSyntax PlaceValueMarker(ExpressionSyntax node)
         {
             if (node is InitializerExpressionSyntax)

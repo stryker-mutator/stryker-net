@@ -11,10 +11,6 @@ namespace Stryker.Core.Instrumentation
     /// </summary>
     internal class ExpressionMethodToBodyEngine : BaseEngine<BaseMethodDeclarationSyntax>
     {
-        public ExpressionMethodToBodyEngine(string markerId) : base(markerId)
-        {
-        }
-
         /// <summary>
         /// Converts the given method (or operator) from expression to body form.
         /// </summary>

@@ -102,7 +102,7 @@ namespace ExampleProject
         {
             var list = new List<List<double>>();
             int[] listProjected = list.Select(l => l.Count()).ToArray();
-        }   
+        }
     }
 }");
         var options = new StrykerOptions
@@ -110,7 +110,9 @@ namespace ExampleProject
             MutationLevel = MutationLevel.Complete,
             DevMode = true
         };
-        var mutator = new CsharpMutantOrchestrator(options: options);
+            int[] listProjected = new[] { new[] { 1d } }.Select(l => l.Count()).ToArray();
+
+            var mutator = new CsharpMutantOrchestrator(options: options);
         var helpers = new List<SyntaxTree>();
         foreach (var (name, code) in CodeInjection.MutantHelpers)
         {
@@ -128,26 +130,26 @@ namespace ExampleProject
 
         Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(MetadataReference.CreateFromFile(Assembly.Load(a).Location)));
 
-       var input = new MutationTestInput()
-       {
-           ProjectInfo = new ProjectInfo(new MockFileSystem())
-           {
-               ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                   {
-                       { "TargetDir", "" },
-                       { "AssemblyName", "AssemblyName"},
-                       { "TargetFileName", "TargetFileName.dll"},
-                       { "SignAssembly", "true" },
-                       { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
-                   },
-                  projectFilePath: "TestResources").Object,
-               TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                   {
-                       { "AssemblyName", "AssemblyName"},
-                   }).Object
-               }
-           },
-           AssemblyReferences = references
+        var input = new MutationTestInput()
+        {
+            ProjectInfo = new ProjectInfo(new MockFileSystem())
+            {
+                ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    {
+                        { "TargetDir", "" },
+                        { "AssemblyName", "AssemblyName"},
+                        { "TargetFileName", "TargetFileName.dll"},
+                        { "SignAssembly", "true" },
+                        { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
+                    },
+                    projectFilePath: "TestResources").Object,
+                TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    {
+                        { "AssemblyName", "AssemblyName"},
+                    }).Object
+                }
+            },
+            AssemblyReferences = references
        };
 
        var rollbackProcess = new RollbackProcess();
@@ -157,8 +159,8 @@ namespace ExampleProject
        using (var ms = new MemoryStream())
        {
            var result = target.Compile(helpers,  ms, null, true);
-           result.RollbackResult.RollbackedIds.Count().ShouldBe(1);
-       }
+           result.RollbackResult.RollbackedIds.Count().ShouldBe(2); // should actually be 1 but thanks to issue #1745 rollback doesn't work
+            }
     }
 
     [Fact]

@@ -26,7 +26,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 
             var ex = Should.Throw<InputException>(() => target.Validate());
 
-            ex.Message.ShouldBe($"Invalid excluded mutation (gibberish). The excluded mutations options are [Arithmetic, Equality, Boolean, Logical, Assignment, Unary, Update, Checked, Linq, String, Statement, Bitwise, Initializer, Regex]");
+            ex.Message.ShouldBe($"Invalid excluded mutation (gibberish). The excluded mutations options are [Statement, Arithmetic, Block, Equality, Boolean, Logical, Assignment, Unary, Update, Checked, Linq, String, Bitwise, Initializer, Regex]");
         }
 
         [Fact]
@@ -140,6 +140,22 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             linqExpressions.Count().ShouldBe(2);
             linqExpressions.First().ShouldBe(LinqExpression.Max);
             linqExpressions.Last().ShouldBe(LinqExpression.Sum);
+        }
+
+        /// <summary>
+        /// This test is needed as other mutators also have "statement" in their name. It should pick the right mutator.
+        /// </summary>
+        [Fact]
+        public void ShouldIgnoreStatementMutator()
+        {
+            var target = new IgnoreMutationsInput
+            {
+                SuppliedInput = new[] { "statement" }
+            };
+
+            var mutators = target.Validate();
+
+            mutators.ShouldHaveSingleItem().ShouldBe(Mutator.Statement);
         }
     }
 }
