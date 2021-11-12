@@ -84,7 +84,8 @@ namespace Stryker.Core.UnitTest.Reporters
             var options = new StrykerOptions
             {
                 ReportTypeToOpen = Core.Options.Inputs.ReportType.Html,
-                OutputPath = Directory.GetCurrentDirectory()
+                OutputPath = Directory.GetCurrentDirectory(),
+                ReportFileName = "mutation-report"
             };
 
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
