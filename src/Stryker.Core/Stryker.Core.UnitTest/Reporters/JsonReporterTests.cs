@@ -10,6 +10,7 @@ using Shouldly;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
+using Stryker.Core.Reporters.Json.SourceFiles;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
@@ -38,7 +39,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 new LinePosition(2, 2),
                 new LinePosition(4, 5));
 
-            var jsonMutantLocation = new JsonMutantLocation(lineSpan);
+            var jsonMutantLocation = new Core.Reporters.Json.Location(lineSpan);
 
             jsonMutantLocation.Start.Line.ShouldBe(3);
             jsonMutantLocation.Start.Column.ShouldBe(3);

@@ -2,6 +2,7 @@ using System.IO;
 using Shouldly;
 using Stryker.Core.Baseline.Utils;
 using Stryker.Core.Reporters.Json;
+using Stryker.Core.Reporters.Json.SourceFiles;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Baseline.Utils
@@ -20,7 +21,7 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
 
             var jsonMutant = new JsonMutant
             {
-                Location = new JsonMutantLocation
+                Location = new Location
                 {
                     Start = new JsonMutantPosition
                     {
@@ -56,7 +57,7 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
 
             var jsonMutant = new JsonMutant
             {
-                Location = new JsonMutantLocation
+                Location = new Location
                 {
                     Start = new JsonMutantPosition
                     {
@@ -94,7 +95,7 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
 
             var jsonMutant = new JsonMutant
             {
-                Location = new JsonMutantLocation
+                Location = new Location
                 {
                     Start = new JsonMutantPosition
                     {

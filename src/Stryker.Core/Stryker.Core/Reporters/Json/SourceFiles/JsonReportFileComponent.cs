@@ -30,7 +30,7 @@ namespace Stryker.Core.Reporters.Json.SourceFiles
                     Id = mutant.Id.ToString(),
                     MutatorName = mutant.Mutation.DisplayName ?? "",
                     Replacement = mutant.Mutation.ReplacementNode.ToFullString(),
-                    Location = new JsonMutantLocation(mutant.Mutation.OriginalNode.GetLocation().GetMappedLineSpan()),
+                    Location = new Location(mutant.Mutation.OriginalNode.GetLocation().GetMappedLineSpan()),
                     Status = mutant.ResultStatus.ToString(),
                     Description = mutant.Mutation.Description ?? ""
                 };
