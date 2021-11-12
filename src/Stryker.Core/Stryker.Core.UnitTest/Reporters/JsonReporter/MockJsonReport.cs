@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Stryker.Core.Reporters.Json;
+using Stryker.Core.Reporters.Json.SourceFiles;
 
 namespace Stryker.Core.UnitTest.Reporters
 {

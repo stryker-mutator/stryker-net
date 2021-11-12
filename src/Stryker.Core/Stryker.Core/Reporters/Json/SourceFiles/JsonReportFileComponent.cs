@@ -3,7 +3,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.ProjectComponents;
 using System.Collections.Generic;
 
-namespace Stryker.Core.Reporters.Json
+namespace Stryker.Core.Reporters.Json.SourceFiles
 {
     public class JsonReportFileComponent
     {
