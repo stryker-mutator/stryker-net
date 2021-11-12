@@ -95,7 +95,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var reportPath = Path.Combine(options.OutputPath, "reports", $"{options.ReportFileName}.html");
 
             reportPath = FilePathUtils.NormalizePathSeparators(reportPath);
-            reportPath = reportPath.StartsWith(Path.DirectorySeparatorChar) ? reportPath : Path.DirectorySeparatorChar + reportPath;
+            reportPath = reportPath.StartsWith("/") ? reportPath : "/" + reportPath;
 
             // Check if browser open action is invoked
             mockProcess.Verify(m => m.Start("file://" + reportPath));
