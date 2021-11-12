@@ -120,38 +120,6 @@ struct Program
         }
 
         [Fact]
-        private void ShouldMutateNonVoidReturnsAsDefaultWhenContainsReturns()
-        {
-            var source = @"
-class Program
-{
-    int Method(bool input)
-    {
-        if (input)
-        {
-            input = false;
-        }
-
-        if (input)
-        {
-            return 0;
-        }
-
-        return 1;
-    }
-}";
-
-            var mutations = GetMutations(source).ToList();
-            mutations.Count.ShouldBe(3);
-
-            var (methodBlock, firstIfBlock, secondIfBlock) = (mutations[0], mutations[1], mutations[2]);
-
-            AssertDefaultReturn(methodBlock);
-            firstIfBlock.ReplacementNode.ChildNodes().ShouldBeEmpty();
-            AssertDefaultReturn(secondIfBlock);
-        }
-
-        [Fact]
         private void ShouldMutateVoidReturnsAsEmptyInMethod()
         {
             var source = @"
