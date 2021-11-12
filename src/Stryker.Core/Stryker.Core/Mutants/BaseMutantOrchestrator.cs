@@ -30,9 +30,6 @@ namespace Stryker.Core.Mutants
 
     public abstract class BaseMutantOrchestrator<T> : BaseMutantOrchestrator
     {
-        protected  BaseMutantOrchestrator() : base(null)
-        {
-        }
         protected BaseMutantOrchestrator(StrykerOptions input) : base(input)
         {
         }

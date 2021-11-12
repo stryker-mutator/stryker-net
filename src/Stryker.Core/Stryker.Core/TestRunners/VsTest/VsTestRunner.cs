@@ -308,11 +308,11 @@ namespace Stryker.Core.TestRunners.VsTest
             // since we analyze mutant coverage, mutants are assumed as not covered
             var seenTestCases = new HashSet<Guid>();
             var dynamicTestCases = new HashSet<Guid>();
-            var mutantCount = mutants.Any() ? mutants.Max(m => m.Id) + 1 : 0;
-            var map = new List<ICollection<TestDescription>>(mutantCount);
+            var maxMutantId = mutants.Any() ? mutants.Max(m => m.Id) + 1 : 0;
+            var map = new List<ICollection<TestDescription>>(maxMutantId);
             var staticMutantLists = new HashSet<int>();
             // initialize the map
-            for (var i = 0; i < mutantCount; i++)
+            for (var i = 0; i < maxMutantId; i++)
             {
                 map.Add(new List<TestDescription>());
             }
