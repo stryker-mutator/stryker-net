@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Mutators;
+using Stryker.Core.Options.Inputs;
 using Stryker.Core.Reporters;
 
 namespace Stryker.Core.Options
@@ -47,6 +48,7 @@ namespace Stryker.Core.Options
 
         public string FallbackVersion { get; init; }
         public string ModuleName { get; init; }
+        public ReportType ReportTypeToOpen { get; init; }
 
         public IEnumerable<FilePattern> Mutate { get; init; } = new[] { FilePattern.Parse("**/*") };
         public IEnumerable<Regex> IgnoredMethods { get; init; } = Enumerable.Empty<Regex>();
@@ -56,6 +58,7 @@ namespace Stryker.Core.Options
         public OptimizationModes OptimizationMode { get; init; }
 
         private string _projectName;
+
         public string ProjectName
         {
             get => _projectName;
@@ -70,6 +73,7 @@ namespace Stryker.Core.Options
         }
 
         private string _projectVersion;
+
         public string ProjectVersion
         {
             get => _projectVersion;
@@ -107,6 +111,7 @@ namespace Stryker.Core.Options
             LanguageVersion = LanguageVersion,
             LogOptions = LogOptions,
             ModuleName = ModuleName,
+            ReportTypeToOpen = ReportTypeToOpen,
             Mutate = Mutate,
             MutationLevel = MutationLevel,
             OptimizationMode = OptimizationMode,

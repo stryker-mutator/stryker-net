@@ -7,21 +7,25 @@ using Crayon;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.Reporters.HtmlReporter.ProcessWrapper;
 using Stryker.Core.Reporters.Json;
 
-namespace Stryker.Core.Reporters.Html
+namespace Stryker.Core.Reporters.Html.reporter
 {
     public class HtmlReporter : IReporter
     {
         private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
         private readonly TextWriter _consoleWriter;
+        private readonly IProcessWrapper _processWrapper;
 
-        public HtmlReporter(StrykerOptions options, IFileSystem fileSystem = null, TextWriter consoleWriter = null)
+        public HtmlReporter(StrykerOptions options, IFileSystem fileSystem = null,
+            TextWriter consoleWriter = null, IProcessWrapper processWrapper = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
             _consoleWriter = consoleWriter ?? Console.Out;
+            _processWrapper = processWrapper ?? new ProcessWrapper();
         }
 
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
@@ -30,14 +34,23 @@ namespace Stryker.Core.Reporters.Html
             var filename = _options.ReportFileName + ".html";
             var reportPath = Path.Combine(_options.OutputPath, "reports", filename);
 
+            reportPath = FilePathUtils.NormalizePathSeparators(reportPath);
+
             WriteHtmlReport(reportPath, mutationReport.ToJsonHtmlSafe());
 
-            var clickablePath = reportPath.Replace("\\", "/");
-            clickablePath = clickablePath.StartsWith("/") ? clickablePath : $"/{clickablePath}";
+            // to make path clickable it should always start with: file:///
+            var reportUri = reportPath.Replace("\\", "/");
+            reportUri = reportUri.StartsWith("/") ? reportUri : "/" + reportUri;
+            reportUri = "file://" + reportUri;
 
             _consoleWriter.Write(Output.Green($"\nYour html report has been generated at: \n " +
-                $"file://{clickablePath} \n" +
+                $"{reportUri} \n" +
                 $"You can open it in your browser of choice. \n"));
+
+            if (_options.ReportTypeToOpen == Options.Inputs.ReportType.Html)
+            {
+                _processWrapper.Start(reportUri);
+            }
         }
 
         private void WriteHtmlReport(string filePath, string mutationReport)
