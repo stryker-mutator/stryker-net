@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 namespace Stryker.Core.Mutants
 {
     /// <summary>
@@ -27,28 +25,29 @@ namespace Stryker.Core.Mutants
         public Mutation Mutation { get; set; }
         public MutantStatus ResultStatus { get; set; }
         public ITestListDescription CoveringTests { get; set; } = TestsGuidList.EveryTest();
-        public string ResultStatusReason { get; set; }
-        public bool CountForStats => ResultStatus != MutantStatus.CompileError && ResultStatus != MutantStatus.Ignored;
 
         public bool MustRunAgainstAllTests => CoveringTests.IsEveryTest;
+        public ITestListDescription KillingTests { get; set; } = TestsGuidList.NoTest();
 
+        public string ResultStatusReason { get; set; }
+        public bool CountForStats => ResultStatus != MutantStatus.CompileError && ResultStatus != MutantStatus.Ignored;
+        public bool MustRunAgainstAllTests => CoveringTests.IsEveryTest;
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
         public int? Line => Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
         public bool IsStaticValue { get; set; }
-
         public void ResetCoverage() => CoveringTests = TestsGuidList.NoTest();
-
         public void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests)
         {
             if (CoveringTests.ContainsAny(failedTests))
             {
                 ResultStatus = MutantStatus.Killed;
+                KillingTests = CoveringTests.Intersect(failedTests);
             }
             else if (resultRanTests.IsEveryTest || (MustRunAgainstAllTests is not true && CoveringTests.IsIncluded(resultRanTests)))
             {
                 ResultStatus = MutantStatus.Survived;
             }
-            else if ((!timedOutTests.IsEmpty && CoveringTests.IsEveryTest) || CoveringTests.ContainsAny(timedOutTests))
+            else if (CoveringTests.ContainsAny(timedOutTests))
             {
                 ResultStatus = MutantStatus.Timeout;
             }

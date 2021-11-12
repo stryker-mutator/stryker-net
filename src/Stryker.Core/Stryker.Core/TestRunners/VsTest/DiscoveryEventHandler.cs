@@ -10,12 +10,12 @@ namespace Stryker.Core.TestRunners.VsTest
     {
         private readonly AutoResetEvent _waitHandle;
         private readonly List<string> _messages;
-        public List<TestCase> DiscoveredTestCases { get; private set; }
+        public List<TestCase> DiscoveredTestCases { get; }
         public bool Aborted { get; private set; }
 
         public DiscoveryEventHandler(AutoResetEvent waitHandle, List<string> messages)
         {
-            this._waitHandle = waitHandle;
+            _waitHandle = waitHandle;
             DiscoveredTestCases = new List<TestCase>();
             _messages = messages;
         }
@@ -39,14 +39,8 @@ namespace Stryker.Core.TestRunners.VsTest
             _waitHandle.Set();
         }
 
-        public void HandleRawMessage(string rawMessage)
-        {
-            _messages.Add("Test Discovery Raw Message: " + rawMessage);
-        }
+        public void HandleRawMessage(string rawMessage) => _messages.Add("Test Discovery Raw Message: " + rawMessage);
 
-        public void HandleLogMessage(TestMessageLevel level, string message)
-        {
-            _messages.Add("Test Discovery Message: " + message);
-        }
+        public void HandleLogMessage(TestMessageLevel level, string message) => _messages.Add("Test Discovery Message: " + message);
     }
 }

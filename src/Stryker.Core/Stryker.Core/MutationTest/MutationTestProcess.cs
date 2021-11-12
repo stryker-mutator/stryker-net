@@ -29,10 +29,8 @@ namespace Stryker.Core.MutationTest
         public IMutationTestProcess Provide(MutationTestInput mutationTestInput,
             IReporter reporter,
             IMutationTestExecutor mutationTestExecutor,
-            StrykerOptions options)
-        {
-            return new MutationTestProcess(mutationTestInput, reporter, mutationTestExecutor, options: options);
-        }
+            StrykerOptions options) =>
+            new MutationTestProcess(mutationTestInput, reporter, mutationTestExecutor, options: options);
     }
 
     public interface IMutationTestProcess
@@ -40,9 +38,11 @@ namespace Stryker.Core.MutationTest
         MutationTestInput Input { get; }
         void Mutate();
         StrykerRunResult Test(IEnumerable<Mutant> mutantsToTest);
+        public void Diagnostic(IEnumerable<Mutant> mutants, int mutantToDiagnose);
         void Restore();
         void GetCoverage();
         void FilterMutants();
+        IEnumerable<string> GetTestNames(ITestListDescription monitoredMutantCoveringTests);
     }
 
     public class MutationTestProcess : IMutationTestProcess
@@ -121,6 +121,8 @@ namespace Stryker.Core.MutationTest
             _mutationProcess.FilterMutants();
         }
 
+        public IEnumerable<string> GetTestNames(ITestListDescription testList) => _mutationTestExecutor.TestRunner.DiscoverTests().Extract(testList.GetGuids()).Select(t => t.Name);
+
         public StrykerRunResult Test(IEnumerable<Mutant> mutantsToTest)
         {
             if (!MutantsToTest(mutantsToTest))
@@ -128,35 +130,44 @@ namespace Stryker.Core.MutationTest
                 return new StrykerRunResult(_options, double.NaN);
             }
 
-            TestMutants(mutantsToTest);
-            _mutationTestExecutor.TestRunner.Dispose();
+            var mutantCount = mutantsToTest.Count();
+            var buildMutantGroupsForTest = BuildMutantGroupsForTest(mutantsToTest.ToList()).ToList();
+            _logger.LogDebug(
+                $"Mutations will be tested in {buildMutantGroupsForTest.Count} test runs" +
+                (mutantCount > buildMutantGroupsForTest.Count ? $", instead of {mutantCount}." : "."));
+
+            TestMutants(buildMutantGroupsForTest);
 
             return new StrykerRunResult(_options, _projectContents.GetMutationScore());
         }
 
+        public void Diagnostic(IEnumerable<Mutant> mutants, int mutantToDiagnose)
+        {
+            var groups = BuildMutantGroupsForTest(mutants.ToList()).Where(l => l.Any(t => t.Id == mutantToDiagnose)).ToList();
+            TestMutants(groups);
+        }
+
         public void Restore() => Input.ProjectInfo.RestoreOriginalAssembly();
 
-        private void TestMutants(IEnumerable<Mutant> mutantsToTest)
+        private void TestMutants(IEnumerable<List<Mutant>> mutantGroups)
         {
-            var mutantGroups = BuildMutantGroupsForTest(mutantsToTest.ToList());
-
             var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.Concurrency };
 
-            var testsFailingInitialy = Input.InitialTestRun.Result.FailingTests.GetGuids().ToHashSet();
+            var testsFailingInitially = Input.InitialTestRun.Result.FailingTests.GetGuids().ToHashSet();
 
             Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
             {
                 var reportedMutants = new HashSet<Mutant>();
 
-                bool testUpdateHandler(IReadOnlyList<Mutant> testedMutants, ITestGuids failedTests, ITestGuids ranTests, ITestGuids timedOutTest)
+                bool TestUpdateHandler(IReadOnlyList<Mutant> testedMutants, ITestGuids failedTests, ITestGuids ranTests, ITestGuids timedOutTest)
                 {
                     var continueTestRun = _options.OptimizationMode.HasFlag(OptimizationModes.DisableBail);
-                    if (testsFailingInitialy.Count > 0 && failedTests.GetGuids().Any(id => testsFailingInitialy.Contains(id)))
+                    if (testsFailingInitially.Count > 0 && failedTests.GetGuids().Any(id => testsFailingInitially.Contains(id)))
                     {
                         // some of the failing tests where failing without any mutation
                         // we discard those tests
                         failedTests = new TestsGuidList(
-                            failedTests.GetGuids().Where(t => !testsFailingInitialy.Contains(t)));
+                            failedTests.GetGuids().Where(t => !testsFailingInitially.Contains(t)));
                     }
                     foreach (var mutant in testedMutants)
                     {
@@ -172,13 +183,13 @@ namespace Stryker.Core.MutationTest
 
                     return continueTestRun;
                 }
-                _mutationTestExecutor.Test(mutants, Input.InitialTestRun.TimeoutValueCalculator, testUpdateHandler);
+                _mutationTestExecutor.Test(mutants, Input.InitialTestRun.TimeoutValueCalculator, TestUpdateHandler);
 
                 OnMutantsTested(mutants, reportedMutants);
             });
         }
 
-        private void OnMutantsTested(IEnumerable<Mutant> mutants, HashSet<Mutant> reportedMutants)
+        private void OnMutantsTested(IEnumerable<Mutant> mutants, ISet<Mutant> reportedMutants)
         {
             foreach (var mutant in mutants)
             {
@@ -193,10 +204,9 @@ namespace Stryker.Core.MutationTest
 
         private void OnMutantTested(Mutant mutant, ISet<Mutant> reportedMutants)
         {
-            if (mutant.ResultStatus != MutantStatus.NotRun && !reportedMutants.Contains(mutant))
+            if (mutant.ResultStatus != MutantStatus.NotRun && reportedMutants.Add(mutant))
             {
                 _reporter?.OnMutantTested(mutant);
-                reportedMutants.Add(mutant);
             }
         }
 
@@ -253,10 +263,6 @@ namespace Stryker.Core.MutationTest
 
                 blocks.Add(nextBlock);
             }
-
-            _logger.LogDebug(
-                $"Mutations will be tested in {blocks.Count} test runs" +
-                (mutantsNotRun.Count > blocks.Count ? $", instead of {mutantsNotRun.Count}." : "."));
 
             return blocks;
         }

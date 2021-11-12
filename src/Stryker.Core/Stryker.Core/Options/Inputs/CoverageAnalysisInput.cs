@@ -12,9 +12,8 @@ namespace Stryker.Core.Options.Inputs
     - all: capture the list of mutations covered by each test. Test only these mutations. Fast option.
     - perTestInIsolation: like 'perTest', but running each test in an isolated run. Slowest fast option.";
 
-        public OptimizationModes Validate()
-        {
-            return (SuppliedInput ?? Default).ToLower() switch
+        public OptimizationModes Validate() =>
+            (SuppliedInput ?? Default).ToLower() switch
             {
                 "pertestinisolation" => OptimizationModes.CoverageBasedTest | OptimizationModes.CaptureCoveragePerTest,
                 "pertest" => OptimizationModes.CoverageBasedTest,
@@ -22,6 +21,5 @@ namespace Stryker.Core.Options.Inputs
                 "off" => OptimizationModes.None,
                 _ => throw new InputException($"Incorrect coverageAnalysis option ({SuppliedInput}). The options are [Off, All, PerTest or PerTestInIsolation].")
             };
-        }
     }
 }

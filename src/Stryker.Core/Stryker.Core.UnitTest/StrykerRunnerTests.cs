@@ -25,12 +25,11 @@ namespace Stryker.Core.UnitTest
             var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var inputsMock = new Mock<IStrykerInputs>(MockBehavior.Strict);
-            var fileSystemMock = new MockFileSystem();
 
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf()
             {
-                Mutants = new List<Mutant> { new Mutant { Id = 1 } }
+                Mutants = new List<Mutant> { new() { Id = 1 } }
             });
 
             var projectInfo = Mock.Of<ProjectInfo>();
@@ -47,6 +46,9 @@ namespace Stryker.Core.UnitTest
                 LogOptions = new LogOptions(),
                 OptimizationMode = OptimizationModes.SkipUncoveredMutants
             });
+
+            inputsMock.SetupProperty(x => x.MutantToDiagnose);
+            inputsMock.Object.MutantToDiagnose = new MutantToDiagnoseInput();
 
             projectOrchestratorMock.Setup(x => x.MutateProjects(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>()))
                 .Returns(new List<IMutationTestProcess>()
@@ -113,6 +115,9 @@ namespace Stryker.Core.UnitTest
                 LogOptions = new LogOptions()
             });
 
+            inputsMock.SetupProperty(t => t.MutantToDiagnose);
+            inputsMock.Object.MutantToDiagnose = new MutantToDiagnoseInput();
+
             projectOrchestratorMock.Setup(x => x.MutateProjects(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>()))
                 .Returns(new List<IMutationTestProcess>() { mutationTestProcessMock.Object });
 
@@ -124,6 +129,7 @@ namespace Stryker.Core.UnitTest
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()));
             reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IEnumerable<IReadOnlyMutant>>()));
             reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>()));
+
 
             var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
 

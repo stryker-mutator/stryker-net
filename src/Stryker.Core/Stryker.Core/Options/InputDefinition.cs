@@ -19,7 +19,6 @@ namespace Stryker.Core.Options
     /// Definition for options that have a different type for the input and the option
     /// </summary>
     /// <typeparam name="TInput">The type of the input</typeparam>
-    /// <typeparam name="TValue">The type of the option</typeparam>
     public abstract class Input<TInput> : IInput<TInput>
     {
         /// <summary>

@@ -35,7 +35,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly Func<int, IStrykerTestHostLauncher> _hostBuilder;
         private readonly IVsTestHelper _vsTestHelper;
         private readonly bool _ownHelper;
-        private readonly List<string> _messages = new List<string>();
+        private readonly List<string> _messages = new();
         private IDictionary<Guid, VsTestDescription> _vsTests;
         private ICollection<string> _sources;
         private bool _disposedValue; // To detect redundant calls
@@ -72,11 +72,10 @@ namespace Stryker.Core.TestRunners.VsTest
             InitializeVsTestConsole();
         }
 
-        private bool CantUseStrykerDataCollector()
-        {
+        private bool CantUseStrykerDataCollector() =>
+            _projectInfo.TestProjectAnalyzerResults.Select(x => x.GetTargetFrameworkAndVersion()).Any(t =>
             return _projectInfo.TestProjectAnalyzerResults.Select(x => x.GetNuGetFramework()).Any(t =>
                 t.Framework == FrameworkConstants.FrameworkIdentifiers.NetCoreApp && t.Version.Major < 2);
-        }
 
         public TestRunResult InitialTest()
         {

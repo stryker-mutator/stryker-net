@@ -138,7 +138,7 @@ namespace Stryker.CLI
             AddCliInput(inputs.AzureFileStorageSasInput, "azure-fileshare-sas", null, category: InputCategory.Reporting);
 
             AddCliInput(inputs.DevModeInput, "dev-mode", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
-
+            AddCliInput(inputs.MutantToDiagnose, "mutant-to-diagnose", null, CommandOptionType.SingleValue, InputCategory.Misc);
         }
 
         private void RegisterCliInput(CommandLineApplication app, CliInput option)

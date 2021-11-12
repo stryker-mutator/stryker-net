@@ -66,5 +66,14 @@ namespace Stryker.CLI.UnitTest
             _inputs.ReportersInput.SuppliedInput.First().ShouldBe("test");
             _inputs.ReportersInput.SuppliedInput.Last().ShouldBe("test2");
         }
+
+
+        [Fact]
+        public void ShouldHandleDiagnosticMode()
+        {
+            _target.ReadCommandLineConfig(new []{"--mutant-to-diagnose 12"}, _app, _inputs);
+
+            _inputs.MutantToDiagnose.SuppliedInput.ShouldBe(12);
+        }
     }
 }

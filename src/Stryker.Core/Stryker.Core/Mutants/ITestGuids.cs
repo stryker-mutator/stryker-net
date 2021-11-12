@@ -19,6 +19,7 @@ namespace Stryker.Core.Mutants
         bool ContainsAny(ITestGuids other);
         bool IsIncluded(ITestGuids test);
         TestsGuidList Merge(ITestGuids other);
+        ITestListDescription Intersect(ITestGuids failedTests);
     }
 
 }
