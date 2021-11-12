@@ -53,7 +53,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var folderComponent = JsonReportTestHelper.CreateProjectWith();
             var fileComponent = ((CsharpFileLeaf)(folderComponent as CsharpFolderComposite).GetAllFiles().First()).ToReadOnly();
 
-            new JsonReportFileComponent(fileComponent).Language.ShouldBe("cs");
+            new SourceFile(fileComponent).Language.ShouldBe("cs");
         }
 
         [Fact]
@@ -62,7 +62,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var folderComponent = JsonReportTestHelper.CreateProjectWith();
             var fileComponent = ((CsharpFileLeaf)(folderComponent as CsharpFolderComposite).GetAllFiles().First()).ToReadOnly();
 
-            new JsonReportFileComponent(fileComponent).Source.ShouldBe(fileComponent.SourceCode);
+            new SourceFile(fileComponent).Source.ShouldBe(fileComponent.SourceCode);
         }
 
         [Fact]
@@ -71,7 +71,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var folderComponent = JsonReportTestHelper.CreateProjectWith();
             foreach (var file in (folderComponent as CsharpFolderComposite).GetAllFiles())
             {
-                var jsonReportComponent = new JsonReportFileComponent(((CsharpFileLeaf)file).ToReadOnly());
+                var jsonReportComponent = new SourceFile(((CsharpFileLeaf)file).ToReadOnly());
                 foreach (var mutant in file.Mutants)
                 {
                     jsonReportComponent.Mutants.ShouldContain(m => m.Id == mutant.Id.ToString());
@@ -86,7 +86,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var folderComponent = JsonReportTestHelper.CreateProjectWith(duplicateMutant: true);
             foreach (var file in (folderComponent as CsharpFolderComposite).GetAllFiles())
             {
-                var jsonReportComponent = new JsonReportFileComponent(((CsharpFileLeaf)file).ToReadOnly(), loggerMock);
+                var jsonReportComponent = new SourceFile(((CsharpFileLeaf)file).ToReadOnly(), loggerMock);
                 foreach (var mutant in file.Mutants)
                 {
                     jsonReportComponent.Mutants.ShouldContain(m => m.Id == mutant.Id.ToString());

@@ -11,7 +11,7 @@ namespace Stryker.Core.Reporters.Json
         public string SchemaVersion { get; init; } = "1";
         public IDictionary<string, int> Thresholds { get; init; } = new Dictionary<string, int>();
         public string ProjectRoot { get; init; }
-        public IDictionary<string, JsonReportFileComponent> Files { get; init; } = new Dictionary<string, JsonReportFileComponent>();
+        public IDictionary<string, SourceFile> Files { get; init; } = new Dictionary<string, SourceFile>();
 
         public JsonReport()
         {
@@ -32,9 +32,9 @@ namespace Stryker.Core.Reporters.Json
             return new JsonReport(options, mutationReport);
         }
 
-        private IDictionary<string, JsonReportFileComponent> GenerateReportComponents(IReadOnlyProjectComponent component)
+        private IDictionary<string, SourceFile> GenerateReportComponents(IReadOnlyProjectComponent component)
         {
-            var files = new Dictionary<string, JsonReportFileComponent>();
+            var files = new Dictionary<string, SourceFile>();
             if (component is ReadOnlyFolderComposite folder)
             {
                 Merge(files, GenerateFolderReportComponents(folder));
@@ -47,9 +47,9 @@ namespace Stryker.Core.Reporters.Json
             return files;
         }
 
-        private IDictionary<string, JsonReportFileComponent> GenerateFolderReportComponents(ReadOnlyFolderComposite folderComponent)
+        private IDictionary<string, SourceFile> GenerateFolderReportComponents(ReadOnlyFolderComposite folderComponent)
         {
-            var files = new Dictionary<string, JsonReportFileComponent>();
+            var files = new Dictionary<string, SourceFile>();
             foreach (var child in folderComponent.Children)
             {
                 Merge(files, GenerateReportComponents(child));
@@ -58,9 +58,9 @@ namespace Stryker.Core.Reporters.Json
             return files;
         }
 
-        private IDictionary<string, JsonReportFileComponent> GenerateFileReportComponents(ReadOnlyFileLeaf fileComponent)
+        private IDictionary<string, SourceFile> GenerateFileReportComponents(ReadOnlyFileLeaf fileComponent)
         {
-            return new Dictionary<string, JsonReportFileComponent> { { fileComponent.RelativePath, new JsonReportFileComponent(fileComponent) } };
+            return new Dictionary<string, SourceFile> { { fileComponent.RelativePath, new SourceFile(fileComponent) } };
         }
 
         private void Merge<TTo, TFrom>(IDictionary<TTo, TFrom> to, IDictionary<TTo, TFrom> from)

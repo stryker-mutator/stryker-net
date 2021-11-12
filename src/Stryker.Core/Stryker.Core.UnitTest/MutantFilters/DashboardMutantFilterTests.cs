@@ -165,7 +165,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Setup Mocks
             var jsonReportFileComponent = new MockJsonReportFileComponent("", "", jsonMutants);
 
-            var jsonFileComponents = new Dictionary<string, JsonReportFileComponent>
+            var jsonFileComponents = new Dictionary<string, SourceFile>
             {
                 ["foo.cs"] =  jsonReportFileComponent
             };
@@ -223,7 +223,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Setup Mocks
             var jsonReportFileComponent = new MockJsonReportFileComponent("", "", jsonMutants);
 
-            var jsonFileComponents = new Dictionary<string, JsonReportFileComponent>
+            var jsonFileComponents = new Dictionary<string, SourceFile>
             {
                 ["foo.cs"] = jsonReportFileComponent
             };
@@ -290,7 +290,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Setup Mocks
             var jsonReportFileComponent = new MockJsonReportFileComponent("", "", jsonMutants);
 
-            var jsonFileComponents = new Dictionary<string, JsonReportFileComponent>
+            var jsonFileComponents = new Dictionary<string, SourceFile>
             {
                 ["foo.cs"] = jsonReportFileComponent
             };
@@ -353,7 +353,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             // Setup Mocks
 
-            var jsonFileComponents = new Dictionary<string, JsonReportFileComponent>();
+            var jsonFileComponents = new Dictionary<string, SourceFile>();
 
             var baseline = new MockJsonReport(null, jsonFileComponents);
 

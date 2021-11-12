@@ -68,7 +68,7 @@ namespace Stryker.Core.MutantFilters
                 return;
             }
 
-            JsonReportFileComponent baselineFile = _baseline.Files[FilePathUtils.NormalizePathSeparators(file.RelativePath)];
+            SourceFile baselineFile = _baseline.Files[FilePathUtils.NormalizePathSeparators(file.RelativePath)];
 
             if (baselineFile is { })
             {

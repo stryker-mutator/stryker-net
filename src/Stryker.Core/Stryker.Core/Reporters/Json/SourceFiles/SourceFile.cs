@@ -5,19 +5,19 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.Reporters.Json.SourceFiles
 {
-    public class JsonReportFileComponent
+    public class SourceFile
     {
         public string Language { get; init; }
         public string Source { get; init; }
         public ISet<JsonMutant> Mutants { get; init; }
 
-        public JsonReportFileComponent()
+        public SourceFile()
         {
         }
 
-        public JsonReportFileComponent(ReadOnlyFileLeaf file, ILogger logger = null)
+        public SourceFile(ReadOnlyFileLeaf file, ILogger logger = null)
         {
-            logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<JsonReportFileComponent>();
+            logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<SourceFile>();
 
             Source = file.SourceCode;
             Language = "cs";
