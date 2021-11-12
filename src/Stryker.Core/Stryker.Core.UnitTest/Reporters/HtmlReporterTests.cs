@@ -94,10 +94,11 @@ namespace Stryker.Core.UnitTest.Reporters
             reporter.OnAllMutantsTested(mutationTree);
             var reportPath = Path.Combine(options.OutputPath, "reports", $"{options.ReportFileName}.html");
 
-            var clickablePath = FilePathUtils.NormalizePathSeparators(reportPath);
+            reportPath = FilePathUtils.NormalizePathSeparators(reportPath);
+            reportPath = reportPath.StartsWith(Path.DirectorySeparatorChar) ? reportPath : Path.DirectorySeparatorChar + reportPath;
 
             // Check if browser open action is invoked
-            mockProcess.Verify(m => m.Start("file://" + clickablePath));
+            mockProcess.Verify(m => m.Start("file://" + reportPath));
         }
 
         [Fact]

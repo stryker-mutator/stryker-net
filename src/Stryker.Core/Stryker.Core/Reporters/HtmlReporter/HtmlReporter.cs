@@ -34,20 +34,21 @@ namespace Stryker.Core.Reporters.Html.reporter
             var filename = _options.ReportFileName + ".html";
             var reportPath = Path.Combine(_options.OutputPath, "reports", filename);
 
+            reportPath = FilePathUtils.NormalizePathSeparators(reportPath);
+
             WriteHtmlReport(reportPath, mutationReport.ToJsonHtmlSafe());
 
-            var clickablePath = FilePathUtils.NormalizePathSeparators(reportPath);
-            clickablePath = clickablePath.StartsWith(Path.DirectorySeparatorChar) ? clickablePath : Path.DirectorySeparatorChar + clickablePath;
+            // to make path clickable it should always start with: file:///
+            var clickablePath = reportPath.StartsWith(Path.DirectorySeparatorChar) ? reportPath : Path.DirectorySeparatorChar + reportPath;
+            clickablePath = "file://" + clickablePath;
 
             _consoleWriter.Write(Output.Green($"\nYour html report has been generated at: \n " +
-                $"file://{clickablePath} \n" +
+                $"{clickablePath} \n" +
                 $"You can open it in your browser of choice. \n"));
 
             if (_options.ReportTypeToOpen == Options.Inputs.ReportType.Html)
             {
-                clickablePath = clickablePath.Remove(0, 1);
-
-                _processWrapper.Start("file://" + clickablePath);
+                _processWrapper.Start(clickablePath);
             }
         }
 
