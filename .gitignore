@@ -288,3 +288,4 @@ StrykerLogs/
 *.buildlog
 *.DotSettings
 /src/Stryker.CLI/TestStatisticsAnalyzer/test-stats-report.json
+.DS_Store

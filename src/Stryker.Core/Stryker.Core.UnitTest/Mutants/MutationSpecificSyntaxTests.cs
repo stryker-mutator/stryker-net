@@ -2,14 +2,15 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.InjectedHelpers;
+using Stryker.Core.Mutants;
+using Stryker.Core.Mutators;
+using Stryker.Core.Options;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
 {
     public class MutationSpecificSyntaxTests: MutantOrchestratorTestsBase
     {
-
-
         [Fact]
         public void ShouldMutateInterfaces()
         {
@@ -45,6 +46,28 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
             var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
             actualNode.ShouldBeSemantically(expectedNode);
             actualNode.ShouldNotContainErrors();
+        }
+
+        [Fact]
+        public void ShouldMutateBlockStatements()
+        {
+            var options = new StrykerOptions
+            {
+                MutationLevel = MutationLevel.Complete,
+                OptimizationMode = OptimizationModes.CoverageBasedTest,
+            };
+            _target = new CsharpMutantOrchestrator(options: options);
+
+            string source = @"private void Move()
+			{
+				;
+			}";
+            string expected = @"private void Move()
+    {if(StrykerNamespace.MutantControl.IsActive(0)){}else		    {
+    			    ;
+    		    }}";
+
+            ShouldMutateSourceToExpected(source, expected);
         }
 
         [Theory]

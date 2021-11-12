@@ -279,10 +279,10 @@ Threshold calculations in order:
 - `mutation score < threshold-break`:
     - Error! The application will exit with exit code 1.
 
-### `break` <`number`>
+### `break-at` <`number`>
 
 Default: `0`  
-Command line: `[-b|--break] 40`  
+Command line: `[-b|--break-at] 40`  
 Config file: `"thresholds": { "break": 0 }`
 
 When threshold break is set to anything other than 0 Stryker will exit with a non-zero code. This can be used in a CI pipeline to fail the pipeline when you mutation score is not sufficient. Must be less than or equal to threshold low.
@@ -597,3 +597,10 @@ Command line: `--msbuild-path "c://MsBuild/MsBuild.exe"`
 Config file: `N/A`  
 
 By default stryker tries to autodiscover msbuild on your system. If stryker fails to discover msbuild you may supply the path to msbuild manually with this option.
+
+### `report-file-name` <`string`>
+
+Default: `mutation-report`
+Config file: `report-file-name`
+
+If HTML or JSON reporting is being used, this sets the filename of the output file.

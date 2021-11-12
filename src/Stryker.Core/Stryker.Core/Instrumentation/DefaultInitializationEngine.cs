@@ -17,9 +17,6 @@ namespace Stryker.Core.Instrumentation
     internal class DefaultInitializationEngine : BaseEngine<BlockSyntax>
     {
         private static SyntaxAnnotation blockMarker = new SyntaxAnnotation("InitializationBlock");
-        public DefaultInitializationEngine(string injector): base(injector)
-        {
-        }
 
         /// <summary>
         /// Add an assignment to default value for the given parameter/variable

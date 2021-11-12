@@ -12,10 +12,6 @@ namespace Stryker.Core.Instrumentation
     /// </summary>
     internal class EndingReturnEngine: BaseEngine<BlockSyntax>
     {
-        public EndingReturnEngine(string markerId) : base(markerId)
-        {
-        }
-
         public BlockSyntax InjectReturn(BlockSyntax block, TypeSyntax type, SyntaxTokenList modifiers)
         {
             var returnType = type;

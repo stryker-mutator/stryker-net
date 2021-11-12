@@ -7,8 +7,12 @@ namespace Stryker.Core.Mutators
 {
     public enum Mutator
     {
+        [Description("Statements")]
+        Statement,
         [Description("Arithmetic operators")]
         Arithmetic,
+        [Description("Block statements")]
+        Block,
         [Description("Equality operators")]
         Equality,
         [Description("Boolean literals")]
@@ -27,8 +31,6 @@ namespace Stryker.Core.Mutators
         Linq,
         [Description("String literals")]
         String,
-        [Description("Statements")]
-        Statement,
         [Description("Bitwise operators")]
         Bitwise,
         [Description("Array initializer")]
