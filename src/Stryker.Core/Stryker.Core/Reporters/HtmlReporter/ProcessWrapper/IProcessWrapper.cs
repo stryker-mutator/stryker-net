@@ -4,6 +4,7 @@ namespace Stryker.Core.Reporters.HtmlReporter.ProcessWrapper
 {
     public interface IProcessWrapper
     {
-        public Process Start(string filePath);
+        Process StartFile(string filePath);
+        Process StartUrl(string url);
     }
 }

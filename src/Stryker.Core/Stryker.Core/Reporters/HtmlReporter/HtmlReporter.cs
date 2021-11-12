@@ -49,7 +49,7 @@ namespace Stryker.Core.Reporters.Html.reporter
 
             if (_options.ReportTypeToOpen == Options.Inputs.ReportType.Html)
             {
-                _processWrapper.Start(reportUri);
+                _processWrapper.StartFile(reportUri);
             }
         }
 

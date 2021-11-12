@@ -5,13 +5,13 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
-    public class ReportOpenerTests : TestBase
+    public class OpenReportInputTests : TestBase
     {
         [Fact]
         public void ShouldHaveHelpText()
         {
             var target = new OpenReportInput();
-            target.HelpText.ShouldBe(@"If enabled stryker will attempt to open the Html report in your browser when the results are calculated. | default: 'Html' | allowed: None, Html");
+            target.HelpText.ShouldBe(@"If enabled stryker will attempt to open the Html report in your browser when the results are calculated. | default: 'Html' | allowed: Html, Dashboard");
         }
 
         [Fact]
@@ -38,7 +38,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             var target = new OpenReportInput { SuppliedInput = "gibberish" };
             var ex = Should.Throw<InputException>(() => target.Validate(true));
 
-            ex.Message.ShouldBe("The given report type (gibberish) is invalid. Valid options are: [Html]");
+            ex.Message.ShouldBe("The given report type (gibberish) is invalid. Valid options are: [Html, Dashboard]");
         }
     }
 }
