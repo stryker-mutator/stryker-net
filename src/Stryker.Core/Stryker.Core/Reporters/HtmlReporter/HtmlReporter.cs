@@ -36,8 +36,8 @@ namespace Stryker.Core.Reporters.Html.reporter
 
             WriteHtmlReport(reportPath, mutationReport.ToJsonHtmlSafe());
 
-            var clickablePath = reportPath.Replace("\\", "/");
-            clickablePath = clickablePath.StartsWith("/") ? clickablePath : $"/{clickablePath}";
+            var clickablePath = FilePathUtils.NormalizePathSeparators(reportPath);
+            clickablePath = clickablePath.StartsWith(Path.DirectorySeparatorChar) ? clickablePath : Path.DirectorySeparatorChar + clickablePath;
 
             _consoleWriter.Write(Output.Green($"\nYour html report has been generated at: \n " +
                 $"file://{clickablePath} \n" +

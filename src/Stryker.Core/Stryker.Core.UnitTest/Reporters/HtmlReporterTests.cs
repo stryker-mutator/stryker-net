@@ -92,9 +92,9 @@ namespace Stryker.Core.UnitTest.Reporters
             var mutationTree = JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent();
 
             reporter.OnAllMutantsTested(mutationTree);
-            var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.html");
+            var reportPath = Path.Combine(options.OutputPath, "reports", $"{options.ReportFileName}.html");
 
-            var clickablePath = reportPath.Replace("\\", "/");
+            var clickablePath = FilePathUtils.NormalizePathSeparators(reportPath);
 
             // Check if browser open action is invoked
             mockProcess.Verify(m => m.Start("file://" + clickablePath));
