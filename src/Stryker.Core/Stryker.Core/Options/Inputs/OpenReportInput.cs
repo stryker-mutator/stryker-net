@@ -19,7 +19,7 @@ namespace Stryker.Core.Options.Inputs
 
         protected override IEnumerable<string> AllowedOptions => Enum.GetNames(typeof(ReportType));
 
-        public ReportType Validate(bool enabled)
+        public ReportType? Validate(bool enabled)
         {
             if (enabled)
             {
@@ -40,7 +40,7 @@ namespace Stryker.Core.Options.Inputs
                 }
             }
 
-            return ReportType.Html;
+            return null;
         }
     }
 }
