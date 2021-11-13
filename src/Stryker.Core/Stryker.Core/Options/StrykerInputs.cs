@@ -107,7 +107,8 @@ namespace Stryker.Core.Options
             var basePath = BasePathInput.Validate(_fileSystem);
             var outputPath = OutputPathInput.Validate(_fileSystem);
             var reportFileNameInput = ReportFileNameInput.Validate();
-            var reporters = ReportersInput.Validate();
+            var withBaseline = WithBaselineInput.Validate();
+            var reporters = ReportersInput.Validate(withBaseline);
             var baselineProvider = BaselineProviderInput.Validate(reporters);
             var sinceEnabled = SinceInput.Validate(WithBaselineInput.SuppliedInput);
 
@@ -152,7 +153,7 @@ namespace Stryker.Core.Options
                 DiffIgnoreChanges = DiffIgnoreChangesInput.Validate(),
                 AzureFileStorageSas = AzureFileStorageSasInput.Validate(baselineProvider),
                 AzureFileStorageUrl = AzureFileStorageUrlInput.Validate(baselineProvider),
-                WithBaseline = WithBaselineInput.Validate(),
+                WithBaseline = withBaseline,
                 BaselineProvider = baselineProvider,
                 FallbackVersion = FallbackVersionInput.Validate(ProjectVersionInput.SuppliedInput, WithBaselineInput.SuppliedInput),
                 Since = sinceEnabled,

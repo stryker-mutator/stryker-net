@@ -4,23 +4,27 @@ updates:
   directory: "/src/Stryker.CLI"
   schedule:
     interval: daily
-  prefix: 'deps: '
-  include: "scope"
+  commit-message:
+    prefix: 'deps: '
+    include: "scope"
 - package-ecosystem: nuget
   directory: "/integrationtest"
   schedule:
     interval: daily
-  prefix: 'deps: '
-  include: "scope"
+  commit-message:
+    prefix: 'deps: '
+    include: "scope"
 - package-ecosystem: nuget
   directory: "/integrationtest/TargetProjects/NetFramework"
   schedule:
     interval: daily
-  prefix: 'deps: '
-  include: "scope"
+  commit-message:
+    prefix: 'deps: '
+    include: "scope"
 - package-ecosystem: nuget
   directory: "/src/Stryker.Core/Stryker.Core/ToolHelpers"
   schedule:
     interval: daily
-  prefix: 'deps: '
-  include: "scope"
+  commit-message:
+    prefix: 'deps: '
+    include: "scope"
