@@ -24,7 +24,7 @@ namespace Stryker.Core.Reporters
         {
             var mutationReport = JsonReport.Build(_options, reportComponent);
             var projectVersion = _gitInfoProvider.GetCurrentBranchName();
-            var baselineVersion = $"dashboard-compare/{projectVersion}";
+            var baselineVersion = $"baseline/{projectVersion}";
 
             _baselineProvider.Save(mutationReport, baselineVersion).Wait();
         }

@@ -31,7 +31,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             target.OnAllMutantsTested(readOnlyInputComponent.Object);
 
-            baselineProvider.Verify(x => x.Save(It.IsAny<JsonReport>(), It.Is<string>(x => x == "dashboard-compare/new-feature")), Times.Once);
+            baselineProvider.Verify(x => x.Save(It.IsAny<JsonReport>(), It.Is<string>(x => x == "baseline/new-feature")), Times.Once);
             baselineProvider.Verify(x => x.Save(It.IsAny<JsonReport>(), It.Is<string>(x => x == "new-feature")), Times.Never);
         }
     }

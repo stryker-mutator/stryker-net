@@ -59,14 +59,14 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns(branchName);
 
-            baselineProvider.Setup(x => x.Load(branchName)).Returns(Task.FromResult<JsonReport>(null));
+            baselineProvider.Setup(x => x.Load($"baseline/{branchName}")).Returns(Task.FromResult<JsonReport>(null));
             baselineProvider.Setup(x => x.Load($"baseline/{options.FallbackVersion}")).Returns(Task.FromResult(jsonReport));
 
             // Act
             var target = new BaselineMutantFilter(options, baselineProvider.Object, gitInfoProvider.Object);
 
             // Assert
-            baselineProvider.Verify(x => x.Load(branchName), Times.Once);
+            baselineProvider.Verify(x => x.Load($"baseline/{branchName}"), Times.Once);
             baselineProvider.Verify(x => x.Load($"baseline/{options.FallbackVersion}"), Times.Once);
             baselineProvider.VerifyNoOtherCalls();
         }
@@ -140,8 +140,9 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var target = new BaselineMutantFilter(options, gitInfoProvider: gitInfoProvider.Object, baselineProvider: baselineProvider.Object);
 
             // Assert
-            baselineProvider.Verify(x => x.Load("dashboard-compare/refs/heads/master"), Times.Once);
-            baselineProvider.Verify(x => x.Load("fallback/version"), Times.Never);
+            baselineProvider.Verify(x => x.Load($"baseline/{branchName}"), Times.Once);
+            baselineProvider.Verify(x => x.Load($"baseline/{options.FallbackVersion}"), Times.Never);
+            baselineProvider.VerifyNoOtherCalls();
         }
 
         [Fact]

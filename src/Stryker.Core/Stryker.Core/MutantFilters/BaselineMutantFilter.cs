@@ -109,7 +109,7 @@ namespace Stryker.Core.MutantFilters
         {
             var branchName = _gitInfoProvider.GetCurrentBranchName();
 
-            var baselineLocation = $"dashboard-compare/{branchName}";
+            var baselineLocation = $"baseline/{branchName}";
 
             var report = await _baselineProvider.Load(baselineLocation);
 
@@ -125,13 +125,18 @@ namespace Stryker.Core.MutantFilters
             return report;
         }
 
-        private async Task<JsonReport> GetFallbackBaselineAsync()
+        private async Task<JsonReport> GetFallbackBaselineAsync(bool baseline = true)
         {
-            var report = await _baselineProvider.Load(_options.FallbackVersion);
+            var report = await _baselineProvider.Load($"{(baseline ? "baseline/" : "")}{_options.FallbackVersion}");
 
             if (report == null)
             {
-                _logger.LogInformation("We could not locate a baseline report for the current branch or fallback version. Now running a complete test to establish a baseline.");
+                if(baseline)
+                {
+                    _logger.LogDebug("We could not locate a baseline report for the fallback version. Now trying regular fallback version.");
+                    return await GetFallbackBaselineAsync(false);
+                }
+                _logger.LogInformation("We could not locate a baseline report for the current branch, version or fallback version. Now running a complete test to establish a fresh baseline.");
                 return null;
             }
 
