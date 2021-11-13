@@ -7,13 +7,13 @@ using Stryker.Core.Reporters.Json;
 
 namespace Stryker.Core.Reporters
 {
-    public class GitBaselineReporter : IReporter
+    public class BaselineReporter : IReporter
     {
         private readonly StrykerOptions _options;
         private readonly IBaselineProvider _baselineProvider;
         private readonly IGitInfoProvider _gitInfoProvider;
 
-        public GitBaselineReporter(StrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
+        public BaselineReporter(StrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
         {
             _options = options;
             _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
