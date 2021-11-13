@@ -13,20 +13,29 @@ namespace Stryker.Core.Options.Inputs
         protected override string Description => "Reporters inform about various stages in the mutation testrun.";
         protected override IEnumerable<string> AllowedOptions => EnumToStrings(typeof(Reporter));
 
-        public IEnumerable<Reporter> Validate()
+        public IEnumerable<Reporter> Validate(bool withBaseline)
         {
-            if (SuppliedInput is { })
+            HashSet<Reporter> reporters;
+            if (SuppliedInput is not null)
             {
-                var reporters = new List<Reporter>();
+                reporters = new HashSet<Reporter>();
 
                 ValidateChosenReporters(SuppliedInput, reporters);
-
-                return reporters;
             }
-            return new List<Reporter> { Reporter.Progress, Reporter.Html };
+            else
+            {
+                reporters = new HashSet<Reporter> { Reporter.Progress, Reporter.Html };
+            }
+
+            if(withBaseline)
+            {
+                reporters.Add(Reporter.Baseline);
+            }
+
+            return reporters;
         }
 
-        private static void ValidateChosenReporters(IEnumerable<string> chosenReporters, List<Reporter> reporters)
+        private static void ValidateChosenReporters(IEnumerable<string> chosenReporters, HashSet<Reporter> reporters)
         {
             IList<string> invalidReporters = new List<string>();
 

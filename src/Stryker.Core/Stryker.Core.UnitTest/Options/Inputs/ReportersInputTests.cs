@@ -21,7 +21,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             var target = new ReportersInput { SuppliedInput = null };
 
-            var result = target.Validate();
+            var result = target.Validate(false);
 
             result.Count().ShouldBe(2);
             result.ShouldContain(Reporter.Progress);
@@ -33,7 +33,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             var target = new ReportersInput { SuppliedInput = new[] { "Html", } };
 
-            var result = target.Validate();
+            var result = target.Validate(false);
 
             result.ShouldHaveSingleItem().ShouldBe(Reporter.Html);
         }
@@ -52,7 +52,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
                 Reporter.Dots.ToString(),
             } };
 
-            var result = target.Validate();
+            var result = target.Validate(false);
 
             result.Count().ShouldBe(8);
             result.ShouldContain(Reporter.Html);
@@ -70,9 +70,19 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             var target = new ReportersInput { SuppliedInput = new[] { "Gibberish", "Test" } };
 
-            var ex = Should.Throw<InputException>(() => target.Validate());
+            var ex = Should.Throw<InputException>(() => target.Validate(false));
 
             ex.Message.ShouldBe($"These reporter values are incorrect: Gibberish, Test.");
+        }
+
+        [Fact]
+        public void ShouldEnableBaselineReporterWhenWithBaselineEnabled()
+        {
+            var target = new ReportersInput { SuppliedInput = null };
+
+            var validatedReporters = target.Validate(withBaseline: true);
+
+            validatedReporters.ShouldContain(Reporter.Baseline);
         }
     }
 }
