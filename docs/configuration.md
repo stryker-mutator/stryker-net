@@ -181,7 +181,7 @@ The levels are:
 | Arithmetic Operators | Basic|
 | Block (not yet implemented) | Basic|
 | Equality Operators | Standard |
-| flagean Literals | Standard|
+| Boolean Literals | Standard|
 | Assignment statements | Standard |
 | Collection initializer | Standard |
 | Unary Operators | Standard |
