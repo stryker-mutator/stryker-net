@@ -28,7 +28,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var baselineMutantHelperMock = new Mock<IBaselineMutantHelper>(MockBehavior.Loose);
 
             // Act
-            var target = new DashboardMutantFilter(new StrykerOptions(), baselineProviderMock.Object, gitInfoProvider.Object, baselineMutantHelperMock.Object) as IMutantFilter;
+            var target = new BaselineMutantFilter(new StrykerOptions(), baselineProviderMock.Object, gitInfoProvider.Object, baselineMutantHelperMock.Object) as IMutantFilter;
 
             // Assert
             target.DisplayName.ShouldBe("dashboard filter");
@@ -62,7 +62,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             baselineProvider.Setup(x => x.Load("fallback/version")).Returns(Task.FromResult(jsonReport));
 
             // Act
-            var target = new DashboardMutantFilter(options, baselineProvider.Object, gitInfoProvider.Object);
+            var target = new BaselineMutantFilter(options, baselineProvider.Object, gitInfoProvider.Object);
 
             // Assert
             baselineProvider.Verify(x => x.Load("dashboard-compare/refs/heads/master"), Times.Once);
@@ -95,7 +95,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             baselineProvider.Setup(x => x.Load("dashboard-compare/refs/heads/master")).Returns(Task.FromResult(jsonReport));
 
             // Act
-            var target = new DashboardMutantFilter(options, gitInfoProvider: gitInfoProvider.Object, baselineProvider: baselineProvider.Object);
+            var target = new BaselineMutantFilter(options, gitInfoProvider: gitInfoProvider.Object, baselineProvider: baselineProvider.Object);
 
             // Assert
             baselineProvider.Verify(x => x.Load("dashboard-compare/refs/heads/master"), Times.Once);
@@ -115,7 +115,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 ProjectVersion = "version",
             };
 
-            var target = new DashboardMutantFilter(options, baselineProvider.Object, branchProvider.Object);
+            var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object);
 
             var file = new Mock<ReadOnlyFileLeaf>(new CsharpFileLeaf());
 
@@ -177,7 +177,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             baselineMutantHelper.Setup(mock => mock.GetMutantSourceCode(It.IsAny<string>(), It.IsAny<JsonMutant>())).Returns(string.Empty);
 
             // Act
-            var target = new DashboardMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
+            var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
 
             var results = target.FilterMutants(mutants, file, options);
 
@@ -239,7 +239,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 It.Is<string>(source => source == "var foo = \"bar\";"))).Returns(mutants).Verifiable();
 
             // Act
-            var target = new DashboardMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
+            var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
 
             var results = target.FilterMutants(mutants, file, options);
 
@@ -306,7 +306,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 It.Is<string>(source => source == "var foo = \"bar\";"))).Returns(mutants).Verifiable();
 
             // Act
-            var target = new DashboardMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
+            var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
 
             var results = target.FilterMutants(mutants, file, options);
 
@@ -359,7 +359,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             baselineProvider.Setup(mock => mock.Load(It.IsAny<string>())).Returns(Task.FromResult((JsonReport)baseline));
 
             // Act
-            var target = new DashboardMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
+            var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
 
             var results = target.FilterMutants(mutants, file, options);
 

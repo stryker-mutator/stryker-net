@@ -14,22 +14,22 @@ using Stryker.Core.Reporters.Json;
 
 namespace Stryker.Core.MutantFilters
 {
-    public class DashboardMutantFilter : IMutantFilter
+    public class BaselineMutantFilter : IMutantFilter
     {
 
         private readonly IBaselineProvider _baselineProvider;
         private readonly IGitInfoProvider _gitInfoProvider;
-        private readonly ILogger<DashboardMutantFilter> _logger;
+        private readonly ILogger<BaselineMutantFilter> _logger;
         private readonly IBaselineMutantHelper _baselineMutantHelper;
 
         private readonly StrykerOptions _options;
         private readonly JsonReport _baseline;
 
-        public string DisplayName => "dashboard filter";
+        public string DisplayName => "baseline filter";
 
-        public DashboardMutantFilter(StrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null, IBaselineMutantHelper baselineMutantHelper = null)
+        public BaselineMutantFilter(StrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null, IBaselineMutantHelper baselineMutantHelper = null)
         {
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<DashboardMutantFilter>();
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<BaselineMutantFilter>();
             _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
             _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
             _baselineMutantHelper = baselineMutantHelper ?? new BaselineMutantHelper();

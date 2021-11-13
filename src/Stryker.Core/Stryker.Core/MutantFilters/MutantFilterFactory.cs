@@ -41,7 +41,7 @@ namespace Stryker.Core.MutantFilters
 
             if (options.WithBaseline)
             {
-                enabledFilters.Add(new DashboardMutantFilter(options, _baselineProvider, _gitInfoProvider));
+                enabledFilters.Add(new BaselineMutantFilter(options, _baselineProvider, _gitInfoProvider));
             }
             if (options.Since || options.WithBaseline)
             {
