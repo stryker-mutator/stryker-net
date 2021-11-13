@@ -25,17 +25,7 @@ namespace Stryker.Core.Reporters.Json.SourceFiles
 
             foreach (var mutant in file.Mutants)
             {
-                var jsonMutant = new JsonMutant
-                {
-                    Id = mutant.Id.ToString(),
-                    MutatorName = mutant.Mutation.DisplayName,
-                    Replacement = mutant.Mutation.ReplacementNode.ToFullString(),
-                    Location = new Location(mutant.Mutation.OriginalNode.GetLocation().GetMappedLineSpan()),
-                    Status = mutant.ResultStatus.ToString(),
-                    Description = mutant.Mutation.Description
-                };
-
-                if (!Mutants.Add(jsonMutant))
+                if (!Mutants.Add(new JsonMutant(mutant)))
                 {
                     logger.LogWarning(
                         $"Mutant {mutant.Id} was generated twice in file {file.RelativePath}. \n" +
@@ -46,15 +36,9 @@ namespace Stryker.Core.Reporters.Json.SourceFiles
 
         private class UniqueJsonMutantComparer : EqualityComparer<JsonMutant>
         {
-            public override bool Equals(JsonMutant left, JsonMutant right)
-            {
-                return left.Id == right.Id;
-            }
+            public override bool Equals(JsonMutant left, JsonMutant right) => left.Id == right.Id;
 
-            public override int GetHashCode(JsonMutant jsonMutant)
-            {
-                return jsonMutant.Id.GetHashCode();
-            }
+            public override int GetHashCode(JsonMutant jsonMutant) => jsonMutant.Id.GetHashCode();
         }
     }
 }
