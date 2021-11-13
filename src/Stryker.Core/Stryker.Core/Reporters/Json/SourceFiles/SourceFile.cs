@@ -34,7 +34,7 @@ namespace Stryker.Core.Reporters.Json.SourceFiles
             }
         }
 
-        private class UniqueJsonMutantComparer : EqualityComparer<JsonMutant>
+        private sealed class UniqueJsonMutantComparer : EqualityComparer<JsonMutant>
         {
             public override bool Equals(JsonMutant left, JsonMutant right) => left.Id == right.Id;
 
