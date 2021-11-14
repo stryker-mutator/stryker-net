@@ -2,7 +2,6 @@ using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
-using Stryker.Core.Options;
 using System.Collections.Generic;
 using System.IO;
 using LibGitLogLevel = LibGit2Sharp.LogLevel;
@@ -23,7 +22,7 @@ namespace Stryker.CLI.Logging
                                                                                        { LibGitLogLevel.Error, MSLogLevel.Error }
                                                                                    };
 
-        private static ILoggerFactory _factory = null;
+        private static ILoggerFactory _factory;
 
         public static void ConfigureLogger(LogEventLevel logLevel, bool logToFile, string outputPath)
         {

@@ -18,7 +18,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
         private Dictionary<int, TestsGuidList> _coverageResult = new();
         private Dictionary<int, TestsGuidList> _failedTestsPerRun = new();
-        private const int InitialRunID = -1;
+        private const int InitialRunId = -1;
 
         public TestSet TestSet { get; } = new();
         public IDictionary<int, Mutant> Mutants => _mutants;
@@ -52,15 +52,9 @@ namespace Stryker.Core.UnitTest.MutationTest
             return _mutants.Values;
         }
 
-        public IEnumerable<Mutant> GetCoveredMutants()
-        {
-            return _coverageResult.Keys.Select(i => _mutants[i]);
-        }
+        public IEnumerable<Mutant> GetCoveredMutants() => _coverageResult.Keys.Select(i => _mutants[i]);
 
-        public MutantStatus GetMutantStatus(int id)
-        {
-            return _mutants[id].ResultStatus;
-        }
+        public MutantStatus GetMutantStatus(int id) => _mutants[id].ResultStatus;
 
         public void DeclareCoverageForMutant(int mutantId, params int[] testIds)
         {
@@ -69,7 +63,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
         public void DeclareTestsFailingAtInit(params int[] ids)
         {
-            DeclareTestsFailingWhenTestingMutant(InitialRunID, ids);
+            DeclareTestsFailingWhenTestingMutant(InitialRunId, ids);
         }
 
         public void DeclareTestsFailingWhenTestingMutant(int id, params int[] ids)
@@ -140,7 +134,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             }
 
             // if this is the initial test run, we must return the complete list of tests.
-            if (id == InitialRunID)
+            if (id == InitialRunId)
             {
                 return new TestsGuidList(_tests.Values.Select(t => t.Id));
             }
@@ -149,7 +143,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
         private TestRunResult GetRunResult(int id) => new(TestsGuidList.EveryTest(), GetFailedTests(id), TestsGuidList.NoTest(), string.Empty, TimeSpan.Zero);
 
-        public TestRunResult GetInitialRunResult() => GetRunResult(InitialRunID);
+        public TestRunResult GetInitialRunResult() => GetRunResult(InitialRunId);
 
         public Mock<ITestRunner> GetTestRunnerMock()
         {
@@ -157,10 +151,10 @@ namespace Stryker.Core.UnitTest.MutationTest
             var successResult = new TestRunResult(GetGuidList(),
                 TestsGuidList.NoTest(),
                 TestsGuidList.NoTest(),
-                String.Empty,
+                string.Empty,
                 TimeSpan.Zero);
             runnerMock.Setup(x => x.DiscoverTests()).Returns(TestSet);
-            runnerMock.Setup(x => x.InitialTest()).Returns(GetRunResult(InitialRunID));
+            runnerMock.Setup(x => x.InitialTest()).Returns(GetRunResult(InitialRunId));
             runnerMock.Setup(x => x.CaptureCoverage(It.IsAny<IEnumerable<Mutant>>()))
                 .Callback((Action<IEnumerable<Mutant>>)(t =>
                 {

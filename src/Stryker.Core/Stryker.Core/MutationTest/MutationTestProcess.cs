@@ -19,32 +19,6 @@ using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.MutationTest
 {
-    public interface IMutationTestProcessProvider
-    {
-        IMutationTestProcess Provide(MutationTestInput mutationTestInput, IReporter reporter, IMutationTestExecutor mutationTestExecutor, StrykerOptions options);
-    }
-
-    public class MutationTestProcessProvider : IMutationTestProcessProvider
-    {
-        public IMutationTestProcess Provide(MutationTestInput mutationTestInput,
-            IReporter reporter,
-            IMutationTestExecutor mutationTestExecutor,
-            StrykerOptions options) =>
-            new MutationTestProcess(mutationTestInput, reporter, mutationTestExecutor, options: options);
-    }
-
-    public interface IMutationTestProcess
-    {
-        MutationTestInput Input { get; }
-        void Mutate();
-        StrykerRunResult Test(IEnumerable<Mutant> mutantsToTest);
-        public void Diagnostic(IEnumerable<Mutant> mutants, int mutantToDiagnose);
-        void Restore();
-        void GetCoverage();
-        void FilterMutants();
-        IEnumerable<string> GetTestNames(ITestListDescription monitoredMutantCoveringTests);
-    }
-
     public class MutationTestProcess : IMutationTestProcess
     {
         public MutationTestInput Input { get; }
@@ -116,12 +90,7 @@ namespace Stryker.Core.MutationTest
             _mutationProcess.Mutate();
         }
 
-        public void FilterMutants()
-        {
-            _mutationProcess.FilterMutants();
-        }
-
-        public IEnumerable<string> GetTestNames(ITestListDescription testList) => _mutationTestExecutor.TestRunner.DiscoverTests().Extract(testList.GetGuids()).Select(t => t.Name);
+        public void FilterMutants() => _mutationProcess.FilterMutants();
 
         public StrykerRunResult Test(IEnumerable<Mutant> mutantsToTest)
         {
@@ -141,10 +110,46 @@ namespace Stryker.Core.MutationTest
             return new StrykerRunResult(_options, _projectContents.GetMutationScore());
         }
 
-        public void Diagnostic(IEnumerable<Mutant> mutants, int mutantToDiagnose)
+        public IEnumerable<string> GetTestNames(ITestListDescription testList) => _mutationTestExecutor.TestRunner.DiscoverTests().Extract(testList.GetGuids()).Select(t => t.Name);
+
+        public MutantDiagnostic DiagnoseMutant(IList<Mutant> mutants, int mutantToDiagnose)
         {
-            var groups = BuildMutantGroupsForTest(mutants.ToList()).Where(l => l.Any(t => t.Id == mutantToDiagnose)).ToList();
+            var monitoredMutant = Input.ProjectInfo.ProjectContents.Mutants.First(m => m.Id == mutantToDiagnose);
+            _logger.LogWarning($"Diagnosing mutant {mutantToDiagnose}.");
+            if (monitoredMutant.CoveringTests.IsEveryTest)
+            {
+                _logger.LogWarning("This mutant is run against every test, unable to automatically diagnose issue.");
+                return null;
+            }
+            _logger.LogInformation("Mutant is covered by the following tests: ");
+            var result = new MutantDiagnostic(GetTestNames(monitoredMutant.CoveringTests));
+            _logger.LogInformation(string.Join(',', result.CoveringTests));
+            
+            _logger.LogInformation("*** Step 1 normal run ***");
+            var step = PerformStep(mutants, monitoredMutant);
+            result.DeclareResult(step.status, GetTestNames(step.killingTests));
+            // clean up status
+            _logger.LogInformation("*** Step 2 solo run ***");
+            step = PerformStep(new List<Mutant> { monitoredMutant }, monitoredMutant);
+            result.DeclareResult(step.status, GetTestNames(step.killingTests));
+            // clean up status
+            _logger.LogInformation("*** Step 3 run against all tests ***");
+            monitoredMutant.CoveringTests = TestsGuidList.EveryTest();
+            step = PerformStep(new List<Mutant> { monitoredMutant }, monitoredMutant);
+            result.DeclareResult(step.status, GetTestNames(step.killingTests));
+            _logger.LogInformation("*** Step 3 solo run against all ***");
+            return result;
+        }
+
+        private (MutantStatus status, ITestListDescription killingTests) PerformStep(IEnumerable<Mutant> mutants, Mutant monitoredMutant)
+        {
+            monitoredMutant.ResultStatus = MutantStatus.NotRun;
+            var groups = BuildMutantGroupsForTest(mutants.ToList()).Where(l => l.Contains(monitoredMutant)).ToList();
             TestMutants(groups);
+
+            var step2 = monitoredMutant.ResultStatus;
+            _logger.LogInformation($"Mutant {monitoredMutant.Id} is {step2}.");
+            return (step2, monitoredMutant.KillingTests);
         }
 
         public void Restore() => Input.ProjectInfo.RestoreOriginalAssembly();
@@ -267,9 +272,6 @@ namespace Stryker.Core.MutationTest
             return blocks;
         }
 
-        public void GetCoverage()
-        {
-            _coverageAnalyser.DetermineTestCoverage();
-        }
+        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage();
     }
 }

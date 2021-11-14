@@ -22,7 +22,7 @@ namespace Stryker.Core.Options
 
         public LogOptions LogOptions { get; init; }
         public MutationLevel MutationLevel { get; init; }
-        public Thresholds Thresholds { get; init; } = new Thresholds() { Break = 0, Low = 60, High = 80 };
+        public Thresholds Thresholds { get; init; } = new() { Break = 0, Low = 60, High = 80 };
 
         public int AdditionalTimeout { get; init; }
         public LanguageVersion LanguageVersion { get; init; }

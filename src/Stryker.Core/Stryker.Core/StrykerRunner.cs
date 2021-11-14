@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
@@ -10,13 +11,13 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
-using Stryker.Core.Reporters.Progress;
 
 namespace Stryker.Core
 {
     public interface IStrykerRunner
     {
-        StrykerRunResult RunMutationTest(IStrykerInputs inputs, ILoggerFactory loggerFactory, IProjectOrchestrator projectOrchestrator = null);
+        void SetupLogging(ILoggerFactory loggerFactory);
+        StrykerRunResult RunMutationTest(IStrykerInputs inputs, IProjectOrchestrator projectOrchestrator = null);
     }
 
     public class StrykerRunner : IStrykerRunner
@@ -36,15 +37,12 @@ namespace Stryker.Core
         /// Starts a mutation test run
         /// </summary>
         /// <param name="inputs"></param>
-        /// <param name="loggerFactory">This loggerfactory will be used to create loggers during the stryker run</param>
         /// <param name="projectOrchestrator"></param>
         /// <exception cref="InputException">For managed exceptions</exception>
-        public StrykerRunResult RunMutationTest(IStrykerInputs inputs, ILoggerFactory loggerFactory, IProjectOrchestrator projectOrchestrator = null)
+        public StrykerRunResult RunMutationTest(IStrykerInputs inputs, IProjectOrchestrator projectOrchestrator = null)
         {
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-
-            SetupLogging(loggerFactory);
 
             // Setup project orchestrator can't be done sooner since it needs logging
             projectOrchestrator ??= new ProjectOrchestrator();
@@ -107,7 +105,7 @@ namespace Stryker.Core
                 }
                 else
                 {
-                    DiagnoseMutant(inputs, reporters, mutantsNotRun, readOnlyInputComponent);
+                    DiagnoseMutant(inputs, mutantsNotRun);
                 }
 
                 reporters.OnAllMutantsTested(rootComponent);
@@ -130,8 +128,7 @@ namespace Stryker.Core
             }
         }
 
-        private void DiagnoseMutant(IStrykerInputs inputs, IReporter reporters, List<Mutant> mutantsNotRun,
-            IReadOnlyProjectComponent readOnlyInputComponent)
+        private void DiagnoseMutant(IStrykerInputs inputs, IList<Mutant> mutantsNotRun)
         {
             var mutant = inputs.MutantToDiagnose.SuppliedInput!.Value;
 
@@ -141,47 +138,42 @@ namespace Stryker.Core
             if (monitoredProject == null)
             {
                 // we were given an invalid mutant ID
-                _logger.LogError($"Unable to find mutant {mutant}. Please check that it exists in the project(s).");
+                _logger.LogError($"Unable to find mutant {mutant}. Please provide an existing mutant id.");
                 return;
             }
-            var monitoredMutant = monitoredProject.Input.ProjectInfo.ProjectContents.Mutants.First(m => m.Id == mutant);
-            // diagnostic run
-            _logger.LogWarning($"Diagnosing mutant {mutant}.");
-            if (monitoredMutant.CoveringTests.IsEveryTest)
-            {
-                _logger.LogWarning("This mutant is run against every test, unable to automatically diagnose issue.");
-                return;
-            }
-            _logger.LogInformation("Mutant is covered by the following tests: ");
-            var testNames = monitoredProject.GetTestNames(monitoredMutant.CoveringTests);
-            _logger.LogInformation(string.Join(',', testNames));
-            
-            _logger.LogInformation("*** Step 1 normal run ***");
-            var step1 = PerformStep(reporters, mutantsNotRun, readOnlyInputComponent, monitoredProject, monitoredMutant);
-            // clean up status
-            _logger.LogInformation("*** Step 2 solo run ***");
 
-            mutantsNotRun = new List<Mutant> { monitoredMutant };
-            var step2 = PerformStep(reporters, mutantsNotRun, readOnlyInputComponent, monitoredProject, monitoredMutant);
-            // clean up status
-            _logger.LogInformation("*** Step 3 run against all tests ***");
-            monitoredMutant.CoveringTests = TestsGuidList.EveryTest();
-            var step3 = PerformStep(reporters, new List<Mutant> { monitoredMutant }, readOnlyInputComponent, monitoredProject, monitoredMutant);
-            _logger.LogInformation("*** Step 3 solo run against all ***");
-            if (step1 == step2 && step1 == step3)
-            {
-                _logger.LogWarning($"All runs lead to the same status ({step1}), no problem was detected.");
+            var results = monitoredProject.DiagnoseMutant(mutantsNotRun, inputs.MutantToDiagnose.SuppliedInput.Value);
+            _logger.LogInformation(GenerateDiagnoseReport(results));
+            _logger.LogWarning("*** Mutant Diagnostic mode end ***");
+        }
+
+        public string GenerateDiagnoseReport(MutantDiagnostic results)
+        {
+            var report = new StringBuilder();
+            var baseLine = results.RunResults[0].status;
+            // diagnostic run
+            if (baseLine == results.RunResults[1].status && baseLine == results.RunResults[2].status)
+            {  
+                report.AppendFormat("Mutant consistently appears as {0}. {1}.",
+                    baseLine, baseLine switch
+                    {
+                        MutantStatus.NoCoverage or MutantStatus.Survived=> "You need to add some tests to fix that",
+                        _ => "There is no visible issue"
+                    });
             }
             else
             {
-                _logger.LogInformation($"Run results are not consistent!");
-                if (step1 == MutantStatus.Survived)
+                report.AppendLine("Run results are not consistent!");
+                if (baseLine == MutantStatus.Survived)
                 {
                     // false positive
-                    if (step2 == MutantStatus.Survived)
+                    if (results.RunResults[1].status == baseLine)
                     {
                         _logger.LogInformation("Coverage analysis dit not properly capture coverage for this mutant.");
-                        // TODO: dump the test that killed the mutant (and that was not part of the covering test
+                        // TODO: dump the test that killed the mutant (and that was not part of the covering tests)
+                        report.AppendLine("The coverage for this mutant was not properly determined.");
+                        report.Append("It was killed by these test(s): ");
+                        report.AppendJoin(',', results.RunResults[2].killingTests.Except(results.CoveringTests));
                     }
                     else
                     {
@@ -189,36 +181,17 @@ namespace Stryker.Core
                         // TODO: perform a binary search on the original mutant group to find the problematic mutant. This one has probably coverage issue
                     }
                 }
-                else if (step1 == MutantStatus.NoCoverage)
+                else if (results.RunResults[0].status == MutantStatus.NoCoverage)
                 {
-                    //TO DO handle situation where a mutant is killed while not having coverage
+                    //TODO handle situation where a mutant is killed while not having coverage
                 }
                 else
                 {
                     _logger.LogWarning("Stryker.NET is not able to produce a diagnostic for false negative.");
                 }
             }
-            _logger.LogWarning("*** Mutant Diagnostic mode end ***");
-        }
 
-        private MutantStatus PerformStep(IReporter reporters, IReadOnlyCollection<Mutant> mutants,
-            IReadOnlyProjectComponent readOnlyInputComponent, IMutationTestProcess monitoredProject, Mutant monitoredMutant)
-        {
-            reporters.OnStartMutantTestRun(mutants);
-            monitoredMutant.ResultStatus = MutantStatus.NotRun;
-            monitoredProject!.Diagnostic(mutants, monitoredMutant.Id);
-
-            reporters.OnAllMutantsTested(readOnlyInputComponent);
-            var step2 = monitoredMutant.ResultStatus;
-            _logger.LogInformation($"Mutant {monitoredMutant.Id} is {step2}.");
-            if (step2 == MutantStatus.Killed)
-            {
-                _logger.LogInformation("Mutant is killed by the following tests: ");
-                var testNames = monitoredProject.GetTestNames(monitoredMutant.KillingTests);
-                _logger.LogInformation(string.Join(',', testNames));
-            }
-
-            return step2;
+            return report.ToString();
         }
 
         private void TestMutants(IReporter reporters, IEnumerable<Mutant> mutantsNotRun, IReadOnlyProjectComponent readOnlyInputComponent)
@@ -237,7 +210,7 @@ namespace Stryker.Core
             reporters.OnAllMutantsTested(readOnlyInputComponent);
         }
 
-        private void SetupLogging(ILoggerFactory loggerFactory)
+        public void SetupLogging(ILoggerFactory loggerFactory)
         {
             // setup logging
             ApplicationLogging.LoggerFactory = loggerFactory;

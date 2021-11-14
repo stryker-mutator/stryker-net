@@ -90,7 +90,8 @@ namespace Stryker.CLI
 
         private void RunStryker(IStrykerInputs inputs)
         {
-            var result = _stryker.RunMutationTest(inputs, ApplicationLogging.LoggerFactory);
+            _stryker.SetupLogging(ApplicationLogging.LoggerFactory);
+            var result = _stryker.RunMutationTest(inputs);
 
             HandleStrykerRunResult(inputs, result);
         }
