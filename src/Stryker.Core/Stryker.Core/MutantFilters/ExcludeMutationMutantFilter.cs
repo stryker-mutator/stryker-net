@@ -10,8 +10,9 @@ namespace Stryker.Core.MutantFilters
     /// Checks if the mutation type of the mutant should be excluded.
     /// </summary>
     /// <seealso cref="IMutantFilter" />
-    public class ExcludeMutationMutantFilter : IMutantFilter
+    public class IgnoreMutationMutantFilter : IMutantFilter
     {
+        public MutantFilter Type => MutantFilter.IgnoreMutation;
         public string DisplayName => "mutation type filter";
 
         /// <inheritdoc />

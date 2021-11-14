@@ -11,17 +11,18 @@ using System.Linq;
 
 namespace Stryker.Core.MutantFilters
 {
-    public class DiffMutantFilter : IMutantFilter
+    public class SinceMutantFilter : IMutantFilter
     {
         private readonly DiffResult _diffResult;
         private readonly TestSet _tests;
-        private readonly ILogger<DiffMutantFilter> _logger;
+        private readonly ILogger<SinceMutantFilter> _logger;
 
-        public string DisplayName => "git diff file filter";
+        public MutantFilter Type => MutantFilter.Since;
+        public string DisplayName => "Since filter";
 
-        public DiffMutantFilter(IDiffProvider diffProvider = null)
+        public SinceMutantFilter(IDiffProvider diffProvider = null)
         {
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<DiffMutantFilter>();
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<SinceMutantFilter>();
 
             _diffResult = diffProvider.ScanDiff();
             _tests = diffProvider.Tests;

@@ -11,6 +11,7 @@ namespace Stryker.Core.MutantFilters
     /// </summary>
     public class FilePatternMutantFilter : IMutantFilter
     {
+        public MutantFilter Type => MutantFilter.FilePattern;
         public string DisplayName => "file filter";
         private readonly IEnumerable<FilePattern> _includePattern;
         private readonly IEnumerable<FilePattern> _excludePattern;

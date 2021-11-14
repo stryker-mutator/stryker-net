@@ -17,6 +17,7 @@ namespace Stryker.Core.MutantFilters
     /// <seealso cref="IMutantFilter" />
     public class ExcludeLinqExpressionFilter : IMutantFilter
     {
+        public MutantFilter Type => MutantFilter.IgnoreLinqMutation;
         public string DisplayName => "linq expression filter";
         private SyntaxTriviaRemover _triviaRemover { get; init; } = new SyntaxTriviaRemover();
 
