@@ -17,7 +17,7 @@ namespace Stryker.Core.MutantFilters
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
         {
-            IEnumerable<Mutant> mutantsToTest = mutants.ToList();
+            IEnumerable<Mutant> mutantsToTest = mutants.Where(m => m.ResultStatus is not MutantStatus.Ignored).ToList();
 
             foreach (var mutantFilter in MutantFilters)
             {

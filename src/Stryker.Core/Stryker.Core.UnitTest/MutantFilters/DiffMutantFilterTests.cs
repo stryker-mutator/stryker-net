@@ -26,7 +26,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var target = new SinceMutantFilter(diffProviderMock.Object) as IMutantFilter;
 
             // Assert
-            target.DisplayName.ShouldBe("git diff file filter");
+            target.DisplayName.ShouldBe("Since filter");
         }
 
         [Fact]
