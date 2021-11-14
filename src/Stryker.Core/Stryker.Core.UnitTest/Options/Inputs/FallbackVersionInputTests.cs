@@ -22,19 +22,39 @@ Example: If the current branch is based on the main branch, set 'main' as the fa
         {
             var input = new FallbackVersionInput { SuppliedInput = "master" };
 
-            var exception = Should.Throw<InputException>(() => input.Validate("master", true));
+            var exception = Should.Throw<InputException>(() => input.Validate(projectVersion: "master", dashboardEnabled: true));
 
             exception.Message.ShouldBe("Fallback version cannot be set to the same value as the current project version, please provide a different fallback version");
         }
 
         [Fact]
-        public void ShouldAllowDevelopment()
+        public void ShouldNotValidate_IfNotEnabled()
+        {
+            var input = new FallbackVersionInput { SuppliedInput = "master" };
+
+            var validatedInput = input.Validate("master", dashboardEnabled: false);
+
+            validatedInput.ShouldBe(string.Empty);
+        }
+
+        [Fact]
+        public void ShouldUseProvidedInputValue()
         {
             var input = new FallbackVersionInput { SuppliedInput = "development" };
 
             var validatedInput = input.Validate("master", true);
 
             validatedInput.ShouldBe("development");
+        }
+
+        [Fact]
+        public void ShouldUseSinceTarget_IfNotExplicitlySet()
+        {
+            var input = new FallbackVersionInput();
+
+            var validatedInput = input.Validate("development", true);
+
+            validatedInput.ShouldBe("master");
         }
     }
 }
