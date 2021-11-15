@@ -267,7 +267,7 @@ Default: `{ high: 80, low: 60, break: 0 }`
 Command line: `N/A`  
 Config file: `"thresholds": { "high": 80, "low": 60, "break": 0 }`
 
-Configure the mutation score thresholds for your project. Thresholds should be a number between 0 and 100. Thresholds can all have the same value except for 0. Threshold high cannot be 0.
+Configure the mutation score thresholds for your project. Thresholds should be a number between 0 and 100. Thresholds can have the same value.
 
 Threshold calculations in order:
 - `mutation score >= threshold-high`: 
@@ -277,17 +277,32 @@ Threshold calculations in order:
 - `mutation score < threshold-low`:
     - Danger! Your reporters will display red colors, you're in the danger zone now.
 - `mutation score < threshold-break`:
-    - Error! The application will exit with exit code 1.
+    - Error! Stryker will exit with exitcode 1.
 
 ### `break-at` <`number`>
 
 Default: `0`  
 Command line: `[-b|--break-at] 40`  
-Config file: `"thresholds": { "break": 0 }`
+Config file: See [thresholds](#thresholds-object)
 
-When threshold break is set to anything other than 0 Stryker will exit with a non-zero code. This can be used in a CI pipeline to fail the pipeline when you mutation score is not sufficient. Must be less than or equal to threshold low.
+Must be less than or equal to threshold low.  
+When threshold break is set to anything other than 0 and the mutation score is lower than the threshold Stryker will exit with a non-zero code. This can be used in a CI pipeline to fail the pipeline when your mutation score is not sufficient.  
 
-See [thresholds](#thresholds-<object>)
+### `threshold-high` <`number`>
+
+Default: `80`  
+Command line: `--threshold-high 90`  
+Config file: See [thresholds](#thresholds-object)
+
+Minimum good mutation score. Must be higher than or equal to threshold low. Must be higher than 0.
+
+### `threshold-low` <`number`>
+
+Default: `60`  
+Command line: `--threshold-low 40`  
+Config file: See [thresholds](#thresholds-object)
+
+Minimum acceptable mutation score. Must be less than or equal to threshold high and more than or equal to threshold break.
 
 ### `ignore-mutations` <`string[]`>
 
