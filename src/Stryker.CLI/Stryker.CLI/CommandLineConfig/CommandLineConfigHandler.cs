@@ -126,6 +126,8 @@ namespace Stryker.CLI
         private void PrepareCliOptions(IStrykerInputs inputs)
         {
             AddCliInput(inputs.ThresholdBreakInput, "break-at", "b", argumentHint: "0-100");
+            AddCliInput(inputs.ThresholdHighInput, "threshold-high", "", argumentHint: "0-100");
+            AddCliInput(inputs.ThresholdLowInput, "threshold-low", "", argumentHint: "0-100");
             AddCliInput(inputs.LogToFileInput, "log-to-file", "L", optionType: CommandOptionType.NoValue);
             AddCliInput(inputs.VerbosityInput, "verbosity", "V");
             AddCliInput(inputs.ConcurrencyInput, "concurrency", "c", argumentHint: "number");
@@ -140,11 +142,11 @@ namespace Stryker.CLI
             AddCliInput(inputs.SinceInput, "since", "", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish", category: InputCategory.Mutation);
             AddCliInput(inputs.WithBaselineInput, "with-baseline", "", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish", category: InputCategory.Mutation);
 
+            AddCliInput(inputs.OpenReportInput, "open-report", "o", CommandOptionType.SingleOrNoValue, argumentHint: "report-type", category: InputCategory.Reporting);
             AddCliInput(inputs.ReportersInput, "reporter", "r", optionType: CommandOptionType.MultipleValue, category: InputCategory.Reporting);
             AddCliInput(inputs.ProjectVersionInput, "version", "v", category: InputCategory.Reporting);
             AddCliInput(inputs.DashboardApiKeyInput, "dashboard-api-key", null, category: InputCategory.Reporting);
             AddCliInput(inputs.AzureFileStorageSasInput, "azure-fileshare-sas", null, category: InputCategory.Reporting);
-            AddCliInput(inputs.OpenReportInput, "open-report", "o", CommandOptionType.SingleOrNoValue, argumentHint: "report-type", category: InputCategory.Reporting);
 
             AddCliInput(inputs.DevModeInput, "dev-mode", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
 
