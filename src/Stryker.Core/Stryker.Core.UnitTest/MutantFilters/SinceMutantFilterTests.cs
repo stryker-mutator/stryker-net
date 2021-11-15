@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
-    public class DiffMutantFilterTests : TestBase
+    public class SinceMutantFilterTests : TestBase
     {
         [Fact]
         public static void ShouldHaveName()
@@ -26,7 +26,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var target = new SinceMutantFilter(diffProviderMock.Object) as IMutantFilter;
 
             // Assert
-            target.DisplayName.ShouldBe("Since filter");
+            target.DisplayName.ShouldBe("since filter");
         }
 
         [Fact]

@@ -18,7 +18,7 @@ namespace Stryker.Core.MutantFilters
         private readonly ILogger<SinceMutantFilter> _logger;
 
         public MutantFilter Type => MutantFilter.Since;
-        public string DisplayName => "Since filter";
+        public string DisplayName => "since filter";
 
         public SinceMutantFilter(IDiffProvider diffProvider = null)
         {
