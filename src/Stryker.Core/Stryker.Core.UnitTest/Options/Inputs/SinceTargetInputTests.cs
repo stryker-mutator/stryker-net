@@ -37,14 +37,14 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             {
                 new SinceTargetInput { SuppliedInput = "" }.Validate(sinceEnabled: true);
             });
-            ex.Message.ShouldBe("The target branch/commit cannot be empty when the since feature is enabled");
+            ex.Message.ShouldBe("The since target cannot be empty when the since feature is enabled");
         }
 
         [Fact]
         public void ShouldNotValidateSinceTargetWhenSinceDisabled()
         {
             var validatedSinceBranch = new SinceTargetInput { SuppliedInput = "develop" }.Validate(sinceEnabled: false);
-            validatedSinceBranch.ShouldBe(null);
+            validatedSinceBranch.ShouldBe("master");
         }
     }
 }

@@ -14,22 +14,22 @@ using Stryker.Core.Reporters.Json;
 
 namespace Stryker.Core.MutantFilters
 {
-    public class DashboardMutantFilter : IMutantFilter
+    public class BaselineMutantFilter : IMutantFilter
     {
 
         private readonly IBaselineProvider _baselineProvider;
         private readonly IGitInfoProvider _gitInfoProvider;
-        private readonly ILogger<DashboardMutantFilter> _logger;
+        private readonly ILogger<BaselineMutantFilter> _logger;
         private readonly IBaselineMutantHelper _baselineMutantHelper;
 
         private readonly StrykerOptions _options;
         private readonly JsonReport _baseline;
 
-        public string DisplayName => "dashboard filter";
+        public string DisplayName => "baseline filter";
 
-        public DashboardMutantFilter(StrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null, IBaselineMutantHelper baselineMutantHelper = null)
+        public BaselineMutantFilter(StrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null, IBaselineMutantHelper baselineMutantHelper = null)
         {
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<DashboardMutantFilter>();
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<BaselineMutantFilter>();
             _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
             _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
             _baselineMutantHelper = baselineMutantHelper ?? new BaselineMutantHelper();
@@ -109,7 +109,7 @@ namespace Stryker.Core.MutantFilters
         {
             var branchName = _gitInfoProvider.GetCurrentBranchName();
 
-            var baselineLocation = $"dashboard-compare/{branchName}";
+            var baselineLocation = $"baseline/{branchName}";
 
             var report = await _baselineProvider.Load(baselineLocation);
 
@@ -125,13 +125,18 @@ namespace Stryker.Core.MutantFilters
             return report;
         }
 
-        private async Task<JsonReport> GetFallbackBaselineAsync()
+        private async Task<JsonReport> GetFallbackBaselineAsync(bool baseline = true)
         {
-            var report = await _baselineProvider.Load(_options.FallbackVersion);
+            var report = await _baselineProvider.Load($"{(baseline ? "baseline/" : "")}{_options.FallbackVersion}");
 
             if (report == null)
             {
-                _logger.LogInformation("We could not locate a baseline report for the current branch or fallback version. Now running a complete test to establish a baseline.");
+                if(baseline)
+                {
+                    _logger.LogDebug("We could not locate a baseline report for the fallback version. Now trying regular fallback version.");
+                    return await GetFallbackBaselineAsync(false);
+                }
+                _logger.LogInformation("We could not locate a baseline report for the current branch, version or fallback version. Now running a complete test to establish a fresh baseline.");
                 return null;
             }
 

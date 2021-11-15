@@ -33,22 +33,19 @@ And then running this locally installed tool:
       script: $(Agent.BuildDirectory)/tools/dotnet-stryker
 ```
 
-## Configuring dashboard compare in pull requests
+## Configuring baseline in pull requests
 Dashboard compare is very useful when running stryker in pipelines because it cuts down on the total runtime by only testing mutations that have changed compared to for example master
 The following minimal steps are needed to use dashboard compare
 
-1. Enable --with-baseline
+1. Enable --with-baseline and choose the comparison target
 1. Choose a storage provider (Dashboard for public projects or Azure File Share for private projects)
 1. Set up authentication for the chosen storage provider 
 1. Set --version to the name of the source branch (usually current branch)
-1. Set --since to the name of the target branch (usually master/main or development)
 1. Set any other options needed for your chosen storage provider (see: [storage provider docs](https://stryker-mutator.io/docs/stryker-net/configuration#baselineprovider-string))
 
 Example for azure devops with dashboard storage provider:
 ```
-dotnet stryker --with-baseline --dashboard-api-key $(Stryker.Dashboard.Api.Key) --version $(System.PullRequest.SourceBranch) --since $(System.PullRequest.TargetBranch)
-or short:
-dotnet stryker --dashboard-api-key $(Stryker.Dashboard.Api.Key) -v $(System.PullRequest.SourceBranch) --since $(System.PullRequest.TargetBranch)
+dotnet stryker --with-baseline:$(System.PullRequest.TargetBranch) --dashboard-api-key $(Stryker.Dashboard.Api.Key) --version $(System.PullRequest.SourceBranch)
 ```
 
 ```json

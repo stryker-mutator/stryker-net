@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class GitBaselineReporterTests : TestBase
+    public class BaselineReporterTests : TestBase
     {
         [Fact]
         public void Doesnt_Use_ProjectVersion_When_CurrentBranch_Is_Not_Null()
@@ -27,11 +27,11 @@ namespace Stryker.Core.UnitTest.Reporters
 
             gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns("new-feature");
 
-            var target = new GitBaselineReporter(options, baselineProvider.Object, gitInfoProvider.Object);
+            var target = new BaselineReporter(options, baselineProvider.Object, gitInfoProvider.Object);
 
             target.OnAllMutantsTested(readOnlyInputComponent.Object);
 
-            baselineProvider.Verify(x => x.Save(It.IsAny<JsonReport>(), It.Is<string>(x => x == "dashboard-compare/new-feature")), Times.Once);
+            baselineProvider.Verify(x => x.Save(It.IsAny<JsonReport>(), It.Is<string>(x => x == "baseline/new-feature")), Times.Once);
             baselineProvider.Verify(x => x.Save(It.IsAny<JsonReport>(), It.Is<string>(x => x == "new-feature")), Times.Never);
         }
     }

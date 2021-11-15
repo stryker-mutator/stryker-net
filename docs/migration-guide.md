@@ -51,8 +51,8 @@ Options migration overview:
 | log-file                      | L \| log-to-file                            | log-file                      | ❌                           |
 | log-level                     | V \| verbosity                              | log-level                     | verbosity                    |
 | mutation-level                | l \| mutation-level                         | mutation-level                | mutation-level               |
-| threshold-high                | ❌                                          | thresholds.high               | thresholds.high              |
-| threshold-low                 | ❌                                          | thresholds.low                | thresholds.low               |
+| threshold-high                | threshold-high                              | thresholds.high               | thresholds.high              |
+| threshold-low                 | threshold-low                               | thresholds.low                | thresholds.low               |
 | threshold-break               | b \| break-at                               | thresholds.break              | thresholds.break             |
 | reporters                     | r \| reporter (flag allowed multiple times) | reporters                     | reporters                    |
 | project-file                  | p \| project                                | project-file                  | project                      |
@@ -76,7 +76,7 @@ Options migration overview:
 | dashboard-fallback-version    | ❌                                          | dashboard-fallback-version    | baseline.fallback-version    |
 | baseline-storage-location     | ❌                                          | baseline-storage-location     | baseline.provider            |
 | dashboard-compare             | with-baseline                               | dashboard-compare             | baseline                     |
-| git-diff-target               | \--since ...                                | git-diff-target               | since.target                 |
+| git-diff-target               | since                                       | git-diff-target               | since.target                 |
 | azure-storage-sas             | azure-fileshare-sas                         | azure-storage-sas             | ❌                           |
 | files-to-exclude              | ❌                                          | files-to-exclude              | ❌                           |
 | test-runner                   | ❌                                          | test-runner                   | ❌                           |
