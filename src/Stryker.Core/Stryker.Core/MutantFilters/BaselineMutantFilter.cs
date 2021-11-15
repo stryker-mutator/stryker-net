@@ -16,7 +16,6 @@ namespace Stryker.Core.MutantFilters
 {
     public class BaselineMutantFilter : IMutantFilter
     {
-
         private readonly IBaselineProvider _baselineProvider;
         private readonly IGitInfoProvider _gitInfoProvider;
         private readonly ILogger<BaselineMutantFilter> _logger;
@@ -25,6 +24,7 @@ namespace Stryker.Core.MutantFilters
         private readonly StrykerOptions _options;
         private readonly JsonReport _baseline;
 
+        public MutantFilter Type => MutantFilter.Baseline;
         public string DisplayName => "baseline filter";
 
         public BaselineMutantFilter(StrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null, IBaselineMutantHelper baselineMutantHelper = null)

@@ -32,10 +32,10 @@ namespace Stryker.Core.MutantFilters
 
         private static IEnumerable<IMutantFilter> DetermineEnabledMutantFilters(StrykerOptions options)
         {
-            var enabledFilters = new List<IMutantFilter> {
+            var enabledFilters = new SortedSet<IMutantFilter>(new ByMutantFilterType()) {
                     new FilePatternMutantFilter(options),
                     new IgnoredMethodMutantFilter(),
-                    new ExcludeMutationMutantFilter(),
+                    new IgnoreMutationMutantFilter(),
                     new ExcludeFromCodeCoverageFilter()
                 };
 
@@ -45,7 +45,7 @@ namespace Stryker.Core.MutantFilters
             }
             if (options.Since || options.WithBaseline)
             {
-                enabledFilters.Add(new DiffMutantFilter(_diffProvider));
+                enabledFilters.Add(new SinceMutantFilter(_diffProvider));
             }
             if (options.ExcludedLinqExpressions.Any())
             {
@@ -53,6 +53,11 @@ namespace Stryker.Core.MutantFilters
             }
 
             return enabledFilters;
+        }
+
+        private sealed class ByMutantFilterType : IComparer<IMutantFilter>
+        {
+            public int Compare(IMutantFilter x, IMutantFilter y) => x.Type.CompareTo(y.Type);
         }
     }
 }

@@ -79,7 +79,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(5);
 
-            resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(DiffMutantFilter)).Count().ShouldBe(1);
+            resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(SinceMutantFilter)).Count().ShouldBe(1);
         }
 
         [Fact]
@@ -124,7 +124,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(6);
             resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(BaselineMutantFilter)).Count().ShouldBe(1);
-            resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(DiffMutantFilter)).Count().ShouldBe(1);
+            resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(SinceMutantFilter)).Count().ShouldBe(1);
         }
     }
 }
