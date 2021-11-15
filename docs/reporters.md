@@ -38,10 +38,10 @@ dotnet stryker --reporter "dashboard"
 ```
 
 The following options are relevant when using the dashboard reporter:
-- [Api key](./configuration.md#dashboard-api-key-<string>) - required
-- [Project name](./configuration.md#project-info.name-<string>) - required
-- [Project version](./configuration.md#project-info.version-<string>) - required
-- [Project module](./configuration.md#project-info.module-<string>) - optional
+- [Api key](./configuration.md#dashboard-api-key-string) - required
+- [Project name](./configuration.md#project-infoname-string) - required
+- [Project version](./configuration.md#project-infoversion-string) - required
+- [Project module](./configuration.md#project-infomodule-string) - optional
 
 # Cleartext reporter
 It displays all files right after the mutation testrun is done. Ideal for a quick run, as it leaves no file on your system.

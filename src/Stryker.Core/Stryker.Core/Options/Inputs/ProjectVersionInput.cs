@@ -11,16 +11,18 @@ namespace Stryker.Core.Options.Inputs
 
         protected override string Description => "Project version used in dashboard reporter and baseline feature.";
 
-        public string Validate(string fallbackVersion, IEnumerable<Reporter> reporters, bool? dashboardCompareEnabled)
+        public string Validate(IEnumerable<Reporter> reporters, bool withBaseline)
         {
-            if (reporters.Contains(Reporter.Dashboard))
+            if (reporters.Contains(Reporter.Dashboard) || withBaseline)
             {
-                if (dashboardCompareEnabled.IsNotNullAndTrue() && fallbackVersion == SuppliedInput)
+                if (withBaseline && string.IsNullOrWhiteSpace(SuppliedInput))
                 {
-                    throw new InputException("Project version cannot be the same as the fallback version. Please provide a different version for one of them.");
+                    throw new InputException("Project version cannot be empty when baseline is enabled");
                 }
+                return SuppliedInput ?? Default;
             }
-            return SuppliedInput ?? Default;
+
+            return Default;
         }
     }
 }

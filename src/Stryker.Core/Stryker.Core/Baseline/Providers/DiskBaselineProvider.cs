@@ -13,7 +13,7 @@ namespace Stryker.Core.Baseline.Providers
         private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
         private readonly ILogger<DiskBaselineProvider> _logger;
-        private const string _outputPath = "StrykerOutput/Baselines/";
+        private const string _outputPath = "StrykerOutput";
 
         public DiskBaselineProvider(StrykerOptions options, IFileSystem fileSystem = null)
         {

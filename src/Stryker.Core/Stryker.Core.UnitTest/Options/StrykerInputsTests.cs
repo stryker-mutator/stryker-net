@@ -129,7 +129,7 @@ namespace Stryker.Core.UnitTest.Options
             _target.ReportersInput.SuppliedInput = new[] { "html" };
             _target.BaselineProviderInput.SuppliedInput = "dashboard";
             _target.WithBaselineInput.SuppliedInput = true;
-            _target.FallbackVersionInput.SuppliedInput = "develop";
+            _target.ProjectVersionInput.SuppliedInput = "develop";
 
             var result = _target.ValidateAll();
 
@@ -143,7 +143,7 @@ namespace Stryker.Core.UnitTest.Options
             _target.ReportersInput.SuppliedInput = new[] { "html" };
             _target.BaselineProviderInput.SuppliedInput = "disk";
             _target.WithBaselineInput.SuppliedInput = true;
-            _target.FallbackVersionInput.SuppliedInput = "develop";
+            _target.ProjectVersionInput.SuppliedInput = "develop";
 
             var result = _target.ValidateAll();
 
