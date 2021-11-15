@@ -286,7 +286,7 @@ Command line: `[-b|--break-at] 40`
 Config file: See [thresholds](#thresholds-object)
 
 Must be less than or equal to threshold low.  
-When threshold break is set to anything other than 0 Stryker will exit with a non-zero code. This can be used in a CI pipeline to fail the pipeline when you mutation score is not sufficient.  
+When threshold break is set to anything other than 0 Stryker will exit with a non-zero code. This can be used in a CI pipeline to fail the pipeline when your mutation score is not sufficient.  
 
 ### `threshold-high` <`number`>
 
