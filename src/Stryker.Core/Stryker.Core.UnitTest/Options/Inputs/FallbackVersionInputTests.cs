@@ -18,16 +18,6 @@ Example: If the current branch is based on the main branch, set 'main' as the fa
         }
 
         [Fact]
-        public void FallbackVersionCannotBeProjectVersion()
-        {
-            var input = new FallbackVersionInput { SuppliedInput = "master" };
-
-            var exception = Should.Throw<InputException>(() => input.Validate(withBaseline: true, projectVersion: "master", sinceTarget: "master"));
-
-            exception.Message.ShouldBe("Fallback version cannot be set to the same value as the current project version, please provide a different fallback version");
-        }
-
-        [Fact]
         public void ShouldNotValidate_IfNotEnabled()
         {
             var input = new FallbackVersionInput { SuppliedInput = "master" };

@@ -20,11 +20,6 @@ Example: If the current branch is based on the main branch, set 'main' as the fa
                     return sinceTarget;
                 }
 
-                if (SuppliedInput == projectVersion)
-                {
-                    // Fallback version is used when a baseline for the project version cannot be found by the baseline provider. Thus fallback needs to be different.
-                    throw new InputException("Fallback version cannot be set to the same value as the current project version, please provide a different fallback version");
-                }
                 return SuppliedInput;
             }
 
