@@ -10,7 +10,6 @@
 
 * **configuration:** Option to set report file name ([#1755](https://github.com/stryker-mutator/stryker-net/issues/1755)) ([2a1c564](https://github.com/stryker-mutator/stryker-net/commit/2a1c56439783a121c5d0962183f617554860e1da))
 * **options:** Reintroduce threshold high and threshold low from the commandline ([#1801](https://github.com/stryker-mutator/stryker-net/issues/1801)) ([a4e722a](https://github.com/stryker-mutator/stryker-net/commit/a4e722aef113121f7829560a9dc40b70526ea5d7))
-* **reporting:** Add option to automatically open the mutation report in the browser ([#1750](https://github.com/stryker-mutator/stryker-net/issues/1750)) ([6b2ec48](https://github.com/stryker-mutator/stryker-net/commit/6b2ec487c0e275a219ba64fabed2171b23e36b84))
 * Support csharp10 syntaxes ([#1792](https://github.com/stryker-mutator/stryker-net/issues/1792)) ([a7d401b](https://github.com/stryker-mutator/stryker-net/commit/a7d401b781200965fcaf4b93950ed297635676ed))
 
 
