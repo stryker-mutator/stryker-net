@@ -35,7 +35,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Crayon" Version="2.0.62" />
+    <PackageReference Include="Crayon" Version="2.0.64" />
     <PackageReference Include="LibGit2Sharp" Version="0.27.0-preview-0116" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
     <PackageReference Include="FSharp.Compiler.Service" Version="38.0.0" />
