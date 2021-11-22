@@ -791,8 +791,8 @@
       },
       "Serilog.Sinks.Console": {
         "type": "Transitive",
-        "resolved": "4.0.0",
-        "contentHash": "yJQit9sTJ4xGLKgCujqDJsaGqBNJwGB/H898z+xYlMG06twy4//6LLnSrsmpduZxcHIG4im7cv+JmXLzXz2EkQ==",
+        "resolved": "4.0.1",
+        "contentHash": "apLOvSJQLlIbKlbx+Y2UDHSP05kJsV7mou+fvJoRGs/iR+jC22r8cuFVMjjfVxz/AD4B2UCltFhE1naRLXwKNw==",
         "dependencies": {
           "Serilog": "2.10.0"
         }
@@ -1852,7 +1852,7 @@
           "Serilog": "2.10.0",
           "Serilog.Extensions.Logging": "3.1.0",
           "Serilog.Extensions.Logging.File": "2.0.0",
-          "Serilog.Sinks.Console": "4.0.0",
+          "Serilog.Sinks.Console": "4.0.1",
           "ShellProgressBar": "5.1.0",
           "Stryker.DataCollector": "1.1.0",
           "Stryker.RegexMutators": "1.1.0",
