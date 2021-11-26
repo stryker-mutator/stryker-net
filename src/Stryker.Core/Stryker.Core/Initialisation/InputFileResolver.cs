@@ -163,12 +163,14 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private string DetermineProjectUnderTestWithNameFilter(string projectUnderTestNameFilter, IEnumerable<string> projectReferences)
+        internal string DetermineProjectUnderTestWithNameFilter(string projectUnderTestNameFilter, IEnumerable<string> projectReferences)
         {
             var stringBuilder = new StringBuilder();
             var referenceChoice = BuildReferenceChoice(projectReferences);
 
-            var projectReferencesMatchingNameFilter = projectReferences.Where(x => x.Contains(projectUnderTestNameFilter, StringComparison.OrdinalIgnoreCase));
+            var projectReferencesMatchingNameFilter = projectReferences
+                .Select(x => FilePathUtils.NormalizePathSeparators(x))
+                .Where(x => x.Contains(FilePathUtils.NormalizePathSeparators(projectUnderTestNameFilter), StringComparison.OrdinalIgnoreCase));
             if (!projectReferencesMatchingNameFilter.Any())
             {
                 stringBuilder.Append("No project reference matched the given project filter");
@@ -187,7 +189,7 @@ namespace Stryker.Core.Initialisation
                 throw new InputException(ErrorMessage, stringBuilder.ToString());
             }
 
-            return FilePathUtils.NormalizePathSeparators(projectReferencesMatchingNameFilter.Single());
+            return projectReferencesMatchingNameFilter.Single();
         }
 
         private string DetermineProjectUnderTestWithoutNameFilter(IEnumerable<string> projectReferences)

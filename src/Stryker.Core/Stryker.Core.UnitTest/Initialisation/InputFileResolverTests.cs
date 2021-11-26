@@ -991,7 +991,7 @@ Please specify a test project name filter that results in one project.
             var target = new InputFileResolver();
 
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string> { "../ExampleProject/ExampleProject.csproj" }).Object;
+                projectReferences: new List<string> { "../ExampleProject/ExampleProject.csproj" }).Object;
 
             var result = target.FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, null);
             result.ShouldBe("../ExampleProject/ExampleProject.csproj");
@@ -1013,10 +1013,10 @@ Please specify a test project name filter that results in one project.
         public void ShouldThrowOnMultipleProjects()
         {
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string> {
-                        "../ExampleProject/ExampleProject.csproj",
-                        "../AnotherProject/AnotherProject.csproj"
-                    }).Object;
+                projectReferences: new List<string> {
+                    "../ExampleProject/ExampleProject.csproj",
+                    "../AnotherProject/AnotherProject.csproj"
+                }).Object;
 
             var ex = Assert.Throws<InputException>(() =>
             {
@@ -1037,10 +1037,10 @@ Please specify a test project name filter that results in one project.
         public void ShouldMatchFromMultipleProjectByName(string shouldMatch)
         {
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string> {
-                        "../ExampleProject/ExampleProject.csproj",
-                        "../AnotherProject/AnotherProject.csproj"
-                    }).Object;
+                projectReferences: new List<string> {
+                    "../ExampleProject/ExampleProject.csproj",
+                    "../AnotherProject/AnotherProject.csproj"
+                }).Object;
 
             var result = new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, shouldMatch);
 
@@ -1055,10 +1055,10 @@ Please specify a test project name filter that results in one project.
         public void ShouldThrowWhenTheNameMatchesMore(string shouldMatchMoreThanOne)
         {
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string> {
-                        "../ExampleProject/ExampleProject.csproj",
-                        "../AnotherProject/AnotherProject.csproj"
-                    }).Object;
+                projectReferences: new List<string> {
+                    "../ExampleProject/ExampleProject.csproj",
+                    "../AnotherProject/AnotherProject.csproj"
+                }).Object;
 
             var ex = Assert.Throws<InputException>(() =>
             {
@@ -1076,10 +1076,10 @@ Please specify a test project name filter that results in one project.
         public void ShouldThrowWhenTheNameMatchesNone(string shouldMatchNone)
         {
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string> {
-                        "../ExampleProject/ExampleProject.csproj",
-                        "../AnotherProject/AnotherProject.csproj"
-                    }).Object;
+                projectReferences: new List<string> {
+                    "../ExampleProject/ExampleProject.csproj",
+                    "../AnotherProject/AnotherProject.csproj"
+                }).Object;
 
             var ex = Assert.Throws<InputException>(() =>
             {
@@ -1088,6 +1088,21 @@ Please specify a test project name filter that results in one project.
 
             ex.Message.ShouldBe("Project reference issue.");
             ex.Details.ShouldContain("no project", Case.Insensitive);
+        }
+
+        [Theory]
+        [InlineData("ExampleProject/ExampleProject.csproj")]
+        [InlineData("ExampleProject\\ExampleProject.csproj")]
+        public void ShouldMatchOnBothForwardAndBackwardsSlash(string shouldMatch)
+        {
+            var projectReferences = new List<string> {
+                "../ExampleProject/ExampleProject.csproj",
+                "../AnotherProject/AnotherProject.csproj"
+            };
+
+            var match = new InputFileResolver().DetermineProjectUnderTestWithNameFilter(shouldMatch, projectReferences);
+
+            match.ShouldBe(FilePathUtils.NormalizePathSeparators("../ExampleProject/ExampleProject.csproj"));
         }
     }
 }
