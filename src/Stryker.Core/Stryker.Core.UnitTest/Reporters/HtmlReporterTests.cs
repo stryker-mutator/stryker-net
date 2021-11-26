@@ -71,9 +71,9 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var fileContents = mockFileSystem.GetFile(reportPath).TextContents;
 
-            fileContents.ShouldContain(@"""thresholds"": {");
-            fileContents.ShouldContain(@"""high"": 80");
-            fileContents.ShouldContain(@"""low"": 60");
+            fileContents.ShouldContain(@"""thresholds"":{");
+            fileContents.ShouldContain(@"""high"":80");
+            fileContents.ShouldContain(@"""low"":60");
         }
 
         [Fact]
