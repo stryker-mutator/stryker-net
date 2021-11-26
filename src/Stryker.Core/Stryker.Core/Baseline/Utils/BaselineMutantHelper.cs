@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Stryker.Core.Mutants;
-using Stryker.Core.Reporters.Json;
+using Stryker.Core.Reporters.Json.SourceFiles;
 
 namespace Stryker.Core.Baseline.Utils
 {
