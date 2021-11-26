@@ -11,7 +11,6 @@ namespace Stryker.Core.UnitTest.Reporters
             IDictionary<string, SourceFile> files
         )
         {
-            SchemaVersion = "1.3";
             Thresholds = thresholds;
             Files = files;
         }
