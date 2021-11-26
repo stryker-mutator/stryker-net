@@ -11,6 +11,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.Json;
+using Stryker.Core.Reporters.Json.SourceFiles;
 
 namespace Stryker.Core.MutantFilters
 {
@@ -67,7 +68,7 @@ namespace Stryker.Core.MutantFilters
                 return;
             }
 
-            JsonReportFileComponent baselineFile = _baseline.Files[FilePathUtils.NormalizePathSeparators(file.RelativePath)];
+            SourceFile baselineFile = _baseline.Files[FilePathUtils.NormalizePathSeparators(file.RelativePath)];
 
             if (baselineFile is { })
             {
