@@ -1,3 +1,4 @@
+using System.Linq;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
@@ -15,19 +16,55 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             target.HelpText.ShouldBe(@"Project version used in dashboard reporter and baseline feature. | default: ''");
         }
 
-        [Theory]
-        [InlineData("test")]
-        [InlineData("myversion")]
-        public void ProjectVersionCannotBeFallbackVersion(string value)
+        [Fact]
+        public void ProjectVersion_UsesSuppliedInput_IfDashboardReporterEnabled()
         {
-            var input = new ProjectVersionInput { };
-            input.SuppliedInput = value;
+            var suppliedInput = "test";
+            var input = new ProjectVersionInput { SuppliedInput = suppliedInput };
+
+            var result = input.Validate(reporters: new[] { Reporter.Dashboard }, withBaseline: false);
+            result.ShouldBe(suppliedInput);
+        }
+
+        [Fact]
+        public void ProjectVersion_UsesSuppliedInput_IfBaselineEnabled()
+        {
+            var suppliedInput = "test";
+            var input = new ProjectVersionInput { SuppliedInput = suppliedInput };
+
+            var result = input.Validate(reporters: Enumerable.Empty<Reporter>(), withBaseline: true);
+            result.ShouldBe(suppliedInput);
+        }
+
+        [Fact]
+        public void ProjectVersion_ShouldBeDefault_IfBaselineAndDashboardDisabled()
+        {
+            var suppliedInput = "test";
+            var input = new ProjectVersionInput { SuppliedInput = suppliedInput };
+
+            var result = input.Validate(reporters: Enumerable.Empty<Reporter>(), withBaseline: false);
+            result.ShouldBe(string.Empty);
+        }
+
+        [Fact]
+        public void ProjectVersion_ShouldBeDefault_IfDashboardEnabledAndSuppliedInputNull()
+        {
+            var input = new ProjectVersionInput();
+
+            var result = input.Validate(reporters: new[] { Reporter.Dashboard }, withBaseline: false);
+            result.ShouldBe(string.Empty);
+        }
+
+        [Fact]
+        public void ProjectVersion_CannotBeEmpty_WhenBaselineEnabled()
+        {
+            var input = new ProjectVersionInput();
 
             var exception = Should.Throw<InputException>(() => {
-                input.Validate(value, reporters: new[] { Reporter.Dashboard }, true);
+                input.Validate(reporters: Enumerable.Empty<Reporter>(), withBaseline: true);
             });
 
-            exception.Message.ShouldBe("Project version cannot be the same as the fallback version. Please provide a different version for one of them.");
+            exception.Message.ShouldBe("Project version cannot be empty when baseline is enabled");
         }
     }
 }

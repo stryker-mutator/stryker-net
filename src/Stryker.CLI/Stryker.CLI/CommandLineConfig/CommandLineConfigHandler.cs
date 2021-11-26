@@ -106,7 +106,7 @@ namespace Stryker.CLI
 
                 case WithBaselineInput withBaselineInput:
                     withBaselineInput.SuppliedInput = true;
-                    inputs.BaselineProviderInput.SuppliedInput = cliInput.Value();
+                    inputs.SinceTargetInput.SuppliedInput = cliInput.Value();
                     break;
 
                 case OpenReportInput openReportInput:

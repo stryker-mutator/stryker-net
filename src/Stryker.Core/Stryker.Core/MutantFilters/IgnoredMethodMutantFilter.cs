@@ -15,6 +15,7 @@ namespace Stryker.Core.MutantFilters
     /// <seealso cref="IMutantFilter" />
     public sealed class IgnoredMethodMutantFilter : IMutantFilter
     {
+        public MutantFilter Type => MutantFilter.IgnoreMethod;
         public string DisplayName => "method filter";
         private readonly SyntaxTriviaRemover _triviaRemover = new SyntaxTriviaRemover();
 

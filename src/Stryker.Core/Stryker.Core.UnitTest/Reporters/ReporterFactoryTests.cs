@@ -47,7 +47,7 @@ namespace Stryker.Core.UnitTest.Reporters
             broadcastReporter.Reporters.ShouldContain(r => r is ClearTextTreeReporter);
             broadcastReporter.Reporters.ShouldContain(r => r is ProgressReporter);
             broadcastReporter.Reporters.ShouldContain(r => r is DashboardReporter);
-            broadcastReporter.Reporters.ShouldContain(r => r is GitBaselineReporter);
+            broadcastReporter.Reporters.ShouldContain(r => r is BaselineReporter);
 
             result.Reporters.Count().ShouldBe(8);
         }
