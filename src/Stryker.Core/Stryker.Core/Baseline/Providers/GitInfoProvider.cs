@@ -17,12 +17,12 @@ namespace Stryker.Core.Baseline.Providers
 
         public IRepository Repository { get; }
 
-        public string RepositoryPath => _repositoryPath ?? LibGit2Sharp.Repository.Discover(_options.BasePath)?.Split(".git")[0];
+        public string RepositoryPath => _repositoryPath;
 
         public GitInfoProvider(StrykerOptions options, IRepository repository = null, string repositoryPath = null, ILogger<GitInfoProvider> logger = null)
         {
-            _repositoryPath = repositoryPath;
             _options = options;
+            _repositoryPath = repositoryPath ?? DiscoverGitRepo();
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<GitInfoProvider>();
 
             if (!options.Since)
@@ -128,6 +128,30 @@ namespace Stryker.Core.Baseline.Providers
                 }
             }
 
+            return null;
+        }
+
+        private string DiscoverGitRepo()
+        {
+            var baseGitRepo = LibGit2Sharp.Repository.Discover(_options.BasePath)?.Split(".git")[0];
+            if (!string.IsNullOrEmpty(baseGitRepo))
+            {
+                return baseGitRepo;
+            }
+
+            if (_options.TestProjects.Any())
+            {
+                var foundRepos = _options.TestProjects.Select(x => LibGit2Sharp.Repository.Discover(x)?.Split(".git")[0]);
+
+                if (foundRepos.Distinct().Count() == 1)
+                {
+                    return foundRepos.First();
+                }
+                else
+                {
+                    _logger.LogError("Test projects in multiple repos. Unable to determine project repo.");
+                }
+            }
             return null;
         }
     }
