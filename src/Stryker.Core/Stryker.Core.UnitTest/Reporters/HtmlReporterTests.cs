@@ -1,6 +1,7 @@
 using Moq;
 using Shouldly;
 using Stryker.Core.Options;
+using Stryker.Core.Options.Inputs;
 using Stryker.Core.Reporters.Html.reporter;
 using Stryker.Core.Reporters.HtmlReporter.ProcessWrapper;
 using System.IO;
@@ -14,7 +15,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ShouldWriteJsonToFile()
         {
-            var mockProcess = new Mock<IProcessWrapper>();
+            var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();
             var options = new StrykerOptions
             {
@@ -32,7 +33,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ShouldReplacePlaceholdersInHtmlFile()
         {
-            var mockProcess = new Mock<IProcessWrapper>();
+            var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();
             var options = new StrykerOptions
             {
@@ -55,7 +56,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ShouldContainJsonInHtmlReportFile()
         {
-            var mockProcess = new Mock<IProcessWrapper>();
+            var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();
             var options = new StrykerOptions
             {
@@ -79,11 +80,11 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ShouldOpenHtmlReportIfOptionIsProvided()
         {
-            var mockProcess = new Mock<IProcessWrapper>();
+            var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();
             var options = new StrykerOptions
             {
-                ReportTypeToOpen = Core.Options.Inputs.ReportType.Html,
+                ReportTypeToOpen = ReportType.Html,
                 OutputPath = Directory.GetCurrentDirectory(),
                 ReportFileName = "mutation-report"
             };
@@ -98,16 +99,19 @@ namespace Stryker.Core.UnitTest.Reporters
             reportUri = reportUri.StartsWith("/") ? reportUri : "/" + reportUri;
 
             // Check if browser open action is invoked
-            mockProcess.Verify(m => m.Start("file://" + reportUri));
+            mockProcess.Verify(m => m.Open("file://" + reportUri));
         }
 
-        [Fact]
-        public void ShouldNotOpenHtmlReportIfOptionIsProvided()
+        [Theory]
+        [InlineData(ReportType.Dashboard)]
+        [InlineData(null)]
+        public void ShouldNotOpenHtmlReportIfOptionIsProvided(ReportType? reportType)
         {
-            var mockProcess = new Mock<IProcessWrapper>();
+            var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();
             var options = new StrykerOptions
             {
+                ReportTypeToOpen = reportType,
                 OutputPath = Directory.GetCurrentDirectory()
             };
 
@@ -115,10 +119,9 @@ namespace Stryker.Core.UnitTest.Reporters
             var mutationTree = JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent();
 
             reporter.OnAllMutantsTested(mutationTree);
-            var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.html");
 
             // Check if browser open action is invoked
-            mockProcess.Invocations.ShouldBeEmpty();
+            mockProcess.VerifyNoOtherCalls();
         }
     }
 }
