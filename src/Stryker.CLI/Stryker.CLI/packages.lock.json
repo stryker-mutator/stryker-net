@@ -418,13 +418,13 @@
       },
       "Microsoft.TestPlatform": {
         "type": "Transitive",
-        "resolved": "16.10.0",
-        "contentHash": "JWIMJ91HtS4RUWzOduDzD1tRWzo6uh+mdjnjxyoYet2D4fIdzQdATEYsajwLKJ7LZ3KnSEHw+XkTGRnOdksexg=="
+        "resolved": "17.0.0",
+        "contentHash": "VUxQgxgHWiVevEy9DGXfOhUu/yPqEClFKcQWg7NkRLjWKuEMfMDSB4+GG8mOi+jtZGqp3k33eEdKBZSKCmHr8Q=="
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Transitive",
-        "resolved": "16.10.0",
-        "contentHash": "DYp9eKg3zffZuePhgdUrh5tHkt1YOaSraVH87r4WXDOjag1/n08aFl1vRhWP8y2RoBLTHdcZRTDOhQyYMxAYNg==",
+        "resolved": "17.0.0",
+        "contentHash": "WMugCdPkA8U/BsSRc+3RN+DXcaYSDvp/s0MofVld08iF1O5fek4iKecygk6NruNf1rgJsv4LK71mrwbyeqhzHA==",
         "dependencies": {
           "NuGet.Frameworks": "5.0.0",
           "System.Reflection.Metadata": "1.6.0"
@@ -432,13 +432,13 @@
       },
       "Microsoft.TestPlatform.Portable": {
         "type": "Transitive",
-        "resolved": "16.10.0",
-        "contentHash": "bO8mQmr9KimT5wh1pzaeYE41eBK3SdXrlT6tE6pa3Yv+TnUk1YZ4l/Yy1t+SFhFX9etOuZEjdxDJBvTXzSUbKw=="
+        "resolved": "17.0.0",
+        "contentHash": "hnMZVnecXDUhOHWtOmFOyqu46Uonrjw2O3uoQzsxKWnsaNJtRKx3ownOi8/PScgnZKhxejjSwH7kk/wRYbrZrA=="
       },
       "Microsoft.TestPlatform.TranslationLayer": {
         "type": "Transitive",
-        "resolved": "16.10.0",
-        "contentHash": "v0nJO8/12IXWjkXRkjqTOgM0BGJsX39c+ULgJnAEMBQ6bjI+zNkK/h/BGhNUByE49gkfD9AF31iOPij/x3SnQw==",
+        "resolved": "17.0.0",
+        "contentHash": "ElNRMdfFnCWbpkf4Zpqu5aI+f0ZHNWjCsn9C9Om7tpSsMg4LGQt3q2ZytOavpRW4pJVYKOJfb8HG+wQhSbCcog==",
         "dependencies": {
           "NETStandard.Library": "2.0.0"
         }
@@ -1282,10 +1282,10 @@
           "Microsoft.Extensions.Configuration": "6.0.0",
           "Microsoft.Extensions.Configuration.Json": "6.0.0",
           "Microsoft.Extensions.Logging": "6.0.0",
-          "Microsoft.TestPlatform": "16.10.0",
-          "Microsoft.TestPlatform.ObjectModel": "16.10.0",
-          "Microsoft.TestPlatform.Portable": "16.10.0",
-          "Microsoft.TestPlatform.TranslationLayer": "16.10.0",
+          "Microsoft.TestPlatform": "17.0.0",
+          "Microsoft.TestPlatform.ObjectModel": "17.0.0",
+          "Microsoft.TestPlatform.Portable": "17.0.0",
+          "Microsoft.TestPlatform.TranslationLayer": "17.0.0",
           "Microsoft.Web.LibraryManager.Build": "2.1.113",
           "Mono.Cecil": "0.11.4",
           "Serilog": "2.10.0",
@@ -1302,7 +1302,7 @@
       "stryker.datacollector": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "16.10.0"
+          "Microsoft.TestPlatform.ObjectModel": "17.0.0"
         }
       },
       "stryker.regexmutators": {
