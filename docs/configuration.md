@@ -9,10 +9,10 @@ custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs
 You run stryker from the test project directory.
 
 On some dotnet core projects stryker can run without specifying any custom configuration. Simply run `dotnet stryker` to start testing.  
-On dotnet framework projects the solution path argument is always required. Run at least `dotnet stryker --solution <solution-path>` or specify the solution file path in the config file to start testing. See [solution](#solution-<path>).
+On dotnet framework projects the solution path argument is always required. Run at least `dotnet stryker --solution <solution-path>` or specify the solution file path in the config file to start testing. See [solution](#solution-path).
 
 ## Use a config file
-When using Stryker regularly we recommend using a config file. This way you won't have to document how to run Stryker, you can save the config file in version control. To use a config file create a file called `stryker-config.json` in the (unit test) project folder and add a configuration section called stryker-config. Alternatively use [init](#init-<bool>)
+When using Stryker regularly we recommend using a config file. This way you won't have to document how to run Stryker, you can save the config file in version control. To use a config file create a file called `stryker-config.json` in the (unit test) project folder and add a configuration section called stryker-config.
 
 Example `stryker-config.json` file:
 ``` javascript
@@ -24,14 +24,6 @@ Example `stryker-config.json` file:
     }
 }
 ```
-
-### `init` <`flag`>
-
-Default: `false`  
-Command line: `--init`  
-Config file: `N/A`  
-
-Creates a stryker config file with default options. Any options passed in the cli will override the defaults.
 
 ### `config-file` <`path`>
 
@@ -146,7 +138,7 @@ Default: `null`
 Command line: `N/A`  
 Config file: `"project-info": { "name": 'github.com/stryker-mutator/stryker-net' }`
 
-The name registered with the [Stryker dashboard](./reporters.md#dashboard-reporter). It is in the form of `gitProvider/organization/repository`. At the moment the dashboard backend only supports github.com as a git provider, but we want to also support gitlab.com/bitbucket.org etc in the future. It can have an indefinite number of levels. Slashes (/) in this name are not escaped. For example `github.com/stryker-mutator/stryker-net`.
+The name registered with the [Stryker dashboard](./reporters.md#dashboard-reporter). It is in the form of `gitProvider/organization/repository`. At the moment the dashboard backend only supports github.com as a git provider. It can have an indefinite number of levels. Slashes (/) in this name are not escaped. For example `github.com/stryker-mutator/stryker-net`.
 
 ### `project-info.module` <`string`>
 
@@ -158,7 +150,7 @@ If you want to store multiple reports for a given version you can use this optio
 
 See [Stryker dashboard](./reporters.md#dashboard-reporter)
 
-### `project-info.version` <`comittish`>
+### `project-info.version` <`committish`>
 
 Default: `null`  
 Command line: `[-v|--version] "feat/logging"`  
@@ -235,6 +227,14 @@ When this option is passed, generated reports should open in the browser automat
 Valid values:
 - html
 - dashboard
+
+### `report-file-name` <`string`>
+
+Default: `mutation-report`
+Command line: `N/A` 
+Config file: `report-file-name`
+
+If HTML and/or JSON reporting is being used you can use this option to change the report file name.
 
 ### `additional-timeout` <`number`>
 
@@ -384,7 +384,7 @@ are run against all tests as Stryker cannot reliably capture coverage for those.
 constructors/initialisers being called only once during tests. This heuristic is not needed when using
 `perTestInIsolation` due to test being run one by one.
 
-### `disable-bail` <`bool`>
+### `disable-bail` <`flag`>
 
 Default: `false`  
 Command line: `N/A`  
@@ -392,7 +392,7 @@ Config file: `"disable-bail": true`
 
 Stryker aborts a unit testrun for a mutant as soon as one test fails because this is enough to confirm the mutant is killed. This can reduce the total runtime but also means you miss information about individual unit tests (eg if a unit test does not kill any mutants and is therefore useless). You can disable this behavior and run all unit tests for a mutant to completion. This can be especially useful when you want to find useless unit tests.
 
-### `disable-mix-mutants` <`bool`>
+### `disable-mix-mutants` <`flag`>
 
 Default: `false`  
 Command line: `N/A`  
@@ -400,7 +400,7 @@ Config file: `"disable-mix-mutants": true`
 
 Stryker combines multiple mutants in the same testrun when the mutants are not covered by the same unit tests. This reduces the total runtime. You can disable this behavior and run every mutation in an isolated testrun. This can be useful when mixed mutants have unintended side effects.
 
-### `since` <`flag`>
+### `since` <`flag`> [`:committish`]
 
 Default: `false`  
 Command line: `--since:feat-2`  
@@ -408,28 +408,28 @@ Config file: `"since": { }`
 
 Use git information to test only code changes since the given target. Stryker will only report on mutants within the changed code. All other mutants will not have a result.
 
-If you wish to test only changed sources and tests but would like to have a complete mutation report see [with-baseline](#with-baseline-<flag>).
+If you wish to test only changed sources and tests but would like to have a complete mutation report see [with-baseline](#with-baseline-flag-committish).
 
-Set the diffing target on the command line by passing a comittish with the since flag in the format `--since:<comittish>`.
-Set the diffing target in the config file by setting the [since.target](#since.target-<comittish>) option.
+Set the diffing target on the command line by passing a committish with the since flag in the format `--since:<committish>`.
+Set the diffing target in the config file by setting the [since target](#sincetarget-committish) option.
 
 *\* For changes on test project files all mutants covered by tests in that file will be seen as changed.*
 
-### `since.enabled` <`bool`>
+### `since.enabled` <`flag`>
 
 Default: `null`  
 Command line: `N/A`  
 Config file: `"since": { "enabled": false }`
 
-Enable or disable [since](#since-<flag>). If the enabled property is not set but the `since` object exists in the config file it is assumed to be enabled. Use this option to (temporarily) disable `since` without having to delete the other `since` configuration.
+Enable or disable [since](#since-flag-committish). If the enabled property is not set but the `since` object exists in the config file it is assumed to be enabled. Use this option to (temporarily) disable `since` without having to delete the other `since` configuration.
 
-### `since.target` <`comittish`>
+### `since.target` <`committish`>
 
 Default: `master`  
 Command line: `N/A`  
 Config file: `"since": { "target": 'feat-2' }`
 
-Set the diffing target for the [since](#since-<flag>) feature.
+Set the diffing target for the [since](#since-flag-committish) feature.
 
 ### `since.ignore-changes-in` <`string[]`>
 
@@ -448,36 +448,36 @@ Use [globbing syntax](https://en.wikipedia.org/wiki/Glob_(programming)) for wild
 
 ## Baseline
 
-### `with-baseline` <`flag`>
+### `with-baseline` <`flag`> [`:committish`]
 
 Default: `false`  
 Command line: `--with-baseline:feat-2`  
 Config file: `"baseline": { }`
 
-Enabling `with-baseline` saves the mutation report to a storage location such as the filesystem. The mutation report is loaded at the start of the next mutation run. Any changed source code or unit test results in a reset of the mutants affected by the change. For unchanged mutants the previous result is reused. This feature expands on the [since](#since-<flag>) feature by providing you with a full report after a partial mutation testrun.
+Enabling `with-baseline` saves the mutation report to a storage location such as the filesystem. The mutation report is loaded at the start of the next mutation run. Any changed source code or unit test results in a reset of the mutants affected by the change. For unchanged mutants the previous result is reused. This feature expands on the [since](#since-flag-committish) feature by providing you with a full report after a partial mutation testrun.
 
-The report name is based on the current branch name or the [project-info version](#project-info.version-<string>).
+The report name is based on the current branch name or the [project-info.version](#project-infoversion-committish).
 
-Set the diffing target on the command line by passing a comittish with the since flag.
-Set the diffing target in the config file by setting the [since target](#since.target-<comittish>) option.
+Set the diffing target on the command line by passing a committish with the since flag.
+Set the diffing target in the config file by setting the [since target](#sincetarget-committish) option.
 
-*\* This feature automatically enables the [since](#since-<flag>) feature.*
+*\* This feature automatically enables the [since](#since-flag-committish) feature.*
 
-### `baseline.enabled` <`bool`>
+### `baseline.enabled` <`flag`>
 
 Default: `null`  
 Command line: `N/A`  
 Config file: `"baseline": { "enabled": false }`
 
-Enable or disable [with-baseline](#with-baseline-<flag>). If the enabled property is not set but the `baseline` object exists in the config file it is assumed to be enabled. Use this option to (temporarily) disable `with-baseline` without having to delete the other baseline configuration.
+Enable or disable [with-baseline](#with-baseline-flag-committish). If the enabled property is not set but the `baseline` object exists in the config file it is assumed to be enabled. Use this option to (temporarily) disable `with-baseline` without having to delete the other baseline configuration.
 
 ### `baseline.fallback-version` <`string`>
 
-Default: [since-target](#since-target-<comittish>)  
+Default: [since-target](#since-flag-committish)  
 Command line: `N/A`  
 Config file: `"baseline": { "fallback-version": 'develop' }`
 
-When [with-baseline](#with-baseline-<bool[<:comittish>]>) is enabled and Stryker cannot find an existing report for the current branch the fallback version is used. When Stryker is still unable to find a baseline we will do a complete instead of partial testrun. The complete testrun will then be saved as the new baseline for the next mutation testrun.
+When [with-baseline](#with-baseline-flag-committish) is enabled and Stryker cannot find an existing report for the current branch the fallback version is used. When Stryker is still unable to find a baseline we will do a complete instead of partial testrun. The complete testrun will then be saved as the new baseline for the next mutation testrun.
 
 **Example**:
 ```json
@@ -506,7 +506,7 @@ baseline used: feat-2
 new baseline saved to: feat-2
 ```
 
-*\* The [since-target](#since-target-<comittish>) explicit or default value is used as the fallback version unless the fallback version is explicitly set.*
+*\* The [since-target](#since-target-committish) explicit or default value is used as the fallback version unless the fallback version is explicitly set.*
 
 ### `baseline.provider` <`string`>
 
@@ -514,7 +514,7 @@ Default: `Disk`
 Command line: `N/A`  
 Config file: `"baseline": { "provider": 'AzureFileStorage'}`
 
-Sets the storage provider for the baseline used by [with-baseline](#with-baseline-<bool[<:comittish>]>). By default this is set to disk, when the dashboard [reporter](#reporter-<string>) is enabled this is automatically set to Dashboard.
+Sets the storage provider for the baseline used by [with-baseline](#with-baseline-flag-committish). By default this is set to disk, when the dashboard [reporter](#reporter-string) is enabled this is automatically set to Dashboard.
 
 Supported storage providers are:
 
@@ -532,12 +532,13 @@ Default: `null`
 Command line: `N/A`  
 Config file: `"baseline": { "azure-fileshare-url": 'https://stryker-net.file.core.windows.net/baselines'}`
 
-When using the azure file storage [provider](#baseline.provider-<string>) you must set the file share url.
+When using the azure file storage [provider](#baselineprovider-string) you must set the file share url.
 The file share url should be in the the format:
 
 `https://<STORAGE_ACCOUNT_NAME>.file.core.windows.net/<FILE_SHARE_NAME>/<OPTIONAL_SUBFOLDER_NAME>`
 
-Providing a subfolder is optional but allowed. The baseline are always stored in a folder called `StrykerOutput/Baselines`. In the case of a custom subfolder the complete url to the baselines would become `https://<FILE_SHARE_URL>/<OPTIONAL_SUBFOLDER_NAME>/StrykerOutput/Baselines`
+The baseline are stored in a folder called `StrykerOutput/Baselines` by default. Or in `StrykerOutput/<projectName>` if a [project name](#project-infoname-string) is set.
+Providing a subfolder is optional but allowed. In the case of a custom subfolder the complete url to the baselines would become `https://<FILE_SHARE_URL>/<OPTIONAL_SUBFOLDER_NAME>/StrykerOutput/Baselines`
 
 ### `azure-storage-sas` <`string`>
 
@@ -545,7 +546,7 @@ Default: `null`
 Command line: `--azure-storage-sas "adfdf34343242323rewfe323434"`  
 Config file: `N/A`
 
-When using the azure file storage [provider](#baseline.provider-<string>) you must pass credentials for the fileshare to Stryker.
+When using the azure file storage [provider](#baselineprovider-string) you must pass credentials for the fileshare to Stryker.
 For authentication with the azure fileshare we support Shared Access Signatures. For more information on how to configure a SAS check the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
 
 # Troubleshooting
@@ -594,7 +595,7 @@ Config file: `N/A`
 Environment variable: `STRYKER_DASHBOARD_API_KEY="afdfsgarg3wr32r3r32f3f3"`
 
 The API key for authentication with the Stryker dashboard.  
-Get your api key at [stryker dashboard](https://dashboard.stryker-mutator.io/). To keep your api key safe, store it in an encrypted variable in your pipeline.
+Get your api key at the [stryker dashboard](https://dashboard.stryker-mutator.io/). To keep your api key safe, store it in an encrypted variable in your pipeline.
 
 ### `dashboard-url` <`string`>
 
@@ -612,10 +613,3 @@ Command line: `--msbuild-path "c://MsBuild/MsBuild.exe"`
 Config file: `N/A`  
 
 By default stryker tries to autodiscover msbuild on your system. If stryker fails to discover msbuild you may supply the path to msbuild manually with this option.
-
-### `report-file-name` <`string`>
-
-Default: `mutation-report`
-Config file: `report-file-name`
-
-If HTML or JSON reporting is being used, this sets the filename of the output file.
