@@ -44,7 +44,7 @@ namespace Stryker.Core.Reporters
 
                 if (_options.ReportTypeToOpen == Options.Inputs.ReportType.Dashboard)
                 {
-                    _processWrapper.StartUrl(reportUri);
+                    _processWrapper.Open(reportUri);
                 }
             }
             else

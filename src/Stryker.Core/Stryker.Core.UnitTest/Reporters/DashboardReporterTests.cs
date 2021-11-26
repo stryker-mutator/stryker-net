@@ -66,7 +66,7 @@ namespace Stryker.Core.UnitTest.Reporters
             reporter.OnAllMutantsTested(mutationTree);
 
             // Check if browser open action is invoked
-            mockProcess.Verify(m => m.StartUrl("https://dashboard.com"));
+            mockProcess.Verify(m => m.Open("https://dashboard.com"));
         }
 
         [Theory]

@@ -99,7 +99,7 @@ namespace Stryker.Core.UnitTest.Reporters
             reportUri = reportUri.StartsWith("/") ? reportUri : "/" + reportUri;
 
             // Check if browser open action is invoked
-            mockProcess.Verify(m => m.StartFile("file://" + reportUri));
+            mockProcess.Verify(m => m.Open("file://" + reportUri));
         }
 
         [Theory]
