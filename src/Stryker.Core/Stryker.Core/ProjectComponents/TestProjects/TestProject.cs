@@ -12,14 +12,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
 
         public bool Equals(TestProject other) => other.TestProjectAnalyzerResult.Equals(TestProjectAnalyzerResult) && other.TestFiles.SetEquals(TestFiles);
 
-        public override bool Equals(object other)
-        {
-            if (other is TestProject project)
-            {
-                return Equals(project);
-            }
-            return false;
-        }
+        public override bool Equals(object obj) => obj is TestProject project && Equals(project);
 
         public override int GetHashCode() => TestProjectAnalyzerResult.GetHashCode() ^ TestFiles.GetHashCode();
     }

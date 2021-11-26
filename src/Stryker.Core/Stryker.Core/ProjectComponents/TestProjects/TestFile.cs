@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.ProjectComponents.TestProjects
 {
-    public class TestFile :IEquatable<TestFile>
+    public sealed class TestFile : IEquatable<TestFile>
     {
         public string FilePath { get; set; }
         public string Source { get; set; }
@@ -20,14 +20,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
 
         public bool Equals(TestFile other) => other.FilePath.Equals(FilePath) && other.Source.Equals(Source);
 
-        public override bool Equals(object other)
-        {
-            if (other is TestFile file)
-            {
-                return Equals(file);
-            }
-            return false;
-        }
+        public override bool Equals(object obj) => obj is TestFile file && Equals(file);
 
         public override int GetHashCode() => FilePath.GetHashCode() ^ Source.GetHashCode();
     }
