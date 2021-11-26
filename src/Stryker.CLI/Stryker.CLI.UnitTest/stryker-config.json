@@ -2,7 +2,6 @@
   "stryker-config": {
     "project-info": {
       "name": "github.com/stryker-mutator/stryker-net",
-      "version": "master",
       "module": "cli"
     },
     "baseline": {
