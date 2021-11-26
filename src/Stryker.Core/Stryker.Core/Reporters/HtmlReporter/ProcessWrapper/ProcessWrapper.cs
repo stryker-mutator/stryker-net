@@ -9,7 +9,6 @@ namespace Stryker.Core.Reporters.HtmlReporter.ProcessWrapper
         {
             var processInfo = new ProcessStartInfo
             {
-                
                 FileName = path,
                 UseShellExecute = true
             };
