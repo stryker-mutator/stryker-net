@@ -5,7 +5,7 @@ using Buildalyzer;
 
 namespace Stryker.Core.ProjectComponents.TestProjects
 {
-    public class TestProject : IEquatable<TestProject>
+    public sealed class TestProject : IEquatable<TestProject>
     {
         public IAnalyzerResult TestProjectAnalyzerResult { get; set; }
         public ISet<TestFile> TestFiles { get; set; } = new HashSet<TestFile>();
