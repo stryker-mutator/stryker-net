@@ -39,10 +39,8 @@ namespace Stryker.Core.Reporters.Json
         private void WriteReportToJsonFile(string filePath, JsonReport mutationReport)
         {
             _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-            using (var file = _fileSystem.File.Create(filePath))
-            {
-                mutationReport.Serialize(file);
-            }
+            using var file = _fileSystem.File.Create(filePath);
+            mutationReport.Serialize(file);
         }
 
         public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
