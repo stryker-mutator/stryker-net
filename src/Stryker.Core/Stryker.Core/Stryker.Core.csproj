@@ -28,7 +28,6 @@
   <ItemGroup>
     <EmbeddedResource Include="InjectedHelpers\MutantControl.cs" />
     <EmbeddedResource Include="InjectedHelpers\Coverage\MutantContext.cs" />
-    <Folder Include="Reporters\HtmlReporter\Files\" />
 
     <EmbeddedResource Include="ToolHelpers\.vstest\Microsoft.TestPlatform.Portable\*\*.nupkg" />
   </ItemGroup>

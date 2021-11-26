@@ -1,6 +1,6 @@
 {
   "version": "1.0",
-  "defaultProvider": "unpkg",
+  "defaultProvider": "jsdelivr",
   "libraries": [
     {
       "library": "mutation-testing-elements@1.7.6",
