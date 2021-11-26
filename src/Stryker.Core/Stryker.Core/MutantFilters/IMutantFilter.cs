@@ -27,5 +27,9 @@ namespace Stryker.Core.MutantFilters
         /// The display name.
         /// </value>
         string DisplayName { get; }
+        /// <summary>
+        /// The type of this mutant filter
+        /// </summary>
+        MutantFilter Type { get; }
     }
 }

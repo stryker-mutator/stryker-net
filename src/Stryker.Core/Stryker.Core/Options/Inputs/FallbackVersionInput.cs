@@ -9,17 +9,21 @@ Can be semver, git commit hash, branch name or anything else to indicate what ve
 When you don't specify a fallback version the since target will be used as fallback version.
 Example: If the current branch is based on the main branch, set 'main' as the fallback version";
 
-        public override string Default => string.Empty;
+        public override string Default => new SinceTargetInput().Default;
 
-        public string Validate(string projectVersion, bool? dashboardEnabled)
+        public string Validate(bool withBaseline, string projectVersion, string sinceTarget)
         {
-            if (dashboardEnabled.IsNotNullAndTrue() && SuppliedInput == projectVersion)
+            if (withBaseline)
             {
-                // Fallback version is used when the current branch cannot be found on the dashboard for the baseline feature. Thus fallback needs to be another version
-                throw new InputException("Fallback version cannot be set to the same value as the current project version, please provide a different fallback version");
+                if(SuppliedInput is null)
+                {
+                    return sinceTarget;
+                }
+
+                return SuppliedInput;
             }
 
-            return SuppliedInput;
+            return Default;
         }
     }
 }

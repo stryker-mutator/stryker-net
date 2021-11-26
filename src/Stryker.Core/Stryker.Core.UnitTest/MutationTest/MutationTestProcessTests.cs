@@ -84,7 +84,12 @@ namespace Stryker.Core.UnitTest.MutationTest
             var mockMutants = new Collection<Mutant>() { new() { Mutation = new Mutation() }, mutantToBeSkipped };
 
             // create mocks
-            var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict);
+            var options = new StrykerOptions()
+            {
+                DevMode = true,
+                ExcludedMutations = new Mutator[] { }
+            };
+            var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict, options);
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             var coverageAnalyzerMock = new Mock<ICoverageAnalyser>(MockBehavior.Strict);
@@ -93,12 +98,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
-            var options = new StrykerOptions()
-            {
-                DevMode = true,
-                ExcludedMutations = new Mutator[] { }
-            };
-
+ 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
                 mutationTestExecutorMock.Object,
@@ -166,7 +166,13 @@ namespace Stryker.Core.UnitTest.MutationTest
             var mockMutants = new Collection<Mutant>() { new Mutant() { Mutation = new Mutation() }, mutantToBeSkipped, compileErrorMutant };
 
             // create mocks
-            var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict);
+            var options = new StrykerOptions()
+            {
+                DevMode = true,
+                ExcludedMutations = new Mutator[] { }
+            };
+
+            var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict, options);
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Strict);
@@ -183,11 +189,6 @@ namespace Stryker.Core.UnitTest.MutationTest
                 .Callback<IEnumerable<Mutant>, ReadOnlyFileLeaf, StrykerOptions>((mutants, _, __) => mutantsPassedToFilter = mutants)
                 .Returns((IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions o) => mutants.Take(1));
 
-            var options = new StrykerOptions()
-            {
-                DevMode = true,
-                ExcludedMutations = new Mutator[] { }
-            };
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
@@ -250,10 +251,11 @@ namespace Stryker.Core.UnitTest.MutationTest
                 },
                 AssemblyReferences = _assemblies
             };
-            var mockMutants = new Collection<Mutant>() { new Mutant() { Mutation = new Mutation() } };
+            var mockMutants = new Collection<Mutant>() { new() { Mutation = new Mutation() } };
 
             // create mocks
-            var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict);
+            var options = new StrykerOptions();
+            var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict, options);
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             var coverageAnalyzerMock = new Mock<ICoverageAnalyser>(MockBehavior.Strict);
@@ -266,7 +268,6 @@ namespace Stryker.Core.UnitTest.MutationTest
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ReadOnlyProjectComponent>()));
 
-            var options = new StrykerOptions();
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
                 mutationTestExecutorMock.Object,

@@ -70,6 +70,7 @@ namespace Stryker.Core.Mutants
                 new PropertyDeclarationOrchestrator(),
                 new ArrayInitializerOrchestrator(),
                 new LocalFunctionStatementOrchestrator(),
+                new AnonymousFunctionExpressionOrchestrator(),
                 new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>(),
                 new AccessorSyntaxOrchestrator(),
                 new LocalDeclarationOrchestrator(),

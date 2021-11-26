@@ -68,6 +68,17 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
     		    }}";
 
             ShouldMutateSourceToExpected(source, expected);
+
+            source = @"private int Move()
+			{
+				;
+			}";
+            expected = @"private int Move()
+    {if(StrykerNamespace.MutantControl.IsActive(1)){}else		    {
+    			    ;
+    		    } return default(int);}";
+
+            ShouldMutateSourceToExpected(source, expected);
         }
 
         [Theory]
@@ -108,7 +119,7 @@ string Value {get => Out(out var x)? ""empty"": """";}
 static TestClass(){}}";
 
             var expected = @"class Test {
-string Value {get {if(StrykerNamespace.MutantControl.IsActive(0)){return!(Out(out var x))? ""empty"": """";}else{return Out(out var x)? (StrykerNamespace.MutantControl.IsActive(1)?"""":""empty""): (StrykerNamespace.MutantControl.IsActive(2)?""Stryker was here!"":"""");}}}
+string Value {get {if(StrykerNamespace.MutantControl.IsActive(0)){return!(Out(out var x))? ""empty"": """";}else{return Out(out var x)? (StrykerNamespace.MutantControl.IsActive(1)?"""":""empty""): (StrykerNamespace.MutantControl.IsActive(2)?""Stryker was here!"":"""");}return default(string);}}
 static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
 
             ShouldMutateSourceToExpected(source, expected);

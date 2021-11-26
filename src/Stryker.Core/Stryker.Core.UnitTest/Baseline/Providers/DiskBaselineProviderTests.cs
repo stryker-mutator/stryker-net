@@ -23,10 +23,10 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             var sut = new DiskBaselineProvider(options, fileSystemMock);
 
             // Act
-            await sut.Save(JsonReport.Build(options, JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent()), "version");
+            await sut.Save(JsonReport.Build(options, JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent()), "baseline/version");
 
             // Assert
-            var path = FilePathUtils.NormalizePathSeparators(@"C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/Baselines/version/stryker-report.json");
+            var path = FilePathUtils.NormalizePathSeparators(@"C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/baseline/version/stryker-report.json");
 
             MockFileData file = fileSystemMock.GetFile(path);
             file.ShouldNotBeNull();
@@ -57,12 +57,12 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             };
             var report = JsonReport.Build(options, JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
 
-            fileSystemMock.AddFile("C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/Baselines/version/stryker-report.json", report.ToJson());
+            fileSystemMock.AddFile("C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/baseline/version/stryker-report.json", report.ToJson());
 
             var target = new DiskBaselineProvider(options, fileSystemMock);
 
             // Act
-            var result = await target.Load("version");
+            var result = await target.Load("baseline/version");
 
             // Assert
             result.ShouldNotBeNull();

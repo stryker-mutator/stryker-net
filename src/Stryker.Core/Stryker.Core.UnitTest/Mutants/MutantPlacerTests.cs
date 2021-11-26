@@ -126,10 +126,22 @@ namespace Stryker.Core.UnitTest.Mutants
         }
 
         [Theory]
-        [InlineData("public int X { get => 1;}", "public int X { get {return 1;}}")]
-        [InlineData("public int X { get => 1; set { }}", "public int X { get {return 1;} set { }}")]
-        [InlineData("public int X { set => value++;}", "public int X { set { value++;}}")]
+        [InlineData("() => Call(2)","() => {return Call(2);}")]
+        [InlineData("(x) => Call(2)","(x) => {return Call(2);}")]
+        [InlineData("x => Call(2)","x => {return Call(2);}")]
+        [InlineData("(out x) => Call(out x)","(out x) => {return Call(out x);}")]
+        [InlineData("(x, y) => Call(2)","(x, y) => {return Call(2);}")]
         public void ShouldConvertAccessorExpressionBodyBackAndForth(string original, string injected)
+        {
+            var source = $"class Test {{ private void Any(){{ Register({original});}}}}";
+            var expectedCode = $"class Test {{ private void Any(){{ Register({injected});}}}}";
+
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<AnonymousFunctionExpressionSyntax>(source, expectedCode, MutantPlacer.ConvertExpressionToBody);
+        }
+
+        [Theory]
+        [InlineData("public int X { get => 1;}", "public int X { get {return 1;}}")]
+        public void ShouldConvertAnonymousFunctionExpressionBodyBackAndForth(string original, string injected)
         {
             var source = $"class Test {{{original}}}";
             var expectedCode = $"class Test {{{injected}}}";

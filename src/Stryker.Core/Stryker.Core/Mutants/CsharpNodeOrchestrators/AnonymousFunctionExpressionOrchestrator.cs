@@ -1,32 +1,18 @@
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 {
-    /// <summary>
-    /// Handles Methods/properties' accessors/constructors and finalizers.
-    /// </summary>
-    /// <typeparam name="T">Type of the syntax node, must be derived from <see cref="BaseMethodDeclarationSyntax"/>.</typeparam>
-    internal class BaseMethodDeclarationOrchestrator<T> : NodeSpecificOrchestrator<T, BaseMethodDeclarationSyntax> where T : BaseMethodDeclarationSyntax
+    internal class AnonymousFunctionExpressionOrchestrator : NodeSpecificOrchestrator<AnonymousFunctionExpressionSyntax, AnonymousFunctionExpressionSyntax>
     {
-        protected override MutationContext PrepareContext(T node, MutationContext context)
-        {
-            context.Enter(MutationControl.Block);
-            return base.PrepareContext(node, context);
-        }
-
-        protected override void RestoreContext(MutationContext context) => context.Leave(MutationControl.Block);
-
-        /// <inheritdoc/>
-        /// Inject mutations and convert expression body to block body if required.
-        protected override BaseMethodDeclarationSyntax InjectMutations(T sourceNode, BaseMethodDeclarationSyntax targetNode,
-            MutationContext context)
+        protected override AnonymousFunctionExpressionSyntax InjectMutations(AnonymousFunctionExpressionSyntax sourceNode,
+            AnonymousFunctionExpressionSyntax targetNode, MutationContext context)
         {
             targetNode = base.InjectMutations(sourceNode, targetNode, context);
 
-            if (targetNode.Body == null)
+            if (targetNode.Block == null)
             {
                 if (targetNode.ExpressionBody == null)
                 {
@@ -47,8 +33,8 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 
                 // we need to inject pending block (and statement) level mutations
                 targetNode = targetNode.WithBody(
-                    SyntaxFactory.Block(context.InjectBlockLevelExpressionMutation(targetNode.Body,
-                        sourceNode.ExpressionBody?.Expression, sourceNode.NeedsReturn())));
+                    SyntaxFactory.Block(context.InjectBlockLevelExpressionMutation(targetNode.Block,
+                        sourceNode.ExpressionBody, true)));
             }
             else
             {
@@ -56,10 +42,23 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                 targetNode = MutantPlacer.AddEndingReturn(targetNode);
             }
 
+            if (targetNode is SimpleLambdaExpressionSyntax lambdaExpression && lambdaExpression.Parameter.Modifiers.Any(m => m.Kind() == SyntaxKind.OutKeyword))
+            {
+                targetNode = targetNode.WithBody(MutantPlacer.AddDefaultInitializers(targetNode.Block, new List<ParameterSyntax>{lambdaExpression.Parameter}));
+            }
+            else if (targetNode is ParenthesizedLambdaExpressionSyntax parenthesizedLambda)
             // inject initialization to default for all out parameters
-            targetNode = targetNode.WithBody(MutantPlacer.AddDefaultInitializers(targetNode.Body, sourceNode.ParameterList.Parameters.Where(p =>
+            {
+                targetNode = targetNode.WithBody(MutantPlacer.AddDefaultInitializers(targetNode.Block, parenthesizedLambda.ParameterList.Parameters.Where(p =>
                 p.Modifiers.Any(m => m.Kind() == SyntaxKind.OutKeyword))));
+            }
             return targetNode;
+        }
+
+        protected override MutationContext PrepareContext(AnonymousFunctionExpressionSyntax node, MutationContext context)
+        {
+            context.Enter(MutationControl.Block);
+            return base.PrepareContext(node, context);
         }
     }
 }

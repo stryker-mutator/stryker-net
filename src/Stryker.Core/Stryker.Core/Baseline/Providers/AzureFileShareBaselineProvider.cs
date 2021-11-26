@@ -14,7 +14,6 @@ namespace Stryker.Core.Baseline.Providers
     public class AzureFileShareBaselineProvider : IBaselineProvider
     {
         private const string DefaultOutputDirectoryName = "StrykerOutput";
-        private const string BaselinesDirectoryName = "Baselines";
 
         private readonly StrykerOptions _options;
         private readonly HttpClient _httpClient;
@@ -27,11 +26,7 @@ namespace Stryker.Core.Baseline.Providers
             _httpClient = httpClient ?? new HttpClient();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<AzureFileShareBaselineProvider>();
 
-            _outputPath = $"{DefaultOutputDirectoryName}/{BaselinesDirectoryName}";
-            if (!string.IsNullOrWhiteSpace(options.ProjectName))
-            {
-                _outputPath = $"{options.ProjectName}/{BaselinesDirectoryName}";
-            }
+            _outputPath = string.IsNullOrWhiteSpace(options.ProjectName) ? DefaultOutputDirectoryName : $"{DefaultOutputDirectoryName}/{options.ProjectName}";
         }
 
         public async Task<JsonReport> Load(string version)
@@ -69,7 +64,7 @@ namespace Stryker.Core.Baseline.Providers
 
             if (existingReport == null)
             {
-                var successfullyCreatedDirectories = await CreateDirectories(fileUrl);
+                var successfullyCreatedDirectories = await CreateDirectoriesAsync(fileUrl);
 
                 if (!successfullyCreatedDirectories)
                 {
@@ -78,7 +73,7 @@ namespace Stryker.Core.Baseline.Providers
             }
 
             // If the file already exists, this replaces the existing file. Does not add content to the file
-            var successfullyAllocated = await AllocateFileLocation(byteSize, fileUrl);
+            var successfullyAllocated = await AllocateFileLocationAsync(byteSize, fileUrl);
 
             if (!successfullyAllocated)
             {
@@ -86,12 +81,12 @@ namespace Stryker.Core.Baseline.Providers
             }
 
             // This adds the content to the file
-            await UploadFile(reportJson, byteSize, url);
+            await UploadFileAsync(reportJson, byteSize, url);
 
             _logger.LogDebug("Baseline report has been saved to {0}", fileUrl);
         }
 
-        private async Task<bool> CreateDirectories(string fileUrl)
+        private async Task<bool> CreateDirectoriesAsync(string fileUrl)
         {
             _logger.LogDebug("Creating directories for file {0}", fileUrl);
 
@@ -104,7 +99,7 @@ namespace Stryker.Core.Baseline.Providers
             {
                 currentDirectory.Append($"{segment}/");
 
-                if (!await CreateDirectory(currentDirectory.ToString()))
+                if (!await CreateDirectoryAsync(currentDirectory.ToString()))
                 {
                     return false;
                 }
@@ -113,7 +108,7 @@ namespace Stryker.Core.Baseline.Providers
             return true;
         }
 
-        private async Task<bool> CreateDirectory(string fileUrl)
+        private async Task<bool> CreateDirectoryAsync(string fileUrl)
         {
             _logger.LogDebug("Creating directory {0}", fileUrl);
 
@@ -140,7 +135,7 @@ namespace Stryker.Core.Baseline.Providers
             return false;
         }
 
-        private async Task<bool> AllocateFileLocation(int byteSize, string fileUrl)
+        private async Task<bool> AllocateFileLocationAsync(int byteSize, string fileUrl)
         {
             _logger.LogDebug("Allocating storage for file {0}", fileUrl);
 
@@ -168,7 +163,7 @@ namespace Stryker.Core.Baseline.Providers
             }
         }
 
-        private async Task UploadFile(string report, int byteSize, Uri uploadUri)
+        private async Task UploadFileAsync(string report, int byteSize, Uri uploadUri)
         {
             _logger.LogDebug("Uploading file to azure file storage");
 
@@ -202,9 +197,7 @@ namespace Stryker.Core.Baseline.Providers
             requestMessage.Headers.Add("x-ms-file-last-write-time", "now");
         }
 
-        private string ToSafeResponseMessage(string responseMessage)
-        {
-            return responseMessage.Replace(_options.AzureFileStorageUrl, "xxxxxxxxxx").Replace(_options.AzureFileStorageSas, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-        }
+        private string ToSafeResponseMessage(string responseMessage) =>
+            responseMessage.Replace(_options.AzureFileStorageUrl, "xxxxxxxxxx").Replace(_options.AzureFileStorageSas, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
     }
 }
