@@ -12,7 +12,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public static void ShouldHaveName()
         {
-            var target = new ExcludeMutationMutantFilter() as IMutantFilter;
+            var target = new IgnoreMutationMutantFilter() as IMutantFilter;
             target.DisplayName.ShouldBe("mutation type filter");
         }
 
@@ -30,7 +30,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 }
             };
 
-            var sut = new ExcludeMutationMutantFilter();
+            var sut = new IgnoreMutationMutantFilter();
 
             var options = new StrykerOptions
             {

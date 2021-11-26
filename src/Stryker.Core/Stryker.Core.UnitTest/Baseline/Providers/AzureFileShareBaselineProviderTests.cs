@@ -49,9 +49,9 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
 
             var target = new AzureFileShareBaselineProvider(options, httpClient: httpClient);
 
-            var result = await target.Load("project_version");
+            var result = await target.Load("baseline/project_version");
 
-            var expectedUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/Baselines/project_version/stryker-report.json?sv=AZURE_SAS_KEY");
+            var expectedUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/baseline/project_version/stryker-report.json?sv=AZURE_SAS_KEY");
 
             handlerMock
                 .Protected()
@@ -83,13 +83,13 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
 
             var jsonReport = JsonReport.Build(options, readonlyInputComponent);
 
-            var expectedGetUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/Baselines/project_version/stryker-report.json?sv=AZURE_SAS_KEY");
+            var expectedGetUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/baseline/project_version/stryker-report.json?sv=AZURE_SAS_KEY");
 
-            var expectedCreateDirectoryUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/Baselines/project_version?restype=directory&sv=AZURE_SAS_KEY");
+            var expectedCreateDirectoryUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/baseline/project_version?restype=directory&sv=AZURE_SAS_KEY");
 
-            var expectedFileAllocationUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/Baselines/project_version/stryker-report.json?sv=AZURE_SAS_KEY");
+            var expectedFileAllocationUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/baseline/project_version/stryker-report.json?sv=AZURE_SAS_KEY");
 
-            var expectedUploadContentUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/Baselines/project_version/stryker-report.json?comp=range&sv=AZURE_SAS_KEY");
+            var expectedUploadContentUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/baseline/project_version/stryker-report.json?comp=range&sv=AZURE_SAS_KEY");
 
             handlerMock
                 .Protected()
@@ -132,7 +132,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
 
             var target = new AzureFileShareBaselineProvider(options, new HttpClient(handlerMock.Object));
 
-            await target.Save(jsonReport, "project_version");
+            await target.Save(jsonReport, "baseline/project_version");
 
             // assert
             handlerMock
@@ -185,7 +185,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
         {
             // arrange
             var projectName = "my-project-name";
-            var projectVersion = "my-project-version";
+            var projectVersion = "baseline/my-project-version";
 
             var options = new StrykerOptions
             {
@@ -201,15 +201,16 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
 
             var jsonReport = JsonReport.Build(options, readonlyInputComponent);
 
-            var expectedGetUri = new Uri($"https://www.filestoragelocation.com/{projectName}/Baselines/{projectVersion}/stryker-report.json?sv=AZURE_SAS_KEY");
+            var expectedGetUri = new Uri($"https://www.filestoragelocation.com/StrykerOutput/{projectName}/{projectVersion}/stryker-report.json?sv=AZURE_SAS_KEY");
 
-            var expectedCreateProjectOutputDirectoryUri = new Uri($"https://www.filestoragelocation.com/{projectName}/?restype=directory&sv=AZURE_SAS_KEY");
-            var expectedCreateBaselinesDirectoryUri = new Uri($"https://www.filestoragelocation.com/{projectName}/Baselines/?restype=directory&sv=AZURE_SAS_KEY");
-            var expectedCreateVersionDirectoryUri = new Uri($"https://www.filestoragelocation.com/{projectName}/Baselines/{projectVersion}/?restype=directory&sv=AZURE_SAS_KEY");
+            var expectedCreateOutputDirectoryUri = new Uri($"https://www.filestoragelocation.com/StrykerOutput/?restype=directory&sv=AZURE_SAS_KEY");
+            var expectedCreateProjectOutputDirectoryUri = new Uri($"https://www.filestoragelocation.com/StrykerOutput/{projectName}/?restype=directory&sv=AZURE_SAS_KEY");
+            var expectedCreateBaselinesDirectoryUri = new Uri($"https://www.filestoragelocation.com/StrykerOutput/{projectName}/baseline/?restype=directory&sv=AZURE_SAS_KEY");
+            var expectedCreateVersionDirectoryUri = new Uri($"https://www.filestoragelocation.com/StrykerOutput/{projectName}/{projectVersion}/?restype=directory&sv=AZURE_SAS_KEY");
 
-            var expectedFileAllocationUri = new Uri($"https://www.filestoragelocation.com/{projectName}/Baselines/{projectVersion}/stryker-report.json?sv=AZURE_SAS_KEY");
+            var expectedFileAllocationUri = new Uri($"https://www.filestoragelocation.com/StrykerOutput/{projectName}/{projectVersion}/stryker-report.json?sv=AZURE_SAS_KEY");
 
-            var expectedUploadContentUri = new Uri($"https://www.filestoragelocation.com/{projectName}/Baselines/{projectVersion}/stryker-report.json?comp=range&sv=AZURE_SAS_KEY");
+            var expectedUploadContentUri = new Uri($"https://www.filestoragelocation.com/StrykerOutput/{projectName}/{projectVersion}/stryker-report.json?comp=range&sv=AZURE_SAS_KEY");
 
             handlerMock
                 .Protected()
@@ -224,6 +225,17 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
                 })
                 .Verifiable();
 
+            handlerMock
+                .Protected()
+                .Setup<Task<HttpResponseMessage>>(
+                "SendAsync",
+                ItExpr.Is<HttpRequestMessage>(requestMessage => requestMessage.RequestUri == expectedCreateOutputDirectoryUri && requestMessage.Method == HttpMethod.Put),
+                ItExpr.IsAny<CancellationToken>())
+                .ReturnsAsync(new HttpResponseMessage()
+                {
+                    StatusCode = System.Net.HttpStatusCode.Created
+                })
+                .Verifiable();
             handlerMock
                 .Protected()
                 .Setup<Task<HttpResponseMessage>>(
@@ -292,10 +304,10 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
         }
 
         [Theory]
-        [InlineData("2.0.0")]
-        [InlineData("2.0.0-beta001")]
-        [InlineData("master")]
-        [InlineData("project_version")]
+        [InlineData("baseline/2.0.0")]
+        [InlineData("baseline/2.0.0-beta001")]
+        [InlineData("baseline/master")]
+        [InlineData("baseline/project_version")]
         public async Task Save_Calls_CreateDictionary_And_AllocateFileLocation_When_Baseline_Does_Not_Exists(string version)
         {
             // arrange
@@ -311,15 +323,15 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
 
             var jsonReport = JsonReport.Build(options, readonlyInputComponent);
 
-            var expectedGetUri = new Uri($"https://www.filestoragelocation.com/StrykerOutput/Baselines/{version}/stryker-report.json?sv=AZURE_SAS_KEY");
+            var expectedGetUri = new Uri($"https://www.filestoragelocation.com/StrykerOutput/{version}/stryker-report.json?sv=AZURE_SAS_KEY");
 
             var expectedCreateStrykerOutputDirectoryUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/?restype=directory&sv=AZURE_SAS_KEY");
-            var expectedCreateBaselinesDirectoryUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/Baselines/?restype=directory&sv=AZURE_SAS_KEY");
-            var expectedCreateVersionDirectoryUri = new Uri($"https://www.filestoragelocation.com/StrykerOutput/Baselines/{version}/?restype=directory&sv=AZURE_SAS_KEY");
+            var expectedCreateBaselinesDirectoryUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/baseline/?restype=directory&sv=AZURE_SAS_KEY");
+            var expectedCreateVersionDirectoryUri = new Uri($"https://www.filestoragelocation.com/StrykerOutput/{version}/?restype=directory&sv=AZURE_SAS_KEY");
 
-            var expectedFileAllocationUri = new Uri($"https://www.filestoragelocation.com/StrykerOutput/Baselines/{version}/stryker-report.json?sv=AZURE_SAS_KEY");
+            var expectedFileAllocationUri = new Uri($"https://www.filestoragelocation.com/StrykerOutput/{version}/stryker-report.json?sv=AZURE_SAS_KEY");
 
-            var expectedUploadContentUri = new Uri($"https://www.filestoragelocation.com/StrykerOutput/Baselines/{version}/stryker-report.json?comp=range&sv=AZURE_SAS_KEY");
+            var expectedUploadContentUri = new Uri($"https://www.filestoragelocation.com/StrykerOutput/{version}/stryker-report.json?comp=range&sv=AZURE_SAS_KEY");
 
             handlerMock
                 .Protected()

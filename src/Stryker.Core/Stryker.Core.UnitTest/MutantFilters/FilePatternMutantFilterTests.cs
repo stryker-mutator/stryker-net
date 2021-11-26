@@ -17,7 +17,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public static void ShouldHaveName()
         {
             var target = new FilePatternMutantFilter(new StrykerOptions()) as IMutantFilter;
-            target.DisplayName.ShouldBe("file filter");
+            target.DisplayName.ShouldBe("mutate filter");
         }
 
         [Theory]

@@ -18,7 +18,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
-    public class DashboardMutantFilterTests : TestBase
+    public class BaselineMutantFilterTests : TestBase
     {
         [Fact]
         public static void ShouldHaveName()
@@ -29,16 +29,17 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var baselineMutantHelperMock = new Mock<IBaselineMutantHelper>(MockBehavior.Loose);
 
             // Act
-            var target = new DashboardMutantFilter(new StrykerOptions(), baselineProviderMock.Object, gitInfoProvider.Object, baselineMutantHelperMock.Object) as IMutantFilter;
+            var target = new BaselineMutantFilter(new StrykerOptions(), baselineProviderMock.Object, gitInfoProvider.Object, baselineMutantHelperMock.Object) as IMutantFilter;
 
             // Assert
-            target.DisplayName.ShouldBe("dashboard filter");
+            target.DisplayName.ShouldBe("baseline filter");
         }
 
         [Fact]
-        public void GetBaselineCallsFallbackWhenDashboardClientReturnsNull()
+        public void GetBaseline_UsesBaselineFallbackVersion_WhenReportForCurrentVersionNotFound()
         {
             // Arrange
+            var branchName = "refs/heads/master";
             var baselineProvider = new Mock<IBaselineProvider>();
             var gitInfoProvider = new Mock<IGitInfoProvider>();
             var baselineMutantHelperMock = new Mock<IBaselineMutantHelper>();
@@ -57,23 +58,64 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var jsonReport = JsonReport.Build(options, inputComponent);
 
-            gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns("refs/heads/master");
+            gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns(branchName);
 
-            baselineProvider.Setup(x => x.Load("dashboard-compare/refs/heads/master")).Returns(Task.FromResult<JsonReport>(null));
-            baselineProvider.Setup(x => x.Load("fallback/version")).Returns(Task.FromResult(jsonReport));
+            baselineProvider.Setup(x => x.Load($"baseline/{branchName}")).Returns(Task.FromResult<JsonReport>(null));
+            baselineProvider.Setup(x => x.Load($"baseline/{options.FallbackVersion}")).Returns(Task.FromResult(jsonReport));
 
             // Act
-            var target = new DashboardMutantFilter(options, baselineProvider.Object, gitInfoProvider.Object);
+            var target = new BaselineMutantFilter(options, baselineProvider.Object, gitInfoProvider.Object);
 
             // Assert
-            baselineProvider.Verify(x => x.Load("dashboard-compare/refs/heads/master"), Times.Once);
-            baselineProvider.Verify(x => x.Load("fallback/version"), Times.Once);
+            baselineProvider.Verify(x => x.Load($"baseline/{branchName}"), Times.Once);
+            baselineProvider.Verify(x => x.Load($"baseline/{options.FallbackVersion}"), Times.Once);
+            baselineProvider.VerifyNoOtherCalls();
         }
 
         [Fact]
-        public void GetBaselineDoesNotCallFallbackWhenDashboardClientReturnsReport()
+        public void GetBaseline_UsesFallbackVersion_WhenBaselineFallbackVersionNotFound()
         {
             // Arrange
+            var branchName = "refs/heads/master";
+            var baselineProvider = new Mock<IBaselineProvider>();
+            var gitInfoProvider = new Mock<IGitInfoProvider>();
+            var baselineMutantHelperMock = new Mock<IBaselineMutantHelper>();
+
+            var options = new StrykerOptions()
+            {
+                WithBaseline = true,
+                DashboardApiKey = "Acces_Token",
+                ProjectName = "github.com/JohnDoe/project",
+                ProjectVersion = "version/human/readable",
+                Reporters = new[] { Reporter.Dashboard },
+                FallbackVersion = "fallback/version"
+            };
+
+            var inputComponent = new Mock<IReadOnlyProjectComponent>().Object;
+
+            var jsonReport = JsonReport.Build(options, inputComponent);
+
+            gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns(branchName);
+
+            baselineProvider.Setup(x => x.Load(branchName)).Returns(Task.FromResult<JsonReport>(null));
+            baselineProvider.Setup(x => x.Load($"baseline/{options.FallbackVersion}")).Returns(Task.FromResult<JsonReport>(null));
+            baselineProvider.Setup(x => x.Load(options.FallbackVersion)).Returns(Task.FromResult(jsonReport));
+
+            // Act
+            var target = new BaselineMutantFilter(options, baselineProvider.Object, gitInfoProvider.Object);
+
+            // Assert
+            baselineProvider.Verify(x => x.Load($"baseline/{branchName}"), Times.Once);
+            baselineProvider.Verify(x => x.Load($"baseline/{options.FallbackVersion}"), Times.Once);
+            baselineProvider.Verify(x => x.Load(options.FallbackVersion), Times.Once);
+            baselineProvider.VerifyNoOtherCalls();
+        }
+
+        [Fact]
+        public void GetBaseline_UsesCurrentVersionReport_IfReportExists()
+        {
+            // Arrange
+            var branchName = "refs/heads/master";
             var baselineProvider = new Mock<IBaselineProvider>();
             var gitInfoProvider = new Mock<IGitInfoProvider>();
 
@@ -91,16 +133,17 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var jsonReport = JsonReport.Build(options, inputComponent);
 
-            gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns("refs/heads/master");
+            gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns(branchName);
 
-            baselineProvider.Setup(x => x.Load("dashboard-compare/refs/heads/master")).Returns(Task.FromResult(jsonReport));
+            baselineProvider.Setup(x => x.Load($"baseline/{branchName}")).Returns(Task.FromResult(jsonReport));
 
             // Act
-            var target = new DashboardMutantFilter(options, gitInfoProvider: gitInfoProvider.Object, baselineProvider: baselineProvider.Object);
+            var target = new BaselineMutantFilter(options, gitInfoProvider: gitInfoProvider.Object, baselineProvider: baselineProvider.Object);
 
             // Assert
-            baselineProvider.Verify(x => x.Load("dashboard-compare/refs/heads/master"), Times.Once);
-            baselineProvider.Verify(x => x.Load("fallback/version"), Times.Never);
+            baselineProvider.Verify(x => x.Load($"baseline/{branchName}"), Times.Once);
+            baselineProvider.Verify(x => x.Load($"baseline/{options.FallbackVersion}"), Times.Never);
+            baselineProvider.VerifyNoOtherCalls();
         }
 
         [Fact]
@@ -116,7 +159,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 ProjectVersion = "version",
             };
 
-            var target = new DashboardMutantFilter(options, baselineProvider.Object, branchProvider.Object);
+            var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object);
 
             var file = new Mock<ReadOnlyFileLeaf>(new CsharpFileLeaf());
 
@@ -178,7 +221,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             baselineMutantHelper.Setup(mock => mock.GetMutantSourceCode(It.IsAny<string>(), It.IsAny<JsonMutant>())).Returns(string.Empty);
 
             // Act
-            var target = new DashboardMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
+            var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
 
             var results = target.FilterMutants(mutants, file, options);
 
@@ -240,7 +283,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 It.Is<string>(source => source == "var foo = \"bar\";"))).Returns(mutants).Verifiable();
 
             // Act
-            var target = new DashboardMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
+            var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
 
             var results = target.FilterMutants(mutants, file, options);
 
@@ -307,7 +350,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 It.Is<string>(source => source == "var foo = \"bar\";"))).Returns(mutants).Verifiable();
 
             // Act
-            var target = new DashboardMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
+            var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
 
             var results = target.FilterMutants(mutants, file, options);
 
@@ -360,7 +403,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             baselineProvider.Setup(mock => mock.Load(It.IsAny<string>())).Returns(Task.FromResult((JsonReport)baseline));
 
             // Act
-            var target = new DashboardMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
+            var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);
 
             var results = target.FilterMutants(mutants, file, options);
 

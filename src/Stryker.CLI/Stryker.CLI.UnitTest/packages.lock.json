@@ -123,8 +123,8 @@
       },
       "Crayon": {
         "type": "Transitive",
-        "resolved": "2.0.62",
-        "contentHash": "cOICpzQn826x1SxSmxkweztCXHP1HcHP/VZJ55izMEpLyiS9l6sMk2Hx7m666ndQcEZ5COVyuvVRgbMUEcdEnw=="
+        "resolved": "2.0.64",
+        "contentHash": "/HvVrtMTaZ4nm3xYGkNFfRiPLoqRuQQgZIlyYUCn9fQa2UlT6PA/xoGJFaV2S8ogz/LoTdq6Wi2Qi7DddF1JSg=="
       },
       "DiffEngine": {
         "type": "Transitive",
@@ -794,8 +794,8 @@
       },
       "Serilog.Sinks.Console": {
         "type": "Transitive",
-        "resolved": "4.0.0",
-        "contentHash": "yJQit9sTJ4xGLKgCujqDJsaGqBNJwGB/H898z+xYlMG06twy4//6LLnSrsmpduZxcHIG4im7cv+JmXLzXz2EkQ==",
+        "resolved": "4.0.1",
+        "contentHash": "apLOvSJQLlIbKlbx+Y2UDHSP05kJsV7mou+fvJoRGs/iR+jC22r8cuFVMjjfVxz/AD4B2UCltFhE1naRLXwKNw==",
         "dependencies": {
           "Serilog": "2.10.0"
         }
@@ -1840,14 +1840,14 @@
           "McMaster.Extensions.CommandLineUtils": "3.1.0",
           "Microsoft.Extensions.Configuration.Binder": "6.0.0",
           "NuGet.Versioning": "5.11.0",
-          "stryker": "1.0.1"
+          "stryker": "1.1.0"
         }
       },
       "stryker": {
         "type": "Project",
         "dependencies": {
           "Buildalyzer": "3.2.3",
-          "Crayon": "2.0.62",
+          "Crayon": "2.0.64",
           "DotNet.Glob": "3.1.3",
           "FSharp.Compiler.Service": "38.0.0",
           "LibGit2Sharp": "0.27.0-preview-0116",
@@ -1864,10 +1864,10 @@
           "Serilog": "2.10.0",
           "Serilog.Extensions.Logging": "3.1.0",
           "Serilog.Extensions.Logging.File": "2.0.0",
-          "Serilog.Sinks.Console": "4.0.0",
+          "Serilog.Sinks.Console": "4.0.1",
           "ShellProgressBar": "5.1.0",
-          "Stryker.DataCollector": "1.0.0",
-          "Stryker.RegexMutators": "1.0.0",
+          "Stryker.DataCollector": "1.1.0",
+          "Stryker.RegexMutators": "1.1.0",
           "System.IO.Abstractions": "13.2.47",
           "System.Net.Http.Json": "6.0.0"
         }
