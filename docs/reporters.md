@@ -39,9 +39,25 @@ dotnet stryker --reporter "dashboard"
 
 The following options are relevant when using the dashboard reporter:
 - [Api key](./configuration.md#dashboard-api-key-string) - required
-- [Project name](./configuration.md#project-infoname-string) - required
-- [Project version](./configuration.md#project-infoversion-string) - required
+- [Project name](./configuration.md#project-infoname-string) - required (unless using SourceLink)
+- [Project version](./configuration.md#project-infoversion-string) - required (unless using SourceLink)
 - [Project module](./configuration.md#project-infomodule-string) - optional
+
+## Use SourceLink for dashboard reporter​
+
+Filling all settings to use the dashboard reporter can be a bit of a hassle. However, thanks to [SourceLink](https://github.com/dotnet/sourcelink#readme), the repository URL and the full version (including the git SHA1) of a project can be included in the produced assembly.
+
+Stryker uses the information computed by SourceLink to automatically retrieve the project name (github.com/organization/project) and project version, both of which are requirements for the dashboard reporter.
+
+Enable this by adding the following to your `.csproj` or `Directory.Build.props` to enable in all your projects:
+
+``` xml
+  <ItemGroup>
+    <PackageReference Include="DotNet.ReproducibleBuilds" Version="0.1.66" PrivateAssets="All"/>
+  </ItemGroup>
+```
+
+For more information on SourceLink and ReproducibleBuilds see SourceLink and Dotnet.ReproducibleBuilds
 
 # Cleartext reporter
 It displays all files right after the mutation testrun is done. Ideal for a quick run, as it leaves no file on your system.
