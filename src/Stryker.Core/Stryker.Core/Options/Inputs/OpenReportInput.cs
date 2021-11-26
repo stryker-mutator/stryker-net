@@ -7,8 +7,8 @@ namespace Stryker.Core.Options.Inputs
 {
     public enum ReportType
     {
-        None,
-        Html
+        Html,
+        Dashboard
     }
 
     public class OpenReportInput : Input<string>
@@ -19,7 +19,7 @@ namespace Stryker.Core.Options.Inputs
 
         protected override IEnumerable<string> AllowedOptions => Enum.GetNames(typeof(ReportType));
 
-        public ReportType Validate(bool enabled)
+        public ReportType? Validate(bool enabled)
         {
             if (enabled)
             {
@@ -35,12 +35,12 @@ namespace Stryker.Core.Options.Inputs
                     }
                     else
                     {
-                        throw new InputException($"The given report type ({SuppliedInput}) is invalid. Valid options are: [{string.Join(", ", ((IEnumerable<ReportType>)Enum.GetValues(typeof(ReportType))).Where(item => item != ReportType.None))}]");
+                        throw new InputException($"The given report type ({SuppliedInput}) is invalid. Valid options are: [{string.Join(", ", (IEnumerable<ReportType>)Enum.GetValues(typeof(ReportType)))}]");
                     }
                 }
             }
 
-            return ReportType.None;
+            return null;
         }
     }
 }

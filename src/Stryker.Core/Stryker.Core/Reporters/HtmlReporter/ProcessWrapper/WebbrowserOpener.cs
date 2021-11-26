@@ -1,14 +1,16 @@
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Stryker.Core.Reporters.HtmlReporter.ProcessWrapper
 {
-    public class ProcessWrapper : IProcessWrapper
+    [ExcludeFromCodeCoverage]
+    public class WebbrowserOpener : IWebbrowserOpener
     {
-        public Process Start(string filePath)
+        public Process Open(string path)
         {
             var processInfo = new ProcessStartInfo
             {
-                FileName = filePath,
+                FileName = path,
                 UseShellExecute = true
             };
 
