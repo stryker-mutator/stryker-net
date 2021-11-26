@@ -15,7 +15,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ShouldWriteJsonToFile()
         {
-            var mockProcess = new Mock<IProcessWrapper>();
+            var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();
             var options = new StrykerOptions
             {
@@ -33,7 +33,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ShouldReplacePlaceholdersInHtmlFile()
         {
-            var mockProcess = new Mock<IProcessWrapper>();
+            var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();
             var options = new StrykerOptions
             {
@@ -56,7 +56,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ShouldContainJsonInHtmlReportFile()
         {
-            var mockProcess = new Mock<IProcessWrapper>();
+            var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();
             var options = new StrykerOptions
             {
@@ -80,7 +80,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ShouldOpenHtmlReportIfOptionIsProvided()
         {
-            var mockProcess = new Mock<IProcessWrapper>();
+            var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();
             var options = new StrykerOptions
             {
@@ -107,7 +107,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [InlineData(null)]
         public void ShouldNotOpenHtmlReportIfOptionIsProvided(ReportType? reportType)
         {
-            var mockProcess = new Mock<IProcessWrapper>();
+            var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();
             var options = new StrykerOptions
             {

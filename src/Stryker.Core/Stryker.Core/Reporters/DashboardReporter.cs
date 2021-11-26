@@ -19,16 +19,16 @@ namespace Stryker.Core.Reporters
         private readonly IDashboardClient _dashboardClient;
         private readonly ILogger<DashboardReporter> _logger;
         private readonly TextWriter _consoleWriter;
-        private readonly IProcessWrapper _processWrapper;
+        private readonly IWebbrowserOpener _processWrapper;
 
         public DashboardReporter(StrykerOptions options, IDashboardClient dashboardClient = null, ILogger<DashboardReporter> logger = null,
-            TextWriter consoleWriter = null, IProcessWrapper processWrapper = null)
+            TextWriter consoleWriter = null, IWebbrowserOpener processWrapper = null)
         {
             _options = options;
             _dashboardClient = dashboardClient ?? new DashboardClient(options);
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
             _consoleWriter = consoleWriter ?? Console.Out;
-            _processWrapper = processWrapper ?? new ProcessWrapper();
+            _processWrapper = processWrapper ?? new WebbrowserOpener();
         }
 
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)

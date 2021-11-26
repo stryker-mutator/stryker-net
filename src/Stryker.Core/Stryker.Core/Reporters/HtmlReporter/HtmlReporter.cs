@@ -17,15 +17,15 @@ namespace Stryker.Core.Reporters.Html.reporter
         private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
         private readonly TextWriter _consoleWriter;
-        private readonly IProcessWrapper _processWrapper;
+        private readonly IWebbrowserOpener _processWrapper;
 
         public HtmlReporter(StrykerOptions options, IFileSystem fileSystem = null,
-            TextWriter consoleWriter = null, IProcessWrapper processWrapper = null)
+            TextWriter consoleWriter = null, IWebbrowserOpener processWrapper = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
             _consoleWriter = consoleWriter ?? Console.Out;
-            _processWrapper = processWrapper ?? new ProcessWrapper();
+            _processWrapper = processWrapper ?? new WebbrowserOpener();
         }
 
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)

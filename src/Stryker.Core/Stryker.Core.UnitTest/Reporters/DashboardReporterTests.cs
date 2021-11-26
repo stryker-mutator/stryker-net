@@ -27,7 +27,7 @@ namespace Stryker.Core.UnitTest.Reporters
                Reporters = reporters
             };
 
-            var mockProcess = new Mock<IProcessWrapper>();
+            var mockProcess = new Mock<IWebbrowserOpener>();
             var dashboardClientMock = new Mock<IDashboardClient>();
 
             dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<JsonReport>(), "version/human/readable"));
@@ -54,7 +54,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 ProjectVersion = "version/human/readable",
                 Reporters = reporters
             };
-            var mockProcess = new Mock<IProcessWrapper>();
+            var mockProcess = new Mock<IWebbrowserOpener>();
             var dashboardClientMock = new Mock<IDashboardClient>();
 
             dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<JsonReport>(), "version/human/readable"))
@@ -83,7 +83,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 ProjectVersion = "version/human/readable",
                 Reporters = reporters
             };
-            var mockProcess = new Mock<IProcessWrapper>();
+            var mockProcess = new Mock<IWebbrowserOpener>();
             var dashboardClientMock = new Mock<IDashboardClient>();
 
             dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<JsonReport>(), "version/human/readable"))

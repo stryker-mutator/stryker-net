@@ -2,7 +2,7 @@ using System.Diagnostics;
 
 namespace Stryker.Core.Reporters.HtmlReporter.ProcessWrapper
 {
-    public interface IProcessWrapper
+    public interface IWebbrowserOpener
     {
         /// <summary>
         /// Opens a file or url in the OS default program

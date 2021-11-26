@@ -1,9 +1,8 @@
 using System.Diagnostics;
-using System.Runtime.InteropServices;
 
 namespace Stryker.Core.Reporters.HtmlReporter.ProcessWrapper
 {
-    public class ProcessWrapper : IProcessWrapper
+    public class WebbrowserOpener : IWebbrowserOpener
     {
         public Process Open(string path)
         {
