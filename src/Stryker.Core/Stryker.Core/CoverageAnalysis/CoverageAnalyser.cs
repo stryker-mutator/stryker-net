@@ -56,7 +56,7 @@ namespace Stryker.Core.CoverageAnalysis
             // force static mutants to be tested against all tests.
             if (!_options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
             {
-                foreach (var mutant in mutantsToScan.Where(mutant => mutant.IsStaticValue))
+                foreach (var mutant in mutantsToScan.Where(mutant => mutant.IsStaticValue || mutant.CannotDetermineCoverage))
                 {
                     mutant.CoveringTests = TestsGuidList.EveryTest();
                 }

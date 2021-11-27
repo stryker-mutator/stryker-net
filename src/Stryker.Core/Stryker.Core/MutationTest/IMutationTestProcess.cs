@@ -7,13 +7,17 @@ namespace Stryker.Core.MutationTest
     public class MutantDiagnostic
     {
         private IList<(MutantStatus status, IEnumerable<string> killingTests)> runResults = new List<(MutantStatus status, IEnumerable<string> killingTests)>();
-        private IEnumerable<string> coveringTests ;
 
         public IList<(MutantStatus status, IEnumerable<string> killingTests)> RunResults => runResults;
 
-        public IEnumerable<string> CoveringTests => coveringTests;
+        public IEnumerable<string> CoveringTests { get; }
+        public IEnumerable<int> MutationGroup { get; }
 
-        public MutantDiagnostic(IEnumerable<string> coveringTests) => this.coveringTests = coveringTests;
+        public MutantDiagnostic(IEnumerable<string> coveringTests, IEnumerable<int> mutationGroup)
+        {
+            CoveringTests = coveringTests;
+            MutationGroup = mutationGroup;
+        }
 
         public void DeclareResult(MutantStatus status, IEnumerable<string> killingTests) => runResults.Add((status, killingTests));
     }

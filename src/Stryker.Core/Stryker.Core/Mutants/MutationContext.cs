@@ -27,6 +27,8 @@ namespace Stryker.Core.Mutants
             _store = parent._store;
             FilteredMutators = parent.FilteredMutators;
             FilterComment = parent.FilterComment;
+            CantDetermineCoverage = parent.CantDetermineCoverage;
+            MustTestInIsolation = parent.MustTestInIsolation;
         }
 
         /// <summary>
@@ -42,7 +44,14 @@ namespace Stryker.Core.Mutants
         /// <summary>
         ///  True when inside a static initializer, fields or accessor.
         /// </summary>
-        public bool InStaticValue { get; set; }
+        public bool InStaticValue { get; set;}
+
+        /// <summary>
+        /// True if the coverage cannot be determined.
+        /// </summary>
+        public bool CantDetermineCoverage { get; set; }
+
+        public bool MustTestInIsolation { get; set; }
 
         /// <summary>
         /// True if orchestrators have to inject static usage tracing
@@ -169,6 +178,26 @@ namespace Stryker.Core.Mutants
             }
 
             return _store.PlaceBlockMutations(mutatedNode, m => wrapper(originalNode.InjectMutation(m)));
+        }
+
+        public MutationContext SetTestStrategy(bool newContext, bool forceAllTest, bool isolated)
+        {
+            var result = newContext ? new MutationContext(this) : this;
+            if (forceAllTest)
+            {
+                result.CantDetermineCoverage = true;
+            }
+            else if (isolated)
+            {
+                result.MustTestInIsolation = true;
+            }
+            else
+            {
+                result.MustTestInIsolation = false;
+                result.CantDetermineCoverage = false;
+            }
+
+            return result;
         }
 
         /// <summary>

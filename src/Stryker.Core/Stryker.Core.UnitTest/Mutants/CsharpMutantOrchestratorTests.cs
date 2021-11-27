@@ -976,6 +976,72 @@ x +2;
         }
 
         [Fact]
+        public void ShouldFlagMutantAsToTestAppartAccordingToComment()
+        {
+            string source = @"public void SomeMethod() {
+	var x = 0;
+// Stryker test apart once
+	x/=2;
+}";
+            string expected = @"public void SomeMethod() {
+	var x = 0;
+// Stryker test apart once
+if(StrykerNamespace.MutantControl.IsActive(0)){    x*=2;
+}else{    x/=2;
+}}";
+
+            ShouldMutateSourceToExpected(source, expected);
+            _target.Mutants.ShouldHaveSingleItem().MustBeTestedInIsolation.ShouldBe(true);
+        }
+
+        [Fact]
+        public void ShouldFlagMutantAsToFullyTestAccordingToComment()
+        {
+            string source = @"public void SomeMethod() {
+	var x = 0;
+// Stryker test full once
+	x/=2;
+}";
+            string expected = @"public void SomeMethod() {
+	var x = 0;
+// Stryker test full once
+if(StrykerNamespace.MutantControl.IsActive(0)){    x*=2;
+}else{    x/=2;
+}}";
+
+            ShouldMutateSourceToExpected(source, expected);
+            _target.Mutants.ShouldHaveSingleItem().MustRunAgainstAllTests.ShouldBe(true);
+        }
+
+        [Fact]
+        public void ShouldFlagMutantAsToFullyTestAccordingToBlockComment()
+        {
+            string source = @"public void SomeMethod() {
+	var x = 0;
+// Stryker test full
+	x/=2;
+// Stryker test normal
+    x-=2;
+}";
+            string expected = @"public void SomeMethod() {
+	var x = 0;
+if(StrykerNamespace.MutantControl.IsActive(0)){// Stryker test full
+	x*=2;
+}else{// Stryker test full
+	x/=2;
+}if(StrykerNamespace.MutantControl.IsActive(1)){    x+=2;
+}else{    x-=2;
+}// Stryker test normal
+}";
+
+            ShouldMutateSourceToExpected(source, expected);
+            _target.Mutants.Count.ShouldBe(2);
+
+            _target.Mutants.ElementAt(0).CannotDetermineCoverage.ShouldBeTrue();
+            _target.Mutants.ElementAt(1).CannotDetermineCoverage.ShouldBeFalse();
+        }
+
+        [Fact]
         public void ShouldMutateChainedMutations()
         {
             string source = @"public void Simple()

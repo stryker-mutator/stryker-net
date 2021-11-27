@@ -23,7 +23,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
     internal abstract class NodeSpecificOrchestrator<TNode, TBase> : INodeMutator where TBase : SyntaxNode where TNode : TBase
     {
         private static readonly Regex _pattern = new("^\\s*\\/\\/\\s*Stryker", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static readonly Regex _parser = new("^\\s*\\/\\/\\s*Stryker\\s*(disable|restore)\\s*(once|)\\s*([^:]*)\\s*:?(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
+        private static readonly Regex _parser = new("^\\s*\\/\\/\\s*Stryker\\s*((test\\s*(apart|normal|full))|(disable|restore))\\s*(once|)\\s*([^\\n:]*)\\s*:?(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
         private static readonly ILogger _logger = ApplicationLogging.LoggerFactory.CreateLogger<NodeSpecificOrchestrator<TNode, TBase>>();
 
@@ -117,19 +117,31 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 
         private static MutationContext ParseStrykerComment(MutationContext context, Match match, TNode node)
         {
-            const int ModeGroup = 1;
-            const int OnceGroup = 2;
-            const int MutatorsGroup = 3;
-            const int CommentGroup = 4;
+            const int TestControlGroup = 2;
+            const int IgnoreControlGroup = 4;
+            const int OnceGroup = 5;
+            const int CommentGroup = 7;
 
-            // get the ignore comment
+            var onlyOnce = match.Groups[OnceGroup].Value.Trim().ToLower() == "once";
             var comment = match.Groups[CommentGroup].Value.Trim();
-            if (string.IsNullOrEmpty(comment))
+
+            if (match.Groups[TestControlGroup].Success)
             {
-                comment = "Ignored via code comment.";
+                const int modeGroup = 3;
+                var mode = match.Groups[modeGroup].Value.Trim().ToLower();
+                // flag mutants as to be tested in isolation from other mutants
+                return context.SetTestStrategy(onlyOnce, mode == "full", mode == "apart");
             }
 
-            var disable = match.Groups[ModeGroup].Value.ToLower() switch
+            if (!match.Groups[IgnoreControlGroup].Success)
+            {
+                return context;
+            }
+
+            const int MutatorsGroup = 6;
+            var command = match.Groups[IgnoreControlGroup].Value.ToLower();
+            // manual ignore
+            var disable = command switch
             {
                 "disable" => true,
                 _ => false,
@@ -158,7 +170,14 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                 }
             }
 
-            return context.FilterMutators(disable, filteredMutators, match.Groups[OnceGroup].Value.ToLower() == "once", comment);
+            // get the ignore comment
+            if (string.IsNullOrEmpty(comment))
+            {
+                comment = "Ignored via code comment.";
+            }
+
+            return context.FilterMutators(disable, filteredMutators, onlyOnce, comment);
+
         }
 
         protected virtual void RestoreContext(MutationContext context) { }

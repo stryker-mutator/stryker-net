@@ -126,7 +126,7 @@ namespace Stryker.Core.UnitTest
 
             mutationTestProcessMock.SetupGet(x => x.Input).Returns(mutationTestInput);
             mutationTestProcessMock.Setup(x => x.GetCoverage());
-            var mutantDiagnostic = new MutantDiagnostic(Enumerable.Empty<string>());
+            var mutantDiagnostic = new MutantDiagnostic(Enumerable.Empty<string>(), new []{1});
             mutantDiagnostic.DeclareResult(MutantStatus.Survived, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(MutantStatus.Survived, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(MutantStatus.Survived, Enumerable.Empty<string>());
@@ -150,7 +150,7 @@ namespace Stryker.Core.UnitTest
         [InlineData(MutantStatus.Ignored)]
         public void ShouldGenerateCleanDiagnosisWhenConsistent(MutantStatus consistentStatus)
         {
-            var mutantDiagnostic = new MutantDiagnostic(Enumerable.Empty<string>());
+            var mutantDiagnostic = new MutantDiagnostic(Enumerable.Empty<string>(), new []{1});
             mutantDiagnostic.DeclareResult(consistentStatus, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(consistentStatus, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(consistentStatus, Enumerable.Empty<string>());
@@ -167,7 +167,7 @@ namespace Stryker.Core.UnitTest
         [InlineData(MutantStatus.Survived)]
         public void ShouldGenerateDiagnosisToAddTest(MutantStatus consistentStatus)
         {
-            var mutantDiagnostic = new MutantDiagnostic(Enumerable.Empty<string>());
+            var mutantDiagnostic = new MutantDiagnostic(Enumerable.Empty<string>(), new []{1});
             mutantDiagnostic.DeclareResult(consistentStatus, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(consistentStatus, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(consistentStatus, Enumerable.Empty<string>());
@@ -183,7 +183,7 @@ namespace Stryker.Core.UnitTest
         [InlineData(MutantStatus.Killed)]
         public void ShouldGenerateCoverageDiagnosisWhenAllTestsFix(MutantStatus lastStatus)
         {
-            var mutantDiagnostic = new MutantDiagnostic(new []{"1","2"});
+            var mutantDiagnostic = new MutantDiagnostic(new []{"1","2"}, new []{1});
             mutantDiagnostic.DeclareResult(MutantStatus.Survived, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(MutantStatus.Survived, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(lastStatus, new []{"1", "3"});
@@ -249,7 +249,7 @@ It was killed by these test(s): 3");
 
             result.MutationScore.ShouldBe(double.NaN);
 
-            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
+            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Once);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>()), Times.Once);
         }

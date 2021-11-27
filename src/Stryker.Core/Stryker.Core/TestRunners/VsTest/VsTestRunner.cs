@@ -115,7 +115,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     foreach (var mutant in mutants)
                     {
                         ITestListDescription tests;
-                        if ((mutant.IsStaticValue && !_options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest)) || mutant.MustRunAgainstAllTests)
+                        if (((mutant.IsStaticValue||mutant.CannotDetermineCoverage) && !_options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest)) || mutant.MustRunAgainstAllTests)
                         {
                             tests = TestsGuidList.EveryTest();
                             needAll = true;

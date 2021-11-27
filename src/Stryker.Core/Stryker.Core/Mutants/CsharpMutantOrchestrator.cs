@@ -133,6 +133,7 @@ namespace Stryker.Core.Mutants
                 ResultStatus = mutantIgnored ? MutantStatus.Ignored : MutantStatus.NotRun,
                 IsStaticValue = context.InStaticValue,
                 ResultStatusReason = mutantIgnored ? context.FilterComment : null
+                MustBeTestedInIsolation = context.MustTestInIsolation,
             };
         }
 

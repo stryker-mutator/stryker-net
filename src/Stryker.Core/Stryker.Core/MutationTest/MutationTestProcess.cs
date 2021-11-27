@@ -101,7 +101,7 @@ namespace Stryker.Core.MutationTest
 
             var mutantCount = mutantsToTest.Count();
             var buildMutantGroupsForTest = BuildMutantGroupsForTest(mutantsToTest.ToList()).ToList();
-            _logger.LogDebug(
+            _logger.LogInformation(
                 $"Mutations will be tested in {buildMutantGroupsForTest.Count} test runs" +
                 (mutantCount > buildMutantGroupsForTest.Count ? $", instead of {mutantCount}." : "."));
 
@@ -116,40 +116,86 @@ namespace Stryker.Core.MutationTest
         {
             var monitoredMutant = Input.ProjectInfo.ProjectContents.Mutants.First(m => m.Id == mutantToDiagnose);
             _logger.LogWarning($"Diagnosing mutant {mutantToDiagnose}.");
-            if (monitoredMutant.CoveringTests.IsEveryTest)
+            var monitoredMutantCoveringTests = monitoredMutant.CoveringTests;
+            if (monitoredMutantCoveringTests.IsEveryTest)
             {
                 _logger.LogWarning("This mutant is run against every test, unable to automatically diagnose issue.");
                 return null;
             }
-            _logger.LogInformation("Mutant is covered by the following tests: ");
-            var result = new MutantDiagnostic(GetTestNames(monitoredMutant.CoveringTests));
-            _logger.LogInformation(string.Join(',', result.CoveringTests));
+
+            if (monitoredMutant.ResultStatus is MutantStatus.CompileError or MutantStatus.Ignored)
+            {
+                _logger.LogWarning("Stryker does not offer diagnosis for {0} mutants.", monitoredMutant.ResultStatus);
+                return null;
+            }
+            var group = BuildMutantGroupsForTest(mutants.ToList()).First(l => l.Contains(monitoredMutant));
+            var result = new MutantDiagnostic(GetTestNames(monitoredMutantCoveringTests), group.Select(m => m.Id));
+            if (monitoredMutant.ResultStatus != MutantStatus.NoCoverage)
+            {
+                _logger.LogInformation("Mutant is covered by the following tests: ");
+                _logger.LogInformation(string.Join(',', result.CoveringTests));
             
-            _logger.LogInformation("*** Step 1 normal run ***");
-            var step = PerformStep(mutants, monitoredMutant);
-            result.DeclareResult(step.status, GetTestNames(step.killingTests));
-            // clean up status
-            _logger.LogInformation("*** Step 2 solo run ***");
-            step = PerformStep(new List<Mutant> { monitoredMutant }, monitoredMutant);
-            result.DeclareResult(step.status, GetTestNames(step.killingTests));
-            // clean up status
+                _logger.LogInformation("*** Step 1 normal run ***");
+                RetestMutantGroup(group);
+                _logger.LogInformation($"Mutant {monitoredMutant.Id} is {monitoredMutant.ResultStatus}.");
+                result.DeclareResult(monitoredMutant.ResultStatus, GetTestNames(monitoredMutant.KillingTests));
+
+                _logger.LogInformation("*** Step 2 solo run ***");
+                RetestMutantGroup(new List<Mutant>{monitoredMutant});
+                _logger.LogInformation($"Mutant {monitoredMutant.Id} is {monitoredMutant.ResultStatus}.");
+                result.DeclareResult(monitoredMutant.ResultStatus, GetTestNames(monitoredMutant.KillingTests));
+            }
+            else
+            {
+                _logger.LogInformation("Mutant appears as being not covered by any tests. No coverage based testing.");
+                result.DeclareResult(MutantStatus.NoCoverage, Enumerable.Empty<string>());
+                result.DeclareResult(MutantStatus.NoCoverage, Enumerable.Empty<string>());
+            }
             _logger.LogInformation("*** Step 3 run against all tests ***");
+            // we mark the mutant as needing all tests.
             monitoredMutant.CoveringTests = TestsGuidList.EveryTest();
-            step = PerformStep(new List<Mutant> { monitoredMutant }, monitoredMutant);
-            result.DeclareResult(step.status, GetTestNames(step.killingTests));
-            _logger.LogInformation("*** Step 3 solo run against all ***");
+            RetestMutantGroup(new List<Mutant>{monitoredMutant});
+            monitoredMutant.CoveringTests = monitoredMutantCoveringTests;
+            _logger.LogInformation($"Mutant {monitoredMutant.Id} is {monitoredMutant.ResultStatus}.");
+            result.DeclareResult(monitoredMutant.ResultStatus, GetTestNames(monitoredMutant.KillingTests));
+
+            if (result.RunResults[0].status != result.RunResults[1].status)
+            {
+                var referenceStatus = result.RunResults[0].status;
+                _logger.LogWarning("Inconsistent coverage based tests. There is some unwanted side effect. Using binary search to find problematic mutant.");
+                var initialGroup = group;
+                initialGroup.Remove(monitoredMutant);
+                var firstIndex = 0;
+                var lastIndex = initialGroup.Count - 1;
+                while (lastIndex - firstIndex > 1)
+                {
+                    var pivot = (lastIndex + firstIndex) / 2;
+                    _logger.LogWarning("Testing a group of {0} mutants", pivot-firstIndex+1);
+                    RetestMutantGroup(initialGroup.GetRange(firstIndex, pivot-firstIndex+1).Append(monitoredMutant).ToList());
+                    if (monitoredMutant.ResultStatus == referenceStatus)
+                    {
+                        // this group contains the problematic mutant
+                        lastIndex = pivot;
+                    }
+                    else
+                    {
+                        firstIndex = pivot + 1;
+                    }
+                }
+                //
+                _logger.LogInformation("Problematic mutant is {0}", initialGroup[firstIndex].Id);
+            }
             return result;
         }
 
-        private (MutantStatus status, ITestListDescription killingTests) PerformStep(IEnumerable<Mutant> mutants, Mutant monitoredMutant)
+        private void RetestMutantGroup(List<Mutant> mutants)
         {
-            monitoredMutant.ResultStatus = MutantStatus.NotRun;
-            var groups = BuildMutantGroupsForTest(mutants.ToList()).Where(l => l.Contains(monitoredMutant)).ToList();
-            TestMutants(groups);
+            foreach (var mutant in mutants)
+            {
+                mutant.ResultStatus = MutantStatus.NotRun;
+            }
 
-            var step2 = monitoredMutant.ResultStatus;
-            _logger.LogInformation($"Mutant {monitoredMutant.Id} is {step2}.");
-            return (step2, monitoredMutant.KillingTests);
+            TestMutants(new[] { mutants });
         }
 
         public void Restore() => Input.ProjectInfo.RestoreOriginalAssembly();
@@ -239,20 +285,30 @@ namespace Stryker.Core.MutationTest
 
             var blocks = new List<List<Mutant>>(mutantsNotRun.Count);
             var mutantsToGroup = mutantsNotRun.ToList();
-            // we deal with mutants needing full testing first
-            blocks.AddRange(mutantsToGroup.Where(m => m.MustRunAgainstAllTests).Select(m => new List<Mutant> { m }));
-            mutantsToGroup.RemoveAll(m => m.MustRunAgainstAllTests);
+            // deal with mutants that must be run alone, either it is requested or because they run against all tests
+            var mutantToTestInIsolation =
+                mutantsNotRun.Where(m => m.MustRunAgainstAllTests || m.MustBeTestedInIsolation).ToList();
+            blocks.AddRange(mutantToTestInIsolation.Select(m => new List<Mutant> { m }));
+            mutantsToGroup.RemoveAll(m => mutantToTestInIsolation.Contains(m));
 
+            // now, we will build groups of mutants
             var testsCount = mutantsToGroup.Sum(m => m.CoveringTests.Count);
-            mutantsToGroup = mutantsToGroup.OrderBy(m => m.CoveringTests.Count).ToList();
+            // we start with the one needing more tests
+            mutantsToGroup = mutantsToGroup.OrderBy(m => -m.CoveringTests.Count).ToList();
             for (var i = 0; i < mutantsToGroup.Count; i++)
             {
                 var usedTests = mutantsToGroup[i].CoveringTests;
+                // we create a block with the next mutant
+                // and try to see if we can ad other mutant(s) to this group
+                // ensuring each mutant has a distinct list of covering tests
                 var nextBlock = new List<Mutant> { mutantsToGroup[i] };
+
                 for (var j = i + 1; j < mutantsToGroup.Count; j++)
                 {
                     var currentMutant = mutantsToGroup[j];
                     var nextSet = currentMutant.CoveringTests;
+                    // quick optimization here: if we need more (distinct) tests that there is, no need to check for overlap
+                    // if not, check if this mutant is not covered by any of the selected mutants
                     if (nextSet.Count + usedTests.Count > testsCount ||
                         nextSet.ContainsAny(usedTests))
                     {
