@@ -213,7 +213,6 @@ namespace Stryker.Core.UnitTest.MutationTest
             mutantToBeSkipped.ResultStatus.ShouldBe(MutantStatus.Ignored);
         }
 
-
         [Fact]
         public void MutateShouldWriteToDisk_IfCompilationIsSuccessful()
         {
@@ -293,50 +292,9 @@ namespace Stryker.Core.UnitTest.MutationTest
             // we need at least one test
             scenario.CreateTest(1);
             // and we need to declare that the mutant is covered
-            scenario.DeclareCoverageForMutant(1);
-            var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
-
-            var folder = new CsharpFolderComposite();
-            folder.Add(new CsharpFileLeaf()
-            {
-                SourceCode = SourceFile,
-                Mutants = scenario.GetMutants()
-            });
-
-            var input = new MutationTestInput()
-            {
-                ProjectInfo = new ProjectInfo(new MockFileSystem())
-                {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                        {
-                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" },
-                            { "Language", "C#" }
-                        }).Object
-                    ,
-                    ProjectContents = folder
-                },
-                AssemblyReferences = _assemblies,
-                InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
-            };
-            var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
-            reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
-
-            var mutationExecutor = new MutationTestExecutor(scenario.GetTestRunnerMock().Object);
-
-            var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
-
-            var options = new StrykerOptions()
-            {
-                BasePath = basePath,
-                Concurrency = 1,
-                OptimizationMode = OptimizationModes.CoverageBasedTest
-            };
-            var target = new MutationTestProcess(input,
-                reporterMock.Object,
-                mutationExecutor,
-                mutantFilter: mutantFilterMock.Object,
-                options: options);
+            scenario.DeclareFullCoverageForMutant(1);
+ 
+            var target = BuildMutationTestProcess(scenario);
 
             target.GetCoverage();
             target.Test(scenario.GetCoveredMutants());
@@ -361,50 +319,18 @@ namespace Stryker.Core.UnitTest.MutationTest
             scenario.CreateTests(1,2);
 
             // mutant 1 is covered by both tests
-            scenario.DeclareCoverageForMutant(1);
+            scenario.DeclareFullCoverageForMutant(1);
             // mutant 2 is covered only by test 1
             scenario.DeclareCoverageForMutant(2, 1);
             // test 1 succeeds, test 2 fails
-            scenario.DeclareTestsFailingWhenTestingMutant(1, 2);
-            var runnerMock = scenario.GetTestRunnerMock();
+            scenario.DeclareTestsFailingWhenTestingMutant( 1, 2);
 
-            // setup coverage
-            var executor = new MutationTestExecutor(runnerMock.Object);
+            var target = BuildMutationTestProcess(scenario);
 
-            var input = new MutationTestInput
-            {
-                ProjectInfo = new ProjectInfo(new MockFileSystem())
-                {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                        { "TargetFileName", "TestName.dll" },
-                        { "Language", "C#" }
-                    }).Object,
-                    ProjectContents = folder
-                },
-                AssemblyReferences = _assemblies,
-                InitialTestRun =  new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
-            };
-
-            var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
-
-            var options = new StrykerOptions
-            {
-                BasePath = basePath,
-                Concurrency = 1,
-                OptimizationMode = OptimizationModes.CoverageBasedTest
-            };
-
-            var target = new MutationTestProcess(input,
-                null,
-                executor,
-                mutantFilter: mutantFilterMock.Object,
-                options: options);
             // test mutants
             target.GetCoverage();
             
-            target.Test(input.ProjectInfo.ProjectContents.Mutants);
+            target.Test(scenario.GetMutants());
             // first mutant should be killed by test 2
             scenario.GetMutantStatus(1).ShouldBe(MutantStatus.Killed);
             // other mutant survives
@@ -415,64 +341,26 @@ namespace Stryker.Core.UnitTest.MutationTest
         public void ShouldHandleTestFailingAtInit()
         {
             var scenario = new FullRunScenario();
-            var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
             scenario.CreateMutants(1,2);
 
-            var folder = new CsharpFolderComposite();
-            folder.Add(new CsharpFileLeaf()
-            {
-                SourceCode = SourceFile,
-                Mutants = scenario.GetMutants()
-            });
+
             scenario.CreateTests(1, 2, 3);
 
             // mutant 1 is covered by both tests
-            scenario.DeclareCoverageForMutant(1);
+            scenario.DeclareFullCoverageForMutant(1);
             // mutant 2 is covered only by test 1
             scenario.DeclareCoverageForMutant(2, 1,3);
             scenario.DeclareTestsFailingAtInit(1);
             // test 1 succeeds, test 2 fails
             scenario.DeclareTestsFailingWhenTestingMutant(1, 1, 2);
             scenario.DeclareTestsFailingWhenTestingMutant(2, 1);
-            var runnerMock = scenario.GetTestRunnerMock();
 
-            // setup coverage
-            var executor = new MutationTestExecutor(runnerMock.Object);
-
-            var input = new MutationTestInput
-            {
-                ProjectInfo = new ProjectInfo(new MockFileSystem())
-                {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                        { "TargetFileName", "TestName.dll" },
-                        { "Language", "C#" }
-                    }).Object,
-                    ProjectContents = folder
-                },
-                AssemblyReferences = _assemblies,
-                InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
-            };
-
-            var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
-
-            var options = new StrykerOptions
-            {
-                BasePath = basePath,
-                Concurrency = 1,
-                OptimizationMode = OptimizationModes.CoverageBasedTest
-            };
-
-            var target = new MutationTestProcess(input,
-                null,
-                executor,
-                mutantFilter: mutantFilterMock.Object,
-                options: options);
+            var target = BuildMutationTestProcess(scenario);
+   
             // test mutants
             target.GetCoverage();
             
-            target.Test(input.ProjectInfo.ProjectContents.Mutants);
+            target.Test(scenario.GetMutants());
             // first mutant should be killed by test 2
             scenario.GetMutantStatus(1).ShouldBe(MutantStatus.Killed);
             // other mutant survives
@@ -514,9 +402,6 @@ namespace Stryker.Core.UnitTest.MutationTest
                 },
                 AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
             };
-            var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
-            reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
-
             var runnerMock = new Mock<ITestRunner>();
             runnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
@@ -533,7 +418,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             };
 
             var target = new MutationTestProcess(input,
-                reporterMock.Object,
+                null,
                 executorMock.Object,
                 mutantFilter: mutantFilterMock.Object,
                 options: options);
@@ -646,40 +531,149 @@ namespace Stryker.Core.UnitTest.MutationTest
         public void ShouldRunThreeTestRunsWhenDiagnosing()
         {
             var scenario = new FullRunScenario();
-            var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
             scenario.CreateMutants(1,2);
+            scenario.CreateTests(1, 2, 3);
 
+            // mutant 1 is covered by both tests
+            scenario.DeclareCoverageForMutant(1,1,2);
+            // mutant 2 is covered only by test 1
+            scenario.DeclareCoverageForMutant(2,1,3);
+            // test 1 succeeds, test 2 fails
+            scenario.DeclareTestsFailingWhenTestingMutant(1, 1, 2);
+            scenario.DeclareTestsFailingWhenTestingMutant(2, 1);
+
+            var target = BuildMutationTestProcess(scenario);
+            // test mutants
+            target.GetCoverage();
+            
+            var result = target.DiagnoseMutant(scenario.Mutants.Values.ToList(), 1);
+            // first mutant should be killed by test 2
+            result.RunResults[0].status.ShouldBe(MutantStatus.Killed);
+            // tests should have been run three times
+            scenario.GetTestRunnerMock().Verify(t => t.TestMultipleMutants(It.IsAny<ITimeoutValueCalculator>(),
+                It.IsAny<IReadOnlyList<Mutant>>(), It.IsAny<TestUpdateHandler>()), Times.Exactly(3));
+        }
+
+        [Fact]
+        public void ShouldDiagnoseNonCoveredMutant()
+        {
+            var scenario = new FullRunScenario();
+            scenario.CreateMutants(1);
+            scenario.CreateTests(1);
+
+            scenario.DeclareCoverageForMutant(1);
+            scenario.DeclareTestsFailingWhenTestingMutant(new []{1}, 1, 1);
+            var target = BuildMutationTestProcess(scenario);
+            target.GetCoverage();
+            // test mutants
+            var result = target.DiagnoseMutant(scenario.Mutants.Values.ToList(), 1);
+
+            result.RunResults[0].status.ShouldBe(MutantStatus.NoCoverage);
+            result.RunResults[1].status.ShouldBe(MutantStatus.NoCoverage);
+            result.RunResults[2].status.ShouldBe(MutantStatus.Killed);
+        }
+
+        [Fact]
+        public void ShouldNotDiagnoseMutantWithFullCoverage()
+        {
+            var scenario = new FullRunScenario();
+            scenario.CreateMutants(1);
+            scenario.CreateTests(1, 2);
+
+            scenario.DeclareCoverageForMutant(1, 1, 2);
+            scenario.DeclareTestsFailingWhenTestingMutant(1);
+            var target = BuildMutationTestProcess(scenario);
+            target.GetCoverage();
+            // test mutants
+            var result = target.DiagnoseMutant(scenario.Mutants.Values.ToList(), 1);
+
+            result.RunResults[0].status.ShouldBe(MutantStatus.Survived);
+            result.RunResults[1].status.ShouldBe(MutantStatus.Survived);
+            result.RunResults[2].status.ShouldBe(MutantStatus.Survived);
+        }
+
+        [Fact]
+        public void ShouldDiagnoseMutantWithoutCoverage()
+        {
+            var scenario = new FullRunScenario();
+            scenario.CreateMutants(1);
+            scenario.CreateTests(1);
+
+            scenario.DeclareCoverageForMutant(1);
+            scenario.DeclareTestsFailingWhenTestingMutant(1);
+            var target = BuildMutationTestProcess(scenario);
+            target.GetCoverage();
+            // test mutants
+            var result = target.DiagnoseMutant(scenario.Mutants.Values.ToList(), 1);
+
+            result.RunResults[0].status.ShouldBe(MutantStatus.NoCoverage);
+            result.RunResults[1].status.ShouldBe(MutantStatus.NoCoverage);
+            result.RunResults[2].status.ShouldBe(MutantStatus.NotRun);
+        }
+
+        [Fact]
+        public void ShouldFindConflictingMutantsInDiagnoseMode()
+        {
+            var scenario = new FullRunScenario();
+            scenario.CreateMutants(1,2, 3, 4);
+
+            scenario.CreateTests(1, 2, 3, 4);
+
+            scenario.DeclareCoverageForMutant(1, 1);
+            scenario.DeclareCoverageForMutant(2, 2);
+            scenario.DeclareCoverageForMutant(3, 3);
+            scenario.DeclareCoverageForMutant(4, 4);
+            scenario.DeclareTestsFailingWhenTestingMutant(new []{1, 2, 3, 4}, 1);
+            scenario.DeclareTestsFailingWhenTestingMutant(new []{1, 2, 3}, 1);
+            scenario.DeclareTestsFailingWhenTestingMutant(new []{1, 2, 4}, 1, 1);
+            scenario.DeclareTestsFailingWhenTestingMutant(new []{1, 4}, 1, 1);
+            scenario.DeclareTestsFailingWhenTestingMutant(new []{1, 3}, 1);
+            scenario.DeclareTestsFailingWhenTestingMutant(new []{1, 2}, 1, 1);
+            scenario.DeclareTestsFailingWhenTestingMutant(new []{1}, 1, 1);
+            //scenario.DeclareTestsFailingWhenTestingMutant(new []{1}, 1, 1, 2);
+            // test 1 succeeds, test 2 fails
+
+            var target = BuildMutationTestProcess(scenario);
+            target.GetCoverage();
+            // test mutants
+            var result = target.DiagnoseMutant(scenario.Mutants.Values.ToList(), 1);
+
+            // first mutant should be killed by test 2
+            result.RunResults[0].status.ShouldBe(MutantStatus.Survived);
+            result.RunResults[1].status.ShouldBe(MutantStatus.Killed);
+            result.ConflictingMutant.ShouldBe(3);
+
+            // tests should have been run four times
+            var runnerMock = scenario.GetTestRunnerMock();
+            runnerMock.Verify(t => t.TestMultipleMutants(It.IsAny<ITimeoutValueCalculator>(),
+                It.IsAny<IReadOnlyList<Mutant>>(), It.IsAny<TestUpdateHandler>()), Times.Exactly(5));
+        }
+
+
+        private MutationTestProcess BuildMutationTestProcess(FullRunScenario scenario)
+        {
+            var runnerMock = scenario.GetTestRunnerMock();
+
+            // setup coverage
+            var executor = new MutationTestExecutor(runnerMock.Object);
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf()
             {
                 SourceCode = SourceFile,
                 Mutants = scenario.GetMutants()
             });
-            scenario.CreateTests(1, 2, 3);
-
-            // mutant 1 is covered by both tests
-            scenario.DeclareCoverageForMutant(1);
-            // mutant 2 is covered only by test 1
-            scenario.DeclareCoverageForMutant(2, 1,3);
-            scenario.DeclareTestsFailingAtInit(1);
-            // test 1 succeeds, test 2 fails
-            scenario.DeclareTestsFailingWhenTestingMutant(1, 1, 2);
-            scenario.DeclareTestsFailingWhenTestingMutant(2, 1);
-            var runnerMock = scenario.GetTestRunnerMock();
-
-            // setup coverage
-            var executor = new MutationTestExecutor(runnerMock.Object);
 
             var input = new MutationTestInput
             {
                 ProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                        { "TargetFileName", "TestName.dll" },
-                        { "Language", "C#" }
-                    }).Object,
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        properties: new Dictionary<string, string>()
+                        {
+                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
+                            { "TargetFileName", "TestName.dll" },
+                            { "Language", "C#" }
+                        }).Object,
                     ProjectContents = folder
                 },
                 AssemblyReferences = _assemblies,
@@ -688,29 +682,19 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
 
-            var options = new StrykerOptions
-            {
-                BasePath = basePath,
-                Concurrency = 1,
-                OptimizationMode = OptimizationModes.CoverageBasedTest
-            };
-
+            var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
             var target = new MutationTestProcess(input,
                 null,
                 executor,
                 mutantFilter: mutantFilterMock.Object,
-                options: options);
-            // test mutants
-            target.GetCoverage();
-            
-            var result = target.DiagnoseMutant(input.ProjectInfo.ProjectContents.Mutants.ToList(), 1);
-
-            // first mutant should be killed by test 2
-            result.RunResults[0].status.ShouldBe(MutantStatus.Killed);
-
-            // tests should have been run three times
-            runnerMock.Verify(t => t.TestMultipleMutants(It.IsAny<ITimeoutValueCalculator>(),
-                It.IsAny<IReadOnlyList<Mutant>>(), It.IsAny<TestUpdateHandler>()), Times.Exactly(3));
+                options: new StrykerOptions
+                {
+                    BasePath = basePath,
+                    Concurrency = 1,
+                    OptimizationMode = OptimizationModes.CoverageBasedTest
+                });
+            return target;
         }
+
     }
 }

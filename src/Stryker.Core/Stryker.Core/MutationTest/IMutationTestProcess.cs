@@ -12,6 +12,7 @@ namespace Stryker.Core.MutationTest
 
         public IEnumerable<string> CoveringTests { get; }
         public IEnumerable<int> MutationGroup { get; }
+        public int ConflictingMutant { get; set; }
 
         public MutantDiagnostic(IEnumerable<string> coveringTests, IEnumerable<int> mutationGroup)
         {
