@@ -60,6 +60,12 @@ namespace Stryker.Core.ProjectComponents
             double totalCount = TotalMutants.Count();
             double killedCount = DetectedMutants.Count();
 
+            if (totalCount == 0)
+            {
+                // prevent devide by zero
+                return 0;
+            }
+
             return killedCount / totalCount;
         }
 
