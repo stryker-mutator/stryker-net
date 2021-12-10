@@ -35,10 +35,17 @@ namespace Stryker.Core.ProjectComponents
 
     public abstract class ProjectComponent<T> : ProjectComponent
     {
-        public IEnumerable<IReadOnlyMutant> TotalMutants => Mutants.Where(m =>
-                m.ResultStatus != MutantStatus.CompileError && m.ResultStatus != MutantStatus.Ignored);
 
-        public IEnumerable<IReadOnlyMutant> DetectedMutants => Mutants.Where(m =>
+        private IEnumerable<IReadOnlyMutant> ValidMutants => UndetectedMutants
+            .Union(DetectedMutants);
+
+        private IEnumerable<IReadOnlyMutant> UndetectedMutants => Mutants
+            .Where(m =>
+                m.ResultStatus == MutantStatus.Survived ||
+                m.ResultStatus == MutantStatus.NoCoverage);
+
+        public IEnumerable<IReadOnlyMutant> DetectedMutants => Mutants
+            .Where(m =>
                 m.ResultStatus == MutantStatus.Killed ||
                 m.ResultStatus == MutantStatus.Timeout);
 
@@ -54,13 +61,13 @@ namespace Stryker.Core.ProjectComponents
         /// <summary>
         /// Returns the mutation score for this folder / file
         /// </summary>
-        /// <returns>decimal between 0 and 1 or null when no score could be calculated</returns>
+        /// <returns>double between 0 and 1 or NaN when no score could be calculated</returns>
         public double GetMutationScore()
         {
-            double totalCount = TotalMutants.Count();
-            double killedCount = DetectedMutants.Count();
+            double valid = ValidMutants.Count();
+            double detected = DetectedMutants.Count();
 
-            return killedCount / totalCount;
+            return detected / valid;
         }
 
         public Health CheckHealth(Thresholds threshold)
