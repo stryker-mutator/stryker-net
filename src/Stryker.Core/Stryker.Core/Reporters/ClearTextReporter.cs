@@ -40,42 +40,30 @@ namespace Stryker.Core.Reporters
 
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
         {
-            var files = new List<IReadOnlyFileLeaf>();
+            var files = reportComponent.GetAllFiles();
 
-            IReadOnlyFolderComposite rootFolder = null;
-
-            reportComponent.DisplayFolder = (IReadOnlyProjectComponent current) =>
+            if (files.Any())
             {
-                rootFolder ??= current as IReadOnlyFolderComposite;
-            };
+                // print empty line for readability
+                _consoleWriter.WriteLine();
+                _consoleWriter.WriteLine();
+                _consoleWriter.WriteLine("All mutants have been tested, and your mutation score has been calculated");
 
-            reportComponent.DisplayFile = (IReadOnlyProjectComponent current) =>
-            {
-                files.Add(current as IReadOnlyFileLeaf);
-            };
+                var filePathLength = Math.Max(9, files.Max(f => f.RelativePath?.Length ?? 0) + 1);
+                string dashes = new string('─', filePathLength);
+                _consoleWriter.WriteLine($"┌─{dashes}┬──────────┬──────────┬───────────┬────────────┬──────────┬─────────┐");
+                _consoleWriter.WriteLine($"│ File{new string(' ', filePathLength - 4)}│  % score │ # killed │ # timeout │ # survived │ # no cov │ # error │");
+                _consoleWriter.WriteLine($"├─{dashes}┼──────────┼──────────┼───────────┼────────────┼──────────┼─────────┤");
 
-            // print empty line for readability
-            _consoleWriter.WriteLine();
-            _consoleWriter.WriteLine();
-            _consoleWriter.WriteLine("All mutants have been tested, and your mutation score has been calculated");
+                DisplayComponent(reportComponent, filePathLength);
 
-            // start recursive invocation of handlers
-            reportComponent.Display();
+                foreach (var file in files)
+                {
+                    DisplayComponent(file, filePathLength);
+                }
 
-            var filePathLength = Math.Max(9, files.Max(f => f.RelativePath?.Length ?? 0) + 1);
-
-            _consoleWriter.WriteLine($"┌─{new string('─', filePathLength)}┬──────────┬──────────┬───────────┬────────────┬──────────┬─────────┐");
-            _consoleWriter.WriteLine($"│ File{new string(' ', filePathLength - 4)}│  % score │ # killed │ # timeout │ # survived │ # no cov │ # error │");
-            _consoleWriter.WriteLine($"├─{new string('─', filePathLength)}┼──────────┼──────────┼───────────┼────────────┼──────────┼─────────┤");
-
-            DisplayComponent(rootFolder, filePathLength);
-
-            foreach (var file in files)
-            {
-                DisplayComponent(file, filePathLength);
+                _consoleWriter.WriteLine($"└─{dashes}┴──────────┴──────────┴───────────┴────────────┴──────────┴─────────┘");
             }
-
-            _consoleWriter.WriteLine($"└─{new string('─', filePathLength)}┴──────────┴──────────┴───────────┴────────────┴──────────┴─────────┘");
         }
 
         private void DisplayComponent(IReadOnlyProjectComponent inputComponent, int filePathLength)

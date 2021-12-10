@@ -75,7 +75,7 @@ namespace Stryker.Core.Initialisation
             var projectUnderTestFolderComposite = new CsharpFolderComposite()
             {
                 FullPath = projectUnderTestDir,
-                RelativePath = string.Empty,
+                RelativePath = null,
             };
             var cache = new Dictionary<string, CsharpFolderComposite> { [string.Empty] = projectUnderTestFolderComposite };
 
