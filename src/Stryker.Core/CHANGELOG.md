@@ -1,3 +1,19 @@
+# [](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.1.0...stryker@) (2021-12-10)
+
+
+### Bug Fixes
+
+* **Assembly resolving:** Embedded resources resolving no longer uses Immediate mode. Fixes Xamarin support. ([#1816](https://github.com/stryker-mutator/stryker-net/issues/1816)) ([c1e5087](https://github.com/stryker-mutator/stryker-net/commit/c1e50877ed936353b3fede63b16520421f8a1a2f))
+
+
+### Features
+
+* **html report:** New diff view in HTML report ([#1818](https://github.com/stryker-mutator/stryker-net/issues/1818)) ([9b5ac6c](https://github.com/stryker-mutator/stryker-net/commit/9b5ac6c452895548d6c4bcb646d426441bd10549))
+* **reporting:** Open dashboard report with --open-report ([#1795](https://github.com/stryker-mutator/stryker-net/issues/1795)) ([75cbec2](https://github.com/stryker-mutator/stryker-net/commit/75cbec233ef24d326db04c66eade384851964118))
+* **reporting:** Report when a mutant is in a static context ([#1820](https://github.com/stryker-mutator/stryker-net/issues/1820)) ([f267b61](https://github.com/stryker-mutator/stryker-net/commit/f267b619b62019736c8a3b8bd3d1946bd60fefd2))
+
+
+
 # [](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.0.1...stryker@) (2021-11-16)
 
 
