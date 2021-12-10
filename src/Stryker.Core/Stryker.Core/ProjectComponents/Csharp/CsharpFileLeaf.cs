@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public class CsharpFileLeaf : ProjectComponent<SyntaxTree>, IFileLeaf<SyntaxTree>, IReadOnlyFileLeaf<SyntaxTree>
+    public class CsharpFileLeaf : ProjectComponent<SyntaxTree>, IFileLeaf<SyntaxTree>
     {
         public string SourceCode { get; set; }
 

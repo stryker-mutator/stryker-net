@@ -15,13 +15,13 @@ namespace Stryker.Core.ProjectComponents
         string RelativePath { get; set; }
         public Display DisplayFile { get; set; }
         public Display DisplayFolder { get; set; }
-        IEnumerable<IReadOnlyMutant> ValidMutants { get; }
-        IEnumerable<IReadOnlyMutant> UndetectedMutants { get; }
-        IEnumerable<IReadOnlyMutant> DetectedMutants { get; }
-        IEnumerable<IReadOnlyMutant> TotalMutants { get; }
-        IEnumerable<IReadOnlyMutant> InvalidMutants { get; }
-        IEnumerable<IReadOnlyMutant> IgnoredMutants { get; }
-        IEnumerable<IReadOnlyMutant> NotRunMutants { get; }
+        IEnumerable<IReadOnlyMutant> TotalMutants();
+        IEnumerable<IReadOnlyMutant> ValidMutants();
+        IEnumerable<IReadOnlyMutant> UndetectedMutants();
+        IEnumerable<IReadOnlyMutant> DetectedMutants();
+        IEnumerable<IReadOnlyMutant> InvalidMutants();
+        IEnumerable<IReadOnlyMutant> IgnoredMutants();
+        IEnumerable<IReadOnlyMutant> NotRunMutants();
 
         Health CheckHealth(Thresholds threshold);
         IEnumerable<IFileLeaf> GetAllFiles();
@@ -53,34 +53,34 @@ namespace Stryker.Core.ProjectComponents
         public abstract IEnumerable<IFileLeaf> GetAllFiles();
         public abstract void Display();
 
-        public IEnumerable<IReadOnlyMutant> TotalMutants => ValidMutants
-            .Union(InvalidMutants)
-            .Union(IgnoredMutants)
+        public IEnumerable<IReadOnlyMutant> TotalMutants() => ValidMutants()
+            .Union(InvalidMutants())
+            .Union(IgnoredMutants())
             .ToList();
 
-        public IEnumerable<IReadOnlyMutant> ValidMutants => UndetectedMutants
-            .Union(DetectedMutants)
+        public IEnumerable<IReadOnlyMutant> ValidMutants() => UndetectedMutants()
+            .Union(DetectedMutants())
             .ToList();
 
-        public IEnumerable<IReadOnlyMutant> InvalidMutants => Mutants
+        public IEnumerable<IReadOnlyMutant> InvalidMutants() => Mutants
             .Where(m => m.ResultStatus == MutantStatus.CompileError)
             .ToList();
 
-        public IEnumerable<IReadOnlyMutant> UndetectedMutants => Mutants
+        public IEnumerable<IReadOnlyMutant> UndetectedMutants() => Mutants
             .Where(m =>
                 m.ResultStatus == MutantStatus.Survived ||
                 m.ResultStatus == MutantStatus.NoCoverage)
             .ToList();
 
-        public IEnumerable<IReadOnlyMutant> IgnoredMutants => Mutants
+        public IEnumerable<IReadOnlyMutant> IgnoredMutants() => Mutants
             .Where(m => m.ResultStatus == MutantStatus.Ignored)
             .ToList();
 
-        public IEnumerable<IReadOnlyMutant> NotRunMutants => Mutants
+        public IEnumerable<IReadOnlyMutant> NotRunMutants() => Mutants
             .Where(m => m.ResultStatus == MutantStatus.NotRun)
             .ToList();
 
-        public IEnumerable<IReadOnlyMutant> DetectedMutants => Mutants
+        public IEnumerable<IReadOnlyMutant> DetectedMutants() => Mutants
             .Where(m =>
                 m.ResultStatus == MutantStatus.Killed ||
                 m.ResultStatus == MutantStatus.Timeout)
@@ -92,8 +92,8 @@ namespace Stryker.Core.ProjectComponents
         /// <returns>double between 0 and 1 or NaN when no score could be calculated</returns>
         public double GetMutationScore()
         {
-            double valid = ValidMutants.Count();
-            double detected = DetectedMutants.Count();
+            double valid = ValidMutants().Count();
+            double detected = DetectedMutants().Count();
 
             return detected / valid;
         }

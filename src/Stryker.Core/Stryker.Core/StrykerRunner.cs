@@ -73,7 +73,7 @@ namespace Stryker.Core
                 reporters.OnMutantsCreated(rootComponent);
 
                 var allMutants = rootComponent.Mutants;
-                var mutantsNotRun = rootComponent.NotRunMutants;
+                var mutantsNotRun = rootComponent.NotRunMutants();
 
                 if (!mutantsNotRun.Any())
                 {
