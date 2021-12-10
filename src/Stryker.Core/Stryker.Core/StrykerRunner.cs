@@ -52,7 +52,6 @@ namespace Stryker.Core
 
             var reporters = _reporterFactory.Create(options);
 
-
             try
             {
                 // Mutate
