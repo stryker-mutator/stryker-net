@@ -1,17 +1,20 @@
 using System;
 using System.Collections.Generic;
+using Buildalyzer;
+using Moq;
 using Shouldly;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
 {
-    public class TestFileTests
+    public class TestProjectTests
     {
         [Fact]
-        public void MergeTestFiles()
+        public void TestProjectEquals()
         {
             // Arrange
+            var testProjectAnalyzerResult = Mock.Of<IAnalyzerResult>();
             var testCase1Id = Guid.NewGuid();
             var fileA = new TestFile
             {
@@ -51,11 +54,20 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
                 }
             };
 
-            // Act
-            var fileAB = fileA + fileB;
+            var testProjectA = new TestProject
+            {
+                TestProjectAnalyzerResult = testProjectAnalyzerResult,
+                TestFiles = new HashSet<TestFile> { fileA }
+            };
+
+            var testProjectB = new TestProject
+            {
+                TestProjectAnalyzerResult = testProjectAnalyzerResult,
+                TestFiles = new HashSet<TestFile> { fileB }
+            };
 
             // Assert
-            fileAB.Tests.Count.ShouldBe(2);
+            testProjectA.ShouldBe(testProjectB);
         }
     }
 }
