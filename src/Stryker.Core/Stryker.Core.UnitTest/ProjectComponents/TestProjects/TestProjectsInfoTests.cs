@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Buildalyzer;
 using Moq;
 using Shouldly;
@@ -15,13 +16,13 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
         {
             // Arrange
             var testProjectAnalyzerResult = Mock.Of<IAnalyzerResult>();
-            var testFiles = new HashSet<TestFile>
+            var testFiles = new List<TestFile>
             {
                 new TestFile
                 {
                     FilePath = "/c/",
                     Source = "bla",
-                    Tests = new HashSet<TestCase>
+                    Tests = new List<TestCase>
                     {
                         new TestCase
                         {
@@ -43,7 +44,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
 
             var testProjectsInfoA = new TestProjectsInfo
             {
-                TestProjects = new HashSet<TestProject>
+                TestProjects = new List<TestProject>
                 {
                     new TestProject
                     {
@@ -54,25 +55,36 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
             };
             var testProjectsInfoB = new TestProjectsInfo
             {
-                TestProjects = new HashSet<TestProject>
+                TestProjects = new List<TestProject>
                 {
                     new TestProject
                     {
                         TestProjectAnalyzerResult = testProjectAnalyzerResult,
-                        TestFiles = new HashSet<TestFile>(testFiles)
+                        TestFiles = testFiles
+                    }
+                }
+            };
+            var testProjectsInfoC = new TestProjectsInfo
+            {
+                TestProjects = new List<TestProject>
+                {
+                    new TestProject
+                    {
+                        TestProjectAnalyzerResult = testProjectAnalyzerResult,
+                        TestFiles = new List<TestFile>
                         {
                             new TestFile
                             {
-                                FilePath = "/d/",
-                                Source = "blaaa",
-                                Tests = new HashSet<TestCase>
+                                FilePath = "/c/",
+                                Source = "bla",
+                                Tests = new List<TestCase>
                                 {
                                     new TestCase
                                     {
                                         Id = Guid.NewGuid(),
-                                        Line = 2,
-                                        Name = "test2",
-                                        Source = "blaaa"
+                                        Line = 1,
+                                        Name = "test1",
+                                        Source = "bla"
                                     }
                                 }
                             }
@@ -82,10 +94,11 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
             };
 
             // Act
-            var testProjectsInfoAB = testProjectsInfoA + testProjectsInfoB;
+            var testProjectsInfoAB = testProjectsInfoA + testProjectsInfoB + testProjectsInfoC;
 
             // Assert
-            testProjectsInfoAB.TestFiles.Count.ShouldBe(2);
+            testProjectsInfoAB.TestFiles.Count().ShouldBe(1);
+            testProjectsInfoAB.TestFiles.Single().Tests.Count().ShouldBe(2);
         }
     }
 }

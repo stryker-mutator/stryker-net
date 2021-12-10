@@ -68,6 +68,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
 
             // Assert
             testProjectA.ShouldBe(testProjectB);
+            testProjectA.GetHashCode().ShouldBe(testProjectB.GetHashCode());
         }
 
         [Fact]

@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Linq;
 using Buildalyzer;
 
 namespace Stryker.Core.ProjectComponents.TestProjects
 {
     public sealed class TestProject : IEquatable<TestProject>
     {
-        public IAnalyzerResult TestProjectAnalyzerResult { get; set; }
-        public ISet<TestFile> TestFiles { get; set; } = new HashSet<TestFile>();
+        public IAnalyzerResult TestProjectAnalyzerResult { get; init; }
+        public IEnumerable<TestFile> TestFiles { get; init; } = new List<TestFile>();
 
-        public bool Equals(TestProject other) => other.TestProjectAnalyzerResult.Equals(TestProjectAnalyzerResult) && other.TestFiles.SetEquals(TestFiles);
+        public bool Equals(TestProject other) => other.TestProjectAnalyzerResult.Equals(TestProjectAnalyzerResult) && other.TestFiles.SequenceEqual(TestFiles);
 
         public override bool Equals(object obj) => obj is TestProject project && Equals(project);
 
-        public override int GetHashCode() => TestProjectAnalyzerResult.GetHashCode() ^ TestFiles.GetHashCode();
+        // Stryker disable once bitwise: Bitwise mutation does not change functional usage of GetHashCode
+        public override int GetHashCode() => TestProjectAnalyzerResult.GetHashCode();
     }
 }

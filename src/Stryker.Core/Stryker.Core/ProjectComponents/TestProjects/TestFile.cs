@@ -1,19 +1,20 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.ProjectComponents.TestProjects
 {
     public sealed class TestFile : IEquatable<TestFile>
     {
-        public string FilePath { get; set; }
-        public string Source { get; set; }
-        public ISet<TestCase> Tests { get; set; } = new HashSet<TestCase>();
+        public string FilePath { get; init; }
+        public string Source { get; init; }
+        public IEnumerable<TestCase> Tests { get; set; } = new List<TestCase>();
 
         public static TestFile operator +(TestFile a, TestFile b)
         {
-            if(a.Equals(b))
+            if (a == b)
             {
-                a.Tests.UnionWith(b.Tests);
+                a.Tests = a.Tests.Union(b.Tests);
             }
             return a;
         }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Shouldly;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Xunit;
@@ -17,7 +18,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
             {
                 FilePath = "/c/",
                 Source = "bla",
-                Tests = new HashSet<TestCase>
+                Tests = new List<TestCase>
                 {
                     new TestCase
                     {
@@ -39,7 +40,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
             {
                 FilePath = "/c/",
                 Source = "bla",
-                Tests = new HashSet<TestCase>
+                Tests = new List<TestCase>
                 {
                     new TestCase
                     {
@@ -55,7 +56,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
             var fileAB = fileA + fileB;
 
             // Assert
-            fileAB.Tests.Count.ShouldBe(2);
+            fileAB.Tests.Count().ShouldBe(2);
         }
     }
 }
