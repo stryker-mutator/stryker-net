@@ -36,7 +36,7 @@ namespace Stryker.Core.Initialisation
             {
                 return ModuleDefinition.ReadModule(
                     assemblyPath,
-                    new ReaderParameters(ReadingMode.Immediate)
+                    new ReaderParameters(ReadingMode.Deferred)
                     {
                         InMemory = true,
                         ReadWrite = false,

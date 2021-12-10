@@ -87,12 +87,6 @@ namespace Stryker.Core.Initialisation
 
             foreach (var sourceFile in analyzerResult.SourceFiles)
             {
-                // Skip xamarin UI generated files
-                if (sourceFile.EndsWith(".xaml.cs"))
-                {
-                    continue;
-                }
-
                 var relativePath = Path.GetRelativePath(projectUnderTestDir, sourceFile);
                 var folderComposite = GetOrBuildFolderComposite(cache, Path.GetDirectoryName(relativePath), projectUnderTestDir, projectUnderTestFolderComposite);
 
