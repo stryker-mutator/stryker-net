@@ -1,4 +1,7 @@
 {
+  "extra-oject": {
+    "this-should-work": "but not appear in the options object"
+  },
   "stryker-config": {
     "reporters": [
       "Json"
