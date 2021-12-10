@@ -81,11 +81,11 @@ namespace Stryker.Core
                 {
                     if (allMutants.Any(x => x.ResultStatus == MutantStatus.Ignored))
                     {
-                        _logger.LogWarning("It looks like all mutants with tests were excluded. Try a re-run with less exclusion!");
+                        _logger.LogWarning("It looks like all mutants with tests were ignored. Try a re-run with less ignoring!");
                     }
                     if (allMutants.Any(x => x.ResultStatus == MutantStatus.NoCoverage))
                     {
-                        _logger.LogWarning("It looks like all non-excluded mutants are not covered by a test. Go add some tests!");
+                        _logger.LogWarning("It looks like all non-ignored mutants are not covered by a test. Go add some tests!");
                     }
                     if (!allMutants.Any())
                     {
