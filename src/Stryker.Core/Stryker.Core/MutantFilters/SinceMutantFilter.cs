@@ -48,7 +48,7 @@ namespace Stryker.Core.MutantFilters
             }
         }
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options)
         {
             // Mutants can be enabled for testing based on multiple reasons. We store all the filtered mutants in this list and return this list.
             IEnumerable<Mutant> filteredMutants;

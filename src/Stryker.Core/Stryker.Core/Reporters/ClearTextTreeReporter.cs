@@ -146,7 +146,7 @@ namespace Stryker.Core.Reporters
                 {
                     continuationLines.Add(node.Parent.Children.Last().FullPath != node.FullPath);
 
-                    node = node.Parent.ToReadOnlyInputComponent();
+                    node = node.Parent;
                 }
 
                 continuationLines.Reverse();

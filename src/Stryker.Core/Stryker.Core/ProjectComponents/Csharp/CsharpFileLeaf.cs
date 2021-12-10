@@ -4,7 +4,7 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public class CsharpFileLeaf : ProjectComponent<SyntaxTree>, IFileLeaf<SyntaxTree>
+    public class CsharpFileLeaf : ProjectComponent<SyntaxTree>, IFileLeaf<SyntaxTree>, IReadOnlyFileLeaf<SyntaxTree>
     {
         public string SourceCode { get; set; }
 
@@ -24,19 +24,14 @@ namespace Stryker.Core.ProjectComponents
 
         public override IEnumerable<SyntaxTree> MutatedSyntaxTrees => new List<SyntaxTree> { MutatedSyntaxTree };
 
-        public ReadOnlyFileLeaf ToReadOnly()
-        {
-            return new ReadOnlyFileLeaf(this);
-        }
-
-        public override IReadOnlyProjectComponent ToReadOnlyInputComponent()
-        {
-            return ToReadOnly();
-        }
-
-        public override IEnumerable<IProjectComponent> GetAllFiles()
+        public override IEnumerable<IFileLeaf<SyntaxTree>> GetAllFiles()
         {
             yield return this;
+        }
+
+        public override void Display()
+        {
+            DisplayFile(this);
         }
     }
 }

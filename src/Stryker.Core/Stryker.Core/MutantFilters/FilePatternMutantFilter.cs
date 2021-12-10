@@ -22,7 +22,7 @@ namespace Stryker.Core.MutantFilters
             _excludePattern = options.Mutate.Where(x => x.IsExclude).ToList();
         }
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options)
         {
             return mutants.Where(IsMutantIncluded);
 

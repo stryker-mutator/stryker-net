@@ -268,7 +268,7 @@ namespace Stryker.Core.Initialisation
                     if (string.IsNullOrEmpty(folder))
                     {
                         // we are at root
-                        var root = inputFiles as IFolderComposite;
+                        var root = inputFiles as IReadOnlyFolderComposite;
                         root.Add(subDir);
                     }
                 }

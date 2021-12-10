@@ -40,18 +40,18 @@ namespace Stryker.Core.Reporters
 
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
         {
-            var files = new List<ReadOnlyFileLeaf>();
+            var files = new List<IReadOnlyFileLeaf>();
 
-            ReadOnlyFolderComposite rootFolder = null;
+            IReadOnlyFolderComposite rootFolder = null;
 
             reportComponent.DisplayFolder = (IReadOnlyProjectComponent current) =>
             {
-                rootFolder ??= (ReadOnlyFolderComposite)current;
+                rootFolder ??= current as IReadOnlyFolderComposite;
             };
 
             reportComponent.DisplayFile = (IReadOnlyProjectComponent current) =>
             {
-                files.Add((ReadOnlyFileLeaf)current);
+                files.Add(current as IReadOnlyFileLeaf);
             };
 
             // print empty line for readability
@@ -84,7 +84,7 @@ namespace Stryker.Core.Reporters
 
             var mutationScore = inputComponent.GetMutationScore();
 
-            if (inputComponent is ReadOnlyFileLeaf && inputComponent.IsComponentExcluded(_options.Mutate))
+            if (inputComponent.IsComponentExcluded(_options.Mutate))
             {
                 _consoleWriter.Write(Output.Bright.Black("Excluded"));
             }

@@ -19,7 +19,7 @@ namespace Stryker.Core.MutantFilters
         public string DisplayName => "method filter";
         private readonly SyntaxTriviaRemover _triviaRemover = new SyntaxTriviaRemover();
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options) =>
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options) =>
             options.IgnoredMethods.Any() ?
                     mutants.Where(m => !IsPartOfIgnoredMethodCall(m.Mutation.OriginalNode, options)) :
                     mutants;
