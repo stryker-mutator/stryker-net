@@ -8,7 +8,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
     public class TestCaseTests
     {
         [Fact]
-        public void TestCaseEqualsAllValues()
+        public void TestCaseEqualsWhenAllPropertiesEqual()
         {
             // Arrange
             var guid = Guid.NewGuid();
@@ -36,7 +36,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
         [InlineData("00000000-0000-0000-0000-000000000000", "1", 1, "1")]
         [InlineData("00000000-0000-0000-0000-000000000000", "2", 2, "1")]
         [InlineData("00000000-0000-0000-0000-000000000000", "2", 1, "2")]
-        public void TestCaseNotEqualsWhen(string id, string name, int lineNumber, string source)
+        public void TestCaseNotEqualsWhenNotAllPropertiesEqual(string id, string name, int lineNumber, string source)
         {
             // Arrange
             var testCaseA = new TestCase
