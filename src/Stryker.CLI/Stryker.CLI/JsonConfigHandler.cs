@@ -68,7 +68,8 @@ namespace Stryker.CLI
             FileBasedInput input;
             try
             {
-                var root = JsonSerializer.Deserialize<FileBasedInputOuter>(json);
+                var serializerOptions = new JsonSerializerOptions { ReadCommentHandling = JsonCommentHandling.Skip };
+                var root = JsonSerializer.Deserialize<FileBasedInputOuter>(json, serializerOptions);
                 if (root == null)
                 {
                     throw new InputException($"The config file at \"{configFilePath}\" could not be parsed.");
