@@ -169,7 +169,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Fact]
-        public void InitializeShouldSkipXamlFiles()
+        public void InitializeShouldNotSkipXamlFiles()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
@@ -204,7 +204,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var result = target.ResolveInput(_options);
 
-            result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
+            result.ProjectContents.GetAllFiles().Count().ShouldBe(5);
         }
 
         [Fact]
