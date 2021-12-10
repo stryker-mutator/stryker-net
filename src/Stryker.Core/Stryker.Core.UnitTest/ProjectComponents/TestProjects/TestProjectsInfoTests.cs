@@ -70,7 +70,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
                 {
                     new TestProject
                     {
-                        TestProjectAnalyzerResult = testProjectAnalyzerResult,
+                        TestProjectAnalyzerResult = Mock.Of<IAnalyzerResult>(),
                         TestFiles = new List<TestFile>
                         {
                             new TestFile
@@ -94,11 +94,12 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
             };
 
             // Act
-            var testProjectsInfoAB = testProjectsInfoA + testProjectsInfoB + testProjectsInfoC;
+            var testProjectsInfoABC = testProjectsInfoA + testProjectsInfoB + testProjectsInfoC;
 
             // Assert
-            testProjectsInfoAB.TestFiles.Count().ShouldBe(1);
-            testProjectsInfoAB.TestFiles.Single().Tests.Count().ShouldBe(2);
+            testProjectsInfoABC.TestFiles.Count().ShouldBe(2);
+            testProjectsInfoABC.TestFiles.First().Tests.Count().ShouldBe(2);
+            testProjectsInfoABC.TestFiles.ElementAt(1).Tests.Count().ShouldBe(1);
         }
     }
 }
