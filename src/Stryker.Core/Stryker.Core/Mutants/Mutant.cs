@@ -15,6 +15,7 @@ namespace Stryker.Core.Mutants
         int? Line { get; }
         bool CountForStats { get; }
         bool MustRunAgainstAllTests { get; }
+        bool IsStaticValue { get; }
     }
 
     /// <summary>
@@ -29,19 +30,13 @@ namespace Stryker.Core.Mutants
         public string ResultStatusReason { get; set; }
         public bool CountForStats => ResultStatus != MutantStatus.CompileError && ResultStatus != MutantStatus.Ignored;
 
-        public bool MustRunAgainstAllTests
-        {
-            get => CoveringTests.IsEveryTest;
-        }
+        public bool MustRunAgainstAllTests => CoveringTests.IsEveryTest;
 
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
         public int? Line => Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
         public bool IsStaticValue { get; set; }
 
-        public void ResetCoverage()
-        {
-            CoveringTests = TestsGuidList.NoTest();
-        }
+        public void ResetCoverage() => CoveringTests = TestsGuidList.NoTest();
 
         public void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests)
         {
@@ -49,11 +44,11 @@ namespace Stryker.Core.Mutants
             {
                 ResultStatus = MutantStatus.Killed;
             }
-            else if (resultRanTests.IsEveryTest || (!MustRunAgainstAllTests && CoveringTests.IsIncluded(resultRanTests)))
+            else if (resultRanTests.IsEveryTest || (MustRunAgainstAllTests is not true && CoveringTests.IsIncluded(resultRanTests)))
             {
                 ResultStatus = MutantStatus.Survived;
             }
-            else if (!timedOutTests.IsEmpty && CoveringTests.IsEveryTest || CoveringTests.ContainsAny(timedOutTests))
+            else if ((!timedOutTests.IsEmpty && CoveringTests.IsEveryTest) || CoveringTests.ContainsAny(timedOutTests))
             {
                 ResultStatus = MutantStatus.Timeout;
             }
