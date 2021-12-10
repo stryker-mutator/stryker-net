@@ -96,7 +96,13 @@ namespace Stryker.CLI
         {
             var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCli>();
 
-            logger.LogInformation("The final mutation score is {MutationScore:P2}", result.MutationScore);
+            if (result.MutationScore == double.NaN)
+            {
+                logger.LogInformation("Stryker was unable to calculate a mutation score");
+            } else
+            {
+                logger.LogInformation("The final mutation score is {MutationScore:P2}", result.MutationScore);
+            }
             if (result.ScoreIsLowerThanThresholdBreak())
             {
                 var thresholdBreak = (double)inputs.ValidateAll().Thresholds.Break / 100;

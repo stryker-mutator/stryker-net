@@ -104,13 +104,13 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         }
 
         [Fact]
-        public void ReportComponent_ShouldCalculateMutationScore_NoMutations()
+        public void ReportComponent_ShouldCalculateMutationScoreNaN_NoMutations()
         {
             var target = new CsharpFolderComposite();
             target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { } });
 
             var result = target.GetMutationScore();
-            result.ShouldBe(0);
+            result.ShouldBe(double.NaN);
         }
 
         [Fact]
@@ -170,7 +170,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         [InlineData(MutantStatus.Killed, 1)]
         [InlineData(MutantStatus.Timeout, 1)]
         [InlineData(MutantStatus.Survived, 0)]
-        [InlineData(MutantStatus.NotRun, 0)]
+        [InlineData(MutantStatus.NotRun, double.NaN)]
         public void ReportComponent_ShouldCalculateMutationScore_OnlyKilledIsSuccessful(MutantStatus status, double expectedScore)
         {
             var target = new CsharpFolderComposite();
@@ -187,13 +187,21 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             target.Add(new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.CompileError } } });
 
             var result = target.GetMutationScore();
-            result.ShouldBe(0);
+            result.ShouldBe(double.NaN);
         }
 
         [Fact]
-        public void ShouldGet0MutationScoreWhenAllExcluded()
+        public void ShouldGetNaNMutationScoreWhenAllExcluded()
         {
             var file = new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Ignored } } };
+
+            file.GetMutationScore().ShouldBe(double.NaN);
+        }
+
+        [Fact]
+        public void ShouldGet0MutationScoreWhenAllNoCoverage()
+        {
+            var file = new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.NoCoverage } } };
 
             file.GetMutationScore().ShouldBe(0);
         }
