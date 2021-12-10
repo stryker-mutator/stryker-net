@@ -1,5 +1,9 @@
 {
+  "extra-oject": {
+    "this-should-work": "but not appear in the options object"
+  },
   "stryker-config": {
+    //we should support comments in config files
     "reporters": [
       "Json"
     ],

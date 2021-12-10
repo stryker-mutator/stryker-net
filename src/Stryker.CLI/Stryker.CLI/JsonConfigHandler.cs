@@ -68,16 +68,11 @@ namespace Stryker.CLI
             FileBasedInput input;
             try
             {
-                var root = JsonSerializer.Deserialize<FileBasedInputOuter>(json);
+                var serializerOptions = new JsonSerializerOptions { ReadCommentHandling = JsonCommentHandling.Skip };
+                var root = JsonSerializer.Deserialize<FileBasedInputOuter>(json, serializerOptions);
                 if (root == null)
                 {
                     throw new InputException($"The config file at \"{configFilePath}\" could not be parsed.");
-                }
-                IReadOnlyCollection<string> extraKeys = root.ExtraData != null ? root.ExtraData.Keys : Array.Empty<string>();
-                if (extraKeys.Any())
-                {
-                    var description = extraKeys.Count == 1 ? $"\"{extraKeys.First()}\" was found" : $"several were found: {{ \"{string.Join("\", \"", extraKeys)}\" }}";
-                    throw new InputException($"The config file at \"{configFilePath}\" must contain a single \"stryker-config\" root object but {description}.");
                 }
                 input = root.Input ?? throw new InputException($"The config file at \"{configFilePath}\" must contain a single \"stryker-config\" root object.");
             }

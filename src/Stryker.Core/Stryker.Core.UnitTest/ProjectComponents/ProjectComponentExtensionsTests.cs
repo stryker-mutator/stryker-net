@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.ProjectComponents
 {
-    public class ProjectComponentsExtensionsTests : TestBase
+    public class ProjectComponentExtensionsTests : TestBase
     {
         [Theory]
         [InlineData(new int[0], new int[0])]
