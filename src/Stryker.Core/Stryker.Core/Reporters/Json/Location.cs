@@ -1,24 +1,24 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 
 namespace Stryker.Core.Reporters.Json
 {
-    public class JsonMutantLocation
+    public class Location
     {
-        public JsonMutantPosition Start { get; init; }
-        public JsonMutantPosition End { get; init; }
+        public Position Start { get; init; }
+        public Position End { get; init; }
 
-        public JsonMutantLocation()
+        public Location()
         {
         }
 
-        public JsonMutantLocation(FileLinePositionSpan location)
+        public Location(FileLinePositionSpan location)
         {
-            Start = new JsonMutantPosition
+            Start = new Position
             {
                 Line = location.StartLinePosition.Line + 1,
                 Column = location.StartLinePosition.Character + 1
             };
-            End = new JsonMutantPosition
+            End = new Position
             {
                 Line = location.EndLinePosition.Line + 1,
                 Column = location.EndLinePosition.Character + 1

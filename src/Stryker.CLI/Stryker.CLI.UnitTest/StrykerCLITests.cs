@@ -414,6 +414,21 @@ Options:";
         }
 
         [Theory]
+        [InlineData("-o", null)]
+        [InlineData("-o:html", "html")]
+        [InlineData("--open-report", null)]
+        [InlineData("--open-report:dashboard", "dashboard")]
+        public void ShouldSupplyOpenReportInputsWhenPassed(string arg, string expected)
+        {
+            _target.Run(new[] { arg });
+
+            _strykerRunnerMock.VerifyAll();
+
+            _inputs.OpenReportEnabledInput.SuppliedInput.ShouldBeTrue();
+            _inputs.OpenReportInput.SuppliedInput.ShouldBe(expected);
+        }
+
+        [Theory]
         [InlineData("--azure-fileshare-sas", "sas")]
         public void ShouldSupplyAzureFileshareSasWhenPassed(params string[] argName)
         {

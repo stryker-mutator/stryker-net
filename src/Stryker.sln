@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.28729.10
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.CLI", "Stryker.CLI\Stryker.CLI\Stryker.CLI.csproj", "{7B35D5F5-F983-4034-8A15-952E8C415010}"
 EndProject
@@ -16,6 +16,22 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.RegexMutators", "Stryker.RegexMutators\Stryker.RegexMutators\Stryker.RegexMutators.csproj", "{4E6E67F9-1890-4A6A-885B-CD6D55B2FC49}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.RegexMutators.UnitTest", "Stryker.RegexMutators\Stryker.RegexMutators.UnitTest\Stryker.RegexMutators.UnitTest.csproj", "{7C8C7670-4636-4C56-9E3E-22B987337EF2}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{68DC3E8E-7CC2-4953-BAFC-08EFBF9F3307}"
+	ProjectSection(SolutionItems) = preProject
+		..\.editorconfig = ..\.editorconfig
+		..\azure-pipelines.yml = ..\azure-pipelines.yml
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipeline-templates", "pipeline-templates", "{A9BCC324-3DF8-493A-9792-A15C9797AD11}"
+	ProjectSection(SolutionItems) = preProject
+		..\pipeline-templates\populate-cache-steps.yml = ..\pipeline-templates\populate-cache-steps.yml
+		..\pipeline-templates\prepare-integration-test-steps.yml = ..\pipeline-templates\prepare-integration-test-steps.yml
+		..\pipeline-templates\run-integration-test-steps.yml = ..\pipeline-templates\run-integration-test-steps.yml
+		..\pipeline-templates\update-package-lock-files-stage.yml = ..\pipeline-templates\update-package-lock-files-stage.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -54,6 +70,9 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{A9BCC324-3DF8-493A-9792-A15C9797AD11} = {68DC3E8E-7CC2-4953-BAFC-08EFBF9F3307}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {41C3DC7A-5A90-418D-AC69-6B5A34E6A7AC}

@@ -90,7 +90,7 @@ stages:
         custom: tool
         arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools
         includeNuGetOrg: true
-    - script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporters "['dashboard', 'dots']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module cli --dashboard-api-key $(Stryker.Dashboard.Api.Key)
+    - script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporter dashboard --reporter dots --reporter html --version master --dashboard-api-key $(Stryker.Dashboard.Api.Key)
       condition: succeeded()
       displayName: Run Stryker on Stryker.CLI
       workingDirectory: 'src\Stryker.CLI\Stryker.CLI.UnitTest'
@@ -107,7 +107,7 @@ stages:
         custom: tool
         arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools
         includeNuGetOrg: true
-    - script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporters "['dashboard', 'dots', 'html']" --dashboard-project github.com/stryker-mutator/stryker-net --dashboard-version master --dashboard-module core --dashboard-api-key $(Stryker.Dashboard.Api.Key)
+    - script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporter dashboard --reporter dots --reporter html --version master --dashboard-api-key $(Stryker.Dashboard.Api.Key)
       condition: succeeded()
       displayName: Run Stryker on Stryker.Core
       workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
