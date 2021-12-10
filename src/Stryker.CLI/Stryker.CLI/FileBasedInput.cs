@@ -9,13 +9,10 @@ namespace Stryker.CLI
         Dictionary<string, JsonElement> ExtraData { get; init; }
     }
 
-    public class FileBasedInputOuter : IExtraData
+    public class FileBasedInputOuter
     {
         [JsonPropertyName("stryker-config")]
         public FileBasedInput Input { get; init; }
-
-        [JsonExtensionData]
-        public Dictionary<string, JsonElement> ExtraData { get; init; }
     }
 
     public class FileBasedInput : IExtraData
