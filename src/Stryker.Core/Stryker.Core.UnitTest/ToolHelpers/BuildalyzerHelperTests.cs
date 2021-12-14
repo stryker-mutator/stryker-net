@@ -9,18 +9,6 @@ namespace Stryker.Core.UnitTest.ToolHelpers
     public class BuildalyzerHelperTests : TestBase
     {
         [Fact]
-        public void ShouldGetAssemblyAttributeFileNameDefault()
-        {
-            var projectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>() { },
-                    projectFilePath: "path").Object;
-
-            var result = projectAnalyzerResult.GetNullableContextOptions();
-
-            result.ShouldBe("path.assemblyinfo.cs");
-        }
-
-        [Fact]
         public void ShouldGetAssemblyAttributeFileName()
         {
             var projectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
