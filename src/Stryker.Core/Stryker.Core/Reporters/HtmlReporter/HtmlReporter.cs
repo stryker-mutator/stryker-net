@@ -48,11 +48,11 @@ namespace Stryker.Core.Reporters.Html.reporter
                 _processWrapper.Open(reportUri);
             } else
             {
-                _consoleWriter.Write(Output.Cyan("Hint: by passing \"--open or -o\" the report will open automatically once stryker is done."));
+                _consoleWriter.Write(Output.Cyan("Hint: by passing \"--open-report or -o\" the report will open automatically once Stryker is done."));
             }
 
-            _consoleWriter.WriteLine(Output.Green($"\nYour html report has been generated at: \n " +
-                $"{reportUri} \n" +
+            _consoleWriter.WriteLine(Output.Green($"\nYour html report has been generated at:\n" +
+                $"{reportUri}\n" +
                 $"You can open it in your browser of choice."));
         }
 
