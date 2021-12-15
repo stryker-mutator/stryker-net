@@ -1,4 +1,4 @@
-# [](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.1.0...dotnet-stryker@) (2021-12-10)
+# [1.2.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.1.0...dotnet-stryker@) (2021-12-10)
 
 
 ### Bug Fixes
@@ -14,7 +14,7 @@
 
 
 
-# [](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.0.1...dotnet-stryker@) (2021-11-16)
+# [1.1.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.0.1...dotnet-stryker@) (2021-11-16)
 
 
 ### Bug Fixes
@@ -31,7 +31,7 @@
 
 
 
-# [](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.0.0...dotnet-stryker@) (2021-11-02)
+# [1.0.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.0.0...dotnet-stryker@) (2021-11-02)
 
 
 ### Bug Fixes
@@ -40,7 +40,7 @@
 
 
 
-# [](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.11...dotnet-stryker@) (2021-10-30)
+# [1.0.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.11...dotnet-stryker@) (2021-10-30)
 
 
 ### Bug Fixes
