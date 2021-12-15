@@ -43,14 +43,17 @@ namespace Stryker.Core.Reporters.Html.reporter
             reportUri = reportUri.StartsWith("/") ? reportUri : "/" + reportUri;
             reportUri = "file://" + reportUri;
 
-            _consoleWriter.Write(Output.Green($"\nYour html report has been generated at: \n " +
-                $"{reportUri} \n" +
-                $"You can open it in your browser of choice. \n"));
-
             if (_options.ReportTypeToOpen == Options.Inputs.ReportType.Html)
             {
                 _processWrapper.Open(reportUri);
+            } else
+            {
+                _consoleWriter.Write(Output.Cyan("Hint: by passing \"--open-report or -o\" the report will open automatically once Stryker is done."));
             }
+
+            _consoleWriter.WriteLine(Output.Green($"\nYour html report has been generated at:\n" +
+                $"{reportUri}\n" +
+                $"You can open it in your browser of choice."));
         }
 
         private void WriteHtmlReport(string filePath, string mutationReport)

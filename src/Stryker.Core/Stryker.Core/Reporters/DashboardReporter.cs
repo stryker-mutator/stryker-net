@@ -39,13 +39,17 @@ namespace Stryker.Core.Reporters
 
             if (reportUri != null)
             {
-                _logger.LogDebug("Your stryker report has been uploaded to: \n {0} \nYou can open it in your browser of choice.", reportUri);
-                _consoleWriter.Write(Output.Green($"Your stryker report has been uploaded to: \n {reportUri} \nYou can open it in your browser of choice."));
-
                 if (_options.ReportTypeToOpen == Options.Inputs.ReportType.Dashboard)
                 {
                     _processWrapper.Open(reportUri);
                 }
+                else
+                {
+                    _consoleWriter.Write(Output.Cyan("Hint: by passing \"--open-report:dashboard or -o:dashboard\" the report will open automatically once Stryker is done."));
+                }
+
+                _logger.LogDebug("Your stryker report has been uploaded to: \n {0} \nYou can open it in your browser of choice.", reportUri);
+                _consoleWriter.Write(Output.Green($"Your stryker report has been uploaded to: \n {reportUri} \nYou can open it in your browser of choice."));
             }
             else
             {
