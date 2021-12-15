@@ -10,7 +10,7 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <VersionPrefix>1.2.0</VersionPrefix>
+    <VersionPrefix>1.2.1</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <PackageId>dotnet-stryker</PackageId>
     <Authors>Richard Werkman, Rouke Broersma</Authors>

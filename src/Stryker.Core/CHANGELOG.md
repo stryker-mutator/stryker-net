@@ -1,3 +1,12 @@
+# [](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.2.0...stryker@) (2021-12-15)
+
+
+### Bug Fixes
+
+* **Load preprocessor symbols:** Correctly load preprocessor symbols so they can be used ([#1836](https://github.com/stryker-mutator/stryker-net/issues/1836)) ([58bc927](https://github.com/stryker-mutator/stryker-net/commit/58bc927ab740db3294e16ce0af84ec0db28ab83d))
+
+
+
 # [1.2.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.1.0...stryker@) (2021-12-10)
 
 
