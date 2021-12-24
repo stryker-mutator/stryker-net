@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Stryker.Core.Initialisation;
 using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.MutationTest
@@ -12,9 +13,14 @@ namespace Stryker.Core.MutationTest
     public class MutationTestInput
     {
         /// <summary>
-        /// Contains all information about the project the framework was called on
+        /// Contains all information about the project to mutate
         /// </summary>
-        public SourceProjectInfo ProjectInfo { get; set; }
+        public SourceProjectInfo SourceProjectInfo { get; set; }
+
+        /// <summary>
+        /// Contains all information about the tests to run
+        /// </summary>
+        public TestProjectsInfo TestProjectsInfo { get; set; }
 
         /// <summary>
         /// The testrunner that will be used for the mutation test run
