@@ -25,22 +25,22 @@ namespace Stryker.Core.UnitTest.Mutants
 			{
 				// the default list of mutators
                 new BlockMutator(),
-				new BinaryExpressionMutator(),
-				new BooleanMutator(),
-				new AssignmentExpressionMutator(),
-				new PrefixUnaryMutator(),
-				new PostfixUnaryMutator(),
-				new CheckedMutator(),
-				new LinqMutator(),
-				new StringMutator(),
-				new StringEmptyMutator(),
-				new InterpolatedStringMutator(),
-				new NegateConditionMutator(),
-				new InitializerMutator(),
-				new ObjectCreationMutator(),
-				new ArrayCreationMutator(),
-				new StatementMutator(),
-				new RegexMutator()
+                new BinaryExpressionMutator(),
+                new BooleanMutator(),
+                new AssignmentExpressionMutator(),
+                new PrefixUnaryMutator(),
+                new PostfixUnaryMutator(),
+                new CheckedMutator(),
+                new LinqMutator(),
+                new StringMutator(),
+                new StringEmptyMutator(),
+                new InterpolatedStringMutator(),
+                new NegateConditionMutator(),
+                new InitializerMutator(),
+                new ObjectCreationMutator(),
+                new ArrayCreationMutator(),
+                new StatementMutator(),
+                new RegexMutator()
 			};
 			_target = new CsharpMutantOrchestrator(mutators, options);
 		}
