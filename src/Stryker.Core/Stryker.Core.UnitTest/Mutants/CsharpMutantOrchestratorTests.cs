@@ -1008,6 +1008,14 @@ return default(string);}
         }
 
         [Fact]
+        public void ShouldAddReturnDefaultToArrowExpressionOperator()
+        {
+            string source = @"public static int operator+ (TestClass value, TestClass other) => Sub(out var x, """")?1:2;";
+            string expected = @"public static int operator+ (TestClass value, TestClass other) {if(StrykerNamespace.MutantControl.IsActive(0)){return!(Sub(out var x, """"))?1:2;}else{return Sub(out var x, (StrykerNamespace.MutantControl.IsActive(1)?""Stryker was here!"":""""))?1:2;}}";
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldNotAddReturnDefaultToEnumerationMethods()
         {
             string source = @"public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable, string propertyName)
@@ -1061,6 +1069,14 @@ if(StrykerNamespace.MutantControl.IsActive(4)){;}else{		yield break;
 	;
 }}";
             ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldNotAddReturnDefaultToDestructor()
+        {
+            string source = @"~TestClass(){;}";
+
+            ShouldMutateSourceToExpected(source, source);
         }
 
         [Fact]
@@ -1155,21 +1171,24 @@ static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
         [Fact]
         public void ShouldMutateStaticProperties()
         {
-            var source = @"class Test {
+            var source = @"
 static string Value
 {
 	get { return ""TestDescription"";}
 	set { value = ""TestDescription"";}
 }
-static TestClass(){}}";
+static TestClass(){}";
 
-            var expected = @"class Test {
+            var expected = @"
 static string Value
 {
-	get { return (StrykerNamespace.MutantControl.IsActive(0)?"""":""TestDescription"");}
-	set { value = (StrykerNamespace.MutantControl.IsActive(1)?"""":""TestDescription"");}
-}
-static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
+	get {if(StrykerNamespace.MutantControl.IsActive(0)){}else{ return (StrykerNamespace.MutantControl.IsActive(1)?"""":""TestDescription"");}
+return default(string);
+        }
+        set {if(StrykerNamespace.MutantControl.IsActive(2)){}else{ value = (StrykerNamespace.MutantControl.IsActive(3)?"""":""TestDescription"");}
+}}
+static TestClass() { using (new StrykerNamespace.MutantContext()) { } }
+";
             ShouldMutateSourceToExpected(source, expected);
         }
 

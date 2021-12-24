@@ -21,8 +21,8 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
 {
     interface TestClass
     {
-        int A {get; set;}
-        int B {get; set;}
+        int A { get; set; }
+        int B { get; set; }
         void MethodA();
     }
 }";
@@ -34,8 +34,8 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
 {
     interface TestClass
     {
-        int A {get; set;}
-        int B {get; set;}
+        int A { get; set; }
+        int B { get; set; }
         void MethodA();
     }
 }";
@@ -208,62 +208,6 @@ return default(string);}}";
             ShouldMutateSourceToExpected(source, expected);
 
         }
-        [Fact]
-        public void ShouldAddReturnDefaultToMethods()
-        {
-            string source = @"bool TestMethod()
-{
-    ;
-}";
-            string expected = @"bool TestMethod()
-{
-    ;
-    return default(bool);
-}";
-            ShouldMutateSourceToExpected(source, expected);
-        }
-
-        [Fact]
-        public void ShouldAddReturnDefaultToConversion()
-        {
-            string source = @"public static explicit operator string(TestClass value)
-{;
-}";
-            string expected = @"public static explicit operator string(TestClass value)
-{;
-return default(string);
-}";
-            ShouldMutateSourceToExpected(source, expected);
-        }
-
-        [Fact]
-        public void ShouldAddReturnDefaultToOperator()
-        {
-            string source = @"public static string operator+ (TestClass value, TestClass other)
-{;
-}";
-            string expected = @"public static string operator+ (TestClass value, TestClass other)
-{;
-return default(string);
-}";
-            ShouldMutateSourceToExpected(source, expected);
-        }
-
-        [Fact]
-        public void ShouldAddReturnDefaultToArrowExpressionOperator()
-        {
-            string source = @"public static int operator+ (TestClass value, TestClass other) => Sub(out var x, """")?1:2;";
-            string expected = @"public static int operator+ (TestClass value, TestClass other) {if(StrykerNamespace.MutantControl.IsActive(0)){return!(Sub(out var x, """"))?1:2;}else{return Sub(out var x, (StrykerNamespace.MutantControl.IsActive(1)?""Stryker was here!"":""""))?1:2;}}";
-            ShouldMutateSourceToExpected(source, expected);
-        }
-
-        [Fact]
-        public void ShouldNotAddReturnDefaultToDestructor()
-        {
-            string source = @"~TestClass(){;}";
-
-            ShouldMutateSourceToExpected(source, source);
-        }
 
         [Fact]
         public void ShouldNotMutateConstDeclaration()
@@ -272,92 +216,6 @@ return default(string);
 const string text = ""a""+""b""+""c"";}";
             var expected = @"void Test(){
 const string text = ""a""+""b""+""c"";}";
-            ShouldMutateSourceToExpected(source, expected);
-        }
-
-        [Fact]
-        public void ShouldAddReturnDefaultToAsyncMethods()
-        {
-            string source = @"public async Task<bool> TestMethod()
-{
-    ;
-}";
-            string expected = @"public async Task<bool> TestMethod()
-{
-    ;
-    return default(bool);
-}";
-            ShouldMutateSourceToExpected(source, expected);
-        }
-
-        [Fact]
-        public void ShouldNotAddReturnDefaultToEnumerationMethods()
-        {
-            string source = @"public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable, string propertyName)
-      {
-        foreach (var o in enumerable)
-        {
-            yield return value;
-        }
-      }
-public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable)
-      {
-        yield break;
-      }";
-            string expected = @"public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable, string propertyName)
-      {
-        foreach (var o in enumerable)
-        {
-if(StrykerNamespace.MutantControl.IsActive(0)){;}else{            yield return value;}
-        }
-      }
-public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable)
-      {
-if(StrykerNamespace.MutantControl.IsActive(1)){;}else{        yield break;}
-      }";
-            ShouldMutateSourceToExpected(source, expected);
-        }
-
-        [Fact]
-        public void ShouldAddReturnDefaultToAsyncWithFullNamespaceMethods()
-        {
-            string source = @"public async System.Threading.Tasks.Task<bool> TestMethod()
-{
-    ;
-}";
-            string expected = @"public async System.Threading.Tasks.Task<bool> TestMethod()
-{
-    ;
-    return default(bool);
-}";
-            ShouldMutateSourceToExpected(source, expected);
-        }
-
-        [Fact]
-        public void ShouldNotAddReturnDefaultToAsyncTaskMethods()
-        {
-            string source = @"public async Task TestMethod()
-{
-    ;
-}";
-            string expected = @"public async Task TestMethod()
-{
-    ;
-}";
-            ShouldMutateSourceToExpected(source, expected);
-        }
-
-        [Fact]
-        public void ShouldNotAddReturnDefaultToMethodsWithReturnTypeVoid()
-        {
-            string source = @"void TestMethod()
-{
-    ;
-}";
-            string expected = @"void TestMethod()
-{
-    ;
-}";
             ShouldMutateSourceToExpected(source, expected);
         }
 
