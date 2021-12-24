@@ -55,36 +55,29 @@ namespace Stryker.Core.ProjectComponents
 
         public IEnumerable<IReadOnlyMutant> TotalMutants() => ValidMutants()
             .Union(InvalidMutants())
-            .Union(IgnoredMutants())
-            .ToList();
+            .Union(IgnoredMutants());
 
         public IEnumerable<IReadOnlyMutant> ValidMutants() => UndetectedMutants()
-            .Union(DetectedMutants())
-            .ToList();
+            .Union(DetectedMutants());
 
         public IEnumerable<IReadOnlyMutant> InvalidMutants() => Mutants
-            .Where(m => m.ResultStatus == MutantStatus.CompileError)
-            .ToList();
+            .Where(m => m.ResultStatus == MutantStatus.CompileError);
 
         public IEnumerable<IReadOnlyMutant> UndetectedMutants() => Mutants
             .Where(m =>
                 m.ResultStatus == MutantStatus.Survived ||
-                m.ResultStatus == MutantStatus.NoCoverage)
-            .ToList();
+                m.ResultStatus == MutantStatus.NoCoverage);
 
         public IEnumerable<IReadOnlyMutant> IgnoredMutants() => Mutants
-            .Where(m => m.ResultStatus == MutantStatus.Ignored)
-            .ToList();
+            .Where(m => m.ResultStatus == MutantStatus.Ignored);
 
         public IEnumerable<IReadOnlyMutant> NotRunMutants() => Mutants
-            .Where(m => m.ResultStatus == MutantStatus.NotRun)
-            .ToList();
+            .Where(m => m.ResultStatus == MutantStatus.NotRun);
 
         public IEnumerable<IReadOnlyMutant> DetectedMutants() => Mutants
             .Where(m =>
                 m.ResultStatus == MutantStatus.Killed ||
-                m.ResultStatus == MutantStatus.Timeout)
-            .ToList();
+                m.ResultStatus == MutantStatus.Timeout);
 
         /// <summary>
         /// Returns the mutation score for this folder / file

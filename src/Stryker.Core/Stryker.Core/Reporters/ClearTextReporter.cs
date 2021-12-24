@@ -99,11 +99,12 @@ namespace Stryker.Core.Reporters
                 }
             }
 
-            _consoleWriter.Write($" │ {inputComponent.Mutants.Count(m => m.ResultStatus == MutantStatus.Killed),8}");
-            _consoleWriter.Write($" │ {inputComponent.Mutants.Count(m => m.ResultStatus == MutantStatus.Timeout),9}");
+            var mutants = inputComponent.Mutants.ToList();
+            _consoleWriter.Write($" │ {mutants.Count(m => m.ResultStatus == MutantStatus.Killed),8}");
+            _consoleWriter.Write($" │ {mutants.Count(m => m.ResultStatus == MutantStatus.Timeout),9}");
             _consoleWriter.Write($" │ {inputComponent.TotalMutants().Count() - inputComponent.DetectedMutants().Count(),10}");
-            _consoleWriter.Write($" │ {inputComponent.Mutants.Count(m => m.ResultStatus == MutantStatus.NoCoverage),8}");
-            _consoleWriter.Write($" │ {inputComponent.Mutants.Count(m => m.ResultStatus == MutantStatus.CompileError),7}");
+            _consoleWriter.Write($" │ {mutants.Count(m => m.ResultStatus == MutantStatus.NoCoverage),8}");
+            _consoleWriter.Write($" │ {mutants.Count(m => m.ResultStatus == MutantStatus.CompileError),7}");
             _consoleWriter.WriteLine($" │");
         }
     }

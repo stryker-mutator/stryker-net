@@ -73,7 +73,7 @@ namespace Stryker.Core
                 reporters.OnMutantsCreated(rootComponent);
 
                 var allMutants = rootComponent.Mutants;
-                var mutantsNotRun = rootComponent.NotRunMutants();
+                var mutantsNotRun = rootComponent.NotRunMutants().ToList();
 
                 if (!mutantsNotRun.Any())
                 {
@@ -159,7 +159,7 @@ namespace Stryker.Core
         {
             if (projectComponents.Count() > 1)
             {
-                var rootComponent = new CsharpFolderComposite
+                var rootComponent = new Solution
                 {
                     FullPath = options.BasePath // in case of a solution run the basePath will be where the solution file is
                 };
