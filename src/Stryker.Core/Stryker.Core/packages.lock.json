@@ -4,11 +4,11 @@
     ".NETCoreApp,Version=v5.0": {
       "Buildalyzer": {
         "type": "Direct",
-        "requested": "[3.2.5, )",
-        "resolved": "3.2.5",
-        "contentHash": "fkz47ah43ipHXFWcoh48BHpqqrjrtK53a9XAfremYp/Ya+2WqxHb4NykH5H/s903rj8CNraKftMVlqJNbOSyDg==",
+        "requested": "[3.2.6, )",
+        "resolved": "3.2.6",
+        "contentHash": "dZJvQaVR9+v6O2S7zL8uzHGmDVXDBlk5EYOwedAWZiezg8nVJuRDDkJdU9DHdxtczWpxl6B/G68e7rf/3TY4qQ==",
         "dependencies": {
-          "Buildalyzer.Logger": "3.2.5",
+          "Buildalyzer.Logger": "3.2.6",
           "MSBuild.StructuredLogger": "2.1.545",
           "Microsoft.Build": "16.10.0",
           "Microsoft.Build.Framework": "16.10.0",
@@ -224,8 +224,8 @@
       },
       "Buildalyzer.Logger": {
         "type": "Transitive",
-        "resolved": "3.2.5",
-        "contentHash": "Yi93SvRzymkT9856Z0joTftjOs2NJfMFSjkep4jAgWxEK2cskLyqxdaAhJiqtLAzJMRkbBRIhmAi6ldHwwVIjQ==",
+        "resolved": "3.2.6",
+        "contentHash": "Zkq//fOMYLP4/Y1VYQQgQXMNPpkYWgAiRSHCyx1ijL+tfGqQKiSEQjBh1sJ+H7jOhBnvF7FLixTIyZol1zFf5g==",
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         }
