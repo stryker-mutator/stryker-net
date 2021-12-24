@@ -142,9 +142,9 @@ namespace Stryker.Core.UnitTest.Reporters
             var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.json");
             mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
             var fileContents = mockFileSystem.File.ReadAllText(reportPath);
-            fileContents.ShouldContain(@"""thresholds"": {");
-            fileContents.ShouldContain(@"""high"": 80");
-            fileContents.ShouldContain(@"""low"": 60");
+            fileContents.ShouldContain(@"""thresholds"":{");
+            fileContents.ShouldContain(@"""high"":80");
+            fileContents.ShouldContain(@"""low"":60");
         }
     }
 }

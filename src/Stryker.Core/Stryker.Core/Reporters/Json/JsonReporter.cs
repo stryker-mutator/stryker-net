@@ -39,25 +39,23 @@ namespace Stryker.Core.Reporters.Json
         private void WriteReportToJsonFile(string filePath, JsonReport mutationReport)
         {
             _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-            using (var file = _fileSystem.File.Create(filePath))
-            {
-                mutationReport.Serialize(file);
-            }
+            using var file = _fileSystem.File.Create(filePath);
+            mutationReport.Serialize(file);
         }
 
         public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
         {
-            // This report does not currently report when mutants are created
+            // This reporter does not currently report when mutants are created
         }
 
         public void OnMutantTested(IReadOnlyMutant result)
         {
-            // This report does not currently report when mutants are tested
+            // This reporter does not currently report when mutants are tested
         }
 
         public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
         {
-            // This report does not currently report when the mutation testrun starts
+            // This reporter does not currently report when the mutation testrun starts
         }
     }
 }

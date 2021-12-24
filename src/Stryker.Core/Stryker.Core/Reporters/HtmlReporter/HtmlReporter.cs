@@ -43,57 +43,59 @@ namespace Stryker.Core.Reporters.Html.reporter
             reportUri = reportUri.StartsWith("/") ? reportUri : "/" + reportUri;
             reportUri = "file://" + reportUri;
 
-            _consoleWriter.Write(Output.Green($"\nYour html report has been generated at: \n " +
-                $"{reportUri} \n" +
-                $"You can open it in your browser of choice. \n"));
-
             if (_options.ReportTypeToOpen == Options.Inputs.ReportType.Html)
             {
                 _processWrapper.Open(reportUri);
+            } else
+            {
+                _consoleWriter.Write(Output.Cyan("Hint: by passing \"--open-report or -o\" the report will open automatically once Stryker is done."));
             }
+
+            _consoleWriter.WriteLine(Output.Green($"\nYour html report has been generated at:\n" +
+                $"{reportUri}\n" +
+                $"You can open it in your browser of choice."));
         }
 
         private void WriteHtmlReport(string filePath, string mutationReport)
         {
             _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
-            using (var htmlStream = typeof(HtmlReporter).Assembly
+            using var htmlStream = typeof(HtmlReporter).Assembly
                 .GetManifestResourceStream(typeof(HtmlReporter)
                 .Assembly.GetManifestResourceNames()
-                .Single(m => m.Contains("mutation-report.html"))))
-            using (var jsStream = typeof(HtmlReporter).Assembly
+                .Single(m => m.Contains("mutation-report.html")));
+
+            using var jsStream = typeof(HtmlReporter).Assembly
                 .GetManifestResourceStream(typeof(HtmlReporter)
                 .Assembly.GetManifestResourceNames()
-                .Single(m => m.Contains("mutation-test-elements.js"))))
+                .Single(m => m.Contains("mutation-test-elements.js")));
 
-            {
-                using (var htmlReader = new StreamReader(htmlStream))
-                using (var jsReader = new StreamReader(jsStream))
-                {
-                    using (var file = _fileSystem.File.CreateText(filePath))
-                    {
-                        var fileContent = htmlReader.ReadToEnd();
+            using var htmlReader = new StreamReader(htmlStream);
+            using var jsReader = new StreamReader(jsStream);
 
-                        fileContent = fileContent.Replace("##REPORT_JS##", jsReader.ReadToEnd());
-                        fileContent = fileContent.Replace("##REPORT_TITLE##", "Stryker.NET Report");
-                        fileContent = fileContent.Replace("##REPORT_JSON##", mutationReport);
+            using var file = _fileSystem.File.CreateText(filePath);
+            var fileContent = htmlReader.ReadToEnd();
 
-                        file.WriteLine(fileContent);
-                    }
-                }
-            }
+            fileContent = fileContent.Replace("##REPORT_JS##", jsReader.ReadToEnd());
+            fileContent = fileContent.Replace("##REPORT_TITLE##", "Stryker.NET Report");
+            fileContent = fileContent.Replace("##REPORT_JSON##", mutationReport);
+
+            file.WriteLine(fileContent);
         }
 
         public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
         {
+            // This reporter does not currently report when mutants are created
         }
 
         public void OnMutantTested(IReadOnlyMutant result)
         {
+            // This reporter does not currently report when mutants are tested
         }
 
         public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
         {
+            // This reporter does not currently report when the mutation testrun starts
         }
     }
 }

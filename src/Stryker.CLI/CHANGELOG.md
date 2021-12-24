@@ -1,4 +1,29 @@
-# [](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.0.1...dotnet-stryker@) (2021-11-16)
+# [](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.2.0...dotnet-stryker@) (2021-12-15)
+
+
+### Bug Fixes
+
+* **Load preprocessor symbols:** Correctly load preprocessor symbols so they can be used ([#1836](https://github.com/stryker-mutator/stryker-net/issues/1836)) ([58bc927](https://github.com/stryker-mutator/stryker-net/commit/58bc927ab740db3294e16ce0af84ec0db28ab83d))
+
+
+
+# [1.2.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.1.0...dotnet-stryker@) (2021-12-10)
+
+
+### Bug Fixes
+
+* **config file:** Additional properties in the root of the config file are allowed ([#1830](https://github.com/stryker-mutator/stryker-net/issues/1830)) ([e806a02](https://github.com/stryker-mutator/stryker-net/commit/e806a02602cb346c45a6d39b4f29e11a7ec6216a))
+
+
+### Features
+
+* **Config file comments:** Add support for config file comments ([#1832](https://github.com/stryker-mutator/stryker-net/issues/1832)) ([8443799](https://github.com/stryker-mutator/stryker-net/commit/84437999a49a96639b37cb6f779ba1dff053581e))
+* **html report:** New diff view in HTML report ([#1818](https://github.com/stryker-mutator/stryker-net/issues/1818)) ([9b5ac6c](https://github.com/stryker-mutator/stryker-net/commit/9b5ac6c452895548d6c4bcb646d426441bd10549))
+* **reporting:** Open dashboard report with --open-report ([#1795](https://github.com/stryker-mutator/stryker-net/issues/1795)) ([75cbec2](https://github.com/stryker-mutator/stryker-net/commit/75cbec233ef24d326db04c66eade384851964118))
+
+
+
+# [1.1.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.0.1...dotnet-stryker@) (2021-11-16)
 
 
 ### Bug Fixes
@@ -15,7 +40,7 @@
 
 
 
-# [](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.0.0...dotnet-stryker@) (2021-11-02)
+# [1.0.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.0.0...dotnet-stryker@) (2021-11-02)
 
 
 ### Bug Fixes
@@ -24,7 +49,7 @@
 
 
 
-# [](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.11...dotnet-stryker@) (2021-10-30)
+# [1.0.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.11...dotnet-stryker@) (2021-10-30)
 
 
 ### Bug Fixes
