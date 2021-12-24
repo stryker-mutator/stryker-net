@@ -18,6 +18,7 @@ using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ToolHelpers;
 using Stryker.DataCollector;
 

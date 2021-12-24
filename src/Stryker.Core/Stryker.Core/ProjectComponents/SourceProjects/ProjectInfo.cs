@@ -3,9 +3,8 @@ using System.IO;
 using System.IO.Abstractions;
 using Buildalyzer;
 using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.ProjectComponents;
 
-namespace Stryker.Core.Initialisation
+namespace Stryker.Core.ProjectComponents.SourceProjects
 {
     public class ProjectInfo
     {

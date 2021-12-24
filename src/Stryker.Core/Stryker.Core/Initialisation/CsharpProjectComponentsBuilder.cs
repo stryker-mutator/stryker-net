@@ -14,6 +14,7 @@ using Stryker.Core.InjectedHelpers;
 using Stryker.Core.MutantFilters.Extensions;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.SourceProjects;
 
 namespace Stryker.Core.Initialisation
 {

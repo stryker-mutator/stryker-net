@@ -7,6 +7,7 @@ using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Control;
 using Stryker.Core.Exceptions;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using System;
 using System.Collections.Generic;
 using System.IO;

@@ -1,7 +1,8 @@
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Stryker.Core.Initialisation;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.TestRunners;
-using System.Collections.Generic;
 
 namespace Stryker.Core.MutationTest
 {

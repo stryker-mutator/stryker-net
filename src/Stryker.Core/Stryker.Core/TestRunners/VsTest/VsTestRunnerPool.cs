@@ -8,6 +8,7 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ToolHelpers;
 
 namespace Stryker.Core.TestRunners.VsTest
