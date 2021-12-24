@@ -179,15 +179,15 @@ namespace Stryker.Core.UnitTest.MutationTest
             var coverageAnalyzerMock = new Mock<ICoverageAnalyser>(MockBehavior.Strict);
 
             // setup mocks
-            reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ReadOnlyProjectComponent>()));
+            reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()));
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
             mutantFilterMock.SetupGet(x => x.DisplayName).Returns("Mock filter");
             IEnumerable<Mutant> mutantsPassedToFilter = null;
-            mutantFilterMock.Setup(x => x.FilterMutants(It.IsAny<IEnumerable<Mutant>>(), It.IsAny<ReadOnlyFileLeaf>(), It.IsAny<StrykerOptions>()))
-                .Callback<IEnumerable<Mutant>, ReadOnlyFileLeaf, StrykerOptions>((mutants, _, __) => mutantsPassedToFilter = mutants)
-                .Returns((IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions o) => mutants.Take(1));
+            mutantFilterMock.Setup(x => x.FilterMutants(It.IsAny<IEnumerable<Mutant>>(), It.IsAny<IReadOnlyFileLeaf>(), It.IsAny<StrykerOptions>()))
+                .Callback<IEnumerable<Mutant>, IReadOnlyFileLeaf, StrykerOptions>((mutants, _, __) => mutantsPassedToFilter = mutants)
+                .Returns((IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions o) => mutants.Take(1));
 
 
             var target = new MutationTestProcess(input,
@@ -266,7 +266,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
-            reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<ReadOnlyProjectComponent>()));
+            reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()));
 
             var target = new MutationTestProcess(input,
                 reporterMock.Object,
