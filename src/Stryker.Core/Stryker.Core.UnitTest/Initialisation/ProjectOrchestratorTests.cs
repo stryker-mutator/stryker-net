@@ -33,7 +33,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             _mutationTestInput = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
                     ProjectContents = new CsharpFolderComposite()
                 },

@@ -89,7 +89,7 @@ namespace Stryker.Core.Initialisation
 
             var input = new MutationTestInput
             {
-                ProjectInfo = projectInfo,
+                SourceProjectInfo = projectInfo,
                 AssemblyReferences = _assemblyReferenceResolver.LoadProjectReferences(projectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
                 TestRunner = _testRunner,
             };

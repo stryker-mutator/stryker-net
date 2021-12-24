@@ -36,7 +36,7 @@ namespace Stryker.Core.Compiling
         }
 
         private string AssemblyName =>
-            _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetAssemblyName();
+            _input.SourceProjectInfo.ProjectUnderTestAnalyzerResult.GetAssemblyName();
 
         /// <summary>
         /// Compiles the given input onto the memory stream
@@ -48,7 +48,7 @@ namespace Stryker.Core.Compiling
         /// </summary>
         public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream, bool devMode)
         {
-            var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
+            var analyzerResult = _input.SourceProjectInfo.ProjectUnderTestAnalyzerResult;
             var trees = syntaxTrees.ToList();
             var compilationOptions = analyzerResult.GetCompilationOptions();
 
@@ -142,11 +142,11 @@ namespace Stryker.Core.Compiling
             _logger.LogDebug($"Trying compilation for the {ReadableNumber(retryCount)} time.");
 
             var emitOptions = symbolStream == null ? null : new EmitOptions(false, DebugInformationFormat.PortablePdb,
-                _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetSymbolFileName());
+                _input.SourceProjectInfo.ProjectUnderTestAnalyzerResult.GetSymbolFileName());
             var emitResult = compilation.Emit(
                 ms,
                 symbolStream,
-                manifestResources: _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetResources(_logger),
+                manifestResources: _input.SourceProjectInfo.ProjectUnderTestAnalyzerResult.GetResources(_logger),
                 win32Resources: compilation.CreateDefaultWin32Resources(
                     true, // Important!
                     false,

@@ -39,7 +39,7 @@ namespace Stryker.Core.UnitTest
             Mock.Get(projectInfo).Setup(p => p.RestoreOriginalAssembly());
             var mutationTestInput = new MutationTestInput()
             {
-                ProjectInfo = projectInfo
+                SourceProjectInfo = projectInfo
             };
 
             inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
@@ -101,7 +101,7 @@ namespace Stryker.Core.UnitTest
             });
             var mutationTestInput = new MutationTestInput()
             {
-                ProjectInfo = new SourceProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new SourceProjectInfo(new MockFileSystem())
                 {
                     ProjectContents = folder
                 }

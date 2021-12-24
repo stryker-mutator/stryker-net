@@ -615,7 +615,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
                 var input = new MutationTestInput
                 {
-                    ProjectInfo = _targetProject,
+                    SourceProjectInfo = _targetProject,
                     TestRunner = runner,
                     InitialTestRun = new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500))
                 };

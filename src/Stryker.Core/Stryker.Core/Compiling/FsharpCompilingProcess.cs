@@ -31,11 +31,11 @@ namespace Stryker.Core.Compiling
         }
 
         private string AssemblyName =>
-            _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetAssemblyName();
+            _input.SourceProjectInfo.ProjectUnderTestAnalyzerResult.GetAssemblyName();
 
         public CompilingProcessResult Compile(IEnumerable<ParsedInput> syntaxTrees, bool devMode)
         {
-            var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
+            var analyzerResult = _input.SourceProjectInfo.ProjectUnderTestAnalyzerResult;
 
             FSharpList<ParsedInput> trees = ListModule.OfSeq(syntaxTrees.Reverse());
             FSharpList<string> dependencies = ListModule.OfSeq(analyzerResult.References);
@@ -45,18 +45,18 @@ namespace Stryker.Core.Compiling
 
             var pathlist = new List<string>();
             var pdblist = new List<string>();
-            foreach (var testProject in _input.ProjectInfo.TestProjectAnalyzerResults)
+            foreach (var testProject in _input.SourceProjectInfo.TestProjectAnalyzerResults)
             {
-                var injectionPath = _input.ProjectInfo.GetInjectionFilePath(testProject);
+                var injectionPath = _input.SourceProjectInfo.GetInjectionFilePath(testProject);
                 if (!_fileSystem.Directory.Exists(injectionPath.Substring(0,injectionPath.LastIndexOf('\\'))))
                 {
                     _fileSystem.Directory.CreateDirectory(injectionPath);
                 }
 
-                pathlist.Add(Path.Combine(injectionPath, _input.ProjectInfo.GetInjectionFilePath(testProject)));
+                pathlist.Add(Path.Combine(injectionPath, _input.SourceProjectInfo.GetInjectionFilePath(testProject)));
 
                 pdblist.Add(Path.Combine(injectionPath,
-                        _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetSymbolFileName()));
+                        _input.SourceProjectInfo.ProjectUnderTestAnalyzerResult.GetSymbolFileName()));
 
                 _logger.LogDebug("Injected the mutated assembly file into {0}", injectionPath);
             }

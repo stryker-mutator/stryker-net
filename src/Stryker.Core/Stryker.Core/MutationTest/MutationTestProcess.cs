@@ -70,14 +70,14 @@ namespace Stryker.Core.MutationTest
             StrykerOptions options = null)
         {
             Input = mutationTestInput;
-            _projectContents = mutationTestInput.ProjectInfo.ProjectContents;
+            _projectContents = mutationTestInput.SourceProjectInfo.ProjectContents;
             _reporter = reporter;
             _options = options;
             _mutationTestExecutor = mutationTestExecutor;
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
             _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options, _mutationTestExecutor, Input);
-            _language = Input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage();
+            _language = Input.SourceProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage();
             _orchestrator = cSharpOrchestrator ?? fSharpOrchestrator ?? ChooseOrchestrator(_options);
 
             SetupMutationTestProcess(mutantFilter);
@@ -112,7 +112,7 @@ namespace Stryker.Core.MutationTest
 
         public void Mutate()
         {
-            Input.ProjectInfo.BackupOriginalAssembly();
+            Input.SourceProjectInfo.BackupOriginalAssembly();
             _mutationProcess.Mutate();
         }
 
@@ -134,7 +134,7 @@ namespace Stryker.Core.MutationTest
             return new StrykerRunResult(_options, _projectContents.ToReadOnlyInputComponent().GetMutationScore());
         }
 
-        public void Restore() => Input.ProjectInfo.RestoreOriginalAssembly();
+        public void Restore() => Input.SourceProjectInfo.RestoreOriginalAssembly();
 
         private void TestMutants(IEnumerable<Mutant> mutantsToTest)
         {
