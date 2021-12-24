@@ -12,7 +12,7 @@ namespace Stryker.Core.UnitTest.Mutators
     public class BlockMutatorTests
     {
         [Fact]
-        public void ShouldMutateNonEmptyConstructorOnClass()
+        private void ShouldMutateNonEmptyConstructorOnClass()
         {
             var source = @"
 class Program
@@ -30,7 +30,7 @@ class Program
         }
 
         [Fact]
-        public void ShouldNotMutateStructConstructorAssignments()
+        private void ShouldNotMutateStructConstructorAssignments()
         {
             var source = @"
 struct Program
@@ -57,7 +57,7 @@ struct Program
         }
 
         [Fact]
-        public void ShouldMutateLocalFunctionsInStructConstructors()
+        private void ShouldMutateLocalFunctionsInStructConstructors()
         {
             var source = @"
 struct Program
@@ -83,7 +83,7 @@ struct Program
         }
 
         [Fact]
-        public void ShouldMutateStructConstructorNonAssignmentsAtRoot()
+        private void ShouldMutateStructConstructorNonAssignmentsAtRoot()
         {
             var source = @"
 struct Program
@@ -98,7 +98,7 @@ struct Program
         }
 
         [Fact]
-        public void ShouldMutateStructConstructorNonAssignmentChild()
+        private void ShouldMutateStructConstructorNonAssignmentChild()
         {
             var source = @"
 struct Program
@@ -120,7 +120,7 @@ struct Program
         }
 
         [Fact]
-        public void ShouldMutateVoidReturnsAsEmptyInMethod()
+        private void ShouldMutateVoidReturnsAsEmptyInMethod()
         {
             var source = @"
 class Program
@@ -138,7 +138,7 @@ class Program
         }
 
         [Fact]
-        public void ShouldMutateVoidReturnsAsEmptyInLocalFunction()
+        private void ShouldMutateVoidReturnsAsEmptyInLocalFunction()
         {
             var source = @"
 class Program
@@ -164,7 +164,7 @@ class Program
         }
 
         [Fact]
-        public void ShouldNotMutateAlreadyEmptyBlocks()
+        private void ShouldNotMutateAlreadyEmptyBlocks()
         {
             // E.g. empty constructors bodies and method overrides are totally valid
             // and produce false positives if mutated.
@@ -186,27 +186,7 @@ class Program
         }
 
         [Fact]
-        public void ShouldNotMutateInfiniteWhileLoops()
-        {
-            var source = @"
-class Program
-{
-    void Method()
-    {
-        while (true)
-        {
-            // Should not be mutated or it will always time out
-            break; // Just to make this more realistic...
-        }
-    }
-}";
-            GetMutations(source)
-                .Where(mutation => mutation.OriginalNode.Parent is WhileStatementSyntax)
-                .ShouldBeEmpty();
-        }
-
-        [Fact]
-        public void ShouldNotMutateIndexGetter()
+        private void ShouldNotMutateInfiniteWhileLoops()
         {
             var source = @"
 class Program

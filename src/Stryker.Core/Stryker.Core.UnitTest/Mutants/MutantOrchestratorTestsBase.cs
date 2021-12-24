@@ -24,7 +24,6 @@ namespace Stryker.Core.UnitTest.Mutants
 			var mutators = new List<IMutator>
 			{
 				// the default list of mutators
-                new BlockMutator(),
 				new BinaryExpressionMutator(),
 				new BooleanMutator(),
 				new AssignmentExpressionMutator(),
