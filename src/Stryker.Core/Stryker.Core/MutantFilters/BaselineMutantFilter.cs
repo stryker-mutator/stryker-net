@@ -44,7 +44,7 @@ namespace Stryker.Core.MutantFilters
         }
         
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options)
         {
             if (options.WithBaseline)
             {
@@ -61,7 +61,7 @@ namespace Stryker.Core.MutantFilters
             return mutants;
         }
 
-        private void UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file)
+        private void UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file)
         {
             if(!_baseline.Files.ContainsKey(FilePathUtils.NormalizePathSeparators(file.RelativePath)))
             {

@@ -1,4 +1,4 @@
-﻿using Stryker.Core.Mutants;
+using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +29,10 @@ namespace Stryker.Core.Reporters.Progress
 
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
         {
-            _progressBarReporter.ReportFinalState();
+            if (reportComponent.Mutants.Any())
+            {
+                _progressBarReporter.ReportFinalState();
+            }
         }
     }
 }

@@ -36,7 +36,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var target = new DashboardReporter(options, dashboardClient: dashboardClientMock.Object, processWrapper: mockProcess.Object);
 
             // Act
-            target.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
+            target.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith());
 
             // Assert
             dashboardClientMock.Verify(x => x.PublishReport(It.IsAny<JsonReport>(), "version/human/readable"), Times.Once);
@@ -61,7 +61,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 .Returns(Task.FromResult("https://dashboard.com"));
 
             var reporter = new DashboardReporter(options, dashboardClientMock.Object, processWrapper: mockProcess.Object);
-            var mutationTree = JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent();
+            var mutationTree = JsonReportTestHelper.CreateProjectWith();
 
             reporter.OnAllMutantsTested(mutationTree);
 
@@ -90,7 +90,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 .Returns(Task.FromResult("https://dashboard.com"));
 
             var reporter = new DashboardReporter(options, dashboardClientMock.Object, processWrapper: mockProcess.Object);
-            var mutationTree = JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent();
+            var mutationTree = JsonReportTestHelper.CreateProjectWith();
 
             reporter.OnAllMutantsTested(mutationTree);
 

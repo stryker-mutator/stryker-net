@@ -161,7 +161,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object);
 
-            var file = new Mock<ReadOnlyFileLeaf>(new CsharpFileLeaf());
+            var file = new CsharpFileLeaf();
 
             var mutants = new List<Mutant>
             {
@@ -171,7 +171,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             };
 
             // Act
-            var results = target.FilterMutants(mutants, file.Object, options);
+            var results = target.FilterMutants(mutants, file, options);
 
             // Assert
             results.Count().ShouldBe(3);
@@ -190,10 +190,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 WithBaseline = true,
                 ProjectVersion = "version",
             };
-            var file = new ReadOnlyFileLeaf(new CsharpFileLeaf
+            var file = new CsharpFileLeaf
             {
                 RelativePath = "foo.cs"
-            });
+            };
 
             var mutants = new List<Mutant>
             {
@@ -242,10 +242,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 WithBaseline = true,
                 ProjectVersion = "version",
             };
-            var file = new ReadOnlyFileLeaf(new CsharpFileLeaf
+            var file = new CsharpFileLeaf
             {
                 RelativePath = "foo.cs"
-            });
+            };
 
             var mutants = new List<Mutant>
             {
@@ -305,10 +305,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 WithBaseline = true,
                 ProjectVersion = "version",
             };
-            var file = new ReadOnlyFileLeaf(new CsharpFileLeaf
+            var file = new CsharpFileLeaf
             {
                 RelativePath = "foo.cs"
-            });
+            };
 
             var mutants = new List<Mutant>
             {
@@ -379,10 +379,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 ProjectVersion = "version"
             };
 
-            var file = new ReadOnlyFileLeaf(new CsharpFileLeaf
+            var file = new CsharpFileLeaf
             {
                 RelativePath = "foo.cs"
-            });
+            };
 
             var mutants = new List<Mutant>
             {

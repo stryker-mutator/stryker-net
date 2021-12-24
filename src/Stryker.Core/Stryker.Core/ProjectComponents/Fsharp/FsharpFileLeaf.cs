@@ -25,19 +25,14 @@ namespace Stryker.Core.ProjectComponents
 
         public override IEnumerable<ParsedInput> MutatedSyntaxTrees => new List<ParsedInput> { MutatedSyntaxTree };
 
-        public ReadOnlyFileLeaf ToReadOnly()
-        {
-            return new ReadOnlyFileLeaf(this);
-        }
-
-        public override IReadOnlyProjectComponent ToReadOnlyInputComponent()
-        {
-            return ToReadOnly();
-        }
-
-        public override IEnumerable<IProjectComponent> GetAllFiles()
+        public override IEnumerable<IFileLeaf<ParsedInput>> GetAllFiles()
         {
             yield return this;
+        }
+
+        public override void Display()
+        {
+            DisplayFile(this);
         }
     }
 }
