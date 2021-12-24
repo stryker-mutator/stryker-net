@@ -1,14 +1,15 @@
 using System.Collections.Generic;
+using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.Reporters.Json.TestFiles
 {
-    public class TestFile
+    public class JsonTestFile
     {
         public string Language { get; init; }
         public string Source { get; init; }
         public ISet<Test> Tests { get; set; }
 
-        public TestFile(TestFile testFile)
+        public JsonTestFile(TestFile testFile)
         {
             Source = testFile.Source;
             Language = "cs";
