@@ -20,11 +20,11 @@ namespace Stryker.Core.Initialisation
 {
     internal class FsharpProjectComponentsBuilder : ProjectComponentsBuilder
     {
-        private readonly ProjectInfo _projectInfo;
+        private readonly SourceProjectInfo _projectInfo;
         private readonly string[] _foldersToExclude;
         private readonly ILogger _logger;
 
-        public FsharpProjectComponentsBuilder(ProjectInfo projectInfo, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) : base(fileSystem)
+        public FsharpProjectComponentsBuilder(SourceProjectInfo projectInfo, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) : base(fileSystem)
         {
             _projectInfo = projectInfo;
             _foldersToExclude = foldersToExclude;

@@ -16,7 +16,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInputFileResolver
     {
-        ProjectInfo ResolveInput(StrykerOptions options);
+        SourceProjectInfo ResolveInput(StrykerOptions options);
     }
 
     /// <summary>
@@ -44,9 +44,9 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Finds the referencedProjects and looks for all files that should be mutated in those projects
         /// </summary>
-        public ProjectInfo ResolveInput(StrykerOptions options)
+        public SourceProjectInfo ResolveInput(StrykerOptions options)
         {
-            var projectInfo = new ProjectInfo(_fileSystem);
+            var projectInfo = new SourceProjectInfo(_fileSystem);
             // Determine test projects
             var testProjectFiles = new List<string>();
             if (options.TestProjects != null && options.TestProjects.Any())
@@ -152,7 +152,7 @@ namespace Stryker.Core.Initialisation
             return projectUnderTestPath;
         }
 
-        private void ValidateTestProjectsCanBeExecuted(ProjectInfo projectInfo)
+        private void ValidateTestProjectsCanBeExecuted(SourceProjectInfo projectInfo)
         {
             // if references contains Microsoft.VisualStudio.QualityTools.UnitTestFramework 
             // we have detected usage of mstest V1 and should exit

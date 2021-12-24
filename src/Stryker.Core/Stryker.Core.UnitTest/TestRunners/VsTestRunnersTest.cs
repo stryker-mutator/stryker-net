@@ -39,7 +39,7 @@ namespace Stryker.Core.UnitTest.TestRunners
     public class VsTestRunnersTest : TestBase
     {
         private readonly string _testAssemblyPath;
-        private readonly ProjectInfo _targetProject;
+        private readonly SourceProjectInfo _targetProject;
         private readonly MockFileSystem _fileSystem;
         private readonly Mutant _mutant;
         private readonly List<TestCase> _testCases;
@@ -94,7 +94,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             _otherMutant = new Mutant { Id = 1 };
             _projectContents = content;
             _projectContents.Add(new CsharpFileLeaf { Mutants = new[] { _otherMutant, _mutant } });
-            _targetProject = new ProjectInfo(_fileSystem)
+            _targetProject = new SourceProjectInfo(_fileSystem)
             {
                 TestProjectAnalyzerResults = new List<IAnalyzerResult> {
                     TestHelper.SetupProjectAnalyzerResult(

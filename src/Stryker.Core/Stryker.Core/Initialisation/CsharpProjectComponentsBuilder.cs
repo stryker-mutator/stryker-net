@@ -20,12 +20,12 @@ namespace Stryker.Core.Initialisation
 {
     public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
     {
-        private readonly ProjectInfo _projectInfo;
+        private readonly SourceProjectInfo _projectInfo;
         private readonly StrykerOptions _options;
         private readonly string[] _foldersToExclude;
         private readonly ILogger _logger;
 
-        public CsharpProjectComponentsBuilder(ProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) : base(fileSystem)
+        public CsharpProjectComponentsBuilder(SourceProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) : base(fileSystem)
         {
             _projectInfo = projectInfo;
             _options = options;

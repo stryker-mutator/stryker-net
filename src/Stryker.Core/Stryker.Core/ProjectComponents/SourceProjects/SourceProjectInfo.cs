@@ -6,13 +6,13 @@ using Stryker.Core.Initialisation.Buildalyzer;
 
 namespace Stryker.Core.ProjectComponents.SourceProjects
 {
-    public class ProjectInfo
+    public class SourceProjectInfo
     {
         private readonly IFileSystem _fileSystem;
 
-        public ProjectInfo() : this(null) { }
+        public SourceProjectInfo() : this(null) { }
 
-        public ProjectInfo(IFileSystem fileSystem) => _fileSystem = fileSystem ?? new FileSystem();
+        public SourceProjectInfo(IFileSystem fileSystem) => _fileSystem = fileSystem ?? new FileSystem();
 
         public IEnumerable<IAnalyzerResult> TestProjectAnalyzerResults { get; set; }
         public IAnalyzerResult ProjectUnderTestAnalyzerResult { get; set; }

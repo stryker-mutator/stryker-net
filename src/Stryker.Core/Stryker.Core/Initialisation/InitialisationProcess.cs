@@ -101,7 +101,7 @@ namespace Stryker.Core.Initialisation
             // initial test
             _initialTestProcess.InitialTest(options, _testRunner);
 
-        private void InitializeDashboardProjectInformation(StrykerOptions options, ProjectInfo projectInfo)
+        private void InitializeDashboardProjectInformation(StrykerOptions options, SourceProjectInfo projectInfo)
         {
             var dashboardReporterEnabled = options.Reporters.Contains(Reporter.Dashboard) || options.Reporters.Contains(Reporter.All);
             var dashboardBaselineEnabled = options.WithBaseline && options.BaselineProvider == BaselineProvider.Dashboard;

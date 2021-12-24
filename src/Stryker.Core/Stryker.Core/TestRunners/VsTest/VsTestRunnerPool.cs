@@ -23,7 +23,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly VsTestHelper _helper = new();
         private readonly ILogger _logger;
 
-        public VsTestRunnerPool(StrykerOptions options, ProjectInfo projectInfo)
+        public VsTestRunnerPool(StrykerOptions options, SourceProjectInfo projectInfo)
         {
             _options = options;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();

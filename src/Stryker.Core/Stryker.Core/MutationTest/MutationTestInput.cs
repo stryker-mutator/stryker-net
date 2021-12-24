@@ -14,7 +14,7 @@ namespace Stryker.Core.MutationTest
         /// <summary>
         /// Contains all information about the project the framework was called on
         /// </summary>
-        public ProjectInfo ProjectInfo { get; set; }
+        public SourceProjectInfo ProjectInfo { get; set; }
 
         /// <summary>
         /// The testrunner that will be used for the mutation test run

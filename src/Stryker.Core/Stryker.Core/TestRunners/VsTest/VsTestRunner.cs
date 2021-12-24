@@ -31,7 +31,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private IVsTestConsoleWrapper _vsTestConsole;
         private readonly IFileSystem _fileSystem;
         private readonly StrykerOptions _options;
-        private readonly ProjectInfo _projectInfo;
+        private readonly SourceProjectInfo _projectInfo;
         private readonly Func<int, IStrykerTestHostLauncher> _hostBuilder;
         private readonly IVsTestHelper _vsTestHelper;
         private readonly bool _ownHelper;
@@ -49,7 +49,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private string RunnerId => $"Runner {_id}";
 
         public VsTestRunner(StrykerOptions options,
-            ProjectInfo projectInfo,
+            SourceProjectInfo projectInfo,
             IDictionary<Guid, VsTestDescription> tests,
             TestSet testSet,
             IFileSystem fileSystem = null,
