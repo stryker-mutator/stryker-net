@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.Reporters
 {
@@ -13,6 +14,6 @@ namespace Stryker.Core.Reporters
         // Will get called when a mutation has been tested
         void OnMutantTested(IReadOnlyMutant result);
         // Will get called when all mutations have been tested
-        void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent);
+        void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo);
     }
 }

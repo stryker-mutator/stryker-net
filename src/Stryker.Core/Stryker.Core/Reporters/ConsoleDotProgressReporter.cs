@@ -1,9 +1,10 @@
-using Crayon;
-using Stryker.Core.Mutants;
-using Stryker.Core.ProjectComponents;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Crayon;
+using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.Reporters
 {
@@ -14,10 +15,7 @@ namespace Stryker.Core.Reporters
     {
         private readonly TextWriter _consoleWriter;
 
-        public ConsoleDotProgressReporter(TextWriter consoleWriter = null)
-        {
-            _consoleWriter = consoleWriter ?? Console.Out;
-        }
+        public ConsoleDotProgressReporter(TextWriter consoleWriter = null) => _consoleWriter = consoleWriter ?? Console.Out;
 
         public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent) { }
 
@@ -41,6 +39,6 @@ namespace Stryker.Core.Reporters
             };
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent) { }
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo) { }
     }
 }

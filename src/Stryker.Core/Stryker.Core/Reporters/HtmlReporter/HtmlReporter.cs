@@ -7,6 +7,7 @@ using Crayon;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.HtmlReporter.ProcessWrapper;
 using Stryker.Core.Reporters.Json;
 
@@ -28,9 +29,9 @@ namespace Stryker.Core.Reporters.Html.reporter
             _processWrapper = processWrapper ?? new WebbrowserOpener();
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
-            var mutationReport = JsonReport.Build(_options, reportComponent);
+            var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
             var filename = _options.ReportFileName + ".html";
             var reportPath = Path.Combine(_options.OutputPath, "reports", filename);
 
@@ -46,7 +47,8 @@ namespace Stryker.Core.Reporters.Html.reporter
             if (_options.ReportTypeToOpen == Options.Inputs.ReportType.Html)
             {
                 _processWrapper.Open(reportUri);
-            } else
+            }
+            else
             {
                 _consoleWriter.Write(Output.Cyan("Hint: by passing \"--open-report or -o\" the report will open automatically once Stryker is done."));
             }

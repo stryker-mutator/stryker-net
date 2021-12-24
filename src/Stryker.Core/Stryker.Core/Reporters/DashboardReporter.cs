@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
 using Crayon;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Clients;
@@ -5,11 +8,9 @@ using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.HtmlReporter.ProcessWrapper;
 using Stryker.Core.Reporters.Json;
-using System;
-using System.Collections.Generic;
-using System.IO;
 
 namespace Stryker.Core.Reporters
 {
@@ -31,9 +32,9 @@ namespace Stryker.Core.Reporters
             _processWrapper = processWrapper ?? new WebbrowserOpener();
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
-            var mutationReport = JsonReport.Build(_options, reportComponent);
+            var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
 
             var reportUri = _dashboardClient.PublishReport(mutationReport, _options.ProjectVersion).Result;
 

@@ -7,6 +7,7 @@ using Crayon;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.Reporters
 {
@@ -44,7 +45,7 @@ namespace Stryker.Core.Reporters
             // This reporter does not report during the testrun
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
             var rootFolderProcessed = false;
 
@@ -173,7 +174,7 @@ namespace Stryker.Core.Reporters
             else
             {
                 // print the score as a percentage
-                string scoreText = string.Format("({0:P2})", mutationScore);
+                var scoreText = string.Format("({0:P2})", mutationScore);
                 if (inputComponent.CheckHealth(_options.Thresholds) is Health.Good)
                 {
                     _consoleWriter.Write(Output.Green(scoreText));
