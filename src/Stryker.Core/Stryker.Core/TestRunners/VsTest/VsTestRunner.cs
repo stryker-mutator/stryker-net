@@ -20,7 +20,6 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ToolHelpers;
 using Stryker.DataCollector;
-using Framework = Stryker.Core.Initialisation.Framework;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -72,11 +71,8 @@ namespace Stryker.Core.TestRunners.VsTest
             InitializeVsTestConsole();
         }
 
-        private bool CantUseStrykerDataCollector()
-        {
-            return _projectInfo.TestProjectAnalyzerResults.Select(x => x.GetTargetFrameworkAndVersion()).Any(t =>
-                t.Framework == Framework.DotNet && t.Version.Major < 2);
-        }
+        private bool CantUseStrykerDataCollector() => _projectInfo.TestProjectAnalyzerResults.Select(x => x.GetTargetFrameworkAndVersion()).Any(t =>
+                                                                    t.Framework == Framework.DotNet && t.Version.Major < 2);
 
         public TestRunResult InitialTest()
         {
@@ -95,17 +91,14 @@ namespace Stryker.Core.TestRunners.VsTest
             return BuildTestRunResult(testResults, int.MaxValue, false);
         }
 
-        public TestRunResult RunAll(ITimeoutValueCalculator timeoutMs, Mutant activeMutant, TestUpdateHandler update)
-        {
-            return TestMultipleMutants(timeoutMs, activeMutant == null ? null : new List<Mutant> { activeMutant }, update);
-        }
+        public TestRunResult RunAll(ITimeoutValueCalculator timeoutMs, Mutant activeMutant, TestUpdateHandler update) => TestMultipleMutants(timeoutMs, activeMutant == null ? null : new List<Mutant> { activeMutant }, update);
 
         public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var mutantTestsMap = new Dictionary<int, ITestGuids>();
             var needAll = true;
             ICollection<Guid> testCases;
-            int? timeOutMs = timeoutCalc?.DefaultTimeout;
+            var timeOutMs = timeoutCalc?.DefaultTimeout;
 
             if (mutants != null)
             {
@@ -225,10 +218,7 @@ namespace Stryker.Core.TestRunners.VsTest
             DetectTestFramework(_vsTests?.Values);
         }
 
-        public TestSet DiscoverTests()
-        {
-            return DiscoverTests(null).Item2;
-        }
+        public TestSet DiscoverTests() => DiscoverTests(null).Item2;
 
         public (IDictionary<Guid, VsTestDescription>, TestSet) DiscoverTests(string runSettings)
         {
@@ -418,8 +408,16 @@ namespace Stryker.Core.TestRunners.VsTest
             int retries = 0)
         {
             using var eventHandler = new RunEventHandler(_vsTests, _logger, RunnerId);
-            void HandlerVsTestFailed(object sender, EventArgs e) => _vsTestFailed = true;
-            void HandlerUpdate(object sender, EventArgs e) => updateHandler?.Invoke(eventHandler);
+            void HandlerVsTestFailed(object sender, EventArgs e)
+            {
+                _vsTestFailed = true;
+            }
+
+            void HandlerUpdate(object sender, EventArgs e)
+            {
+                updateHandler?.Invoke(eventHandler);
+            }
+
             var strykerVsTestHostLauncher = _hostBuilder(_id);
 
             eventHandler.VsTestFailed += HandlerVsTestFailed;
@@ -537,10 +535,7 @@ $@"<RunSettings>
             return runSettings;
         }
 
-        private bool NeedCoverage()
-        {
-            return _options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) || _options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants);
-        }
+        private bool NeedCoverage() => _options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) || _options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants);
 
         private IVsTestConsoleWrapper PrepareVsTestConsole()
         {

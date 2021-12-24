@@ -13,10 +13,7 @@ namespace Stryker.Core.Initialisation
 
         public ProjectInfo() : this(null) { }
 
-        public ProjectInfo(IFileSystem fileSystem)
-        {
-            _fileSystem = fileSystem ?? new FileSystem();
-        }
+        public ProjectInfo(IFileSystem fileSystem) => _fileSystem = fileSystem ?? new FileSystem();
 
         public IEnumerable<IAnalyzerResult> TestProjectAnalyzerResults { get; set; }
         public IAnalyzerResult ProjectUnderTestAnalyzerResult { get; set; }
@@ -26,12 +23,9 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         public IProjectComponent ProjectContents { get; set; }
 
-        public string GetInjectionFilePath(IAnalyzerResult analyzerResult)
-        {
-            return Path.Combine(
+        public string GetInjectionFilePath(IAnalyzerResult analyzerResult) => Path.Combine(
                 Path.GetDirectoryName(analyzerResult.GetAssemblyPath()),
                 Path.GetFileName(ProjectUnderTestAnalyzerResult.GetAssemblyPath()));
-        }
 
         public virtual void RestoreOriginalAssembly()
         {
@@ -61,12 +55,4 @@ namespace Stryker.Core.Initialisation
 
         private static string GetBackupName(string injectionPath) => injectionPath + ".stryker-unchanged";
     }
-
-    public enum Framework
-    {
-        DotNetClassic,
-        DotNet,
-        DotNetStandard,
-        Unknown
-    };
 }
