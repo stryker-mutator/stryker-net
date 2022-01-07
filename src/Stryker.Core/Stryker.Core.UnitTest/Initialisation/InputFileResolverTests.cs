@@ -371,9 +371,9 @@ using System.Reflection;
         [Fact]
         public void InitializeShouldNotResolveImportedPropsFile()
         {
-            string sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            var sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
-            string projectFile = @"
+            var projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -423,9 +423,9 @@ using System.Reflection;
         [Fact]
         public void InitializeShouldResolveMultipleImportedProjects()
         {
-            string sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            var sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
-            string sharedItems = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            var sharedItems = @"<?xml version=""1.0"" encoding=""utf-8""?>
                 <Project xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
                 <PropertyGroup>
                 <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -436,7 +436,7 @@ using System.Reflection;
                 <Compile Include=""$(MSBuildThisFileDirectory)shared.cs"" />
                 </ItemGroup>
                 </Project>";
-            string sharedItems2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            var sharedItems2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
                 <Project xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
                 <PropertyGroup>
                 <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -447,7 +447,7 @@ using System.Reflection;
                 <Compile Include=""$(MSBuildThisFileDirectory)shared.cs"" />
                 </ItemGroup>
                 </Project>";
-            string projectFile = @"
+            var projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -500,9 +500,9 @@ using System.Reflection;
         [Fact]
         public void InitializeShouldThrowOnMissingSharedProject()
         {
-            string sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            var sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
-            string projectFile = @"
+            var projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -553,11 +553,11 @@ using System.Reflection;
         [Fact]
         public void InitializeShouldResolvePropertiesInSharedProjectImports()
         {
-            string sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            var sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
-            string sharedFile = "<Project />";
+            var sharedFile = "<Project />";
 
-            string projectFile = @"
+            var projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -616,11 +616,11 @@ using System.Reflection;
         [Fact]
         public void InitializeShouldThrowIfImportPropertyCannotBeResolved()
         {
-            string sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            var sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
-            string sharedFile = "<Project />";
+            var sharedFile = "<Project />";
 
-            string projectFile = @"
+            var projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -1005,8 +1005,7 @@ Please specify a test project name filter that results in one project.
                 new InputFileResolver().FindProjectUnderTest(Enumerable.Empty<IAnalyzerResult>(), null);
             });
 
-            ex.Message.ShouldBe("Project reference issue.");
-            ex.Details.ShouldContain("no project", Case.Insensitive);
+            ex.Message.ShouldContain("no project", Case.Insensitive);
         }
 
         [Fact]
@@ -1023,9 +1022,8 @@ Please specify a test project name filter that results in one project.
                 new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, null);
             });
 
-            ex.Message.ShouldBe("Project reference issue.");
-            ex.Details.ShouldContain("Test project contains more than one project reference. Please set the project option");
-            ex.Details.ShouldContain("Choose one of the following references:");
+            ex.Message.ShouldContain("Test project contains more than one project reference. Please set the project option");
+            ex.Message.ShouldContain("Choose one of the following references:");
         }
 
         [Theory]
@@ -1065,8 +1063,7 @@ Please specify a test project name filter that results in one project.
                 new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, shouldMatchMoreThanOne);
             });
 
-            ex.Message.ShouldBe("Project reference issue.");
-            ex.Details.ShouldContain("more than one", Case.Insensitive);
+            ex.Message.ShouldContain("more than one", Case.Insensitive);
         }
 
         [Theory]
@@ -1086,12 +1083,11 @@ Please specify a test project name filter that results in one project.
                 new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, shouldMatchNone);
             });
 
-            ex.Message.ShouldBe("Project reference issue.");
-            ex.Details.ShouldContain("no project", Case.Insensitive);
+            ex.Message.ShouldContain("no project", Case.Insensitive);
         }
 
         [Theory]
-        [InlineData("ExampleProject/ExampleProject.csproj")]
+        [InlineData("ExampleProject/sdfsdfExampleProject.csproj")]
         [InlineData("ExampleProject\\ExampleProject.csproj")]
         public void ShouldMatchOnBothForwardAndBackwardsSlash(string shouldMatch)
         {
