@@ -122,7 +122,7 @@ namespace Stryker.Core.MutationTest
             {
                 // CompileError is a final status and can not be changed during filtering.
                 var mutantsToFilter = file.Mutants.Where(x => x.ResultStatus != MutantStatus.CompileError);
-                _mutantFilter.FilterMutants(mutantsToFilter, ((CsharpFileLeaf)file).ToReadOnly(), _options);
+                _mutantFilter.FilterMutants(mutantsToFilter, file, _options);
             }
         }
     }

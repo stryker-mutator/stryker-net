@@ -66,7 +66,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 }
             });
 
-            target.OnAllMutantsTested(folder.ToReadOnly(), It.IsAny<TestProjectsInfo>());
+            target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
             textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
@@ -106,7 +106,7 @@ All files [2/3 ({(2.0 / 3.0):P2})]
                 Mutants = new Collection<Mutant>() { }
             });
 
-            target.OnAllMutantsTested(folder.ToReadOnly(), It.IsAny<TestProjectsInfo>());
+            target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
             textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
@@ -149,7 +149,7 @@ All files [0/0 (N/A)]
                 }
             });
 
-            target.OnAllMutantsTested(folder.ToReadOnly(), It.IsAny<TestProjectsInfo>());
+            target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
             textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
@@ -193,7 +193,7 @@ All files [1/1 ({1:P2})]
                 ResultStatus = MutantStatus.Survived, Mutation = mutation } }
             });
 
-            target.OnAllMutantsTested(folder.ToReadOnly(), It.IsAny<TestProjectsInfo>());
+            target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
             textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
@@ -246,7 +246,7 @@ All files [0/1 ({0:P2})]
                 }
             });
 
-            target.OnAllMutantsTested(folder.ToReadOnly(), It.IsAny<TestProjectsInfo>());
+            target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
             textWriter.RedSpanCount().ShouldBe(4);
         }
@@ -288,7 +288,7 @@ All files [0/1 ({0:P2})]
                 }
             });
 
-            target.OnAllMutantsTested(folder.ToReadOnly(), It.IsAny<TestProjectsInfo>());
+            target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
             textWriter.YellowSpanCount().ShouldBe(2);
         }
@@ -325,7 +325,7 @@ All files [0/1 ({0:P2})]
                 }
             });
 
-            target.OnAllMutantsTested(folder.ToReadOnly(), It.IsAny<TestProjectsInfo>());
+            target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
             textWriter.GreenSpanCount().ShouldBe(3);
         }

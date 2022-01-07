@@ -131,7 +131,7 @@ namespace Stryker.Core.MutationTest
             TestMutants(mutantsToTest);
             _mutationTestExecutor.TestRunner.Dispose();
 
-            return new StrykerRunResult(_options, _projectContents.ToReadOnlyInputComponent().GetMutationScore());
+            return new StrykerRunResult(_options, _projectContents.GetMutationScore());
         }
 
         public void Restore() => Input.SourceProjectInfo.RestoreOriginalAssembly();

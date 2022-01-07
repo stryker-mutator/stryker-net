@@ -39,7 +39,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
 
             var target = new DashboardBaselineProvider(strykerOptions, dashboardClient.Object);
 
-            await target.Save(JsonReport.Build(strykerOptions, JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent(), It.IsAny<TestProjectsInfo>()), "version");
+            await target.Save(JsonReport.Build(strykerOptions, JsonReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>()), "version");
 
             dashboardClient.Verify(x => x.PublishReport(It.IsAny<JsonReport>(), It.Is<string>(x => x == "version")), Times.Once);
         }

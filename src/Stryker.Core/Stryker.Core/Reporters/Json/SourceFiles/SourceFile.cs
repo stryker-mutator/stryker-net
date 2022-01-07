@@ -15,7 +15,7 @@ namespace Stryker.Core.Reporters.Json.SourceFiles
         {
         }
 
-        public SourceFile(ReadOnlyFileLeaf file, ILogger logger = null)
+        public SourceFile(IReadOnlyFileLeaf file, ILogger logger = null)
         {
             logger ??= ApplicationLogging.LoggerFactory.CreateLogger<SourceFile>();
 

@@ -63,7 +63,6 @@ namespace Stryker.Core
                 _logger.LogInformation("{0} mutants created", rootComponent.Mutants.Count());
 
                 AnalyseCoverage(options);
-                var readOnlyInputComponent = rootComponent.ToReadOnlyInputComponent();
 
                 // Filter
                 foreach (var project in _mutationTestProcesses)
@@ -72,28 +71,32 @@ namespace Stryker.Core
                 }
 
                 // Report
-                reporters.OnMutantsCreated(readOnlyInputComponent);
+                reporters.OnMutantsCreated(rootComponent);
 
-                var allMutants = rootComponent.Mutants.ToList();
-                var mutantsNotRun = allMutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList();
+                var allMutants = rootComponent.Mutants;
+                var mutantsNotRun = rootComponent.NotRunMutants().ToList();
 
                 if (!mutantsNotRun.Any())
                 {
                     if (allMutants.Any(x => x.ResultStatus == MutantStatus.Ignored))
                     {
-                        _logger.LogWarning("It looks like all mutants with tests were excluded. Try a re-run with less exclusion!");
+                        _logger.LogWarning("It looks like all mutants with tests were ignored. Try a re-run with less ignoring!");
                     }
                     if (allMutants.Any(x => x.ResultStatus == MutantStatus.NoCoverage))
                     {
-                        _logger.LogWarning("It looks like all non-excluded mutants are not covered by a test. Go add some tests!");
+                        _logger.LogWarning("It looks like all non-ignored mutants are not covered by a test. Go add some tests!");
+                    }
+                    if (allMutants.Any(x => x.ResultStatus == MutantStatus.CompileError))
+                    {
+                        _logger.LogWarning("It looks like all mutants resulted in compile errors. Mutants sure are strange!");
                     }
                     if (!allMutants.Any())
                     {
                         _logger.LogWarning("It\'s a mutant-free world, nothing to test.");
                     }
 
-                    reporters.OnAllMutantsTested(readOnlyInputComponent, combinedTestProjectsInfo);
-                    return new StrykerRunResult(options, double.NaN);
+                    reporters.OnAllMutantsTested(rootComponent, combinedTestProjectsInfo);
+                    return new StrykerRunResult(options, rootComponent.GetMutationScore());
                 }
 
                 // Report
@@ -106,9 +109,9 @@ namespace Stryker.Core
                     project.Restore();
                 }
 
-                reporters.OnAllMutantsTested(readOnlyInputComponent, combinedTestProjectsInfo);
+                reporters.OnAllMutantsTested(rootComponent, combinedTestProjectsInfo);
 
-                return new StrykerRunResult(options, readOnlyInputComponent.GetMutationScore());
+                return new StrykerRunResult(options, rootComponent.GetMutationScore());
             }
 #if !DEBUG
             catch (Exception ex) when (!(ex is InputException))
@@ -157,7 +160,7 @@ namespace Stryker.Core
         {
             if (projectComponents.Count() > 1)
             {
-                var rootComponent = new FolderComposite
+                var rootComponent = new Solution
                 {
                     FullPath = options.BasePath // in case of a solution run the basePath will be where the solution file is
                 };

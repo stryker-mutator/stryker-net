@@ -99,10 +99,10 @@ namespace Stryker.Core.Reporters
                 stringBuilder.Append(continuationLines.Last() ? ContinueLine : NoLine);
 
                 var prefix = stringBuilder.ToString();
-
-                foreach (var mutant in current.TotalMutants)
+                var totalMutants = current.TotalMutants();
+                foreach (var mutant in totalMutants)
                 {
-                    var isLastMutant = current.TotalMutants.Last() == mutant;
+                    var isLastMutant = totalMutants.Last() == mutant;
 
                     _consoleWriter.Write($"{prefix}{(isLastMutant ? FinalBranchLine : BranchLine)}");
 
@@ -147,7 +147,7 @@ namespace Stryker.Core.Reporters
                 {
                     continuationLines.Add(node.Parent.Children.Last().FullPath != node.FullPath);
 
-                    node = node.Parent.ToReadOnlyInputComponent();
+                    node = node.Parent;
                 }
 
                 continuationLines.Reverse();
@@ -161,7 +161,7 @@ namespace Stryker.Core.Reporters
             var mutationScore = inputComponent.GetMutationScore();
 
             // Convert the threshold integer values to decimal values
-            _consoleWriter.Write($" [{ inputComponent.DetectedMutants.Count()}/{ inputComponent.TotalMutants.Count()} ");
+            _consoleWriter.Write($" [{ inputComponent.DetectedMutants().Count()}/{ inputComponent.TotalMutants().Count()} ");
 
             if (inputComponent.IsComponentExcluded(_options.Mutate))
             {

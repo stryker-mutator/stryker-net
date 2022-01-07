@@ -53,7 +53,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var mutant = new Mutant();
 
             // Act
-            var filterResult = target.FilterMutants(new List<Mutant> { mutant }, file.ToReadOnly(), options);
+            var filterResult = target.FilterMutants(new List<Mutant> { mutant }, file, options);
 
             // Assert
             filterResult.ShouldBeEmpty();
@@ -84,7 +84,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var mutant = new Mutant();
 
             // Act
-            var filterResult = target.FilterMutants(new List<Mutant> { mutant }, file.ToReadOnly(), options);
+            var filterResult = target.FilterMutants(new List<Mutant> { mutant }, file, options);
 
             // Assert
             filterResult.ShouldContain(mutant);
@@ -127,7 +127,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
 
             // Act
-            var filterResult = target.FilterMutants(new List<Mutant> { mutant }, file.ToReadOnly(), options);
+            var filterResult = target.FilterMutants(new List<Mutant> { mutant }, file, options);
 
             // Assert
             filterResult.ShouldContain(mutant);
@@ -169,7 +169,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             };
 
             // Act
-            var results = target.FilterMutants(mutants, new CsharpFileLeaf() { RelativePath = "src/1/SomeFile0.cs" }.ToReadOnly(), options);
+            var results = target.FilterMutants(mutants, new CsharpFileLeaf() { RelativePath = "src/1/SomeFile0.cs" }, options);
 
             // Assert
             results.Count().ShouldBe(0);
@@ -217,7 +217,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             };
 
             // Act
-            var results = target.FilterMutants(mutants, new CsharpFileLeaf() { RelativePath = "src/1/SomeFile0.cs" }.ToReadOnly(), options);
+            var results = target.FilterMutants(mutants, new CsharpFileLeaf() { RelativePath = "src/1/SomeFile0.cs" }, options);
 
             // Assert
             results.Count().ShouldBe(0);
@@ -263,7 +263,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             };
 
             // Act
-            var results = target.FilterMutants(mutants, new CsharpFileLeaf().ToReadOnly(), options);
+            var results = target.FilterMutants(mutants, new CsharpFileLeaf(), options);
 
             // Assert
             results.ShouldBe(new []{expectedToStay1, expectedToStay2});
@@ -296,7 +296,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             };
 
             // Act
-            var results = target.FilterMutants(mutants, new CsharpFileLeaf().ToReadOnly(), options);
+            var results = target.FilterMutants(mutants, new CsharpFileLeaf(), options);
 
             // Assert
             results.ShouldBeEmpty();
@@ -322,7 +322,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var mutants = new List<Mutant> { new Mutant(), new Mutant(), new Mutant() };
 
             // Act
-            var result = target.FilterMutants(mutants, new CsharpFileLeaf() { FullPath = "C:\\Foo\\Bar" }.ToReadOnly(), options);
+            var result = target.FilterMutants(mutants, new CsharpFileLeaf() { FullPath = "C:\\Foo\\Bar" }, options);
 
             // Assert
             result.ShouldBe(mutants);

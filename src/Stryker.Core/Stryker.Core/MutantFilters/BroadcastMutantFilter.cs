@@ -15,7 +15,7 @@ namespace Stryker.Core.MutantFilters
 
         public string DisplayName => "broadcast filter";
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options)
         {
             var mutantsToTest = mutants.Where(m => m.ResultStatus is not MutantStatus.Ignored);
 

@@ -36,11 +36,11 @@ namespace Stryker.Core.Reporters.Json
         private IDictionary<string, SourceFile> GenerateReportComponents(IReadOnlyProjectComponent component)
         {
             var files = new Dictionary<string, SourceFile>();
-            if (component is ReadOnlyFolderComposite folder)
+            if (component is IReadOnlyFolderComposite folder)
             {
                 Merge(files, GenerateFolderReportComponents(folder));
             }
-            else if (component is ReadOnlyFileLeaf file)
+            else if (component is IReadOnlyFileLeaf file)
             {
                 Merge(files, GenerateFileReportComponents(file));
             }
@@ -48,7 +48,7 @@ namespace Stryker.Core.Reporters.Json
             return files;
         }
 
-        private IDictionary<string, SourceFile> GenerateFolderReportComponents(ReadOnlyFolderComposite folderComponent)
+        private IDictionary<string, SourceFile> GenerateFolderReportComponents(IReadOnlyFolderComposite folderComponent)
         {
             var files = new Dictionary<string, SourceFile>();
             foreach (var child in folderComponent.Children)
@@ -59,7 +59,7 @@ namespace Stryker.Core.Reporters.Json
             return files;
         }
 
-        private static IDictionary<string, SourceFile> GenerateFileReportComponents(ReadOnlyFileLeaf fileComponent) => new Dictionary<string, SourceFile> { { fileComponent.RelativePath, new SourceFile(fileComponent) } };
+        private static IDictionary<string, SourceFile> GenerateFileReportComponents(IReadOnlyFileLeaf fileComponent) => new Dictionary<string, SourceFile> { { fileComponent.RelativePath, new SourceFile(fileComponent) } };
 
         private void AddTestFiles(TestProjectsInfo testProjectsInfo)
         {

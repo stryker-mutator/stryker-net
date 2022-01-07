@@ -76,7 +76,7 @@ namespace Stryker.Core.Initialisation
             var projectUnderTestFolderComposite = new CsharpFolderComposite()
             {
                 FullPath = projectUnderTestDir,
-                RelativePath = string.Empty,
+                RelativePath = null,
             };
             var cache = new Dictionary<string, CsharpFolderComposite> { [string.Empty] = projectUnderTestFolderComposite };
 
@@ -269,7 +269,7 @@ namespace Stryker.Core.Initialisation
                     if (string.IsNullOrEmpty(folder))
                     {
                         // we are at root
-                        var root = inputFiles as IFolderComposite;
+                        var root = inputFiles as IReadOnlyFolderComposite;
                         root.Add(subDir);
                     }
                 }

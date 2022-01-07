@@ -19,6 +19,12 @@ namespace Stryker.Core.Reporters.Progress
 
         public void OnMutantTested(IReadOnlyMutant result) => _progressBarReporter.ReportRunTest(result);
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo) => _progressBarReporter.ReportFinalState();
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
+        {
+            if (reportComponent.Mutants.Any())
+            {
+                _progressBarReporter.ReportFinalState();
+            }
+        }
     }
 }

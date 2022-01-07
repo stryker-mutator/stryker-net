@@ -105,7 +105,7 @@ namespace Stryker.Core.Initialisation
 
         // get the FolderComposite object representing the the project's folder 'targetFolder'. Build the needed FolderComposite(s) for a complete path
         private FsharpFolderComposite GetOrBuildFolderComposite(IDictionary<string, FsharpFolderComposite> cache, string targetFolder, string projectUnderTestDir,
-            string projectRoot, ProjectComponent<ParsedInput> inputFiles)
+            string projectRoot, FsharpFolderComposite inputFiles)
         {
             if (cache.ContainsKey(targetFolder))
             {
@@ -137,7 +137,7 @@ namespace Stryker.Core.Initialisation
                     if (string.IsNullOrEmpty(folder))
                     {
                         // we are at root
-                        ((IFolderComposite)inputFiles).Add(subDir);
+                        inputFiles.Add(subDir);
                     }
                 }
                 else

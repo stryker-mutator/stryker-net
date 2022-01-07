@@ -40,7 +40,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             rootFolder.Add(folder);
 
-            target.OnAllMutantsTested(rootFolder.ToReadOnly(), It.IsAny<TestProjectsInfo>());
+            target.OnAllMutantsTested(rootFolder, It.IsAny<TestProjectsInfo>());
 
             textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
@@ -93,7 +93,7 @@ All mutants have been tested, and your mutation score has been calculated
 
             rootFolder.Add(folder);
 
-            target.OnAllMutantsTested(rootFolder.ToReadOnly(), It.IsAny<TestProjectsInfo>());
+            target.OnAllMutantsTested(rootFolder, It.IsAny<TestProjectsInfo>());
 
             textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
@@ -145,7 +145,7 @@ All mutants have been tested, and your mutation score has been calculated
             });
             rootFolder.Add(folder);
 
-            target.OnAllMutantsTested(rootFolder.ToReadOnly(), It.IsAny<TestProjectsInfo>());
+            target.OnAllMutantsTested(rootFolder, It.IsAny<TestProjectsInfo>());
 
             textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
@@ -198,7 +198,7 @@ All mutants have been tested, and your mutation score has been calculated
                 }
             });
 
-            target.OnAllMutantsTested(folder.ToReadOnly(), It.IsAny<TestProjectsInfo>());
+            target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
             textWriter.RedSpanCount().ShouldBe(2);
         }
@@ -240,7 +240,7 @@ All mutants have been tested, and your mutation score has been calculated
                 }
             });
 
-            target.OnAllMutantsTested(folder.ToReadOnly(), It.IsAny<TestProjectsInfo>());
+            target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
             textWriter.YellowSpanCount().ShouldBe(2);
         }
@@ -277,7 +277,7 @@ All mutants have been tested, and your mutation score has been calculated
                 }
             });
 
-            target.OnAllMutantsTested(folder.ToReadOnly(), It.IsAny<TestProjectsInfo>());
+            target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
             textWriter.GreenSpanCount().ShouldBe(2);
         }
