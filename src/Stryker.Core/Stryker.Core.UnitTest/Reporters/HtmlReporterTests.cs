@@ -1,6 +1,7 @@
 using Moq;
 using Shouldly;
 using Stryker.Core.Options;
+using Stryker.Core.Options.Inputs;
 using Stryker.Core.Reporters.Html.reporter;
 using Stryker.Core.Reporters.HtmlReporter.ProcessWrapper;
 using System.IO;
@@ -14,7 +15,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ShouldWriteJsonToFile()
         {
-            var mockProcess = new Mock<IProcessWrapper>();
+            var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();
             var options = new StrykerOptions
             {
@@ -24,7 +25,7 @@ namespace Stryker.Core.UnitTest.Reporters
             };
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
 
-            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
+            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith());
             var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.html");
             mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
         }
@@ -32,7 +33,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ShouldReplacePlaceholdersInHtmlFile()
         {
-            var mockProcess = new Mock<IProcessWrapper>();
+            var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();
             var options = new StrykerOptions
             {
@@ -42,7 +43,7 @@ namespace Stryker.Core.UnitTest.Reporters
             };
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
 
-            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
+            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith());
             var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.html");
 
             var fileContents = mockFileSystem.GetFile(reportPath).TextContents;
@@ -55,7 +56,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ShouldContainJsonInHtmlReportFile()
         {
-            var mockProcess = new Mock<IProcessWrapper>();
+            var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();
             var options = new StrykerOptions
             {
@@ -64,32 +65,32 @@ namespace Stryker.Core.UnitTest.Reporters
                 ReportFileName = "mutation-report"
             };
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
-            var mutationTree = JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent();
+            var mutationTree = JsonReportTestHelper.CreateProjectWith();
 
             reporter.OnAllMutantsTested(mutationTree);
             var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.html");
 
             var fileContents = mockFileSystem.GetFile(reportPath).TextContents;
 
-            fileContents.ShouldContain(@"""thresholds"": {");
-            fileContents.ShouldContain(@"""high"": 80");
-            fileContents.ShouldContain(@"""low"": 60");
+            fileContents.ShouldContain(@"""thresholds"":{");
+            fileContents.ShouldContain(@"""high"":80");
+            fileContents.ShouldContain(@"""low"":60");
         }
 
         [Fact]
         public void ShouldOpenHtmlReportIfOptionIsProvided()
         {
-            var mockProcess = new Mock<IProcessWrapper>();
+            var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();
             var options = new StrykerOptions
             {
-                ReportTypeToOpen = Core.Options.Inputs.ReportType.Html,
+                ReportTypeToOpen = ReportType.Html,
                 OutputPath = Directory.GetCurrentDirectory(),
                 ReportFileName = "mutation-report"
             };
 
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
-            var mutationTree = JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent();
+            var mutationTree = JsonReportTestHelper.CreateProjectWith();
 
             reporter.OnAllMutantsTested(mutationTree);
             var reportUri = Path.Combine(options.OutputPath, "reports", $"{options.ReportFileName}.html");
@@ -98,27 +99,29 @@ namespace Stryker.Core.UnitTest.Reporters
             reportUri = reportUri.StartsWith("/") ? reportUri : "/" + reportUri;
 
             // Check if browser open action is invoked
-            mockProcess.Verify(m => m.Start("file://" + reportUri));
+            mockProcess.Verify(m => m.Open("file://" + reportUri));
         }
 
-        [Fact]
-        public void ShouldNotOpenHtmlReportIfOptionIsProvided()
+        [Theory]
+        [InlineData(ReportType.Dashboard)]
+        [InlineData(null)]
+        public void ShouldNotOpenHtmlReportIfOptionIsProvided(ReportType? reportType)
         {
-            var mockProcess = new Mock<IProcessWrapper>();
+            var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();
             var options = new StrykerOptions
             {
+                ReportTypeToOpen = reportType,
                 OutputPath = Directory.GetCurrentDirectory()
             };
 
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
-            var mutationTree = JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent();
+            var mutationTree = JsonReportTestHelper.CreateProjectWith();
 
             reporter.OnAllMutantsTested(mutationTree);
-            var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.html");
 
             // Check if browser open action is invoked
-            mockProcess.Invocations.ShouldBeEmpty();
+            mockProcess.VerifyNoOtherCalls();
         }
     }
 }

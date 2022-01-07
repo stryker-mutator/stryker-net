@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using Stryker.Core.Reporters.Json;
+using Stryker.Core.Reporters.Json.SourceFiles;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public class MockJsonReportFileComponent : JsonReportFileComponent
+    public class MockJsonReportFileComponent : SourceFile
     {
         public MockJsonReportFileComponent(
             string language,

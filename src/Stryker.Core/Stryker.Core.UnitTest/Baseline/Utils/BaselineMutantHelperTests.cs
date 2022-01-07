@@ -2,6 +2,7 @@ using System.IO;
 using Shouldly;
 using Stryker.Core.Baseline.Utils;
 using Stryker.Core.Reporters.Json;
+using Stryker.Core.Reporters.Json.SourceFiles;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Baseline.Utils
@@ -20,14 +21,14 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
 
             var jsonMutant = new JsonMutant
             {
-                Location = new JsonMutantLocation
+                Location = new Location
                 {
-                    Start = new JsonMutantPosition
+                    Start = new Position
                     {
                         Column = 17,
                         Line = 17
                     },
-                    End = new JsonMutantPosition
+                    End = new Position
                     {
                         Column = 62,
                         Line = 17
@@ -56,14 +57,14 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
 
             var jsonMutant = new JsonMutant
             {
-                Location = new JsonMutantLocation
+                Location = new Location
                 {
-                    Start = new JsonMutantPosition
+                    Start = new Position
                     {
                         Column = 13,
                         Line = 24
                     },
-                    End = new JsonMutantPosition
+                    End = new Position
                     {
                         Column = 38,
                         Line = 26
@@ -94,14 +95,14 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
 
             var jsonMutant = new JsonMutant
             {
-                Location = new JsonMutantLocation
+                Location = new Location
                 {
-                    Start = new JsonMutantPosition
+                    Start = new Position
                     {
                         Column = 30,
                         Line = 34
                     },
-                    End = new JsonMutantPosition
+                    End = new Position
                     {
                         Column = 34,
                         Line = 34
