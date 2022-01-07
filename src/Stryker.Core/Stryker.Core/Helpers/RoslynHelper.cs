@@ -32,9 +32,14 @@ namespace Stryker.Core.Helpers
         /// <returns>method returns type. Null if this not relevant</returns>
         public static TypeSyntax ReturnType(this AccessorDeclarationSyntax accessor)
         {
-            if (accessor.IsGetter() && accessor.Parent is AccessorListSyntax accessorList && accessorList.Parent is PropertyDeclarationSyntax propertyDeclaration)
+            if (accessor.IsGetter() && accessor.Parent is AccessorListSyntax accessorList)
             {
-                return propertyDeclaration.Type;
+                return accessorList.Parent switch
+                {
+                    PropertyDeclarationSyntax propertyDeclaration => propertyDeclaration.Type,
+                    IndexerDeclarationSyntax indexerDeclaration => indexerDeclaration.Type,
+                    _ => null
+                };
             }
 
             return null;
