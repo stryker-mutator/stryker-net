@@ -219,7 +219,7 @@ You can find a description for every reporter in the [reporter docs](./reporters
 ### `open-report` <`string`>
 
 Default: `html`
-Command line: `[-o|--open-report]`
+Command line: `[-o:html|--open-report:dashboard]`
 Config file: `N/A`
 
 When this option is passed, generated reports should open in the browser automatically after stryker is done. Both html and dashboard reports can be opened automatically.

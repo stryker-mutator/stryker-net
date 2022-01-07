@@ -38,7 +38,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             rootFolder.Add(folder);
 
-            target.OnAllMutantsTested(rootFolder.ToReadOnly());
+            target.OnAllMutantsTested(rootFolder);
 
             textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
@@ -91,7 +91,7 @@ All mutants have been tested, and your mutation score has been calculated
 
             rootFolder.Add(folder);
 
-            target.OnAllMutantsTested(rootFolder.ToReadOnly());
+            target.OnAllMutantsTested(rootFolder);
 
             textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
@@ -143,7 +143,7 @@ All mutants have been tested, and your mutation score has been calculated
             });
             rootFolder.Add(folder);
 
-            target.OnAllMutantsTested(rootFolder.ToReadOnly());
+            target.OnAllMutantsTested(rootFolder);
 
             textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
@@ -196,7 +196,7 @@ All mutants have been tested, and your mutation score has been calculated
                 }
             });
 
-            target.OnAllMutantsTested(folder.ToReadOnly());
+            target.OnAllMutantsTested(folder);
 
             textWriter.RedSpanCount().ShouldBe(2);
         }
@@ -238,7 +238,7 @@ All mutants have been tested, and your mutation score has been calculated
                 }
             });
 
-            target.OnAllMutantsTested(folder.ToReadOnly());
+            target.OnAllMutantsTested(folder);
 
             textWriter.YellowSpanCount().ShouldBe(2);
         }
@@ -275,7 +275,7 @@ All mutants have been tested, and your mutation score has been calculated
                 }
             });
 
-            target.OnAllMutantsTested(folder.ToReadOnly());
+            target.OnAllMutantsTested(folder);
 
             textWriter.GreenSpanCount().ShouldBe(2);
         }

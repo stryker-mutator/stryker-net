@@ -12,6 +12,7 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Json;
+using Stryker.Core.Reporters.Json.SourceFiles;
 using Stryker.Core.UnitTest.Reporters;
 using Xunit;
 
@@ -160,7 +161,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object);
 
-            var file = new Mock<ReadOnlyFileLeaf>(new CsharpFileLeaf());
+            var file = new CsharpFileLeaf();
 
             var mutants = new List<Mutant>
             {
@@ -170,7 +171,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             };
 
             // Act
-            var results = target.FilterMutants(mutants, file.Object, options);
+            var results = target.FilterMutants(mutants, file, options);
 
             // Assert
             results.Count().ShouldBe(3);
@@ -189,10 +190,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 WithBaseline = true,
                 ProjectVersion = "version",
             };
-            var file = new ReadOnlyFileLeaf(new CsharpFileLeaf
+            var file = new CsharpFileLeaf
             {
                 RelativePath = "foo.cs"
-            });
+            };
 
             var mutants = new List<Mutant>
             {
@@ -207,7 +208,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Setup Mocks
             var jsonReportFileComponent = new MockJsonReportFileComponent("", "", jsonMutants);
 
-            var jsonFileComponents = new Dictionary<string, JsonReportFileComponent>
+            var jsonFileComponents = new Dictionary<string, SourceFile>
             {
                 ["foo.cs"] =  jsonReportFileComponent
             };
@@ -241,10 +242,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 WithBaseline = true,
                 ProjectVersion = "version",
             };
-            var file = new ReadOnlyFileLeaf(new CsharpFileLeaf
+            var file = new CsharpFileLeaf
             {
                 RelativePath = "foo.cs"
-            });
+            };
 
             var mutants = new List<Mutant>
             {
@@ -265,7 +266,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Setup Mocks
             var jsonReportFileComponent = new MockJsonReportFileComponent("", "", jsonMutants);
 
-            var jsonFileComponents = new Dictionary<string, JsonReportFileComponent>
+            var jsonFileComponents = new Dictionary<string, SourceFile>
             {
                 ["foo.cs"] = jsonReportFileComponent
             };
@@ -304,10 +305,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 WithBaseline = true,
                 ProjectVersion = "version",
             };
-            var file = new ReadOnlyFileLeaf(new CsharpFileLeaf
+            var file = new CsharpFileLeaf
             {
                 RelativePath = "foo.cs"
-            });
+            };
 
             var mutants = new List<Mutant>
             {
@@ -332,7 +333,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Setup Mocks
             var jsonReportFileComponent = new MockJsonReportFileComponent("", "", jsonMutants);
 
-            var jsonFileComponents = new Dictionary<string, JsonReportFileComponent>
+            var jsonFileComponents = new Dictionary<string, SourceFile>
             {
                 ["foo.cs"] = jsonReportFileComponent
             };
@@ -378,10 +379,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 ProjectVersion = "version"
             };
 
-            var file = new ReadOnlyFileLeaf(new CsharpFileLeaf
+            var file = new CsharpFileLeaf
             {
                 RelativePath = "foo.cs"
-            });
+            };
 
             var mutants = new List<Mutant>
             {
@@ -395,7 +396,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             // Setup Mocks
 
-            var jsonFileComponents = new Dictionary<string, JsonReportFileComponent>();
+            var jsonFileComponents = new Dictionary<string, SourceFile>();
 
             var baseline = new MockJsonReport(null, jsonFileComponents);
 

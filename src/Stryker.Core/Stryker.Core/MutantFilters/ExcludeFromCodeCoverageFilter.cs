@@ -14,7 +14,7 @@ namespace Stryker.Core.MutantFilters
         public MutantFilter Type => MutantFilter.ExcludeFromCodeCoverage;
         public string DisplayName => "exclude from code coverage filter";
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options)
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options)
         {
             return mutants.Where(m => !Exclude(m.Mutation.OriginalNode));
         }

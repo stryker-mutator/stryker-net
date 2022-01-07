@@ -75,7 +75,7 @@ namespace Stryker.Core.Initialisation
             var projectUnderTestFolderComposite = new CsharpFolderComposite()
             {
                 FullPath = projectUnderTestDir,
-                RelativePath = string.Empty,
+                RelativePath = null,
             };
             var cache = new Dictionary<string, CsharpFolderComposite> { [string.Empty] = projectUnderTestFolderComposite };
 
@@ -87,12 +87,6 @@ namespace Stryker.Core.Initialisation
 
             foreach (var sourceFile in analyzerResult.SourceFiles)
             {
-                // Skip xamarin UI generated files
-                if (sourceFile.EndsWith(".xaml.cs"))
-                {
-                    continue;
-                }
-
                 var relativePath = Path.GetRelativePath(projectUnderTestDir, sourceFile);
                 var folderComposite = GetOrBuildFolderComposite(cache, Path.GetDirectoryName(relativePath), projectUnderTestDir, projectUnderTestFolderComposite);
 
@@ -239,7 +233,7 @@ namespace Stryker.Core.Initialisation
 
         private static CSharpParseOptions BuildCsharpParseOptions(IAnalyzerResult analyzerResult, StrykerOptions options)
         {
-            return new CSharpParseOptions(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: analyzerResult.GetDefineConstants());
+            return new CSharpParseOptions(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: analyzerResult.PreprocessorSymbols);
         }
 
         // get the FolderComposite object representing the the project's folder 'targetFolder'. Build the needed FolderComposite(s) for a complete path
@@ -274,7 +268,7 @@ namespace Stryker.Core.Initialisation
                     if (string.IsNullOrEmpty(folder))
                     {
                         // we are at root
-                        var root = inputFiles as IFolderComposite;
+                        var root = inputFiles as IReadOnlyFolderComposite;
                         root.Add(subDir);
                     }
                 }

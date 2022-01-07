@@ -21,7 +21,7 @@ namespace Stryker.Core.MutantFilters
         public string DisplayName => "linq expression filter";
         private SyntaxTriviaRemover _triviaRemover { get; init; } = new SyntaxTriviaRemover();
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, ReadOnlyFileLeaf file, StrykerOptions options) => options.ExcludedLinqExpressions.Any() ?
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options) => options.ExcludedLinqExpressions.Any() ?
                     mutants.Where(m => m.Mutation.Type != Mutator.Linq || !IsIgnoreExpression(m.Mutation.OriginalNode, options)) :
                     mutants;
 

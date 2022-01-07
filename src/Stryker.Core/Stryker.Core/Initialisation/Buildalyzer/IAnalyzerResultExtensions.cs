@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using Buildalyzer;
@@ -50,41 +49,11 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             return compilationOptions;
         }
 
-        public static IList<string> GetDefineConstants(this IAnalyzerResult analyzerResult)
-        {
-            return analyzerResult?.GetPropertyOrDefault("DefineConstants", "").Split(";").Where(x => !string.IsNullOrWhiteSpace(x)).ToList() ?? new List<string>();
-        }
-
         public static string AssemblyAttributeFileName(this IAnalyzerResult analyzerResult)
         {
             return analyzerResult.GetPropertyOrDefault("GeneratedAssemblyInfoFile",
                 (Path.GetFileNameWithoutExtension(analyzerResult.ProjectFilePath) + ".AssemblyInfo.cs")
                 .ToLowerInvariant());
-        }
-
-        public static (bool frameworkSupportsAppDomain, bool frameworkSupportsPipes) CompatibilityModes(this IAnalyzerResult analyzerResult)
-        {
-            var (framework, version) = analyzerResult.GetTargetFrameworkAndVersion();
-
-            var frameworkSupportsAppDomain = true;
-            var frameworkSupportsPipes = true;
-
-            switch (framework)
-            {
-                case Framework.DotNet when version.Major < 2:
-                    frameworkSupportsAppDomain = false;
-                    break;
-                case Framework.DotNetStandard when version.Major < 2:
-                    frameworkSupportsAppDomain = false;
-                    frameworkSupportsPipes = false;
-                    break;
-                case Framework.Unknown:
-                case Framework.DotNetClassic:
-                    frameworkSupportsPipes = version < new Version(3, 5);
-                    break;
-            }
-
-            return (frameworkSupportsAppDomain, frameworkSupportsPipes);
         }
 
         public static string GetSymbolFileName(this IAnalyzerResult analyzerResult)
