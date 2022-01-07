@@ -8,6 +8,7 @@ using Moq.Protected;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
 using Xunit;
 
@@ -30,7 +31,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
 
             var readonlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose).Object;
 
-            var jsonReport = JsonReport.Build(options, readonlyInputComponent);
+            var jsonReport = JsonReport.Build(options, readonlyInputComponent, It.IsAny<TestProjectsInfo>());
 
             handlerMock
                 .Protected()
@@ -81,7 +82,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
 
             var readonlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose).Object;
 
-            var jsonReport = JsonReport.Build(options, readonlyInputComponent);
+            var jsonReport = JsonReport.Build(options, readonlyInputComponent, It.IsAny<TestProjectsInfo>());
 
             var expectedGetUri = new Uri("https://www.filestoragelocation.com/StrykerOutput/baseline/project_version/stryker-report.json?sv=AZURE_SAS_KEY");
 
@@ -199,7 +200,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
 
             var readonlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose).Object;
 
-            var jsonReport = JsonReport.Build(options, readonlyInputComponent);
+            var jsonReport = JsonReport.Build(options, readonlyInputComponent, It.IsAny<TestProjectsInfo>());
 
             var expectedGetUri = new Uri($"https://www.filestoragelocation.com/StrykerOutput/{projectName}/{projectVersion}/stryker-report.json?sv=AZURE_SAS_KEY");
 
@@ -321,7 +322,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
 
             var readonlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose).Object;
 
-            var jsonReport = JsonReport.Build(options, readonlyInputComponent);
+            var jsonReport = JsonReport.Build(options, readonlyInputComponent, It.IsAny<TestProjectsInfo>());
 
             var expectedGetUri = new Uri($"https://www.filestoragelocation.com/StrykerOutput/{version}/stryker-report.json?sv=AZURE_SAS_KEY");
 

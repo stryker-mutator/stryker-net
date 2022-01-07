@@ -9,6 +9,7 @@ using Moq;
 using Shouldly;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Json.SourceFiles;
 using Xunit;
@@ -99,7 +100,7 @@ namespace Stryker.Core.UnitTest.Reporters
         {
             var folderComponent = JsonReportTestHelper.CreateProjectWith();
 
-            var report = JsonReport.Build(new StrykerOptions(), folderComponent.ToReadOnlyInputComponent());
+            var report = JsonReport.Build(new StrykerOptions(), folderComponent.ToReadOnlyInputComponent(), It.IsAny<TestProjectsInfo>());
 
             report.ShouldSatisfyAllConditions(
                 () => report.Thresholds.ShouldContainKey("high"),
@@ -111,7 +112,7 @@ namespace Stryker.Core.UnitTest.Reporters
         {
             var folderComponent = JsonReportTestHelper.CreateProjectWith();
 
-            var report = JsonReport.Build(new StrykerOptions(), folderComponent.ToReadOnlyInputComponent());
+            var report = JsonReport.Build(new StrykerOptions(), folderComponent.ToReadOnlyInputComponent(), It.IsAny<TestProjectsInfo>());
 
             report.Files.Count.ShouldBeGreaterThan(0);
         }
@@ -121,7 +122,7 @@ namespace Stryker.Core.UnitTest.Reporters
         {
             var folderComponent = JsonReportTestHelper.CreateProjectWith();
 
-            var report = JsonReport.Build(new StrykerOptions(), folderComponent.ToReadOnlyInputComponent());
+            var report = JsonReport.Build(new StrykerOptions(), folderComponent.ToReadOnlyInputComponent(), It.IsAny<TestProjectsInfo>());
 
             report.ProjectRoot.ShouldBe("/home/user/src/project/");
         }
@@ -138,7 +139,7 @@ namespace Stryker.Core.UnitTest.Reporters
             };
             var reporter = new JsonReporter(options, mockFileSystem);
 
-            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent());
+            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith().ToReadOnlyInputComponent(), It.IsAny<TestProjectsInfo>());
             var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.json");
             mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
             var fileContents = mockFileSystem.File.ReadAllText(reportPath);

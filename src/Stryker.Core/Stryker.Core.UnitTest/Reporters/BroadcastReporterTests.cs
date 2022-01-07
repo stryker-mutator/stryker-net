@@ -1,8 +1,9 @@
+using System.Collections.ObjectModel;
 using Moq;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
-using System.Collections.ObjectModel;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
@@ -13,7 +14,7 @@ namespace Stryker.Core.UnitTest.Reporters
         public void BroadcastReporter_ShouldInvokeSameMethodWithSameObject_OnAllMutantsTested()
         {
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
-            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>()));
+            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()));
 
             var exampleInputComponent = new ReadOnlyFileLeaf(new CsharpFileLeaf());
             var exampleMutant = new Mutant();
@@ -24,9 +25,9 @@ namespace Stryker.Core.UnitTest.Reporters
             };
             var target = new BroadcastReporter(reporters);
 
-            target.OnAllMutantsTested(exampleInputComponent);
+            target.OnAllMutantsTested(exampleInputComponent, It.IsAny<TestProjectsInfo>());
 
-            reporterMock.Verify(x => x.OnAllMutantsTested(exampleInputComponent), Times.Once);
+            reporterMock.Verify(x => x.OnAllMutantsTested(exampleInputComponent, It.IsAny<TestProjectsInfo>()), Times.Once);
         }
 
         [Fact]
@@ -73,7 +74,7 @@ namespace Stryker.Core.UnitTest.Reporters
         public void BroadcastReporter_ShouldInvokeAllReportersInList()
         {
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
-            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>()));
+            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()));
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()));
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
 
@@ -87,11 +88,11 @@ namespace Stryker.Core.UnitTest.Reporters
             };
             var target = new BroadcastReporter(reporters);
 
-            target.OnAllMutantsTested(exampleInputComponent);
+            target.OnAllMutantsTested(exampleInputComponent, It.IsAny<TestProjectsInfo>());
             target.OnMutantsCreated(exampleInputComponent);
             target.OnMutantTested(exampleMutant);
 
-            reporterMock.Verify(x => x.OnAllMutantsTested(exampleInputComponent), Times.Exactly(2));
+            reporterMock.Verify(x => x.OnAllMutantsTested(exampleInputComponent, It.IsAny<TestProjectsInfo>()), Times.Exactly(2));
             reporterMock.Verify(x => x.OnMutantsCreated(exampleInputComponent), Times.Exactly(2));
             reporterMock.Verify(x => x.OnMutantTested(exampleMutant), Times.Exactly(2));
         }
@@ -106,7 +107,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var target = new BroadcastReporter(reporters);
 
-            target.OnAllMutantsTested(exampleInputComponent);
+            target.OnAllMutantsTested(exampleInputComponent, It.IsAny<TestProjectsInfo>());
             target.OnMutantsCreated(exampleInputComponent);
             target.OnMutantTested(exampleMutant);
         }

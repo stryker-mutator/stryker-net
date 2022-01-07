@@ -56,6 +56,7 @@ namespace Stryker.Core
             {
                 // Mutate
                 _mutationTestProcesses = projectOrchestrator.MutateProjects(options, reporters).ToList();
+                var combinedTestProjectsInfo = _mutationTestProcesses.Select(mtp => mtp.Input.TestProjectsInfo).Aggregate((a, b) => a + b);
 
                 var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.SourceProjectInfo.ProjectContents).ToList(), options);
 
@@ -91,7 +92,7 @@ namespace Stryker.Core
                         _logger.LogWarning("It\'s a mutant-free world, nothing to test.");
                     }
 
-                    reporters.OnAllMutantsTested(readOnlyInputComponent);
+                    reporters.OnAllMutantsTested(readOnlyInputComponent, combinedTestProjectsInfo);
                     return new StrykerRunResult(options, double.NaN);
                 }
 
@@ -105,7 +106,7 @@ namespace Stryker.Core
                     project.Restore();
                 }
 
-                reporters.OnAllMutantsTested(readOnlyInputComponent);
+                reporters.OnAllMutantsTested(readOnlyInputComponent, combinedTestProjectsInfo);
 
                 return new StrykerRunResult(options, readOnlyInputComponent.GetMutationScore());
             }

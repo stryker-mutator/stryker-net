@@ -7,67 +7,67 @@ using Stryker.Core.Options;
 
 namespace Stryker.Core.UnitTest.Mutants
 {
-	/// <summary>
-	/// This base class provides helper to test source file mutation
-	/// </summary>
-	public class MutantOrchestratorTestsBase : TestBase
-	{
-		protected CsharpMutantOrchestrator _target;
+    /// <summary>
+    /// This base class provides helper to test source file mutation
+    /// </summary>
+    public class MutantOrchestratorTestsBase : TestBase
+    {
+        protected CsharpMutantOrchestrator _target;
 
-		public MutantOrchestratorTestsBase()
-		{
-			var options = new StrykerOptions
-			{
-				MutationLevel = MutationLevel.Complete,
-				OptimizationMode = OptimizationModes.CoverageBasedTest,
-			};
-			var mutators = new List<IMutator>
-			{
-				// the default list of mutators
-				new BinaryExpressionMutator(),
-				new BooleanMutator(),
-				new AssignmentExpressionMutator(),
-				new PrefixUnaryMutator(),
-				new PostfixUnaryMutator(),
-				new CheckedMutator(),
-				new LinqMutator(),
-				new StringMutator(),
-				new StringEmptyMutator(),
-				new InterpolatedStringMutator(),
-				new NegateConditionMutator(),
-				new InitializerMutator(),
-				new ObjectCreationMutator(),
-				new ArrayCreationMutator(),
-				new StatementMutator(),
-				new RegexMutator()
-			};
-			_target = new CsharpMutantOrchestrator(mutators, options);
-		}
+        public MutantOrchestratorTestsBase()
+        {
+            var options = new StrykerOptions
+            {
+                MutationLevel = MutationLevel.Complete,
+                OptimizationMode = OptimizationModes.CoverageBasedTest,
+            };
+            var mutators = new List<IMutator>
+            {
+                // the default list of mutators
+                new BinaryExpressionMutator(),
+                new BooleanMutator(),
+                new AssignmentExpressionMutator(),
+                new PrefixUnaryMutator(),
+                new PostfixUnaryMutator(),
+                new CheckedMutator(),
+                new LinqMutator(),
+                new StringMutator(),
+                new StringEmptyMutator(),
+                new InterpolatedStringMutator(),
+                new NegateConditionMutator(),
+                new InitializerMutator(),
+                new ObjectCreationMutator(),
+                new ArrayCreationMutator(),
+                new StatementMutator(),
+                new RegexMutator()
+            };
+            _target = new CsharpMutantOrchestrator(mutators, options);
+        }
 
-		protected void ShouldMutateSourceToExpected(string actual, string expected)
-		{
-			actual = @"using System;
+        protected void ShouldMutateSourceToExpected(string actual, string expected)
+        {
+            actual = @"using System;
 using System.Collections.Generic;
-			using System.Text;
+            using System.Text;
 namespace StrykerNet.UnitTest.Mutants.TestResources
-	{
-		class TestClass
-		{" + actual + "}}";
+    {
+        class TestClass
+        {" + actual + "}}";
 
-			expected = @"using System;
+            expected = @"using System;
 using System.Collections.Generic;
-			using System.Text;
+            using System.Text;
 namespace StrykerNet.UnitTest.Mutants.TestResources
-	{
-		class TestClass
-		{" + expected + "}}";
-			var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(actual).GetRoot());
-			actual = actualNode.ToFullString();
-			actual = actual.Replace(CodeInjection.HelperNamespace, "StrykerNamespace");
-			actualNode = CSharpSyntaxTree.ParseText(actual).GetRoot();
-			var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
-			actualNode.ShouldBeSemantically(expectedNode);
-			actualNode.ShouldNotContainErrors();
-		}
-	}
+    {
+        class TestClass
+        {" + expected + "}}";
+            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(actual).GetRoot());
+            actual = actualNode.ToFullString();
+            actual = actual.Replace(CodeInjection.HelperNamespace, "StrykerNamespace");
+            actualNode = CSharpSyntaxTree.ParseText(actual).GetRoot();
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
+        }
+    }
 }
