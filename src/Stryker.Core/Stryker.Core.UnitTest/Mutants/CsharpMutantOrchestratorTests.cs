@@ -1,6 +1,7 @@
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
+using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Xunit;
 
@@ -8,10 +9,73 @@ namespace Stryker.Core.UnitTest.Mutants
 {
     public class CsharpMutantOrchestratorTests : MutantOrchestratorTestsBase
     {
-		[Fact]
-		public void IfStatementsShouldBeNested()
-		{
-			string source = @"void TestMethod()
+        [Fact]
+        public void ShouldMutateInterfaces()
+        {
+            var actual = @"using System;
+using System.Collections.Generic;
+using System.Text;
+namespace StrykerNet.UnitTest.Mutants.TestResources
+{
+    interface TestClass
+    {
+        int A { get; set; }
+        int B { get; set; }
+        void MethodA();
+    }
+}";
+
+            var expected = @"using System;
+using System.Collections.Generic;
+using System.Text;
+namespace StrykerNet.UnitTest.Mutants.TestResources
+{
+    interface TestClass
+    {
+        int A { get; set; }
+        int B { get; set; }
+        void MethodA();
+    }
+}";
+            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(actual).GetRoot());
+            actual = actualNode.ToFullString();
+            actual = actual.Replace(CodeInjection.HelperNamespace, "StrykerNamespace");
+            actualNode = CSharpSyntaxTree.ParseText(actual).GetRoot();
+            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode.ShouldBeSemantically(expectedNode);
+            actualNode.ShouldNotContainErrors();
+        }
+
+        [Fact]
+        public void ShouldMutateComplexExpressionBodiedLocalFunction()
+        {
+            string source = @"void TestMethod(){
+int SomeMethod()  => (true && SomeOtherMethod(out var x)) ? x : 5;
+}";
+            string expected = @"void TestMethod(){if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+int SomeMethod()  {if(StrykerNamespace.MutantControl.IsActive(1)){return!((true && SomeOtherMethod(out var x)) )? x : 5;}else{if(StrykerNamespace.MutantControl.IsActive(2)){return(true || SomeOtherMethod(out var x)) ? x : 5;}else{return ((StrykerNamespace.MutantControl.IsActive(3)?false:true )&& SomeOtherMethod(out var x)) ? x : 5;}}};
+}}";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldMutateExpressionBodiedLocalFunction()
+        {
+            string source = @"void TestMethod(){
+void SomeMethod()  => (true && SomeOtherMethod(out var x)) ? x : 5;
+}";
+            string expected = @"void TestMethod(){if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+void SomeMethod()  {if(StrykerNamespace.MutantControl.IsActive(1)){!((true && SomeOtherMethod(out var x)) )? x : 5;}else{if(StrykerNamespace.MutantControl.IsActive(2)){(true || SomeOtherMethod(out var x)) ? x : 5;}else{((StrykerNamespace.MutantControl.IsActive(3)?false:true )&& SomeOtherMethod(out var x)) ? x : 5;}}};
+}}";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void IfStatementsShouldBeNested()
+        {
+            string source = @"void TestMethod()
 {
 	int i = 0;
 	if (i + 8 == 8)
@@ -1076,7 +1140,9 @@ if(StrykerNamespace.MutantControl.IsActive(4)){;}else{		yield break;
         {
             string source = @"~TestClass(){;}";
 
-            ShouldMutateSourceToExpected(source, source);
+            string expected = @"{~TestClass(){if(StrykerNamespace.MutantControl.IsActive(0)){}else{;}}}}";
+
+            ShouldMutateSourceToExpected(source, expected);
         }
 
         [Fact]
@@ -1266,7 +1332,7 @@ string Value => Generator(out var x) ? """" :""test"";
             var expected = @"class Test {
 int GetId(string input) {if(StrykerNamespace.MutantControl.IsActive(0)){return!(int.TryParse(input, out var result) )? result : 0;}else{return int.TryParse(input, out var result) ? result : 0;}}
 string Value {get{if(StrykerNamespace.MutantControl.IsActive(1)){return!(Generator(out var x) )? """" :""test"";}else{return Generator(out var x) ? (StrykerNamespace.MutantControl.IsActive(2)?""Stryker was here!"":"""" ):(StrykerNamespace.MutantControl.IsActive(3)?"""":""test"");}}}}}}";
-			ShouldMutateSourceToExpected(source, expected);
-		}
-	}
+            ShouldMutateSourceToExpected(source, expected);
+        }
+    }
 }
