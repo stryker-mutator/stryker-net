@@ -1098,7 +1098,7 @@ Please specify a test project name filter that results in one project.
 
             var match = new InputFileResolver().DetermineProjectUnderTestWithNameFilter(shouldMatch, projectReferences);
 
-            match.ShouldBe(FilePathUtils.NormalizePathSeparators("../ExampleProject/ExampleProject.csproj"));
+            match.ShouldBe("../ExampleProject/ExampleProject.csproj");
         }
     }
 }
