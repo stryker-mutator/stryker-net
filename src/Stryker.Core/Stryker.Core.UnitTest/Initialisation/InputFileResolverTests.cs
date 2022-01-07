@@ -1096,8 +1096,8 @@ Please specify a test project name filter that results in one project.
         public void ShouldMatchOnBothForwardAndBackwardsSlash(string shouldMatch)
         {
             var projectReferences = new List<string> {
-                "../ExampleProject/ExampleProject.csproj",
-                "../AnotherProject/AnotherProject.csproj"
+                FilePathUtils.NormalizePathSeparators("../ExampleProject/ExampleProject.csproj"),
+                FilePathUtils.NormalizePathSeparators("../AnotherProject/AnotherProject.csproj")
             };
 
             var match = new InputFileResolver().DetermineProjectUnderTestWithNameFilter(shouldMatch, projectReferences);
