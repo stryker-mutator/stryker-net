@@ -754,7 +754,7 @@ Please specify a test project name filter that results in one project.
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
                 { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
-                { Path.Combine(_filesystemRoot, "ExampleProject\\ExampleProject2", "ExampleProject2.csproj"), new MockFileData(defaultTestProjectFileContents)},
+                { Path.Combine(_filesystemRoot, @"ExampleProject\ExampleProject2", "ExampleProject2.csproj"), new MockFileData(defaultTestProjectFileContents)},
                 { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
             });
 
@@ -991,10 +991,10 @@ Please specify a test project name filter that results in one project.
             var target = new InputFileResolver();
 
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: new List<string> { "..\ExampleProject\ExampleProject.csproj" }).Object;
+                projectReferences: new List<string> { @"..\ExampleProject\ExampleProject.csproj" }).Object;
 
             var result = target.FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, null);
-            result.ShouldBe("..\ExampleProject\ExampleProject.csproj");
+            result.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
         }
 
         [Fact]
@@ -1013,8 +1013,8 @@ Please specify a test project name filter that results in one project.
         {
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: new List<string> {
-                    "..\ExampleProject\ExampleProject.csproj",
-                    "..\AnotherProject\AnotherProject.csproj"
+                    @"..\ExampleProject\ExampleProject.csproj",
+                    @"..\AnotherProject\AnotherProject.csproj"
                 }).Object;
 
             var ex = Assert.Throws<InputException>(() =>
@@ -1036,13 +1036,13 @@ Please specify a test project name filter that results in one project.
         {
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: new List<string> {
-                    "..\ExampleProject\ExampleProject.csproj",
-                    "..\AnotherProject\AnotherProject.csproj"
+                    @"..\ExampleProject\ExampleProject.csproj",
+                    @"..\AnotherProject\AnotherProject.csproj"
                 }).Object;
 
             var result = new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, shouldMatch);
 
-            result.ShouldBe(Path.Combine("..", "ExampleProject", "ExampleProject.csproj"));
+            result.ShouldBe(@"..\ExampleProject\ExampleProject.csproj"));
         }
 
         [Theory]
@@ -1054,8 +1054,8 @@ Please specify a test project name filter that results in one project.
         {
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: new List<string> {
-                    "..\ExampleProject\ExampleProject.csproj",
-                    "..\AnotherProject\AnotherProject.csproj"
+                    @"..\ExampleProject\ExampleProject.csproj",
+                    @"..\AnotherProject\AnotherProject.csproj"
                 }).Object;
 
             var ex = Assert.Throws<InputException>(() =>
@@ -1074,8 +1074,8 @@ Please specify a test project name filter that results in one project.
         {
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: new List<string> {
-                    "..\ExampleProject\ExampleProject.csproj",
-                    "..\AnotherProject\AnotherProject.csproj"
+                    @"..\ExampleProject\ExampleProject.csproj",
+                    @"..\AnotherProject\AnotherProject.csproj"
                 }).Object;
 
             var ex = Assert.Throws<InputException>(() =>
@@ -1093,13 +1093,13 @@ Please specify a test project name filter that results in one project.
         public void ShouldMatchOnBothForwardAndBackwardsSlash(string shouldMatch)
         {
             var projectReferences = new List<string> {
-                "..\ExampleProject\ExampleProject.csproj",
-                "..\AnotherProject\AnotherProject.csproj"
+                @"..\ExampleProject\ExampleProject.csproj",
+                @"..\AnotherProject\AnotherProject.csproj"
             };
 
             var match = new InputFileResolver().DetermineProjectUnderTestWithNameFilter(shouldMatch, projectReferences);
 
-            match.ShouldBe("..\ExampleProject\ExampleProject.csproj");
+            match.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
         }
     }
 }
