@@ -22,7 +22,6 @@ namespace Stryker.Core.Mutators
                 yield break;
             }
 
-
             yield return new Mutation()
             {
                 OriginalNode = node,
