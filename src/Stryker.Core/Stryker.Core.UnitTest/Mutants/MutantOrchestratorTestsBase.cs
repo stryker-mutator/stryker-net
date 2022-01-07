@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
@@ -21,27 +20,8 @@ namespace Stryker.Core.UnitTest.Mutants
                 MutationLevel = MutationLevel.Complete,
                 OptimizationMode = OptimizationModes.CoverageBasedTest,
             };
-            var mutators = new List<IMutator>
-            {
-                // the default list of mutators
-                new BinaryExpressionMutator(),
-                new BooleanMutator(),
-                new AssignmentExpressionMutator(),
-                new PrefixUnaryMutator(),
-                new PostfixUnaryMutator(),
-                new CheckedMutator(),
-                new LinqMutator(),
-                new StringMutator(),
-                new StringEmptyMutator(),
-                new InterpolatedStringMutator(),
-                new NegateConditionMutator(),
-                new InitializerMutator(),
-                new ObjectCreationMutator(),
-                new ArrayCreationMutator(),
-                new StatementMutator(),
-                new RegexMutator()
-            };
-            _target = new CsharpMutantOrchestrator(mutators, options);
+
+            _target = new CsharpMutantOrchestrator(options: options);
         }
 
         protected void ShouldMutateSourceToExpected(string actual, string expected)
