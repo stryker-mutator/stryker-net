@@ -1042,7 +1042,7 @@ Please specify a test project name filter that results in one project.
 
             var result = new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, shouldMatch);
 
-            result.ShouldBe(@"..\ExampleProject\ExampleProject.csproj"));
+            result.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
         }
 
         [Theory]
