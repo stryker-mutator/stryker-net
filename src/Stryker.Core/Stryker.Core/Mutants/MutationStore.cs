@@ -1,6 +1,6 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
@@ -66,31 +66,25 @@ namespace Stryker.Core.Mutants
             }
         }
 
-        public StatementSyntax PlaceBlockMutations(StatementSyntax block, Func<Mutation, StatementSyntax> mutationFunc)
+        public StatementSyntax PlaceBlockMutations(SyntaxNode sourceNode, StatementSyntax block)
         {
             var result =
-                MutantPlacer.PlaceStatementControlledMutations(block,
-                    _blockMutants.Peek()
-                        .Select(m => (m.Id, mutationFunc(m.Mutation))));
+                MutantPlacer.PlaceStatementControlledMutations(sourceNode, block, _blockMutants.Peek());
             _blockMutants.Peek().Clear();
             return result;
         }
 
-        public StatementSyntax PlaceStatementMutations(StatementSyntax block, Func<Mutation, StatementSyntax> mutationFunc)
+        public StatementSyntax PlaceStatementMutations(SyntaxNode sourceNode, StatementSyntax block)
         {
             var result =
-                MutantPlacer.PlaceStatementControlledMutations(block,
-                    _statementMutants.Peek()
-                        .Select(m => (m.Id, mutationFunc(m.Mutation))));
+                MutantPlacer.PlaceStatementControlledMutations(sourceNode, block, _statementMutants.Peek());
             _statementMutants.Peek().Clear();
             return result;
         }
 
-        public ExpressionSyntax PlaceExpressionMutations(ExpressionSyntax expression,
-            Func<Mutation, ExpressionSyntax> converter)
+        public ExpressionSyntax PlaceExpressionMutations(SyntaxNode sourceNode, ExpressionSyntax expression)
         {
-            var result = MutantPlacer.PlaceExpressionControlledMutations(expression,
-                _expressionMutants.Select(m => (m.Id, converter(m.Mutation))));
+            var result = MutantPlacer.PlaceExpressionControlledMutations(sourceNode, expression, _expressionMutants);
             _expressionMutants.Clear();
             return result;
         }

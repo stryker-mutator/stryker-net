@@ -29,9 +29,11 @@ namespace Stryker.Core.UnitTest.Mutants
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(8))));
 
-            var result = MutantPlacer.PlaceStatementControlledMutations(originalNode, new[] {(id, (StatementSyntax) mutatedNode)});
+            var mutants = new[] { new Mutant { Id = id, Mutation = new Mutation { ReplacementNode = mutatedNode } } };
 
-            result.ToFullString().Replace(CodeInjection.HelperNamespace, "StrykerNamespace").ShouldBeSemantically("if (StrykerNamespace.MutantControl.IsActive("+id+@"))
+            var result = MutantPlacer.PlaceStatementControlledMutations(originalNode, originalNode, mutants);
+
+            result.ToFullString().Replace(CodeInjection.HelperNamespace, "StrykerNamespace").ShouldBeSemantically("if (StrykerNamespace.MutantControl.IsActive(" + id + @"))
             {
                 1 - 8;
             } else {
@@ -48,7 +50,7 @@ namespace Stryker.Core.UnitTest.Mutants
             CheckMutantPlacerProperlyPlaceAndRemoveHelpers<T, T>(sourceCode, expectedCode, placer, condition);
 
         private void CheckMutantPlacerProperlyPlaceAndRemoveHelpers<T, TU>(string sourceCode, string expectedCode,
-            Func<T, T> placer, Predicate<T> condition = null) where T : SyntaxNode where TU: SyntaxNode
+            Func<T, T> placer, Predicate<T> condition = null) where T : SyntaxNode where TU : SyntaxNode
         {
             var actualNode = CSharpSyntaxTree.ParseText(sourceCode).GetRoot();
 
@@ -57,7 +59,7 @@ namespace Stryker.Core.UnitTest.Mutants
             actualNode = actualNode.ReplaceNode(node, placer(node));
             actualNode.ToFullString().ShouldBeSemantically(expectedCode);
 
-            TU newNode ;
+            TU newNode;
             if (typeof(TU) == typeof(T))
             {
                 newNode = actualNode.DescendantNodes().First(t => t is TU && t.ContainsAnnotations) as TU;
@@ -68,7 +70,7 @@ namespace Stryker.Core.UnitTest.Mutants
             }
 
             // Remove helper
-            var restored= MutantPlacer.RemoveMutant(newNode);
+            var restored = MutantPlacer.RemoveMutant(newNode);
             actualNode = actualNode.ReplaceNode(newNode, restored);
             actualNode.ToFullString().ShouldBeSemantically(sourceCode);
             // try to remove again
@@ -90,7 +92,9 @@ namespace Stryker.Core.UnitTest.Mutants
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(8)));
 
-            var result = MutantPlacer.PlaceExpressionControlledMutations(originalNode, new[]{(id, (ExpressionSyntax) mutatedNode)});
+            var mutants = new[] { new Mutant { Id = id, Mutation = new Mutation { ReplacementNode = mutatedNode } } };
+
+            var result = MutantPlacer.PlaceExpressionControlledMutations(originalNode, originalNode, mutants);
 
             result.ToFullString()
                 .ShouldBeSemantically(@$"({CodeInjection.HelperNamespace}.MutantControl.IsActive({id})?1-8:1+8)");
@@ -101,12 +105,12 @@ namespace Stryker.Core.UnitTest.Mutants
         }
 
         [Theory]
-        [InlineData("static TestClass()=> Value-='a';","static TestClass(){ Value-='a';}")]
-        [InlineData("void TestClass()=> Value-='a';","void TestClass(){ Value-='a';}")]
-        [InlineData("int TestClass()=> 1;","int TestClass(){ return 1;}")]
-        [InlineData("~TestClass()=> Value-='a';","~TestClass(){ Value-='a';}")]
-        [InlineData("public static operator int(Test t)=> 0;","public static operator int(Test t){ return 0;}")]
-        [InlineData("public static int operator +(Test t, Test q)=> 0;","public static int operator +(Test t, Test q){return 0;}")]
+        [InlineData("static TestClass()=> Value-='a';", "static TestClass(){ Value-='a';}")]
+        [InlineData("void TestClass()=> Value-='a';", "void TestClass(){ Value-='a';}")]
+        [InlineData("int TestClass()=> 1;", "int TestClass(){ return 1;}")]
+        [InlineData("~TestClass()=> Value-='a';", "~TestClass(){ Value-='a';}")]
+        [InlineData("public static operator int(Test t)=> 0;", "public static operator int(Test t){ return 0;}")]
+        [InlineData("public static int operator +(Test t, Test q)=> 0;", "public static int operator +(Test t, Test q){return 0;}")]
         public void ShouldConvertExpressionBodyBackAndForth(string original, string injected)
         {
             var source = $"class Test {{{original}}}";
@@ -116,7 +120,7 @@ namespace Stryker.Core.UnitTest.Mutants
         }
 
         [Theory]
-        [InlineData("void TestClass(){ void LocalFunction() => Value-='a';}","void TestClass(){ void LocalFunction() {Value-='a';};}}")]
+        [InlineData("void TestClass(){ void LocalFunction() => Value-='a';}", "void TestClass(){ void LocalFunction() {Value-='a';};}}")]
         public void ShouldConvertExpressionBodyBackLocalFunctionAndForth(string original, string injected)
         {
             var source = $"class Test {{{original}}}";
@@ -126,11 +130,11 @@ namespace Stryker.Core.UnitTest.Mutants
         }
 
         [Theory]
-        [InlineData("() => Call(2)","() => {return Call(2);}")]
-        [InlineData("(x) => Call(2)","(x) => {return Call(2);}")]
-        [InlineData("x => Call(2)","x => {return Call(2);}")]
-        [InlineData("(out x) => Call(out x)","(out x) => {return Call(out x);}")]
-        [InlineData("(x, y) => Call(2)","(x, y) => {return Call(2);}")]
+        [InlineData("() => Call(2)", "() => {return Call(2);}")]
+        [InlineData("(x) => Call(2)", "(x) => {return Call(2);}")]
+        [InlineData("x => Call(2)", "x => {return Call(2);}")]
+        [InlineData("(out x) => Call(out x)", "(out x) => {return Call(out x);}")]
+        [InlineData("(x, y) => Call(2)", "(x, y) => {return Call(2);}")]
         public void ShouldConvertAccessorExpressionBodyBackAndForth(string original, string injected)
         {
             var source = $"class Test {{ private void Any(){{ Register({original});}}}}";
@@ -174,7 +178,7 @@ namespace Stryker.Core.UnitTest.Mutants
             var expected = "class Test {bool Method(out int x) {{x = default(int);}x=0;}}";
 
             CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BlockSyntax>(source, expected,
-                (n)=> MutantPlacer.AddDefaultInitializers(n,
+                (n) => MutantPlacer.AddDefaultInitializers(n,
                     new[]{SyntaxFactory.Parameter(SyntaxFactory.Identifier("x")).WithType(SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword))
                     )}));
         }
@@ -204,7 +208,8 @@ namespace Stryker.Core.UnitTest.Mutants
             var source = @"class Test {
 static TestClass()=> Value-='a';}";
 
-            var orchestrator = new CsharpMutantOrchestrator(options: new StrykerOptions {
+            var orchestrator = new CsharpMutantOrchestrator(options: new StrykerOptions
+            {
                 OptimizationMode = OptimizationModes.CoverageBasedTest,
                 MutationLevel = MutationLevel.Complete
             });
@@ -213,7 +218,7 @@ static TestClass()=> Value-='a';}";
             var node = actualNode.DescendantNodes().First(t => t is BlockSyntax);
 
             // Remove marker
-            var restored= MutantPlacer.RemoveMutant(node);
+            var restored = MutantPlacer.RemoveMutant(node);
             actualNode = actualNode.ReplaceNode(node, restored);
 
             // remove mutation
@@ -223,7 +228,7 @@ static TestClass()=> Value-='a';}";
 
             // remove expression to body conversion
             node = actualNode.DescendantNodes().First(t => t is ConstructorDeclarationSyntax);
-            restored= MutantPlacer.RemoveMutant(node);
+            restored = MutantPlacer.RemoveMutant(node);
             actualNode = actualNode.ReplaceNode(node, restored);
 
             var expectedNode = CSharpSyntaxTree.ParseText(source.Replace("StrykerNamespace", CodeInjection.HelperNamespace)).GetRoot();
