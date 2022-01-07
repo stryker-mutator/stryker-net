@@ -172,8 +172,8 @@ namespace Stryker.Core.Initialisation
                 .Where(x => x.Contains(FilePathUtils.NormalizePathSeparators(projectUnderTestNameFilter), StringComparison.OrdinalIgnoreCase));
             if (!projectReferencesMatchingNameFilter.Any())
             {
-                stringBuilder.Append("No project reference matched the given project filter");
-                stringBuilder.AppendLine(projectUnderTestNameFilter);
+                stringBuilder.Append("No project reference matched the given project filter ");
+                stringBuilder.Append($"'{projectUnderTestNameFilter}'");
                 stringBuilder.Append(referenceChoice);
 
                 throw new InputException(stringBuilder.ToString());
