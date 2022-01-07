@@ -9,7 +9,6 @@ using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Initialisation
 {
@@ -25,7 +24,6 @@ namespace Stryker.Core.Initialisation
     /// </summary>
     public class InputFileResolver : IInputFileResolver
     {
-        private const string ErrorMessage = "Project reference issue.";
         private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules", "StrykerOutput" };
         private readonly IFileSystem _fileSystem;
         private readonly IProjectFileReader _projectFileReader;
@@ -74,7 +72,7 @@ namespace Stryker.Core.Initialisation
             projectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath, options.TargetFramework);
 
             //to test Fsharp support you would need to create a FsharpProjectComponentsBuilder
-            IProjectComponent inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
+            var inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
             projectInfo.ProjectContents = inputFiles;
 
             ValidateTestProjectsCanBeExecuted(projectInfo);
@@ -133,7 +131,7 @@ namespace Stryker.Core.Initialisation
 
         public string FindProjectUnderTest(IEnumerable<IAnalyzerResult> testProjects, string projectUnderTestNameFilter)
         {
-            IEnumerable<string> projectReferences = FindProjectsReferencedByAllTestProjects(testProjects);
+            var projectReferences = FindProjectsReferencedByAllTestProjects(testProjects);
 
             string projectUnderTestPath;
 
@@ -166,6 +164,7 @@ namespace Stryker.Core.Initialisation
         internal string DetermineProjectUnderTestWithNameFilter(string projectUnderTestNameFilter, IEnumerable<string> projectReferences)
         {
             var stringBuilder = new StringBuilder();
+
             var referenceChoice = BuildReferenceChoice(projectReferences);
 
             var projectReferencesMatchingNameFilter = projectReferences
@@ -177,7 +176,7 @@ namespace Stryker.Core.Initialisation
                 stringBuilder.AppendLine(projectUnderTestNameFilter);
                 stringBuilder.Append(referenceChoice);
 
-                throw new InputException(ErrorMessage, stringBuilder.ToString());
+                throw new InputException(stringBuilder.ToString());
             }
             else if (projectReferencesMatchingNameFilter.Count() > 1)
             {
@@ -186,7 +185,7 @@ namespace Stryker.Core.Initialisation
                 stringBuilder.AppendLine(", please specify the full name of the project reference.");
                 stringBuilder.Append(referenceChoice);
 
-                throw new InputException(ErrorMessage, stringBuilder.ToString());
+                throw new InputException(stringBuilder.ToString());
             }
 
             return projectReferencesMatchingNameFilter.Single();
@@ -202,14 +201,14 @@ namespace Stryker.Core.Initialisation
                 stringBuilder.AppendLine("Test project contains more than one project reference. Please set the project option (https://stryker-mutator.io/docs/stryker-net/configuration#project-file-name) to specify which project to mutate.");
                 stringBuilder.Append(referenceChoice);
 
-                throw new InputException(ErrorMessage, stringBuilder.ToString());
+                throw new InputException(stringBuilder.ToString());
             }
 
             if (!projectReferences.Any()) // No references found
             {
                 stringBuilder.AppendLine("No project references found. Please add a project reference to your test project and retry.");
 
-                throw new InputException(ErrorMessage, stringBuilder.ToString());
+                throw new InputException(stringBuilder.ToString());
             }
 
             return projectReferences.Single();
@@ -229,7 +228,7 @@ namespace Stryker.Core.Initialisation
             builder.AppendLine($"Choose one of the following references:");
             builder.AppendLine("");
 
-            foreach (string projectReference in projectReferences)
+            foreach (var projectReference in projectReferences)
             {
                 builder.Append("  ");
                 builder.AppendLine(projectReference);
