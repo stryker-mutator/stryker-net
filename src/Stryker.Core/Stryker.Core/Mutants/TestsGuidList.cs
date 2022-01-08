@@ -33,8 +33,6 @@ namespace Stryker.Core.Mutants
         public TestsGuidList Merge(ITestGuids other) => new(_testsGuid.Union(other.GetGuids()));
         public ITestListDescription Intersect(ITestGuids failedTests) => IsEveryTest ? new TestsGuidList(failedTests.GetGuids()) : new TestsGuidList(failedTests.GetGuids().Intersect(_testsGuid));
 
-        public bool Contains(Guid testId) => IsEveryTest || _testsGuid.Contains(testId);
-
         public bool IsIncluded(ITestGuids test) => test.IsEveryTest || _testsGuid.IsSubsetOf(test.GetGuids());
 
         public static TestsGuidList EveryTest() => EveryTests;

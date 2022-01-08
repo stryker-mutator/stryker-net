@@ -14,22 +14,15 @@ namespace Stryker.Core.Initialisation.Buildalyzer
 {
     public static class IAnalyzerResultExtensions
     {
-        public static string GetAssemblyPath(this IAnalyzerResult analyzerResult)
-        {
-            return FilePathUtils.NormalizePathSeparators(Path.Combine(
+        public static string GetAssemblyPath(this IAnalyzerResult analyzerResult) =>
+            FilePathUtils.NormalizePathSeparators(Path.Combine(
                 FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["TargetDir"]),
                 FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["TargetFileName"])));
-        }
 
-        public static string GetAssemblyName(this IAnalyzerResult analyzerResult)
-        {
-            return FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["AssemblyName"]);
-        }
+        public static string GetAssemblyName(this IAnalyzerResult analyzerResult) => FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["AssemblyName"]);
 
-        public static IEnumerable<ResourceDescription> GetResources(this IAnalyzerResult analyzerResult, ILogger logger)
-        {
-            return EmbeddedResourcesGenerator.GetManifestResources(GetAssemblyPath(analyzerResult), logger);
-        }
+        public static IEnumerable<ResourceDescription> GetResources(this IAnalyzerResult analyzerResult, ILogger logger) =>
+            EmbeddedResourcesGenerator.GetManifestResources(GetAssemblyPath(analyzerResult), logger);
 
         public static CSharpCompilationOptions GetCompilationOptions(this IAnalyzerResult analyzerResult)
         {
@@ -49,17 +42,13 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             return compilationOptions;
         }
 
-        public static string AssemblyAttributeFileName(this IAnalyzerResult analyzerResult)
-        {
-            return analyzerResult.GetPropertyOrDefault("GeneratedAssemblyInfoFile",
+        public static string AssemblyAttributeFileName(this IAnalyzerResult analyzerResult) =>
+            analyzerResult.GetPropertyOrDefault("GeneratedAssemblyInfoFile",
                 (Path.GetFileNameWithoutExtension(analyzerResult.ProjectFilePath) + ".AssemblyInfo.cs")
                 .ToLowerInvariant());
-        }
 
-        public static string GetSymbolFileName(this IAnalyzerResult analyzerResult)
-        {
-            return Path.ChangeExtension(analyzerResult.GetAssemblyName(), ".pdb");
-        }
+        public static string GetSymbolFileName(this IAnalyzerResult analyzerResult) =>
+            Path.ChangeExtension(analyzerResult.GetAssemblyName(), ".pdb");
 
         public static IEnumerable<ISourceGenerator> GetSourceGenerators(this IAnalyzerResult analyzerResult, ILogger logger = null)
         {

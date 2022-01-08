@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
@@ -27,9 +28,14 @@ namespace Stryker.Core.UnitTest.MutationTest
         private readonly Dictionary<HashSet<int>, Dictionary<int, TestsGuidList>> _failedTestsPerRun = new(new HashSetComparer());
         private const int InitialRunId = -1;
         private Mock<ITestRunner> _runnerMock;
-
+        /// <summary>
+        /// Existing tests.
+        /// </summary>
         public TestSet TestSet { get; } = new();
-        public IDictionary<int, Mutant> Mutants => _mutants;
+        /// <summary>
+        /// Existing mutants.
+        /// </summary>
+        public IEnumerable<Mutant> Mutants => _mutants.Values;
 
         /// <summary>
         /// Create a mutant
@@ -42,29 +48,71 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 mutantId = _mutants.Keys.Append(-1).Max() + 1;
             }
-            var mutant = new Mutant { Id = mutantId};
+            var mutant = BuildMutant(mutantId);
             _mutants[mutantId] = mutant;
             return mutant;
         }
 
+        public static Mutant BuildMutant(int id)
+        {
+            var mutant = new Mutant
+            {
+                Id = id,
+                Mutation = new Mutation
+                {
+                    DisplayName = $"Test Mutation {id}.",
+                    OriginalNode = SyntaxFactory.ParseStatement("return 1+2;"),
+                    ReplacementNode = SyntaxFactory.ParseStatement("return 1-2;")
+                }
+            };
+            return mutant;
+        }
+
+        /// <summary>
+        /// Create several mutants using provided ids.
+        /// </summary>
+        /// <param name="mutantIds">list of desired mutants.</param>
         public void CreateMutants(params int[] mutantIds)
         {
             foreach (var id in mutantIds)
             {
-                CreateMutant(id);
+                _ = CreateMutant(id);
             }
         }
 
-        public IEnumerable<Mutant> GetMutants() => _mutants.Values;
+        /// <summary>
+        /// Get the list of mutants that must be tested.
+        /// </summary>
+        /// <returns></returns>
+        public IEnumerable<Mutant> GetTestableMutants() => _coverageResult.Keys.Select(i => _mutants[i]);
 
-        public IEnumerable<Mutant> GetCoveredMutants() => _coverageResult.Keys.Select(i => _mutants[i]);
-
+        /// <summary>
+        /// Get the status of the mutant of a given id
+        /// </summary>
+        /// <param name="mutantId">requested mutant id</param>
+        /// <returns>return the mutant's status</returns>
         public MutantStatus GetMutantStatus(int mutantId) => _mutants[mutantId].ResultStatus;
-
+        /// <summary>
+        /// Declare the tests covering one mutant
+        /// </summary>
+        /// <param name="mutantId">mutant id</param>
+        /// <param name="testIds">tests covering the given mutant</param>
         public void DeclareCoverageForMutant(int mutantId, params int[] testIds) => _coverageResult[mutantId] = GetGuidList(testIds);
+        /// <summary>
+        /// Declare that the mutant must be run against all tests.
+        /// </summary>
+        /// <param name="mutantId">mutant id</param>
         public void DeclareFullCoverageForMutant(int mutantId) => _coverageResult[mutantId] = GetGuidList();
+        /// <summary>
+        /// Declare tests that are failing against the non mutated assembly.
+        /// </summary>
+        /// <param name="testIds">test ids</param>
         public void DeclareTestsFailingAtInit(params int[] testIds) => DeclareTestsFailingWhenTestingMutant(InitialRunId, testIds);
-
+        /// <summary>
+        /// Declare the tests that are failing when testing a mutant.
+        /// </summary>
+        /// <param name="mutantId">Mutant id</param>
+        /// <param name="testIds">Test(s) failing for this mutant</param>
         public void DeclareTestsFailingWhenTestingMutant(int mutantId, params int[] testIds)
         {
             var testsGuidList = GetGuidList(testIds);
@@ -76,18 +124,18 @@ namespace Stryker.Core.UnitTest.MutationTest
             }
             _failedTestsPerMutant[mutantId] = testsGuidList;
         }
+
+        /// <summary>
+        /// Declare tests that fail for a specific run
+        /// </summary>
+        /// <param name="mutantIds">list of mutants for the run</param>
+        /// <param name="mutantId">mutant concerned by those tests</param>
+        /// <param name="testIds">tests that fail</param>
         public void DeclareTestsFailingWhenTestingMutant(IEnumerable<int> mutantIds,int mutantId, params int[] testIds)
         {
             var key = mutantIds.ToHashSet();
             var testsGuidList = GetGuidList(testIds);
-            /*
-            if (!testsGuidList.IsIncluded(GetCoveringTests(mutantId)))
-            {
-                // just check we are not doing something stupid
-                throw new ApplicationException(
-                    $"you tried to declare a failing test but it does not cover mutant {mutantId}");
-            }
-            */
+
             if (!_failedTestsPerRun.ContainsKey(key))
             {
                 _failedTestsPerRun[key] = new Dictionary<int, TestsGuidList>();
@@ -115,6 +163,10 @@ namespace Stryker.Core.UnitTest.MutationTest
             return test;
         }
 
+        /// <summary>
+        /// Create tests.
+        /// </summary>
+        /// <param name="testIds">List of ids to create test out of.</param>
         public void CreateTests(params int[] testIds)
         {
             foreach (var id in testIds)
@@ -130,12 +182,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         /// <returns></returns>
         public TestsGuidList GetGuidList(params int[] testIds) => new TestsGuidList(testIds.Select(i => _tests[i]).Select(t => t.Id));
 
-        /// <summary>
-        /// Returns a list of test Guids
-        /// </summary>
-        /// <param name="testIds"></param>
-        /// <returns></returns>
-        public TestsGuidList GetGuidList() => new TestsGuidList(_tests.Values.Select(t => t.Id));
+        private TestsGuidList GetGuidList() => new(_tests.Values.Select(t => t.Id));
 
         private TestsGuidList GetFailedTests(int mutantId, IEnumerable<int> readOnlyList)
         {

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Helpers;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
@@ -170,15 +171,24 @@ namespace Stryker.Core
                     if (results.RunResults[1].status == baseLine)
                     {
                         _logger.LogInformation("Coverage analysis dit not properly capture coverage for this mutant.");
-                        // TODO: dump the test that killed the mutant (and that was not part of the covering tests)
-                        report.AppendLine("The coverage for this mutant was not properly determined.");
+                        report.AppendLine("The coverage for this mutant was not properly determined. You can workaround this problem.");
+                        var findDeclaringNodeText = results.DiagnosedMutant.Location;
+                        report.AppendFormat("Add '// Stryker full once' to {0}.", findDeclaringNodeText);
+                        report.AppendLine();
                         report.Append("It was killed by these test(s): ");
                         report.AppendJoin(',', results.RunResults[2].killingTests.Except(results.CoveringTests));
                     }
                     else
                     {
                         _logger.LogInformation("There have been an unexpected interaction between two mutations.");
-                        // TODO: perform a binary search on the original mutant group to find the problematic mutant. This one has probably coverage issue
+                        report.AppendLine("The tests for this mutant was corrupted by another mutant. As a work around, you should");
+                        var findDeclaringNodeText = results.ConflictingMutant.Location;
+                        report.AppendFormat("Add '// Stryker apart once' before mutant {0} at {1}.",
+                            results.ConflictingMutant.Id, results.ConflictingMutant.Location);
+                        report.AppendLine();
+                        report.AppendFormat("Diagnosed mutant {0} was killed by these test(s): ", results.DiagnosedMutant.Id);
+                        report.AppendLine();
+                        report.AppendJoin(',', results.RunResults[2].killingTests);
                     }
                 }
                 else if (results.RunResults[0].status == MutantStatus.NoCoverage)
@@ -193,7 +203,6 @@ namespace Stryker.Core
 
             return report.ToString();
         }
-
         private void TestMutants(IReporter reporters, IEnumerable<Mutant> mutantsNotRun, IReadOnlyProjectComponent readOnlyInputComponent)
         {
             // Report

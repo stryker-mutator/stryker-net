@@ -12,6 +12,7 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
+using Stryker.Core.UnitTest.MutationTest;
 using Xunit;
 
 namespace Stryker.Core.UnitTest
@@ -116,7 +117,7 @@ namespace Stryker.Core.UnitTest
             });
 
             inputsMock.SetupProperty(x => x.MutantToDiagnose);
-            inputsMock.Object.MutantToDiagnose = new MutantToDiagnoseInput(){SuppliedInput = 1};
+            inputsMock.Object.MutantToDiagnose = new MutantToDiagnoseInput {SuppliedInput = 1};
 
             projectOrchestratorMock.Setup(x => x.MutateProjects(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>()))
                 .Returns(new List<IMutationTestProcess>()
@@ -126,7 +127,8 @@ namespace Stryker.Core.UnitTest
 
             mutationTestProcessMock.SetupGet(x => x.Input).Returns(mutationTestInput);
             mutationTestProcessMock.Setup(x => x.GetCoverage());
-            var mutantDiagnostic = new MutantDiagnostic(Enumerable.Empty<string>(), new []{1});
+            var mutant = new Mutant();
+            var mutantDiagnostic = new MutantDiagnostic( mutant, Enumerable.Empty<string>(), new []{1});
             mutantDiagnostic.DeclareResult(MutantStatus.Survived, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(MutantStatus.Survived, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(MutantStatus.Survived, Enumerable.Empty<string>());
@@ -150,7 +152,8 @@ namespace Stryker.Core.UnitTest
         [InlineData(MutantStatus.Ignored)]
         public void ShouldGenerateCleanDiagnosisWhenConsistent(MutantStatus consistentStatus)
         {
-            var mutantDiagnostic = new MutantDiagnostic(Enumerable.Empty<string>(), new []{1});
+            var mutant = new Mutant();
+            var mutantDiagnostic = new MutantDiagnostic(mutant, Enumerable.Empty<string>(), new []{1});
             mutantDiagnostic.DeclareResult(consistentStatus, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(consistentStatus, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(consistentStatus, Enumerable.Empty<string>());
@@ -167,7 +170,8 @@ namespace Stryker.Core.UnitTest
         [InlineData(MutantStatus.Survived)]
         public void ShouldGenerateDiagnosisToAddTest(MutantStatus consistentStatus)
         {
-            var mutantDiagnostic = new MutantDiagnostic(Enumerable.Empty<string>(), new []{1});
+            var mutant = new Mutant();
+            var mutantDiagnostic = new MutantDiagnostic(mutant, Enumerable.Empty<string>(), new []{1});
             mutantDiagnostic.DeclareResult(consistentStatus, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(consistentStatus, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(consistentStatus, Enumerable.Empty<string>());
@@ -183,17 +187,19 @@ namespace Stryker.Core.UnitTest
         [InlineData(MutantStatus.Killed)]
         public void ShouldGenerateCoverageDiagnosisWhenAllTestsFix(MutantStatus lastStatus)
         {
-            var mutantDiagnostic = new MutantDiagnostic(new []{"1","2"}, new []{1});
+            var mutant = FullRunScenario.BuildMutant(1);
+            var mutantDiagnostic = new MutantDiagnostic(mutant, new []{"1","2"}, new []{1});
             mutantDiagnostic.DeclareResult(MutantStatus.Survived, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(MutantStatus.Survived, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(lastStatus, new []{"1", "3"});
             var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
             var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
             target.SetupLogging(new LoggerFactory());
-            var report = target.GenerateDiagnoseReport(mutantDiagnostic);
+            var report= target.GenerateDiagnoseReport(mutantDiagnostic);
 
             report.ShouldBe(@"Run results are not consistent!
-The coverage for this mutant was not properly determined.
+The coverage for this mutant was not properly determined. You can workaround this problem.
+Add '// Stryker full once' to  line 0:0.
 It was killed by these test(s): 3");
         }
 

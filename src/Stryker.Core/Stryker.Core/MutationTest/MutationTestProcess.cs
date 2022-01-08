@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Security.Policy;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
@@ -113,7 +112,7 @@ namespace Stryker.Core.MutationTest
 
         public IEnumerable<string> GetTestNames(ITestListDescription testList) => _mutationTestExecutor.TestRunner.DiscoverTests().Extract(testList.GetGuids()).Select(t => t.Name);
 
-        public MutantDiagnostic DiagnoseMutant(IList<Mutant> mutants, int mutantToDiagnose)
+        public MutantDiagnostic DiagnoseMutant(IEnumerable<Mutant> mutants, int mutantToDiagnose)
         {
             var monitoredMutant = Input.ProjectInfo.ProjectContents.Mutants.First(m => m.Id == mutantToDiagnose);
             _logger.LogWarning($"Diagnosing mutant {mutantToDiagnose}.");
@@ -126,7 +125,7 @@ namespace Stryker.Core.MutationTest
             }
 
             var group = BuildMutantGroupsForTest(mutants.ToList()).First(l => l.Contains(monitoredMutant));
-            var result = new MutantDiagnostic(GetTestNames(monitoredMutantCoveringTests), group.Select(m => m.Id));
+            var result = new MutantDiagnostic(monitoredMutant, GetTestNames(monitoredMutantCoveringTests), group.Select(m => m.Id));
             if (monitoredMutant.MustRunAgainstAllTests)
             {
                 var testNames = GetTestNames(monitoredMutant.KillingTests);
@@ -193,7 +192,7 @@ namespace Stryker.Core.MutationTest
                 }
                 //
                 _logger.LogInformation("Problematic mutant is {0}", initialGroup[firstIndex].Id);
-                result.ConflictingMutant = initialGroup[firstIndex].Id;
+                result.ConflictingMutant = initialGroup[firstIndex];
             }
             return result;
         }

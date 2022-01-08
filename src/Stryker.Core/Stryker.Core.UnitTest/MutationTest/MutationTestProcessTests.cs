@@ -297,7 +297,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var target = BuildMutationTestProcess(scenario);
 
             target.GetCoverage();
-            target.Test(scenario.GetCoveredMutants());
+            target.Test(scenario.GetTestableMutants());
 
             scenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
             scenario.GetMutantStatus(2).ShouldBe(MutantStatus.NoCoverage);
@@ -314,7 +314,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             folder.Add(new CsharpFileLeaf()
             {
                 SourceCode = SourceFile,
-                Mutants = scenario.GetMutants()
+                Mutants = scenario.Mutants
             });
             scenario.CreateTests(1,2);
 
@@ -330,7 +330,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             // test mutants
             target.GetCoverage();
             
-            target.Test(scenario.GetMutants());
+            target.Test(scenario.GetTestableMutants());
             // first mutant should be killed by test 2
             scenario.GetMutantStatus(1).ShouldBe(MutantStatus.Killed);
             // other mutant survives
@@ -360,7 +360,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             // test mutants
             target.GetCoverage();
             
-            target.Test(scenario.GetMutants());
+            target.Test(scenario.Mutants);
             // first mutant should be killed by test 2
             scenario.GetMutantStatus(1).ShouldBe(MutantStatus.Killed);
             // other mutant survives
@@ -434,7 +434,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf()
             {
-                Mutants = scenario.GetMutants()
+                Mutants = scenario.Mutants
             });
 
             var projectUnderTest = TestHelper.SetupProjectAnalyzerResult(
@@ -546,7 +546,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             // test mutants
             target.GetCoverage();
             
-            var result = target.DiagnoseMutant(scenario.Mutants.Values.ToList(), 1);
+            var result = target.DiagnoseMutant(scenario.Mutants, 1);
             // first mutant should be killed by test 2
             result.RunResults[0].status.ShouldBe(MutantStatus.Killed);
             // tests should have been run three times
@@ -566,7 +566,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var target = BuildMutationTestProcess(scenario);
             target.GetCoverage();
             // test mutants
-            var result = target.DiagnoseMutant(scenario.Mutants.Values.ToList(), 1);
+            var result = target.DiagnoseMutant(scenario.Mutants, 1);
 
             result.RunResults[0].status.ShouldBe(MutantStatus.NoCoverage);
             result.RunResults[1].status.ShouldBe(MutantStatus.NoCoverage);
@@ -585,7 +585,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var target = BuildMutationTestProcess(scenario);
             target.GetCoverage();
             // test mutants
-            var result = target.DiagnoseMutant(scenario.Mutants.Values.ToList(), 1);
+            var result = target.DiagnoseMutant(scenario.Mutants, 1);
 
             result.RunResults[0].status.ShouldBe(MutantStatus.Survived);
             result.RunResults[1].status.ShouldBe(MutantStatus.Survived);
@@ -604,7 +604,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var target = BuildMutationTestProcess(scenario);
             target.GetCoverage();
             // test mutants
-            var result = target.DiagnoseMutant(scenario.Mutants.Values.ToList(), 1);
+            var result = target.DiagnoseMutant(scenario.Mutants, 1);
 
             result.RunResults[0].status.ShouldBe(MutantStatus.NoCoverage);
             result.RunResults[1].status.ShouldBe(MutantStatus.NoCoverage);
@@ -636,12 +636,12 @@ namespace Stryker.Core.UnitTest.MutationTest
             var target = BuildMutationTestProcess(scenario);
             target.GetCoverage();
             // test mutants
-            var result = target.DiagnoseMutant(scenario.Mutants.Values.ToList(), 1);
+            var result = target.DiagnoseMutant(scenario.Mutants, 1);
 
             // first mutant should be killed by test 2
             result.RunResults[0].status.ShouldBe(MutantStatus.Survived);
             result.RunResults[1].status.ShouldBe(MutantStatus.Killed);
-            result.ConflictingMutant.ShouldBe(3);
+            result.ConflictingMutant.Id.ShouldBe(3);
 
             // tests should have been run four times
             var runnerMock = scenario.GetTestRunnerMock();
@@ -660,7 +660,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             folder.Add(new CsharpFileLeaf()
             {
                 SourceCode = SourceFile,
-                Mutants = scenario.GetMutants()
+                Mutants = scenario.Mutants
             });
 
             var input = new MutationTestInput

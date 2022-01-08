@@ -31,6 +31,15 @@ namespace Stryker.Core.Mutants
         public bool CountForStats => ResultStatus != MutantStatus.CompileError && ResultStatus != MutantStatus.Ignored;
         public bool MustRunAgainstAllTests => CoveringTests.IsEveryTest;
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
+        public string Location
+        {
+            get
+            {
+                var location = Mutation?.OriginalNode?.GetLocation().GetMappedLineSpan();
+                return $"{location.Value.Path} line {location.Value.StartLinePosition.Line}:{location.Value.StartLinePosition.Character}";
+            }
+        }
+
         public int? Line => Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
         public bool IsStaticValue { get; set; }
         public bool CannotDetermineCoverage { get; set; }
