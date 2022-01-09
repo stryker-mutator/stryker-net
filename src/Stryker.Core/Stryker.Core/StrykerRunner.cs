@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Helpers;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
@@ -96,13 +95,14 @@ namespace Stryker.Core
                     }
 
                     reporters.OnAllMutantsTested(rootComponent);
+                    reporters.OnAllMutantsTested(rootComponent);
                     return new StrykerRunResult(options, rootComponent.GetMutationScore());
                 }
 
                 if (!inputs.MutantToDiagnose.SuppliedInput.HasValue)
                 {
                     // normal test run
-                    TestMutants(reporters, mutantsNotRun, readOnlyInputComponent);
+                    TestMutants(reporters, mutantsNotRun, rootComponent);
                 }
                 else
                 {
@@ -129,7 +129,7 @@ namespace Stryker.Core
             }
         }
 
-        private void DiagnoseMutant(IStrykerInputs inputs, IList<Mutant> mutantsNotRun)
+        private void DiagnoseMutant(IStrykerInputs inputs, IList<IReadOnlyMutant> mutantsNotRun)
         {
             var mutant = inputs.MutantToDiagnose.SuppliedInput!.Value;
 
@@ -143,7 +143,7 @@ namespace Stryker.Core
                 return;
             }
 
-            var results = monitoredProject.DiagnoseMutant(mutantsNotRun, inputs.MutantToDiagnose.SuppliedInput.Value);
+            var results = monitoredProject.DiagnoseMutant(monitoredProject.Input.ProjectInfo.ProjectContents.Mutants, inputs.MutantToDiagnose.SuppliedInput.Value);
             _logger.LogInformation(GenerateDiagnoseReport(results));
             _logger.LogWarning("*** Mutant Diagnostic mode end ***");
         }
@@ -203,7 +203,7 @@ namespace Stryker.Core
 
             return report.ToString();
         }
-        private void TestMutants(IReporter reporters, IEnumerable<Mutant> mutantsNotRun, IReadOnlyProjectComponent readOnlyInputComponent)
+        private void TestMutants(IReporter reporters, IEnumerable<IReadOnlyMutant> mutantsNotRun, IReadOnlyProjectComponent readOnlyInputComponent)
         {
             // Report
             reporters.OnStartMutantTestRun(mutantsNotRun);

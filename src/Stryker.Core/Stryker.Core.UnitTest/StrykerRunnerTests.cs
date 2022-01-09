@@ -133,7 +133,7 @@ namespace Stryker.Core.UnitTest
             mutantDiagnostic.DeclareResult(MutantStatus.Survived, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(MutantStatus.Survived, Enumerable.Empty<string>());
 
-            mutationTestProcessMock.Setup(x => x.DiagnoseMutant(It.IsAny<List<Mutant>>(), 1)).Returns(mutantDiagnostic);
+            mutationTestProcessMock.Setup(x => x.DiagnoseMutant(It.IsAny<IEnumerable<Mutant>>(), 1)).Returns(mutantDiagnostic);
             mutationTestProcessMock.Setup(x => x.FilterMutants());
 
             var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
@@ -144,7 +144,7 @@ namespace Stryker.Core.UnitTest
 
             projectOrchestratorMock.Verify(x => x.MutateProjects(It.Is<StrykerOptions>(y => y.BasePath == "C:/test"), It.IsAny<IReporter>()), Times.Once);
             mutationTestProcessMock.Verify(x => x.GetCoverage(), Times.Once);
-            mutationTestProcessMock.Verify(x => x.DiagnoseMutant(It.IsAny<IList<Mutant>>(), 1), Times.Once);
+            mutationTestProcessMock.Verify(x => x.DiagnoseMutant(It.IsAny<IEnumerable<Mutant>>(), 1), Times.Once);
         }
 
         [Theory]
@@ -255,7 +255,7 @@ It was killed by these test(s): 3");
 
             result.MutationScore.ShouldBe(double.NaN);
 
-            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Once);
+            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<IReadOnlyMutant>>()), Times.Once);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>()), Times.Once);
         }

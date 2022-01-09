@@ -14,6 +14,8 @@ namespace Stryker.Core.Mutants
         bool CountForStats { get; }
         bool MustRunAgainstAllTests { get; }
         bool IsStaticValue { get; }
+        public bool MustBeTestedInIsolation { get; }
+        public string Location { get; }
     }
 
     /// <summary>

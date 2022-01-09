@@ -284,20 +284,20 @@ namespace Stryker.Core.MutationTest
             return true;
         }
 
-        private IEnumerable<List<Mutant>> BuildMutantGroupsForTest(IReadOnlyCollection<Mutant> mutantsNotRun)
+        private IEnumerable<List<T>> BuildMutantGroupsForTest<T>(IReadOnlyCollection<T> mutantsNotRun) where T: IReadOnlyMutant
         {
 
             if (_options.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants) || !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
             {
-                return mutantsNotRun.Select(x => new List<Mutant> { x });
+                return mutantsNotRun.Select(x => new List<T> { x });
             }
 
-            var blocks = new List<List<Mutant>>(mutantsNotRun.Count);
+            var blocks = new List<List<T>>(mutantsNotRun.Count);
             var mutantsToGroup = mutantsNotRun.ToList();
             // deal with mutants that must be run alone, either it is requested or because they run against all tests
             var mutantToTestInIsolation =
                 mutantsNotRun.Where(m => m.MustRunAgainstAllTests || m.MustBeTestedInIsolation).ToList();
-            blocks.AddRange(mutantToTestInIsolation.Select(m => new List<Mutant> { m }));
+            blocks.AddRange(mutantToTestInIsolation.Select(m => new List<T> { m }));
             mutantsToGroup.RemoveAll(m => mutantToTestInIsolation.Contains(m));
 
             // now, we will build groups of mutants
@@ -310,7 +310,7 @@ namespace Stryker.Core.MutationTest
                 // we create a block with the next mutant
                 // and try to see if we can ad other mutant(s) to this group
                 // ensuring each mutant has a distinct list of covering tests
-                var nextBlock = new List<Mutant> { mutantsToGroup[i] };
+                var nextBlock = new List<T> { mutantsToGroup[i] };
 
                 for (var j = i + 1; j < mutantsToGroup.Count; j++)
                 {

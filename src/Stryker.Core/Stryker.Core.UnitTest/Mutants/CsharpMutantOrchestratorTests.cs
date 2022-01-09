@@ -983,15 +983,17 @@ x +2;
 // Stryker test apart once
 	x/=2;
 }";
-            string expected = @"public void SomeMethod() {
+            string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	var x = 0;
-// Stryker test apart once
-if(StrykerNamespace.MutantControl.IsActive(0)){    x*=2;
-}else{    x/=2;
-}}";
+if(StrykerNamespace.MutantControl.IsActive(1)){// Stryker test apart once
+	x*=2;
+}else{// Stryker test apart once
+	x/=2;
+}}}";
 
             ShouldMutateSourceToExpected(source, expected);
-            _target.Mutants.ShouldHaveSingleItem().MustBeTestedInIsolation.ShouldBe(true);
+            _target.Mutants.Count.ShouldBe(2);
+            _target.Mutants.ElementAt(1).MustBeTestedInIsolation.ShouldBe(true);
         }
 
         [Fact]
@@ -1002,15 +1004,17 @@ if(StrykerNamespace.MutantControl.IsActive(0)){    x*=2;
 // Stryker test full once
 	x/=2;
 }";
-            string expected = @"public void SomeMethod() {
+            string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	var x = 0;
-// Stryker test full once
-if(StrykerNamespace.MutantControl.IsActive(0)){    x*=2;
-}else{    x/=2;
-}}";
+if(StrykerNamespace.MutantControl.IsActive(1)){// Stryker test full once
+	x*=2;
+}else{// Stryker test full once
+	x/=2;
+}}}";
 
             ShouldMutateSourceToExpected(source, expected);
-            _target.Mutants.ShouldHaveSingleItem().MustRunAgainstAllTests.ShouldBe(true);
+            _target.Mutants.Count.ShouldBe(2);
+            _target.Mutants.ElementAt(1).MustRunAgainstAllTests.ShouldBe(true);
         }
 
         [Fact]
@@ -1023,22 +1027,23 @@ if(StrykerNamespace.MutantControl.IsActive(0)){    x*=2;
 // Stryker test normal
     x-=2;
 }";
-            string expected = @"public void SomeMethod() {
+            string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	var x = 0;
-if(StrykerNamespace.MutantControl.IsActive(0)){// Stryker test full
+if(StrykerNamespace.MutantControl.IsActive(1)){// Stryker test full
 	x*=2;
 }else{// Stryker test full
 	x/=2;
-}if(StrykerNamespace.MutantControl.IsActive(1)){    x+=2;
-}else{    x-=2;
-}// Stryker test normal
-}";
+}if(StrykerNamespace.MutantControl.IsActive(2)){// Stryker test normal
+    x+=2;
+}else{// Stryker test normal
+    x-=2;
+}}}";
 
             ShouldMutateSourceToExpected(source, expected);
-            _target.Mutants.Count.ShouldBe(2);
+            _target.Mutants.Count.ShouldBe(3);
 
-            _target.Mutants.ElementAt(0).CannotDetermineCoverage.ShouldBeTrue();
-            _target.Mutants.ElementAt(1).CannotDetermineCoverage.ShouldBeFalse();
+            _target.Mutants.ElementAt(1).CannotDetermineCoverage.ShouldBeTrue();
+            _target.Mutants.ElementAt(2).CannotDetermineCoverage.ShouldBeFalse();
         }
 
         [Fact]
