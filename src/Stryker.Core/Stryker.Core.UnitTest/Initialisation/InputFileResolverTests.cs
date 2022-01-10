@@ -331,7 +331,7 @@ using System.Reflection;
     <ItemGroup>
     </ItemGroup>
 
-     <Import Project=""..\SharedProject\Example.projitems"" Label=""Shared"" />
+     <Import Project=""../SharedProject/Example.projitems"" Label=""Shared"" />
 
 </Project>";
 
@@ -457,8 +457,8 @@ using System.Reflection;
     <ItemGroup>
     </ItemGroup>
 
-     <Import Project=""..\SharedProject1\Example.projitems"" Label=""Shared"" />
-     <Import Project=""..\SharedProject2\Example.projitems"" Label=""Shared"" />
+     <Import Project=""../SharedProject1/Example.projitems"" Label=""Shared"" />
+     <Import Project=""../SharedProject2/Example.projitems"" Label=""Shared"" />
 
 </Project>";
 
@@ -568,7 +568,7 @@ using System.Reflection;
     <ItemGroup>
     </ItemGroup>
 
-    <Import Project=""..\$(SharedDir)\Example.projitems"" Label=""Shared"" />
+    <Import Project=""../$(SharedDir)/Example.projitems"" Label=""Shared"" />
 
     <ItemGroup>
         <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
@@ -630,7 +630,7 @@ using System.Reflection;
     <ItemGroup>
     </ItemGroup>
 
-    <Import Project=""..\$(SharedDir)\Example.projitems"" Label=""Shared"" />
+    <Import Project=""../$(SharedDir)/Example.projitems"" Label=""Shared"" />
 
     <ItemGroup>
         <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
