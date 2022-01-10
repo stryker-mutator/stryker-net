@@ -1089,7 +1089,6 @@ Please specify a test project name filter that results in one project.
         [Theory]
         [InlineData("ExampleProject/ExampleProject.csproj")]
         [InlineData("ExampleProject\\ExampleProject.csproj")]
-        [InlineData(@"ExampleProject\ExampleProject.csproj")]
         public void ShouldMatchOnBothForwardAndBackwardsSlash(string shouldMatch)
         {
             var projectReferences = new List<string> {

@@ -167,9 +167,8 @@ namespace Stryker.Core.Initialisation
 
             var referenceChoice = BuildReferenceChoice(projectReferences);
 
-            var normalizedProjectUnderTestNameFilter = projectUnderTestNameFilter.Replace("\\", "/");
+            var normalizedProjectUnderTestNameFilter = projectUnderTestNameFilter.Replace("/", "\\");
             var projectReferencesMatchingNameFilter = projectReferences
-                .Select(x => x.Replace("\\", "/"))
                 .Where(x => x.Contains(normalizedProjectUnderTestNameFilter, StringComparison.OrdinalIgnoreCase));
             if (!projectReferencesMatchingNameFilter.Any())
             {
