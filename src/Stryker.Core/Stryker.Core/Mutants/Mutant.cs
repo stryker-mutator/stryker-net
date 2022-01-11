@@ -38,7 +38,7 @@ namespace Stryker.Core.Mutants
             get
             {
                 var location = Mutation?.OriginalNode?.GetLocation().GetMappedLineSpan();
-                return $"{location.Value.Path} line {location.Value.StartLinePosition.Line}:{location.Value.StartLinePosition.Character}";
+                return location == null ? "Unknown location." : $"{location.Value.Path} line {location.Value.StartLinePosition.Line}:{location.Value.StartLinePosition.Character}";
             }
         }
 

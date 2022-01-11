@@ -170,18 +170,29 @@ namespace Stryker.Core.MutationTest
             {
                 var referenceStatus = result.RunResults[0].status;
                 _logger.LogWarning("Inconsistent coverage based tests. There is some unwanted side effect. Using binary search to find problematic mutant.");
-                var initialGroup = group;
-                initialGroup.Remove(monitoredMutant);
+                group.Remove(monitoredMutant);
                 var firstIndex = 0;
-                var lastIndex = initialGroup.Count - 1;
+                var lastIndex = group.Count - 1;
+                var firstRun = true;
                 while (lastIndex - firstIndex > 0)
                 {
                     var pivot = (lastIndex + firstIndex) / 2;
-                    _logger.LogWarning("Testing a group of {0} mutants", pivot-firstIndex+1);
-                    RetestMutantGroup(initialGroup.GetRange(firstIndex, pivot-firstIndex+1).Append(monitoredMutant).ToList());
+                    RetestMutantGroup(group.GetRange(firstIndex, pivot-firstIndex+1).Append(monitoredMutant));
                     if (monitoredMutant.ResultStatus == referenceStatus)
                     {
-                        // this group contains a problematic mutant
+                        if (firstRun)
+                        {
+                            // this group contains the problematic mutant, we test the other half to be sure the bad mutant is not the one we diagnose
+                            RetestMutantGroup(group.GetRange(pivot + 1, lastIndex - pivot).Append(monitoredMutant)
+                                .ToList());
+                            if (monitoredMutant.ResultStatus == referenceStatus)
+                            {
+                                // the diagnose mutant is the problematic one.
+                                firstIndex = mutantToDiagnose;
+                                break;
+                            }
+                        }
+
                         lastIndex = pivot;
                     }
                     else
@@ -189,22 +200,26 @@ namespace Stryker.Core.MutationTest
                         // the other half must contain a problematic mutant
                         firstIndex = pivot + 1;
                     }
+
+                    firstRun = false;
                 }
                 //
-                _logger.LogInformation("Problematic mutant is {0}", initialGroup[firstIndex].Id);
-                result.ConflictingMutant = initialGroup[firstIndex];
+                _logger.LogInformation("Problematic mutant is {0}", group[firstIndex].Id);
+                result.ConflictingMutant = group[firstIndex];
             }
             return result;
         }
 
-        private void RetestMutantGroup(List<Mutant> mutants)
+        private void RetestMutantGroup(IEnumerable<Mutant> mutants)
         {
-            foreach (var mutant in mutants)
+            var toTest = mutants.ToList();
+            foreach (var mutant in toTest)
             {
                 mutant.ResultStatus = MutantStatus.NotRun;
             }
 
-            TestMutants(new[] { mutants });
+            _logger.LogInformation("Testing a group of {0} mutants", toTest.Count);
+            TestMutants(new[] { toTest });
         }
 
         public void Restore() => Input.ProjectInfo.RestoreOriginalAssembly();

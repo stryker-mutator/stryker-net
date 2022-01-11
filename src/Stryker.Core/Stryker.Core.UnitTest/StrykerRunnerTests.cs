@@ -199,7 +199,7 @@ namespace Stryker.Core.UnitTest
 
             report.ShouldBe(@"Run results are not consistent!
 The coverage for this mutant was not properly determined. You can workaround this problem.
-Add '// Stryker full once' to  line 0:0.
+Add '// Stryker test full once' to  line 0:0.
 It was killed by these test(s): 3");
         }
 
