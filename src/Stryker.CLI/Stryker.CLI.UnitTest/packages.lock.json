@@ -523,8 +523,8 @@
       },
       "Microsoft.Web.LibraryManager.Build": {
         "type": "Transitive",
-        "resolved": "2.1.113",
-        "contentHash": "sPbpMMMqcdvVL8dyugOY5o4APB2bY1I9ueBlrDTfMRMRHP+olcDoqCGnaCSluxoCnzRpz9H7TbT7G/mdWwKplw==",
+        "resolved": "2.1.161",
+        "contentHash": "NXhxbf6CY3rfBKTrio23JdBJXMzLb9uiLhPJfXXB7gxTk+Jc6k9IXyno5YJNbeLGBWHbf7C2QVBCIxMMVjBF7A==",
         "dependencies": {
           "System.Runtime.Loader": "4.3.0"
         }
@@ -1840,7 +1840,7 @@
           "McMaster.Extensions.CommandLineUtils": "3.1.0",
           "Microsoft.Extensions.Configuration.Binder": "6.0.0",
           "NuGet.Versioning": "5.11.0",
-          "stryker": "1.2.1"
+          "stryker": "1.2.2"
         }
       },
       "stryker": {
@@ -1859,15 +1859,15 @@
           "Microsoft.TestPlatform.ObjectModel": "16.10.0",
           "Microsoft.TestPlatform.Portable": "16.10.0",
           "Microsoft.TestPlatform.TranslationLayer": "16.10.0",
-          "Microsoft.Web.LibraryManager.Build": "2.1.113",
+          "Microsoft.Web.LibraryManager.Build": "2.1.161",
           "Mono.Cecil": "0.11.4",
           "Serilog": "2.10.0",
           "Serilog.Extensions.Logging": "3.1.0",
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "4.0.1",
           "ShellProgressBar": "5.1.0",
-          "Stryker.DataCollector": "1.2.1",
-          "Stryker.RegexMutators": "1.2.1",
+          "Stryker.DataCollector": "1.2.2",
+          "Stryker.RegexMutators": "1.2.2",
           "System.IO.Abstractions": "16.0.8",
           "System.Net.Http.Json": "6.0.0"
         }

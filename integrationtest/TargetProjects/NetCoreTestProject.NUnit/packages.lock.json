@@ -523,7 +523,7 @@
       "targetproject": {
         "type": "Project",
         "dependencies": {
-          "Library": "1.2.1"
+          "Library": "1.2.2"
         }
       }
     }
