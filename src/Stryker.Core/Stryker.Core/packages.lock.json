@@ -141,9 +141,9 @@
       },
       "Microsoft.Web.LibraryManager.Build": {
         "type": "Direct",
-        "requested": "[2.1.113, )",
-        "resolved": "2.1.113",
-        "contentHash": "sPbpMMMqcdvVL8dyugOY5o4APB2bY1I9ueBlrDTfMRMRHP+olcDoqCGnaCSluxoCnzRpz9H7TbT7G/mdWwKplw==",
+        "requested": "[2.1.161, )",
+        "resolved": "2.1.161",
+        "contentHash": "NXhxbf6CY3rfBKTrio23JdBJXMzLb9uiLhPJfXXB7gxTk+Jc6k9IXyno5YJNbeLGBWHbf7C2QVBCIxMMVjBF7A==",
         "dependencies": {
           "System.Runtime.Loader": "4.3.0"
         }
