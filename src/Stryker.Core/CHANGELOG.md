@@ -1,3 +1,20 @@
+# [](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.2.1...stryker@) (2022-01-11)
+
+
+### Bug Fixes
+
+* **Indexer methods:** Prevents rollback on indexer methods ([#1843](https://github.com/stryker-mutator/stryker-net/issues/1843)) ([ecb6df9](https://github.com/stryker-mutator/stryker-net/commit/ecb6df9750545b507313d0bffc5bee91bdb23f08))
+* **Project filter:** Project filter works with both forward and backward slashes ([#1819](https://github.com/stryker-mutator/stryker-net/issues/1819)) ([6a6f302](https://github.com/stryker-mutator/stryker-net/commit/6a6f3026ccc258d3ae3fde63911511ac314efd93))
+* **Reporters:** Stryker no longer throws exception on no mutants found ([#1833](https://github.com/stryker-mutator/stryker-net/issues/1833)) ([991497a](https://github.com/stryker-mutator/stryker-net/commit/991497a9b3fd7280a7d48d77caf29130049fdba1))
+* **reporting:** Result status reason was filled with NotRun for mutants that were run ([#1851](https://github.com/stryker-mutator/stryker-net/issues/1851)) ([d8292b9](https://github.com/stryker-mutator/stryker-net/commit/d8292b951dc48a3a65b82e5b3b267c20603b1491))
+
+
+### Reverts
+
+* Revert "Add test" ([6cc5580](https://github.com/stryker-mutator/stryker-net/commit/6cc5580d25195eaaf022e8afe019e6f3cf816969))
+
+
+
 # [](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.2.0...stryker@) (2021-12-15)
 
 
