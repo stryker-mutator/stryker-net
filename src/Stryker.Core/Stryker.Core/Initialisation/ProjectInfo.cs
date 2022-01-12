@@ -13,7 +13,7 @@ namespace Stryker.Core.Initialisation
     public class ProjectInfo
     {
         private readonly IFileSystem _fileSystem;
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public ProjectInfo() : this(null) { }
 
@@ -31,12 +31,10 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         public IProjectComponent ProjectContents { get; set; }
 
-        public string GetInjectionFilePath(IAnalyzerResult analyzerResult)
-        {
-            return Path.Combine(
+        public string GetInjectionFilePath(IAnalyzerResult analyzerResult) =>
+            Path.Combine(
                 Path.GetDirectoryName(analyzerResult.GetAssemblyPath()),
                 Path.GetFileName(ProjectUnderTestAnalyzerResult.GetAssemblyPath()));
-        }
 
         public virtual void RestoreOriginalAssembly()
         {
@@ -50,10 +48,10 @@ namespace Stryker.Core.Initialisation
                 catch (UnauthorizedAccessException e)
                 {
                     _logger.LogWarning("Failed to restore the original assembly. {0}", e);
-                    throw;
                 }
             }
         }
+
         public virtual void BackupOriginalAssembly()
         {
             foreach (var testProject in TestProjectAnalyzerResults)
