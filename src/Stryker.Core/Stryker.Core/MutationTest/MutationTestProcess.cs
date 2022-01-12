@@ -151,7 +151,7 @@ namespace Stryker.Core.MutationTest
                     _logger.LogInformation($"Mutant {monitoredMutant.Id} is {monitoredMutant.ResultStatus}.");
                     result.DeclareResult(monitoredMutant.ResultStatus, GetTestNames(monitoredMutant.KillingTests));
                 }
-                else if (monitoredMutant.ResultStatus == MutantStatus.NoCoverage)
+                else
                 {
                     _logger.LogInformation("Mutant appears as being not covered by any tests.");
                     result.DeclareResult(MutantStatus.NoCoverage, Enumerable.Empty<string>());
@@ -170,44 +170,51 @@ namespace Stryker.Core.MutationTest
             {
                 var referenceStatus = result.RunResults[0].status;
                 _logger.LogWarning("Inconsistent coverage based tests. There is some unwanted side effect. Using binary search to find problematic mutant.");
-                group.Remove(monitoredMutant);
-                var firstIndex = 0;
-                var lastIndex = group.Count - 1;
-                var firstRun = true;
-                while (lastIndex - firstIndex > 0)
-                {
-                    var pivot = (lastIndex + firstIndex) / 2;
-                    RetestMutantGroup(group.GetRange(firstIndex, pivot-firstIndex+1).Append(monitoredMutant));
-                    if (monitoredMutant.ResultStatus == referenceStatus)
-                    {
-                        if (firstRun)
-                        {
-                            // this group contains the problematic mutant, we test the other half to be sure the bad mutant is not the one we diagnose
-                            RetestMutantGroup(group.GetRange(pivot + 1, lastIndex - pivot).Append(monitoredMutant)
-                                .ToList());
-                            if (monitoredMutant.ResultStatus == referenceStatus)
-                            {
-                                // the diagnose mutant is the problematic one.
-                                firstIndex = mutantToDiagnose;
-                                break;
-                            }
-                        }
-
-                        lastIndex = pivot;
-                    }
-                    else
-                    {
-                        // the other half must contain a problematic mutant
-                        firstIndex = pivot + 1;
-                    }
-
-                    firstRun = false;
-                }
+                var firstIndex = FindConflictingMutant(@group, monitoredMutant, referenceStatus);
                 //
                 _logger.LogInformation("Problematic mutant is {0}", group[firstIndex].Id);
                 result.ConflictingMutant = group[firstIndex];
             }
             return result;
+        }
+
+        private int FindConflictingMutant(List<Mutant> @group, Mutant monitoredMutant, MutantStatus referenceStatus)
+        {
+            var mutantToDiagnose = monitoredMutant.Id;
+            group.Remove(monitoredMutant);
+            var firstIndex = 0;
+            var lastIndex = @group.Count - 1;
+            var firstRun = true;
+            while (lastIndex - firstIndex > 0)
+            {
+                var pivot = (lastIndex + firstIndex) / 2;
+                RetestMutantGroup(group.GetRange(firstIndex, pivot - firstIndex + 1).Append(monitoredMutant));
+                if (monitoredMutant.ResultStatus == referenceStatus)
+                {
+                    if (firstRun)
+                    {
+                        // this group contains the problematic mutant, we test the other half to be sure the bad mutant is not the one we diagnose
+                        RetestMutantGroup(group.GetRange(pivot + 1, lastIndex - pivot).Append(monitoredMutant)
+                            .ToList());
+                        if (monitoredMutant.ResultStatus == referenceStatus)
+                        {
+                            // the diagnose mutant is the problematic one.
+                            return mutantToDiagnose;
+                        }
+                    }
+
+                    lastIndex = pivot;
+                }
+                else
+                {
+                    // the other half must contain a problematic mutant
+                    firstIndex = pivot + 1;
+                }
+
+                firstRun = false;
+            }
+
+            return firstIndex;
         }
 
         private void RetestMutantGroup(IEnumerable<Mutant> mutants)

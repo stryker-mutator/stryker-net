@@ -106,7 +106,7 @@ namespace Stryker.Core
                 }
                 else
                 {
-                    DiagnoseMutant(inputs, mutantsNotRun);
+                    DiagnoseMutant(inputs);
                 }
 
                 reporters.OnAllMutantsTested(rootComponent);
@@ -129,7 +129,7 @@ namespace Stryker.Core
             }
         }
 
-        private void DiagnoseMutant(IStrykerInputs inputs, IList<IReadOnlyMutant> mutantsNotRun)
+        private void DiagnoseMutant(IStrykerInputs inputs)
         {
             var mutant = inputs.MutantToDiagnose.SuppliedInput!.Value;
 
@@ -154,50 +154,51 @@ namespace Stryker.Core
             var baseLine = results.RunResults[0].status;
             // diagnostic run
             if (baseLine == results.RunResults[1].status && baseLine == results.RunResults[2].status)
-            {  
-                report.AppendFormat("Mutant consistently appears as {0}. {1}.",
-                    baseLine, baseLine switch
+            {
+                // all tests sessions gave the same result: no problem related to coverage analysis
+                report.AppendFormat("Mutant consistently appears as {0}. {1}.", baseLine, baseLine switch
                     {
-                        MutantStatus.NoCoverage or MutantStatus.Survived=> "You need to add some tests to fix that",
+                        MutantStatus.NoCoverage => "You need to add some tests to fix that",
+                        MutantStatus.Survived => $"Modifying the following tests may help you kill this one: {string.Join(", ", results.CoveringTests.Take(20))}",
+                        MutantStatus.Ignored => "Check Stryker configuration file to see why it is ignored",
+                        MutantStatus.NotRun => "This should happen. You can check on Github to see if there is an open issue about this and open one if you want help", 
                         _ => "There is no visible issue"
                     });
             }
             else
             {
                 report.AppendLine("Run results are not consistent!");
-                if (baseLine == MutantStatus.Survived)
+                switch (baseLine)
                 {
                     // false positive
-                    if (results.RunResults[1].status == baseLine)
+                    case MutantStatus.Survived when results.RunResults[1].status == baseLine:
+                    case MutantStatus.NoCoverage:
                     {
                         _logger.LogInformation("Coverage analysis dit not properly capture coverage for this mutant.");
-                        report.AppendLine("The coverage for this mutant was not properly determined. You can workaround this problem.");
                         var findDeclaringNodeText = results.DiagnosedMutant.Location;
-                        report.AppendFormat("Add '// Stryker test full once' to {0}.", findDeclaringNodeText);
-                        report.AppendLine();
-                        report.Append("It was killed by these test(s): ");
-                        report.AppendJoin(',', results.RunResults[2].killingTests.Except(results.CoveringTests));
+                        report.
+                            AppendLine("The coverage for this mutant was not properly determined. You can workaround this problem.").
+                            AppendFormat("Add '// Stryker test full once' to {0}.", findDeclaringNodeText).
+                            AppendLine().Append("It was killed by these test(s): ").
+                            AppendJoin(',', results.RunResults[2].killingTests.Except(results.CoveringTests));
+                        break;
                     }
-                    else
+                    case MutantStatus.Survived:
                     {
-                        _logger.LogInformation("There have been an unexpected interaction between two mutations.");
-                        report.AppendLine("The tests for this mutant was corrupted by another mutant. As a work around, you should");
                         var findDeclaringNodeText = results.ConflictingMutant.Location;
-                        report.AppendFormat("Add '// Stryker test apart once' before mutant {0} at {1}.",
-                            results.ConflictingMutant.Id, results.ConflictingMutant.Location);
-                        report.AppendLine();
-                        report.AppendFormat("Diagnosed mutant {0} was killed by these test(s): ", results.DiagnosedMutant.Id);
-                        report.AppendLine();
-                        report.AppendJoin(',', results.RunResults[2].killingTests);
+                        _logger.LogInformation("There have been an unexpected interaction between two mutations.");
+                        report.AppendLine("The tests for this mutant was corrupted by another mutant. As a work around, you should").
+                            AppendFormat("Add '// Stryker test apart once' before mutant {0} at {1}.",
+                                results.ConflictingMutant.Id, findDeclaringNodeText).
+                            AppendLine().
+                            AppendFormat("Diagnosed mutant {0} was killed by these test(s): ", results.DiagnosedMutant.Id).
+                            AppendLine().
+                            AppendJoin(',', results.RunResults[2].killingTests);
+                        break;
                     }
-                }
-                else if (results.RunResults[0].status == MutantStatus.NoCoverage)
-                {
-                    //TODO handle situation where a mutant is killed while not having coverage
-                }
-                else
-                {
-                    _logger.LogWarning("Stryker.NET is not able to produce a diagnostic for false negative.");
+                    default:
+                        _logger.LogWarning("Stryker.NET is not able to produce a diagnostic for false negative.");
+                        break;
                 }
             }
 

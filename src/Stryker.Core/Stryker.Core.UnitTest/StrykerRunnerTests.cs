@@ -147,49 +147,121 @@ namespace Stryker.Core.UnitTest
             mutationTestProcessMock.Verify(x => x.DiagnoseMutant(It.IsAny<IEnumerable<Mutant>>(), 1), Times.Once);
         }
 
-        [Theory]
-        [InlineData(MutantStatus.Killed)]
-        [InlineData(MutantStatus.Ignored)]
-        public void ShouldGenerateCleanDiagnosisWhenConsistent(MutantStatus consistentStatus)
+        [Fact]
+        public void ShouldGenerateCleanDiagnosisWhenConsistentlyKilled()
         {
             var mutant = new Mutant();
             var mutantDiagnostic = new MutantDiagnostic(mutant, Enumerable.Empty<string>(), new []{1});
-            mutantDiagnostic.DeclareResult(consistentStatus, Enumerable.Empty<string>());
-            mutantDiagnostic.DeclareResult(consistentStatus, Enumerable.Empty<string>());
-            mutantDiagnostic.DeclareResult(consistentStatus, Enumerable.Empty<string>());
+            mutantDiagnostic.DeclareResult(MutantStatus.Killed, Enumerable.Empty<string>());
+            mutantDiagnostic.DeclareResult(MutantStatus.Killed, Enumerable.Empty<string>());
+            mutantDiagnostic.DeclareResult(MutantStatus.Killed, Enumerable.Empty<string>());
             var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
             var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
 
             var report = target.GenerateDiagnoseReport(mutantDiagnostic);
 
-            report.ShouldBe($"Mutant consistently appears as {consistentStatus}. There is no visible issue.");
+            report.ShouldBe($"Mutant consistently appears as {MutantStatus.Killed}. There is no visible issue.");
+        }
+
+        [Fact]
+        public void ShouldGenerateCleanDiagnosisWhenConsistentIgnored()
+        {
+            var mutant = new Mutant();
+            var status = MutantStatus.Ignored;
+            var mutantDiagnostic = new MutantDiagnostic(mutant, Enumerable.Empty<string>(), new []{1});
+            mutantDiagnostic.DeclareResult(status, Enumerable.Empty<string>());
+            mutantDiagnostic.DeclareResult(status, Enumerable.Empty<string>());
+            mutantDiagnostic.DeclareResult(status, Enumerable.Empty<string>());
+            var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
+            var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
+
+            var report = target.GenerateDiagnoseReport(mutantDiagnostic);
+
+            report.ShouldBe($"Mutant consistently appears as {status}. Check Stryker configuration file to see why it is ignored.");
+        }
+
+        [Fact]
+        public void ShouldGenerateDiagnosisToAddStrykerCommentsForNonIsolatedTests()
+        {
+            var mutant = new Mutant();
+            var mutantDiagnostic = new MutantDiagnostic(mutant, Enumerable.Empty<string>(), new []{1});
+            mutantDiagnostic.ConflictingMutant = new Mutant { Id = 2};
+            mutantDiagnostic.DeclareResult(MutantStatus.Survived, Enumerable.Empty<string>());
+            mutantDiagnostic.DeclareResult(MutantStatus.Killed, new []{"SomeTest"});
+            mutantDiagnostic.DeclareResult(MutantStatus.Killed, new []{"SomeTest"});
+            var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
+            var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
+            target.SetupLogging(new LoggerFactory());
+
+            var report = target.GenerateDiagnoseReport(mutantDiagnostic);
+
+            report.ShouldBe(@"Run results are not consistent!
+The tests for this mutant was corrupted by another mutant. As a work around, you should
+Add '// Stryker test apart once' before mutant 2 at Unknown location..
+Diagnosed mutant 0 was killed by these test(s): 
+SomeTest");
+        }
+
+        [Fact]
+        public void ShouldGenerateDiagnosisToAddTest()
+        {
+            var mutant = new Mutant();
+            const MutantStatus ConsistentStatus = MutantStatus.NoCoverage;
+            var mutantDiagnostic = new MutantDiagnostic(mutant, Enumerable.Empty<string>(), new []{1});
+            mutantDiagnostic.DeclareResult(ConsistentStatus, Enumerable.Empty<string>());
+            mutantDiagnostic.DeclareResult(ConsistentStatus, Enumerable.Empty<string>());
+            mutantDiagnostic.DeclareResult(ConsistentStatus, Enumerable.Empty<string>());
+            var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
+            var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
+
+            var report = target.GenerateDiagnoseReport(mutantDiagnostic);
+
+            report.ShouldBe($"Mutant consistently appears as {ConsistentStatus}. You need to add some tests to fix that.");
+        }
+
+        [Fact]
+        public void ShouldGenerateDiagnosisToReportIssueOnNotRun()
+        {
+            var mutant = new Mutant();
+            const MutantStatus ConsistentStatus = MutantStatus.NotRun;
+            var mutantDiagnostic = new MutantDiagnostic(mutant, Enumerable.Empty<string>(), new []{1});
+            mutantDiagnostic.DeclareResult(ConsistentStatus, Enumerable.Empty<string>());
+            mutantDiagnostic.DeclareResult(ConsistentStatus, Enumerable.Empty<string>());
+            mutantDiagnostic.DeclareResult(ConsistentStatus, Enumerable.Empty<string>());
+            var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
+            var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
+
+            var report = target.GenerateDiagnoseReport(mutantDiagnostic);
+
+            report.ShouldBe($"Mutant consistently appears as {ConsistentStatus}. This should happen. You can check on Github to see if there is an open issue about this and open one if you want help.");
+        }
+
+        [Fact]
+        public void ShouldGenerateDiagnosisToModifyTests()
+        {
+            var mutant = new Mutant();
+            const MutantStatus ConsistentStatus = MutantStatus.Survived;
+            var mutantDiagnostic = new MutantDiagnostic(mutant, new []{"FirstTest", "OtherTest"}, new []{1});
+            mutantDiagnostic.DeclareResult(ConsistentStatus, Enumerable.Empty<string>());
+            mutantDiagnostic.DeclareResult(ConsistentStatus, Enumerable.Empty<string>());
+            mutantDiagnostic.DeclareResult(ConsistentStatus, Enumerable.Empty<string>());
+            var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
+            var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
+
+            var report = target.GenerateDiagnoseReport(mutantDiagnostic);
+
+            report.ShouldBe($"Mutant consistently appears as {ConsistentStatus}. Modifying the following tests may help you kill this one: FirstTest, OtherTest.");
         }
 
         [Theory]
-        [InlineData(MutantStatus.NoCoverage)]
         [InlineData(MutantStatus.Survived)]
-        public void ShouldGenerateDiagnosisToAddTest(MutantStatus consistentStatus)
-        {
-            var mutant = new Mutant();
-            var mutantDiagnostic = new MutantDiagnostic(mutant, Enumerable.Empty<string>(), new []{1});
-            mutantDiagnostic.DeclareResult(consistentStatus, Enumerable.Empty<string>());
-            mutantDiagnostic.DeclareResult(consistentStatus, Enumerable.Empty<string>());
-            mutantDiagnostic.DeclareResult(consistentStatus, Enumerable.Empty<string>());
-            var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
-            var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
-
-            var report = target.GenerateDiagnoseReport(mutantDiagnostic);
-
-            report.ShouldBe($"Mutant consistently appears as {consistentStatus}. You need to add some tests to fix that.");
-        }
-
-        [Theory]
-        [InlineData(MutantStatus.Killed)]
-        public void ShouldGenerateCoverageDiagnosisWhenAllTestsFix(MutantStatus lastStatus)
+        [InlineData(MutantStatus.NoCoverage)]
+        public void ShouldGenerateCoverageDiagnosisWhenAllTestsFix(MutantStatus firstStatus)
         {
             var mutant = FullRunScenario.BuildMutant(1);
+            const MutantStatus lastStatus = MutantStatus.Killed;
             var mutantDiagnostic = new MutantDiagnostic(mutant, new []{"1","2"}, new []{1});
-            mutantDiagnostic.DeclareResult(MutantStatus.Survived, Enumerable.Empty<string>());
+            mutantDiagnostic.DeclareResult(firstStatus, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(MutantStatus.Survived, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(lastStatus, new []{"1", "3"});
             var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);

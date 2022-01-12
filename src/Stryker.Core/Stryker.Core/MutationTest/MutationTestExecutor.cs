@@ -66,7 +66,7 @@ namespace Stryker.Core.MutationTest
 
                 if (remainingMutants.Any())
                 {
-                    Logger.LogDebug($"Not all mutants were tested due to timeout. Running another session for the {remainingMutants.Count()} remaining.");
+                    Logger.LogDebug($"Not all mutants were tested due to timeout. Running another session for the {remainingMutants.Count} remaining.");
                 }
                 mutantsToTest = remainingMutants;
             }
