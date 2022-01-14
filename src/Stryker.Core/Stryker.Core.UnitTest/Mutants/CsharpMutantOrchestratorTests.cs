@@ -278,7 +278,7 @@ private bool Out(int test, Func<int, bool>lambda )
             string expected = @"void TestMethod()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	int i = 0;
-	var result = (StrykerNamespace.MutantControl.IsActive(1)?!(Out(i, (x) => { int.TryParse(""3"", out int y); return x == y;} ) ):Out(i, (x) => {if(StrykerNamespace.MutantControl.IsActive(2)){}else{ int.TryParse((StrykerNamespace.MutantControl.IsActive(3)?"""":""3""), out int y); return (StrykerNamespace.MutantControl.IsActive(4)?x != y:x == y);} return default;}) )? i.ToString() : (StrykerNamespace.MutantControl.IsActive(5)?""Stryker was here!"":"""");
+	var result = (StrykerNamespace.MutantControl.IsActive(1)?!(Out(i, (x) => { int.TryParse(""3"", out int y); return x == y;} ) ):Out(i, (x) => {if(StrykerNamespace.MutantControl.IsActive(2)){}else{ int.TryParse((StrykerNamespace.MutantControl.IsActive(3)?"""":""3""), out int y); return (StrykerNamespace.MutantControl.IsActive(4)?x != y:x == y);}}) )? i.ToString() : (StrykerNamespace.MutantControl.IsActive(5)?""Stryker was here!"":"""");
 }
     }
     private bool Out(int test, Func<int, bool> lambda)
@@ -946,7 +946,7 @@ if(StrykerNamespace.MutantControl.IsActive(3)){;}else{		request.Headers.Add((Str
 }if(StrykerNamespace.MutantControl.IsActive(6)){;}else{		request.Headers.TryAddWithoutValidation((StrykerNamespace.MutantControl.IsActive(7)?"""":""Date""), date);
 }
 }
-return default;}, ensureSuccessStatusCode: (StrykerNamespace.MutantControl.IsActive(8) ? true : false));
+}, ensureSuccessStatusCode: (StrykerNamespace.MutantControl.IsActive(8) ? true : false));
 }}}";
 
             ShouldMutateSourceToExpected(source, expected);
