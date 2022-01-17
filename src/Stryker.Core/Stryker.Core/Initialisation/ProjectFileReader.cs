@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Buildalyzer;
+using Buildalyzer.Environment;
 using Microsoft.Build.Exceptions;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
@@ -51,7 +52,7 @@ namespace Stryker.Core.Initialisation
             }
 
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
-            var analyzerResults = _manager.GetProject(projectFilePath).Build();
+            var analyzerResults = _manager.GetProject(projectFilePath).Build(new EnvironmentOptions { DesignTime = false });
             var analyzerResult = SelectAnalyzerResult(analyzerResults, targetFramework);
 
             LogAnalyzerResult(analyzerResult);

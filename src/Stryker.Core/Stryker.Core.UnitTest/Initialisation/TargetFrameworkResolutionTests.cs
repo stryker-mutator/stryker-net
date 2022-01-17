@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Buildalyzer;
+using Buildalyzer.Environment;
 using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation;
@@ -24,7 +25,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(projectAnalyzerMock.Object);
 
             projectAnalyzerMock
-                .Setup(m => m.Build())
+                .Setup(m => m.Build(It.IsAny<EnvironmentOptions>()))
                 .Returns(analyzerResultsMock.Object);
 
             analyzerResultsMock
