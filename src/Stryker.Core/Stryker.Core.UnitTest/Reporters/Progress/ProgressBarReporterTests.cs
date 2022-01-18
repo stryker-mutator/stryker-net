@@ -1,4 +1,5 @@
 using Moq;
+using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Progress;
 using Xunit;
@@ -194,9 +195,11 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
             var progress = new ProgressBar();
             progress.Start(0, "test");
             progress.Tick("next");
+            progress.Ticks().ShouldBe(1);
             progress.Stop();
 
             progress.Dispose();
+            progress.Ticks().ShouldBe(-1);
         }
 
         private void VerifyProgress(string progressBar, int tested, int total, int percentage, string estimate)
