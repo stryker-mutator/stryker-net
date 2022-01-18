@@ -14,7 +14,7 @@ namespace Stryker.Core.Reporters.Progress
 
     public class ProgressBar : IProgressBar, IDisposable
     {
-        private readonly ProgressBarOptions _options = new ProgressBarOptions
+        private readonly ProgressBarOptions _options = new()
         {
             ForegroundColor = ConsoleColor.Yellow,
             ForegroundColorDone = ConsoleColor.Green,

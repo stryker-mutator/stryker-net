@@ -187,6 +187,18 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
             }
         }
 
+
+        [Fact]
+        public void ProgressBarSmokeCheck()
+        {
+            var progress = new ProgressBar();
+            progress.Start(0, "test");
+            progress.Tick("next");
+            progress.Stop();
+
+            progress.Dispose();
+        }
+
         private void VerifyProgress(string progressBar, int tested, int total, int percentage, string estimate)
         {
             if (tested > 0)
