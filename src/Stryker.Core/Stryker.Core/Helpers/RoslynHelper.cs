@@ -148,7 +148,7 @@ namespace Stryker.Core.Helpers
             var hasReturn = false;
             syntax.ScanChildStatements(s =>
             {
-                if (syntax is not ReturnStatementSyntax { Expression: { } })
+                if (s is not ReturnStatementSyntax { Expression: { } })
                 {
                     return true;
                 }
