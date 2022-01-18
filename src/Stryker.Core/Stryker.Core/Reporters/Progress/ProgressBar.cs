@@ -32,6 +32,8 @@ namespace Stryker.Core.Reporters.Progress
 
         public void Stop() => Dispose();
 
+        public int Ticks() => _progressBar?.CurrentTick ?? -1;
+
         protected virtual void Dispose(bool disposing)
         {
             if (_disposedValue)
@@ -41,6 +43,7 @@ namespace Stryker.Core.Reporters.Progress
             if (disposing)
             {
                 _progressBar?.Dispose();
+                _progressBar = null;
             }
 
             _disposedValue = true;
