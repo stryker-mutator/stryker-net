@@ -159,14 +159,25 @@ namespace Stryker.Core.Helpers
             return hasReturn;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="syntax"></param>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
         public static bool ScanChildStatements(this StatementSyntax syntax, Func<StatementSyntax, bool> predicate)
         {
+            if (!predicate(syntax))
+            {
+                return false;
+            }
+            // scan children with slight optimization for well known statement
             switch (syntax)
             {
                 case BlockSyntax block:
                     return block.Statements.All(s => ScanChildStatements(s, predicate));
                 case LocalFunctionStatementSyntax:
-                    break;
+                    return true;
                 case ForStatementSyntax forStatement:
                     return forStatement.Statement.ScanChildStatements(predicate);
                 case WhileStatementSyntax whileStatement:
@@ -180,10 +191,9 @@ namespace Stryker.Core.Helpers
                         return false;
                     return ifStatement.Else?.Statement.ScanChildStatements(predicate) != false;
                 default:
-                    return predicate(syntax);
+                    return syntax.ChildNodes().Where(n => n is StatementSyntax).Cast<StatementSyntax>()
+                        .All(s => ScanChildStatements(s, predicate));
             }
-
-            return true;
         }
     }
 }

@@ -17,7 +17,7 @@ namespace Stryker.Core.MutantFilters
     {
         public MutantFilter Type => MutantFilter.IgnoreMethod;
         public string DisplayName => "method filter";
-        private readonly SyntaxTriviaRemover _triviaRemover = new SyntaxTriviaRemover();
+        private readonly SyntaxTriviaRemover _triviaRemover = new();
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options) =>
             options.IgnoredMethods.Any() ?
@@ -33,8 +33,13 @@ namespace Stryker.Core.MutantFilters
                 // Check if the current node is an object creation syntax (constructor invocation).
                 ObjectCreationExpressionSyntax creation => MatchesAnIgnoredMethod(_triviaRemover.Visit(creation.Type) + ".ctor", options),
 
+                // check if the node is a block containing only ignored node
+                BlockSyntax {Statements: {Count: >0}} block => block.Statements.All(s=> IsPartOfIgnoredMethodCall(s, options)),
+
+                ExpressionStatementSyntax invocationExpressionStatementSyntax => IsPartOfIgnoredMethodCall(invocationExpressionStatementSyntax.Expression, options),
+
                 // Traverse the tree upwards.
-                SyntaxNode node when node.Parent != null => IsPartOfIgnoredMethodCall(syntaxNode.Parent, options),
+                { Parent: { } } => IsPartOfIgnoredMethodCall(syntaxNode.Parent, options),
                 _ => false,
             };
 
