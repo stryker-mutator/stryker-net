@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Shouldly;
 using Stryker.Core.MutantFilters;
@@ -184,6 +185,99 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
 
             // Assert
             filteredMutants.ShouldNotContain(mutant);
+        }
+
+        [Fact]
+        public void ShouldFilterStatementAndBlockWithOnlyIgnoredMethods()
+        {
+            // Arrange
+            var source = @"
+public class IgnoredMethodMutantFilter_NestedMethodCalls
+{
+    private void TestMethod()
+    {
+        Dispose();
+        Dispose();
+    }
+}";
+            var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
+            var originalNode = (StatementSyntax)baseSyntaxTree.DescendantNodes().First(t => t is StatementSyntax and not BlockSyntax);
+
+            var mutant = new Mutant
+            {
+                Mutation = new Mutation
+                {
+                    OriginalNode = originalNode,
+                }
+            };
+
+            var options = new StrykerOptions
+            {
+                IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { "Dispose" } }.Validate()
+            };
+
+            var blockMutant = new Mutant
+            {
+                Mutation = new Mutation
+                {
+                    OriginalNode = (BlockSyntax)baseSyntaxTree.DescendantNodes().First(t => t is BlockSyntax),
+                }
+            };
+
+            var sut = new IgnoredMethodMutantFilter();
+
+            // Act
+            var filteredMutants = sut.FilterMutants(new[] { mutant, blockMutant }, null, options);
+
+            // Assert
+            filteredMutants.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void ShouldFilterStatementAndBlockWithNonIgnoredMethods()
+        {
+            // Arrange
+            var source = @"
+public class IgnoredMethodMutantFilter_NestedMethodCalls
+{
+    private void TestMethod()
+    {
+        Dispose();
+        TestMethod();
+    }
+}";
+            var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
+            var originalNode = (StatementSyntax)baseSyntaxTree.DescendantNodes().First(t => t is StatementSyntax and not BlockSyntax);
+
+            var mutant = new Mutant
+            {
+                Mutation = new Mutation
+                {
+                    OriginalNode = originalNode,
+                }
+            };
+
+            var options = new StrykerOptions
+            {
+                IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { "Dispose" } }.Validate()
+            };
+
+            var blockMutant = new Mutant
+            {
+                Mutation = new Mutation
+                {
+                    OriginalNode = (BlockSyntax)baseSyntaxTree.DescendantNodes().First(t => t is BlockSyntax),
+                }
+            };
+
+            var sut = new IgnoredMethodMutantFilter();
+
+            // Act
+            var filteredMutants = sut.FilterMutants(new[] { mutant, blockMutant }, null, options);
+
+            // Assert
+            filteredMutants.ShouldNotContain(mutant);
+            filteredMutants.ShouldContain(blockMutant);
         }
 
         [Theory]

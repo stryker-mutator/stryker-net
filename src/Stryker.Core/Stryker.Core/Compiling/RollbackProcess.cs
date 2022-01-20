@@ -152,16 +152,16 @@ namespace Stryker.Core.Compiling
 
         private void ScanAllMutationsIfsAndIds(SyntaxNode node,  IList<(SyntaxNode, int)> scan)
         {
+            foreach (var childNode in node.ChildNodes())
+            {
+                ScanAllMutationsIfsAndIds(childNode, scan);
+            }
             var id = ExtractMutationIfAndId(node);
             if (id != null)
             {
                 scan.Add((node, id.Value));
             }
 
-            foreach (var childNode in node.ChildNodes())
-            {
-                ScanAllMutationsIfsAndIds(childNode, scan);
-            }
         }
 
         private void DumpBuildErrors(KeyValuePair<SyntaxTree, ICollection<Diagnostic>> syntaxTreeMap)

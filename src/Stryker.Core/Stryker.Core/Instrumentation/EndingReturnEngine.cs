@@ -16,13 +16,13 @@ namespace Stryker.Core.Instrumentation
         {
             var returnType = type;
             BlockSyntax ret;
-            // if we had no body or the the last statement was a return, no need to add one, or this is an iterator method
+            // if we had no body or the last statement is a return, no need to add one, or this is an iterator method
             if (block == null
                 || returnType == null
                 || block.Statements.Count == 0
                 || block!.Statements.Last().Kind() == SyntaxKind.ReturnStatement
                 || returnType.IsVoid()
-                || block.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.YieldReturnStatement)|| x.IsKind(SyntaxKind.YieldBreakStatement), false))
+                || block.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.YieldReturnStatement) || x.IsKind(SyntaxKind.YieldBreakStatement), false))
             {
                 ret = null;
             }
@@ -48,19 +48,21 @@ namespace Stryker.Core.Instrumentation
             return ret == null ? block : ret.WithAdditionalAnnotations(Marker);
         }
 
-        public BlockSyntax InjectReturn(BlockSyntax block, SyntaxTokenList modifiers)
+        public BlockSyntax InjectReturn(BlockSyntax block)
         {
             BlockSyntax ret;
             // if we had no body or the the last statement was a return, no need to add one, or this is an iterator method
             if (block == null
                 || block.Statements.Count == 0
                 || block!.Statements.Last().Kind() == SyntaxKind.ReturnStatement
+                || !block.ContainsValueReturn()
                 || block.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.YieldReturnStatement) || x.IsKind(SyntaxKind.YieldBreakStatement), false))
             {
                 ret = null;
             }
             else
             {
+                
                 ret = block.AddStatements(
                     SyntaxFactory.ReturnStatement(SyntaxFactory.LiteralExpression(SyntaxKind.DefaultLiteralExpression).WithLeadingTrivia(SyntaxFactory.Space)));
             }
