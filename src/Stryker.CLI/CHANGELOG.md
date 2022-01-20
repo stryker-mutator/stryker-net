@@ -1,3 +1,12 @@
+# [](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.2.2...dotnet-stryker@) (2022-01-20)
+
+
+### Bug Fixes
+
+* mutation testing for self-contained apps ([#1868](https://github.com/stryker-mutator/stryker-net/issues/1868)) ([9ce18d1](https://github.com/stryker-mutator/stryker-net/commit/9ce18d19b4c01e0581c2cca2149fe590dc2a2f0f))
+
+
+
 # [](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.2.1...dotnet-stryker@) (2022-01-11)
 
 

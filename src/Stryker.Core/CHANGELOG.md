@@ -1,3 +1,19 @@
+# [](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.2.2...stryker@) (2022-01-20)
+
+
+### Bug Fixes
+
+* block mutator no longer mutates case section ([fe9ca13](https://github.com/stryker-mutator/stryker-net/commit/fe9ca1395ff95c5d773567c1211a13e23bd83a76))
+* mutation testing for self-contained apps ([#1868](https://github.com/stryker-mutator/stryker-net/issues/1868)) ([9ce18d1](https://github.com/stryker-mutator/stryker-net/commit/9ce18d19b4c01e0581c2cca2149fe590dc2a2f0f))
+* order of mutation roll back is now correct ([a4d2c1c](https://github.com/stryker-mutator/stryker-net/commit/a4d2c1cca0abe2f6ecb1aa1e83d4a41bf2964a79))
+
+
+### Features
+
+* Ignoredmethod filters now properly filters out method and block mutations ([fea6d6e](https://github.com/stryker-mutator/stryker-net/commit/fea6d6efd4d13cfc1da060b446c2159522e4f774))
+
+
+
 # [](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.2.1...stryker@) (2022-01-11)
 
 
