@@ -80,7 +80,7 @@ namespace Stryker.Core.Mutants
         public static LocalFunctionStatementSyntax AddEndingReturn(LocalFunctionStatementSyntax function) =>
             function.WithBody(endingReturnEngine.InjectReturn(function.Body, function.ReturnType, function.Modifiers));
         public static AnonymousFunctionExpressionSyntax AddEndingReturn(AnonymousFunctionExpressionSyntax function) =>
-            function.WithBlock(endingReturnEngine.InjectReturn(function.Block, function.Modifiers));
+            function.WithBlock(endingReturnEngine.InjectReturn(function.Block));
 
         public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block) => 
             staticEngine.PlaceStaticContextMarker(block);

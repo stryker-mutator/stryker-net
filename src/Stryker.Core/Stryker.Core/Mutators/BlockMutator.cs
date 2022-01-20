@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
@@ -17,12 +18,12 @@ namespace Stryker.Core.Mutators
         {
             if (node.IsEmpty() ||
                 IsInfiniteWhileLoop(node) ||
-                (IsInStructConstructor(node) && ContainsAssignments(node)))
+                (CantBeMutated(node)))
             {
                 yield break;
             }
 
-            yield return new Mutation()
+            yield return new Mutation
             {
                 OriginalNode = node,
                 ReplacementNode = SyntaxFactory.Block(),
@@ -31,16 +32,16 @@ namespace Stryker.Core.Mutators
             };
         }
 
-        private static bool IsInfiniteWhileLoop(BlockSyntax node) =>
+        private static bool IsInfiniteWhileLoop(SyntaxNode node) =>
             node.Parent is WhileStatementSyntax { Condition: LiteralExpressionSyntax cond } &&
             cond.Kind() == SyntaxKind.TrueLiteralExpression;
 
-        private static bool ContainsAssignments(BlockSyntax node) => node
+        private static bool ContainsAssignments(SyntaxNode node) => node
             .ChildNodes()
             .OfType<ExpressionStatementSyntax>()
             .Any(expressionSyntax => expressionSyntax.Expression is AssignmentExpressionSyntax);
 
-        private static bool IsInStructConstructor(BlockSyntax node)
+        private static bool CantBeMutated(SyntaxNode node)
         {
             foreach (var ancestor in node.Ancestors())
             {
@@ -51,6 +52,8 @@ namespace Stryker.Core.Mutators
                     case LocalFunctionStatementSyntax:
                         return false;
                     case ConstructorDeclarationSyntax { Parent: StructDeclarationSyntax }:
+                        return ContainsAssignments(node);
+                    case SwitchSectionSyntax:
                         return true;
                 }
             }
