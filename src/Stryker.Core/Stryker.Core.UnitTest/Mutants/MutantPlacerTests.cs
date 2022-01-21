@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -29,9 +30,9 @@ namespace Stryker.Core.UnitTest.Mutants
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(8))));
 
-            var mutants = new[] { new Mutant { Id = id, Mutation = new Mutation { ReplacementNode = mutatedNode } } };
+            var mutants = new List<(Mutant, StatementSyntax)> { (new Mutant { Id = id, Mutation = new Mutation { ReplacementNode = mutatedNode } }, mutatedNode) };
 
-            var result = MutantPlacer.PlaceStatementControlledMutations(originalNode, originalNode, mutants);
+            var result = MutantPlacer.PlaceStatementControlledMutations(originalNode, mutants);
 
             result.ToFullString().Replace(CodeInjection.HelperNamespace, "StrykerNamespace").ShouldBeSemantically("if (StrykerNamespace.MutantControl.IsActive(" + id + @"))
             {
@@ -92,9 +93,9 @@ namespace Stryker.Core.UnitTest.Mutants
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(8)));
 
-            var mutants = new[] { new Mutant { Id = id, Mutation = new Mutation { ReplacementNode = mutatedNode } } };
+            var mutants = new List<(Mutant, ExpressionSyntax)> { (new Mutant { Id = id, Mutation = new Mutation { ReplacementNode = mutatedNode } }, mutatedNode) };
 
-            var result = MutantPlacer.PlaceExpressionControlledMutations(originalNode, originalNode, mutants);
+            var result = MutantPlacer.PlaceExpressionControlledMutations(originalNode, mutants);
 
             result.ToFullString()
                 .ShouldBeSemantically(@$"({CodeInjection.HelperNamespace}.MutantControl.IsActive({id})?1-8:1+8)");

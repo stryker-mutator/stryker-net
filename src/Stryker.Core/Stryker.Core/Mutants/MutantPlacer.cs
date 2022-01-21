@@ -92,21 +92,21 @@ namespace Stryker.Core.Mutants
         public static BlockSyntax AddDefaultInitializers(BlockSyntax block, IEnumerable<ParameterSyntax> parameters) =>
             defaultInitializationEngine.AddDefaultInitializers(block, parameters);
 
-        public static StatementSyntax PlaceStatementControlledMutations(SyntaxNode sourceNode, StatementSyntax original,
-            IEnumerable<Mutant> mutants) =>
-            mutants.Aggregate(original, (syntaxNode, mutant) =>
-                IfEngine.InjectIf(GetBinaryExpression(mutant.Id), syntaxNode, (StatementSyntax)sourceNode.InjectMutation(mutant.Mutation))
+        public static StatementSyntax PlaceStatementControlledMutations(StatementSyntax original,
+            IEnumerable<(Mutant mutant, StatementSyntax mutation)> mutants) =>
+            mutants.Aggregate(original, (syntaxNode, mutationInfo) =>
+                IfEngine.InjectIf(GetBinaryExpression(mutationInfo.mutant.Id), syntaxNode, mutationInfo.mutation as StatementSyntax)
                     // Mark this node as a MutationIf node. Store the MutantId in the annotation to retrace the mutant later
-                    .WithAdditionalAnnotations(new SyntaxAnnotation(MutationIdMarker, mutant.Id.ToString()))
-                    .WithAdditionalAnnotations(new SyntaxAnnotation(MutationTypeMarker, mutant.Mutation.Type.ToString())));
+                    .WithAdditionalAnnotations(new SyntaxAnnotation(MutationIdMarker, mutationInfo.mutant.Id.ToString()))
+                    .WithAdditionalAnnotations(new SyntaxAnnotation(MutationTypeMarker, mutationInfo.mutant.Mutation.Type.ToString())));
 
-        public static ExpressionSyntax PlaceExpressionControlledMutations(SyntaxNode sourceNode, ExpressionSyntax original,
-            IEnumerable<Mutant> mutants) =>
-            mutants.Aggregate(original, (current, mutant) =>
-                conditionalEngine.PlaceWithConditionalExpression(GetBinaryExpression(mutant.Id), current, sourceNode.InjectMutation(mutant.Mutation) as ExpressionSyntax)
+        public static ExpressionSyntax PlaceExpressionControlledMutations(ExpressionSyntax original,
+            IEnumerable<(Mutant mutant, ExpressionSyntax mutation)> mutants) =>
+            mutants.Aggregate(original, (current, mutationInfo) =>
+                conditionalEngine.PlaceWithConditionalExpression(GetBinaryExpression(mutationInfo.mutant.Id), current, mutationInfo.mutation)
                     // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later
-                    .WithAdditionalAnnotations(new SyntaxAnnotation(MutationIdMarker, mutant.Id.ToString()))
-                    .WithAdditionalAnnotations(new SyntaxAnnotation(MutationTypeMarker, mutant.Mutation.Type.ToString())));
+                    .WithAdditionalAnnotations(new SyntaxAnnotation(MutationIdMarker, mutationInfo.mutant.Id.ToString()))
+                    .WithAdditionalAnnotations(new SyntaxAnnotation(MutationTypeMarker, mutationInfo.mutant.Mutation.Type.ToString())));
 
         public static SyntaxNode RemoveMutant(SyntaxNode nodeToRemove)
         {

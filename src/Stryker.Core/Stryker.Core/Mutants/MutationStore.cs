@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -66,25 +67,23 @@ namespace Stryker.Core.Mutants
             }
         }
 
-        public StatementSyntax PlaceBlockMutations(SyntaxNode sourceNode, StatementSyntax block)
+        public StatementSyntax PlaceBlockMutations(StatementSyntax block, Func<Mutation, StatementSyntax> mutationFunc)
         {
-            var result =
-                MutantPlacer.PlaceStatementControlledMutations(sourceNode, block, _blockMutants.Peek());
+            var result = MutantPlacer.PlaceStatementControlledMutations(block, _blockMutants.Peek().Select(m => (m, mutationFunc(m.Mutation))));
             _blockMutants.Peek().Clear();
             return result;
         }
 
-        public StatementSyntax PlaceStatementMutations(SyntaxNode sourceNode, StatementSyntax block)
+        public StatementSyntax PlaceStatementMutations(StatementSyntax block, Func<Mutation, StatementSyntax> mutationFunc)
         {
-            var result =
-                MutantPlacer.PlaceStatementControlledMutations(sourceNode, block, _statementMutants.Peek());
+            var result = MutantPlacer.PlaceStatementControlledMutations(block, _statementMutants.Peek().Select(m => (m, mutationFunc(m.Mutation))));
             _statementMutants.Peek().Clear();
             return result;
         }
 
-        public ExpressionSyntax PlaceExpressionMutations(SyntaxNode sourceNode, ExpressionSyntax expression)
+        public ExpressionSyntax PlaceExpressionMutations(ExpressionSyntax expression, Func<Mutation, ExpressionSyntax> converter)
         {
-            var result = MutantPlacer.PlaceExpressionControlledMutations(sourceNode, expression, _expressionMutants);
+            var result = MutantPlacer.PlaceExpressionControlledMutations(expression, _expressionMutants.Select(m => (m, converter(m.Mutation))));
             _expressionMutants.Clear();
             return result;
         }

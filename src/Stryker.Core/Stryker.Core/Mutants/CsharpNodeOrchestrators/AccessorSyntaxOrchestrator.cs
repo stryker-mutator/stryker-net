@@ -32,7 +32,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                 result = MutantPlacer.ConvertExpressionToBody(result);
             }
 
-            var newBody = context.InjectBlockLevelExpressionMutation(sourceNode.ExpressionBody!.Expression, result.Body, sourceNode.NeedsReturn());
+            var newBody = context.InjectBlockLevelExpressionMutation(result.Body, sourceNode.ExpressionBody!.Expression, sourceNode.NeedsReturn());
             result = result.WithBody(SyntaxFactory.Block(newBody));
             if (sourceNode.NeedsReturn())
             {

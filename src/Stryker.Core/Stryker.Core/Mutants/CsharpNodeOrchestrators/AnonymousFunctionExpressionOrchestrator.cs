@@ -33,7 +33,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 
                 // we need to inject pending block (and statement) level mutations
                 targetNode = targetNode.WithBody(
-                    SyntaxFactory.Block(context.InjectBlockLevelExpressionMutation(sourceNode.ExpressionBody, targetNode.Block, true)));
+                    SyntaxFactory.Block(context.InjectBlockLevelExpressionMutation(targetNode.Block, sourceNode.ExpressionBody, true)));
             }
             else
             {

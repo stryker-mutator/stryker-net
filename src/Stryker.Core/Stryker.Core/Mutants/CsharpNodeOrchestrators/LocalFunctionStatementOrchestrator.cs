@@ -34,8 +34,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 
             // we need to move to a body version of the function to inject pending mutations
             targetNode = MutantPlacer.ConvertExpressionToBody(targetNode);
-            return targetNode.WithBody(SyntaxFactory.Block(context.InjectBlockLevelExpressionMutation(sourceNode.ExpressionBody.Expression,
-                targetNode.Body, sourceNode.NeedsReturn())));
+            return targetNode.WithBody(SyntaxFactory.Block(context.InjectBlockLevelExpressionMutation(targetNode.Body, sourceNode.ExpressionBody.Expression, sourceNode.NeedsReturn())));
         }
     }
 }

@@ -52,6 +52,17 @@
           "System.Memory": "4.5.4"
         }
       },
+      "System.Collections": {
+        "type": "Direct",
+        "requested": "[4.3.0, )",
+        "resolved": "4.3.0",
+        "contentHash": "3Dcj85/TBdVpL5Zr+gEEBUuFe2icOnLalmEh9hfck1PTYbbyWuZgh4fmm2ysCLTrqLQw6t3TgTyJ+VLp+Qb+Lw==",
+        "dependencies": {
+          "Microsoft.NETCore.Platforms": "1.1.0",
+          "Microsoft.NETCore.Targets": "1.1.0",
+          "System.Runtime": "4.3.0"
+        }
+      },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
         "requested": "[16.0.2, )",
@@ -849,16 +860,6 @@
         "type": "Transitive",
         "resolved": "5.0.0",
         "contentHash": "JPJArwA1kdj8qDAkY2XGjSWoYnqiM7q/3yRNkt6n28Mnn95MuEGkZXUbPBf7qc3IjwrGY5ttQon7yqHZyQJmOQ=="
-      },
-      "System.Collections": {
-        "type": "Transitive",
-        "resolved": "4.3.0",
-        "contentHash": "3Dcj85/TBdVpL5Zr+gEEBUuFe2icOnLalmEh9hfck1PTYbbyWuZgh4fmm2ysCLTrqLQw6t3TgTyJ+VLp+Qb+Lw==",
-        "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.1.0",
-          "Microsoft.NETCore.Targets": "1.1.0",
-          "System.Runtime": "4.3.0"
-        }
       },
       "System.Collections.Concurrent": {
         "type": "Transitive",
@@ -1854,8 +1855,8 @@
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "4.0.1",
           "ShellProgressBar": "5.1.0",
-          "Stryker.DataCollector": "1.2.1",
-          "Stryker.RegexMutators": "1.2.1",
+          "Stryker.DataCollector": "1.0.0",
+          "Stryker.RegexMutators": "1.0.0",
           "System.IO.Abstractions": "16.0.2",
           "System.Net.Http.Json": "6.0.0"
         }
