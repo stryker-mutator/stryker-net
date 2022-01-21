@@ -243,12 +243,14 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
     private void TestMethod()
     {
         Dispose();
-        TestMethod();
-    }
+        for(;;)
+            TestMethod();
+        x = x+2;
+   }
 }";
             var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
             var originalNode = (StatementSyntax)baseSyntaxTree.DescendantNodes().First(t => t is StatementSyntax and not BlockSyntax);
-
+            // this mutant is call to Dispose and should be ignored
             var mutant = new Mutant
             {
                 Mutation = new Mutation
@@ -257,11 +259,18 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
-            var options = new StrykerOptions
+            // this is an arbitrary statement mutation that should not be filtered
+            originalNode = (StatementSyntax)baseSyntaxTree.DescendantNodes().Where(t => t is StatementSyntax and not BlockSyntax).ElementAt(3);
+
+            var statementMutant = new Mutant
             {
-                IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { "Dispose" } }.Validate()
+                Mutation = new Mutation
+                {
+                    OriginalNode = originalNode,
+                }
             };
 
+            // this is a block mutations that contains non ignored methods it should not be filtered
             var blockMutant = new Mutant
             {
                 Mutation = new Mutation
@@ -270,14 +279,20 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 }
             };
 
+            var options = new StrykerOptions
+            {
+                IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { "Dispose" } }.Validate()
+            };
+
             var sut = new IgnoredMethodMutantFilter();
 
             // Act
-            var filteredMutants = sut.FilterMutants(new[] { mutant, blockMutant }, null, options);
+            var filteredMutants = sut.FilterMutants(new[] { mutant, blockMutant, statementMutant }, null, options);
 
             // Assert
             filteredMutants.ShouldNotContain(mutant);
             filteredMutants.ShouldContain(blockMutant);
+            filteredMutants.ShouldContain(statementMutant);
         }
 
         [Theory]
