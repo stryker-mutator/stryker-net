@@ -1,14 +1,4 @@
 <Project>
-  <!-- Enable libman restore on build by default -->
-  <PropertyGroup>
-    <LibraryRestore>true</LibraryRestore>
-  </PropertyGroup>
-
-  <!-- Disable libman restore on build if we are building for live unit testing -->
-  <PropertyGroup Condition="'$(BuildingForLiveUnitTesting)' == 'true' ">
-    <LibraryRestore>false</LibraryRestore>
-  </PropertyGroup>
-  
   <PropertyGroup>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
