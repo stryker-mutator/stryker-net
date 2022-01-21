@@ -1,7 +1,6 @@
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
-using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
@@ -1039,8 +1038,7 @@ if(StrykerNamespace.MutantControl.IsActive(1)){;}else{	await SendRequest(url, Ht
 if(StrykerNamespace.MutantControl.IsActive(3)){;}else{		request.Headers.Add((StrykerNamespace.MutantControl.IsActive(4)?"""":""Accept""), (StrykerNamespace.MutantControl.IsActive(5)?"""":""application / json; version = 1""));
 }if(StrykerNamespace.MutantControl.IsActive(6)){;}else{		request.Headers.TryAddWithoutValidation((StrykerNamespace.MutantControl.IsActive(7)?"""":""Date""), date);
 }
-    }
-return default;}, ensureSuccessStatusCode: (StrykerNamespace.MutantControl.IsActive(8) ? true : false));
+}}, ensureSuccessStatusCode: (StrykerNamespace.MutantControl.IsActive(8) ? true : false));
 }}}";
 
             ShouldMutateSourceToExpected(source, expected);
@@ -1166,14 +1164,6 @@ return default(string);}
         }
 
         [Fact]
-        public void ShouldAddReturnDefaultToArrowExpressionOperator()
-        {
-            string source = @"public static int operator+ (TestClass value, TestClass other) => Sub(out var x, """")?1:2;";
-            string expected = @"public static int operator+ (TestClass value, TestClass other) {if(StrykerNamespace.MutantControl.IsActive(0)){return!(Sub(out var x, """"))?1:2;}else{return Sub(out var x, (StrykerNamespace.MutantControl.IsActive(1)?""Stryker was here!"":""""))?1:2;}}";
-            ShouldMutateSourceToExpected(source, expected);
-        }
-
-        [Fact]
         public void ShouldNotAddReturnDefaultToEnumerationMethods()
         {
             string source = @"public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable, string propertyName)
@@ -1226,16 +1216,6 @@ if(StrykerNamespace.MutantControl.IsActive(4)){;}else{		yield break;
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	;
 }}";
-            ShouldMutateSourceToExpected(source, expected);
-        }
-
-        [Fact]
-        public void ShouldNotAddReturnDefaultToDestructor()
-        {
-            string source = @"~TestClass(){;}";
-
-            string expected = @"{~TestClass(){if(StrykerNamespace.MutantControl.IsActive(0)){}else{;}}}}";
-
             ShouldMutateSourceToExpected(source, expected);
         }
 
