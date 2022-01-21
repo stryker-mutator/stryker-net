@@ -1,4 +1,5 @@
 using Moq;
+using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Progress;
 using Xunit;
@@ -185,6 +186,20 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
                     expected = "│ Testing mutant 1 / 100000000 │ K 0 │ S 0 │ T 1 │ ~11d 13h │";
                     break;
             }
+        }
+
+
+        [Fact]
+        public void ProgressBarSmokeCheck()
+        {
+            var progress = new ProgressBar();
+            progress.Start(0, "test");
+            progress.Tick("next");
+            progress.Ticks().ShouldBe(1);
+            progress.Stop();
+
+            progress.Dispose();
+            progress.Ticks().ShouldBe(-1);
         }
 
         private void VerifyProgress(string progressBar, int tested, int total, int percentage, string estimate)

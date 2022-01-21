@@ -32,9 +32,14 @@ namespace Stryker.Core.Helpers
         /// <returns>method returns type. Null if this not relevant</returns>
         public static TypeSyntax ReturnType(this AccessorDeclarationSyntax accessor)
         {
-            if (accessor.IsGetter() && accessor.Parent is AccessorListSyntax accessorList && accessorList.Parent is PropertyDeclarationSyntax propertyDeclaration)
+            if (accessor.IsGetter() && accessor.Parent is AccessorListSyntax accessorList)
             {
-                return propertyDeclaration.Type;
+                return accessorList.Parent switch
+                {
+                    PropertyDeclarationSyntax propertyDeclaration => propertyDeclaration.Type,
+                    IndexerDeclarationSyntax indexerDeclaration => indexerDeclaration.Type,
+                    _ => null
+                };
             }
 
             return null;
@@ -71,18 +76,18 @@ namespace Stryker.Core.Helpers
             !localFunction.ReturnType.IsVoid();
 
         /// <summary>
-        /// Checks if a member is static
-        /// </summary>
-        /// <param name="node">Member to analyze</param>
-        /// <returns>true if it is a static method, properties, fields...</returns>
-        public static bool IsStatic(this MemberDeclarationSyntax node) => node.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword);
-
-        /// <summary>
         /// Checks if an accessor is a getter and needs to end with a return
         /// </summary>
         /// <param name="baseMethod"></param>
         /// <returns>true if this is a getter</returns>
         public static bool NeedsReturn(this AccessorDeclarationSyntax baseMethod) => baseMethod.IsGetter();
+
+        /// <summary>
+        /// Checks if a member is static
+        /// </summary>
+        /// <param name="node">Member to analyze</param>
+        /// <returns>true if it is a static method, properties, fields...</returns>
+        public static bool IsStatic(this MemberDeclarationSyntax node) => node.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword);
 
         /// <summary>
         /// Returns true if the given type is 'void'.
@@ -132,5 +137,63 @@ namespace Stryker.Core.Helpers
         /// <param name="type">Type used in the resulting default expression.</param>
         /// <returns>An expression representing `default(<paramref name="type"/>'.</returns>
         public static ExpressionSyntax BuildDefaultExpression(this TypeSyntax type) => SyntaxFactory.DefaultExpression(type.WithoutTrailingTrivia()).WithLeadingTrivia(SyntaxFactory.Space);
+
+        /// <summary>
+        /// Check (recursively) if the statement returns some value.
+        /// </summary>
+        /// <param name="syntax">statement to analyze.</param>
+        /// <returns>true is the statement returns a value in at least one path.</returns>
+        public static bool ContainsValueReturn(this StatementSyntax syntax)
+        {
+            var hasReturn = false;
+            syntax.ScanChildStatements(s =>
+            {
+                if (s is not ReturnStatementSyntax { Expression: { } })
+                {
+                    return true;
+                }
+                hasReturn = true;
+                return false;
+
+            });
+            return hasReturn;
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="syntax"></param>
+        /// <param name="predicate"></param>
+        /// <returns></returns>
+        public static bool ScanChildStatements(this StatementSyntax syntax, Func<StatementSyntax, bool> predicate)
+        {
+            if (!predicate(syntax))
+            {
+                return false;
+            }
+            // scan children with slight optimization for well known statement
+            switch (syntax)
+            {
+                case BlockSyntax block:
+                    return block.Statements.All(s => ScanChildStatements(s, predicate));
+                case LocalFunctionStatementSyntax:
+                    return true;
+                case ForStatementSyntax forStatement:
+                    return forStatement.Statement.ScanChildStatements(predicate);
+                case WhileStatementSyntax whileStatement:
+                    return whileStatement.Statement.ScanChildStatements(predicate);
+                case DoStatementSyntax doStatement:
+                    return doStatement.Statement.ScanChildStatements(predicate);
+                case SwitchStatementSyntax switchStatement:
+                    return switchStatement.Sections.SelectMany(s => s.Statements).All(statement => ScanChildStatements(statement, predicate));
+                case IfStatementSyntax ifStatement:
+                    if (!ifStatement.Statement.ScanChildStatements(predicate))
+                        return false;
+                    return ifStatement.Else?.Statement.ScanChildStatements(predicate) != false;
+                default:
+                    return syntax.ChildNodes().Where(n => n is StatementSyntax).Cast<StatementSyntax>()
+                        .All(s => ScanChildStatements(s, predicate));
+            }
+        }
     }
 }

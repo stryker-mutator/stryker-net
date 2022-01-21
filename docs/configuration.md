@@ -310,11 +310,11 @@ Default: `null`
 Command line: `N/A`  
 Config file: `"ignore-mutations": ['string', 'logical']`
 
-Turn off mutations that are not currently relevant to your project. 
+Ignores mutations that are not currently relevant to your project. Find the mutation names [here](https://stryker-mutator.io/docs/stryker-net/mutations).
 
 #### `Linq expressions`
 
-It's possible to disable specific linq expressions using:
+It's also possible to disable specific linq expressions using:
 ```json
 "stryker-config": {
     "ignore-mutations": [
@@ -323,7 +323,6 @@ It's possible to disable specific linq expressions using:
     ]
 }
 ```
-
 
 The mutants of the ignored types will not be tested. They will show up in your reports as `Ignored`.
 

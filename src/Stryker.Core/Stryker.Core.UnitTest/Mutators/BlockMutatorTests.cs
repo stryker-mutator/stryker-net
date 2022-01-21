@@ -12,7 +12,7 @@ namespace Stryker.Core.UnitTest.Mutators
     public class BlockMutatorTests
     {
         [Fact]
-        private void ShouldMutateNonEmptyConstructorOnClass()
+        public void ShouldMutateNonEmptyConstructorOnClass()
         {
             var source = @"
 class Program
@@ -30,7 +30,7 @@ class Program
         }
 
         [Fact]
-        private void ShouldNotMutateStructConstructorAssignments()
+        public void ShouldNotMutateStructConstructorAssignments()
         {
             var source = @"
 struct Program
@@ -57,7 +57,31 @@ struct Program
         }
 
         [Fact]
-        private void ShouldMutateLocalFunctionsInStructConstructors()
+        public void ShouldNotMutateSwitchCasesBlock()
+        {
+            var source = @"
+struct Program
+{
+    int mustBeInitialized;
+    bool alsoThisMustBeInitialized;
+
+    Program(int value)
+    {
+        switch(value)
+        {
+            default:
+            {
+                value++;
+            }
+        }
+    }
+}";
+            // there should be only a mutation for the whole method body
+            GetMutations(source).ShouldHaveSingleItem();
+        }
+
+        [Fact]
+        public void ShouldMutateLocalFunctionsInStructConstructors()
         {
             var source = @"
 struct Program
@@ -83,7 +107,7 @@ struct Program
         }
 
         [Fact]
-        private void ShouldMutateStructConstructorNonAssignmentsAtRoot()
+        public void ShouldMutateStructConstructorNonAssignmentsAtRoot()
         {
             var source = @"
 struct Program
@@ -98,7 +122,7 @@ struct Program
         }
 
         [Fact]
-        private void ShouldMutateStructConstructorNonAssignmentChild()
+        public void ShouldMutateStructConstructorNonAssignmentChild()
         {
             var source = @"
 struct Program
@@ -120,7 +144,7 @@ struct Program
         }
 
         [Fact]
-        private void ShouldMutateVoidReturnsAsEmptyInMethod()
+        public void ShouldMutateVoidReturnsAsEmptyInMethod()
         {
             var source = @"
 class Program
@@ -138,7 +162,7 @@ class Program
         }
 
         [Fact]
-        private void ShouldMutateVoidReturnsAsEmptyInLocalFunction()
+        public void ShouldMutateVoidReturnsAsEmptyInLocalFunction()
         {
             var source = @"
 class Program
@@ -164,7 +188,7 @@ class Program
         }
 
         [Fact]
-        private void ShouldNotMutateAlreadyEmptyBlocks()
+        public void ShouldNotMutateAlreadyEmptyBlocks()
         {
             // E.g. empty constructors bodies and method overrides are totally valid
             // and produce false positives if mutated.
@@ -186,7 +210,7 @@ class Program
         }
 
         [Fact]
-        private void ShouldNotMutateInfiniteWhileLoops()
+        public void ShouldNotMutateInfiniteWhileLoops()
         {
             var source = @"
 class Program

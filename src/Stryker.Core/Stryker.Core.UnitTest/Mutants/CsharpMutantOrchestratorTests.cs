@@ -1,6 +1,7 @@
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
+using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
@@ -20,8 +21,8 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
 {
     interface TestClass
     {
-        int A {get; set;}
-        int B {get; set;}
+        int A { get; set; }
+        int B { get; set; }
         void MethodA();
     }
 }";
@@ -33,8 +34,8 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
 {
     interface TestClass
     {
-        int A {get; set;}
-        int B {get; set;}
+        int A { get; set; }
+        int B { get; set; }
         void MethodA();
     }
 }";
@@ -340,6 +341,43 @@ private bool Out(int test, Func<int, bool>lambda )
         }
         return default(bool);
     }";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldMutateWhenDeclarationInInnerScopeInExpressionForm()
+        {
+            var source = @"void TestMethod()
+{
+	int i = 0;
+	var result = Out(i, (x) => int.TryParse(""3"", out int y) ? true : false);
+}
+";
+            var expected = @"void TestMethod()
+{if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+	int i = 0;
+	var result = Out(i, (x) => {if(StrykerNamespace.MutantControl.IsActive(1)){return!(int.TryParse(""3"", out int y) )? true : false;}else{return int.TryParse((StrykerNamespace.MutantControl.IsActive(2)?"""":""3""), out int y) ? (StrykerNamespace.MutantControl.IsActive(3)?false:true ): (StrykerNamespace.MutantControl.IsActive(4)?true:false);}});
+}}
+";
+
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldMutateLambdaAndAddDefaultReturn()
+        {
+            var source = @"void TestMethod()
+{
+	int i = 0;
+	var result = Out(i, (x) => {if (x>2) return false; i++;});
+}
+";
+            var expected = @"void TestMethod()
+{if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+	int i = 0;
+	var result = Out(i, (x) => {if(StrykerNamespace.MutantControl.IsActive(1)){}else{if ((StrykerNamespace.MutantControl.IsActive(4)?!(x>2):(StrykerNamespace.MutantControl.IsActive(3)?x>=2:(StrykerNamespace.MutantControl.IsActive(2)?x<2:x>2)))) return (StrykerNamespace.MutantControl.IsActive(5)?true:false); if(StrykerNamespace.MutantControl.IsActive(6)){;}else{if(StrykerNamespace.MutantControl.IsActive(7)){i--;}else{i++;}}}return default;});}}
+";
 
             ShouldMutateSourceToExpected(source, expected);
         }
@@ -1019,7 +1057,9 @@ return default;}, ensureSuccessStatusCode: (StrykerNamespace.MutantControl.IsAct
 
             var mutants = _target.GetLatestMutantBatch().ToList();
             mutants.Count.ShouldBe(2);
-            mutants.First().Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(1);
+            var blockLinespan = mutants.First().Mutation.OriginalNode.GetLocation().GetLineSpan();
+            blockLinespan.StartLinePosition.Line.ShouldBe(1);
+            blockLinespan.EndLinePosition.Line.ShouldBe(3);
             mutants.Last().Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(2);
         }
 
@@ -1044,7 +1084,10 @@ namespace TestApp
 
             var mutants = _target.GetLatestMutantBatch().ToList();
             mutants.Count.ShouldBe(7);
-            mutants.First().Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(9);
+
+            var blockLinespan = mutants.First().Mutation.OriginalNode.GetLocation().GetLineSpan();
+            blockLinespan.StartLinePosition.Line.ShouldBe(9);
+            blockLinespan.EndLinePosition.Line.ShouldBe(11);
             foreach (var mutant in mutants.Skip(1))
             {
                 mutant.Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line.ShouldBe(10);
@@ -1102,6 +1145,35 @@ const string text = ""a""+""b"";}}";
         }
 
         [Fact]
+        public void ShouldAddReturnDefaultToIndexerGetter()
+        {
+            string source = @"public string this[string key]
+{
+    get
+    {
+        return key;
+    }
+}";
+            string expected = @"public string this[string key]
+{
+    get
+{if(StrykerNamespace.MutantControl.IsActive(0)){}else        {
+        return key;
+    }
+return default(string);}
+}";
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldAddReturnDefaultToArrowExpressionOperator()
+        {
+            string source = @"public static int operator+ (TestClass value, TestClass other) => Sub(out var x, """")?1:2;";
+            string expected = @"public static int operator+ (TestClass value, TestClass other) {if(StrykerNamespace.MutantControl.IsActive(0)){return!(Sub(out var x, """"))?1:2;}else{return Sub(out var x, (StrykerNamespace.MutantControl.IsActive(1)?""Stryker was here!"":""""))?1:2;}}";
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldNotAddReturnDefaultToEnumerationMethods()
         {
             string source = @"public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable, string propertyName)
@@ -1154,6 +1226,16 @@ if(StrykerNamespace.MutantControl.IsActive(4)){;}else{		yield break;
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	;
 }}";
+            ShouldMutateSourceToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldNotAddReturnDefaultToDestructor()
+        {
+            string source = @"~TestClass(){;}";
+
+            string expected = @"{~TestClass(){if(StrykerNamespace.MutantControl.IsActive(0)){}else{;}}}}";
+
             ShouldMutateSourceToExpected(source, expected);
         }
 
@@ -1322,7 +1404,7 @@ string Value {get{if(StrykerNamespace.MutantControl.IsActive(0)){return!(Generat
 			int mag = (int)Math.Log(value, 1024);
 			decimal adjustedSize = (decimal)value / (1L << (mag * 10));
 
-			return $""{ adjustedSize:n1} { SizeSuffixes[mag]}"";
+			return $""{ adjustedSize:n1} { SizeSuffixes[mag] }"";
 
         }
 else		{

@@ -1,23 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
+  
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <DebugType>Full</DebugType>
-    <Authors>Richard Werkman, Rouke Broersma</Authors>
-    <Product>Mutation Testing</Product>
-    <ApplicationIcon />
-    <OutputType>Library</OutputType>
     <AssemblyName>Stryker.Core</AssemblyName>
     <RootNamespace>Stryker.Core</RootNamespace>
-    <StartupObject />
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <VersionPrefix>1.2.1</VersionPrefix>
+    <OutputType>Library</OutputType>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <VersionPrefix>1.3.1</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <PackageId>stryker</PackageId>
+    <Product>Mutation Testing</Product>
+    <Authors>Richard Werkman, Rouke Broersma</Authors>
     <Description>All stryker mutation test logic is contained in this library. This package does not include a runner. Use this package if you want to extend stryker with your own runner.</Description>
     <PackageProjectUrl>https://stryker-mutator.io/</PackageProjectUrl>
     <PackageLicenseFile>LICENSE</PackageLicenseFile>
-    <PackageIconUrl>https://raw.githubusercontent.com/stryker-mutator/stryker/master/stryker-80x80.png</PackageIconUrl>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>stryker-80x80.png</PackageIcon>
     <RepositoryUrl>https://github.com/stryker-mutator/stryker-net</RepositoryUrl>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
   </PropertyGroup>
 
   <PropertyGroup>
@@ -40,7 +43,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
     <PackageReference Include="FSharp.Compiler.Service" Version="38.0.0" />
     <PackageReference Include="DotNet.Glob" Version="3.1.3" />
-    <PackageReference Include="Buildalyzer" Version="3.2.6" />
+    <PackageReference Include="Buildalyzer" Version="3.2.8" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfiguration)" /> 		<!-- From Directory.Build.props -->
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfiguration)" /> 	<!-- From Directory.Build.props -->
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsConfiguration)" /> 				<!-- From Directory.Build.props -->
@@ -48,7 +51,7 @@
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="$(MicrosoftTestPlatform)" /> 					<!-- From Directory.Build.props -->
     <PackageReference Include="Microsoft.TestPlatform.Portable" Version="$(MicrosoftTestPlatform)" /> 						<!-- From Directory.Build.props -->
     <PackageReference Include="Microsoft.TestPlatform.TranslationLayer" Version="$(MicrosoftTestPlatform)" /> 				<!-- From Directory.Build.props -->
-    <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.113" />
+    <PackageReference Include="Microsoft.Web.LibraryManager.Build" Version="2.1.161" />
     <PackageReference Include="Mono.Cecil" Version="0.11.4" />
     <PackageReference Include="Serilog" Version="2.10.0" />
     <PackageReference Include="Serilog.Extensions.Logging" Version="3.1.0" />
@@ -60,7 +63,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Include="..\..\..\LICENS*" Pack="true" PackagePath="" />
+    <None Include="..\..\..\LICENSE" Pack="true" PackagePath="" Visible="false" />
+    <None Include="..\..\..\README.md" Pack="true" PackagePath="" Visible="false" />
+    <None Include="..\..\..\docs\images\stryker-80x80.png" Pack="true" PackagePath="" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>

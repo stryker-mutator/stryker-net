@@ -17,14 +17,14 @@ namespace Stryker.Core.MutantFilters
     {
         public MutantFilter Type => MutantFilter.IgnoreMethod;
         public string DisplayName => "method filter";
-        private readonly SyntaxTriviaRemover _triviaRemover = new SyntaxTriviaRemover();
+        private readonly SyntaxTriviaRemover _triviaRemover = new();
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options) =>
             options.IgnoredMethods.Any() ?
                     mutants.Where(m => !IsPartOfIgnoredMethodCall(m.Mutation.OriginalNode, options)) :
                     mutants;
 
-        private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, StrykerOptions options) =>
+        private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, StrykerOptions options, bool canGoUp = true) =>
             syntaxNode switch
             {
                 // Check if the current node is an invocation. This will also ignore invokable properties like `Func<bool> MyProp { get;}`
@@ -33,8 +33,13 @@ namespace Stryker.Core.MutantFilters
                 // Check if the current node is an object creation syntax (constructor invocation).
                 ObjectCreationExpressionSyntax creation => MatchesAnIgnoredMethod(_triviaRemover.Visit(creation.Type) + ".ctor", options),
 
+                // check if the node is a block containing only ignored node
+                BlockSyntax {Statements: {Count: >0}} block => block.Statements.All(s=> IsPartOfIgnoredMethodCall(s, options, false)),
+
+                ExpressionStatementSyntax invocationExpressionStatementSyntax => IsPartOfIgnoredMethodCall(invocationExpressionStatementSyntax.Expression, options, false),
+
                 // Traverse the tree upwards.
-                SyntaxNode node when node.Parent != null => IsPartOfIgnoredMethodCall(syntaxNode.Parent, options),
+                { Parent: { } }  => canGoUp && IsPartOfIgnoredMethodCall(syntaxNode.Parent, options),
                 _ => false,
             };
 

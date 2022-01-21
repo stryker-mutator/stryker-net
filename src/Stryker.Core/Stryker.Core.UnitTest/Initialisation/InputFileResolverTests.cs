@@ -371,9 +371,9 @@ using System.Reflection;
         [Fact]
         public void InitializeShouldNotResolveImportedPropsFile()
         {
-            string sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            var sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
-            string projectFile = @"
+            var projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -383,7 +383,7 @@ using System.Reflection;
     <ItemGroup>
     </ItemGroup>
 
-     <Import Project=""../NonSharedProject/Example.props"" Label=""Shared"" />
+     <Import Project=""..\NonSharedProject\Example.props"" Label=""Shared"" />
 
 </Project>";
 
@@ -423,9 +423,9 @@ using System.Reflection;
         [Fact]
         public void InitializeShouldResolveMultipleImportedProjects()
         {
-            string sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            var sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
-            string sharedItems = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            var sharedItems = @"<?xml version=""1.0"" encoding=""utf-8""?>
                 <Project xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
                 <PropertyGroup>
                 <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -436,7 +436,7 @@ using System.Reflection;
                 <Compile Include=""$(MSBuildThisFileDirectory)shared.cs"" />
                 </ItemGroup>
                 </Project>";
-            string sharedItems2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
+            var sharedItems2 = @"<?xml version=""1.0"" encoding=""utf-8""?>
                 <Project xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
                 <PropertyGroup>
                 <MSBuildAllProjects>$(MSBuildAllProjects);$(MSBuildThisFileFullPath)</MSBuildAllProjects>
@@ -447,7 +447,7 @@ using System.Reflection;
                 <Compile Include=""$(MSBuildThisFileDirectory)shared.cs"" />
                 </ItemGroup>
                 </Project>";
-            string projectFile = @"
+            var projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -500,9 +500,9 @@ using System.Reflection;
         [Fact]
         public void InitializeShouldThrowOnMissingSharedProject()
         {
-            string sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            var sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
-            string projectFile = @"
+            var projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -512,10 +512,10 @@ using System.Reflection;
     <ItemGroup>
     </ItemGroup>
 
-     <Import Project=""../SharedProject/Example.projitems"" Label=""Shared"" />
+     <Import Project=""..\SharedProject\Example.projitems"" Label=""Shared"" />
 
     <ItemGroup>
-        <ProjectReference Include=""../ExampleProject/ExampleProject.csproj"" />
+        <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
     </ItemGroup>
 </Project>";
 
@@ -553,11 +553,11 @@ using System.Reflection;
         [Fact]
         public void InitializeShouldResolvePropertiesInSharedProjectImports()
         {
-            string sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            var sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
-            string sharedFile = "<Project />";
+            var sharedFile = "<Project />";
 
-            string projectFile = @"
+            var projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -571,7 +571,7 @@ using System.Reflection;
     <Import Project=""../$(SharedDir)/Example.projitems"" Label=""Shared"" />
 
     <ItemGroup>
-        <ProjectReference Include=""../ExampleProject/ExampleProject.csproj"" />
+        <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
     </ItemGroup>
 </Project>";
 
@@ -616,11 +616,11 @@ using System.Reflection;
         [Fact]
         public void InitializeShouldThrowIfImportPropertyCannotBeResolved()
         {
-            string sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            var sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
-            string sharedFile = "<Project />";
+            var sharedFile = "<Project />";
 
-            string projectFile = @"
+            var projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -633,7 +633,7 @@ using System.Reflection;
     <Import Project=""../$(SharedDir)/Example.projitems"" Label=""Shared"" />
 
     <ItemGroup>
-        <ProjectReference Include=""../ExampleProject/ExampleProject.csproj"" />
+        <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
     </ItemGroup>
 </Project>";
 
@@ -754,7 +754,7 @@ Please specify a test project name filter that results in one project.
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
                 { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
-                { Path.Combine(_filesystemRoot, "ExampleProject\\ExampleProject2", "ExampleProject2.csproj"), new MockFileData(defaultTestProjectFileContents)},
+                { Path.Combine(_filesystemRoot, @"ExampleProject\ExampleProject2", "ExampleProject2.csproj"), new MockFileData(defaultTestProjectFileContents)},
                 { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
             });
 
@@ -991,10 +991,10 @@ Please specify a test project name filter that results in one project.
             var target = new InputFileResolver();
 
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string> { "../ExampleProject/ExampleProject.csproj" }).Object;
+                projectReferences: new List<string> { @"..\ExampleProject\ExampleProject.csproj" }).Object;
 
             var result = target.FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, null);
-            result.ShouldBe("../ExampleProject/ExampleProject.csproj");
+            result.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
         }
 
         [Fact]
@@ -1005,27 +1005,25 @@ Please specify a test project name filter that results in one project.
                 new InputFileResolver().FindProjectUnderTest(Enumerable.Empty<IAnalyzerResult>(), null);
             });
 
-            ex.Message.ShouldBe("Project reference issue.");
-            ex.Details.ShouldContain("no project", Case.Insensitive);
+            ex.Message.ShouldContain("no project", Case.Insensitive);
         }
 
         [Fact]
         public void ShouldThrowOnMultipleProjects()
         {
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string> {
-                        "../ExampleProject/ExampleProject.csproj",
-                        "../AnotherProject/AnotherProject.csproj"
-                    }).Object;
+                projectReferences: new List<string> {
+                    @"..\ExampleProject\ExampleProject.csproj",
+                    @"..\AnotherProject\AnotherProject.csproj"
+                }).Object;
 
             var ex = Assert.Throws<InputException>(() =>
             {
                 new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, null);
             });
 
-            ex.Message.ShouldBe("Project reference issue.");
-            ex.Details.ShouldContain("Test project contains more than one project reference. Please set the project option");
-            ex.Details.ShouldContain("Choose one of the following references:");
+            ex.Message.ShouldContain("Test project contains more than one project reference. Please set the project option");
+            ex.Message.ShouldContain("Choose one of the following references:");
         }
 
         [Theory]
@@ -1037,14 +1035,14 @@ Please specify a test project name filter that results in one project.
         public void ShouldMatchFromMultipleProjectByName(string shouldMatch)
         {
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string> {
-                        "../ExampleProject/ExampleProject.csproj",
-                        "../AnotherProject/AnotherProject.csproj"
-                    }).Object;
+                projectReferences: new List<string> {
+                    @"..\ExampleProject\ExampleProject.csproj",
+                    @"..\AnotherProject\AnotherProject.csproj"
+                }).Object;
 
             var result = new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, shouldMatch);
 
-            result.ShouldBe(Path.Combine("..", "ExampleProject", "ExampleProject.csproj"));
+            result.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
         }
 
         [Theory]
@@ -1055,18 +1053,17 @@ Please specify a test project name filter that results in one project.
         public void ShouldThrowWhenTheNameMatchesMore(string shouldMatchMoreThanOne)
         {
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string> {
-                        "../ExampleProject/ExampleProject.csproj",
-                        "../AnotherProject/AnotherProject.csproj"
-                    }).Object;
+                projectReferences: new List<string> {
+                    @"..\ExampleProject\ExampleProject.csproj",
+                    @"..\AnotherProject\AnotherProject.csproj"
+                }).Object;
 
             var ex = Assert.Throws<InputException>(() =>
             {
                 new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, shouldMatchMoreThanOne);
             });
 
-            ex.Message.ShouldBe("Project reference issue.");
-            ex.Details.ShouldContain("more than one", Case.Insensitive);
+            ex.Message.ShouldContain("more than one", Case.Insensitive);
         }
 
         [Theory]
@@ -1076,18 +1073,32 @@ Please specify a test project name filter that results in one project.
         public void ShouldThrowWhenTheNameMatchesNone(string shouldMatchNone)
         {
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string> {
-                        "../ExampleProject/ExampleProject.csproj",
-                        "../AnotherProject/AnotherProject.csproj"
-                    }).Object;
+                projectReferences: new List<string> {
+                    @"..\ExampleProject\ExampleProject.csproj",
+                    @"..\AnotherProject\AnotherProject.csproj"
+                }).Object;
 
             var ex = Assert.Throws<InputException>(() =>
             {
                 new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, shouldMatchNone);
             });
 
-            ex.Message.ShouldBe("Project reference issue.");
-            ex.Details.ShouldContain("no project", Case.Insensitive);
+            ex.Message.ShouldContain("no project", Case.Insensitive);
+        }
+
+        [Theory]
+        [InlineData("ExampleProject/ExampleProject.csproj")]
+        [InlineData("ExampleProject\\ExampleProject.csproj")]
+        public void ShouldMatchOnBothForwardAndBackwardsSlash(string shouldMatch)
+        {
+            var projectReferences = new List<string> {
+                @"..\ExampleProject\ExampleProject.csproj",
+                @"..\AnotherProject\AnotherProject.csproj"
+            };
+
+            var match = new InputFileResolver().DetermineProjectUnderTestWithNameFilter(shouldMatch, projectReferences);
+
+            match.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
         }
     }
 }

@@ -4,11 +4,11 @@
     ".NETCoreApp,Version=v5.0": {
       "Buildalyzer": {
         "type": "Direct",
-        "requested": "[3.2.6, )",
-        "resolved": "3.2.6",
-        "contentHash": "dZJvQaVR9+v6O2S7zL8uzHGmDVXDBlk5EYOwedAWZiezg8nVJuRDDkJdU9DHdxtczWpxl6B/G68e7rf/3TY4qQ==",
+        "requested": "[3.2.8, )",
+        "resolved": "3.2.8",
+        "contentHash": "r1h4va07taHc+nzcCfVw5V6HPQqNl4r3of/MBrdeicQi6xe9JRDPgd9j3RXdlRtGaGJzQt7fOFlxdb2pBO/6Cw==",
         "dependencies": {
-          "Buildalyzer.Logger": "3.2.6",
+          "Buildalyzer.Logger": "3.2.8",
           "MSBuild.StructuredLogger": "2.1.545",
           "Microsoft.Build": "16.10.0",
           "Microsoft.Build.Framework": "16.10.0",
@@ -141,9 +141,9 @@
       },
       "Microsoft.Web.LibraryManager.Build": {
         "type": "Direct",
-        "requested": "[2.1.113, )",
-        "resolved": "2.1.113",
-        "contentHash": "sPbpMMMqcdvVL8dyugOY5o4APB2bY1I9ueBlrDTfMRMRHP+olcDoqCGnaCSluxoCnzRpz9H7TbT7G/mdWwKplw==",
+        "requested": "[2.1.161, )",
+        "resolved": "2.1.161",
+        "contentHash": "NXhxbf6CY3rfBKTrio23JdBJXMzLb9uiLhPJfXXB7gxTk+Jc6k9IXyno5YJNbeLGBWHbf7C2QVBCIxMMVjBF7A==",
         "dependencies": {
           "System.Runtime.Loader": "4.3.0"
         }
@@ -206,9 +206,9 @@
       },
       "System.IO.Abstractions": {
         "type": "Direct",
-        "requested": "[16.0.2, )",
-        "resolved": "16.0.2",
-        "contentHash": "ttuf5AaYXguAtuWnQLa18kZk8OpFgs9m+84K4Xm5+Plw/WKKy1j+eilTZWw63D2F5RGgs9v+OhSiGFGAW9olFw==",
+        "requested": "[16.1.4, )",
+        "resolved": "16.1.4",
+        "contentHash": "VDzIUc7o2DlrZsWGFxQQBnqOmrVTCOB/dvmnetT3YppyBdlDC4w6E0AccVFeFij0g9F7feWoUV4K6YHeZ3sI+A==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "5.0.0"
         }
@@ -224,8 +224,8 @@
       },
       "Buildalyzer.Logger": {
         "type": "Transitive",
-        "resolved": "3.2.6",
-        "contentHash": "Zkq//fOMYLP4/Y1VYQQgQXMNPpkYWgAiRSHCyx1ijL+tfGqQKiSEQjBh1sJ+H7jOhBnvF7FLixTIyZol1zFf5g==",
+        "resolved": "3.2.8",
+        "contentHash": "2zdvWL+t2q1cmye7gd4hN+EPV8jNn9ge8K8p+aPu9tqAWVvoTtVPCPq1wTi2s/QnSZOMbaZJ+aceiXP992sQ4g==",
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         }
