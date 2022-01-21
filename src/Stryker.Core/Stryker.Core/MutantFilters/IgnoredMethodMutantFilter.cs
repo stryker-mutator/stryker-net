@@ -24,7 +24,7 @@ namespace Stryker.Core.MutantFilters
                     mutants.Where(m => !IsPartOfIgnoredMethodCall(m.Mutation.OriginalNode, options)) :
                     mutants;
 
-        private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, StrykerOptions options) =>
+        private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, StrykerOptions options, bool canGoUp = true) =>
             syntaxNode switch
             {
                 // Check if the current node is an invocation. This will also ignore invokable properties like `Func<bool> MyProp { get;}`
@@ -34,12 +34,12 @@ namespace Stryker.Core.MutantFilters
                 ObjectCreationExpressionSyntax creation => MatchesAnIgnoredMethod(_triviaRemover.Visit(creation.Type) + ".ctor", options),
 
                 // check if the node is a block containing only ignored node
-                BlockSyntax {Statements: {Count: >0}} block => block.Statements.All(s=> IsPartOfIgnoredMethodCall(s, options)),
+                BlockSyntax {Statements: {Count: >0}} block => block.Statements.All(s=> IsPartOfIgnoredMethodCall(s, options, false)),
 
-                ExpressionStatementSyntax invocationExpressionStatementSyntax => IsPartOfIgnoredMethodCall(invocationExpressionStatementSyntax.Expression, options),
+                ExpressionStatementSyntax invocationExpressionStatementSyntax => IsPartOfIgnoredMethodCall(invocationExpressionStatementSyntax.Expression, options, false),
 
                 // Traverse the tree upwards.
-                { Parent: { } } => IsPartOfIgnoredMethodCall(syntaxNode.Parent, options),
+                { Parent: { } }  => canGoUp && IsPartOfIgnoredMethodCall(syntaxNode.Parent, options),
                 _ => false,
             };
 
