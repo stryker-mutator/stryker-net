@@ -1,3 +1,12 @@
+# [](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.3.0...stryker@) (2022-01-21)
+
+
+### Bug Fixes
+
+* stackoverflow exceptions due to ignoredmethods filter ([#1879](https://github.com/stryker-mutator/stryker-net/issues/1879)) ([bdd8692](https://github.com/stryker-mutator/stryker-net/commit/bdd86920b613e85cf738fe00b7c885e4ec9ceee0))
+
+
+
 # [](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.2.2...stryker@) (2022-01-20)
 
 
