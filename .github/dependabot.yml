@@ -1,7 +1,7 @@
 version: 2
 updates:
 - package-ecosystem: nuget
-  directory: "/src/Stryker.CLI"
+  directory: "/src"
   schedule:
     interval: daily
   commit-message:
