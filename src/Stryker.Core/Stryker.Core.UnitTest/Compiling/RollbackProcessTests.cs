@@ -181,7 +181,7 @@ namespace ExampleProject
 
         public string Subtract(string first, string second)
         {
-            if(ActiveMutation == 6) {
+            if (ActiveMutation == 6) {
                 while (first.Length > 2)
                 {
                     return first - second;
@@ -198,7 +198,7 @@ namespace ExampleProject
                 }
                 while (first.Length < 2)
                 {
-                    return (ActiveMutation == 7) ? second - first : second + first);
+                    return (ActiveMutation == 7 ? second - first : second + first);
                 }
                 return null;
             }
@@ -212,7 +212,8 @@ namespace ExampleProject
                 mutantIf,
                 mutantIf.WithAdditionalAnnotations(GetMutationIdMarker(6), _ifEngineMarker)
             );
-            var mutantCondition = root.DescendantNodes().First(x => x is ParenthesizedExpressionSyntax parenthesized && parenthesized.Expression is ConditionalExpressionSyntax);
+            var y = root.DescendantNodes().OfType<ParenthesizedExpressionSyntax>();
+            var mutantCondition = root.DescendantNodes().OfType<ParenthesizedExpressionSyntax>().First(x => x.Expression is ConditionalExpressionSyntax);
             root = root.ReplaceNode(
                 mutantCondition,
                 mutantCondition.WithAdditionalAnnotations(GetMutationIdMarker(7), _conditionalEngineMarker)
@@ -345,15 +346,18 @@ namespace ExampleProject
     {
         public int ActiveMutation = 1;
 
-        public string AddTwoStrings(string first, string second)
+        public string this[string key]
         {
-if (ActiveMutation == 1){ return default; } else {
-            if(ActiveMutation == 2){
-                return first - second;
-            } else {
-                return first + second;
+            get
+            {
+                if (ActiveMutation == 1) { ; } else {
+                    if (ActiveMutation == 2) {
+                        return key; // some mutation
+                    } else {
+                        return key + key;
+                    }
+                }
             }
-}
         }
     }
 }");

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
+using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Compiling
 {
@@ -82,17 +83,17 @@ namespace Stryker.Core.Compiling
         // search is this node contains or is within a mutation
         private (SyntaxNode, int) FindMutationIfAndId(SyntaxNode startNode)
         {
-            var id = ExtractMutationIfAndId(startNode);
-            if (id != null)
+            var info = ExtractMutationInfo(startNode);
+            if (info.Id != null)
             {
-                return (startNode, id.Value);
+                return (startNode, info.Id.Value);
             }
             for (var node = startNode; node != null; node = node.Parent)
             {
-                id = ExtractMutationIfAndId(node);
-                if (id != null)
+                info = ExtractMutationInfo(node);
+                if (info.Id != null)
                 {
-                    return (node, id.Value);
+                    return (node, info.Id.Value);
                 }
             }
 
@@ -105,10 +106,10 @@ namespace Stryker.Core.Compiling
         {
             foreach (var node in startNode.ChildNodes())
             {
-                var id = ExtractMutationIfAndId(node);
-                if (id != null)
+                var info = ExtractMutationInfo(node);
+                if (info.Id != null)
                 {
-                    return (node, id.Value);
+                    return (node, info.Id.Value);
                 }
             }
 
@@ -124,13 +125,13 @@ namespace Stryker.Core.Compiling
             return (null, -1);
         }
 
-        private int? ExtractMutationIfAndId(SyntaxNode node)
+        private (int? Id, string Engine, string Type) ExtractMutationInfo(SyntaxNode node)
         {
             var (id, engine, type) = MutantPlacer.FindAnnotations(node);
 
             if (engine == null)
             {
-                return null;
+                return (null, null, null);
             }
 
             if (id == -1)
@@ -140,7 +141,7 @@ namespace Stryker.Core.Compiling
 
             Logger.LogDebug($"Found mutant {id} of type '{type}' controlled by '{engine}'.", id, type, engine);
 
-            return id;
+            return (id, engine, type);
         }
 
         private static SyntaxNode FindEnclosingMember(SyntaxNode node)
@@ -156,12 +157,12 @@ namespace Stryker.Core.Compiling
             return null;
         }
 
-        private void ScanAllMutationsIfsAndIds(SyntaxNode node, IList<(SyntaxNode, int)> scan)
+        private void ScanAllMutationsIfsAndIds(SyntaxNode node, IList<(SyntaxNode, int, string)> scan)
         {
-            var id = ExtractMutationIfAndId(node);
-            if (id != null)
+            var info = ExtractMutationInfo(node);
+            if (info.Id != null)
             {
-                scan.Add((node, id.Value));
+                scan.Add((node, info.Id.Value, info.Type));
             }
 
             foreach (var childNode in node.ChildNodes())
@@ -229,19 +230,34 @@ namespace Stryker.Core.Compiling
                         return originalTree;
                     }
 
-                    Logger.LogWarning(
-                        "Safe Mode! Stryker will try to continue by rolling back all mutations in method. This should not happen, please report this as an issue on github with the previous error message.");
-                    // backup, remove all mutations in the node
-                    var scan = new List<(SyntaxNode, int)>();
+                    var scan = new List<(SyntaxNode, int, string)>();
                     var initNode = FindEnclosingMember(brokenMutation) ?? brokenMutation;
                     ScanAllMutationsIfsAndIds(initNode, scan);
 
-                    foreach (var (key, value) in scan)
+                    if (scan.Any(x => x.Item3 == Mutator.Block.ToString()))
                     {
-                        brokenMutations.Add(key);
-                        if (value != -1)
+                        foreach (var (mutation, mutationId, mutationType) in scan.Where(x => x.Item3 == Mutator.Block.ToString()))
                         {
-                            RolledBackIds.Add(value);
+                            brokenMutations.Add(mutation);
+                            if (mutationId != -1)
+                            {
+                                RolledBackIds.Add(mutationId);
+                            }
+                        }
+                    }
+                    else
+                    {
+                        Logger.LogWarning(
+                        "Safe Mode! Stryker will try to continue by rolling back all mutations in method. This should not happen, please report this as an issue on github with the previous error message.");
+                        // backup, remove all mutations in the node
+
+                        foreach (var (mutation, mutationId, mutationType) in scan)
+                        {
+                            brokenMutations.Add(mutation);
+                            if (mutationId != -1)
+                            {
+                                RolledBackIds.Add(mutationId);
+                            }
                         }
                     }
                 }

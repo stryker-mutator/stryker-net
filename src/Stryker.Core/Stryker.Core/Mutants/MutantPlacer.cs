@@ -95,7 +95,7 @@ namespace Stryker.Core.Mutants
         public static StatementSyntax PlaceStatementControlledMutations(SyntaxNode sourceNode, StatementSyntax original,
             IEnumerable<Mutant> mutants) =>
             mutants.Aggregate(original, (syntaxNode, mutant) =>
-                IfEngine.InjectIf(GetBinaryExpression(mutant.Id), syntaxNode, sourceNode.InjectMutation(mutant.Mutation) as StatementSyntax)
+                IfEngine.InjectIf(GetBinaryExpression(mutant.Id), syntaxNode, (StatementSyntax)sourceNode.InjectMutation(mutant.Mutation))
                     // Mark this node as a MutationIf node. Store the MutantId in the annotation to retrace the mutant later
                     .WithAdditionalAnnotations(new SyntaxAnnotation(MutationIdMarker, mutant.Id.ToString()))
                     .WithAdditionalAnnotations(new SyntaxAnnotation(MutationTypeMarker, mutant.Mutation.Type.ToString())));

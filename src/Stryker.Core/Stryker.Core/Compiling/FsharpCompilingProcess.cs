@@ -4,7 +4,6 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using FSharp.Compiler.SourceCodeServices;
-using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Control;
@@ -48,7 +47,7 @@ namespace Stryker.Core.Compiling
             foreach (var testProject in _input.ProjectInfo.TestProjectAnalyzerResults)
             {
                 var injectionPath = _input.ProjectInfo.GetInjectionFilePath(testProject);
-                if (!_fileSystem.Directory.Exists(injectionPath.Substring(0,injectionPath.LastIndexOf('\\'))))
+                if (!_fileSystem.Directory.Exists(injectionPath.Substring(0, injectionPath.LastIndexOf('\\'))))
                 {
                     _fileSystem.Directory.CreateDirectory(injectionPath);
                 }
