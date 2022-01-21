@@ -882,10 +882,12 @@ if(StrykerNamespace.MutantControl.IsActive(3)){// Stryker restore all
 }";
             string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	var x = 0;
-// Stryker disable once all
+// Stryker disable Update , Statement : comment
 	x++;
-if(StrykerNamespace.MutantControl.IsActive(3)){	x*=2;
-}else{	x/=2;
+if(StrykerNamespace.MutantControl.IsActive(3)){// Stryker restore all
+	x*=2;
+}else{// Stryker restore all
+	x/=2;
 }}}";
 
             ShouldMutateSourceToExpected(source, expected);
