@@ -2,6 +2,18 @@
   "version": 1,
   "dependencies": {
     ".NETCoreApp,Version=v5.0": {
+      "coverlet.collector": {
+        "type": "Direct",
+        "requested": "[3.1.0, )",
+        "resolved": "3.1.0",
+        "contentHash": "YzYqSRrjoP5lULBhTDcTOjuM4IDPPi6PhFsl4w8EI4WdZhE6llt7E38Tg4CHyrS+QKwyu1+9OwkdDgluOdoBTw=="
+      },
+      "coverlet.msbuild": {
+        "type": "Direct",
+        "requested": "[3.1.0, )",
+        "resolved": "3.1.0",
+        "contentHash": "xOv5HZagq0I6uF4vt8NVVpwcA2W/uGmNcbLStao2eMk98RQH5NFPQuouh2nWWPSZrNIhGG/iYbBn2pO4s5i+ig=="
+      },
       "DotNet.ReproducibleBuilds": {
         "type": "Direct",
         "requested": "[1.1.1, )",
@@ -13,12 +25,6 @@
           "Microsoft.SourceLink.GitHub": "1.1.1",
           "Microsoft.SourceLink.GitLab": "1.1.1"
         }
-      },
-      "Microsoft.CodeCoverage": {
-        "type": "Direct",
-        "requested": "[16.10.0, )",
-        "resolved": "16.10.0",
-        "contentHash": "7g0UjAwhEi2OBBv8SDV3wZ6J103cQyZbKVgDy59fnNdlbv0XpUCfdBZiSW5yVK/d2jp6faCdGh7VnI/F2JZO+Q=="
       },
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
@@ -54,11 +60,11 @@
       },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[13.2.47, )",
-        "resolved": "13.2.47",
-        "contentHash": "pi6rVI4B0aB/QtpJuYXmcSQEGLOGK58mgsOWnf94syBQgNZ2KjJTduStR7RfKWY5EK9u42SJRi/mVRiyAEjqiw==",
+        "requested": "[16.1.4, )",
+        "resolved": "16.1.4",
+        "contentHash": "w4ApEKGdZJsRiiXf34AFmoe86GhvQIdGt/Db5aXSbNDE17qHJaQkJBhrlHJcI5E/OI/53BTudXg9xSwKJDhNig==",
         "dependencies": {
-          "System.IO.Abstractions": "13.2.47"
+          "System.IO.Abstractions": "16.1.4"
         }
       },
       "xunit": {
@@ -268,6 +274,11 @@
         "dependencies": {
           "Microsoft.CodeAnalysis.Common": "[4.0.1]"
         }
+      },
+      "Microsoft.CodeCoverage": {
+        "type": "Transitive",
+        "resolved": "16.10.0",
+        "contentHash": "7g0UjAwhEi2OBBv8SDV3wZ6J103cQyZbKVgDy59fnNdlbv0XpUCfdBZiSW5yVK/d2jp6faCdGh7VnI/F2JZO+Q=="
       },
       "Microsoft.CSharp": {
         "type": "Transitive",
