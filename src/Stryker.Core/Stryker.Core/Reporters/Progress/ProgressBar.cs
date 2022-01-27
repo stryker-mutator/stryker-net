@@ -28,7 +28,7 @@ namespace Stryker.Core.Reporters.Progress
 
         public void Start(int maxTicks, string message) => _progressBar = new ShellProgressBar.ProgressBar(Math.Max(maxTicks, 1), message, _options);
 
-        public void Tick(string message) => _progressBar.Tick(message);
+        public void Tick(string message) => _progressBar?.Tick(message);
 
         public void Stop() => Dispose();
 
