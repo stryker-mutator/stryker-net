@@ -16,9 +16,9 @@
       },
       "McMaster.Extensions.CommandLineUtils": {
         "type": "Direct",
-        "requested": "[4.0.0, )",
-        "resolved": "4.0.0",
-        "contentHash": "XPOKrD1UGx52Lcl8GHrMMWS2R009/FlbJX55ACz4SbviEW+M+rKNNoAW0R3LCIQ4oDo1eguXUjYFN0oFjQY1gQ==",
+        "requested": "[4.0.1, )",
+        "resolved": "4.0.1",
+        "contentHash": "nqKyjpNB37t3xYYTkst8r5dU5Cxj3HWirR1H6U5iiSRrUJLBeJQHogHk/HsnDqVnq0+jrzSxYw8lJ02GsTRcrw==",
         "dependencies": {
           "System.ComponentModel.Annotations": "5.0.0"
         }

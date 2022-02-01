@@ -179,8 +179,8 @@
       },
       "McMaster.Extensions.CommandLineUtils": {
         "type": "Transitive",
-        "resolved": "4.0.0",
-        "contentHash": "XPOKrD1UGx52Lcl8GHrMMWS2R009/FlbJX55ACz4SbviEW+M+rKNNoAW0R3LCIQ4oDo1eguXUjYFN0oFjQY1gQ==",
+        "resolved": "4.0.1",
+        "contentHash": "nqKyjpNB37t3xYYTkst8r5dU5Cxj3HWirR1H6U5iiSRrUJLBeJQHogHk/HsnDqVnq0+jrzSxYw8lJ02GsTRcrw==",
         "dependencies": {
           "System.ComponentModel.Annotations": "5.0.0"
         }
@@ -1848,7 +1848,7 @@
       "dotnet-stryker": {
         "type": "Project",
         "dependencies": {
-          "McMaster.Extensions.CommandLineUtils": "4.0.0",
+          "McMaster.Extensions.CommandLineUtils": "4.0.1",
           "Microsoft.Extensions.Configuration.Binder": "6.0.0",
           "NuGet.Versioning": "6.0.0",
           "stryker": "1.3.1"
