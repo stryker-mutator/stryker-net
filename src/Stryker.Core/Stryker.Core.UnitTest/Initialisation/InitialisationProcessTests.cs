@@ -1,4 +1,3 @@
-using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Mono.Collections.Generic;
 using Moq;
@@ -12,6 +11,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Stryker.Core.Mutants;
 using Xunit;
+using Stryker.Core.Initialisation.SolutionAnalyzer;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {

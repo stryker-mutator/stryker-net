@@ -4,17 +4,18 @@ using Buildalyzer;
 using Microsoft.Build.Exceptions;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Core.Initialisation.SolutionAnalyzer;
 using Stryker.Core.Logging;
 
 namespace Stryker.Core.Initialisation
 {
     public interface IProjectFileReader
     {
-        IAnalyzerResult AnalyzeProject(
+        SolutionAnalyzer.IAnalyzerResult AnalyzeProject(
             string projectFilePath,
             string solutionFilePath,
-            string targetFramework);
+            string targetFramework,
+            AnalyzerOption analyzerOption);
     }
 
     public class ProjectFileReader : IProjectFileReader
@@ -32,10 +33,11 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
         }
 
-        public IAnalyzerResult AnalyzeProject(
+        public SolutionAnalyzer.IAnalyzerResult AnalyzeProject(
             string projectFilePath,
             string solutionFilePath,
-            string targetFramework)
+            string targetFramework,
+            AnalyzerOption analyzerOption)
         {
             if (solutionFilePath != null)
             {
@@ -58,7 +60,7 @@ namespace Stryker.Core.Initialisation
 
             if (!analyzerResult.Succeeded)
             {
-                if (analyzerResult.GetTargetFramework() == Framework.DotNetClassic)
+                if (analyzerResult.ToAnalyzerResult().GetTargetFramework() == Framework.DotNetClassic)
                 {
                     // buildalyzer failed to find restored packages, retry after nuget restore
                     _logger.LogDebug("Project analyzer result not successful, restoring packages");
@@ -72,10 +74,10 @@ namespace Stryker.Core.Initialisation
                 }
             }
 
-            return analyzerResult;
+            return analyzerResult.ToAnalyzerResult();
         }
 
-        private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
+        private void LogAnalyzerResult(Buildalyzer.IAnalyzerResult analyzerResult)
         {
             // dump all properties as it can help diagnosing build issues for user project.
             _logger.LogTrace("**** Buildalyzer result ****");
@@ -91,7 +93,7 @@ namespace Stryker.Core.Initialisation
             {
                 _logger.LogTrace("SourceFile {0}", sourceFile);
             }
-            foreach (var reference in analyzerResult?.References ?? Enumerable.Empty<string>())
+            foreach (var reference in analyzerResult?.ProjectReferences ?? Enumerable.Empty<string>())
             {
                 _logger.LogTrace("References: {0}", reference);
             }
@@ -100,7 +102,7 @@ namespace Stryker.Core.Initialisation
             _logger.LogTrace("**** Buildalyzer result ****");
         }
 
-        private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
+        private Buildalyzer.IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
         {
             if (targetFramework == null)
             {

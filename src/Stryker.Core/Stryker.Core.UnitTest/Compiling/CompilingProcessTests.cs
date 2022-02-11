@@ -1,4 +1,3 @@
-using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Moq;
@@ -6,6 +5,7 @@ using Shouldly;
 using Stryker.Core.Compiling;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Initialisation.SolutionAnalyzer;
 using Stryker.Core.MutationTest;
 using System.Collections.Generic;
 using System.Collections.Immutable;

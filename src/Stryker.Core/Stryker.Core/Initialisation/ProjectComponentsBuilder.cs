@@ -7,9 +7,9 @@ using Stryker.Core.InjectedHelpers;
 using System.Xml.Linq;
 using System.Linq;
 using Stryker.Core.ProjectComponents;
-using Buildalyzer;
 using System.IO;
 using System.IO.Abstractions;
+using Stryker.Core.Initialisation.SolutionAnalyzer;
 
 namespace Stryker.Core.Initialisation
 {

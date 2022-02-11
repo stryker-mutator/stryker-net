@@ -1,4 +1,3 @@
-using Buildalyzer;
 using FSharp.Compiler.SourceCodeServices;
 using FSharp.Compiler.Text;
 using Microsoft.Build.Logging.StructuredLogger;
@@ -6,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Control;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Initialisation.SolutionAnalyzer;
 using Stryker.Core.ProjectComponents;
 using System;
 using System.Collections.Generic;

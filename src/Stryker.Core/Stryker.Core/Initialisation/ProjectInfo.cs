@@ -1,8 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
-using Buildalyzer;
-using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Core.Initialisation.SolutionAnalyzer;
 using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Initialisation

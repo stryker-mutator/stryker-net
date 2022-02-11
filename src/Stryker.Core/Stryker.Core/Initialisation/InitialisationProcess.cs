@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Mono.Cecil;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Core.Initialisation.SolutionAnalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
@@ -89,7 +89,7 @@ namespace Stryker.Core.Initialisation
             var input = new MutationTestInput
             {
                 ProjectInfo = projectInfo,
-                AssemblyReferences = _assemblyReferenceResolver.LoadProjectReferences(projectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
+                AssemblyReferences = _assemblyReferenceResolver.LoadProjectReferences(projectInfo.ProjectUnderTestAnalyzerResult.References.ToArray()).ToList(),
                 TestRunner = _testRunner,
             };
 

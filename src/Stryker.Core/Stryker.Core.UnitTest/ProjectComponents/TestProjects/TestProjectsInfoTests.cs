@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Buildalyzer;
 using Moq;
 using Shouldly;
+using Stryker.Core.Initialisation.SolutionAnalyzer;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Xunit;
 

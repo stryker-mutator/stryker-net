@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using Stryker.Core.Initialisation.SolutionAnalyzer;
 using Stryker.Core.Options.Inputs;
 
 namespace Stryker.Core.Options
@@ -116,6 +117,7 @@ namespace Stryker.Core.Options
 
             _strykerOptionsCache ??= new StrykerOptions()
             {
+                AnalyzerOption = AnalyzerOption.Buildalyzer,
                 BasePath = basePath,
                 OutputPath = outputPath,
                 ReportFileName = reportFileNameInput,

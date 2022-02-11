@@ -13,7 +13,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Core.Initialisation.SolutionAnalyzer;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;

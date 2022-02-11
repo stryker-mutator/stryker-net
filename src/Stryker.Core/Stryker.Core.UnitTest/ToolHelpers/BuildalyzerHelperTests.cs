@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Shouldly;
-using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Core.Initialisation.SolutionAnalyzer;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.ToolHelpers

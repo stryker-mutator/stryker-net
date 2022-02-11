@@ -4,7 +4,10 @@ using Buildalyzer;
 using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Initialisation.SolutionAnalyzer;
 using Xunit;
+using IAnalyzerResult = Buildalyzer.IAnalyzerResult;
+using IProjectAnalyzer = Buildalyzer.IProjectAnalyzer;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
@@ -49,7 +52,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            var result = _projectFileReader.AnalyzeProject(null, null, null);
+            var result = _projectFileReader.AnalyzeProject(null, null, null, It.IsAny<AnalyzerOption>());
             result.TargetFramework.ShouldBe("X");
         }
 
@@ -68,7 +71,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            var result = _projectFileReader.AnalyzeProject(null, null, "Y");
+            var result = _projectFileReader.AnalyzeProject(null, null, "Y", It.IsAny<AnalyzerOption>());
             result.TargetFramework.ShouldBe("Y");
         }
 
@@ -87,7 +90,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            var result = _projectFileReader.AnalyzeProject(null, null, "Z");
+            var result = _projectFileReader.AnalyzeProject(null, null, "Z", It.IsAny<AnalyzerOption>());
             result.TargetFramework.ShouldBe("X");
         }
     }

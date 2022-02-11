@@ -9,7 +9,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Control;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Core.Initialisation.SolutionAnalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using ParsedInput = FSharp.Compiler.SyntaxTree.ParsedInput;
@@ -38,7 +38,7 @@ namespace Stryker.Core.Compiling
             var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
 
             FSharpList<ParsedInput> trees = ListModule.OfSeq(syntaxTrees.Reverse());
-            FSharpList<string> dependencies = ListModule.OfSeq(analyzerResult.References);
+            FSharpList<string> dependencies = ListModule.OfSeq(analyzerResult.ProjectReferences);
 
             //we need a checker if we want to compile 
             var checker = FSharpChecker.Create(projectCacheSize: null, keepAssemblyContents: null, keepAllBackgroundResolutions: null, legacyReferenceResolver: null, tryGetMetadataSnapshot: null, suggestNamesForErrors: null, keepAllBackgroundSymbolUses: null, enableBackgroundItemKeyStoreAndSemanticClassification: null);

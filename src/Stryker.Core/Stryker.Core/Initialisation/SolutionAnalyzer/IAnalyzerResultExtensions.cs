@@ -3,17 +3,28 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using System.Text.RegularExpressions;
-using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 
-namespace Stryker.Core.Initialisation.Buildalyzer
+namespace Stryker.Core.Initialisation.SolutionAnalyzer
 {
     public static class IAnalyzerResultExtensions
     {
+        /// <summary>
+        /// Method needed for ProjectFileReader, which uses Buildalyzer directly.
+        /// </summary>
+        /// <param name="buildAlyzerResult"></param>
+        /// <returns></returns>
+        public static IAnalyzerResult ToAnalyzerResult(this Buildalyzer.IAnalyzerResult buildAlyzerResult)
+        {
+            return new AnalyzerResult(buildAlyzerResult.ProjectFilePath, buildAlyzerResult.References, buildAlyzerResult.ProjectReferences,
+                                        buildAlyzerResult.AnalyzerReferences, buildAlyzerResult.PreprocessorSymbols, buildAlyzerResult.Properties,
+                                        buildAlyzerResult.SourceFiles, buildAlyzerResult.Succeeded, buildAlyzerResult.TargetFramework);
+        }
+
         public static string GetAssemblyPath(this IAnalyzerResult analyzerResult)
         {
             return FilePathUtils.NormalizePathSeparators(Path.Combine(

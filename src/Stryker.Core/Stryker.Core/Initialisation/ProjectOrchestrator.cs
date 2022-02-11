@@ -4,9 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Buildalyzer;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Core.Initialisation.SolutionAnalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
@@ -23,13 +22,13 @@ namespace Stryker.Core.Initialisation
     public class ProjectOrchestrator : IProjectOrchestrator
     {
         private readonly ILogger _logger;
-        private readonly IBuildalyzerProvider _buildalyzerProvider;
+        private readonly ISolutionAnalyzerManagerProvider _solutionAnalyzerManagerProvider;
         private readonly IProjectMutator _projectMutator;
 
-        public ProjectOrchestrator(IBuildalyzerProvider buildalyzerProvider = null,
+        public ProjectOrchestrator(ISolutionAnalyzerManagerProvider solutionAnalyzerManagerProvider = null,
             IProjectMutator projectMutator = null)
         {
-            _buildalyzerProvider = buildalyzerProvider ?? new BuildalyzerProvider();
+            _solutionAnalyzerManagerProvider = solutionAnalyzerManagerProvider ?? new SolutionAnalyzerManagerProvider();
             _projectMutator = projectMutator ?? new ProjectMutator();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectOrchestrator>();
         }
@@ -96,7 +95,7 @@ namespace Stryker.Core.Initialisation
         private List<IAnalyzerResult> AnalyzeSolution(StrykerOptions options)
         {
             _logger.LogInformation("Identifying projects to mutate. This can take a while.");
-            var manager = _buildalyzerProvider.Provide(options.SolutionPath);
+            var manager = _solutionAnalyzerManagerProvider.Provide(options.SolutionPath, options.AnalyzerOption);
 
             // build all projects
             var projectsAnalyzerResults = new ConcurrentBag<IAnalyzerResult>();
@@ -105,17 +104,16 @@ namespace Stryker.Core.Initialisation
             {
                 Parallel.ForEach(manager.Projects.Values, project =>
                 {
-                    _logger.LogDebug("Analysing {projectFilePath}", project.ProjectFile.Path);
-                    var buildResult = project.Build();
-                    var projectAnalyzerResult = buildResult.Results.FirstOrDefault();
+                    _logger.LogDebug("Analysing {projectFilePath}", project.ProjectFilePath);
+                    var projectAnalyzerResult = project.Build();
                     if (projectAnalyzerResult is { })
                     {
                         projectsAnalyzerResults.Add(projectAnalyzerResult);
-                        _logger.LogDebug("Analysis of project {projectFilePath} succeeded", project.ProjectFile.Path);
+                        _logger.LogDebug("Analysis of project {projectFilePath} succeeded", project.ProjectFilePath);
                     }
                     else
                     {
-                        _logger.LogWarning("Analysis of project {projectFilePath} failed", project.ProjectFile.Path);
+                        _logger.LogWarning("Analysis of project {projectFilePath} failed", project.ProjectFilePath);
                     }
                 });
             }

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
-using Buildalyzer;
 using Moq;
+using Stryker.Core.Initialisation.SolutionAnalyzer;
 
 namespace Stryker.Core.UnitTest
 {
@@ -11,7 +11,6 @@ namespace Stryker.Core.UnitTest
             string[] sourceFiles = null,
             IEnumerable<string> projectReferences = null,
             string targetFramework = null,
-            IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> packageReferences = null,
             string[] references = null)
         {
             var analyzerResultMock = new Mock<IAnalyzerResult>();
@@ -35,10 +34,6 @@ namespace Stryker.Core.UnitTest
             if (targetFramework != null)
             {
                 analyzerResultMock.Setup(x => x.TargetFramework).Returns(targetFramework);
-            }
-            if (packageReferences != null)
-            {
-                analyzerResultMock.Setup(x => x.PackageReferences).Returns(packageReferences);
             }
             if (references != null)
             {

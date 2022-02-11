@@ -3,6 +3,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Baseline.Providers;
+using Stryker.Core.Initialisation.SolutionAnalyzer;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options.Inputs;
 using Stryker.Core.Reporters;
@@ -57,6 +58,8 @@ namespace Stryker.Core.Options
 
         public OptimizationModes OptimizationMode { get; init; }
 
+        public AnalyzerOption AnalyzerOption { get; init; }
+
         private string _projectName;
 
         public string ProjectName
@@ -94,6 +97,7 @@ namespace Stryker.Core.Options
         {
             _parentOptions = this,
             AdditionalTimeout = AdditionalTimeout,
+            AnalyzerOption = AnalyzerOption,
             AzureFileStorageSas = AzureFileStorageSas,
             AzureFileStorageUrl = AzureFileStorageUrl,
             BaselineProvider = BaselineProvider,

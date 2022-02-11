@@ -1,11 +1,10 @@
 using System.Collections.Generic;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
-using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Shouldly;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Core.Initialisation.SolutionAnalyzer;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation

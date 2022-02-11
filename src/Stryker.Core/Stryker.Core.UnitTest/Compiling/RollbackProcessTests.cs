@@ -12,7 +12,6 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Buildalyzer;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.InjectedHelpers;
@@ -21,6 +20,7 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Xunit;
+using Stryker.Core.Initialisation.SolutionAnalyzer;
 
 namespace Stryker.Core.UnitTest.Compiling
 {
