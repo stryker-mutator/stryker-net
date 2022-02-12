@@ -38,7 +38,7 @@ namespace Stryker.Core.Compiling
             var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
 
             FSharpList<ParsedInput> trees = ListModule.OfSeq(syntaxTrees.Reverse());
-            FSharpList<string> dependencies = ListModule.OfSeq(analyzerResult.ProjectReferences);
+            FSharpList<string> dependencies = ListModule.OfSeq(analyzerResult.References);
 
             //we need a checker if we want to compile 
             var checker = FSharpChecker.Create(projectCacheSize: null, keepAssemblyContents: null, keepAllBackgroundResolutions: null, legacyReferenceResolver: null, tryGetMetadataSnapshot: null, suggestNamesForErrors: null, keepAllBackgroundSymbolUses: null, enableBackgroundItemKeyStoreAndSemanticClassification: null);
