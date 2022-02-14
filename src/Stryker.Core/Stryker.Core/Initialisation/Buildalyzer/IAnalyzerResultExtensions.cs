@@ -152,8 +152,9 @@ namespace Stryker.Core.Initialisation.Buildalyzer
 
         private static Framework ParseTargetFramework(string targetFrameworkVersionString)
         {
-            return targetFrameworkVersionString switch
+            return targetFrameworkVersionString?.ToLower() switch
             {
+                string framework when framework.StartsWith(".netcoreapp") => Framework.DotNet,
                 string framework when framework.StartsWith("netcoreapp") => Framework.DotNet,
                 string framework when framework.StartsWith("netstandard") => Framework.DotNetStandard,
                 string framework when framework.StartsWith("net") && char.GetNumericValue(framework[3]) >= 5 => Framework.DotNet,
@@ -164,7 +165,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
 
         private static Version ParseTargetFrameworkVersion(string targetFrameworkVersionString)
         {
-            var analysis = Regex.Match(targetFrameworkVersionString ?? string.Empty, "(?<version>[\\d\\.]+)");
+            var analysis = Regex.Match(targetFrameworkVersionString ?? string.Empty, "(?<version>\\d+(\\.\\d+)*)");
             if (analysis.Success)
             {
                 var version = analysis.Groups["version"].Value;
