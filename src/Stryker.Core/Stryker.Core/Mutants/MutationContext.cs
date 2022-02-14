@@ -59,6 +59,11 @@ namespace Stryker.Core.Mutants
         public bool HasStatementLevelMutant => _store.HasStatementLevel;
 
         /// <summary>
+        /// true if there are pending block level mutations.
+        /// </summary>
+        public bool HasBlockLevelMutants => _store.HasBlockLevel;
+
+        /// <summary>
         /// Call this to signal mutation occurs in static method or fields
         /// </summary>
         /// <returns>A new context</returns>
@@ -139,7 +144,8 @@ namespace Stryker.Core.Mutants
         /// <param name="mutatedNode">Target node that will contain the mutations</param>
         /// <param name="sourceNode">Source node, used to generate mutations</param>
         /// <returns>A mutated node containing the mutations.</returns>
-        public StatementSyntax InjectStatementLevel(StatementSyntax mutatedNode, StatementSyntax sourceNode) => _store.PlaceStatementMutations(mutatedNode, m => sourceNode.InjectMutation(m));
+        public StatementSyntax InjectStatementLevel(StatementSyntax mutatedNode, StatementSyntax sourceNode)
+            => _store.PlaceStatementMutations(mutatedNode, sourceNode.InjectMutation);
 
         /// <summary>
         /// Injects pending block level mutations.
@@ -148,7 +154,7 @@ namespace Stryker.Core.Mutants
         /// <param name="originalNode">Source node, used to generate mutations</param>
         /// <returns>A mutated node containing the mutations.</returns>
         public StatementSyntax InjectBlockLevel(StatementSyntax mutatedNode, StatementSyntax originalNode)
-        => _store.PlaceBlockMutations(mutatedNode, m => originalNode.InjectMutation(m));
+            => _store.PlaceBlockMutations(mutatedNode, originalNode.InjectMutation);
 
         /// <summary>s
         /// Injects pending block level mutations for expression body method or functions
@@ -164,6 +170,11 @@ namespace Stryker.Core.Mutants
             var wrapper = needReturn
                 ? (Func<ExpressionSyntax, StatementSyntax>)SyntaxFactory.ReturnStatement
                 : SyntaxFactory.ExpressionStatement;
+            // TODO: check is this has any actual benefit
+            if (_store.HasStatementLevel)
+            {
+                mutatedNode = _store.PlaceStatementMutations(mutatedNode, m => wrapper(originalNode.InjectMutation(m)));
+            }
             return _store.PlaceBlockMutations(mutatedNode, m =>
                 wrapper(originalNode.InjectMutation(m)));
         }
