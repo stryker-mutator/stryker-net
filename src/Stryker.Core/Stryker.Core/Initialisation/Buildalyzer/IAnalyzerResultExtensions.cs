@@ -124,10 +124,6 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             {
                 return (ParseTargetFramework(analyzerResult.TargetFramework), ParseTargetFrameworkVersion(analyzerResult.TargetFramework));
             }
-            catch(FormatException)
-            {
-                throw new InputException($"Unable to parse framework version string {analyzerResult.TargetFramework}. Please fix the framework version in the csproj.");
-            }
             catch (Exception)
             {
                 throw new InputException($"Unable to parse framework version string {analyzerResult.TargetFramework}. Please fix the framework version in the csproj.");
