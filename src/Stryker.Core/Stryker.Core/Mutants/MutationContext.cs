@@ -59,15 +59,10 @@ namespace Stryker.Core.Mutants
         public bool HasStatementLevelMutant => _store.HasStatementLevel;
 
         /// <summary>
-        /// true if there are pending block level mutations.
-        /// </summary>
-        public bool HasBlockLevelMutants => _store.HasBlockLevel;
-
-        /// <summary>
         /// Call this to signal mutation occurs in static method or fields
         /// </summary>
         /// <returns>A new context</returns>
-        public MutationContext EnterStatic() => new MutationContext(this) { InStaticValue = true };
+        public MutationContext EnterStatic() => new(this) { InStaticValue = true };
 
         /// <summary>
         /// Call this when beginning of a syntax structure that can control mutations (expression, statement, block)
@@ -170,7 +165,6 @@ namespace Stryker.Core.Mutants
             var wrapper = needReturn
                 ? (Func<ExpressionSyntax, StatementSyntax>)SyntaxFactory.ReturnStatement
                 : SyntaxFactory.ExpressionStatement;
-            // TODO: check is this has any actual benefit
             if (_store.HasStatementLevel)
             {
                 mutatedNode = _store.PlaceStatementMutations(mutatedNode, m => wrapper(originalNode.InjectMutation(m)));
