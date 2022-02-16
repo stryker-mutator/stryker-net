@@ -10,6 +10,7 @@ using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
+using NuGet.Frameworks;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
@@ -20,7 +21,6 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ToolHelpers;
 using Stryker.DataCollector;
-using Framework = Stryker.Core.Initialisation.Framework;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -74,8 +74,8 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private bool CantUseStrykerDataCollector()
         {
-            return _projectInfo.TestProjectAnalyzerResults.Select(x => x.GetTargetFrameworkAndVersion()).Any(t =>
-                t.Framework == Framework.DotNet && t.Version.Major < 2);
+            return _projectInfo.TestProjectAnalyzerResults.Select(x => x.GetNuGetFramework()).Any(t =>
+                t.Framework == FrameworkConstants.FrameworkIdentifiers.NetCoreApp && t.Version.Major < 2);
         }
 
         public TestRunResult InitialTest()
@@ -495,7 +495,6 @@ namespace Stryker.Core.TestRunners.VsTest
         private string GenerateRunSettings(int? timeout, bool forMutantTesting, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap)
         {
             var projectAnalyzerResult = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault();
-            var targetFramework = projectAnalyzerResult.GetTargetFramework();
             var needCoverage = forCoverage && NeedCoverage();
             var dataCollectorSettings = (forMutantTesting || forCoverage) ?
                 CoverageCollector.GetVsTestSettings(needCoverage, mutantTestsMap?.Select(e => (e.Key, e.Value.GetGuids())), CodeInjection.HelperNamespace)
@@ -522,7 +521,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var runSettings =
 $@"<RunSettings>
  <RunConfiguration>
-{(targetFramework == Framework.DotNetClassic ? "<DisableAppDomain>true</DisableAppDomain>" : "")}
+{(projectAnalyzerResult.TargetsFullFramework() ? "<DisableAppDomain>true</DisableAppDomain>" : "")}
   <MaxCpuCount>{optionsConcurrentTestRunners}</MaxCpuCount>
 {timeoutSettings}
 {settingsForCoverage}

@@ -40,6 +40,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
             var analyzerResultFrameworkYMock = new Mock<IAnalyzerResult>();
 
+            analyzerResultFrameworkXMock.Setup(m => m.Succeeded).Returns(true);
+            analyzerResultFrameworkYMock.Setup(m => m.Succeeded).Returns(true);
             analyzerResultFrameworkXMock.Setup(m => m.TargetFramework).Returns("X");
             analyzerResultFrameworkYMock.Setup(m => m.TargetFramework).Returns("Y");
 
@@ -59,6 +61,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
             var analyzerResultFrameworkYMock = new Mock<IAnalyzerResult>();
 
+            analyzerResultFrameworkXMock.Setup(m => m.Succeeded).Returns(true);
+            analyzerResultFrameworkYMock.Setup(m => m.Succeeded).Returns(true);
             analyzerResultFrameworkXMock.Setup(m => m.TargetFramework).Returns("X");
             analyzerResultFrameworkYMock.Setup(m => m.TargetFramework).Returns("Y");
 
@@ -78,6 +82,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
             var analyzerResultFrameworkYMock = new Mock<IAnalyzerResult>();
 
+            analyzerResultFrameworkXMock.Setup(m => m.Succeeded).Returns(true);
+            analyzerResultFrameworkYMock.Setup(m => m.Succeeded).Returns(true);
             analyzerResultFrameworkXMock.Setup(m => m.TargetFramework).Returns("X");
             analyzerResultFrameworkYMock.Setup(m => m.TargetFramework).Returns("Y");
 
