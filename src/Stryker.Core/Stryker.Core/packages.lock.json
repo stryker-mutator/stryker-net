@@ -110,31 +110,31 @@
       },
       "Microsoft.TestPlatform": {
         "type": "Direct",
-        "requested": "[16.10.0, )",
-        "resolved": "16.10.0",
-        "contentHash": "JWIMJ91HtS4RUWzOduDzD1tRWzo6uh+mdjnjxyoYet2D4fIdzQdATEYsajwLKJ7LZ3KnSEHw+XkTGRnOdksexg=="
+        "requested": "[17.1.0, )",
+        "resolved": "17.1.0",
+        "contentHash": "lifqbWiMdWWVUNF/c3OZ2ECmQ3AeYsK30ib1DB3wKnCmYa646SXY6uxsdAA6qHDA3dN1C5sDAzOJA8WNe3XnHg=="
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Direct",
-        "requested": "[16.10.0, )",
-        "resolved": "16.10.0",
-        "contentHash": "DYp9eKg3zffZuePhgdUrh5tHkt1YOaSraVH87r4WXDOjag1/n08aFl1vRhWP8y2RoBLTHdcZRTDOhQyYMxAYNg==",
+        "requested": "[17.1.0, )",
+        "resolved": "17.1.0",
+        "contentHash": "OMo/FYnKGy3lZEK0gfitskRM3ga/YBt6MyCyFPq0xNLeybGOQ6HnYNAAvzyePo5WPuMiw3LX+HiuRWNjnas1fA==",
         "dependencies": {
-          "NuGet.Frameworks": "5.0.0",
+          "NuGet.Frameworks": "5.11.0",
           "System.Reflection.Metadata": "1.6.0"
         }
       },
       "Microsoft.TestPlatform.Portable": {
         "type": "Direct",
-        "requested": "[16.10.0, )",
-        "resolved": "16.10.0",
-        "contentHash": "bO8mQmr9KimT5wh1pzaeYE41eBK3SdXrlT6tE6pa3Yv+TnUk1YZ4l/Yy1t+SFhFX9etOuZEjdxDJBvTXzSUbKw=="
+        "requested": "[17.1.0, )",
+        "resolved": "17.1.0",
+        "contentHash": "BQSGDh2Nl8rFwUoUz1IcpTXSkTtW9DlZeNgIFTMuDWyUSvdTZHzN5Q7q4RnmpXjreUEktpGqkDPQyBYQexX06A=="
       },
       "Microsoft.TestPlatform.TranslationLayer": {
         "type": "Direct",
-        "requested": "[16.10.0, )",
-        "resolved": "16.10.0",
-        "contentHash": "v0nJO8/12IXWjkXRkjqTOgM0BGJsX39c+ULgJnAEMBQ6bjI+zNkK/h/BGhNUByE49gkfD9AF31iOPij/x3SnQw==",
+        "requested": "[17.1.0, )",
+        "resolved": "17.1.0",
+        "contentHash": "MLwj3rjwfNX+/0L23HVxBU7AcHeYvvQzDXZRgI24q48ExFsHry7NE/j2bnPS8irqFy94oBs0SiBOXmKp1b5V/A==",
         "dependencies": {
           "NETStandard.Library": "2.0.0"
         }
@@ -605,8 +605,8 @@
       },
       "NuGet.Frameworks": {
         "type": "Transitive",
-        "resolved": "5.0.0",
-        "contentHash": "c5JVjuVAm4f7E9Vj+v09Z9s2ZsqFDjBpcsyS3M9xRo0bEdm/LVZSzLxxNvfvAwRiiE8nwe1h2G4OwiwlzFKXlA=="
+        "resolved": "5.11.0",
+        "contentHash": "eaiXkUjC4NPcquGWzAGMXjuxvLwc6XGKMptSyOGQeT0X70BUZObuybJFZLA0OfTdueLd3US23NBPTBb6iF3V1Q=="
       },
       "RegexParser": {
         "type": "Transitive",
@@ -1274,7 +1274,7 @@
       "stryker.datacollector": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "16.10.0"
+          "Microsoft.TestPlatform.ObjectModel": "17.1.0"
         }
       },
       "stryker.regexmutators": {
