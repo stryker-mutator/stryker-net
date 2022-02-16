@@ -124,7 +124,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             {
                 return (ParseTargetFramework(analyzerResult.TargetFramework), ParseTargetFrameworkVersion(analyzerResult.TargetFramework));
             }
-            catch (Exception)
+            catch (ArgumentException)
             {
                 throw new InputException($"Unable to parse framework version string {analyzerResult.TargetFramework}. Please fix the framework version in the csproj.");
             }
@@ -152,9 +152,8 @@ namespace Stryker.Core.Initialisation.Buildalyzer
 
         private static Framework ParseTargetFramework(string targetFrameworkVersionString)
         {
-            return targetFrameworkVersionString?.ToLower() switch
+            return targetFrameworkVersionString switch
             {
-                string framework when framework.StartsWith(".netcoreapp") => Framework.DotNet,
                 string framework when framework.StartsWith("netcoreapp") => Framework.DotNet,
                 string framework when framework.StartsWith("netstandard") => Framework.DotNetStandard,
                 string framework when framework.StartsWith("net") && char.GetNumericValue(framework[3]) >= 5 => Framework.DotNet,
@@ -165,7 +164,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
 
         private static Version ParseTargetFrameworkVersion(string targetFrameworkVersionString)
         {
-            var analysis = Regex.Match(targetFrameworkVersionString ?? string.Empty, "(?<version>\\d+(\\.\\d+)*)");
+            var analysis = Regex.Match(targetFrameworkVersionString ?? string.Empty, "(?<version>[\\d\\.]+)");
             if (analysis.Success)
             {
                 var version = analysis.Groups["version"].Value;

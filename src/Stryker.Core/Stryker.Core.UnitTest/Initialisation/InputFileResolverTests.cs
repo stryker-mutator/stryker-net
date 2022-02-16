@@ -68,7 +68,6 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Theory]
-        [InlineData(null, Framework.Unknown, 0, 0, null)]
         [InlineData("netcoreapp2.1", Framework.DotNet, 2, 1, null)]
         [InlineData("netstandard1.6", Framework.DotNetStandard, 1, 6, null)]
         [InlineData("mono4.6", Framework.Unknown, 4, 6, null)]
@@ -79,7 +78,6 @@ namespace Stryker.Core.UnitTest.Initialisation
         [InlineData("net5.0", Framework.DotNet, 5, 0, null)]
         [InlineData("net5.0-windows", Framework.DotNet, 5, 0, null)]
         [InlineData("net5", Framework.DotNet, 5, 0, null)]
-        [InlineData(".NETCoreApp,Version=v5.0", Framework.DotNet, 5, 0, null)]
         public void ProjectAnalyzerShouldDecodeFramework(string version, Framework framework, int major, int minor, int? patch)
         {
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -94,20 +92,6 @@ namespace Stryker.Core.UnitTest.Initialisation
             {
                 analyzerResult.GetTargetFrameworkAndVersion().ShouldBe((framework, new Version(major, minor)));
             }
-        }
-
-        [Theory]
-        [InlineData("net12345")]
-        [InlineData("netcoreapp1.2.3.4.5")]
-        public void ProjectAnalyzerShouldRaiseExceptionsForIllFormedFramework(string version)
-        {
-            var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: new List<string> { projectUnderTestPath },
-                targetFramework: "net12345").Object;
-
-            Action lambda = () => analyzerResult.GetTargetFrameworkAndVersion();
-
-            lambda.ShouldThrow(typeof(InputException));
         }
 
         [Fact]
