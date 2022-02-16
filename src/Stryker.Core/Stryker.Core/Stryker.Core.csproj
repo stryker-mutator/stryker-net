@@ -43,7 +43,7 @@
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.0.1" />
     <PackageReference Include="FSharp.Compiler.Service" Version="38.0.0" />
     <PackageReference Include="DotNet.Glob" Version="3.1.3" />
-    <PackageReference Include="Buildalyzer" Version="3.2.8" />
+    <PackageReference Include="Buildalyzer" Version="4.1.1" />
     <PackageReference Include="Microsoft.Extensions.Configuration" Version="$(MicrosoftExtensionsConfiguration)" /> 		<!-- From Directory.Build.props -->
     <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="$(MicrosoftExtensionsConfiguration)" /> 	<!-- From Directory.Build.props -->
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsConfiguration)" /> 				<!-- From Directory.Build.props -->
