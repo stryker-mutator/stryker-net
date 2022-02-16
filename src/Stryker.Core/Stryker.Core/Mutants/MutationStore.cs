@@ -78,6 +78,10 @@ namespace Stryker.Core.Mutants
 
         public StatementSyntax PlaceStatementMutations(StatementSyntax block, Func<Mutation, StatementSyntax> mutationFunc)
         {
+            if (_statementMutants.Count == 0)
+            {
+                return block;
+            }
             var result =
                 MutantPlacer.PlaceStatementControlledMutations(block,
                     _statementMutants.Peek()
