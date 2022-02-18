@@ -110,12 +110,16 @@ namespace Stryker.Core.Mutants
 
         public static SyntaxNode RemoveMutant(SyntaxNode nodeToRemove)
         {
-            var engine = nodeToRemove.GetAnnotatedNodes(Injector).FirstOrDefault()?.GetAnnotations(Injector).First().Data;
-            if (!string.IsNullOrEmpty(engine))
+            var annotatedNode = nodeToRemove.GetAnnotatedNodes(Injector).FirstOrDefault();
+            if (annotatedNode != null)
             {
-                return InstrumentEngines[engine].RemoveInstrumentation(nodeToRemove);
+                var engine = annotatedNode.GetAnnotations(Injector).First().Data;
+                if (!string.IsNullOrEmpty(engine))
+                {
+                    var restoredNode = InstrumentEngines[engine].RemoveInstrumentation(annotatedNode);
+                    return annotatedNode==nodeToRemove ? restoredNode : nodeToRemove.ReplaceNode(annotatedNode, restoredNode);
+                }
             }
-
             throw new InvalidOperationException($"Unable to find an engine to remove injection from this node: '{nodeToRemove}'");
         }
 

@@ -62,7 +62,7 @@ namespace Stryker.Core.Mutants
         /// Call this to signal mutation occurs in static method or fields
         /// </summary>
         /// <returns>A new context</returns>
-        public MutationContext EnterStatic() => new MutationContext(this) { InStaticValue = true };
+        public MutationContext EnterStatic() => new(this) { InStaticValue = true };
 
         /// <summary>
         /// Call this when beginning of a syntax structure that can control mutations (expression, statement, block)
@@ -139,7 +139,8 @@ namespace Stryker.Core.Mutants
         /// <param name="mutatedNode">Target node that will contain the mutations</param>
         /// <param name="sourceNode">Source node, used to generate mutations</param>
         /// <returns>A mutated node containing the mutations.</returns>
-        public StatementSyntax InjectStatementLevel(StatementSyntax mutatedNode, StatementSyntax sourceNode) => _store.PlaceStatementMutations(mutatedNode, m => sourceNode.InjectMutation(m));
+        public StatementSyntax InjectStatementLevel(StatementSyntax mutatedNode, StatementSyntax sourceNode)
+            => _store.PlaceStatementMutations(mutatedNode, sourceNode.InjectMutation);
 
         /// <summary>
         /// Injects pending block level mutations.
@@ -147,7 +148,7 @@ namespace Stryker.Core.Mutants
         /// <param name="mutatedNode">Target node that will contain the mutations</param>
         /// <param name="sourceNode">Source node, used to generate mutations</param>
         /// <returns>A mutated node containing the mutations.</returns>
-        public StatementSyntax InjectBlockLevel(StatementSyntax mutatedNode, StatementSyntax sourceNode) => _store.PlaceBlockMutations(mutatedNode, m => sourceNode.InjectMutation(m));
+        public StatementSyntax InjectBlockLevel(StatementSyntax mutatedNode, StatementSyntax originalNode) => _store.PlaceBlockMutations(mutatedNode, m => originalNode.InjectMutation(m));
 
         /// <summary>s
         /// Injects pending block level mutations for expression body method or functions
@@ -162,7 +163,7 @@ namespace Stryker.Core.Mutants
                 ? (Func<ExpressionSyntax, StatementSyntax>)SyntaxFactory.ReturnStatement
                 : SyntaxFactory.ExpressionStatement;
 
-            return _store.PlaceBlockMutations(mutatedNode, m => wrapper(sourceNode.InjectMutation(m)));
+            return _store.PlaceBlockMutations(mutatedNode, m => wrapper(originalNode.InjectMutation(m)));
         }
 
         /// <summary>

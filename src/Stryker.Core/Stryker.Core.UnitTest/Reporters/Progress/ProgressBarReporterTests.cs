@@ -40,6 +40,19 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
             ));
         }
 
+        [Fact]
+        public void ShouldSupportWhenNoMutants()
+        {
+            var progressBarMock = new ProgressBar();
+
+            var progressBarReporter = new ProgressBarReporter(progressBarMock, new FixedClock());
+            // the progress bar was never initialized
+            progressBarMock.Ticks().ShouldBe(-1);
+            progressBarReporter.ReportFinalState();
+            // the progress bar was never initialized
+            progressBarMock.Ticks().ShouldBe(-1);
+        }
+
         [Theory]
         [InlineData(MutantStatus.Killed)]
         [InlineData(MutantStatus.Survived)]
