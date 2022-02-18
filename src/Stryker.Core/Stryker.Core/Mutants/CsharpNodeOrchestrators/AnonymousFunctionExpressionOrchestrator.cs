@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -41,7 +42,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                 targetNode = MutantPlacer.AddEndingReturn(targetNode);
             }
 
-            if (targetNode is SimpleLambdaExpressionSyntax lambdaExpression && lambdaExpression.Parameter.Modifiers.Any(m => m.Kind() == SyntaxKind.OutKeyword))
+            if (targetNode is SimpleLambdaExpressionSyntax lambdaExpression && lambdaExpression.Parameter.Modifiers.Any(m => m.IsKind(SyntaxKind.OutKeyword)))
             {
                 targetNode = targetNode.WithBody(MutantPlacer.AddDefaultInitializers(targetNode.Block, new List<ParameterSyntax> { lambdaExpression.Parameter }));
             }
@@ -49,7 +50,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
             // inject initialization to default for all out parameters
             {
                 targetNode = targetNode.WithBody(MutantPlacer.AddDefaultInitializers(targetNode.Block, parenthesizedLambda.ParameterList.Parameters.Where(p =>
-                p.Modifiers.Any(m => m.Kind() == SyntaxKind.OutKeyword))));
+                p.Modifiers.Any(m => m.IsKind(SyntaxKind.OutKeyword)))));
             }
             return targetNode;
         }

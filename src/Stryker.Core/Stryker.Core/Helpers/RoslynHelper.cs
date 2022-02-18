@@ -87,7 +87,7 @@ namespace Stryker.Core.Helpers
         /// </summary>
         /// <param name="node">Member to analyze</param>
         /// <returns>true if it is a static method, properties, fields...</returns>
-        public static bool IsStatic(this MemberDeclarationSyntax node) => node.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword);
+        public static bool IsStatic(this MemberDeclarationSyntax node) => node.Modifiers.Any(x => x.IsKind(SyntaxKind.StaticKeyword));
 
         /// <summary>
         /// Returns true if the given type is 'void'.

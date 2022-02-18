@@ -157,7 +157,7 @@ namespace Stryker.Core.Mutants
         /// <param name="originalNode">Source node, used to generate mutations</param>
         /// <param name="needReturn">Set to true if the method has a return value. Expressions are transformed to return statement.</param>
         /// <returns>A mutated node containing the mutations.</returns>
-        public StatementSyntax InjectBlockLevelExpressionMutation(StatementSyntax mutatedNode, ExpressionSyntax sourceNode, bool needReturn)
+        public StatementSyntax InjectBlockLevelExpressionMutation(StatementSyntax mutatedNode, ExpressionSyntax originalNode, bool needReturn)
         {
             var wrapper = needReturn
                 ? (Func<ExpressionSyntax, StatementSyntax>)SyntaxFactory.ReturnStatement

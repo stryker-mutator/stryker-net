@@ -223,7 +223,7 @@ static TestClass()=> Value-='a';}";
             actualNode = actualNode.ReplaceNode(node, restored);
 
             // remove mutation
-            node = actualNode.DescendantNodes().First(t => t.Kind() == SyntaxKind.IfStatement);
+            node = actualNode.DescendantNodes().First(t => t.IsKind(SyntaxKind.IfStatement));
             restored = MutantPlacer.RemoveMutant(node);
             actualNode = actualNode.ReplaceNode(node, restored);
 

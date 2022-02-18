@@ -148,7 +148,7 @@ namespace Stryker.Core.Compiling
         {
             for (var currentNode = node; currentNode != null; currentNode = currentNode.Parent)
             {
-                if (currentNode.Kind() == SyntaxKind.MethodDeclaration || currentNode.Kind() == SyntaxKind.GetAccessorDeclaration || currentNode.Kind() == SyntaxKind.SetAccessorDeclaration)
+                if (currentNode.IsKind(SyntaxKind.MethodDeclaration) || currentNode.IsKind(SyntaxKind.GetAccessorDeclaration) || currentNode.IsKind(SyntaxKind.SetAccessorDeclaration))
                 {
                     return currentNode;
                 }
