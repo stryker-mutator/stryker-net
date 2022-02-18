@@ -22,13 +22,13 @@ namespace Stryker.Core.Initialisation
     public class ProjectOrchestrator : IProjectOrchestrator
     {
         private readonly ILogger _logger;
-        private readonly ISolutionAnalyzerManagerProvider _solutionAnalyzerManagerProvider;
+        private readonly IProjectsAnalyzerManagerProvider _solutionAnalyzerManagerProvider;
         private readonly IProjectMutator _projectMutator;
 
-        public ProjectOrchestrator(ISolutionAnalyzerManagerProvider solutionAnalyzerManagerProvider = null,
+        public ProjectOrchestrator(IProjectsAnalyzerManagerProvider solutionAnalyzerManagerProvider = null,
             IProjectMutator projectMutator = null)
         {
-            _solutionAnalyzerManagerProvider = solutionAnalyzerManagerProvider ?? new SolutionAnalyzerManagerProvider();
+            _solutionAnalyzerManagerProvider = solutionAnalyzerManagerProvider ?? new ProjectsAnalyzerManagerProvider();
             _projectMutator = projectMutator ?? new ProjectMutator();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectOrchestrator>();
         }

@@ -17,7 +17,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 {
     public class ProjectOrchestratorTests : TestBase
     {
-        private readonly Mock<ISolutionAnalyzerManagerProvider> _solutionAnalyzerManagerProviderMock = new Mock<ISolutionAnalyzerManagerProvider>(MockBehavior.Strict);
+        private readonly Mock<IProjectsAnalyzerManagerProvider> _solutionAnalyzerManagerProviderMock = new Mock<IProjectsAnalyzerManagerProvider>(MockBehavior.Strict);
         private readonly Mock<IMutationTestProcess> _mutationTestProcessMock = new Mock<IMutationTestProcess>(MockBehavior.Strict);
         private readonly Mock<IProjectMutator> _projectMutatorMock = new Mock<IProjectMutator>(MockBehavior.Strict);
         private readonly Mock<IInitialisationProcess> _initialisationProcessMock = new Mock<IInitialisationProcess>(MockBehavior.Strict);

@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace Stryker.Core.Initialisation.ProjectAnalyzer
 {
-    public class RoslynSolutionAnalyzerManager : IProjectsAnalyzerManager
+    public class RoslynProjectsAnalyzerManager : IProjectsAnalyzerManager
     {
-        public RoslynSolutionAnalyzerManager(string solutionFilePath)
+        public RoslynProjectsAnalyzerManager(string solutionFilePath)
         {
             throw new NotImplementedException();
         }
