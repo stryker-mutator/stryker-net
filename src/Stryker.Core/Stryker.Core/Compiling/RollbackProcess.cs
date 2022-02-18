@@ -125,23 +125,23 @@ namespace Stryker.Core.Compiling
             return (null, -1);
         }
 
-        private (int? Id, string Engine, string Type) ExtractMutationInfo(SyntaxNode node)
+        private MutantInfo ExtractMutationInfo(SyntaxNode node)
         {
-            var (id, engine, type) = MutantPlacer.FindAnnotations(node);
+            var info = MutantPlacer.FindAnnotations(node);
 
-            if (engine == null)
+            if (info.Engine == null)
             {
-                return (null, null, null);
+                return new MutantInfo();
             }
 
-            if (id == -1)
+            if (info.Id == -1)
             {
                 Logger.LogError("Mutation not found, this should not happen");
             }
 
-            Logger.LogDebug($"Found mutant {id} of type '{type}' controlled by '{engine}'.", id, type, engine);
+            Logger.LogDebug("Found mutant {id} of type '{type}' controlled by '{engine}'.", info.Id, info.Type, info.Engine);
 
-            return (id, engine, type);
+            return info;
         }
 
         private static SyntaxNode FindEnclosingMember(SyntaxNode node)
@@ -157,7 +157,7 @@ namespace Stryker.Core.Compiling
             return null;
         }
 
-        private void ScanAllMutationsIfsAndIds(SyntaxNode node, IList<(SyntaxNode, int, string)> scan)
+        private void ScanAllMutationsIfsAndIds(SyntaxNode node, IList<MutantInfo> scan)
         {
             foreach (var childNode in node.ChildNodes())
             {
@@ -167,9 +167,8 @@ namespace Stryker.Core.Compiling
             var info = ExtractMutationInfo(node);
             if (info.Id != null)
             {
-                scan.Add((node, info.Id.Value, info.Type));
+                scan.Add(info);
             }
-
         }
 
         private void DumpBuildErrors(KeyValuePair<SyntaxTree, ICollection<Diagnostic>> syntaxTreeMap)
@@ -231,18 +230,18 @@ namespace Stryker.Core.Compiling
                         return originalTree;
                     }
 
-                    var scan = new List<(SyntaxNode, int, string)>();
+                    var scan = new List<MutantInfo>();
                     var initNode = FindEnclosingMember(brokenMutation) ?? brokenMutation;
                     ScanAllMutationsIfsAndIds(initNode, scan);
 
-                    if (scan.Any(x => x.Item3 == Mutator.Block.ToString()))
+                    if (scan.Any(x => x.Type == Mutator.Block.ToString()))
                     {
-                        foreach (var (mutation, mutationId, mutationType) in scan.Where(x => x.Item3 == Mutator.Block.ToString()))
+                        foreach (var mutant in scan.Where(x => x.Type == Mutator.Block.ToString()))
                         {
-                            brokenMutations.Add(mutation);
-                            if (mutationId != -1)
+                            brokenMutations.Add(mutant.Node);
+                            if (mutant.Id != -1)
                             {
-                                RolledBackIds.Add(mutationId);
+                                RolledBackIds.Add(mutant.Id.Value);
                             }
                         }
                     }
@@ -252,12 +251,12 @@ namespace Stryker.Core.Compiling
                         "Safe Mode! Stryker will try to continue by rolling back all mutations in method. This should not happen, please report this as an issue on github with the previous error message.");
                         // backup, remove all mutations in the node
 
-                        foreach (var (mutation, mutationId, mutationType) in scan)
+                        foreach (var mutation in scan)
                         {
-                            brokenMutations.Add(mutation);
-                            if (mutationId != -1)
+                            brokenMutations.Add(mutation.Node);
+                            if (mutation.Id != -1)
                             {
-                                RolledBackIds.Add(mutationId);
+                                RolledBackIds.Add(mutation.Id.Value);
                             }
                         }
                     }

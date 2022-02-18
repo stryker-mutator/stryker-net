@@ -163,6 +163,11 @@ namespace Stryker.Core.Mutants
                 ? (Func<ExpressionSyntax, StatementSyntax>)SyntaxFactory.ReturnStatement
                 : SyntaxFactory.ExpressionStatement;
 
+            if (_store.HasStatementLevel)
+            {
+                mutatedNode = _store.PlaceStatementMutations(mutatedNode, m => wrapper(originalNode.InjectMutation(m)));
+            }
+
             return _store.PlaceBlockMutations(mutatedNode, m => wrapper(originalNode.InjectMutation(m)));
         }
 

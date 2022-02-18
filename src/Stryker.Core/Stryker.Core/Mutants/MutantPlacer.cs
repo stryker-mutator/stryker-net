@@ -117,13 +117,13 @@ namespace Stryker.Core.Mutants
                 if (!string.IsNullOrEmpty(engine))
                 {
                     var restoredNode = InstrumentEngines[engine].RemoveInstrumentation(annotatedNode);
-                    return annotatedNode==nodeToRemove ? restoredNode : nodeToRemove.ReplaceNode(annotatedNode, restoredNode);
+                    return annotatedNode == nodeToRemove ? restoredNode : nodeToRemove.ReplaceNode(annotatedNode, restoredNode);
                 }
             }
             throw new InvalidOperationException($"Unable to find an engine to remove injection from this node: '{nodeToRemove}'");
         }
 
-        public static (int id, string engine, string type) FindAnnotations(SyntaxNode node)
+        public static MutantInfo FindAnnotations(SyntaxNode node)
         {
             var id = -1;
             string engine = null;
@@ -145,7 +145,13 @@ namespace Stryker.Core.Mutants
                 }
             }
 
-            return (id, engine, type);
+            return new MutantInfo
+            {
+                Id = id,
+                Engine = engine,
+                Type = type,
+                Node = node
+            };
         }
 
         /// <summary>
