@@ -12,7 +12,6 @@ using Stryker.Core.Reporters;
 using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
 using Xunit;
-using IProjectAnalyzer = Stryker.Core.Initialisation.SolutionAnalyzer.IProjectAnalyzer;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {

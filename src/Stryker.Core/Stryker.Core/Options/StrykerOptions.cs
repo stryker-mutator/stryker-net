@@ -3,7 +3,6 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Baseline.Providers;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options.Inputs;
 using Stryker.Core.Reporters;
