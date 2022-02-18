@@ -12,7 +12,7 @@ using NuGet.Frameworks;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Xunit;
@@ -1007,7 +1007,7 @@ Please specify a test project name filter that results in one project.
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: new List<string> { @"..\ExampleProject\ExampleProject.csproj" }).Object;
 
-            var result = target.FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, null);
+            var result = target.FindProjectUnderTest(new List<IAnalysisResult> { analyzerResult }, null);
             result.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
         }
 
@@ -1016,7 +1016,7 @@ Please specify a test project name filter that results in one project.
         {
             var ex = Assert.Throws<InputException>(() =>
             {
-                new InputFileResolver().FindProjectUnderTest(Enumerable.Empty<IAnalyzerResult>(), null);
+                new InputFileResolver().FindProjectUnderTest(Enumerable.Empty<IAnalysisResult>(), null);
             });
 
             ex.Message.ShouldContain("no project", Case.Insensitive);
@@ -1033,7 +1033,7 @@ Please specify a test project name filter that results in one project.
 
             var ex = Assert.Throws<InputException>(() =>
             {
-                new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, null);
+                new InputFileResolver().FindProjectUnderTest(new List<IAnalysisResult> { analyzerResult }, null);
             });
 
             ex.Message.ShouldContain("Test project contains more than one project reference. Please set the project option");
@@ -1054,7 +1054,7 @@ Please specify a test project name filter that results in one project.
                     @"..\AnotherProject\AnotherProject.csproj"
                 }).Object;
 
-            var result = new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, shouldMatch);
+            var result = new InputFileResolver().FindProjectUnderTest(new List<IAnalysisResult> { analyzerResult }, shouldMatch);
 
             result.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
         }
@@ -1074,7 +1074,7 @@ Please specify a test project name filter that results in one project.
 
             var ex = Assert.Throws<InputException>(() =>
             {
-                new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, shouldMatchMoreThanOne);
+                new InputFileResolver().FindProjectUnderTest(new List<IAnalysisResult> { analyzerResult }, shouldMatchMoreThanOne);
             });
 
             ex.Message.ShouldContain("more than one", Case.Insensitive);
@@ -1094,7 +1094,7 @@ Please specify a test project name filter that results in one project.
 
             var ex = Assert.Throws<InputException>(() =>
             {
-                new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, shouldMatchNone);
+                new InputFileResolver().FindProjectUnderTest(new List<IAnalysisResult> { analyzerResult }, shouldMatchNone);
             });
 
             ex.Message.ShouldContain("no project", Case.Insensitive);

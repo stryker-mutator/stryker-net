@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Initialisation
@@ -17,15 +17,15 @@ namespace Stryker.Core.Initialisation
             _fileSystem = fileSystem ?? new FileSystem();
         }
 
-        public IEnumerable<IAnalyzerResult> TestProjectAnalyzerResults { get; set; }
-        public IAnalyzerResult ProjectUnderTestAnalyzerResult { get; set; }
+        public IEnumerable<IAnalysisResult> TestProjectAnalyzerResults { get; set; }
+        public IAnalysisResult ProjectUnderTestAnalyzerResult { get; set; }
 
         /// <summary>
         /// The Folder/File structure found in the project under test.
         /// </summary>
         public IProjectComponent ProjectContents { get; set; }
 
-        public string GetInjectionFilePath(IAnalyzerResult analyzerResult)
+        public string GetInjectionFilePath(IAnalysisResult analyzerResult)
         {
             return Path.Combine(
                 Path.GetDirectoryName(analyzerResult.GetAssemblyPath()),

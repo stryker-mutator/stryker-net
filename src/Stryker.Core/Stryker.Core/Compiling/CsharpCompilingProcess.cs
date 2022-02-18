@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 
@@ -97,7 +97,7 @@ namespace Stryker.Core.Compiling
             throw new CompilationException("Failed to restore build able state.");
         }
 
-        private CSharpCompilation RunSourceGenerators(IAnalyzerResult analyzerResult, CSharpCompilation compilation)
+        private CSharpCompilation RunSourceGenerators(IAnalysisResult analyzerResult, CSharpCompilation compilation)
         {
             var generators = analyzerResult.GetSourceGenerators(_logger);
             _ = CSharpGeneratorDriver

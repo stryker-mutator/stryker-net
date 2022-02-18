@@ -14,7 +14,7 @@ using NuGet.Frameworks;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;

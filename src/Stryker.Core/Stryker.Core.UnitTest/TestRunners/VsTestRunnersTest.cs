@@ -16,7 +16,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCo
 using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
@@ -95,7 +95,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             _projectContents.Add(new CsharpFileLeaf { Mutants = new[] { _otherMutant, _mutant } });
             _targetProject = new ProjectInfo(_fileSystem)
             {
-                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
+                TestProjectAnalyzerResults = new List<IAnalysisResult> {
                     TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", Path.GetDirectoryName(_testAssemblyPath) },

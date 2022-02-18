@@ -4,7 +4,7 @@ using System.Linq;
 using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -43,11 +43,11 @@ namespace Stryker.Core.UnitTest.Initialisation
         public void ShouldInitializeEachProjectInSolution()
         {
             // arrange
-            var solutionAnalyzerManagerMock = new Mock<ISolutionAnalyzerManager>(MockBehavior.Strict);
+            var solutionAnalyzerManagerMock = new Mock<IProjectsAnalyzerManager>(MockBehavior.Strict);
             var projectUnderTestAnalyzerMock = new Mock<IProjectAnalyzer>(MockBehavior.Strict);
-            var projectUnderTestAnalyzerResultMock = new Mock<IAnalyzerResult>(MockBehavior.Strict);
+            var projectUnderTestAnalyzerResultMock = new Mock<IAnalysisResult>(MockBehavior.Strict);
             var testProjectAnalyzerMock = new Mock<IProjectAnalyzer>(MockBehavior.Strict);
-            var testProjectAnalyzerResultMock = new Mock<IAnalyzerResult>(MockBehavior.Strict);
+            var testProjectAnalyzerResultMock = new Mock<IAnalysisResult>(MockBehavior.Strict);
 
             // when a solutionPath is given and it's inside the current directory (basePath)
             var options = new StrykerOptions
@@ -67,11 +67,11 @@ namespace Stryker.Core.UnitTest.Initialisation
                     { "MyProject.UnitTests", testProjectAnalyzerMock.Object }
                 });
             testProjectAnalyzerMock.Setup(x => x.ProjectFilePath).Returns("C:/testproject/");
-            testProjectAnalyzerMock.Setup(x => x.Build()).Returns(testProjectAnalyzerResultMock.Object);
+            testProjectAnalyzerMock.Setup(x => x.Analyze()).Returns(testProjectAnalyzerResultMock.Object);
             testProjectAnalyzerResultMock.Setup(x => x.ProjectReferences).Returns(new[] { "C:/projectundertest/projectundertest.csproj" });
             testProjectAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns("C:/testproject/projectUnderTest.csproj");
             projectUnderTestAnalyzerMock.Setup(x => x.ProjectFilePath).Returns("C:/projectUnderTest/");
-            projectUnderTestAnalyzerMock.Setup(x => x.Build()).Returns(projectUnderTestAnalyzerResultMock.Object);
+            projectUnderTestAnalyzerMock.Setup(x => x.Analyze()).Returns(projectUnderTestAnalyzerResultMock.Object);
             // The test project references the microsoft.net.test.sdk
             testProjectAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "True" } });
             projectUnderTestAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "False" }, { "ProjectTypeGuids", "not testproject" } });

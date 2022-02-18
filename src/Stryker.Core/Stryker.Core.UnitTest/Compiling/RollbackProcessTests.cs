@@ -14,7 +14,7 @@ using Shouldly;
 using Stryker.Core.Compiling;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
@@ -150,7 +150,7 @@ namespace ExampleProject
                         { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
                     },
                         projectFilePath: "TestResources").Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<IAnalysisResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                     {
                         { "AssemblyName", "AssemblyName"},
                     }).Object

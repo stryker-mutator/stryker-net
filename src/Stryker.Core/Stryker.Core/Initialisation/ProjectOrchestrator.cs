@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
@@ -61,7 +61,7 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private IEnumerable<IMutationTestProcess> MutateSolution(StrykerOptions options, IReporter reporters, IEnumerable<IAnalyzerResult> projectsUnderTest, IEnumerable<IAnalyzerResult> testProjects)
+        private IEnumerable<IMutationTestProcess> MutateSolution(StrykerOptions options, IReporter reporters, IEnumerable<IAnalysisResult> projectsUnderTest, IEnumerable<IAnalysisResult> testProjects)
         {
             foreach (var project in projectsUnderTest)
             {
@@ -92,20 +92,20 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private List<IAnalyzerResult> AnalyzeSolution(StrykerOptions options)
+        private List<IAnalysisResult> AnalyzeSolution(StrykerOptions options)
         {
             _logger.LogInformation("Identifying projects to mutate. This can take a while.");
             var manager = _solutionAnalyzerManagerProvider.Provide(options.SolutionPath);
 
             // build all projects
-            var projectsAnalyzerResults = new ConcurrentBag<IAnalyzerResult>();
+            var projectsAnalyzerResults = new ConcurrentBag<IAnalysisResult>();
             _logger.LogDebug("Analysing {count} projects", manager.Projects.Count);
             try
             {
                 Parallel.ForEach(manager.Projects.Values, project =>
                 {
                     _logger.LogDebug("Analysing {projectFilePath}", project.ProjectFilePath);
-                    var projectAnalyzerResult = project.Build();
+                    var projectAnalyzerResult = project.Analyze();
                     if (projectAnalyzerResult is { })
                     {
                         projectsAnalyzerResults.Add(projectAnalyzerResult);
@@ -128,7 +128,7 @@ namespace Stryker.Core.Initialisation
         private static bool IsSolutionContext(StrykerOptions options) =>
             options.SolutionPath != null && FilePathUtils.NormalizePathSeparators(options.BasePath) == FilePathUtils.NormalizePathSeparators(Path.GetDirectoryName(options.SolutionPath));
 
-        private IEnumerable<IAnalyzerResult> FindProjectsUnderTest(IEnumerable<IAnalyzerResult> projectsAnalyzerResults)
+        private IEnumerable<IAnalysisResult> FindProjectsUnderTest(IEnumerable<IAnalysisResult> projectsAnalyzerResults)
         {
             foreach (var project in projectsAnalyzerResults)
             {

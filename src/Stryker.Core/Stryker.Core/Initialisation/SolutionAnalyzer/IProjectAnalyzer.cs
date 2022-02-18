@@ -1,9 +1,9 @@
 
-namespace Stryker.Core.Initialisation.SolutionAnalyzer
+namespace Stryker.Core.Initialisation.ProjectAnalyzer
 {
     public interface IProjectAnalyzer
     {
         string ProjectFilePath { get; }
-        IAnalyzerResult Build();
+        IAnalysisResult Analyze();
     }
 }

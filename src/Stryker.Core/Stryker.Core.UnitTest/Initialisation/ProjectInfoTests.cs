@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Shouldly;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
@@ -16,7 +16,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var target = new ProjectInfo(new MockFileSystem())
             {
-                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
+                TestProjectAnalyzerResults = new List<IAnalysisResult> {
                     TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", "/test/bin/Debug/" },
@@ -39,7 +39,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var target = new ProjectInfo(new MockFileSystem())
             {
-                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
+                TestProjectAnalyzerResults = new List<IAnalysisResult> {
                     TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", "/test/bin/Debug/" },
@@ -70,7 +70,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var target = new ProjectInfo(new MockFileSystem())
             {
-                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
+                TestProjectAnalyzerResults = new List<IAnalysisResult> {
                     TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", "/test/bin/Debug/" },
@@ -101,7 +101,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var target = new ProjectInfo(new MockFileSystem())
             {
-                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
+                TestProjectAnalyzerResults = new List<IAnalysisResult> {
                     TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", "/test/bin/Debug/" },

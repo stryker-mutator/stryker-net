@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Stryker.Core.Initialisation.SolutionAnalyzer
+namespace Stryker.Core.Initialisation.ProjectAnalyzer
 {
-    public interface IAnalyzerResult
+    public interface IAnalysisResult
     {
         string ProjectFilePath { get; }
 

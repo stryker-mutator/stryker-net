@@ -4,7 +4,7 @@ using Buildalyzer;
 using Microsoft.Build.Exceptions;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Stryker.Core.Logging;
 
 namespace Stryker.Core.Initialisation

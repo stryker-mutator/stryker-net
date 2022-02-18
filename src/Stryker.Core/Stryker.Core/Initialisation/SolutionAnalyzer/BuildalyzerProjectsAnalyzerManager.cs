@@ -1,13 +1,13 @@
 using System.Collections.Generic;
 using Buildalyzer;
 
-namespace Stryker.Core.Initialisation.SolutionAnalyzer
+namespace Stryker.Core.Initialisation.ProjectAnalyzer
 {
-    public class BuildalyzerSolutionAnalyzerManager : ISolutionAnalyzerManager
+    public class BuildalyzerProjectsAnalyzerManager : IProjectsAnalyzerManager
     {
         private readonly Dictionary<string, IProjectAnalyzer> _projects = new Dictionary<string, IProjectAnalyzer>();
 
-        public BuildalyzerSolutionAnalyzerManager(string solutionFilePath)
+        public BuildalyzerProjectsAnalyzerManager(string solutionFilePath)
         {
             AnalyzerManager analyzerManager = new(solutionFilePath);
 

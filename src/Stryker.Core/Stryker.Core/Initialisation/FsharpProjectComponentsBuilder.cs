@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Control;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Stryker.Core.ProjectComponents;
 using System;
 using System.Collections.Generic;
@@ -44,7 +44,7 @@ namespace Stryker.Core.Initialisation
             return inputFiles;
         }
 
-        private FsharpFolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult)
+        private FsharpFolderComposite FindProjectFilesUsingBuildalyzer(IAnalysisResult analyzerResult)
         {
             var inputFiles = new FsharpFolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
@@ -149,7 +149,7 @@ namespace Stryker.Core.Initialisation
             return cache[targetFolder];
         }
 
-        private FsharpFolderComposite FindProjectFilesScanningProjectFolders(IAnalyzerResult analyzerResult)
+        private FsharpFolderComposite FindProjectFilesScanningProjectFolders(IAnalysisResult analyzerResult)
         {
             var inputFiles = new FsharpFolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
@@ -172,7 +172,7 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Recursively scans the given directory for files to mutate
         /// </summary>
-        private FsharpFolderComposite FindInputFiles(string path, IAnalyzerResult analyzerResult)
+        private FsharpFolderComposite FindInputFiles(string path, IAnalysisResult analyzerResult)
         {
             var rootFolderComposite = new FsharpFolderComposite
             {

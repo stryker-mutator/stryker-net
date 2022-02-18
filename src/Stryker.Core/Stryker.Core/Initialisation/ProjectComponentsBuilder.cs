@@ -9,7 +9,7 @@ using System.Linq;
 using Stryker.Core.ProjectComponents;
 using System.IO;
 using System.IO.Abstractions;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 
 namespace Stryker.Core.Initialisation
 {
@@ -20,7 +20,7 @@ namespace Stryker.Core.Initialisation
 
         protected ProjectComponentsBuilder(IFileSystem fileSystem) => FileSystem = fileSystem;
 
-        protected IEnumerable<string> ExtractProjectFolders(IAnalyzerResult projectAnalyzerResult)
+        protected IEnumerable<string> ExtractProjectFolders(IAnalysisResult projectAnalyzerResult)
         {
             var projectFilePath = projectAnalyzerResult.ProjectFilePath;
             var projectFile = FileSystem.File.OpenText(projectFilePath);
@@ -58,7 +58,7 @@ namespace Stryker.Core.Initialisation
             return sharedProjects;
         }
 
-        private static string ReplaceMsbuildProperties(string projectReference, IAnalyzerResult projectAnalyzerResult)
+        private static string ReplaceMsbuildProperties(string projectReference, IAnalysisResult projectAnalyzerResult)
         {
             var propertyRegex = new Regex(@"\$\(([a-zA-Z_][a-zA-Z0-9_\-.]*)\)");
             var properties = projectAnalyzerResult.Properties;

@@ -9,7 +9,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.IO;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 
 namespace Stryker.Core.UnitTest.Fsharp
 {

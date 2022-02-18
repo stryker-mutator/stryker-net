@@ -1,5 +1,5 @@
 using System.IO.Abstractions;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Stryker.Core.Options.Inputs;
 
 namespace Stryker.Core.Options

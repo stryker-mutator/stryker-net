@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
 
@@ -55,7 +55,7 @@ namespace Stryker.Core.Initialisation
                 testProjectFiles.Add(FindTestProject(options.BasePath));
             }
 
-            var testProjectAnalyzerResults = new List<IAnalyzerResult>();
+            var testProjectAnalyzerResults = new List<IAnalysisResult>();
             foreach (var testProjectFile in testProjectFiles)
             {
                 // Analyze the test project
@@ -129,7 +129,7 @@ namespace Stryker.Core.Initialisation
             return projectFiles.Single();
         }
 
-        public string FindProjectUnderTest(IEnumerable<IAnalyzerResult> testProjects, string projectUnderTestNameFilter)
+        public string FindProjectUnderTest(IEnumerable<IAnalysisResult> testProjects, string projectUnderTestNameFilter)
         {
             var projectReferences = FindProjectsReferencedByAllTestProjects(testProjects);
 
@@ -214,7 +214,7 @@ namespace Stryker.Core.Initialisation
             return projectReferences.Single();
         }
 
-        private static IEnumerable<string> FindProjectsReferencedByAllTestProjects(IEnumerable<IAnalyzerResult> testProjects)
+        private static IEnumerable<string> FindProjectsReferencedByAllTestProjects(IEnumerable<IAnalysisResult> testProjects)
         {
             var amountOfTestProjects = testProjects.Count();
             var allProjectReferences = testProjects.SelectMany(t => t.ProjectReferences);

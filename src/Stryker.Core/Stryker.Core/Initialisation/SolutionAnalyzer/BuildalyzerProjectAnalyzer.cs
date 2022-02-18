@@ -1,6 +1,6 @@
 using System.Linq;
 
-namespace Stryker.Core.Initialisation.SolutionAnalyzer
+namespace Stryker.Core.Initialisation.ProjectAnalyzer
 {
     public class BuildalyzerProjectAnalyzer : IProjectAnalyzer
     {
@@ -16,7 +16,7 @@ namespace Stryker.Core.Initialisation.SolutionAnalyzer
             get { return _projectAnalyzer.ProjectFile.Path; }
         }
 
-        public IAnalyzerResult Build()
+        public IAnalysisResult Analyze()
         {
             var buildAlyzerResult = _projectAnalyzer.Build().FirstOrDefault();
             var analyzerResult = new AnalyzerResult(buildAlyzerResult.ProjectFilePath, buildAlyzerResult.References, buildAlyzerResult.ProjectReferences,

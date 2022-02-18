@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace Stryker.Core.Initialisation.SolutionAnalyzer
+namespace Stryker.Core.Initialisation.ProjectAnalyzer
 {
-    public interface ISolutionAnalyzerManager
+    public interface IProjectsAnalyzerManager
     {
         IReadOnlyDictionary<string, IProjectAnalyzer> Projects { get; }
     }

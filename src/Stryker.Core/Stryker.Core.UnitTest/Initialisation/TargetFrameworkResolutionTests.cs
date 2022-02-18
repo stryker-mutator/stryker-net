@@ -4,7 +4,7 @@ using Buildalyzer;
 using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Xunit;
 using IAnalyzerResult = Buildalyzer.IAnalyzerResult;
 using IProjectAnalyzer = Buildalyzer.IProjectAnalyzer;

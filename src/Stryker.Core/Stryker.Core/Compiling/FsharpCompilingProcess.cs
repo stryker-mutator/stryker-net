@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Control;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using ParsedInput = FSharp.Compiler.SyntaxTree.ParsedInput;

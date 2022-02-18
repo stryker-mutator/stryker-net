@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Stryker.Core.Initialisation.SolutionAnalyzer
+namespace Stryker.Core.Initialisation.ProjectAnalyzer
 {
-    public class RoslynSolutionAnalyzerManager : ISolutionAnalyzerManager
+    public class RoslynSolutionAnalyzerManager : IProjectsAnalyzerManager
     {
         public RoslynSolutionAnalyzerManager(string solutionFilePath)
         {

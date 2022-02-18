@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 using Mono.Cecil;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;

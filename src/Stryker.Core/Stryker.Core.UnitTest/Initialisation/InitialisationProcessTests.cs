@@ -11,7 +11,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Stryker.Core.Mutants;
 using Xunit;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
@@ -42,7 +42,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         references: new string[0]).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(
+                    TestProjectAnalyzerResults = new List<IAnalysisResult> { TestHelper.SetupProjectAnalyzerResult(
                         projectFilePath: "C://Example/Dir/ProjectFolder",
                         targetFramework: "netcoreapp2.1").Object
                     },
@@ -89,7 +89,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         references: new string[0]).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(
+                    TestProjectAnalyzerResults = new List<IAnalysisResult> { TestHelper.SetupProjectAnalyzerResult(
                         projectFilePath: "C://Example/Dir/ProjectFolder",
                         targetFramework: "netcoreapp2.1").Object
                     },

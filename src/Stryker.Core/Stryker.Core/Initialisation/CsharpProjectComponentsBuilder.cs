@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.MutantFilters.Extensions;
 using Stryker.Core.Options;
@@ -47,7 +47,7 @@ namespace Stryker.Core.Initialisation
         }
 
         // Deprecated method, should not be maintained
-        private CsharpFolderComposite FindProjectFilesScanningProjectFolders(IAnalyzerResult analyzerResult, StrykerOptions options)
+        private CsharpFolderComposite FindProjectFilesScanningProjectFolders(IAnalysisResult analyzerResult, StrykerOptions options)
         {
             var inputFiles = new CsharpFolderComposite();
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
@@ -67,7 +67,7 @@ namespace Stryker.Core.Initialisation
             return inputFiles;
         }
 
-        private CsharpFolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult, StrykerOptions options)
+        private CsharpFolderComposite FindProjectFilesUsingBuildalyzer(IAnalysisResult analyzerResult, StrykerOptions options)
         {
             var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
             var generatedAssemblyInfo = analyzerResult.AssemblyAttributeFileName();
@@ -156,7 +156,7 @@ namespace Stryker.Core.Initialisation
         /// Recursively scans the given directory for files to mutate
         /// Deprecated method, should not be maintained
         /// </summary>
-        private CsharpFolderComposite FindInputFiles(string path, string projectUnderTestDir, IAnalyzerResult analyzerResult, StrykerOptions options)
+        private CsharpFolderComposite FindInputFiles(string path, string projectUnderTestDir, IAnalysisResult analyzerResult, StrykerOptions options)
         {
             var rootFolderComposite = new CsharpFolderComposite
             {
@@ -230,7 +230,7 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private static CSharpParseOptions BuildCsharpParseOptions(IAnalyzerResult analyzerResult, StrykerOptions options)
+        private static CSharpParseOptions BuildCsharpParseOptions(IAnalysisResult analyzerResult, StrykerOptions options)
         {
             return new CSharpParseOptions(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: analyzerResult.PreprocessorSymbols);
         }

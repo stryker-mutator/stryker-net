@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 
-namespace Stryker.Core.Initialisation.SolutionAnalyzer
+namespace Stryker.Core.Initialisation.ProjectAnalyzer
 {
-    public class AnalyzerResult : IAnalyzerResult
+    public class AnalyzerResult : IAnalysisResult
     {
         public AnalyzerResult(string projectFilePath, IEnumerable<string> references, IEnumerable<string> projectReferences, IEnumerable<string> analyzerReferences, IEnumerable<string> preprocessorSymbols, IReadOnlyDictionary<string, string> properties, string[] sourceFiles, bool succeeded, string targetFramework)
         {

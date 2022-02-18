@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Moq;
 using Shouldly;
-using Stryker.Core.Initialisation.SolutionAnalyzer;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Xunit;
 
@@ -15,7 +15,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
         public void MergeTestProjectsInfo()
         {
             // Arrange
-            var testProjectAnalyzerResult = Mock.Of<IAnalyzerResult>();
+            var testProjectAnalyzerResult = Mock.Of<IAnalysisResult>();
             var testFiles = new List<TestFile>
             {
                 new TestFile
@@ -70,7 +70,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
                 {
                     new TestProject
                     {
-                        TestProjectAnalyzerResult = Mock.Of<IAnalyzerResult>(),
+                        TestProjectAnalyzerResult = Mock.Of<IAnalysisResult>(),
                         TestFiles = new List<TestFile>
                         {
                             new TestFile
