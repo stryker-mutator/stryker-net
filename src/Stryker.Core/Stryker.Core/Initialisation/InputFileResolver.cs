@@ -59,7 +59,7 @@ namespace Stryker.Core.Initialisation
             foreach (var testProjectFile in testProjectFiles)
             {
                 // Analyze the test project
-                testProjectAnalyzerResults.Add(_projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework));
+                testProjectAnalyzerResults.Add(_projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework).ToAnalyzerResult());
             }
             projectInfo.TestProjectAnalyzerResults = testProjectAnalyzerResults;
 
@@ -69,7 +69,7 @@ namespace Stryker.Core.Initialisation
             _logger.LogInformation("The project {0} will be mutated.", projectUnderTest);
 
             // Analyze project under test
-            projectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath, options.TargetFramework);
+            projectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath, options.TargetFramework).ToAnalyzerResult();
 
             //to test Fsharp support you would need to create a FsharpProjectComponentsBuilder
             var inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();

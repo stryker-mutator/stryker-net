@@ -40,7 +40,7 @@ namespace Stryker.Core.Initialisation
             }
             else
             {
-                _logger.LogWarning("Buildalyzer could not find sourcefiles. This should not happen. Will fallback to filesystem scan. Please report an issue at github.");
+                _logger.LogWarning("Analysis could not find sourcefiles. This should not happen. Will fallback to filesystem scan. Please report an issue at github.");
                 inputFiles = FindProjectFilesScanningProjectFolders(_projectInfo.ProjectUnderTestAnalyzerResult, _options);
             }
             return inputFiles;

@@ -4,14 +4,14 @@ using Buildalyzer;
 using Microsoft.Build.Exceptions;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Core.Initialisation.SolutionAnalyzer;
 using Stryker.Core.Logging;
 
 namespace Stryker.Core.Initialisation
 {
     public interface IProjectFileReader
     {
-        IAnalyzerResult AnalyzeProject(
+        Buildalyzer.IAnalyzerResult AnalyzeProject(
             string projectFilePath,
             string solutionFilePath,
             string targetFramework);
@@ -32,7 +32,7 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
         }
 
-        public IAnalyzerResult AnalyzeProject(
+        public Buildalyzer.IAnalyzerResult AnalyzeProject(
             string projectFilePath,
             string solutionFilePath,
             string targetFramework)
@@ -75,10 +75,10 @@ namespace Stryker.Core.Initialisation
             return analyzerResult;
         }
 
-        private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
+        private void LogAnalyzerResult(Buildalyzer.IAnalyzerResult analyzerResult)
         {
             // dump all properties as it can help diagnosing build issues for user project.
-            _logger.LogTrace("**** Buildalyzer result ****");
+            _logger.LogTrace("**** Analyzer result ****");
 
             _logger.LogTrace("Project: {0}", analyzerResult.ProjectFilePath);
             _logger.LogTrace("TargetFramework: {0}", analyzerResult.TargetFramework);
@@ -97,10 +97,10 @@ namespace Stryker.Core.Initialisation
             }
             _logger.LogTrace("Succeeded: {0}", analyzerResult.Succeeded);
 
-            _logger.LogTrace("**** Buildalyzer result ****");
+            _logger.LogTrace("**** Analyzer result ****");
         }
 
-        private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
+        private Buildalyzer.IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
         {
             if (targetFramework == null)
             {
