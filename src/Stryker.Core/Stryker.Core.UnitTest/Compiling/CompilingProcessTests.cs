@@ -3,7 +3,9 @@ using System.Collections.Immutable;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
+using System.Linq;
 using System.Reflection;
+using System.Text;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -11,8 +13,14 @@ using Moq;
 using Shouldly;
 using Stryker.Core.Compiling;
 using Stryker.Core.Exceptions;
+using Stryker.Core.InjectedHelpers;
+using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
+using Stryker.Core.Mutators;
+using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.TestRunners;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Compiling
@@ -318,6 +326,101 @@ namespace ExampleProject
 
                 Assembly.Load(ms.ToArray()).GetName().Version.ToString().ShouldBe("0.0.0.0");
             }
+        }
+
+        [Fact]
+        public void ShouldCompileAndRollbackErrorsForEventHandler()
+        {
+            var sourceFile = @"using System;
+
+namespace ExampleProject
+{
+    public class Calculator
+    {
+        public int Subtract(int first, int second)
+        {
+            return first - second;
+        }
+        private event Action SendCompleted;
+void TestMethod(){
+Action<Action> unsubscribe = (handler) => SendCompleted -= handler;}
+    }
+}";
+            var projectContentsMutants = MutateAndCompileSource(sourceFile);
+            // those results can change if mutators are added.
+            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.CompileError).ShouldBe(1);
+            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.NotRun).ShouldBe(3);
+        }
+
+        private static IEnumerable<Mutant> MutateAndCompileSource(string sourceFile)
+        {
+            var filesystemRoot = Path.GetPathRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
+
+            var inputFile = new CsharpFileLeaf()
+            {
+                SourceCode = sourceFile,
+                SyntaxTree = CSharpSyntaxTree.ParseText(sourceFile)
+            };
+            var folder = new CsharpFolderComposite();
+            folder.Add(inputFile);
+            foreach (var (name, code) in CodeInjection.MutantHelpers)
+            {
+                folder.AddCompilationSyntaxTree(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32));
+            }
+
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { Path.Combine(filesystemRoot, "ExampleProject", "Calculator.cs"), new MockFileData(sourceFile) },
+                {
+                    Path.Combine(filesystemRoot, "ExampleProject.Test", "bin", "Debug", "netcoreapp2.0", "ExampleProject.dll"),
+                    new MockFileData("Bytecode")
+                },
+                {
+                    Path.Combine(filesystemRoot, "ExampleProject.Test", "obj", "Release", "netcoreapp2.0",
+                        "ExampleProject.dll"),
+                    new MockFileData("Bytecode")
+                }
+            });
+
+            var input = new MutationTestInput
+            {
+                SourceProjectInfo = new SourceProjectInfo(fileSystem)
+                {
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        properties: new Dictionary<string, string>()
+                        {
+                            { "TargetDir", "Project" },
+                            { "AssemblyName", "AssemblyName" },
+                            { "TargetFileName", "TargetFileName.dll" },
+                        }).Object,
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult>
+                    {
+                        TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                        {
+                            { "AssemblyName", "TargetFileName" },
+                            { "TargetDir", "Test" },
+                            { "TargetFileName", "TestTargetFileName.dll" },
+                        }).Object
+                    },
+                    ProjectContents = folder
+                },
+                AssemblyReferences = new List<PortableExecutableReference>
+                {
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
+                },
+                TestRunner = new Mock<ITestRunner>(MockBehavior.Default).Object
+            };
+
+            var options = new StrykerOptions
+            {
+                MutationLevel = MutationLevel.Complete,
+                OptimizationMode = OptimizationModes.CoverageBasedTest,
+            };
+            var process = new CsharpMutationProcess(input, fileSystem, options);
+            process.Mutate();
+
+            var projectContentsMutants = input.SourceProjectInfo.ProjectContents.Mutants;
+            return projectContentsMutants;
         }
     }
 }

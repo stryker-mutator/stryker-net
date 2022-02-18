@@ -53,7 +53,7 @@ namespace Stryker.Core.Initialisation
                 _logger.LogWarning($"{(failingTestsCount == 1 ? "A test is ": $"{failingTestsCount} tests are")} failing. Stryker will continue but outcome will be impacted.");
                 if (((double)failingTestsCount) / initTestRunResult.RanTests.Count >= .5)
                 {
-                    throw new InputException("Initial testrun has more han 50% failing tests.", initTestRunResult.ResultMessage);
+                    throw new InputException("Initial testrun has more than 50% failing tests.", initTestRunResult.ResultMessage);
                 }
             }
 

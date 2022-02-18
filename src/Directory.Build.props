@@ -1,14 +1,4 @@
 <Project>
-  <!-- Enable libman restore on build by default -->
-  <PropertyGroup>
-    <LibraryRestore>true</LibraryRestore>
-  </PropertyGroup>
-
-  <!-- Disable libman restore on build if we are building for live unit testing -->
-  <PropertyGroup Condition="'$(BuildingForLiveUnitTesting)' == 'true' ">
-    <LibraryRestore>false</LibraryRestore>
-  </PropertyGroup>
-  
   <PropertyGroup>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
@@ -16,8 +6,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <MicrosoftTestPlatform>16.10.0</MicrosoftTestPlatform>
-    <SystemIOAbstractions>16.0.2</SystemIOAbstractions>
+    <MicrosoftTestPlatform>17.1.0</MicrosoftTestPlatform>
+    <SystemIOAbstractions>16.1.10</SystemIOAbstractions>
     <MicrosoftExtensionsConfiguration>6.0.0</MicrosoftExtensionsConfiguration>
   </PropertyGroup>
 

@@ -24,7 +24,6 @@ namespace Stryker.Core.Instrumentation
                 // no need to convert
                 return method;
             }
-
             var  statementLine = SyntaxFactory.ReturnStatement(method.ExpressionBody.WithLeadingTrivia(SyntaxFactory.Space));
 
             // do we need add return to the expression body?

@@ -57,6 +57,30 @@ struct Program
         }
 
         [Fact]
+        public void ShouldNotMutateSwitchCasesBlock()
+        {
+            var source = @"
+struct Program
+{
+    int mustBeInitialized;
+    bool alsoThisMustBeInitialized;
+
+    Program(int value)
+    {
+        switch(value)
+        {
+            default:
+            {
+                value++;
+            }
+        }
+    }
+}";
+            // there should be only a mutation for the whole method body
+            GetMutations(source).ShouldHaveSingleItem();
+        }
+
+        [Fact]
         public void ShouldMutateLocalFunctionsInStructConstructors()
         {
             var source = @"
