@@ -52,7 +52,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            var result = _projectFileReader.AnalyzeProject(null, null, null, It.IsAny<AnalyzerOption>());
+            var result = _projectFileReader.AnalyzeProject(null, null, null);
             result.TargetFramework.ShouldBe("X");
         }
 
@@ -71,7 +71,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            var result = _projectFileReader.AnalyzeProject(null, null, "Y", It.IsAny<AnalyzerOption>());
+            var result = _projectFileReader.AnalyzeProject(null, null, "Y");
             result.TargetFramework.ShouldBe("Y");
         }
 
@@ -90,7 +90,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            var result = _projectFileReader.AnalyzeProject(null, null, "Z", It.IsAny<AnalyzerOption>());
+            var result = _projectFileReader.AnalyzeProject(null, null, "Z");
             result.TargetFramework.ShouldBe("X");
         }
     }

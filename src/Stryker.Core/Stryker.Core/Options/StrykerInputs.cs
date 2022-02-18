@@ -117,7 +117,6 @@ namespace Stryker.Core.Options
 
             _strykerOptionsCache ??= new StrykerOptions()
             {
-                AnalyzerOption = AnalyzerOption.Buildalyzer,
                 BasePath = basePath,
                 OutputPath = outputPath,
                 ReportFileName = reportFileNameInput,

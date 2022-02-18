@@ -60,7 +60,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             _initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>())).Returns(_mutationTestInput);
             _initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>())).Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(5)));
-            _solutionAnalyzerManagerProviderMock.Setup(x => x.Provide(It.IsAny<string>(), It.IsAny<AnalyzerOption>())).Returns(solutionAnalyzerManagerMock.Object);
+            _solutionAnalyzerManagerProviderMock.Setup(x => x.Provide(It.IsAny<string>())).Returns(solutionAnalyzerManagerMock.Object);
             // The analyzer finds two projects
             solutionAnalyzerManagerMock.Setup(x => x.Projects)
                 .Returns(new Dictionary<string, IProjectAnalyzer> {

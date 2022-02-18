@@ -14,8 +14,7 @@ namespace Stryker.Core.Initialisation
         SolutionAnalyzer.IAnalyzerResult AnalyzeProject(
             string projectFilePath,
             string solutionFilePath,
-            string targetFramework,
-            AnalyzerOption analyzerOption);
+            string targetFramework);
     }
 
     public class ProjectFileReader : IProjectFileReader
@@ -36,8 +35,7 @@ namespace Stryker.Core.Initialisation
         public SolutionAnalyzer.IAnalyzerResult AnalyzeProject(
             string projectFilePath,
             string solutionFilePath,
-            string targetFramework,
-            AnalyzerOption analyzerOption)
+            string targetFramework)
         {
             if (solutionFilePath != null)
             {

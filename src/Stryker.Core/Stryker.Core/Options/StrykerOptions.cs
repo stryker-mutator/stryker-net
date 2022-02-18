@@ -58,8 +58,6 @@ namespace Stryker.Core.Options
 
         public OptimizationModes OptimizationMode { get; init; }
 
-        public AnalyzerOption AnalyzerOption { get; init; }
-
         private string _projectName;
 
         public string ProjectName
@@ -97,7 +95,6 @@ namespace Stryker.Core.Options
         {
             _parentOptions = this,
             AdditionalTimeout = AdditionalTimeout,
-            AnalyzerOption = AnalyzerOption,
             AzureFileStorageSas = AzureFileStorageSas,
             AzureFileStorageUrl = AzureFileStorageUrl,
             BaselineProvider = BaselineProvider,

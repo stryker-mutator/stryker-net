@@ -95,7 +95,7 @@ namespace Stryker.Core.Initialisation
         private List<IAnalyzerResult> AnalyzeSolution(StrykerOptions options)
         {
             _logger.LogInformation("Identifying projects to mutate. This can take a while.");
-            var manager = _solutionAnalyzerManagerProvider.Provide(options.SolutionPath, options.AnalyzerOption);
+            var manager = _solutionAnalyzerManagerProvider.Provide(options.SolutionPath);
 
             // build all projects
             var projectsAnalyzerResults = new ConcurrentBag<IAnalyzerResult>();

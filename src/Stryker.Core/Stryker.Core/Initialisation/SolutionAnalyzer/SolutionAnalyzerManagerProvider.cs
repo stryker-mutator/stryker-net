@@ -7,20 +7,15 @@ namespace Stryker.Core.Initialisation.SolutionAnalyzer
     /// </summary>
     public interface ISolutionAnalyzerManagerProvider
     {
-        ISolutionAnalyzerManager Provide(string solutionFilePath, AnalyzerOption analyzerOption);
+        ISolutionAnalyzerManager Provide(string solutionFilePath);
     }
 
     [ExcludeFromCodeCoverage]
     public class SolutionAnalyzerManagerProvider : ISolutionAnalyzerManagerProvider
     {
-        public ISolutionAnalyzerManager Provide(string solutionFilePath, AnalyzerOption analyzerOption)
+        public ISolutionAnalyzerManager Provide(string solutionFilePath)
         {
-            return analyzerOption switch
-            {
-                AnalyzerOption.Buildalyzer => new BuildalyzerSolutionAnalyzerManager(solutionFilePath),
-                AnalyzerOption.Microsoft => new RoslynSolutionAnalyzerManager(solutionFilePath),
-                _ => null,
-            };
+            return new BuildalyzerSolutionAnalyzerManager(solutionFilePath);
         }
     }
 }
