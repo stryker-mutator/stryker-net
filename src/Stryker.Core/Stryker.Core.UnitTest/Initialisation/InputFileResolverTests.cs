@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Moq;
+using NuGet.Frameworks;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
@@ -16,6 +17,7 @@ using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Xunit;
+using static NuGet.Frameworks.FrameworkConstants;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
@@ -68,30 +70,43 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Theory]
-        [InlineData("netcoreapp2.1", Framework.DotNet, 2, 1, null)]
-        [InlineData("netstandard1.6", Framework.DotNetStandard, 1, 6, null)]
-        [InlineData("mono4.6", Framework.Unknown, 4, 6, null)]
-        [InlineData("net4.5", Framework.DotNetClassic, 4, 5, null)]
-        [InlineData("net4.5.1", Framework.DotNetClassic, 4, 5, 1)]
-        [InlineData("net45", Framework.DotNetClassic, 4, 5, null)]
-        [InlineData("net452", Framework.DotNetClassic, 4, 5, 2)]
-        [InlineData("net5.0", Framework.DotNet, 5, 0, null)]
-        [InlineData("net5.0-windows", Framework.DotNet, 5, 0, null)]
-        [InlineData("net5", Framework.DotNet, 5, 0, null)]
-        public void ProjectAnalyzerShouldDecodeFramework(string version, Framework framework, int major, int minor, int? patch)
+        [InlineData("netcoreapp2.1", FrameworkIdentifiers.NetCoreApp, "", 2, 1, 0, 0)]
+        [InlineData("netstandard1.6", FrameworkIdentifiers.NetStandard, "", 1, 6, 0, 0)]
+        [InlineData("net4.5", FrameworkIdentifiers.Net, "", 4, 5, 0, 0)]
+        [InlineData("net4.5.1", FrameworkIdentifiers.Net, "", 4, 5, 1, 0)]
+        [InlineData("net45", FrameworkIdentifiers.Net, "", 4, 5, 0, 0)]
+        [InlineData("net452", FrameworkIdentifiers.Net, "", 4, 5, 2, 0)]
+        [InlineData("net5.0", FrameworkIdentifiers.NetCoreApp, "", 5, 0, 0, 0)]
+        [InlineData("net5.0-windows", FrameworkIdentifiers.NetCoreApp, "windows", 5, 0, 0, 0)]
+        [InlineData("net5", FrameworkIdentifiers.NetCoreApp, "", 5, 0, 0, 0)]
+        public void ProjectAnalyzerShouldDecodeFramework(string tfm, string framework, string platform, int major, int minor, int build, int revision)
+        {
+            var version = new Version(major, minor, build, revision);
+            var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                projectReferences: new List<string> { projectUnderTestPath },
+                targetFramework: tfm).Object;
+
+            var nuGetFramework = analyzerResult.GetNuGetFramework();
+            nuGetFramework.Framework.ShouldBe(framework);
+            nuGetFramework.Platform.ShouldBe(platform);
+            nuGetFramework.Version.ShouldBe(version);
+            nuGetFramework.ShouldBe(new NuGetFramework(framework, version, platform, EmptyVersion));
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("nxt")]
+        [InlineData("mono4.6")]
+        [InlineData("netcoreapp1.2.3.4.5")]
+        public void ProjectAnalyzerShouldRaiseExceptionsForIllFormedFramework(string tfm)
         {
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: new List<string> { projectUnderTestPath },
-                targetFramework: version).Object;
+                targetFramework: tfm).Object;
 
-            if (patch.HasValue)
-            {
-                analyzerResult.GetTargetFrameworkAndVersion().ShouldBe((framework, new Version(major, minor, patch.Value)));
-            }
-            else
-            {
-                analyzerResult.GetTargetFrameworkAndVersion().ShouldBe((framework, new Version(major, minor)));
-            }
+            Action lambda = () => analyzerResult.GetNuGetFramework();
+
+            lambda.ShouldThrow(typeof(InputException));
         }
 
         [Fact]

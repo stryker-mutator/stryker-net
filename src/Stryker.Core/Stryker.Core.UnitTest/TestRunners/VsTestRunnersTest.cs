@@ -101,7 +101,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                         { "TargetDir", Path.GetDirectoryName(_testAssemblyPath) },
                         { "TargetFileName", Path.GetFileName(_testAssemblyPath) }
                     },
-                    targetFramework: "toto").Object
+                    targetFramework: "netcoreapp2.1").Object
                 },
                 ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {

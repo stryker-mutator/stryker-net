@@ -58,7 +58,7 @@ namespace Stryker.Core.Initialisation
 
             if (!analyzerResult.Succeeded)
             {
-                if (analyzerResult.GetTargetFramework() == Framework.DotNetClassic)
+                if (analyzerResult.TargetsFullFramework())
                 {
                     // buildalyzer failed to find restored packages, retry after nuget restore
                     _logger.LogDebug("Project analyzer result not successful, restoring packages");
