@@ -60,11 +60,11 @@
       },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[16.1.10, )",
-        "resolved": "16.1.10",
-        "contentHash": "9t0Dlajwe7MzVjyxszXgEifBFzKVGt0IJ/A22paRc/TfAsRvZ4jX1TdGGtm350wGIRbeQgacesPhipY/pf2eRA==",
+        "requested": "[16.1.11, )",
+        "resolved": "16.1.11",
+        "contentHash": "/b/4FDoOjxkLFUWXQEbRbV04tvl7Uu3oKVMquiykLj5p+r+Ld6znSrECdrM6xqvnZf6HP/eb+o+YdUPhaux1Gw==",
         "dependencies": {
-          "System.IO.Abstractions": "16.1.10"
+          "System.IO.Abstractions": "16.1.11"
         }
       },
       "xunit": {
@@ -1192,8 +1192,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "16.1.10",
-        "contentHash": "8gkCyek6AArbiaX9c+pzRzSFgsagLIbXEmja5b1sRkIEMLqubxoYDpIxrHRAbC1KFZyF2dl/wyQfSurN6X/LWg==",
+        "resolved": "16.1.11",
+        "contentHash": "ylgDEWn/43b56pSnqB0NHg150cTCZthrLXgEJz7SywmVfHc4DQGqBhgPvqatD7cYMJ50mn7ImQfQyrpsZAwmNQ==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "5.0.0"
         }
@@ -1866,7 +1866,7 @@
           "ShellProgressBar": "5.1.0",
           "Stryker.DataCollector": "1.3.1",
           "Stryker.RegexMutators": "1.3.1",
-          "System.IO.Abstractions": "16.1.10",
+          "System.IO.Abstractions": "16.1.11",
           "System.Net.Http.Json": "6.0.0"
         }
       },
