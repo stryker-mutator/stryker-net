@@ -2,29 +2,18 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
-using System.Text.RegularExpressions;
+using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
+using NuGet.Frameworks;
 using Stryker.Core.Exceptions;
 
-namespace Stryker.Core.Initialisation.SolutionAnalyzer
+namespace Stryker.Core.Initialisation.Buildalyzer
 {
     public static class IAnalyzerResultExtensions
     {
-        /// <summary>
-        /// Method needed for ProjectFileReader, which uses Buildalyzer directly.
-        /// </summary>
-        /// <param name="buildAlyzerResult"></param>
-        /// <returns></returns>
-        public static IAnalyzerResult ToAnalyzerResult(this Buildalyzer.IAnalyzerResult buildAlyzerResult)
-        {
-            return new AnalyzerResult(buildAlyzerResult.ProjectFilePath, buildAlyzerResult.References, buildAlyzerResult.ProjectReferences,
-                                        buildAlyzerResult.AnalyzerReferences, buildAlyzerResult.PreprocessorSymbols, buildAlyzerResult.Properties,
-                                        buildAlyzerResult.SourceFiles, buildAlyzerResult.Succeeded, buildAlyzerResult.TargetFramework);
-        }
-
         public static string GetAssemblyPath(this IAnalyzerResult analyzerResult)
         {
             return FilePathUtils.NormalizePathSeparators(Path.Combine(
@@ -108,37 +97,21 @@ namespace Stryker.Core.Initialisation.SolutionAnalyzer
             public Assembly LoadFromPath(string fullPath) => Assembly.LoadFrom(fullPath);
         }
 
-        public static Framework GetTargetFramework(this IAnalyzerResult analyzerResult)
+        internal static NuGetFramework GetNuGetFramework(this IAnalyzerResult analyzerResult)
         {
-            try
+            var framework = NuGetFramework.Parse(analyzerResult.TargetFramework ?? "");
+            if (framework == NuGetFramework.UnsupportedFramework)
             {
-                return ParseTargetFramework(analyzerResult.TargetFramework);
+                var atPath = string.IsNullOrEmpty(analyzerResult.ProjectFilePath) ? "" : $" at '{analyzerResult.ProjectFilePath}'";
+                var message = $"The target framework '{analyzerResult.TargetFramework}' is not supported. Please fix the target framework in the csproj{atPath}.";
+                throw new InputException(message);
             }
-            catch (ArgumentException)
-            {
-                throw new InputException($"Unable to parse framework version string {analyzerResult.TargetFramework}. Please fix the framework version in the csproj.");
-            }
+            return framework;
         }
 
-        /// <summary>
-        /// Extracts a target <c>Framework</c> and <c>Version</c> from the MSBuild property TargetFramework
-        /// </summary>
-        /// <returns>
-        /// A tuple of <c>Framework</c> and <c>Version</c> which together form the target framework and framework version of the project.
-        /// </returns>
-        /// <example>
-        /// <c>(Framework.NetCore, 3.0)</c>
-        /// </example>
-        public static (Framework Framework, Version Version) GetTargetFrameworkAndVersion(this IAnalyzerResult analyzerResult)
+        internal static bool TargetsFullFramework(this IAnalyzerResult analyzerResult)
         {
-            try
-            {
-                return (ParseTargetFramework(analyzerResult.TargetFramework), ParseTargetFrameworkVersion(analyzerResult.TargetFramework));
-            }
-            catch (ArgumentException)
-            {
-                throw new InputException($"Unable to parse framework version string {analyzerResult.TargetFramework}. Please fix the framework version in the csproj.");
-            }
+            return GetNuGetFramework(analyzerResult).IsDesktop();
         }
 
         public static Language GetLanguage(this IAnalyzerResult analyzerResult)
@@ -159,39 +132,6 @@ namespace Stryker.Core.Initialisation.SolutionAnalyzer
                 .Contains("{3AC096D0-A1C2-E12C-1390-A8335801FDAB}");
 
             return isTestProject || hasTestProjectTypeGuid;
-        }
-
-        private static Framework ParseTargetFramework(string targetFrameworkVersionString)
-        {
-            return targetFrameworkVersionString switch
-            {
-                string framework when framework.StartsWith("netcoreapp") => Framework.DotNet,
-                string framework when framework.StartsWith("netstandard") => Framework.DotNetStandard,
-                string framework when framework.StartsWith("net") && char.GetNumericValue(framework[3]) >= 5 => Framework.DotNet,
-                string framework when framework.StartsWith("net") && char.GetNumericValue(framework[3]) <= 4 => Framework.DotNetClassic,
-                _ => Framework.Unknown
-            };
-        }
-
-        private static Version ParseTargetFrameworkVersion(string targetFrameworkVersionString)
-        {
-            var analysis = Regex.Match(targetFrameworkVersionString ?? string.Empty, "(?<version>[\\d\\.]+)");
-            if (analysis.Success)
-            {
-                var version = analysis.Groups["version"].Value;
-                if (!version.Contains('.'))
-                {
-                    version = version.Length switch
-                    {
-                        1 => $"{version}.0",
-                        2 => $"{version[0]}.{version.Substring(1)}",
-                        3 => $"{version[0]}.{version[1]}.{version[2]}",
-                        _ => throw new ArgumentException("invalid version")
-                    };
-                }
-                return new Version(version);
-            }
-            return new Version();
         }
 
         private static OutputKind GetOutputKind(this IAnalyzerResult analyzerResult)

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
@@ -68,10 +69,7 @@ namespace Stryker.Core.Mutants
 
         public StatementSyntax PlaceBlockMutations(StatementSyntax block, Func<Mutation, StatementSyntax> mutationFunc)
         {
-            var result =
-                MutantPlacer.PlaceStatementControlledMutations(block,
-                    _blockMutants.Peek()
-                        .Select(m => (m.Id, mutationFunc(m.Mutation))));
+            var result = MutantPlacer.PlaceStatementControlledMutations(block, _blockMutants.Peek().Select(m => (m, mutationFunc(m.Mutation))));
             _blockMutants.Peek().Clear();
             return result;
         }
@@ -82,19 +80,14 @@ namespace Stryker.Core.Mutants
             {
                 return block;
             }
-            var result =
-                MutantPlacer.PlaceStatementControlledMutations(block,
-                    _statementMutants.Peek()
-                        .Select(m => (m.Id, mutationFunc(m.Mutation))));
+            var result = MutantPlacer.PlaceStatementControlledMutations(block, _statementMutants.Peek().Select(m => (m, mutationFunc(m.Mutation))));
             _statementMutants.Peek().Clear();
             return result;
         }
 
-        public ExpressionSyntax PlaceExpressionMutations(ExpressionSyntax expression,
-            Func<Mutation, ExpressionSyntax> converter)
+        public ExpressionSyntax PlaceExpressionMutations(ExpressionSyntax expression, Func<Mutation, ExpressionSyntax> converter)
         {
-            var result = MutantPlacer.PlaceExpressionControlledMutations(expression,
-                _expressionMutants.Select(m => (m.Id, converter(m.Mutation))));
+            var result = MutantPlacer.PlaceExpressionControlledMutations(expression, _expressionMutants.Select(m => (m, converter(m.Mutation))));
             _expressionMutants.Clear();
             return result;
         }

@@ -62,7 +62,7 @@ namespace Stryker.Core.Mutants
                 new DontMutateOrchestrator<EnumMemberDeclarationSyntax>(),
                 new DontMutateOrchestrator<RecursivePatternSyntax>(),
                 new DontMutateOrchestrator<FieldDeclarationSyntax>(
-                    (t) => t.Modifiers.Any(x => x.Kind() == SyntaxKind.ConstKeyword)),
+                    (t) => t.Modifiers.Any(x => x.IsKind(SyntaxKind.ConstKeyword))),
                 new AssignmentStatementOrchestrator(),
                 new PostfixUnaryExpressionOrchestrator(),
                 new StaticFieldDeclarationOrchestrator(),

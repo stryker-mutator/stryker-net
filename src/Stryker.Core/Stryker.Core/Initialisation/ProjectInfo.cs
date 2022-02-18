@@ -60,12 +60,4 @@ namespace Stryker.Core.Initialisation
 
         private static string GetBackupName(string injectionPath) => injectionPath + ".stryker-unchanged";
     }
-
-    public enum Framework
-    {
-        DotNetClassic,
-        DotNet,
-        DotNetStandard,
-        Unknown
-    };
 }
