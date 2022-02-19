@@ -22,13 +22,13 @@ namespace Stryker.Core.Initialisation
     public class ProjectOrchestrator : IProjectOrchestrator
     {
         private readonly ILogger _logger;
-        private readonly IProjectsAnalyzerManagerProvider _solutionAnalyzerManagerProvider;
+        private readonly IProjectsAnalyzerManagerProvider _projectsAnalyzerManagerProvider;
         private readonly IProjectMutator _projectMutator;
 
-        public ProjectOrchestrator(IProjectsAnalyzerManagerProvider solutionAnalyzerManagerProvider = null,
+        public ProjectOrchestrator(IProjectsAnalyzerManagerProvider projectsAnalyzerManagerProvider = null,
             IProjectMutator projectMutator = null)
         {
-            _solutionAnalyzerManagerProvider = solutionAnalyzerManagerProvider ?? new ProjectsAnalyzerManagerProvider();
+            _projectsAnalyzerManagerProvider = projectsAnalyzerManagerProvider ?? new ProjectsAnalyzerManagerProvider();
             _projectMutator = projectMutator ?? new ProjectMutator();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectOrchestrator>();
         }
@@ -95,7 +95,7 @@ namespace Stryker.Core.Initialisation
         private List<IAnalysisResult> AnalyzeSolution(StrykerOptions options)
         {
             _logger.LogInformation("Identifying projects to mutate. This can take a while.");
-            var manager = _solutionAnalyzerManagerProvider.Provide(options.SolutionPath);
+            var manager = _projectsAnalyzerManagerProvider.Provide(options.SolutionPath);
 
             // build all projects
             var projectsAnalyzerResults = new ConcurrentBag<IAnalysisResult>();
