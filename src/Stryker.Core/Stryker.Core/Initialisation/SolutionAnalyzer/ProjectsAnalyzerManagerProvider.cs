@@ -15,7 +15,7 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
     {
         public IProjectsAnalyzerManager Provide(string filePath)
         {
-            return new BuildalyzerProjectsAnalyzerManager(filePath);
+            return new MsBuildProjectsAnalyzerManager(filePath);
         }
     }
 }
