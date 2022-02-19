@@ -1,4 +1,7 @@
 using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Logging;
 
 namespace Stryker.Core.Initialisation.ProjectAnalyzer
 {
@@ -15,6 +18,7 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
             _sourceFiles = sourceFiles;
             _succeeded = succeeded;
             _targetFramework = targetFramework;
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<AnalyzerResult>();
         }
 
         private readonly string _projectFilePath;
@@ -26,6 +30,7 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
         private readonly string[] _sourceFiles;
         private readonly bool _succeeded;
         private readonly string _targetFramework;
+        private readonly ILogger _logger;
 
 
         public string ProjectFilePath { get { return _projectFilePath; } }
@@ -45,5 +50,29 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
         public bool Succeeded { get { return _succeeded; } }
 
         public string TargetFramework { get { return _targetFramework; } }
+
+        public void Log()
+        {
+            // dump all properties as it can help diagnosing build issues for user project.
+            _logger.LogTrace("**** Analyzer result ****");
+
+            _logger.LogTrace("Project: {0}", ProjectFilePath);
+            _logger.LogTrace("TargetFramework: {0}", TargetFramework);
+
+            foreach (var property in Properties ?? new Dictionary<string, string>())
+            {
+                _logger.LogTrace("Property {0}={1}", property.Key, property.Value);
+            }
+            foreach (var sourceFile in SourceFiles ?? Enumerable.Empty<string>())
+            {
+                _logger.LogTrace("SourceFile {0}", sourceFile);
+            }
+            foreach (var reference in References ?? Enumerable.Empty<string>())
+            {
+                _logger.LogTrace("References: {0}", reference);
+            }
+            _logger.LogTrace("Succeeded: {0}", Succeeded);
+            _logger.LogTrace("**** Analyzer result ****");
+        }
     }
 }

@@ -25,5 +25,7 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
         bool Succeeded { get; }
 
         string TargetFramework { get; }
+
+        void Log();
     }
 }

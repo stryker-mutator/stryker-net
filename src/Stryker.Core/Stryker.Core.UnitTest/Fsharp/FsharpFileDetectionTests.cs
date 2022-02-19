@@ -62,13 +62,13 @@ namespace Stryker.Core.UnitTest.Fsharp
                 });
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, "fsharp"))
-                .Returns(TestHelper.SetupProjectBuildalyzerResult(
+                .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>() { _projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: _testProjectPath,
                     references: new string[] { "" }).Object);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(_projectUnderTestPath, null, "fsharp"))
-                .Returns(TestHelper.SetupProjectBuildalyzerResult(
+                .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>() { _projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: _projectUnderTestPath,

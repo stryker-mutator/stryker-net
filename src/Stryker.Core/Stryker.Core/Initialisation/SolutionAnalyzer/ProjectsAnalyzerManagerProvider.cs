@@ -7,15 +7,15 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
     /// </summary>
     public interface IProjectsAnalyzerManagerProvider
     {
-        IProjectsAnalyzerManager Provide(string solutionFilePath);
+        IProjectsAnalyzerManager Provide(string filePath);
     }
 
     [ExcludeFromCodeCoverage]
     public class ProjectsAnalyzerManagerProvider : IProjectsAnalyzerManagerProvider
     {
-        public IProjectsAnalyzerManager Provide(string solutionFilePath)
+        public IProjectsAnalyzerManager Provide(string filePath)
         {
-            return new BuildalyzerProjectsAnalyzerManager(solutionFilePath);
+            return new BuildalyzerProjectsAnalyzerManager(filePath);
         }
     }
 }

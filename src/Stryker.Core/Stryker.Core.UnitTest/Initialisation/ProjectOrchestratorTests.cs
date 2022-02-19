@@ -67,11 +67,11 @@ namespace Stryker.Core.UnitTest.Initialisation
                     { "MyProject.UnitTests", testProjectAnalyzerMock.Object }
                 });
             testProjectAnalyzerMock.Setup(x => x.ProjectFilePath).Returns("C:/testproject/");
-            testProjectAnalyzerMock.Setup(x => x.Analyze()).Returns(testProjectAnalyzerResultMock.Object);
+            testProjectAnalyzerMock.Setup(x => x.Analyze(It.IsAny<string>())).Returns(testProjectAnalyzerResultMock.Object);
             testProjectAnalyzerResultMock.Setup(x => x.ProjectReferences).Returns(new[] { "C:/projectundertest/projectundertest.csproj" });
             testProjectAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns("C:/testproject/projectUnderTest.csproj");
             projectUnderTestAnalyzerMock.Setup(x => x.ProjectFilePath).Returns("C:/projectUnderTest/");
-            projectUnderTestAnalyzerMock.Setup(x => x.Analyze()).Returns(projectUnderTestAnalyzerResultMock.Object);
+            projectUnderTestAnalyzerMock.Setup(x => x.Analyze(It.IsAny<string>())).Returns(projectUnderTestAnalyzerResultMock.Object);
             // The test project references the microsoft.net.test.sdk
             testProjectAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "True" } });
             projectUnderTestAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "False" }, { "ProjectTypeGuids", "not testproject" } });

@@ -6,7 +6,6 @@ using Shouldly;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Xunit;
-using IAnalyzerResult = Buildalyzer.IAnalyzerResult;
 using IProjectAnalyzer = Buildalyzer.IProjectAnalyzer;
 
 namespace Stryker.Core.UnitTest.Initialisation
@@ -14,17 +13,12 @@ namespace Stryker.Core.UnitTest.Initialisation
     public class TargetFrameworkResolutionTests : TestBase
     {
         private IEnumerable<IAnalyzerResult> _analyzerResults = Enumerable.Empty<IAnalyzerResult>();
-        private readonly ProjectFileReader _projectFileReader;
+        private readonly BuildalyzerProjectAnalyzer _buildAlyzerProjectAnalyzer;
 
         public TargetFrameworkResolutionTests()
         {
-            var analyzerManagerMock = new Mock<IAnalyzerManager>();
             var projectAnalyzerMock = new Mock<IProjectAnalyzer>();
             var analyzerResultsMock = new Mock<IAnalyzerResults>();
-
-            analyzerManagerMock
-                .Setup(m => m.GetProject(It.IsAny<string>()))
-                .Returns(projectAnalyzerMock.Object);
 
             projectAnalyzerMock
                 .Setup(m => m.Build())
@@ -34,7 +28,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Setup(m => m.GetEnumerator())
                 .Returns(() => _analyzerResults.GetEnumerator());
 
-            _projectFileReader = new ProjectFileReader(manager: analyzerManagerMock.Object);
+            _buildAlyzerProjectAnalyzer = new BuildalyzerProjectAnalyzer(projectAnalyzer: projectAnalyzerMock.Object);
         }
 
         [Fact]
@@ -54,7 +48,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            var result = _projectFileReader.AnalyzeProject(null, null, null);
+            var result = _buildAlyzerProjectAnalyzer.Analyze(null);
             result.TargetFramework.ShouldBe("X");
         }
 
@@ -75,7 +69,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            var result = _projectFileReader.AnalyzeProject(null, null, "Y");
+            var result = _buildAlyzerProjectAnalyzer.Analyze("Y");
             result.TargetFramework.ShouldBe("Y");
         }
 
@@ -96,7 +90,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            var result = _projectFileReader.AnalyzeProject(null, null, "Z");
+            var result = _buildAlyzerProjectAnalyzer.Analyze("Z");
             result.TargetFramework.ShouldBe("X");
         }
     }

@@ -13,18 +13,6 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
 {
     public static class IAnalyzerResultExtensions
     {
-        /// <summary>
-        /// Method needed for ProjectFileReader, which uses Buildalyzer directly.
-        /// </summary>
-        /// <param name="buildAlyzerResult"></param>
-        /// <returns></returns>
-        public static IAnalysisResult ToAnalyzerResult(this Buildalyzer.IAnalyzerResult buildAlyzerResult)
-        {
-            return new AnalyzerResult(buildAlyzerResult.ProjectFilePath, buildAlyzerResult.References, buildAlyzerResult.ProjectReferences,
-                                        buildAlyzerResult.AnalyzerReferences, buildAlyzerResult.PreprocessorSymbols, buildAlyzerResult.Properties,
-                                        buildAlyzerResult.SourceFiles, buildAlyzerResult.Succeeded, buildAlyzerResult.TargetFramework);
-        }
-
         public static string GetAssemblyPath(this IAnalysisResult analyzerResult)
         {
             return FilePathUtils.NormalizePathSeparators(Path.Combine(
@@ -124,12 +112,6 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
         {
             return GetNuGetFramework(analyzerResult).IsDesktop();
         }
-
-        internal static bool TargetsFullFramework(this Buildalyzer.IAnalyzerResult analyzerResult)
-        {
-            return TargetsFullFramework(analyzerResult.ToAnalyzerResult());
-        }
-
 
         public static Language GetLanguage(this IAnalysisResult analyzerResult)
         {
