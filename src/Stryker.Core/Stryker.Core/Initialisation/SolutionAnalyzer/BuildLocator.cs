@@ -30,7 +30,7 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
             VisualStudioInstance instance = instances/*.Where(x => x.Version.ToString() == "3.1.302")*/.First();
             Console.WriteLine($"Using version {instance.Version} of SDK to process SLN and csproj files.");
             MSBuildLocator.RegisterInstance(instance);
-
+/*
             // We're using the installed version of the binaries to avoid a dependency between
             // the .NET Core SDK version and NuGet. This is a workaround due to the issue below:
             // https://github.com/microsoft/MSBuildLocator/issues/86
@@ -51,6 +51,6 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
                 }
                 return null;
             };
-        }
+*/        }
     }
 }

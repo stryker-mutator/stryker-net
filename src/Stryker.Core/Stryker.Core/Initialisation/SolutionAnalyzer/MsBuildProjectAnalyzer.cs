@@ -49,7 +49,9 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
 
             try
             {
-                _project = Project.FromFile(props[@"AbsolutePath"], projectOptions);
+                //ProjectCollection.GlobalProjectCollection.LoadProject(props[@"AbsolutePath"], projectOptions);
+                _project = ProjectCollection.GlobalProjectCollection.LoadedProjects.FirstOrDefault(d => d.FullPath == props[@"AbsolutePath"]) ??
+                                Project.FromFile(props[@"AbsolutePath"], new ProjectOptions());
             }
             catch (InvalidProjectFileException ex)
             {
@@ -84,11 +86,53 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
             {
                 foreach (ProjectItem item in _project.AllEvaluatedItems.Where(x => x.ItemType == @"ProjectReference"))
                 {
+                    // ProjectReference is a relative path
+                    string projectReference = Path.Combine(_project.DirectoryPath, item.EvaluatedInclude);
+                    projectReference = Path.GetFullPath(projectReference);
+                    references.Add(projectReference);
+                }
+            }
+            return references;
+        }
+
+        private List<string> GetAnalyzerReferences()
+        {
+            var references = new List<string>();
+            if (_project != null)
+            {
+                foreach (ProjectItem item in _project.AllEvaluatedItems.Where(x => x.ItemType == @"Analyzer"))
+                {
                     references.Add(item.EvaluatedInclude);
                 }
             }
             return references;
         }
+        private List<string> GetReferences()
+        {
+            var references = new List<string>();
+            if (_project != null)
+            {
+                foreach (ProjectItem item in _project.AllEvaluatedItems.Where(x => x.ItemType == @"Reference"))
+                {
+                    references.Add(item.EvaluatedInclude);
+                }
+            }
+            return references;
+        }
+
+        private List<string> GetPreprocessorValues()
+        {
+            var references = new List<string>();
+            if (_project != null)
+            {
+                foreach (ProjectItem item in _project.AllEvaluatedItems.Where(x => x.ItemType == @"PreprocessorValue"))
+                {
+                    references.Add(item.EvaluatedInclude);
+                }
+            }
+            return references;
+        }
+
 
         private List<string> GetSourceFiles()
         {
@@ -114,12 +158,15 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
         {
             string projectFilePath = _project.FullPath;
             IEnumerable<string> projectReferences = GetProjectReferences();
+            IEnumerable<string> analyzerReferences = GetAnalyzerReferences();
+            IEnumerable<string> references = GetReferences();
+            IEnumerable<string> preprocessorValues = GetPreprocessorValues();
             IReadOnlyDictionary<string, string> properties = GetProperties();
             string[] sourceFiles = GetSourceFiles().ToArray();
-            string targetFramework2 = GetTargetFramework();
+            string targetFramework2 = GetTargetFramework(); // TODO: Filter by TargetFramework rather than everything munged together
             bool succeeded = _project != null;
 
-            var result = new AnalyzerResult(projectFilePath, projectReferences /*references*/, projectReferences, projectReferences/* analyzerReferences*/, null /* preprocessorsymbols*/, properties, sourceFiles, succeeded, targetFramework);
+            var result = new AnalyzerResult(projectFilePath, references, projectReferences, analyzerReferences, preprocessorValues, properties, sourceFiles, succeeded, targetFramework);
             result.Log();
             return result;
         }
