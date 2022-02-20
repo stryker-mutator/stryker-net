@@ -35,6 +35,9 @@ namespace Stryker.Core.Initialisation
 
         public IEnumerable<IMutationTestProcess> MutateProjects(StrykerOptions options, IReporter reporters)
         {
+            BuildLocator buildLocator = new();
+            buildLocator.Initialize();
+
             if (IsSolutionContext(options))
             {
                 // Build and analyze all projects in the solution with buildalyzer

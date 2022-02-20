@@ -46,7 +46,7 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
                     {
                         continue;
                     }
-                    _projects.Add(filePath, new MsBuildProjectAnalyzer(projectInSolution));
+                    _projects.Add(projectInSolution.AbsolutePath, new MsBuildProjectAnalyzer(projectInSolution));
                 }
             }
             else
