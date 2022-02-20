@@ -21,13 +21,6 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
             SolutionProjectType.WebProject
         };
 
-        private void AddProject(string filePath)
-        {
-            AnalyzerManager analyzerManager = new();
-            Buildalyzer.IProjectAnalyzer projectAnalyzer = analyzerManager.GetProject(filePath);
-            _projects.Add(filePath, new BuildalyzerProjectAnalyzer(projectAnalyzer));
-        }
-
         public MsBuildProjectsAnalyzerManager(string filePath)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MsBuildProjectsAnalyzerManager>();
@@ -53,13 +46,12 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
                     {
                         continue;
                     }
-
-                    AddProject(projectInSolution.AbsolutePath);
+                    _projects.Add(filePath, new MsBuildProjectAnalyzer(projectInSolution));
                 }
             }
             else
             {
-                AddProject(filePath);
+                _projects.Add(filePath, new MsBuildProjectAnalyzer(filePath));
             }
         }
         public IReadOnlyDictionary<string, IProjectAnalyzer> Projects { get { return _projects; } }
