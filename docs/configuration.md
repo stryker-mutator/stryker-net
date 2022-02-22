@@ -56,7 +56,7 @@ The project file name is required when your test project has more than one proje
 ### `test-projects` <`string[]`>
 
 Default: `null`  
-Command line: `N/A`  
+Command line: `[-tp|--test-project] "../Tests/Tests.csproj" -tp "../MoreTests/MoreTests.csproj"`
 Config file: `"test-projects": ['../MyProject.UnitTests/MyProject.UnitTests.csproj', '../MyProject.SpecFlow/MyProject.SpecFlow.csproj']`
 
 When you have multiple test projects covering one project under test you may specify all relevant test projects in the config file. You must run stryker from the project under test instead of the test project directory when using multiple test projects.

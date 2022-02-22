@@ -268,6 +268,19 @@ Options:";
         }
 
         [Theory]
+        [InlineData("--test-project")]
+        [InlineData("-tp")]
+        public void ShouldPassTestProjectArgumentsToStryker_WithTestProjectArgument(string argName)
+        {
+            _target.Run(new string[] { argName, "SomeProjectName1.csproj", argName, "SomeProjectName2.csproj" });
+
+            _strykerRunnerMock.VerifyAll();
+
+            _inputs.TestProjectsInput.SuppliedInput.ShouldContain("SomeProjectName1.csproj");
+            _inputs.TestProjectsInput.SuppliedInput.ShouldContain("SomeProjectName2.csproj");
+        }
+
+        [Theory]
         [InlineData("--verbosity")]
         [InlineData("-V")]
         public void ShouldPassLogConsoleArgumentsToStryker_WithLogConsoleArgument(string argName)
