@@ -27,7 +27,7 @@ cd /my/unit/test/project/folder
 dotnet stryker
 ```
 
-For more information read our [getting started](https://stryker-mutator.io/docs/stryker-net/Getting-started)
+For more information read our [getting started](https://stryker-mutator.io/docs/stryker-net/getting-started)
 
 ## Documentation
 

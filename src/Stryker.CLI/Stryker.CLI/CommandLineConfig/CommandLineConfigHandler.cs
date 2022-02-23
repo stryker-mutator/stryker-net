@@ -128,8 +128,8 @@ namespace Stryker.CLI
 
             AddCliInput(inputs.MutateInput, "mutate", "m", optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern", category: InputCategory.Mutation);
             AddCliInput(inputs.MutationLevelInput, "mutation-level", "l", category: InputCategory.Mutation);
-            AddCliInput(inputs.SinceInput, "since", "", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish", category: InputCategory.Mutation);
-            AddCliInput(inputs.WithBaselineInput, "with-baseline", "", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "comittish", category: InputCategory.Mutation);
+            AddCliInput(inputs.SinceInput, "since", "", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "committish", category: InputCategory.Mutation);
+            AddCliInput(inputs.WithBaselineInput, "with-baseline", "", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "committish", category: InputCategory.Mutation);
 
             AddCliInput(inputs.OpenReportInput, "open-report", "o", CommandOptionType.SingleOrNoValue, argumentHint: "report-type", category: InputCategory.Reporting);
             AddCliInput(inputs.ReportersInput, "reporter", "r", optionType: CommandOptionType.MultipleValue, category: InputCategory.Reporting);
