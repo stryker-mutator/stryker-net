@@ -93,13 +93,12 @@ namespace Stryker.Core.UnitTest.Reporters
             var mutationTree = JsonReportTestHelper.CreateProjectWith();
 
             reporter.OnAllMutantsTested(mutationTree);
-            var reportUri = Path.Combine(options.OutputPath, "reports", $"{options.ReportFileName}.html");
 
-            reportUri = reportUri.Replace("\\", "/");
-            reportUri = reportUri.StartsWith("/") ? reportUri : "/" + reportUri;
+            var reportUri = Path.Combine(options.OutputPath, "reports", $"{options.ReportFileName}.html");
+            reportUri = "file://" + reportUri.Replace("\\", "/");
 
             // Check if browser open action is invoked
-            mockProcess.Verify(m => m.Open("file://" + reportUri));
+            mockProcess.Verify(m => m.Open(reportUri));
         }
 
         [Theory]

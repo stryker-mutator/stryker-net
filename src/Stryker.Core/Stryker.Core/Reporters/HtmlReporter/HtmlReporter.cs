@@ -37,10 +37,7 @@ namespace Stryker.Core.Reporters.Html.reporter
 
             WriteHtmlReport(reportPath, mutationReport.ToJsonHtmlSafe());
 
-            // to make path clickable it should always start with: file:///
-            var reportUri = reportPath.Replace("\\", "/");
-            reportUri = reportUri.StartsWith("/") ? reportUri : "/" + reportUri;
-            reportUri = "file://" + reportUri;
+            var reportUri = "file://" + reportPath.Replace("\\", "/");
 
             if (_options.ReportTypeToOpen == Options.Inputs.ReportType.Html)
             {
@@ -48,12 +45,22 @@ namespace Stryker.Core.Reporters.Html.reporter
             }
             else
             {
-                _console.Markup("[Cyan]Hint: by passing \"--open-report or -o\" the report will open automatically once Stryker is done.[/]");
+                _console.MarkupLine("[Cyan]Hint: by passing \"--open-report or -o\" the report will open automatically once Stryker is done.[/]");
             }
 
-            _console.MarkupLine($"[Green]\nYour html report has been generated at:\n" +
-                $"{reportUri}\n" +
-                $"You can open it in your browser of choice.[/]");
+            _console.WriteLine();
+            _console.MarkupLine("[Green]Your html report has been generated at:[/]");
+
+            if (_console.Profile.Capabilities.Links)
+            {
+                _console.MarkupLine($"[Green][link={reportUri}]{reportPath}[/][/]");
+            }
+            else
+            {
+                _console.MarkupLine($"[Green]{reportPath}[/]");
+            }
+
+            _console.MarkupLine("[Green]You can open it in your browser of choice.[/]");
         }
 
         private void WriteHtmlReport(string filePath, string mutationReport)

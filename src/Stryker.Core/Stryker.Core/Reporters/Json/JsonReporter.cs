@@ -26,13 +26,21 @@ namespace Stryker.Core.Reporters.Json
             var mutationReport = JsonReport.Build(_options, reportComponent);
             var filename = _options.ReportFileName + ".json";
             var reportPath = Path.Combine(_options.OutputPath, "reports", filename);
+            var reportUri = "file://" + reportPath.Replace("\\", "/");
 
             WriteReportToJsonFile(reportPath, mutationReport);
 
-            var clickablePath = reportPath.Replace("\\", "/");
-            clickablePath = clickablePath.StartsWith("/") ? clickablePath : $"/{clickablePath}";
+            _console.WriteLine();
+            _console.MarkupLine("[Green]Your json report has been generated at:[/]");
 
-            _console.Markup($"[Green]\nYour json report has been generated at: \n file://{clickablePath} \n[/]");
+            if (_console.Profile.Capabilities.Links)
+            {
+                _console.MarkupLine($"[Green][link={reportUri}]{reportPath}[/][/]");
+            }
+            else
+            {
+                _console.MarkupLine($"[Green]{reportPath}[/]");
+            }
         }
 
         private void WriteReportToJsonFile(string filePath, JsonReport mutationReport)
