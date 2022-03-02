@@ -40,10 +40,10 @@
       },
       "Buildalyzer": {
         "type": "Transitive",
-        "resolved": "4.1.1",
-        "contentHash": "6RrdDb6sAMG1w6+PnRxGEqt2AD1AVzXBqXbyAD2BIefdbinUjYbHfGYLhmHquQXW/gRmvTQINFXaunl9oPRikw==",
+        "resolved": "4.1.2",
+        "contentHash": "6wFnJysMQjLntQamKcL8MNZX/gjnipU7JqLmowLuqY/icTY0e4YreQWqOaR/dLRSTT5jIveVON3+szHx/WW7vw==",
         "dependencies": {
-          "Buildalyzer.Logger": "4.1.1",
+          "Buildalyzer.Logger": "4.1.2",
           "MSBuild.StructuredLogger": "2.1.507",
           "Microsoft.Build": "16.9.0",
           "Microsoft.Build.Framework": "16.9.0",
@@ -52,15 +52,15 @@
           "Microsoft.Extensions.DependencyModel": "2.1.0",
           "Microsoft.Extensions.Logging": "2.1.1",
           "Microsoft.Extensions.Logging.Abstractions": "2.1.1",
-          "MsBuildPipeLogger.Server": "1.1.4",
+          "MsBuildPipeLogger.Server": "1.1.6",
           "NuGet.Frameworks": "6.0.0",
           "System.Reflection.TypeExtensions": "4.7.0"
         }
       },
       "Buildalyzer.Logger": {
         "type": "Transitive",
-        "resolved": "4.1.1",
-        "contentHash": "ZmjvopEp/+Y5Tjc5fC/1RVDy5M5NDjjzz5O7WOqGdN1vTLvyttCplKeV4CFKWJn4wPlYU7exMpsTuk0WPrm3zw=="
+        "resolved": "4.1.2",
+        "contentHash": "CFmtVa9YhgmsGOitH8OHaASLBMrZIVPGCCM+uLySqqmplMV54s30J8PLxlVLEv4TAKrJaJCZf7bnZdowRQv+JA=="
       },
       "Crayon": {
         "type": "Transitive",
@@ -479,8 +479,8 @@
       },
       "MsBuildPipeLogger.Server": {
         "type": "Transitive",
-        "resolved": "1.1.4",
-        "contentHash": "q8JEIy//2yMTDRlydDKE2T4Uws3IVsxIAnsyAEL/FSck80UU2sKWx8mPMciqs1xb54Bdm7mVgZnRDOb/2Mf3Ew==",
+        "resolved": "1.1.6",
+        "contentHash": "rls0hb7plSfVFCqScDxTqtGpIlMfoQEchqjmK/YtXDML11GU5jI+oCi9YsikGulJVUv/vLSY6Ktah0uXwv25EA==",
         "dependencies": {
           "Microsoft.Build": "15.3.409"
         }
@@ -1245,7 +1245,7 @@
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "Buildalyzer": "4.1.1",
+          "Buildalyzer": "4.1.2",
           "Crayon": "2.0.64",
           "DotNet.Glob": "3.1.3",
           "FSharp.Compiler.Service": "38.0.0",
@@ -1266,8 +1266,8 @@
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "4.0.1",
           "ShellProgressBar": "5.1.0",
-          "Stryker.DataCollector": "1.3.1",
-          "Stryker.RegexMutators": "1.3.1",
+          "Stryker.DataCollector": "1.4.0",
+          "Stryker.RegexMutators": "1.4.0",
           "System.IO.Abstractions": "16.1.15",
           "System.Net.Http.Json": "6.0.0"
         }
