@@ -15,14 +15,19 @@ Reasons you might want to lower this setting:
     - You're running on a shared server
     - You are running stryker in the background while doing other work";
 
-        public override int? Default => Environment.ProcessorCount / 2;
+        public override int? Default => Math.Max(Environment.ProcessorCount / 2, 1);
 
         public int Validate(ILogger<ConcurrencyInput> logger = null)
         {
             logger ??= ApplicationLogging.LoggerFactory.CreateLogger<ConcurrencyInput>();
 
-            if (SuppliedInput == null)
+            if (SuppliedInput is null)
             {
+                if (Environment.ProcessorCount < 1)
+                {
+                    logger.LogWarning("Processor count is not reported by the system, using concurrency of 1. Set a concurrency to remove this warning.");
+                }
+
                 return Default.Value;
             }
 
