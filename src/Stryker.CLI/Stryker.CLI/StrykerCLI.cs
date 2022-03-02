@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Crayon;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
+using Spectre.Console;
 using Stryker.CLI.Clients;
 using Stryker.CLI.Logging;
 using Stryker.Core;
@@ -18,18 +18,21 @@ namespace Stryker.CLI
         private readonly IConfigReader _configReader;
         private readonly ILoggingInitializer _loggingInitializer;
         private readonly IStrykerNugetFeedClient _nugetClient;
+        private readonly IAnsiConsole _console;
 
         public int ExitCode { get; private set; } = ExitCodes.Success;
 
         public StrykerCli(IStrykerRunner stryker = null,
             IConfigReader configReader = null,
             ILoggingInitializer loggingInitializer = null,
-            IStrykerNugetFeedClient nugetClient = null)
+            IStrykerNugetFeedClient nugetClient = null,
+            IAnsiConsole console = null)
         {
             _stryker = stryker ?? new StrykerRunner();
             _configReader = configReader ?? new ConfigReader();
             _loggingInitializer = loggingInitializer ?? new LoggingInitializer();
             _nugetClient = nugetClient ?? new StrykerNugetFeedClient();
+            _console = console ?? AnsiConsole.Console;
         }
 
         /// <summary>
@@ -99,19 +102,20 @@ namespace Stryker.CLI
             if (double.IsNaN(result.MutationScore))
             {
                 logger.LogInformation("Stryker was unable to calculate a mutation score");
-            } else
+            }
+            else
             {
                 logger.LogInformation("The final mutation score is {MutationScore:P2}", result.MutationScore);
             }
+
             if (result.ScoreIsLowerThanThresholdBreak())
             {
                 var thresholdBreak = (double)inputs.ValidateAll().Thresholds.Break / 100;
                 logger.LogWarning("Final mutation score is below threshold break. Crashing...");
 
-                Console.WriteLine(Output.Red($@"
- The mutation score is lower than the configured break threshold of {thresholdBreak:P0}."));
-
-                Console.WriteLine(Output.Red(" Looks like you've got some work to do :)"));
+                _console.WriteLine();
+                _console.MarkupLine($"[Red]The mutation score is lower than the configured break threshold of {thresholdBreak:P0}.[/]");
+                _console.MarkupLine(" [Red]Looks like you've got some work to do :)[/]");
 
                 ExitCode = ExitCodes.BreakThresholdViolated;
             }
@@ -119,7 +123,7 @@ namespace Stryker.CLI
 
         private void PrintStrykerASCIIName()
         {
-            Console.WriteLine(Output.Yellow(@"
+            _console.MarkupLine(@"[Yellow]
    _____ _              _               _   _ ______ _______  
   / ____| |            | |             | \ | |  ____|__   __| 
  | (___ | |_ _ __ _   _| | _____ _ __  |  \| | |__     | |    
@@ -128,8 +132,8 @@ namespace Stryker.CLI
  |_____/ \__|_|   \__, |_|\_\___|_| (_)|_| \_|______|  |_|    
                    __/ |                                      
                   |___/                                       
-"));
-            Console.WriteLine();
+[/]");
+            _console.WriteLine();
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Bug", "S3168:\"async\" methods should not return \"void\"", Justification = "This method is fire and forget. Task.Run also doesn't work in unit tests")]
@@ -152,23 +156,23 @@ namespace Stryker.CLI
                 return;
             }
 
-            Console.WriteLine($"Version: {Output.Green(currentVersion.ToString())}");
-            Console.WriteLine();
+            _console.MarkupLine($"Version: [Green]{currentVersion}[/]");
+            _console.WriteLine();
 
             var latestVersion = await _nugetClient.GetLatestVersionAsync();
             if (latestVersion > currentVersion)
             {
-                Console.WriteLine(Output.Yellow($@"A new version of Stryker.NET ({latestVersion}) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker`"));
-                Console.WriteLine();
+                _console.MarkupLine($@"[Yellow]A new version of Stryker.NET ({latestVersion}) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker`[/]");
+                _console.WriteLine();
             }
 
             var previewVersion = await _nugetClient.GetPreviewVersionAsync();
             if (previewVersion > currentVersion)
             {
-                Console.WriteLine(Output.Cyan($@"A preview version of Stryker.NET ({previewVersion}) is available.
+                _console.MarkupLine($@"[Cyan]A preview version of Stryker.NET ({previewVersion}) is available.
 If you would like to try out this preview version you can install it with `dotnet tool update -g dotnet-stryker --version {previewVersion}`
-Since this is a preview feature things might not work as expected! Please report any findings on GitHub!"));
-                Console.WriteLine();
+Since this is a preview feature things might not work as expected! Please report any findings on GitHub![/]");
+                _console.WriteLine();
             }
         }
     }

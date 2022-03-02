@@ -1,4 +1,5 @@
 using Shouldly;
+using Spectre.Console.Testing;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters;
 using System.IO;
@@ -14,8 +15,8 @@ namespace Stryker.Core.UnitTest.Reporters
         [InlineData(MutantStatus.Timeout, "T", "default")]
         public void ConsoleDotReporter_ShouldPrintRightCharOnMutation(MutantStatus givenStatus, string expectedOutput, string color)
         {
-            var textWriter = new StringWriter();
-            var target = new ConsoleDotProgressReporter(textWriter);
+            var console = new TestConsole().EmitAnsiSequences();
+            var target = new ConsoleDotProgressReporter(console);
 
             target.OnMutantTested(new Mutant()
             {
@@ -24,15 +25,15 @@ namespace Stryker.Core.UnitTest.Reporters
 
             if (color == "default")
             {
-                textWriter.AnyForegroundColorSpanCount().ShouldBe(0);
+                console.Output.AnyForegroundColorSpanCount().ShouldBe(0);
             }
 
             if (color == "red")
             {
-                textWriter.RedSpanCount().ShouldBe(1);
+                console.Output.RedSpanCount().ShouldBe(1);
             }
 
-            textWriter.RemoveAnsi().ShouldBe(expectedOutput);
+            console.Output.RemoveAnsi().ShouldBe(expectedOutput);
         }
     }
 }

@@ -1,5 +1,4 @@
-using System;
-using Crayon;
+using Spectre.Console;
 using Stryker.Core;
 using Stryker.Core.Exceptions;
 
@@ -14,10 +13,10 @@ namespace Stryker.CLI
                 var app = new StrykerCli();
                 return app.Run(args);
             }
-            catch (InputException strEx)
+            catch (InputException exception)
             {
-                Output.Yellow("Stryker.NET failed to mutate your project. For more information see the logs below:");
-                Console.WriteLine(strEx.ToString());
+                AnsiConsole.MarkupLine("[Yellow]Stryker.NET failed to mutate your project. For more information see the logs below:[/]");
+                AnsiConsole.WriteLine(exception.ToString());
                 return ExitCodes.OtherError;
             }
         }

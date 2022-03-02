@@ -1,9 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using Crayon;
+using Spectre.Console;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -16,15 +15,15 @@ namespace Stryker.Core.Reporters.Html.reporter
     {
         private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
-        private readonly TextWriter _consoleWriter;
+        private readonly IAnsiConsole _console;
         private readonly IWebbrowserOpener _processWrapper;
 
         public HtmlReporter(StrykerOptions options, IFileSystem fileSystem = null,
-            TextWriter consoleWriter = null, IWebbrowserOpener processWrapper = null)
+            IAnsiConsole console = null, IWebbrowserOpener processWrapper = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
-            _consoleWriter = consoleWriter ?? Console.Out;
+            _console = console ?? AnsiConsole.Console;
             _processWrapper = processWrapper ?? new WebbrowserOpener();
         }
 
@@ -46,14 +45,15 @@ namespace Stryker.Core.Reporters.Html.reporter
             if (_options.ReportTypeToOpen == Options.Inputs.ReportType.Html)
             {
                 _processWrapper.Open(reportUri);
-            } else
+            }
+            else
             {
-                _consoleWriter.Write(Output.Cyan("Hint: by passing \"--open-report or -o\" the report will open automatically once Stryker is done."));
+                _console.Markup("[Cyan]Hint: by passing \"--open-report or -o\" the report will open automatically once Stryker is done.[/]");
             }
 
-            _consoleWriter.WriteLine(Output.Green($"\nYour html report has been generated at:\n" +
+            _console.MarkupLine($"[Green]\nYour html report has been generated at:\n" +
                 $"{reportUri}\n" +
-                $"You can open it in your browser of choice."));
+                $"You can open it in your browser of choice.[/]");
         }
 
         private void WriteHtmlReport(string filePath, string mutationReport)

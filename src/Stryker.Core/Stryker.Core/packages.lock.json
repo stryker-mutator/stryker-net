@@ -22,12 +22,6 @@
           "System.Reflection.TypeExtensions": "4.7.0"
         }
       },
-      "Crayon": {
-        "type": "Direct",
-        "requested": "[2.0.64, )",
-        "resolved": "2.0.64",
-        "contentHash": "/HvVrtMTaZ4nm3xYGkNFfRiPLoqRuQQgZIlyYUCn9fQa2UlT6PA/xoGJFaV2S8ogz/LoTdq6Wi2Qi7DddF1JSg=="
-      },
       "DotNet.Glob": {
         "type": "Direct",
         "requested": "[3.1.3, )",
@@ -210,6 +204,18 @@
           "System.Runtime.InteropServices.RuntimeInformation": "4.3.0",
           "System.Text.Encoding.CodePages": "4.0.1"
         }
+      },
+      "Spectre.Console": {
+        "type": "Direct",
+        "requested": "[0.43.0, )",
+        "resolved": "0.43.0",
+        "contentHash": "TyfzVxx3jHr1FeeI9Z6Jn6QTnP7KduV14dn9GTYc0v/t2h4L6WJ0Kc2DOnOJUlGBQ/qXK4P+HITIR/JTHcKYLg=="
+      },
+      "Spectre.Console.Analyzer": {
+        "type": "Direct",
+        "requested": "[0.43.0, )",
+        "resolved": "0.43.0",
+        "contentHash": "Z5NLKfVRgvgzIdbwDTr7kVqlHu5Bvm3BphlctTdS085MJHy6Yq7G49R6vXU/ycK8Ppv2UPjJ0LbrdRDFIeBIqw=="
       },
       "System.IO.Abstractions": {
         "type": "Direct",

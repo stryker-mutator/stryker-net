@@ -1,8 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
-using Crayon;
+using Spectre.Console;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -13,13 +12,13 @@ namespace Stryker.Core.Reporters.Json
     {
         private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
-        private readonly TextWriter _consoleWriter;
+        private readonly IAnsiConsole _console;
 
-        public JsonReporter(StrykerOptions options, IFileSystem fileSystem = null, TextWriter consoleWriter = null)
+        public JsonReporter(StrykerOptions options, IFileSystem fileSystem = null, IAnsiConsole console = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
-            _consoleWriter = consoleWriter ?? Console.Out;
+            _console = console ?? AnsiConsole.Console;
         }
 
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
@@ -33,7 +32,7 @@ namespace Stryker.Core.Reporters.Json
             var clickablePath = reportPath.Replace("\\", "/");
             clickablePath = clickablePath.StartsWith("/") ? clickablePath : $"/{clickablePath}";
 
-            _consoleWriter.Write(Output.Green($"\nYour json report has been generated at: \n file://{clickablePath} \n"));
+            _console.Markup($"[Green]\nYour json report has been generated at: \n file://{clickablePath} \n[/]");
         }
 
         private void WriteReportToJsonFile(string filePath, JsonReport mutationReport)
