@@ -122,6 +122,7 @@ namespace Stryker.CLI
 
             AddCliInput(inputs.SolutionInput, "solution", "s", argumentHint: "file-path", category: InputCategory.Build);
             AddCliInput(inputs.ProjectUnderTestNameInput, "project", "p", argumentHint: "project-name.csproj", category: InputCategory.Build);
+            AddCliInput(inputs.TestProjectsInput, "test-project", "tp", CommandOptionType.MultipleValue, InputCategory.Build);
             AddCliInput(inputs.MsBuildPathInput, "msbuild-path", null, category: InputCategory.Build);
 
 
