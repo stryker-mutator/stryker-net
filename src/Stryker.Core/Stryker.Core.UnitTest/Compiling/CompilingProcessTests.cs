@@ -342,17 +342,18 @@ namespace ExampleProject
         {
             int z;
             int y;
-            {
             if (true)
             {
-               z = 1;
-               y = 0;
-            }
-            else
-            {
-              z = 0;
-              y = 1;
-            }
+                if (true)
+                {
+                   z = 1;
+                   y = 0;
+                }
+                else
+                {
+                  z = 0;
+                  y = 1;
+                }
             }
             return z + y;
         }
@@ -360,8 +361,8 @@ namespace ExampleProject
 }";
             var projectContentsMutants = MutateAndCompileSource(sourceFile);
             // those results can change if mutators are added.
-            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.CompileError).ShouldBe(5);
-            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.NotRun).ShouldBe(2);
+            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.CompileError).ShouldBe(9);
+            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.NotRun).ShouldBe(0);
         }
 
         [Fact]
