@@ -341,24 +341,27 @@ namespace ExampleProject
         public int Dummy()
         {
             int z;
+            int y;
             {
-            if (1 == 2)
+            if (true)
             {
                z = 1;
+               y = 0;
             }
             else
             {
               z = 0;
+              y = 1;
             }
             }
-            return z;
+            return z + y;
         }
     }
 }";
             var projectContentsMutants = MutateAndCompileSource(sourceFile);
             // those results can change if mutators are added.
-            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.CompileError).ShouldBe(4);
-            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.NotRun).ShouldBe(1);
+            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.CompileError).ShouldBe(5);
+            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.NotRun).ShouldBe(2);
         }
 
         [Fact]

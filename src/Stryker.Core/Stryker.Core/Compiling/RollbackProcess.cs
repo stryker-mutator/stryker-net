@@ -236,9 +236,8 @@ namespace Stryker.Core.Compiling
 
                     if (scan.Any(x => x.Type == Mutator.Block.ToString()))
                     {
-                        foreach (var mutant in scan.Where(x => x.Type == Mutator.Block.ToString()))
+                        foreach (var mutant in scan.Where(x => x.Type == Mutator.Block.ToString() && !brokenMutations.Contains(x.Node)))
                         {
-                            //if (brokenMutations.Contains(mutant.Node)) continue;
                             brokenMutations.Add(mutant.Node);
                             if (mutant.Id != -1)
                             {
@@ -252,9 +251,8 @@ namespace Stryker.Core.Compiling
                         "Safe Mode! Stryker will try to continue by rolling back all mutations in method. This should not happen, please report this as an issue on github with the previous error message.");
                         // backup, remove all mutations in the node
 
-                        foreach (var mutant in scan)
+                        foreach (var mutant in scan.Where(mutant => !brokenMutations.Contains(mutant.Node)))
                         {
-                            if (brokenMutations.Contains(mutant.Node)) continue;
                             brokenMutations.Add(mutant.Node);
                             if (mutant.Id != -1)
                             {
