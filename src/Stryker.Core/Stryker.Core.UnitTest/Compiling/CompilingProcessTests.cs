@@ -329,6 +329,39 @@ namespace ExampleProject
         }
 
         [Fact]
+        public void ShouldCompileAndRollbackErrorWhenUninitializedVariable()
+        {
+            var sourceFile = @"using System;
+using System.Collections.Generic;
+
+namespace ExampleProject
+{
+    public class Calculator
+    {
+        public int Dummy()
+        {
+            int z;
+            {
+            if (1 == 2)
+            {
+               z = 1;
+            }
+            else
+            {
+              z = 0;
+            }
+            }
+            return z;
+        }
+    }
+}";
+            var projectContentsMutants = MutateAndCompileSource(sourceFile);
+            // those results can change if mutators are added.
+            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.CompileError).ShouldBe(4);
+            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.NotRun).ShouldBe(1);
+        }
+
+        [Fact]
         public void ShouldCompileAndRollbackErrorsForEventHandler()
         {
             var sourceFile = @"using System;
