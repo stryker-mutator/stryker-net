@@ -115,7 +115,7 @@ namespace Stryker.CLI
 
                 _console.WriteLine();
                 _console.MarkupLine($"[Red]The mutation score is lower than the configured break threshold of {thresholdBreak:P0}.[/]");
-                _console.MarkupLine(" [Red]Looks like you've got some work to do :)[/]");
+                _console.MarkupLine(" [Red]Looks like you've got some work to do :smiling_face_with_halo:[/]");
 
                 ExitCode = ExitCodes.BreakThresholdViolated;
             }
