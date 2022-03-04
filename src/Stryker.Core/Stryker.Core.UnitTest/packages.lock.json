@@ -1850,6 +1850,12 @@
           "System.IO.Abstractions": "16.1.15",
           "System.Net.Http.Json": "6.0.0"
         }
+      },
+      "stryker.datacollector": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.TestPlatform.ObjectModel": "17.1.0"
+        }
       }
     }
   }
