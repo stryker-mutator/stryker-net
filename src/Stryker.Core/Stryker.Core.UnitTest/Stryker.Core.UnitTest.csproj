@@ -47,6 +47,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj" />
+    <ProjectReference Include="..\..\Stryker.RegexMutators\Stryker.RegexMutators\Stryker.RegexMutators.csproj" />
     <ProjectReference Include="..\Stryker.Core\Stryker.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
