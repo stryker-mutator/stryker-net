@@ -40,6 +40,7 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
     }
 
     console.log('Updating package.json');
+    replaceVersionNumber('./package.json', `"version": "${packagejson.version}",`, `"version": "${newVersionNumber}",`);
     replaceVersionNumber('./package.json', `"versionPrefix": "${oldVersionPrefix}",`, `"versionPrefix": "${versionPrefix}",`);
     replaceVersionNumber('./package.json', `"versionSuffix": "${oldVersionSuffix}",`, `"versionSuffix": "${versionSuffix}",`);
 
@@ -50,8 +51,8 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
 
         if (!versionSuffix) {
             console.log(`Updating changelog for ${package.name}`);
-            exec(`npx conventional-changelog-cli -p angular --infile "${package.path}/CHANGELOG.md" --same-file --commit-path ${package.path} --tag-prefix "${package.name}@"`);
             commitMessageLines.push(`- ${package.name}@${newVersionNumber}`);
+            exec(`npx conventional-changelog-cli -p angular --infile "${package.path}/CHANGELOG.md" --same-file --commit-path ${package.path} --tag-prefix "${package.name}@"`);
         }
     });
 
@@ -59,14 +60,14 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
     replaceVersionNumber('./azure-pipelines.yml', `VersionBuildNumber: $[counter('${oldVersion}', 1)]`, `VersionBuildNumber: $[counter('${versionPrefix}', 1)]`);
     replaceVersionNumber('./azure-pipelines.yml', `PackageVersion: '${oldVersion}'`, `PackageVersion: '${versionPrefix}'`);
 
-    console.log(`Creating commit`);
-    exec('git add .');
-    exec(`git commit ${commitMessageLines.map(entry => `-m "${entry}"`).join(' ')}`);
-
     if (!versionSuffix) {
         console.log('Tagging commit');
         packages.forEach(package => exec(`git tag -a ${package.name}@${newVersionNumber} -m "${package.name}@${newVersionNumber}"`));
     }
+
+    console.log(`Creating commit`);
+    exec('git add .');
+    exec(`git commit ${commitMessageLines.map(entry => `-m "${entry}"`).join(' ')}`);
 
     console.log(`Pushing commit ${versionSuffix?'':' and tags'}`);
     exec('git push --follow-tags');
