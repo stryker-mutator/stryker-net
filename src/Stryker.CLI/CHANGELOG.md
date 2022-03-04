@@ -1,3 +1,17 @@
+# [](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.3.1...dotnet-stryker@) (2022-03-02)
+
+
+### Bug Fixes
+
+* **initialisation:** Use the NuGet.Frameworks package to parse target frameworks ([#1906](https://github.com/stryker-mutator/stryker-net/issues/1906)) ([556e1ae](https://github.com/stryker-mutator/stryker-net/commit/556e1aedd1b3179e6b082acf7b7081ea6d6286fc)), closes [/github.com/stryker-mutator/stryker-net/pull/1905/commits/6d9c0a95adfa50df4f78a800439321df7833a95b#diff-7ac954b3982a221de06b52bcdde548ea509a15bfc79fef82cf7b87071a223197](https://github.com//github.com/stryker-mutator/stryker-net/pull/1905/commits/6d9c0a95adfa50df4f78a800439321df7833a95b/issues/diff-7ac954b3982a221de06b52bcdde548ea509a15bfc79fef82cf7b87071a223197) [#1905](https://github.com/stryker-mutator/stryker-net/issues/1905)
+
+
+### Features
+
+* Allow specifying test projects as commandline arguments ([#1929](https://github.com/stryker-mutator/stryker-net/issues/1929)) ([072b456](https://github.com/stryker-mutator/stryker-net/commit/072b4568a8bc1180fa85f9691a75110783ce37cf))
+
+
+
 # [](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.3.0...dotnet-stryker@) (2022-01-21)
 
 

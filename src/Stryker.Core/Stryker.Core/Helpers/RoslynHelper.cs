@@ -87,7 +87,7 @@ namespace Stryker.Core.Helpers
         /// </summary>
         /// <param name="node">Member to analyze</param>
         /// <returns>true if it is a static method, properties, fields...</returns>
-        public static bool IsStatic(this MemberDeclarationSyntax node) => node.Modifiers.Any(x => x.Kind() == SyntaxKind.StaticKeyword);
+        public static bool IsStatic(this MemberDeclarationSyntax node) => node.Modifiers.Any(x => x.IsKind(SyntaxKind.StaticKeyword));
 
         /// <summary>
         /// Returns true if the given type is 'void'.
@@ -101,19 +101,19 @@ namespace Stryker.Core.Helpers
         /// Build a mutated version of a <see cref="SyntaxNode"/>.
         /// </summary>
         /// <typeparam name="T">Type of the node that hosts the mutation.</typeparam>
-        /// <param name="original">Original node.</param>
-        /// <param name="mutation">Mutation to apply to the node.</param>
+        /// <param name="sourceNode">Node of the original tree.</param>
+        /// <param name="mutation">Mutation to apply to the sourceNode.</param>
         /// <returns>A copy of <see cref="original"/> with the mutation applied.</returns>
         /// <exception cref="InvalidOperationException">when mutation does not belong to this node.</exception>
-        /// <remarks><paramref name="original"/> can be any node that includes the original, non mutated node described in the mutation.</remarks>
-        public static T InjectMutation<T>(this T original, Mutation mutation) where T:SyntaxNode
+        /// <remarks><paramref name="sourceNode"/> can be any node that includes the original, non mutated node described in the mutation.</remarks>
+        public static T InjectMutation<T>(this T sourceNode, Mutation mutation) where T : SyntaxNode
         {
-            if (!original.Contains(mutation.OriginalNode))
+            if (!sourceNode.Contains(mutation.OriginalNode))
             {
                 // if this happens, there is a probably a bug in some orchestrator
-                throw new InvalidOperationException($"Cannot inject mutation '{mutation.ReplacementNode}' in '{original}' because we cannot find the original code.");
+                throw new InvalidOperationException($"Cannot inject mutation '{mutation.ReplacementNode}' in '{sourceNode}' because we cannot find the original code.");
             }
-            return original.ReplaceNode(mutation.OriginalNode, mutation.ReplacementNode);
+            return sourceNode.ReplaceNode(mutation.OriginalNode, mutation.ReplacementNode);
         }
 
         /// <summary>

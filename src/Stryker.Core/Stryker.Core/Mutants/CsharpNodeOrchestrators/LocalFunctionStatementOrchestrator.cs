@@ -1,4 +1,5 @@
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
@@ -22,7 +23,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                 // inject initialization to default for all out parameters
                 targetNode = sourceNode.WithBody(MutantPlacer.AddDefaultInitializers(fullTargetBody,
                     sourceNodeParameterList.Parameters.Where(p =>
-                        p.Modifiers.Any(m => m.Kind() == SyntaxKind.OutKeyword))));
+                        p.Modifiers.Any(m => m.IsKind(SyntaxKind.OutKeyword)))));
                 // add a return in case we changed the control flow
                 return MutantPlacer.AddEndingReturn(targetNode);
             }

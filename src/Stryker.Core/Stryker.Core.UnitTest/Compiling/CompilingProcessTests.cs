@@ -1,12 +1,3 @@
-using Buildalyzer;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Moq;
-using Shouldly;
-using Stryker.Core.Compiling;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
-using Stryker.Core.MutationTest;
 using System.Collections.Generic;
 using System.Collections.Immutable;
 using System.Collections.ObjectModel;
@@ -15,8 +6,17 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Buildalyzer;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Moq;
+using Shouldly;
+using Stryker.Core.Compiling;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Initialisation;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
+using Stryker.Core.MutationTest;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -329,6 +329,43 @@ namespace ExampleProject
         }
 
         [Fact]
+        public void ShouldCompileAndRollbackErrorWhenUninitializedVariable()
+        {
+            var sourceFile = @"using System;
+using System.Collections.Generic;
+
+namespace ExampleProject
+{
+    public class Calculator
+    {
+        public int Dummy()
+        {
+            int z;
+            int y;
+            if (true)
+            {
+                if (true)
+                {
+                   z = 1;
+                   y = 0;
+                }
+                else
+                {
+                  z = 0;
+                  y = 1;
+                }
+            }
+            return z + y;
+        }
+    }
+}";
+            var projectContentsMutants = MutateAndCompileSource(sourceFile);
+            // those results can change if mutators are added.
+            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.CompileError).ShouldBe(9);
+            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.NotRun).ShouldBe(0);
+        }
+
+        [Fact]
         public void ShouldCompileAndRollbackErrorsForEventHandler()
         {
             var sourceFile = @"using System;
@@ -342,14 +379,16 @@ namespace ExampleProject
             return first - second;
         }
         private event Action SendCompleted;
-void TestMethod(){
-Action<Action> unsubscribe = (handler) => SendCompleted -= handler;}
+
+        void TestMethod(){
+            Action<Action> unsubscribe = (handler) => SendCompleted -= handler;
+        }
     }
 }";
             var projectContentsMutants = MutateAndCompileSource(sourceFile);
             // those results can change if mutators are added.
-            projectContentsMutants.Count(t=> t.ResultStatus == MutantStatus.CompileError).ShouldBe(1);
-            projectContentsMutants.Count(t=> t.ResultStatus == MutantStatus.NotRun).ShouldBe(3);
+            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.CompileError).ShouldBe(1);
+            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.NotRun).ShouldBe(3);
         }
 
         private static IEnumerable<Mutant> MutateAndCompileSource(string sourceFile)

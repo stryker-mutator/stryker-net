@@ -38,7 +38,7 @@ namespace Stryker.Core.Initialisation
             foreach (var testProject in TestProjectAnalyzerResults)
             {
                 var injectionPath = GetInjectionFilePath(testProject);
-                _fileSystem.File.Move(GetBackupName(injectionPath), injectionPath, true);
+                _fileSystem.File.Copy(GetBackupName(injectionPath), injectionPath, true);
             }
         }
         public virtual void BackupOriginalAssembly()
