@@ -1,3 +1,13 @@
+## [1.4.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.4.0...stryker@1.4.1) (2022-03-04)
+
+
+### Bug Fixes
+
+* **packaging:** Include referenced projects in nupkg ([#1947](https://github.com/stryker-mutator/stryker-net/issues/1947)) ([e7427ce](https://github.com/stryker-mutator/stryker-net/commit/e7427cee807df53388e6b009052b35b6a76881cf))
+* **Rollback:** Null Reference Exception during mutation rollback ([#1940](https://github.com/stryker-mutator/stryker-net/issues/1940)) ([5b71ad0](https://github.com/stryker-mutator/stryker-net/commit/5b71ad07c0c2d173cb7a126d8d6a0e77825b67f8))
+
+
+
 # [1.4.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.3.1...stryker@1.4.0) (2022-03-02)
 
 
