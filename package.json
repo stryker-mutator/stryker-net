@@ -1,5 +1,6 @@
 {
     "private": true,
+    "version": "1.4.0",
     "versionPrefix": "1.4.0",
     "versionSuffix": "",
     "scripts": {
