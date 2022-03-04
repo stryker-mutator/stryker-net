@@ -1852,8 +1852,6 @@
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "4.0.1",
           "ShellProgressBar": "5.1.0",
-          "Stryker.DataCollector": "1.4.0",
-          "Stryker.RegexMutators": "1.4.0",
           "System.IO.Abstractions": "16.1.16",
           "System.Net.Http.Json": "6.0.0"
         }
