@@ -53,11 +53,12 @@ namespace Stryker.Core.Reporters.Html.reporter
 
             if (_console.Profile.Capabilities.Links)
             {
+                // We must print the report path as the link text because on some terminals links might be supported but not actually clickable: https://github.com/spectreconsole/spectre.console/issues/764
                 _console.MarkupLine($"[Green][link={reportUri}]{reportPath}[/][/]");
             }
             else
             {
-                _console.MarkupLine($"[Green]{reportPath}[/]");
+                _console.MarkupLine($"[Green]{reportUri}[/]");
             }
 
             _console.MarkupLine("[Green]You can open it in your browser of choice.[/]");
