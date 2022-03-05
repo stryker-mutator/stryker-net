@@ -1,3 +1,12 @@
+## [1.4.2](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.4.1...dotnet-stryker@1.4.2) (2022-03-05)
+
+
+### Bug Fixes
+
+* **regex mutations:** Revert inclusion of referenced projects because transitive dependencies are not included ([#1950](https://github.com/stryker-mutator/stryker-net/issues/1950)) ([69a80ee](https://github.com/stryker-mutator/stryker-net/commit/69a80ee75e082c1343a068ad6e3be4faf2edbd7a))
+
+
+
 ## [1.4.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.4.0...dotnet-stryker@1.4.1) (2022-03-04)
 
 
