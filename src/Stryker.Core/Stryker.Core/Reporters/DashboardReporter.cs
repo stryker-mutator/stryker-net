@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using Stryker.Core.Clients;
@@ -7,7 +8,6 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.HtmlReporter.ProcessWrapper;
 using Stryker.Core.Reporters.Json;
-using System.Collections.Generic;
 
 namespace Stryker.Core.Reporters
 {
@@ -46,8 +46,20 @@ namespace Stryker.Core.Reporters
                     _console.Write("[Cyan]Hint: by passing \"--open-report:dashboard or -o:dashboard\" the report will open automatically once Stryker is done.[/]");
                 }
 
-                _logger.LogDebug("Your stryker report has been uploaded to: \n {0} \nYou can open it in your browser of choice.", reportUri);
-                _console.Write($"[Green]Your stryker report has been uploaded to: \n {reportUri} \nYou can open it in your browser of choice.[/]");
+                _console.WriteLine();
+                _console.MarkupLine("[Green]Your report has been uploaded at:[/]");
+
+                if (_console.Profile.Capabilities.Links)
+                {
+                    // We must print the report path as the link text because on some terminals links might be supported but not actually clickable: https://github.com/spectreconsole/spectre.console/issues/764
+                    _console.MarkupLine($"[Green][link={reportUri}]{reportUri}[/][/]");
+                }
+                else
+                {
+                    _console.MarkupLine($"[Green]{reportUri}[/]");
+                }
+
+                _console.MarkupLine("[Green]You can open it in your browser of choice.[/]");
             }
             else
             {
