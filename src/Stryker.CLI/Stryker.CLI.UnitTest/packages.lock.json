@@ -674,6 +674,11 @@
         "resolved": "6.1.0",
         "contentHash": "UtKr2U2DNTWVwIgAiUVd+t1qfVGBq9B7pI0s/hIoQOjtSNBWqv6Z5e5UgCFhWXw1wC/QkeaGKMs9ZHSzRrMn2w=="
       },
+      "RegexParser": {
+        "type": "Transitive",
+        "resolved": "0.5.1",
+        "contentHash": "cFqI0vxy4E7C83ijq1uFIkIOEnG3kezH+xBkBaQX9FvJKikrt+riQRDC4J4NQ5QXh/p6R3DC8qBVGXloC58zEQ=="
+      },
       "runtime.linux-arm.runtime.native.System.IO.Ports": {
         "type": "Transitive",
         "resolved": "5.0.0-rtm.20519.4",
@@ -1859,8 +1864,22 @@
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "4.0.1",
           "ShellProgressBar": "5.1.0",
+          "Stryker.DataCollector": "1.4.0",
+          "Stryker.RegexMutators": "1.4.0",
           "System.IO.Abstractions": "16.1.16",
           "System.Net.Http.Json": "6.0.0"
+        }
+      },
+      "stryker.datacollector": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.TestPlatform.ObjectModel": "17.1.0"
+        }
+      },
+      "stryker.regexmutators": {
+        "type": "Project",
+        "dependencies": {
+          "RegexParser": "0.5.1"
         }
       }
     }
