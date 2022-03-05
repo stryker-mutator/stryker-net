@@ -1,9 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Crayon;
+using Spectre.Console;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -15,18 +14,13 @@ namespace Stryker.Core.Reporters
     /// </summary>
     public class ClearTextTreeReporter : IReporter
     {
-        private const string ContinueLine = "│   ";
-        private const string NoLine = "    ";
-        private const string BranchLine = "├── ";
-        private const string FinalBranchLine = "└── ";
-
         private readonly StrykerOptions _options;
-        private readonly TextWriter _consoleWriter;
+        private readonly IAnsiConsole _console;
 
-        public ClearTextTreeReporter(StrykerOptions strykerOptions, TextWriter consoleWriter = null)
+        public ClearTextTreeReporter(StrykerOptions strykerOptions, IAnsiConsole console = null)
         {
             _options = strykerOptions;
-            _consoleWriter = consoleWriter ?? Console.Out;
+            _console = console ?? AnsiConsole.Console;
         }
 
         public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
@@ -46,148 +40,102 @@ namespace Stryker.Core.Reporters
 
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
         {
-            var rootFolderProcessed = false;
+            Tree root = null;
+
+            var stack = new Stack<IHasTreeNodes>();
 
             // setup display handlers
             reportComponent.DisplayFolder = (IReadOnlyProjectComponent current) =>
             {
-                // show depth
-                var continuationLines = ParentContinuationLines(current);
-
-                var stringBuilder = new StringBuilder();
-                foreach (var item in continuationLines.SkipLast(1))
-                {
-                    stringBuilder.Append(item ? ContinueLine : NoLine);
-                }
-
-                var folderLines = string.Empty;
-                if (continuationLines.Count > 0)
-                {
-                    folderLines = continuationLines.Last() ? BranchLine : FinalBranchLine;
-                }
-
                 var name = Path.GetFileName(current.RelativePath);
-                if (current.Parent == null && !rootFolderProcessed)
-                {
-                    name = "All files";
-                    rootFolderProcessed = true;
-                }
 
-                if (!string.IsNullOrWhiteSpace(name))
+                if (root is null)
                 {
-                    _consoleWriter.Write($"{stringBuilder}{folderLines}{name}");
-                    DisplayComponent(current);
+                    root = new Tree("All files" + DisplayComponent(current));
+                    stack.Push(root);
+                }
+                else if (!string.IsNullOrWhiteSpace(name))
+                {
+                    stack.Push(stack.Peek().AddNode(name + DisplayComponent(current)));
                 }
             };
 
             reportComponent.DisplayFile = (IReadOnlyProjectComponent current) =>
             {
-                // show depth
-                var continuationLines = ParentContinuationLines(current);
-
-                var stringBuilder = new StringBuilder();
-                foreach (var item in continuationLines.SkipLast(1))
-                {
-                    stringBuilder.Append(item ? ContinueLine : NoLine);
-                }
                 var name = Path.GetFileName(current.RelativePath);
 
-                _consoleWriter.Write($"{stringBuilder}{(continuationLines.Last() ? BranchLine : FinalBranchLine)}{name}");
-                DisplayComponent(current);
+                var fileNode = stack.Peek().AddNode(name + DisplayComponent(current));
 
-                stringBuilder.Append(continuationLines.Last() ? ContinueLine : NoLine);
+                if (current.FullPath == current.Parent.Children.Last().FullPath)
+                {
+                    stack.Pop();
+                }
 
-                var prefix = stringBuilder.ToString();
                 var totalMutants = current.TotalMutants();
                 foreach (var mutant in totalMutants)
                 {
-                    var isLastMutant = totalMutants.Last() == mutant;
-
-                    _consoleWriter.Write($"{prefix}{(isLastMutant ? FinalBranchLine : BranchLine)}");
-
-                    switch (mutant.ResultStatus)
+                    var status = mutant.ResultStatus switch
                     {
-                        case MutantStatus.Killed:
-                        case MutantStatus.Timeout:
-                            _consoleWriter.Write(Output.Green($"[{mutant.ResultStatus}]"));
-                            break;
-                        case MutantStatus.NoCoverage:
-                            _consoleWriter.Write(Output.Yellow($"[{mutant.ResultStatus}]"));
-                            break;
-                        default:
-                            _consoleWriter.Write(Output.Red($"[{mutant.ResultStatus}]"));
-                            break;
-                    }
+                        MutantStatus.Killed or MutantStatus.Timeout => $"[Green][[{mutant.ResultStatus}]][/]",
+                        MutantStatus.NoCoverage => $"[Yellow][[{mutant.ResultStatus}]][/]",
+                        _ => $"[Red][[{mutant.ResultStatus}]][/]",
+                    };
 
-                    _consoleWriter.WriteLine($" {mutant.Mutation.DisplayName} on line {mutant.Line}");
-                    _consoleWriter.WriteLine($"{prefix}{(isLastMutant ? NoLine : ContinueLine)}{BranchLine}[-] {mutant.Mutation.OriginalNode}");
-                    _consoleWriter.WriteLine($"{prefix}{(isLastMutant ? NoLine : ContinueLine)}{FinalBranchLine}[+] {mutant.Mutation.ReplacementNode}");
+                    var mutantNode = fileNode.AddNode(status + $" {mutant.Mutation.DisplayName} on line {mutant.Line}");
+                    mutantNode.AddNode(Markup.Escape($"[-] {mutant.Mutation.OriginalNode}"));
+                    mutantNode.AddNode(Markup.Escape($"[+] {mutant.Mutation.ReplacementNode}"));
                 }
             };
 
             // print empty line for readability
-            _consoleWriter.WriteLine();
-            _consoleWriter.WriteLine();
-            _consoleWriter.WriteLine("All mutants have been tested, and your mutation score has been calculated");
+            _console.WriteLine();
+            _console.WriteLine();
+            _console.WriteLine("All mutants have been tested, and your mutation score has been calculated");
 
             // start recursive invocation of handlers
             reportComponent.Display();
+
+            _console.Write(root);
         }
 
-        private static List<bool> ParentContinuationLines(IReadOnlyProjectComponent current)
-        {
-            var continuationLines = new List<bool>();
-
-            var node = current;
-
-            if (node.Parent != null)
-            {
-                while (node.Parent != null)
-                {
-                    continuationLines.Add(node.Parent.Children.Last().FullPath != node.FullPath);
-
-                    node = node.Parent;
-                }
-
-                continuationLines.Reverse();
-            }
-
-            return continuationLines;
-        }
-
-        private void DisplayComponent(IReadOnlyProjectComponent inputComponent)
+        private string DisplayComponent(IReadOnlyProjectComponent inputComponent)
         {
             var mutationScore = inputComponent.GetMutationScore();
 
+            var stringBuilder = new StringBuilder();
+
             // Convert the threshold integer values to decimal values
-            _consoleWriter.Write($" [{ inputComponent.DetectedMutants().Count()}/{ inputComponent.TotalMutants().Count()} ");
+            stringBuilder.Append($" [[{ inputComponent.DetectedMutants().Count()}/{ inputComponent.TotalMutants().Count()} ");
 
             if (inputComponent.IsComponentExcluded(_options.Mutate))
             {
-                _consoleWriter.Write(Output.Bright.Black("(Excluded)"));
+                stringBuilder.Append("[Gray](Excluded)[/]");
             }
             else if (double.IsNaN(mutationScore))
             {
-                _consoleWriter.Write(Output.Bright.Black("(N/A)"));
+                stringBuilder.Append("[Gray](N/A)[/]");
             }
             else
             {
                 // print the score as a percentage
-                string scoreText = string.Format("({0:P2})", mutationScore);
+                var scoreText = string.Format("({0:P2})", mutationScore);
                 if (inputComponent.CheckHealth(_options.Thresholds) is Health.Good)
                 {
-                    _consoleWriter.Write(Output.Green(scoreText));
+                    stringBuilder.Append($"[Green]{scoreText}[/]");
                 }
                 else if (inputComponent.CheckHealth(_options.Thresholds) is Health.Warning)
                 {
-                    _consoleWriter.Write(Output.Yellow(scoreText));
+                    stringBuilder.Append($"[Yellow]{scoreText}[/]");
                 }
                 else if (inputComponent.CheckHealth(_options.Thresholds) is Health.Danger)
                 {
-                    _consoleWriter.Write(Output.Red(scoreText));
+                    stringBuilder.Append($"[Red]{scoreText}[/]");
                 }
             }
-            _consoleWriter.WriteLine("]");
+
+            stringBuilder.Append("]]");
+
+            return stringBuilder.ToString();
         }
     }
 }

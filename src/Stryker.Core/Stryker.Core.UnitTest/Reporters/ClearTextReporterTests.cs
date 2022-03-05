@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
+using Spectre.Console.Testing;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
@@ -19,8 +19,8 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ClearTextReporter_ShouldPrintOnReportDone()
         {
-            var textWriter = new StringWriter();
-            var target = new ClearTextReporter(new StrykerOptions(), textWriter);
+            var console = new TestConsole().EmitAnsiSequences().Width(160);
+            var target = new ClearTextReporter(new StrykerOptions(), console);
 
             var rootFolder = new CsharpFolderComposite();
 
@@ -40,17 +40,17 @@ namespace Stryker.Core.UnitTest.Reporters
 
             target.OnAllMutantsTested(rootFolder);
 
-            textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
+            console.Output.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
 All mutants have been tested, and your mutation score has been calculated
-┌─────────────────────┬──────────┬──────────┬───────────┬────────────┬──────────┬─────────┐
-│ File                │  % score │ # killed │ # timeout │ # survived │ # no cov │ # error │
-├─────────────────────┼──────────┼──────────┼───────────┼────────────┼──────────┼─────────┤
-│ All files           │      N/A │        0 │         0 │          0 │        0 │       0 │
-│ FolderA/SomeFile.cs │      N/A │        0 │         0 │          0 │        0 │       0 │
-└─────────────────────┴──────────┴──────────┴───────────┴────────────┴──────────┴─────────┘
+╭─────────────────────┬─────────┬──────────┬───────────┬────────────┬──────────┬─────────╮
+│ File                │ % score │ # killed │ # timeout │ # survived │ # no cov │ # error │
+├─────────────────────┼─────────┼──────────┼───────────┼────────────┼──────────┼─────────┤
+│ All files           │     N/A │        0 │         0 │          0 │        0 │       0 │
+│ FolderA/SomeFile.cs │     N/A │        0 │         0 │          0 │        0 │       0 │
+╰─────────────────────┴─────────┴──────────┴───────────┴────────────┴──────────┴─────────╯
 ");
-            textWriter.DarkGraySpanCount().ShouldBe(2);
+            console.Output.DarkGraySpanCount().ShouldBe(2);
         }
 
         [Fact]
@@ -67,8 +67,8 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = Mutator.Arithmetic
             };
 
-            var textWriter = new StringWriter();
-            var target = new ClearTextReporter(new StrykerOptions(), textWriter);
+            var console = new TestConsole().EmitAnsiSequences().Width(160);
+            var target = new ClearTextReporter(new StrykerOptions(), console);
 
             var rootFolder = new CsharpFolderComposite();
 
@@ -93,17 +93,17 @@ All mutants have been tested, and your mutation score has been calculated
 
             target.OnAllMutantsTested(rootFolder);
 
-            textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
+            console.Output.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
 All mutants have been tested, and your mutation score has been calculated
-┌─────────────────────┬──────────┬──────────┬───────────┬────────────┬──────────┬─────────┐
-│ File                │  % score │ # killed │ # timeout │ # survived │ # no cov │ # error │
-├─────────────────────┼──────────┼──────────┼───────────┼────────────┼──────────┼─────────┤
-│ All files           │   {100:N2} │        1 │         0 │          0 │        0 │       0 │
-│ FolderA/SomeFile.cs │   {100:N2} │        1 │         0 │          0 │        0 │       0 │
-└─────────────────────┴──────────┴──────────┴───────────┴────────────┴──────────┴─────────┘
+╭─────────────────────┬─────────┬──────────┬───────────┬────────────┬──────────┬─────────╮
+│ File                │ % score │ # killed │ # timeout │ # survived │ # no cov │ # error │
+├─────────────────────┼─────────┼──────────┼───────────┼────────────┼──────────┼─────────┤
+│ All files           │  {100:N2} │        1 │         0 │          0 │        0 │       0 │
+│ FolderA/SomeFile.cs │  {100:N2} │        1 │         0 │          0 │        0 │       0 │
+╰─────────────────────┴─────────┴──────────┴───────────┴────────────┴──────────┴─────────╯
 ");
-            textWriter.GreenSpanCount().ShouldBe(2);
+            console.Output.GreenSpanCount().ShouldBe(2);
         }
 
         [Fact]
@@ -120,8 +120,8 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = Mutator.Arithmetic
             };
 
-            var textWriter = new StringWriter();
-            var target = new ClearTextReporter(new StrykerOptions(), textWriter);
+            var console = new TestConsole().EmitAnsiSequences().Width(160);
+            var target = new ClearTextReporter(new StrykerOptions(), console);
 
             var rootFolder = new CsharpFolderComposite();
 
@@ -145,18 +145,18 @@ All mutants have been tested, and your mutation score has been calculated
 
             target.OnAllMutantsTested(rootFolder);
 
-            textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
+            console.Output.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
 All mutants have been tested, and your mutation score has been calculated
-┌─────────────────────┬──────────┬──────────┬───────────┬────────────┬──────────┬─────────┐
-│ File                │  % score │ # killed │ # timeout │ # survived │ # no cov │ # error │
-├─────────────────────┼──────────┼──────────┼───────────┼────────────┼──────────┼─────────┤
-│ All files           │     {0:N2} │        0 │         0 │          1 │        0 │       0 │
-│ FolderA/SomeFile.cs │     {0:N2} │        0 │         0 │          1 │        0 │       0 │
-└─────────────────────┴──────────┴──────────┴───────────┴────────────┴──────────┴─────────┘
+╭─────────────────────┬─────────┬──────────┬───────────┬────────────┬──────────┬─────────╮
+│ File                │ % score │ # killed │ # timeout │ # survived │ # no cov │ # error │
+├─────────────────────┼─────────┼──────────┼───────────┼────────────┼──────────┼─────────┤
+│ All files           │    {0:N2} │        0 │         0 │          1 │        0 │       0 │
+│ FolderA/SomeFile.cs │    {0:N2} │        0 │         0 │          1 │        0 │       0 │
+╰─────────────────────┴─────────┴──────────┴───────────┴────────────┴──────────┴─────────╯
 ");
             // All percentages should be red and the [Survived] too
-            textWriter.RedSpanCount().ShouldBe(2);
+            console.Output.RedSpanCount().ShouldBe(2);
         }
 
         [Fact]
@@ -173,9 +173,9 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = Mutator.Arithmetic
             };
 
-            var textWriter = new StringWriter();
             var options = new StrykerOptions { Thresholds = new Thresholds { High = 80, Low = 70, Break = 0 } };
-            var target = new ClearTextReporter(options, textWriter);
+            var console = new TestConsole().EmitAnsiSequences().Width(160);
+            var target = new ClearTextReporter(options, console);
 
             var folder = new CsharpFolderComposite()
             {
@@ -198,7 +198,7 @@ All mutants have been tested, and your mutation score has been calculated
 
             target.OnAllMutantsTested(folder);
 
-            textWriter.RedSpanCount().ShouldBe(2);
+            console.Output.RedSpanCount().ShouldBe(2);
         }
 
         [Fact]
@@ -215,9 +215,9 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = Mutator.Arithmetic
             };
 
-            var textWriter = new StringWriter();
             var options = new StrykerOptions { Thresholds = new Thresholds { High = 90, Low = 70, Break = 0 } };
-            var target = new ClearTextReporter(options, textWriter);
+            var console = new TestConsole().EmitAnsiSequences().Width(160);
+            var target = new ClearTextReporter(options, console);
 
             var folder = new CsharpFolderComposite()
             {
@@ -240,7 +240,7 @@ All mutants have been tested, and your mutation score has been calculated
 
             target.OnAllMutantsTested(folder);
 
-            textWriter.YellowSpanCount().ShouldBe(2);
+            console.Output.YellowSpanCount().ShouldBe(2);
         }
 
         [Fact]
@@ -257,8 +257,8 @@ All mutants have been tested, and your mutation score has been calculated
                 Type = Mutator.Arithmetic
             };
 
-            var textWriter = new StringWriter();
-            var target = new ClearTextReporter(new StrykerOptions(), textWriter);
+            var console = new TestConsole().EmitAnsiSequences().Width(160);
+            var target = new ClearTextReporter(new StrykerOptions(), console);
 
             var folder = new CsharpFolderComposite()
             {
@@ -277,7 +277,7 @@ All mutants have been tested, and your mutation score has been calculated
 
             target.OnAllMutantsTested(folder);
 
-            textWriter.GreenSpanCount().ShouldBe(2);
+            console.Output.GreenSpanCount().ShouldBe(2);
         }
     }
 }

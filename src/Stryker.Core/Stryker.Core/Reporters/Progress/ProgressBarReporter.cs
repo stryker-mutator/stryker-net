@@ -1,6 +1,5 @@
 using System;
-using System.IO;
-using Crayon;
+using Spectre.Console;
 using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Reporters.Progress
@@ -18,7 +17,7 @@ namespace Stryker.Core.Reporters.Progress
 
         private readonly IProgressBar _progressBar;
         private readonly IStopWatchProvider _stopWatch;
-        private readonly TextWriter _consoleWriter;
+        private readonly IAnsiConsole _console;
 
         private int _mutantsToBeTested;
         private int _numberOfMutantsRan;
@@ -28,11 +27,11 @@ namespace Stryker.Core.Reporters.Progress
         private int _mutantsSurvivedCount;
         private int _mutantsTimeoutCount;
 
-        public ProgressBarReporter(IProgressBar progressBar, IStopWatchProvider stopWatch, TextWriter consoleWriter = null)
+        public ProgressBarReporter(IProgressBar progressBar, IStopWatchProvider stopWatch, IAnsiConsole console = null)
         {
             _progressBar = progressBar;
             _stopWatch = stopWatch;
-            _consoleWriter = consoleWriter ?? Console.Out;
+            _console = console ?? AnsiConsole.Console;
         }
 
         public void ReportInitialState(int mutantsToBeTested)
@@ -70,10 +69,10 @@ namespace Stryker.Core.Reporters.Progress
 
             var length = _mutantsToBeTested.ToString().Length;
 
-            _consoleWriter.WriteLine();
-            _consoleWriter.WriteLine($"Killed:   {Output.Bright.Magenta(_mutantsKilledCount.ToString().PadLeft(length))}");
-            _consoleWriter.WriteLine($"Survived: {Output.Bright.Magenta(_mutantsSurvivedCount.ToString().PadLeft(length))}");
-            _consoleWriter.WriteLine($"Timeout:  {Output.Bright.Magenta(_mutantsTimeoutCount.ToString().PadLeft(length))}");
+            _console.WriteLine();
+            _console.MarkupLine($"Killed:   [Magenta]{_mutantsKilledCount.ToString().PadLeft(length)}[/]");
+            _console.MarkupLine($"Survived: [Magenta]{_mutantsSurvivedCount.ToString().PadLeft(length)}[/]");
+            _console.MarkupLine($"Timeout:  [Magenta]{_mutantsTimeoutCount.ToString().PadLeft(length)}[/]");
         }
 
         private string RemainingTime()
