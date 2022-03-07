@@ -38,9 +38,9 @@
       },
       "Moq": {
         "type": "Direct",
-        "requested": "[4.17.1, )",
-        "resolved": "4.17.1",
-        "contentHash": "TzEvfuFC9Mcr49q6cEaSqLEQA8N2S6OFmj+7Vax21Q0uKSKKaM35tt+cmPfRZyyfx/NggfdTZRWv05mBhUaVLg==",
+        "requested": "[4.17.2, )",
+        "resolved": "4.17.2",
+        "contentHash": "HytUPJ3/uks2UgJ9hIcyXm3YxpFAR4OJzbQwTHltbKGun3lFLhEHs97hiiPj1dY8jV/kasXeihTzDxct6Zf3iQ==",
         "dependencies": {
           "Castle.Core": "4.4.1",
           "System.Threading.Tasks.Extensions": "4.5.4"
@@ -1851,7 +1851,7 @@
           "McMaster.Extensions.CommandLineUtils": "4.0.1",
           "Microsoft.Extensions.Configuration.Binder": "6.0.0",
           "NuGet.Versioning": "6.1.0",
-          "stryker": "1.4.1"
+          "stryker": "1.4.2"
         }
       },
       "stryker": {
@@ -1879,8 +1879,8 @@
           "ShellProgressBar": "5.1.0",
           "Spectre.Console": "0.43.0",
           "Spectre.Console.Analyzer": "0.43.0",
-          "Stryker.DataCollector": "1.0.0",
-          "Stryker.RegexMutators": "1.0.0",
+          "Stryker.DataCollector": "1.4.2",
+          "Stryker.RegexMutators": "1.4.2",
           "System.IO.Abstractions": "16.1.16",
           "System.Net.Http.Json": "6.0.0"
         }
