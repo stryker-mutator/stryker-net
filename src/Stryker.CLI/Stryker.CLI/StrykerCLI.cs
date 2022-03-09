@@ -165,14 +165,16 @@ namespace Stryker.CLI
                 _console.MarkupLine($@"[Yellow]A new version of Stryker.NET ({latestVersion}) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker`[/]");
                 _console.WriteLine();
             }
-
-            var previewVersion = await _nugetClient.GetPreviewVersionAsync();
-            if (previewVersion > currentVersion)
+            else
             {
-                _console.MarkupLine($@"[Cyan]A preview version of Stryker.NET ({previewVersion}) is available.
+                var previewVersion = await _nugetClient.GetPreviewVersionAsync();
+                if (previewVersion > currentVersion)
+                {
+                    _console.MarkupLine($@"[Cyan]A preview version of Stryker.NET ({previewVersion}) is available.
 If you would like to try out this preview version you can install it with `dotnet tool update -g dotnet-stryker --version {previewVersion}`
 Since this is a preview feature things might not work as expected! Please report any findings on GitHub![/]");
-                _console.WriteLine();
+                    _console.WriteLine();
+                }
             }
         }
     }
