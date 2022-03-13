@@ -66,7 +66,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
         {
             // Arrange
             var mutant = Create(@"
-[ExcludeFromCodeCoverage]
+[ExcludeFromCodeCoverage(""sowhat"")]
 public class IgnoredMethodMutantFilter_NestedMethodCalls
 {
     private void TestMethod()
