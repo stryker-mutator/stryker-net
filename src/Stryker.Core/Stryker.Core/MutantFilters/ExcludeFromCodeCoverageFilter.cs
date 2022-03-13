@@ -39,7 +39,7 @@ namespace Stryker.Core.MutantFilters
         {
             return m.AttributeLists
                 .SelectMany(attr => attr.Attributes)
-                .Any(attr => Regex.IsMatch(attr.ToString(),
+                .Any(attr => Regex.IsMatch(attr.Name.ToString(),
                     @"^(?:System\.Diagnostics\.CodeAnalysis\.)?ExcludeFromCodeCoverage(?:Attribute)?$"));
         }
     }

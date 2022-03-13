@@ -134,11 +134,6 @@ namespace Stryker.Core.Compiling
                 return new MutantInfo();
             }
 
-            if (info.Id == -1)
-            {
-                Logger.LogError("Mutation not found, this should not happen");
-            }
-
             Logger.LogDebug("Found mutant {id} of type '{type}' controlled by '{engine}'.", info.Id, info.Type, info.Engine);
 
             return info;
@@ -239,10 +234,7 @@ namespace Stryker.Core.Compiling
                         foreach (var mutant in scan.Where(x => x.Type == Mutator.Block.ToString() && !brokenMutations.Contains(x.Node)))
                         {
                             brokenMutations.Add(mutant.Node);
-                            if (mutant.Id != -1)
-                            {
-                                RolledBackIds.Add(mutant.Id.Value);
-                            }
+                            RolledBackIds.Add(mutant.Id.Value);
                         }
                     }
                     else
