@@ -767,8 +767,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "16.1.22",
-        "contentHash": "gN/jYiIK6Vm3EBg5YabhOYGwglWhI6Ukdp9U4g8DSXGb3v2cA+5mNo+sO/MuHbnj40/biE0qjz+0ooz3MN/6uA==",
+        "resolved": "16.1.23",
+        "contentHash": "I3wVtPHa4v9l5k2QLO+9SmdBG6qsLZZkmn5TWSX+R/S/RIoGq9HQXDRvYT+i3z/s72i0ZTF6Z0kh+pvF6N+0SQ==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "5.0.0"
         }
@@ -1205,7 +1205,7 @@
           "Spectre.Console.Analyzer": "0.43.0",
           "Stryker.DataCollector": "1.4.2",
           "Stryker.RegexMutators": "1.4.2",
-          "System.IO.Abstractions": "16.1.22",
+          "System.IO.Abstractions": "16.1.23",
           "System.Net.Http.Json": "6.0.0"
         }
       },
