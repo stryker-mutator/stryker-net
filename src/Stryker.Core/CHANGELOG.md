@@ -1,3 +1,17 @@
+# [1.5.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.4.2...stryker@1.5.0) (2022-03-15)
+
+
+### Bug Fixes
+
+* **filters:** ExcludeFromCodeCoverage not working when justification is given ([#1964](https://github.com/stryker-mutator/stryker-net/issues/1964)) ([a562149](https://github.com/stryker-mutator/stryker-net/commit/a56214959eae7c0b578f54c55970dc15c3891ffb)), closes [#1957](https://github.com/stryker-mutator/stryker-net/issues/1957)
+
+
+### Features
+
+* **reporting:** Make links clickable in terminals that support Ansi magic ([#1936](https://github.com/stryker-mutator/stryker-net/issues/1936)) ([54b9872](https://github.com/stryker-mutator/stryker-net/commit/54b98724d5651d993f7d27753b70369ef0a1a2ce))
+
+
+
 ## [1.4.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.4.1...stryker@1.4.2) (2022-03-05)
 
 

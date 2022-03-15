@@ -1,3 +1,17 @@
+# [1.5.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.4.2...dotnet-stryker@1.5.0) (2022-03-15)
+
+
+### Bug Fixes
+
+* Version update check at startup no longer recommends upgrading to preview and latest ([#1956](https://github.com/stryker-mutator/stryker-net/issues/1956)) ([d67fd65](https://github.com/stryker-mutator/stryker-net/commit/d67fd65d85edb2a0c063652f1f86c09b69896866))
+
+
+### Features
+
+* **reporting:** Make links clickable in terminals that support Ansi magic ([#1936](https://github.com/stryker-mutator/stryker-net/issues/1936)) ([54b9872](https://github.com/stryker-mutator/stryker-net/commit/54b98724d5651d993f7d27753b70369ef0a1a2ce))
+
+
+
 ## [1.4.2](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.4.1...dotnet-stryker@1.4.2) (2022-03-05)
 
 
