@@ -16,60 +16,6 @@ namespace Stryker.Core.TestRunners.VsTest
         List<TestResult> TestResults { get; }
         IReadOnlyList<TestCase> TestsInTimeout { get; }
     }
-    internal class TestRun
-    {
-        private readonly VsTestDescription _testDescription;
-        private readonly IList<TestResult> _results;
-
-        public TestRun(VsTestDescription testDescription)
-        {
-            _testDescription = testDescription;
-            _results = new List<TestResult>(testDescription.NbSubCases);
-        }
-
-        public bool AddResult(TestResult result)
-        {
-            _results.Add(result);
-            return _results.Count >= _testDescription.NbSubCases;
-        }
-
-        public bool IsComplete()
-        {
-            return _results.Count >= _testDescription.NbSubCases;
-        }
-
-        public TestResult Result()
-        {
-            var result = _results.Aggregate((TestResult)null, (acc, next) =>
-            {
-                if (acc == null)
-                {
-                    return next;
-                }
-                if (next.Outcome == TestOutcome.Failed || acc.Outcome == TestOutcome.None)
-                {
-                    acc.Outcome = next.Outcome;
-                }
-                if (acc.StartTime > next.StartTime)
-                {
-                    acc.StartTime = next.StartTime;
-                }
-                if (acc.EndTime < next.EndTime)
-                {
-                    acc.EndTime = next.EndTime;
-                }
-
-                foreach (var message in next.Messages)
-                {
-                    acc.Messages.Add(message);
-                }
-
-                acc.Duration = acc.EndTime - acc.StartTime;
-                return acc;
-            });
-            return result;
-        }
-    }
 
     public sealed class RunEventHandler : ITestRunEventsHandler, IDisposable, IRunResults
     {
@@ -78,7 +24,9 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly string _runnerId;
         private readonly IDictionary<Guid, VsTestDescription> _vsTests;
         private readonly IDictionary<Guid, TestRun> _runs = new Dictionary<Guid, TestRun>();
-        private readonly Dictionary<Guid, TestCase> _inProgress = new Dictionary<Guid, TestCase>();
+        private readonly Dictionary<Guid, TestCase> _inProgress = new();
+        private bool _disposed;
+        private readonly object _lck = new();
         public event EventHandler VsTestFailed;
         public event EventHandler ResultsUpdated;
 
@@ -125,21 +73,26 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
         {
-            if (testRunChangedArgs.ActiveTests != null)
+            lock (_lck)
             {
-                foreach (var activeTest in testRunChangedArgs.ActiveTests)
+                if (_disposed)
+                    return;
+                if (testRunChangedArgs.ActiveTests != null)
                 {
-                    _inProgress[activeTest.Id] = activeTest;
+                    foreach (var activeTest in testRunChangedArgs.ActiveTests)
+                    {
+                        _inProgress[activeTest.Id] = activeTest;
+                    }
                 }
-            }
 
-            if (testRunChangedArgs.NewTestResults == null || !testRunChangedArgs.NewTestResults.Any())
-            {
-                return;
-            }
+                if (testRunChangedArgs.NewTestResults == null || !testRunChangedArgs.NewTestResults.Any())
+                {
+                    return;
+                }
 
-            CaptureTestResults(testRunChangedArgs.NewTestResults);
-            ResultsUpdated?.Invoke(this, EventArgs.Empty);
+                CaptureTestResults(testRunChangedArgs.NewTestResults);
+                ResultsUpdated?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         public void HandleTestRunComplete(
@@ -148,69 +101,82 @@ namespace Stryker.Core.TestRunners.VsTest
             ICollection<AttachmentSet> runContextAttachments,
             ICollection<string> executorUris)
         {
-            if (lastChunkArgs?.ActiveTests != null)
+            _logger.LogTrace($"{_runnerId}: Test Completed");
+            lock (_lck)
             {
-                foreach (var activeTest in lastChunkArgs.ActiveTests)
+                if (_disposed)
                 {
-                    _inProgress[activeTest.Id] = activeTest;
+                    return;
                 }
+                if (lastChunkArgs?.ActiveTests != null)
+                {
+                    foreach (var activeTest in lastChunkArgs.ActiveTests)
+                    {
+                        _inProgress[activeTest.Id] = activeTest;
+                    }
+                }
+
+                if (lastChunkArgs?.NewTestResults != null)
+                {
+                    CaptureTestResults(lastChunkArgs.NewTestResults);
+                }
+
+                if (!testRunCompleteArgs.IsCanceled && (_inProgress.Any() || _runs.Values.Any(t => !t.IsComplete())))
+                {
+                    // report ongoing tests and test case with missing results as timeouts.
+                    TestsInTimeout = _inProgress.Values.Union(_runs.Values.Where(t => !t.IsComplete()).Select(t => t.Result().TestCase)).ToList();
+                    if (TestsInTimeout.Count > 0)
+                    {
+                        TimeOut = true;
+                    }
+                }
+
+                ResultsUpdated?.Invoke(this, EventArgs.Empty);
+
+                if (testRunCompleteArgs.Error != null)
+                {
+                    if (testRunCompleteArgs.Error.GetType() == typeof(TransationLayerException))
+                    {
+                        _logger.LogDebug(testRunCompleteArgs.Error, $"{_runnerId}: VsTest may have crashed, triggering VsTest restart!");
+                        VsTestFailed?.Invoke(this, EventArgs.Empty);
+                    }
+                    else if (testRunCompleteArgs.Error.InnerException is IOException sock)
+                    {
+                        _logger.LogDebug(sock, $"{_runnerId}: Test session ended unexpectedly.");
+                    }
+                    else if (!CancelRequested)
+                    {
+                        _logger.LogDebug(testRunCompleteArgs.Error, $"{_runnerId}: VsTest error:");
+                        VsTestFailed?.Invoke(this, EventArgs.Empty);
+                    }
+                }
+
+                _waitHandle.Set();
             }
-
-            if (lastChunkArgs?.NewTestResults != null)
-            {
-                CaptureTestResults(lastChunkArgs.NewTestResults);
-            }
-
-            if (!testRunCompleteArgs.IsCanceled && (_inProgress.Any() || _runs.Values.Any(t => !t.IsComplete())))
-            {
-                // report ongoing tests and test case with missing results as timeouts.
-                TestsInTimeout = _inProgress.Values.Union(_runs.Values.Where(t => !t.IsComplete()).Select(t => t.Result().TestCase)).ToList();
-                if (TestsInTimeout.Count > 0)
-                {
-                    TimeOut = true;
-                }
-            }
-
-            ResultsUpdated?.Invoke(this, EventArgs.Empty);
-
-            if (testRunCompleteArgs.Error != null)
-            {
-                if (testRunCompleteArgs.Error.GetType() == typeof(TransationLayerException))
-                {
-                    _logger.LogDebug(testRunCompleteArgs.Error, $"{_runnerId}: VsTest may have crashed, triggering VsTest restart!");
-                    VsTestFailed?.Invoke(this, EventArgs.Empty);
-                }
-                else if (testRunCompleteArgs.Error.InnerException is IOException sock)
-                {
-                    _logger.LogWarning(sock, $"{_runnerId}: Test session ended unexpectedly.");
-                }
-                else if (!CancelRequested)
-                {
-                    _logger.LogDebug(testRunCompleteArgs.Error, $"{_runnerId}: VsTest error:");
-                }
-            }
-
-            _waitHandle.Set();
         }
 
-        public int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo)
-        {
-            throw new NotSupportedException();
-        }
+        public int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo) => throw new NotSupportedException();
 
-        public void HandleRawMessage(string rawMessage)
-        {
-            _logger.LogTrace($"{_runnerId}: {rawMessage} [RAW]");
-        }
+        public void HandleRawMessage(string rawMessage) => _logger.LogTrace($"{_runnerId}: {rawMessage} [RAW]");
 
-        public void WaitEnd()
+        public void WaitEnd(DateTime deadLine)
         {
-            _waitHandle.WaitOne();
+            var timeout = deadLine - DateTime.Now;
+            if (timeout < TimeSpan.Zero)
+            {
+                timeout = TimeSpan.Zero;
+            }
+            if (!_waitHandle.WaitOne(timeout))
+            {
+                _logger.LogDebug($"{_runnerId}: VsTest client did not report run completion.");
+                HandleTestRunComplete(new TestRunCompleteEventArgs(null, false, false, null, null, TimeSpan.Zero),
+                    null, null, null);
+            }
         }
 
         public void HandleLogMessage(TestMessageLevel level, string message)
         {
-            LogLevel levelFinal = level switch
+            var levelFinal = level switch
             {
                 TestMessageLevel.Informational => LogLevel.Debug,
                 TestMessageLevel.Warning => LogLevel.Warning,
@@ -222,7 +188,11 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public void Dispose()
         {
-            _waitHandle.Dispose();
+            lock (_lck)
+            {
+                _waitHandle.Dispose();
+                _disposed = true;
+            }
         }
     }
 }

@@ -39,14 +39,8 @@ namespace Stryker.Core.TestRunners.VsTest
             _waitHandle.Set();
         }
 
-        public void HandleRawMessage(string rawMessage)
-        {
-            _messages.Add("Test Discovery Raw Message: " + rawMessage);
-        }
+        public void HandleRawMessage(string rawMessage) => _messages.Add("Test Discovery Raw Message: " + rawMessage);
 
-        public void HandleLogMessage(TestMessageLevel level, string message)
-        {
-            _messages.Add("Test Discovery Message: " + message);
-        }
+        public void HandleLogMessage(TestMessageLevel level, string message) => _messages.Add("Test Discovery Message: " + message);
     }
 }

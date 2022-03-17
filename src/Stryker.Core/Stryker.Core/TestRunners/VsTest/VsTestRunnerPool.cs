@@ -15,8 +15,8 @@ namespace Stryker.Core.TestRunners.VsTest
     public sealed class VsTestRunnerPool : ITestRunner
     {
         private readonly StrykerOptions _options;
-        private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
-        private readonly ConcurrentBag<VsTestRunner> _availableRunners = new ConcurrentBag<VsTestRunner>();
+        private readonly AutoResetEvent _runnerAvailableHandler = new(false);
+        private readonly ConcurrentBag<VsTestRunner> _availableRunners = new();
         private readonly IDictionary<Guid, VsTestDescription> _vsTests;
         private readonly TestSet _tests;
         private readonly VsTestHelper _helper = new();
@@ -26,14 +26,11 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             _options = options;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
-            using var runner = new VsTestRunner(options, projectInfo, null, new TestSet(), helper: _helper);
+            var runner = new VsTestRunner(options, projectInfo, null, new TestSet(), helper: _helper);
             (_vsTests, _tests) = runner.DiscoverTests(null);
             _availableRunners.Add(runner);
 
-            Parallel.For(1, options.Concurrency, (i, loopState) =>
-            {
-                _availableRunners.Add(new VsTestRunner(options, projectInfo, _vsTests, _tests, helper: _helper));
-            });
+            Parallel.For(1, options.Concurrency, (_, _) => _availableRunners.Add(new VsTestRunner(options, projectInfo, _vsTests, _tests, helper: _helper)));
         }
 
         public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
@@ -104,7 +101,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError("Something went wrong while capturing coverage", e);
+                    _logger.LogError("Something went wrong while capturing coverage: {0}", e);
                 }
                 finally
                 {

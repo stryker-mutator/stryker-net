@@ -10,26 +10,18 @@ namespace Stryker.Core.TestRunners.VsTest
 {
     public interface IStrykerTestHostLauncher : ITestHostLauncher
     {
-        bool WaitProcessExit();
+        bool WaitProcessExit(DateTime dateTime);
     }
 
-    public class StrykerVsTestHostLauncher : IStrykerTestHostLauncher
+    public class StrykerVsTestHostLauncher : ITestHostLauncher
     {
-        private Process _currentProcess;
-        private readonly object _lck = new object();
         private readonly int _id;
 
         private static ILogger Logger { get; }
 
-        static StrykerVsTestHostLauncher()
-        {
-            Logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerVsTestHostLauncher>();
-        }
+        static StrykerVsTestHostLauncher() => Logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerVsTestHostLauncher>();
 
-        public StrykerVsTestHostLauncher(int id)
-        {
-            _id = id;
-        }
+        public StrykerVsTestHostLauncher(int id) => _id = id;
 
         public bool IsDebug => false;
 
@@ -53,49 +45,20 @@ namespace Stryker.Core.TestRunners.VsTest
                     ["Verify_DisableClipboard"] = "true",
                 },
             };
-            _currentProcess = new Process { StartInfo = processInfo, EnableRaisingEvents = true };
+            var currentProcess = new Process { StartInfo = processInfo, EnableRaisingEvents = false };
 
-            _currentProcess.Exited += CurrentProcess_Exited;
+            currentProcess.OutputDataReceived += Process_OutputDataReceived;
+            currentProcess.ErrorDataReceived += Process_ErrorDataReceived;
 
-            _currentProcess.OutputDataReceived += Process_OutputDataReceived;
-            _currentProcess.ErrorDataReceived += Process_ErrorDataReceived;
-
-            if (!_currentProcess.Start())
+            if (!currentProcess.Start())
             {
-                Logger.LogError($"Runner {_id}: Failed to start process {processInfo.Arguments}.");
+                Logger.LogDebug($"Runner {_id}: Failed to start process {processInfo.Arguments}.");
             }
 
-            _currentProcess.BeginOutputReadLine();
-            _currentProcess.BeginErrorReadLine();
+            currentProcess.BeginOutputReadLine();
+            currentProcess.BeginErrorReadLine();
 
-            return _currentProcess.Id;
-        }
-
-        private void CurrentProcess_Exited(object sender, EventArgs e)
-        {
-            lock (_lck)
-            {
-                Monitor.Pulse(_lck);
-            }
-        }
-
-        public bool WaitProcessExit()
-        {
-            if (_currentProcess == null)
-            {
-                return false;
-            }
-
-            while (!_currentProcess.HasExited)
-            {
-                lock (_lck)
-                {
-                    Monitor.Wait(_lck, 500);
-                }
-            }
-
-            _currentProcess.Dispose();
-            return true;
+            return currentProcess.Id;
         }
 
         private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
@@ -114,9 +77,6 @@ namespace Stryker.Core.TestRunners.VsTest
             }
         }
 
-        public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo)
-        {
-            return LaunchTestHost(defaultTestHostStartInfo, CancellationToken.None);
-        }
+        public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo) => LaunchTestHost(defaultTestHostStartInfo, CancellationToken.None);
     }
 }

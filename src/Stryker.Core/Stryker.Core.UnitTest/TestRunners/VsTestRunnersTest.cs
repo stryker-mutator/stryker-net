@@ -187,7 +187,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 });
             }
             mockVsTest.Setup(x =>
-                x.RunTestsWithCustomTestHost(
+                x.RunTestsWithCustomTestHostAsync(
                     It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
                     It.Is<string>(settings => !settings.Contains("<Coverage")),
                     It.Is<TestPlatformOptions>(o => o != null && o.TestCaseFilter == null),
@@ -199,14 +199,14 @@ namespace Stryker.Core.UnitTest.TestRunners
                     // generate test results
                     MoqTestRun(testRunEvents, results);
                     synchroObject.Set();
-                });
+                }).Returns(Task.CompletedTask);
         }
 
         // setup a customized coverage capture run, using provided coverage results
         private void SetupMockCoverageRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> coverageResults, EventWaitHandle endProcess)
         {
             mockVsTest.Setup(x =>
-                x.RunTestsWithCustomTestHost(
+                x.RunTestsWithCustomTestHostAsync(
                     It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
                     It.Is<string>(settings => settings.Contains("<Coverage")),
                     It.Is<TestPlatformOptions>(o => o != null && o.TestCaseFilter == null),
@@ -235,14 +235,14 @@ namespace Stryker.Core.UnitTest.TestRunners
                     }
                     MoqTestRun(testRunEvents, results);
                     endProcess.Set();
-                });
+                }).Returns(Task.CompletedTask);
         }
 
         // setup a customized partial test runs, using provided test results
         private void SetupMockPartialTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> results, EventWaitHandle endProcess)
         {
             mockVsTest.Setup(x =>
-                x.RunTestsWithCustomTestHost(
+                x.RunTestsWithCustomTestHostAsync(
                     It.IsAny<IEnumerable<TestCase>>(),
                     It.Is<string>(s => !s.Contains("<Coverage")),
                     It.Is<TestPlatformOptions>(o => o != null && o.TestCaseFilter == null),
@@ -291,13 +291,13 @@ namespace Stryker.Core.UnitTest.TestRunners
                     collector.TestSessionEnd(new TestSessionEndArgs());
 
                     endProcess.Set();
-                });
+                }).Returns(Task.CompletedTask);
         }
 
         private void SetupMockTimeOutTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> results, string timeoutTest, EventWaitHandle endProcess)
         {
             mockVsTest.Setup(x =>
-                x.RunTestsWithCustomTestHost(
+                x.RunTestsWithCustomTestHostAsync(
                     It.IsAny<IEnumerable<TestCase>>(),
                     It.IsAny<string>(),
                     It.Is<TestPlatformOptions>(o => o != null && o.TestCaseFilter == null),
@@ -350,7 +350,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                     collector.TestSessionEnd(new TestSessionEndArgs());
 
                     endProcess.Set();
-                });
+                }).Returns(Task.CompletedTask);
         }
 
         private Mock<IVsTestConsoleWrapper> BuildVsTestRunner(StrykerOptions options, WaitHandle endProcess, out VsTestRunner runner)
@@ -359,13 +359,11 @@ namespace Stryker.Core.UnitTest.TestRunners
             mockedVsTestConsole.Setup(x => x.StartSession());
             mockedVsTestConsole.Setup(x => x.InitializeExtensions(It.IsAny<List<string>>()));
             mockedVsTestConsole.Setup(x => x.AbortTestRun());
-            mockedVsTestConsole.Setup(x =>
-                x.DiscoverTests(It.Is<IEnumerable<string>>(d => d.Any(e => e == _testAssemblyPath)),
-                    It.IsAny<string>(),
-                    It.IsAny<ITestDiscoveryEventsHandler>())).Callback(
+            mockedVsTestConsole.Setup(x => x.DiscoverTestsAsync(It.Is<IEnumerable<string>>(d => d.Any(e => e == _testAssemblyPath)),
+                It.IsAny<string>(),
+                It.IsAny<ITestDiscoveryEventsHandler>())).Callback(
                 (IEnumerable<string> _, string _, ITestDiscoveryEventsHandler discoveryEventsHandler) =>
-                    DiscoverTests(discoveryEventsHandler, _testCases, false));
-
+                    DiscoverTests(discoveryEventsHandler, _testCases, false)).Returns(Task.CompletedTask);
             runner = new VsTestRunner(
                 options,
                 _targetProject,
@@ -374,7 +372,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 _fileSystem,
                 new Mock<IVsTestHelper>().Object,
                 wrapper: mockedVsTestConsole.Object,
-                hostBuilder: _ => new MoqHost(endProcess, false));
+                hostBuilder: _ => new MoqHost());
             return mockedVsTestConsole;
         }
 
@@ -779,32 +777,13 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         // class mocking the VsTest Host Launcher
-        private class MoqHost : IStrykerTestHostLauncher
+        private class MoqHost : ITestHostLauncher
         {
-            private readonly WaitHandle _handle;
+            public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo) => throw new NotImplementedException();
 
-            public MoqHost(WaitHandle handle, bool isDebug)
-            {
-                _handle = handle;
-                IsDebug = isDebug;
-            }
-
-            public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo)
-            {
-                throw new NotImplementedException();
-            }
-
-            public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo, CancellationToken cancellationToken)
-            {
-                throw new NotImplementedException();
-            }
+            public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo, CancellationToken cancellationToken) => throw new NotImplementedException();
 
             public bool IsDebug { get; }
-
-            public bool WaitProcessExit()
-            {
-                return _handle == null || _handle.WaitOne();
-            }
         }
     }
 }
