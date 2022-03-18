@@ -8,6 +8,7 @@ using Moq;
 using NuGet.Versioning;
 using Serilog.Events;
 using Shouldly;
+using Spectre.Console.Testing;
 using Stryker.CLI.Clients;
 using Stryker.CLI.Logging;
 using Stryker.Core;
@@ -82,29 +83,18 @@ Options:";
                 .Returns(strykerRunResult)
                 .Verifiable();
 
-            var target = new StrykerCli(strykerRunnerMock.Object, null, _loggingInitializerMock.Object, _nugetClientMock.Object);
+            var console = new TestConsole().EmitAnsiSequences().Width(160);
+            var target = new StrykerCli(strykerRunnerMock.Object, null, _loggingInitializerMock.Object, _nugetClientMock.Object, console);
 
-            using var sw = new StringWriter();
-            var originalOut = Console.Out;
-            try
-            {
-                Console.SetOut(sw);
+            target.Run(Array.Empty<string>());
 
-                target.Run(new string[] { });
+            // wait 20ms to let the getVersion call be handled
+            Thread.Sleep(20);
 
-                // wait 20ms to let the getVersion call be handled
-                Thread.Sleep(20);
+            var consoleOutput = console.Output;
 
-                var consoleOutput = sw.GetStringBuilder().ToString();
-
-                consoleOutput.ShouldContain("Version:");
-                consoleOutput.ShouldContain("A new version of Stryker.NET (10.0.0) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker");
-            }
-            finally
-            {
-                //reset the console to prevent object disposed exceptions in other tests
-                Console.SetOut(originalOut);
-            }
+            consoleOutput.ShouldContain("Version:");
+            consoleOutput.ShouldContain(@"A new version of Stryker.NET (10.0.0) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker`");
         }
 
         [Fact]
@@ -265,6 +255,19 @@ Options:";
             _strykerRunnerMock.VerifyAll();
 
             _inputs.SolutionInput.SuppliedInput.ShouldBe("SomeSolutionPath.sln");
+        }
+
+        [Theory]
+        [InlineData("--test-project")]
+        [InlineData("-tp")]
+        public void ShouldPassTestProjectArgumentsToStryker_WithTestProjectArgument(string argName)
+        {
+            _target.Run(new string[] { argName, "SomeProjectName1.csproj", argName, "SomeProjectName2.csproj" });
+
+            _strykerRunnerMock.VerifyAll();
+
+            _inputs.TestProjectsInput.SuppliedInput.ShouldContain("SomeProjectName1.csproj");
+            _inputs.TestProjectsInput.SuppliedInput.ShouldContain("SomeProjectName2.csproj");
         }
 
         [Theory]

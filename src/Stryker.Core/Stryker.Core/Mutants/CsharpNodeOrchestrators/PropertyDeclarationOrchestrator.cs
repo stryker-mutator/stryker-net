@@ -5,7 +5,7 @@ using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 {
-    internal class PropertyDeclarationOrchestrator: NodeSpecificOrchestrator<PropertyDeclarationSyntax, BasePropertyDeclarationSyntax>
+    internal class PropertyDeclarationOrchestrator : NodeSpecificOrchestrator<PropertyDeclarationSyntax, BasePropertyDeclarationSyntax>
     {
         protected override MutationContext PrepareContext(PropertyDeclarationSyntax node, MutationContext context)
         {
@@ -53,7 +53,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 
             // and inject pending mutations in the getter's body.
             result = mutated.ReplaceNode(getter.Body!,
-                    SyntaxFactory.Block( context.InjectBlockLevelExpressionMutation( getter.Body, sourceNode.ExpressionBody!.Expression, true)))
+                    SyntaxFactory.Block(context.InjectBlockLevelExpressionMutation(getter.Body, sourceNode.ExpressionBody!.Expression, true)))
                 .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.None));
             return result;
         }

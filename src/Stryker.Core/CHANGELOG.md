@@ -1,4 +1,56 @@
-# [](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.3.0...stryker@) (2022-01-21)
+# [1.5.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.4.2...stryker@1.5.0) (2022-03-15)
+
+
+### Bug Fixes
+
+* **filters:** ExcludeFromCodeCoverage not working when justification is given ([#1964](https://github.com/stryker-mutator/stryker-net/issues/1964)) ([a562149](https://github.com/stryker-mutator/stryker-net/commit/a56214959eae7c0b578f54c55970dc15c3891ffb)), closes [#1957](https://github.com/stryker-mutator/stryker-net/issues/1957)
+
+
+### Features
+
+* **reporting:** Make links clickable in terminals that support Ansi magic ([#1936](https://github.com/stryker-mutator/stryker-net/issues/1936)) ([54b9872](https://github.com/stryker-mutator/stryker-net/commit/54b98724d5651d993f7d27753b70369ef0a1a2ce))
+
+
+
+## [1.4.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.4.1...stryker@1.4.2) (2022-03-05)
+
+
+### Bug Fixes
+
+* **regex mutations:** Revert inclusion of referenced projects because transitive dependencies are not included ([#1950](https://github.com/stryker-mutator/stryker-net/issues/1950)) ([69a80ee](https://github.com/stryker-mutator/stryker-net/commit/69a80ee75e082c1343a068ad6e3be4faf2edbd7a))
+
+
+
+## [1.4.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.4.0...stryker@1.4.1) (2022-03-04)
+
+
+### Bug Fixes
+
+* **packaging:** Include referenced projects in nupkg ([#1947](https://github.com/stryker-mutator/stryker-net/issues/1947)) ([e7427ce](https://github.com/stryker-mutator/stryker-net/commit/e7427cee807df53388e6b009052b35b6a76881cf))
+* **Rollback:** Null Reference Exception during mutation rollback ([#1940](https://github.com/stryker-mutator/stryker-net/issues/1940)) ([5b71ad0](https://github.com/stryker-mutator/stryker-net/commit/5b71ad07c0c2d173cb7a126d8d6a0e77825b67f8))
+
+
+
+# [1.4.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.3.1...stryker@1.4.0) (2022-03-02)
+
+
+### Bug Fixes
+
+* **initialisation:** Make sure to select valid IAnalyzerResult from Buildalyzer ([#1900](https://github.com/stryker-mutator/stryker-net/issues/1900)) ([da2cd52](https://github.com/stryker-mutator/stryker-net/commit/da2cd52c20bc1d8a5863ce6f9eaf901d8d8fade7)), closes [#1899](https://github.com/stryker-mutator/stryker-net/issues/1899)
+* **initialisation:** Use the NuGet.Frameworks package to parse target frameworks ([#1906](https://github.com/stryker-mutator/stryker-net/issues/1906)) ([556e1ae](https://github.com/stryker-mutator/stryker-net/commit/556e1aedd1b3179e6b082acf7b7081ea6d6286fc)), closes [/github.com/stryker-mutator/stryker-net/pull/1905/commits/6d9c0a95adfa50df4f78a800439321df7833a95b#diff-7ac954b3982a221de06b52bcdde548ea509a15bfc79fef82cf7b87071a223197](https://github.com//github.com/stryker-mutator/stryker-net/pull/1905/commits/6d9c0a95adfa50df4f78a800439321df7833a95b/issues/diff-7ac954b3982a221de06b52bcdde548ea509a15bfc79fef82cf7b87071a223197) [#1905](https://github.com/stryker-mutator/stryker-net/issues/1905)
+* **mutation placing:** Support statement mutations in expression bodies lambdas ([#1905](https://github.com/stryker-mutator/stryker-net/issues/1905)) ([35c8374](https://github.com/stryker-mutator/stryker-net/commit/35c837480f1fbfcc6b7b2ce5bd808bc1b94af82b))
+* **ProcessorCount:** Guard against `ProcessorCount` reporting values lower then `1` ([#1930](https://github.com/stryker-mutator/stryker-net/issues/1930)) ([c378d63](https://github.com/stryker-mutator/stryker-net/commit/c378d6300a936ac38d6592a537213746b30d69b9))
+* **progressbar reporter:** fix NRE in the case of a mutant free world ([#1882](https://github.com/stryker-mutator/stryker-net/issues/1882)) ([249e204](https://github.com/stryker-mutator/stryker-net/commit/249e2042f0235cc7b54898b8f986fb901468b03b))
+* **rollback:** Improve stability by rollbacking block mutations before all mutations are removed ([#1875](https://github.com/stryker-mutator/stryker-net/issues/1875)) ([2446ef0](https://github.com/stryker-mutator/stryker-net/commit/2446ef02847f687a63650d6a19647fffc937e70b))
+
+
+### Features
+
+* Allow specifying test projects as commandline arguments ([#1929](https://github.com/stryker-mutator/stryker-net/issues/1929)) ([072b456](https://github.com/stryker-mutator/stryker-net/commit/072b4568a8bc1180fa85f9691a75110783ce37cf))
+
+
+
+# [1.3.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.3.0...stryker@1.3.1) (2022-01-21)
 
 
 ### Bug Fixes
@@ -7,7 +59,7 @@
 
 
 
-# [](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.2.2...stryker@) (2022-01-20)
+# [1.3.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.2.2...stryker@1.3.0) (2022-01-20)
 
 
 ### Bug Fixes
@@ -23,7 +75,7 @@
 
 
 
-# [](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.2.1...stryker@) (2022-01-11)
+# [1.2.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.2.1...stryker@1.2.2) (2022-01-11)
 
 
 ### Bug Fixes
@@ -40,7 +92,7 @@
 
 
 
-# [](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.2.0...stryker@) (2021-12-15)
+# [1.2.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.2.0...stryker@1.2.1) (2021-12-15)
 
 
 ### Bug Fixes
@@ -49,7 +101,7 @@
 
 
 
-# [1.2.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.1.0...stryker@) (2021-12-10)
+# [1.2.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.1.0...stryker@1.2.0) (2021-12-10)
 
 
 ### Bug Fixes
@@ -65,7 +117,7 @@
 
 
 
-# [1.1.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.0.1...stryker@) (2021-11-16)
+# [1.1.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.0.1...stryker@1.1.0) (2021-11-16)
 
 
 ### Bug Fixes
@@ -85,7 +137,7 @@
 
 
 
-# [1.0.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.0.0...stryker@) (2021-11-02)
+# [1.0.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.0.0...stryker@1.0.1) (2021-11-02)
 
 
 ### Bug Fixes
@@ -96,7 +148,7 @@
 
 
 
-# [1.0.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.11...stryker@) (2021-10-30)
+# [1.0.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@0.22.11...stryker@1.0.0) (2021-10-30)
 
 
 ### Bug Fixes

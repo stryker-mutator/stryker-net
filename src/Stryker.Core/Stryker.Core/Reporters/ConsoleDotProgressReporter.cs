@@ -1,7 +1,5 @@
-using System;
 using System.Collections.Generic;
-using System.IO;
-using Crayon;
+using Spectre.Console;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
@@ -13,32 +11,30 @@ namespace Stryker.Core.Reporters
     /// </summary>
     public class ConsoleDotProgressReporter : IReporter
     {
-        private readonly TextWriter _consoleWriter;
+        private readonly IAnsiConsole _console;
 
-        public ConsoleDotProgressReporter(TextWriter consoleWriter = null) => _consoleWriter = consoleWriter ?? Console.Out;
+        public ConsoleDotProgressReporter(IAnsiConsole console = null) => _console = console ?? AnsiConsole.Console;
 
         public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent) { }
 
-        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
-        {
-        }
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested) { }
 
         public void OnMutantTested(IReadOnlyMutant result)
         {
             switch (result.ResultStatus)
             {
                 case MutantStatus.Killed:
-                    _consoleWriter.Write(".");
+                    _console.Write(".");
                     break;
                 case MutantStatus.Survived:
-                    _consoleWriter.Write(Output.Red("S"));
+                    _console.Markup("[Red]S[/]");
                     break;
                 case MutantStatus.Timeout:
-                    _consoleWriter.Write("T");
+                    _console.Write("T");
                     break;
             };
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo) { }
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo) => _console.WriteLine();
     }
 }

@@ -1,8 +1,7 @@
-using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using Crayon;
+using Spectre.Console;
+using Spectre.Console.Rendering;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -16,12 +15,12 @@ namespace Stryker.Core.Reporters
     public class ClearTextReporter : IReporter
     {
         private readonly StrykerOptions _options;
-        private readonly TextWriter _consoleWriter;
+        private readonly IAnsiConsole _console;
 
-        public ClearTextReporter(StrykerOptions strykerOptions, TextWriter consoleWriter = null)
+        public ClearTextReporter(StrykerOptions strykerOptions, IAnsiConsole console = null)
         {
             _options = strykerOptions;
-            _consoleWriter = consoleWriter ?? Console.Out;
+            _console = console ?? AnsiConsole.Console;
         }
 
         public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
@@ -42,71 +41,79 @@ namespace Stryker.Core.Reporters
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
             var files = reportComponent.GetAllFiles();
-
             if (files.Any())
             {
                 // print empty line for readability
-                _consoleWriter.WriteLine();
-                _consoleWriter.WriteLine();
-                _consoleWriter.WriteLine("All mutants have been tested, and your mutation score has been calculated");
+                _console.WriteLine();
+                _console.WriteLine();
+                _console.WriteLine("All mutants have been tested, and your mutation score has been calculated");
 
-                var filePathLength = Math.Max(9, files.Max(f => f.RelativePath?.Length ?? 0) + 1);
-                string dashes = new string('─', filePathLength);
-                _consoleWriter.WriteLine($"┌─{dashes}┬──────────┬──────────┬───────────┬────────────┬──────────┬─────────┐");
-                _consoleWriter.WriteLine($"│ File{new string(' ', filePathLength - 4)}│  % score │ # killed │ # timeout │ # survived │ # no cov │ # error │");
-                _consoleWriter.WriteLine($"├─{dashes}┼──────────┼──────────┼───────────┼────────────┼──────────┼─────────┤");
+                var table = new Table()
+                    .RoundedBorder()
+                    .AddColumn("File", c => c.NoWrap())
+                    .AddColumn("% score", c => c.Alignment(Justify.Right).NoWrap())
+                    .AddColumn("# killed", c => c.Alignment(Justify.Right).NoWrap())
+                    .AddColumn("# timeout", c => c.Alignment(Justify.Right).NoWrap())
+                    .AddColumn("# survived", c => c.Alignment(Justify.Right).NoWrap())
+                    .AddColumn("# no cov", c => c.Alignment(Justify.Right).NoWrap())
+                    .AddColumn("# error", c => c.Alignment(Justify.Right).NoWrap());
 
-                DisplayComponent(reportComponent, filePathLength);
+                DisplayComponent(reportComponent, table);
 
                 foreach (var file in files)
                 {
-                    DisplayComponent(file, filePathLength);
+                    DisplayComponent(file, table);
                 }
 
-                _consoleWriter.WriteLine($"└─{dashes}┴──────────┴──────────┴───────────┴────────────┴──────────┴─────────┘");
+                _console.Write(table);
             }
         }
 
-        private void DisplayComponent(IReadOnlyProjectComponent inputComponent, int filePathLength)
+        private void DisplayComponent(IReadOnlyProjectComponent inputComponent, Table table)
         {
-            _consoleWriter.Write($"│ {(inputComponent.RelativePath ?? "All files").PadRight(filePathLength)}│ ");
+            var columns = new List<IRenderable>
+            {
+                new Text(inputComponent.RelativePath ?? "All files")
+            };
 
             var mutationScore = inputComponent.GetMutationScore();
 
             if (inputComponent.IsComponentExcluded(_options.Mutate))
             {
-                _consoleWriter.Write(Output.Bright.Black("Excluded"));
+                columns.Add(new Markup("[Gray]Excluded[/]"));
             }
             else if (double.IsNaN(mutationScore))
             {
-                _consoleWriter.Write(Output.Bright.Black("     N/A"));
+                columns.Add(new Markup("[Gray]N/A[/]"));
             }
             else
             {
-                var scoreText = $"{mutationScore * 100:N2}".PadLeft(8);
+                var scoreText = $"{mutationScore * 100:N2}";
 
                 var checkHealth = inputComponent.CheckHealth(_options.Thresholds);
                 if (checkHealth is Health.Good)
                 {
-                    _consoleWriter.Write(Output.Green(scoreText));
+                    columns.Add(new Markup($"[Green]{scoreText}[/]"));
                 }
                 else if (checkHealth is Health.Warning)
                 {
-                    _consoleWriter.Write(Output.Yellow(scoreText));
+                    columns.Add(new Markup($"[Yellow]{scoreText}[/]"));
                 }
                 else if (checkHealth is Health.Danger)
                 {
-                    _consoleWriter.Write(Output.Red(scoreText));
+                    columns.Add(new Markup($"[Red]{scoreText}[/]"));
                 }
             }
 
             var mutants = inputComponent.Mutants.ToList();
-            _consoleWriter.Write($" │ {mutants.Count(m => m.ResultStatus == MutantStatus.Killed),8}");
-            _consoleWriter.Write($" │ {mutants.Count(m => m.ResultStatus == MutantStatus.Timeout),9}");
-            _consoleWriter.Write($" │ {inputComponent.TotalMutants().Count() - inputComponent.DetectedMutants().Count(),10}");
-            _consoleWriter.Write($" │ {mutants.Count(m => m.ResultStatus == MutantStatus.NoCoverage),8}");
-            _consoleWriter.Write($" │ {mutants.Count(m => m.ResultStatus == MutantStatus.CompileError),7}");
-            _consoleWriter.WriteLine($" │");
+
+            columns.Add(new Text(mutants.Count(m => m.ResultStatus == MutantStatus.Killed).ToString()));
+            columns.Add(new Text(mutants.Count(m => m.ResultStatus == MutantStatus.Timeout).ToString()));
+            columns.Add(new Text((inputComponent.TotalMutants().Count() - inputComponent.DetectedMutants().Count()).ToString()));
+            columns.Add(new Text(mutants.Count(m => m.ResultStatus == MutantStatus.NoCoverage).ToString()));
+            columns.Add(new Text(mutants.Count(m => m.ResultStatus == MutantStatus.CompileError).ToString()));
+
+            table.AddRow(columns);
         }
     }
 }

@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators
 {
-    public class StatementMutator: MutatorBase<StatementSyntax>, IMutator
+    public class StatementMutator : MutatorBase<StatementSyntax>, IMutator
     {
         public override MutationLevel MutationLevel => MutationLevel.Standard;
 
@@ -92,9 +93,9 @@ namespace Stryker.Core.Mutators
                 // removing an out variable may cause a compile error
                 if (expressionNode
                     .DescendantTokens(s => !(s is AnonymousFunctionExpressionSyntax))
-                    .Any(t => t.Kind() == SyntaxKind.OutKeyword))
+                    .Any(t => t.IsKind(SyntaxKind.OutKeyword)))
                 {
-                   yield break;
+                    yield break;
                 }
             }
 

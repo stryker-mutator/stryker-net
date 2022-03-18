@@ -1,9 +1,8 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using Crayon;
+using Spectre.Console;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -17,15 +16,15 @@ namespace Stryker.Core.Reporters.Html.reporter
     {
         private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
-        private readonly TextWriter _consoleWriter;
+        private readonly IAnsiConsole _console;
         private readonly IWebbrowserOpener _processWrapper;
 
         public HtmlReporter(StrykerOptions options, IFileSystem fileSystem = null,
-            TextWriter consoleWriter = null, IWebbrowserOpener processWrapper = null)
+            IAnsiConsole console = null, IWebbrowserOpener processWrapper = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
-            _consoleWriter = consoleWriter ?? Console.Out;
+            _console = console ?? AnsiConsole.Console;
             _processWrapper = processWrapper ?? new WebbrowserOpener();
         }
 
@@ -39,10 +38,7 @@ namespace Stryker.Core.Reporters.Html.reporter
 
             WriteHtmlReport(reportPath, mutationReport.ToJsonHtmlSafe());
 
-            // to make path clickable it should always start with: file:///
-            var reportUri = reportPath.Replace("\\", "/");
-            reportUri = reportUri.StartsWith("/") ? reportUri : "/" + reportUri;
-            reportUri = "file://" + reportUri;
+            var reportUri = "file://" + reportPath.Replace("\\", "/");
 
             if (_options.ReportTypeToOpen == Options.Inputs.ReportType.Html)
             {
@@ -50,12 +46,23 @@ namespace Stryker.Core.Reporters.Html.reporter
             }
             else
             {
-                _consoleWriter.Write(Output.Cyan("Hint: by passing \"--open-report or -o\" the report will open automatically once Stryker is done."));
+                _console.MarkupLine("[Cyan]Hint: by passing \"--open-report or -o\" the report will open automatically once Stryker is done.[/]");
             }
 
-            _consoleWriter.WriteLine(Output.Green($"\nYour html report has been generated at:\n" +
-                $"{reportUri}\n" +
-                $"You can open it in your browser of choice."));
+            _console.WriteLine();
+            _console.MarkupLine("[Green]Your html report has been generated at:[/]");
+
+            if (_console.Profile.Capabilities.Links)
+            {
+                // We must print the report path as the link text because on some terminals links might be supported but not actually clickable: https://github.com/spectreconsole/spectre.console/issues/764
+                _console.MarkupLine($"[Green][link={reportUri}]{reportPath}[/][/]");
+            }
+            else
+            {
+                _console.MarkupLine($"[Green]{reportUri}[/]");
+            }
+
+            _console.MarkupLine("[Green]You can open it in your browser of choice.[/]");
         }
 
         private void WriteHtmlReport(string filePath, string mutationReport)

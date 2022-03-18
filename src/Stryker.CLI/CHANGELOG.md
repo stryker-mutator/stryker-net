@@ -1,8 +1,54 @@
-# [](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.3.0...dotnet-stryker@) (2022-01-21)
+# [1.5.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.4.2...dotnet-stryker@1.5.0) (2022-03-15)
+
+
+### Bug Fixes
+
+* Version update check at startup no longer recommends upgrading to preview and latest ([#1956](https://github.com/stryker-mutator/stryker-net/issues/1956)) ([d67fd65](https://github.com/stryker-mutator/stryker-net/commit/d67fd65d85edb2a0c063652f1f86c09b69896866))
+
+
+### Features
+
+* **reporting:** Make links clickable in terminals that support Ansi magic ([#1936](https://github.com/stryker-mutator/stryker-net/issues/1936)) ([54b9872](https://github.com/stryker-mutator/stryker-net/commit/54b98724d5651d993f7d27753b70369ef0a1a2ce))
 
 
 
-# [](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.2.2...dotnet-stryker@) (2022-01-20)
+## [1.4.2](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.4.1...dotnet-stryker@1.4.2) (2022-03-05)
+
+
+### Bug Fixes
+
+* **regex mutations:** Revert inclusion of referenced projects because transitive dependencies are not included ([#1950](https://github.com/stryker-mutator/stryker-net/issues/1950)) ([69a80ee](https://github.com/stryker-mutator/stryker-net/commit/69a80ee75e082c1343a068ad6e3be4faf2edbd7a))
+
+
+
+## [1.4.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.4.0...dotnet-stryker@1.4.1) (2022-03-04)
+
+
+### Bug Fixes
+
+* **packaging:** Include referenced projects in nupkg ([#1947](https://github.com/stryker-mutator/stryker-net/issues/1947)) ([e7427ce](https://github.com/stryker-mutator/stryker-net/commit/e7427cee807df53388e6b009052b35b6a76881cf))
+
+
+
+# [1.4.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.3.1...dotnet-stryker@1.4.0) (2022-03-02)
+
+
+### Bug Fixes
+
+* **initialisation:** Use the NuGet.Frameworks package to parse target frameworks ([#1906](https://github.com/stryker-mutator/stryker-net/issues/1906)) ([556e1ae](https://github.com/stryker-mutator/stryker-net/commit/556e1aedd1b3179e6b082acf7b7081ea6d6286fc)), closes [/github.com/stryker-mutator/stryker-net/pull/1905/commits/6d9c0a95adfa50df4f78a800439321df7833a95b#diff-7ac954b3982a221de06b52bcdde548ea509a15bfc79fef82cf7b87071a223197](https://github.com//github.com/stryker-mutator/stryker-net/pull/1905/commits/6d9c0a95adfa50df4f78a800439321df7833a95b/issues/diff-7ac954b3982a221de06b52bcdde548ea509a15bfc79fef82cf7b87071a223197) [#1905](https://github.com/stryker-mutator/stryker-net/issues/1905)
+
+
+### Features
+
+* Allow specifying test projects as commandline arguments ([#1929](https://github.com/stryker-mutator/stryker-net/issues/1929)) ([072b456](https://github.com/stryker-mutator/stryker-net/commit/072b4568a8bc1180fa85f9691a75110783ce37cf))
+
+
+
+# [1.3.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.3.0...dotnet-stryker@1.3.1) (2022-01-21)
+
+
+
+# [1.3.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.2.2...dotnet-stryker@1.3.0) (2022-01-20)
 
 
 ### Bug Fixes
@@ -11,11 +57,11 @@
 
 
 
-# [](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.2.1...dotnet-stryker@) (2022-01-11)
+# [1.2.2](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.2.1...dotnet-stryker@1.2.2) (2022-01-11)
 
 
 
-# [](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.2.0...dotnet-stryker@) (2021-12-15)
+# [1.2.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.2.0...dotnet-stryker@1.2.1) (2021-12-15)
 
 
 ### Bug Fixes
@@ -24,7 +70,7 @@
 
 
 
-# [1.2.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.1.0...dotnet-stryker@) (2021-12-10)
+# [1.2.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.1.0...dotnet-stryker@1.2.0) (2021-12-10)
 
 
 ### Bug Fixes
@@ -40,7 +86,7 @@
 
 
 
-# [1.1.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.0.1...dotnet-stryker@) (2021-11-16)
+# [1.1.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.0.1...dotnet-stryker@1.1.0) (2021-11-16)
 
 
 ### Bug Fixes
@@ -57,7 +103,7 @@
 
 
 
-# [1.0.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.0.0...dotnet-stryker@) (2021-11-02)
+# [1.0.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.0.0...dotnet-stryker@1.0.1) (2021-11-02)
 
 
 ### Bug Fixes
@@ -66,7 +112,7 @@
 
 
 
-# [1.0.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.11...dotnet-stryker@) (2021-10-30)
+# [1.0.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@0.22.11...dotnet-stryker@1.0.0) (2021-10-30)
 
 
 ### Bug Fixes

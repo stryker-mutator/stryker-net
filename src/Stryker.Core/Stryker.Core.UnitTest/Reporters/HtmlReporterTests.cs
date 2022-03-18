@@ -95,12 +95,10 @@ namespace Stryker.Core.UnitTest.Reporters
 
             reporter.OnAllMutantsTested(mutationTree, It.IsAny<TestProjectsInfo>());
             var reportUri = Path.Combine(options.OutputPath, "reports", $"{options.ReportFileName}.html");
-
-            reportUri = reportUri.Replace("\\", "/");
-            reportUri = reportUri.StartsWith("/") ? reportUri : "/" + reportUri;
+            reportUri = "file://" + reportUri.Replace("\\", "/");
 
             // Check if browser open action is invoked
-            mockProcess.Verify(m => m.Open("file://" + reportUri));
+            mockProcess.Verify(m => m.Open(reportUri));
         }
 
         [Theory]

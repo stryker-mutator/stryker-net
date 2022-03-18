@@ -1,10 +1,10 @@
 using System.Collections.ObjectModel;
-using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Moq;
 using Shouldly;
+using Spectre.Console.Testing;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
@@ -29,8 +29,9 @@ namespace Stryker.Core.UnitTest.Reporters
                 DisplayName = "This name should display",
                 Type = Mutator.Arithmetic
             };
-            var textWriter = new StringWriter();
-            var target = new ClearTextTreeReporter(new StrykerOptions(), textWriter);
+
+            var console = new TestConsole().EmitAnsiSequences();
+            var target = new ClearTextTreeReporter(new StrykerOptions(), console);
 
             var folder = new CsharpFolderComposite()
             {
@@ -65,13 +66,22 @@ namespace Stryker.Core.UnitTest.Reporters
                     new Mutant() { ResultStatus = MutantStatus.Survived, Mutation = mutation }
                 }
             });
+            folder.Add(new CsharpFileLeaf()
+            {
+                RelativePath = "ProjectFolder/Zzz.cs",
+                FullPath = "C://ProjectFolder/Zzz.cs",
+                Mutants = new Collection<Mutant>() {
+                    new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation },
+                    new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation }
+                }
+            });
 
             target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
-            textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
+            console.Output.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
 All mutants have been tested, and your mutation score has been calculated
-All files [2/3 ({(2.0 / 3.0):P2})]
+All files [4/5 ({4.0 / 5.0:P2})]
 ├── Order.cs [2/2 ({1:P2})]
 │   ├── [Killed] This name should display on line 1
 │   │   ├── [-] 0 + 8
@@ -79,20 +89,27 @@ All files [2/3 ({(2.0 / 3.0):P2})]
 │   └── [Killed] This name should display on line 1
 │       ├── [-] 0 + 8
 │       └── [+] 0 -8
-└── Subdir [0/1 ({0:P2})]
-    ├── OrderItem.cs [0/0 (N/A)]
-    └── CustomerOrdersWithItemsSpecification.cs [0/1 ({0:P2})]
-        └── [Survived] This name should display on line 1
-            ├── [-] 0 + 8
-            └── [+] 0 -8
+├── Subdir [0/1 ({0:P2})]
+│   ├── OrderItem.cs [0/0 (N/A)]
+│   └── CustomerOrdersWithItemsSpecification.cs [0/1 ({0:P2})]
+│       └── [Survived] This name should display on line 1
+│           ├── [-] 0 + 8
+│           └── [+] 0 -8
+└── Zzz.cs [2/2 ({1:P2})]
+    ├── [Killed] This name should display on line 1
+    │   ├── [-] 0 + 8
+    │   └── [+] 0 -8
+    └── [Killed] This name should display on line 1
+        ├── [-] 0 + 8
+        └── [+] 0 -8
 ");
         }
 
         [Fact]
         public void ClearTextTreeReporter_ShouldPrintOnReportDone()
         {
-            var textWriter = new StringWriter();
-            var target = new ClearTextTreeReporter(new StrykerOptions(), textWriter);
+            var console = new TestConsole().EmitAnsiSequences();
+            var target = new ClearTextTreeReporter(new StrykerOptions(), console);
 
             var folder = new CsharpFolderComposite()
             {
@@ -108,13 +125,13 @@ All files [2/3 ({(2.0 / 3.0):P2})]
 
             target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
-            textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
+            console.Output.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
 All mutants have been tested, and your mutation score has been calculated
 All files [0/0 (N/A)]
 └── SomeFile.cs [0/0 (N/A)]
 ");
-            textWriter.DarkGraySpanCount().ShouldBe(2);
+            console.Output.DarkGraySpanCount().ShouldBe(2);
         }
 
         [Fact]
@@ -131,8 +148,8 @@ All files [0/0 (N/A)]
                 Type = Mutator.Arithmetic
             };
 
-            var textWriter = new StringWriter();
-            var target = new ClearTextTreeReporter(new StrykerOptions(), textWriter);
+            var console = new TestConsole().EmitAnsiSequences();
+            var target = new ClearTextTreeReporter(new StrykerOptions(), console);
 
             var folder = new CsharpFolderComposite()
             {
@@ -151,7 +168,7 @@ All files [0/0 (N/A)]
 
             target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
-            textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
+            console.Output.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
 All mutants have been tested, and your mutation score has been calculated
 All files [1/1 ({1:P2})]
@@ -160,7 +177,7 @@ All files [1/1 ({1:P2})]
         ├── [-] 0 + 8
         └── [+] 0 -8
 ");
-            textWriter.GreenSpanCount().ShouldBe(3);
+            console.Output.GreenSpanCount().ShouldBe(3);
         }
 
         [Fact]
@@ -177,8 +194,8 @@ All files [1/1 ({1:P2})]
                 Type = Mutator.Arithmetic
             };
 
-            var textWriter = new StringWriter();
-            var target = new ClearTextTreeReporter(new StrykerOptions(), textWriter);
+            var console = new TestConsole().EmitAnsiSequences();
+            var target = new ClearTextTreeReporter(new StrykerOptions(), console);
 
             var folder = new CsharpFolderComposite()
             {
@@ -195,7 +212,7 @@ All files [1/1 ({1:P2})]
 
             target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
-            textWriter.RemoveAnsi().ShouldBeWithNewlineReplace($@"
+            console.Output.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
 All mutants have been tested, and your mutation score has been calculated
 All files [0/1 ({0:P2})]
@@ -206,7 +223,7 @@ All files [0/1 ({0:P2})]
 ");
 
             // All percentages should be red and the [Survived] too
-            textWriter.RedSpanCount().ShouldBe(3);
+            console.Output.RedSpanCount().ShouldBe(3);
         }
 
         [Fact]
@@ -223,9 +240,9 @@ All files [0/1 ({0:P2})]
                 Type = Mutator.Arithmetic
             };
 
-            var textWriter = new StringWriter();
             var options = new StrykerOptions { Thresholds = new Thresholds { High = 80, Low = 70, Break = 0 } };
-            var target = new ClearTextTreeReporter(options, textWriter);
+            var console = new TestConsole().EmitAnsiSequences();
+            var target = new ClearTextTreeReporter(options, console);
 
             var folder = new CsharpFolderComposite()
             {
@@ -248,7 +265,7 @@ All files [0/1 ({0:P2})]
 
             target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
-            textWriter.RedSpanCount().ShouldBe(4);
+            console.Output.RedSpanCount().ShouldBe(4);
         }
 
         [Fact]
@@ -265,9 +282,9 @@ All files [0/1 ({0:P2})]
                 Type = Mutator.Arithmetic
             };
 
-            var textWriter = new StringWriter();
             var options = new StrykerOptions { Thresholds = new Thresholds { High = 90, Low = 70, Break = 0 } };
-            var target = new ClearTextReporter(options, textWriter);
+            var console = new TestConsole().EmitAnsiSequences();
+            var target = new ClearTextTreeReporter(options, console);
 
             var folder = new CsharpFolderComposite()
             {
@@ -290,7 +307,7 @@ All files [0/1 ({0:P2})]
 
             target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
-            textWriter.YellowSpanCount().ShouldBe(2);
+            console.Output.YellowSpanCount().ShouldBe(2);
         }
 
         [Fact]
@@ -307,8 +324,8 @@ All files [0/1 ({0:P2})]
                 Type = Mutator.Arithmetic
             };
 
-            var textWriter = new StringWriter();
-            var target = new ClearTextTreeReporter(new StrykerOptions(), textWriter);
+            var console = new TestConsole().EmitAnsiSequences();
+            var target = new ClearTextTreeReporter(new StrykerOptions(), console);
 
             var folder = new CsharpFolderComposite()
             {
@@ -327,7 +344,7 @@ All files [0/1 ({0:P2})]
 
             target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
-            textWriter.GreenSpanCount().ShouldBe(3);
+            console.Output.GreenSpanCount().ShouldBe(3);
         }
     }
 }

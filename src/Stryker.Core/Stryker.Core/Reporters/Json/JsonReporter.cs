@@ -1,8 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
-using Crayon;
+using Spectre.Console;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -14,13 +13,13 @@ namespace Stryker.Core.Reporters.Json
     {
         private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
-        private readonly TextWriter _consoleWriter;
+        private readonly IAnsiConsole _console;
 
-        public JsonReporter(StrykerOptions options, IFileSystem fileSystem = null, TextWriter consoleWriter = null)
+        public JsonReporter(StrykerOptions options, IFileSystem fileSystem = null, IAnsiConsole console = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
-            _consoleWriter = consoleWriter ?? Console.Out;
+            _console = console ?? AnsiConsole.Console;
         }
 
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
@@ -28,13 +27,22 @@ namespace Stryker.Core.Reporters.Json
             var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
             var filename = _options.ReportFileName + ".json";
             var reportPath = Path.Combine(_options.OutputPath, "reports", filename);
+            var reportUri = "file://" + reportPath.Replace("\\", "/");
 
             WriteReportToJsonFile(reportPath, mutationReport);
 
-            var clickablePath = reportPath.Replace("\\", "/");
-            clickablePath = clickablePath.StartsWith("/") ? clickablePath : $"/{clickablePath}";
+            _console.WriteLine();
+            _console.MarkupLine("[Green]Your json report has been generated at:[/]");
 
-            _consoleWriter.Write(Output.Green($"\nYour json report has been generated at: \n file://{clickablePath} \n"));
+            if (_console.Profile.Capabilities.Links)
+            {
+                // We must print the report path as the link text because on some terminals links might be supported but not actually clickable: https://github.com/spectreconsole/spectre.console/issues/764
+                _console.MarkupLine($"[Green][link={reportUri}]{reportPath}[/][/]");
+            }
+            else
+            {
+                _console.MarkupLine($"[Green]{reportUri}[/]");
+            }
         }
 
         private void WriteReportToJsonFile(string filePath, JsonReport mutationReport)
