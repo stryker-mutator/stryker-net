@@ -45,8 +45,8 @@ namespace Stryker.Core.Initialisation
 
                 var testProjects = solutionProjects.Except(projectsUnderTest);
 
-                _logger.LogDebug("Found {0} projects under test", projectsUnderTest.Count());
-                _logger.LogDebug("Found {0} test projects", testProjects.Count());
+                _logger.LogInformation("Found {0} projects under test", projectsUnderTest.Count());
+                _logger.LogInformation("Found {0} test projects", testProjects.Count());
 
                 // Mutate all projects in the solution
                 foreach (var project in MutateSolution(options, reporters, projectsUnderTest, testProjects))
