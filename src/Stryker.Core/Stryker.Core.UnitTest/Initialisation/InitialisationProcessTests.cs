@@ -35,7 +35,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 {
                     new CsharpFileLeaf()
                 });
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>()))
+            inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfo(It.IsAny<StrykerOptions>(), TODO))
                 .Returns(new SourceProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -63,7 +63,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var result = target.Initialize(options);
 
-            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveSourceProjectInfo(It.IsAny<StrykerOptions>(), TODO), Times.Once);
         }
 
         [Fact]
@@ -78,7 +78,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf());
 
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>())).Returns(
+            inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfo(It.IsAny<StrykerOptions>(), TODO)).Returns(
                 new SourceProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(

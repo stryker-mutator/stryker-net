@@ -4,19 +4,19 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
-using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.Initialisation
 {
     public interface IInputFileResolver
     {
-        SourceProjectInfo ResolveInput(StrykerOptions options);
+        TestProjectsInfo ResolveTestProjectsInfo(StrykerOptions options);
+        SourceProjectInfo ResolveSourceProjectInfo(StrykerOptions options, TestProjectsInfo testProjectsInfo);
     }
 
     /// <summary>
@@ -40,13 +40,8 @@ namespace Stryker.Core.Initialisation
 
         public InputFileResolver() : this(new FileSystem(), new ProjectFileReader(), null) { }
 
-        /// <summary>
-        /// Finds the referencedProjects and looks for all files that should be mutated in those projects
-        /// </summary>
-        public SourceProjectInfo ResolveInput(StrykerOptions options)
+        public TestProjectsInfo ResolveTestProjectsInfo(StrykerOptions options)
         {
-            var projectInfo = new SourceProjectInfo(_fileSystem);
-            // Determine test projects
             var testProjectFiles = new List<string>();
             if (options.TestProjects != null && options.TestProjects.Any())
             {
@@ -57,30 +52,38 @@ namespace Stryker.Core.Initialisation
                 testProjectFiles.Add(FindTestProject(options.BasePath));
             }
 
-            var testProjectAnalyzerResults = new List<IAnalyzerResult>();
+            var testProjects = new List<TestProject>();
             foreach (var testProjectFile in testProjectFiles)
             {
-                // Analyze the test project
-                testProjectAnalyzerResults.Add(_projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework));
+                var testProjectAnalyzerResult = _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework);
+
+                testProjects.Add(new TestProject(_fileSystem, testProjectAnalyzerResult));
             }
-            projectInfo.TestProjectAnalyzerResults = testProjectAnalyzerResults;
+
+            return new TestProjectsInfo
+            {
+                TestProjects = testProjects
+            };
+        }
+
+        public SourceProjectInfo ResolveSourceProjectInfo(StrykerOptions options, TestProjectsInfo testProjectsInfo)
+        {
+            var sourceProjectInfo = new SourceProjectInfo(_fileSystem)
+            {
+                TestProjectAnalyzerResults = testProjectsInfo.TestProjects.Select(t => t.TestProjectAnalyzerResult)
+            };
 
             // Determine project under test
-            var projectUnderTest = FindProjectUnderTest(projectInfo.TestProjectAnalyzerResults, options.ProjectUnderTestName);
+            var projectUnderTest = FindProjectUnderTest(testProjectsInfo, options.ProjectUnderTestName);
 
-            _logger.LogInformation("The project {0} will be mutated.", projectUnderTest);
-
-            // Analyze project under test
-            projectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath, options.TargetFramework);
+            sourceProjectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath, options.TargetFramework);
 
             //to test Fsharp support you would need to create a FsharpProjectComponentsBuilder
-            var inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
-            projectInfo.ProjectContents = inputFiles;
+            sourceProjectInfo.ProjectContents = new CsharpProjectComponentsBuilder(sourceProjectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
 
-            ValidateTestProjectsCanBeExecuted(projectInfo);
-            _logger.LogInformation("Analysis complete.");
+            _logger.LogInformation("Found project {0} to mutate.", projectUnderTest);
 
-            return projectInfo;
+            return sourceProjectInfo;
         }
 
         public string FindTestProject(string path)
@@ -131,9 +134,9 @@ namespace Stryker.Core.Initialisation
             return projectFiles.Single();
         }
 
-        public string FindProjectUnderTest(IEnumerable<IAnalyzerResult> testProjects, string projectUnderTestNameFilter)
+        public string FindProjectUnderTest(TestProjectsInfo testProjectsInfo, string projectUnderTestNameFilter)
         {
-            var projectReferences = FindProjectsReferencedByAllTestProjects(testProjects);
+            var projectReferences = FindProjectsReferencedByAllTestProjects(testProjectsInfo.TestProjects);
 
             string projectUnderTestPath;
 
@@ -149,18 +152,6 @@ namespace Stryker.Core.Initialisation
             _logger.LogDebug("Using {0} as project under test", projectUnderTestPath);
 
             return projectUnderTestPath;
-        }
-
-        private void ValidateTestProjectsCanBeExecuted(SourceProjectInfo projectInfo)
-        {
-            // if references contains Microsoft.VisualStudio.QualityTools.UnitTestFramework 
-            // we have detected usage of mstest V1 and should exit
-            if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.References
-                .Any(r => r.Contains("Microsoft.VisualStudio.QualityTools.UnitTestFramework"))))
-            {
-                throw new InputException("Please upgrade to MsTest V2. Stryker.NET uses VSTest which does not support MsTest V1.",
-                    @"See https://devblogs.microsoft.com/devops/upgrade-to-mstest-v2/ for upgrade instructions.");
-            }
         }
 
         internal string DetermineProjectUnderTestWithNameFilter(string projectUnderTestNameFilter, IEnumerable<string> projectReferences)
@@ -216,10 +207,10 @@ namespace Stryker.Core.Initialisation
             return projectReferences.Single();
         }
 
-        private static IEnumerable<string> FindProjectsReferencedByAllTestProjects(IEnumerable<IAnalyzerResult> testProjects)
+        private static IEnumerable<string> FindProjectsReferencedByAllTestProjects(IEnumerable<TestProject> testProjects)
         {
             var amountOfTestProjects = testProjects.Count();
-            var allProjectReferences = testProjects.SelectMany(t => t.ProjectReferences);
+            var allProjectReferences = testProjects.SelectMany(t => t.TestProjectAnalyzerResult.ProjectReferences);
             var projectReferences = allProjectReferences.GroupBy(x => x).Where(g => g.Count() == amountOfTestProjects).Select(g => g.Key);
             return projectReferences;
         }

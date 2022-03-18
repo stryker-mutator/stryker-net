@@ -16,6 +16,7 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Xunit;
 using static NuGet.Frameworks.FrameworkConstants;
 
@@ -139,7 +140,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 ).Object);
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(_options);
+            var result = target.ResolveSourceProjectInfo(_options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
@@ -178,7 +179,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(_options);
+            var result = target.ResolveSourceProjectInfo(_options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
         }
@@ -217,7 +218,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 ).Object);
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(_options);
+            var result = target.ResolveSourceProjectInfo(_options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(5);
         }
@@ -273,7 +274,7 @@ using System.Reflection;
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(_options);
+            var result = target.ResolveSourceProjectInfo(_options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
             var mutatedFile = ((ProjectComponent<SyntaxTree>)result.ProjectContents).CompilationSyntaxTrees.First(s => s != null && s.FilePath.Contains("AssemblyInfo.cs"));
@@ -315,7 +316,7 @@ using System.Reflection;
                 ).Object);
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(_options);
+            var result = target.ResolveSourceProjectInfo(_options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
@@ -378,7 +379,7 @@ using System.Reflection;
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(_options);
+            var result = target.ResolveSourceProjectInfo(_options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
         }
@@ -430,7 +431,7 @@ using System.Reflection;
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(_options);
+            var result = target.ResolveSourceProjectInfo(_options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
@@ -507,7 +508,7 @@ using System.Reflection;
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(_options);
+            var result = target.ResolveSourceProjectInfo(_options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
         }
@@ -561,7 +562,7 @@ using System.Reflection;
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            Assert.Throws<FileNotFoundException>(() => target.ResolveInput(_options));
+            Assert.Throws<FileNotFoundException>(() => target.ResolveSourceProjectInfo(_options));
 
         }
 
@@ -621,7 +622,7 @@ using System.Reflection;
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(_options);
+            var result = target.ResolveSourceProjectInfo(_options);
 
             var allFiles = result.ProjectContents.GetAllFiles();
 
@@ -677,7 +678,7 @@ using System.Reflection;
                 ).Object);
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var exception = Assert.Throws<InputException>(() => target.ResolveInput(_options));
+            var exception = Assert.Throws<InputException>(() => target.ResolveSourceProjectInfo(_options));
             exception.Message.ShouldBe($"Missing MSBuild property (SharedDir) in project reference (..{FilePathUtils.NormalizePathSeparators("/$(SharedDir)/Example.projitems")}). Please check your project file ({projectUnderTestPath}) and try again.");
         }
 
@@ -707,7 +708,7 @@ using System.Reflection;
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(_options);
+            var result = target.ResolveSourceProjectInfo(_options);
 
             ((CsharpFolderComposite)result.ProjectContents).Children.Count().ShouldBe(1);
         }
@@ -884,7 +885,7 @@ Please specify a test project name filter that results in one project.
             // Act
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var actual = target.ResolveInput(options);
+            var actual = target.ResolveSourceProjectInfo(options);
 
             // Assert
             actual.ProjectUnderTestAnalyzerResult.ProjectFilePath.ShouldBe(projectUnderTestPath);
@@ -913,7 +914,7 @@ Please specify a test project name filter that results in one project.
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var ex = Assert.Throws<InputException>(() => target.ResolveInput(_options));
+            var ex = Assert.Throws<InputException>(() => target.ResolveSourceProjectInfo(_options));
 
             ex.Message.ShouldBe("Please upgrade to MsTest V2. Stryker.NET uses VSTest which does not support MsTest V1.");
             ex.Details.ShouldBe(@"See https://devblogs.microsoft.com/devops/upgrade-to-mstest-v2/ for upgrade instructions.");
@@ -952,7 +953,7 @@ Please specify a test project name filter that results in one project.
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveInput(_options);
+            var result = target.ResolveSourceProjectInfo(_options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
@@ -995,7 +996,7 @@ Please specify a test project name filter that results in one project.
                     Path.Combine(_filesystemRoot, "TestProject2", "ExampleProject.csproj")
                 }
             };
-            var result = target.ResolveInput(options);
+            var result = target.ResolveSourceProjectInfo(options);
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(1);
         }
@@ -1017,7 +1018,7 @@ Please specify a test project name filter that results in one project.
         {
             var ex = Assert.Throws<InputException>(() =>
             {
-                new InputFileResolver().FindProjectUnderTest(Enumerable.Empty<IAnalyzerResult>(), null);
+                new InputFileResolver().FindProjectUnderTest(new TestProjectsInfo(), null);
             });
 
             ex.Message.ShouldContain("no project", Case.Insensitive);

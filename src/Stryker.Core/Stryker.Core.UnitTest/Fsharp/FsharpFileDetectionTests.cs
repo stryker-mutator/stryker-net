@@ -74,7 +74,7 @@ namespace Stryker.Core.UnitTest.Fsharp
                     properties: new Dictionary<string, string>() { { "Language", "F#" } }).Object);
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object, loggerMock.Object);
 
-            var result = target.ResolveInput(new StrykerOptions());
+            var result = target.ResolveSourceProjectInfo(new StrykerOptions());
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
