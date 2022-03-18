@@ -5,7 +5,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
 {
     public class TestProjectsInfo
     {
-        public IEnumerable<TestProject> TestProjects { get; set; } = new List<TestProject>();
+        public IEnumerable<TestProject> TestProjects { get; set; }
         public IEnumerable<TestFile> TestFiles => TestProjects.SelectMany(testProject => testProject.TestFiles);
 
         public static TestProjectsInfo operator +(TestProjectsInfo a, TestProjectsInfo b)
