@@ -1,8 +1,6 @@
 using System.Collections.Generic;
 using System.IO.Abstractions.TestingHelpers;
-using System.Linq;
 using Buildalyzer;
-using Microsoft.CodeAnalysis;
 using Mono.Collections.Generic;
 using Moq;
 using Stryker.Core.Exceptions;
@@ -25,7 +23,6 @@ namespace Stryker.Core.UnitTest.Initialisation
             var inputFileResolverMock = new Mock<IInputFileResolver>(MockBehavior.Strict);
             var initialBuildProcessMock = new Mock<IInitialBuildProcess>(MockBehavior.Strict);
             var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
-            var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<ITimeoutValueCalculator>(), null, null))
                 .Returns(new TestRunResult(true)); // testrun is successful
@@ -51,15 +48,12 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<ITestRunner>())).Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(1)));
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
-            assemblyReferenceResolverMock.Setup(x => x.LoadProjectReferences(It.IsAny<string[]>()))
-                .Returns(Enumerable.Empty<PortableExecutableReference>());
 
             var target = new InitialisationProcess(
                 inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
                 initialTestProcessMock.Object,
-                testRunnerMock.Object,
-                assemblyReferenceResolverMock.Object);
+                testRunnerMock.Object);
 
             var options = new StrykerOptions
             {
@@ -79,7 +73,6 @@ namespace Stryker.Core.UnitTest.Initialisation
             var inputFileResolverMock = new Mock<IInputFileResolver>(MockBehavior.Strict);
             var initialBuildProcessMock = new Mock<IInitialBuildProcess>(MockBehavior.Strict);
             var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
-            var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
             testRunnerMock.Setup(x => x.RunAll(It.IsAny<ITimeoutValueCalculator>(), null, null));
             var folder = new CsharpFolderComposite();
@@ -101,16 +94,12 @@ namespace Stryker.Core.UnitTest.Initialisation
             testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
             testRunnerMock.Setup(x => x.Dispose());
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<ITestRunner>())).Throws(new InputException("")); // failing test
-            assemblyReferenceResolverMock.Setup(x => x.LoadProjectReferences(It.IsAny<string[]>()))
-                .Returns(Enumerable.Empty<PortableExecutableReference>())
-                .Verifiable();
 
             var target = new InitialisationProcess(
                 inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
                 initialTestProcessMock.Object,
-                testRunnerMock.Object,
-                assemblyReferenceResolverMock.Object);
+                testRunnerMock.Object);
             var options = new StrykerOptions
             {
                 ProjectName = "TheProjectName",
@@ -120,8 +109,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             target.Initialize(options);
             Assert.Throws<InputException>(() => target.InitialTest(options));
 
-            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);
-            assemblyReferenceResolverMock.Verify();
+            inputFileResolverMock.Verify(x => x.ResolveSourceProjectInfo(It.IsAny<StrykerOptions>(), TODO), Times.Once);
             initialTestProcessMock.Verify(x => x.InitialTest(It.IsAny<StrykerOptions>(), testRunnerMock.Object), Times.Once);
         }
     }

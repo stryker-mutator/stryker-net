@@ -3,9 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
-using System.IO.Pipes;
 using System.Linq;
-using System.Reflection;
 using System.Text;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
@@ -29,15 +27,9 @@ namespace Stryker.Core.UnitTest.Compiling
         private readonly SyntaxAnnotation _ifEngineMarker = new("Injector", "IfInstrumentationEngine");
         private readonly SyntaxAnnotation _conditionalEngineMarker = new("Injector", "ConditionalInstrumentationEngine");
 
-        private SyntaxAnnotation GetMutationIdMarker(int id)
-        {
-            return new("MutationId", id.ToString());
-        }
+        private SyntaxAnnotation GetMutationIdMarker(int id) => new("MutationId", id.ToString());
 
-        private SyntaxAnnotation GetMutationTypeMarker(Mutator type)
-        {
-            return new("MutationType", type.ToString());
-        }
+        private SyntaxAnnotation GetMutationTypeMarker(Mutator type) => new("MutationType", type.ToString());
 
         [Fact]
         public void RollbackProcess_ShouldRollbackError_RollbackedCompilationShouldCompile()
@@ -128,15 +120,6 @@ namespace ExampleProject
 
             var mutant = mutator.Mutate(syntaxTree.GetRoot());
             helpers.Add(mutant.SyntaxTree);
-            var references = new List<PortableExecutableReference>() 
-            {
-                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(List<string>).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(PipeStream).Assembly.Location),
-            };
-
-            Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(MetadataReference.CreateFromFile(Assembly.Load(a).Location)));
 
             var input = new MutationTestInput()
             {
@@ -156,8 +139,7 @@ namespace ExampleProject
                         { "AssemblyName", "AssemblyName"},
                     }).Object
                 }
-                },
-                AssemblyReferences = references
+                }
             };
 
             var rollbackProcess = new RollbackProcess();
@@ -237,7 +219,7 @@ namespace ExampleProject
 
             var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
 
-                var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+            var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
             rollbackedResult.Success.ShouldBeTrue();
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 6, 7 });
@@ -323,7 +305,7 @@ namespace ExampleProject
                     MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
                 });
 
-    var target = new RollbackProcess();
+            var target = new RollbackProcess();
 
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);

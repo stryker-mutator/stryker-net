@@ -55,7 +55,7 @@ namespace Stryker.Core.Compiling
             var compilation = CSharpCompilation.Create(AssemblyName,
                 syntaxTrees: trees,
                 options: compilationOptions,
-                references: _input.AssemblyReferences);
+                references: _input.SourceProjectInfo.ProjectUnderTestAnalyzerResult.References.Select(r => MetadataReference.CreateFromFile(r)));
             RollbackProcessResult rollbackProcessResult;
 
             // C# source generators must be executed before compilation
@@ -176,15 +176,12 @@ namespace Stryker.Core.Compiling
             }
         }
 
-        private static string ReadableNumber(int number)
+        private static string ReadableNumber(int number) => number switch
         {
-            return number switch
-            {
-                1 => "first",
-                2 => "second",
-                3 => "third",
-                _ => (number + "th")
-            };
-        }
+            1 => "first",
+            2 => "second",
+            3 => "third",
+            _ => (number + "th")
+        };
     }
 }

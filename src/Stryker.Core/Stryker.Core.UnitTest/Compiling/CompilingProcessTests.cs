@@ -13,7 +13,6 @@ using Moq;
 using Shouldly;
 using Stryker.Core.Compiling;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
@@ -58,9 +57,6 @@ namespace ExampleProject
                             { "AssemblyName", "TargetFileName"},
                         }).Object
                     }
-                },
-                AssemblyReferences = new List<PortableExecutableReference>() {
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
                 }
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
@@ -105,9 +101,6 @@ namespace ExampleProject
                             { "AssemblyName", "TargetFileName"},
                         }).Object
                     }
-                },
-                AssemblyReferences = new List<PortableExecutableReference>() {
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
                 }
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
@@ -158,9 +151,6 @@ namespace ExampleProject
                             { "AssemblyName", "TargetFileName"},
                         }).Object
                     }
-                },
-                AssemblyReferences = new List<PortableExecutableReference>() {
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
                 }
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
@@ -208,10 +198,7 @@ namespace ExampleProject
                             { "AssemblyName", "AssemblyName"},
                         }).Object
                     }
-                },
-                AssemblyReferences = new List<PortableExecutableReference>() {
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
-                },
+                }
 
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
@@ -262,10 +249,7 @@ namespace ExampleProject
                             { "AssemblyName", "AssemblyName"},
                         }).Object
                     }
-                },
-                AssemblyReferences = new List<PortableExecutableReference>() {
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
-                },
+                }
 
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
@@ -311,9 +295,6 @@ namespace ExampleProject
                             { "AssemblyName", "AssemblyName"},
                         }).Object
                     }
-                },
-                AssemblyReferences = new List<PortableExecutableReference>() {
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
                 }
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
@@ -443,10 +424,6 @@ namespace ExampleProject
                         }).Object
                     },
                     ProjectContents = folder
-                },
-                AssemblyReferences = new List<PortableExecutableReference>
-                {
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
                 },
                 TestRunner = new Mock<ITestRunner>(MockBehavior.Default).Object
             };

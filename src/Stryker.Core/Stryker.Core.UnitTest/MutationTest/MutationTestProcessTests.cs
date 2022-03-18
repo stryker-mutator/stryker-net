@@ -30,14 +30,12 @@ namespace Stryker.Core.UnitTest.MutationTest
         private string CurrentDirectory { get; }
         private string FilesystemRoot { get; }
         private string SourceFile { get; }
-        private readonly IEnumerable<PortableExecutableReference> _assemblies;
 
         public MutationTestProcessTests()
         {
             CurrentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             FilesystemRoot = Path.GetPathRoot(CurrentDirectory);
             SourceFile = File.ReadAllText(CurrentDirectory + "/TestResources/ExampleSourceFile.cs");
-            _assemblies = new ReferenceProvider().GetReferencedAssemblies();
         }
 
         [Fact]
@@ -77,8 +75,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         }).Object
                     },
                     ProjectContents = folder
-                },
-                AssemblyReferences = _assemblies
+                }
             };
 
             var mutantToBeSkipped = new Mutant() { Mutation = new Mutation() };
@@ -158,8 +155,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         }).Object
                     },
                     ProjectContents = folder
-                },
-                AssemblyReferences = _assemblies
+                }
             };
 
             var mutantToBeSkipped = new Mutant() { Mutation = new Mutation() };
@@ -249,8 +245,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         }).Object
                     },
                     ProjectContents = folder
-                },
-                AssemblyReferences = _assemblies
+                }
             };
             var mockMutants = new Collection<Mutant>() { new() { Mutation = new Mutation() } };
 
@@ -317,7 +312,6 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ,
                     ProjectContents = folder
                 },
-                AssemblyReferences = _assemblies,
                 InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
             };
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
@@ -384,7 +378,6 @@ namespace Stryker.Core.UnitTest.MutationTest
                     }).Object,
                     ProjectContents = folder
                 },
-                AssemblyReferences = _assemblies,
                 InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
             };
 
@@ -452,7 +445,6 @@ namespace Stryker.Core.UnitTest.MutationTest
                     }).Object,
                     ProjectContents = folder
                 },
-                AssemblyReferences = _assemblies,
                 InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
             };
 
@@ -512,8 +504,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                         }).Object
                     },
                     ProjectContents = folder
-                },
-                AssemblyReferences = new ReferenceProvider().GetReferencedAssemblies()
+                }
             };
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
@@ -561,8 +552,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 {
                     ProjectContents = folder,
                     ProjectUnderTestAnalyzerResult = projectUnderTest
-                },
-                AssemblyReferences = _assemblies
+                }
             };
 
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
@@ -611,8 +601,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 {
                     ProjectContents = folder,
                     ProjectUnderTestAnalyzerResult = projectUnderTest
-                },
-                AssemblyReferences = _assemblies
+                }
             };
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));

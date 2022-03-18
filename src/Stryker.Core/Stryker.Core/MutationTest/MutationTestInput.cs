@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-using Microsoft.CodeAnalysis;
 using Stryker.Core.Initialisation;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
@@ -31,10 +29,5 @@ namespace Stryker.Core.MutationTest
         /// Get/Set the initial test
         /// </summary>
         public InitialTestRun InitialTestRun { get; set; }
-
-        /// <summary>
-        /// All the needed references for compiling the input project
-        /// </summary>
-        public IEnumerable<PortableExecutableReference> AssemblyReferences { get; set; }
     }
 }

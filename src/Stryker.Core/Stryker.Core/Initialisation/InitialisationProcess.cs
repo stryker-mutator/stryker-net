@@ -40,7 +40,6 @@ namespace Stryker.Core.Initialisation
         private readonly IInputFileResolver _inputFileResolver;
         private readonly IInitialBuildProcess _initialBuildProcess;
         private readonly IInitialTestProcess _initialTestProcess;
-        private readonly IAssemblyReferenceResolver _assemblyReferenceResolver;
         private ITestRunner _testRunner;
         private readonly ILogger _logger;
 
@@ -48,14 +47,12 @@ namespace Stryker.Core.Initialisation
             IInputFileResolver inputFileResolver = null,
             IInitialBuildProcess initialBuildProcess = null,
             IInitialTestProcess initialTestProcess = null,
-            ITestRunner testRunner = null,
-            IAssemblyReferenceResolver assemblyReferenceResolver = null)
+            ITestRunner testRunner = null)
         {
             _inputFileResolver = inputFileResolver ?? new InputFileResolver();
             _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
             _initialTestProcess = initialTestProcess ?? new InitialTestProcess();
             _testRunner = testRunner;
-            _assemblyReferenceResolver = assemblyReferenceResolver ?? new AssemblyReferenceResolver();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
         }
 
@@ -90,7 +87,6 @@ namespace Stryker.Core.Initialisation
             var input = new MutationTestInput
             {
                 SourceProjectInfo = projectInfo,
-                AssemblyReferences = _assemblyReferenceResolver.LoadProjectReferences(projectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
                 TestRunner = _testRunner,
             };
 
