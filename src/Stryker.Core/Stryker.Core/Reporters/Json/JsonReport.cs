@@ -14,7 +14,7 @@ namespace Stryker.Core.Reporters.Json
         public IDictionary<string, int> Thresholds { get; init; } = new Dictionary<string, int>();
         public string ProjectRoot { get; init; }
         public IDictionary<string, SourceFile> Files { get; init; } = new Dictionary<string, SourceFile>();
-        public IDictionary<string, JsonTestFile> TestFiles { get; set; } = new Dictionary<string, JsonTestFile>();
+        public IDictionary<string, JsonTestFile> TestFiles { get; set; } = null;
 
         public JsonReport()
         {
@@ -63,9 +63,10 @@ namespace Stryker.Core.Reporters.Json
 
         private void AddTestFiles(TestProjectsInfo testProjectsInfo)
         {
-            if (testProjectsInfo is not null)
+            if (testProjectsInfo is not null && testProjectsInfo.TestFiles is not null)
             {
-                foreach (var testFile in testProjectsInfo?.TestFiles)
+                TestFiles = new Dictionary<string, JsonTestFile>();
+                foreach (var testFile in testProjectsInfo.TestFiles)
                 {
                     TestFiles.Add(testFile.FilePath, new JsonTestFile(testFile));
                 }
