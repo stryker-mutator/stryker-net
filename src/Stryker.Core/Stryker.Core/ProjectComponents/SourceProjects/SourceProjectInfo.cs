@@ -10,8 +10,6 @@ namespace Stryker.Core.ProjectComponents.SourceProjects
     {
         private readonly IFileSystem _fileSystem;
 
-        public SourceProjectInfo() : this(null) { }
-
         public SourceProjectInfo(IFileSystem fileSystem) => _fileSystem = fileSystem ?? new FileSystem();
 
         public IEnumerable<IAnalyzerResult> TestProjectAnalyzerResults { get; set; }
