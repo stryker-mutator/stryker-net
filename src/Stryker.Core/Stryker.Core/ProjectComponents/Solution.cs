@@ -1,13 +1,21 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public class Solution : ProjectComponent
+    public class Solution : ProjectComponent, IReadOnlyFolderComposite
     {
         private readonly IList<IProjectComponent> _children = new List<IProjectComponent>();
 
         public IEnumerable<IProjectComponent> Children => _children;
+
+        public override IEnumerable<Mutant> Mutants
+        {
+            get => Children.SelectMany(x => x.Mutants);
+            set => throw new NotSupportedException("Folders do not contain mutants.");
+        }
 
         public void Add(IProjectComponent child)
         {
@@ -32,6 +40,6 @@ namespace Stryker.Core.ProjectComponents
             }
         }
 
-        public override IEnumerable<IFileLeaf> GetAllFiles() => throw new NotImplementedException();
+        public override IEnumerable<IFileLeaf> GetAllFiles() => Children.SelectMany(x => x.GetAllFiles());
     }
 }
