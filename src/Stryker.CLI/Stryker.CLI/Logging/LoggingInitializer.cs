@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
+using Spectre.Console;
 using Stryker.Core;
 using Stryker.Core.Options;
 
@@ -49,7 +50,7 @@ namespace Stryker.CLI.Logging
                 }
                 catch (IOException e)
                 {
-                    Console.WriteLine($"Could't create gitignore file because of error {e.Message}. \n" +
+                    AnsiConsole.WriteLine($"Could't create gitignore file because of error {e.Message}. \n" +
                         "If you use any diff compare features this may mean that stryker logs show up as changes.");
                 }
             }
