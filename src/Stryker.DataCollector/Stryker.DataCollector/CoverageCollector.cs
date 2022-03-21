@@ -173,7 +173,7 @@ namespace Stryker.DataCollector
             }
 
             var nameSpaceNode = node.SelectSingleNode("//Parameters/MutantControl");
-            if (nameSpaceNode != null && nameSpaceNode.Attributes != null)
+            if (nameSpaceNode?.Attributes != null)
             {
                 _controlClassName = nameSpaceNode.Attributes["name"].Value;
             }

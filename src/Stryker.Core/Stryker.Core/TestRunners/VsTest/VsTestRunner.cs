@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
@@ -10,6 +9,7 @@ using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
 using NuGet.Frameworks;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
@@ -26,16 +26,14 @@ namespace Stryker.Core.TestRunners.VsTest
 {
     public sealed class VsTestRunner : ITestRunner
     {
-        private static int count;
-
         private IVsTestConsoleWrapper _vsTestConsole;
         private readonly IFileSystem _fileSystem;
         private readonly StrykerOptions _options;
         private readonly ProjectInfo _projectInfo;
-        private readonly Func<int, IStrykerTestHostLauncher> _hostBuilder;
+        private readonly Func<int, ITestHostLauncher> _hostBuilder;
         private readonly IVsTestHelper _vsTestHelper;
         private readonly bool _ownHelper;
-        private readonly List<string> _messages = new List<string>();
+        private readonly List<string> _messages = new();
         private IDictionary<Guid, VsTestDescription> _vsTests;
         private ICollection<string> _sources;
         private bool _disposedValue; // To detect redundant calls
@@ -52,31 +50,35 @@ namespace Stryker.Core.TestRunners.VsTest
             ProjectInfo projectInfo,
             IDictionary<Guid, VsTestDescription> tests,
             TestSet testSet,
+            int id,
             IFileSystem fileSystem = null,
             IVsTestHelper helper = null,
             ILogger logger = null,
             IVsTestConsoleWrapper wrapper = null,
-            Func<int, IStrykerTestHostLauncher> hostBuilder = null)
+            Func<int, ITestHostLauncher> hostBuilder = null)
         {
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunner>();
             _fileSystem = fileSystem ?? new FileSystem();
             _options = options;
             _projectInfo = projectInfo;
-            _hostBuilder = hostBuilder ?? (id => new StrykerVsTestHostLauncher(id));
+            _hostBuilder = hostBuilder ?? (xId => new StrykerVsTestHostLauncher(xId));
             SetListOfTests(tests);
             _tests = testSet ?? new TestSet();
             _ownHelper = helper == null;
             _vsTestHelper = helper ?? new VsTestHelper();
-            _vsTestConsole = wrapper ?? PrepareVsTestConsole();
-            _id = count++;
-            InitializeVsTestConsole();
+            _id = id;
+            PrepareVsTestEnvironment();
+            _vsTestConsole = wrapper;
+            if (_vsTestConsole == null)
+            {
+                PrepareVsTestConsole();
+            }
+            _vsTests = DiscoverTests(null).Item1;
         }
 
-        private bool CantUseStrykerDataCollector()
-        {
-            return _projectInfo.TestProjectAnalyzerResults.Select(x => x.GetNuGetFramework()).Any(t =>
+        private bool CantUseStrykerDataCollector() =>
+            _projectInfo.TestProjectAnalyzerResults.Select(x => x.GetNuGetFramework()).Any(t =>
                 t.Framework == FrameworkConstants.FrameworkIdentifiers.NetCoreApp && t.Version.Major < 2);
-        }
 
         public TestRunResult InitialTest()
         {
@@ -95,17 +97,14 @@ namespace Stryker.Core.TestRunners.VsTest
             return BuildTestRunResult(testResults, int.MaxValue, false);
         }
 
-        public TestRunResult RunAll(ITimeoutValueCalculator timeoutMs, Mutant activeMutant, TestUpdateHandler update)
-        {
-            return TestMultipleMutants(timeoutMs, activeMutant == null ? null : new List<Mutant> { activeMutant }, update);
-        }
+        public TestRunResult RunAll(ITimeoutValueCalculator timeoutMs, Mutant activeMutant, TestUpdateHandler update) => TestMultipleMutants(timeoutMs, activeMutant == null ? null : new List<Mutant> { activeMutant }, update);
 
         public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var mutantTestsMap = new Dictionary<int, ITestGuids>();
             var needAll = true;
             ICollection<Guid> testCases;
-            int? timeOutMs = timeoutCalc?.DefaultTimeout;
+            var timeOutMs = timeoutCalc?.DefaultTimeout;
 
             if (mutants != null)
             {
@@ -159,7 +158,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 testCases = null;
             }
 
-            var numberTestCases = testCases == null ? 0 : testCases.Count;
+            var numberTestCases = testCases?.Count ?? 0;
             var expectedTests = needAll ? DiscoverTests().Count : numberTestCases;
 
             void HandleUpdate(IRunResults handler)
@@ -186,9 +185,11 @@ namespace Stryker.Core.TestRunners.VsTest
                 _aborted = true;
             }
 
-            _logger.LogDebug("Using {0} ms as testrun timeout", timeOutMs.ToString() ?? "no");
+            if (timeOutMs.HasValue)
+                _logger.LogDebug("Using {0} ms as test run timeout", timeOutMs);
 
-            var testResults = RunTestSession(mutantTestsMap, needAll, GenerateRunSettings(timeOutMs, mutants != null, false, mutantTestsMap), HandleUpdate);
+            var testResults = RunTestSession(mutantTestsMap, needAll,
+                GenerateRunSettings(timeOutMs, mutants != null, false, mutantTestsMap), timeOutMs, HandleUpdate);
 
             return BuildTestRunResult(testResults, expectedTests);
         }
@@ -225,10 +226,7 @@ namespace Stryker.Core.TestRunners.VsTest
             DetectTestFramework(_vsTests?.Values);
         }
 
-        public TestSet DiscoverTests()
-        {
-            return DiscoverTests(null).Item2;
-        }
+        public TestSet DiscoverTests() => DiscoverTests(null).Item2;
 
         public (IDictionary<Guid, VsTestDescription>, TestSet) DiscoverTests(string runSettings)
         {
@@ -287,8 +285,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _logger.LogDebug($"{RunnerId}: Capturing coverage.");
             if (CantUseStrykerDataCollector())
             {
-                _logger.LogDebug($"{RunnerId}: project does not support StrykerDataCollector. Coverage data is simulated. Upgrade test proj" +
-                                 $" to@                                                                                                                  NetCore 2.0+");
+                _logger.LogDebug($"{RunnerId}: project does not support StrykerDataCollector. Coverage data is simulated. Upgrade test proj to NetCore 2.0+");
                 // can't capture coverage info
                 foreach (var mutant in mutants)
                 {
@@ -348,7 +345,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     // we have coverage data
                     seenTestCases.Add(testDescription.Id);
 
-                    var propertyPairValue = (value as string);
+                    var propertyPairValue = value as string;
                     if (string.IsNullOrWhiteSpace(propertyPairValue))
                     {
                         _logger.LogDebug($"{RunnerId}: Test {testResult.TestCase.DisplayName} does not cover any mutation.");
@@ -369,10 +366,7 @@ namespace Stryker.Core.TestRunners.VsTest
                             map[id].Add(testDescription.Description);
                         }
 
-                        foreach (var id in staticMutants)
-                        {
-                            staticMutantLists.Add(id);
-                        }
+                        staticMutantLists.UnionWith(staticMutants);
                     }
                     var (testProperty, mutantOutsideTests) = testResult.GetProperties()
                         .FirstOrDefault(x => x.Key.Id == CoverageCollector.OutOfTestsPropertyName);
@@ -384,10 +378,7 @@ namespace Stryker.Core.TestRunners.VsTest
                             ? Enumerable.Empty<int>()
                             : propertyPairValue.Split(',').Select(int.Parse);
                         _logger.LogWarning("Some mutations were executed outside any test (mutation ids: {0}).", propertyPairValue);
-                        foreach (var id in coveredMutants)
-                        {
-                            staticMutantLists.Add(id);
-                        }
+                        staticMutantLists.UnionWith(coveredMutants);
                     }
                 }
             }
@@ -414,6 +405,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private IRunResults RunTestSession(Dictionary<int, ITestGuids> mutantTestsMap,
             bool runAllTests,
             string runSettings,
+            int? timeOut = null,
             Action<RunEventHandler> updateHandler = null,
             int retries = 0)
         {
@@ -429,50 +421,48 @@ namespace Stryker.Core.TestRunners.VsTest
             var options = new TestPlatformOptions { TestCaseFilter = _options.TestCaseFilter };
             if (runAllTests)
             {
-                _vsTestConsole.RunTestsWithCustomTestHost(_sources, runSettings, options, eventHandler,
+                _vsTestConsole.RunTestsWithCustomTestHostAsync(_sources, runSettings, options, eventHandler,
                     strykerVsTestHostLauncher);
             }
             else
             {
-                _vsTestConsole.RunTestsWithCustomTestHost(mutantTestsMap.SelectMany(m => m.Value.GetGuids()).Select(t => _vsTests[t].Case), runSettings,
+                _vsTestConsole.RunTestsWithCustomTestHostAsync(mutantTestsMap.SelectMany(m => m.Value.GetGuids()).Select(t => _vsTests[t].Case), runSettings,
                     options, eventHandler, strykerVsTestHostLauncher);
             }
 
-            // Test host exited signal comes after the run completed
-            strykerVsTestHostLauncher.WaitProcessExit();
-
-            // At this point, run must have complete. Check signal for true
-            eventHandler.WaitEnd();
+            // Wait for test completed report
+            if (!eventHandler.WaitEnd(timeOut))
+            {
+                _logger.LogWarning($"{RunnerId}: VsTest did not report the end of test session in due time, it may have hang. Retrying");
+                _vsTestConsole.AbortTestRun();
+                _vsTestFailed = true;
+            }
 
             eventHandler.ResultsUpdated -= HandlerUpdate;
             eventHandler.VsTestFailed -= HandlerVsTestFailed;
 
-            if (!_vsTestFailed || retries > 10)
+            if (!_vsTestFailed || retries > 5)
             {
                 return eventHandler;
             }
-            _vsTestConsole = PrepareVsTestConsole();
+            PrepareVsTestConsole();
             _vsTestFailed = false;
 
-            return RunTestSession(mutantTestsMap, true, runSettings, updateHandler, ++retries);
+            return RunTestSession(mutantTestsMap, runAllTests, runSettings, timeOut, updateHandler, retries+1);
         }
 
         private ConsoleParameters DetermineConsoleParameters()
         {
-            if (_options.LogOptions.LogToFile)
+            if (!_options.LogOptions.LogToFile) return new ConsoleParameters();
+            var vsTestLogPath = _fileSystem.Path.Combine(_options.OutputPath, "logs", $"{RunnerId}_VsTest-log.txt");
+            _fileSystem.Directory.CreateDirectory(_fileSystem.Path.GetDirectoryName(vsTestLogPath));
+
+            _logger.LogTrace("{1}: Logging VsTest output to: {0}", vsTestLogPath, RunnerId);
+            return new ConsoleParameters
             {
-                var vsTestLogPath = Path.Combine(_options.OutputPath, "logs", "VsTest-log.txt");
-                _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(vsTestLogPath));
-
-                _logger.LogTrace("{1}: Logging VsTest output to: {0}", vsTestLogPath, RunnerId);
-                return new ConsoleParameters
-                {
-                    TraceLevel = DetermineTraceLevel(),
-                    LogFilePath = vsTestLogPath
-                };
-            }
-
-            return new ConsoleParameters();
+                TraceLevel = DetermineTraceLevel(),
+                LogFilePath = vsTestLogPath
+            };
         }
 
         private TraceLevel DetermineTraceLevel()
@@ -508,7 +498,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             if (_testFramework.HasFlag(TestFramework.xUnit))
             {
-                settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
+                settingsForCoverage += "<Disable>true</DisableParallelization>";
             }
 
             var timeoutSettings = timeout != null ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>" + Environment.NewLine : string.Empty;
@@ -536,12 +526,10 @@ $@"<RunSettings>
             return runSettings;
         }
 
-        private bool NeedCoverage()
-        {
-            return _options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) || _options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants);
-        }
+        private bool NeedCoverage() => _options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest)
+                                       || _options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants);
 
-        private IVsTestConsoleWrapper PrepareVsTestConsole()
+        private void PrepareVsTestConsole()
         {
             if (_vsTestConsole != null)
             {
@@ -550,16 +538,25 @@ $@"<RunSettings>
                     _vsTestConsole.EndSession();
                 }
                 catch { /*Ignore exception. vsTestConsole has been disposed outside of our control*/ }
-                _vsTestConsole = null;
             }
 
-            return new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), DetermineConsoleParameters());
+            _vsTestConsole = new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(), DetermineConsoleParameters());
+            try
+            {
+                // Set roll forward on no candidate fx so vstest console can start on incompatible dotnet core runtimes
+                Environment.SetEnvironmentVariable("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2");
+                _vsTestConsole.StartSession();
+                _vsTestConsole.InitializeExtensions(_sources.Select( _fileSystem.Path.GetDirectoryName));
+            }
+            catch (Exception e)
+            {
+                throw new GeneralStrykerException("Stryker failed to connect to vstest.console", e);
+            }
         }
 
-        private void InitializeVsTestConsole()
+        private void PrepareVsTestEnvironment()
         {
             var testBinariesPaths = _projectInfo.TestProjectAnalyzerResults.Select(testProject => testProject.GetAssemblyPath()).ToList();
-            var testBinariesLocations = new List<string>();
             _sources = new List<string>();
 
             foreach (var path in testBinariesPaths)
@@ -569,23 +566,8 @@ $@"<RunSettings>
                     throw new GeneralStrykerException($"The test project binaries could not be found at {path}, exiting...");
                 }
 
-                testBinariesLocations.Add(Path.GetDirectoryName(path));
                 _sources.Add(path);
             }
-
-            try
-            {
-                // Set roll forward on no candidate fx so vstest console can start on incompatible dotnet core runtimes
-                Environment.SetEnvironmentVariable("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2");
-                _vsTestConsole.StartSession();
-                _vsTestConsole.InitializeExtensions(testBinariesLocations);
-            }
-            catch (Exception e)
-            {
-                throw new GeneralStrykerException("Stryker failed to connect to vstest.console", e);
-            }
-
-            _vsTests = DiscoverTests(null).Item1;
         }
 
         #region IDisposable Support

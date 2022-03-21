@@ -165,10 +165,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         private void SetupMockTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, bool testResult, EventWaitHandle synchroObject)
         {
             var results = new List<(string, bool)>(_testCases.Count);
-            for (var i = 0; i < _testCases.Count; i++)
-            {
-                results.Add((_testCases[i].FullyQualifiedName, testResult));
-            }
+            results.AddRange(_testCases.Select(t => (t.FullyQualifiedName, testResult)));
             SetupMockTestRun(mockVsTest, results, synchroObject);
         }
 
@@ -176,18 +173,17 @@ namespace Stryker.Core.UnitTest.TestRunners
             EventWaitHandle synchroObject)
         {
             var results = new List<TestResult>();
-            foreach (var testResult in testResults)
+            foreach (var (testResultId, success) in testResults)
             {
-                var testResultId = testResult.id;
                 var testCase = FindOrBuildCase(testResultId);
                 results.Add(new TestResult(testCase)
                 {
-                    Outcome = testResult.success ? TestOutcome.Passed : TestOutcome.Failed,
+                    Outcome = success ? TestOutcome.Passed : TestOutcome.Failed,
                     ComputerName = "."
                 });
             }
             mockVsTest.Setup(x =>
-                x.RunTestsWithCustomTestHost(
+                x.RunTestsWithCustomTestHostAsync(
                     It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
                     It.Is<string>(settings => !settings.Contains("<Coverage")),
                     It.Is<TestPlatformOptions>(o => o != null && o.TestCaseFilter == null),
@@ -199,14 +195,13 @@ namespace Stryker.Core.UnitTest.TestRunners
                     // generate test results
                     MoqTestRun(testRunEvents, results);
                     synchroObject.Set();
-                });
+                }).Returns(Task.CompletedTask);
         }
 
         // setup a customized coverage capture run, using provided coverage results
-        private void SetupMockCoverageRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> coverageResults, EventWaitHandle endProcess)
-        {
+        private void SetupMockCoverageRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> coverageResults, EventWaitHandle endProcess) =>
             mockVsTest.Setup(x =>
-                x.RunTestsWithCustomTestHost(
+                x.RunTestsWithCustomTestHostAsync(
                     It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
                     It.Is<string>(settings => settings.Contains("<Coverage")),
                     It.Is<TestPlatformOptions>(o => o != null && o.TestCaseFilter == null),
@@ -235,14 +230,12 @@ namespace Stryker.Core.UnitTest.TestRunners
                     }
                     MoqTestRun(testRunEvents, results);
                     endProcess.Set();
-                });
-        }
+                }).Returns(Task.CompletedTask);
 
         // setup a customized partial test runs, using provided test results
-        private void SetupMockPartialTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> results, EventWaitHandle endProcess)
-        {
+        private void SetupMockPartialTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> results, EventWaitHandle endProcess) =>
             mockVsTest.Setup(x =>
-                x.RunTestsWithCustomTestHost(
+                x.RunTestsWithCustomTestHostAsync(
                     It.IsAny<IEnumerable<TestCase>>(),
                     It.Is<string>(s => !s.Contains("<Coverage")),
                     It.Is<TestPlatformOptions>(o => o != null && o.TestCaseFilter == null),
@@ -283,7 +276,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                         }
 
                         var result = new TestResult(matchingTest)
-                        { Outcome = strings[1] == "F" ? TestOutcome.Failed : TestOutcome.Passed, ComputerName = "." };
+                            { Outcome = strings[1] == "F" ? TestOutcome.Failed : TestOutcome.Passed, ComputerName = "." };
                         runResults.Add(result);
                     }
                     // setup a normal test run
@@ -291,13 +284,11 @@ namespace Stryker.Core.UnitTest.TestRunners
                     collector.TestSessionEnd(new TestSessionEndArgs());
 
                     endProcess.Set();
-                });
-        }
+                }).Returns(Task.CompletedTask);
 
-        private void SetupMockTimeOutTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> results, string timeoutTest, EventWaitHandle endProcess)
-        {
+        private void SetupMockTimeOutTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> results, string timeoutTest, EventWaitHandle endProcess) =>
             mockVsTest.Setup(x =>
-                x.RunTestsWithCustomTestHost(
+                x.RunTestsWithCustomTestHostAsync(
                     It.IsAny<IEnumerable<TestCase>>(),
                     It.IsAny<string>(),
                     It.Is<TestPlatformOptions>(o => o != null && o.TestCaseFilter == null),
@@ -342,7 +333,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                             timeOutTestCase = matchingTest;
                         }
                         var result = new TestResult(matchingTest)
-                        { Outcome = strings[1] == "F" ? TestOutcome.Failed : TestOutcome.Passed, ComputerName = "." };
+                            { Outcome = strings[1] == "F" ? TestOutcome.Failed : TestOutcome.Passed, ComputerName = "." };
                         runResults.Add(result);
                     }
                     // setup a normal test run
@@ -350,8 +341,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                     collector.TestSessionEnd(new TestSessionEndArgs());
 
                     endProcess.Set();
-                });
-        }
+                }).Returns(Task.CompletedTask);
 
         private Mock<IVsTestConsoleWrapper> BuildVsTestRunner(StrykerOptions options, WaitHandle endProcess, out VsTestRunner runner)
         {
@@ -371,6 +361,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 _targetProject,
                 null,
                 null,
+                0,
                 _fileSystem,
                 new Mock<IVsTestHelper>().Object,
                 wrapper: mockedVsTestConsole.Object,
@@ -612,11 +603,14 @@ namespace Stryker.Core.UnitTest.TestRunners
                 _testCases.Add(new TestCase("T2", _executorUri, _testAssemblyPath));
                 _testCases.Add(new TestCase("T3", _executorUri, _testAssemblyPath));
 
+                var ranTests = new TestsGuidList(_testCases.Select(t => t.Id));
+                var testRunResult = new TestRunResult(ranTests, TestsGuidList.NoTest(), TestsGuidList.NoTest(),
+                    string.Empty, TimeSpan.Zero);
                 var input = new MutationTestInput
                 {
                     ProjectInfo = _targetProject,
                     TestRunner = runner,
-                    InitialTestRun = new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500))
+                    InitialTestRun = new InitialTestRun(testRunResult, new TimeoutValueCalculator(500))
                 };
                 foreach (var mutant in _targetProject.ProjectContents.Mutants)
                 {
@@ -779,7 +773,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         // class mocking the VsTest Host Launcher
-        private class MoqHost : IStrykerTestHostLauncher
+        private class MoqHost : ITestHostLauncher
         {
             private readonly WaitHandle _handle;
 

@@ -72,6 +72,15 @@ namespace Stryker.Core.CoverageAnalysis
                 {
                     mutant.CoveringTests = TestsGuidList.EveryTest();
                 }
+                if (mutant.CoveringTests.IsEveryTest)
+                {
+                    _logger.LogDebug($"Mutant {mutant.Id} is covered by all tests.");
+                }
+                else
+                {
+                    _logger.LogDebug($"Mutant {mutant.Id} is covered by {mutant.CoveringTests.Count} tests.");
+                    _logger.LogTrace($"Tests are : {string.Join(',', mutant.CoveringTests.GetGuids())}.");
+                }
             }
         }
     }
