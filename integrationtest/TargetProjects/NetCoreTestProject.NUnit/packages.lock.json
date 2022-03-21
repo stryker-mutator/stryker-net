@@ -14,9 +14,9 @@
       },
       "NUnit": {
         "type": "Direct",
-        "requested": "[3.13.2, )",
-        "resolved": "3.13.2",
-        "contentHash": "u+fz/lXyR4vlamySNAEMrXvh+GhAQiB6/aVZtU5WjivR5zF26Ui0tfteDtWqT90k9D8y6g8rFKYQC97Z7d195w==",
+        "requested": "[3.13.3, )",
+        "resolved": "3.13.3",
+        "contentHash": "KNPDpls6EfHwC3+nnA67fh5wpxeLb3VLFAfLxrug6JMYDLHH6InaQIWR7Sc3y75d/9IKzMksH/gi08W7XWbmnQ==",
         "dependencies": {
           "NETStandard.Library": "2.0.0"
         }
