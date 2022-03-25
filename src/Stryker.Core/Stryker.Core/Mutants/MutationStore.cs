@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
@@ -20,7 +19,7 @@ namespace Stryker.Core.Mutants
     /// </summary>
     public class MutationStore
     {
-        private static readonly ILogger _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationStore>();
+        private static readonly ILogger Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationStore>();
         protected List<Mutant> _expressionMutants = new();
         protected Stack<List<Mutant>> _statementMutants = new();
         protected Stack<List<Mutant>> _blockMutants = new();
@@ -53,10 +52,10 @@ namespace Stryker.Core.Mutants
                     if (_blockMutants.Count == 0)
                     {
                         // we have mutations that are going to be lost
-                        _logger.LogDebug($"{mutations.Count()} were generated but could not be injected as they cannot be controlled dynamically.");
+                        Logger.LogDebug($"{mutations.Count()} were generated but could not be injected as they cannot be controlled dynamically.");
                         foreach (var mutant in mutations)
                         {
-                            _logger.LogDebug($"{mutant.Id}: {mutant.DisplayName}");
+                            Logger.LogDebug($"{mutant.Id}: {mutant.DisplayName}");
                             mutant.ResultStatus = MutantStatus.Ignored;
                             mutant.ResultStatusReason = "Unable to inject back mutations in source code.";
                         }
@@ -92,10 +91,7 @@ namespace Stryker.Core.Mutants
             return result;
         }
 
-        public void EnterStatement()
-        {
-            _statementMutants.Push(new List<Mutant>());
-        }
+        public void EnterStatement() => _statementMutants.Push(new List<Mutant>());
 
         public void LeaveStatement()
         {
@@ -104,10 +100,7 @@ namespace Stryker.Core.Mutants
             _expressionMutants.Clear();
         }
 
-        public void EnterBlock()
-        {
-            _blockMutants.Push(new List<Mutant>());
-        }
+        public void EnterBlock() => _blockMutants.Push(new List<Mutant>());
 
         public void LeaveBlock()
         {
