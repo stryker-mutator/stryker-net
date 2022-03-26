@@ -77,6 +77,7 @@ namespace Stryker.Core
 
                 if (!mutantsNotRun.Any())
                 {
+                    reporters.OnStartMutantTestRun(Enumerable.Empty<IReadOnlyMutant>());
                     if (allMutants.Any(x => x.ResultStatus == MutantStatus.Ignored))
                     {
                         _logger.LogWarning("It looks like all mutants with tests were ignored. Try a re-run with less ignoring!");
@@ -93,8 +94,6 @@ namespace Stryker.Core
                     {
                         _logger.LogWarning("It\'s a mutant-free world, nothing to test.");
                     }
-
-                    reporters.OnAllMutantsTested(rootComponent);
                     reporters.OnAllMutantsTested(rootComponent);
                     return new StrykerRunResult(options, rootComponent.GetMutationScore());
                 }
@@ -109,7 +108,6 @@ namespace Stryker.Core
                     DiagnoseMutant(inputs);
                 }
 
-                reporters.OnAllMutantsTested(rootComponent);
                 return new StrykerRunResult(options, rootComponent.GetMutationScore());
             }
 #if !DEBUG

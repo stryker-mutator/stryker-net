@@ -991,7 +991,7 @@ if(StrykerNamespace.MutantControl.IsActive(1)){// Stryker test apart once
 	x/=2;
 }}}";
 
-            ShouldMutateSourceToExpected(source, expected);
+            ShouldMutateSourceInClassToExpected(source, expected);
             _target.Mutants.Count.ShouldBe(2);
             _target.Mutants.ElementAt(1).MustBeTestedInIsolation.ShouldBe(true);
         }
@@ -1012,7 +1012,7 @@ if(StrykerNamespace.MutantControl.IsActive(1)){// Stryker test full once
 	x/=2;
 }}}";
 
-            ShouldMutateSourceToExpected(source, expected);
+            ShouldMutateSourceInClassToExpected(source, expected);
             _target.Mutants.Count.ShouldBe(2);
             _target.Mutants.ElementAt(1).MustRunAgainstAllTests.ShouldBe(true);
         }
@@ -1039,7 +1039,7 @@ if(StrykerNamespace.MutantControl.IsActive(1)){// Stryker test full
     x-=2;
 }}}";
 
-            ShouldMutateSourceToExpected(source, expected);
+            ShouldMutateSourceInClassToExpected(source, expected);
             _target.Mutants.Count.ShouldBe(3);
 
             _target.Mutants.ElementAt(1).CannotDetermineCoverage.ShouldBeTrue();

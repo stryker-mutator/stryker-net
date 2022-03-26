@@ -73,8 +73,7 @@ namespace Stryker.Core.TestRunners.VsTest
         }
 
         private bool CantUseStrykerDataCollector() =>
-            _projectInfo.TestProjectAnalyzerResults.Select(x => x.GetTargetFrameworkAndVersion()).Any(t =>
-            return _projectInfo.TestProjectAnalyzerResults.Select(x => x.GetNuGetFramework()).Any(t =>
+            _projectInfo.TestProjectAnalyzerResults.Select(x => x.GetNuGetFramework()).Any(t =>
                 t.Framework == FrameworkConstants.FrameworkIdentifiers.NetCoreApp && t.Version.Major < 2);
 
         public TestRunResult InitialTest()
@@ -115,7 +114,9 @@ namespace Stryker.Core.TestRunners.VsTest
                     foreach (var mutant in mutants)
                     {
                         ITestListDescription tests;
-                        if (((mutant.IsStaticValue||mutant.CannotDetermineCoverage) && !_options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest)) || mutant.MustRunAgainstAllTests)
+                        if (((mutant.IsStaticValue||mutant.CannotDetermineCoverage)  &&
+                             !_options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest)) ||
+                            mutant.MustRunAgainstAllTests)
                         {
                             tests = TestsGuidList.EveryTest();
                             needAll = true;

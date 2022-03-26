@@ -327,7 +327,7 @@ It was killed by these test(s): 3");
 
             result.MutationScore.ShouldBe(double.NaN);
 
-            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<IReadOnlyMutant>>()), Times.Once);
+            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IEnumerable<IReadOnlyMutant>>()), Times.Once);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>()), Times.Once);
         }
