@@ -60,5 +60,10 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
             context.Enter(MutationControl.Block);
             return base.PrepareContext(node, context);
         }
+        protected override void RestoreContext(MutationContext context)
+        {
+            context.Leave(MutationControl.Block);
+            base.RestoreContext(context);
+        }
     }
 }
