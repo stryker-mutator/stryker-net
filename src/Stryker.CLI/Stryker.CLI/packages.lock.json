@@ -616,8 +616,8 @@
       },
       "Spectre.Console": {
         "type": "Transitive",
-        "resolved": "0.43.0",
-        "contentHash": "TyfzVxx3jHr1FeeI9Z6Jn6QTnP7KduV14dn9GTYc0v/t2h4L6WJ0Kc2DOnOJUlGBQ/qXK4P+HITIR/JTHcKYLg=="
+        "resolved": "0.44.0",
+        "contentHash": "QMpKtn5QV1j2nklqDwuRE/XwbDn5jxww+Mt5J6Jn3EeQIzaLcuLyUhCLh/mS8giN6uXbqOV1ep5HlUGxrV1ujQ=="
       },
       "Spectre.Console.Analyzer": {
         "type": "Transitive",
@@ -1201,7 +1201,7 @@
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "4.0.1",
           "ShellProgressBar": "5.1.0",
-          "Spectre.Console": "0.43.0",
+          "Spectre.Console": "0.44.0",
           "Spectre.Console.Analyzer": "0.43.0",
           "Stryker.DataCollector": "1.5.0",
           "Stryker.RegexMutators": "1.5.0",
