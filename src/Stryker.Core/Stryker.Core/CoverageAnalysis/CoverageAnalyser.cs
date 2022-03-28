@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
@@ -74,12 +73,16 @@ namespace Stryker.Core.CoverageAnalysis
                 }
                 if (mutant.CoveringTests.IsEveryTest)
                 {
-                    _logger.LogDebug($"Mutant {mutant.Id} is covered by all tests.");
+                    _logger.LogDebug($"Mutant {mutant.Id} will be tested agaisnt all tests.");
                 }
-                else
+                else if (mutant.CoveringTests.Count>0)
                 {
                     _logger.LogDebug($"Mutant {mutant.Id} is covered by {mutant.CoveringTests.Count} tests.");
                     _logger.LogTrace($"Tests are : {string.Join(',', mutant.CoveringTests.GetGuids())}.");
+                }
+                else
+                {
+                    _logger.LogDebug($"Mutant {mutant.Id} is not covered by any test.");
                 }
             }
         }

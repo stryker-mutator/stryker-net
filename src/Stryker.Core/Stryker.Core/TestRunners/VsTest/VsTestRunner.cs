@@ -9,7 +9,6 @@ using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
 using NuGet.Frameworks;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
@@ -30,7 +29,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly IFileSystem _fileSystem;
         private readonly StrykerOptions _options;
         private readonly ProjectInfo _projectInfo;
-        private readonly Func<int, ITestHostLauncher> _hostBuilder;
+        private readonly Func<int, IStrykerTestHostLauncher> _hostBuilder;
         private readonly IVsTestHelper _vsTestHelper;
         private readonly bool _ownHelper;
         private readonly List<string> _messages = new();
@@ -55,7 +54,7 @@ namespace Stryker.Core.TestRunners.VsTest
             IVsTestHelper helper = null,
             ILogger logger = null,
             IVsTestConsoleWrapper wrapper = null,
-            Func<int, ITestHostLauncher> hostBuilder = null)
+            Func<int, IStrykerTestHostLauncher> hostBuilder = null)
         {
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunner>();
             _fileSystem = fileSystem ?? new FileSystem();
@@ -89,7 +88,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 if (!_vsTests.ContainsKey(result.TestCase.Id))
                 {
                     _vsTests[result.TestCase.Id] = new VsTestDescription(result.TestCase);
-                    _logger.LogWarning($"Initial test run encounter a unexpected test case ({result.TestCase.DisplayName}), mutation tests may be inaccurate. Disable coverage analysis if your have doubts.");
+                    _logger.LogWarning($"{RunnerId}: Initial test run encounter a unexpected test case ({result.TestCase.DisplayName}), mutation tests may be inaccurate. Disable coverage analysis if your have doubts.");
                 }
                 _vsTests[result.TestCase.Id].RegisterInitialTestResult(result);
             }
@@ -186,7 +185,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             if (timeOutMs.HasValue)
-                _logger.LogDebug("Using {0} ms as test run timeout", timeOutMs);
+                _logger.LogDebug($"{RunnerId}: Using {timeOutMs} ms as test run timeout");
 
             var testResults = RunTestSession(mutantTestsMap, needAll,
                 GenerateRunSettings(timeOutMs, mutants != null, false, mutantTestsMap), timeOutMs, HandleUpdate);
@@ -318,7 +317,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == CoverageCollector.PropertyName);
                 if (!_vsTests.ContainsKey(testResult.TestCase.Id))
                 {
-                    _logger.LogWarning($"Coverage analysis run encountered a unexpected test case ({testResult.TestCase.DisplayName}), mutation tests may be inaccurate. Disable coverage analysis if your have doubts.");
+                    _logger.LogWarning($"{RunnerId}: Coverage analysis run encountered a unexpected test case ({testResult.TestCase.DisplayName}), mutation tests may be inaccurate. Disable coverage analysis if your have doubts.");
                     _vsTests.Add(testResult.TestCase.Id, new VsTestDescription(testResult.TestCase));
                 }
                 var testDescription = _vsTests[testResult.TestCase.Id];
@@ -377,7 +376,7 @@ namespace Stryker.Core.TestRunners.VsTest
                         var coveredMutants = string.IsNullOrEmpty(propertyPairValue)
                             ? Enumerable.Empty<int>()
                             : propertyPairValue.Split(',').Select(int.Parse);
-                        _logger.LogWarning("Some mutations were executed outside any test (mutation ids: {0}).", propertyPairValue);
+                        _logger.LogWarning($"{RunnerId}: Some mutations were executed outside any test (mutation ids: {propertyPairValue}).");
                         staticMutantLists.UnionWith(coveredMutants);
                     }
                 }
@@ -438,6 +437,11 @@ namespace Stryker.Core.TestRunners.VsTest
                 _vsTestFailed = true;
             }
 
+            if (!strykerVsTestHostLauncher.IsProcessCreated)
+            {
+                throw new GeneralStrykerException("*** Failed to create a TestRunner, Stryker cannot recover from this!***");
+            }
+
             eventHandler.ResultsUpdated -= HandlerUpdate;
             eventHandler.VsTestFailed -= HandlerVsTestFailed;
 
@@ -457,7 +461,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var vsTestLogPath = _fileSystem.Path.Combine(_options.OutputPath, "logs", $"{RunnerId}_VsTest-log.txt");
             _fileSystem.Directory.CreateDirectory(_fileSystem.Path.GetDirectoryName(vsTestLogPath));
 
-            _logger.LogTrace("{1}: Logging VsTest output to: {0}", vsTestLogPath, RunnerId);
+            _logger.LogTrace($"{RunnerId}: Logging VsTest output to: {vsTestLogPath}");
             return new ConsoleParameters
             {
                 TraceLevel = DetermineTraceLevel(),
@@ -478,7 +482,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 _ => TraceLevel.Off
             } : TraceLevel.Off;
 
-            _logger.LogTrace("{0}: VsTest logging set to {1}", RunnerId, traceLevel);
+            _logger.LogTrace($"{RunnerId}: VsTest logging set to {traceLevel}");
             return traceLevel;
         }
 
@@ -498,7 +502,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             if (_testFramework.HasFlag(TestFramework.xUnit))
             {
-                settingsForCoverage += "<Disable>true</DisableParallelization>";
+                settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
             }
 
             var timeoutSettings = timeout != null ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>" + Environment.NewLine : string.Empty;
@@ -521,7 +525,7 @@ $@"<RunSettings>
  </RunConfiguration>
 {dataCollectorSettings}
 </RunSettings>";
-            _logger.LogTrace("VsTest run settings set to: {0}", runSettings);
+            _logger.LogTrace($"{RunnerId}: VsTest run settings set to: {runSettings}");
 
             return runSettings;
         }

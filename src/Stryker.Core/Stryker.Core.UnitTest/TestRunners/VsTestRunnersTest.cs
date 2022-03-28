@@ -16,6 +16,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Moq;
 using Shouldly;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
@@ -343,7 +344,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                     endProcess.Set();
                 }).Returns(Task.CompletedTask);
 
-        private Mock<IVsTestConsoleWrapper> BuildVsTestRunner(StrykerOptions options, WaitHandle endProcess, out VsTestRunner runner)
+        private Mock<IVsTestConsoleWrapper> BuildVsTestRunner(StrykerOptions options, WaitHandle endProcess, out VsTestRunner runner, bool suceed = true)
         {
             var mockedVsTestConsole = new Mock<IVsTestConsoleWrapper>(MockBehavior.Strict);
             mockedVsTestConsole.Setup(x => x.StartSession());
@@ -365,7 +366,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 _fileSystem,
                 new Mock<IVsTestHelper>().Object,
                 wrapper: mockedVsTestConsole.Object,
-                hostBuilder: _ => new MoqHost(endProcess, false));
+                hostBuilder: _ => new MoqHost(endProcess, suceed, false));
             return mockedVsTestConsole;
         }
 
@@ -388,6 +389,17 @@ namespace Stryker.Core.UnitTest.TestRunners
             // tests are successful => run should be successful
             result.FailingTests.Count.ShouldBe(1);
 
+        }
+
+        [Fact]
+        public void HandleVsTestCreationFailure()
+        {
+            using var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset);
+            var mockVsTest = BuildVsTestRunner(new StrykerOptions(), endProcess, out var runner, false);
+            SetupMockTestRun(mockVsTest, new[] { ("T0", false), ("T1", true) }, endProcess);
+
+            Action action = () => runner.InitialTest();
+            action.ShouldThrow<GeneralStrykerException>();
         }
 
         [Fact]
@@ -773,13 +785,14 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         // class mocking the VsTest Host Launcher
-        private class MoqHost : ITestHostLauncher
+        private class MoqHost : IStrykerTestHostLauncher
         {
             private readonly WaitHandle _handle;
 
-            public MoqHost(WaitHandle handle, bool isDebug)
+            public MoqHost(WaitHandle handle, bool succeed, bool isDebug)
             {
                 _handle = handle;
+                IsProcessCreated = succeed;
                 IsDebug = isDebug;
             }
 
@@ -795,10 +808,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             public bool IsDebug { get; }
 
-            public bool WaitProcessExit()
-            {
-                return _handle == null || _handle.WaitOne();
-            }
+            public bool IsProcessCreated { get; }
         }
     }
 }

@@ -7,9 +7,16 @@ using System.Threading;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
-    public class StrykerVsTestHostLauncher : ITestHostLauncher
+
+    public interface IStrykerTestHostLauncher : ITestHostLauncher
+    {
+         bool IsProcessCreated { get; }
+    }
+
+    public class StrykerVsTestHostLauncher : IStrykerTestHostLauncher
     {
         private readonly int _id;
+        private Process _currentProcess;
 
         private static ILogger Logger { get; }
 
@@ -18,6 +25,8 @@ namespace Stryker.Core.TestRunners.VsTest
         public StrykerVsTestHostLauncher(int id) => _id = id;
 
         public bool IsDebug => false;
+
+        public bool IsProcessCreated => _currentProcess != null;
 
         public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo, CancellationToken cancellationToken)
         {
@@ -39,27 +48,27 @@ namespace Stryker.Core.TestRunners.VsTest
                     ["Verify_DisableClipboard"] = "true",
                 },
             };
-            var currentProcess = new Process { StartInfo = processInfo, EnableRaisingEvents = true };
+            _currentProcess = new Process { StartInfo = processInfo, EnableRaisingEvents = true };
 
-            currentProcess.OutputDataReceived += Process_OutputDataReceived;
-            currentProcess.ErrorDataReceived += Process_ErrorDataReceived;
+            _currentProcess.OutputDataReceived += Process_OutputDataReceived;
+            _currentProcess.ErrorDataReceived += Process_ErrorDataReceived;
 
-            if (!currentProcess.Start())
+            if (!_currentProcess.Start())
             {
                 Logger.LogError($"Runner {_id}: Failed to start process {processInfo.Arguments}.");
             }
 
-            currentProcess.BeginOutputReadLine();
-            currentProcess.BeginErrorReadLine();
+            _currentProcess.BeginOutputReadLine();
+            _currentProcess.BeginErrorReadLine();
 
-            return currentProcess.Id;
+            return _currentProcess.Id;
         }
 
         private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
             if (e.Data != null)
             {
-                Logger.LogTrace($"Runner {_id}: {e.Data} (VsTest error)");
+                Logger.LogDebug($"Runner {_id}: {e.Data} (VsTest error)");
             }
         }
 
