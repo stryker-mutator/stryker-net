@@ -621,8 +621,8 @@
       },
       "Spectre.Console.Analyzer": {
         "type": "Transitive",
-        "resolved": "0.43.0",
-        "contentHash": "Z5NLKfVRgvgzIdbwDTr7kVqlHu5Bvm3BphlctTdS085MJHy6Yq7G49R6vXU/ycK8Ppv2UPjJ0LbrdRDFIeBIqw=="
+        "resolved": "0.44.0",
+        "contentHash": "WhbzH1izhY9JMcN1VOyJc9AEKODJHZ9jfYTyo6AKFKzRJPmko6faSA2/siRhHxjVF6X3WgXBbuQ0FlWu+baGQw=="
       },
       "System.AppContext": {
         "type": "Transitive",
@@ -1202,7 +1202,7 @@
           "Serilog.Sinks.Console": "4.0.1",
           "ShellProgressBar": "5.1.0",
           "Spectre.Console": "0.43.0",
-          "Spectre.Console.Analyzer": "0.43.0",
+          "Spectre.Console.Analyzer": "0.44.0",
           "Stryker.DataCollector": "1.5.0",
           "Stryker.RegexMutators": "1.5.0",
           "System.IO.Abstractions": "16.1.25",
