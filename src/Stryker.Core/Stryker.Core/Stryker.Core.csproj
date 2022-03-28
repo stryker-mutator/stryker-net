@@ -59,7 +59,7 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
     <PackageReference Include="ShellProgressBar" Version="5.1.0" />
     <PackageReference Include="Spectre.Console" Version="0.43.0" />
-    <PackageReference Include="Spectre.Console.Analyzer" Version="0.43.0" />
+    <PackageReference Include="Spectre.Console.Analyzer" Version="0.44.0" />
     <PackageReference Include="System.IO.Abstractions" Version="$(SystemIOAbstractions)" /> <!-- From Directory.Build.props -->
     <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
   </ItemGroup>
