@@ -200,7 +200,7 @@ stages:
       inputs:
         command: test
         projects: '**/Validation.csproj'
-        arguments: --filter Traits=SingleTestProject
+        arguments: --filter Category=SingleTestProject
 
   - job: LinuxTests
     displayName: Run tests on Linux
@@ -217,7 +217,7 @@ stages:
       inputs:
         command: test
         projects: '**/Validation.csproj'
-        arguments: --filter Traits=SingleTestProject
+        arguments: --filter Category=SingleTestProject
 
   - job: MacOsTests
     displayName: Run tests on Mac OS
@@ -234,7 +234,7 @@ stages:
       inputs:
         command: test
         projects: '**/Validation.csproj'
-        arguments: --filter Traits=SingleTestProject
+        arguments: --filter Category=SingleTestProject
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'macos-netcore-multi-test-project'
@@ -244,7 +244,7 @@ stages:
       inputs:
         command: test
         projects: '**/Validation.csproj'
-        arguments: --filter Traits=MultipleTestProjects
+        arguments: --filter Category=MultipleTestProjects
 
 - stage: PublishMasterReleaseArtifact
   displayName: Publish Release Artifact

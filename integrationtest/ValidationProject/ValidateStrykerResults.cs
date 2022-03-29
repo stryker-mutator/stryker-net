@@ -30,7 +30,7 @@ namespace IntegrationTests
 
                 var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-                CheckReportMutantCounts(report, total: 12, ignored: 0, survived: 1, killed: 4, timeout: 0, nocoverage: 7);
+                CheckReportMutantCounts(report, total: 24, ignored: 0, survived: 1, killed: 8, timeout: 0, nocoverage: 15);
             }
         }
 
@@ -49,7 +49,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutantCounts(report, total: 63, ignored: 21, survived: 2, killed: 2, timeout: 2, nocoverage: 34);
+            CheckReportMutantCounts(report, total: 103, ignored: 36, survived: 4, killed: 9, timeout: 2, nocoverage: 50);
         }
 
         [Fact]
@@ -67,7 +67,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutantCounts(report, total: 63, ignored: 21, survived: 2, killed: 2, timeout: 2, nocoverage: 34);
+            CheckReportMutantCounts(report, total: 103, ignored: 6, survived: 9, killed: 11, timeout: 2, nocoverage: 73);
         }
 
         private void CheckReportMutantCounts(JsonReport report, int total, int ignored, int survived, int killed, int timeout, int nocoverage)
