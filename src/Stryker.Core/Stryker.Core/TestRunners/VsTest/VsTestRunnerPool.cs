@@ -40,15 +40,13 @@ namespace Stryker.Core.TestRunners.VsTest
 
             try
             {
-                return mutants == null ? runner.RunAll(timeoutCalc, null, update) : runner.TestMultipleMutants(timeoutCalc, mutants, update);
+                return runner.TestMultipleMutants(timeoutCalc, mutants, update);
             }
             finally
             {
                 ReturnRunner(runner);
             }
         }
-
-        public TestRunResult RunAll(ITimeoutValueCalculator timeoutMs, Mutant activeMutant, TestUpdateHandler update) => TestMultipleMutants(timeoutMs, activeMutant == null ? null : new List<Mutant> { activeMutant }, update);
 
         public TestRunResult InitialTest()
         {
@@ -77,7 +75,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             try
             {
-                result = needCoverage ? runner.CaptureCoverage(mutants) : runner.RunAll(null, null, null);
+                result = needCoverage ? runner.CaptureCoverage(mutants) : new TestRunResult(true);
             }
             finally
             {

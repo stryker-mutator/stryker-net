@@ -66,20 +66,11 @@ namespace Stryker.DataCollector
             return string.Format(TemplateForConfiguration, line, configuration);
         }
 
-        public void Initialize(IDataCollectionSink dataCollectionSink)
-        {
-            this._dataSink = dataCollectionSink;
-        }
+        public void Initialize(IDataCollectionSink dataCollectionSink) => this._dataSink = dataCollectionSink;
 
-        public void SetLogger(Action<string> logger)
-        {
-            _logger = logger;
-        }
+        public void SetLogger(Action<string> logger) => _logger = logger;
 
-        public void Log(string message)
-        {
-            _logger?.Invoke(message);
-        }
+        public void Log(string message) => _logger?.Invoke(message);
 
         // called before any test is run
         public void TestSessionStart(TestSessionStartArgs testSessionStartArgs)
@@ -233,22 +224,16 @@ namespace Stryker.DataCollector
             }
 
             _dataSink.SendData(testCaseEndArgs.DataCollectionContext, PropertyName, coverData);
-            if (_mutationCoveredOutsideTests.Count > 0)
-            {
-                // report any mutations covered before this test executed
-                _dataSink.SendData(testCaseEndArgs.DataCollectionContext, OutOfTestsPropertyName, string.Join(",", _mutationCoveredOutsideTests));
-                _mutationCoveredOutsideTests.Clear();
-            }
+            if (_mutationCoveredOutsideTests.Count <= 0) return;
+            // report any mutations covered before this test executed
+            _dataSink.SendData(testCaseEndArgs.DataCollectionContext, OutOfTestsPropertyName, string.Join(",", _mutationCoveredOutsideTests));
+            _mutationCoveredOutsideTests.Clear();
         }
 
         public IList<int>[] RetrieveCoverData()
-        {
-            return (IList<int>[])_getCoverageData.Invoke(null, new object[] { });
-        }
+            => (IList<int>[])_getCoverageData.Invoke(null, new object[] { });
 
         public void TestSessionEnd(TestSessionEndArgs testSessionEndArgs)
-        {
-            Log($"TestSession ends.");
-        }
+            => Log($"TestSession ends.");
     }
 }
