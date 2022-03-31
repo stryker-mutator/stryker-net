@@ -224,7 +224,7 @@ namespace Stryker.DataCollector
             }
 
             _dataSink.SendData(testCaseEndArgs.DataCollectionContext, PropertyName, coverData);
-            if (_mutationCoveredOutsideTests.Count <= 0) return;
+            if (_mutationCoveredOutsideTests.Count <= 0) { return; }
             // report any mutations covered before this test executed
             _dataSink.SendData(testCaseEndArgs.DataCollectionContext, OutOfTestsPropertyName, string.Join(",", _mutationCoveredOutsideTests));
             _mutationCoveredOutsideTests.Clear();

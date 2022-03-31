@@ -30,8 +30,8 @@ namespace Stryker.Core.TestRunners.VsTest
             (_vsTests, _tests) = runner.DiscoverTests(null);
             _availableRunners.Add(runner);
 
-            Parallel.For(1, options.Concurrency,
-                (i, _) => _availableRunners.Add(new VsTestRunner(options, projectInfo, _vsTests, _tests, i, helper: _helper)));
+            Parallel.For(1, options.Concurrency, (i, _) => 
+                 _availableRunners.Add(new VsTestRunner(options, projectInfo, _vsTests, _tests, i, helper: _helper)));
         }
 
         public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
