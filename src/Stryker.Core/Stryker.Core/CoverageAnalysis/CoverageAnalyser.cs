@@ -73,7 +73,7 @@ namespace Stryker.Core.CoverageAnalysis
                 }
                 if (mutant.CoveringTests.IsEveryTest)
                 {
-                    _logger.LogDebug($"Mutant {mutant.Id} will be tested agaisnt all tests.");
+                    _logger.LogDebug($"Mutant {mutant.Id} will be tested against all tests.");
                 }
                 else if (mutant.CoveringTests.Count>0)
                 {
