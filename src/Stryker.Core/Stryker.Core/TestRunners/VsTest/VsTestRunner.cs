@@ -183,7 +183,9 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             if (timeOutMs.HasValue)
+            {
                 _logger.LogDebug($"{RunnerId}: Using {timeOutMs} ms as test run timeout");
+            }
 
             var testResults = RunTestSession(mutantTestsMap, needAll,
                 GenerateRunSettings(timeOutMs, mutants != null, false, mutantTestsMap), timeOutMs, HandleUpdate);
