@@ -8,33 +8,41 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 {
     internal class AnonymousFunctionExpressionOrchestrator : NodeSpecificOrchestrator<AnonymousFunctionExpressionSyntax, AnonymousFunctionExpressionSyntax>
     {
+        /// <summary>
+        /// Mutate the children, except the arrow expression body that may require conversion.
+        /// </summary>
+        protected override AnonymousFunctionExpressionSyntax OrchestrateChildrenMutation(AnonymousFunctionExpressionSyntax node,
+            MutationContext context) =>
+            node.ReplaceNodes(node.ChildNodes().Where(child => child != node.ExpressionBody),
+                (original, _) => MutateSingleNode(original, context));
+
         protected override AnonymousFunctionExpressionSyntax InjectMutations(AnonymousFunctionExpressionSyntax sourceNode,
             AnonymousFunctionExpressionSyntax targetNode, MutationContext context)
         {
             targetNode = base.InjectMutations(sourceNode, targetNode, context);
-
+            
             if (targetNode.Block == null)
             {
-                if (targetNode.ExpressionBody == null)
+                // we will now mutate the expression body
+                var localContext = context.Enter(MutationControl.Block);
+                targetNode = targetNode.ReplaceNode(targetNode.ExpressionBody,
+                    MutateSingleNode(sourceNode.ExpressionBody, localContext));
+                if (localContext.HasStatementLevelMutant)
                 {
-                    // only a definition (eg interface)
+                    // this is an expression body method
+                    // we need to convert it to expression body form
+                    targetNode = MutantPlacer.ConvertExpressionToBody(targetNode);
+                    // we need to inject pending block (and statement) level mutations
+                    targetNode = targetNode.WithBody(SyntaxFactory.Block(
+                        localContext.InjectBlockLevelExpressionMutation(targetNode.Block,
+                            sourceNode.ExpressionBody, true)));
+                }
+                localContext.Leave(MutationControl.Block);
+                if (targetNode.Block == null)
+                {
+                    // we did not perform any conversion
                     return targetNode;
                 }
-
-                // this is an expression body method
-                if (!context.HasStatementLevelMutant)
-                {
-                    // there is no statement or block level mutant, so the method control flow is not changed by mutations
-                    // there is no need to change the method in any may
-                    return targetNode;
-                }
-
-                // we need to convert it to expression body form
-                targetNode = MutantPlacer.ConvertExpressionToBody(targetNode);
-
-                // we need to inject pending block (and statement) level mutations
-                targetNode = targetNode.WithBody(
-                    SyntaxFactory.Block(context.InjectBlockLevelExpressionMutation(targetNode.Block, sourceNode.ExpressionBody, true)));
             }
             else
             {
@@ -42,28 +50,18 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                 targetNode = MutantPlacer.AddEndingReturn(targetNode);
             }
 
-            if (targetNode is SimpleLambdaExpressionSyntax lambdaExpression && lambdaExpression.Parameter.Modifiers.Any(m => m.IsKind(SyntaxKind.OutKeyword)))
+            switch (targetNode)
             {
-                targetNode = targetNode.WithBody(MutantPlacer.AddDefaultInitializers(targetNode.Block, new List<ParameterSyntax> { lambdaExpression.Parameter }));
-            }
-            else if (targetNode is ParenthesizedLambdaExpressionSyntax parenthesizedLambda)
-            // inject initialization to default for all out parameters
-            {
-                targetNode = targetNode.WithBody(MutantPlacer.AddDefaultInitializers(targetNode.Block, parenthesizedLambda.ParameterList.Parameters.Where(p =>
-                p.Modifiers.Any(m => m.IsKind(SyntaxKind.OutKeyword)))));
+                case SimpleLambdaExpressionSyntax lambdaExpression when lambdaExpression.Parameter.Modifiers.Any(m => m.IsKind(SyntaxKind.OutKeyword)):
+                    targetNode = targetNode.WithBody(MutantPlacer.AddDefaultInitializers(targetNode.Block, new List<ParameterSyntax> { lambdaExpression.Parameter }));
+                    break;
+                // inject initialization to default for all out parameters
+                case ParenthesizedLambdaExpressionSyntax parenthesizedLambda:
+                    targetNode = targetNode.WithBody(MutantPlacer.AddDefaultInitializers(targetNode.Block, parenthesizedLambda.ParameterList.Parameters.Where(p =>
+                        p.Modifiers.Any(m => m.IsKind(SyntaxKind.OutKeyword)))));
+                    break;
             }
             return targetNode;
-        }
-
-        protected override MutationContext PrepareContext(AnonymousFunctionExpressionSyntax node, MutationContext context)
-        {
-            context.Enter(MutationControl.Block);
-            return base.PrepareContext(node, context);
-        }
-        protected override void RestoreContext(MutationContext context)
-        {
-            context.Leave(MutationControl.Block);
-            base.RestoreContext(context);
         }
     }
 }

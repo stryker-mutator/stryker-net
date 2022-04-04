@@ -145,8 +145,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
 void SomeMethod()  => (true && SomeOtherMethod(out var x)) ? x : 5;
 }";
             string expected = @"void TestMethod(){if(StrykerNamespace.MutantControl.IsActive(0)){}else{
-void SomeMethod()  {if(StrykerNamespace.MutantControl.IsActive(1)){!((true && SomeOtherMethod(out var x)) )? x : 5;}else{if(StrykerNamespace.MutantControl.IsActive(2)){(true || SomeOtherMethod(out var x)) ? x : 5;}else{((StrykerNamespace.MutantControl.IsActive(3)?false:true )&& SomeOtherMethod(out var x)) ? x : 5;}}};
-}}";
+void SomeMethod()  {if(StrykerNamespace.MutantControl.IsActive(1)){return!((true && SomeOtherMethod(out var x)) )? x : 5;}else{if(StrykerNamespace.MutantControl.IsActive(2)){return(true || SomeOtherMethod(out var x)) ? x : 5;}else{((StrykerNamespace.MutantControl.IsActive(3)?false:true )&& SomeOtherMethod(out var x)) ? x : 5;}}};}}";
 
             ShouldMutateSourceInClassToExpected(source, expected);
         }
@@ -1444,6 +1443,45 @@ string Value => Generator(out var x) ? """" :""test"";
             var expected = @"class Test {
 int GetId(string input) {if(StrykerNamespace.MutantControl.IsActive(0)){return!(int.TryParse(input, out var result) )? result : 0;}else{return int.TryParse(input, out var result) ? result : 0;}}
 string Value {get{if(StrykerNamespace.MutantControl.IsActive(1)){return!(Generator(out var x) )? """" :""test"";}else{return Generator(out var x) ? (StrykerNamespace.MutantControl.IsActive(2)?""Stryker was here!"":"""" ):(StrykerNamespace.MutantControl.IsActive(3)?"""":""test"");}}}}}}";
+            ShouldMutateSourceInClassToExpected(source, expected);
+        }
+
+        [Fact]
+        // test for issue #1386
+        public void ShouldHandleLocalFunctions()
+        {
+            var source = @"
+        public string DoStuff(char myChar, int myInt)
+        {
+            if (TryGet(myChar, out int i))
+            {}
+            string makeString(char c, int i) => new string(c, i);
+            return getString;
+        }
+        private bool TryGet(char myChar, out int i)
+        {
+            i = 0;
+            return true;
+        }";
+
+            var expected = @"public string DoStuff(char myChar, int myInt)
+{if(StrykerNamespace.MutantControl.IsActive(0)){}else{if(StrykerNamespace.MutantControl.IsActive(1))        {
+            if (!(TryGet(myChar, out int i)))
+            {}
+            string makeString(char c, int i) => new string(c, i);
+            return getString;
+        }
+else        {
+            if (TryGet(myChar, out int i))
+            {}
+            string makeString(char c, int i) => new string(c, i);
+            return getString;
+        }
+}return default(string);}        private bool TryGet(char myChar, out int i)
+{{i= default(int);}if(StrykerNamespace.MutantControl.IsActive(2)){}else        {
+            i = 0;
+            return (StrykerNamespace.MutantControl.IsActive(3)?false:true);
+        }return default(bool);}}}}";
             ShouldMutateSourceInClassToExpected(source, expected);
         }
     }
