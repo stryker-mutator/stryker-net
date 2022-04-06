@@ -59,7 +59,7 @@ The syntax for the comments is: `Stryker [disable|restore][once][all| mutator li
 
 `// Stryker disable once all` will only disable mutants on the next line.
 
-`// Stryker disable once Arithmetic,Update` will only disable Arithmetic and Update mutants on the next line. For the complete list of the types of mutators you may ignore, check out the [mutations](./mutations.md) page, using the name in the parenthesis.
+`// Stryker disable once Arithmetic,Update` will only disable Arithmetic and Update mutants on the next line. For the complete list of the types of mutators you may ignore, check out the [mutations](./mutations.md) page. For each mutator, use the name in parenthesis.
 
 Example:
 
