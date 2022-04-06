@@ -61,6 +61,24 @@ The syntax for the comments is: `Stryker [disable|restore][once][all| mutator li
 
 `// Stryker disable once Arithmetic,Update` will only disable Arithmetic and Update mutants on the next line
 
+Complete list of the types of mutators you may ignore:
+
+- Statement
+- Arithmetic
+- Block
+- Equality
+- Boolean
+- Logical
+- Assignment
+- Unary
+- Update
+- Checked
+- Linq
+- String
+- Bitwise
+- Initializer
+- Regex
+
 Example:
 
 ```csharp
