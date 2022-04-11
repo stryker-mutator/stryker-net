@@ -1,7 +1,7 @@
 {
   "version": 1,
   "dependencies": {
-    ".NETFramework,Version=v4.6.1": {
+    ".NETFramework,Version=v4.7.2": {
       "MSTest.TestAdapter": {
         "type": "Direct",
         "requested": "[2.2.8, 2.2.8]",
