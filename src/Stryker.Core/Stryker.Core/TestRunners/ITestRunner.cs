@@ -12,8 +12,6 @@ namespace Stryker.Core.TestRunners
 
     public interface ITestRunner : IDisposable
     {
-        TestRunResult RunAll(ITimeoutValueCalculator timeoutMs, Mutant activeMutant, TestUpdateHandler update);
-
         TestSet DiscoverTests();
 
         TestRunResult InitialTest();

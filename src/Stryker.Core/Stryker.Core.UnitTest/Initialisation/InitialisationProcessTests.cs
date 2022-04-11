@@ -26,8 +26,6 @@ namespace Stryker.Core.UnitTest.Initialisation
             var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
             var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<ITimeoutValueCalculator>(), null, null))
-                .Returns(new TestRunResult(true)); // testrun is successful
             testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
             testRunnerMock.Setup(x => x.Dispose());
             var projectContents = new CsharpFolderComposite();
@@ -80,7 +78,6 @@ namespace Stryker.Core.UnitTest.Initialisation
             var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
             var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
-            testRunnerMock.Setup(x => x.RunAll(It.IsAny<ITimeoutValueCalculator>(), null, null));
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf());
 

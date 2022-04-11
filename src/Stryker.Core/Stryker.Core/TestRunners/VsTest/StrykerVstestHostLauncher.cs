@@ -2,36 +2,31 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
 using Stryker.Core.Logging;
-using System;
 using System.Diagnostics;
 using System.Threading;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
+
     public interface IStrykerTestHostLauncher : ITestHostLauncher
     {
-        bool WaitProcessExit();
+         bool IsProcessCreated { get; }
     }
 
     public class StrykerVsTestHostLauncher : IStrykerTestHostLauncher
     {
-        private Process _currentProcess;
-        private readonly object _lck = new object();
         private readonly int _id;
+        private Process _currentProcess;
 
         private static ILogger Logger { get; }
 
-        static StrykerVsTestHostLauncher()
-        {
-            Logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerVsTestHostLauncher>();
-        }
+        static StrykerVsTestHostLauncher() => Logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerVsTestHostLauncher>();
 
-        public StrykerVsTestHostLauncher(int id)
-        {
-            _id = id;
-        }
+        public StrykerVsTestHostLauncher(int id) => _id = id;
 
         public bool IsDebug => false;
+
+        public bool IsProcessCreated => _currentProcess != null;
 
         public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo, CancellationToken cancellationToken)
         {
@@ -55,8 +50,6 @@ namespace Stryker.Core.TestRunners.VsTest
             };
             _currentProcess = new Process { StartInfo = processInfo, EnableRaisingEvents = true };
 
-            _currentProcess.Exited += CurrentProcess_Exited;
-
             _currentProcess.OutputDataReceived += Process_OutputDataReceived;
             _currentProcess.ErrorDataReceived += Process_ErrorDataReceived;
 
@@ -71,38 +64,11 @@ namespace Stryker.Core.TestRunners.VsTest
             return _currentProcess.Id;
         }
 
-        private void CurrentProcess_Exited(object sender, EventArgs e)
-        {
-            lock (_lck)
-            {
-                Monitor.Pulse(_lck);
-            }
-        }
-
-        public bool WaitProcessExit()
-        {
-            if (_currentProcess == null)
-            {
-                return false;
-            }
-
-            while (!_currentProcess.HasExited)
-            {
-                lock (_lck)
-                {
-                    Monitor.Wait(_lck, 500);
-                }
-            }
-
-            _currentProcess.Dispose();
-            return true;
-        }
-
         private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
             if (e.Data != null)
             {
-                Logger.LogTrace($"Runner {_id}: {e.Data} (VsTest error)");
+                Logger.LogDebug($"Runner {_id}: {e.Data} (VsTest error)");
             }
         }
 
@@ -114,9 +80,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
         }
 
-        public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo)
-        {
-            return LaunchTestHost(defaultTestHostStartInfo, CancellationToken.None);
-        }
+        public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo) =>
+            LaunchTestHost(defaultTestHostStartInfo, CancellationToken.None);
     }
 }
