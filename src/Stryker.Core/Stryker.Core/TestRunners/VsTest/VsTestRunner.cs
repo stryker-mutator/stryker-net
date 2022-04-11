@@ -88,7 +88,8 @@ namespace Stryker.Core.TestRunners.VsTest
                 if (!_vsTests.ContainsKey(result.TestCase.Id))
                 {
                     _vsTests[result.TestCase.Id] = new VsTestDescription(result.TestCase);
-                    _logger.LogWarning($"{RunnerId}: Initial test run encounter a unexpected test case ({result.TestCase.DisplayName}), mutation tests may be inaccurate. Disable coverage analysis if your have doubts.");
+                    _logger.LogWarning("{RunnerId}: Initial test run encounter a unexpected test case ({TestCaseDisplayName}), mutation tests may be inaccurate. Disable coverage analysis if your have doubts.",
+                        RunnerId, result.TestCase.DisplayName);
                 }
                 _vsTests[result.TestCase.Id].RegisterInitialTestResult(result);
             }
@@ -395,7 +396,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public void CoverageForOneTest(Guid test, IEnumerable<Mutant> mutants)
         {
-            _logger.LogDebug($"{RunnerId}: Capturing coverage for {_vsTests[test].Case.FullyQualifiedName}.");
+            _logger.LogDebug("{RunnerId}: Capturing coverage for {TestCaseFullyQualifiedName}.", RunnerId, _vsTests[test].Case.FullyQualifiedName);
             var map = new Dictionary<int, ITestGuids>(1) { [-1] = new WrappedGuidsEnumeration(new[] { test }) };
             var testResults = RunTestSession(map, true, GenerateRunSettings(null, false, true, null));
             ParseResultsForCoverage(testResults.TestResults.Where(x => x.TestCase.Id == test), mutants);
@@ -409,8 +410,16 @@ namespace Stryker.Core.TestRunners.VsTest
             int retries = 0)
         {
             using var eventHandler = new RunEventHandler(_vsTests, _logger, RunnerId);
-            void HandlerVsTestFailed(object sender, EventArgs e) => _vsTestFailed = true;
-            void HandlerUpdate(object sender, EventArgs e) => updateHandler?.Invoke(eventHandler);
+            void HandlerVsTestFailed(object sender, EventArgs e)
+            {
+                _vsTestFailed = true;
+            }
+
+            void HandlerUpdate(object sender, EventArgs e)
+            {
+                updateHandler?.Invoke(eventHandler);
+            }
+
             var strykerVsTestHostLauncher = _hostBuilder(_id);
 
             eventHandler.VsTestFailed += HandlerVsTestFailed;
@@ -452,16 +461,19 @@ namespace Stryker.Core.TestRunners.VsTest
             PrepareVsTestConsole();
             _vsTestFailed = false;
 
-            return RunTestSession(mutantTestsMap, runAllTests, runSettings, timeOut, updateHandler, retries+1);
+            return RunTestSession(mutantTestsMap, runAllTests, runSettings, timeOut, updateHandler, retries + 1);
         }
 
         private ConsoleParameters DetermineConsoleParameters()
         {
-            if (!_options.LogOptions.LogToFile) return new ConsoleParameters();
+            if (!_options.LogOptions.LogToFile)
+            {
+                return new ConsoleParameters();
+            }
             var vsTestLogPath = _fileSystem.Path.Combine(_options.OutputPath, "logs", $"{RunnerId}_VsTest-log.txt");
             _fileSystem.Directory.CreateDirectory(_fileSystem.Path.GetDirectoryName(vsTestLogPath));
 
-            _logger.LogTrace($"{RunnerId}: Logging VsTest output to: {vsTestLogPath}");
+            _logger.LogTrace("{RunnerId}: Logging VsTest output to: {vsTestLogPath}", RunnerId, vsTestLogPath);
             return new ConsoleParameters
             {
                 TraceLevel = DetermineTraceLevel(),
@@ -471,7 +483,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private TraceLevel DetermineTraceLevel()
         {
-            var traceLevel = _options.LogOptions.LogToFile ? _options.LogOptions.LogLevel switch
+            var traceLevel = _options.LogOptions.LogLevel switch
             {
                 LogEventLevel.Debug => TraceLevel.Verbose,
                 LogEventLevel.Verbose => TraceLevel.Verbose,
@@ -480,9 +492,9 @@ namespace Stryker.Core.TestRunners.VsTest
                 LogEventLevel.Warning => TraceLevel.Warning,
                 LogEventLevel.Information => TraceLevel.Info,
                 _ => TraceLevel.Off
-            } : TraceLevel.Off;
+            };
 
-            _logger.LogTrace($"{RunnerId}: VsTest logging set to {traceLevel}");
+            _logger.LogTrace("{RunnerId}: VsTest logging set to {traceLevel}", RunnerId, traceLevel);
             return traceLevel;
         }
 
@@ -525,7 +537,7 @@ $@"<RunSettings>
  </RunConfiguration>
 {dataCollectorSettings}
 </RunSettings>";
-            _logger.LogTrace($"{RunnerId}: VsTest run settings set to: {runSettings}");
+            _logger.LogTrace("{RunnerId}: VsTest run settings set to: {runSettings}", RunnerId, runSettings);
 
             return runSettings;
         }
@@ -550,7 +562,7 @@ $@"<RunSettings>
                 // Set roll forward on no candidate fx so vstest console can start on incompatible dotnet core runtimes
                 Environment.SetEnvironmentVariable("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2");
                 _vsTestConsole.StartSession();
-                _vsTestConsole.InitializeExtensions(_sources.Select( _fileSystem.Path.GetDirectoryName));
+                _vsTestConsole.InitializeExtensions(_sources.Select(_fileSystem.Path.GetDirectoryName));
             }
             catch (Exception e)
             {
