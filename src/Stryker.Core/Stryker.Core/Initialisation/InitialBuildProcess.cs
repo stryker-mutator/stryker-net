@@ -58,8 +58,9 @@ namespace Stryker.Core.Initialisation
         private void CheckBuildResult(ProcessResult result, string buildCommand, string buildPath)
         {
             _logger.LogTrace("Initial build output {0}", result.Output);
-            if (!string.IsNullOrWhiteSpace(result.Error))
-//            if (result.ExitCode != ExitCodes.Success)
+            if (result.ExitCode != ExitCodes.Success && result.Error != string.Empty)
+            // TODO: Investigate what changed here         
+            //   if (result.ExitCode != ExitCodes.Success)
             {
                 // Initial build failed
                 throw new InputException(result.Output, $"Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"{buildCommand} {buildPath}\"");

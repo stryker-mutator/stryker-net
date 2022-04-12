@@ -6,6 +6,7 @@ using Moq;
 using Shouldly;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Initialisation.ProjectAnalyzer;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
@@ -48,7 +49,7 @@ namespace Stryker.Core.UnitTest
                 OptimizationMode = OptimizationModes.SkipUncoveredMutants
             });
 
-            projectOrchestratorMock.Setup(x => x.MutateProjects(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>()))
+            projectOrchestratorMock.Setup(x => x.MutateProjects(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>(), It.IsAny<BuildLocator>()))
                 .Returns(new List<IMutationTestProcess>()
                 {
                     mutationTestProcessMock.Object
@@ -75,7 +76,7 @@ namespace Stryker.Core.UnitTest
 
             target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object);
 
-            projectOrchestratorMock.Verify(x => x.MutateProjects(It.Is<StrykerOptions>(x => x.BasePath == "C:/test"), It.IsAny<IReporter>()), Times.Once);
+            projectOrchestratorMock.Verify(x => x.MutateProjects(It.Is<StrykerOptions>(x => x.BasePath == "C:/test"), It.IsAny<IReporter>(), It.IsAny<BuildLocator>()), Times.Once);
             mutationTestProcessMock.Verify(x => x.GetCoverage(), Times.Once);
             mutationTestProcessMock.Verify(x => x.Test(It.IsAny<IEnumerable<Mutant>>()), Times.Once);
             reporterMock.Verify(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()), Times.Once);
@@ -113,7 +114,7 @@ namespace Stryker.Core.UnitTest
                 LogOptions = new LogOptions()
             });
 
-            projectOrchestratorMock.Setup(x => x.MutateProjects(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>()))
+            projectOrchestratorMock.Setup(x => x.MutateProjects(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>(), It.IsAny<BuildLocator>()))
                 .Returns(new List<IMutationTestProcess>() { mutationTestProcessMock.Object });
 
             mutationTestProcessMock.Setup(x => x.FilterMutants());

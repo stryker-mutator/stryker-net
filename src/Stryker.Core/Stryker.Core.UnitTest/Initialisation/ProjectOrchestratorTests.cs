@@ -48,6 +48,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var projectUnderTestAnalyzerResultMock = new Mock<IAnalysisResult>(MockBehavior.Strict);
             var testProjectAnalyzerMock = new Mock<IProjectAnalyzer>(MockBehavior.Strict);
             var testProjectAnalyzerResultMock = new Mock<IAnalysisResult>(MockBehavior.Strict);
+            var buildLocatorMock = new Mock<BuildLocator>(MockBehavior.Strict);
 
             // when a solutionPath is given and it's inside the current directory (basePath)
             var options = new StrykerOptions
@@ -76,9 +77,10 @@ namespace Stryker.Core.UnitTest.Initialisation
             testProjectAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "True" } });
             projectUnderTestAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "False" }, { "ProjectTypeGuids", "not testproject" } });
             projectUnderTestAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns("C:/projectundertest/projectundertest.csproj");
+            buildLocatorMock.Setup(x => x.Initialize());
 
             // act
-            var result = target.MutateProjects(options, _reporterMock.Object).ToList();
+            var result = target.MutateProjects(options, _reporterMock.Object, buildLocatorMock.Object).ToList();
 
             // assert
             var mutationTestProcess = result.ShouldHaveSingleItem();

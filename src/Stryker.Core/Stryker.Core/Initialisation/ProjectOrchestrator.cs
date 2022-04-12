@@ -16,7 +16,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IProjectOrchestrator
     {
-        IEnumerable<IMutationTestProcess> MutateProjects(StrykerOptions options, IReporter reporters);
+        IEnumerable<IMutationTestProcess> MutateProjects(StrykerOptions options, IReporter reporters, BuildLocator buildLocator = null);
     }
 
     public class ProjectOrchestrator : IProjectOrchestrator
@@ -33,9 +33,9 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectOrchestrator>();
         }
 
-        public IEnumerable<IMutationTestProcess> MutateProjects(StrykerOptions options, IReporter reporters)
+        public IEnumerable<IMutationTestProcess> MutateProjects(StrykerOptions options, IReporter reporters, BuildLocator buildLocator = null)
         {
-            BuildLocator buildLocator = new();
+            buildLocator ??= new BuildLocator();
             buildLocator.Initialize();
 
             if (IsSolutionContext(options))

@@ -110,8 +110,7 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
 
         internal static bool TargetsFullFramework(this IAnalysisResult analyzerResult)
         {
-            return false;
-//            return GetNuGetFramework(analyzerResult).IsDesktop();
+            return GetNuGetFramework(analyzerResult).IsDesktop();
         }
 
         public static Language GetLanguage(this IAnalysisResult analyzerResult)

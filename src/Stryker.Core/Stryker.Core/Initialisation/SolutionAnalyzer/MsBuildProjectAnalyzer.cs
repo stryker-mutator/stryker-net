@@ -6,6 +6,9 @@ using Microsoft.Build.Construction;
 using Microsoft.Build.Definition;
 using Microsoft.Build.Evaluation;
 using Microsoft.Build.Exceptions;
+using Microsoft.Build.Execution;
+using Microsoft.Build.Framework;
+using Microsoft.Build.Logging;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 
@@ -14,7 +17,8 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
     public class MsBuildProjectAnalyzer : IProjectAnalyzer
     {
         private Project _project;
-        private readonly ILogger _logger = ApplicationLogging.LoggerFactory.CreateLogger<MsBuildProjectAnalyzer>();
+        private readonly Microsoft.Extensions.Logging.ILogger _logger = ApplicationLogging.LoggerFactory.CreateLogger<MsBuildProjectAnalyzer>();
+        private static object _lock = new object();
 
         public MsBuildProjectAnalyzer(ProjectInSolution projectInSolution)
         {
@@ -49,16 +53,12 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
 
             try
             {
-                //ProjectCollection.GlobalProjectCollection.LoadProject(props[@"AbsolutePath"], projectOptions);
                 _project = ProjectCollection.GlobalProjectCollection.LoadedProjects.FirstOrDefault(d => d.FullPath == props[@"AbsolutePath"]) ??
                                 Project.FromFile(props[@"AbsolutePath"], new ProjectOptions());
             }
             catch (InvalidProjectFileException ex)
             {
                 // Old project types such as ASP.NET 5 may not supported, based on what MSBuildLocator finds.
-                // .NET 5.0 Core SDK was not working at the time this was authored.  
-                //     global.json forces version 3.1.404 to be used, requiring that SDK to be installed.
-                //     https://download.visualstudio.microsoft.com/download/pr/3366b2e6-ed46-48ae-bf7b-f5804f6ee4c9/186f681ff967b509c6c9ad31d3d343da/dotnet-sdk-3.1.404-win-x64.exe
                 // This can also happen when the SDK loaded is newer than BuildLocator's knowledge.  For example, BuildLocator does not know of NET5 until version 1.3.2.
                 _logger.LogWarning(@"ERROR: " + props["RelativePath"] + ex.Message);
                 _logger.LogWarning(@"This may be an old project type, or there is a problem with the SDK that MsBuildLocator chose.");
@@ -112,9 +112,26 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
             var references = new List<string>();
             if (_project != null)
             {
-                foreach (ProjectItem item in _project.AllEvaluatedItems.Where(x => x.ItemType == @"Reference"))
+                //TODO: We use Parallel.ForEach..., but only 1 BuildManager behind the scenes
+                lock (_lock)
                 {
-                    references.Add(item.EvaluatedInclude);
+                    //TODO: cache results
+                    var manager = BuildManager.DefaultBuildManager;
+
+                    var target = @"ResolveReferences";
+                    var projectInstance = new ProjectInstance(ProjectFilePath);
+                    var buildResult = manager.Build(
+                        new BuildParameters()
+                        {
+                            DetailedSummary = true
+                        },
+                        new BuildRequestData(projectInstance, new string[] { target })
+                    );
+
+                    foreach (var item in buildResult[target].Items)
+                    {
+                        references.Add(item.ItemSpec);
+                    }
                 }
             }
             return references;
@@ -166,7 +183,7 @@ namespace Stryker.Core.Initialisation.ProjectAnalyzer
             string targetFramework2 = GetTargetFramework(); // TODO: Filter by TargetFramework rather than everything munged together
             bool succeeded = _project != null;
 
-            var result = new AnalyzerResult(projectFilePath, references, projectReferences, analyzerReferences, preprocessorValues, properties, sourceFiles, succeeded, targetFramework);
+            var result = new AnalyzerResult(projectFilePath, references, projectReferences, analyzerReferences, preprocessorValues, properties, sourceFiles, succeeded, targetFramework2);
             result.Log();
             return result;
         }
