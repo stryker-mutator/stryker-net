@@ -20,9 +20,9 @@ namespace Stryker.Core.Mutants
     public class MutationStore
     {
         private static readonly ILogger Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationStore>();
-        protected List<Mutant> _expressionMutants = new();
-        protected Stack<List<Mutant>> _statementMutants = new();
-        protected Stack<List<Mutant>> _blockMutants = new();
+        private readonly List<Mutant> _expressionMutants = new();
+        private readonly Stack<List<Mutant>> _statementMutants = new();
+        private readonly Stack<List<Mutant>> _blockMutants = new();
 
         public bool HasBlockLevel => _blockMutants.Count > 0 && _blockMutants.Peek().Count > 0;
         public bool HasStatementLevel => (_statementMutants.Count > 0 && _statementMutants.Peek().Count > 0) || HasBlockLevel;
