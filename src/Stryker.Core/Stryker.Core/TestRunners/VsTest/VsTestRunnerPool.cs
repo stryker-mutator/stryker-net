@@ -15,8 +15,8 @@ namespace Stryker.Core.TestRunners.VsTest
     public sealed class VsTestRunnerPool : ITestRunner
     {
         private readonly StrykerOptions _options;
-        private readonly AutoResetEvent _runnerAvailableHandler = new AutoResetEvent(false);
-        private readonly ConcurrentBag<VsTestRunner> _availableRunners = new ConcurrentBag<VsTestRunner>();
+        private readonly AutoResetEvent _runnerAvailableHandler = new(false);
+        private readonly ConcurrentBag<VsTestRunner> _availableRunners = new();
         private readonly IDictionary<Guid, VsTestDescription> _vsTests;
         private readonly TestSet _tests;
         private readonly VsTestHelper _helper = new();
@@ -26,14 +26,12 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             _options = options;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
-            using var runner = new VsTestRunner(options, projectInfo, null, new TestSet(), helper: _helper);
+            var runner = new VsTestRunner(options, projectInfo, null, new TestSet(), 0, helper: _helper);
             (_vsTests, _tests) = runner.DiscoverTests(null);
             _availableRunners.Add(runner);
 
-            Parallel.For(1, options.Concurrency, (i, loopState) =>
-            {
-                _availableRunners.Add(new VsTestRunner(options, projectInfo, _vsTests, _tests, helper: _helper));
-            });
+            Parallel.For(1, options.Concurrency, (i, _) => 
+                 _availableRunners.Add(new VsTestRunner(options, projectInfo, _vsTests, _tests, i, helper: _helper)));
         }
 
         public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
@@ -42,17 +40,12 @@ namespace Stryker.Core.TestRunners.VsTest
 
             try
             {
-                return mutants == null ? runner.RunAll(timeoutCalc, null, update) : runner.TestMultipleMutants(timeoutCalc, mutants, update);
+                return runner.TestMultipleMutants(timeoutCalc, mutants, update);
             }
             finally
             {
                 ReturnRunner(runner);
             }
-        }
-
-        public TestRunResult RunAll(ITimeoutValueCalculator timeoutMs, Mutant activeMutant, TestUpdateHandler update)
-        {
-            return TestMultipleMutants(timeoutMs, activeMutant == null ? null : new List<Mutant> { activeMutant }, update);
         }
 
         public TestRunResult InitialTest()
@@ -82,7 +75,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             try
             {
-                result = needCoverage ? runner.CaptureCoverage(mutants) : runner.RunAll(null, null, null);
+                result = needCoverage ? runner.CaptureCoverage(mutants) : new TestRunResult(true);
             }
             finally
             {
@@ -104,7 +97,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError("Something went wrong while capturing coverage", e);
+                    _logger.LogError("Something went wrong while capturing coverage: {0}", e);
                 }
                 finally
                 {
@@ -141,9 +134,6 @@ namespace Stryker.Core.TestRunners.VsTest
             _runnerAvailableHandler.Dispose();
         }
 
-        public TestSet DiscoverTests()
-        {
-            return _tests;
-        }
+        public TestSet DiscoverTests() => _tests;
     }
 }

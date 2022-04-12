@@ -13,12 +13,13 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
     internal class BaseMethodDeclarationOrchestrator<T> : NodeSpecificOrchestrator<T, BaseMethodDeclarationSyntax> where T : BaseMethodDeclarationSyntax
     {
         protected override MutationContext PrepareContext(T node, MutationContext context)
-        {
-            context.Enter(MutationControl.Block);
-            return base.PrepareContext(node, context);
-        }
+            => base.PrepareContext(node, context.Enter(MutationControl.Block));
 
-        protected override void RestoreContext(MutationContext context) => context.Leave(MutationControl.Block);
+        protected override void RestoreContext(MutationContext context)
+        {
+            context.Leave(MutationControl.Block);
+            base.RestoreContext(context);
+        }
 
         /// <inheritdoc/>
         /// Inject mutations and convert expression body to block body if required.

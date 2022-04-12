@@ -51,9 +51,9 @@
       },
       "LibGit2Sharp": {
         "type": "Direct",
-        "requested": "[0.27.0-preview-0175, )",
-        "resolved": "0.27.0-preview-0175",
-        "contentHash": "dshdxaQU3MPVbVCTEbv/6Bek1G0uAq1zSiqHC0XUvJG/MHU3HxC3rLiaEvnMfLuEls/2HZQcWFW2ys1qUA3x2Q==",
+        "requested": "[0.27.0-preview-0182, )",
+        "resolved": "0.27.0-preview-0182",
+        "contentHash": "YgSFGX7q+KwzkjiD04sZ6Zr8GVrG4o7dHUwM9eDsliT350HxX83smtJc8kyMBiBLyjX4X3qB7aIs2KJL3Uh1og==",
         "dependencies": {
           "LibGit2Sharp.NativeBinaries": "[2.0.315-alpha.0.9]"
         }

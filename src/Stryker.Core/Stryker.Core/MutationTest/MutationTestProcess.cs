@@ -228,7 +228,7 @@ namespace Stryker.Core.MutationTest
             blocks.AddRange(mutantsToGroup.Where(m => m.MustRunAgainstAllTests).Select(m => new List<Mutant> { m }));
             mutantsToGroup.RemoveAll(m => m.MustRunAgainstAllTests);
 
-            var testsCount = mutantsToGroup.Sum(m => m.CoveringTests.Count);
+            var testsCount = Input.InitialTestRun.Result.RanTests.Count;
             mutantsToGroup = mutantsToGroup.OrderBy(m => m.CoveringTests.Count).ToList();
             for (var i = 0; i < mutantsToGroup.Count; i++)
             {
@@ -238,11 +238,15 @@ namespace Stryker.Core.MutationTest
                 {
                     var currentMutant = mutantsToGroup[j];
                     var nextSet = currentMutant.CoveringTests;
-                    if (nextSet.Count + usedTests.Count > testsCount ||
-                        nextSet.ContainsAny(usedTests))
+                    if (nextSet.Count + usedTests.Count > testsCount)
+                    {
+                        break;
+                    }
+                    if (nextSet.ContainsAny(usedTests))
                     {
                         continue;
                     }
+
                     // add this mutant to the block
                     nextBlock.Add(currentMutant);
                     // remove the mutant from the list of mutants to group
