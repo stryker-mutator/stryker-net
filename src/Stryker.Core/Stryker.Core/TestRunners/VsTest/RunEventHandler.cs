@@ -33,10 +33,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return _results.Count >= _testDescription.NbSubCases;
         }
 
-        public bool IsComplete()
-        {
-            return _results.Count >= _testDescription.NbSubCases;
-        }
+        public bool IsComplete() => _results.Count >= _testDescription.NbSubCases;
 
         public TestResult Result()
         {
@@ -78,7 +75,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly string _runnerId;
         private readonly IDictionary<Guid, VsTestDescription> _vsTests;
         private readonly IDictionary<Guid, TestRun> _runs = new Dictionary<Guid, TestRun>();
-        private readonly Dictionary<Guid, TestCase> _inProgress = new Dictionary<Guid, TestCase>();
+        private readonly Dictionary<Guid, TestCase> _inProgress = new();
         public event EventHandler VsTestFailed;
         public event EventHandler ResultsUpdated;
 
@@ -193,24 +190,36 @@ namespace Stryker.Core.TestRunners.VsTest
             _waitHandle.Set();
         }
 
-        public int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo)
-        {
-            throw new NotSupportedException();
-        }
+        public int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo) => throw new NotSupportedException();
 
-        public void HandleRawMessage(string rawMessage)
-        {
-            _logger.LogTrace($"{_runnerId}: {rawMessage} [RAW]");
-        }
+        public void HandleRawMessage(string rawMessage) => _logger.LogTrace($"{_runnerId}: {rawMessage} [RAW]");
 
-        public void WaitEnd()
+        public bool WaitEnd(int? timeOut)
         {
-            _waitHandle.WaitOne();
+            if (timeOut == null)
+            {
+                return _waitHandle.WaitOne();
+            }
+            else
+            {
+                var delay = 0;
+                const int Unit = 500;
+                while (delay<timeOut.Value*3)
+                {
+                    if (_waitHandle.WaitOne(Unit))
+                    {
+                        return true;
+                    }
+                    delay += Unit;
+                }
+
+                return false;
+            }
         }
 
         public void HandleLogMessage(TestMessageLevel level, string message)
         {
-            LogLevel levelFinal = level switch
+            var levelFinal = level switch
             {
                 TestMessageLevel.Informational => LogLevel.Debug,
                 TestMessageLevel.Warning => LogLevel.Warning,
@@ -220,9 +229,6 @@ namespace Stryker.Core.TestRunners.VsTest
             _logger.LogTrace($"{_runnerId}: [{levelFinal}] {message}");
         }
 
-        public void Dispose()
-        {
-            _waitHandle.Dispose();
-        }
+        public void Dispose() => _waitHandle.Dispose();
     }
 }

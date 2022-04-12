@@ -220,7 +220,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             return mutantId == InitialRunId ? new TestsGuidList(_tests.Values.Select(t => t.Id)) : TestsGuidList.NoTest();
         }
 
-        private TestRunResult GetRunResult(int id) => new(TestsGuidList.EveryTest(), GetFailedTests(id, null), TestsGuidList.NoTest(), string.Empty, TimeSpan.Zero);
+        private TestRunResult GetRunResult(int id) => new(GetCoveringTests(id), GetFailedTests(id, null), TestsGuidList.NoTest(), string.Empty, TimeSpan.Zero);
 
         public TestRunResult GetInitialRunResult() => GetRunResult(InitialRunId);
 

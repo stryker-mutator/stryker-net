@@ -322,8 +322,7 @@ namespace Stryker.Core.MutationTest
             blocks.AddRange(mutantToTestInIsolation.Select(m => new List<T> { m }));
             mutantsToGroup.RemoveAll(m => mutantToTestInIsolation.Contains(m));
 
-            // now, we will build groups of mutants
-            var testsCount = mutantsToGroup.Sum(m => m.CoveringTests.Count);
+            var testsCount = Input.InitialTestRun.Result.RanTests.Count;
             // we start with the one needing more tests
             mutantsToGroup = mutantsToGroup.OrderBy(m => -m.CoveringTests.Count).ToList();
             for (var i = 0; i < mutantsToGroup.Count; i++)
@@ -345,6 +344,7 @@ namespace Stryker.Core.MutationTest
                     {
                         continue;
                     }
+
                     // add this mutant to the block
                     nextBlock.Add(currentMutant);
                     // remove the mutant from the list of mutants to group
