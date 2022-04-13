@@ -39,6 +39,9 @@ namespace Stryker.Core.Reporters.Progress
             _stopWatch.Start();
             _mutantsToBeTested = mutantsToBeTested;
 
+            // skip two lines for the progress bar
+            _console.WriteLine();
+            _console.WriteLine();
             _progressBar.Start(_mutantsToBeTested, string.Format(LoggingFormat, 0, _mutantsToBeTested, _mutantsKilledCount, _mutantsSurvivedCount, _mutantsTimeoutCount, RemainingTime()));
         }
 
