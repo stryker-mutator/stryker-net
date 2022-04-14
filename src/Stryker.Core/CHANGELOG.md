@@ -1,3 +1,15 @@
+## [1.5.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.5.0...stryker@1.5.1) (2022-04-12)
+
+
+### Bug Fixes
+
+* **baseline:** potential InvalidOperationException: Sequence contains no elements ([#1993](https://github.com/stryker-mutator/stryker-net/issues/1993)) ([f3260f4](https://github.com/stryker-mutator/stryker-net/commit/f3260f4d915b0622928b92a252eca7a81719adf8))
+* **mutating:** Better support for mutating local function ([#1987](https://github.com/stryker-mutator/stryker-net/issues/1987)) ([6491298](https://github.com/stryker-mutator/stryker-net/commit/6491298a9466525d4465c9e35e06c8b393b7bbb3))
+* properly restore storage context when leaving anonymous function. Fix some NREs and mutation loss ([#1980](https://github.com/stryker-mutator/stryker-net/issues/1980)) ([302c9d9](https://github.com/stryker-mutator/stryker-net/commit/302c9d93a72ac1af2b9b5bdd06fca97854b14e5b))
+* **testrunner:** Improve handling of frozen VsTest runners ([#1977](https://github.com/stryker-mutator/stryker-net/issues/1977)) ([1d3310b](https://github.com/stryker-mutator/stryker-net/commit/1d3310b41f83ee467264602eece3821b36677d01))
+
+
+
 # [1.5.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.4.2...stryker@1.5.0) (2022-03-15)
 
 
