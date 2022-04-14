@@ -46,11 +46,16 @@ namespace Stryker.Core
 
             // Setup project orchestrator can't be done sooner since it needs logging
             projectOrchestrator ??= new ProjectOrchestrator();
-
+            var diagnoseMode = inputs.MutantToDiagnose.SuppliedInput.HasValue; 
             var options = inputs.ValidateAll();
             _logger.LogDebug("Stryker started with options: {@Options}", options);
 
-            var reporters = inputs.MutantToDiagnose.SuppliedInput.HasValue ? new BroadcastReporter(Enumerable.Empty<IReporter>()) : _reporterFactory.Create(options);
+            if (diagnoseMode)
+            {
+                _logger.LogInformation("Diagnose mode: Stryker will analyze mutant {mutantId} and suggest remediation action(s) if possible.", inputs.MutantToDiagnose.SuppliedInput);
+            }
+            // get reporters (none if diagnose mode is enabled)
+            var reporters = diagnoseMode ? new BroadcastReporter(Enumerable.Empty<IReporter>()) : _reporterFactory.Create(options);
 
             try
             {
@@ -98,7 +103,7 @@ namespace Stryker.Core
                     return new StrykerRunResult(options, rootComponent.GetMutationScore());
                 }
 
-                if (!inputs.MutantToDiagnose.SuppliedInput.HasValue)
+                if (!diagnoseMode)
                 {
                     // normal test run
                     TestMutants(reporters, mutantsNotRun, rootComponent);
@@ -159,7 +164,7 @@ namespace Stryker.Core
                         MutantStatus.NoCoverage => "You need to add some tests to fix that",
                         MutantStatus.Survived => $"Modifying the following tests may help you kill this one: {string.Join(", ", results.CoveringTests.Take(20))}",
                         MutantStatus.Ignored => "Check Stryker configuration file to see why it is ignored",
-                        MutantStatus.NotRun => "This should happen. You can check on Github to see if there is an open issue about this and open one if you want help", 
+                        MutantStatus.NotRun => "This should not happen. You can check on Github to see if there is an open issue about this and open one if you want help", 
                         _ => "There is no visible issue"
                     });
             }
@@ -173,10 +178,10 @@ namespace Stryker.Core
                     case MutantStatus.NoCoverage:
                     {
                         _logger.LogInformation("Coverage analysis dit not properly capture coverage for this mutant.");
-                        var findDeclaringNodeText = results.DiagnosedMutant.Location;
+                        var declaringNodeLocation = results.DiagnosedMutant.Location;
                         report.
                             AppendLine("The coverage for this mutant was not properly determined. You can workaround this problem.").
-                            AppendFormat("Add '// Stryker test full once' to {0}.", findDeclaringNodeText).
+                            AppendFormat("Add '// Stryker test full once' to {0}.", declaringNodeLocation).
                             AppendLine().Append("It was killed by these test(s): ").
                             AppendJoin(',', results.RunResults[2].killingTests.Except(results.CoveringTests));
                         break;

@@ -233,7 +233,7 @@ SomeTest");
 
             var report = target.GenerateDiagnoseReport(mutantDiagnostic);
 
-            report.ShouldBe($"Mutant consistently appears as {ConsistentStatus}. This should happen. You can check on Github to see if there is an open issue about this and open one if you want help.");
+            report.ShouldBe($"Mutant consistently appears as {ConsistentStatus}. This should not happen. You can check on Github to see if there is an open issue about this and open one if you want help.");
         }
 
         [Fact]

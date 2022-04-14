@@ -15,7 +15,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public VsTestDescription(TestCase testCase)
         {
             Case = testCase;
-            Description = new TestDescription(testCase.Id, testCase.DisplayName, testCase.CodeFilePath);
+            Description = new TestDescription(testCase.Id, testCase.FullyQualifiedName, testCase.CodeFilePath);
         }
 
         public TestFramework Framework

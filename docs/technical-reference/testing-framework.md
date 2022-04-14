@@ -35,10 +35,10 @@ These test mesthods accept one or more parameters and bear one of this attribute
 There are differences
 between compile time theories (data is fixed at build time) and run time theories (data is discovered at run time).
 
-#### Static theories
+### Static theories
 Static discoveries are seen and processed as different test cases.
 
-#### Run time theories
+### Run time theories
 Run time theories are discovered as one test, disregarding the number of underlying data set.
 There is one test result per dataset, all associated with the same test.
 
@@ -69,7 +69,10 @@ Also, if a mutation ends up changing a test case name - typically by changing th
 test identifier so this testcase will only run when running **all tests** and can no longer be executed in isolation, as
 Stryker can't anticipate the test name.
 
-### NUnit
+### Runner source code
+The source code is available on [GitHub](https://github.com/xunit/visualstudio.xunit/blob/main/src/xunit.runner.visualstudio/VsTestRunner.cs)
+
+## NUnit
 
 ### TestCases
 NUnit's TestCases is a pattern where some test is executed multiple times with varying input data (like xUnit's TestCase).
@@ -115,10 +118,15 @@ TestCase start event
 ```
 
 The problems for Stryker are:
-1. If test cases have the same name, we cannot distinguish between test cases, so it must be handled as a single test. This *single test* reports multiple test cases so Stryker needs to wait either for one failure or for each testcase
+1. If test cases have the same name, we cannot distinguish between test cases, so it must be handled as a single test. This *single test* reports multiple test cases
+ so Stryker needs to wait either for one failure or for each testcase
 to succeed to establish the correct status. The good news is that discovery should provide the number of results to wait for.
 2. Every mutation encountered by the `TestCaseSource` method will be reported as covered by the first test case,
-whereas it is likely these mutations would need to be adequately associated with their realtive test case.
+whereas it is likely these mutations would need to be adequately associated with their related test case.
 3. TestCaseSource is called **before** Testcase start event which means Stryker may set the active mutation too late. 
 The only way to handle this is to force any concerned mutants to run in dedicated test sessions.
+
+### Runner source code
+The source code is available on [GitHub](https://github.com/nunit/nunit3-vs-adapter/blob/master/src/NUnitTestAdapter/NUnitTestAdapter.cs)
+
 

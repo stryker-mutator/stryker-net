@@ -124,13 +124,14 @@ namespace Stryker.Core.MutationTest
                 return null;
             }
 
-            var group = BuildMutantGroupsForTest(mutants.ToList()).First(l => l.Contains(monitoredMutant));
-            var result = new MutantDiagnostic(monitoredMutant, GetTestNames(monitoredMutantCoveringTests), group.Select(m => m.Id));
+            var mutantGroup = BuildMutantGroupsForTest(mutants.ToList()).First(l => l.Contains(monitoredMutant));
+            var result = new MutantDiagnostic(monitoredMutant, GetTestNames(monitoredMutantCoveringTests), mutantGroup.Select(m => m.Id));
             if (monitoredMutant.MustRunAgainstAllTests)
             {
                 var testNames = GetTestNames(monitoredMutant.KillingTests);
                 _logger.LogInformation("Mutant is tested against all tests, no need for supplemental test runs.");
                 RetestMutantGroup(new List<Mutant>{monitoredMutant});
+                // all results assumed as identical
                 result.DeclareResult(monitoredMutant.ResultStatus, testNames);
                 result.DeclareResult(monitoredMutant.ResultStatus, testNames);
                 result.DeclareResult(monitoredMutant.ResultStatus, testNames);
@@ -143,7 +144,7 @@ namespace Stryker.Core.MutationTest
                     _logger.LogInformation(string.Join(',', result.CoveringTests));
 
                     _logger.LogInformation("*** Step 1 normal run ***");
-                    RetestMutantGroup(group);
+                    RetestMutantGroup(mutantGroup);
                     _logger.LogInformation($"Mutant {monitoredMutant.Id} is {monitoredMutant.ResultStatus}.");
                     result.DeclareResult(monitoredMutant.ResultStatus, GetTestNames(monitoredMutant.KillingTests));
                     _logger.LogInformation("*** Step 2 solo run ***");
@@ -170,31 +171,71 @@ namespace Stryker.Core.MutationTest
             {
                 var referenceStatus = result.RunResults[0].status;
                 _logger.LogWarning("Inconsistent coverage based tests. There is some unwanted side effect. Using binary search to find problematic mutant.");
-                var firstIndex = FindConflictingMutant(@group, monitoredMutant, referenceStatus);
+                var firstIndex = FindConflictingMutant(mutantGroup, monitoredMutant, referenceStatus);
                 //
-                _logger.LogInformation("Problematic mutant is {0}", group[firstIndex].Id);
-                result.ConflictingMutant = group[firstIndex];
+                var conflictingMutant = mutantGroup[firstIndex];
+                _logger.LogInformation("Conflicting mutant is {0}", conflictingMutant.Id);
+                result.ConflictingMutant = conflictingMutant;
+                _logger.LogInformation("Using binary search to find a conflicting test.");
+                // find a conflicting test
+                var testName = FindConflictingTest(referenceStatus, monitoredMutant, conflictingMutant);
+                _logger.LogInformation("Conflicting test is {0}.", testName);
             }
             return result;
         }
 
-        private int FindConflictingMutant(List<Mutant> @group, Mutant monitoredMutant, MutantStatus referenceStatus)
+        private string FindConflictingTest(MutantStatus referenceStatus, Mutant monitoredMutant, Mutant conflictingMutant)
+        {
+            var originalList = conflictingMutant.CoveringTests.GetGuids().ToArray();
+            var lower = 0;
+            var upper = originalList.Length;
+            var alternativeMutant = new Mutant
+            {
+                Id = conflictingMutant.Id,
+                CoveringTests = conflictingMutant.CoveringTests,
+                ResultStatus = MutantStatus.NotRun,
+                Mutation = conflictingMutant.Mutation,
+                IsStaticValue = conflictingMutant.IsStaticValue
+            };
+            var testGroup = new[] { monitoredMutant, alternativeMutant };
+            while (upper-lower>1)
+            {
+                var pivot = (lower + upper) / 2;
+                monitoredMutant.ResultStatus = MutantStatus.NotRun;
+                alternativeMutant.CoveringTests = new TestsGuidList(originalList[lower..pivot]);
+                alternativeMutant.ResultStatus = MutantStatus.NotRun;
+                RetestMutantGroup(testGroup);
+                if (monitoredMutant.ResultStatus == referenceStatus)
+                {
+                    // this group contains a conflicting test
+                    upper = pivot;
+                }
+                else
+                {
+                    lower = pivot;
+                }
+            }
+
+            return GetTestNames(alternativeMutant.CoveringTests).First();
+        }
+
+        private int FindConflictingMutant(List<Mutant> group, Mutant monitoredMutant, MutantStatus referenceStatus)
         {
             var mutantToDiagnose = monitoredMutant.Id;
             group.Remove(monitoredMutant);
             var firstIndex = 0;
-            var lastIndex = @group.Count - 1;
+            var lastIndex = group.Count - 1;
             var firstRun = true;
             while (lastIndex - firstIndex > 0)
             {
                 var pivot = (lastIndex + firstIndex) / 2;
-                RetestMutantGroup(group.GetRange(firstIndex, pivot - firstIndex + 1).Append(monitoredMutant));
+                RetestMutantGroup(group.GetRange(firstIndex, pivot - firstIndex+1).Append(monitoredMutant));
                 if (monitoredMutant.ResultStatus == referenceStatus)
                 {
                     if (firstRun)
                     {
                         // this group contains the problematic mutant, we test the other half to be sure the bad mutant is not the one we diagnose
-                        RetestMutantGroup(group.GetRange(pivot + 1, lastIndex - pivot).Append(monitoredMutant)
+                        RetestMutantGroup(group.GetRange(pivot+1, lastIndex - pivot).Append(monitoredMutant)
                             .ToList());
                         if (monitoredMutant.ResultStatus == referenceStatus)
                         {
@@ -208,7 +249,7 @@ namespace Stryker.Core.MutationTest
                 else
                 {
                     // the other half must contain a problematic mutant
-                    firstIndex = pivot + 1;
+                    firstIndex = pivot+1;
                 }
 
                 firstRun = false;
@@ -225,7 +266,7 @@ namespace Stryker.Core.MutationTest
                 mutant.ResultStatus = MutantStatus.NotRun;
             }
 
-            _logger.LogInformation("Testing a group of {0} mutants", toTest.Count);
+            _logger.LogInformation("Testing a group of {0} mutants against {1} tests.", toTest.Count, toTest.Any(t => t.CoveringTests.IsEveryTest) ? "all" : toTest.Sum(t => t.CoveringTests.Count));
             TestMutants(new[] { toTest });
         }
 
