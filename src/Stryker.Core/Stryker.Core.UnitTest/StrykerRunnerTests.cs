@@ -168,6 +168,7 @@ namespace Stryker.Core.UnitTest
         {
             var mutant = new Mutant();
             var status = MutantStatus.Ignored;
+            mutant.ResultStatusReason = "Ignore by test";
             var mutantDiagnostic = new MutantDiagnostic(mutant, Enumerable.Empty<string>(), new []{1});
             mutantDiagnostic.DeclareResult(status, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(status, Enumerable.Empty<string>());
@@ -177,15 +178,17 @@ namespace Stryker.Core.UnitTest
 
             var report = target.GenerateDiagnoseReport(mutantDiagnostic);
 
-            report.ShouldBe($"Mutant consistently appears as {status}. Check Stryker configuration file to see why it is ignored.");
+            report.ShouldBe($"Mutant consistently appears as {status}. Reason seems to be: Ignore by test.");
         }
 
         [Fact]
         public void ShouldGenerateDiagnosisToAddStrykerCommentsForNonIsolatedTests()
         {
             var mutant = new Mutant();
-            var mutantDiagnostic = new MutantDiagnostic(mutant, Enumerable.Empty<string>(), new []{1});
-            mutantDiagnostic.ConflictingMutant = new Mutant { Id = 2};
+            var mutantDiagnostic = new MutantDiagnostic(mutant, Enumerable.Empty<string>(), new []{1})
+                {
+                    ConflictingMutant = new Mutant { Id = 2}
+                };
             mutantDiagnostic.DeclareResult(MutantStatus.Survived, Enumerable.Empty<string>());
             mutantDiagnostic.DeclareResult(MutantStatus.Killed, new []{"SomeTest"});
             mutantDiagnostic.DeclareResult(MutantStatus.Killed, new []{"SomeTest"});
@@ -197,7 +200,7 @@ namespace Stryker.Core.UnitTest
 
             report.ShouldBe(@"Run results are not consistent!
 The tests for this mutant was corrupted by another mutant. As a work around, you should
-Add '// Stryker test apart once' before mutant 2 at Unknown location..
+Add '// Stryker test apart once' before mutant 2 at Unknown location.
 Diagnosed mutant 0 was killed by these test(s): 
 SomeTest");
         }

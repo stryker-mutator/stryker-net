@@ -163,7 +163,7 @@ namespace Stryker.Core
                     {
                         MutantStatus.NoCoverage => "You need to add some tests to fix that",
                         MutantStatus.Survived => $"Modifying the following tests may help you kill this one: {string.Join(", ", results.CoveringTests.Take(20))}",
-                        MutantStatus.Ignored => "Check Stryker configuration file to see why it is ignored",
+                        MutantStatus.Ignored => $"Reason seems to be: {results.DiagnosedMutant.ResultStatusReason}",
                         MutantStatus.NotRun => "This should not happen. You can check on Github to see if there is an open issue about this and open one if you want help", 
                         _ => "There is no visible issue"
                     });
@@ -178,7 +178,7 @@ namespace Stryker.Core
                     case MutantStatus.NoCoverage:
                     {
                         _logger.LogInformation("Coverage analysis dit not properly capture coverage for this mutant.");
-                        var declaringNodeLocation = results.DiagnosedMutant.Location;
+                        var declaringNodeLocation = results.DiagnosedMutant.GetRelativeLocation(string.Empty);
                         report.
                             AppendLine("The coverage for this mutant was not properly determined. You can workaround this problem.").
                             AppendFormat("Add '// Stryker test full once' to {0}.", declaringNodeLocation).
@@ -232,14 +232,13 @@ namespace Stryker.Core
 
         private void AnalyseCoverage(StrykerOptions options)
         {
-            if (options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) || options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
-            {
-                _logger.LogInformation($"Capture mutant coverage using '{options.OptimizationMode}' mode.");
+            if (!options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
+                !options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest)) return;
+            _logger.LogInformation($"Capturing mutant coverage using '{options.OptimizationMode}' mode.");
 
-                foreach (var project in _mutationTestProcesses)
-                {
-                    project.GetCoverage();
-                }
+            foreach (var project in _mutationTestProcesses)
+            {
+                project.GetCoverage();
             }
         }
 

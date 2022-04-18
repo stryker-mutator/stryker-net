@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace Stryker.Core.Mutants
 {
     /// <summary>
@@ -16,6 +18,7 @@ namespace Stryker.Core.Mutants
         bool IsStaticValue { get; }
         public bool MustBeTestedInIsolation { get; }
         public string Location { get; }
+        string GetRelativeLocation(string relativeToThisPath);
     }
 
     /// <summary>
@@ -37,7 +40,7 @@ namespace Stryker.Core.Mutants
             get
             {
                 var location = Mutation?.OriginalNode?.GetLocation().GetMappedLineSpan();
-                return location == null ? "Unknown location." : $"{location.Value.Path} line {location.Value.StartLinePosition.Line}:{location.Value.StartLinePosition.Character}";
+                return location == null ? "Unknown location" : $"{location.Value.Path} line {location.Value.StartLinePosition.Line}:{location.Value.StartLinePosition.Character}";
             }
         }
 
@@ -62,5 +65,22 @@ namespace Stryker.Core.Mutants
                 ResultStatus = MutantStatus.Timeout;
             }
         }
+
+        public string GetRelativeLocation(string relativeToThisPath)
+        {
+            var location = Mutation?.OriginalNode?.GetLocation().GetMappedLineSpan();
+            if (!location.HasValue)
+            {
+                return "Unknown location (file may be generated)";
+            }
+
+            var filename = location.Value.Path;
+            if (!string.IsNullOrEmpty(relativeToThisPath))
+            {
+                filename = Path.GetRelativePath(relativeToThisPath, filename);
+            }
+            return $"{filename} line {location.Value.StartLinePosition.Line}:{location.Value.StartLinePosition.Character}";
+        }
+
     }
 }
