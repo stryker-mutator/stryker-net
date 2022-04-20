@@ -91,8 +91,10 @@ namespace Stryker.Core.TestRunners.VsTest
                     _logger.LogWarning("{RunnerId}: Initial test run encounter a unexpected test case ({TestCaseDisplayName}), mutation tests may be inaccurate. Disable coverage analysis if your have doubts.",
                         RunnerId, result.TestCase.DisplayName);
                 }
+
                 _vsTests[result.TestCase.Id].RegisterInitialTestResult(result);
             }
+
             // get the test results, but prevent compression of 'all tests'
             return BuildTestRunResult(testResults, int.MaxValue, false);
         }
@@ -137,8 +139,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     if (timeoutCalc != null && testCases != null)
                     {
                         // compute time out
-                        var duration = (int)testCases.Select(id => _vsTests[id].InitialRunTime.TotalMilliseconds).Sum();
-                        timeOutMs = timeoutCalc.CalculateTimeoutValue(duration);
+                        timeOutMs = timeoutCalc.CalculateTimeoutValue((int)testCases.Sum(id => _vsTests[id].InitialRunTime.TotalMilliseconds));
                     }
                 }
                 else
@@ -208,7 +209,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 _logger.LogTrace($"{RunnerId}: Initial Test session reports 0 result and 0 stuck tests.");
             }
 
-            var duration = testResults.TestResults.Aggregate(new TimeSpan(), (span, result) => span.Add(result.Duration));
+            var duration =  TimeSpan.FromTicks(_vsTests.Values.Sum(t => t.InitialRunTime.Ticks));
 
             var message = string.Join(Environment.NewLine,
                 resultAsArray.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage))
