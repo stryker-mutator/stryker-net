@@ -48,7 +48,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         private readonly TestProperty _coverageProperty;
         private readonly TestProperty _unexpectedCoverageProperty;
         private readonly Uri _xUnitUri;
-        private readonly TimeSpan _testDefaultDuration = TimeSpan.FromMilliseconds(100);
+        private readonly TimeSpan _testDefaultDuration = TimeSpan.FromSeconds(1);
 
         // initialize the test context and mock objects
         public VsTestRunnersTest()
