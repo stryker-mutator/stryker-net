@@ -10,7 +10,7 @@ namespace Stryker.Core.TestRunners.VsTest
     public class VsTestDescription
     {
         private readonly ICollection<TestResult> _initialResults = new List<TestResult>();
-        private int _subCases = 0;
+        private int _subCases;
 
         public VsTestDescription(TestCase testCase)
         {
@@ -26,18 +26,25 @@ namespace Stryker.Core.TestRunners.VsTest
                 {
                     return TestFramework.nUnit;
                 }
-                if (Case.Properties.Any(p => p.Id == "XunitTestCase"))
-                {
-                    return TestFramework.xUnit;
-                }
-
-                return TestFramework.msTest;
+                return Case.ExecutorUri.AbsoluteUri.Contains("xunit") ? TestFramework.xUnit : TestFramework.msTest;
             }
         }
 
         public TestDescription Description { get; }
 
-        public TimeSpan InitialRunTime => _initialResults.Aggregate(new TimeSpan(), (current, result) => current + result.Duration);
+        public TimeSpan InitialRunTime
+        {
+            get
+            {
+                if (Framework == TestFramework.xUnit)
+                {
+                    // xUnit returns the run time for the case within each result, so the first one is sufficient
+                    return _initialResults.First().Duration;
+                }
+
+                return TimeSpan.FromTicks(_initialResults.Sum(t => t.Duration.Ticks));
+            }
+        }
 
         public Guid Id => Case.Id;
 
@@ -45,15 +52,9 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public int NbSubCases => Math.Max(_subCases, _initialResults.Count);
 
-        public void RegisterInitialTestResult(TestResult result)
-        {
-            _initialResults.Add(result);
-        }
+        public void RegisterInitialTestResult(TestResult result) => _initialResults.Add(result);
 
-        public void AddSubCase()
-        {
-            _subCases++;
-        }
+        public void AddSubCase() => _subCases++;
 
         protected bool Equals(VsTestDescription other) => Equals(Case.Id, other.Case.Id);
 
