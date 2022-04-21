@@ -1,3 +1,13 @@
+## [1.5.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.5.1...stryker@1.5.2) (2022-04-21)
+
+
+### Bug Fixes
+
+* **ignore-mutations:** Support mutator names as well as descriptions ([#2006](https://github.com/stryker-mutator/stryker-net/issues/2006)) ([f3fb5c6](https://github.com/stryker-mutator/stryker-net/commit/f3fb5c6139f6d656d43a2c2a271821254a039a66))
+* **testrunner:** Properly handle execution time for xUnit theories ([#2004](https://github.com/stryker-mutator/stryker-net/issues/2004)) ([92aec17](https://github.com/stryker-mutator/stryker-net/commit/92aec175d9bb6b1aae4d0d4556422669bf8bfeb8))
+
+
+
 ## [1.5.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.5.0...stryker@1.5.1) (2022-04-12)
 
 
