@@ -26,7 +26,7 @@ Coming from Stryker.NET V0.x? Take a look at our [migration guide](https://stryk
 
 # Install stryker
 
-Stryker can be installed globally for your whole system or locally for a specific project.
+Stryker can be installed globally for your whole system or locally for a specific unit test project.
 
 ## Install globally
 ```bash
@@ -34,13 +34,13 @@ dotnet tool install -g dotnet-stryker
 ```
 
 ## Install in project
-Create a file called dotnet-tools.json in your project folder if this is your first local tool.
+Create a file called dotnet-tools.json in your unit test project folder if this is your first local tool.
 
 ```bash
 dotnet new tool-manifest
 ```
 
-Then install stryker without the -g flag by executing the following command in the project folder
+Then install stryker without the -g flag by executing the following command in the unit test project folder
 
 ```bash
 dotnet tool install dotnet-stryker
