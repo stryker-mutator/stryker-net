@@ -54,6 +54,29 @@ namespace Stryker.Core.UnitTest.Reporters
         }
 
         [Fact]
+        public void ShouldSupportSpacesInPath()
+        {
+            var mockProcess = new Mock<IWebbrowserOpener>();
+            var mockFileSystem = new MockFileSystem();
+            var options = new StrykerOptions
+            {
+                Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 },
+                OutputPath = " folder \\ next level",
+                ReportFileName = "mutation-report"
+            };
+            var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
+
+            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith());
+            var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.html");
+
+            var fileContents = mockFileSystem.GetFile(reportPath).TextContents;
+
+            fileContents.ShouldNotContain("##REPORT_JS##");
+            fileContents.ShouldNotContain("##REPORT_TITLE##");
+            fileContents.ShouldNotContain("##REPORT_JSON##");
+        }
+
+        [Fact]
         public void ShouldContainJsonInHtmlReportFile()
         {
             var mockProcess = new Mock<IWebbrowserOpener>();
