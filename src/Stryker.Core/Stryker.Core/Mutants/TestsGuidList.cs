@@ -18,19 +18,22 @@ namespace Stryker.Core.Mutants
         {
         }
 
-        public TestsGuidList(IEnumerable<Guid> guids) => _testsGuid = guids != null ? new HashSet<Guid>(guids) : new HashSet<Guid>();
+        public TestsGuidList(IEnumerable<Guid> guids) => _testsGuid = (guids != null) ? new HashSet<Guid>(guids) : new HashSet<Guid>();
 
         public TestsGuidList(params Guid[] guids) : this((IEnumerable<Guid>)guids)
         {
         }
 
         public bool IsEveryTest => _testsGuid == null;
+        
+        ITestGuids ITestGuids.Merge(ITestGuids other) => Merge(other);
 
         public bool IsEmpty => _testsGuid is { Count: 0 };
 
         public int Count => _testsGuid?.Count ?? 0;
 
-        public TestsGuidList Merge(ITestGuids other) => new(_testsGuid.Union(other.GetGuids()));
+        public TestsGuidList Merge(ITestGuids other) => new(_testsGuid == null ? other.GetGuids() : _testsGuid.Union(other.GetGuids()));
+        
         public ITestListDescription Intersect(ITestGuids failedTests) => IsEveryTest ? new TestsGuidList(failedTests.GetGuids()) : new TestsGuidList(failedTests.GetGuids().Intersect(_testsGuid));
 
         public bool IsIncluded(ITestGuids test) => test.IsEveryTest || _testsGuid.IsSubsetOf(test.GetGuids());

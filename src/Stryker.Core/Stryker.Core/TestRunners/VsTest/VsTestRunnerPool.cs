@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -64,18 +65,52 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants)
         {
-            var needCoverage = _options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) || _options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants);
-            if (needCoverage && _options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
+            TestRunResult result;
+            var optimizationMode = _options.OptimizationMode;
+            if (!optimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) &&
+                !optimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants))
             {
-                return CaptureCoveragePerIsolatedTests(mutants);
+                return new TestRunResult(true);
+            }
+
+            if (!optimizationMode.HasFlag(OptimizationModes.SmartCoverageCapture))
+            {
+                var normalTests = _vsTests.Keys.ToList();
+                var dubiousTests = new List<Guid>();
+                // check if we have tests with multiple results that may require isolated capture
+                foreach (var vsTestDescription in _vsTests)
+                {
+                    if (vsTestDescription.Value.NbSubCases > 1)
+                    {
+                        normalTests.Remove(vsTestDescription.Key);
+                        dubiousTests.Add(vsTestDescription.Key);
+                    }
+                }
+                //    
+                var capture = TakeRunner();
+
+                try
+                {
+                    result = capture.CaptureCoverage(new TestsGuidList(normalTests) ,mutants);
+
+                }
+                finally
+                {
+                    ReturnRunner(capture);
+                }
+
+                return result.Merge(CaptureCoveragePerIsolatedTests(dubiousTests, mutants));
+            }
+            if (optimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
+            {
+                return CaptureCoveragePerIsolatedTests(_vsTests.Keys, mutants);
             }
 
             var runner = TakeRunner();
-            TestRunResult result;
 
             try
             {
-                result = needCoverage ? runner.CaptureCoverage(mutants) : new TestRunResult(true);
+                result = runner.CaptureCoverage(TestsGuidList.EveryTest() , mutants);
             }
             finally
             {
@@ -84,11 +119,11 @@ namespace Stryker.Core.TestRunners.VsTest
             return result;
         }
 
-        private TestRunResult CaptureCoveragePerIsolatedTests(IEnumerable<Mutant> mutants)
+        private TestRunResult CaptureCoveragePerIsolatedTests(IEnumerable<Guid> tests, IEnumerable<Mutant> mutants)
         {
             var options = new ParallelOptions { MaxDegreeOfParallelism = _availableRunners.Count };
 
-            Parallel.ForEach(_vsTests.Keys, options, testCase =>
+            Parallel.ForEach(tests, options, testCase =>
             {
                 var runner = TakeRunner();
                 try

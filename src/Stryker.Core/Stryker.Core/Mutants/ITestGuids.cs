@@ -10,6 +10,7 @@ namespace Stryker.Core.Mutants
         int Count { get; }
         bool IsEmpty { get; }
         bool IsEveryTest { get; }
+        ITestGuids Merge(ITestGuids otherTimedOutTests);
     }
 
     // represents a test list
