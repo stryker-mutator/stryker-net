@@ -93,22 +93,16 @@ namespace Stryker.Core.MutationTest
             return new CsharpMutantOrchestrator(options: options);
         }
 
-        private void SetupMutationTestProcess(IMutantFilter mutantFilter)
-        {
-
-            if (_language == Language.Csharp)
+        private void SetupMutationTestProcess(IMutantFilter mutantFilter) =>
+            _mutationProcess = _language switch
             {
-                _mutationProcess = new CsharpMutationProcess(Input, _fileSystem, _options, mutantFilter, (BaseMutantOrchestrator<SyntaxNode>)_orchestrator);
-            }
-            else if (_language == Language.Fsharp)
-            {
-                _mutationProcess = new FsharpMutationProcess(Input, (BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>>)_orchestrator, _fileSystem, _options);
-            }
-            else
-            {
-                throw new GeneralStrykerException("no valid language detected || no valid csproj or fsproj was given");
-            }
-        }
+                Language.Csharp => new CsharpMutationProcess(Input, _fileSystem, _options, mutantFilter,
+                    (BaseMutantOrchestrator<SyntaxNode>)_orchestrator),
+                Language.Fsharp => new FsharpMutationProcess(Input,
+                    (BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>>)_orchestrator, _fileSystem, _options),
+                _ => throw new GeneralStrykerException(
+                    "no valid language detected || no valid csproj or fsproj was given")
+            };
 
         public void Mutate()
         {
@@ -116,10 +110,7 @@ namespace Stryker.Core.MutationTest
             _mutationProcess.Mutate();
         }
 
-        public void FilterMutants()
-        {
-            _mutationProcess.FilterMutants();
-        }
+        public void FilterMutants() => _mutationProcess.FilterMutants();
 
         public StrykerRunResult Test(IEnumerable<Mutant> mutantsToTest)
         {
@@ -142,21 +133,21 @@ namespace Stryker.Core.MutationTest
 
             var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.Concurrency };
 
-            var testsFailingInitialy = Input.InitialTestRun.Result.FailingTests.GetGuids().ToHashSet();
+            var testsFailingInitially = Input.InitialTestRun.Result.FailingTests.GetGuids().ToHashSet();
 
             Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
             {
                 var reportedMutants = new HashSet<Mutant>();
-
-                bool testUpdateHandler(IReadOnlyList<Mutant> testedMutants, ITestGuids failedTests, ITestGuids ranTests, ITestGuids timedOutTest)
+                
+                bool TestUpdateHandler(IReadOnlyList<Mutant> testedMutants, ITestGuids failedTests, ITestGuids ranTests, ITestGuids timedOutTest)
                 {
                     var continueTestRun = _options.OptimizationMode.HasFlag(OptimizationModes.DisableBail);
-                    if (testsFailingInitialy.Count > 0 && failedTests.GetGuids().Any(id => testsFailingInitialy.Contains(id)))
+                    if (testsFailingInitially.Count > 0 && failedTests.GetGuids().Any(id => testsFailingInitially.Contains(id)))
                     {
                         // some of the failing tests where failing without any mutation
                         // we discard those tests
                         failedTests = new TestsGuidList(
-                            failedTests.GetGuids().Where(t => !testsFailingInitialy.Contains(t)));
+                            failedTests.GetGuids().Where(t => !testsFailingInitially.Contains(t)));
                     }
                     foreach (var mutant in testedMutants)
                     {
@@ -172,7 +163,7 @@ namespace Stryker.Core.MutationTest
 
                     return continueTestRun;
                 }
-                _mutationTestExecutor.Test(mutants, Input.InitialTestRun.TimeoutValueCalculator, testUpdateHandler);
+                _mutationTestExecutor.Test(mutants, Input.InitialTestRun.TimeoutValueCalculator, TestUpdateHandler);
 
                 OnMutantsTested(mutants, reportedMutants);
             });
@@ -193,11 +184,13 @@ namespace Stryker.Core.MutationTest
 
         private void OnMutantTested(Mutant mutant, ISet<Mutant> reportedMutants)
         {
-            if (mutant.ResultStatus != MutantStatus.NotRun && !reportedMutants.Contains(mutant))
+            if (mutant.ResultStatus == MutantStatus.NotRun || reportedMutants.Contains(mutant))
             {
-                _reporter?.OnMutantTested(mutant);
-                reportedMutants.Add(mutant);
+                // skip duplicates or useless notifications
+                return;
             }
+            _reporter?.OnMutantTested(mutant);
+            reportedMutants.Add(mutant);
         }
 
         private bool MutantsToTest(IEnumerable<Mutant> mutantsToTest)
@@ -216,7 +209,6 @@ namespace Stryker.Core.MutationTest
 
         private IEnumerable<List<Mutant>> BuildMutantGroupsForTest(IReadOnlyCollection<Mutant> mutantsNotRun)
         {
-
             if (_options.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants) || !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
             {
                 return mutantsNotRun.Select(x => new List<Mutant> { x });
@@ -265,9 +257,6 @@ namespace Stryker.Core.MutationTest
             return blocks;
         }
 
-        public void GetCoverage()
-        {
-            _coverageAnalyser.DetermineTestCoverage();
-        }
+        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage();
     }
 }

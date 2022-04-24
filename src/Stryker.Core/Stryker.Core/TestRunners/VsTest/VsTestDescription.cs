@@ -65,7 +65,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return obj.GetType() == GetType() && Equals((VsTestDescription) obj);
         }
 
-        public override int GetHashCode() => (Case != null ? Case.Id.GetHashCode() : 0);
+        public override int GetHashCode() => Case != null ? Case.Id.GetHashCode() : 0;
 
         public override string ToString() => Case.FullyQualifiedName;
     }

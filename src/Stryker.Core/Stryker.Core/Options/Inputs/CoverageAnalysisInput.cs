@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Text;
 using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
@@ -6,22 +9,45 @@ namespace Stryker.Core.Options.Inputs
     {
         public override string Default => "perTest";
 
-        protected override string Description => @"Use coverage info to speed up execution. Possible values are: off, all, perTest, perIsolatedTest.
-    - off: coverage data is not captured.
-    - perTest (Default): capture the list of mutations covered by each test. For every mutation that has tests, only the tests that cover this mutation are tested. Fastest option.
-    - all: capture the list of mutations covered by each test. Test only these mutations. Fast option.
-    - perTestInIsolation: like 'perTest', but running each test in an isolated run. Slowest fast option.";
+        protected override string Description
+        {
+            get
+            {
+                var result = new StringBuilder("Use coverage info to speed up execution. Possible values are: ");
+                result.AppendJoin(", ", _possibleValues.Keys).AppendLine(".");
+                foreach (var possibleValue in _possibleValues)
+                {
+                    result.AppendLine($"\t- {possibleValue.Key}: {possibleValue.Value.description}");
+                }
+                return result.ToString();
+            }
+        }
+
+        private readonly Dictionary<string, (OptimizationModes mode, string description)> _possibleValues = new(StringComparer.OrdinalIgnoreCase)
+        {
+            ["off"] = (OptimizationModes.None,
+                "Coverage data is not captured. Every mutant is tested against all test. Slowest, use in case of doubt."),
+            ["perTest"] =
+                (OptimizationModes.CoverageBasedTest, "Capture mutations covered by each test. Mutations are tested against covering tests (or flagged NoCoverage if no test cover them). Fastest option."),
+            ["all"] =
+                (OptimizationModes.SkipUncoveredMutants, "Capture the list of mutations covered by some test. Test only these mutations, other are flagged as NoCoverage. Fast option."),
+            ["perTestInIsolation"] =
+                (OptimizationModes.CaptureCoveragePerTest | OptimizationModes.CoverageBasedTest, "'perTest' but coverage of each test is captured in isolation. Increase coverage accuracy at the expense of a slow init phase."),
+            ["smart"] =
+                (OptimizationModes.SmartCoverageCapture|OptimizationModes.CoverageBasedTest, "'pertest', but use isolated mode for test for which coverage cannot be reliably established. !Beta at this  stage!")
+            
+        };
 
         public OptimizationModes Validate()
         {
-            return (SuppliedInput ?? Default).ToLower() switch
+            var value = (SuppliedInput ?? Default).ToLower();
+            if (_possibleValues.ContainsKey(value))
             {
-                "pertestinisolation" => OptimizationModes.CoverageBasedTest | OptimizationModes.CaptureCoveragePerTest,
-                "pertest" => OptimizationModes.CoverageBasedTest,
-                "all" => OptimizationModes.SkipUncoveredMutants,
-                "off" => OptimizationModes.None,
-                _ => throw new InputException($"Incorrect coverageAnalysis option ({SuppliedInput}). The options are [Off, All, PerTest or PerTestInIsolation].")
-            };
+                return _possibleValues[value].mode;
+            }
+
+            throw new InputException(
+                $"Incorrect coverageAnalysis option ({SuppliedInput}). The options are [{string.Join(", ", _possibleValues.Keys)}].");
         }
     }
 }

@@ -75,7 +75,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         public void DeclareTestsFailingWhenTestingMutant(int id, params int[] ids)
         {
             var testsGuidList = GetGuidList(ids);
-            if (!testsGuidList.IsIncluded(GetCoveringTests(id)))
+            if (!testsGuidList.IsIncludedIn(GetCoveringTests(id)))
             {
                 // just check we are not doing something stupid
                 throw new ApplicationException(

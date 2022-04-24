@@ -11,11 +11,14 @@ namespace Stryker.Core.Mutants
         public int Count => _guids.Count();
         public bool IsEmpty => _guids == null || !_guids.Any();
         public bool IsEveryTest => false;
+        public ITestGuids Merge(ITestGuids other) => MergeList(this, other);
+        public bool Contains(Guid testId) => _guids.Any( g => g==testId);
 
-        public WrappedGuidsEnumeration(IEnumerable<Guid> guids)
-        {
-            _guids = guids;
-        }
+        public bool ContainsAny(ITestGuids other) => _guids.Any(other.Contains);
+
+        public bool IsIncludedIn(ITestGuids other) => _guids.All(other.Contains);
+
+        public WrappedGuidsEnumeration(IEnumerable<Guid> guids) => _guids = guids;
 
         public static ITestGuids MergeList(ITestGuids a, ITestGuids b)
         {

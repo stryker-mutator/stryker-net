@@ -9,6 +9,7 @@ namespace Stryker.Core.TestRunners
         {
             FailingTests = !success ? TestsGuidList.EveryTest() : TestsGuidList.NoTest();
             RanTests = TestsGuidList.EveryTest();
+            TimedOutTests = TestsGuidList.NoTest();
             ResultMessage = message;
             Duration = TimeSpan.Zero;
         }
@@ -30,16 +31,19 @@ namespace Stryker.Core.TestRunners
             ITestGuids failedTest,
             ITestGuids timedOutTests,
             string message,
-            TimeSpan duration)
-        {
-            return new TestRunResult(ranTests, failedTest, timedOutTests, message, duration){SessionTimedOut = true};
-        }
+            TimeSpan duration) =>
+            new(ranTests, failedTest, timedOutTests, message, duration){SessionTimedOut = true};
 
         public ITestGuids FailingTests { get; }
         public ITestGuids RanTests { get; }
         public ITestGuids TimedOutTests { get; }
-        public bool SessionTimedOut { get; private set; }
+        public bool SessionTimedOut { get; private init; }
         public string ResultMessage { get; }
         public TimeSpan Duration { get; }
+
+        public TestRunResult Merge(TestRunResult other) =>
+            new TestRunResult(RanTests.Merge(other.RanTests), FailingTests.Merge(other.FailingTests),
+                TimedOutTests.Merge(other.TimedOutTests), ResultMessage + other.ResultMessage,
+                Duration + other.Duration);
     }
 }

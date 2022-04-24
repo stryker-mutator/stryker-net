@@ -11,7 +11,7 @@ namespace Stryker.Core.Mutants
         Mutation Mutation { get; }
         MutantStatus ResultStatus { get; }
         string ResultStatusReason { get; }
-        ITestListDescription CoveringTests { get; }
+        ITestGuids CoveringTests { get; }
         int? Line { get; }
         bool CountForStats { get; }
         bool MustRunAgainstAllTests { get; }
@@ -26,7 +26,7 @@ namespace Stryker.Core.Mutants
         public int Id { get; set; }
         public Mutation Mutation { get; set; }
         public MutantStatus ResultStatus { get; set; }
-        public ITestListDescription CoveringTests { get; set; } = TestsGuidList.EveryTest();
+        public ITestGuids CoveringTests { get; set; } = TestsGuidList.EveryTest();
         public string ResultStatusReason { get; set; }
         public bool CountForStats => ResultStatus != MutantStatus.CompileError && ResultStatus != MutantStatus.Ignored;
 
@@ -44,7 +44,7 @@ namespace Stryker.Core.Mutants
             {
                 ResultStatus = MutantStatus.Killed;
             }
-            else if (resultRanTests.IsEveryTest || (MustRunAgainstAllTests is not true && CoveringTests.IsIncluded(resultRanTests)))
+            else if (resultRanTests.IsEveryTest || (MustRunAgainstAllTests is not true && CoveringTests.IsIncludedIn(resultRanTests)))
             {
                 ResultStatus = MutantStatus.Survived;
             }

@@ -1826,7 +1826,7 @@
           "McMaster.Extensions.CommandLineUtils": "4.0.1",
           "Microsoft.Extensions.Configuration.Binder": "6.0.0",
           "NuGet.Protocol": "6.1.0",
-          "stryker": "1.5.0"
+          "stryker": "1.5.2"
         }
       },
       "stryker": {
@@ -1854,10 +1854,11 @@
           "ShellProgressBar": "5.1.0",
           "Spectre.Console": "0.44.0",
           "Spectre.Console.Analyzer": "0.44.0",
-          "Stryker.DataCollector": "1.5.0",
-          "Stryker.RegexMutators": "1.5.0",
+          "Stryker.DataCollector": "1.0.0",
+          "Stryker.RegexMutators": "1.0.0",
           "System.IO.Abstractions": "16.1.25",
-          "System.Net.Http.Json": "6.0.0"
+          "System.Net.Http.Json": "6.0.0",
+          "System.Runtime.Caching": "5.0.0"
         }
       },
       "stryker.datacollector": {
