@@ -69,11 +69,11 @@
       },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[16.1.25, )",
-        "resolved": "16.1.25",
-        "contentHash": "brRQOCtC9i2vGD31uS/tcdRMKd/6Hd0cj89BgBu+xCu42B+JjNvKROnrFsPjSCchyq0nZPMUG96yP1pXysniWQ==",
+        "requested": "[17.0.1, )",
+        "resolved": "17.0.1",
+        "contentHash": "/nuL4jF8fC0tk980IEeNLGb4w+duwyK8azV1AwxtQCmtd0sa5QSxLQuKtVJUM8NuQpEygu/ALO2fHEXdQ9msHQ==",
         "dependencies": {
-          "System.IO.Abstractions": "16.1.25"
+          "System.IO.Abstractions": "17.0.1"
         }
       },
       "xunit": {
@@ -1209,8 +1209,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "16.1.25",
-        "contentHash": "PZ3y8SgASqtIlJyhss47FGLwBMXMWvxL9MKk9dEqIZT/vrfQr5yhKwdJ/vNm2H8FqsWJoxu0P12nYGXFj0irkA==",
+        "resolved": "17.0.1",
+        "contentHash": "vmU7+i6fV75ab2z4A7DwEYrHLhsMdrfDTqItp1I7RZoTRFa1n3H15BR+6VJuKCmwtojl2eOnJ9rd6vOHr/S0gg==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "5.0.0"
         }
@@ -1826,7 +1826,7 @@
           "McMaster.Extensions.CommandLineUtils": "4.0.1",
           "Microsoft.Extensions.Configuration.Binder": "6.0.0",
           "NuGet.Protocol": "6.1.0",
-          "stryker": "1.5.0"
+          "stryker": "1.5.2"
         }
       },
       "stryker": {
@@ -1854,9 +1854,9 @@
           "ShellProgressBar": "5.1.0",
           "Spectre.Console": "0.44.0",
           "Spectre.Console.Analyzer": "0.44.0",
-          "Stryker.DataCollector": "1.5.0",
-          "Stryker.RegexMutators": "1.5.0",
-          "System.IO.Abstractions": "16.1.25",
+          "Stryker.DataCollector": "1.5.2",
+          "Stryker.RegexMutators": "1.5.2",
+          "System.IO.Abstractions": "17.0.1",
           "System.Net.Http.Json": "6.0.0"
         }
       },
