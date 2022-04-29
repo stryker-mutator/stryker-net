@@ -36,7 +36,7 @@ namespace Stryker.CLI.Logging
             }
 
             // When stryker log level is debug or trace, set LibGit2Sharp loglevel
-            if (logLevel > LogEventLevel.Information) // LibGit2Sharp does not handle LogEventLevel.None properly.
+            if (logLevel < LogEventLevel.Information) // LibGit2Sharp does not handle LogEventLevel.None properly.
             {
                 var libGit2SharpLogger = LoggerFactory.CreateLogger(nameof(LibGit2Sharp));
                 GlobalSettings.LogConfiguration = new LogConfiguration(LogLevelConverter.Convert(logLevel), (level, message) => libGit2SharpLogger.Log(LogLevelConverter.Convert(level), message));
