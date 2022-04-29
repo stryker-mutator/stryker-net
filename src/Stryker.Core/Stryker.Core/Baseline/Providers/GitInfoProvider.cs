@@ -61,7 +61,7 @@ namespace Stryker.Core.Baseline.Providers
 
             if (commit == null)
             {
-                throw new InputException($"No Branch or commit found with given target {_options.SinceTarget}. Please provide a different GitDiffTarget.");
+                throw new InputException($"No branch or tag or commit found with given target {_options.SinceTarget}. Please provide a different GitDiffTarget.");
             }
 
             return commit;
@@ -79,8 +79,6 @@ namespace Stryker.Core.Baseline.Providers
 
         private Commit GetTargetCommit()
         {
-            Branch targetBranch = null;
-
             _logger.LogDebug("Looking for branch matching {gitDiffTarget}", _options.SinceTarget);
             foreach (var branch in Repository.Branches)
             {
@@ -89,20 +87,17 @@ namespace Stryker.Core.Baseline.Providers
                     if (branch.UpstreamBranchCanonicalName?.Contains(_options.SinceTarget) ?? false)
                     {
                         _logger.LogDebug("Matched with upstream canonical name {upstreamCanonicalName}", branch.UpstreamBranchCanonicalName);
-                        targetBranch = branch;
-                        break;
+                        return branch.Tip;
                     }
                     if (branch.CanonicalName?.Contains(_options.SinceTarget) ?? false)
                     {
                         _logger.LogDebug("Matched with canonical name {canonicalName}", branch.CanonicalName);
-                        targetBranch = branch;
-                        break;
+                        return branch.Tip;
                     }
                     if (branch.FriendlyName?.Contains(_options.SinceTarget) ?? false)
                     {
                         _logger.LogDebug("Matched with friendly name {friendlyName}", branch.FriendlyName);
-                        targetBranch = branch;
-                        break;
+                        return branch.Tip;
                     }
                 }
                 catch (ArgumentNullException)
@@ -111,9 +106,13 @@ namespace Stryker.Core.Baseline.Providers
                 }
             }
 
-            if (targetBranch != null)
+            _logger.LogDebug("Looking for tag matching {gitDiffTarget}", _options.SinceTarget);
+            var tag = Repository.Tags.FirstOrDefault(t => t.Target is Commit && (t.CanonicalName?.Contains(_options.SinceTarget) ?? false));
+            var tagCommit = tag?.Target as Commit;
+            if (tagCommit != null)
             {
-                return targetBranch.Tip;
+                _logger.LogDebug("Found tag {tag} for diff target {gitDiffTarget}", tag.CanonicalName, _options.SinceTarget);
+                return tagCommit;
             }
 
             // It's a commit!
@@ -123,7 +122,7 @@ namespace Stryker.Core.Baseline.Providers
 
                 if (commit != null)
                 {
-                    _logger.LogDebug($"Found commit {commit.Sha} for diff target {_options.SinceTarget}");
+                    _logger.LogDebug("Found commit {commit} for diff target {gitDiffTarget}", commit.Sha, _options.SinceTarget);
                     return commit;
                 }
             }
