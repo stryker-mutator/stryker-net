@@ -39,7 +39,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 if (Framework == TestFramework.xUnit)
                 {
                     // xUnit returns the run time for the case within each result, so the first one is sufficient
-                    return _initialResults.First().Duration;
+                    return _initialResults.FirstOrDefault()?.Duration ?? TimeSpan.Zero;
                 }
 
                 return TimeSpan.FromTicks(_initialResults.Sum(t => t.Duration.Ticks));
