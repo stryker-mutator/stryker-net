@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.IO;
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
@@ -11,17 +10,6 @@ namespace Stryker.CLI.Logging
 {
     public static class ApplicationLogging
     {
-        private static readonly Dictionary<LibGitLogLevel, MSLogLevel> _logLevelMap = new Dictionary<LibGitLogLevel, MSLogLevel>
-                                                                                   {
-                                                                                       { LibGitLogLevel.None, MSLogLevel.None },
-                                                                                       { LibGitLogLevel.Debug, MSLogLevel.Debug },
-                                                                                       { LibGitLogLevel.Trace, MSLogLevel.Trace },
-                                                                                       { LibGitLogLevel.Info, MSLogLevel.Information },
-                                                                                       { LibGitLogLevel.Warning, MSLogLevel.Warning },
-                                                                                       { LibGitLogLevel.Fatal, MSLogLevel.Critical },
-                                                                                       { LibGitLogLevel.Error, MSLogLevel.Error }
-                                                                                   };
-
         private static ILoggerFactory _factory = null;
 
         public static void ConfigureLogger(LogEventLevel logLevel, bool logToFile, string outputPath)
