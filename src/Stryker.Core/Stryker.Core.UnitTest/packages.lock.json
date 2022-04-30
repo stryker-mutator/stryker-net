@@ -69,11 +69,11 @@
       },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[16.1.25, )",
-        "resolved": "16.1.25",
-        "contentHash": "brRQOCtC9i2vGD31uS/tcdRMKd/6Hd0cj89BgBu+xCu42B+JjNvKROnrFsPjSCchyq0nZPMUG96yP1pXysniWQ==",
+        "requested": "[17.0.3, )",
+        "resolved": "17.0.3",
+        "contentHash": "paVNk+myawcYJHYBEDpZHLNjA++GpfkwIYlmzhRMn0wCJwYDep4fnflUC5la8iAf4hmPVIi7JM3AUtwRgZt6cQ==",
         "dependencies": {
-          "System.IO.Abstractions": "16.1.25"
+          "System.IO.Abstractions": "17.0.3"
         }
       },
       "xunit": {
@@ -747,8 +747,8 @@
       },
       "Serilog": {
         "type": "Transitive",
-        "resolved": "2.10.0",
-        "contentHash": "+QX0hmf37a0/OZLxM3wL7V6/ADvC1XihXN4Kq/p6d8lCPfgkRdiuhbWlMaFjR9Av0dy5F0+MBeDmDdRZN/YwQA=="
+        "resolved": "2.11.0",
+        "contentHash": "ysv+hBzTul6Dp+Hvm10FlhJO3yMQcFKSAleus+LpiIzvNstpeV4Z7gGuIZ1OPNfIMulSHOjmLuGAEDKzpnV8ZQ=="
       },
       "Serilog.Extensions.Logging": {
         "type": "Transitive",
@@ -1198,8 +1198,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "16.1.25",
-        "contentHash": "PZ3y8SgASqtIlJyhss47FGLwBMXMWvxL9MKk9dEqIZT/vrfQr5yhKwdJ/vNm2H8FqsWJoxu0P12nYGXFj0irkA==",
+        "resolved": "17.0.3",
+        "contentHash": "P1iDcQEvrVO359GJr7BSsb2XL+YlW9/oqVtlNwszVjj1Aj9qyORBYkftOicPxdBSHiR5Eu/Px2cMu5qiD5elnA==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "5.0.0"
         }
@@ -1860,16 +1860,16 @@
           "Microsoft.Web.LibraryManager.Build": "2.1.161",
           "Mono.Cecil": "0.11.4",
           "NuGet.Frameworks": "6.1.0",
-          "Serilog": "2.10.0",
+          "Serilog": "2.11.0",
           "Serilog.Extensions.Logging": "3.1.0",
           "Serilog.Extensions.Logging.File": "2.0.0",
           "Serilog.Sinks.Console": "4.0.1",
           "ShellProgressBar": "5.1.0",
           "Spectre.Console": "0.44.0",
           "Spectre.Console.Analyzer": "0.44.0",
-          "Stryker.DataCollector": "1.0.0",
-          "Stryker.RegexMutators": "1.0.0",
-          "System.IO.Abstractions": "16.1.25",
+          "Stryker.DataCollector": "1.5.2",
+          "Stryker.RegexMutators": "1.5.2",
+          "System.IO.Abstractions": "17.0.3",
           "System.Net.Http.Json": "6.0.0",
           "System.Runtime.Caching": "5.0.0"
         }
