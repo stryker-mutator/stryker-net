@@ -107,29 +107,21 @@ namespace Stryker.Core.Initialisation
                 return analyzerResults.First(e => e.TargetFramework != null);
             }
 
-            var analyzerResultList = analyzerResults?.Where(result => result.TargetFramework == targetFramework).ToList();
-
-            switch (analyzerResultList?.Count)
-            {
-                case 0:
-                    throw new InputException($"The target framework of {targetFramework} has no analyzer results.");
-                case > 1:
-                    throw new InputException($"The target framework of {targetFramework} had multiple matched results.");
-            }
-
-            var analyzerResultForFramework = analyzerResultList?.SingleOrDefault();
+            var analyzerResultForFramework = analyzerResults.SingleOrDefault(result => result.TargetFramework == targetFramework);
             if (analyzerResultForFramework != null)
             {
                 return analyzerResultForFramework;
             }
+            else
+            {
+                var firstAnalyzerResult = analyzerResults.First();
+                _logger.LogWarning(
+                    "The configured target framework '{0}' isn't available for this project. " +
+                    "It will be built against the first framework available " +
+                    "which is {1}.", targetFramework, firstAnalyzerResult.TargetFramework);
 
-            var firstAnalyzerResult = analyzerResults?.FirstOrDefault();
-            _logger.LogWarning(
-                "The configured target framework '{0}' isn't available for this project. " +
-                "It will be built against the first framework available " +
-                "which is {1}.", targetFramework, firstAnalyzerResult?.TargetFramework);
-
-            return firstAnalyzerResult;
+                return firstAnalyzerResult;
+            }
         }
     }
 }
