@@ -1,3 +1,15 @@
+## [1.5.3](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.5.2...stryker@1.5.3) (2022-05-03)
+
+
+### Bug Fixes
+
+* **baseline:** fixed issue where invalid header was used for creating azure fileshare file ([#2027](https://github.com/stryker-mutator/stryker-net/issues/2027)) ([7901c33](https://github.com/stryker-mutator/stryker-net/commit/7901c3353a2af27f5680255a49c75c7f94bdba09))
+* **reporters:** support spaces in report pathname ([#2010](https://github.com/stryker-mutator/stryker-net/issues/2010)) ([1bc8afa](https://github.com/stryker-mutator/stryker-net/commit/1bc8afa92d403fcdadda03bcf4a0e303167e6b94))
+* **since:** Add possibility to specify a git tag for the since.target option ([#1994](https://github.com/stryker-mutator/stryker-net/issues/1994)) ([12e3d9b](https://github.com/stryker-mutator/stryker-net/commit/12e3d9bc974fa9f7bc524ecfbe349360e0bfcec5))
+* **testrunner:** Add default timespan for not executed duplicated xunit tests ([#2020](https://github.com/stryker-mutator/stryker-net/issues/2020)) ([2cbbfcd](https://github.com/stryker-mutator/stryker-net/commit/2cbbfcd3e750ae54c8d7f7f2c4724f1a29880dd7))
+
+
+
 ## [1.5.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.5.1...stryker@1.5.2) (2022-04-21)
 
 
