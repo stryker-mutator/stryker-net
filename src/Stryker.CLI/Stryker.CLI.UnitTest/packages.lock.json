@@ -89,9 +89,9 @@
       },
       "xunit.runner.visualstudio": {
         "type": "Direct",
-        "requested": "[2.4.3, )",
-        "resolved": "2.4.3",
-        "contentHash": "kZZSmOmKA8OBlAJaquPXnJJLM9RwQ27H7BMVqfMLUcTi9xHinWGJiWksa3D4NEtz0wZ/nxd2mogObvBgJKCRhQ=="
+        "requested": "[2.4.4, )",
+        "resolved": "2.4.4",
+        "contentHash": "6iEHJlHdie0v792U3WUZl0DT6aY9O/zuWQIWKH8GOTWiZdiSup4mpyyNt+LQM5nvscwEAssFBDOGIXuYExj6Hg=="
       },
       "Buildalyzer": {
         "type": "Transitive",
@@ -1826,7 +1826,7 @@
           "McMaster.Extensions.CommandLineUtils": "4.0.1",
           "Microsoft.Extensions.Configuration.Binder": "6.0.0",
           "NuGet.Protocol": "6.1.0",
-          "stryker": "1.5.2"
+          "stryker": "1.5.3"
         }
       },
       "stryker": {
@@ -1854,8 +1854,8 @@
           "ShellProgressBar": "5.1.0",
           "Spectre.Console": "0.44.0",
           "Spectre.Console.Analyzer": "0.44.0",
-          "Stryker.DataCollector": "1.5.2",
-          "Stryker.RegexMutators": "1.5.2",
+          "Stryker.DataCollector": "1.5.3",
+          "Stryker.RegexMutators": "1.5.3",
           "System.IO.Abstractions": "17.0.3",
           "System.Net.Http.Json": "6.0.0"
         }

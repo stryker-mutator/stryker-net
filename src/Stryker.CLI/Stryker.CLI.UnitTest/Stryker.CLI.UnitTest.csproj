@@ -20,7 +20,7 @@
     <PackageReference Include="Spectre.Console.Testing" Version="0.44.0" />
     <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="$(SystemIOAbstractions)" />
     <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.4" />
   </ItemGroup>
 
   <ItemGroup>
