@@ -89,9 +89,9 @@
       },
       "xunit.runner.visualstudio": {
         "type": "Direct",
-        "requested": "[2.4.4, )",
-        "resolved": "2.4.4",
-        "contentHash": "6iEHJlHdie0v792U3WUZl0DT6aY9O/zuWQIWKH8GOTWiZdiSup4mpyyNt+LQM5nvscwEAssFBDOGIXuYExj6Hg=="
+        "requested": "[2.4.5, )",
+        "resolved": "2.4.5",
+        "contentHash": "OwHamvBdUKgqsXfBzWiCW/O98BTx81UKzx2bieIOQI7CZFE5NEQZGi8PBQGIKawDW96xeRffiNf20SjfC0x9hw=="
       },
       "Buildalyzer": {
         "type": "Transitive",
