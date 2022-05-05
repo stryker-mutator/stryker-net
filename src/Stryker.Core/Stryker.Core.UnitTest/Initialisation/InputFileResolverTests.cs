@@ -79,6 +79,9 @@ namespace Stryker.Core.UnitTest.Initialisation
         [InlineData("net5.0", FrameworkIdentifiers.NetCoreApp, "", 5, 0, 0, 0)]
         [InlineData("net5.0-windows", FrameworkIdentifiers.NetCoreApp, "windows", 5, 0, 0, 0)]
         [InlineData("net5", FrameworkIdentifiers.NetCoreApp, "", 5, 0, 0, 0)]
+        [InlineData("net6.0", FrameworkIdentifiers.NetCoreApp, "", 6, 0, 0, 0)]
+        [InlineData("net6.0-windows", FrameworkIdentifiers.NetCoreApp, "windows", 6, 0, 0, 0)]
+        [InlineData("net6", FrameworkIdentifiers.NetCoreApp, "", 6, 0, 0, 0)]
         public void ProjectAnalyzerShouldDecodeFramework(string tfm, string framework, string platform, int major, int minor, int build, int revision)
         {
             var version = new Version(major, minor, build, revision);
