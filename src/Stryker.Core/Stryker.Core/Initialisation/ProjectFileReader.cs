@@ -104,7 +104,14 @@ namespace Stryker.Core.Initialisation
         {
             if (targetFramework == null)
             {
-                return analyzerResults.First(e => e.TargetFramework != null);
+                var analyzerResult = analyzerResults.FirstOrDefault(e => e.TargetFramework != null);
+
+                if (analyzerResult == null)
+                {
+                    throw new InputException($"No analyzer result found and the targetFramework was null.");
+                }
+
+                return analyzerResult;
             }
 
             var analyzerResultForFramework = analyzerResults.SingleOrDefault(result => result.TargetFramework == targetFramework);
@@ -112,16 +119,14 @@ namespace Stryker.Core.Initialisation
             {
                 return analyzerResultForFramework;
             }
-            else
-            {
-                var firstAnalyzerResult = analyzerResults.First();
-                _logger.LogWarning(
-                    "The configured target framework '{0}' isn't available for this project. " +
-                    "It will be built against the first framework available " +
-                    "which is {1}.", targetFramework, firstAnalyzerResult.TargetFramework);
 
-                return firstAnalyzerResult;
-            }
+            var firstAnalyzerResult = analyzerResults.First();
+            _logger.LogWarning(
+                "The configured target framework '{0}' isn't available for this project. " +
+                "It will be built against the first framework available " +
+                "which is {1}.", targetFramework, firstAnalyzerResult.TargetFramework);
+
+            return firstAnalyzerResult;
         }
     }
 }
