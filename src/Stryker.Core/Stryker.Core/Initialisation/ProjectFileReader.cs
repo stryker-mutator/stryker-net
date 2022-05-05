@@ -108,7 +108,7 @@ namespace Stryker.Core.Initialisation
 
                 if (analyzerResult is null)
                 {
-                    throw new InputException("No analyzer result found and the targetFramework was null.");
+                    throw new InputException("No analyzer result with a valid target framework could be found.");
                 }
 
                 return analyzerResult;
