@@ -120,7 +120,7 @@ namespace Stryker.Core.Initialisation
                 return analyzerResultForFramework;
             }
 
-            var firstAnalyzerResult = analyzerResults.First();
+            var firstAnalyzerResult = analyzerResults.First(e => e.TargetFramework is not null);
             _logger.LogWarning(
                 "The configured target framework '{0}' isn't available for this project. " +
                 "It will be built against the first framework available " +
