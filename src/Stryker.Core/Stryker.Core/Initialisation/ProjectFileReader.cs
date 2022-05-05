@@ -115,7 +115,7 @@ namespace Stryker.Core.Initialisation
             }
 
             var analyzerResultForFramework = analyzerResults.SingleOrDefault(result => result.TargetFramework == targetFramework);
-            if (analyzerResultForFramework != null)
+            if (analyzerResultForFramework is not null)
             {
                 return analyzerResultForFramework;
             }
