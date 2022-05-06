@@ -49,6 +49,10 @@ stages:
     displayName: Run Sonar Analysis
     dependsOn: []
     steps:
+    - task: UseDotNet@2
+      displayName: 'Use dotnet 6'
+      inputs:
+        version: 6.x
     - template: pipeline-templates/populate-cache-steps.yml
     - task: SonarCloudPrepare@1
       inputs:
@@ -83,6 +87,10 @@ stages:
     dependsOn: []
     timeoutInMinutes: 240
     steps:
+    - task: UseDotNet@2
+      displayName: 'Use dotnet 6'
+      inputs:
+        version: 6.x
     - task: DotNetCoreCLI@2
       displayName: 'Install dotnet-stryker'
       inputs:
@@ -100,6 +108,10 @@ stages:
     dependsOn: []
     timeoutInMinutes: 240
     steps:
+    - task: UseDotNet@2
+      displayName: 'Use dotnet 6'
+      inputs:
+        version: 6.x
     - task: DotNetCoreCLI@2
       displayName: 'Install dotnet-stryker'
       inputs:
@@ -129,6 +141,10 @@ stages:
           steps:
           - checkout: self
           - template: pipeline-templates/populate-cache-steps.yml
+          - task: UseDotNet@2
+            displayName: 'Use dotnet 6'
+            inputs:
+              version: 6.x
           - task: DotNetCoreCLI@2
             displayName: 'Restore vstest binaries'
             inputs:
@@ -257,6 +273,10 @@ stages:
     displayName: Publish Release Artifacts
     steps:
     - template: pipeline-templates/populate-cache-steps.yml
+    - task: UseDotNet@2
+      displayName: 'Use dotnet 6'
+      inputs:
+        version: 6.x
     - task: DotNetCoreCLI@2
       displayName: 'Restore vstest binaries'
       inputs:
@@ -295,6 +315,10 @@ stages:
     displayName: Publish Release Artifacts
     steps:
     - template: pipeline-templates/populate-cache-steps.yml
+    - task: UseDotNet@2
+      displayName: 'Use dotnet 6'
+      inputs:
+        version: 6.x
     - task: DotNetCoreCLI@2
       displayName: 'Restore vstest binaries'
       inputs:

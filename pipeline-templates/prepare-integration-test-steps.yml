@@ -1,4 +1,8 @@
 steps:
+- task: UseDotNet@2
+  displayName: 'Use dotnet 6'
+  inputs:
+    version: 6.x
 - task: DotNetCoreCLI@2 # Microsoft broke implicit restore on build so let's just keep this here..
   displayName: 'Restore'
   inputs:
