@@ -8,13 +8,23 @@ custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs
 
 This guide instructs how to update major versions of Stryker.NET.
 
+## V1 --> V2
+
+### ⏭ Updated runtime
+
+The .NET runtime requirement for Stryker.NET has been updated from dotnet 5.0 to dotnet 6.0 LTS.
+
+Please [download and install the dotnet 6 runtime](https://dotnet.microsoft.com/download/dotnet/6.0) and update your pipeline have the dotnet 6 runtime available.
+
+_Note that you do not have to update your application to target dotnet 6. Dotnet 6 is only a runtime requirement for stryker to be able to run on your system._
+
 ## V0.x --> V1.x
 
 ### ⏭ Updated runtime
 
-The .NET runtime for Stryker.NET has been updated from 3.1 to 5.0.
+The .NET runtime requirement for Stryker.NET has been updated from 3.1 to 5.0.
 
-Please [download and install .NET 5.0](https://dotnet.microsoft.com/download/dotnet/5.0) or update your pipeline to support .NET 5.
+Please [download and install the dotnet 5 runtime](https://dotnet.microsoft.com/download/dotnet/5.0) and update your pipeline have the dotnet 5 runtime available.
 
 _Note that you do not have to update your application to use dotnet 5. Dotnet 5 is only a runtime requirement for stryker to be able to run on your system._
 
