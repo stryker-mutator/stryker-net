@@ -103,7 +103,7 @@ namespace Stryker.Core.Initialisation
         private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
         {
             var firstAnalyzerResult = analyzerResults?.First(e => e.TargetFramework is not null);
-            if (targetFramework == null)
+            if (targetFramework is null)
             {
                 return firstAnalyzerResult ?? throw new InputException("No analyzer result with a valid target framework could be found.");
             }
