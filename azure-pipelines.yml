@@ -62,15 +62,6 @@ stages:
         projectKey: 'stryker-net'
         projectName: 'Stryker .NET'
         projectVersion: '$(PackageVersion)'
-    - task: DotNetCoreCLI@2 # Microsoft broke implicit restore on build so let's just keep this here..
-      displayName: 'Restore'
-      inputs:
-        command: 'restore'
-        projects: 'src/Stryker.sln'
-    - task: DotNetCoreCLI@2
-      inputs:
-        command: 'build'
-        projects: 'src/Stryker.sln'
     - task: DotNetCoreCLI@2
       displayName: 'Run unit tests'
       inputs:
@@ -152,11 +143,6 @@ stages:
               custom: 'restore'
               arguments: '--packages ./.vstest/'
               workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
-          - task: DotNetCoreCLI@2 # Microsoft broke implicit restore on build so let's just keep this here..
-            displayName: 'Restore'
-            inputs:
-              command: 'restore'
-              projects: 'src/Stryker.sln'
           - task: DotNetCoreCLI@2
             displayName: 'Pack integrationtest packages'
             inputs:

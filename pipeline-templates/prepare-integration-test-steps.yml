@@ -3,11 +3,6 @@ steps:
   displayName: 'Use dotnet 6'
   inputs:
     version: 6.x
-- task: DotNetCoreCLI@2 # Microsoft broke implicit restore on build so let's just keep this here..
-  displayName: 'Restore'
-  inputs:
-    command: 'restore'
-    projects: 'src/Stryker.sln'
 
 - task: DotNetCoreCLI@2
   displayName: 'Run unit tests'
