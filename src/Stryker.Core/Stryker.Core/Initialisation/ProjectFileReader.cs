@@ -102,29 +102,22 @@ namespace Stryker.Core.Initialisation
 
         private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
         {
+            var firstAnalyzerResult = analyzerResults?.First(e => e.TargetFramework is not null);
             if (targetFramework == null)
             {
-                var analyzerResult = analyzerResults.FirstOrDefault(e => e.TargetFramework is not null);
-
-                if (analyzerResult is null)
-                {
-                    throw new InputException("No analyzer result with a valid target framework could be found.");
-                }
-
-                return analyzerResult;
+                return firstAnalyzerResult ?? throw new InputException("No analyzer result with a valid target framework could be found.");
             }
 
-            var analyzerResultForFramework = analyzerResults.SingleOrDefault(result => result.TargetFramework == targetFramework);
+            var analyzerResultForFramework = analyzerResults?.SingleOrDefault(result => result.TargetFramework == targetFramework);
             if (analyzerResultForFramework is not null)
             {
                 return analyzerResultForFramework;
             }
 
-            var firstAnalyzerResult = analyzerResults.First(e => e.TargetFramework is not null);
             _logger.LogWarning(
                 "The configured target framework '{0}' isn't available for this project. " +
                 "It will be built against the first framework available " +
-                "which is {1}.", targetFramework, firstAnalyzerResult.TargetFramework);
+                "which is {1}.", targetFramework, firstAnalyzerResult?.TargetFramework);
 
             return firstAnalyzerResult;
         }
