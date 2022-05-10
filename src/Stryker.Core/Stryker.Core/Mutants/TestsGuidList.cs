@@ -33,7 +33,7 @@ namespace Stryker.Core.Mutants
 
         public bool Contains(Guid testId) => IsEveryTest || _testsGuid.Contains(testId);
 
-        public bool IsIncludedIn(ITestGuids test) => test.IsEveryTest || _testsGuid.IsSubsetOf(test.GetGuids());
+        public bool IsIncludedIn(ITestGuids other) => other.IsEveryTest || _testsGuid.IsSubsetOf(other.GetGuids());
 
         public static TestsGuidList EveryTest() => everyTests;
 

@@ -592,8 +592,6 @@ namespace Stryker.Core.UnitTest.TestRunners
                 // only first test covers one mutant
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;0", ["T1"] = ";" }, endProcess);
 
-                _mutant.ResetCoverage();
-                _otherMutant.ResetCoverage();
                 var analyzer = new CoverageAnalyser(options);
                 analyzer.DetermineTestCoverage(runner, new []{_mutant, _otherMutant});
 
@@ -639,10 +637,6 @@ namespace Stryker.Core.UnitTest.TestRunners
                     TestRunner = runner,
                     InitialTestRun = new InitialTestRun(testRunResult, new TimeoutValueCalculator(500))
                 };
-                foreach (var mutant in _targetProject.ProjectContents.Mutants)
-                {
-                    mutant.ResetCoverage();
-                }
                 var mockReporter = new Mock<IReporter>();
                 var tester = new MutationTestProcess(input, mockReporter.Object, new MutationTestExecutor(input.TestRunner), fileSystem: _fileSystem, options: options, mutantFilter: mutantFilter.Object);
                 SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = "1;" }, endProcess);

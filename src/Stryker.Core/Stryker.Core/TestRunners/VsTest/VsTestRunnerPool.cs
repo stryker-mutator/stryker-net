@@ -38,6 +38,7 @@ namespace Stryker.Core.TestRunners.VsTest
             Func<VsTestContextInformation, int, VsTestRunner> runnerBuilder = null)
         {
             _context = new VsTestContextInformation(options, projectInfo);
+            _context.Initialize();
             _logger = forcedLogger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
             runnerBuilder ??= (context, i) => new VsTestRunner(context, i);
             Parallel.For(0, Math.Max(1, _context.Options.Concurrency), (i, _) => 
@@ -60,10 +61,10 @@ namespace Stryker.Core.TestRunners.VsTest
                 var normalTests = _context.VsTests.Keys.ToList();
                 var dubiousTests = new List<Guid>();
                 // check if we have tests with multiple results that may require isolated capture
-                foreach (var vsTestDescription in _context.VsTests.Where( pair => pair.Value.NbSubCases>1))
+                foreach (var id in _context.VsTests.Where( pair => pair.Value.NbSubCases>1).Select( p => p.Key))
                 {
-                    normalTests.Remove(vsTestDescription.Key);
-                    dubiousTests.Add(vsTestDescription.Key);
+                    normalTests.Remove(id);
+                    dubiousTests.Add(id);
                 }
 
                 var aggregator = new SimpleRunResults();
@@ -148,7 +149,6 @@ namespace Stryker.Core.TestRunners.VsTest
                     _context.VsTests.Add(testCaseId, new VsTestDescription(testResult.TestCase));
                 }
                 var testDescription = _context.VsTests[testCaseId];
-                CoverageConfidence level;
                 if (key == null)
                 {
                     // the coverage collector was not able to report anything ==> it has not been tracked by it, so we do not have coverage data
@@ -160,59 +160,68 @@ namespace Stryker.Core.TestRunners.VsTest
                         continue;
                     }
 
-                    level = CoverageConfidence.Dubious;
                     // this is a suspect test
                     dynamicTestCases.Add(testDescription.Id);
+                    results.Add(new CoverageRunResult(testCaseId, CoverageConfidence.Dubious, Enumerable.Empty<int>(), Enumerable.Empty<int>(), Enumerable.Empty<int>()));
                 }
                 else if (value != null)
                 {
                     // we have coverage data
                     seenTestCases.Add(testDescription.Id);
                     var propertyPairValue = value as string;
-                    level = perIsolatedTest ? CoverageConfidence.Exact : CoverageConfidence.Normal;
-                    IEnumerable<int> coveredMutants;
-                    IEnumerable<int> staticMutants;
-                    if (string.IsNullOrWhiteSpace(propertyPairValue))
-                    {
-                        _logger.LogDebug($"VsTestRunner: Test {testResult.TestCase.DisplayName} does not cover any mutation.");
-                        coveredMutants = null;
-                        staticMutants = null;
-                    }
-                    else
-                    {
-                        var parts = propertyPairValue.Split(';');
-                        coveredMutants = string.IsNullOrEmpty(parts[0])
-                            ? Enumerable.Empty<int>()
-                            : parts[0].Split(',').Select(int.Parse);
-                        // we identify mutants that are part of static code, unless we performed pertest capture
-                        staticMutants = (parts.Length == 1 || string.IsNullOrEmpty(parts[1]) || _context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
-                            ? Enumerable.Empty<int>()
-                            : parts[1].Split(',').Select(int.Parse);
-                    }
-                    // look for suspicious mutants
-                    var (testProperty, mutantOutsideTests) = testResult.GetProperties()
-                        .FirstOrDefault(x => x.Key.Id == CoverageCollector.OutOfTestsPropertyName);
-                    IEnumerable<int> leakedMutants;
-                    if (testProperty != null)
-                    {
-                        // we have some mutations that appeared outside any test, probably some run time test case generation, or some async logic.
-                        propertyPairValue = mutantOutsideTests as string;
-                        leakedMutants = string.IsNullOrEmpty(propertyPairValue)
-                            ? Enumerable.Empty<int>()
-                            : propertyPairValue.Split(',').Select(int.Parse);
-                        _logger.LogWarning($"VsTestRunner: Some mutations were executed outside any test (mutation ids: {propertyPairValue}).");
-                    }
-                    else
-                    {
-                        leakedMutants = Enumerable.Empty<int>();
-                    }
 
-                    results.Add(new CoverageRunResult(testCaseId, level, coveredMutants, staticMutants, leakedMutants));
+                    results.Add(BuildCoverageRunResultFromCoverageInfo(propertyPairValue, testResult, testCaseId, perIsolatedTest ? CoverageConfidence.Exact : CoverageConfidence.Normal));
                 }
             }
 
             return results;
         }
 
+        private CoverageRunResult BuildCoverageRunResultFromCoverageInfo(string propertyPairValue, TestResult testResult,
+            Guid testCaseId, CoverageConfidence level)
+        {
+            IEnumerable<int> coveredMutants;
+            IEnumerable<int> staticMutants;
+            IEnumerable<int> leakedMutants;
+
+            if (string.IsNullOrWhiteSpace(propertyPairValue))
+            {
+                _logger.LogDebug($"VsTestRunner: Test {testResult.TestCase.DisplayName} does not cover any mutation.");
+                coveredMutants = null;
+                staticMutants = null;
+            }
+            else
+            {
+                var parts = propertyPairValue.Split(';');
+                coveredMutants = string.IsNullOrEmpty(parts[0])
+                    ? Enumerable.Empty<int>()
+                    : parts[0].Split(',').Select(int.Parse);
+                // we identify mutants that are part of static code, unless we performed pertest capture
+                staticMutants = (parts.Length == 1 || string.IsNullOrEmpty(parts[1]) ||
+                                 _context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
+                    ? Enumerable.Empty<int>()
+                    : parts[1].Split(',').Select(int.Parse);
+            }
+
+            // look for suspicious mutants
+            var (testProperty, mutantOutsideTests) = testResult.GetProperties()
+                .FirstOrDefault(x => x.Key.Id == CoverageCollector.OutOfTestsPropertyName);
+            if (testProperty != null)
+            {
+                // we have some mutations that appeared outside any test, probably some run time test case generation, or some async logic.
+                propertyPairValue = mutantOutsideTests as string;
+                leakedMutants = string.IsNullOrEmpty(propertyPairValue)
+                    ? Enumerable.Empty<int>()
+                    : propertyPairValue.Split(',').Select(int.Parse);
+                _logger.LogWarning(
+                    $"VsTestRunner: Some mutations were executed outside any test (mutation ids: {propertyPairValue}).");
+            }
+            else
+            {
+                leakedMutants = Enumerable.Empty<int>();
+            }
+
+            return new CoverageRunResult(testCaseId, level, coveredMutants, staticMutants, leakedMutants);
+        }
     }
 }

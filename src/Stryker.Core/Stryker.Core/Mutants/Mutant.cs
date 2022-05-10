@@ -24,19 +24,24 @@ namespace Stryker.Core.Mutants
     public class Mutant : IReadOnlyMutant
     {
         public int Id { get; set; }
+
         public Mutation Mutation { get; set; }
+
         public MutantStatus ResultStatus { get; set; }
+
         public ITestGuids CoveringTests { get; set; } = TestsGuidList.EveryTest();
+
         public string ResultStatusReason { get; set; }
+
         public bool CountForStats => ResultStatus != MutantStatus.CompileError && ResultStatus != MutantStatus.Ignored;
 
         public bool MustRunAgainstAllTests => CoveringTests.IsEveryTest;
 
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
-        public int? Line => Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
-        public bool IsStaticValue { get; set; }
 
-        public void ResetCoverage() => CoveringTests = TestsGuidList.NoTest();
+        public int? Line => Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
+
+        public bool IsStaticValue { get; set; }
 
         public void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests)
         {

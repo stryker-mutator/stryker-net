@@ -346,6 +346,67 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         [Fact]
+        public void ShouldCallExecutorForEveryMutantWhenNoOptimization()
+        {
+            var scenario = new FullRunScenario();
+            scenario.CreateMutants(1, 2);
+            // we need at least one test
+            scenario.CreateTest(1);
+            // and we need to declare that the mutant is covered
+            scenario.DeclareCoverageForMutant(1);
+            scenario.SetMode(OptimizationModes.None);
+            var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
+
+            var folder = new CsharpFolderComposite();
+            folder.Add(new CsharpFileLeaf()
+            {
+                SourceCode = SourceFile,
+                Mutants = scenario.GetMutants()
+            });
+
+            var input = new MutationTestInput()
+            {
+                ProjectInfo = new ProjectInfo(new MockFileSystem())
+                {
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                        {
+                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
+                            { "TargetFileName", "TestName.dll" },
+                            { "Language", "C#" }
+                        }).Object
+                    ,
+                    ProjectContents = folder
+                },
+                AssemblyReferences = _assemblies,
+                InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
+            };
+            var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
+            reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
+
+            var mutationExecutor = new MutationTestExecutor(scenario.GetTestRunnerMock().Object);
+
+            var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
+
+            var options = new StrykerOptions()
+            {
+                BasePath = basePath,
+                Concurrency = 1,
+                OptimizationMode = OptimizationModes.None
+            };
+            var target = new MutationTestProcess(input,
+                reporterMock.Object,
+                mutationExecutor,
+                mutantFilter: mutantFilterMock.Object,
+                options: options);
+
+            target.GetCoverage();
+            target.Test(scenario.GetMutants());
+
+            scenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
+            scenario.GetMutantStatus(2).ShouldBe(MutantStatus.Survived);
+        }
+
+        [Fact]
         public void ShouldHandleCoverage()
         {
             var scenario = new FullRunScenario();

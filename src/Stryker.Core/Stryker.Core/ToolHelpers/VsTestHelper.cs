@@ -225,9 +225,9 @@ namespace Stryker.Core.ToolHelpers
 
             try
             {
-                foreach (var vsTestConsole in _vsTestPaths)
+                foreach (var vsTestConsole in _vsTestPaths.Values)
                 {
-                    var path = vsTestConsole.Value;
+                    var path = vsTestConsole;
                     // If vstest path is not in nuget package folder, clean it up
                     if (!nugetPackageFolders.Any(nf => path.Contains(nf)))
                     {

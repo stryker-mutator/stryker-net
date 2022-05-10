@@ -131,43 +131,46 @@ namespace Stryker.Core.MutationTest
 
             var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.Concurrency };
 
-            var testsFailingInitially = Input.InitialTestRun.Result.FailingTests.GetGuids().ToHashSet();
-
             Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
             {
                 var reportedMutants = new HashSet<Mutant>();
                 
-                bool TestUpdateHandler(IReadOnlyList<Mutant> testedMutants, ITestGuids failedTests, ITestGuids ranTests, ITestGuids timedOutTest)
-                {
-                    var continueTestRun = _options.OptimizationMode.HasFlag(OptimizationModes.DisableBail);
-                    if (testsFailingInitially.Count > 0 && failedTests.GetGuids().Any(id => testsFailingInitially.Contains(id)))
-                    {
-                        // some of the failing tests where failing without any mutation
-                        // we discard those tests
-                        failedTests = new TestsGuidList(
-                            failedTests.GetGuids().Where(t => !testsFailingInitially.Contains(t)));
-                    }
-                    foreach (var mutant in testedMutants)
-                    {
-                        mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest);
-
-                        if (mutant.ResultStatus == MutantStatus.NotRun)
-                        {
-                            continueTestRun = true; // Not all mutants in this group were tested so we continue
-                        }
-
-                        OnMutantTested(mutant, reportedMutants); // Report on mutant that has been tested
-                    }
-
-                    return continueTestRun;
-                }
-                _mutationTestExecutor.Test(mutants, Input.InitialTestRun.TimeoutValueCalculator, TestUpdateHandler);
+                _mutationTestExecutor.Test(mutants,
+                    Input.InitialTestRun.TimeoutValueCalculator,
+                    (testedMutants, tests, ranTests, outTests) => TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants));
 
                 OnMutantsTested(mutants, reportedMutants);
             });
         }
 
-        private void OnMutantsTested(IEnumerable<Mutant> mutants, HashSet<Mutant> reportedMutants)
+        private bool TestUpdateHandler(IEnumerable<Mutant> testedMutants, ITestGuids failedTests, ITestGuids ranTests,
+            ITestGuids timedOutTest, ISet<Mutant> reportedMutants)
+        {
+            var testsFailingInitially = Input.InitialTestRun.Result.FailingTests.GetGuids().ToHashSet();
+            var continueTestRun = _options.OptimizationMode.HasFlag(OptimizationModes.DisableBail);
+            if (testsFailingInitially.Count > 0 && failedTests.GetGuids().Any(id => testsFailingInitially.Contains(id)))
+            {
+                // some of the failing tests where failing without any mutation
+                // we discard those tests
+                failedTests = new TestsGuidList(
+                    failedTests.GetGuids().Where(t => !testsFailingInitially.Contains(t)));
+            }
+            foreach (var mutant in testedMutants)
+            {
+                mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest);
+
+                if (mutant.ResultStatus == MutantStatus.NotRun)
+                {
+                    continueTestRun = true; // Not all mutants in this group were tested so we continue
+                }
+
+                OnMutantTested(mutant, reportedMutants); // Report on mutant that has been tested
+            }
+
+            return continueTestRun;
+        }
+
+        private void OnMutantsTested(IEnumerable<Mutant> mutants, ISet<Mutant> reportedMutants)
         {
             foreach (var mutant in mutants)
             {

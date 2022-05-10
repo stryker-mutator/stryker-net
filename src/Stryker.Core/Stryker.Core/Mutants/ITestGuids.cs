@@ -10,9 +10,9 @@ namespace Stryker.Core.Mutants
         int Count { get; }
         bool IsEmpty { get; }
         bool IsEveryTest { get; }
-        ITestGuids Merge(ITestGuids otherTimedOutTests);
+        ITestGuids Merge(ITestGuids other);
         bool Contains(Guid testId);
         bool ContainsAny(ITestGuids other);
-        bool IsIncludedIn(ITestGuids test);
+        bool IsIncludedIn(ITestGuids other);
     }
 }

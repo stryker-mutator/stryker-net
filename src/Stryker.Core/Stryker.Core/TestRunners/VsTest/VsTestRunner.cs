@@ -13,7 +13,7 @@ using Stryker.Core.Options;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
-    public sealed class VsTestRunner
+    public sealed class VsTestRunner : IDisposable
     {
         private IVsTestConsoleWrapper _vsTestConsole;
         private bool _disposedValue; // To detect redundant calls

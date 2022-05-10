@@ -4,6 +4,7 @@ using System.Linq;
 using Moq;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
+using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.UnitTest.MutationTest
@@ -20,6 +21,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         private readonly Dictionary<int, TestsGuidList> _failedTestsPerRun = new();
         private readonly Dictionary<Guid, List<int>> _testCoverage = new();
         private const int InitialRunId = -1;
+        private OptimizationModes _mode = OptimizationModes.CoverageBasedTest | OptimizationModes.SkipUncoveredMutants;
 
         public TestSet TestSet { get; } = new();
         public IDictionary<int, Mutant> Mutants => _mutants;
@@ -69,6 +71,8 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         public void DeclareTestsFailingAtInit(params int[] ids) => DeclareTestsFailingWhenTestingMutant(InitialRunId, ids);
+
+        public void SetMode(OptimizationModes mode) => _mode = mode;
 
         public void DeclareTestsFailingWhenTestingMutant(int id, params int[] ids)
         {
@@ -132,17 +136,19 @@ namespace Stryker.Core.UnitTest.MutationTest
 
         private TestsGuidList GetCoveringTests(int id)
         {
-            if (_coverageResult.TryGetValue(id, out var list))
-            {
-                return list;
-            }
 
             // if this is the initial test run, we must return the complete list of tests.
             if (id == InitialRunId)
             {
                 return new TestsGuidList(_tests.Values.Select(t => t.Id));
             }
-            return TestsGuidList.NoTest();
+
+            if (!_mode.HasFlag(OptimizationModes.CoverageBasedTest))
+            {
+                return TestsGuidList.EveryTest();
+            }
+
+            return _coverageResult.TryGetValue(id, out var list) ? list : TestsGuidList.NoTest();
         }
 
         private TestRunResult GetRunResult(int id) => new(GetCoveringTests(id), GetFailedTests(id), TestsGuidList.NoTest(), string.Empty, TimeSpan.Zero);
@@ -179,7 +185,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 {
                     foreach (var m in list)
                     {
-                        update(list, GetFailedTests(m.Id), GetCoveringTests(m.Id), TestsGuidList.NoTest());
+                        update(list, GetFailedTests(m.Id),  GetCoveringTests(m.Id), TestsGuidList.NoTest());
                     }
                 }))
                 .Returns(successResult);

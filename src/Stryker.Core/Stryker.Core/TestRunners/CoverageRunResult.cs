@@ -43,18 +43,9 @@ namespace Stryker.Core.TestRunners
                     confidence = Confidence;
                     break;
                 case CoverageConfidence.Normal:
-                    if (other.Confidence == CoverageConfidence.Dubious)
-                    {
-                        confidence = other.Confidence;
-                    }
-                    else
-                    {
-                        confidence = Confidence;
-                    }
-
+                    confidence = other.Confidence == CoverageConfidence.Dubious ? other.Confidence : Confidence;
                     break;
                 default:
-                case CoverageConfidence.Exact:
                     confidence = other.Confidence;
                     break;
 
