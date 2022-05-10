@@ -42,7 +42,7 @@ namespace Stryker.Core.TestRunners
         public TimeSpan Duration { get; }
 
         public TestRunResult Merge(TestRunResult other) =>
-            new TestRunResult(RanTests.Merge(other.RanTests), FailingTests.Merge(other.FailingTests),
+            new(RanTests.Merge(other.RanTests), FailingTests.Merge(other.FailingTests),
                 TimedOutTests.Merge(other.TimedOutTests), ResultMessage + other.ResultMessage,
                 Duration + other.Duration);
     }

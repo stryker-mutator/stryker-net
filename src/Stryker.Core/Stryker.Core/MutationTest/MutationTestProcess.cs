@@ -76,7 +76,7 @@ namespace Stryker.Core.MutationTest
             _mutationTestExecutor = mutationTestExecutor;
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-            _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options, _mutationTestExecutor, Input);
+            _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options);
             _language = Input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage();
             _orchestrator = cSharpOrchestrator ?? fSharpOrchestrator ?? ChooseOrchestrator(_options);
 
@@ -257,6 +257,6 @@ namespace Stryker.Core.MutationTest
             return blocks;
         }
 
-        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage();
+        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(_mutationTestExecutor.TestRunner, _projectContents.Mutants);
     }
 }

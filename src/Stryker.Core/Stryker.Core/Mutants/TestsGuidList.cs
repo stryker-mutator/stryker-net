@@ -18,7 +18,7 @@ namespace Stryker.Core.Mutants
         {
         }
 
-        public TestsGuidList(IEnumerable<Guid> guids) => _testsGuid = guids != null ? new HashSet<Guid>(guids) : new HashSet<Guid>();
+        public TestsGuidList(IEnumerable<Guid> guids) => _testsGuid = guids != null ? new HashSet<Guid>(guids) : null;
 
         public TestsGuidList(params Guid[] guids) : this((IEnumerable<Guid>)guids)
         {

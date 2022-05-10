@@ -8,13 +8,7 @@ namespace Stryker.Core.Mutants
     {
         private readonly IDictionary<Guid, TestDescription> _tests = new Dictionary<Guid, TestDescription>();
         public int Count => _tests.Count;
-        public TestDescription this[Guid guid]
-        {
-            get
-            {
-                return _tests[guid];
-            }
-        }
+        public TestDescription this[Guid guid] => _tests[guid];
 
         public void RegisterTests(IEnumerable<TestDescription> tests)
         {
@@ -24,9 +18,6 @@ namespace Stryker.Core.Mutants
             }
         }
 
-        public IEnumerable<TestDescription> Extract(IEnumerable<Guid> ids)
-        {
-            return ids.Select(i => _tests[i]);
-        }
+        public IEnumerable<TestDescription> Extract(IEnumerable<Guid> ids) => ids.Select(i => _tests[i]);
     }
 }

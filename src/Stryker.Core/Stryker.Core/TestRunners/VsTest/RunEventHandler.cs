@@ -16,55 +16,29 @@ namespace Stryker.Core.TestRunners.VsTest
         List<TestResult> TestResults { get; }
         IReadOnlyList<TestCase> TestsInTimeout { get; }
     }
-    internal class TestRun
+
+    public class SimpleRunResults : IRunResults
     {
-        private readonly VsTestDescription _testDescription;
-        private readonly IList<TestResult> _results;
+        private List<TestCase> _testsInTimeOut = new();
+        public List<TestResult> TestResults { get; } = new();
+        public IReadOnlyList<TestCase> TestsInTimeout => _testsInTimeOut.AsReadOnly();
 
-        public TestRun(VsTestDescription testDescription)
+        public SimpleRunResults Merge(IRunResults other)
         {
-            _testDescription = testDescription;
-            _results = new List<TestResult>(testDescription.NbSubCases);
-        }
-
-        public bool AddResult(TestResult result)
-        {
-            _results.Add(result);
-            return _results.Count >= _testDescription.NbSubCases;
-        }
-
-        public bool IsComplete() => _results.Count >= _testDescription.NbSubCases;
-
-        public TestResult Result()
-        {
-            var result = _results.Aggregate((TestResult)null, (acc, next) =>
+            if (other.TestsInTimeout?.Count > 0)
             {
-                if (acc == null)
+                if (_testsInTimeOut == null)
                 {
-                    return next;
+                    _testsInTimeOut = other.TestsInTimeout.ToList();
                 }
-                if (next.Outcome == TestOutcome.Failed || acc.Outcome == TestOutcome.None)
+                else
                 {
-                    acc.Outcome = next.Outcome;
+                    _testsInTimeOut.AddRange(other.TestsInTimeout);
                 }
-                if (acc.StartTime > next.StartTime)
-                {
-                    acc.StartTime = next.StartTime;
-                }
-                if (acc.EndTime < next.EndTime)
-                {
-                    acc.EndTime = next.EndTime;
-                }
+            }
 
-                foreach (var message in next.Messages)
-                {
-                    acc.Messages.Add(message);
-                }
-
-                acc.Duration = acc.EndTime - acc.StartTime;
-                return acc;
-            });
-            return result;
+            TestResults.AddRange(other.TestResults);
+            return this;
         }
     }
 
@@ -161,7 +135,8 @@ namespace Stryker.Core.TestRunners.VsTest
             if (!testRunCompleteArgs.IsCanceled && (_inProgress.Any() || _runs.Values.Any(t => !t.IsComplete())))
             {
                 // report ongoing tests and test case with missing results as timeouts.
-                TestsInTimeout = _inProgress.Values.Union(_runs.Values.Where(t => !t.IsComplete()).Select(t => t.Result().TestCase)).ToList();
+                TestsInTimeout = _inProgress.Values
+                    .Union(_runs.Values.Where(t => !t.IsComplete()).Select(t => t.Result().TestCase)).ToList();
                 if (TestsInTimeout.Count > 0)
                 {
                     TimeOut = true;
@@ -174,7 +149,8 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 if (testRunCompleteArgs.Error.GetType() == typeof(TransationLayerException))
                 {
-                    _logger.LogDebug(testRunCompleteArgs.Error, $"{_runnerId}: VsTest may have crashed, triggering VsTest restart!");
+                    _logger.LogDebug(testRunCompleteArgs.Error,
+                        $"{_runnerId}: VsTest may have crashed, triggering VsTest restart!");
                     VsTestFailed?.Invoke(this, EventArgs.Empty);
                 }
                 else if (testRunCompleteArgs.Error.InnerException is IOException sock)
@@ -190,7 +166,8 @@ namespace Stryker.Core.TestRunners.VsTest
             _waitHandle.Set();
         }
 
-        public int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo) => throw new NotSupportedException();
+        public int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo) =>
+            throw new NotSupportedException();
 
         public void HandleRawMessage(string rawMessage) => _logger.LogTrace($"{_runnerId}: {rawMessage} [RAW]");
 
@@ -204,12 +181,13 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 var delay = 0;
                 const int Unit = 500;
-                while (delay<timeOut.Value*3)
+                while (delay < timeOut.Value * 3)
                 {
                     if (_waitHandle.WaitOne(Unit))
                     {
                         return true;
                     }
+
                     delay += Unit;
                 }
 

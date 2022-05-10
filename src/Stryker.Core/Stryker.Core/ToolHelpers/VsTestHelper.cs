@@ -18,13 +18,16 @@ namespace Stryker.Core.ToolHelpers
         void Cleanup(int tries = 5);
     }
 
+    /// <summary>
+    /// Locates VsTest folder. Installs one if none is found. 
+    /// </summary>
     public class VsTestHelper : IVsTestHelper
     {
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
-        private readonly Dictionary<OSPlatform, string> _vstestPaths = new Dictionary<OSPlatform, string>();
+        private readonly Dictionary<OSPlatform, string> _vsTestPaths = new();
         private string _platformVsTestToolPath;
-        private object _lck = new object();
+        private readonly object _lck = new();
 
         public VsTestHelper(IFileSystem fileSystem = null, ILogger logger = null)
         {
@@ -32,6 +35,11 @@ namespace Stryker.Core.ToolHelpers
             _fileSystem = fileSystem ?? new FileSystem();
         }
 
+        /// <summary>
+        /// Finds VsTest path version corresponding to current platform (ie OS)
+        /// </summary>
+        /// <returns>VsTest full path.</returns>
+        /// <exception cref="PlatformNotSupportedException">When it fails to find a VsTest install for the current plaform</exception>
         public string GetCurrentPlatformVsTestToolPath()
         {
             lock (_lck)
@@ -39,32 +47,33 @@ namespace Stryker.Core.ToolHelpers
                 if (string.IsNullOrEmpty(_platformVsTestToolPath))
                 {
                     var paths = GetVsTestToolPaths();
-                    foreach (var path in paths)
-                    {
-                        if (RuntimeInformation.IsOSPlatform(path.Key))
-                        {
-                            _logger.LogDebug("Using vstest.console: {0} for OS {1}", path.Value, path.Key);
-                            _platformVsTestToolPath = path.Value;
-                            break;
-                        }
-                    }
-                    if (string.IsNullOrEmpty(_platformVsTestToolPath))
+                    
+                    if (!paths.Keys.Any(RuntimeInformation.IsOSPlatform))
                     {
                         throw new PlatformNotSupportedException(
                             $"The current OS is not any of the following currently supported: {string.Join(", ", paths.Keys)}");
                     }
+
+                    var osPlatform = paths.Keys.First(RuntimeInformation.IsOSPlatform);
+                    _platformVsTestToolPath = paths[osPlatform];
+                    _logger.LogDebug("Using vstest.console: {0} for OS {1}", osPlatform, _platformVsTestToolPath);
                 }
             }
 
             return _platformVsTestToolPath;
         }
 
+        /// <summary>
+        /// Gets VsTest installations
+        /// </summary>
+        /// <returns>a dictionary with the folder for each detected platform</returns>
+        /// <exception cref="ApplicationException">If it fails to find and deploy VsTest</exception>
         private Dictionary<OSPlatform, string> GetVsTestToolPaths()
         {
             // If any of the found paths is for the current OS, just return the paths as we have what we need
-            if (_vstestPaths.Any(p => RuntimeInformation.IsOSPlatform(p.Key)))
+            if (_vsTestPaths.Any(p => RuntimeInformation.IsOSPlatform(p.Key)))
             {
-                return _vstestPaths;
+                return _vsTestPaths;
             }
 
             var nugetPackageFolders = CollectNugetPackageFolders();
@@ -72,12 +81,12 @@ namespace Stryker.Core.ToolHelpers
             if (SearchNugetPackageFolders(nugetPackageFolders) is var nugetAssemblies
                 && nugetAssemblies.Any(p => RuntimeInformation.IsOSPlatform(p.Key)))
             {
-                Merge(_vstestPaths, nugetAssemblies);
+                Merge(_vsTestPaths, nugetAssemblies);
                 _logger.LogDebug("Using vstest from nuget package folders");
             }
             else if (DeployEmbeddedVsTestBinaries() is var deployPath)
             {
-                Merge(_vstestPaths, SearchNugetPackageFolders(new List<string> { deployPath }, versionDependent: false));
+                Merge(_vsTestPaths, SearchNugetPackageFolders(new List<string> { deployPath }, versionDependent: false));
                 _logger.LogDebug("Using vstest from deployed vstest package");
             }
             else
@@ -85,10 +94,10 @@ namespace Stryker.Core.ToolHelpers
                 throw new ApplicationException("Could not find or deploy vstest. Exiting.");
             }
 
-            return _vstestPaths;
+            return _vsTestPaths;
         }
 
-        private void Merge(Dictionary<OSPlatform, string> to, Dictionary<OSPlatform, string> from)
+        private static void Merge(IDictionary<OSPlatform, string> to, Dictionary<OSPlatform, string> from)
         {
             foreach (var val in from)
             {
@@ -101,10 +110,10 @@ namespace Stryker.Core.ToolHelpers
             var vsTestPaths = new Dictionary<OSPlatform, string>();
 
             var versionString = FileVersionInfo.GetVersionInfo(typeof(IVsTestConsoleWrapper).Assembly.Location).ProductVersion;
-            const string portablePackageName = "microsoft.testplatform.portable";
+            const string PortablePackageName = "microsoft.testplatform.portable";
             bool dllFound = false, exeFound = false;
 
-            foreach (string nugetPackageFolder in nugetPackageFolders)
+            foreach (var nugetPackageFolder in nugetPackageFolders)
             {
                 if (dllFound && exeFound)
                 {
@@ -114,7 +123,7 @@ namespace Stryker.Core.ToolHelpers
                 string searchFolder;
                 if (versionDependent)
                 {
-                    var portablePackageFolder = Path.Combine(nugetPackageFolder, portablePackageName, versionString);
+                    var portablePackageFolder = Path.Combine(nugetPackageFolder, PortablePackageName, versionString);
 
                     if (!_fileSystem.Directory.Exists(portablePackageFolder))
                     {
@@ -178,14 +187,14 @@ namespace Stryker.Core.ToolHelpers
 
         private string DeployEmbeddedVsTestBinaries()
         {
-            var vstestZip = typeof(VsTestHelper).Assembly
+            var vsTestZip = typeof(VsTestHelper).Assembly
                 .GetManifestResourceNames()
                 .Single(r => r.Contains("Microsoft.TestPlatform.Portable", StringComparison.InvariantCultureIgnoreCase));
 
             var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), ".vstest");
 
             using (var stream = typeof(VsTestHelper).Assembly
-            .GetManifestResourceStream(vstestZip))
+            .GetManifestResourceStream(vsTestZip))
             {
                 var zipPath = Path.Combine(tempDir, "vstest.zip");
                 _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(zipPath));
@@ -206,15 +215,19 @@ namespace Stryker.Core.ToolHelpers
             return tempDir;
         }
 
+        /// <summary>
+        /// Removes any VsTest instance that were deployed by Stryker.
+        /// </summary>
+        /// <param name="tries">Remaining attempts.</param>
         public void Cleanup(int tries = 5)
         {
             var nugetPackageFolders = CollectNugetPackageFolders();
 
             try
             {
-                foreach (var vstestConsole in _vstestPaths)
+                foreach (var vsTestConsole in _vsTestPaths)
                 {
-                    var path = vstestConsole.Value;
+                    var path = vsTestConsole.Value;
                     // If vstest path is not in nuget package folder, clean it up
                     if (!nugetPackageFolders.Any(nf => path.Contains(nf)))
                     {

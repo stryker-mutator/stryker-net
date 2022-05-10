@@ -35,8 +35,6 @@ namespace Stryker.Core.UnitTest.Initialisation
             var ranTests = new TestsGuidList(failedTest, successfulTest);
             var failedTests = new TestsGuidList(failedTest);
             testRunnerMock.Setup(x => x.InitialTest()).Returns(new TestRunResult(ranTests, failedTests, TestsGuidList.NoTest(), string.Empty, TimeSpan.Zero) );
-            testRunnerMock.Setup(x => x.CaptureCoverage( It.IsAny<List<Mutant>>()))
-                .Returns(new TestRunResult(true));
             testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
 
             Assert.Throws<InputException>(() => _target.InitialTest(_options, testRunnerMock.Object));
@@ -56,8 +54,6 @@ namespace Stryker.Core.UnitTest.Initialisation
             var ranTests = new TestsGuidList(testList);
             var failedTests = new TestsGuidList(test1);
             testRunnerMock.Setup(x => x.InitialTest()).Returns(new TestRunResult(ranTests, failedTests, TestsGuidList.NoTest(), string.Empty, TimeSpan.Zero) );
-            testRunnerMock.Setup(x => x.CaptureCoverage( It.IsAny<List<Mutant>>()))
-                .Returns(new TestRunResult(true));
             testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
 
             _target.InitialTest(_options, testRunnerMock.Object);
@@ -68,8 +64,6 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             testRunnerMock.Setup(x => x.InitialTest()).Callback(() => Thread.Sleep(2)).Returns(new TestRunResult(true));
-            testRunnerMock.Setup(x => x.CaptureCoverage(It.IsAny<List<Mutant>>()))
-                .Returns(new TestRunResult(true));
             testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
 
             var result = _target.InitialTest(_options, testRunnerMock.Object);

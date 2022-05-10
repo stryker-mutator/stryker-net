@@ -37,8 +37,10 @@ namespace Stryker.DataCollector
 
         public string MutantList => _singleMutant?.ToString() ?? string.Join(",", _mutantTestedBy.Values.Distinct());
 
-        public static string GetVsTestSettings(bool needCoverage, IEnumerable<(int, IEnumerable<Guid>)> mutantTestsMap,
-            string helpNameSpace)
+        public static string GetVsTestSettings(bool needCoverage,
+            IEnumerable<(int mutant, IEnumerable<Guid> coveringTests)> mutantTestsMap,
+            string helperNameSpace,
+            string coverageCaptureFile = null)
         {
             var codeBase = typeof(CoverageCollector).GetTypeInfo().Assembly.Location;
             var qualifiedName = typeof(CoverageCollector).AssemblyQualifiedName;
@@ -54,24 +56,31 @@ namespace Stryker.DataCollector
             configuration.Append("<Parameters>");
             if (needCoverage)
             {
-                configuration.Append("<Coverage/>");
+                configuration.Append($"<Coverage file='{coverageCaptureFile}'/>");
             }
 
             if (mutantTestsMap != null)
             {
                 foreach (var entry in mutantTestsMap)
                 {
-                    configuration.AppendFormat("<Mutant id='{0}' tests='{1}'/>", entry.Item1,
-                        entry.Item2 == null ? "" : string.Join(",", entry.Item2));
+                    configuration.AppendFormat("<Mutant id='{0}' tests='{1}'/>", entry.mutant,
+                        entry.Item2 == null ? "" : string.Join(",", entry.coveringTests));
                 }
             }
 
-            configuration.Append($"<MutantControl  name='{helpNameSpace}.MutantControl'/>");
+            configuration.Append($"<MutantControl  name='{helperNameSpace}.MutantControl'/>");
             configuration.Append("</Parameters>");
 
             return string.Format(TemplateForConfiguration, line, configuration);
         }
-
+        /*
+         * [
+ {"testCaseId":"abcdef0123",
+ "mutationCoveredAfter": [12,15]},
+ {"testCaseId":"abcdef0143",
+ "mutationCoveredAfter": [2,5]}
+]
+         */
         public void Initialize(IDataCollectionSink dataCollectionSink) => _dataSink = dataCollectionSink;
 
         public void SetLogger(Action<string> logger) => _logger = logger;

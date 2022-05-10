@@ -118,6 +118,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 new Mock<IVsTestHelper>().Object,
                 _fileSystem,
                 _=> mockedVsTestConsole.Object,
+                null,
                 NullLogger.Instance
                 );
         }
