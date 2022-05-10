@@ -1,8 +1,10 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Buildalyzer;
 using Moq;
 using Shouldly;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Xunit;
 
@@ -77,7 +79,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Fact]
-        public void SelectsFirstFrameworkIfSpecifiedButNotAvailable()
+        public void ThrowsIfSpecifiedButNotAvailable()
         {
             var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
             var analyzerResultFrameworkYMock = new Mock<IAnalyzerResult>();
@@ -93,8 +95,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            var result = _projectFileReader.AnalyzeProject(null, null, "Z");
-            result.TargetFramework.ShouldBe("X");
+            Func<IAnalyzerResult> analyzeProject = () => _projectFileReader.AnalyzeProject(null, null, "Z");
+            analyzeProject.ShouldThrow<InputException>("");
         }
     }
 }
