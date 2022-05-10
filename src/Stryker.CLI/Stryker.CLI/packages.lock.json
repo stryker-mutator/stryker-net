@@ -43,10 +43,10 @@
       },
       "Buildalyzer": {
         "type": "Transitive",
-        "resolved": "4.1.3",
-        "contentHash": "25NJRnGgYBOC3OPgFDj/KeJwSldXPFZl5jDXjqP7Vsy6vC+MPapcJ687/dOjUeS4t4aVuYrMyWdaezkZgs+Rdw==",
+        "resolved": "4.1.4",
+        "contentHash": "O6KGKPeCAe+Ujhd2sl66nu7rrEAM2hBUbi3n79BVBOj9YxuUlbxviOfy3Cq22iIp9rUDPOqOL8E2AYiQwxpUHQ==",
         "dependencies": {
-          "Buildalyzer.Logger": "4.1.3",
+          "Buildalyzer.Logger": "4.1.4",
           "MSBuild.StructuredLogger": "2.1.507",
           "Microsoft.Build": "16.9.0",
           "Microsoft.Build.Framework": "16.9.0",
@@ -62,8 +62,8 @@
       },
       "Buildalyzer.Logger": {
         "type": "Transitive",
-        "resolved": "4.1.3",
-        "contentHash": "9qq5VfFO/cvasetqJpj+V5sc8Ng5EQjCkYi3COOvzyqNLivYIp+4Cf1ddfbcye3X3i89z9oHIEmF3iNQspFSDw=="
+        "resolved": "4.1.4",
+        "contentHash": "2C2FR877slFBYM/usMkGnmOZlLKejV0uag0IzmARkKkBD75jNPM6q2WLaFAW/yRLPyyArpunYzQ+4AaDyEImHQ=="
       },
       "DotNet.Glob": {
         "type": "Transitive",
@@ -1197,7 +1197,7 @@
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "Buildalyzer": "4.1.3",
+          "Buildalyzer": "4.1.4",
           "DotNet.Glob": "3.1.3",
           "FSharp.Compiler.Service": "38.0.0",
           "LibGit2Sharp": "0.27.0-preview-0182",
@@ -1219,8 +1219,8 @@
           "ShellProgressBar": "5.1.0",
           "Spectre.Console": "0.44.0",
           "Spectre.Console.Analyzer": "0.44.0",
-          "Stryker.DataCollector": "1.5.2",
-          "Stryker.RegexMutators": "1.5.2",
+          "Stryker.DataCollector": "1.5.3",
+          "Stryker.RegexMutators": "1.5.3",
           "System.IO.Abstractions": "17.0.3",
           "System.Net.Http.Json": "6.0.0",
           "System.Runtime.Caching": "5.0.0"

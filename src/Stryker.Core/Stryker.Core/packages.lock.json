@@ -4,11 +4,11 @@
     ".NETCoreApp,Version=v5.0": {
       "Buildalyzer": {
         "type": "Direct",
-        "requested": "[4.1.3, )",
-        "resolved": "4.1.3",
-        "contentHash": "25NJRnGgYBOC3OPgFDj/KeJwSldXPFZl5jDXjqP7Vsy6vC+MPapcJ687/dOjUeS4t4aVuYrMyWdaezkZgs+Rdw==",
+        "requested": "[4.1.4, )",
+        "resolved": "4.1.4",
+        "contentHash": "O6KGKPeCAe+Ujhd2sl66nu7rrEAM2hBUbi3n79BVBOj9YxuUlbxviOfy3Cq22iIp9rUDPOqOL8E2AYiQwxpUHQ==",
         "dependencies": {
-          "Buildalyzer.Logger": "4.1.3",
+          "Buildalyzer.Logger": "4.1.4",
           "MSBuild.StructuredLogger": "2.1.507",
           "Microsoft.Build": "16.9.0",
           "Microsoft.Build.Framework": "16.9.0",
@@ -246,8 +246,8 @@
       },
       "Buildalyzer.Logger": {
         "type": "Transitive",
-        "resolved": "4.1.3",
-        "contentHash": "9qq5VfFO/cvasetqJpj+V5sc8Ng5EQjCkYi3COOvzyqNLivYIp+4Cf1ddfbcye3X3i89z9oHIEmF3iNQspFSDw=="
+        "resolved": "4.1.4",
+        "contentHash": "2C2FR877slFBYM/usMkGnmOZlLKejV0uag0IzmARkKkBD75jNPM6q2WLaFAW/yRLPyyArpunYzQ+4AaDyEImHQ=="
       },
       "FSharp.Core": {
         "type": "Transitive",
