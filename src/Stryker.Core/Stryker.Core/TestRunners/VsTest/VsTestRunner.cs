@@ -147,7 +147,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var resultAsArray = testResults.TestResults.ToArray();
             var testCases = resultAsArray.Select(t => t.TestCase.Id).ToHashSet();
-            var ranTestsCount = testCases.Count();
+            var ranTestsCount = testCases.Count;
             var timeout = !_aborted && ranTestsCount < expectedTests;
             var ranTests = (compressAll && ranTestsCount >= _context.Tests.Count) ? (ITestGuids)TestsGuidList.EveryTest() : new WrappedGuidsEnumeration(testCases);
             var failedTests = resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(t => t.TestCase.Id);
@@ -169,7 +169,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 : new TestRunResult(ranTests, failedTestsDescription, timedOutTests, message, duration);
         }
 
-        public IRunResults RunTestSession(ITestGuids testsToRun, int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<RunEventHandler> updateHandler = null) =>
+        public IRunResults RunTestSession(ITestGuids testsToRun, int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<IRunResults> updateHandler = null) =>
             RunTestSession(testsToRun,
                 _context.GenerateRunSettings(timeout, false, mutantTestsMap, null), timeout, updateHandler);
 
@@ -183,7 +183,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private IRunResults RunTestSession(ITestGuids tests,
             string runSettings,
             int? timeOut = null,
-            Action<RunEventHandler> updateHandler = null,
+            Action<IRunResults> updateHandler = null,
             int retries = 0)
         {
             using var eventHandler = new RunEventHandler(_context.VsTests, _logger, RunnerId);
@@ -233,8 +233,9 @@ namespace Stryker.Core.TestRunners.VsTest
 
             if (!_vsTestFailed || retries > 5)
             {
-                return eventHandler;
+                return new SimpleRunResults(eventHandler.TestResults, eventHandler.TestsInTimeout);
             }
+
             PrepareVsTestConsole();
             _vsTestFailed = false;
 

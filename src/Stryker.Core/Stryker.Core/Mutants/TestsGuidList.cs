@@ -9,8 +9,8 @@ namespace Stryker.Core.Mutants
     {
         private readonly ISet<Guid> _testsGuid;
 
-        private static readonly TestsGuidList EveryTests = new();
-        private static readonly TestsGuidList NoTestAtAll = new(Array.Empty<Guid>());
+        private static readonly TestsGuidList everyTests = new();
+        private static readonly TestsGuidList noTestAtAll = new(Array.Empty<Guid>());
 
         private TestsGuidList() => _testsGuid = null;
 
@@ -35,9 +35,9 @@ namespace Stryker.Core.Mutants
 
         public bool IsIncludedIn(ITestGuids test) => test.IsEveryTest || _testsGuid.IsSubsetOf(test.GetGuids());
 
-        public static TestsGuidList EveryTest() => EveryTests;
+        public static TestsGuidList EveryTest() => everyTests;
 
-        public static TestsGuidList NoTest() => NoTestAtAll;
+        public static TestsGuidList NoTest() => noTestAtAll;
 
         public IEnumerable<Guid> GetGuids() => _testsGuid;
 

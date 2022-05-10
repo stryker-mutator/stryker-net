@@ -196,7 +196,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     if (testProperty != null)
                     {
                         // we have some mutations that appeared outside any test, probably some run time test case generation, or some async logic.
-                        propertyPairValue = (mutantOutsideTests as string);
+                        propertyPairValue = mutantOutsideTests as string;
                         leakedMutants = string.IsNullOrEmpty(propertyPairValue)
                             ? Enumerable.Empty<int>()
                             : propertyPairValue.Split(',').Select(int.Parse);

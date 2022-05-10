@@ -23,6 +23,16 @@ namespace Stryker.Core.TestRunners.VsTest
         public List<TestResult> TestResults { get; } = new();
         public IReadOnlyList<TestCase> TestsInTimeout => _testsInTimeOut.AsReadOnly();
 
+        public SimpleRunResults()
+        {
+        }
+
+        public SimpleRunResults(ICollection<TestResult> results, IReadOnlyCollection<TestCase> testsInTimeout)
+        {
+            TestResults = results.ToList();
+            _testsInTimeOut = testsInTimeout?.ToList() ?? new ();
+        }
+
         public SimpleRunResults Merge(IRunResults other)
         {
             if (other.TestsInTimeout?.Count > 0)

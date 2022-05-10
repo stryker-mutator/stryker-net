@@ -61,10 +61,10 @@ namespace Stryker.DataCollector
 
             if (mutantTestsMap != null)
             {
-                foreach (var entry in mutantTestsMap)
+                foreach (var (mutant, coveringTests) in mutantTestsMap)
                 {
-                    configuration.AppendFormat("<Mutant id='{0}' tests='{1}'/>", entry.mutant,
-                        entry.Item2 == null ? "" : string.Join(",", entry.coveringTests));
+                    configuration.AppendFormat("<Mutant id='{0}' tests='{1}'/>", mutant,
+                        coveringTests == null ? "" : string.Join(",", coveringTests));
                 }
             }
 

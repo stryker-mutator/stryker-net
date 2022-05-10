@@ -29,10 +29,8 @@ namespace Stryker.Core.MutationTest
         public IMutationTestProcess Provide(MutationTestInput mutationTestInput,
             IReporter reporter,
             IMutationTestExecutor mutationTestExecutor,
-            StrykerOptions options)
-        {
-            return new MutationTestProcess(mutationTestInput, reporter, mutationTestExecutor, options: options);
-        }
+            StrykerOptions options) =>
+            new MutationTestProcess(mutationTestInput, reporter, mutationTestExecutor, options: options);
     }
 
     public interface IMutationTestProcess
@@ -193,7 +191,7 @@ namespace Stryker.Core.MutationTest
             reportedMutants.Add(mutant);
         }
 
-        private bool MutantsToTest(IEnumerable<Mutant> mutantsToTest)
+        private static bool MutantsToTest(IEnumerable<Mutant> mutantsToTest)
         {
             if (!mutantsToTest.Any())
             {

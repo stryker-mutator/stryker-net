@@ -17,10 +17,7 @@ namespace Stryker.Core.ProjectComponents
             set => throw new NotSupportedException("Folders do not contain mutants.");
         }
 
-        public void Add(IProjectComponent child)
-        {
-            _children.Add(child);
-        }
+        public void Add(IProjectComponent child) => _children.Add(child);
 
         public void AddRange(IEnumerable<IProjectComponent> children)
         {
