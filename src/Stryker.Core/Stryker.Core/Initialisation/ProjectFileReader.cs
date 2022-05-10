@@ -102,6 +102,8 @@ namespace Stryker.Core.Initialisation
 
         private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
         {
+            if (analyzerResults.Count == 0)
+                throw new InputException("No analyzer results were found");
             var firstAnalyzerResult = analyzerResults?.First(e => e.TargetFramework is not null);
             if (targetFramework is null)
             {
