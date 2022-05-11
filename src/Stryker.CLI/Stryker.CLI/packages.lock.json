@@ -1195,7 +1195,7 @@
           "Microsoft.TestPlatform.TranslationLayer": "17.2.0",
           "Microsoft.Web.LibraryManager.Build": "2.1.161",
           "Mono.Cecil": "0.11.4",
-          "NuGet.Frameworks": "6.1.0",
+          "NuGet.Frameworks": "6.2.0",
           "Serilog": "2.11.0",
           "Serilog.Extensions.Logging": "3.1.0",
           "Serilog.Extensions.Logging.File": "2.0.0",
