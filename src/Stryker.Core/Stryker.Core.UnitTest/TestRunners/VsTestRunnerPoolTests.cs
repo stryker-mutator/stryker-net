@@ -219,18 +219,22 @@ namespace Stryker.Core.UnitTest.TestRunners
                     var results = new List<TestResult>(coverageResults.Count);
                     foreach (var (key, value) in coverageResults)
                     {
-                        var coveredList = value.Split('|');
                         var result = new TestResult(FindOrBuildCase(key))
                         {
                             DisplayName = key,
                             Outcome = TestOutcome.Passed,
                             ComputerName = "."
                         };
-                        result.SetPropertyValue(_coverageProperty, coveredList[0]);
-                        if (coveredList.Length > 1)
+                        if (value != null)
                         {
-                            result.SetPropertyValue(_unexpectedCoverageProperty, coveredList[1]);
+                            var coveredList = value.Split('|');
+                            result.SetPropertyValue(_coverageProperty, coveredList[0]);
+                            if (coveredList.Length > 1)
+                            {
+                                result.SetPropertyValue(_unexpectedCoverageProperty, coveredList[1]);
+                            }
                         }
+
                         results.Add(result);
                     }
                     MoqTestRun(testRunEvents, results);
@@ -794,6 +798,8 @@ namespace Stryker.Core.UnitTest.TestRunners
             result.FailingTests.IsEmpty.ShouldBeTrue();
         }
 
+        // this verifies that mutant that are covered outside any tests are
+        // flagged as to be tested against all tests
         [Fact]
         public void MarkSuspiciousCoverage()
         {
@@ -806,12 +812,36 @@ namespace Stryker.Core.UnitTest.TestRunners
             {
                 var mockVsTest = BuildVsTestRunnerPool(options, endProcess, out var runner);
 
-                SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;|1", ["T1"] = ";" }, endProcess);
+                SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;|1", ["T1"] = ";"}, endProcess);
 
                 var analyzer = new CoverageAnalyser(options);
                 analyzer.DetermineTestCoverage(runner, new []{_mutant, _otherMutant});
                 // the suspicious mutant should be tested against all tests
                 _otherMutant.CoveringTests.Count.ShouldBe(2);
+            }
+        }
+
+        // this verifies that tests missing any coverage information are
+        // flagged as to be tested used against every mutants
+        [Fact]
+        public void MarkSuspiciousTests()
+        {
+            var options = new StrykerOptions
+            {
+                OptimizationMode = OptimizationModes.CoverageBasedTest
+            };
+
+            using (var endProcess = new EventWaitHandle(false, EventResetMode.ManualReset))
+            {
+                var mockVsTest = BuildVsTestRunnerPool(options, endProcess, out var runner);
+
+                SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "1;", ["T1"] = null}, endProcess);
+
+                var analyzer = new CoverageAnalyser(options);
+                analyzer.DetermineTestCoverage(runner, new []{_mutant, _otherMutant});
+                // the suspicious mutant should be tested against all tests
+                _otherMutant.CoveringTests.Count.ShouldBe(2);
+                _mutant.CoveringTests.Count.ShouldBe(1);
             }
         }
 

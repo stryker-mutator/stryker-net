@@ -21,9 +21,15 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly ILogger _logger;
         private readonly VsTestContextInformation _context;
         
+        /// <summary>
+        /// this constructor is for test purposes
+        /// </summary>
+        /// <param name="vsTestContext"></param>
+        /// <param name="forcedLogger"></param>
+        /// <param name="runnerBuilder"></param>
         public VsTestRunnerPool(VsTestContextInformation vsTestContext,
-            ILogger forcedLogger = null,
-            Func<VsTestContextInformation, int, VsTestRunner> runnerBuilder = null)
+            ILogger forcedLogger,
+            Func<VsTestContextInformation, int, VsTestRunner> runnerBuilder)
         {
             _logger = forcedLogger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
             _context = vsTestContext;
@@ -33,16 +39,13 @@ namespace Stryker.Core.TestRunners.VsTest
         }
 
         public VsTestRunnerPool(StrykerOptions options,
-            ProjectInfo projectInfo,
-            ILogger forcedLogger = null,
-            Func<VsTestContextInformation, int, VsTestRunner> runnerBuilder = null)
+            ProjectInfo projectInfo)
         {
             _context = new VsTestContextInformation(options, projectInfo);
             _context.Initialize();
-            _logger = forcedLogger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
-            runnerBuilder ??= (context, i) => new VsTestRunner(context, i);
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
             Parallel.For(0, Math.Max(1, _context.Options.Concurrency), (i, _) => 
-                 _availableRunners.Add(runnerBuilder(_context, i)));
+                 _availableRunners.Add(new VsTestRunner(_context, i)));
         }
 
         public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
@@ -153,7 +156,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 {
                     // the coverage collector was not able to report anything ==> it has not been tracked by it, so we do not have coverage data
                     // ==> we need it to use this test against every mutation
-                    if (!seenTestCases.Contains(testCaseId) ||
+                    if (seenTestCases.Contains(testCaseId) ||
                         dynamicTestCases.Contains(testCaseId))
                     {
                         _logger.LogDebug($"VsTestRunner: Test {testResult.TestCase.DisplayName} was not tracked, so no coverage data for it.");
