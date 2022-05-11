@@ -219,9 +219,9 @@
       },
       "System.IO.Abstractions": {
         "type": "Direct",
-        "requested": "[17.0.3, )",
-        "resolved": "17.0.3",
-        "contentHash": "P1iDcQEvrVO359GJr7BSsb2XL+YlW9/oqVtlNwszVjj1Aj9qyORBYkftOicPxdBSHiR5Eu/Px2cMu5qiD5elnA==",
+        "requested": "[17.0.8, )",
+        "resolved": "17.0.8",
+        "contentHash": "6+SvU0pBW+kXvqEHonhJVqN0N5F8lgfoUAQuAa9KfDgAYoZrAfXrCRCMv+Qbi/bMqclinSoncoAUIoktz8xn9w==",
         "dependencies": {
           "System.IO.FileSystem.AccessControl": "5.0.0"
         }
