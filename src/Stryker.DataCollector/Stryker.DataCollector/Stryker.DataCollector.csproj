@@ -8,6 +8,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="$(MicrosoftTestPlatform)" />
+    <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="$(MicrosoftTestPlatform)" /> <!-- From Directory.Build.props -->
   </ItemGroup>
 </Project>

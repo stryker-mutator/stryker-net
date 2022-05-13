@@ -5,26 +5,26 @@ updates:
   schedule:
     interval: daily
   commit-message:
-    prefix: 'deps: '
+    prefix: 'chore'
     include: "scope"
 - package-ecosystem: nuget
   directory: "/integrationtest"
   schedule:
     interval: daily
   commit-message:
-    prefix: 'deps: '
+    prefix: 'chore'
     include: "scope"
 - package-ecosystem: nuget
   directory: "/integrationtest/TargetProjects/NetFramework"
   schedule:
     interval: daily
   commit-message:
-    prefix: 'deps: '
+    prefix: 'chore'
     include: "scope"
 - package-ecosystem: nuget
   directory: "/src/Stryker.Core/Stryker.Core/ToolHelpers"
   schedule:
     interval: daily
   commit-message:
-    prefix: 'deps: '
+    prefix: 'chore'
     include: "scope"
