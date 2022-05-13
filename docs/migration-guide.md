@@ -8,7 +8,7 @@ custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs
 
 This guide instructs how to update major versions of Stryker.NET.
 
-## V1 --> V2
+## V1.x --> V2.x
 
 ### ⏭ Updated runtime
 
