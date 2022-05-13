@@ -78,11 +78,7 @@ namespace Stryker.DataCollector
             return string.Format(TemplateForConfiguration, line, configuration);
         }
 
-        public void Initialize(IDataCollectionSink dataCollectionSink)
-        {
-            _dataSink = dataCollectionSink;
-            // SetLogger(text => EqtTrace.Warning(text));
-        }
+        public void Initialize(IDataCollectionSink dataCollectionSink) => _dataSink = dataCollectionSink;
 
         public void SetLogger(Action<string> logger) => _logger = logger;
 
@@ -160,30 +156,7 @@ namespace Stryker.DataCollector
             var testMapping = node.SelectNodes("//Parameters/Mutant");
             if (testMapping != null)
             {
-                var mutations = new HashSet<int>();
-                for (var i = 0; i < testMapping.Count; i++)
-                {
-                    var current = testMapping[i];
-                    var id = int.Parse(current.Attributes["id"].Value);
-                    var tests = current.Attributes["tests"].Value;
-                    mutations.Add(id);
-                    if (string.IsNullOrEmpty(tests))
-                    {
-                        _singleMutant = id;
-                    }
-                    else
-                    {
-                        foreach (var test in tests.Split(','))
-                        {
-                            _mutantTestedBy[test] = id;
-                        }
-                    }
-                }
-
-                if (mutations.Count == 1)
-                {
-                    _singleMutant = mutations.First();
-                }
+                ParseTestMapping(testMapping);
             }
 
             var nameSpaceNode = node.SelectSingleNode("//Parameters/MutantControl");
@@ -200,6 +173,34 @@ namespace Stryker.DataCollector
                 {
                     _coverageReportFile = coverage.Attributes["file"].Value;
                 }
+            }
+        }
+
+        private void ParseTestMapping(XmlNodeList testMapping)
+        {
+            var mutations = new HashSet<int>();
+            for (var i = 0; i < testMapping.Count; i++)
+            {
+                var current = testMapping[i];
+                var id = int.Parse(current.Attributes["id"].Value);
+                var tests = current.Attributes["tests"].Value;
+                mutations.Add(id);
+                if (string.IsNullOrEmpty(tests))
+                {
+                    _singleMutant = id;
+                }
+                else
+                {
+                    foreach (var test in tests.Split(','))
+                    {
+                        _mutantTestedBy[test] = id;
+                    }
+                }
+            }
+
+            if (mutations.Count == 1)
+            {
+                _singleMutant = mutations.First();
             }
         }
 
@@ -277,7 +278,6 @@ namespace Stryker.DataCollector
             if (_mutationCoveredOutsideTests == null || _mutationCoveredOutsideTests.Count == 0) { return; }
             
             // report any mutations covered before this test executed
-
             _mutationCoveredOutsideTests.Clear();
         }
 
