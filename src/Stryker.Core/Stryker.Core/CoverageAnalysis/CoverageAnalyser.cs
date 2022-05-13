@@ -22,6 +22,9 @@ namespace Stryker.Core.CoverageAnalysis
 
         public void DetermineTestCoverage(ITestRunner runner, IEnumerable<Mutant> mutants)
         {
+            var mutantsToScan =
+                mutants.Where(x => x.ResultStatus == MutantStatus.NotRun)
+                    .ToList();
             if (!_options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
                 !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
             {
@@ -32,7 +35,7 @@ namespace Stryker.Core.CoverageAnalysis
                 return;
             }
 
-            ParseCoverage(runner.CaptureCoverage(), mutants);
+            ParseCoverage(runner.CaptureCoverage(), mutantsToScan);
         }
 
         private void ParseCoverage(IEnumerable<CoverageRunResult> coverage, IEnumerable<Mutant> mutantsToScan)
