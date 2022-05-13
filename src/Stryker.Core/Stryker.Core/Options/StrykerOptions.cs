@@ -15,6 +15,9 @@ namespace Stryker.Core.Options
         public bool DevMode { get; init; }
 
         public string BasePath { get; init; }
+
+        private readonly string RootPathField;
+        public string RootPath { get => RootPathField ?? BasePath; init => RootPathField = value; }
         public string OutputPath { get; init; }
         public string ReportFileName { get; init; }
         public string SolutionPath { get; init; }
@@ -90,7 +93,7 @@ namespace Stryker.Core.Options
         // Keep a reference on the parent instance in order to flow get/set properties (ProjectName and ProjectVersion) up to the parent
         private StrykerOptions _parentOptions;
 
-        public StrykerOptions Copy(string basePath, string projectUnderTest, IEnumerable<string> testProjects) => new()
+        public StrykerOptions Copy(string basePath, string rootPath, string projectUnderTest, IEnumerable<string> testProjects) => new()
         {
             _parentOptions = this,
             AdditionalTimeout = AdditionalTimeout,
@@ -98,6 +101,7 @@ namespace Stryker.Core.Options
             AzureFileStorageUrl = AzureFileStorageUrl,
             BaselineProvider = BaselineProvider,
             BasePath = basePath,
+            RootPath = rootPath,
             Concurrency = Concurrency,
             DashboardApiKey = DashboardApiKey,
             DashboardUrl = DashboardUrl,

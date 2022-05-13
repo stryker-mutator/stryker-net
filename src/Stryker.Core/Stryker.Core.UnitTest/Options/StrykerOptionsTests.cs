@@ -46,9 +46,11 @@ namespace Stryker.Core.UnitTest.Options
                 ProjectVersion = "version"
             };
 
-            var result = target.Copy("C://Dev//Test", "test", new[] { "project1" });
+            var result = target.Copy("C://Dev//Test", "C://Dev", "test", new[] { "project1" });
 
             result.AdditionalTimeout.ShouldBe(1);
+            result.BasePath.ShouldBe("C://Dev//Test");
+            result.RootPath.ShouldBe("C://Dev");
         }
     }
 }
