@@ -171,22 +171,22 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public IRunResults RunTestSession(ITestGuids testsToRun, int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<IRunResults> updateHandler = null) =>
             RunTestSession(testsToRun,
-                _context.GenerateRunSettings(timeout, false, mutantTestsMap, null), timeout, updateHandler);
+                _context.GenerateRunSettings(timeout, false, mutantTestsMap, null), timeout, updateHandler).GetResults();
 
-        public IRunResults RunCoverageSession(ITestGuids testsToRun)
-        {
-            var coverageFileName = _context.BuildFilePathName($"{RunnerId}-Coverage.json");
-            return RunTestSession(testsToRun,
-                _context.GenerateRunSettings(null, true, null, coverageFileName));
-        }
-        
-        private IRunResults RunTestSession(ITestGuids tests,
+        public IRunResults RunCoverageSession(ITestGuids testsToRun) =>
+            RunTestSession(testsToRun,
+                _context.GenerateRunSettings(null,
+                    true,
+                    null,
+                    $"{RunnerId}-Coverage.json")).GetRawResults();
+
+        private RunEventHandler RunTestSession(ITestGuids tests,
             string runSettings,
             int? timeOut = null,
             Action<IRunResults> updateHandler = null,
             int retries = 0)
         {
-            using var eventHandler = new RunEventHandler(_context.VsTests, _logger, RunnerId);
+            var eventHandler = new RunEventHandler(_context.VsTests, _logger, RunnerId);
             void HandlerVsTestFailed(object sender, EventArgs e)
             {
                 _vsTestFailed = true;
@@ -194,7 +194,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             void HandlerUpdate(object sender, EventArgs e)
             {
-                updateHandler?.Invoke(eventHandler);
+                updateHandler?.Invoke(eventHandler.GetResults());
             }
 
             var strykerVsTestHostLauncher = _context.BuildHostLauncher(RunnerId);
@@ -233,7 +233,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             if (!_vsTestFailed || retries > 5)
             {
-                return new SimpleRunResults(eventHandler.TestResults, eventHandler.TestsInTimeout);
+                return eventHandler;
             }
 
             PrepareVsTestConsole();

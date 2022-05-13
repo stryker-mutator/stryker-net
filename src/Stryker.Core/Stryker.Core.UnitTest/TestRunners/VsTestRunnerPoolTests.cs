@@ -240,6 +240,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                     MoqTestRun(testRunEvents, results);
                     endProcess.Set();
                 }).Returns(Task.CompletedTask);
+
         private void SetupMockCoveragePerTestRunP(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> coverageResults, EventWaitHandle endProcess) =>
             mockVsTest.Setup(x =>
                 x.RunTestsWithCustomTestHostAsync(

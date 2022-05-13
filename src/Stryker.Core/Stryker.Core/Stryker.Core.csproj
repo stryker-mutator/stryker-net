@@ -62,7 +62,6 @@
     <PackageReference Include="Spectre.Console.Analyzer" Version="0.44.0" />
     <PackageReference Include="System.IO.Abstractions" Version="$(SystemIOAbstractions)" /> <!-- From Directory.Build.props -->
     <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />
-    <PackageReference Include="System.Runtime.Caching" Version="5.0.0" />
   </ItemGroup>
 
   <ItemGroup>

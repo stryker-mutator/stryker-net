@@ -40,10 +40,5 @@ namespace Stryker.Core.TestRunners
         public bool SessionTimedOut { get; private init; }
         public string ResultMessage { get; }
         public TimeSpan Duration { get; }
-
-        public TestRunResult Merge(TestRunResult other) =>
-            new(RanTests.Merge(other.RanTests), FailingTests.Merge(other.FailingTests),
-                TimedOutTests.Merge(other.TimedOutTests), ResultMessage + other.ResultMessage,
-                Duration + other.Duration);
     }
 }

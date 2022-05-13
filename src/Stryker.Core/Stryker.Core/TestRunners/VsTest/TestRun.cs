@@ -53,10 +53,12 @@ namespace Stryker.Core.TestRunners.VsTest
                 if (acc.StartTime > next.StartTime)
                 {
                     acc.StartTime = next.StartTime;
+                    acc.Duration = acc.EndTime - acc.StartTime;
                 }
                 if (acc.EndTime < next.EndTime)
                 {
                     acc.EndTime = next.EndTime;
+                    acc.Duration = acc.EndTime - acc.StartTime;
                 }
 
                 foreach (var message in next.Messages)
@@ -64,7 +66,6 @@ namespace Stryker.Core.TestRunners.VsTest
                     acc.Messages.Add(message);
                 }
 
-                acc.Duration = acc.EndTime - acc.StartTime;
                 return acc;
             });
             return result;

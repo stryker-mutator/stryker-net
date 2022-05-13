@@ -86,12 +86,6 @@ namespace Stryker.Core.TestRunners.VsTest
         public StrykerOptions Options { get; }
 
         /// <summary>
-        ///     Get if coverage needs to be captured
-        /// </summary>
-        public bool NeedCoverage => Options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) ||
-                                    Options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants);
-
-        /// <summary>
         ///     Log folder path
         /// </summary>
         public string LogPath =>
@@ -157,7 +151,7 @@ namespace Stryker.Core.TestRunners.VsTest
         /// </summary>
         /// <param name="fileName">requested filename</param>
         /// <returns>A full pathname</returns>
-        public string BuildFilePathName(string fileName) => _fileSystem.Path.Combine(LogPath, fileName);
+        public string BuildFilePathName(string fileName) => fileName == null ? null : _fileSystem.Path.Combine(LogPath, fileName);
 
         private ConsoleParameters DetermineConsoleParameters(string runnerId)
         {
@@ -270,26 +264,26 @@ namespace Stryker.Core.TestRunners.VsTest
  <RunConfiguration>
   <CollectSourceInformation>false</CollectSourceInformation>
   <MaxCpuCount>{Options.Concurrency}</MaxCpuCount>
-  <DesignMode>true</DesignMode>
+  <DesignMode>false</DesignMode>
 {testCaseFilter}
  </RunConfiguration>
 </RunSettings>";
         }
 
-        public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap,
-            string coverageFileName)
+        public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap, string coverageFileName)
         {
             var projectAnalyzerResult = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault();
             var settingsForCoverage = string.Empty;
-            var needSequentialRun = forCoverage || mutantTestsMap is { Count: > 1 };
+            var needSequentialRun = forCoverage || mutantTestsMap is { Count: >1 } or null;
             var needDataCollector = forCoverage || mutantTestsMap is { };
             var dataCollectorSettings = needDataCollector
                 ? CoverageCollector.GetVsTestSettings(
-                    forCoverage && NeedCoverage,
+                    forCoverage,
                     mutantTestsMap?.Select(e => (e.Key, e.Value.GetGuids())),
-                    CodeInjection.HelperNamespace, coverageFileName)
+                    CodeInjection.HelperNamespace, BuildFilePathName(coverageFileName))
                 : string.Empty;
-            if (_testFramework.HasFlag(TestFramework.nUnit))
+
+            if (_testFramework.HasFlag(TestFramework.nUnit) && needSequentialRun)
                 settingsForCoverage = "<CollectDataForEachTestSeparately>true</CollectDataForEachTestSeparately>";
 
             if (_testFramework.HasFlag(TestFramework.xUnit) && needSequentialRun)

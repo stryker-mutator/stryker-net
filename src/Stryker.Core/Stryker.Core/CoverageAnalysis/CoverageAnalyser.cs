@@ -55,7 +55,6 @@ namespace Stryker.Core.CoverageAnalysis
             {
                 CoverageForThisMutant(mutant, staticMutants, leakedMutations, testIds, trustedCoveringMap, coveringMap, dubiousTests);
             }
-
         }
 
         private void TransformResult(IEnumerable<CoverageRunResult> coverageRunResults, ICollection<Guid> guids, IReadOnlyDictionary<int, ISet<Guid>> dictionary, IReadOnlyDictionary<int, ISet<Guid>> coveringMap1,
