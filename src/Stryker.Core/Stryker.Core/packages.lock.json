@@ -219,9 +219,9 @@
       },
       "System.IO.Abstractions": {
         "type": "Direct",
-        "requested": "[17.0.10, )",
-        "resolved": "17.0.10",
-        "contentHash": "pXhKp+rE17muzrBy1MfL2Y4gPskkmiHN0VHy67gcdH3xxa8dbbiVIQkpHGh6dbtcmh7C0FsnHjww4N+Y29yNJg=="
+        "requested": "[17.0.12, )",
+        "resolved": "17.0.12",
+        "contentHash": "HgkivvhQIqBv4nXEhxQJEdbmace4E/j8c7SbKYcxFWaaA6P6QN0ge0XtLNZOHXsT7aiqesaT4Ud3AFVCZd+BLg=="
       },
       "System.Net.Http.Json": {
         "type": "Direct",
