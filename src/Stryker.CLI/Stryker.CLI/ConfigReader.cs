@@ -35,8 +35,8 @@ namespace Stryker.CLI
             }
             else if (configFileOption.HasValue())
             {
-                // only throw exception if the config file path provided by the user
-                throw new InputException($"Config file not found {configFilePath}");
+                // only throw exception if the config file path is provided by the user
+                throw new InputException($"Config file not found at {configFilePath}");
             }
 
             cmdConfigHandler.ReadCommandLineConfig(args, app, inputs);
