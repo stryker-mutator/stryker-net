@@ -38,9 +38,9 @@
       },
       "Moq": {
         "type": "Direct",
-        "requested": "[4.18.0, )",
-        "resolved": "4.18.0",
-        "contentHash": "FweC21Di1QYRovLbEK6Nu1rHrTwueXw0/1GtGgpH7YvSR/yeiLRfs2otUZdBhyAJJW7SZ0UUSNIBjcLyDFLerw==",
+        "requested": "[4.18.1, )",
+        "resolved": "4.18.1",
+        "contentHash": "MmZIKNyvn8VrivSaqA8tqy5DmwUievC9zsuNTrcb00oY4IeGq6fXT5BQK329lZ05/tyi5vp30AWe9fl0d2PZQg==",
         "dependencies": {
           "Castle.Core": "5.0.0",
           "System.Threading.Tasks.Extensions": "4.5.4"
@@ -69,11 +69,11 @@
       },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[17.0.10, )",
-        "resolved": "17.0.10",
-        "contentHash": "uEECcvtO7zoaY07cY2cf4YQuC7SMsU+RfaonuIIMiJsRzkmD9HyYZ8Jqxd1cI1AuvtgIcp1ts0wxeajQC16Qqw==",
+        "requested": "[17.0.14, )",
+        "resolved": "17.0.14",
+        "contentHash": "V2m0P9Ap6ElD3Tuo2cFhlgRTeI0i1006pRBKTiTscu5g368kJuMZny5en0X5PCVL19XQa28+8KBFjz5pe15HWw==",
         "dependencies": {
-          "System.IO.Abstractions": "17.0.10"
+          "System.IO.Abstractions": "17.0.14"
         }
       },
       "xunit": {
@@ -248,24 +248,24 @@
       },
       "Microsoft.CodeAnalysis.Common": {
         "type": "Transitive",
-        "resolved": "4.1.0",
-        "contentHash": "bNzTyxP3iD5FPFHfVDl15Y6/wSoI7e3MeV0lOaj9igbIKTjgrmuw6LoVJ06jUNFA7+KaDC/OIsStWl/FQJz6sQ==",
+        "resolved": "4.2.0",
+        "contentHash": "lbusGcuE7D8FtZawQ4G++UFsRQArPzZN1GGXjPQwu3gvCbw7FXDcBq1zDZrZN1vRzPTVe1qyZMvfGhVUzs1TDg==",
         "dependencies": {
           "Microsoft.CodeAnalysis.Analyzers": "3.3.3",
           "System.Collections.Immutable": "5.0.0",
           "System.Memory": "4.5.4",
           "System.Reflection.Metadata": "5.0.0",
-          "System.Runtime.CompilerServices.Unsafe": "5.0.0",
-          "System.Text.Encoding.CodePages": "4.5.1",
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0",
+          "System.Text.Encoding.CodePages": "6.0.0",
           "System.Threading.Tasks.Extensions": "4.5.4"
         }
       },
       "Microsoft.CodeAnalysis.CSharp": {
         "type": "Transitive",
-        "resolved": "4.1.0",
-        "contentHash": "sbu6kDGzo9bfQxuqWpeEE7I9P30bSuZEnpDz9/qz20OU6pm79Z63+/BsAzO2e/R/Q97kBrpj647wokZnEVr97w==",
+        "resolved": "4.2.0",
+        "contentHash": "5IDwr8zGNBmDpxtzxxZj9IHwoA6HJ1/WWT/JacqPQJ4Vz/oZXaHNlzcBPVCZRGWUw+QvVdAhCKwEyJyuAuH/wg==",
         "dependencies": {
-          "Microsoft.CodeAnalysis.Common": "[4.1.0]"
+          "Microsoft.CodeAnalysis.Common": "[4.2.0]"
         }
       },
       "Microsoft.CodeCoverage": {
@@ -1080,8 +1080,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "17.0.10",
-        "contentHash": "pXhKp+rE17muzrBy1MfL2Y4gPskkmiHN0VHy67gcdH3xxa8dbbiVIQkpHGh6dbtcmh7C0FsnHjww4N+Y29yNJg=="
+        "resolved": "17.0.14",
+        "contentHash": "Wf1v3SGGQnDm3YSkz6k2OyFicaCJEpoDyzwf/+3ub1VI78aKSYcGhwTgKjuUr1WLNQLH00AIaoSOawg391vIqg=="
       },
       "System.IO.FileSystem": {
         "type": "Transitive",
@@ -1515,10 +1515,10 @@
       },
       "System.Text.Encoding.CodePages": {
         "type": "Transitive",
-        "resolved": "5.0.0",
-        "contentHash": "NyscU59xX6Uo91qvhOs2Ccho3AR2TnZPomo1Z0K6YpyztBPM/A5VbkzOO19sy3A3i1TtEnTxA7bCe3Us+r5MWg==",
+        "resolved": "6.0.0",
+        "contentHash": "ZFCILZuOvtKPauZ/j/swhvw68ZRi9ATCfvGbk1QfydmcXBkIWecWKn/250UH7rahZ5OoDBaiAudJtPvLwzw85A==",
         "dependencies": {
-          "Microsoft.NETCore.Platforms": "5.0.0"
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
         }
       },
       "System.Text.Encoding.Extensions": {
@@ -1716,7 +1716,7 @@
           "DotNet.Glob": "3.1.3",
           "FSharp.Compiler.Service": "38.0.0",
           "LibGit2Sharp": "0.27.0-preview-0182",
-          "Microsoft.CodeAnalysis.CSharp": "4.1.0",
+          "Microsoft.CodeAnalysis.CSharp": "4.2.0",
           "Microsoft.Extensions.Configuration": "6.0.0",
           "Microsoft.Extensions.Configuration.Json": "6.0.0",
           "Microsoft.Extensions.Logging": "6.0.0",
@@ -1734,9 +1734,9 @@
           "ShellProgressBar": "5.1.0",
           "Spectre.Console": "0.44.0",
           "Spectre.Console.Analyzer": "0.44.0",
-          "Stryker.DataCollector": "1.0.0",
-          "Stryker.RegexMutators": "1.0.0",
-          "System.IO.Abstractions": "17.0.10",
+          "Stryker.DataCollector": "1.5.3",
+          "Stryker.RegexMutators": "1.5.3",
+          "System.IO.Abstractions": "17.0.14",
           "System.Net.Http.Json": "6.0.0"
         }
       },
