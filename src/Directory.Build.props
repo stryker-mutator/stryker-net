@@ -12,7 +12,7 @@
 
   <PropertyGroup>
     <MicrosoftTestPlatform>17.2.0</MicrosoftTestPlatform>
-    <SystemIOAbstractions>17.0.14</SystemIOAbstractions>
+    <SystemIOAbstractions>17.0.15</SystemIOAbstractions>
     <MicrosoftExtensionsConfiguration>6.0.0</MicrosoftExtensionsConfiguration>
   </PropertyGroup>
 
