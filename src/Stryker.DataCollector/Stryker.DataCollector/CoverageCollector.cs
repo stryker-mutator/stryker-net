@@ -21,7 +21,7 @@ namespace Stryker.DataCollector
         private int _activeMutation = -1;
         private Action<string> _logger;
         private readonly IDictionary<string, int> _mutantTestedBy = new Dictionary<string, int>();
-        private int? _singleMutant;
+        private readonly ICollection<TestCoverageInfo> _testsToMutantCoverage = new List<TestCoverageInfo>();
 
         private string _controlClassName;
         private Type _controller;
@@ -31,7 +31,9 @@ namespace Stryker.DataCollector
         private MethodInfo _getCoverageData;
         private IList<int> _mutationCoveredOutsideTests;
         private TestCase _currentTestCase;
+        private TestCase _previousTest;
 
+        private const string AnyId = "*";
         private const string TemplateForConfiguration =
             @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0}>
 <Configuration>{1}</Configuration></InProcDataCollector></InProcDataCollectors></InProcDataCollectionRunSettings>";
@@ -39,7 +41,7 @@ namespace Stryker.DataCollector
         public const string PropertyName = "Stryker.Coverage";
         public const string OutOfTestsPropertyName = "Stryker.Coverage.OutOfTests";
 
-        public string MutantList => _singleMutant?.ToString() ?? string.Join(",", _mutantTestedBy.Values.Distinct());
+        public string MutantList => string.Join(",", _mutantTestedBy.Values.Distinct());
 
         public static string GetVsTestSettings(bool needCoverage,
             IEnumerable<(int mutant, IEnumerable<Guid> coveringTests)> mutantTestsMap,
@@ -98,15 +100,8 @@ namespace Stryker.DataCollector
             }
 
             AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoaded;
-            if (IsSingleMode)
-            {
-                SetActiveMutation(_singleMutant.Value);
-            }
-
             Log($"Test Session start with conf {configuration}.");
         }
-
-        private bool IsSingleMode => _singleMutant.HasValue;
 
         private void OnAssemblyLoaded(object sender, AssemblyLoadEventArgs args)
         {
@@ -139,9 +134,9 @@ namespace Stryker.DataCollector
             _activeMutantField.SetValue(null, _activeMutation);
         }
 
-        private void SetActiveMutation(int id)
+        private void SetActiveMutation(string id)
         {
-            _activeMutation = id;
+            _activeMutation = GetActiveMutantForThisTest(id);
             if (_activeMutantField != null)
             {
                 _activeMutantField.SetValue(null, _activeMutation);
@@ -176,6 +171,16 @@ namespace Stryker.DataCollector
             }
         }
 
+        private int GetActiveMutantForThisTest(string testId)
+        {
+            if (_mutantTestedBy.ContainsKey(testId))
+            {
+                return _mutantTestedBy[testId];
+            }
+
+            return !_mutantTestedBy.ContainsKey(AnyId) ? -1 : _mutantTestedBy[AnyId];
+        }
+
         private void ParseTestMapping(XmlNodeList testMapping)
         {
             var mutations = new HashSet<int>();
@@ -187,7 +192,7 @@ namespace Stryker.DataCollector
                 mutations.Add(id);
                 if (string.IsNullOrEmpty(tests))
                 {
-                    _singleMutant = id;
+                    _mutantTestedBy[AnyId] = id;
                 }
                 else
                 {
@@ -198,43 +203,34 @@ namespace Stryker.DataCollector
                 }
             }
 
+            // special case if we test only one mutant
             if (mutations.Count == 1)
             {
-                _singleMutant = mutations.First();
+                _mutantTestedBy[AnyId] = mutations.First();
             }
         }
 
         public void TestCaseStart(TestCaseStartArgs testCaseStartArgs)
         {
             var fistTest = _currentTestCase == null;
+            _previousTest = _currentTestCase;
             _currentTestCase = testCaseStartArgs.TestCase;
             if (_coverageOn)
             {
                 // see if any mutation was executed outside a test
-                // except for first (assumed to be covered by first test
+                // except for first (assumed to be covered by the first test)
                 if (!fistTest)
                 {
-                    var covered = RetrieveCoverData();
-                    if (covered[0] != null)
-                    {
-                        _mutationCoveredOutsideTests =
-                            covered[1] != null ? covered[0].Union(covered[1]).ToList() : covered[0].ToList();
-                    }
-                    else if (covered[1] != null)
-                    {
-                        _mutationCoveredOutsideTests = covered[1].ToList();
-                    }
+                    CaptureCoverageOutsideTests();
                 }
 
                 return;
             }
 
             // we need to set the proper mutant
-            var mutantId = _singleMutant ?? _mutantTestedBy[_currentTestCase.Id.ToString()];
+            SetActiveMutation(testCaseStartArgs.TestCase.Id.ToString());
 
-            SetActiveMutation(mutantId);
-
-            Log($"Test {_currentTestCase.FullyQualifiedName} starts against mutant {mutantId} (var).");
+            Log($"Test {_currentTestCase.FullyQualifiedName} starts against mutant {_activeMutation} (var).");
         }
 
         public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
@@ -246,13 +242,19 @@ namespace Stryker.DataCollector
             }
 
             PublishCoverageData(testCaseEndArgs.DataCollectionContext);
-            SetActiveMutation(_singleMutant ?? -2);
         }
 
         private void PublishCoverageData(DataCollectionContext dataCollectionContext)
         {
             var covered = RetrieveCoverData();
-            var coverData = string.Join(",", covered[0]) + ";" + string.Join(",", covered[1]);
+            var testCoverageInfo = new TestCoverageInfo(_currentTestCase,
+                _previousTest,
+                covered[0],
+                covered[1],
+                _mutationCoveredOutsideTests);
+            _testsToMutantCoverage.Add(testCoverageInfo);
+
+            var coverData = testCoverageInfo.GetCoverageAsString();
             if (coverData == string.Empty)
             {
                 // test covers no mutant, but empty string is not a valid value
@@ -260,48 +262,117 @@ namespace Stryker.DataCollector
             }
 
             _dataSink.SendData(dataCollectionContext, PropertyName, coverData);
-            if (_mutationCoveredOutsideTests.Count == 0) { return; }
+            if (!testCoverageInfo.HasLeakedMutations) { return; }
 
-            // report any mutations covered before this test executed
+            // report any mutations covered before this test was executed
             _dataSink.SendData(dataCollectionContext, OutOfTestsPropertyName,
-                string.Join(",", _mutationCoveredOutsideTests));
+                testCoverageInfo.GetLeakedMutationsAsString());
             _mutationCoveredOutsideTests.Clear();
         }
 
         public IList<int>[] RetrieveCoverData()
-            => (IList<int>[])_getCoverageData.Invoke(null, new object[] { });
+            => (IList<int>[])_getCoverageData?.Invoke(null, new object[] { });
+
+        private void CaptureCoverageOutsideTests()
+        {
+            var covered = RetrieveCoverData();
+            if (covered?[0] != null)
+            {
+                _mutationCoveredOutsideTests =
+                    covered[1] != null ? covered[0].Union(covered[1]).ToList() : covered[0].ToList();
+            }
+            else if (covered?[1] != null)
+            {
+                _mutationCoveredOutsideTests = covered[1].ToList();
+            }
+        }
 
         public void TestSessionEnd(TestSessionEndArgs testSessionEndArgs)
         {
             Log($"TestSession ends.");
+            // report any mutations covered after the last test
+            CaptureCoverageOutsideTests();
+            if ((_mutationCoveredOutsideTests?.Count ?? 0) > 0)
+            {
+                _testsToMutantCoverage.Add(new TestCoverageInfo(null,
+                    _currentTestCase,
+                    null,
+                    null,
+                    _mutationCoveredOutsideTests));
+            }
             SaveReport();
-            if (_mutationCoveredOutsideTests == null || _mutationCoveredOutsideTests.Count == 0) { return; }
-            
-            // report any mutations covered before this test executed
-            _mutationCoveredOutsideTests.Clear();
         }
 
         private void SaveReport()
         {
-            if (_mutationCoveredOutsideTests != null)
+            if (string.IsNullOrEmpty(_coverageReportFile) || _testsToMutantCoverage.Count == 0)
             {
-                var reportBuilder = new StringBuilder("[");
-                reportBuilder.Append($"{{\"testCaseId\":\"{_currentTestCase}\"");
-                reportBuilder.Append(
-                    $"{{\"mutationCoveredAfter\":[{string.Join(", ", _mutationCoveredOutsideTests.Select(i => i.ToString()))}]");
-                reportBuilder.Append('}');
-                reportBuilder.Append(']');
-                File.WriteAllText(_coverageReportFile, reportBuilder.ToString());
-            }        }
+                return;
+            }
 
-        /*
- * [
-{"testCaseId":"abcdef0123",
-"mutationCoveredAfter": [12,15]},
-{"testCaseId":"abcdef0143",
-"mutationCoveredAfter": [2,5]}
-]
- */
+            var reportBuilder = new StringBuilder(TestCoverageInfo.JSonSizeEstimate*_testsToMutantCoverage.Count).
+                Append('[').
+                Append(string.Join(",", _testsToMutantCoverage)).
+                Append(']');
+            Directory.CreateDirectory(Path.GetDirectoryName(_coverageReportFile));
+            File.WriteAllText(_coverageReportFile, reportBuilder.ToString());
+        }
 
+        private readonly struct TestCoverageInfo
+        {
+            public const int JSonSizeEstimate = 100;
+            private readonly TestCase _test;
+            private readonly TestCase _previousTest;
+            private readonly IList<int> _coveredMutations;
+            private readonly IList<int> _coveredStaticMutations;
+            private readonly IList<int> _leakedMutationsFromPreviousTest;
+
+            public TestCoverageInfo(TestCase test, TestCase previousTest, IList<int> coveredMutations,
+                IList<int> coveredStaticMutations, IList<int> leakedMutationsFromPreviousTest)
+            {
+                _test = test;
+                _previousTest = previousTest;
+                _coveredMutations = coveredMutations;
+                _coveredStaticMutations = coveredStaticMutations;
+                _leakedMutationsFromPreviousTest = leakedMutationsFromPreviousTest;
+            }
+
+            public string GetCoverageAsString() => string.Join(",", _coveredMutations) + ";" + string.Join(",", _coveredStaticMutations);
+
+            public bool HasLeakedMutations => (_leakedMutationsFromPreviousTest?.Count ?? 0) > 1;
+
+            public string GetLeakedMutationsAsString() =>
+                HasLeakedMutations ? string.Join(",", _coveredStaticMutations) : string.Empty;
+
+            public override string ToString()
+            {
+                var reportBuilder = new StringBuilder(JSonSizeEstimate);
+                reportBuilder.Append('{');
+                reportBuilder.Append(_test != null ? $"\"testCaseId\":\"{_test.Id}\"" : "\"testCaseId\":\"NoTest\"");
+                reportBuilder.Append(_test != null ? $",\"testCaseName\":\"{_test.FullyQualifiedName}\"" : "");
+                if (_coveredMutations != null)
+                {
+                    reportBuilder.Append($",\"mutationsCovered\":[{string.Join(",", _coveredMutations.Select(i => i.ToString()))}]");
+                }
+
+                if (_coveredStaticMutations != null)
+                {
+                    reportBuilder.Append($",\"staticMutationsCovered\":[{string.Join(",", _coveredStaticMutations.Select(i => i.ToString()))}]");
+                }
+
+                if (_leakedMutationsFromPreviousTest != null)
+                {
+                    reportBuilder.Append(
+                        $",\"mutationsCoveredBeforeStart\":[{string.Join(",", _leakedMutationsFromPreviousTest.Select(i => i.ToString()))}]");
+                }
+
+                if (_previousTest != null)
+                {
+                    reportBuilder.Append($",\"testCaseBeforeId\":\"{_previousTest.Id}\"");
+                }
+                reportBuilder.AppendLine("}");
+                return reportBuilder.ToString();
+            }
+        }
     }
 }

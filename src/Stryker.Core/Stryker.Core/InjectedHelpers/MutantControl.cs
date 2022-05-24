@@ -43,17 +43,7 @@ namespace Stryker
         private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
         {
             GC.KeepAlive(_coveredMutants);
-        }
-
-        private static string BuildReport()
-        {
-            return string.Format("{0};{1}", string.Join(",", _coveredMutants), string.Join(",", _coveredStaticdMutants));
-        }
-
-        private static void Log(string message)
-        {
-            // uncomment when you need to debug this component
-            //Console.WriteLine("[" + DateTime.Now.ToString("HH:mm:ss.fff") + " DBG] " + message);
+            GC.KeepAlive(_coveredStaticdMutants);
         }
 
         // check with: Stryker.MutantControl.IsActive(ID)

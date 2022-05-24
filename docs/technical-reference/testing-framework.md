@@ -100,21 +100,22 @@ Then each test is run separately and a test result is provided for each test.
 **Caveat**: if the `ToString()` method is not overriden, multiple test cases will have the same name 
 (eg: `Test(MyClass`). Then, there will be no way to distinguish between tests as well as properly associate test
 results.
-When this happens, these appear as a single test resulting in multiple outcomes in Visual Studio.
+When this happens, NUnit will run the test against all data in the set and return a single result (failed if at least one test failed).
+The drawback is that you can't identify which data set failed the test.
 
 Here is a summarized timeline of tests execution:
 ```
    NUnit runner calls the TestCaseSource and gets every test case.
 TestCase start event
    NUnit run test with first set of data
-   NUnit reports test reult
+   NUnit reports test result
 TestCase end event
 TestCase start event
    NUnit run test with second set of data
-   NUnit reports test reult
+   NUnit reports test result
 TestCase end event
    ...
-   NUnit reports lasy test reult
+   NUnit reports lasy test result
 TestCase end event
 TestCase start event
    ...

@@ -48,6 +48,8 @@ namespace Stryker.Core.TestRunners.VsTest
                  _availableRunners.Add(new VsTestRunner(_context, i)));
         }
 
+        public TestSet DiscoverTests() => _context.Tests;
+
         public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
             => RunThis(runner => runner.TestMultipleMutants(timeoutCalc, mutants, update));
 
@@ -61,23 +63,8 @@ namespace Stryker.Core.TestRunners.VsTest
             IRunResults resultsToParse;
             if (optimizationMode.HasFlag(OptimizationModes.SmartCoverageCapture))
             {
-                var normalTests = _context.VsTests.Keys.ToList();
-                var dubiousTests = new List<Guid>();
-                // check if we have tests with multiple results that may require isolated capture
-                foreach (var id in _context.VsTests.Where( pair => pair.Value.NbSubCases>1).Select( p => p.Key))
-                {
-                    normalTests.Remove(id);
-                    dubiousTests.Add(id);
-                }
-
-                var aggregator = new SimpleRunResults();
-                aggregator.Merge(
-                    RunThis(
-                        runner => runner.RunCoverageSession(new TestsGuidList(normalTests))));
-                aggregator.Merge(CaptureCoveragePerIsolatedTests(dubiousTests));
-                resultsToParse = aggregator;
+                resultsToParse = SmartCoverageCapture();
             }
-            
             else if (optimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
             {
                 resultsToParse = CaptureCoveragePerIsolatedTests(_context.VsTests.Keys);
@@ -88,6 +75,48 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             return ConvertCoverageResult(resultsToParse.TestResults, false);
+        }
+
+        private SimpleRunResults SmartCoverageCapture()
+        {
+            var normalTests = _context.VsTests.Keys.ToList();
+            var dubiousTests = new List<Guid>();
+
+            // check if we have tests with multiple results that may require isolated capture
+            foreach (var suspiciousCase in _context.VsTests.Values.Where(pair => pair.NbSubCases > 1))
+            {
+                var similar = _context.FindTestCasesWithinDataSource(suspiciousCase);
+                foreach (var description in similar)
+                {
+                    normalTests.Remove(description.Id);
+                    dubiousTests.Add(description.Id);
+                    _logger.LogDebug($"Coverage for test {description.Case.DisplayName} will be established in isolation.");
+                }
+            }
+
+            var aggregator = new SimpleRunResults();
+            aggregator.Merge(
+                RunThis(
+                    runner => runner.RunCoverageSession(new TestsGuidList(normalTests))));
+            List<TestResult> suspiciousResults = new();
+            // now scan if we find tests with 'early' coverage
+            foreach (var result in aggregator.TestResults.Where(result => result.Properties.Any(x => x.Id == CoverageCollector.OutOfTestsPropertyName)))
+            {
+                suspiciousResults.Add(result);
+                var similar = _context.FindTestCasesWithinDataSource(_context.VsTests[result.TestCase.Id]);
+                // we have a leak
+                foreach (var description in similar)
+                {
+                    normalTests.Remove(description.Id);
+                    dubiousTests.Add(description.Id);
+                    _logger.LogDebug($"Coverage for test {description.Case.DisplayName} will be established in isolation.");
+                }
+
+                dubiousTests.Add(result.TestCase.Id);
+            }
+
+            aggregator.Merge(CaptureCoveragePerIsolatedTests(dubiousTests));
+            return aggregator;
         }
 
         private IRunResults CaptureCoveragePerIsolatedTests(IEnumerable<Guid> tests)
@@ -121,7 +150,6 @@ namespace Stryker.Core.TestRunners.VsTest
                 _availableRunners.Add(runner);
                 _runnerAvailableHandler.Set();
             }
-
         }
 
         public void Dispose()
@@ -132,8 +160,6 @@ namespace Stryker.Core.TestRunners.VsTest
             }
             _runnerAvailableHandler.Dispose();
         }
-
-        public TestSet DiscoverTests() => _context.Tests;
 
         private IEnumerable<CoverageRunResult> ConvertCoverageResult(ICollection<TestResult> testResults, bool perIsolatedTest)
         {

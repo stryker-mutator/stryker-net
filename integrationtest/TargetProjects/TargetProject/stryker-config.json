@@ -1,7 +1,8 @@
 {
   "stryker-config": {
     "reporters": [
-      "Dots",
+        "Dots",
+        "ClearText",
       "Json"
     ],
     "test-projects": [

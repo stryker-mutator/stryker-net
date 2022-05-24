@@ -106,14 +106,6 @@ namespace Stryker.Core.TestRunners.VsTest
         }
 
         /// <summary>
-        ///     Checks if the project can use the Stryker's DataCollector
-        /// </summary>
-        /// <returns>true if the project can use StrykerDataCollector</returns>
-        public bool CantUseStrykerDataCollector() =>
-            _projectInfo.TestProjectAnalyzerResults.Select(x => x.GetNuGetFramework()).Any(t =>
-                t.Framework == FrameworkConstants.FrameworkIdentifiers.NetCoreApp && t.Version.Major < 2);
-
-        /// <summary>
         ///     Starts a new VsTest instance and returns a wrapper to control it.
         /// </summary>
         /// <param name="runnerId">Name of the instance to create (used in log files)</param>
@@ -151,7 +143,7 @@ namespace Stryker.Core.TestRunners.VsTest
         /// </summary>
         /// <param name="fileName">requested filename</param>
         /// <returns>A full pathname</returns>
-        public string BuildFilePathName(string fileName) => fileName == null ? null : _fileSystem.Path.Combine(LogPath, fileName);
+        public string BuildFilePathName(string fileName) => fileName == null ? null : _fileSystem.Path.Combine(Options.ReportPath ?? ".", fileName);
 
         private ConsoleParameters DetermineConsoleParameters(string runnerId)
         {
@@ -207,32 +199,55 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var wrapper = BuildVsTestWrapper("TestDiscoverer");
             var messages = new List<string>();
-            using (var waitHandle = new AutoResetEvent(false))
+            var handler = new DiscoveryEventHandler(messages);
+            wrapper.DiscoverTests(_sources, GenerateRunSettingsForDiscovery(), handler);
+
+            handler.WaitEnd();
+            if (handler.Aborted)
             {
-                var handler = new DiscoveryEventHandler(waitHandle, messages);
-                wrapper.DiscoverTests(_sources, GenerateRunSettingsForDiscovery(), handler);
-
-                waitHandle.WaitOne();
-                if (handler.Aborted)
-                {
-                    _logger.LogError("TestDiscoverer: Test discovery has been aborted!");
-                }
-
-                VsTests = new Dictionary<Guid, VsTestDescription>(handler.DiscoveredTestCases.Count);
-                foreach (var testCase in handler.DiscoveredTestCases)
-                {
-                    if (!VsTests.ContainsKey(testCase.Id))
-                    {
-                        VsTests[testCase.Id] = new VsTestDescription(testCase);
-                    }
-
-                    VsTests[testCase.Id].AddSubCase();
-                }
-
-                DetectTestFrameworks(VsTests.Values);
+                _logger.LogError("TestDiscoverer: Test discovery has been aborted!");
             }
 
+            VsTests = new Dictionary<Guid, VsTestDescription>(handler.DiscoveredTestCases.Count);
+            foreach (var testCase in handler.DiscoveredTestCases)
+            {
+                if (!VsTests.ContainsKey(testCase.Id))
+                {
+                    VsTests[testCase.Id] = new VsTestDescription(testCase);
+                }
+
+                VsTests[testCase.Id].AddSubCase();
+                _logger.LogDebug($"Test Case : name= {testCase.DisplayName} (id= {testCase.Id}, FQN= {testCase.FullyQualifiedName}).");
+            }
+
+            DetectTestFrameworks(VsTests.Values);
+
             wrapper.EndSession();
+        }
+
+        public List<VsTestDescription> FindTestCasesWithinDataSource(VsTestDescription referenceTest)
+        {
+            List<VsTestDescription> result;
+            switch (referenceTest.Framework)
+            {
+                case TestFramework.xUnit:
+                    // find all tests that have the same FQN
+                    result = VsTests.Values.Where(desc => desc.Case.FullyQualifiedName == referenceTest.Case.FullyQualifiedName).ToList();
+                    break;
+                case TestFramework.nUnit:
+                {
+                    string Extractor(string name) => name.Substring(0, name.IndexOf('('));
+
+                    var referenceName = Extractor(referenceTest.Case.FullyQualifiedName);
+
+                    result = VsTests.Values.Where(desc => Extractor(desc.Case.FullyQualifiedName) == referenceName).ToList();
+                    break;
+                }
+                default:
+                    result = new List<VsTestDescription>() { referenceTest };
+                    break;
+            }
+            return result;
         }
 
         private void DetectTestFrameworks(ICollection<VsTestDescription> tests)

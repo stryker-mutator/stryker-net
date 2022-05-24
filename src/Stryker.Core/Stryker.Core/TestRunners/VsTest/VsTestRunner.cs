@@ -69,7 +69,8 @@ namespace Stryker.Core.TestRunners.VsTest
                 foreach (var mutant in mutants)
                 {
                     ITestGuids tests;
-                    if ((mutant.IsStaticValue && !_context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest)) || mutant.MustRunAgainstAllTests)
+                    if ((mutant.IsStaticValue && !_context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
+                        || mutant.MustRunAgainstAllTests)
                     {
                         tests = TestsGuidList.EveryTest();
                         needAll = true;
@@ -178,7 +179,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 _context.GenerateRunSettings(null,
                     true,
                     null,
-                    $"{RunnerId}-Coverage.json")).GetRawResults();
+                    testsToRun.IsEveryTest ? "Coverage.json" : $"Coverage for {testsToRun.GetGuids().First()}.json")).GetRawResults();
 
         private RunEventHandler RunTestSession(ITestGuids tests,
             string runSettings,

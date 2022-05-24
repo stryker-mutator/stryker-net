@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
@@ -16,6 +17,7 @@ namespace Stryker.Core.Options
 
         public string BasePath { get; init; }
         public string OutputPath { get; init; }
+        public string ReportPath =>  Path.Combine(OutputPath ?? ".", "reports");
         public string ReportFileName { get; init; }
         public string SolutionPath { get; init; }
         public string TargetFramework { get; init; }
