@@ -58,7 +58,7 @@ namespace Stryker.Core.Initialisation
             {
                 // mutate a single project from the test project context
                 _logger.LogInformation("Identifying project to mutate.");
-                yield return _projectMutator.MutateProject(options.Copy(options.BasePath, options.BasePath, options.ProjectUnderTestName, options.TestProjects), reporters);
+                yield return _projectMutator.MutateProject(options, reporters);
             }
         }
 
@@ -80,8 +80,8 @@ namespace Stryker.Core.Initialisation
                     }
 
                     var projectOptions = options.Copy(
-                        basePath: projectFilePath,
-                        rootPath: options.BasePath,
+                        projectPath: projectFilePath,
+                        workingDirectory: options.ProjectPath,
                         projectUnderTest: projectFilePath,
                         testProjects: relatedTestProjects.Select(x => x.ProjectFilePath));
 
@@ -129,7 +129,7 @@ namespace Stryker.Core.Initialisation
         }
 
         private static bool IsSolutionContext(StrykerOptions options) =>
-            options.SolutionPath != null && FilePathUtils.NormalizePathSeparators(options.BasePath) == FilePathUtils.NormalizePathSeparators(Path.GetDirectoryName(options.SolutionPath));
+            options.SolutionPath != null && FilePathUtils.NormalizePathSeparators(options.ProjectPath) == FilePathUtils.NormalizePathSeparators(Path.GetDirectoryName(options.SolutionPath));
 
         private IEnumerable<IAnalyzerResult> FindProjectsUnderTest(IEnumerable<IAnalyzerResult> projectsAnalyzerResults)
         {

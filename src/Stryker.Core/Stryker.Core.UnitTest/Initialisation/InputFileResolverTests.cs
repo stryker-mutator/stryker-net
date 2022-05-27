@@ -40,7 +40,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             _basePath = Path.Combine(_filesystemRoot, "TestProject");
             _options = new StrykerOptions()
             {
-                BasePath = _basePath
+                ProjectPath = _basePath
             };
             sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
             testProjectPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj"));
@@ -861,7 +861,7 @@ Please specify a test project name filter that results in one project.
 
             var options = new StrykerOptions()
             {
-                BasePath = basePath,
+                ProjectPath = basePath,
                 ProjectUnderTestName = projectUnderTestNameFilter,
                 TestProjects = new List<string> { testProjectPath }
             };
@@ -988,7 +988,7 @@ Please specify a test project name filter that results in one project.
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
             var options = new StrykerOptions()
             {
-                BasePath = Path.Combine(_filesystemRoot, "ExampleProject"),
+                ProjectPath = Path.Combine(_filesystemRoot, "ExampleProject"),
                 TestProjects = new List<string>
                 {
                     Path.Combine(_filesystemRoot, "TestProject1", "ExampleProject.csproj"),
