@@ -1,5 +1,7 @@
 using System;
+using System.Collections.Generic;
 using Stryker.Core.Mutants;
+using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.TestRunners
 {
@@ -13,12 +15,15 @@ namespace Stryker.Core.TestRunners
             Duration = TimeSpan.Zero;
         }
 
-        public TestRunResult(ITestGuids ranTests,
+        public TestRunResult(
+            IEnumerable<VsTestDescription> vsTestDescriptions,
+            ITestGuids ranTests,
             ITestGuids failedTests,
             ITestGuids timedOutTest,
             string message,
             TimeSpan timeSpan)
         {
+            VsTestDescriptions = vsTestDescriptions;
             RanTests = ranTests;
             FailingTests = failedTests;
             TimedOutTests = timedOutTest;
@@ -26,14 +31,13 @@ namespace Stryker.Core.TestRunners
             Duration = timeSpan;
         }
 
-        public static TestRunResult TimedOut(ITestGuids ranTests,
+        public static TestRunResult TimedOut(
+            IEnumerable<VsTestDescription> vsTestDescriptions,
+            ITestGuids ranTests,
             ITestGuids failedTest,
             ITestGuids timedOutTests,
             string message,
-            TimeSpan duration)
-        {
-            return new TestRunResult(ranTests, failedTest, timedOutTests, message, duration){SessionTimedOut = true};
-        }
+            TimeSpan duration) => new TestRunResult(vsTestDescriptions, ranTests, failedTest, timedOutTests, message, duration) { SessionTimedOut = true };
 
         public ITestGuids FailingTests { get; }
         public ITestGuids RanTests { get; }
@@ -41,5 +45,6 @@ namespace Stryker.Core.TestRunners
         public bool SessionTimedOut { get; private set; }
         public string ResultMessage { get; }
         public TimeSpan Duration { get; }
+        public IEnumerable<VsTestDescription> VsTestDescriptions { get; private set; }
     }
 }

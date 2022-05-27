@@ -1,6 +1,7 @@
 using System.Linq;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 
 namespace Stryker.Core.Initialisation
@@ -38,10 +39,25 @@ namespace Stryker.Core.Initialisation
             // initial test
             input.InitialTestRun = initialisationProcess.InitialTest(options);
 
+            // Enrich test projects info with unit tests
+            EnrichTestProjectsWithTestInfo(input.InitialTestRun, input.TestProjectsInfo);
+
             // mutate
             process.Mutate();
 
             return process;
+        }
+
+        private void EnrichTestProjectsWithTestInfo(InitialTestRun initialTestRun, TestProjectsInfo testProjectsInfo)
+        {
+            foreach (var unitTest in initialTestRun.Result.VsTestDescriptions.Select(desc => desc.Case))
+            {
+                var testFile = testProjectsInfo.TestFiles.SingleOrDefault(testFile => testFile.FilePath == unitTest.CodeFilePath);
+                if (testFile is not null)
+                {
+                    testFile.AddTest(unitTest.Id, unitTest.FullyQualifiedName, null, unitTest.LineNumber);
+                }
+            }
         }
     }
 }

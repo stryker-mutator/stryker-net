@@ -134,7 +134,7 @@ namespace Stryker.Core.TestRunners.VsTest
                                      $"against {(testCases == null ? "all tests." : string.Join(", ", testCases))}.");
                     if (testCases?.Count == 0)
                     {
-                        return new TestRunResult(TestsGuidList.NoTest(), TestsGuidList.NoTest(), TestsGuidList.NoTest(), "Mutants are not covered by any test!", TimeSpan.Zero);
+                        return new TestRunResult(null, TestsGuidList.NoTest(), TestsGuidList.NoTest(), TestsGuidList.NoTest(), "Mutants are not covered by any test!", TimeSpan.Zero);
                     }
 
                     if (timeoutCalc != null && testCases != null)
@@ -210,7 +210,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 _logger.LogTrace($"{RunnerId}: Initial Test session reports 0 result and 0 stuck tests.");
             }
 
-            var duration =  TimeSpan.FromTicks(_vsTests.Values.Sum(t => t.InitialRunTime.Ticks));
+            var duration = TimeSpan.FromTicks(_vsTests.Values.Sum(t => t.InitialRunTime.Ticks));
 
             var message = string.Join(Environment.NewLine,
                 resultAsArray.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage))
@@ -218,8 +218,8 @@ namespace Stryker.Core.TestRunners.VsTest
             var failedTestsDescription = new WrappedGuidsEnumeration(failedTests);
             var timedOutTests = new WrappedGuidsEnumeration(testResults.TestsInTimeout?.Select(t => t.Id));
             return timeout
-                ? TestRunResult.TimedOut(ranTests, failedTestsDescription, timedOutTests, message, duration)
-                : new TestRunResult(ranTests, failedTestsDescription, timedOutTests, message, duration);
+                ? TestRunResult.TimedOut(_vsTests.Values, ranTests, failedTestsDescription, timedOutTests, message, duration)
+                : new TestRunResult(_vsTests.Values, ranTests, failedTestsDescription, timedOutTests, message, duration);
         }
 
         private void SetListOfTests(IDictionary<Guid, VsTestDescription> tests)
