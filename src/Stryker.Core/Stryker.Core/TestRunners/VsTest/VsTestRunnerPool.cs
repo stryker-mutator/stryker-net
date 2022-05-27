@@ -166,16 +166,19 @@ namespace Stryker.Core.TestRunners.VsTest
             var seenTestCases = new HashSet<Guid>();
             var dynamicTestCases = new HashSet<Guid>();
             var results = new List<CoverageRunResult>(testResults.Count);
+            var defaultConfidence = perIsolatedTest ? CoverageConfidence.Exact : CoverageConfidence.Normal;
             // initialize the map
-            foreach (var testResult in testResults)
+            foreach (var testResult in testResults.Where( tr => tr.Outcome == TestOutcome.Passed))
             {
                 var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == CoverageCollector.PropertyName);
                 var testCaseId = testResult.TestCase.Id;
+                var unexpected = false;
                 if (!_context.VsTests.ContainsKey(testCaseId))
                 {
                     _logger.LogWarning($"VsTestRunner: Coverage analysis run encountered a unexpected test case ({testResult.TestCase.DisplayName}), mutation tests may be inaccurate. Disable coverage analysis if you have doubts.");
                     // add the test description
                     _context.VsTests.Add(testCaseId, new VsTestDescription(testResult.TestCase));
+                    unexpected = true;
                 }
                 var testDescription = _context.VsTests[testCaseId];
                 if (key == null)
@@ -199,7 +202,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     seenTestCases.Add(testDescription.Id);
                     var propertyPairValue = value as string;
 
-                    results.Add(BuildCoverageRunResultFromCoverageInfo(propertyPairValue, testResult, testCaseId, perIsolatedTest ? CoverageConfidence.Exact : CoverageConfidence.Normal));
+                    results.Add(BuildCoverageRunResultFromCoverageInfo(propertyPairValue, testResult, testCaseId, unexpected ? CoverageConfidence.UnexpectedCase : defaultConfidence));
                 }
             }
 

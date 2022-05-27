@@ -52,7 +52,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             // get the test results, but prevent compression of 'all tests'
-            return BuildTestRunResult(testResults, int.MaxValue, false);
+            return BuildTestRunResult(testResults, _context.Tests.Count, false);
         }
 
         public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
@@ -150,12 +150,12 @@ namespace Stryker.Core.TestRunners.VsTest
             var testCases = resultAsArray.Select(t => t.TestCase.Id).ToHashSet();
             var ranTestsCount = testCases.Count;
             var timeout = !_aborted && ranTestsCount < expectedTests;
-            var ranTests = (compressAll && ranTestsCount >= _context.Tests.Count) ? (ITestGuids)TestsGuidList.EveryTest() : new WrappedGuidsEnumeration(testCases);
+            var ranTests = compressAll && ranTestsCount >= _context.Tests.Count ? (ITestGuids)TestsGuidList.EveryTest() : new WrappedGuidsEnumeration(testCases);
             var failedTests = resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(t => t.TestCase.Id);
 
             if (ranTests.IsEmpty && (testResults.TestsInTimeout == null || testResults.TestsInTimeout.Count == 0))
             {
-                _logger.LogTrace($"{RunnerId}: Initial Test session reports 0 result and 0 stuck tests.");
+                _logger.LogTrace($"{RunnerId}: Test session reports 0 result and 0 stuck tests.");
             }
 
             var duration =  TimeSpan.FromTicks(_context.VsTests.Values.Sum(t => t.InitialRunTime.Ticks));
@@ -219,14 +219,14 @@ namespace Stryker.Core.TestRunners.VsTest
             // Wait for test completed report
             if (!eventHandler.WaitEnd(timeOut))
             {
-                _logger.LogWarning($"{RunnerId}: VsTest did not report the end of test session in due time, it may have hang. Retrying");
+                _logger.LogWarning($"{RunnerId}: VsTest did not report the end of test session in due time, it may have hang. Retrying!");
                 _vsTestConsole.AbortTestRun();
                 _vsTestFailed = true;
             }
 
             if (!strykerVsTestHostLauncher.IsProcessCreated)
             {
-                throw new GeneralStrykerException("*** Failed to create a TestRunner, Stryker cannot recover from this!***");
+                throw new GeneralStrykerException("*** Failed to create a TestRunner, Stryker cannot recover from this! ***");
             }
 
             eventHandler.ResultsUpdated -= HandlerUpdate;

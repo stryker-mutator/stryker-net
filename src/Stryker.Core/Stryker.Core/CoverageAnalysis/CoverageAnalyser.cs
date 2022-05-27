@@ -47,30 +47,52 @@ namespace Stryker.Core.CoverageAnalysis
             var staticMutants = new HashSet<int>();
             var dubiousTests = new List<Guid>();
             var leakedMutations = new HashSet<int>();
+            var mutantsNeedingAllTests = new HashSet<int>();
             var testIds = coverage.Select(c => c.TestId).ToList();
             // process coverage results
-            TransformResult(coverage, dubiousTests, trustedCoveringMap, coveringMap, staticMutants, leakedMutations);
+            TransformResult(coverage, dubiousTests, trustedCoveringMap, coveringMap,
+                staticMutants,
+                leakedMutations, mutantsNeedingAllTests);
             // now declare coverage info for each mutant
             foreach (var mutant in mutantsToScan)
             {
-                CoverageForThisMutant(mutant, staticMutants, leakedMutations, testIds, trustedCoveringMap, coveringMap, dubiousTests);
+                if (mutantsNeedingAllTests.Contains(mutant.Id))
+                {
+                    mutant.CoveringTests = TestsGuidList.EveryTest();
+                }
+                else
+                {
+                    CoverageForThisMutant(mutant, staticMutants, leakedMutations, testIds, trustedCoveringMap, coveringMap, dubiousTests);
+                }
             }
         }
 
-        private void TransformResult(IEnumerable<CoverageRunResult> coverageRunResults, ICollection<Guid> guids, IReadOnlyDictionary<int, ISet<Guid>> dictionary, IReadOnlyDictionary<int, ISet<Guid>> coveringMap1,
-            ISet<int> staticMutantSet, ISet<int> leakedMutationSet)
+        private void TransformResult(IEnumerable<CoverageRunResult> coverageRunResults,
+            ICollection<Guid> guids,
+            IReadOnlyDictionary<int, ISet<Guid>> dictionary,
+            IReadOnlyDictionary<int, ISet<Guid>> coveringMap1,
+            ISet<int> staticMutantSet,
+            ISet<int> leakedMutationSet,
+            ISet<int> mutantsNeedingAllTests)
         {
             foreach (var coverageRunResult in coverageRunResults)
             {
                 var id = coverageRunResult.TestId;
                 switch (coverageRunResult.Confidence)
                 {
-                    // track non normal coverage result for second pass
+                    case CoverageConfidence.UnexpectedCase:
+                        // if the test case was not expected, we assume we can't run it selectively. Then we must run all tests to ensure we can
+                        // execute it
+                        mutantsNeedingAllTests.UnionWith(coverageRunResult.CoveredMutations.Union(coverageRunResult
+                                .DetectedStaticMutations));
+                        break;
                     case CoverageConfidence.Dubious:
+                        // we do not have reliable coverage data for this test.
+                        // we need to test every mutant against it
                         guids.Add(id);
                         break;
                     case CoverageConfidence.Exact:
-                        // track coverage
+                        // we have perfect coverage data, including static mutations
                         foreach (var mutation in coverageRunResult.CoveredMutations.Union(coverageRunResult
                                      .DetectedStaticMutations))
                         {
@@ -78,7 +100,7 @@ namespace Stryker.Core.CoverageAnalysis
                         }
                         break;
                     default:
-                        // track coverage
+                        // we have normal coverage, i.e. coverage is reliable except for static mutations.
                         foreach (var mutation in coverageRunResult.CoveredMutations.Union(coverageRunResult
                                      .DetectedStaticMutations))
                         {
@@ -94,8 +116,13 @@ namespace Stryker.Core.CoverageAnalysis
             }
         }
 
-        private void CoverageForThisMutant(Mutant mutant, IReadOnlySet<int> staticMutants, IReadOnlySet<int> leakedMutations, IEnumerable<Guid> testIds,
-            IReadOnlyDictionary<int, ISet<Guid>> trustedCoveringMap, IReadOnlyDictionary<int, ISet<Guid>> coveringMap, IReadOnlyCollection<Guid> dubiousTests)
+        private void CoverageForThisMutant(Mutant mutant,
+            IReadOnlySet<int> staticMutants,
+            IReadOnlySet<int> leakedMutations,
+            IEnumerable<Guid> testIds,
+            IReadOnlyDictionary<int, ISet<Guid>> trustedCoveringMap,
+            IReadOnlyDictionary<int, ISet<Guid>> coveringMap,
+            IReadOnlyCollection<Guid> dubiousTests)
         {
             var mutantId = mutant.Id;
             if (mutant.IsStaticValue || staticMutants.Contains(mutantId))

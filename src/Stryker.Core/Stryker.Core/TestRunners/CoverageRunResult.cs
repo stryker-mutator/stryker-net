@@ -9,7 +9,8 @@ namespace Stryker.Core.TestRunners
     {
         Exact,
         Normal,
-        Dubious
+        Dubious,
+        UnexpectedCase
     }
 
     public class CoverageRunResult
@@ -34,28 +35,11 @@ namespace Stryker.Core.TestRunners
             LeakedMutations = leakedMutations?.ToImmutableArray();
         }
 
-        public CoverageRunResult Merge(CoverageRunResult other)
-        {
-            CoverageConfidence confidence;
-            switch (Confidence)
-            {
-                case CoverageConfidence.Dubious:
-                    confidence = Confidence;
-                    break;
-                case CoverageConfidence.Normal:
-                    confidence = other.Confidence == CoverageConfidence.Dubious ? other.Confidence : Confidence;
-                    break;
-                default:
-                    confidence = other.Confidence;
-                    break;
-
-            }
-
-            return new CoverageRunResult(TestId,
-                confidence,
+        public CoverageRunResult Merge(CoverageRunResult other) =>
+            new CoverageRunResult(TestId,
+                (CoverageConfidence)Math.Max((int)Confidence, (int)other.Confidence),
                 CoveredMutations.Union(other.CoveredMutations),
                 DetectedStaticMutations.Union(other.CoveredMutations),
                 LeakedMutations.Union(other.LeakedMutations));
-        }
     }
 }
