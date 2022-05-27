@@ -323,7 +323,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var options = new StrykerOptions()
             {
-                BasePath = basePath,
+                ProjectPath = basePath,
                 Concurrency = 1,
                 OptimizationMode = OptimizationModes.CoverageBasedTest
             };
@@ -385,7 +385,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var options = new StrykerOptions
             {
-                BasePath = basePath,
+                ProjectPath = basePath,
                 Concurrency = 1,
                 OptimizationMode = OptimizationModes.CoverageBasedTest
             };
@@ -452,7 +452,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var options = new StrykerOptions
             {
-                BasePath = basePath,
+                ProjectPath = basePath,
                 Concurrency = 1,
                 OptimizationMode = OptimizationModes.CoverageBasedTest
             };
@@ -521,7 +521,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var options = new StrykerOptions()
             {
-                BasePath = basePath
+                ProjectPath = basePath
             };
 
             var target = new MutationTestProcess(input,
@@ -563,7 +563,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var options = new StrykerOptions()
             {
-                BasePath = basePath
+                ProjectPath = basePath
             };
 
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
@@ -616,7 +616,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var options = new StrykerOptions()
             {
-                BasePath = basePath
+                ProjectPath = basePath
             };
 
             var target = new MutationTestProcess(input,

@@ -49,7 +49,7 @@ namespace Stryker.Core.Initialisation
             }
             else
             {
-                testProjectFiles.Add(FindTestProject(options.BasePath));
+                testProjectFiles.Add(FindTestProject(options.ProjectPath));
             }
 
             var testProjects = new List<TestProject>();
