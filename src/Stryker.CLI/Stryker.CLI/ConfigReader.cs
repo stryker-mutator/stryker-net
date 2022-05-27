@@ -1,5 +1,6 @@
 using System.IO;
 using McMaster.Extensions.CommandLineUtils;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 
 namespace Stryker.CLI
@@ -24,12 +25,20 @@ namespace Stryker.CLI
             var basePath = Directory.GetCurrentDirectory();
             inputs.BasePathInput.SuppliedInput = basePath;
 
+            var configFileOption = cmdConfigHandler.GetConfigFileOption(args, app);
+
             // read config from json and commandline
-            var configFilePath = Path.Combine(basePath, cmdConfigHandler.GetConfigFilePath(args, app));
+            var configFilePath = Path.Combine(basePath, configFileOption?.Value() ?? "stryker-config.json");
             if (File.Exists(configFilePath))
             {
                 JsonConfigHandler.DeserializeConfig(configFilePath, inputs);
             }
+            else if (configFileOption.HasValue())
+            {
+                // throw exception if the config file path is provided by the user yet it does not exist
+                throw new InputException($"Config file not found at {configFilePath}");
+            }
+
             cmdConfigHandler.ReadCommandLineConfig(args, app, inputs);
         }
     }

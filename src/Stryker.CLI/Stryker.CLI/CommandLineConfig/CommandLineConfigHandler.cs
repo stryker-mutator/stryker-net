@@ -24,11 +24,10 @@ namespace Stryker.CLI
             }
         }
 
-        public string GetConfigFilePath(string[] args, CommandLineApplication app)
+        public CommandOption GetConfigFileOption(string[] args, CommandLineApplication app)
         {
             var commands = app.Parse(args);
-            var option = commands.SelectedCommand.Options.SingleOrDefault(o => o.LongName == _configFileInput.ArgumentName);
-            return option?.Value() ?? "stryker-config.json";
+            return commands.SelectedCommand.Options.SingleOrDefault(o => o.LongName == _configFileInput.ArgumentName);
         }
 
         public void ReadCommandLineConfig(string[] args, CommandLineApplication app, IStrykerInputs inputs)
