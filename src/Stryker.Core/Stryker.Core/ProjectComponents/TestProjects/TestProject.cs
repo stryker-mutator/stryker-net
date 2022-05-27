@@ -30,13 +30,13 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             var testFiles = new List<TestFile>();
             foreach (var file in testProjectAnalyzerResult.SourceFiles)
             {
-                var source = _fileSystem.File.ReadAllText(file);
-                if (!IsGenerated(file, source))
+                var sourceCode = _fileSystem.File.ReadAllText(file);
+                if (!IsGenerated(file, sourceCode))
                 {
                     testFiles.Add(new TestFile
                     {
                         FilePath = file,
-                        Source = source
+                        Source = sourceCode
                     });
                 }
             }
@@ -44,9 +44,9 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             TestFiles = testFiles;
         }
 
-        private bool IsGenerated(string file, string source)
+        private bool IsGenerated(string file, string sourceCode)
         {
-            var isGenerated = CSharpSyntaxTree.ParseText(source,
+            var isGenerated = CSharpSyntaxTree.ParseText(sourceCode,
                     path: file,
                     encoding: Encoding.UTF32,
                     options: new CSharpParseOptions(LanguageVersion.Latest, DocumentationMode.None)).IsGenerated();

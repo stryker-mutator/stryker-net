@@ -10,7 +10,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
         public string Source { get; init; }
         public IEnumerable<TestCase> Tests { get; private set; } = new List<TestCase>();
 
-        public void AddTest(Guid id, string name, string source, int lineNumber)
+        public void AddTest(Guid id, string name, string sourceCode, int lineNumber)
         {
             if (Tests.Any(test => test.Id == id))
             {
