@@ -38,7 +38,7 @@ namespace Stryker.Core.Reporters.Html.reporter
 
             WriteHtmlReport(reportPath, mutationReport.ToJsonHtmlSafe());
 
-            var reportUri = "file://" + reportPath.Replace("\\", "/");
+            var reportUri = "file://" + reportPath.Replace("\\", "/").Replace(" ", "%20");
 
             if (_options.ReportTypeToOpen == Options.Inputs.ReportType.Html)
             {

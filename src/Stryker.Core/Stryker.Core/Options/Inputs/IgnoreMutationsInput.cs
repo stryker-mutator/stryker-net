@@ -28,7 +28,7 @@ namespace Stryker.Core.Options.Inputs
                 {
                     // Find any mutatorType that matches the name passed by the user
                     var mutatorDescriptor = typeDescriptions.FirstOrDefault(
-                        x => x.Value.ToString().ToLower().Contains(mutatorToExclude.ToLower()));
+                        x => string.Equals(x.Key.ToString(), mutatorToExclude, StringComparison.CurrentCultureIgnoreCase) || x.Value.ToString().ToLower().Contains(mutatorToExclude.ToLower()));
                     if (mutatorDescriptor.Value is { })
                     {
                         excludedMutators.Add(mutatorDescriptor.Key);

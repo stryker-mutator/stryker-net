@@ -118,6 +118,8 @@ namespace Stryker.Core.Baseline.Providers
 
             SetWritingHeaders(requestMessage);
 
+            requestMessage.Headers.Add("x-ms-file-last-write-time", "now");
+
             using var response = await _httpClient.SendAsync(requestMessage);
             if (response.StatusCode == HttpStatusCode.Created)
             {
@@ -145,6 +147,7 @@ namespace Stryker.Core.Baseline.Providers
 
             SetWritingHeaders(requestMessage);
 
+            requestMessage.Headers.Add("x-ms-file-last-write-time", "now");
             requestMessage.Headers.Add("x-ms-type", "file");
             requestMessage.Headers.Add("x-ms-content-length", byteSize.ToString());
 
@@ -194,7 +197,6 @@ namespace Stryker.Core.Baseline.Providers
             requestMessage.Headers.Add("x-ms-file-permission", "inherit");
             requestMessage.Headers.Add("x-ms-file-attributes", "None");
             requestMessage.Headers.Add("x-ms-file-creation-time", "now");
-            requestMessage.Headers.Add("x-ms-file-last-write-time", "now");
         }
 
         private string ToSafeResponseMessage(string responseMessage) =>

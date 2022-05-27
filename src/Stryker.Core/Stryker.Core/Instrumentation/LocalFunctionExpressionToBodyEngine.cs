@@ -37,7 +37,6 @@ namespace Stryker.Core.Instrumentation
             }
             // do we need add return to the expression body?
             return function.WithBody(SyntaxFactory.Block(statementLine)).WithExpressionBody(null).WithAdditionalAnnotations(Marker);
-
         }
 
         protected override SyntaxNode Revert(LocalFunctionStatementSyntax node)

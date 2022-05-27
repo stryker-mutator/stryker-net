@@ -93,8 +93,9 @@ namespace Stryker.Core.MutantFilters
         {
             if (matchingMutants.Count() == 1)
             {
-                matchingMutants.First().ResultStatus = (MutantStatus)Enum.Parse(typeof(MutantStatus), baselineMutant.Status);
-                matchingMutants.First().ResultStatusReason = "Result based on previous run";
+                var matchingMutant = matchingMutants.First();
+                matchingMutant.ResultStatus = (MutantStatus)Enum.Parse(typeof(MutantStatus), baselineMutant.Status);
+                matchingMutant.ResultStatusReason = "Result based on previous run";
             }
             else
             {

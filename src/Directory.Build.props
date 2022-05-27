@@ -1,4 +1,9 @@
 <Project>
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+  </PropertyGroup>
+  
   <PropertyGroup>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
@@ -6,8 +11,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <MicrosoftTestPlatform>17.1.0</MicrosoftTestPlatform>
-    <SystemIOAbstractions>16.1.23</SystemIOAbstractions>
+    <MicrosoftTestPlatform>17.2.0</MicrosoftTestPlatform>
+    <SystemIOAbstractions>17.0.15</SystemIOAbstractions>
     <MicrosoftExtensionsConfiguration>6.0.0</MicrosoftExtensionsConfiguration>
   </PropertyGroup>
 

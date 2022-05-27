@@ -1,10 +1,8 @@
+using System.IO;
 using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
-using Stryker.Core.Options;
-using System.Collections.Generic;
-using System.IO;
 using LibGitLogLevel = LibGit2Sharp.LogLevel;
 using MSLogLevel = Microsoft.Extensions.Logging.LogLevel;
 
@@ -12,17 +10,6 @@ namespace Stryker.CLI.Logging
 {
     public static class ApplicationLogging
     {
-        private static readonly Dictionary<LibGitLogLevel, MSLogLevel> LogLevelMap = new Dictionary<LibGitLogLevel, MSLogLevel>
-                                                                                   {
-                                                                                       { LibGitLogLevel.None, MSLogLevel.None },
-                                                                                       { LibGitLogLevel.Debug, MSLogLevel.Debug },
-                                                                                       { LibGitLogLevel.Trace, MSLogLevel.Trace },
-                                                                                       { LibGitLogLevel.Info, MSLogLevel.Information },
-                                                                                       { LibGitLogLevel.Warning, MSLogLevel.Warning },
-                                                                                       { LibGitLogLevel.Fatal, MSLogLevel.Critical },
-                                                                                       { LibGitLogLevel.Error, MSLogLevel.Error }
-                                                                                   };
-
         private static ILoggerFactory _factory = null;
 
         public static void ConfigureLogger(LogEventLevel logLevel, bool logToFile, string outputPath)
@@ -36,11 +23,11 @@ namespace Stryker.CLI.Logging
                 LoggerFactory.AddFile(logFilesPath + "/log-{Date}.txt", MSLogLevel.Trace);
             }
 
-            // When stryker log level is debug or trace, set LibGit2Sharp loglevel to info
-            if (logLevel < LogEventLevel.Information)
+            // When stryker log level is debug or trace, set LibGit2Sharp loglevel
+            if (logLevel < LogEventLevel.Information) // LibGit2Sharp does not handle LogEventLevel.None properly.
             {
                 var libGit2SharpLogger = LoggerFactory.CreateLogger(nameof(LibGit2Sharp));
-                GlobalSettings.LogConfiguration = new LogConfiguration(LibGitLogLevel.Info, (level, message) => libGit2SharpLogger.Log(LogLevelMap[level], message));
+                GlobalSettings.LogConfiguration = new LogConfiguration(LogLevelConverter.Convert(logLevel), (level, message) => libGit2SharpLogger.Log(LogLevelConverter.Convert(level), message));
             }
         }
 
@@ -48,6 +35,31 @@ namespace Stryker.CLI.Logging
         {
             get => _factory ??= new LoggerFactory();
             set => _factory = value;
+        }
+
+        private static class LogLevelConverter
+        {
+            public static LibGitLogLevel Convert(LogEventLevel level) => level switch
+            {
+                LogEventLevel.Information => LibGitLogLevel.None,
+                LogEventLevel.Debug => LibGitLogLevel.Debug,
+                LogEventLevel.Verbose => LibGitLogLevel.Trace,
+                LogEventLevel.Warning => LibGitLogLevel.Warning,
+                LogEventLevel.Error => LibGitLogLevel.Error,
+                _ => LibGitLogLevel.None
+            };
+
+            public static MSLogLevel Convert(LibGitLogLevel level) => level switch
+            {
+                LibGitLogLevel.None => MSLogLevel.None,
+                LibGitLogLevel.Trace => MSLogLevel.Trace,
+                LibGitLogLevel.Debug => MSLogLevel.Debug,
+                LibGitLogLevel.Info => MSLogLevel.Information,
+                LibGitLogLevel.Warning => MSLogLevel.Warning,
+                LibGitLogLevel.Error => MSLogLevel.Error,
+                LibGitLogLevel.Fatal => MSLogLevel.Critical,
+                _ => MSLogLevel.None
+            };
         }
     }
 }

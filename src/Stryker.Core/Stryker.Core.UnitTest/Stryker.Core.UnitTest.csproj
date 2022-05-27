@@ -1,6 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net5.0</TargetFramework>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
 
@@ -37,13 +36,13 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>  <!-- From Directory.Build.props -->
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestPlatform)" />  <!-- From Directory.Build.props -->
-    <PackageReference Include="Moq" Version="4.17.2" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(MicrosoftTestPlatform)" />                <!-- From Directory.Build.props -->
+    <PackageReference Include="Moq" Version="4.18.1" />
     <PackageReference Include="Shouldly" Version="4.0.3" />
-    <PackageReference Include="Spectre.Console.Testing" Version="0.43.0" />
+    <PackageReference Include="Spectre.Console.Testing" Version="0.44.0" />
     <PackageReference Include="System.IO.Abstractions.TestingHelpers" Version="$(SystemIOAbstractions)" />  <!-- From Directory.Build.props -->
     <PackageReference Include="xunit" Version="2.4.1" />
-    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3" PrivateAssets="all" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5" PrivateAssets="all" />
     <PackageReference Include="Xunit.SkippableFact" Version="1.4.13" />
   </ItemGroup>
   <ItemGroup>
@@ -51,8 +50,5 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="xunit.runner.json" CopyToOutputDirectory="PreserveNewest" />
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
 </Project>

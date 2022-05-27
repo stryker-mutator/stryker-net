@@ -39,31 +39,37 @@ between compile time theories (data is fixed at build time) and run time theorie
 Static discoveries are seen and processed as different test cases.
 
 #### Run time theories
-Run time theories are discovered as one test, disregarding the number of underlying data set.
-There is one test result per dataset, all associated with the same test.
+Run time theories may be discovered as one test, disregarding the number of underlying data set.
+During discovery phase, xUnit determines if it can generates a test case for each (theory) data set;
+if it can, those test cases are processed as usual; otherwise it will provide several results for the same test case.
+
+There is one test result per dataset, all associated with the same test case.
 
 Here is a summarized timeline of tests execution:
 ```
    xUnit runner calls data theory's data source to fetch each test case value(s)
 TestCase start event
    xUnit run test with first set of data
-   xUnit reports test results
-TestCase end event
    xUnit run test with second set of data
-   xUnit reports test reult
-   xUnit run test with third set of data
+   ...
+   xUnit run test with last set of data
+   xUnit reports first test results
+TestCase end event
+   xUnit reports second test reult
    ...
    xUnit reports last test result
 TestCase start event
    ...
 ```
+_Remark_: in this situation, each test result includes the TOTAL execution time (i.e. the time to test every data set) so one should not sum them.
+
 The difficulty here is that a lot happens between `testcase end` and `testcase start` events. 
 At coverage capture it is a problem, because there is a risk of spilling coverage information to the next tests: Stryker
 can only capture coverage information on `testcase end` events, and only in association with the current running test.
 So, every mutants covered between `testcase end` and `testcase start` will be associated with the **next** test.
 
-And during execution phase, it is impossible to predict when the test will really be over, so it is diffult to
-establish is the test was succesful.  
+And during execution phase, it is impossible to predict when the test will really be over, so it is difficult to
+establish if the test was succesful.  
 
 Also, if a mutation ends up changing a test case name - typically by changing the result of `ToTring()`, it will change the
 test identifier so this testcase will only run when running **all tests** and can no longer be executed in isolation, as

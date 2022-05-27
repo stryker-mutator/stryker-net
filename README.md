@@ -16,8 +16,13 @@ For an introduction to mutation testing and Stryker's features, see [stryker-mut
 
 ## Compatibility
 
- - dotnet core 1.1 or newer
- - dotnet framework 4.5 or newer
+Minimum target version:
+ - dotnet core 1.1
+ - dotnet framework 4.5
+
+ Tested against:
+  - dotnet core 3.1
+  - dotnet framework 4.8
 
 ## Getting started
 
