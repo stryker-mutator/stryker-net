@@ -94,7 +94,7 @@ namespace Stryker.Core.Initialisation
                 {
                     SourceCode = FileSystem.File.ReadAllText(sourceFile),
                     FullPath = sourceFile,
-                    RelativePath = Path.GetRelativePath(Path.GetDirectoryName(_options.WorkingDirectory), sourceFile)
+                    RelativePath = relativePath
                 };
 
                 // Get the syntax tree for the source file
