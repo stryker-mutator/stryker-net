@@ -116,7 +116,7 @@ namespace Stryker.Core.Options
 
             _strykerOptionsCache ??= new StrykerOptions()
             {
-                BasePath = basePath,
+                ProjectPath = basePath,
                 OutputPath = outputPath,
                 ReportFileName = reportFileNameInput,
                 Concurrency = ConcurrencyInput.Validate(),

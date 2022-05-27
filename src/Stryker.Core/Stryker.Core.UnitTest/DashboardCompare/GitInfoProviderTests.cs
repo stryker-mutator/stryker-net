@@ -47,7 +47,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         {
             var options = new StrykerOptions()
             {
-                BasePath = "C:\\",
+                ProjectPath = "C:\\",
             };
 
             var repository = new Mock<IRepository>(MockBehavior.Strict);

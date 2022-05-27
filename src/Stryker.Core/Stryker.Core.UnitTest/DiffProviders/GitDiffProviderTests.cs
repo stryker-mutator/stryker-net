@@ -20,7 +20,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         {
             var options = new StrykerOptions()
             {
-                BasePath = "C:\\"
+                ProjectPath = "C:\\"
             };
 
             var gitInfoProvider = new Mock<IGitInfoProvider>(MockBehavior.Strict);
@@ -44,7 +44,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions()
             {
-                BasePath = "C:\\",
+                ProjectPath = "C:\\",
                 SinceTarget = "d670460b4b4aece5915caf5c68d12f560a9fe3e4"
             };
 
@@ -109,7 +109,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions()
             {
-                BasePath = "C:\\",
+                ProjectPath = "C:\\",
                 SinceTarget = "d670460b4b4aece5915caf5c68d12f560a9fe3e4"
             };
             var gitInfoMock = new Mock<IGitInfoProvider>();
@@ -218,7 +218,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions()
             {
-                BasePath = basePath,
+                ProjectPath = basePath,
                 SinceTarget = "d670460b4b4aece5915caf5c68d12f560a9fe3e4",
                 DiffIgnoreChanges = diffIgnoreFiles
             };
@@ -294,7 +294,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions()
             {
-                BasePath = basePath,
+                ProjectPath = basePath,
                 SinceTarget = "d670460b4b4aece5915caf5c68d12f560a9fe3e4",
                 DiffIgnoreChanges = diffIgnoreFiles
             };
@@ -370,7 +370,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions()
             {
-                BasePath = basePath,
+                ProjectPath = basePath,
                 SinceTarget = "d670460b4b4aece5915caf5c68d12f560a9fe3e4",
                 DiffIgnoreChanges = diffIgnoreFiles
             };
@@ -446,7 +446,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions()
             {
-                BasePath = basePath,
+                ProjectPath = basePath,
                 SinceTarget = "d670460b4b4aece5915caf5c68d12f560a9fe3e4",
                 DiffIgnoreChanges = diffIgnoreFiles
             };

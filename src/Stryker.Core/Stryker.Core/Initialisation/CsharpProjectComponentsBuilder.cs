@@ -75,7 +75,7 @@ namespace Stryker.Core.Initialisation
             var projectUnderTestFolderComposite = new CsharpFolderComposite()
             {
                 FullPath = projectUnderTestDir,
-                RelativePath = null,
+                RelativePath = Path.GetDirectoryName(projectUnderTestDir),
             };
             var cache = new Dictionary<string, CsharpFolderComposite> { [string.Empty] = projectUnderTestFolderComposite };
 
@@ -94,7 +94,7 @@ namespace Stryker.Core.Initialisation
                 {
                     SourceCode = FileSystem.File.ReadAllText(sourceFile),
                     FullPath = sourceFile,
-                    RelativePath = Path.GetRelativePath(projectUnderTestDir, sourceFile)
+                    RelativePath = relativePath
                 };
 
                 // Get the syntax tree for the source file

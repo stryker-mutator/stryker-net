@@ -18,7 +18,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             var fileSystemMock = new MockFileSystem();
             var options = new StrykerOptions()
             {
-                BasePath = @"C:/Users/JohnDoe/Project/TestFolder"
+                ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder"
             };
             var sut = new DiskBaselineProvider(options, fileSystemMock);
 
@@ -37,7 +37,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
         {
             // Arrange
             var fileSystemMock = new MockFileSystem();
-            var options = new StrykerOptions { BasePath = "C:/Dev" };
+            var options = new StrykerOptions { ProjectPath = "C:/Dev" };
             var sut = new DiskBaselineProvider(options, fileSystemMock);
 
             // Act
@@ -53,7 +53,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             var fileSystemMock = new MockFileSystem();
             var options = new StrykerOptions()
             {
-                BasePath = @"C:/Users/JohnDoe/Project/TestFolder"
+                ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder"
             };
             var report = JsonReport.Build(options, JsonReportTestHelper.CreateProjectWith());
 

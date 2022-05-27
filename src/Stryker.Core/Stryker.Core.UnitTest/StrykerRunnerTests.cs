@@ -43,7 +43,7 @@ namespace Stryker.Core.UnitTest
 
             inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
             {
-                BasePath = "C:/test",
+                ProjectPath = "C:/test",
                 LogOptions = new LogOptions(),
                 OptimizationMode = OptimizationModes.SkipUncoveredMutants
             });
@@ -75,7 +75,7 @@ namespace Stryker.Core.UnitTest
 
             target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object);
 
-            projectOrchestratorMock.Verify(x => x.MutateProjects(It.Is<StrykerOptions>(x => x.BasePath == "C:/test"), It.IsAny<IReporter>()), Times.Once);
+            projectOrchestratorMock.Verify(x => x.MutateProjects(It.Is<StrykerOptions>(x => x.ProjectPath == "C:/test"), It.IsAny<IReporter>()), Times.Once);
             mutationTestProcessMock.Verify(x => x.GetCoverage(), Times.Once);
             mutationTestProcessMock.Verify(x => x.Test(It.IsAny<IEnumerable<Mutant>>()), Times.Once);
             reporterMock.Verify(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()), Times.Once);
@@ -108,7 +108,7 @@ namespace Stryker.Core.UnitTest
 
             inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
             {
-                BasePath = "C:/test",
+                ProjectPath = "C:/test",
                 OptimizationMode = OptimizationModes.None,
                 LogOptions = new LogOptions()
             });
