@@ -48,9 +48,9 @@ namespace Stryker.Core.DiffProviders
                     continue;
                 }
 
-                var fullName = _options.BasePath.EndsWith(Path.DirectorySeparatorChar)
-                    ? _options.BasePath
-                    : _options.BasePath + Path.DirectorySeparatorChar;
+                var fullName = _options.ProjectPath.EndsWith(Path.DirectorySeparatorChar)
+                    ? _options.ProjectPath
+                    : _options.ProjectPath + Path.DirectorySeparatorChar;
 
                 if (diffPath.StartsWith(fullName))
                 {

@@ -60,7 +60,7 @@ namespace Stryker.Core.Reporters.Json
 
         private IDictionary<string, SourceFile> GenerateFileReportComponents(IReadOnlyFileLeaf fileComponent)
         {
-            return new Dictionary<string, SourceFile> { { fileComponent.RelativePath, new SourceFile(fileComponent) } };
+            return new Dictionary<string, SourceFile> { { fileComponent.FullPath, new SourceFile(fileComponent) } };
         }
 
         private void Merge<TTo, TFrom>(IDictionary<TTo, TFrom> to, IDictionary<TTo, TFrom> from)

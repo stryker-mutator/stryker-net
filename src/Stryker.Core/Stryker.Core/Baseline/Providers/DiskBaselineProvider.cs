@@ -26,7 +26,7 @@ namespace Stryker.Core.Baseline.Providers
         public async Task<JsonReport> Load(string version)
         {
             var reportPath = FilePathUtils.NormalizePathSeparators(
-                Path.Combine(_options.BasePath, _outputPath, version, "stryker-report.json"));
+                Path.Combine(_options.ProjectPath, _outputPath, version, "stryker-report.json"));
 
             if (_fileSystem.File.Exists(reportPath))
             {
@@ -42,7 +42,7 @@ namespace Stryker.Core.Baseline.Providers
         public async Task Save(JsonReport report, string version)
         {
             var reportDirectory = FilePathUtils.NormalizePathSeparators(
-                Path.Combine(_options.BasePath, _outputPath, version));
+                Path.Combine(_options.ProjectPath, _outputPath, version));
 
             _fileSystem.Directory.CreateDirectory(reportDirectory);
 
