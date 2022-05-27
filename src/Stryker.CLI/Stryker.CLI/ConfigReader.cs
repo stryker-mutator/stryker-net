@@ -35,7 +35,7 @@ namespace Stryker.CLI
             }
             else if (configFileOption.HasValue())
             {
-                // only throw exception if the config file path is provided by the user
+                // throw exception if the config file path is provided by the user yet it does not exist
                 throw new InputException($"Config file not found at {configFilePath}");
             }
 
