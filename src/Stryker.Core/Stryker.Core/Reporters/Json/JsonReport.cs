@@ -35,10 +35,6 @@ namespace Stryker.Core.Reporters.Json
         private IDictionary<string, SourceFile> GenerateReportComponents(IReadOnlyProjectComponent component)
         {
             var files = new Dictionary<string, SourceFile>();
-            if (component is Solution solution)
-            {
-                Merge(files, GenerateSolutionReportComponents(solution));
-            }
             if (component is IReadOnlyFolderComposite folder)
             {
                 Merge(files, GenerateFolderReportComponents(folder));
@@ -46,17 +42,6 @@ namespace Stryker.Core.Reporters.Json
             else if (component is IReadOnlyFileLeaf file)
             {
                 Merge(files, GenerateFileReportComponents(file));
-            }
-
-            return files;
-        }
-
-        private IDictionary<string, SourceFile> GenerateSolutionReportComponents(IReadOnlyFolderComposite folderComponent)
-        {
-            var files = new Dictionary<string, SourceFile>();
-            foreach (var child in folderComponent.Children)
-            {
-                Merge(files, GenerateReportComponents(child));
             }
 
             return files;
