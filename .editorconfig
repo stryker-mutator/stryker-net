@@ -1,5 +1,5 @@
-root = true
 # top-most EditorConfig file
+root = true
 
 # Set default behavior to:
 #   UTF-8 encoding,
@@ -12,190 +12,6 @@ insert_final_newline = true
 indent_style = space
 indent_size = 4
 trim_trailing_whitespace = true
-
-# Microsoft .NET properties
-csharp_new_line_before_members_in_object_initializers = false
-csharp_preferred_modifier_order = public, private, protected, internal, static, extern, new, virtual, abstract, sealed, override, readonly, unsafe, volatile, async:suggestion
-csharp_style_expression_bodied_accessors = true:suggestion
-csharp_style_expression_bodied_constructors = true:suggestion
-csharp_style_expression_bodied_methods = true:suggestion
-csharp_style_expression_bodied_properties = true:suggestion
-csharp_style_var_elsewhere = true:suggestion
-csharp_style_var_for_built_in_types = true:suggestion
-csharp_style_var_when_type_is_apparent = true:suggestion
-dotnet_naming_rule.async_members_should_be_pascal_case_suffixed_with_async_rule.import_to_resharper = True
-dotnet_naming_rule.async_members_should_be_pascal_case_suffixed_with_async_rule.resharper_description = async_members_should_be_pascal_case_suffixed_with_async
-dotnet_naming_rule.async_members_should_be_pascal_case_suffixed_with_async_rule.resharper_guid = 5a9e2a98-0f57-4ae9-93a6-f7e2c3d07050
-dotnet_naming_rule.async_members_should_be_pascal_case_suffixed_with_async_rule.severity = suggestion
-dotnet_naming_rule.async_members_should_be_pascal_case_suffixed_with_async_rule.style = upper_camel_case_async_style
-dotnet_naming_rule.async_members_should_be_pascal_case_suffixed_with_async_rule.symbols = async_members_should_be_pascal_case_suffixed_with_async_symbols
-dotnet_naming_rule.const_declarations_should_be_pascal_case_rule.import_to_resharper = True
-dotnet_naming_rule.const_declarations_should_be_pascal_case_rule.resharper_description = const_declarations_should_be_pascal_case
-dotnet_naming_rule.const_declarations_should_be_pascal_case_rule.resharper_guid = 04ac6d45-2220-4353-ab68-d561b78f0914
-dotnet_naming_rule.const_declarations_should_be_pascal_case_rule.severity = suggestion
-dotnet_naming_rule.const_declarations_should_be_pascal_case_rule.style = upper_camel_case_style
-dotnet_naming_rule.const_declarations_should_be_pascal_case_rule.symbols = const_declarations_should_be_pascal_case_symbols
-dotnet_naming_rule.const_declarations_should_be_pascal_case_rule_1.import_to_resharper = False
-dotnet_naming_rule.const_declarations_should_be_pascal_case_rule_1.severity = suggestion
-dotnet_naming_rule.const_declarations_should_be_pascal_case_rule_1.style = upper_camel_case_style
-dotnet_naming_rule.const_declarations_should_be_pascal_case_rule_1.symbols = const_declarations_should_be_pascal_case_symbols_1
-dotnet_naming_rule.interfaces_should_be_pascal_case_prefixed_with_i_rule.import_to_resharper = True
-dotnet_naming_rule.interfaces_should_be_pascal_case_prefixed_with_i_rule.resharper_description = interfaces_should_be_pascal_case_prefixed_with_i
-dotnet_naming_rule.interfaces_should_be_pascal_case_prefixed_with_i_rule.resharper_guid = c341ecde-5db0-4952-bf78-98c8678fde6e
-dotnet_naming_rule.interfaces_should_be_pascal_case_prefixed_with_i_rule.severity = suggestion
-dotnet_naming_rule.interfaces_should_be_pascal_case_prefixed_with_i_rule.style = i_upper_camel_case_style
-dotnet_naming_rule.interfaces_should_be_pascal_case_prefixed_with_i_rule.symbols = interfaces_should_be_pascal_case_prefixed_with_i_symbols
-dotnet_naming_rule.local_constants_rule.import_to_resharper = as_predefined
-dotnet_naming_rule.local_constants_rule.severity = suggestion
-dotnet_naming_rule.local_constants_rule.style = upper_camel_case_style
-dotnet_naming_rule.local_constants_rule.symbols = local_constants_symbols
-dotnet_naming_rule.parameters_should_be_camel_case_rule.import_to_resharper = True
-dotnet_naming_rule.parameters_should_be_camel_case_rule.resharper_description = parameters_should_be_camel_case
-dotnet_naming_rule.parameters_should_be_camel_case_rule.resharper_guid = 18d7ab4d-b428-4d46-8ef8-51151e5308fa
-dotnet_naming_rule.parameters_should_be_camel_case_rule.severity = suggestion
-dotnet_naming_rule.parameters_should_be_camel_case_rule.style = lower_camel_case_style
-dotnet_naming_rule.parameters_should_be_camel_case_rule.symbols = parameters_should_be_camel_case_symbols
-dotnet_naming_rule.private_and_internal_fields_should_be_camel_case_rule.import_to_resharper = True
-dotnet_naming_rule.private_and_internal_fields_should_be_camel_case_rule.resharper_description = private_and_internal_fields_should_be_camel_case
-dotnet_naming_rule.private_and_internal_fields_should_be_camel_case_rule.resharper_guid = 5f94415c-500c-4a99-8d6b-7cc67858cfdf
-dotnet_naming_rule.private_and_internal_fields_should_be_camel_case_rule.severity = suggestion
-dotnet_naming_rule.private_and_internal_fields_should_be_camel_case_rule.style = lower_camel_case_style
-dotnet_naming_rule.private_and_internal_fields_should_be_camel_case_rule.symbols = private_and_internal_fields_should_be_camel_case_symbols
-dotnet_naming_rule.private_and_internal_static_fields_should_be_camel_case_rule.import_to_resharper = True
-dotnet_naming_rule.private_and_internal_static_fields_should_be_camel_case_rule.resharper_description = private_and_internal_static_fields_should_be_camel_case
-dotnet_naming_rule.private_and_internal_static_fields_should_be_camel_case_rule.resharper_guid = c7d67853-6d54-4aed-bd47-36112b0e26ae
-dotnet_naming_rule.private_and_internal_static_fields_should_be_camel_case_rule.severity = suggestion
-dotnet_naming_rule.private_and_internal_static_fields_should_be_camel_case_rule.style = lower_camel_case_style
-dotnet_naming_rule.private_and_internal_static_fields_should_be_camel_case_rule.symbols = private_and_internal_static_fields_should_be_camel_case_symbols
-dotnet_naming_rule.private_constants_rule.import_to_resharper = as_predefined
-dotnet_naming_rule.private_constants_rule.resharper_style = AaBb, _ + aaBb
-dotnet_naming_rule.private_constants_rule.severity = suggestion
-dotnet_naming_rule.private_constants_rule.style = upper_camel_case_style
-dotnet_naming_rule.private_constants_rule.symbols = private_constants_symbols
-dotnet_naming_rule.private_members_with_underscore_rule.import_to_resharper = True
-dotnet_naming_rule.private_members_with_underscore_rule.resharper_description = private_members_with_underscore
-dotnet_naming_rule.private_members_with_underscore_rule.resharper_guid = 91ad0f68-0a25-42ce-906f-6aca9075c8a2
-dotnet_naming_rule.private_members_with_underscore_rule.severity = suggestion
-dotnet_naming_rule.private_members_with_underscore_rule.style = lower_camel_case_style_1
-dotnet_naming_rule.private_members_with_underscore_rule.symbols = private_members_with_underscore_symbols
-dotnet_naming_rule.private_static_fields_rule.import_to_resharper = as_predefined
-dotnet_naming_rule.private_static_fields_rule.resharper_style = aaBb, _ + aaBb
-dotnet_naming_rule.private_static_fields_rule.severity = suggestion
-dotnet_naming_rule.private_static_fields_rule.style = lower_camel_case_style
-dotnet_naming_rule.private_static_fields_rule.symbols = private_static_fields_symbols
-dotnet_naming_rule.private_static_readonly_rule.import_to_resharper = as_predefined
-dotnet_naming_rule.private_static_readonly_rule.resharper_style = aaBb, _ + aaBb, AaBb
-dotnet_naming_rule.private_static_readonly_rule.severity = suggestion
-dotnet_naming_rule.private_static_readonly_rule.style = lower_camel_case_style
-dotnet_naming_rule.private_static_readonly_rule.symbols = private_static_readonly_symbols
-dotnet_naming_rule.public_and_protected_declarations_should_be_pascal_case_rule.import_to_resharper = True
-dotnet_naming_rule.public_and_protected_declarations_should_be_pascal_case_rule.resharper_description = public_and_protected_declarations_should_be_pascal_case
-dotnet_naming_rule.public_and_protected_declarations_should_be_pascal_case_rule.resharper_guid = beb3718f-048c-45be-8498-ce680dbc5d47
-dotnet_naming_rule.public_and_protected_declarations_should_be_pascal_case_rule.severity = suggestion
-dotnet_naming_rule.public_and_protected_declarations_should_be_pascal_case_rule.style = upper_camel_case_style
-dotnet_naming_rule.public_and_protected_declarations_should_be_pascal_case_rule.symbols = public_and_protected_declarations_should_be_pascal_case_symbols
-dotnet_naming_rule.static_readonly_declarations_should_be_pascal_case_rule.import_to_resharper = True
-dotnet_naming_rule.static_readonly_declarations_should_be_pascal_case_rule.resharper_description = static_readonly_declarations_should_be_pascal_case
-dotnet_naming_rule.static_readonly_declarations_should_be_pascal_case_rule.resharper_guid = ac83a63f-ad32-4803-9c41-a26ffba0a042
-dotnet_naming_rule.static_readonly_declarations_should_be_pascal_case_rule.severity = suggestion
-dotnet_naming_rule.static_readonly_declarations_should_be_pascal_case_rule.style = upper_camel_case_style
-dotnet_naming_rule.static_readonly_declarations_should_be_pascal_case_rule.symbols = static_readonly_declarations_should_be_pascal_case_symbols
-dotnet_naming_rule.type_parameters_should_be_pascal_case_prefixed_with_t_rule.import_to_resharper = True
-dotnet_naming_rule.type_parameters_should_be_pascal_case_prefixed_with_t_rule.resharper_description = type_parameters_should_be_pascal_case_prefixed_with_t
-dotnet_naming_rule.type_parameters_should_be_pascal_case_prefixed_with_t_rule.resharper_guid = 89ecda66-8a71-42e5-88d3-de4b5bab2e81
-dotnet_naming_rule.type_parameters_should_be_pascal_case_prefixed_with_t_rule.severity = suggestion
-dotnet_naming_rule.type_parameters_should_be_pascal_case_prefixed_with_t_rule.style = t_upper_camel_case_style
-dotnet_naming_rule.type_parameters_should_be_pascal_case_prefixed_with_t_rule.symbols = type_parameters_should_be_pascal_case_prefixed_with_t_symbols
-dotnet_naming_style.i_upper_camel_case_style.capitalization = pascal_case
-dotnet_naming_style.i_upper_camel_case_style.required_prefix = I
-dotnet_naming_style.lower_camel_case_style.capitalization = camel_case
-dotnet_naming_style.lower_camel_case_style_1.capitalization = camel_case
-dotnet_naming_style.lower_camel_case_style_1.required_prefix = _
-dotnet_naming_style.t_upper_camel_case_style.capitalization = pascal_case
-dotnet_naming_style.t_upper_camel_case_style.required_prefix = T
-dotnet_naming_style.upper_camel_case_async_style.capitalization = pascal_case
-dotnet_naming_style.upper_camel_case_async_style.required_suffix = Async
-dotnet_naming_style.upper_camel_case_style.capitalization = pascal_case
-dotnet_naming_symbols.async_members_should_be_pascal_case_suffixed_with_async_symbols.applicable_accessibilities = local,public,internal,private,protected,protected_internal,private_protected
-dotnet_naming_symbols.async_members_should_be_pascal_case_suffixed_with_async_symbols.applicable_kinds = method
-dotnet_naming_symbols.async_members_should_be_pascal_case_suffixed_with_async_symbols.required_modifiers = async
-dotnet_naming_symbols.async_members_should_be_pascal_case_suffixed_with_async_symbols.resharper_applicable_kinds = async_method
-dotnet_naming_symbols.async_members_should_be_pascal_case_suffixed_with_async_symbols.resharper_required_modifiers = any
-dotnet_naming_symbols.const_declarations_should_be_pascal_case_symbols.applicable_accessibilities = local,public,internal,private,protected,protected_internal,private_protected
-dotnet_naming_symbols.const_declarations_should_be_pascal_case_symbols.applicable_kinds = local
-dotnet_naming_symbols.const_declarations_should_be_pascal_case_symbols.required_modifiers = const
-dotnet_naming_symbols.const_declarations_should_be_pascal_case_symbols.resharper_applicable_kinds = constant_field,local_constant
-dotnet_naming_symbols.const_declarations_should_be_pascal_case_symbols.resharper_required_modifiers = any
-dotnet_naming_symbols.const_declarations_should_be_pascal_case_symbols_1.applicable_accessibilities = local,public,internal,private,protected,protected_internal,private_protected
-dotnet_naming_symbols.const_declarations_should_be_pascal_case_symbols_1.applicable_kinds = field
-dotnet_naming_symbols.const_declarations_should_be_pascal_case_symbols_1.required_modifiers = const
-dotnet_naming_symbols.interfaces_should_be_pascal_case_prefixed_with_i_symbols.applicable_accessibilities = local,public,internal,private,protected,protected_internal,private_protected
-dotnet_naming_symbols.interfaces_should_be_pascal_case_prefixed_with_i_symbols.applicable_kinds = interface
-dotnet_naming_symbols.interfaces_should_be_pascal_case_prefixed_with_i_symbols.resharper_applicable_kinds = interface
-dotnet_naming_symbols.interfaces_should_be_pascal_case_prefixed_with_i_symbols.resharper_required_modifiers = any
-dotnet_naming_symbols.local_constants_symbols.applicable_accessibilities = *
-dotnet_naming_symbols.local_constants_symbols.applicable_kinds = local
-dotnet_naming_symbols.local_constants_symbols.required_modifiers = const
-dotnet_naming_symbols.parameters_should_be_camel_case_symbols.applicable_accessibilities = local,public,internal,private,protected,protected_internal,private_protected
-dotnet_naming_symbols.parameters_should_be_camel_case_symbols.applicable_kinds = parameter
-dotnet_naming_symbols.parameters_should_be_camel_case_symbols.resharper_applicable_kinds = parameter
-dotnet_naming_symbols.parameters_should_be_camel_case_symbols.resharper_required_modifiers = any
-dotnet_naming_symbols.private_and_internal_fields_should_be_camel_case_symbols.applicable_accessibilities = local,internal,private
-dotnet_naming_symbols.private_and_internal_fields_should_be_camel_case_symbols.applicable_kinds = field
-dotnet_naming_symbols.private_and_internal_fields_should_be_camel_case_symbols.resharper_applicable_kinds = any_field
-dotnet_naming_symbols.private_and_internal_fields_should_be_camel_case_symbols.resharper_required_modifiers = any
-dotnet_naming_symbols.private_and_internal_static_fields_should_be_camel_case_symbols.applicable_accessibilities = local,internal,private
-dotnet_naming_symbols.private_and_internal_static_fields_should_be_camel_case_symbols.applicable_kinds = field
-dotnet_naming_symbols.private_and_internal_static_fields_should_be_camel_case_symbols.required_modifiers = static
-dotnet_naming_symbols.private_and_internal_static_fields_should_be_camel_case_symbols.resharper_applicable_kinds = any_field
-dotnet_naming_symbols.private_and_internal_static_fields_should_be_camel_case_symbols.resharper_required_modifiers = static
-dotnet_naming_symbols.private_constants_symbols.applicable_accessibilities = private
-dotnet_naming_symbols.private_constants_symbols.applicable_kinds = field
-dotnet_naming_symbols.private_constants_symbols.required_modifiers = const
-dotnet_naming_symbols.private_members_with_underscore_symbols.applicable_accessibilities = local,private
-dotnet_naming_symbols.private_members_with_underscore_symbols.applicable_kinds = field
-dotnet_naming_symbols.private_members_with_underscore_symbols.resharper_applicable_kinds = any_field
-dotnet_naming_symbols.private_members_with_underscore_symbols.resharper_required_modifiers = any
-dotnet_naming_symbols.private_static_fields_symbols.applicable_accessibilities = private
-dotnet_naming_symbols.private_static_fields_symbols.applicable_kinds = field
-dotnet_naming_symbols.private_static_fields_symbols.required_modifiers = static
-dotnet_naming_symbols.private_static_readonly_symbols.applicable_accessibilities = private
-dotnet_naming_symbols.private_static_readonly_symbols.applicable_kinds = field
-dotnet_naming_symbols.private_static_readonly_symbols.required_modifiers = static,readonly
-dotnet_naming_symbols.public_and_protected_declarations_should_be_pascal_case_symbols.applicable_accessibilities = local,public,protected
-dotnet_naming_symbols.public_and_protected_declarations_should_be_pascal_case_symbols.applicable_kinds = method,field,event,property
-dotnet_naming_symbols.public_and_protected_declarations_should_be_pascal_case_symbols.resharper_applicable_kinds = method,any_field,event,property
-dotnet_naming_symbols.public_and_protected_declarations_should_be_pascal_case_symbols.resharper_required_modifiers = any
-dotnet_naming_symbols.static_readonly_declarations_should_be_pascal_case_symbols.applicable_accessibilities = local,public,internal,private,protected,protected_internal,private_protected
-dotnet_naming_symbols.static_readonly_declarations_should_be_pascal_case_symbols.applicable_kinds = field
-dotnet_naming_symbols.static_readonly_declarations_should_be_pascal_case_symbols.required_modifiers = readonly,static
-dotnet_naming_symbols.static_readonly_declarations_should_be_pascal_case_symbols.resharper_applicable_kinds = readonly_field
-dotnet_naming_symbols.static_readonly_declarations_should_be_pascal_case_symbols.resharper_required_modifiers = static
-dotnet_naming_symbols.type_parameters_should_be_pascal_case_prefixed_with_t_symbols.applicable_accessibilities = local,public,internal,private,protected,protected_internal,private_protected
-dotnet_naming_symbols.type_parameters_should_be_pascal_case_prefixed_with_t_symbols.applicable_kinds = type_parameter
-dotnet_naming_symbols.type_parameters_should_be_pascal_case_prefixed_with_t_symbols.resharper_applicable_kinds = type_parameter
-dotnet_naming_symbols.type_parameters_should_be_pascal_case_prefixed_with_t_symbols.resharper_required_modifiers = any
-dotnet_style_parentheses_in_arithmetic_binary_operators = always_for_clarity:suggestion
-dotnet_style_parentheses_in_other_binary_operators = always_for_clarity:suggestion
-dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity:suggestion
-dotnet_style_predefined_type_for_locals_parameters_members = true:warning
-dotnet_style_predefined_type_for_member_access = true:suggestion
-dotnet_style_qualification_for_event = false:suggestion
-dotnet_style_qualification_for_field = false:suggestion
-dotnet_style_qualification_for_method = false:suggestion
-dotnet_style_qualification_for_property = false:suggestion
-dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggestion
-file_header_template = --------------------------------------------------------------------------------------------------------------------\n <copyright file="{fileName}" company="NFluent">\n  Copyright $CURRENT_YEAR$ Cyrille DUPUYDAUBY\n  Licensed under the Apache License, Version 2.0 (the "License");\n  you may not use this file except in compliance with the License.\n  You may obtain a copy of the License at\n      http://www.apache.org/licenses/LICENSE-2.0\n  Unless required by applicable law or agreed to in writing, software\n  distributed under the License is distributed on an "AS IS" BASIS,\n  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n  See the License for the specific language governing permissions and\n  limitations under the License.\n</copyright>\n--------------------------------------------------------------------------------------------------------------------\n
-
-# ReSharper properties
-resharper_keep_existing_declaration_block_arrangement = true
-resharper_keep_existing_embedded_block_arrangement = true
-resharper_keep_existing_enum_arrangement = true
-resharper_show_autodetect_configure_formatting_tip = false
-resharper_use_indent_from_vs = false
-
-# ReSharper inspection severities
-resharper_inconsistent_naming_highlighting = suggestion
 
 # Scripts files
 [*.{cmd,csproj,ps1,psm1,sh}]
@@ -365,11 +181,11 @@ dotnet_naming_symbols.static_readonly_declarations.required_modifiers = static, 
 dotnet_naming_symbols.type_parameters.applicable_kinds = type_parameter
 
 # Private members are camelCase and start with _
-dotnet_naming_rule.private_members_with_underscore.symbols = private_members
-dotnet_naming_rule.private_members_with_underscore.style = prefix_underscore
+dotnet_naming_rule.private_members_with_underscore.symbols  = private_members
+dotnet_naming_rule.private_members_with_underscore.style    = prefix_underscore
 dotnet_naming_rule.private_members_with_underscore.severity = suggestion
 
-dotnet_naming_symbols.private_members.applicable_kinds = field
+dotnet_naming_symbols.private_members.applicable_kinds           = field
 dotnet_naming_symbols.private_members.applicable_accessibilities = private
 
 dotnet_naming_style.prefix_underscore.capitalization = camel_case
@@ -411,8 +227,3 @@ dotnet_style_readonly_field = true:suggestion
 dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggestion
 
 dotnet_code_quality_unused_parameters = all:suggestion
-
-[*.{appxmanifest,asax,ascx,aspx,axaml,axml,build,c,c++,cc,cginc,compute,config,cp,cpp,cs,cshtml,csproj,css,cu,cuh,cxx,dbml,discomap,dtd,fx,fxh,h,hh,hlsl,hlsli,hlslinc,hpp,htm,html,hxx,inc,inl,ino,ipp,js,json,jsproj,jsx,lsproj,master,mpp,mq4,mq5,mqh,njsproj,nuspec,paml,proj,props,proto,razor,resjson,resw,resx,skin,StyleCop,targets,tasks,tpp,ts,tsx,usf,ush,vb,vbproj,xaml,xamlx,xml,xoml,xsd}]
-indent_style = space
-indent_size = 4
-tab_width = 4
