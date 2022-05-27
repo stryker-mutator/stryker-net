@@ -2,8 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Text;
 using Buildalyzer;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Exceptions;
+using Stryker.Core.MutantFilters.Extensions;
 
 namespace Stryker.Core.ProjectComponents.TestProjects
 {
@@ -26,14 +30,27 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             var testFiles = new List<TestFile>();
             foreach (var file in testProjectAnalyzerResult.SourceFiles)
             {
-                testFiles.Add(new TestFile
+                var source = _fileSystem.File.ReadAllText(file);
+                if (IsNotGenerated(file, source))
                 {
-                    FilePath = file,
-                    Source = _fileSystem.File.ReadAllText(file)
-                });
+                    testFiles.Add(new TestFile
+                    {
+                        FilePath = file,
+                        Source = source
+                    });
+                }
             }
 
             TestFiles = testFiles;
+        }
+
+        private bool IsNotGenerated(string file, string source)
+        {
+            var isGenerated = CSharpSyntaxTree.ParseText(source,
+                    path: file,
+                    encoding: Encoding.UTF32,
+                    options: new CSharpParseOptions(LanguageVersion.Latest, DocumentationMode.None)).IsGenerated();
+            return !isGenerated;
         }
 
         private static void ValidateIsTestProject(IAnalyzerResult testProjectAnalyzerResult)
