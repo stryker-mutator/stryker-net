@@ -389,7 +389,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var options = new StrykerOptions()
             {
-                BasePath = basePath,
+                OutputPath = basePath,
                 Concurrency = 1,
                 OptimizationMode = OptimizationModes.None
             };

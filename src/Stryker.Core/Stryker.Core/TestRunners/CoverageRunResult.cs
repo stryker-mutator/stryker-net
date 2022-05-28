@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Collections.Immutable;
-using System.Linq;
 
 namespace Stryker.Core.TestRunners
 {
@@ -34,12 +33,5 @@ namespace Stryker.Core.TestRunners
             DetectedStaticMutations = detectedStaticMutations?.ToImmutableArray();
             LeakedMutations = leakedMutations?.ToImmutableArray();
         }
-
-        public CoverageRunResult Merge(CoverageRunResult other) =>
-            new CoverageRunResult(TestId,
-                (CoverageConfidence)Math.Max((int)Confidence, (int)other.Confidence),
-                CoveredMutations.Union(other.CoveredMutations),
-                DetectedStaticMutations.Union(other.CoveredMutations),
-                LeakedMutations.Union(other.LeakedMutations));
     }
 }

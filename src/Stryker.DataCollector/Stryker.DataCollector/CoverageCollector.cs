@@ -80,7 +80,11 @@ namespace Stryker.DataCollector
             return string.Format(TemplateForConfiguration, line, configuration);
         }
 
-        public void Initialize(IDataCollectionSink dataCollectionSink) => _dataSink = dataCollectionSink;
+        public void Initialize(IDataCollectionSink dataCollectionSink)
+        {
+            _dataSink = dataCollectionSink;
+            SetLogger(Console.WriteLine);
+        }
 
         public void SetLogger(Action<string> logger) => _logger = logger;
 

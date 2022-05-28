@@ -226,6 +226,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public List<VsTestDescription> FindTestCasesWithinDataSource(VsTestDescription referenceTest)
         {
             List<VsTestDescription> result;
+            static string Extractor(string name) => name[..name.IndexOf('(')];
             switch (referenceTest.Framework)
             {
                 case TestFramework.xUnit:
@@ -234,15 +235,12 @@ namespace Stryker.Core.TestRunners.VsTest
                     break;
                 case TestFramework.nUnit:
                 {
-                    string Extractor(string name) => name.Substring(0, name.IndexOf('('));
-
                     var referenceName = Extractor(referenceTest.Case.FullyQualifiedName);
-
                     result = VsTests.Values.Where(desc => Extractor(desc.Case.FullyQualifiedName) == referenceName).ToList();
                     break;
                 }
                 default:
-                    result = new List<VsTestDescription>() { referenceTest };
+                    result = new List<VsTestDescription> { referenceTest };
                     break;
             }
             return result;

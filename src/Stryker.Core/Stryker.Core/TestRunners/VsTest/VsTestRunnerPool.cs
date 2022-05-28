@@ -79,40 +79,22 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private SimpleRunResults SmartCoverageCapture()
         {
-            var normalTests = _context.VsTests.Keys.ToList();
             var dubiousTests = new List<Guid>();
 
-            // check if we have tests with multiple results that may require isolated capture
-            foreach (var suspiciousCase in _context.VsTests.Values.Where(pair => pair.NbSubCases > 1))
-            {
-                var similar = _context.FindTestCasesWithinDataSource(suspiciousCase);
-                foreach (var description in similar)
-                {
-                    normalTests.Remove(description.Id);
-                    dubiousTests.Add(description.Id);
-                    _logger.LogDebug($"Coverage for test {description.Case.DisplayName} will be established in isolation.");
-                }
-            }
-
             var aggregator = new SimpleRunResults();
-            aggregator.Merge(
-                RunThis(
-                    runner => runner.RunCoverageSession(new TestsGuidList(normalTests))));
-            List<TestResult> suspiciousResults = new();
+            aggregator.Merge(RunThis(runner => runner.RunCoverageSession(TestsGuidList.EveryTest())));
             // now scan if we find tests with 'early' coverage
-            foreach (var result in aggregator.TestResults.Where(result => result.Properties.Any(x => x.Id == CoverageCollector.OutOfTestsPropertyName)))
+            foreach (var result in aggregator.TestResults.Where(result => result.Properties.Any(x => x.Id == CoverageCollector.OutOfTestsPropertyName)).Select( r => r.TestCase.Id))
             {
-                suspiciousResults.Add(result);
-                var similar = _context.FindTestCasesWithinDataSource(_context.VsTests[result.TestCase.Id]);
+                var similar = _context.FindTestCasesWithinDataSource(_context.VsTests[result]);
                 // we have a leak
                 foreach (var description in similar)
                 {
-                    normalTests.Remove(description.Id);
                     dubiousTests.Add(description.Id);
                     _logger.LogDebug($"Coverage for test {description.Case.DisplayName} will be established in isolation.");
                 }
 
-                dubiousTests.Add(result.TestCase.Id);
+                dubiousTests.Add(result);
             }
 
             aggregator.Merge(CaptureCoveragePerIsolatedTests(dubiousTests));
@@ -167,7 +149,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var dynamicTestCases = new HashSet<Guid>();
             var results = new List<CoverageRunResult>(testResults.Count);
             var defaultConfidence = perIsolatedTest ? CoverageConfidence.Exact : CoverageConfidence.Normal;
-            // initialize the map
+            // initialize the map, only with passing tests
             foreach (var testResult in testResults.Where( tr => tr.Outcome == TestOutcome.Passed))
             {
                 var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == CoverageCollector.PropertyName);
@@ -176,7 +158,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 if (!_context.VsTests.ContainsKey(testCaseId))
                 {
                     _logger.LogWarning($"VsTestRunner: Coverage analysis run encountered a unexpected test case ({testResult.TestCase.DisplayName}), mutation tests may be inaccurate. Disable coverage analysis if you have doubts.");
-                    // add the test description
+                    // add the test description to the referential
                     _context.VsTests.Add(testCaseId, new VsTestDescription(testResult.TestCase));
                     unexpected = true;
                 }
@@ -188,10 +170,11 @@ namespace Stryker.Core.TestRunners.VsTest
                     if (seenTestCases.Contains(testCaseId) ||
                         dynamicTestCases.Contains(testCaseId))
                     {
-                        _logger.LogDebug($"VsTestRunner: Test {testResult.TestCase.DisplayName} was not tracked, so no coverage data for it.");
+                        _logger.LogDebug($"VsTestRunner: Extra result for test {testResult.TestCase.DisplayName}, so no coverage data for it.");
                         continue;
                     }
 
+                    _logger.LogDebug($"VsTestRunner: No coverage data for {testResult.TestCase.DisplayName}.");
                     // this is a suspect test
                     dynamicTestCases.Add(testDescription.Id);
                     results.Add(new CoverageRunResult(testCaseId, CoverageConfidence.Dubious, Enumerable.Empty<int>(), Enumerable.Empty<int>(), Enumerable.Empty<int>()));

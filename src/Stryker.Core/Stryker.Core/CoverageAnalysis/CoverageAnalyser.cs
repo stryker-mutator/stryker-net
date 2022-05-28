@@ -67,7 +67,7 @@ namespace Stryker.Core.CoverageAnalysis
             }
         }
 
-        private void TransformResult(IEnumerable<CoverageRunResult> coverageRunResults,
+        private static void TransformResult(IEnumerable<CoverageRunResult> coverageRunResults,
             ICollection<Guid> guids,
             IReadOnlyDictionary<int, ISet<Guid>> dictionary,
             IReadOnlyDictionary<int, ISet<Guid>> coveringMap1,

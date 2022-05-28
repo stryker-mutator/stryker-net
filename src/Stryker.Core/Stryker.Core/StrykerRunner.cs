@@ -166,10 +166,8 @@ namespace Stryker.Core
                 rootComponent.AddRange(projectComponents);
                 return rootComponent;
             }
-            else
-            {
-                return projectComponents.FirstOrDefault();
-            }
+
+            return projectComponents.FirstOrDefault();
         }
     }
 }
