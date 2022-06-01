@@ -1,3 +1,14 @@
+# [2.0.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.5.3...stryker@2.0.0) (2022-06-01)
+
+
+### Bug Fixes
+
+* **initialisation:** Improve error message when no analyzer results are found ([#2037](https://github.com/stryker-mutator/stryker-net/issues/2037)) ([6ad8afb](https://github.com/stryker-mutator/stryker-net/commit/6ad8afb1d1a324a6c86e1cdba11ddf270b256efb))
+* **initialisation:** Improve error messages when we fail to correctly analyze the project ([#2030](https://github.com/stryker-mutator/stryker-net/issues/2030)) ([305a713](https://github.com/stryker-mutator/stryker-net/commit/305a7139bfbcbda61e7492e93720314529b83a96))
+* **reports:** Fix issue with relative paths that miss the root folder ([#2055](https://github.com/stryker-mutator/stryker-net/issues/2055)) ([4698513](https://github.com/stryker-mutator/stryker-net/commit/46985134192ade92d5e56dc2ce45681ff92e41c9))
+
+
+
 ## [1.5.3](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.5.2...stryker@1.5.3) (2022-05-03)
 
 
