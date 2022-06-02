@@ -9,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Buildalyzer;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
@@ -195,6 +196,37 @@ public class VsTestMockingHelper : TestBase
             {
                 // generate test results
                 MoqTestRun(testRunEvents, results);
+            }).Returns(Task.CompletedTask);
+    }
+
+    protected void SetupFailingTestRun(Mock<IVsTestConsoleWrapper> mockVsTest)
+    {
+        mockVsTest.Setup(x =>
+            x.RunTestsWithCustomTestHostAsync(
+                It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
+                It.Is<string>(settings => !settings.Contains("<Coverage")),
+                It.Is<TestPlatformOptions>(o => o != null && o.TestCaseFilter == null),
+                It.IsAny<ITestRunEventsHandler>(),
+                It.IsAny<ITestHostLauncher>())).Callback(
+            (IEnumerable<string> _, string _, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
+                ITestHostLauncher _) =>
+            {
+                // generate test results
+                Task.Run(() =>
+                {
+                    var timer = new Stopwatch();
+                    testRunEvents.HandleTestRunStatsChange(
+                        new TestRunChangedEventArgs(new TestRunStatistics(0, null), null, null));
+
+
+                    Thread.Sleep(10);
+                    testRunEvents.HandleTestRunComplete(
+                        new TestRunCompleteEventArgs(new TestRunStatistics(0, null), false, false, new TransationLayerException("VsTest Crashed"),
+                            null, timer.Elapsed),
+                        new TestRunChangedEventArgs(null, Array.Empty<TestResult>(), new List<TestCase>()),
+                        null,
+                        null);
+                });
             }).Returns(Task.CompletedTask);
     }
 

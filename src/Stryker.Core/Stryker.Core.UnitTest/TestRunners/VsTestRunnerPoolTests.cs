@@ -26,17 +26,6 @@ namespace Stryker.Core.UnitTest.TestRunners
             _xUnitUri = new Uri("executor://xunit/VsTestRunner2/netcoreapp");
         }
 
-        // simulate the discovery of tests
-
-        // mock a VsTest run. Provides test result one by one at 10 ms intervals
-        // note: a lot of information is still missing (vs real VsTest). You will have to add them if your test requires them
-
-        // setup a simple (mock) test run where all tests fail or succeed
-
-        // setup a customized coverage capture run, using provided coverage results
-
-        // setup a customized partial test runs, using provided test results
-
         [Fact]
         public void RunInitialTestsOn()
         {
@@ -65,6 +54,16 @@ namespace Stryker.Core.UnitTest.TestRunners
             var result = runner.TestMultipleMutants(null, new []{Mutant}, null);
             // tests are successful => run should be successful
             result.FailingTests.IsEmpty.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void RecycleRunnerOnError()
+        {
+            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
+            SetupFailingTestRun(mockVsTest);
+            runner.TestMultipleMutants(null, new []{Mutant}, null);
+            // the test will always end in a crash, VsTestRunner should retry at least once
+            mockVsTest.Verify( m => m.EndSession(), Times.AtLeastOnce());
         }
 
         [Fact]
@@ -363,6 +362,17 @@ namespace Stryker.Core.UnitTest.TestRunners
             result = runner.TestMultipleMutants(null, new []{Mutant}, null);
             result.RanTests.IsEveryTest.ShouldBeTrue();
             result.FailingTests.IsEmpty.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void HandleUnexpectedTestCase()
+        {
+            var options = new StrykerOptions();
+            var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
+            // assume 2 results for T0
+            SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T1", true), ("T2", true) });
+            var result = runner.InitialTest();
+            runner.Context.Tests.Count.ShouldBe(3);
         }
 
         // this verifies that mutant that are covered outside any tests are

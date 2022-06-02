@@ -14,9 +14,11 @@ namespace Stryker.Core.Mutants
         {
             foreach (var test in tests)
             {
-                _tests[test.Id] = test;
+                RegisterTest(test);
             }
         }
+
+        public void RegisterTest(TestDescription test) => _tests[test.Id] = test;
 
         public IEnumerable<TestDescription> Extract(IEnumerable<Guid> ids) => ids.Select(i => _tests[i]);
     }

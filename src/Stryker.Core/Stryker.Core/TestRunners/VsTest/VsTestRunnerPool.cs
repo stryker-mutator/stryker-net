@@ -19,8 +19,8 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly AutoResetEvent _runnerAvailableHandler = new(false);
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new();
         private readonly ILogger _logger;
-        private readonly VsTestContextInformation _context;
-        
+        public VsTestContextInformation Context { get; }
+
         /// <summary>
         /// this constructor is for test purposes
         /// </summary>
@@ -32,23 +32,23 @@ namespace Stryker.Core.TestRunners.VsTest
             Func<VsTestContextInformation, int, VsTestRunner> runnerBuilder)
         {
             _logger = forcedLogger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
-            _context = vsTestContext;
+            Context = vsTestContext;
             runnerBuilder ??= (context, i) => new VsTestRunner(context, i);
-            Parallel.For(0, Math.Max(1, _context.Options.Concurrency), (i, _) => 
-                 _availableRunners.Add(runnerBuilder(_context, i)));
+            Parallel.For(0, Math.Max(1, Context.Options.Concurrency), (i, _) => 
+                 _availableRunners.Add(runnerBuilder(Context, i)));
         }
 
         public VsTestRunnerPool(StrykerOptions options,
             ProjectInfo projectInfo)
         {
-            _context = new VsTestContextInformation(options, projectInfo);
-            _context.Initialize();
+            Context = new VsTestContextInformation(options, projectInfo);
+            Context.Initialize();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
-            Parallel.For(0, Math.Max(1, _context.Options.Concurrency), (i, _) => 
-                 _availableRunners.Add(new VsTestRunner(_context, i)));
+            Parallel.For(0, Math.Max(1, Context.Options.Concurrency), (i, _) => 
+                 _availableRunners.Add(new VsTestRunner(Context, i)));
         }
 
-        public TestSet DiscoverTests() => _context.Tests;
+        public TestSet DiscoverTests() => Context.Tests;
 
         public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
             => RunThis(runner => runner.TestMultipleMutants(timeoutCalc, mutants, update));
@@ -58,7 +58,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public IEnumerable<CoverageRunResult> CaptureCoverage()
         {
-            var optimizationMode = _context.Options.OptimizationMode;
+            var optimizationMode = Context.Options.OptimizationMode;
 
             IRunResults resultsToParse;
             if (optimizationMode.HasFlag(OptimizationModes.SmartCoverageCapture))
@@ -67,7 +67,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
             else if (optimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
             {
-                resultsToParse = CaptureCoveragePerIsolatedTests(_context.VsTests.Keys);
+                resultsToParse = CaptureCoveragePerIsolatedTests(Context.VsTests.Keys);
             }
             else
             {
@@ -86,7 +86,7 @@ namespace Stryker.Core.TestRunners.VsTest
             // now scan if we find tests with 'early' coverage
             foreach (var result in aggregator.TestResults.Where(result => result.Properties.Any(x => x.Id == CoverageCollector.OutOfTestsPropertyName)).Select( r => r.TestCase.Id))
             {
-                var similar = _context.FindTestCasesWithinDataSource(_context.VsTests[result]);
+                var similar = Context.FindTestCasesWithinDataSource(Context.VsTests[result]);
                 // we have a leak
                 foreach (var description in similar)
                 {
@@ -155,14 +155,14 @@ namespace Stryker.Core.TestRunners.VsTest
                 var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == CoverageCollector.PropertyName);
                 var testCaseId = testResult.TestCase.Id;
                 var unexpected = false;
-                if (!_context.VsTests.ContainsKey(testCaseId))
+                if (!Context.VsTests.ContainsKey(testCaseId))
                 {
                     _logger.LogWarning($"VsTestRunner: Coverage analysis run encountered a unexpected test case ({testResult.TestCase.DisplayName}), mutation tests may be inaccurate. Disable coverage analysis if you have doubts.");
                     // add the test description to the referential
-                    _context.VsTests.Add(testCaseId, new VsTestDescription(testResult.TestCase));
+                    Context.VsTests.Add(testCaseId, new VsTestDescription(testResult.TestCase));
                     unexpected = true;
                 }
-                var testDescription = _context.VsTests[testCaseId];
+                var testDescription = Context.VsTests[testCaseId];
                 if (key == null)
                 {
                     // the coverage collector was not able to report anything ==> it has not been tracked by it, so we do not have coverage data
@@ -213,7 +213,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     : parts[0].Split(',').Select(int.Parse);
                 // we identify mutants that are part of static code, unless we performed pertest capture
                 staticMutants = (parts.Length == 1 || string.IsNullOrEmpty(parts[1]) ||
-                                 _context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
+                                 Context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
                     ? Enumerable.Empty<int>()
                     : parts[1].Split(',').Select(int.Parse);
             }
