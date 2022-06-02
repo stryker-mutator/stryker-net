@@ -273,7 +273,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             return $@"<RunSettings>
  <RunConfiguration>
-  <CollectSourceInformation>false</CollectSourceInformation>
+  <CollectSourceInformation>true</CollectSourceInformation>
   <MaxCpuCount>{Options.Concurrency}</MaxCpuCount>
   <DesignMode>false</DesignMode>
 {testCaseFilter}
@@ -318,8 +318,7 @@ namespace Stryker.Core.TestRunners.VsTest
 ")}  <MaxCpuCount>{optionsConcurrentTestRunners}</MaxCpuCount>
 {timeoutSettings}{settingsForCoverage}
 <DesignMode>false</DesignMode>
-{testCaseFilter}</RunConfiguration>
-{dataCollectorSettings}
+{testCaseFilter}</RunConfiguration>{dataCollectorSettings}
 </RunSettings>";
 
             return runSettings;

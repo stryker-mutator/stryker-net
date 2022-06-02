@@ -94,7 +94,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     _logger.LogDebug($"Coverage for test {description.Case.DisplayName} will be established in isolation.");
                 }
 
-                dubiousTests.Add(result);
+                dubiousTests.Add(result);   
             }
 
             aggregator.Merge(CaptureCoveragePerIsolatedTests(dubiousTests));

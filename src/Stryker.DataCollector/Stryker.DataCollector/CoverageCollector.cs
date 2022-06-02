@@ -216,17 +216,13 @@ namespace Stryker.DataCollector
 
         public void TestCaseStart(TestCaseStartArgs testCaseStartArgs)
         {
-            var fistTest = _currentTestCase == null;
             _previousTest = _currentTestCase;
             _currentTestCase = testCaseStartArgs.TestCase;
             if (_coverageOn)
             {
                 // see if any mutation was executed outside a test
                 // except for first (assumed to be covered by the first test)
-                if (!fistTest)
-                {
                     CaptureCoverageOutsideTests();
-                }
 
                 return;
             }

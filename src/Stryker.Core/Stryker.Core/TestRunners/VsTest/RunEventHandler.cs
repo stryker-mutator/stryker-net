@@ -68,8 +68,6 @@ namespace Stryker.Core.TestRunners.VsTest
         public event EventHandler VsTestFailed;
         public event EventHandler ResultsUpdated;
 
-        public bool TimeOut => _currentResults.TestsInTimeout.Count > 0;
-
         public bool CancelRequested { get; set; }
 
         public RunEventHandler(IDictionary<Guid, VsTestDescription> vsTests, ILogger logger, string runnerId)
@@ -108,6 +106,7 @@ namespace Stryker.Core.TestRunners.VsTest
         }
 
         public IRunResults GetRawResults() => new SimpleRunResults(_rawResults, _currentResults.TestsInTimeout);
+
         public IRunResults GetResults() => _currentResults;
 
         public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
@@ -226,6 +225,5 @@ namespace Stryker.Core.TestRunners.VsTest
             };
             _logger.LogTrace($"{_runnerId}: [{levelFinal}] {message}");
         }
-
     }
 }
