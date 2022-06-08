@@ -11,7 +11,7 @@
         "ignore-mutations": [
             "string"
         ],
-        "coverage-analysis": "smart", 
+        "coverage-analysis": "combined", 
         "mutate": [
             "!Person.cs"
         ]

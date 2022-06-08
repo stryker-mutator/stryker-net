@@ -39,11 +39,11 @@ public class VsTestMockingHelper : TestBase
 {
     protected Mutant Mutant { get; }
     protected Mutant OtherMutant { get; }
-    protected readonly CsharpFolderComposite _projectContents;
     private readonly string _testAssemblyPath;
     private readonly ProjectInfo _targetProject;
     private readonly MockFileSystem _fileSystem;
-    private readonly Uri _executorUri;
+    private readonly Uri _NUnitUri;
+    private readonly Uri _xUnitUri;
     private readonly TestProperty _coverageProperty;
     private readonly TestProperty _unexpectedCoverageProperty;
     protected readonly TimeSpan _testDefaultDuration = TimeSpan.FromSeconds(1);
@@ -73,7 +73,8 @@ public class VsTestMockingHelper : TestBase
     </ItemGroup>
 </Project>";
             _testAssemblyPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "_firstTest", "bin", "Debug", "TestApp.dll"));
-            _executorUri = new Uri("exec://nunit");
+            _NUnitUri = new Uri("exec://nunit");
+            _xUnitUri = new Uri("executor://xunit/VsTestRunner2/netcoreapp");
             var firstTest = BuildCase("T0");
             var secondTest = BuildCase("T1");
 
@@ -128,7 +129,7 @@ public class VsTestMockingHelper : TestBase
         Task.Run(() => discoveryEventsHandler.HandleDiscoveredTests(tests)).
             ContinueWith((_, u) => discoveryEventsHandler.HandleDiscoveryComplete((int)u, null, aborted), tests.Count);
 
-    protected TestCase BuildCase(string name) => new(name, _executorUri, _testAssemblyPath) { Id = new Guid() };
+    protected TestCase BuildCase(string name, TestFramework framework = TestFramework.xUnit) => new(name, framework == TestFramework.xUnit ? _xUnitUri : _NUnitUri, _testAssemblyPath) { Id = new Guid() };
 
     private TestCase FindOrBuildCase(string testResultId) => TestCases.FirstOrDefault(t => t.FullyQualifiedName == testResultId) ?? BuildCase(testResultId);
 
@@ -241,30 +242,50 @@ public class VsTestMockingHelper : TestBase
             (IEnumerable<string> _, string _, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
                 ITestHostLauncher _) =>
             {
-                // generate test results
-                var results = new List<TestResult>(coverageResults.Count);
-                foreach (var (key, value) in coverageResults)
-                {
-                    var result = new TestResult(FindOrBuildCase(key))
-                    {
-                        DisplayName = key,
-                        Outcome = TestOutcome.Passed,
-                        ComputerName = "."
-                    };
-                    if (value != null)
-                    {
-                        var coveredList = value.Split('|');
-                        result.SetPropertyValue(_coverageProperty, coveredList[0]);
-                        if (coveredList.Length > 1)
-                        {
-                            result.SetPropertyValue(_unexpectedCoverageProperty, coveredList[1]);
-                        }
-                    }
-
-                    results.Add(result);
-                }
-                MoqTestRun(testRunEvents, results);
+                CoverageRun(coverageResults, testRunEvents);
             }).Returns(Task.CompletedTask);
+
+    protected void SetupMockCoverageRunForTest(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> coverageResults) =>
+        mockVsTest.Setup(x =>
+            x.RunTestsWithCustomTestHostAsync(
+                It.Is<IEnumerable<TestCase>>(t => t.Any(t => coverageResults.ContainsKey(t.FullyQualifiedName))),
+                It.Is<string>(settings => settings.Contains("<Coverage")),
+                It.Is<TestPlatformOptions>(o => o != null && o.TestCaseFilter == null),
+                It.IsAny<ITestRunEventsHandler>(),
+                It.IsAny<ITestHostLauncher>())).Callback(
+            (IEnumerable<TestCase> _, string _, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
+                ITestHostLauncher _) =>
+            {
+                CoverageRun(coverageResults, testRunEvents);
+            }).Returns(Task.CompletedTask);
+
+    private void CoverageRun(IReadOnlyDictionary<string, string> coverageResults, ITestRunEventsHandler testRunEvents)
+    {
+        // generate test results
+        var results = new List<TestResult>(coverageResults.Count);
+        foreach (var (key, value) in coverageResults)
+        {
+            var result = new TestResult(FindOrBuildCase(key))
+            {
+                DisplayName = key,
+                Outcome = TestOutcome.Passed,
+                ComputerName = "."
+            };
+            if (value != null)
+            {
+                var coveredList = value.Split('|');
+                result.SetPropertyValue(_coverageProperty, coveredList[0]);
+                if (coveredList.Length > 1)
+                {
+                    result.SetPropertyValue(_unexpectedCoverageProperty, coveredList[1]);
+                }
+            }
+
+            results.Add(result);
+        }
+
+        MoqTestRun(testRunEvents, results);
+    }
 
     protected void SetupMockCoveragePerTestRunP(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> coverageResults) =>
         mockVsTest.Setup(x =>

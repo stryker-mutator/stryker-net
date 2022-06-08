@@ -26,10 +26,10 @@ namespace Stryker.Core.TestRunners.VsTest
         public SimpleRunResults()
         {}
 
-        public SimpleRunResults(ICollection<TestResult> results, IReadOnlyCollection<TestCase> testsInTimeout)
+        public SimpleRunResults(IEnumerable<TestResult> results, IEnumerable<TestCase> testsInTimeout)
         {
             TestResults = results.ToList();
-            _testsInTimeOut = testsInTimeout?.ToList() ?? new ();
+            _testsInTimeOut = testsInTimeout?.ToList() ?? new List<TestCase>();
         }
 
         public void SetTestsInTimeOut(ICollection<TestCase> tests) => _testsInTimeOut = tests.ToList();

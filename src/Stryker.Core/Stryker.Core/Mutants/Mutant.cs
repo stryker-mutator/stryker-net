@@ -36,6 +36,7 @@ namespace Stryker.Core.Mutants
         public bool CountForStats => ResultStatus != MutantStatus.CompileError && ResultStatus != MutantStatus.Ignored;
 
         public bool MustRunAgainstAllTests => CoveringTests.IsEveryTest;
+        public bool MustBeTestedInIsolation { get; set; }
 
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
 

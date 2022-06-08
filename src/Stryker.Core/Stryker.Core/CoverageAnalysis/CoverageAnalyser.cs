@@ -48,11 +48,17 @@ namespace Stryker.Core.CoverageAnalysis
             var dubiousTests = new List<Guid>();
             var leakedMutations = new HashSet<int>();
             var mutantsNeedingAllTests = new HashSet<int>();
+            var mutationsToTestInIsolation = new HashSet<int>();
             var testIds = coverage.Select(c => c.TestId).ToList();
             // process coverage results
-            TransformResult(coverage, dubiousTests, trustedCoveringMap, coveringMap,
+            TransformResult(coverage,
+                dubiousTests,
+                trustedCoveringMap,
+                coveringMap,
                 staticMutants,
-                leakedMutations, mutantsNeedingAllTests);
+                leakedMutations,
+                mutationsToTestInIsolation,
+                mutantsNeedingAllTests);
             // now declare coverage info for each mutant
             foreach (var mutant in mutantsToScan)
             {
@@ -62,7 +68,7 @@ namespace Stryker.Core.CoverageAnalysis
                 }
                 else
                 {
-                    CoverageForThisMutant(mutant, staticMutants, leakedMutations, testIds, trustedCoveringMap, coveringMap, dubiousTests);
+                    CoverageForThisMutant(mutant, staticMutants, mutationsToTestInIsolation, leakedMutations, testIds, trustedCoveringMap, coveringMap, dubiousTests);
                 }
             }
         }
@@ -73,6 +79,7 @@ namespace Stryker.Core.CoverageAnalysis
             IReadOnlyDictionary<int, ISet<Guid>> coveringMap1,
             ISet<int> staticMutantSet,
             ISet<int> leakedMutationSet,
+            ISet<int> mutationsToTestInIsolation,
             ISet<int> mutantsNeedingAllTests)
         {
             foreach (var coverageRunResult in coverageRunResults)
@@ -113,11 +120,13 @@ namespace Stryker.Core.CoverageAnalysis
                 staticMutantSet.UnionWith(coverageRunResult.DetectedStaticMutations);
                 // store leaked mutations
                 leakedMutationSet.UnionWith(coverageRunResult.LeakedMutations);
+                mutationsToTestInIsolation.UnionWith(coverageRunResult.MutationsToTestInIsolation);
             }
         }
 
         private void CoverageForThisMutant(Mutant mutant,
             IReadOnlySet<int> staticMutants,
+            HashSet<int> mutationsToTestInIsolation,
             IReadOnlySet<int> leakedMutations,
             IEnumerable<Guid> testIds,
             IReadOnlyDictionary<int, ISet<Guid>> trustedCoveringMap,
@@ -139,12 +148,23 @@ namespace Stryker.Core.CoverageAnalysis
             else if (leakedMutations.Contains(mutantId))
             {
                 // mutant has been covered between tests
-                mutant.IsStaticValue = true;
+                mutant.MustBeTestedInIsolation = true;
                 // this mutant appears outside any test => we are not sure which test covers it, we need to run all tests
                 // except the one we trust for not covering it
                 mutant.CoveringTests = new TestsGuidList(testIds.Where(tId => !trustedCoveringMap[mutantId].Contains(tId)));
                 _logger.LogDebug(
                     $"Mutant {mutant.Id} will be tested against all tests because it is covered outside tests.");
+            }
+            else if (mutationsToTestInIsolation.Contains(mutantId))
+            {
+                // mutant has been covered between tests
+                mutant.MustBeTestedInIsolation = true;
+                // this mutant appears outside any test => we are not sure which test covers it, we need to run all tests
+                // except the one we trust for not covering it
+                mutant.CoveringTests = new TestsGuidList(dubiousTests.Union(coveringMap[mutantId])
+                    .Union(trustedCoveringMap[mutantId]));
+                _logger.LogDebug(
+                    $"Mutant {mutant.Id} needs to be tested on its own.");
             }
             else if (coveringMap[mutantId].Count == 0 && dubiousTests.Count == 0 &&
                      trustedCoveringMap[mutantId].Count == 0)
