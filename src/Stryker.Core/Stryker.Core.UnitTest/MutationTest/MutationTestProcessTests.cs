@@ -21,6 +21,7 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using Xunit;
+using Mutation = Stryker.Core.Mutants.Mutation;
 
 namespace Stryker.Core.UnitTest.MutationTest
 {

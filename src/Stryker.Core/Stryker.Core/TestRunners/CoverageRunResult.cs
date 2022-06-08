@@ -14,33 +14,40 @@ namespace Stryker.Core.TestRunners
     }
 
     [Flags]
-    public enum MutationFlags
+    public enum MutationTestingRequirement
     {
-        Normal = 0,
+        None = 0,
         Static = 1,
         CoveredOutsideTest = 2,
         NeedEarlyActivation = 4,
+        NotCovered = 256
     }
 
     public class CoverageRunResult
     {
-        private readonly Dictionary<int, MutationFlags> _mutationFlags = new();
+        private readonly Dictionary<int, MutationTestingRequirement> _mutationFlags = new();
 
         public Guid TestId { get; }
+
+        public IReadOnlyCollection<int> MutationsCovered => _mutationFlags.Keys;
+
+        public MutationTestingRequirement this[int mutation] => _mutationFlags.ContainsKey(mutation)
+            ? _mutationFlags[mutation]
+            : MutationTestingRequirement.NotCovered;
 
         public CoverageConfidence Confidence { get; private set; }
 
         public IReadOnlyCollection<int> CoveredMutations => _mutationFlags
-            .Where(p => !p.Value.HasFlag(MutationFlags.CoveredOutsideTest)).Select(p => p.Key).ToImmutableArray();
+            .Where(p => !p.Value.HasFlag(MutationTestingRequirement.CoveredOutsideTest)).Select(p => p.Key).ToImmutableArray();
 
         public IReadOnlyCollection<int> DetectedStaticMutations => _mutationFlags
-            .Where(p => p.Value.HasFlag(MutationFlags.Static)).Select(p => p.Key).ToImmutableArray();
+            .Where(p => p.Value.HasFlag(MutationTestingRequirement.Static)).Select(p => p.Key).ToImmutableArray();
 
         public IReadOnlyCollection<int> LeakedMutations  => _mutationFlags
-            .Where(p => p.Value.HasFlag(MutationFlags.CoveredOutsideTest)).Select(p => p.Key).ToImmutableArray();
+            .Where(p => p.Value.HasFlag(MutationTestingRequirement.CoveredOutsideTest)).Select(p => p.Key).ToImmutableArray();
 
         public IReadOnlyCollection<int> MutationsToTestInIsolation => _mutationFlags
-            .Where(p => p.Value.HasFlag(MutationFlags.NeedEarlyActivation)).Select(p => p.Key).ToImmutableArray();
+            .Where(p => p.Value.HasFlag(MutationTestingRequirement.NeedEarlyActivation)).Select(p => p.Key).ToImmutableArray();
 
         public CoverageRunResult(Guid testId, CoverageConfidence confidence, IEnumerable<int> coveredMutations,
             IEnumerable<int> detectedStaticMutations, IEnumerable<int> leakedMutations)
@@ -48,17 +55,17 @@ namespace Stryker.Core.TestRunners
             TestId = testId;
             foreach (var coveredMutation in coveredMutations)
             {
-                _mutationFlags[coveredMutation] = MutationFlags.Normal;
+                _mutationFlags[coveredMutation] = MutationTestingRequirement.None;
             }
 
             foreach (var detectedStaticMutation in detectedStaticMutations)
             {
-                _mutationFlags[detectedStaticMutation] = MutationFlags.Static;
+                _mutationFlags[detectedStaticMutation] = MutationTestingRequirement.Static;
             }
 
             foreach (var leakedMutation in leakedMutations)
             {
-                _mutationFlags[leakedMutation] = confidence == CoverageConfidence.Exact ? MutationFlags.NeedEarlyActivation: MutationFlags.CoveredOutsideTest;
+                _mutationFlags[leakedMutation] = confidence == CoverageConfidence.Exact ? MutationTestingRequirement.NeedEarlyActivation: MutationTestingRequirement.CoveredOutsideTest;
             }
 
             Confidence = confidence;
@@ -86,10 +93,10 @@ namespace Stryker.Core.TestRunners
             {
                 if (!_mutationFlags.ContainsKey(i))
                 {
-                    _mutationFlags[i] = MutationFlags.NeedEarlyActivation;
+                    _mutationFlags[i] = MutationTestingRequirement.NeedEarlyActivation;
                     continue;
                 }
-                _mutationFlags[i] = (_mutationFlags[i] & ~MutationFlags.CoveredOutsideTest) | MutationFlags.NeedEarlyActivation;
+                _mutationFlags[i] = (_mutationFlags[i] & ~MutationTestingRequirement.CoveredOutsideTest) | MutationTestingRequirement.NeedEarlyActivation;
             }
         }
     }

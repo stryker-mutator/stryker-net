@@ -113,15 +113,15 @@ namespace Stryker.Core.TestRunners.VsTest
 
             var isolatedTestRuns = ConvertCoverageResult(CaptureCoveragePerIsolatedTests(dubiousTests).TestResults, true).ToDictionary( r => r.TestId);
             // now process them as groups
-            foreach (var pair in isolatedTestRuns)
+            foreach (var key in isolatedTestRuns.Keys)
             {
-                if (!dubiousTests.Contains(pair.Key))
+                if (!dubiousTests.Contains(key))
                 {
                     // we already processed this test
                     continue;
                 }
                 // find test that share the same setup
-                var similar = Context.FindTestCasesWithinDataSource(Context.VsTests[pair.Key]);
+                var similar = Context.FindTestCasesWithinDataSource(Context.VsTests[key]);
                 // we identify the 'leaked' mutations that are common to all those tests
                 var mutationSeenInSetup = new HashSet<int>();
                 foreach (var id in similar.Select(t => t.Id))
@@ -160,13 +160,11 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private T RunThis<T>(Func<VsTestRunner, T> task)
         {
-            VsTestRunner runner1;
-            while (!_availableRunners.TryTake(out runner1))
+            VsTestRunner runner;
+            while (!_availableRunners.TryTake(out runner))
             {
                 _runnerAvailableHandler.WaitOne();
             }
-
-            var runner = runner1;
 
             try
             {
@@ -188,50 +186,18 @@ namespace Stryker.Core.TestRunners.VsTest
             _runnerAvailableHandler.Dispose();
         }
 
-        private IEnumerable<CoverageRunResult> ConvertCoverageResult(ICollection<TestResult> testResults, bool perIsolatedTest)
+        private IEnumerable<CoverageRunResult> ConvertCoverageResult(IEnumerable<TestResult> testResults, bool perIsolatedTest)
         {
             var seenTestCases = new HashSet<Guid>();
-            var dynamicTestCases = new HashSet<Guid>();
             var defaultConfidence = perIsolatedTest ? CoverageConfidence.Exact : CoverageConfidence.Normal;
             var resultCache = new Dictionary<Guid, CoverageRunResult>();
             // initialize the map, only with passing tests
             foreach (var testResult in testResults.Where( tr => tr.Outcome == TestOutcome.Passed))
             {
-                var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == CoverageCollector.PropertyName);
-                var testCaseId = testResult.TestCase.Id;
-                var unexpected = false;
-                if (!Context.VsTests.ContainsKey(testCaseId))
+                if (ConvertSingleResult(testResult, seenTestCases, defaultConfidence,
+                        out var coverageRunResult))
                 {
-                    _logger.LogWarning($"VsTestRunner: Coverage analysis run encountered a unexpected test case ({testResult.TestCase.DisplayName}), mutation tests may be inaccurate. Disable coverage analysis if you have doubts.");
-                    // add the test description to the referential
-                    Context.VsTests.Add(testCaseId, new VsTestDescription(testResult.TestCase));
-                    unexpected = true;
-                }
-                var testDescription = Context.VsTests[testCaseId];
-                CoverageRunResult coverageRunResult;
-                if (key == null)
-                {
-                    // the coverage collector was not able to report anything ==> it has not been tracked by it, so we do not have coverage data
-                    // ==> we need it to use this test against every mutation
-                    if (seenTestCases.Contains(testCaseId) ||
-                        dynamicTestCases.Contains(testCaseId))
-                    {
-                        _logger.LogDebug($"VsTestRunner: Extra result for test {testResult.TestCase.DisplayName}, so no coverage data for it.");
-                        continue;
-                    }
-
-                    _logger.LogDebug($"VsTestRunner: No coverage data for {testResult.TestCase.DisplayName}.");
-                    // this is a suspect test
-                    dynamicTestCases.Add(testDescription.Id);
-                    coverageRunResult = new CoverageRunResult(testCaseId, CoverageConfidence.Dubious, Enumerable.Empty<int>(), Enumerable.Empty<int>(), Enumerable.Empty<int>());
-                }
-                else
-                {
-                    // we have coverage data
-                    seenTestCases.Add(testDescription.Id);
-                    var propertyPairValue = value as string;
-
-                    coverageRunResult = BuildCoverageRunResultFromCoverageInfo(propertyPairValue, testResult, testCaseId, unexpected ? CoverageConfidence.UnexpectedCase : defaultConfidence);
+                    continue;
                 }
 
                 // ensure we returns only entry per test
@@ -246,6 +212,54 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             return resultCache.Values;
+        }
+
+        private bool ConvertSingleResult(TestResult testResult, ISet<Guid> seenTestCases,
+            CoverageConfidence defaultConfidence, out CoverageRunResult coverageRunResult)
+        {
+            var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == CoverageCollector.PropertyName);
+            var testCaseId = testResult.TestCase.Id;
+            var unexpected = false;
+            if (!Context.VsTests.ContainsKey(testCaseId))
+            {
+                _logger.LogWarning(
+                    $"VsTestRunner: Coverage analysis run encountered a unexpected test case ({testResult.TestCase.DisplayName}), mutation tests may be inaccurate. Disable coverage analysis if you have doubts.");
+                // add the test description to the referential
+                Context.VsTests.Add(testCaseId, new VsTestDescription(testResult.TestCase));
+                unexpected = true;
+            }
+
+            var testDescription = Context.VsTests[testCaseId];
+            if (key == null)
+            {
+                // this is a suspect test
+                if (seenTestCases.Contains(testCaseId))
+                {
+                    // this is an extra result. Coverage data is already present in the already parsed result
+                    _logger.LogDebug(
+                        $"VsTestRunner: Extra result for test {testResult.TestCase.DisplayName}, so no coverage data for it.");
+                    coverageRunResult = null;
+                    return true;
+                }
+
+                // the coverage collector was not able to report anything ==> it has not been tracked by it, so we do not have coverage data
+                // ==> we need it to use this test against every mutation
+                _logger.LogDebug($"VsTestRunner: No coverage data for {testResult.TestCase.DisplayName}.");
+                seenTestCases.Add(testDescription.Id);
+                coverageRunResult = new CoverageRunResult(testCaseId, CoverageConfidence.Dubious, Enumerable.Empty<int>(),
+                    Enumerable.Empty<int>(), Enumerable.Empty<int>());
+            }
+            else
+            {
+                // we have coverage data
+                seenTestCases.Add(testDescription.Id);
+                var propertyPairValue = value as string;
+
+                coverageRunResult = BuildCoverageRunResultFromCoverageInfo(propertyPairValue, testResult, testCaseId,
+                    unexpected ? CoverageConfidence.UnexpectedCase : defaultConfidence);
+            }
+
+            return false;
         }
 
         private CoverageRunResult BuildCoverageRunResultFromCoverageInfo(string propertyPairValue, TestResult testResult,
