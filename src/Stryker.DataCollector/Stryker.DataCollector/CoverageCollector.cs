@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Xml;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
@@ -22,11 +24,12 @@ namespace Stryker.DataCollector
         private int? _singleMutant;
 
         private string _controlClassName;
-        private Type _controller;
+        private Type _mutantControlType;
         private FieldInfo _activeMutantField;
 
         private MethodInfo _getCoverageData;
         private IList<int> _mutationCoveredOutsideTests;
+        private EventWaitHandle _waitHandle;
 
         private const string TemplateForConfiguration =
             @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0}>
@@ -75,19 +78,23 @@ namespace Stryker.DataCollector
         // called before any test is run
         public void TestSessionStart(TestSessionStartArgs testSessionStartArgs)
         {
+            //Debugger.Launch();
             var configuration = testSessionStartArgs.Configuration;
             ReadConfiguration(configuration);
-            // scan loaded assembly, just in case the test assembly is already loaded
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(assembly => !assembly.IsDynamic);
-            foreach (var assembly in assemblies)
-            {
-                FindControlType(assembly);
-            }
+            _waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset);
+
+            // if assembly was not loaded yet, wait for assembly to load
             AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoaded;
+
+            // scan loaded assemblies, just in case the test assembly is already loaded
+            var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => !a.IsDynamic && a.ExportedTypes.Any(t => t.FullName == _controlClassName));
+
+            FindControlType(assembly);
             if (_singleMutant.HasValue)
             {
                 SetActiveMutation(_singleMutant.Value);
             }
+            //_waitHandle.WaitOne();
             Log($"Test Session start with conf {configuration}.");
         }
 
@@ -99,26 +106,26 @@ namespace Stryker.DataCollector
 
         private void FindControlType(Assembly assembly)
         {
-            if (_controller != null)
+            if (_mutantControlType != null)
             {
                 return;
             }
 
-            _controller = assembly.ExportedTypes.FirstOrDefault(t => t.FullName == _controlClassName);
-            if (_controller == null)
+            _mutantControlType = assembly.ExportedTypes.FirstOrDefault(t => t.FullName == _controlClassName);
+            if (_mutantControlType == null)
             {
                 return;
             }
 
-            _activeMutantField = _controller.GetField("ActiveMutant");
-            var coverageControlField = _controller.GetField("CaptureCoverage");
-            _getCoverageData = _controller.GetMethod("GetCoverageData");
-
+            _activeMutantField = _mutantControlType.GetField("ActiveMutant");
+            var coverageControlField = _mutantControlType.GetField("CaptureCoverage");
+            _getCoverageData = _mutantControlType.GetMethod("GetCoverageData");
             if (_coverageOn)
             {
                 coverageControlField.SetValue(null, true);
             }
             _activeMutantField.SetValue(null, _activeMutation);
+            _waitHandle.Set();
         }
 
         private void SetActiveMutation(int id)
@@ -224,7 +231,8 @@ namespace Stryker.DataCollector
             }
 
             _dataSink.SendData(testCaseEndArgs.DataCollectionContext, PropertyName, coverData);
-            if (_mutationCoveredOutsideTests.Count <= 0) { return; }
+            if (_mutationCoveredOutsideTests.Count <= 0)
+            { return; }
             // report any mutations covered before this test executed
             _dataSink.SendData(testCaseEndArgs.DataCollectionContext, OutOfTestsPropertyName, string.Join(",", _mutationCoveredOutsideTests));
             _mutationCoveredOutsideTests.Clear();
