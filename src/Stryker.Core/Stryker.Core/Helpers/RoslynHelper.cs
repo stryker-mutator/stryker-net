@@ -102,7 +102,7 @@ namespace Stryker.Core.Helpers
         /// </summary>
         /// <typeparam name="T">Type of the node that hosts the mutation.</typeparam>
         /// <param name="sourceNode">Node of the original tree.</param>
-        /// <param name="mutation">MutationTestingRequirement to apply to the sourceNode.</param>
+        /// <param name="mutation">MutationTestingRequirements to apply to the sourceNode.</param>
         /// <returns>A copy of <see cref="original"/> with the mutation applied.</returns>
         /// <exception cref="InvalidOperationException">when mutation does not belong to this node.</exception>
         /// <remarks><paramref name="sourceNode"/> can be any node that includes the original, non mutated node described in the mutation.</remarks>
