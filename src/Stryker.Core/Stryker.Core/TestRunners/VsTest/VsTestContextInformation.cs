@@ -30,7 +30,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly bool _ownVsTestHelper;
         private readonly ProjectInfo _projectInfo;
         private readonly IVsTestHelper _vsTestHelper;
-        private readonly Func<string, ConsoleParameters, IVsTestConsoleWrapper> _wrapperBuilder;
+        private readonly Func<ConsoleParameters, IVsTestConsoleWrapper> _wrapperBuilder;
         private bool _disposed;
         private List<string> _sources;
         private TestFramework _testFramework;
@@ -49,7 +49,7 @@ namespace Stryker.Core.TestRunners.VsTest
             ProjectInfo projectInfo,
             IVsTestHelper helper = null,
             IFileSystem fileSystem = null,
-            Func<string, ConsoleParameters, IVsTestConsoleWrapper> builder = null,
+            Func<ConsoleParameters, IVsTestConsoleWrapper> builder = null,
             Func<string, IStrykerTestHostLauncher> hostBuilder = null,
             ILogger logger = null)
         {
@@ -110,10 +110,11 @@ namespace Stryker.Core.TestRunners.VsTest
         /// <returns>an <see cref="IVsTestConsoleWrapper" /> controlling the created instance.</returns>
         public IVsTestConsoleWrapper BuildVsTestWrapper(string runnerId)
         {
-            var vsTestConsole = _wrapperBuilder(runnerId, DetermineConsoleParameters(runnerId));
+            var vsTestConsole = _wrapperBuilder(DetermineConsoleParameters(runnerId));
             try
             {
                 // Set roll forward on no candidate fx so vstest console can start on incompatible dotnet core runtimes
+                Environment.SetEnvironmentVariable("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2");
                 vsTestConsole.StartSession();
                 vsTestConsole.InitializeExtensions(_sources.Select(_fileSystem.Path.GetDirectoryName));
             }
@@ -131,7 +132,7 @@ namespace Stryker.Core.TestRunners.VsTest
         /// <returns>an <see cref="IStrykerTestHostLauncher" /> </returns>
         public IStrykerTestHostLauncher BuildHostLauncher(string runnerId) => _hostBuilder(runnerId);
 
-        private IVsTestConsoleWrapper BuildActualVsTestWrapper(string runnerId, ConsoleParameters parameters) =>
+        private IVsTestConsoleWrapper BuildActualVsTestWrapper(ConsoleParameters parameters) =>
             new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(),
                 parameters);
 
@@ -144,30 +145,28 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private ConsoleParameters DetermineConsoleParameters(string runnerId)
         {
-            var environmentVariables = new Dictionary<string, string> {["DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX"] = "2"};
-            var result = new ConsoleParameters
+            var determineConsoleParameters = new ConsoleParameters
             {
-                EnvironmentVariables = environmentVariables
+                TraceLevel = Options.LogOptions?.LogLevel switch
+                {
+                    LogEventLevel.Debug => TraceLevel.Verbose,
+                    LogEventLevel.Verbose => TraceLevel.Verbose,
+                    LogEventLevel.Error => TraceLevel.Error,
+                    LogEventLevel.Fatal => TraceLevel.Error,
+                    LogEventLevel.Warning => TraceLevel.Warning,
+                    LogEventLevel.Information => TraceLevel.Info,
+                    _ => TraceLevel.Off
+                }
             };
-            result.TraceLevel = Options.LogOptions?.LogLevel switch
-            {
-                LogEventLevel.Debug => TraceLevel.Verbose,
-                LogEventLevel.Verbose => TraceLevel.Verbose,
-                LogEventLevel.Error => TraceLevel.Error,
-                LogEventLevel.Fatal => TraceLevel.Error,
-                LogEventLevel.Warning => TraceLevel.Warning,
-                LogEventLevel.Information => TraceLevel.Info,
-                _ => TraceLevel.Off
-            };
+
             if (Options.LogOptions?.LogToFile != true)
             {
-                return result;
+                return determineConsoleParameters;
             }
-
             var vsTestLogPath = _fileSystem.Path.Combine(LogPath, $"{runnerId}_VsTest-log.txt");
             _fileSystem.Directory.CreateDirectory(LogPath);
-            result.LogFilePath = vsTestLogPath;
-            return result;
+            determineConsoleParameters.LogFilePath = vsTestLogPath;
+            return determineConsoleParameters;
         }
 
         /// <summary>

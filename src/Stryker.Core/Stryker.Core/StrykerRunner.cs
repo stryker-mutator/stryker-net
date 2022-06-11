@@ -69,6 +69,12 @@ namespace Stryker.Core
                     project.FilterMutants();
                 }
 
+                // mark non covered mutants
+                foreach (var mutant in rootComponent.Mutants.Where(m => m.CoveringTests.IsEmpty && m.ResultStatus == MutantStatus.NotRun))
+                {
+                    mutant.ResultStatus = MutantStatus.NoCoverage;
+                }
+
                 // Report
                 reporters.OnMutantsCreated(rootComponent);
 

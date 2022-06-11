@@ -120,7 +120,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 _targetProject,
                 new Mock<IVsTestHelper>().Object,
                 _fileSystem,
-                (_, parameters) =>
+                parameters =>
                 {
                     _consoleParameters = parameters;
                     return vsTestConsoleWrapper;
@@ -155,23 +155,22 @@ namespace Stryker.Core.UnitTest.TestRunners
             using var runner = BuildVsTextContext(new StrykerOptions(), out _);
             runner.Initialize();
             _consoleParameters.TraceLevel.ShouldBe(TraceLevel.Off);
-            _consoleParameters.EnvironmentVariables.Count.ShouldBe(1);
-            _consoleParameters.EnvironmentVariables.ShouldContainKey("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX");
-            _consoleParameters.EnvironmentVariables["DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX"].ShouldBe("2");
             _consoleParameters.LogFilePath.ShouldBeNull();
         }
 
         [Fact]
         public void InitializeAndSetParametersAccordingToOptions()
         {
-            using var runner = BuildVsTextContext(new StrykerOptions(){LogOptions = new LogOptions(){LogToFile = true}}, out _);
+            using var runner = BuildVsTextContext(new StrykerOptions{LogOptions = new LogOptions{LogToFile = true}}, out _);
             runner.Initialize();
             // logging should be a defined level
             _consoleParameters.TraceLevel.ShouldBe(TraceLevel.Verbose);
+            
             // we should have the testdiscoverer log file name
-            _consoleParameters.LogFilePath.ShouldBe("\"logs\\TestDiscoverer_VsTest-log.txt\"");
+            _consoleParameters.LogFilePath.ShouldBe($"\"logs{_fileSystem.Path.DirectorySeparatorChar}TestDiscoverer_VsTest-log.txt\"");
+            
             // the log folders should exist
-            _fileSystem.AllDirectories.ShouldContain("C:\\logs");
+            _fileSystem.AllDirectories.Last().ShouldMatch(".*logs$");
         }
 
         [Theory]
@@ -184,7 +183,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         [InlineData((LogEventLevel)(-1), TraceLevel.Off)]
         public void InitializeAndSetProperLogLevel(LogEventLevel setLevel, TraceLevel expectedLevel)
         {
-            using var runner = BuildVsTextContext(new StrykerOptions(){LogOptions = new LogOptions(){LogLevel = setLevel}}, out _);
+            using var runner = BuildVsTextContext(new StrykerOptions{LogOptions = new LogOptions{LogLevel = setLevel}}, out _);
             runner.Initialize();
             // logging should be a defined level
             _consoleParameters.TraceLevel.ShouldBe(expectedLevel);

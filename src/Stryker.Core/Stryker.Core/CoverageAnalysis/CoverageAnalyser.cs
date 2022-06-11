@@ -37,13 +37,6 @@ namespace Stryker.Core.CoverageAnalysis
 
         private void ParseCoverage(IEnumerable<CoverageRunResult> coverage, IEnumerable<Mutant> mutantsToScan)
         {
-            var coveringMap = new Dictionary<int, ISet<Guid>>();
-            var trustedCoveringMap = new Dictionary<int, ISet<Guid>>();
-            foreach (var id in mutantsToScan.Select( m=> m.Id))
-            {
-                coveringMap[id] = new HashSet<Guid>();
-                trustedCoveringMap[id] = new HashSet<Guid>();
-            }
             var dubiousTests = new HashSet<Guid>();
             var trustedTests = new HashSet<Guid>();
             var testIds = coverage.Select(c => c.TestId).ToList();
@@ -105,7 +98,6 @@ namespace Stryker.Core.CoverageAnalysis
                 mutant.CoveringTests = new TestsGuidList(testGuids.Union(dubiousTests));
                 if (mutant.CoveringTests.IsEmpty)
                 {
-                    mutant.ResultStatus = MutantStatus.NoCoverage;
                     _logger.LogInformation(
                         $"Mutant {mutant.Id} is not covered by any test.");
                 }

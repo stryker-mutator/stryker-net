@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using NUnit.Framework;
 using TargetProject;
 
@@ -23,13 +22,17 @@ namespace NetCoreTestProject.NUnit
         // indirect
         private static IEnumerable<(int, string)> TupleSource()
         {
+            Console.WriteLine("TupleSource:29");
             yield return (29, "No");
+            Console.WriteLine("TupleSource:31");
             yield return (31, "Yes");
         }
 
         private static IEnumerable<Student> ObjectSource()
         {
+            Console.WriteLine("ObjectSource:32");
             yield return new Student {Age = 32};
+            Console.WriteLine("ObjectSource:42");
             yield return new Student {Age = 42};
         }
 
@@ -45,9 +48,10 @@ namespace NetCoreTestProject.NUnit
         [Test]
         [TestCaseSource(nameof(ObjectSource))]
         // all test cases refer to the same test
-        public void TestAgeIndirectObject(Student sut)
+        public void TestAgeIndirectObject(Student sut)  
         {
-            Assert.AreEqual("Yes", sut.IsExpired());
+            Console.WriteLine($"ObjectSource test:{sut.Age}");
+            Assert.AreEqual(sut.Age>29 ?"Yes" : "No", sut.IsExpired());
         }
 
         private static IEnumerable<int> RandomSource()
@@ -55,17 +59,18 @@ namespace NetCoreTestProject.NUnit
             var rnd = new Random();
             for (var i = 0; i < 10; i++)
             {
-                Console.Error.WriteLine($"Random{i}");
+                Console.WriteLine($"RandomSource:{i}");
                 yield return rnd.Next();
             }
         }
 
         [Test]
         [TestCaseSource(nameof(RandomSource))]
-        [Ignore("Run explicitly")]
+        //[Ignore("Run explicitly")]
         public void TestRandom(int x)
         {
-            Assert.IsTrue(x % 2 == 0);
+            var sut = new Student{Age = 32};
+            Assert.AreEqual("Yes", sut.IsExpired());
         }
     }
 }

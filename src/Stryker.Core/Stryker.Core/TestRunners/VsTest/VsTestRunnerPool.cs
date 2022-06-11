@@ -198,6 +198,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 if (ConvertSingleResult(testResult, seenTestCases, defaultConfidence,
                         out var coverageRunResult))
                 {
+                    // we should skip this result
                     continue;
                 }
 

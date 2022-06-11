@@ -480,7 +480,7 @@ public class VsTestMockingHelper : TestBase
             targetProject ?? _targetProject,
             new Mock<IVsTestHelper>().Object,
             _fileSystem,
-            (_, _) => mockedVsTestConsole.Object,
+            _ => mockedVsTestConsole.Object,
             hostBuilder: _ => new MoqHost(succeed, false),
             NullLogger.Instance
         );

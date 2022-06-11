@@ -6,6 +6,7 @@ using Moq;
 using Shouldly;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
@@ -130,7 +131,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             // one mutant is covered by tests 0 and 1
             Mutant.CoveringTests.IsEmpty.ShouldBe(false);
             OtherMutant.CoveringTests.IsEmpty.ShouldBe(true);
-            OtherMutant.ResultStatus.ShouldBe(MutantStatus.NoCoverage);
+            OtherMutant.ResultStatus.ShouldBe(MutantStatus.NotRun);
         }
 
         [Fact]
@@ -222,10 +223,31 @@ namespace Stryker.Core.UnitTest.TestRunners
             SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = "1;" });
             tester.GetCoverage();
             SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string> { ["0,1"] = "T0=S,T1=F" });
-            tester.Test(project.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun));
+            tester.Test(project.ProjectContents.Mutants.Where(x => !x.CoveringTests.IsEmpty));
 
             Mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
             OtherMutant.ResultStatus.ShouldBe(MutantStatus.Killed);
+        }
+
+        [Fact]
+        public void ShouldThrowWhenTestingMultipleMutantsWithoutCoverageAnalysis()
+        {
+            var options = new StrykerOptions()
+            {
+                OptimizationMode = OptimizationModes.None,
+                Concurrency = Math.Max(Environment.ProcessorCount / 2, 1)
+            };
+
+            var mutants = new []{Mutant, OtherMutant};
+            // make sure we have 4 mutants
+            var myTestCases = TestCases.ToList();
+            myTestCases.Add(BuildCase("T2"));
+            myTestCases.Add(BuildCase ("T3"));
+            BuildVsTestRunnerPool(options, out var runner, myTestCases);
+
+            var testFunc = () => runner.TestMultipleMutants(new TimeoutValueCalculator(0), mutants, null);
+
+            testFunc.ShouldThrow(typeof(GeneralStrykerException));
         }
 
         [Fact]
@@ -443,7 +465,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             SetupMockCoverageRun(mockVsTest, GenerateCoverageTestResults(new[] { (testCase1, ";|1"), (testCase2, "0;")}));
 
-            SetupMockCoverageRunForTest(mockVsTest, GenerateCoverageTestResults(new[] { (testCase1, ";|1") }));
+            SetupMockCoverageRunForTest(mockVsTest, GenerateCoverageTestResults(new[] { (testCase1, ";|1"), (testCase1, null) }));
             SetupMockCoverageRunForTest(mockVsTest, GenerateCoverageTestResults(new[] { (testCase2, "0;") }));
 
             var analyzer = new CoverageAnalyser(options);

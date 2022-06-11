@@ -343,7 +343,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             target.Test(scenario.GetCoveredMutants());
 
             scenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
-            scenario.GetMutantStatus(2).ShouldBe(MutantStatus.NoCoverage);
+            scenario.GetMutantStatus(2).ShouldBe(MutantStatus.NotRun);
         }
 
         [Fact]

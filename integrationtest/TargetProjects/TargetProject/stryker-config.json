@@ -1,11 +1,12 @@
 {
   "stryker-config": {
     "reporters": [
-        "Dots",
-        "ClearText",
+      "Dots",
+      "ClearText",
       "Json"
     ],
-    "test-projects": [
+    "coverage-analysis": "smart",
+        "test-projects": [
       "../NetCoreTestProject.XUnit/NetCoreTestProject.XUnit.csproj",
       "../NetCoreTestProject.NUnit/NetCoreTestProject.NUnit.csproj"
     ]
