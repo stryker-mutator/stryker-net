@@ -129,7 +129,8 @@ public class VsTestMockingHelper : TestBase
         Task.Run(() => discoveryEventsHandler.HandleDiscoveredTests(tests)).
             ContinueWith((_, u) => discoveryEventsHandler.HandleDiscoveryComplete((int)u, null, aborted), tests.Count);
 
-    protected TestCase BuildCase(string name, TestFramework framework = TestFramework.xUnit) => new(name, framework == TestFramework.xUnit ? _xUnitUri : _NUnitUri, _testAssemblyPath) { Id = new Guid() };
+    protected TestCase BuildCase(string name, TestFramework framework = TestFramework.xUnit, string displayName = null)
+        => new(name, framework == TestFramework.xUnit ? _xUnitUri : _NUnitUri, _testAssemblyPath) { Id = new Guid(), DisplayName = displayName ?? name};
 
     private TestCase FindOrBuildCase(string testResultId) => TestCases.FirstOrDefault(t => t.FullyQualifiedName == testResultId) ?? BuildCase(testResultId);
 
@@ -231,7 +232,9 @@ public class VsTestMockingHelper : TestBase
             }).Returns(Task.CompletedTask);
     }
 
-    protected void SetupMockCoverageRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> coverageResults) =>
+    protected void SetupMockCoverageRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> coverageResults) => SetupMockCoverageRun(mockVsTest, GenerateCoverageTestResults(coverageResults));
+
+    protected void SetupMockCoverageRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyList<TestResult> results) =>
         mockVsTest.Setup(x =>
             x.RunTestsWithCustomTestHostAsync(
                 It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
@@ -242,26 +245,25 @@ public class VsTestMockingHelper : TestBase
             (IEnumerable<string> _, string _, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
                 ITestHostLauncher _) =>
             {
-                CoverageRun(coverageResults, testRunEvents);
+                MoqTestRun(testRunEvents, results);
             }).Returns(Task.CompletedTask);
 
-    protected void SetupMockCoverageRunForTest(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> coverageResults) =>
+    protected void SetupMockCoverageRunForTest(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyList<TestResult> results) =>
         mockVsTest.Setup(x =>
             x.RunTestsWithCustomTestHostAsync(
-                It.Is<IEnumerable<TestCase>>(t => t.Any(t => coverageResults.ContainsKey(t.FullyQualifiedName))),
+                It.Is<IEnumerable<TestCase>>(t => t.All(tc => results.Any(r=>r.TestCase.Id == tc.Id))),
                 It.Is<string>(settings => settings.Contains("<Coverage")),
                 It.Is<TestPlatformOptions>(o => o != null && o.TestCaseFilter == null),
                 It.IsAny<ITestRunEventsHandler>(),
                 It.IsAny<ITestHostLauncher>())).Callback(
-            (IEnumerable<TestCase> _, string _, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
+            (IEnumerable<TestCase> tests, string _, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
                 ITestHostLauncher _) =>
             {
-                CoverageRun(coverageResults, testRunEvents);
+                MoqTestRun(testRunEvents, results);
             }).Returns(Task.CompletedTask);
 
-    private void CoverageRun(IReadOnlyDictionary<string, string> coverageResults, ITestRunEventsHandler testRunEvents)
+    private List<TestResult> GenerateCoverageTestResults(IReadOnlyDictionary<string, string> coverageResults)
     {
-        // generate test results
         var results = new List<TestResult>(coverageResults.Count);
         foreach (var (key, value) in coverageResults)
         {
@@ -284,7 +286,33 @@ public class VsTestMockingHelper : TestBase
             results.Add(result);
         }
 
-        MoqTestRun(testRunEvents, results);
+        return results;
+    }
+
+   protected List<TestResult> GenerateCoverageTestResults(IEnumerable<(TestCase testCase, string coverage)> data)
+    {
+        var results = new List<TestResult>();
+        foreach (var (testCase, coverage) in data)
+        {
+            var result = new TestResult(testCase)
+            {
+                Outcome = TestOutcome.Passed,
+                ComputerName = ".",
+            };
+            if (coverage != null)
+            {
+                var coveredList = coverage.Split('|');
+                result.SetPropertyValue(_coverageProperty, coveredList[0]);
+                if (coveredList.Length > 1)
+                {
+                    result.SetPropertyValue(_unexpectedCoverageProperty, coveredList[1]);
+                }
+            }
+
+            results.Add(result);
+        }
+
+        return results;
     }
 
     protected void SetupMockCoveragePerTestRunP(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> coverageResults) =>

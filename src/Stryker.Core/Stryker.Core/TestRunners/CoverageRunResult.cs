@@ -38,17 +38,8 @@ namespace Stryker.Core.TestRunners
 
         public CoverageConfidence Confidence { get; private set; }
 
-        public IReadOnlyCollection<int> CoveredMutations => _mutationFlags
-            .Where(p => !p.Value.HasFlag(MutationTestingRequirements.CoveredOutsideTest)).Select(p => p.Key).ToImmutableArray();
-
-        public IReadOnlyCollection<int> DetectedStaticMutations => _mutationFlags
-            .Where(p => p.Value.HasFlag(MutationTestingRequirements.Static)).Select(p => p.Key).ToImmutableArray();
-
         public IReadOnlyCollection<int> LeakedMutations  => _mutationFlags
             .Where(p => p.Value.HasFlag(MutationTestingRequirements.CoveredOutsideTest)).Select(p => p.Key).ToImmutableArray();
-
-        public IReadOnlyCollection<int> MutationsToTestInIsolation => _mutationFlags
-            .Where(p => p.Value.HasFlag(MutationTestingRequirements.NeedEarlyActivation)).Select(p => p.Key).ToImmutableArray();
 
         public CoverageRunResult(Guid testId, CoverageConfidence confidence, IEnumerable<int> coveredMutations,
             IEnumerable<int> detectedStaticMutations, IEnumerable<int> leakedMutations)

@@ -679,7 +679,6 @@ namespace Stryker.Core.UnitTest.MutationTest
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
 
             var runnerMock = new Mock<ITestRunner>();
-            runnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             executorMock.SetupGet(x => x.TestRunner).Returns(runnerMock.Object);
             executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<TestUpdateHandler>()));

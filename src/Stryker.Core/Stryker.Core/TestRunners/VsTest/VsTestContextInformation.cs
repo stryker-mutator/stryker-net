@@ -226,19 +226,22 @@ namespace Stryker.Core.TestRunners.VsTest
         public List<VsTestDescription> FindTestCasesWithinDataSource(VsTestDescription referenceTest)
         {
             List<VsTestDescription> result;
-            static string Extractor(string name) => name[..name.IndexOf('(')];
+            static string Extractor(string name)
+            {
+                var indexOf = name.IndexOf('(');
+                return indexOf < 0 ? name : name[..indexOf];
+            }
+
             switch (referenceTest.Framework)
             {
                 case TestFramework.xUnit:
                     // find all tests that have the same FQN
-                    result = VsTests.Values.Where(desc => desc.Case.FullyQualifiedName == referenceTest.Case.FullyQualifiedName).ToList();
+                    result = VsTests.Values.Where(desc => desc.Case.DisplayName == referenceTest.Case.DisplayName).ToList();
                     break;
                 case TestFramework.nUnit:
-                {
                     var referenceName = Extractor(referenceTest.Case.FullyQualifiedName);
                     result = VsTests.Values.Where(desc => Extractor(desc.Case.FullyQualifiedName) == referenceName).ToList();
                     break;
-                }
                 default:
                     result = new List<VsTestDescription> { referenceTest };
                     break;
