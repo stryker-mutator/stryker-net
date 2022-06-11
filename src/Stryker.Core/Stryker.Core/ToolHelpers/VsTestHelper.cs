@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.IO.Abstractions;
 using System.IO.Compression;
@@ -21,6 +22,8 @@ namespace Stryker.Core.ToolHelpers
     /// <summary>
     /// Locates VsTest folder. Installs one if none is found. 
     /// </summary>
+    /// This class is not unit tested currently, so proceed with caution
+    [ExcludeFromCodeCoverage(Justification = "Deeply dependent on current platform, need a lot of work for mocking.")]
     public class VsTestHelper : IVsTestHelper
     {
         private readonly ILogger _logger;
@@ -39,25 +42,26 @@ namespace Stryker.Core.ToolHelpers
         /// Finds VsTest path version corresponding to current platform (ie OS)
         /// </summary>
         /// <returns>VsTest full path.</returns>
-        /// <exception cref="PlatformNotSupportedException">When it fails to find a VsTest install for the current plaform</exception>
+        /// <exception cref="PlatformNotSupportedException">When it fails to find a VsTest install for the current platform</exception>
         public string GetCurrentPlatformVsTestToolPath()
         {
             lock (_lck)
             {
-                if (string.IsNullOrEmpty(_platformVsTestToolPath))
+                if (!string.IsNullOrEmpty(_platformVsTestToolPath))
                 {
-                    var paths = GetVsTestToolPaths();
-                    
-                    if (!paths.Keys.Any(RuntimeInformation.IsOSPlatform))
-                    {
-                        throw new PlatformNotSupportedException(
-                            $"The current OS is not any of the following currently supported: {string.Join(", ", paths.Keys)}");
-                    }
-
-                    var osPlatform = paths.Keys.First(RuntimeInformation.IsOSPlatform);
-                    _platformVsTestToolPath = paths[osPlatform];
-                    _logger.LogDebug("Using vstest.console: {0} for OS {1}", osPlatform, _platformVsTestToolPath);
+                    return _platformVsTestToolPath;
                 }
+                var paths = GetVsTestToolPaths();
+                    
+                if (!paths.Keys.Any(RuntimeInformation.IsOSPlatform))
+                {
+                    throw new PlatformNotSupportedException(
+                        $"The current OS is not any of the following currently supported: {string.Join(", ", paths.Keys)}");
+                }
+
+                var osPlatform = paths.Keys.First(RuntimeInformation.IsOSPlatform);
+                _platformVsTestToolPath = paths[osPlatform];
+                _logger.LogDebug("Using vstest.console: {0} for OS {1}", osPlatform, _platformVsTestToolPath);
             }
 
             return _platformVsTestToolPath;
@@ -88,10 +92,6 @@ namespace Stryker.Core.ToolHelpers
             {
                 Merge(_vsTestPaths, SearchNugetPackageFolders(new List<string> { deployPath }, versionDependent: false));
                 _logger.LogDebug("Using vstest from deployed vstest package");
-            }
-            else
-            {
-                throw new ApplicationException("Could not find or deploy vstest. Exiting.");
             }
 
             return _vsTestPaths;
@@ -193,24 +193,22 @@ namespace Stryker.Core.ToolHelpers
 
             var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), ".vstest");
 
-            using (var stream = typeof(VsTestHelper).Assembly
-            .GetManifestResourceStream(vsTestZip))
+            using var stream = typeof(VsTestHelper).Assembly
+                .GetManifestResourceStream(vsTestZip);
+            var zipPath = Path.Combine(tempDir, "vstest.zip");
+            _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(zipPath));
+
+            using (var file = _fileSystem.FileStream.Create(zipPath, FileMode.Create))
             {
-                var zipPath = Path.Combine(tempDir, "vstest.zip");
-                _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(zipPath));
-
-                using (var file = _fileSystem.FileStream.Create(zipPath, FileMode.Create))
-                {
-                    stream.CopyTo(file);
-                }
-
-                _logger.LogDebug("VsTest zip was copied to: {0}", zipPath);
-
-                ZipFile.ExtractToDirectory(zipPath, tempDir);
-                _fileSystem.File.Delete(zipPath);
-
-                _logger.LogDebug("VsTest zip was unzipped to: {0}", tempDir);
+                stream.CopyTo(file);
             }
+
+            _logger.LogDebug("VsTest zip was copied to: {0}", zipPath);
+
+            ZipFile.ExtractToDirectory(zipPath, tempDir);
+            _fileSystem.File.Delete(zipPath);
+
+            _logger.LogDebug("VsTest zip was unzipped to: {0}", tempDir);
 
             return tempDir;
         }
@@ -229,16 +227,15 @@ namespace Stryker.Core.ToolHelpers
                 {
                     var path = vsTestConsole;
                     // If vstest path is not in nuget package folder, clean it up
-                    if (!nugetPackageFolders.Any(nf => path.Contains(nf)))
+                    if (nugetPackageFolders.Any(nf => path.Contains(nf)) || !_fileSystem.Directory.Exists(Path.GetDirectoryName(path)))
                     {
-                        if (_fileSystem.Directory.Exists(Path.GetDirectoryName(path)))
-                        {
-                            foreach (var entry in _fileSystem.Directory
-                                .EnumerateFiles(Path.GetDirectoryName(path), "*", SearchOption.AllDirectories))
-                            {
-                                _fileSystem.File.Delete(entry);
-                            }
-                        }
+                        continue;
+                    }
+
+                    foreach (var entry in _fileSystem.Directory
+                                 .EnumerateFiles(Path.GetDirectoryName(path), "*", SearchOption.AllDirectories))
+                    {
+                        _fileSystem.File.Delete(entry);
                     }
                 }
             }
