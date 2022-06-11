@@ -434,9 +434,9 @@ namespace Stryker.Core.UnitTest.TestRunners
                 OptimizationMode = OptimizationModes.SmartCoverageCapture|OptimizationModes.CoverageBasedTest
             };
             var myTestCases = new List<TestCase>();
-            var testCase1 = BuildCase("T(1)", TestFramework.nUnit, "T(1)");
+            var testCase1 = BuildCase("T(1)", TestFramework.NUnit, "T(1)");
             myTestCases.Add(testCase1);
-            var testCase2 = BuildCase("T(2)", TestFramework.nUnit, "T(2)");
+            var testCase2 = BuildCase("T(2)", TestFramework.NUnit, "T(2)");
             myTestCases.Add(testCase2);
 
             var mockVsTest = BuildVsTestRunnerPool(options, out var runner, myTestCases);

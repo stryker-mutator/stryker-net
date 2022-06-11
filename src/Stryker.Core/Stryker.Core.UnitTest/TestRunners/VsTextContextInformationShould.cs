@@ -1,24 +1,25 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
-using System.Threading;
 using System.Threading.Tasks;
 using Buildalyzer;
 using Microsoft.Extensions.Logging.Abstractions;
+using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Moq;
+using Serilog.Events;
 using Shouldly;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.TestRunners.VsTest;
 using Stryker.Core.ToolHelpers;
-using Stryker.DataCollector;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
@@ -29,6 +30,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         private readonly ProjectInfo _targetProject;
         private readonly MockFileSystem _fileSystem;
         private readonly Uri _executorUri;
+        private ConsoleParameters _consoleParameters;
 
         public VsTextContextInformationShould()
         {
@@ -99,11 +101,11 @@ namespace Stryker.Core.UnitTest.TestRunners
 
         private TestCase BuildCase(string name) => new(name, _executorUri, _testAssemblyPath) { Id = new Guid() };
 
-        private VsTestContextInformation BuildVsTextContext(StrykerOptions options)
+        private VsTestContextInformation BuildVsTextContext(StrykerOptions options, out Mock<IVsTestConsoleWrapper> mockedVsTestConsole)
         {
-            var mockedVsTestConsole = new Mock<IVsTestConsoleWrapper>(MockBehavior.Strict);
+            mockedVsTestConsole = new Mock<IVsTestConsoleWrapper>(MockBehavior.Strict);
             mockedVsTestConsole.Setup(x => x.StartSession());
-            mockedVsTestConsole.Setup(x => x.InitializeExtensions(It.IsAny<List<string>>()));
+            mockedVsTestConsole.Setup(x => x.InitializeExtensions(It.IsAny<IEnumerable<string>>()));
             mockedVsTestConsole.Setup(x => x.EndSession());
             mockedVsTestConsole.Setup(x =>
                 x.DiscoverTests(It.Is<IEnumerable<string>>(d => d.Any(e => e == _testAssemblyPath)),
@@ -112,12 +114,17 @@ namespace Stryker.Core.UnitTest.TestRunners
                 (IEnumerable<string> _, string _, ITestDiscoveryEventsHandler discoveryEventsHandler) =>
                     DiscoverTests(discoveryEventsHandler, TestCases, false));
 
+            var vsTestConsoleWrapper = mockedVsTestConsole.Object;
             return new VsTestContextInformation(
                 options,
                 _targetProject,
                 new Mock<IVsTestHelper>().Object,
                 _fileSystem,
-                _=> mockedVsTestConsole.Object,
+                (_, parameters) =>
+                {
+                    _consoleParameters = parameters;
+                    return vsTestConsoleWrapper;
+                },
                 null,
                 NullLogger.Instance
                 );
@@ -126,11 +133,61 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void InitializeAndDiscoverTests()
         {
-            using var runner = BuildVsTextContext(new StrykerOptions());
+            using var runner = BuildVsTextContext(new StrykerOptions(), out _);
             // make sure we have discovered first and second tests
             runner.Initialize();
             runner.VsTests.Count.ShouldBe(2);
         }
 
+        [Fact]
+        public void CleanupProperly()
+        {
+            using var runner = BuildVsTextContext(new StrykerOptions(), out var mock);
+            // make sure we have discovered first and second tests
+            runner.Initialize();
+            runner.Dispose();
+            mock.Verify(m => m.EndSession(), Times.Once);
+        }
+
+        [Fact]
+        public void InitializeAndSetParameters()
+        {
+            using var runner = BuildVsTextContext(new StrykerOptions(), out _);
+            runner.Initialize();
+            _consoleParameters.TraceLevel.ShouldBe(TraceLevel.Off);
+            _consoleParameters.EnvironmentVariables.Count.ShouldBe(1);
+            _consoleParameters.EnvironmentVariables.ShouldContainKey("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX");
+            _consoleParameters.EnvironmentVariables["DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX"].ShouldBe("2");
+            _consoleParameters.LogFilePath.ShouldBeNull();
+        }
+
+        [Fact]
+        public void InitializeAndSetParametersAccordingToOptions()
+        {
+            using var runner = BuildVsTextContext(new StrykerOptions(){LogOptions = new LogOptions(){LogToFile = true}}, out _);
+            runner.Initialize();
+            // logging should be a defined level
+            _consoleParameters.TraceLevel.ShouldBe(TraceLevel.Verbose);
+            // we should have the testdiscoverer log file name
+            _consoleParameters.LogFilePath.ShouldBe("\"logs\\TestDiscoverer_VsTest-log.txt\"");
+            // the log folders should exist
+            _fileSystem.AllDirectories.ShouldContain("C:\\logs");
+        }
+
+        [Theory]
+        [InlineData(LogEventLevel.Debug, TraceLevel.Verbose)]
+        [InlineData(LogEventLevel.Verbose, TraceLevel.Verbose)]
+        [InlineData(LogEventLevel.Information, TraceLevel.Info)]
+        [InlineData(LogEventLevel.Warning, TraceLevel.Warning)]
+        [InlineData(LogEventLevel.Error, TraceLevel.Error)]
+        [InlineData(LogEventLevel.Fatal, TraceLevel.Error)]
+        [InlineData((LogEventLevel)(-1), TraceLevel.Off)]
+        public void InitializeAndSetProperLogLevel(LogEventLevel setLevel, TraceLevel expectedLevel)
+        {
+            using var runner = BuildVsTextContext(new StrykerOptions(){LogOptions = new LogOptions(){LogLevel = setLevel}}, out _);
+            runner.Initialize();
+            // logging should be a defined level
+            _consoleParameters.TraceLevel.ShouldBe(expectedLevel);
+        }
     }
 }

@@ -20,7 +20,6 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly AutoResetEvent _runnerAvailableHandler = new(false);
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new();
         private readonly ILogger _logger;
-
         private readonly int _countOfRunners;
 
         public VsTestContextInformation Context { get; }
@@ -124,7 +123,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
                 // find test that share the same setup
                 var similar = Context.FindTestCasesWithinDataSource(Context.VsTests[key]);
-                // we identify the 'leaked' mutations that are common to all those tests
+                // we identify all 'leaked' mutations for those tests
                 var mutationSeenInSetup = new HashSet<int>();
                 foreach (var id in similar.Select(t => t.Id))
                 {

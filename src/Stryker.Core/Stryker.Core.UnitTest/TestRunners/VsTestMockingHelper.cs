@@ -465,7 +465,7 @@ public class VsTestMockingHelper : TestBase
         testCases ??= TestCases.ToList();
         var mockedVsTestConsole = new Mock<IVsTestConsoleWrapper>(MockBehavior.Strict);
         mockedVsTestConsole.Setup(x => x.StartSession());
-        mockedVsTestConsole.Setup(x => x.InitializeExtensions(It.IsAny<List<string>>()));
+        mockedVsTestConsole.Setup(x => x.InitializeExtensions(It.IsAny<IEnumerable<string>>()));
         mockedVsTestConsole.Setup(x => x.AbortTestRun());
         mockedVsTestConsole.Setup(x => x.EndSession());
         mockedVsTestConsole.Setup(x =>
@@ -480,7 +480,7 @@ public class VsTestMockingHelper : TestBase
             targetProject ?? _targetProject,
             new Mock<IVsTestHelper>().Object,
             _fileSystem,
-            _=> mockedVsTestConsole.Object,
+            (_, _) => mockedVsTestConsole.Object,
             hostBuilder: _ => new MoqHost(succeed, false),
             NullLogger.Instance
         );

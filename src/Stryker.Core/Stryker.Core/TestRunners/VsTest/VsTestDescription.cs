@@ -24,9 +24,9 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 if (Case.ExecutorUri.AbsoluteUri.Contains("nunit"))
                 {
-                    return TestFramework.nUnit;
+                    return TestFramework.NUnit;
                 }
-                return Case.ExecutorUri.AbsoluteUri.Contains("xunit") ? TestFramework.xUnit : TestFramework.msTest;
+                return Case.ExecutorUri.AbsoluteUri.Contains("xunit") ? TestFramework.xUnit : TestFramework.MsTest;
             }
         }
 

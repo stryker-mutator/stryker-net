@@ -30,7 +30,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly bool _ownVsTestHelper;
         private readonly ProjectInfo _projectInfo;
         private readonly IVsTestHelper _vsTestHelper;
-        private readonly Func<string, IVsTestConsoleWrapper> _wrapperBuilder;
+        private readonly Func<string, ConsoleParameters, IVsTestConsoleWrapper> _wrapperBuilder;
         private bool _disposed;
         private List<string> _sources;
         private TestFramework _testFramework;
@@ -49,7 +49,7 @@ namespace Stryker.Core.TestRunners.VsTest
             ProjectInfo projectInfo,
             IVsTestHelper helper = null,
             IFileSystem fileSystem = null,
-            Func<string, IVsTestConsoleWrapper> builder = null,
+            Func<string, ConsoleParameters, IVsTestConsoleWrapper> builder = null,
             Func<string, IStrykerTestHostLauncher> hostBuilder = null,
             ILogger logger = null)
         {
@@ -108,7 +108,21 @@ namespace Stryker.Core.TestRunners.VsTest
         /// </summary>
         /// <param name="runnerId">Name of the instance to create (used in log files)</param>
         /// <returns>an <see cref="IVsTestConsoleWrapper" /> controlling the created instance.</returns>
-        public IVsTestConsoleWrapper BuildVsTestWrapper(string runnerId) => _wrapperBuilder(runnerId);
+        public IVsTestConsoleWrapper BuildVsTestWrapper(string runnerId)
+        {
+            var vsTestConsole = _wrapperBuilder(runnerId, DetermineConsoleParameters(runnerId));
+            try
+            {
+                // Set roll forward on no candidate fx so vstest console can start on incompatible dotnet core runtimes
+                vsTestConsole.StartSession();
+                vsTestConsole.InitializeExtensions(_sources.Select(_fileSystem.Path.GetDirectoryName));
+            }
+            catch (Exception e)
+            {
+                throw new GeneralStrykerException("Stryker failed to connect to vstest.console", e);
+            }
+            return vsTestConsole;
+        }
 
         /// <summary>
         ///     Builds a new process launcher used for a test session.
@@ -117,24 +131,9 @@ namespace Stryker.Core.TestRunners.VsTest
         /// <returns>an <see cref="IStrykerTestHostLauncher" /> </returns>
         public IStrykerTestHostLauncher BuildHostLauncher(string runnerId) => _hostBuilder(runnerId);
 
-        private IVsTestConsoleWrapper BuildActualVsTestWrapper(string runnerId)
-        {
-            var vsTestConsole = new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(),
-                DetermineConsoleParameters(runnerId));
-            try
-            {
-                // Set roll forward on no candidate fx so vstest console can start on incompatible dotnet core runtimes
-                Environment.SetEnvironmentVariable("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2");
-                vsTestConsole.StartSession();
-                vsTestConsole.InitializeExtensions(_sources.Select(_fileSystem.Path.GetDirectoryName));
-            }
-            catch (Exception e)
-            {
-                throw new GeneralStrykerException("Stryker failed to connect to vstest.console", e);
-            }
-
-            return vsTestConsole;
-        }
+        private IVsTestConsoleWrapper BuildActualVsTestWrapper(string runnerId, ConsoleParameters parameters) =>
+            new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(),
+                parameters);
 
         /// <summary>
         ///     Build a full path name stored in the log folder.
@@ -145,27 +144,30 @@ namespace Stryker.Core.TestRunners.VsTest
 
         private ConsoleParameters DetermineConsoleParameters(string runnerId)
         {
+            var environmentVariables = new Dictionary<string, string> {["DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX"] = "2"};
+            var result = new ConsoleParameters
+            {
+                EnvironmentVariables = environmentVariables
+            };
+            result.TraceLevel = Options.LogOptions?.LogLevel switch
+            {
+                LogEventLevel.Debug => TraceLevel.Verbose,
+                LogEventLevel.Verbose => TraceLevel.Verbose,
+                LogEventLevel.Error => TraceLevel.Error,
+                LogEventLevel.Fatal => TraceLevel.Error,
+                LogEventLevel.Warning => TraceLevel.Warning,
+                LogEventLevel.Information => TraceLevel.Info,
+                _ => TraceLevel.Off
+            };
             if (Options.LogOptions?.LogToFile != true)
             {
-                return new ConsoleParameters();
+                return result;
             }
+
             var vsTestLogPath = _fileSystem.Path.Combine(LogPath, $"{runnerId}_VsTest-log.txt");
             _fileSystem.Directory.CreateDirectory(LogPath);
-
-            return new ConsoleParameters
-            {
-                TraceLevel = Options.LogOptions.LogLevel switch
-                {
-                    LogEventLevel.Debug => TraceLevel.Verbose,
-                    LogEventLevel.Verbose => TraceLevel.Verbose,
-                    LogEventLevel.Error => TraceLevel.Error,
-                    LogEventLevel.Fatal => TraceLevel.Error,
-                    LogEventLevel.Warning => TraceLevel.Warning,
-                    LogEventLevel.Information => TraceLevel.Info,
-                    _ => TraceLevel.Off
-                },
-                LogFilePath = vsTestLogPath
-            };
+            result.LogFilePath = vsTestLogPath;
+            return result;
         }
 
         /// <summary>
@@ -238,7 +240,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     // find all tests that have the same FQN
                     result = VsTests.Values.Where(desc => desc.Case.DisplayName == referenceTest.Case.DisplayName).ToList();
                     break;
-                case TestFramework.nUnit:
+                case TestFramework.NUnit:
                     var referenceName = Extractor(referenceTest.Case.FullyQualifiedName);
                     result = VsTests.Values.Where(desc => Extractor(desc.Case.FullyQualifiedName) == referenceName).ToList();
                     break;
@@ -257,9 +259,9 @@ namespace Stryker.Core.TestRunners.VsTest
                 return;
             }
 
-            if (tests.Any(testCase => testCase.Framework == TestFramework.nUnit))
+            if (tests.Any(testCase => testCase.Framework == TestFramework.NUnit))
             {
-                _testFramework |= TestFramework.nUnit;
+                _testFramework |= TestFramework.NUnit;
             }
 
             if (tests.Any(testCase => testCase.Framework == TestFramework.xUnit))
@@ -297,7 +299,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     CodeInjection.HelperNamespace, BuildFilePathName(coverageFileName))
                 : string.Empty;
 
-            if (_testFramework.HasFlag(TestFramework.nUnit) && needSequentialRun)
+            if (_testFramework.HasFlag(TestFramework.NUnit) && needSequentialRun)
                 settingsForCoverage = "<CollectDataForEachTestSeparately>true</CollectDataForEachTestSeparately>";
 
             if (_testFramework.HasFlag(TestFramework.xUnit) && needSequentialRun)
