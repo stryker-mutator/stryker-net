@@ -33,8 +33,65 @@ namespace Stryker.Core.UnitTest.TestRunners
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             SetupMockTestRun(mockVsTest, new[] { ("T0", false), ("T1", true) });
             var result = runner.InitialTest();
-            // tests are successful => run should be successful
+            // one test is failing
             result.FailingTests.Count.ShouldBe(1);
+        }
+
+        [Fact]
+        public void ShouldCaptureErrorMessages()
+        {
+            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
+            var testResult = new TestResult(TestCases[0])
+            {
+                Outcome = TestOutcome.Passed,
+                ErrorMessage = "Test"
+            };
+            SetupMockTestRun(mockVsTest, new[] { testResult});
+            var result = runner.InitialTest();
+            result.ResultMessage.ShouldEndWith("Test");
+        }
+
+        [Fact]
+        public void ShouldComputeTimeoutProperly()
+        {
+            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
+            var now = DateTimeOffset.Now;
+            var duration = TimeSpan.FromMilliseconds(2);
+            var testResult = new TestResult(TestCases[0])
+            {
+                Outcome = TestOutcome.Passed,
+                StartTime = now,
+                EndTime = DateTimeOffset.Now+duration+duration,
+                Duration = duration
+            };
+            SetupMockTestRun(mockVsTest, new[] { testResult});
+            var result = runner.InitialTest();
+            runner.Context.VsTests[TestCases[0].Id].InitialRunTime.ShouldBe(duration);
+        }
+
+        [Fact]
+        public void ShouldComputeTimeoutProperlyForMultipleResults()
+        {
+            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
+            var now = DateTimeOffset.Now;
+            var duration = TimeSpan.FromMilliseconds(2);
+            var testResult = new TestResult(TestCases[0])
+            {
+                Outcome = TestOutcome.Passed,
+                StartTime = now,
+                EndTime = now+duration+duration,
+                Duration = duration
+            };
+            var otherTestResult = new TestResult(TestCases[0])
+            {
+                Outcome = TestOutcome.Passed,
+                StartTime = now,
+                EndTime = now+duration+duration,
+                Duration = duration
+            };
+            SetupMockTestRun(mockVsTest, new[] { testResult, otherTestResult});
+            var result = runner.InitialTest();
+            runner.Context.VsTests[TestCases[0].Id].InitialRunTime.ShouldBe(duration);
         }
 
         [Fact]
@@ -465,7 +522,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             SetupMockCoverageRun(mockVsTest, GenerateCoverageTestResults(new[] { (testCase1, ";|1"), (testCase2, "0;")}));
 
-            SetupMockCoverageRunForTest(mockVsTest, GenerateCoverageTestResults(new[] { (testCase1, ";|1"), (testCase1, null) }));
+            SetupMockCoverageRunForTest(mockVsTest, GenerateCoverageTestResults(new[] { (testCase1, ";|1"), (testCase1, null), (testCase1, "0;|1") }));
             SetupMockCoverageRunForTest(mockVsTest, GenerateCoverageTestResults(new[] { (testCase2, "0;") }));
 
             var analyzer = new CoverageAnalyser(options);

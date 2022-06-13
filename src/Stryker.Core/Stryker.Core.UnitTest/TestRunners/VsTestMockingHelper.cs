@@ -17,6 +17,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Moq;
+using Moq.Language.Flow;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
@@ -144,8 +145,9 @@ public class VsTestMockingHelper : TestBase
 
             for (var i = 0; i < testResults.Count; i++)
             {
-                Thread.Sleep(10);
-                testResults[i].EndTime = DateTimeOffset.Now;
+                testResults[i].StartTime = DateTimeOffset.Now;
+                Thread.Sleep(1);
+                testResults[i].EndTime = DateTimeOffset.Now+testResults[i].Duration;
                 testRunEvents.HandleTestRunStatsChange(new TestRunChangedEventArgs(
                     new TestRunStatistics(i + 1, null), new[] { testResults[i] }, null));
             }
@@ -156,7 +158,7 @@ public class VsTestMockingHelper : TestBase
                     new TestRunStatistics(testResults.Count, null), null, new[] { timeOutTest }));
             }
 
-            Thread.Sleep(10);
+            Thread.Sleep(1);
             testRunEvents.HandleTestRunComplete(
                 new TestRunCompleteEventArgs(new TestRunStatistics(testResults.Count, null), false, false, null,
                     null, timer.Elapsed),
@@ -186,6 +188,10 @@ public class VsTestMockingHelper : TestBase
                 Duration = _testDefaultDuration
             });
         }
+        SetupMockTestRun(mockVsTest, results);
+    }
+
+    protected IReturnsResult<IVsTestConsoleWrapper> SetupMockTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyList<TestResult> results) =>
         mockVsTest.Setup(x =>
             x.RunTestsWithCustomTestHostAsync(
                 It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
@@ -199,10 +205,8 @@ public class VsTestMockingHelper : TestBase
                 // generate test results
                 MoqTestRun(testRunEvents, results);
             }).Returns(Task.CompletedTask);
-    }
 
-    protected void SetupFailingTestRun(Mock<IVsTestConsoleWrapper> mockVsTest)
-    {
+    protected void SetupFailingTestRun(Mock<IVsTestConsoleWrapper> mockVsTest) =>
         mockVsTest.Setup(x =>
             x.RunTestsWithCustomTestHostAsync(
                 It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
@@ -230,7 +234,6 @@ public class VsTestMockingHelper : TestBase
                         null);
                 });
             }).Returns(Task.CompletedTask);
-    }
 
     protected void SetupMockCoverageRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> coverageResults) => SetupMockCoverageRun(mockVsTest, GenerateCoverageTestResults(coverageResults));
 

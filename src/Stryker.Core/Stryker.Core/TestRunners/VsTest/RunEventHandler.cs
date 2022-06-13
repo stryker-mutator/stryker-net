@@ -97,7 +97,12 @@ namespace Stryker.Core.TestRunners.VsTest
                     }
                 }
 
-                if (_runs[id].AddResult(testResult))
+                if (_runs[id].IsComplete())
+                {
+                    // unexpected result, report it
+                    _currentResults.TestResults.Add(testResult);
+                }
+                else if (_runs[id].AddResult(testResult))
                 {
                     _currentResults.TestResults.Add(_runs[id].Result());
                     _inProgress.Remove(id);

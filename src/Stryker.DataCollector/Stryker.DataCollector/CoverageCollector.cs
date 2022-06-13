@@ -222,7 +222,7 @@ namespace Stryker.DataCollector
             {
                 // see if any mutation was executed outside a test
                 // except for first (assumed to be covered by the first test)
-                    CaptureCoverageOutsideTests();
+                CaptureCoverageOutsideTests();
 
                 return;
             }
@@ -255,11 +255,6 @@ namespace Stryker.DataCollector
             _testsToMutantCoverage.Add(testCoverageInfo);
 
             var coverData = testCoverageInfo.GetCoverageAsString();
-            if (coverData == string.Empty)
-            {
-                // test covers no mutant, but empty string is not a valid value
-                coverData = " ";
-            }
 
             _dataSink.SendData(dataCollectionContext, PropertyName, coverData);
             if (!testCoverageInfo.HasLeakedMutations) { return; }
@@ -339,10 +334,10 @@ namespace Stryker.DataCollector
 
             public string GetCoverageAsString() => string.Join(",", _coveredMutations) + ";" + string.Join(",", _coveredStaticMutations);
 
-            public bool HasLeakedMutations => (_leakedMutationsFromPreviousTest?.Count ?? 0) > 1;
+            public bool HasLeakedMutations => (_leakedMutationsFromPreviousTest?.Count ?? 0) > 0;
 
             public string GetLeakedMutationsAsString() =>
-                HasLeakedMutations ? string.Join(",", _coveredStaticMutations) : string.Empty;
+                HasLeakedMutations ? string.Join(",", _leakedMutationsFromPreviousTest) : string.Empty;
 
             public override string ToString()
             {

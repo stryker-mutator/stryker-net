@@ -39,11 +39,12 @@ namespace Stryker.Core.CoverageAnalysis
         {
             var dubiousTests = new HashSet<Guid>();
             var trustedTests = new HashSet<Guid>();
-            var testIds = coverage.Select(c => c.TestId).ToList();
+            var testIds = new HashSet<Guid>();
 
             var mutationToResultMap = new Dictionary<int, List<CoverageRunResult>>();
             foreach (var coverageRunResult in coverage)
             {
+                testIds.Add(coverageRunResult.TestId);
                 foreach (var i in coverageRunResult.MutationsCovered)
                 {
                     if (!mutationToResultMap.ContainsKey(i))

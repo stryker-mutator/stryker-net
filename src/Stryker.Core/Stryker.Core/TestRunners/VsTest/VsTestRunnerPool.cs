@@ -101,7 +101,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             var initialResults = CaptureCoverageInOneGo().ToDictionary( r => r.TestId);
             // now scan if we find tests with 'early' coverage
-            foreach (var result in initialResults.Where(result => result.Value.LeakedMutations.Count>0).Select(result => result.Key))
+            foreach (var result in Context.VsTests.Where( p => p.Value.NbSubCases>1).Select(p =>p.Key))
             {
                 var similar = Context.FindTestCasesWithinDataSource(Context.VsTests[result]);
                 // we have a leak
