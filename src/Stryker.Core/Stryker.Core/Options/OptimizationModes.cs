@@ -11,7 +11,6 @@ namespace Stryker.Core.Options
         CoverageBasedTest = 2,
         DisableBail = 4,
         CaptureCoveragePerTest = 8,
-        SmartCoverageCapture = 16,
-        DisableMixMutants = 32,
+        DisableMixMutants = 16,
     }
 }

@@ -33,9 +33,6 @@ namespace Stryker.Core.Options.Inputs
                 (OptimizationModes.SkipUncoveredMutants, "Capture the list of mutations covered by some test. Test only these mutations, other are flagged as NoCoverage. Fast option."),
             ["perTestInIsolation"] =
                 (OptimizationModes.CaptureCoveragePerTest | OptimizationModes.CoverageBasedTest, "'perTest' but coverage of each test is captured in isolation. Increase coverage accuracy at the expense of a slow init phase."),
-            ["combined"] =
-                (OptimizationModes.SmartCoverageCapture| OptimizationModes.CoverageBasedTest, "'pertest', but use isolated mode for tests which coverage cannot be reliably established. !Beta at this stage!")
-            
         };
 
         public OptimizationModes Validate()

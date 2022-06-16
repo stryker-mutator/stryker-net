@@ -174,14 +174,13 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public IRunResults RunTestSession(ITestGuids testsToRun, int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<IRunResults> updateHandler = null) =>
             RunTestSession(testsToRun,
-                _context.GenerateRunSettings(timeout, false, mutantTestsMap, null), timeout, updateHandler).GetResults();
+                _context.GenerateRunSettings(timeout, false, mutantTestsMap), timeout, updateHandler).GetResults();
 
         public IRunResults RunCoverageSession(ITestGuids testsToRun) =>
             RunTestSession(testsToRun,
                 _context.GenerateRunSettings(null,
                     true,
-                    null,
-                    testsToRun.IsEveryTest ? "Coverage.json" : $"Coverage for {testsToRun.GetGuids().First()}.json")).GetRawResults();
+                    null)).GetRawResults();
 
         private RunEventHandler RunTestSession(ITestGuids tests,
             string runSettings,

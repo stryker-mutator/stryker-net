@@ -64,11 +64,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var optimizationMode = Context.Options.OptimizationMode;
 
             IEnumerable<CoverageRunResult> resultsToParse;
-            if (optimizationMode.HasFlag(OptimizationModes.SmartCoverageCapture))
-            {
-                resultsToParse = SmartCoverageCapture();
-            }
-            else if (optimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
+            if (optimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
             {
                 resultsToParse = CaptureCoverageTestByTest();
             }
@@ -94,58 +90,6 @@ namespace Stryker.Core.TestRunners.VsTest
         private IEnumerable<CoverageRunResult> CaptureCoverageInOneGo() => ConvertCoverageResult(RunThis(runner => runner.RunCoverageSession(TestsGuidList.EveryTest()).TestResults), false);
 
         private IEnumerable<CoverageRunResult> CaptureCoverageTestByTest() => ConvertCoverageResult(CaptureCoveragePerIsolatedTests(Context.VsTests.Keys).TestResults, true);
-
-        private IEnumerable<CoverageRunResult> SmartCoverageCapture()
-        {
-            var dubiousTests = new HashSet<Guid>();
-
-            var initialResults = CaptureCoverageInOneGo().ToDictionary( r => r.TestId);
-            // now scan if we find tests with 'early' coverage
-            foreach (var result in Context.VsTests.Where( p => p.Value.NbSubCases>1).Select(p =>p.Key))
-            {
-                var similar = Context.FindTestCasesWithinDataSource(Context.VsTests[result]);
-                // we have a leak
-                foreach (var description in similar)
-                {
-                    dubiousTests.Add(description.Id);
-                    _logger.LogDebug($"Coverage for test {description.Case.DisplayName} will be established in isolation.");
-                }
-            }
-
-            var isolatedTestRuns = ConvertCoverageResult(CaptureCoveragePerIsolatedTests(dubiousTests).TestResults, true).ToDictionary( r => r.TestId);
-            // now process them as groups
-            foreach (var key in isolatedTestRuns.Keys)
-            {
-                if (!dubiousTests.Contains(key))
-                {
-                    // we already processed this test
-                    continue;
-                }
-                // find test that share the same setup
-                var similar = Context.FindTestCasesWithinDataSource(Context.VsTests[key]);
-                // we identify all 'leaked' mutations for those tests
-                var mutationSeenInSetup = new HashSet<int>();
-                foreach (var id in similar.Select(t => t.Id))
-                {
-                    dubiousTests.Remove(id);
-                    if (!isolatedTestRuns.ContainsKey(id))
-                    {
-                        // no test run data, nothing to do
-                        continue;
-                    }
-                    mutationSeenInSetup.UnionWith(isolatedTestRuns[id].LeakedMutations);
-                }
-                // we transform these mutations to normally covered ones.
-                // but we mark them as to be tested in isolation.
-                foreach (var guid in similar.Select(t => t.Id))
-                {
-                    isolatedTestRuns[guid].ConfirmCoverageForLeakedMutations(mutationSeenInSetup);
-                    initialResults[guid] = isolatedTestRuns[guid];
-                }
-            }
-            
-            return initialResults.Values;
-        }
 
         private IRunResults CaptureCoveragePerIsolatedTests(IEnumerable<Guid> tests)
         {

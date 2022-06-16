@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -26,7 +25,6 @@ namespace Stryker.DataCollector
         private string _controlClassName;
         private Type _controller;
         private FieldInfo _activeMutantField;
-        private string _coverageReportFile;
 
         private MethodInfo _getCoverageData;
         private IList<int> _mutationCoveredOutsideTests;
@@ -45,8 +43,7 @@ namespace Stryker.DataCollector
 
         public static string GetVsTestSettings(bool needCoverage,
             IEnumerable<(int mutant, IEnumerable<Guid> coveringTests)> mutantTestsMap,
-            string helperNameSpace,
-            string coverageCaptureFile = null)
+            string helperNameSpace)
         {
             var codeBase = typeof(CoverageCollector).GetTypeInfo().Assembly.Location;
             var qualifiedName = typeof(CoverageCollector).AssemblyQualifiedName;
@@ -60,11 +57,11 @@ namespace Stryker.DataCollector
                 $"friendlyName=\"{friendlyName}\" uri=\"{uri}\" codebase=\"{codeBase}\" assemblyQualifiedName=\"{qualifiedName}\"";
             var configuration = new StringBuilder();
             configuration.Append("<Parameters>");
+
             if (needCoverage)
             {
-                configuration.Append($"<Coverage file='{coverageCaptureFile}'/>");
+                configuration.Append("<Coverage/>");
             }
-
             if (mutantTestsMap != null)
             {
                 foreach (var (mutant, coveringTests) in mutantTestsMap)
@@ -163,15 +160,10 @@ namespace Stryker.DataCollector
             {
                 _controlClassName = nameSpaceNode.Attributes["name"].Value;
             }
-
             var coverage = node.SelectSingleNode("//Parameters/Coverage");
             if (coverage != null)
             {
                 _coverageOn = true;
-                if (coverage.Attributes != null)
-                {
-                    _coverageReportFile = coverage.Attributes["file"].Value;
-                }
             }
         }
 
@@ -295,22 +287,6 @@ namespace Stryker.DataCollector
                     null,
                     _mutationCoveredOutsideTests));
             }
-            SaveReport();
-        }
-
-        private void SaveReport()
-        {
-            if (string.IsNullOrEmpty(_coverageReportFile) || _testsToMutantCoverage.Count == 0)
-            {
-                return;
-            }
-
-            var reportBuilder = new StringBuilder(TestCoverageInfo.JSonSizeEstimate*_testsToMutantCoverage.Count).
-                Append('[').
-                Append(string.Join(",", _testsToMutantCoverage)).
-                Append(']');
-            Directory.CreateDirectory(Path.GetDirectoryName(_coverageReportFile));
-            File.WriteAllText(_coverageReportFile, reportBuilder.ToString());
         }
 
         private readonly struct TestCoverageInfo
@@ -338,36 +314,6 @@ namespace Stryker.DataCollector
 
             public string GetLeakedMutationsAsString() =>
                 HasLeakedMutations ? string.Join(",", _leakedMutationsFromPreviousTest) : string.Empty;
-
-            public override string ToString()
-            {
-                var reportBuilder = new StringBuilder(JSonSizeEstimate);
-                reportBuilder.Append('{');
-                reportBuilder.Append(_test != null ? $"\"testCaseId\":\"{_test.Id}\"" : "\"testCaseId\":\"NoTest\"");
-                reportBuilder.Append(_test != null ? $",\"testCaseName\":\"{_test.FullyQualifiedName}\"" : "");
-                if (_coveredMutations != null)
-                {
-                    reportBuilder.Append($",\"mutationsCovered\":[{string.Join(",", _coveredMutations.Select(i => i.ToString()))}]");
-                }
-
-                if (_coveredStaticMutations != null)
-                {
-                    reportBuilder.Append($",\"staticMutationsCovered\":[{string.Join(",", _coveredStaticMutations.Select(i => i.ToString()))}]");
-                }
-
-                if (_leakedMutationsFromPreviousTest != null)
-                {
-                    reportBuilder.Append(
-                        $",\"mutationsCoveredBeforeStart\":[{string.Join(",", _leakedMutationsFromPreviousTest.Select(i => i.ToString()))}]");
-                }
-
-                if (_previousTest != null)
-                {
-                    reportBuilder.Append($",\"testCaseBeforeId\":\"{_previousTest.Id}\"");
-                }
-                reportBuilder.AppendLine("}");
-                return reportBuilder.ToString();
-            }
         }
     }
 }

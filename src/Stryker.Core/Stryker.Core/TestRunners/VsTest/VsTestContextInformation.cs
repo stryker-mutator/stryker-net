@@ -285,7 +285,7 @@ namespace Stryker.Core.TestRunners.VsTest
 </RunSettings>";
         }
 
-        public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap, string coverageFileName)
+        public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap)
         {
             var projectAnalyzerResult = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault();
             var settingsForCoverage = string.Empty;
@@ -295,7 +295,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 ? CoverageCollector.GetVsTestSettings(
                     forCoverage,
                     mutantTestsMap?.Select(e => (e.Key, e.Value.GetGuids())),
-                    CodeInjection.HelperNamespace, BuildFilePathName(coverageFileName))
+                    CodeInjection.HelperNamespace)
                 : string.Empty;
 
             if (_testFramework.HasFlag(TestFramework.NUnit) && needSequentialRun)

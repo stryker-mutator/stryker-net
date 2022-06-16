@@ -474,64 +474,6 @@ namespace Stryker.Core.UnitTest.TestRunners
             OtherMutant.CoveringTests.Count.ShouldBe(2);
         }
 
-        // this verifies that mutant that are covered outside any tests are
-        // flagged as to be tested against all tests
-        [Fact]
-        public void ShouldRefineCoverageForTheoriesInSmartModeForxUnit()
-        {
-            var options = new StrykerOptions
-            {
-                OptimizationMode = OptimizationModes.SmartCoverageCapture|OptimizationModes.CoverageBasedTest
-            };
-            var myTestCases = new List<TestCase>();
-            var testCase1 = BuildCase("T(1)", TestFramework.xUnit, "T");
-            myTestCases.Add(testCase1);
-            var testCase2 = BuildCase("T(2)", TestFramework.xUnit, "T");
-            myTestCases.Add(testCase2);
-
-            var mockVsTest = BuildVsTestRunnerPool(options, out var runner, myTestCases);
-
-            SetupMockCoverageRun(mockVsTest, GenerateCoverageTestResults(new[] { (testCase1, ";|1"), (testCase2, "0;")}));
-
-            SetupMockCoverageRunForTest(mockVsTest, GenerateCoverageTestResults(new[] { (testCase1, ";|1") }));
-            SetupMockCoverageRunForTest(mockVsTest, GenerateCoverageTestResults(new[] { (testCase2, "0;") }));
-
-            var analyzer = new CoverageAnalyser(options);
-            analyzer.DetermineTestCoverage(runner, new[] { Mutant, OtherMutant });
-            // leaked mutant should be tested in isolation
-            OtherMutant.CoveringTests.Count.ShouldBe(1);
-            OtherMutant.MustBeTestedInIsolation.ShouldBe(true);
-        }
-
-        // this verifies that mutant that are covered outside any tests are
-        // flagged as to be tested against all tests
-        [Fact]
-        public void ShouldRefineCoverageForTheoriesInSmartModeForNUnit()
-        {
-            var options = new StrykerOptions
-            {
-                OptimizationMode = OptimizationModes.SmartCoverageCapture|OptimizationModes.CoverageBasedTest
-            };
-            var myTestCases = new List<TestCase>();
-            var testCase1 = BuildCase("T(1)", TestFramework.NUnit, "T(1)");
-            myTestCases.Add(testCase1);
-            var testCase2 = BuildCase("T(2)", TestFramework.NUnit, "T(2)");
-            myTestCases.Add(testCase2);
-
-            var mockVsTest = BuildVsTestRunnerPool(options, out var runner, myTestCases);
-
-            SetupMockCoverageRun(mockVsTest, GenerateCoverageTestResults(new[] { (testCase1, ";|1"), (testCase2, "0;")}));
-
-            SetupMockCoverageRunForTest(mockVsTest, GenerateCoverageTestResults(new[] { (testCase1, ";|1"), (testCase1, null), (testCase1, "0;|1") }));
-            SetupMockCoverageRunForTest(mockVsTest, GenerateCoverageTestResults(new[] { (testCase2, "0;") }));
-
-            var analyzer = new CoverageAnalyser(options);
-            analyzer.DetermineTestCoverage(runner, new[] { Mutant, OtherMutant });
-            // leaked mutant should be tested in isolation
-            OtherMutant.CoveringTests.Count.ShouldBe(1);
-            OtherMutant.MustBeTestedInIsolation.ShouldBe(true);
-        }
-
         // this verifies that tests missing any coverage information are
         // flagged as to be tested used against every mutants
         [Fact]
@@ -552,7 +494,5 @@ namespace Stryker.Core.UnitTest.TestRunners
             OtherMutant.CoveringTests.Count.ShouldBe(2);
             Mutant.CoveringTests.Count.ShouldBe(1);
         }
-
-        // class mocking the VsTest Host Launcher
     }
 }

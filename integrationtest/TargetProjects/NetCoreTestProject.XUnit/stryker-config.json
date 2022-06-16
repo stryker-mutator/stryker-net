@@ -1,19 +1,18 @@
 {
-    "stryker-config": {
-        "reporters": [
-            "Dots",
-            "ClearText",
-            "Html",
-            "Json"
-        ],
-        "verbosity": "trace",
-        "project": "TargetProject.csproj",
-        "ignore-mutations": [
-            "string"
-        ],
-        "coverage-analysis": "combined", 
-        "mutate": [
-            "!Person.cs"
-        ]
-    }
+  "stryker-config": {
+    "reporters": [
+      "Dots",
+      "ClearText",
+      "Html",
+      "Json"
+    ],
+    "verbosity": "trace",
+    "project": "TargetProject.csproj",
+    "ignore-mutations": [
+      "string"
+    ],
+    "mutate": [
+      "!Person.cs"
+    ]
+  }
 }
