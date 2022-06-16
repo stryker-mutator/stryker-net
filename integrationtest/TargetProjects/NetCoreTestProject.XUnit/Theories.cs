@@ -46,8 +46,8 @@ namespace ExampleProject.XUnit
 
         public static IEnumerable<object[]> TheSource()
         {
-            var student = new Student { Age = 32 };
-            Console.WriteLine("ObjectSource:32");
+            var student = new Student { Age = 22 };
+            Console.WriteLine("ObjectSource:22");
             yield return new object[] {student.IsExpired(), "No"};
             student = new Student { Age = 42 };
             Console.WriteLine("ObjectSource:42");
@@ -90,7 +90,7 @@ namespace ExampleProject.XUnit
             }
         }
 
-        [Theory(DisplayName = "test"/*, Skip = "Run Explicitly"*/)]
+        [Theory(DisplayName = "test", Skip = "Run Explicitly")]
         [MemberData(nameof(RandomSource))]
         public void TestRandom(int x)
         {

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Xml;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
@@ -20,7 +19,6 @@ namespace Stryker.DataCollector
         private int _activeMutation = -1;
         private Action<string> _logger;
         private readonly IDictionary<string, int> _mutantTestedBy = new Dictionary<string, int>();
-        private readonly ICollection<TestCoverageInfo> _testsToMutantCoverage = new List<TestCoverageInfo>();
 
         private string _controlClassName;
         private Type _controller;
@@ -28,8 +26,6 @@ namespace Stryker.DataCollector
 
         private MethodInfo _getCoverageData;
         private IList<int> _mutationCoveredOutsideTests;
-        private TestCase _currentTestCase;
-        private TestCase _previousTest;
 
         private const string AnyId = "*";
         private const string TemplateForConfiguration =
@@ -208,8 +204,6 @@ namespace Stryker.DataCollector
 
         public void TestCaseStart(TestCaseStartArgs testCaseStartArgs)
         {
-            _previousTest = _currentTestCase;
-            _currentTestCase = testCaseStartArgs.TestCase;
             if (_coverageOn)
             {
                 // see if any mutation was executed outside a test
@@ -220,9 +214,10 @@ namespace Stryker.DataCollector
             }
 
             // we need to set the proper mutant
-            SetActiveMutation(testCaseStartArgs.TestCase.Id.ToString());
+            var testCase = testCaseStartArgs.TestCase;
+            SetActiveMutation(testCase.Id.ToString());
 
-            Log($"Test {_currentTestCase.FullyQualifiedName} starts against mutant {_activeMutation} (var).");
+            Log($"Test {testCase.FullyQualifiedName} starts against mutant {_activeMutation} (var).");
         }
 
         public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
@@ -239,12 +234,10 @@ namespace Stryker.DataCollector
         private void PublishCoverageData(DataCollectionContext dataCollectionContext)
         {
             var covered = RetrieveCoverData();
-            var testCoverageInfo = new TestCoverageInfo(_currentTestCase,
-                _previousTest,
+            var testCoverageInfo = new TestCoverageInfo(
                 covered[0],
                 covered[1],
                 _mutationCoveredOutsideTests);
-            _testsToMutantCoverage.Add(testCoverageInfo);
 
             var coverData = testCoverageInfo.GetCoverageAsString();
 
@@ -274,35 +267,17 @@ namespace Stryker.DataCollector
             }
         }
 
-        public void TestSessionEnd(TestSessionEndArgs testSessionEndArgs)
-        {
-            Log($"TestSession ends.");
-            // report any mutations covered after the last test
-            CaptureCoverageOutsideTests();
-            if ((_mutationCoveredOutsideTests?.Count ?? 0) > 0)
-            {
-                _testsToMutantCoverage.Add(new TestCoverageInfo(null,
-                    _currentTestCase,
-                    null,
-                    null,
-                    _mutationCoveredOutsideTests));
-            }
-        }
+        public void TestSessionEnd(TestSessionEndArgs testSessionEndArgs) => Log($"TestSession ends.");
 
         private readonly struct TestCoverageInfo
         {
-            public const int JSonSizeEstimate = 100;
-            private readonly TestCase _test;
-            private readonly TestCase _previousTest;
             private readonly IList<int> _coveredMutations;
             private readonly IList<int> _coveredStaticMutations;
             private readonly IList<int> _leakedMutationsFromPreviousTest;
 
-            public TestCoverageInfo(TestCase test, TestCase previousTest, IList<int> coveredMutations,
+            public TestCoverageInfo(IList<int> coveredMutations,
                 IList<int> coveredStaticMutations, IList<int> leakedMutationsFromPreviousTest)
             {
-                _test = test;
-                _previousTest = previousTest;
                 _coveredMutations = coveredMutations;
                 _coveredStaticMutations = coveredStaticMutations;
                 _leakedMutationsFromPreviousTest = leakedMutationsFromPreviousTest;

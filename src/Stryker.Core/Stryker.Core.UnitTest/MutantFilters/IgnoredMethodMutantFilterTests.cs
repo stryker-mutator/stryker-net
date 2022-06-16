@@ -532,12 +532,12 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
     private void TestMethod()
     {
         Foo(true);
-        Bar(""A MutationTestingRequirements"");
+        Bar(""A Mutation"");
         Quux(42);
     }
 }";
             var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
-            var mutants = new[] { "true", @"""A MutationTestingRequirements""", "42"}.Select(GetOriginalNode).Select(node => new Mutant { Mutation = new Mutation { OriginalNode = node } }).ToArray();
+            var mutants = new[] { "true", @"""A Mutation""", "42"}.Select(GetOriginalNode).Select(node => new Mutant { Mutation = new Mutation { OriginalNode = node } }).ToArray();
             var options = new StrykerOptions
             {
                 IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { "Bar" } }.Validate()
@@ -549,7 +549,7 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
 
             // Assert
             filteredMutants.ShouldContain(mutants[0]); // Foo(true);
-            filteredMutants.ShouldNotContain(mutants[1]); // Bar(""A MutationTestingRequirements"");
+            filteredMutants.ShouldNotContain(mutants[1]); // Bar(""A Mutation"");
             filteredMutants.ShouldContain(mutants[2]); // Quux(42);
 
             Microsoft.CodeAnalysis.SyntaxNode GetOriginalNode(string node) =>
@@ -566,12 +566,12 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
     private void TestMethod()
     {
         Foo(true);
-        Bar(""A MutationTestingRequirements"");
+        Bar(""A Mutation"");
         Quux(42);
     }
 }";
             var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
-            var mutants = new[] { "true", @"""A MutationTestingRequirements""", "42" }.Select(GetOriginalNode).Select(node => new Mutant { Mutation = new Mutation { OriginalNode = node } }).ToArray();
+            var mutants = new[] { "true", @"""A Mutation""", "42" }.Select(GetOriginalNode).Select(node => new Mutant { Mutation = new Mutation { OriginalNode = node } }).ToArray();
             var options = new StrykerOptions
             {
                 IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { "TestMethod" } }.Validate()
@@ -583,7 +583,7 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
 
             // Assert
             filteredMutants.ShouldContain(mutants[0]); // Foo(true);
-            filteredMutants.ShouldContain(mutants[1]); // Bar(""A MutationTestingRequirements"");
+            filteredMutants.ShouldContain(mutants[1]); // Bar(""A Mutation"");
             filteredMutants.ShouldContain(mutants[2]); // Quux(42);
 
             Microsoft.CodeAnalysis.SyntaxNode GetOriginalNode(string node) =>

@@ -66,7 +66,7 @@ namespace NetCoreTestProject.NUnit
 
         [Test]
         [TestCaseSource(nameof(RandomSource))]
-        //[Ignore("Run explicitly")]
+        [Ignore("Run explicitly")]
         public void TestRandom(int x)
         {
             var sut = new Student{Age = 32};

@@ -16,7 +16,7 @@ namespace Stryker.Core
         public static int OtherError = 1;
 
         /// <summary>
-        /// MutationTestingRequirements score is below the break threshold.
+        /// Mutation score is below the break threshold.
         /// </summary>
         public static int BreakThresholdViolated = 2;
     }

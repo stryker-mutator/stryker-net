@@ -176,7 +176,7 @@ namespace Stryker.Core.MutationTest
             {
                 if (mutant.ResultStatus == MutantStatus.NotRun)
                 {
-                    _logger.LogWarning($"MutationTestingRequirements {mutant.Id} was not fully tested.");
+                    _logger.LogWarning($"Mutation {mutant.Id} was not fully tested.");
                 }
 
                 OnMutantTested(mutant, reportedMutants);
