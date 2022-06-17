@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
@@ -23,6 +23,12 @@ namespace Stryker.Core.Mutators
             SyntaxKind.LogicalNotExpression
         };
 
+        private static readonly Dictionary<SyntaxKind, SyntaxKind> UnaryWithInverse = new Dictionary<SyntaxKind, SyntaxKind>
+        {
+            {SyntaxKind.PreIncrementExpression, SyntaxKind.PostIncrementExpression},
+            {SyntaxKind.PreDecrementExpression, SyntaxKind.PostDecrementExpression},
+        };
+
         public override IEnumerable<Mutation> ApplyMutations(PrefixUnaryExpressionSyntax node)
         {
             var unaryKind = node.Kind();
@@ -44,6 +50,17 @@ namespace Stryker.Core.Mutators
                     ReplacementNode = node.Operand,
                     DisplayName = $"{unaryKind} to un-{unaryKind} mutation",
                     Type = unaryKind.ToString().StartsWith("Logic") ? Mutator.Boolean : Mutator.Unary
+                };
+            }
+
+            if (UnaryWithInverse.TryGetValue(unaryKind, out var inverseKind))
+            {
+                yield return new Mutation
+                {
+                    OriginalNode = node,
+                    ReplacementNode = SyntaxFactory.PostfixUnaryExpression(inverseKind, node.Operand),
+                    DisplayName = $"{unaryKind} to {inverseKind} mutation",
+                    Type = Mutator.Update
                 };
             }
         }

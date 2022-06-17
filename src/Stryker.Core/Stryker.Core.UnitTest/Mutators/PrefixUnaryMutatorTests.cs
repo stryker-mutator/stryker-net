@@ -34,9 +34,9 @@ namespace Stryker.Core.UnitTest.Mutators
         }
 
         [Theory]
-        [InlineData(SyntaxKind.PreIncrementExpression, SyntaxKind.PreDecrementExpression)]
-        [InlineData(SyntaxKind.PreDecrementExpression, SyntaxKind.PreIncrementExpression)]
-        public void ShouldMutateUpdateTypes(SyntaxKind original, SyntaxKind expected)
+        [InlineData(SyntaxKind.PreIncrementExpression, SyntaxKind.PreDecrementExpression, SyntaxKind.PostIncrementExpression)]
+        [InlineData(SyntaxKind.PreDecrementExpression, SyntaxKind.PreIncrementExpression, SyntaxKind.PostDecrementExpression)]
+        public void ShouldMutateUpdateTypes(SyntaxKind original, params SyntaxKind[] expectedSyntaxKinds)
         {
             var target = new PrefixUnaryMutator();
             var originalNode = SyntaxFactory.PrefixUnaryExpression(original,
@@ -44,10 +44,17 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var result = target.ApplyMutations(originalNode).ToList();
 
-            result.ShouldHaveSingleItem();
-            var mutation = result.First();
-            mutation.ReplacementNode.IsKind(expected).ShouldBeTrue();
-            mutation.Type.ShouldBe(Mutator.Update);
+            result.Count.ShouldBe(2, "Two mutations should have been made");
+
+            int index = 0;
+            foreach (var mutation in result)
+            {
+                SyntaxKind expectedSyntaxKind = expectedSyntaxKinds[index];
+                mutation.ReplacementNode.IsKind(expectedSyntaxKind).ShouldBeTrue();
+                mutation.Type.ShouldBe(Mutator.Update);
+                mutation.DisplayName.ShouldBe($"{original} to {expectedSyntaxKind} mutation");
+                index++;
+            }
         }
 
         [Theory]
