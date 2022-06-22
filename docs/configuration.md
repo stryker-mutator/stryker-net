@@ -539,10 +539,10 @@ The file share url should be in the the format:
 The baseline are stored in a folder called `StrykerOutput/Baselines` by default. Or in `StrykerOutput/<projectName>` if a [project name](#project-infoname-string) is set.
 Providing a subfolder is optional but allowed. In the case of a custom subfolder the complete url to the baselines would become `https://<FILE_SHARE_URL>/<OPTIONAL_SUBFOLDER_NAME>/StrykerOutput/Baselines`
 
-### `azure-storage-sas` <`string`>
+### `azure-fileshare-sas` <`string`>
 
 Default: `null`  
-Command line: `--azure-storage-sas "adfdf34343242323rewfe323434"`  
+Command line: `--azure-fileshare-sas "adfdf34343242323rewfe323434"`  
 Config file: `N/A`
 
 When using the azure file storage [provider](#baselineprovider-string) you must pass credentials for the fileshare to Stryker.
