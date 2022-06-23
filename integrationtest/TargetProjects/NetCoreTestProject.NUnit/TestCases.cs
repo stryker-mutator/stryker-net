@@ -56,7 +56,7 @@ namespace NetCoreTestProject.NUnit
 
         private static IEnumerable<int> RandomSource()
         {
-            var rnd = new Random();
+            var rnd = TestContext.CurrentContext.Random;
             for (var i = 0; i < 10; i++)
             {
                 Console.WriteLine($"RandomSource:{i}");

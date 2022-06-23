@@ -44,6 +44,7 @@ xUnit's theory is a pattern where some test is executed multiple times with vary
 These test methods accept one or more parameters and bear one of this attributes: `InlineData`, `MemberData` or `ClassData`.
 There are differences
 between compile time theories (data is fixed at build time) and run time theories (data is discovered at run time).
+From a VsTest perspective, the sub cases of the theory share a single display name.
 
 #### Static theories
 Static theories are seen and processed as different test cases, unless two (or more) test cases have the same parameters. Static theories used the `InlineData`
@@ -59,8 +60,9 @@ Overall, xUnit first discovers all  test a
 Here is a summarized timeline of tests execution:
 xUnit runner calls data theory's data source to fetch each test case value(s)
 TestSession start event
-...
-   xUnit discovers test
+```
+xUnit discovers test
+   xUnit discovers theories
      xUnit enumerates data source (for tests)
 ...
 TestCase start event
@@ -77,6 +79,7 @@ TestCase end event
 TestCase start event
    ...
 TestSession end event
+```
 _Remark_: in this situation, each test result includes the TOTAL execution time (i.e. the time to test every data set) so one should not sum them.
 
 The difficulty here is that a lot happens between `testcase end` and `testcase start` events. 
@@ -127,7 +130,10 @@ When this happens, NUnit will run the test against all data in the set and retur
 The drawback is that you can't identify which data set failed the test.
 ### Run Sequence
 Here is a summarized timeline of tests execution:
-` NUnit runner calls the TestCaseSource and gets every test case.
+
+
+```
+NUnit runner calls the TestCaseSource and gets every test case.
 TestSession start event
  ...
    NUnit discovers test
@@ -145,8 +151,8 @@ TestCase end event
 TestCase end event
 TestCase start event
    ...
-`
-  
+```
+
 The problems for Stryker are:
 1. If test cases have the same name, we cannot distinguish between test cases, so it must be handled as a single test. This *single test* reports multiple test cases so Stryker needs to wait either for one failure or for each testcase
 to succeed to establish the correct status. The good news is that discovery should provide the number of results to wait for.
