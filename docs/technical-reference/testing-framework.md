@@ -90,7 +90,7 @@ So, every mutants covered between `testcase end` and `testcase start` will be as
 And during execution phase, it is impossible to predict when the test will really be over, so it is difficult to
 establish if the test was successful.  
 
-Also, if a mutation ends up changing a test case name - typically by changing the result of `ToTring()`, it will change the
+Also, if a mutation ends up changing a test case name - typically by changing the result of `ToString()`, it will change the
 test identifier so this testcase will only run when running **all tests** and can no longer be executed in isolation, as
 Stryker can't anticipate the test name.
 
@@ -104,7 +104,7 @@ I.e. multiple NUnit tests will be reported as one test with one result.
 Ignored test cases are discovered as normal, but the tests are not run, events are not raised for data collectors and they are reported as `Skipped`.
 
 ### TestCases with variable data
-NUnit's TestCases is a pattern where some test is executed multiple times with varying input data (like xUnit's TestCase).
+NUnit's TestCases is a pattern where some test is executed multiple times with varying input data (like xUnit's Theory).
 These test methods accept one or more parameters and bear one of these attributes (on top of the `[Test]` attribute):
  `TestCase` or `TestCaseSource`.
 
