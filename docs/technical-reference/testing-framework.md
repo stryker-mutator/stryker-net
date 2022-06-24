@@ -59,8 +59,8 @@ It will then run all tests.
 Overall, xUnit first discovers all  test a
 Here is a summarized timeline of tests execution:
 xUnit runner calls data theory's data source to fetch each test case value(s)
-TestSession start event
 ```
+TestSession start event
 xUnit discovers test
    xUnit discovers theories
      xUnit enumerates data source (for tests)
