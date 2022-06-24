@@ -113,7 +113,7 @@ namespace Stryker.Core.CoverageAnalysis
         private static MutationTestingRequirements PareResultForThisMutant(IReadOnlyDictionary<int, List<CoverageRunResult>> mutationToResultMap, int mutantId,
             ICollection<Guid> testGuids)
         {
-            var resultTingRequirements = MutationTestingRequirements.None;
+            var resultingRequirements = MutationTestingRequirements.None;
             if (!mutationToResultMap.ContainsKey(mutantId))
             {
                 return resultTingRequirements;

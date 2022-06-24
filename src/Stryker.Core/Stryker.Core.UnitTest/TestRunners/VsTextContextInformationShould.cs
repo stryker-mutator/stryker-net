@@ -24,7 +24,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
 {
-    public class VsTextContextInformationShould
+    public class VsTextContextInformationTests
     {
         private readonly string _testAssemblyPath;
         private readonly ProjectInfo _targetProject;
@@ -163,7 +163,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             using var runner = BuildVsTextContext(new StrykerOptions{LogOptions = new LogOptions{LogToFile = true}}, out _);
             runner.Initialize();
-            // logging should be a defined level
+            // logging should be at defined level
             _consoleParameters.TraceLevel.ShouldBe(TraceLevel.Verbose);
             
             // we should have the testdiscoverer log file name

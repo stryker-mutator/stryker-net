@@ -20,7 +20,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         private static List<int>[] coverageData = { new List<int>(), new List<int>() };
         public static IList<int>[] GetCoverageData()
         {
-            var result= coverageData;
+            var result = coverageData;
             ClearCoverageInfo();
             return result;
         }
