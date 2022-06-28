@@ -1,0 +1,45 @@
+---
+#extra-oject:
+#  this-should-work: but not appear in the options object
+stryker-config:
+  # we can support comments in yaml config files
+  reporters:
+  - Json
+  verbosity: trace
+  coverage-analysis: perTest
+  disable-bail: true
+  disable-mix-mutants: true
+  additional-timeout: 9999
+  project: ExampleProject.csproj
+  concurrency: 1
+  solution: ''
+  mutation-level: ''
+  since:
+    enabled: false
+    target: main
+    ignore-changes-in:
+    - ''
+  language-version: ''
+  dashboard-url: https://alternative-stryker-dashboard.io
+  test-projects:
+  - ''
+  ignore-mutations:
+  - linq.FirstOrDefault
+  ignore-methods:
+  - Log*
+  thresholds:
+    high: 40
+    low: 30
+    break: 20
+  mutate:
+  - "!**/Test.cs{1..100}{200..300}"
+  project-info:
+    name: github.com/stryker-mutator/stryker-net
+    version: master
+    module: cli
+  baseline:
+    enabled: false
+    fallback-version: master
+    azure-fileshare-url: ''
+    provider: ''
+  test-case-filter: "(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1"

@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
+using YamlDotNet.Serialization.NamingConventions;
 
 namespace Stryker.CLI
 {
@@ -68,8 +69,21 @@ namespace Stryker.CLI
             FileBasedInput input;
             try
             {
-                var serializerOptions = new JsonSerializerOptions { ReadCommentHandling = JsonCommentHandling.Skip };
-                var root = JsonSerializer.Deserialize<FileBasedInputOuter>(json, serializerOptions);
+                FileBasedInputOuter root;
+                if (configFilePath.EndsWith("yaml") || configFilePath.EndsWith("yml"))
+                {
+                    var yamldeserializer = new YamlDotNet.Serialization.DeserializerBuilder()
+                        .IgnoreUnmatchedProperties()
+                        .WithNamingConvention(HyphenatedNamingConvention.Instance)
+                        .Build();
+                    
+                    root = yamldeserializer.Deserialize<FileBasedInputOuter>(json);
+                }
+                else
+                {
+                    var serializerOptions = new JsonSerializerOptions { ReadCommentHandling = JsonCommentHandling.Skip };
+                    root = JsonSerializer.Deserialize<FileBasedInputOuter>(json, serializerOptions);
+                }
                 if (root == null)
                 {
                     throw new InputException($"The config file at \"{configFilePath}\" could not be parsed.");

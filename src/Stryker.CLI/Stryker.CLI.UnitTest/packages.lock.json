@@ -1624,12 +1624,18 @@
           "xunit.extensibility.core": "[2.4.1]"
         }
       },
+      "YamlDotNet": {
+        "type": "Transitive",
+        "resolved": "11.2.1",
+        "contentHash": "tBt8K+korVfrjH9wyDEhiLKxbs8qoLCLIFwvYgkSUuMC9//w3z0cFQ8LQAI/5MCKq+BMil0cfRTRvPeE7eXhQw=="
+      },
       "dotnet-stryker": {
         "type": "Project",
         "dependencies": {
           "McMaster.Extensions.CommandLineUtils": "4.0.1",
           "Microsoft.Extensions.Configuration.Binder": "6.0.0",
           "NuGet.Protocol": "6.2.1",
+          "YamlDotNet": "11.2.1",
           "stryker": "2.0.0"
         }
       },
@@ -1658,8 +1664,8 @@
           "ShellProgressBar": "5.2.0",
           "Spectre.Console": "0.44.0",
           "Spectre.Console.Analyzer": "0.44.0",
-          "Stryker.DataCollector": "2.0.0",
-          "Stryker.RegexMutators": "2.0.0",
+          "Stryker.DataCollector": "1.0.0",
+          "Stryker.RegexMutators": "1.0.0",
           "System.IO.Abstractions": "17.0.18",
           "System.Net.Http.Json": "6.0.0"
         }
