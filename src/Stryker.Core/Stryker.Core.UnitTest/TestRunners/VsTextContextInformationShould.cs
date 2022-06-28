@@ -32,7 +32,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         private readonly Uri _executorUri;
         private ConsoleParameters _consoleParameters;
 
-        public VsTextContextInformationShould()
+        public VsTextContextInformationTests()
         {
             var currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             var filesystemRoot = Path.GetPathRoot(currentDirectory);

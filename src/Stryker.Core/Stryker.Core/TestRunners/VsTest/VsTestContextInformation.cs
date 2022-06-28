@@ -289,7 +289,6 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var projectAnalyzerResult = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault();
             var settingsForCoverage = string.Empty;
-            var needSequentialRun = forCoverage || mutantTestsMap is { Count: >1 } or null;
             var needDataCollector = forCoverage || mutantTestsMap is { };
             var dataCollectorSettings = needDataCollector
                 ? CoverageCollector.GetVsTestSettings(
@@ -298,10 +297,10 @@ namespace Stryker.Core.TestRunners.VsTest
                     CodeInjection.HelperNamespace)
                 : string.Empty;
 
-            if (_testFramework.HasFlag(TestFramework.NUnit) && needSequentialRun)
+            if (_testFramework.HasFlag(TestFramework.NUnit))
                 settingsForCoverage = "<CollectDataForEachTestSeparately>true</CollectDataForEachTestSeparately>";
 
-            if (_testFramework.HasFlag(TestFramework.xUnit) && needSequentialRun)
+            if (_testFramework.HasFlag(TestFramework.xUnit))
                 settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
 
             var timeoutSettings = timeout is > 0
@@ -313,13 +312,12 @@ namespace Stryker.Core.TestRunners.VsTest
                 : $"<TestCaseFilter>{Options.TestCaseFilter}</TestCaseFilter>" + Environment.NewLine;
 
             // we need to block parallel run to capture coverage and when testing multiple mutants in a single run
-            var optionsConcurrentTestRunners = needSequentialRun ? 1 : Options.Concurrency;
             var runSettings =
                 $@"<RunSettings>
 <RunConfiguration>
   <CollectSourceInformation>false</CollectSourceInformation>
 {(!projectAnalyzerResult.TargetsFullFramework() ? string.Empty : @"<DisableAppDomain>true</DisableAppDomain>
-")}  <MaxCpuCount>{optionsConcurrentTestRunners}</MaxCpuCount>
+")}  <MaxCpuCount>1</MaxCpuCount>
 {timeoutSettings}{settingsForCoverage}
 <DesignMode>false</DesignMode>
 {testCaseFilter}</RunConfiguration>{dataCollectorSettings}

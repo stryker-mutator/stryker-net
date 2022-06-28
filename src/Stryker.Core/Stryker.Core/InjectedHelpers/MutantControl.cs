@@ -8,7 +8,6 @@ namespace Stryker
     {
         private static List<int> _coveredMutants;
         private static List<int> _coveredStaticdMutants;
-        private static bool usePipe;
         private static string envName;
         private static Object _coverageLock = new Object();
 
@@ -66,7 +65,7 @@ namespace Stryker
                     ActiveMutant = int.Parse(environmentVariable);
                 }
             }
-
+            
             return id == ActiveMutant;
         }
 

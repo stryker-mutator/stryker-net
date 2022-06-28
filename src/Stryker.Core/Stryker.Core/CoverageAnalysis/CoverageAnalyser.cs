@@ -116,35 +116,35 @@ namespace Stryker.Core.CoverageAnalysis
             var resultingRequirements = MutationTestingRequirements.None;
             if (!mutationToResultMap.ContainsKey(mutantId))
             {
-                return resultTingRequirements;
+                return resultingRequirements;
             }
             foreach (var coverageRunResult in mutationToResultMap[mutantId])
             {
                 testGuids.Add(coverageRunResult.TestId);
                 // did this test covered the mutation via some static context
                 var mutationTestingRequirement = coverageRunResult[mutantId];
-                if (!resultTingRequirements.HasFlag(MutationTestingRequirements.Static)
+                if (!resultingRequirements.HasFlag(MutationTestingRequirements.Static)
                     && (mutationTestingRequirement.HasFlag(MutationTestingRequirements.Static)
                         || mutationTestingRequirement.HasFlag(MutationTestingRequirements.CoveredOutsideTest)))
                 {
-                    resultTingRequirements |= MutationTestingRequirements.Static;
+                    resultingRequirements |= MutationTestingRequirements.Static;
                 }
 
                 // did this mutation requires to be tested alone
-                if (!resultTingRequirements.HasFlag(MutationTestingRequirements.NeedEarlyActivation) &&
+                if (!resultingRequirements.HasFlag(MutationTestingRequirements.NeedEarlyActivation) &&
                     mutationTestingRequirement.HasFlag(MutationTestingRequirements.NeedEarlyActivation))
                 {
-                    resultTingRequirements |= MutationTestingRequirements.NeedEarlyActivation;
+                    resultingRequirements |= MutationTestingRequirements.NeedEarlyActivation;
                 }
 
                 if (!mutationTestingRequirement.HasFlag(MutationTestingRequirements.AgainstAllTests) &&
                     coverageRunResult.Confidence == CoverageConfidence.UnexpectedCase)
                 {
-                    resultTingRequirements |= MutationTestingRequirements.AgainstAllTests;
+                    resultingRequirements |= MutationTestingRequirements.AgainstAllTests;
                 }
             }
 
-            return resultTingRequirements;
+            return resultingRequirements;
         }
     }
 }

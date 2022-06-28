@@ -33,7 +33,7 @@ using Stryker.DataCollector;
 namespace Stryker.Core.UnitTest.TestRunners;
 
 /// <summary>
-/// This class hosts helping function for VsTest runner tests
+/// This class has a set of methods that can be used to mock VsTest behavior. 
 /// 
 /// </summary>
 public class VsTestMockingHelper : TestBase
@@ -135,7 +135,7 @@ public class VsTestMockingHelper : TestBase
 
     private TestCase FindOrBuildCase(string testResultId) => TestCases.FirstOrDefault(t => t.FullyQualifiedName == testResultId) ?? BuildCase(testResultId);
 
-    private static void MoqTestRun(ITestRunEventsHandler testRunEvents, IReadOnlyList<TestResult> testResults,
+    private static void MockTestRun(ITestRunEventsHandler testRunEvents, IReadOnlyList<TestResult> testResults,
         TestCase timeOutTest = null) =>
         Task.Run(() =>
         {
@@ -203,7 +203,7 @@ public class VsTestMockingHelper : TestBase
                 ITestHostLauncher _) =>
             {
                 // generate test results
-                MoqTestRun(testRunEvents, results);
+                MockTestRun(testRunEvents, results);
             }).Returns(Task.CompletedTask);
 
     protected void SetupFailingTestRun(Mock<IVsTestConsoleWrapper> mockVsTest) =>
@@ -248,7 +248,7 @@ public class VsTestMockingHelper : TestBase
             (IEnumerable<string> _, string _, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
                 ITestHostLauncher _) =>
             {
-                MoqTestRun(testRunEvents, results);
+                MockTestRun(testRunEvents, results);
             }).Returns(Task.CompletedTask);
 
     protected void SetupMockCoverageRunForTest(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyList<TestResult> results) =>
@@ -262,7 +262,7 @@ public class VsTestMockingHelper : TestBase
             (IEnumerable<TestCase> tests, string _, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
                 ITestHostLauncher _) =>
             {
-                MoqTestRun(testRunEvents, results);
+                MockTestRun(testRunEvents, results);
             }).Returns(Task.CompletedTask);
 
     private List<TestResult> GenerateCoverageTestResults(IReadOnlyDictionary<string, string> coverageResults)
@@ -318,7 +318,7 @@ public class VsTestMockingHelper : TestBase
         return results;
     }
 
-    protected void SetupMockCoveragePerTestRunP(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> coverageResults) =>
+    protected void SetupMockCoveragePerTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> coverageResults) =>
         mockVsTest.Setup(x =>
             x.RunTestsWithCustomTestHostAsync(
                 It.Is<IEnumerable<TestCase>>(t => t.Any()),
@@ -351,7 +351,7 @@ public class VsTestMockingHelper : TestBase
                     }
                     results.Add(result);
                 }
-                MoqTestRun(testRunEvents, results);
+                MockTestRun(testRunEvents, results);
             }).Returns(Task.CompletedTask);
 
     protected static void SetupMockPartialTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> results) =>
@@ -401,7 +401,7 @@ public class VsTestMockingHelper : TestBase
                     runResults.Add(result);
                 }
                 // setup a normal test run
-                MoqTestRun(testRunEvents, runResults);
+                MockTestRun(testRunEvents, runResults);
                 collector.TestSessionEnd(new TestSessionEndArgs());
             }).Returns(Task.CompletedTask);
 
@@ -456,7 +456,7 @@ public class VsTestMockingHelper : TestBase
                     runResults.Add(result);
                 }
                 // setup a normal test run
-                MoqTestRun(testRunEvents, runResults, timeOutTestCase);
+                MockTestRun(testRunEvents, runResults, timeOutTestCase);
                 collector.TestSessionEnd(new TestSessionEndArgs());
 
             }).Returns(Task.CompletedTask);
@@ -484,7 +484,7 @@ public class VsTestMockingHelper : TestBase
             new Mock<IVsTestHelper>().Object,
             _fileSystem,
             _ => mockedVsTestConsole.Object,
-            hostBuilder: _ => new MoqHost(succeed, false),
+            hostBuilder: _ => new MockStrykerTestHostLauncher(succeed, false),
             NullLogger.Instance
         );
         context.Initialize();
@@ -511,9 +511,9 @@ public class VsTestMockingHelper : TestBase
             fileSystem: _fileSystem, options: options, mutantFilter: new Mock<IMutantFilter>(MockBehavior.Loose).Object);
     }
 
-    private class MoqHost : IStrykerTestHostLauncher
+    private class MockStrykerTestHostLauncher : IStrykerTestHostLauncher
     {
-        public MoqHost(bool succeed, bool isDebug)
+        public MockStrykerTestHostLauncher(bool succeed, bool isDebug)
         {
             IsProcessCreated = succeed;
             IsDebug = isDebug;

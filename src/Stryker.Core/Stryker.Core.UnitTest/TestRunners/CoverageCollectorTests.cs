@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
-using Microsoft.VisualStudio.TestPlatform.Utilities;
 using Moq;
 using Shouldly;
 using Stryker.DataCollector;
@@ -56,7 +55,33 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             var collector = new CoverageCollector();
 
-            var mutantMap = new List<(int, IEnumerable<Guid>)>() {(0, new List<Guid>())};
+            var testCase = new TestCase("theTest", new Uri("xunit://"), "source.cs");
+            var nonCoveringTestCase = new TestCase("theOtherTest", new Uri("xunit://"), "source.cs");
+            var mutantMap = new List<(int, IEnumerable<Guid>)> {(10, new List<Guid>{testCase.Id}), (5, new List<Guid>{nonCoveringTestCase.Id})};
+
+            var start = new TestSessionStartArgs
+            {
+                Configuration = CoverageCollector.GetVsTestSettings(false, mutantMap, this.GetType().Namespace)
+            };
+            var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
+            collector.Initialize(mock.Object);
+
+            collector.TestSessionStart(start);
+            MutantControl.ActiveMutant.ShouldBe(-1);
+
+            collector.TestCaseStart(new TestCaseStartArgs(testCase));
+
+            MutantControl.ActiveMutant.ShouldBe(10);
+        }
+
+        [Fact]
+        public void SelectMutantEarlyIfSingle()
+        {
+            var collector = new CoverageCollector();
+
+            var testCase = new TestCase("theTest", new Uri("xunit://"), "source.cs");
+            var nonCoveringTestCase = new TestCase("theOtherTest", new Uri("xunit://"), "source.cs");
+            var mutantMap = new List<(int, IEnumerable<Guid>)> {(5, new List<Guid>{testCase.Id})};
 
             var start = new TestSessionStartArgs
             {
@@ -67,9 +92,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             collector.TestSessionStart(start);
 
-            collector.TestCaseStart(new TestCaseStartArgs(new TestCase("theTest", new Uri("xunit://"), "source.cs")));
-
-            MutantControl.ActiveMutant.ShouldBe(0);
+            MutantControl.ActiveMutant.ShouldBe(5);
         }
 
         [Fact]

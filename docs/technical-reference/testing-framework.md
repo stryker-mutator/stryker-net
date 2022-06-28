@@ -56,9 +56,10 @@ if it can, those test cases are processed as usual; otherwise it will provide se
 
 It will then run all tests.
 ### Run sequence
-Overall, xUnit first discovers all  test a
+Overall, xUnit first discovers every tests at (test) startup. If a list of tests is provided, xUnit filters the discovered lists,
+disacring those which are not part of the provided list. Note that there will be no report for requested tests that have not been
+found during discovery.
 Here is a summarized timeline of tests execution:
-xUnit runner calls data theory's data source to fetch each test case value(s)
 ```
 TestSession start event
 xUnit discovers test

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Xml;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
@@ -161,6 +162,8 @@ namespace Stryker.DataCollector
             {
                 _coverageOn = true;
             }
+
+            SetActiveMutation(AnyId);
         }
 
         private int GetActiveMutantForThisTest(string testId)
@@ -170,7 +173,7 @@ namespace Stryker.DataCollector
                 return _mutantTestedBy[testId];
             }
 
-            return !_mutantTestedBy.ContainsKey(AnyId) ? -1 : _mutantTestedBy[AnyId];
+            return _mutantTestedBy.ContainsKey(AnyId) ? _mutantTestedBy[AnyId] : -1;
         }
 
         private void ParseTestMapping(XmlNodeList testMapping)
@@ -227,7 +230,6 @@ namespace Stryker.DataCollector
             {
                 return;
             }
-
             PublishCoverageData(testCaseEndArgs.DataCollectionContext);
         }
 
