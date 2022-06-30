@@ -31,7 +31,7 @@ namespace Stryker.CLI
             var configFilePath = Path.Combine(basePath, configFileOption?.Value() ?? "stryker-config.json");
             if (File.Exists(configFilePath))
             {
-                JsonConfigHandler.DeserializeConfig(configFilePath, inputs);
+                ConfigHandler.DeserializeConfig(configFilePath, inputs);
             }
             else if (configFileOption.HasValue())
             {

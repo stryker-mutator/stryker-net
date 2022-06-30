@@ -11,58 +11,58 @@ using YamlDotNet.Serialization.NamingConventions;
 
 namespace Stryker.CLI
 {
-    public static class JsonConfigHandler
+    public static class ConfigHandler
     {
         public static void DeserializeConfig(string configFilePath, IStrykerInputs inputs)
         {
-            var jsonConfig = LoadJsonConfig(configFilePath);
+            var config = LoadConfig(configFilePath);
 
             // As json values are first in line we can just overwrite all supplied inputs
-            inputs.ConcurrencyInput.SuppliedInput = jsonConfig.Concurrency;
+            inputs.ConcurrencyInput.SuppliedInput = config.Concurrency;
 
             inputs.SinceInput.SuppliedInput =
-                jsonConfig.Since is not null &&
-                (jsonConfig.Since.Enabled.HasValue && jsonConfig.Since.Enabled.Value);
+                config.Since is not null &&
+                (config.Since.Enabled.HasValue && config.Since.Enabled.Value);
 
             inputs.WithBaselineInput.SuppliedInput =
-                jsonConfig.Baseline is not null &&
-                (jsonConfig.Baseline.Enabled.HasValue && jsonConfig.Baseline.Enabled.Value);
+                config.Baseline is not null &&
+                (config.Baseline.Enabled.HasValue && config.Baseline.Enabled.Value);
 
-            inputs.BaselineProviderInput.SuppliedInput = jsonConfig.Baseline?.Provider;
-            inputs.DiffIgnoreChangesInput.SuppliedInput = jsonConfig.Since?.IgnoreChangesIn;
-            inputs.FallbackVersionInput.SuppliedInput = jsonConfig.Baseline?.FallbackVersion;
-            inputs.AzureFileStorageUrlInput.SuppliedInput = jsonConfig.Baseline?.AzureFileShareUrl;
-            inputs.CoverageAnalysisInput.SuppliedInput = jsonConfig.CoverageAnalysis;
-            inputs.DisableBailInput.SuppliedInput = jsonConfig.DisableBail;
-            inputs.DisableMixMutantsInput.SuppliedInput = jsonConfig.DisableMixMutants;
-            inputs.AdditionalTimeoutInput.SuppliedInput = jsonConfig.AdditionalTimeout;
-            inputs.MutateInput.SuppliedInput = jsonConfig.Mutate;
-            inputs.MutationLevelInput.SuppliedInput = jsonConfig.MutationLevel;
-            inputs.ProjectNameInput.SuppliedInput = jsonConfig.ProjectInfo?.Name;
-            inputs.ModuleNameInput.SuppliedInput = jsonConfig.ProjectInfo?.Module;
-            inputs.ProjectVersionInput.SuppliedInput = jsonConfig.ProjectInfo?.Version;
-            inputs.ReportersInput.SuppliedInput = jsonConfig.Reporters;
+            inputs.BaselineProviderInput.SuppliedInput = config.Baseline?.Provider;
+            inputs.DiffIgnoreChangesInput.SuppliedInput = config.Since?.IgnoreChangesIn;
+            inputs.FallbackVersionInput.SuppliedInput = config.Baseline?.FallbackVersion;
+            inputs.AzureFileStorageUrlInput.SuppliedInput = config.Baseline?.AzureFileShareUrl;
+            inputs.CoverageAnalysisInput.SuppliedInput = config.CoverageAnalysis;
+            inputs.DisableBailInput.SuppliedInput = config.DisableBail;
+            inputs.DisableMixMutantsInput.SuppliedInput = config.DisableMixMutants;
+            inputs.AdditionalTimeoutInput.SuppliedInput = config.AdditionalTimeout;
+            inputs.MutateInput.SuppliedInput = config.Mutate;
+            inputs.MutationLevelInput.SuppliedInput = config.MutationLevel;
+            inputs.ProjectNameInput.SuppliedInput = config.ProjectInfo?.Name;
+            inputs.ModuleNameInput.SuppliedInput = config.ProjectInfo?.Module;
+            inputs.ProjectVersionInput.SuppliedInput = config.ProjectInfo?.Version;
+            inputs.ReportersInput.SuppliedInput = config.Reporters;
 
-            inputs.SinceTargetInput.SuppliedInput = jsonConfig.Since?.Target;
-            inputs.SolutionInput.SuppliedInput = jsonConfig.Solution;
-            inputs.TargetFrameworkInput.SuppliedInput = jsonConfig.TargetFramework;
+            inputs.SinceTargetInput.SuppliedInput = config.Since?.Target;
+            inputs.SolutionInput.SuppliedInput = config.Solution;
+            inputs.TargetFrameworkInput.SuppliedInput = config.TargetFramework;
 
-            inputs.ProjectUnderTestNameInput.SuppliedInput = jsonConfig.Project;
-            inputs.ThresholdBreakInput.SuppliedInput = jsonConfig.Thresholds?.Break;
-            inputs.ThresholdHighInput.SuppliedInput = jsonConfig.Thresholds?.High;
-            inputs.ThresholdLowInput.SuppliedInput = jsonConfig.Thresholds?.Low;
-            inputs.VerbosityInput.SuppliedInput = jsonConfig.Verbosity;
-            inputs.LanguageVersionInput.SuppliedInput = jsonConfig.LanguageVersion;
-            inputs.TestProjectsInput.SuppliedInput = jsonConfig.TestProjects;
-            inputs.TestCaseFilterInput.SuppliedInput = jsonConfig.TestCaseFilter;
-            inputs.DashboardUrlInput.SuppliedInput = jsonConfig.DashboardUrl;
-            inputs.IgnoreMutationsInput.SuppliedInput = jsonConfig.IgnoreMutations;
-            inputs.IgnoredMethodsInput.SuppliedInput = jsonConfig.IgnoreMethods;
+            inputs.ProjectUnderTestNameInput.SuppliedInput = config.Project;
+            inputs.ThresholdBreakInput.SuppliedInput = config.Thresholds?.Break;
+            inputs.ThresholdHighInput.SuppliedInput = config.Thresholds?.High;
+            inputs.ThresholdLowInput.SuppliedInput = config.Thresholds?.Low;
+            inputs.VerbosityInput.SuppliedInput = config.Verbosity;
+            inputs.LanguageVersionInput.SuppliedInput = config.LanguageVersion;
+            inputs.TestProjectsInput.SuppliedInput = config.TestProjects;
+            inputs.TestCaseFilterInput.SuppliedInput = config.TestCaseFilter;
+            inputs.DashboardUrlInput.SuppliedInput = config.DashboardUrl;
+            inputs.IgnoreMutationsInput.SuppliedInput = config.IgnoreMutations;
+            inputs.IgnoredMethodsInput.SuppliedInput = config.IgnoreMethods;
 
-            inputs.ReportFileNameInput.SuppliedInput = jsonConfig.ReportFileName;
+            inputs.ReportFileNameInput.SuppliedInput = config.ReportFileName;
         }
 
-        private static FileBasedInput LoadJsonConfig(string configFilePath)
+        private static FileBasedInput LoadConfig(string configFilePath)
         {
             using var streamReader = new StreamReader(configFilePath);
             var json = streamReader.ReadToEnd();
