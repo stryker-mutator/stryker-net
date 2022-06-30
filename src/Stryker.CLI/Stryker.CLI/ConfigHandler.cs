@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using YamlDotNet.Serialization.NamingConventions;
@@ -64,17 +65,23 @@ namespace Stryker.CLI
 
         private static FileBasedInput LoadConfig(string configFilePath)
         {
-            using var streamReader = new StreamReader(configFilePath);
-            var json = streamReader.ReadToEnd();
+            var lines = File.ReadAllLines(configFilePath);
+            // filter json comments
+            // this does only allow full-line comments thou, not something like
+            //   "verbosity": "trace", // this is a trailing comment 
+            var json = string.Join(Environment.NewLine, lines.Where(l => !l.Trim().StartsWith("//")));         
+            
             FileBasedInput input;
             try
             {
                 FileBasedInputOuter root;
 
                 // yaml deserializer can also read json
-                var yamldeserializer = new YamlDotNet.Serialization.DeserializerBuilder()
+                var yamldeserializer =
+                    new YamlDotNet.Serialization.DeserializerBuilder()                    
                     .IgnoreUnmatchedProperties()
                     .WithNamingConvention(HyphenatedNamingConvention.Instance)
+                    
                     .Build();
 
                 root = yamldeserializer.Deserialize<FileBasedInputOuter>(json);
