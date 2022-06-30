@@ -70,20 +70,15 @@ namespace Stryker.CLI
             try
             {
                 FileBasedInputOuter root;
-                if (configFilePath.EndsWith("yaml") || configFilePath.EndsWith("yml"))
-                {
-                    var yamldeserializer = new YamlDotNet.Serialization.DeserializerBuilder()
-                        .IgnoreUnmatchedProperties()
-                        .WithNamingConvention(HyphenatedNamingConvention.Instance)
-                        .Build();
-                    
-                    root = yamldeserializer.Deserialize<FileBasedInputOuter>(json);
-                }
-                else
-                {
-                    var serializerOptions = new JsonSerializerOptions { ReadCommentHandling = JsonCommentHandling.Skip };
-                    root = JsonSerializer.Deserialize<FileBasedInputOuter>(json, serializerOptions);
-                }
+
+                // yaml deserializer can also read json
+                var yamldeserializer = new YamlDotNet.Serialization.DeserializerBuilder()
+                    .IgnoreUnmatchedProperties()
+                    .WithNamingConvention(HyphenatedNamingConvention.Instance)
+                    .Build();
+
+                root = yamldeserializer.Deserialize<FileBasedInputOuter>(json);
+
                 if (root == null)
                 {
                     throw new InputException($"The config file at \"{configFilePath}\" could not be parsed.");
