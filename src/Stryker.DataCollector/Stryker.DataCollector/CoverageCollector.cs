@@ -29,7 +29,6 @@ namespace Stryker.DataCollector
 
         private MethodInfo _getCoverageData;
         private IList<int> _mutationCoveredOutsideTests;
-        private EventWaitHandle _waitHandle;
 
         private const string TemplateForConfiguration =
             @"<InProcDataCollectionRunSettings><InProcDataCollectors><InProcDataCollector {0}>
@@ -81,7 +80,6 @@ namespace Stryker.DataCollector
             //Debugger.Launch();
             var configuration = testSessionStartArgs.Configuration;
             ReadConfiguration(configuration);
-            _waitHandle = new EventWaitHandle(false, EventResetMode.ManualReset);
 
             // if assembly was not loaded yet, wait for assembly to load
             AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoaded;
@@ -94,7 +92,6 @@ namespace Stryker.DataCollector
             {
                 SetActiveMutation(_singleMutant.Value);
             }
-            //_waitHandle.WaitOne();
             Log($"Test Session start with conf {configuration}.");
         }
 
@@ -125,7 +122,6 @@ namespace Stryker.DataCollector
                 coverageControlField.SetValue(null, true);
             }
             _activeMutantField.SetValue(null, _activeMutation);
-            _waitHandle.Set();
         }
 
         private void SetActiveMutation(int id)
@@ -185,31 +181,36 @@ namespace Stryker.DataCollector
 
         public void TestCaseStart(TestCaseStartArgs testCaseStartArgs)
         {
-            if (_coverageOn)
-            {
-                // see if any mutation was executed outside a test
-                var covered = RetrieveCoverData();
-                if (covered[0] != null)
-                {
-                    _mutationCoveredOutsideTests = covered[1] != null ? covered[0].Union(covered[1]).ToList() : covered[0].ToList();
-                }
-                else if (covered[1] != null)
-                {
-                    _mutationCoveredOutsideTests = covered[1].ToList();
-                }
-                return;
-            }
+            //if (_coverageOn)
+            //{
+            //    // see if any mutation was executed outside a test
+            //    var covered = RetrieveCoverData();
+            //    if (covered[0] != null)
+            //    {
+            //        _mutationCoveredOutsideTests = covered[1] != null ? covered[0].Union(covered[1]).ToList() : covered[0].ToList();
+            //    }
+            //    else if (covered[1] != null)
+            //    {
+            //        _mutationCoveredOutsideTests = covered[1].ToList();
+            //    }
+            //    return;
+            //}
 
-            // we need to set the proper mutant
-            var mutantId = _singleMutant ?? _mutantTestedBy[testCaseStartArgs.TestCase.Id.ToString()];
+            //// we need to set the proper mutant
+            //var mutantId = _singleMutant ?? _mutantTestedBy[testCaseStartArgs.TestCase.Id.ToString()];
 
-            SetActiveMutation(mutantId);
+            //SetActiveMutation(mutantId);
 
-            Log($"Test {testCaseStartArgs.TestCase.FullyQualifiedName} starts against mutant {mutantId} (var).");
+            //Log($"Test {testCaseStartArgs.TestCase.FullyQualifiedName} starts against mutant {mutantId} (var).");
         }
 
         public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
         {
+            var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => !a.IsDynamic && a.ExportedTypes.Any(t => t.FullName == _controlClassName));
+            // The assembly should be found here. But it isn't. We use this assembly to call a method inside the tested assembly to create a map of covered mutation inside the assembly.
+            // In a normal scenario we are able to find the assembly before the first test is run.
+            Debugger.Launch();
+
             Log($"Test {testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName} ends.");
             if (!_coverageOn)
             {
