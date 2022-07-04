@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
@@ -221,16 +222,20 @@ namespace Stryker.Core.MutationTest
             blocks.AddRange(mutantsToGroup.Where(m => m.MustRunAgainstAllTests).Select(m => new List<Mutant> { m }));
             mutantsToGroup.RemoveAll(m => m.MustRunAgainstAllTests);
 
+            mutantsToGroup = mutantsToGroup.Where(m => m.ResultStatus == MutantStatus.NotRun).ToList();
+
             var testsCount = Input.InitialTestRun.Result.RanTests.Count;
-            mutantsToGroup = mutantsToGroup.OrderBy(m => m.CoveringTests.Count).ToList();
-            for (var i = 0; i < mutantsToGroup.Count; i++)
+            mutantsToGroup = mutantsToGroup.OrderBy(m => m.AssessingTests.Count).ToList();
+            while (mutantsToGroup.Count>0)
             {
-                var usedTests = mutantsToGroup[i].CoveringTests;
-                var nextBlock = new List<Mutant> { mutantsToGroup[i] };
-                for (var j = i + 1; j < mutantsToGroup.Count; j++)
+                // we pick the first mutant
+                var usedTests = mutantsToGroup[0].AssessingTests;
+                var nextBlock = new List<Mutant> { mutantsToGroup[0] };
+                mutantsToGroup.RemoveAt(0);
+                for (var j = 0; j < mutantsToGroup.Count; j++)
                 {
                     var currentMutant = mutantsToGroup[j];
-                    var nextSet = currentMutant.CoveringTests;
+                    var nextSet = currentMutant.AssessingTests;
                     if (nextSet.Count + usedTests.Count > testsCount)
                     {
                         break;
@@ -250,7 +255,7 @@ namespace Stryker.Core.MutationTest
 
                 blocks.Add(nextBlock);
             }
-
+            
             _logger.LogDebug(
                 $"Mutations will be tested in {blocks.Count} test runs" +
                 (mutantsNotRun.Count > blocks.Count ? $", instead of {mutantsNotRun.Count}." : "."));
@@ -258,6 +263,6 @@ namespace Stryker.Core.MutationTest
             return blocks;
         }
 
-        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(_mutationTestExecutor.TestRunner, _projectContents.Mutants);
+        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(_mutationTestExecutor.TestRunner, _projectContents.Mutants, Input.InitialTestRun.Result.FailingTests);
     }
 }

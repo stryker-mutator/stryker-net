@@ -69,12 +69,6 @@ namespace Stryker.Core
                     project.FilterMutants();
                 }
 
-                // mark non covered mutants
-                foreach (var mutant in rootComponent.Mutants.Where(m => m.CoveringTests.IsEmpty && m.ResultStatus == MutantStatus.NotRun))
-                {
-                    mutant.ResultStatus = MutantStatus.NoCoverage;
-                }
-
                 // Report
                 reporters.OnMutantsCreated(rootComponent);
 
@@ -131,7 +125,7 @@ namespace Stryker.Core
             {
                 // log duration
                 stopwatch.Stop();
-                _logger.LogInformation("Time Elapsed {0}", stopwatch.Elapsed);
+                _logger.LogInformation("Time Elapsed {duration}", stopwatch.Elapsed);
             }
         }
 

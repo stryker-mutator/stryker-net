@@ -79,12 +79,12 @@ namespace Stryker.Core.TestRunners.VsTest
                     }
                     else
                     {
-                        tests = mutant.CoveringTests;
+                        tests = mutant.AssessingTests;
                     }
                     mutantTestsMap.Add(mutant.Id, tests);
                 }
 
-                testCases = needAll ? null : mutants.SelectMany(m => m.CoveringTests.GetGuids()).ToList();
+                testCases = needAll ? null : mutants.SelectMany(m => m.AssessingTests.GetGuids()).ToList();
 
                 _logger.LogTrace($"{RunnerId}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}] " +
                                  $"against {(testCases == null ? "all tests." : string.Join(", ", testCases))}.");

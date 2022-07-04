@@ -35,6 +35,8 @@ namespace Stryker.Core.Mutants
 
         public bool IsIncludedIn(ITestGuids other) => other.IsEveryTest || _testsGuid.IsSubsetOf(other.GetGuids());
 
+        public ITestGuids Excluding(ISet<Guid> testsToSkip) => (IsEveryTest || IsEmpty) ? this : new TestsGuidList(_testsGuid.Except(testsToSkip));
+
         public static TestsGuidList EveryTest() => everyTests;
 
         public static TestsGuidList NoTest() => noTestAtAll;

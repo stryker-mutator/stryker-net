@@ -20,7 +20,8 @@ namespace Stryker.Core.CoverageAnalysis
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<CoverageAnalyser>();
         }
 
-        public void DetermineTestCoverage(ITestRunner runner, IEnumerable<Mutant> mutants)
+        public void DetermineTestCoverage(ITestRunner runner, IEnumerable<Mutant> mutants,
+            ITestGuids resultFailingTests)
         {
             if (!_options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
                 !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
@@ -28,23 +29,25 @@ namespace Stryker.Core.CoverageAnalysis
                 foreach (var mutant in mutants)
                 {
                     mutant.CoveringTests = TestsGuidList.EveryTest();
+                    mutant.AssessingTests = TestsGuidList.EveryTest();
                 }
                 return;
             }
 
-            ParseCoverage(runner.CaptureCoverage(), mutants);
+            ParseCoverage(runner.CaptureCoverage(), mutants, resultFailingTests);
         }
 
-        private void ParseCoverage(IEnumerable<CoverageRunResult> coverage, IEnumerable<Mutant> mutantsToScan)
+        private void ParseCoverage(IEnumerable<CoverageRunResult> coverage, IEnumerable<Mutant> mutantsToScan,
+            ITestGuids resultFailingTests)
         {
             var dubiousTests = new HashSet<Guid>();
             var trustedTests = new HashSet<Guid>();
+            var failedTests = resultFailingTests.GetGuids().ToHashSet();
             var testIds = new HashSet<Guid>();
 
             var mutationToResultMap = new Dictionary<int, List<CoverageRunResult>>();
             foreach (var coverageRunResult in coverage)
             {
-                testIds.Add(coverageRunResult.TestId);
                 foreach (var i in coverageRunResult.MutationsCovered)
                 {
                     if (!mutationToResultMap.ContainsKey(i))
@@ -54,6 +57,13 @@ namespace Stryker.Core.CoverageAnalysis
                     mutationToResultMap[i].Add(coverageRunResult);
                 }
 
+                if (resultFailingTests.Contains(coverageRunResult.TestId))
+                {
+                    // exclude failing tests from the list of all tests
+                    continue;
+                }
+                testIds.Add(coverageRunResult.TestId);
+                testIds.Add(coverageRunResult.TestId);
                 switch (coverageRunResult.Confidence)
                 {
                     case CoverageConfidence.Dubious:
@@ -68,21 +78,26 @@ namespace Stryker.Core.CoverageAnalysis
             var allTestsExceptTrusted = testIds.Except(trustedTests).ToHashSet();
             foreach (var mutant in mutantsToScan)
             {
-                CoverageForThisMutant(mutant, mutationToResultMap, allTestsExceptTrusted, dubiousTests);
+                CoverageForThisMutant(mutant, mutationToResultMap, allTestsExceptTrusted, dubiousTests, failedTests);
             }
         }
 
-        private void CoverageForThisMutant(Mutant mutant, IReadOnlyDictionary<int, List<CoverageRunResult>> mutationToResultMap,
-            IEnumerable<Guid> allTestsGuidsExceptTrusted, IEnumerable<Guid> dubiousTests)
+        private void CoverageForThisMutant(Mutant mutant,
+            IReadOnlyDictionary<int, List<CoverageRunResult>> mutationToResultMap,
+            ISet<Guid> allTestsGuidsExceptTrusted,
+            ISet<Guid> dubiousTests,
+            ISet<Guid> failedTest)
         {
             var testGuids = new List<Guid>();
             var mutantId = mutant.Id;
-            var resultTingRequirements = PareResultForThisMutant(mutationToResultMap, mutantId, testGuids);
+            var resultTingRequirements = ParseResultForThisMutant(mutationToResultMap, mutantId, testGuids);
 
+            var assessingTests = testGuids.Except(failedTest);
             mutant.MustBeTestedInIsolation = resultTingRequirements.HasFlag(MutationTestingRequirements.NeedEarlyActivation);
             if (resultTingRequirements.HasFlag(MutationTestingRequirements.AgainstAllTests))
             {
                 mutant.CoveringTests = TestsGuidList.EveryTest();
+                mutant.AssessingTests = TestsGuidList.EveryTest();
                 _logger.LogDebug(
                     $"Mutant {mutant.Id} will be tested against all tests.");
             }
@@ -90,27 +105,39 @@ namespace Stryker.Core.CoverageAnalysis
             {
                 // static mutations will be tested against every tests, except the one that are trusted not to cover it
                 mutant.CoveringTests = new TestsGuidList(allTestsGuidsExceptTrusted.Union(testGuids).Distinct());
+                mutant.AssessingTests = new TestsGuidList(allTestsGuidsExceptTrusted.Union(assessingTests).Distinct());
+                
                 mutant.IsStaticValue = true;
                 _logger.LogDebug(
-                    $"Mutant {mutant.Id} will be tested against most tests ({mutant.CoveringTests.Count}).");
+                    $"Mutant {mutant.Id} will be tested against most tests ({mutant.AssessingTests.Count}).");
             }
             else
             {
                 mutant.CoveringTests = new TestsGuidList(testGuids.Union(dubiousTests));
+                mutant.AssessingTests = new TestsGuidList(assessingTests.Union(dubiousTests));
                 if (mutant.CoveringTests.IsEmpty)
                 {
+                    mutant.ResultStatus = MutantStatus.NoCoverage;
+                    mutant.ResultStatusReason = "Not covered by any test.";
                     _logger.LogInformation(
                         $"Mutant {mutant.Id} is not covered by any test.");
+                }
+                else if (mutant.AssessingTests.IsEmpty)
+                {
+                    mutant.ResultStatus = MutantStatus.Survived;
+                    mutant.ResultStatusReason = "Only covered by already failing tests.";
+                    _logger.LogInformation(
+                        $"Mutant {mutant.Id} is only covered by failing tests.");
                 }
                 else
                 {
                     _logger.LogDebug(
-                        $"Mutant {mutant.Id} will be tested against ({mutant.CoveringTests.Count}) tests.");
+                        $"Mutant {mutant.Id} will be tested against ({mutant.AssessingTests.Count}) tests.");
                 }
             }
         }
 
-        private static MutationTestingRequirements PareResultForThisMutant(IReadOnlyDictionary<int, List<CoverageRunResult>> mutationToResultMap, int mutantId,
+        private static MutationTestingRequirements ParseResultForThisMutant(IReadOnlyDictionary<int, List<CoverageRunResult>> mutationToResultMap, int mutantId,
             ICollection<Guid> testGuids)
         {
             var resultingRequirements = MutationTestingRequirements.None;
@@ -121,7 +148,7 @@ namespace Stryker.Core.CoverageAnalysis
             foreach (var coverageRunResult in mutationToResultMap[mutantId])
             {
                 testGuids.Add(coverageRunResult.TestId);
-                // did this test covered the mutation via some static context
+                // did this test covered the mutation via some static context?
                 var mutationTestingRequirement = coverageRunResult[mutantId];
                 if (!resultingRequirements.HasFlag(MutationTestingRequirements.Static)
                     && (mutationTestingRequirement.HasFlag(MutationTestingRequirements.Static)
@@ -130,13 +157,14 @@ namespace Stryker.Core.CoverageAnalysis
                     resultingRequirements |= MutationTestingRequirements.Static;
                 }
 
-                // did this mutation requires to be tested alone
+                // does this mutation require to be tested alone?
                 if (!resultingRequirements.HasFlag(MutationTestingRequirements.NeedEarlyActivation) &&
                     mutationTestingRequirement.HasFlag(MutationTestingRequirements.NeedEarlyActivation))
                 {
                     resultingRequirements |= MutationTestingRequirements.NeedEarlyActivation;
                 }
 
+                // does this mutation require to be tested against all tests?
                 if (!mutationTestingRequirement.HasFlag(MutationTestingRequirements.AgainstAllTests) &&
                     coverageRunResult.Confidence == CoverageConfidence.UnexpectedCase)
                 {

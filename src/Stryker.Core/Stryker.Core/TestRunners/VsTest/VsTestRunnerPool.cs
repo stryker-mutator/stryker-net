@@ -136,8 +136,8 @@ namespace Stryker.Core.TestRunners.VsTest
             var seenTestCases = new HashSet<Guid>();
             var defaultConfidence = perIsolatedTest ? CoverageConfidence.Exact : CoverageConfidence.Normal;
             var resultCache = new Dictionary<Guid, CoverageRunResult>();
-            // initialize the map, only with passing tests
-            foreach (var testResult in testResults.Where( tr => tr.Outcome == TestOutcome.Passed))
+            // initialize the map
+            foreach (var testResult in testResults)
             {
                 if (ConvertSingleResult(testResult, seenTestCases, defaultConfidence,
                         out var coverageRunResult))

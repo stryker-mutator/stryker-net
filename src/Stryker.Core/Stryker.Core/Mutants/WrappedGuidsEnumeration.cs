@@ -26,6 +26,8 @@ namespace Stryker.Core.Mutants
 
         public WrappedGuidsEnumeration(IEnumerable<Guid> guids) => _guids = guids;
 
+        public ITestGuids Excluding(ISet<Guid> testsToSkip) => (IsEveryTest || IsEmpty) ? this : new TestsGuidList(_guids.Except(testsToSkip));
+
         public static ITestGuids MergeList(ITestGuids a, ITestGuids b)
         {
             if (a.GetGuids() == null)
