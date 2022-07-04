@@ -514,8 +514,8 @@
       },
       "Microsoft.Web.LibraryManager.Build": {
         "type": "Transitive",
-        "resolved": "2.1.174",
-        "contentHash": "RD9CwJNAtZgG18rBMuDu3UVP++dXJQwEY8Hq2lZK0nenpPpS0aFJ+X1dE5u1msk5LsL0kxFlvDfm0NrcJnbybg==",
+        "resolved": "2.1.175",
+        "contentHash": "OhJ8cfzvX/rxCuEezniBQCaCqKuQtU2tNr3m3Qryu+V30lZcUrjtsg39DGZWLw6EzbJA+TUdZPfuLeEDuz3cXA==",
         "dependencies": {
           "System.Runtime.Loader": "4.3.0"
         }
@@ -1696,7 +1696,7 @@
           "Microsoft.TestPlatform.ObjectModel": "17.2.0",
           "Microsoft.TestPlatform.Portable": "17.2.0",
           "Microsoft.TestPlatform.TranslationLayer": "17.2.0",
-          "Microsoft.Web.LibraryManager.Build": "2.1.174",
+          "Microsoft.Web.LibraryManager.Build": "2.1.175",
           "Mono.Cecil": "0.11.4",
           "NuGet.Frameworks": "6.2.1",
           "Serilog": "2.11.0",
