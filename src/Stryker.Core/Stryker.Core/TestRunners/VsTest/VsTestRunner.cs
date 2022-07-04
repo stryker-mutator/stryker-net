@@ -70,17 +70,8 @@ namespace Stryker.Core.TestRunners.VsTest
                 needAll = false;
                 foreach (var mutant in mutants)
                 {
-                    ITestGuids tests;
-                    if ((mutant.IsStaticValue && !_context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
-                        || mutant.MustRunAgainstAllTests)
-                    {
-                        tests = TestsGuidList.EveryTest();
-                        needAll = true;
-                    }
-                    else
-                    {
-                        tests = mutant.AssessingTests;
-                    }
+                    var tests = mutant.AssessingTests;
+                    needAll =  needAll || tests.IsEveryTest;
                     mutantTestsMap.Add(mutant.Id, tests);
                 }
 

@@ -219,8 +219,8 @@ namespace Stryker.Core.MutationTest
             var blocks = new List<List<Mutant>>(mutantsNotRun.Count);
             var mutantsToGroup = mutantsNotRun.ToList();
             // we deal with mutants needing full testing first
-            blocks.AddRange(mutantsToGroup.Where(m => m.MustRunAgainstAllTests).Select(m => new List<Mutant> { m }));
-            mutantsToGroup.RemoveAll(m => m.MustRunAgainstAllTests);
+            blocks.AddRange(mutantsToGroup.Where(m => m.AssessingTests.IsEveryTest).Select(m => new List<Mutant> { m }));
+            mutantsToGroup.RemoveAll(m => m.AssessingTests.IsEveryTest);
 
             mutantsToGroup = mutantsToGroup.Where(m => m.ResultStatus == MutantStatus.NotRun).ToList();
 

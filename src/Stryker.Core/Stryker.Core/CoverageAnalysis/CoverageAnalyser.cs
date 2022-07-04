@@ -75,7 +75,7 @@ namespace Stryker.Core.CoverageAnalysis
                 }
             }
 
-            var allTestsExceptTrusted = testIds.Except(trustedTests).ToHashSet();
+            var allTestsExceptTrusted = trustedTests.Count == 0 ? new HashSet<Guid>() :  testIds.Except(trustedTests).ToHashSet();
             foreach (var mutant in mutantsToScan)
             {
                 CoverageForThisMutant(mutant, mutationToResultMap, allTestsExceptTrusted, dubiousTests, failedTests);
@@ -104,8 +104,17 @@ namespace Stryker.Core.CoverageAnalysis
             else if (resultTingRequirements.HasFlag(MutationTestingRequirements.Static))
             {
                 // static mutations will be tested against every tests, except the one that are trusted not to cover it
-                mutant.CoveringTests = new TestsGuidList(allTestsGuidsExceptTrusted.Union(testGuids).Distinct());
-                mutant.AssessingTests = new TestsGuidList(allTestsGuidsExceptTrusted.Union(assessingTests).Distinct());
+                if (allTestsGuidsExceptTrusted.Count == 0)
+                {
+                    mutant.CoveringTests = TestsGuidList.EveryTest();
+                    mutant.AssessingTests = TestsGuidList.EveryTest();
+                }
+                else
+                {
+                    mutant.CoveringTests = new TestsGuidList(allTestsGuidsExceptTrusted.Union(testGuids).Distinct());
+                    mutant.AssessingTests =
+                        new TestsGuidList(allTestsGuidsExceptTrusted.Union(assessingTests).Distinct());
+                }
                 
                 mutant.IsStaticValue = true;
                 _logger.LogDebug(

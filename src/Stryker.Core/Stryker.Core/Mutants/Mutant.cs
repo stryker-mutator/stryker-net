@@ -14,7 +14,6 @@ namespace Stryker.Core.Mutants
         ITestGuids AssessingTests { get; }
         int? Line { get; }
         bool CountForStats { get; }
-        bool MustRunAgainstAllTests { get; }
         bool IsStaticValue { get; }
     }
 
@@ -37,8 +36,6 @@ namespace Stryker.Core.Mutants
 
         public bool CountForStats => ResultStatus != MutantStatus.CompileError && ResultStatus != MutantStatus.Ignored;
 
-        public bool MustRunAgainstAllTests => AssessingTests.IsEveryTest;
-        
         public bool IsStaticValue { get; set; }
 
         public bool MustBeTestedInIsolation { get; set; }
@@ -53,7 +50,7 @@ namespace Stryker.Core.Mutants
             {
                 ResultStatus = MutantStatus.Killed;
             }
-            else if (resultRanTests.IsEveryTest || (MustRunAgainstAllTests is not true && AssessingTests.IsIncludedIn(resultRanTests)))
+            else if (resultRanTests.IsEveryTest || (resultRanTests.IsEveryTest is not true && AssessingTests.IsIncludedIn(resultRanTests)))
             {
                 ResultStatus = MutantStatus.Survived;
             }

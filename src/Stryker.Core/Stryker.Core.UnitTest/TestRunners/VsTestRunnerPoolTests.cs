@@ -468,11 +468,11 @@ namespace Stryker.Core.UnitTest.TestRunners
             var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
 
             SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;|1", ["T1"] = ";" });
-
+            
             var analyzer = new CoverageAnalyser(options);
             analyzer.DetermineTestCoverage(runner, new[] { Mutant, OtherMutant }, TestsGuidList.NoTest());
             // the suspicious mutant should be tested against all tests
-            OtherMutant.CoveringTests.Count.ShouldBe(2);
+            OtherMutant.CoveringTests.IsEveryTest.ShouldBe(true);
         }
 
         // this verifies that tests missing any coverage information are
