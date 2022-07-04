@@ -136,9 +136,9 @@
       },
       "Microsoft.Web.LibraryManager.Build": {
         "type": "Direct",
-        "requested": "[2.1.174, )",
-        "resolved": "2.1.174",
-        "contentHash": "RD9CwJNAtZgG18rBMuDu3UVP++dXJQwEY8Hq2lZK0nenpPpS0aFJ+X1dE5u1msk5LsL0kxFlvDfm0NrcJnbybg==",
+        "requested": "[2.1.175, )",
+        "resolved": "2.1.175",
+        "contentHash": "OhJ8cfzvX/rxCuEezniBQCaCqKuQtU2tNr3m3Qryu+V30lZcUrjtsg39DGZWLw6EzbJA+TUdZPfuLeEDuz3cXA==",
         "dependencies": {
           "System.Runtime.Loader": "4.3.0"
         }
@@ -219,9 +219,9 @@
       },
       "System.IO.Abstractions": {
         "type": "Direct",
-        "requested": "[17.0.18, )",
-        "resolved": "17.0.18",
-        "contentHash": "x0iIMdP+PCLIkz8h13xHCecaiysFgHPe9mM3FdyfSmkl5+MtMCmgFFIe38Aibkzd0UAY/OMoXMKGR2RK10rebQ=="
+        "requested": "[17.0.21, )",
+        "resolved": "17.0.21",
+        "contentHash": "JlVXaGKTUTIuiLsWJmU4+RmQQqOnWI07W6VO1RrwM0JhT/2l0/9YxsXMrlrCH26XJXZk909IXhYdsKT3q2Oi0Q=="
       },
       "System.Net.Http.Json": {
         "type": "Direct",
