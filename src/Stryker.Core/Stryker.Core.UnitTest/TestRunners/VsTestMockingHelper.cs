@@ -338,21 +338,28 @@ public class VsTestMockingHelper : TestBase
                     {
                         continue;
                     }
-                    var result = new TestResult(FindOrBuildCase(key))
-                    {
-                        DisplayName = key,
-                        Outcome = TestOutcome.Passed,
-                        ComputerName = "."
-                    };
-                    result.SetPropertyValue(_coverageProperty, coveredList[0]);
-                    if (coveredList.Length > 1)
-                    {
-                        result.SetPropertyValue(_unexpectedCoverageProperty, coveredList[1]);
-                    }
+                    var result = BuildCoverageTestResult(key, coveredList);
                     results.Add(result);
                 }
                 MockTestRun(testRunEvents, results);
             }).Returns(Task.CompletedTask);
+
+    protected TestResult BuildCoverageTestResult(string key, string[] coveredList)
+    {
+        var result = new TestResult(FindOrBuildCase(key))
+        {
+            DisplayName = key,
+            Outcome = TestOutcome.Passed,
+            ComputerName = "."
+        };
+        result.SetPropertyValue(_coverageProperty, coveredList[0]);
+        if (coveredList.Length > 1)
+        {
+            result.SetPropertyValue(_unexpectedCoverageProperty, coveredList[1]);
+        }
+
+        return result;
+    }
 
     protected static void SetupMockPartialTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> results) =>
         mockVsTest.Setup(x =>

@@ -139,6 +139,11 @@ namespace Stryker.Core.TestRunners.VsTest
             // initialize the map
             foreach (var testResult in testResults)
             {
+                if (testResult.Outcome != TestOutcome.Passed && testResult.Outcome != TestOutcome.Failed)
+                {
+                    // skip any test result that is not a pass or fail
+                    continue;
+                }
                 if (ConvertSingleResult(testResult, seenTestCases, defaultConfidence,
                         out var coverageRunResult))
                 {
@@ -176,9 +181,9 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             var testDescription = Context.VsTests[testCaseId];
+            // is this a suspect test ?
             if (key == null)
             {
-                // this is a suspect test
                 if (seenTestCases.Contains(testCaseId))
                 {
                     // this is an extra result. Coverage data is already present in the already parsed result

@@ -174,7 +174,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
         [Fact]
         public void IdentifyNonCoveredMutants()
-        {
+            {
             var options = new StrykerOptions
             {
                 OptimizationMode = OptimizationModes.SkipUncoveredMutants
@@ -451,7 +451,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
             // assume 2 results for T0
             SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T1", true), ("T2", true) });
-            var result = runner.InitialTest();
+            runner.InitialTest();
             runner.Context.Tests.Count.ShouldBe(3);
         }
 
@@ -493,6 +493,50 @@ namespace Stryker.Core.UnitTest.TestRunners
             analyzer.DetermineTestCoverage(runner, new[] { Mutant, OtherMutant }, TestsGuidList.NoTest());
             // the suspicious mutant should be tested against all tests
             OtherMutant.CoveringTests.Count.ShouldBe(2);
+            Mutant.CoveringTests.Count.ShouldBe(1);
+        }
+
+        // this verifies that unexpected test case (i.e. unseen during test discovery and without coverage info)
+        // are assumed to cover every mutant
+        [Fact]
+        public void DetectUnexpectedCase()
+        {
+            var options = new StrykerOptions
+            {
+                OptimizationMode = OptimizationModes.CoverageBasedTest
+            };
+
+            var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
+
+            var buildCase = BuildCase("unexpected", Core.TestRunners.TestFramework.NUnit);
+            SetupMockCoverageRun(mockVsTest, new[] { new TestResult(buildCase){Outcome = TestOutcome.Passed} });
+
+            var analyzer = new CoverageAnalyser(options);
+            analyzer.DetermineTestCoverage(runner, new[] { Mutant, OtherMutant }, TestsGuidList.NoTest());
+            // the suspicious tests should be used for every mutant
+            OtherMutant.CoveringTests.GetGuids().ShouldContain(buildCase.Id);
+            Mutant.CoveringTests.GetGuids().ShouldContain(buildCase.Id);
+        }
+        
+        // this verifies that Stryker disregard skipped tests
+        [Fact]
+        public void IgnoreSkippedTestResults()
+        {
+            var options = new StrykerOptions
+            {
+                OptimizationMode = OptimizationModes.CoverageBasedTest
+            };
+
+            var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
+
+            var testResult = BuildCoverageTestResult("T0", new[] { "0;", "" });
+            testResult.Outcome = TestOutcome.Skipped;
+            var other = BuildCoverageTestResult("T1", new[] { "0;", "" });
+            SetupMockCoverageRun(mockVsTest, new[] { testResult, other });
+
+            var analyzer = new CoverageAnalyser(options);
+            analyzer.DetermineTestCoverage(runner, new[] { Mutant, OtherMutant }, TestsGuidList.NoTest());
+            // the suspicious tests should be used for every mutant
             Mutant.CoveringTests.Count.ShouldBe(1);
         }
     }
