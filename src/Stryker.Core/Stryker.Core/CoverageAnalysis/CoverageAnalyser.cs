@@ -124,14 +124,14 @@ namespace Stryker.Core.CoverageAnalysis
             {
                 mutant.CoveringTests = new TestsGuidList(testGuids.Union(dubiousTests));
                 mutant.AssessingTests = new TestsGuidList(assessingTests.Union(dubiousTests));
-                if (mutant.CoveringTests.IsEmpty)
+                if (mutant.CoveringTests.IsEmpty && mutant.ResultStatus == MutantStatus.NotRun)
                 {
                     mutant.ResultStatus = MutantStatus.NoCoverage;
                     mutant.ResultStatusReason = "Not covered by any test.";
                     _logger.LogInformation(
                         $"Mutant {mutant.Id} is not covered by any test.");
                 }
-                else if (mutant.AssessingTests.IsEmpty)
+                else if (mutant.AssessingTests.IsEmpty && mutant.ResultStatus == MutantStatus.NotRun)
                 {
                     mutant.ResultStatus = MutantStatus.Survived;
                     mutant.ResultStatusReason = "Only covered by already failing tests.";
