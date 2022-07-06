@@ -518,6 +518,30 @@ namespace Stryker.Core.UnitTest.TestRunners
             Mutant.CoveringTests.Count.ShouldBe(1);
         }
 
+        // this verifies that tests covering no mutants
+        // are properly handled
+        [Fact]
+        public void HandleNonCoveringTests()
+        {
+            var options = new StrykerOptions
+            {
+                OptimizationMode = OptimizationModes.CoverageBasedTest
+            };
+
+            var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
+
+            var testResult = BuildCoverageTestResult("T0", new[] { "0;", "" });
+            var other = BuildCoverageTestResult("T1", new[] { "", "" });
+            SetupMockCoverageRun(mockVsTest, new[] { testResult, other });
+
+
+            var analyzer = new CoverageAnalyser(options);
+            analyzer.DetermineTestCoverage(runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
+         
+            OtherMutant.CoveringTests.Count.ShouldBe(0);
+            Mutant.CoveringTests.Count.ShouldBe(1);
+        }
+
         // this verifies that unexpected test case (i.e. unseen during test discovery and without coverage info)
         // are assumed to cover every mutant
         [Fact]
@@ -560,6 +584,29 @@ namespace Stryker.Core.UnitTest.TestRunners
             analyzer.DetermineTestCoverage(runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
             // the suspicious tests should be used for every mutant
             Mutant.CoveringTests.Count.ShouldBe(1);
+        }
+        
+        // this verifies that Stryker aggregates multiple coverage results
+        [Fact]
+        public void HandlesMultipleResultsForCoverage()
+        {
+            var options = new StrykerOptions
+            {
+                OptimizationMode = OptimizationModes.CoverageBasedTest
+            };
+
+            var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
+
+            var testResult = BuildCoverageTestResult("T0", new[] { "0;", "" });
+            var other = BuildCoverageTestResult("T0", new[] { "1;0", "" });
+            SetupMockCoverageRun(mockVsTest, new[] { testResult, other });
+
+            var analyzer = new CoverageAnalyser(options);
+            analyzer.DetermineTestCoverage(runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
+            // the suspicious tests should be used for every mutant
+            Mutant.CoveringTests.IsEveryTest.ShouldBe(true);
+            Mutant.IsStaticValue.ShouldBe(true);
+            OtherMutant.CoveringTests.Count.ShouldBe(1);
         }
     }
 }

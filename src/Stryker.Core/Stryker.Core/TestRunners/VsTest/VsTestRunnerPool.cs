@@ -222,6 +222,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             if (string.IsNullOrWhiteSpace(propertyPairValue))
             {
+                // do not attempt to parse empty strings
                 _logger.LogDebug($"VsTestRunner: Test {testResult.TestCase.DisplayName} does not cover any mutation.");
                 coveredMutants = Enumerable.Empty<int>();
                 staticMutants = Enumerable.Empty<int>();

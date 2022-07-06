@@ -251,20 +251,6 @@ public class VsTestMockingHelper : TestBase
                 MockTestRun(testRunEvents, results);
             }).Returns(Task.CompletedTask);
 
-    protected void SetupMockCoverageRunForTest(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyList<TestResult> results) =>
-        mockVsTest.Setup(x =>
-            x.RunTestsWithCustomTestHostAsync(
-                It.Is<IEnumerable<TestCase>>(t => t.All(tc => results.Any(r=>r.TestCase.Id == tc.Id))),
-                It.Is<string>(settings => settings.Contains("<Coverage")),
-                It.Is<TestPlatformOptions>(o => o != null && o.TestCaseFilter == null),
-                It.IsAny<ITestRunEventsHandler>(),
-                It.IsAny<ITestHostLauncher>())).Callback(
-            (IEnumerable<TestCase> tests, string _, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
-                ITestHostLauncher _) =>
-            {
-                MockTestRun(testRunEvents, results);
-            }).Returns(Task.CompletedTask);
-
     private List<TestResult> GenerateCoverageTestResults(IReadOnlyDictionary<string, string> coverageResults)
     {
         var results = new List<TestResult>(coverageResults.Count);
