@@ -412,7 +412,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         {
             var scenario = new FullRunScenario();
             var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
-            scenario.CreateMutants(1,2);
+            scenario.CreateMutants(1, 2, 3);
 
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf()
@@ -420,12 +420,13 @@ namespace Stryker.Core.UnitTest.MutationTest
                 SourceCode = SourceFile,
                 Mutants = scenario.GetMutants()
             });
-            scenario.CreateTests(1,2);
+            scenario.CreateTests(1, 2);
 
             // mutant 1 is covered by both tests
             scenario.DeclareCoverageForMutant(1);
             // mutant 2 is covered only by test 1
             scenario.DeclareCoverageForMutant(2, 1);
+            // mutant 3 as no coverage
             // test 1 succeeds, test 2 fails
             scenario.DeclareTestsFailingWhenTestingMutant(1, 2);
             var runnerMock = scenario.GetTestRunnerMock();
@@ -466,11 +467,13 @@ namespace Stryker.Core.UnitTest.MutationTest
             // test mutants
             target.GetCoverage();
             
-            target.Test(input.ProjectInfo.ProjectContents.Mutants);
+            target.Test(input.ProjectInfo.ProjectContents.Mutants.Where(m=> m.ResultStatus == MutantStatus.NotRun));
             // first mutant should be killed by test 2
             scenario.GetMutantStatus(1).ShouldBe(MutantStatus.Killed);
             // other mutant survives
             scenario.GetMutantStatus(2).ShouldBe(MutantStatus.Survived);
+            // third mutant appears as no coverage
+            scenario.GetMutantStatus(3).ShouldBe(MutantStatus.NoCoverage);
         }
 
         [Fact]
