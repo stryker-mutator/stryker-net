@@ -28,9 +28,9 @@ namespace Stryker.Core.Mutants
 
         public MutantStatus ResultStatus { get; set; }
 
-        public ITestGuids CoveringTests { get; set; } = TestsGuidList.NoTest();
+        public ITestGuids CoveringTests { get; set; } = TestGuidsList.NoTest();
         
-        public ITestGuids AssessingTests { get; set; } = TestsGuidList.EveryTest();
+        public ITestGuids AssessingTests { get; set; } = TestGuidsList.EveryTest();
         
         public string ResultStatusReason { get; set; }
 

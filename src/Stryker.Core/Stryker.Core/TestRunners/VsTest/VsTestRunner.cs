@@ -37,7 +37,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public TestRunResult InitialTest()
         {
-            var testResults = RunTestSession(TestsGuidList.EveryTest());
+            var testResults = RunTestSession(TestGuidsList.EveryTest());
             // initial test run, register test results
             foreach (var result in testResults.TestResults)
             {
@@ -81,7 +81,7 @@ namespace Stryker.Core.TestRunners.VsTest
                                  $"against {(testCases == null ? "all tests." : string.Join(", ", testCases))}.");
                 if (testCases?.Count == 0)
                 {
-                    return new TestRunResult(TestsGuidList.NoTest(), TestsGuidList.NoTest(), TestsGuidList.NoTest(), "Mutants are not covered by any test!", TimeSpan.Zero);
+                    return new TestRunResult(TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), "Mutants are not covered by any test!", TimeSpan.Zero);
                 }
 
                 if (timeoutCalc != null && testCases != null)
@@ -96,7 +96,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 {
                     throw new GeneralStrykerException("Internal error: trying to test multiple mutants simultaneously without 'perTest' coverage analysis.");
                 }
-                mutantTestsMap.Add(mutants[0].Id, TestsGuidList.EveryTest());
+                mutantTestsMap.Add(mutants[0].Id, TestGuidsList.EveryTest());
                 testCases = null;
             }
 
@@ -107,7 +107,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 var handlerTestResults = handler.TestResults;
                 var tests = handlerTestResults.Count == _context.Tests.Count
-                    ? (ITestGuids)TestsGuidList.EveryTest()
+                    ? (ITestGuids)TestGuidsList.EveryTest()
                     : new WrappedGuidsEnumeration(handlerTestResults.Select(t => t.TestCase.Id));
                 var failedTest = new WrappedGuidsEnumeration(handlerTestResults.Where(tr => tr.Outcome == TestOutcome.Failed)
                     .Select(t => t.TestCase.Id));
@@ -132,7 +132,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 _logger.LogDebug($"{RunnerId}: Using {timeOutMs} ms as test run timeout");
             }
 
-            var testResults = RunTestSession(new TestsGuidList(testCases), timeOutMs, mutantTestsMap, HandleUpdate);
+            var testResults = RunTestSession(new TestGuidsList(testCases), timeOutMs, mutantTestsMap, HandleUpdate);
 
             return BuildTestRunResult(testResults, expectedTests);
         }
@@ -143,7 +143,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var testCases = resultAsArray.Select(t => t.TestCase.Id).ToHashSet();
             var ranTestsCount = testCases.Count;
             var timeout = !_aborted && ranTestsCount < expectedTests;
-            var ranTests = compressAll && ranTestsCount >= _context.Tests.Count ? (ITestGuids)TestsGuidList.EveryTest() : new WrappedGuidsEnumeration(testCases);
+            var ranTests = compressAll && ranTestsCount >= _context.Tests.Count ? (ITestGuids)TestGuidsList.EveryTest() : new WrappedGuidsEnumeration(testCases);
             var failedTests = resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(t => t.TestCase.Id);
 
             if (ranTests.IsEmpty && (testResults.TestsInTimeout == null || testResults.TestsInTimeout.Count == 0))

@@ -503,9 +503,9 @@ public class VsTestMockingHelper : TestBase
 
     protected MutationTestProcess BuildMutationTestProcess(VsTestRunnerPool runner, StrykerOptions options, IReadOnlyList<TestCase> tests = null, ProjectInfo targetProject = null)
     {
-        var testRunResult = new TestRunResult(new TestsGuidList((tests ?? TestCases).Select(t => t.Id)),
-            TestsGuidList.NoTest(),
-            TestsGuidList.NoTest(),
+        var testRunResult = new TestRunResult(new TestGuidsList((tests ?? TestCases).Select(t => t.Id)),
+            TestGuidsList.NoTest(),
+            TestGuidsList.NoTest(),
             string.Empty,
             TimeSpan.Zero);
         var input = new MutationTestInput

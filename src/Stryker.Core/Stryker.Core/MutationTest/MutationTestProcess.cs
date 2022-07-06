@@ -153,7 +153,7 @@ namespace Stryker.Core.MutationTest
             {
                 // some of the failing tests where failing without any mutation
                 // we discard those tests
-                failedTests = new TestsGuidList(
+                failedTests = new TestGuidsList(
                     failedTests.GetGuids().Where(t => !testsFailingInitially.Contains(t)));
             }
             foreach (var mutant in testedMutants)
@@ -249,7 +249,7 @@ namespace Stryker.Core.MutationTest
                     nextBlock.Add(currentMutant);
                     // remove the mutant from the list of mutants to group
                     mutantsToGroup.RemoveAt(j--);
-                    // add this mutant tests
+                    // add this mutant's tests
                     usedTests = usedTests.Merge(nextSet);
                 }
 

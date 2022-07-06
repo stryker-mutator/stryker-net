@@ -7,9 +7,9 @@ namespace Stryker.Core.TestRunners
     {
         public TestRunResult(bool success, string message = null)
         {
-            FailingTests = !success ? TestsGuidList.EveryTest() : TestsGuidList.NoTest();
-            RanTests = TestsGuidList.EveryTest();
-            TimedOutTests = TestsGuidList.NoTest();
+            FailingTests = !success ? TestGuidsList.EveryTest() : TestGuidsList.NoTest();
+            RanTests = TestGuidsList.EveryTest();
+            TimedOutTests = TestGuidsList.NoTest();
             ResultMessage = message;
             Duration = TimeSpan.Zero;
         }

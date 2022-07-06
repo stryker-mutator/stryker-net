@@ -20,29 +20,26 @@ namespace Stryker.Core.CoverageAnalysis
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<CoverageAnalyser>();
         }
 
-        public void DetermineTestCoverage(ITestRunner runner, IEnumerable<Mutant> mutants,
-            ITestGuids resultFailingTests)
+        public void DetermineTestCoverage(ITestRunner runner, IEnumerable<Mutant> mutants, ITestGuids resultFailingTests)
         {
             if (!_options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
                 !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
             {
                 foreach (var mutant in mutants)
                 {
-                    mutant.CoveringTests = TestsGuidList.EveryTest();
-                    mutant.AssessingTests = TestsGuidList.EveryTest();
+                    mutant.CoveringTests = TestGuidsList.EveryTest();
+                    mutant.AssessingTests = TestGuidsList.EveryTest();
                 }
                 return;
             }
 
-            ParseCoverage(runner.CaptureCoverage(), mutants, resultFailingTests);
+            ParseCoverage(runner.CaptureCoverage(), mutants, new TestGuidsList(resultFailingTests.GetGuids()));
         }
 
-        private void ParseCoverage(IEnumerable<CoverageRunResult> coverage, IEnumerable<Mutant> mutantsToScan,
-            ITestGuids resultFailingTests)
+        private void ParseCoverage(IEnumerable<CoverageRunResult> coverage, IEnumerable<Mutant> mutantsToScan, TestGuidsList failedTests)
         {
             var dubiousTests = new HashSet<Guid>();
             var trustedTests = new HashSet<Guid>();
-            var failedTests = resultFailingTests.GetGuids().ToHashSet();
             var testIds = new HashSet<Guid>();
 
             var mutationToResultMap = new Dictionary<int, List<CoverageRunResult>>();
@@ -57,12 +54,11 @@ namespace Stryker.Core.CoverageAnalysis
                     mutationToResultMap[i].Add(coverageRunResult);
                 }
 
-                if (resultFailingTests.Contains(coverageRunResult.TestId))
+                if (failedTests.Contains(coverageRunResult.TestId))
                 {
                     // exclude failing tests from the list of all tests
                     continue;
                 }
-                testIds.Add(coverageRunResult.TestId);
                 testIds.Add(coverageRunResult.TestId);
                 switch (coverageRunResult.Confidence)
                 {
@@ -75,46 +71,38 @@ namespace Stryker.Core.CoverageAnalysis
                 }
             }
 
-            var allTestsExceptTrusted = trustedTests.Count == 0 ? new HashSet<Guid>() :  testIds.Except(trustedTests).ToHashSet();
+            var allTestsExceptTrusted = (trustedTests.Count == 0 && failedTests.Count == 0)? TestGuidsList.EveryTest()
+                : new TestGuidsList(testIds.Except(trustedTests).ToHashSet()).Excluding(failedTests);
+            
             foreach (var mutant in mutantsToScan)
             {
-                CoverageForThisMutant(mutant, mutationToResultMap, allTestsExceptTrusted, dubiousTests, failedTests);
+                CoverageForThisMutant(mutant, mutationToResultMap, allTestsExceptTrusted, new TestGuidsList( dubiousTests), failedTests);
             }
         }
 
         private void CoverageForThisMutant(Mutant mutant,
             IReadOnlyDictionary<int, List<CoverageRunResult>> mutationToResultMap,
-            ISet<Guid> allTestsGuidsExceptTrusted,
-            ISet<Guid> dubiousTests,
-            ISet<Guid> failedTest)
+            TestGuidsList allTestsGuidsExceptTrusted,
+            TestGuidsList dubiousTests,
+            TestGuidsList failedTest)
         {
-            var testGuids = new List<Guid>();
             var mutantId = mutant.Id;
-            var resultTingRequirements = ParseResultForThisMutant(mutationToResultMap, mutantId, testGuids);
+            var (resultTingRequirements, testGuids) = ParseResultForThisMutant(mutationToResultMap, mutantId);
 
-            var assessingTests = testGuids.Except(failedTest);
+            var assessingTests = testGuids.Excluding(failedTest);
             mutant.MustBeTestedInIsolation = resultTingRequirements.HasFlag(MutationTestingRequirements.NeedEarlyActivation);
             if (resultTingRequirements.HasFlag(MutationTestingRequirements.AgainstAllTests))
             {
-                mutant.CoveringTests = TestsGuidList.EveryTest();
-                mutant.AssessingTests = TestsGuidList.EveryTest();
+                mutant.CoveringTests = TestGuidsList.EveryTest();
+                mutant.AssessingTests = TestGuidsList.EveryTest();
                 _logger.LogDebug(
                     $"Mutant {mutant.Id} will be tested against all tests.");
             }
             else if (resultTingRequirements.HasFlag(MutationTestingRequirements.Static))
             {
                 // static mutations will be tested against every tests, except the one that are trusted not to cover it
-                if (allTestsGuidsExceptTrusted.Count == 0)
-                {
-                    mutant.CoveringTests = TestsGuidList.EveryTest();
-                    mutant.AssessingTests = TestsGuidList.EveryTest();
-                }
-                else
-                {
-                    mutant.CoveringTests = new TestsGuidList(allTestsGuidsExceptTrusted.Union(testGuids).Distinct());
-                    mutant.AssessingTests =
-                        new TestsGuidList(allTestsGuidsExceptTrusted.Union(assessingTests).Distinct());
-                }
+                mutant.CoveringTests =allTestsGuidsExceptTrusted.Merge(testGuids).Excluding(failedTest);
+                mutant.AssessingTests = allTestsGuidsExceptTrusted.Merge(assessingTests).Excluding(failedTest);
                 
                 mutant.IsStaticValue = true;
                 _logger.LogDebug(
@@ -122,8 +110,8 @@ namespace Stryker.Core.CoverageAnalysis
             }
             else
             {
-                mutant.CoveringTests = new TestsGuidList(testGuids.Union(dubiousTests));
-                mutant.AssessingTests = new TestsGuidList(assessingTests.Union(dubiousTests));
+                mutant.CoveringTests = testGuids.Merge(dubiousTests);
+                mutant.AssessingTests = testGuids.Merge(dubiousTests);
                 if (mutant.CoveringTests.IsEmpty && mutant.ResultStatus == MutantStatus.NotRun)
                 {
                     mutant.ResultStatus = MutantStatus.NoCoverage;
@@ -146,14 +134,14 @@ namespace Stryker.Core.CoverageAnalysis
             }
         }
 
-        private static MutationTestingRequirements ParseResultForThisMutant(IReadOnlyDictionary<int, List<CoverageRunResult>> mutationToResultMap, int mutantId,
-            ICollection<Guid> testGuids)
+        private static (MutationTestingRequirements, TestGuidsList) ParseResultForThisMutant(IReadOnlyDictionary<int, List<CoverageRunResult>> mutationToResultMap, int mutantId)
         {
             var resultingRequirements = MutationTestingRequirements.None;
             if (!mutationToResultMap.ContainsKey(mutantId))
             {
-                return resultingRequirements;
+                return (resultingRequirements, TestGuidsList.NoTest()); 
             }
+            var testGuids = new List<Guid>();
             foreach (var coverageRunResult in mutationToResultMap[mutantId])
             {
                 testGuids.Add(coverageRunResult.TestId);
@@ -181,7 +169,7 @@ namespace Stryker.Core.CoverageAnalysis
                 }
             }
 
-            return resultingRequirements;
+            return (resultingRequirements, new TestGuidsList(testGuids));
         }
     }
 }
