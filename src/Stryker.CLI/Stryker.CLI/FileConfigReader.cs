@@ -7,6 +7,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
+using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 
 namespace Stryker.CLI
@@ -64,26 +65,25 @@ namespace Stryker.CLI
 
         private static FileBasedInput LoadConfig(string configFilePath)
         {
-            var lines = File.ReadAllLines(configFilePath);
-            // filter json comments
-            // this does only allow full-line comments thou, not something like
-            //   "verbosity": "trace", // this is a trailing comment 
-            var json = string.Join(Environment.NewLine, lines.Where(l => !l.Trim().StartsWith("//")));
+            using var streamReader = new StreamReader(configFilePath);
+            var fileContents = streamReader.ReadToEnd();
 
             FileBasedInput input;
             try
             {
                 FileBasedInputOuter root;
-
-                // yaml deserializer can also read json
-                var yamldeserializer =
-                    new YamlDotNet.Serialization.DeserializerBuilder()
-                    .IgnoreUnmatchedProperties()
-                    .WithNamingConvention(HyphenatedNamingConvention.Instance)
-
-                    .Build();
-
-                root = yamldeserializer.Deserialize<FileBasedInputOuter>(json);
+                if (configFilePath.EndsWith(".yaml") || configFilePath.EndsWith(".yml"))
+                {
+                    root = DeserializeYaml(fileContents);
+                }
+                else if (configFilePath.EndsWith(".json"))
+                {
+                    root = DeserializeJson(fileContents);
+                }
+                else
+                {
+                    throw new InputException($"Unkown file type for config file at \"{configFilePath}\"");
+                }
 
                 if (root == null)
                 {
@@ -99,6 +99,26 @@ namespace Stryker.CLI
             EnsureCorrectKeys(configFilePath, input, "stryker-config");
 
             return input;
+        }
+
+        private static FileBasedInputOuter DeserializeJson(string json)
+        {
+            FileBasedInputOuter root;
+            var serializerOptions = new JsonSerializerOptions { ReadCommentHandling = JsonCommentHandling.Skip };
+            root = JsonSerializer.Deserialize<FileBasedInputOuter>(json, serializerOptions);
+            return root;
+        }
+
+        private static FileBasedInputOuter DeserializeYaml(string yaml)
+        {
+            FileBasedInputOuter root;
+            var yamldeserializer = new DeserializerBuilder()
+                                    .IgnoreUnmatchedProperties()
+                                    .WithNamingConvention(HyphenatedNamingConvention.Instance)
+                                    .Build();
+
+            root = yamldeserializer.Deserialize<FileBasedInputOuter>(yaml);
+            return root;
         }
 
         private static void EnsureCorrectKeys(string configFilePath, IExtraData @object, string namePath)

@@ -52,16 +52,16 @@ namespace Stryker.CLI
             app.HelpOption();
 
             var inputs = new StrykerInputs();
-            var cmdConfigHandler = new CommandLineConfigReader();
+            var cmdConfigReader = new CommandLineConfigReader();
 
-            cmdConfigHandler.RegisterCommandLineOptions(app, inputs);
+            cmdConfigReader.RegisterCommandLineOptions(app, inputs);
 
             app.OnExecute(() =>
             {
                 // app started
                 PrintStrykerASCIIName();
 
-                _configReader.Build(inputs, args, app, cmdConfigHandler);
+                _configReader.Build(inputs, args, app, cmdConfigReader);
                 _loggingInitializer.SetupLogOptions(inputs);
 
                 PrintStrykerVersionInformationAsync();
