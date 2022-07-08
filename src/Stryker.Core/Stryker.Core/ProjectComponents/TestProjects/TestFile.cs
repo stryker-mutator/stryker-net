@@ -22,7 +22,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             {
                 Id = id,
                 Name = name,
-                Source = source,
+                Source = sourceCode,
                 Line = lineNumber
             };
 

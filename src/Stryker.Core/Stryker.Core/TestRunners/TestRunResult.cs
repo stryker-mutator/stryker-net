@@ -9,8 +9,9 @@ namespace Stryker.Core.TestRunners
     {
         public TestRunResult(bool success, string message = null)
         {
-            FailingTests = !success ? TestsGuidList.EveryTest() : TestsGuidList.NoTest();
-            RanTests = TestsGuidList.EveryTest();
+            FailingTests = !success ? TestGuidsList.EveryTest() : TestGuidsList.NoTest();
+            RanTests = TestGuidsList.EveryTest();
+            TimedOutTests = TestGuidsList.NoTest();
             ResultMessage = message;
             Duration = TimeSpan.Zero;
         }
@@ -42,9 +43,9 @@ namespace Stryker.Core.TestRunners
         public ITestGuids FailingTests { get; }
         public ITestGuids RanTests { get; }
         public ITestGuids TimedOutTests { get; }
-        public bool SessionTimedOut { get; private set; }
+        public bool SessionTimedOut { get; private init; }
         public string ResultMessage { get; }
         public TimeSpan Duration { get; }
-        public IEnumerable<VsTestDescription> VsTestDescriptions { get; private set; }
+        public IEnumerable<VsTestDescription> VsTestDescriptions { get; }
     }
 }

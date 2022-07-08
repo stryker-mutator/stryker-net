@@ -27,7 +27,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
 
             reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>());
-            var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.html");
+            var reportPath = Path.Combine(options.ReportPath, "mutation-report.html");
             mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
         }
 
@@ -45,7 +45,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
 
             reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>());
-            var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.html");
+            var reportPath = Path.Combine(options.ReportPath, "mutation-report.html");
 
             var fileContents = mockFileSystem.GetFile(reportPath).TextContents;
 
@@ -68,7 +68,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
 
             reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith());
-            var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.html");
+            var reportPath = Path.Combine(options.ReportPath, "mutation-report.html");
 
             var fileContents = mockFileSystem.GetFile(reportPath).TextContents;
 
@@ -92,7 +92,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var mutationTree = JsonReportTestHelper.CreateProjectWith();
 
             reporter.OnAllMutantsTested(mutationTree, It.IsAny<TestProjectsInfo>());
-            var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.html");
+            var reportPath = Path.Combine(options.ReportPath, "mutation-report.html");
 
             var fileContents = mockFileSystem.GetFile(reportPath).TextContents;
 
@@ -117,7 +117,8 @@ namespace Stryker.Core.UnitTest.Reporters
             var mutationTree = JsonReportTestHelper.CreateProjectWith();
 
             reporter.OnAllMutantsTested(mutationTree, It.IsAny<TestProjectsInfo>());
-            var reportUri = Path.Combine(options.OutputPath, "reports", $"{options.ReportFileName}.html");
+
+            var reportUri = Path.Combine(options.ReportPath, $"{options.ReportFileName}.html");
             reportUri = "file://" + reportUri.Replace("\\", "/");
 
             // Check if browser open action is invoked

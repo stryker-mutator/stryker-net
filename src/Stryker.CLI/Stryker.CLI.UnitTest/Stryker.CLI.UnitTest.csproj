@@ -28,6 +28,7 @@
 
   <ItemGroup>
     <None Include="filled-stryker-config.json" CopyToOutputDirectory="Always" />
+    <None Include="filled-stryker-config.yaml" CopyToOutputDirectory="Always" />
     <None Include="stryker-config.json" CopyToOutputDirectory="Always" />
   </ItemGroup>
 </Project>
