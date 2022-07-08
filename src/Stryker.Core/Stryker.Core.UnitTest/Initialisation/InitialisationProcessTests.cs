@@ -26,7 +26,6 @@ namespace Stryker.Core.UnitTest.Initialisation
             var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
             var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
-            testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
             testRunnerMock.Setup(x => x.Dispose());
             var projectContents = new CsharpFolderComposite();
             projectContents.Add(new CsharpFileLeaf());
@@ -95,7 +94,6 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
             testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
-            testRunnerMock.Setup(x => x.Dispose());
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(),It.IsAny<ITestRunner>())).Throws(new InputException("")); // failing test
             assemblyReferenceResolverMock.Setup(x => x.LoadProjectReferences(It.IsAny<string[]>()))
                 .Returns(Enumerable.Empty<PortableExecutableReference>())

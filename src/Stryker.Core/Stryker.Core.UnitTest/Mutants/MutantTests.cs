@@ -43,10 +43,10 @@ namespace Stryker.Core.UnitTest.Mutants
         [Fact]
         public void ShouldSetTimedoutState()
         {
-            var failedTestsMock = new Mock<ITestListDescription>();
-            var resultTestsMock = new Mock<ITestListDescription>();
-            var timedoutTestsMock = new Mock<ITestListDescription>();
-            var coveringTestsMock = new Mock<ITestListDescription>();
+            var failedTestsMock = new Mock<ITestGuids>();
+            var resultTestsMock = new Mock<ITestGuids>();
+            var timedoutTestsMock = new Mock<ITestGuids>();
+            var coveringTestsMock = new Mock<ITestGuids>();
 
             failedTestsMock.Setup(x => x.IsEmpty).Returns(true);
             timedoutTestsMock.Setup(x => x.IsEmpty).Returns(false);

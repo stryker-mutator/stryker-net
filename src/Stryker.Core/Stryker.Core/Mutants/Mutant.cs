@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 
 namespace Stryker.Core.Mutants
 {
@@ -11,10 +10,10 @@ namespace Stryker.Core.Mutants
         Mutation Mutation { get; }
         MutantStatus ResultStatus { get; }
         string ResultStatusReason { get; }
-        ITestListDescription CoveringTests { get; }
+        ITestGuids CoveringTests { get; }
+        ITestGuids AssessingTests { get; }
         int? Line { get; }
         bool CountForStats { get; }
-        bool MustRunAgainstAllTests { get; }
         bool IsStaticValue { get; }
     }
 
@@ -24,31 +23,38 @@ namespace Stryker.Core.Mutants
     public class Mutant : IReadOnlyMutant
     {
         public int Id { get; set; }
+
         public Mutation Mutation { get; set; }
+
         public MutantStatus ResultStatus { get; set; }
-        public ITestListDescription CoveringTests { get; set; } = TestsGuidList.EveryTest();
+
+        public ITestGuids CoveringTests { get; set; } = TestGuidsList.NoTest();
+        
+        public ITestGuids AssessingTests { get; set; } = TestGuidsList.EveryTest();
+        
         public string ResultStatusReason { get; set; }
+
         public bool CountForStats => ResultStatus != MutantStatus.CompileError && ResultStatus != MutantStatus.Ignored;
 
-        public bool MustRunAgainstAllTests => CoveringTests.IsEveryTest;
-
-        public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
-        public int? Line => Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
         public bool IsStaticValue { get; set; }
 
-        public void ResetCoverage() => CoveringTests = TestsGuidList.NoTest();
+        public bool MustBeTestedInIsolation { get; set; }
+
+        public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
+
+        public int? Line => Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
 
         public void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests)
         {
-            if (CoveringTests.ContainsAny(failedTests))
+            if (AssessingTests.ContainsAny(failedTests))
             {
                 ResultStatus = MutantStatus.Killed;
             }
-            else if (resultRanTests.IsEveryTest || (MustRunAgainstAllTests is not true && CoveringTests.IsIncluded(resultRanTests)))
+            else if (resultRanTests.IsEveryTest || (resultRanTests.IsEveryTest is not true && AssessingTests.IsIncludedIn(resultRanTests)))
             {
                 ResultStatus = MutantStatus.Survived;
             }
-            else if ((!timedOutTests.IsEmpty && CoveringTests.IsEveryTest) || CoveringTests.ContainsAny(timedOutTests))
+            else if (AssessingTests.ContainsAny(timedOutTests))
             {
                 ResultStatus = MutantStatus.Timeout;
             }
