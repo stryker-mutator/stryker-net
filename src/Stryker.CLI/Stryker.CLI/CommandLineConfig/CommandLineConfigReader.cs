@@ -7,12 +7,12 @@ using Stryker.Core.Options.Inputs;
 
 namespace Stryker.CLI
 {
-    public class CommandLineConfigHandler
+    public class CommandLineConfigReader
     {
         private readonly IDictionary<string, CliInput> _cliInputs = new Dictionary<string, CliInput>();
         private readonly CliInput _configFileInput;
 
-        public CommandLineConfigHandler() => _configFileInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. | default: stryker-config.json", argumentHint: "file-path");
+        public CommandLineConfigReader() => _configFileInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. | default: stryker-config.json", argumentHint: "file-path");
 
         public void RegisterCommandLineOptions(CommandLineApplication app, IStrykerInputs inputs)
         {

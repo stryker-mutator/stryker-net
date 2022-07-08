@@ -5,14 +5,13 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Text.RegularExpressions;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using YamlDotNet.Serialization.NamingConventions;
 
 namespace Stryker.CLI
 {
-    public static class ConfigHandler
+    public static class FileConfigReader
     {
         public static void DeserializeConfig(string configFilePath, IStrykerInputs inputs)
         {
@@ -69,8 +68,8 @@ namespace Stryker.CLI
             // filter json comments
             // this does only allow full-line comments thou, not something like
             //   "verbosity": "trace", // this is a trailing comment 
-            var json = string.Join(Environment.NewLine, lines.Where(l => !l.Trim().StartsWith("//")));         
-            
+            var json = string.Join(Environment.NewLine, lines.Where(l => !l.Trim().StartsWith("//")));
+
             FileBasedInput input;
             try
             {
@@ -78,10 +77,10 @@ namespace Stryker.CLI
 
                 // yaml deserializer can also read json
                 var yamldeserializer =
-                    new YamlDotNet.Serialization.DeserializerBuilder()                    
+                    new YamlDotNet.Serialization.DeserializerBuilder()
                     .IgnoreUnmatchedProperties()
                     .WithNamingConvention(HyphenatedNamingConvention.Instance)
-                    
+
                     .Build();
 
                 root = yamldeserializer.Deserialize<FileBasedInputOuter>(json);

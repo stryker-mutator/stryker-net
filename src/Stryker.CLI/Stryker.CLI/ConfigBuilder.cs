@@ -5,12 +5,12 @@ using Stryker.Core.Options;
 
 namespace Stryker.CLI
 {
-    public interface IConfigReader
+    public interface IConfigBuilder
     {
-        void Build(IStrykerInputs inputs, string[] args, CommandLineApplication app, CommandLineConfigHandler cmdConfigHandler);
+        void Build(IStrykerInputs inputs, string[] args, CommandLineApplication app, CommandLineConfigReader cmdConfigHandler);
     }
 
-    public class ConfigReader : IConfigReader
+    public class ConfigBuilder : IConfigBuilder
     {
         /// <summary>
         /// Reads all config from json and console to fill stryker inputs
@@ -19,7 +19,7 @@ namespace Stryker.CLI
         /// <param name="app">The console application containing all argument information</param>
         /// <param name="cmdConfigHandler">Mock console config handler</param>
         /// <returns>Filled stryker inputs (except output path)</returns>
-        public void Build(IStrykerInputs inputs, string[] args, CommandLineApplication app, CommandLineConfigHandler cmdConfigHandler)
+        public void Build(IStrykerInputs inputs, string[] args, CommandLineApplication app, CommandLineConfigReader cmdConfigHandler)
         {
             // set basepath
             var basePath = Directory.GetCurrentDirectory();
@@ -31,7 +31,7 @@ namespace Stryker.CLI
             var configFilePath = Path.Combine(basePath, configFileOption?.Value() ?? "stryker-config.json");
             if (File.Exists(configFilePath))
             {
-                ConfigHandler.DeserializeConfig(configFilePath, inputs);
+                FileConfigReader.DeserializeConfig(configFilePath, inputs);
             }
             else if (configFileOption.HasValue())
             {

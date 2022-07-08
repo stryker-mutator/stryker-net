@@ -15,7 +15,7 @@ namespace Stryker.CLI
     public class StrykerCli
     {
         private readonly IStrykerRunner _stryker;
-        private readonly IConfigReader _configReader;
+        private readonly IConfigBuilder _configReader;
         private readonly ILoggingInitializer _loggingInitializer;
         private readonly IStrykerNugetFeedClient _nugetClient;
         private readonly IAnsiConsole _console;
@@ -23,13 +23,13 @@ namespace Stryker.CLI
         public int ExitCode { get; private set; } = ExitCodes.Success;
 
         public StrykerCli(IStrykerRunner stryker = null,
-            IConfigReader configReader = null,
+            IConfigBuilder configReader = null,
             ILoggingInitializer loggingInitializer = null,
             IStrykerNugetFeedClient nugetClient = null,
             IAnsiConsole console = null)
         {
             _stryker = stryker ?? new StrykerRunner();
-            _configReader = configReader ?? new ConfigReader();
+            _configReader = configReader ?? new ConfigBuilder();
             _loggingInitializer = loggingInitializer ?? new LoggingInitializer();
             _nugetClient = nugetClient ?? new StrykerNugetFeedClient();
             _console = console ?? AnsiConsole.Console;
@@ -52,7 +52,7 @@ namespace Stryker.CLI
             app.HelpOption();
 
             var inputs = new StrykerInputs();
-            var cmdConfigHandler = new CommandLineConfigHandler();
+            var cmdConfigHandler = new CommandLineConfigReader();
 
             cmdConfigHandler.RegisterCommandLineOptions(app, inputs);
 
