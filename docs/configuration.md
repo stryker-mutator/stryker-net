@@ -12,7 +12,10 @@ On some dotnet core projects stryker can run without specifying any custom confi
 On dotnet framework projects the solution path argument is always required. Run at least `dotnet stryker --solution <solution-path>` or specify the solution file path in the config file to start testing. See [solution](#solution-path).
 
 ## Use a config file
-When using Stryker regularly we recommend using a config file. This way you won't have to document how to run Stryker, you can save the config file in version control. To use a config file create a file called `stryker-config.json` in the (unit test) project folder and add a configuration section called stryker-config.
+When using Stryker regularly we recommend using a config file. This way you won't have to document how to run Stryker, you can save the config file in version control. 
+To use a config file create a file called `stryker-config.json` in the (unit test) project folder and add a configuration section called stryker-config.
+
+We support json and yaml as the config file formats
 
 Example `stryker-config.json` file:
 ``` javascript
@@ -23,6 +26,13 @@ Example `stryker-config.json` file:
         "project": "ExampleProject.csproj"
     }
 }
+```
+
+Example `stryker-config.yaml` file:
+``` yaml
+  stryker-config:
+    solution: '../SolutionFile.sln'
+    project: 'ExampleProject.csproj'
 ```
 
 ### `config-file` <`path`>
