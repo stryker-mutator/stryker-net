@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
@@ -37,6 +38,7 @@ namespace Stryker.Core.Options
         /// The path all output is written to. For example reports and logging files.
         /// </summary>
         public string OutputPath { get; init; }
+        public string ReportPath =>  Path.Combine(OutputPath ?? ".", "reports");
         /// <summary>
         /// A custom settable name for report files.
         /// </summary>

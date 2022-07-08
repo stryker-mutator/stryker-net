@@ -139,7 +139,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var reporter = new JsonReporter(options, mockFileSystem);
 
             reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith());
-            var reportPath = Path.Combine(options.OutputPath, "reports", $"mutation-report.json");
+            var reportPath = Path.Combine(options.ReportPath, "mutation-report.json");
             mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
             var fileContents = mockFileSystem.File.ReadAllText(reportPath);
             fileContents.ShouldContain(@"""thresholds"":{");

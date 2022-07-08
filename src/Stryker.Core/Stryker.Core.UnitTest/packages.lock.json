@@ -69,11 +69,11 @@
       },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[17.0.18, )",
-        "resolved": "17.0.18",
-        "contentHash": "n5lZbRpXQrPdqs/9zJ9LwzuOK4ceQhvgsO0vv+CEyX3bgRQgsDv85ZOZqYghRlDkfwvTCemcdDdgUwXv39/GzA==",
+        "requested": "[17.0.21, )",
+        "resolved": "17.0.21",
+        "contentHash": "VDSZg9VUs5sdxUx5iXc5fqoqkvJCL/NXY2RTEpKdgJIzi7kKZBTakWzqkFLZM7+3bJ6fmFs3wX4cBP9FSbaJnQ==",
         "dependencies": {
-          "System.IO.Abstractions": "17.0.18"
+          "System.IO.Abstractions": "17.0.21"
         }
       },
       "xunit": {
@@ -514,8 +514,8 @@
       },
       "Microsoft.Web.LibraryManager.Build": {
         "type": "Transitive",
-        "resolved": "2.1.174",
-        "contentHash": "RD9CwJNAtZgG18rBMuDu3UVP++dXJQwEY8Hq2lZK0nenpPpS0aFJ+X1dE5u1msk5LsL0kxFlvDfm0NrcJnbybg==",
+        "resolved": "2.1.175",
+        "contentHash": "OhJ8cfzvX/rxCuEezniBQCaCqKuQtU2tNr3m3Qryu+V30lZcUrjtsg39DGZWLw6EzbJA+TUdZPfuLeEDuz3cXA==",
         "dependencies": {
           "System.Runtime.Loader": "4.3.0"
         }
@@ -1052,8 +1052,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "17.0.18",
-        "contentHash": "x0iIMdP+PCLIkz8h13xHCecaiysFgHPe9mM3FdyfSmkl5+MtMCmgFFIe38Aibkzd0UAY/OMoXMKGR2RK10rebQ=="
+        "resolved": "17.0.21",
+        "contentHash": "JlVXaGKTUTIuiLsWJmU4+RmQQqOnWI07W6VO1RrwM0JhT/2l0/9YxsXMrlrCH26XJXZk909IXhYdsKT3q2Oi0Q=="
       },
       "System.IO.FileSystem": {
         "type": "Transitive",
@@ -1696,7 +1696,7 @@
           "Microsoft.TestPlatform.ObjectModel": "17.2.0",
           "Microsoft.TestPlatform.Portable": "17.2.0",
           "Microsoft.TestPlatform.TranslationLayer": "17.2.0",
-          "Microsoft.Web.LibraryManager.Build": "2.1.174",
+          "Microsoft.Web.LibraryManager.Build": "2.1.175",
           "Mono.Cecil": "0.11.4",
           "NuGet.Frameworks": "6.2.1",
           "Serilog": "2.11.0",
@@ -1706,9 +1706,9 @@
           "ShellProgressBar": "5.2.0",
           "Spectre.Console": "0.44.0",
           "Spectre.Console.Analyzer": "0.44.0",
-          "Stryker.DataCollector": "1.0.0",
-          "Stryker.RegexMutators": "1.0.0",
-          "System.IO.Abstractions": "17.0.18",
+          "Stryker.DataCollector": "2.0.0",
+          "Stryker.RegexMutators": "2.0.0",
+          "System.IO.Abstractions": "17.0.21",
           "System.Net.Http.Json": "6.0.0"
         }
       },

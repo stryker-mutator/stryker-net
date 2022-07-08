@@ -16,78 +16,62 @@ namespace Stryker.Core.TestRunners.VsTest
         List<TestResult> TestResults { get; }
         IReadOnlyList<TestCase> TestsInTimeout { get; }
     }
-    internal class TestRun
+
+    public class SimpleRunResults : IRunResults
     {
-        private readonly VsTestDescription _testDescription;
-        private readonly IList<TestResult> _results;
+        private List<TestCase> _testsInTimeOut = new();
+        public List<TestResult> TestResults { get; } = new();
+        public IReadOnlyList<TestCase> TestsInTimeout => _testsInTimeOut.AsReadOnly();
 
-        public TestRun(VsTestDescription testDescription)
+        public SimpleRunResults()
+        {}
+
+        public SimpleRunResults(IEnumerable<TestResult> results, IEnumerable<TestCase> testsInTimeout)
         {
-            _testDescription = testDescription;
-            _results = new List<TestResult>(testDescription.NbSubCases);
+            TestResults = results.ToList();
+            _testsInTimeOut = testsInTimeout?.ToList() ?? new List<TestCase>();
         }
 
-        public bool AddResult(TestResult result)
-        {
-            _results.Add(result);
-            return _results.Count >= _testDescription.NbSubCases;
-        }
+        public void SetTestsInTimeOut(ICollection<TestCase> tests) => _testsInTimeOut = tests.ToList();
 
-        public bool IsComplete() => _results.Count >= _testDescription.NbSubCases;
-
-        public TestResult Result()
+        public SimpleRunResults Merge(IRunResults other)
         {
-            var result = _results.Aggregate((TestResult)null, (acc, next) =>
+            if (other.TestsInTimeout?.Count > 0)
             {
-                if (acc == null)
+                if (_testsInTimeOut == null)
                 {
-                    return next;
+                    _testsInTimeOut = other.TestsInTimeout.ToList();
                 }
-                if (next.Outcome == TestOutcome.Failed || acc.Outcome == TestOutcome.None)
+                else
                 {
-                    acc.Outcome = next.Outcome;
+                    _testsInTimeOut.AddRange(other.TestsInTimeout);
                 }
-                if (acc.StartTime > next.StartTime)
-                {
-                    acc.StartTime = next.StartTime;
-                }
-                if (acc.EndTime < next.EndTime)
-                {
-                    acc.EndTime = next.EndTime;
-                }
+            }
 
-                foreach (var message in next.Messages)
-                {
-                    acc.Messages.Add(message);
-                }
-
-                acc.Duration = acc.EndTime - acc.StartTime;
-                return acc;
-            });
-            return result;
+            TestResults.AddRange(other.TestResults);
+            return this;
         }
     }
 
-    public sealed class RunEventHandler : ITestRunEventsHandler, IDisposable, IRunResults
+    public sealed class RunEventHandler : ITestRunEventsHandler
     {
-        private readonly AutoResetEvent _waitHandle;
         private readonly ILogger _logger;
         private readonly string _runnerId;
         private readonly IDictionary<Guid, VsTestDescription> _vsTests;
         private readonly IDictionary<Guid, TestRun> _runs = new Dictionary<Guid, TestRun>();
         private readonly Dictionary<Guid, TestCase> _inProgress = new();
+        private readonly List<TestResult> _rawResults = new();
+        private readonly SimpleRunResults _currentResults = new();
+        private readonly object _lck = new();
+        private bool _completed;
+
         public event EventHandler VsTestFailed;
         public event EventHandler ResultsUpdated;
 
-        public List<TestResult> TestResults { get; }
-        public IReadOnlyList<TestCase> TestsInTimeout { get; private set; }
-        public bool TimeOut { get; private set; }
         public bool CancelRequested { get; set; }
 
         public RunEventHandler(IDictionary<Guid, VsTestDescription> vsTests, ILogger logger, string runnerId)
         {
-            _waitHandle = new AutoResetEvent(false);
-            TestResults = new List<TestResult>();
             _vsTests = vsTests;
             _logger = logger;
             _runnerId = runnerId;
@@ -96,6 +80,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private void CaptureTestResults(IEnumerable<TestResult> results)
         {
             var testResults = results as TestResult[] ?? results.ToArray();
+            _rawResults.AddRange(testResults);
             foreach (var testResult in testResults)
             {
                 var id = testResult.TestCase.Id;
@@ -112,13 +97,22 @@ namespace Stryker.Core.TestRunners.VsTest
                     }
                 }
 
-                if (_runs[id].AddResult(testResult))
+                if (_runs[id].IsComplete())
                 {
-                    TestResults.Add(_runs[id].Result());
+                    // unexpected result, report it
+                    _currentResults.TestResults.Add(testResult);
+                }
+                else if (_runs[id].AddResult(testResult))
+                {
+                    _currentResults.TestResults.Add(_runs[id].Result());
                     _inProgress.Remove(id);
                 }
             }
         }
+
+        public IRunResults GetRawResults() => new SimpleRunResults(_rawResults, _currentResults.TestsInTimeout);
+
+        public IRunResults GetResults() => _currentResults;
 
         public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
         {
@@ -161,11 +155,8 @@ namespace Stryker.Core.TestRunners.VsTest
             if (!testRunCompleteArgs.IsCanceled && (_inProgress.Any() || _runs.Values.Any(t => !t.IsComplete())))
             {
                 // report ongoing tests and test case with missing results as timeouts.
-                TestsInTimeout = _inProgress.Values.Union(_runs.Values.Where(t => !t.IsComplete()).Select(t => t.Result().TestCase)).ToList();
-                if (TestsInTimeout.Count > 0)
-                {
-                    TimeOut = true;
-                }
+                _currentResults.SetTestsInTimeOut(_inProgress.Values
+                    .Union(_runs.Values.Where(t => !t.IsComplete()).Select(t => t.Result().TestCase)).ToList());
             }
 
             ResultsUpdated?.Invoke(this, EventArgs.Empty);
@@ -174,7 +165,8 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 if (testRunCompleteArgs.Error.GetType() == typeof(TransationLayerException))
                 {
-                    _logger.LogDebug(testRunCompleteArgs.Error, $"{_runnerId}: VsTest may have crashed, triggering VsTest restart!");
+                    _logger.LogDebug(testRunCompleteArgs.Error,
+                        $"{_runnerId}: VsTest may have crashed, triggering VsTest restart!");
                     VsTestFailed?.Invoke(this, EventArgs.Empty);
                 }
                 else if (testRunCompleteArgs.Error.InnerException is IOException sock)
@@ -187,33 +179,43 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
             }
 
-            _waitHandle.Set();
+            lock (_lck)
+            {
+                _completed = true;
+                Monitor.Pulse(_lck);
+            }
         }
 
-        public int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo) => throw new NotSupportedException();
+        public int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo) =>
+            throw new NotSupportedException();
 
         public void HandleRawMessage(string rawMessage) => _logger.LogTrace($"{_runnerId}: {rawMessage} [RAW]");
 
         public bool WaitEnd(int? timeOut)
         {
-            if (timeOut == null)
+            lock (_lck)
             {
-                return _waitHandle.WaitOne();
-            }
-            else
-            {
-                var delay = 0;
-                const int Unit = 500;
-                while (delay<timeOut.Value*3)
+                if (timeOut == null)
                 {
-                    if (_waitHandle.WaitOne(Unit))
+                    while (!_completed)
                     {
-                        return true;
+                        Monitor.Wait(_lck);
                     }
-                    delay += Unit;
-                }
 
-                return false;
+                    return true;
+                }
+                else
+                {
+                    var delay = 0;
+                    const int Unit = 500;
+                    while (!_completed && delay < timeOut.Value * 3)
+                    {
+                        Monitor.Wait(_lck, Unit);
+                        delay += Unit;
+                    }
+
+                    return _completed;
+                }
             }
         }
 
@@ -228,7 +230,5 @@ namespace Stryker.Core.TestRunners.VsTest
             };
             _logger.LogTrace($"{_runnerId}: [{levelFinal}] {message}");
         }
-
-        public void Dispose() => _waitHandle.Dispose();
     }
 }

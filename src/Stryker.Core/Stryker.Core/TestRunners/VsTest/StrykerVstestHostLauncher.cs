@@ -15,14 +15,14 @@ namespace Stryker.Core.TestRunners.VsTest
 
     public class StrykerVsTestHostLauncher : IStrykerTestHostLauncher
     {
-        private readonly int _id;
+        private readonly string _id;
         private Process _currentProcess;
 
         private static ILogger Logger { get; }
 
         static StrykerVsTestHostLauncher() => Logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerVsTestHostLauncher>();
 
-        public StrykerVsTestHostLauncher(int id) => _id = id;
+        public StrykerVsTestHostLauncher(string id) => _id = id;
 
         public bool IsDebug => false;
 
@@ -68,7 +68,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             if (e.Data != null)
             {
-                Logger.LogDebug($"Runner {_id}: {e.Data} (VsTest error)");
+                Logger.LogDebug($"{_id}: {e.Data} (VsTest error)");
             }
         }
 
@@ -76,7 +76,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             if (e.Data != null)
             {
-                Logger.LogTrace($"Runner {_id}: {e.Data} (VsTest output)");
+                Logger.LogTrace($"{_id}: {e.Data} (VsTest output)");
             }
         }
 

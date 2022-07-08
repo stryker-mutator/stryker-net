@@ -24,9 +24,9 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 if (Case.ExecutorUri.AbsoluteUri.Contains("nunit"))
                 {
-                    return TestFramework.nUnit;
+                    return TestFramework.NUnit;
                 }
-                return Case.ExecutorUri.AbsoluteUri.Contains("xunit") ? TestFramework.xUnit : TestFramework.msTest;
+                return Case.ExecutorUri.AbsoluteUri.Contains("xunit") ? TestFramework.xUnit : TestFramework.MsTest;
             }
         }
 
@@ -65,7 +65,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return obj.GetType() == GetType() && Equals((VsTestDescription) obj);
         }
 
-        public override int GetHashCode() => (Case != null ? Case.Id.GetHashCode() : 0);
+        public override int GetHashCode() => Case != null ? Case.Id.GetHashCode() : 0;
 
         public override string ToString() => Case.FullyQualifiedName;
     }
