@@ -57,8 +57,6 @@ namespace Stryker.Core.TestRunners.VsTest
             return BuildTestRunResult(testResults, _context.Tests.Count, false);
         }
 
-        public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants) => CaptureCoverage(mutants);
-
         public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var mutantTestsMap = new Dictionary<int, ITestGuids>();

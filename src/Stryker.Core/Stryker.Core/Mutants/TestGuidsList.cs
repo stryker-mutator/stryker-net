@@ -55,11 +55,25 @@ namespace Stryker.Core.Mutants
             return new TestGuidsList(result);
         }
 
-        public bool Contains(Guid testId) => IsEveryTest || _testsGuid.Contains(testId);
+        public bool Contains(Guid id) => IsEveryTest || _testsGuid.Contains(id);
 
         public bool IsIncludedIn(ITestGuids other) => other.IsEveryTest || _testsGuid?.IsSubsetOf(other.GetGuids())==true;
 
-        public ITestGuids Intersect(ITestGuids failedTests) => IsEveryTest ? failedTests : failedTests.IsEveryTest ? this : new TestGuidsList(failedTests.GetGuids().Where(Contains));
+        public ITestGuids Intersect(ITestGuids failedTests)
+        {
+            if (IsEveryTest)
+            {
+                return failedTests;
+            }
+
+            if (failedTests.IsEveryTest)
+            {
+                return this;
+            }
+            var result = new HashSet<Guid>(_testsGuid);
+            result.IntersectWith(failedTests.GetGuids());
+            return new TestGuidsList(result);
+        }
 
         public TestGuidsList Excluding(TestGuidsList testsToSkip)
         {

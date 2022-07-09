@@ -25,7 +25,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         private static readonly Regex _pattern = new("^\\s*\\/\\/\\s*Stryker", RegexOptions.Compiled | RegexOptions.IgnoreCase);
         private static readonly Regex _parser = new("^\\s*\\/\\/\\s*Stryker\\s*((test\\s*(apart|normal|full))|(disable|restore))\\s*(once|)\\s*([^\\n:]*)\\s*:?(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
 
-        private static readonly ILogger _logger = ApplicationLogging.LoggerFactory.CreateLogger<NodeSpecificOrchestrator<TNode, TBase>>();
+        private static readonly ILogger Logger = ApplicationLogging.LoggerFactory.CreateLogger<NodeSpecificOrchestrator<TNode, TBase>>();
 
         /// <summary>
         /// Get the Roslyn type handled by this class
@@ -110,7 +110,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                     break;
                 }
 
-                _logger.LogWarning($"Invalid Stryker comments at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}.");
+                Logger.LogWarning($"Invalid Stryker comments at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}.");
             }
             return context;
         }
@@ -118,8 +118,10 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         private static MutationContext ParseStrykerComment(MutationContext context, Match match, TNode node)
         {
             const int TestControlGroup = 2;
+            const int ModeGroup = 3;
             const int IgnoreControlGroup = 4;
             const int OnceGroup = 5;
+            const int MutatorsGroup = 6;
             const int CommentGroup = 7;
 
             var onlyOnce = match.Groups[OnceGroup].Value.Trim().ToLower() == "once";
@@ -127,8 +129,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 
             if (match.Groups[TestControlGroup].Success)
             {
-                const int modeGroup = 3;
-                var mode = match.Groups[modeGroup].Value.Trim().ToLower();
+                var mode = match.Groups[ModeGroup].Value.Trim().ToLower();
                 // flag mutants as to be tested in isolation from other mutants
                 return context.SetTestStrategy(onlyOnce, mode == "full", mode == "apart");
             }
@@ -138,7 +139,6 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                 return context;
             }
 
-            const int MutatorsGroup = 6;
             var command = match.Groups[IgnoreControlGroup].Value.ToLower();
             // manual ignore
             var disable = command switch
@@ -164,7 +164,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                     }
                     else
                     {
-                        _logger.LogError(
+                        Logger.LogError(
                             $"{labels[i]} not recognized as a mutator at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}. Legal values are {string.Join(',', Enum.GetValues<Mutator>())}.");
                     }
                 }

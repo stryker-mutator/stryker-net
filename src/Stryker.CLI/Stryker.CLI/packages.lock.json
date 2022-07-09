@@ -41,6 +41,12 @@
           "NuGet.Packaging": "6.2.1"
         }
       },
+      "YamlDotNet": {
+        "type": "Direct",
+        "requested": "[11.2.1, )",
+        "resolved": "11.2.1",
+        "contentHash": "tBt8K+korVfrjH9wyDEhiLKxbs8qoLCLIFwvYgkSUuMC9//w3z0cFQ8LQAI/5MCKq+BMil0cfRTRvPeE7eXhQw=="
+      },
       "Buildalyzer": {
         "type": "Transitive",
         "resolved": "4.1.4",
@@ -1153,8 +1159,8 @@
           "ShellProgressBar": "5.2.0",
           "Spectre.Console": "0.44.0",
           "Spectre.Console.Analyzer": "0.44.0",
-          "Stryker.DataCollector": "2.0.0",
-          "Stryker.RegexMutators": "2.0.0",
+          "Stryker.DataCollector": "1.0.0",
+          "Stryker.RegexMutators": "1.0.0",
           "System.IO.Abstractions": "17.0.21",
           "System.Net.Http.Json": "6.0.0"
         }

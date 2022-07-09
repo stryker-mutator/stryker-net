@@ -58,6 +58,17 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult InitialTest()
             => RunThis(runner => runner.InitialTest());
 
+        private void Initialize(Func<VsTestContextInformation, int, VsTestRunner> runnerBuilder = null)
+        {
+            runnerBuilder ??= (context, i) => new VsTestRunner(context, i);
+            Task.Run(() =>
+                Parallel.For(0, _countOfRunners, (i, _) =>
+                {
+                    _availableRunners.Add(runnerBuilder(Context, i));
+                    _runnerAvailableHandler.Set();
+                }));
+        }
+
         public IEnumerable<CoverageRunResult> CaptureCoverage()
         {
             var optimizationMode = Context.Options.OptimizationMode;
@@ -73,17 +84,6 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             return resultsToParse;
-        }
-
-        private void Initialize(Func<VsTestContextInformation, int, VsTestRunner> runnerBuilder = null)
-        {
-            runnerBuilder ??= (context, i) => new VsTestRunner(context, i);
-            Task.Run(() =>
-                Parallel.For(0, _countOfRunners, (i, _) =>
-                {
-                    _availableRunners.Add(runnerBuilder(Context, i));
-                    _runnerAvailableHandler.Set();
-                }));
         }
 
         private IEnumerable<CoverageRunResult> CaptureCoverageInOneGo() => ConvertCoverageResult(RunThis(runner => runner.RunCoverageSession(TestGuidsList.EveryTest()).TestResults), false);
@@ -120,32 +120,6 @@ namespace Stryker.Core.TestRunners.VsTest
                 _runnerAvailableHandler.Set();
             }
         }
-        
-        public IEnumerable<CoverageRunResult> CaptureCoverage(IEnumerable<Mutant> mutants)
-        {   
-            if (!Context.Options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) &&
-                !Context.Options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants))
-            {
-                _runnerAvailableHandler.WaitOne();
-            }
-
-            var normalTests = Context.VsTests.Keys.ToList();
-            var dubiousTests = new List<Guid>();
-            // check if we have tests with multiple results that may require isolated capture
-            foreach (var vsTestDescription in Context.VsTests)
-            {
-                if (vsTestDescription.Value.NbSubCases > 1)
-                {
-                    normalTests.Remove(vsTestDescription.Key);
-                    dubiousTests.Add(vsTestDescription.Key);
-                }
-            }
-
-            var result = ConvertCoverageResult(RunThis(t => t.RunCoverageSession(new TestGuidsList(normalTests)).TestResults), false);
-
-            return result;
-        }
-
         public void Dispose()
         {
             foreach (var runner in _availableRunners)

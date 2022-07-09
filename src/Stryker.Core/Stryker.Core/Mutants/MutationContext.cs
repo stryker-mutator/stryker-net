@@ -183,6 +183,7 @@ namespace Stryker.Core.Mutants
         public MutationContext SetTestStrategy(bool newContext, bool forceAllTest, bool isolated)
         {
             var result = newContext ? new MutationContext(this) : this;
+
             if (forceAllTest)
             {
                 result.CantDetermineCoverage = true;

@@ -9,18 +9,18 @@ using Xunit;
 
 namespace Stryker.CLI.UnitTest
 {
-    public class ConfigReaderTests
+    public class ConfigBuilderTests
     {
         private readonly Mock<IStrykerInputs> _inputs;
         private readonly CommandLineApplication _app;
-        private readonly CommandLineConfigHandler _cmdConfigHandler;
+        private readonly CommandLineConfigReader _cmdConfigHandler;
 
-        public ConfigReaderTests()
+        public ConfigBuilderTests()
         {
             _inputs = GetMockInputs();
             _app = GetCommandLineApplication();
 
-            _cmdConfigHandler = new CommandLineConfigHandler();
+            _cmdConfigHandler = new CommandLineConfigReader();
             _cmdConfigHandler.RegisterCommandLineOptions(_app, _inputs.Object);
         }
 
@@ -29,7 +29,7 @@ namespace Stryker.CLI.UnitTest
         {
             var args = new[] { "-f", "invalidconfig.json" };
 
-            var reader = new ConfigReader();
+            var reader = new ConfigBuilder();
 
             var exception = Assert.Throws<InputException>(() => reader.Build(_inputs.Object, args, _app, _cmdConfigHandler));
             exception.Message.ShouldStartWith("Config file not found");
@@ -43,7 +43,7 @@ namespace Stryker.CLI.UnitTest
 
             var args = new string[] { };
 
-            var reader = new ConfigReader();
+            var reader = new ConfigBuilder();
 
             reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
 
@@ -51,23 +51,20 @@ namespace Stryker.CLI.UnitTest
 
             Directory.SetCurrentDirectory(currentDirectory);
         }
-        
+
         [Fact]
         public void ValidDefaultConfigFile_ShouldParseConfigFile()
         {
             var args = new string[] { };
 
-            var reader = new ConfigReader();
+            var reader = new ConfigBuilder();
 
             reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
 
             VerifyConfigFileDeserialized(Times.Once());
         }
 
-        private void VerifyConfigFileDeserialized(Times time)
-        {
-            _inputs.VerifyGet(x => x.BaselineProviderInput, time);
-        }
+        private void VerifyConfigFileDeserialized(Times time) => _inputs.VerifyGet(x => x.BaselineProviderInput, time);
 
         private static CommandLineApplication GetCommandLineApplication()
         {

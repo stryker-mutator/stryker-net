@@ -261,7 +261,7 @@ namespace Stryker.Core.MutationTest
                 mutant.ResultStatus = MutantStatus.NotRun;
             }
 
-            _logger.LogInformation("Testing a group of {0} mutants against {1} tests.", toTest.Count, toTest.Any(t => t.CoveringTests.IsEveryTest) ? "all" : toTest.Sum(t => t.CoveringTests.Count));
+            _logger.LogInformation("Testing a group of {0} mutants against {1} tests.", toTest.Count, toTest.Any(t => t.AssessingTests.IsEveryTest) ? "all" : toTest.Sum(t => t.AssessingTests.Count));
             TestMutants(new[] { toTest });
         }
 
@@ -357,8 +357,9 @@ namespace Stryker.Core.MutationTest
             var blocks = new List<List<T>>(mutantsNotRun.Count);
             var mutantsToGroup = mutantsNotRun.ToList();
             // deal with mutants that must be run alone, either it is requested or because they run against all tests
-            blocks.AddRange(mutantsToGroup.Where(m => m.AssessingTests.IsEveryTest).Select(m => new List<T> { m }));
-            mutantsToGroup.RemoveAll(m => m.AssessingTests.IsEveryTest);
+            var needOwnTestSession = mutantsToGroup.Where(m => m.AssessingTests.IsEveryTest || m.MustBeTestedInIsolation).ToHashSet();
+            blocks.AddRange(needOwnTestSession.Select(m => new List<T> { m }));
+            mutantsToGroup.RemoveAll(m => needOwnTestSession.Contains(m));
 
             mutantsToGroup = mutantsToGroup.Where(m => m.ResultStatus == MutantStatus.NotRun).ToList();
             

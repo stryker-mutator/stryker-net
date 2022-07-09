@@ -90,8 +90,8 @@ namespace Stryker.Core.CoverageAnalysis
             var (resultTingRequirements, testGuids) = ParseResultForThisMutant(mutationToResultMap, mutantId);
 
             var assessingTests = testGuids.Excluding(failedTest);
-            mutant.MustBeTestedInIsolation = resultTingRequirements.HasFlag(MutationTestingRequirements.NeedEarlyActivation);
-            if (resultTingRequirements.HasFlag(MutationTestingRequirements.AgainstAllTests))
+            mutant.MustBeTestedInIsolation |= resultTingRequirements.HasFlag(MutationTestingRequirements.NeedEarlyActivation);
+            if (resultTingRequirements.HasFlag(MutationTestingRequirements.AgainstAllTests) || mutant.CannotDetermineCoverage)
             {
                 mutant.CoveringTests = TestGuidsList.EveryTest();
                 mutant.AssessingTests = TestGuidsList.EveryTest();
