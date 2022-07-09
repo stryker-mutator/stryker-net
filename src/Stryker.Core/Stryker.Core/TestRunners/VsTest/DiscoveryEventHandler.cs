@@ -8,17 +8,18 @@ namespace Stryker.Core.TestRunners.VsTest
 {
     public class DiscoveryEventHandler : ITestDiscoveryEventsHandler
     {
-        private readonly AutoResetEvent _waitHandle;
         private readonly List<string> _messages;
-        public List<TestCase> DiscoveredTestCases { get; }
-        public bool Aborted { get; private set; }
-
-        public DiscoveryEventHandler(AutoResetEvent waitHandle, List<string> messages)
+        private readonly object _lck = new();
+        private bool _discoveryDone;
+        public DiscoveryEventHandler(List<string> messages)
         {
-            _waitHandle = waitHandle;
             DiscoveredTestCases = new List<TestCase>();
             _messages = messages;
         }
+
+        public bool Aborted { get; private set; }
+        public List<TestCase> DiscoveredTestCases { get; set; }
+
 
         public void HandleDiscoveredTests(IEnumerable<TestCase> discoveredTestCases)
         {
@@ -36,7 +37,22 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             Aborted = isAborted;
-            _waitHandle.Set();
+            lock (_lck)
+            {
+                _discoveryDone = true;
+                Monitor.Pulse(_lck);
+            }
+        }
+
+        public void WaitEnd()
+        {
+            lock (_lck)
+            {
+                while (!_discoveryDone)
+                {
+                    Monitor.Wait(_lck);
+                }
+            }
         }
 
         public void HandleRawMessage(string rawMessage) => _messages.Add("Test Discovery Raw Message: " + rawMessage);

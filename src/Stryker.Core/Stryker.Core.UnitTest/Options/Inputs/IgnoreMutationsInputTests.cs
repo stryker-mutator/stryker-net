@@ -54,14 +54,14 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             var target = new IgnoreMutationsInput { SuppliedInput = new[] {
                 Mutator.String.ToString(),
-                Mutator.Logical.ToString()
+                Mutator.Regex.ToString(),
             } };
 
             var result = target.Validate();
 
             result.Count().ShouldBe(2);
             result.First().ShouldBe(Mutator.String);
-            result.Last().ShouldBe(Mutator.Logical);
+            result.ElementAt(1).ShouldBe(Mutator.Regex);
         }
 
 

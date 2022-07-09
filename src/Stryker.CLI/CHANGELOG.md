@@ -1,3 +1,25 @@
+# [2.0.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.5.3...dotnet-stryker@2.0.0) (2022-06-01)
+
+
+### Bug Fixes
+
+* **options:** Stryker silently runs with default config if custom config file is set but not found ([#2064](https://github.com/stryker-mutator/stryker-net/issues/2064)) ([96afa2c](https://github.com/stryker-mutator/stryker-net/commit/96afa2c7d627390fee58f993b27637b0d3458323))
+
+
+
+## [1.5.3](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.5.2...dotnet-stryker@1.5.3) (2022-05-03)
+
+
+### Bug Fixes
+
+* **Reporting:** Set correct log level for libgit2sharp ([#2025](https://github.com/stryker-mutator/stryker-net/issues/2025)) ([7308e09](https://github.com/stryker-mutator/stryker-net/commit/7308e096e7ede4625a96f8ece0d3e8b2ae5e60f2))
+
+
+
+## [1.5.2](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.5.1...dotnet-stryker@1.5.2) (2022-04-21)
+
+
+
 ## [1.5.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.5.0...dotnet-stryker@1.5.1) (2022-04-12)
 
 

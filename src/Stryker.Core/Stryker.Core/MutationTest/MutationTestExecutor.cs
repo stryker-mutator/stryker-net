@@ -72,10 +72,9 @@ namespace Stryker.Core.MutationTest
             }
         }
 
-        private TestRunResult RunTestSession(IList<Mutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
+        private TestRunResult RunTestSession(ICollection<Mutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
             TestUpdateHandler updateHandler, bool forceSingle)
         {
-            TestRunResult result;
             Logger.LogTrace($"Testing {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))}.");
             if (forceSingle && mutantsToTest.Count > 1)
             {
@@ -87,16 +86,16 @@ namespace Stryker.Core.MutationTest
 
                 return new TestRunResult(true);
             }
-            else
+
+            var result = TestRunner.TestMultipleMutants(timeoutMs, mutantsToTest.ToList(), updateHandler);
+            if (updateHandler != null)
             {
-                result = TestRunner.TestMultipleMutants(timeoutMs, mutantsToTest.ToList(), updateHandler);
-                if (updateHandler == null)
-                {
-                    foreach (var mutant in mutantsToTest)
-                    {
-                        mutant.AnalyzeTestRun(result.FailingTests, result.RanTests, result.TimedOutTests);
-                    }
-                }
+                return result;
+            }
+
+            foreach (var mutant in mutantsToTest)
+            {
+                mutant.AnalyzeTestRun(result.FailingTests, result.RanTests, result.TimedOutTests);
             }
 
             return result;

@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
+using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.UnitTest.MutationTest
@@ -21,11 +22,14 @@ namespace Stryker.Core.UnitTest.MutationTest
         // list of test (and their description)
         private readonly Dictionary<int, TestDescription> _tests = new ();
         // test coverage per mutant
-        private readonly Dictionary<int, TestsGuidList> _coverageResult = new();
+        private readonly Dictionary<int, TestGuidsList> _coverageResult = new();
         // failing tests per mutant
-        private readonly Dictionary<int, TestsGuidList> _failedTestsPerMutant = new();
+        private readonly Dictionary<int, TestGuidsList> _failedTestsPerMutant = new();
+        // mutant coverage per test
+        private readonly Dictionary<Guid, List<int>> _testCoverage = new();
         // fine control: failing tests per mutant, taking into account the other mutants tested in the same session.
-        private readonly Dictionary<HashSet<int>, Dictionary<int, TestsGuidList>> _failedTestsPerRun = new(new HashSetComparer());
+        private readonly Dictionary<HashSet<int>, Dictionary<int, TestGuidsList>> _failedTestsPerRun = new(new HashSetComparer());
+        private OptimizationModes _mode = OptimizationModes.CoverageBasedTest | OptimizationModes.SkipUncoveredMutants;
         private const int InitialRunId = -1;
         private Mock<ITestRunner> _runnerMock;
         /// <summary>
@@ -35,7 +39,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         /// <summary>
         /// Existing mutants.
         /// </summary>
-        public IEnumerable<Mutant> Mutants => _mutants.Values;
+        public IDictionary<int, Mutant> Mutants => _mutants;
 
         /// <summary>
         /// Create a mutant
@@ -84,8 +88,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         /// Get the list of mutants that must be tested.
         /// </summary>
         /// <returns></returns>
-        public IEnumerable<Mutant> GetTestableMutants() => _coverageResult.Keys.Select(i => _mutants[i]);
-
+        public IEnumerable<Mutant> GetCoveredMutants() => _coverageResult.Keys.Select(i => _mutants[i]);
         /// <summary>
         /// Get the status of the mutant of a given id
         /// </summary>
@@ -97,28 +100,49 @@ namespace Stryker.Core.UnitTest.MutationTest
         /// </summary>
         /// <param name="mutantId">mutant id</param>
         /// <param name="testIds">tests covering the given mutant</param>
-        public void DeclareCoverageForMutant(int mutantId, params int[] testIds) => _coverageResult[mutantId] = GetGuidList(testIds);
+        public void DeclareCoverageForMutant(int mutantId, params int[] testIds)
+        {
+            _coverageResult[mutantId] = GetGuidList(testIds);
+            foreach (var testId in testIds)
+            {
+                var id = _tests[testId].Id;
+                if (!_testCoverage.ContainsKey(id))
+                {
+                    _testCoverage[id] = new List<int>();
+                }
+                _testCoverage[id].Add(mutantId);
+            }
+        }
+
         /// <summary>
         /// Declare that the mutant must be run against all tests.
         /// </summary>
         /// <param name="mutantId">mutant id</param>
-        public void DeclareFullCoverageForMutant(int mutantId) => _coverageResult[mutantId] = GetGuidList();
+        public void DeclareFullCoverageForMutant(int mutantId) =>
+            DeclareCoverageForMutant(mutantId, _tests.Keys.ToArray());
         /// <summary>
         /// Declare tests that are failing against the non mutated assembly.
         /// </summary>
         /// <param name="testIds">test ids</param>
         public void DeclareTestsFailingAtInit(params int[] testIds) => DeclareTestsFailingWhenTestingMutant(InitialRunId, testIds);
+        
+        /// <summary>
+        /// Define optimization mode
+        /// </summary>
+        /// <param name="mode"></param>
+        public void SetMode(OptimizationModes mode) => _mode = mode;
+
         /// <summary>
         /// Declare the tests that are failing when testing a mutant.
         /// </summary>
         /// <param name="mutantId">Mutant id</param>
         /// <param name="testIds">Test(s) failing for this mutant</param>
         public void DeclareTestsFailingWhenTestingMutant(int mutantId, params int[] testIds)
-        {
-            var testsGuidList = GetGuidList(testIds);
-            if (!testsGuidList.IsIncluded(GetCoveringTests(mutantId)))
             {
-                // just check we are not doing something stupid
+            var testsGuidList = GetGuidList(testIds);
+            // just check we are not doing something stupid
+            if (mutantId!= InitialRunId && !testsGuidList.IsIncludedIn(GetCoveringTests(mutantId)))
+            {
                 throw new ApplicationException(
                     $"you tried to declare a failing test but it does not cover mutant {mutantId}");
             }
@@ -126,19 +150,21 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         /// <summary>
-        /// Declare tests that fail for a specific run
+        /// Declare tests that fail for a specific run.
         /// </summary>
-        /// <param name="mutantIds">list of mutants for the run</param>
         /// <param name="mutantId">mutant concerned by those tests</param>
-        /// <param name="testIds">tests that fail</param>
-        public void DeclareTestsFailingWhenTestingMutant(IEnumerable<int> mutantIds,int mutantId, params int[] testIds)
+        /// <param name="mutantInRun"></param>
+        /// <param name="failingTestIds"></param>
+        /// <remarks>this method simulates interdependent tests</remarks>
+        public void DeclareTestsFailingWhenTestingMutantWithGroup(int mutantId, IEnumerable<int> mutantInRun,
+            params int[] failingTestIds)
         {
-            var key = mutantIds.ToHashSet();
-            var testsGuidList = GetGuidList(testIds);
+            var key = mutantInRun.ToHashSet();
+            var testsGuidList = GetGuidList(failingTestIds);
 
             if (!_failedTestsPerRun.ContainsKey(key))
             {
-                _failedTestsPerRun[key] = new Dictionary<int, TestsGuidList>();
+                _failedTestsPerRun[key] = new Dictionary<int, TestGuidsList>();
             }
             _failedTestsPerRun[key][mutantId] = testsGuidList;
         }
@@ -180,11 +206,11 @@ namespace Stryker.Core.UnitTest.MutationTest
         /// </summary>
         /// <param name="testIds"></param>
         /// <returns></returns>
-        public TestsGuidList GetGuidList(params int[] testIds) => new TestsGuidList(testIds.Select(i => _tests[i]).Select(t => t.Id));
+        public TestGuidsList GetGuidList(params int[] testIds) => new(testIds.Select(i => _tests[i]).Select(t => t.Id));
 
-        private TestsGuidList GetGuidList() => new(_tests.Values.Select(t => t.Id));
+        private TestGuidsList GetGuidList() => new(_tests.Values.Select(t => t.Id));
 
-        private TestsGuidList GetFailedTests(int mutantId, IEnumerable<int> readOnlyList)
+        private TestGuidsList GetFailedTests(int mutantId, IEnumerable<int> readOnlyList)
         {
             if (readOnlyList != null)
             {
@@ -202,25 +228,32 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 return list;
             }
-            return TestsGuidList.NoTest();
+            return TestGuidsList.NoTest();
         }
 
-        private TestsGuidList GetCoveringTests(int mutantId)
+        private TestGuidsList GetCoveringTests(int mutantId)
         {
-            if (_coverageResult.TryGetValue(mutantId, out var list))
+            if (mutantId == InitialRunId)
             {
-                if (list.Count == TestSet.Count)
-                {
-                    return TestsGuidList.EveryTest();
-                }
-                return list;
+                return GetGuidList();
+            }
+            
+            if (!_mode.HasFlag(OptimizationModes.CoverageBasedTest))
+            {
+                return TestGuidsList.EveryTest();
             }
 
-            // if this is the initial test run, we must return the complete list of tests.
-            return mutantId == InitialRunId ? new TestsGuidList(_tests.Values.Select(t => t.Id)) : TestsGuidList.NoTest();
+            if (_coverageResult.TryGetValue(mutantId, out var list))
+            {
+                return list;
+            }
+            
+            return TestGuidsList.NoTest();
         }
 
-        private TestRunResult GetRunResult(int id) => new(GetCoveringTests(id), GetFailedTests(id, null), TestsGuidList.NoTest(), string.Empty, TimeSpan.Zero);
+        private TestRunResult GetRunResult(int id) =>
+            new(GetCoveringTests(id), GetFailedTests(id, null), TestGuidsList.NoTest(), string.Empty,
+                TimeSpan.Zero);
 
         public TestRunResult GetInitialRunResult() => GetRunResult(InitialRunId);
 
@@ -233,33 +266,35 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             _runnerMock = new Mock<ITestRunner>();
             var successResult = new TestRunResult(GetGuidList(),
-                TestsGuidList.NoTest(),
-                TestsGuidList.NoTest(),
+                TestGuidsList.NoTest(),
+                TestGuidsList.NoTest(),
                 string.Empty,
                 TimeSpan.Zero);
             _runnerMock.Setup(x => x.DiscoverTests()).Returns(TestSet);
             _runnerMock.Setup(x => x.InitialTest()).Returns(GetRunResult(InitialRunId));
-            _runnerMock.Setup(x => x.CaptureCoverage(It.IsAny<IEnumerable<Mutant>>()))
-                .Callback((Action<IEnumerable<Mutant>>)(t =>
+            _runnerMock.Setup(x => x.CaptureCoverage())
+                .Returns(() =>
                 {
-                    foreach (var m in t)
+                    var result = new List<CoverageRunResult>(_tests.Count);
+                    foreach (var (guid, mutations) in _testCoverage)
                     {
-                        m.CoveringTests = GetCoveringTests(m.Id);
-                        if (m.CoveringTests.Count == TestSet.Count)
-                        {
-                            m.CoveringTests = TestsGuidList.EveryTest();
-                        }
+                        result.Add(new CoverageRunResult(guid, CoverageConfidence.Normal,
+                            mutations,
+                            Enumerable.Empty<int>(),
+                            Enumerable.Empty<int>()));
                     }
-                })).Returns(successResult);
+                    return result;
+                });
+            
             _runnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<ITimeoutValueCalculator>(),
                     It.IsAny<IReadOnlyList<Mutant>>(), It.IsAny<TestUpdateHandler>())).
                 Callback((Action<ITimeoutValueCalculator, IReadOnlyList<Mutant>, TestUpdateHandler>)((test1, list,
                     update) =>
                 {
                     var ids = list.Select(m => m.Id);
-                    foreach (var m in list)
+                    foreach (var mutant in list)
                     {
-                        update(list, GetFailedTests(m.Id, ids), GetCoveringTests(m.Id), TestsGuidList.NoTest());
+                        update(list, GetFailedTests(mutant.Id, ids), mutant.AssessingTests, TestGuidsList.NoTest());
                     }
                 }))
                 .Returns(successResult);
@@ -273,5 +308,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             public int GetHashCode([DisallowNull] HashSet<int> obj) => obj.Aggregate(0, (current, entry) => current ^ entry.GetHashCode());
         }
+
+        public IEnumerable<Mutant> GetMutants() => Mutants.Values;
     }
 }

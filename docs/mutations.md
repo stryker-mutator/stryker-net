@@ -32,11 +32,11 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `!=` | `==` |
 
 ## Logical Operators (_logical_)
-| Original | Mutated | 
-| ------------- | ------------- | 
-| `&&` | `\|\|` | 
-| `\|\|` | `&&` |
-| `^` | `==` |
+| Original                  | Mutated                   |
+|---------------------------|---------------------------|
+| `&&`                      | <code>&#124;&#124;</code> |
+| <code>&#124;&#124;</code> | `&&`                      |
+| `^`                       | `==`                      |
 
 ## Boolean Literals (_boolean_)
 | Original | Mutated | 
@@ -48,21 +48,21 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `while(person.IsAdult())` | `while(!person.IsAdult())` |
 
 ## Assignment Statements (_assignment_)
-| Original | Mutated | 
-| ------------- | ------------- | 
-|`+= ` | `-= ` |
-|`-= ` | `+= ` |
-|`*= ` | `/= ` |
-|`/= ` | `*= ` |
-|`%= ` | `*= ` |
-|`<<=` | `>>=` |
-|`>>=` | `<<=` |
-|`&= ` | `\|= `|
-|`&= ` | `^= ` |
-|`\|= `| `&= ` |
-|`\|= `| `^= ` |
-|`^= ` | `\|= `|
-|`^= ` | `&= ` |
+| Original             | Mutated              |
+|----------------------|----------------------|
+| `+=`                 | `-=`                 |
+| `-=`                 | `+=`                 |
+| `*=`                 | `/=`                 |
+| `/=`                 | `*=`                 |
+| `%=`                 | `*=`                 |
+| `<<=`                | `>>=`                |
+| `>>=`                | `<<=`                |
+| `&=`                 | <code>&#124;=</code> |
+| `&=`                 | `^=`                 |
+| <code>&#124;=</code> | `&=`                 |
+| <code>&#124;=</code> | `^=`                 |
+| `^=`                 | <code>&#124;=</code> |
+| `^=`                 | `&=`                 |
 
 ## Collection initialization (_initializer_)
 | Original | Mutated | 
@@ -149,13 +149,13 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `string.Empty` | `"Stryker was here!"` |
 
 ## Bitwise Operators (_bitwise_)
-| Original | Mutated |
-| ------------- | ------------- | 
-| `<<` | `>>` |
-| `>>` | `<<` |
-| `&` | `\|` |
-| `\|` | `&` |
-| `a^b` | `~(a^b)` |
+| Original            | Mutated             |
+|---------------------|---------------------|
+| `<<`                | `>>`                |
+| `>>`                | `<<`                |
+| `&`                 | <code>&#124;</code> |
+| <code>&#124;</code> | `&`                 |
+| `a^b`               | `~(a^b)`            |
 
 ## Regular Expressions (_regex_)
 For the full list of all available regex mutations, see the [regex mutator docs](./regex-mutations.md).

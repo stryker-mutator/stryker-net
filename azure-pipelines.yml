@@ -23,8 +23,8 @@ pr:
     - '.github/*'
 
 variables:
-  PackageVersion: '1.5.1'
-  VersionBuildNumber: $[counter('1.5.1', 1)]
+  PackageVersion: '2.0.0'
+  VersionBuildNumber: $[counter('2.0.0', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
@@ -49,6 +49,10 @@ stages:
     displayName: Run Sonar Analysis
     dependsOn: []
     steps:
+    - task: UseDotNet@2
+      displayName: 'Use dotnet 6'
+      inputs:
+        version: 6.x
     - template: pipeline-templates/populate-cache-steps.yml
     - task: SonarCloudPrepare@1
       inputs:
@@ -58,15 +62,6 @@ stages:
         projectKey: 'stryker-net'
         projectName: 'Stryker .NET'
         projectVersion: '$(PackageVersion)'
-    - task: DotNetCoreCLI@2 # Microsoft broke implicit restore on build so let's just keep this here..
-      displayName: 'Restore'
-      inputs:
-        command: 'restore'
-        projects: 'src/Stryker.sln'
-    - task: DotNetCoreCLI@2
-      inputs:
-        command: 'build'
-        projects: 'src/Stryker.sln'
     - task: DotNetCoreCLI@2
       displayName: 'Run unit tests'
       inputs:
@@ -83,6 +78,10 @@ stages:
     dependsOn: []
     timeoutInMinutes: 240
     steps:
+    - task: UseDotNet@2
+      displayName: 'Use dotnet 6'
+      inputs:
+        version: 6.x
     - task: DotNetCoreCLI@2
       displayName: 'Install dotnet-stryker'
       inputs:
@@ -100,6 +99,10 @@ stages:
     dependsOn: []
     timeoutInMinutes: 240
     steps:
+    - task: UseDotNet@2
+      displayName: 'Use dotnet 6'
+      inputs:
+        version: 6.x
     - task: DotNetCoreCLI@2
       displayName: 'Install dotnet-stryker'
       inputs:
@@ -129,6 +132,10 @@ stages:
           steps:
           - checkout: self
           - template: pipeline-templates/populate-cache-steps.yml
+          - task: UseDotNet@2
+            displayName: 'Use dotnet 6'
+            inputs:
+              version: 6.x
           - task: DotNetCoreCLI@2
             displayName: 'Restore vstest binaries'
             inputs:
@@ -136,11 +143,6 @@ stages:
               custom: 'restore'
               arguments: '--packages ./.vstest/'
               workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
-          - task: DotNetCoreCLI@2 # Microsoft broke implicit restore on build so let's just keep this here..
-            displayName: 'Restore'
-            inputs:
-              command: 'restore'
-              projects: 'src/Stryker.sln'
           - task: DotNetCoreCLI@2
             displayName: 'Pack integrationtest packages'
             inputs:
@@ -257,6 +259,10 @@ stages:
     displayName: Publish Release Artifacts
     steps:
     - template: pipeline-templates/populate-cache-steps.yml
+    - task: UseDotNet@2
+      displayName: 'Use dotnet 6'
+      inputs:
+        version: 6.x
     - task: DotNetCoreCLI@2
       displayName: 'Restore vstest binaries'
       inputs:
@@ -295,6 +301,10 @@ stages:
     displayName: Publish Release Artifacts
     steps:
     - template: pipeline-templates/populate-cache-steps.yml
+    - task: UseDotNet@2
+      displayName: 'Use dotnet 6'
+      inputs:
+        version: 6.x
     - task: DotNetCoreCLI@2
       displayName: 'Restore vstest binaries'
       inputs:

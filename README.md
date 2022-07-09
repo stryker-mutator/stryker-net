@@ -16,7 +16,7 @@ For an introduction to mutation testing and Stryker's features, see [stryker-mut
 
 ## Compatibility
 
-Minimum sdk version:
+Minimum target version:
  - dotnet core 1.1
  - dotnet framework 4.5
 
@@ -40,7 +40,7 @@ For the full documentation on how to use Stryker.NET, see our [configuration doc
 
 ## Migrating
 
-Coming from Stryker.NET V0.x? Take a look at our [migration guide](https://stryker-mutator.io/docs/stryker-net/migration-guide).
+Coming from Stryker.NET pre V2? Take a look at our [migration guide](https://stryker-mutator.io/docs/stryker-net/migration-guide).
 
 ## Supported Mutators
 

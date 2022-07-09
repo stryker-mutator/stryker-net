@@ -44,7 +44,7 @@ namespace Stryker.Core.UnitTest
 
             inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
             {
-                BasePath = "C:/test",
+                ProjectPath = "C:/test",
                 LogOptions = new LogOptions(),
                 OptimizationMode = OptimizationModes.SkipUncoveredMutants
             });
@@ -80,7 +80,7 @@ namespace Stryker.Core.UnitTest
             target.SetupLogging(new LoggerFactory());
             target.RunMutationTest(inputsMock.Object, projectOrchestratorMock.Object);
 
-            projectOrchestratorMock.Verify(x => x.MutateProjects(It.Is<StrykerOptions>(y => y.BasePath == "C:/test"), It.IsAny<IReporter>()), Times.Once);
+            projectOrchestratorMock.Verify(x => x.MutateProjects(It.Is<StrykerOptions>(y => y.ProjectPath == "C:/test"), It.IsAny<IReporter>()), Times.Once);
             mutationTestProcessMock.Verify(x => x.GetCoverage(), Times.Once);
             mutationTestProcessMock.Verify(x => x.Test(It.IsAny<IEnumerable<Mutant>>()), Times.Once);
             reporterMock.Verify(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()), Times.Once);
@@ -111,7 +111,7 @@ namespace Stryker.Core.UnitTest
 
             inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
             {
-                BasePath = "C:/test",
+                ProjectPath = "C:/test",
                 LogOptions = new LogOptions(),
                 OptimizationMode = OptimizationModes.SkipUncoveredMutants,
             });
@@ -142,7 +142,7 @@ namespace Stryker.Core.UnitTest
             target.SetupLogging(new LoggerFactory());
             target.RunMutationTest(inputsMock.Object, projectOrchestratorMock.Object);
 
-            projectOrchestratorMock.Verify(x => x.MutateProjects(It.Is<StrykerOptions>(y => y.BasePath == "C:/test"), It.IsAny<IReporter>()), Times.Once);
+            projectOrchestratorMock.Verify(x => x.MutateProjects(It.Is<StrykerOptions>(y => y.ProjectPath == "C:/test"), It.IsAny<IReporter>()), Times.Once);
             mutationTestProcessMock.Verify(x => x.GetCoverage(), Times.Once);
             mutationTestProcessMock.Verify(x => x.DiagnoseMutant(It.IsAny<IEnumerable<Mutant>>(), 1), Times.Once);
         }
@@ -302,7 +302,7 @@ It was killed by these test(s): 3");
 
             inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
             {
-                BasePath = "C:/test",
+                ProjectPath = "C:/test",
                 OptimizationMode = OptimizationModes.None,
                 LogOptions = new LogOptions()
             });

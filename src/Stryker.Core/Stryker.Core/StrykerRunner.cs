@@ -128,7 +128,7 @@ namespace Stryker.Core
             {
                 // log duration
                 stopwatch.Stop();
-                _logger.LogInformation("Time Elapsed {0}", stopwatch.Elapsed);
+                _logger.LogInformation("Time Elapsed {duration}", stopwatch.Elapsed);
             }
         }
 
@@ -254,15 +254,13 @@ namespace Stryker.Core
             {
                 var rootComponent = new Solution
                 {
-                    FullPath = options.BasePath // in case of a solution run the basePath will be where the solution file is
+                    FullPath = options.ProjectPath // in case of a solution run the basePath will be where the solution file is
                 };
                 rootComponent.AddRange(projectComponents);
                 return rootComponent;
             }
-            else
-            {
-                return projectComponents.FirstOrDefault();
-            }
+
+            return projectComponents.FirstOrDefault();
         }
     }
 }

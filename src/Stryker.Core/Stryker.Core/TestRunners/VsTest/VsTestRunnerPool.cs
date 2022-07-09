@@ -1,162 +1,149 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
-using Stryker.Core.ToolHelpers;
+using Stryker.DataCollector;
 
 namespace Stryker.Core.TestRunners.VsTest
-{
+{   
     public sealed class VsTestRunnerPool : ITestRunner
     {
-        private readonly StrykerOptions _options;
         private readonly AutoResetEvent _runnerAvailableHandler = new(false);
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new();
-        private readonly IDictionary<Guid, VsTestDescription> _vsTests;
-        private readonly TestSet _tests;
-        private readonly VsTestHelper _helper = new();
         private readonly ILogger _logger;
+        private readonly int _countOfRunners;
+        public VsTestContextInformation Context { get; }
 
-        public VsTestRunnerPool(StrykerOptions options, ProjectInfo projectInfo)
+        /// <summary>
+        /// this constructor is for test purposes
+        /// </summary>
+        /// <param name="vsTestContext"></param>
+        /// <param name="forcedLogger"></param>
+        /// <param name="runnerBuilder"></param>
+        public VsTestRunnerPool(VsTestContextInformation vsTestContext,
+            ILogger forcedLogger,
+            Func<VsTestContextInformation, int, VsTestRunner> runnerBuilder)
         {
-            _options = options;
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
-            var runner = new VsTestRunner(options, projectInfo, null, new TestSet(), 0, helper: _helper);
-            (_vsTests, _tests) = runner.DiscoverTests(null);
-            _availableRunners.Add(runner);
-
-            Parallel.For(1, options.Concurrency, (i, _) => 
-                 _availableRunners.Add(new VsTestRunner(options, projectInfo, _vsTests, _tests, i, helper: _helper)));
+            _logger = forcedLogger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
+            Context = vsTestContext;
+            _countOfRunners = Math.Max(1, Context.Options.Concurrency);
+            Initialize(runnerBuilder);
         }
+
+        [ExcludeFromCodeCoverage(Justification = "It depends on the deployment of VsTest.")]
+        public VsTestRunnerPool(StrykerOptions options,
+            ProjectInfo projectInfo)
+        {
+            Context = new VsTestContextInformation(options, projectInfo);
+            Context.Initialize();
+            _countOfRunners = Math.Max(1, options.Concurrency);
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
+            Initialize();
+        }
+
+        public TestSet DiscoverTests() => Context.Tests;
 
         public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
-        {
-            var runner = TakeRunner();
-
-            try
-            {
-                return runner.TestMultipleMutants(timeoutCalc, mutants, update);
-            }
-            finally
-            {
-                ReturnRunner(runner);
-            }
-        }
+            => RunThis(runner => runner.TestMultipleMutants(timeoutCalc, mutants, update));
 
         public TestRunResult InitialTest()
+            => RunThis(runner => runner.InitialTest());
+
+        public IEnumerable<CoverageRunResult> CaptureCoverage()
         {
-            var runner = TakeRunner();
+            var optimizationMode = Context.Options.OptimizationMode;
 
-            try
-            {
-                return runner.InitialTest();
-            }
-            finally
-            {
-                ReturnRunner(runner);
-            }
-        }
-
-        public TestRunResult CaptureCoverage(IEnumerable<Mutant> mutants)
-        {
-            TestRunResult result;
-            var optimizationMode = _options.OptimizationMode;
-            if (!optimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) &&
-                !optimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants))
-            {
-                return new TestRunResult(true);
-            }
-
-            if (!optimizationMode.HasFlag(OptimizationModes.SmartCoverageCapture))
-            {
-                var normalTests = _vsTests.Keys.ToList();
-                var dubiousTests = new List<Guid>();
-                // check if we have tests with multiple results that may require isolated capture
-                foreach (var vsTestDescription in _vsTests)
-                {
-                    if (vsTestDescription.Value.NbSubCases > 1)
-                    {
-                        normalTests.Remove(vsTestDescription.Key);
-                        dubiousTests.Add(vsTestDescription.Key);
-                    }
-                }
-                //    
-                var capture = TakeRunner();
-
-                try
-                {
-                    result = capture.CaptureCoverage(new TestsGuidList(normalTests) ,mutants);
-
-                }
-                finally
-                {
-                    ReturnRunner(capture);
-                }
-
-                return result.Merge(CaptureCoveragePerIsolatedTests(dubiousTests, mutants));
-            }
+            IEnumerable<CoverageRunResult> resultsToParse;
             if (optimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
             {
-                return CaptureCoveragePerIsolatedTests(_vsTests.Keys, mutants);
+                resultsToParse = CaptureCoverageTestByTest();
+            }
+            else
+            {
+                resultsToParse = CaptureCoverageInOneGo();
             }
 
-            var runner = TakeRunner();
-
-            try
-            {
-                result = runner.CaptureCoverage(TestsGuidList.EveryTest() , mutants);
-            }
-            finally
-            {
-                ReturnRunner(runner);
-            }
-            return result;
+            return resultsToParse;
         }
 
-        private TestRunResult CaptureCoveragePerIsolatedTests(IEnumerable<Guid> tests, IEnumerable<Mutant> mutants)
+        private void Initialize(Func<VsTestContextInformation, int, VsTestRunner> runnerBuilder = null)
         {
-            var options = new ParallelOptions { MaxDegreeOfParallelism = _availableRunners.Count };
-
-            Parallel.ForEach(tests, options, testCase =>
-            {
-                var runner = TakeRunner();
-                try
+            runnerBuilder ??= (context, i) => new VsTestRunner(context, i);
+            Task.Run(() =>
+                Parallel.For(0, _countOfRunners, (i, _) =>
                 {
-                    runner.CoverageForOneTest(testCase, mutants);
-                }
-                catch (Exception e)
-                {
-                    _logger.LogError("Something went wrong while capturing coverage: {0}", e);
-                }
-                finally
-                {
-                    ReturnRunner(runner);
-                }
-            });
-
-            return new TestRunResult(true);
+                    _availableRunners.Add(runnerBuilder(Context, i));
+                    _runnerAvailableHandler.Set();
+                }));
         }
 
-        private VsTestRunner TakeRunner()
+        private IEnumerable<CoverageRunResult> CaptureCoverageInOneGo() => ConvertCoverageResult(RunThis(runner => runner.RunCoverageSession(TestGuidsList.EveryTest()).TestResults), false);
+
+        private IEnumerable<CoverageRunResult> CaptureCoverageTestByTest() => ConvertCoverageResult(CaptureCoveragePerIsolatedTests(Context.VsTests.Keys).TestResults, true);
+
+        private IRunResults CaptureCoveragePerIsolatedTests(IEnumerable<Guid> tests)
+        {
+            var options = new ParallelOptions { MaxDegreeOfParallelism = _countOfRunners };
+            var result = new SimpleRunResults();
+            var results = new ConcurrentBag<IRunResults>();
+            Parallel.ForEach(tests, options,
+                testCase =>
+                    results.Add(RunThis(runner => runner.RunCoverageSession(new TestGuidsList(testCase)))));
+
+            return results.Aggregate(result, (runResults, singleResult) => runResults.Merge(singleResult));
+        }
+
+        private T RunThis<T>(Func<VsTestRunner, T> task)
         {
             VsTestRunner runner;
             while (!_availableRunners.TryTake(out runner))
             {
                 _runnerAvailableHandler.WaitOne();
             }
-            return runner;
-        }
 
-        private void ReturnRunner(VsTestRunner runner)
-        {
-            _availableRunners.Add(runner);
-            _runnerAvailableHandler.Set();
+            try
+            {
+                return task(runner);
+            }
+            finally
+            {
+                _availableRunners.Add(runner);
+                _runnerAvailableHandler.Set();
+            }
+        }
+        
+        public IEnumerable<CoverageRunResult> CaptureCoverage(IEnumerable<Mutant> mutants)
+        {   
+            if (!Context.Options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) &&
+                !Context.Options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants))
+            {
+                _runnerAvailableHandler.WaitOne();
+            }
+
+            var normalTests = Context.VsTests.Keys.ToList();
+            var dubiousTests = new List<Guid>();
+            // check if we have tests with multiple results that may require isolated capture
+            foreach (var vsTestDescription in Context.VsTests)
+            {
+                if (vsTestDescription.Value.NbSubCases > 1)
+                {
+                    normalTests.Remove(vsTestDescription.Key);
+                    dubiousTests.Add(vsTestDescription.Key);
+                }
+            }
+
+            var result = ConvertCoverageResult(RunThis(t => t.RunCoverageSession(new TestGuidsList(normalTests)).TestResults), false);
+
+            return result;
         }
 
         public void Dispose()
@@ -165,10 +152,137 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 runner.Dispose();
             }
-            _helper.Cleanup();
             _runnerAvailableHandler.Dispose();
         }
 
-        public TestSet DiscoverTests() => _tests;
+        private IEnumerable<CoverageRunResult> ConvertCoverageResult(IEnumerable<TestResult> testResults, bool perIsolatedTest)
+        {
+            var seenTestCases = new HashSet<Guid>();
+            var defaultConfidence = perIsolatedTest ? CoverageConfidence.Exact : CoverageConfidence.Normal;
+            var resultCache = new Dictionary<Guid, CoverageRunResult>();
+            // initialize the map
+            foreach (var testResult in testResults)
+            {
+                if (testResult.Outcome != TestOutcome.Passed && testResult.Outcome != TestOutcome.Failed)
+                {
+                    // skip any test result that is not a pass or fail
+                    continue;
+                }
+                if (ConvertSingleResult(testResult, seenTestCases, defaultConfidence,
+                        out var coverageRunResult))
+                {
+                    // we should skip this result
+                    continue;
+                }
+
+                // ensure we returns only entry per test
+                if (resultCache.ContainsKey(coverageRunResult.TestId))
+                {
+                    resultCache[coverageRunResult.TestId].Merge(coverageRunResult);
+                    continue;
+                }
+
+                resultCache[coverageRunResult.TestId] = coverageRunResult;
+
+            }
+
+            return resultCache.Values;
+        }
+
+        private bool ConvertSingleResult(TestResult testResult, ISet<Guid> seenTestCases,
+            CoverageConfidence defaultConfidence, out CoverageRunResult coverageRunResult)
+        {
+            var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == CoverageCollector.PropertyName);
+            var testCaseId = testResult.TestCase.Id;
+            var unexpected = false;
+            if (!Context.VsTests.ContainsKey(testCaseId))
+            {
+                _logger.LogWarning(
+                    $"VsTestRunner: Coverage analysis run encountered a unexpected test case ({testResult.TestCase.DisplayName}), mutation tests may be inaccurate. Disable coverage analysis if you have doubts.");
+                // add the test description to the referential
+                Context.VsTests.Add(testCaseId, new VsTestDescription(testResult.TestCase));
+                unexpected = true;
+            }
+
+            var testDescription = Context.VsTests[testCaseId];
+            // is this a suspect test ?
+            if (key == null)
+            {
+                if (seenTestCases.Contains(testCaseId))
+                {
+                    // this is an extra result. Coverage data is already present in the already parsed result
+                    _logger.LogDebug(
+                        $"VsTestRunner: Extra result for test {testResult.TestCase.DisplayName}, so no coverage data for it.");
+                    coverageRunResult = null;
+                    return true;
+                }
+
+                // the coverage collector was not able to report anything ==> it has not been tracked by it, so we do not have coverage data
+                // ==> we need it to use this test against every mutation
+                _logger.LogDebug($"VsTestRunner: No coverage data for {testResult.TestCase.DisplayName}.");
+                seenTestCases.Add(testDescription.Id);
+                coverageRunResult = new CoverageRunResult(testCaseId, CoverageConfidence.Dubious, Enumerable.Empty<int>(),
+                    Enumerable.Empty<int>(), Enumerable.Empty<int>());
+            }
+            else
+            {
+                // we have coverage data
+                seenTestCases.Add(testDescription.Id);
+                var propertyPairValue = value as string;
+
+                coverageRunResult = BuildCoverageRunResultFromCoverageInfo(propertyPairValue, testResult, testCaseId,
+                    unexpected ? CoverageConfidence.UnexpectedCase : defaultConfidence);
+            }
+
+            return false;
+        }
+
+        private CoverageRunResult BuildCoverageRunResultFromCoverageInfo(string propertyPairValue, TestResult testResult,
+            Guid testCaseId, CoverageConfidence level)
+        {
+            IEnumerable<int> coveredMutants;
+            IEnumerable<int> staticMutants;
+            IEnumerable<int> leakedMutants;
+
+            if (string.IsNullOrWhiteSpace(propertyPairValue))
+            {
+                // do not attempt to parse empty strings
+                _logger.LogDebug($"VsTestRunner: Test {testResult.TestCase.DisplayName} does not cover any mutation.");
+                coveredMutants = Enumerable.Empty<int>();
+                staticMutants = Enumerable.Empty<int>();
+            }
+            else
+            {
+                var parts = propertyPairValue.Split(';');
+                coveredMutants = string.IsNullOrEmpty(parts[0])
+                    ? Enumerable.Empty<int>()
+                    : parts[0].Split(',').Select(int.Parse);
+                // we identify mutants that are part of static code, unless we performed pertest capture
+                staticMutants = parts.Length == 1 || string.IsNullOrEmpty(parts[1]) ||
+                                Context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest)
+                    ? Enumerable.Empty<int>()
+                    : parts[1].Split(',').Select(int.Parse);
+            }
+
+            // look for suspicious mutants
+            var (testProperty, mutantOutsideTests) = testResult.GetProperties()
+                .FirstOrDefault(x => x.Key.Id == CoverageCollector.OutOfTestsPropertyName);
+            if (testProperty != null)
+            {
+                // we have some mutations that appeared outside any test, probably some run time test case generation, or some async logic.
+                propertyPairValue = mutantOutsideTests as string;
+                leakedMutants = string.IsNullOrEmpty(propertyPairValue)
+                    ? Enumerable.Empty<int>()
+                    : propertyPairValue.Split(',').Select(int.Parse);
+                _logger.LogWarning(
+                    $"VsTestRunner: Some mutations were executed outside any test (mutation ids: {propertyPairValue}).");
+            }
+            else
+            {
+                leakedMutants = Enumerable.Empty<int>();
+            }
+
+            return new CoverageRunResult(testCaseId, level, coveredMutants, staticMutants, leakedMutants);
+        }
     }
 }

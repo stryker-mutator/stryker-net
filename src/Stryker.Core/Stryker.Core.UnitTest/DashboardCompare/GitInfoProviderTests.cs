@@ -47,7 +47,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         {
             var options = new StrykerOptions()
             {
-                BasePath = "C:\\",
+                ProjectPath = "C:\\",
             };
 
             var repository = new Mock<IRepository>(MockBehavior.Strict);
@@ -212,6 +212,14 @@ namespace Stryker.Core.UnitTest.DashboardCompare
 
             repository.SetupGet(x => x.Branches).Returns(branchCollectionMock.Object);
 
+            var tagCollectionMock = new Mock<TagCollection>();
+
+            tagCollectionMock
+                .Setup(x => x.GetEnumerator()).Returns(
+                    ((IEnumerable<Tag>)new List<Tag>()).GetEnumerator());
+
+            repository.SetupGet(x => x.Tags).Returns(tagCollectionMock.Object);
+
             var target = new GitInfoProvider(options, repository.Object);
 
 
@@ -238,7 +246,14 @@ namespace Stryker.Core.UnitTest.DashboardCompare
                .Setup(x => x.GetEnumerator()).Returns(
                 ((IEnumerable<Branch>)new List<Branch>()).GetEnumerator());
 
+            var tagCollectionMock = new Mock<TagCollection>();
+
+            tagCollectionMock
+               .Setup(x => x.GetEnumerator()).Returns(
+                ((IEnumerable<Tag>)new List<Tag>()).GetEnumerator());
+
             repositoryMock.SetupGet(x => x.Branches).Returns(branchCollectionMock.Object);
+            repositoryMock.SetupGet(x => x.Tags).Returns(tagCollectionMock.Object);
             repositoryMock.Setup(x => x.Lookup(It.IsAny<ObjectId>())).Returns(commitMock.Object);
 
             var target = new GitInfoProvider(options, repositoryMock.Object);
@@ -327,6 +342,20 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             repositoryMock
                 .SetupGet(x => x.Branches)
                 .Returns(branchCollectionMock.Object);
+
+            var tagCollectionMock = new Mock<TagCollection>(MockBehavior.Strict);
+            var tagMock = new Mock<Tag>();
+
+            tagCollectionMock
+                .Setup(x => x.GetEnumerator())
+                .Returns(((IEnumerable<Tag>)new List<Tag>
+                {
+                 tagMock.Object
+                }).GetEnumerator());
+
+            repositoryMock
+                .SetupGet(x => x.Tags)
+                .Returns(tagCollectionMock.Object);
 
             var target = new GitInfoProvider(options, repositoryMock.Object);
 

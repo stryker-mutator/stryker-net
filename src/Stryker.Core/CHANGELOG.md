@@ -1,3 +1,36 @@
+# [2.0.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.5.3...stryker@2.0.0) (2022-06-01)
+
+
+### Bug Fixes
+
+* **initialisation:** Improve error message when no analyzer results are found ([#2037](https://github.com/stryker-mutator/stryker-net/issues/2037)) ([6ad8afb](https://github.com/stryker-mutator/stryker-net/commit/6ad8afb1d1a324a6c86e1cdba11ddf270b256efb))
+* **initialisation:** Improve error messages when we fail to correctly analyze the project ([#2030](https://github.com/stryker-mutator/stryker-net/issues/2030)) ([305a713](https://github.com/stryker-mutator/stryker-net/commit/305a7139bfbcbda61e7492e93720314529b83a96))
+* **reports:** Fix issue with relative paths that miss the root folder ([#2055](https://github.com/stryker-mutator/stryker-net/issues/2055)) ([4698513](https://github.com/stryker-mutator/stryker-net/commit/46985134192ade92d5e56dc2ce45681ff92e41c9))
+
+
+
+## [1.5.3](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.5.2...stryker@1.5.3) (2022-05-03)
+
+
+### Bug Fixes
+
+* **baseline:** fixed issue where invalid header was used for creating azure fileshare file ([#2027](https://github.com/stryker-mutator/stryker-net/issues/2027)) ([7901c33](https://github.com/stryker-mutator/stryker-net/commit/7901c3353a2af27f5680255a49c75c7f94bdba09))
+* **reporters:** support spaces in report pathname ([#2010](https://github.com/stryker-mutator/stryker-net/issues/2010)) ([1bc8afa](https://github.com/stryker-mutator/stryker-net/commit/1bc8afa92d403fcdadda03bcf4a0e303167e6b94))
+* **since:** Add possibility to specify a git tag for the since.target option ([#1994](https://github.com/stryker-mutator/stryker-net/issues/1994)) ([12e3d9b](https://github.com/stryker-mutator/stryker-net/commit/12e3d9bc974fa9f7bc524ecfbe349360e0bfcec5))
+* **testrunner:** Add default timespan for not executed duplicated xunit tests ([#2020](https://github.com/stryker-mutator/stryker-net/issues/2020)) ([2cbbfcd](https://github.com/stryker-mutator/stryker-net/commit/2cbbfcd3e750ae54c8d7f7f2c4724f1a29880dd7))
+
+
+
+## [1.5.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.5.1...stryker@1.5.2) (2022-04-21)
+
+
+### Bug Fixes
+
+* **ignore-mutations:** Support mutator names as well as descriptions ([#2006](https://github.com/stryker-mutator/stryker-net/issues/2006)) ([f3fb5c6](https://github.com/stryker-mutator/stryker-net/commit/f3fb5c6139f6d656d43a2c2a271821254a039a66))
+* **testrunner:** Properly handle execution time for xUnit theories ([#2004](https://github.com/stryker-mutator/stryker-net/issues/2004)) ([92aec17](https://github.com/stryker-mutator/stryker-net/commit/92aec175d9bb6b1aae4d0d4556422669bf8bfeb8))
+
+
+
 ## [1.5.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.5.0...stryker@1.5.1) (2022-04-12)
 
 

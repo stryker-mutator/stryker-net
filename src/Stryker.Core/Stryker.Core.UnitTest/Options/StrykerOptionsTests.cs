@@ -20,7 +20,7 @@ namespace Stryker.Core.UnitTest.Options
                 AzureFileStorageSas = "sas",
                 AzureFileStorageUrl = "url",
                 BaselineProvider = Core.Baseline.Providers.BaselineProvider.AzureFileStorage,
-                BasePath = "C:/",
+                ProjectPath = "C:/",
                 Concurrency = 4,
                 DashboardApiKey = "key",
                 DashboardUrl = "url",
@@ -46,9 +46,11 @@ namespace Stryker.Core.UnitTest.Options
                 ProjectVersion = "version"
             };
 
-            var result = target.Copy("C://Dev//Test", "test", new[] { "project1" });
+            var result = target.Copy("C://Dev//Test", "C://Dev", "test", new[] { "project1" });
 
             result.AdditionalTimeout.ShouldBe(1);
+            result.ProjectPath.ShouldBe("C://Dev//Test");
+            result.WorkingDirectory.ShouldBe("C://Dev");
         }
     }
 }

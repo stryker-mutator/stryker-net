@@ -11,10 +11,10 @@ namespace Stryker.Core.Mutants
         Mutation Mutation { get; }
         MutantStatus ResultStatus { get; }
         string ResultStatusReason { get; }
-        ITestListDescription CoveringTests { get; }
+        ITestGuids CoveringTests { get; }
+        ITestGuids AssessingTests { get; }
         int? Line { get; }
         bool CountForStats { get; }
-        bool MustRunAgainstAllTests { get; }
         bool IsStaticValue { get; }
         public bool MustBeTestedInIsolation { get; }
         public string Location { get; }
@@ -27,13 +27,30 @@ namespace Stryker.Core.Mutants
     public class Mutant : IReadOnlyMutant
     {
         public int Id { get; set; }
+
         public Mutation Mutation { get; set; }
+
         public MutantStatus ResultStatus { get; set; }
-        public ITestListDescription CoveringTests { get; set; } = TestsGuidList.EveryTest();
-        public ITestListDescription KillingTests { get; set; } = TestsGuidList.NoTest();
+
+        public ITestGuids KillingTests { get; set; } = TestGuidsList.NoTest();
+        public ITestGuids CoveringTests { get; set; } = TestGuidsList.NoTest();
+        
+        public ITestGuids AssessingTests { get; set; } = TestGuidsList.EveryTest();
+
+        public int? Line
+        {
+            get
+            {
+                var location = Mutation?.OriginalNode?.GetLocation().GetMappedLineSpan();
+                return location?.StartLinePosition.Line + 1;
+            }
+        }
+
         public string ResultStatusReason { get; set; }
+
         public bool CountForStats => ResultStatus != MutantStatus.CompileError && ResultStatus != MutantStatus.Ignored;
-        public bool MustRunAgainstAllTests => CoveringTests.IsEveryTest;
+        public bool IsStaticValue { get; set; }
+
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
         public string Location
         {
@@ -44,23 +61,20 @@ namespace Stryker.Core.Mutants
             }
         }
 
-        public int? Line => Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
-        public bool IsStaticValue { get; set; }
         public bool CannotDetermineCoverage { get; set; }
         public bool MustBeTestedInIsolation { get; set; }
-        public void ResetCoverage() => CoveringTests = TestsGuidList.NoTest();
         public void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests)
         {
-            if (CoveringTests.ContainsAny(failedTests))
+            if (AssessingTests.ContainsAny(failedTests))
             {
                 ResultStatus = MutantStatus.Killed;
                 KillingTests = CoveringTests.Intersect(failedTests);
             }
-            else if (resultRanTests.IsEveryTest || (MustRunAgainstAllTests is not true && CoveringTests.IsIncluded(resultRanTests)))
+            else if (resultRanTests.IsEveryTest || (resultRanTests.IsEveryTest is not true && AssessingTests.IsIncludedIn(resultRanTests)))
             {
                 ResultStatus = MutantStatus.Survived;
             }
-            else if (CoveringTests.ContainsAny(timedOutTests))
+            else if (AssessingTests.ContainsAny(timedOutTests))
             {
                 ResultStatus = MutantStatus.Timeout;
             }
