@@ -11,11 +11,12 @@ namespace Stryker
         private static string envName;
         private static Object _coverageLock = new Object();
 
-        // this attribute will be set by the Stryker Data Collector before each test
         public static bool CaptureCoverage;
+        // this attribute will be set by the Stryker Data Collector before each test
         public static int ActiveMutant = -2;
+        public static int ActiveMutantSeen;
         public const int ActiveMutantNotInitValue = -2;
-
+        
         static MutantControl()
         {
             InitCoverage();
@@ -39,12 +40,6 @@ namespace Stryker
             return result;
         }
 
-        private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
-        {
-            GC.KeepAlive(_coveredMutants);
-            GC.KeepAlive(_coveredStaticdMutants);
-        }
-
         // check with: Stryker.MutantControl.IsActive(ID)
         public static bool IsActive(int id)
         {
@@ -65,8 +60,13 @@ namespace Stryker
                     ActiveMutant = int.Parse(environmentVariable);
                 }
             }
-            
-            return id == ActiveMutant;
+
+            if (id == ActiveMutant)
+            {
+                ActiveMutantSeen = ActiveMutant;
+                return true;
+            }
+            return false;
         }
 
         private static void RegisterCoverage(int id)

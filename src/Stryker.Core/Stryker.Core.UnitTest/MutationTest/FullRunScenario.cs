@@ -252,7 +252,11 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         private TestRunResult GetRunResult(int id) =>
-            new(GetCoveringTests(id), GetFailedTests(id, null), TestGuidsList.NoTest(), string.Empty,
+            new(GetCoveringTests(id),
+                GetFailedTests(id, null),
+                TestGuidsList.NoTest(),
+                TestGuidsList.NoTest(),
+                string.Empty,
                 TimeSpan.Zero);
 
         public TestRunResult GetInitialRunResult() => GetRunResult(InitialRunId);
@@ -266,6 +270,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             _runnerMock = new Mock<ITestRunner>();
             var successResult = new TestRunResult(GetGuidList(),
+                TestGuidsList.NoTest(),
                 TestGuidsList.NoTest(),
                 TestGuidsList.NoTest(),
                 string.Empty,
@@ -294,7 +299,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     var ids = list.Select(m => m.Id);
                     foreach (var mutant in list)
                     {
-                        update(list, GetFailedTests(mutant.Id, ids), mutant.AssessingTests, TestGuidsList.NoTest());
+                        update(list, GetFailedTests(mutant.Id, ids), mutant.AssessingTests, TestGuidsList.NoTest(), TestGuidsList.NoTest());
                     }
                 }))
                 .Returns(successResult);

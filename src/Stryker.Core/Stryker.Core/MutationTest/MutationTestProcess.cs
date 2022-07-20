@@ -165,7 +165,23 @@ namespace Stryker.Core.MutationTest
             if (result.RunResults[0].status != result.RunResults[1].status)
             {
                 var referenceStatus = result.RunResults[0].status;
-                _logger.LogWarning("Inconsistent coverage based tests. There is some unwanted side effect. Using binary search to find problematic mutant.");
+                if (monitoredMutant.FalselyCoveringTests.Count > 0)
+                {
+                    if (monitoredMutant.FalselyCoveringTests.Count == monitoredMutant.AssessingTests.Count)
+                    {
+                        _logger.LogWarning("Mutant {mutant} as not been actually tested. It is likely another mutation altered normal test execution.", mutantToDiagnose);
+
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Some tests covering mutant {mutant} did not actually test it. It is likely another mutation altered normal test execution.", mutantToDiagnose);
+                    }
+                }
+                else
+                {
+                    _logger.LogWarning("Inconsistent coverage based tests. There is some unwanted side effect. Using binary search to find problematic mutant.");
+                }
+                monitoredMutant.ResultStatus = referenceStatus;
                 var firstIndex = FindConflictingMutant(mutantGroup, monitoredMutant, referenceStatus);
                 //
                 var conflictingMutant = mutantGroup[firstIndex];
@@ -188,22 +204,33 @@ namespace Stryker.Core.MutationTest
             {
                 Id = conflictingMutant.Id,
                 CoveringTests = conflictingMutant.CoveringTests,
+                AssessingTests = conflictingMutant.AssessingTests,
                 ResultStatus = MutantStatus.NotRun,
                 Mutation = conflictingMutant.Mutation,
                 IsStaticValue = conflictingMutant.IsStaticValue
             };
             var testGroup = new[] { monitoredMutant, alternativeMutant };
+            var first = true;
             while (upper-lower>1)
             {
                 var pivot = (lower + upper) / 2;
                 monitoredMutant.ResultStatus = MutantStatus.NotRun;
-                alternativeMutant.CoveringTests = new TestGuidsList(originalList[lower..pivot]);
+                alternativeMutant.AssessingTests = new TestGuidsList(originalList[lower..pivot]);
                 alternativeMutant.ResultStatus = MutantStatus.NotRun;
                 RetestMutantGroup(testGroup);
                 if (monitoredMutant.ResultStatus == referenceStatus)
                 {
+                    if (first)
+                    {
+                        // check that there is no conflict with the other half of tests
+                        monitoredMutant.ResultStatus = MutantStatus.NotRun;
+                        alternativeMutant.AssessingTests = new TestGuidsList(originalList[pivot..upper]);
+                        alternativeMutant.ResultStatus = MutantStatus.NotRun;
+                        RetestMutantGroup(testGroup);
+                    }
                     // this group contains a conflicting test
                     upper = pivot;
+                    first = false;
                 }
                 else
                 {
@@ -211,12 +238,15 @@ namespace Stryker.Core.MutationTest
                 }
             }
 
-            return GetTestNames(alternativeMutant.CoveringTests).First();
+            return GetTestNames(alternativeMutant.AssessingTests).First();
         }
 
         private int FindConflictingMutant(List<Mutant> group, Mutant monitoredMutant, MutantStatus referenceStatus)
         {
             var mutantToDiagnose = monitoredMutant.Id;
+            // keep the original status as references
+            var originalStatuses = group.ToDictionary(m => m.Id, m => m.ResultStatus);
+            // we remove the mutant of interest from the list
             group.Remove(monitoredMutant);
             var firstIndex = 0;
             var lastIndex = group.Count - 1;
@@ -237,6 +267,7 @@ namespace Stryker.Core.MutationTest
                             // the diagnose mutant is the problematic one.
                             return mutantToDiagnose;
                         }
+                        firstRun = false;
                     }
 
                     lastIndex = pivot;
@@ -246,10 +277,21 @@ namespace Stryker.Core.MutationTest
                     // the other half must contain a problematic mutant
                     firstIndex = pivot+1;
                 }
-
-                firstRun = false;
             }
-
+            // at this stage, we verify that the problematic mutant is not the one we diagnose.
+            RetestMutantGroup(group.GetRange(lastIndex, 1).Append(monitoredMutant)
+                .ToList());
+            /*
+            RetestMutantGroup(group);
+            foreach (var mutant in group)
+            {
+                if (mutant.ResultStatus != originalStatuses[mutant.Id])
+                {
+                    // the problematic mutant is probably the one we diagnose.
+                    return monitoredMutant.Id;
+                }
+            }
+            */
             return firstIndex;
         }
 
@@ -277,14 +319,14 @@ namespace Stryker.Core.MutationTest
                 
                 _mutationTestExecutor.Test(mutants,
                     Input.InitialTestRun.TimeoutValueCalculator,
-                    (testedMutants, tests, ranTests, outTests) => TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants));
+                    (testedMutants, tests, ranTests, outTests, nonCoveringTests) => TestUpdateHandler(testedMutants, tests, ranTests, outTests, nonCoveringTests, reportedMutants));
 
                 OnMutantsTested(mutants, reportedMutants);
             });
         }
 
         private bool TestUpdateHandler(IEnumerable<Mutant> testedMutants, ITestGuids failedTests, ITestGuids ranTests,
-            ITestGuids timedOutTest, ISet<Mutant> reportedMutants)
+            ITestGuids timedOutTest, ITestGuids nonCoveringTests,ISet<Mutant> reportedMutants)
         {
             var testsFailingInitially = Input.InitialTestRun.Result.FailingTests.GetGuids().ToHashSet();
             var continueTestRun = _options.OptimizationMode.HasFlag(OptimizationModes.DisableBail);
@@ -297,7 +339,7 @@ namespace Stryker.Core.MutationTest
             }
             foreach (var mutant in testedMutants)
             {
-                mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest);
+                mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest, nonCoveringTests);
 
                 if (mutant.ResultStatus == MutantStatus.NotRun)
                 {

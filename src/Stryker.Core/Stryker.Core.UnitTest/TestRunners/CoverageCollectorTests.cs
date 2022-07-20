@@ -16,17 +16,25 @@ namespace Stryker.Core.UnitTest.TestRunners
     {
         public static bool CaptureCoverage;
         public static int ActiveMutant = -1;
-        private static List<int>[] coverageData = { new List<int>(), new List<int>() };
+        public static int ActiveMutantSeen;
+        private static List<int>[] coverageData = { new(), new() };
         public static IList<int>[] GetCoverageData()
         {
-            var result = coverageData;
+            var result = coverageData ?? throw new ArgumentNullException(nameof(coverageData));
             ClearCoverageInfo();
             return result;
         }
 
         public static void ClearCoverageInfo() => coverageData = new[] { new List<int>(), new List<int>() };
 
-        public static void HitNormal(int mutation) => coverageData[0].Add(mutation);
+        public static void HitNormal(int mutation)
+        {
+            coverageData[0].Add(mutation);
+            if (ActiveMutantSeen < 0)
+            {
+                ActiveMutantSeen = ActiveMutant;
+            }
+        }
 
         public static void HitStatic(int mutation) => coverageData[1].Add(mutation);
     }
@@ -61,7 +69,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             var start = new TestSessionStartArgs
             {
-                Configuration = CoverageCollector.GetVsTestSettings(false, mutantMap, this.GetType().Namespace)
+                Configuration = CoverageCollector.GetVsTestSettings(false, mutantMap, typeof(MutantControl).Namespace)
             };
             var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
             collector.Initialize(mock.Object);
@@ -80,12 +88,11 @@ namespace Stryker.Core.UnitTest.TestRunners
             var collector = new CoverageCollector();
 
             var testCase = new TestCase("theTest", new Uri("xunit://"), "source.cs");
-            var nonCoveringTestCase = new TestCase("theOtherTest", new Uri("xunit://"), "source.cs");
             var mutantMap = new List<(int, IEnumerable<Guid>)> {(5, new List<Guid>{testCase.Id})};
 
             var start = new TestSessionStartArgs
             {
-                Configuration = CoverageCollector.GetVsTestSettings(false, mutantMap, this.GetType().Namespace)
+                Configuration = CoverageCollector.GetVsTestSettings(false, mutantMap, typeof(MutantControl).Namespace)
             };
             var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
             collector.Initialize(mock.Object);
@@ -93,6 +100,53 @@ namespace Stryker.Core.UnitTest.TestRunners
             collector.TestSessionStart(start);
 
             MutantControl.ActiveMutant.ShouldBe(5);
+        }
+
+        [Fact]
+        public void HandleSingleMutant()
+        {
+            var collector = new CoverageCollector();
+
+            var mutantMap = new List<(int, IEnumerable<Guid>)> {(5, null)};
+
+            var start = new TestSessionStartArgs
+            {
+                Configuration = CoverageCollector.GetVsTestSettings(false, mutantMap, typeof(MutantControl).Namespace)
+            };
+            var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
+            collector.Initialize(mock.Object);
+
+            collector.TestSessionStart(start);
+
+            MutantControl.ActiveMutant.ShouldBe(5);
+        }
+
+        [Fact]
+        public void SignalMutantWasCovered()
+        {
+            var collector = new CoverageCollector();
+
+            var testCase = new TestCase("theTest", new Uri("xunit://"), "source.cs");
+            var mutantMap = new List<(int, IEnumerable<Guid>)> {(5, new List<Guid>{testCase.Id})};
+
+            var start = new TestSessionStartArgs
+            {
+                Configuration = CoverageCollector.GetVsTestSettings(false, mutantMap, typeof(MutantControl).Namespace)
+            };
+            var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
+            collector.Initialize(mock.Object);
+
+            collector.TestSessionStart(start);
+            collector.TestCaseStart(new TestCaseStartArgs(testCase));
+            MutantControl.HitNormal(5);
+            var dataCollection = new DataCollectionContext(testCase);
+            collector.TestCaseEnd(new TestCaseEndArgs(dataCollection, TestOutcome.Passed));
+            // notify the test covered the active mutations
+            mock.Verify(sink => sink.SendData(dataCollection,CoverageCollector.ActiveMutationSeen, "5"), Times.Once);
+            // run a non covering test
+            collector.TestCaseStart(new TestCaseStartArgs(testCase));
+            collector.TestCaseEnd(new TestCaseEndArgs(dataCollection, TestOutcome.Passed));
+            mock.Verify(sink => sink.SendData(dataCollection,CoverageCollector.ActiveMutationSeen, "5"), Times.Once);
         }
 
         [Fact]
@@ -139,7 +193,6 @@ namespace Stryker.Core.UnitTest.TestRunners
             collector.TestCaseStart(new TestCaseStartArgs(testCase));
             var dataCollection = new DataCollectionContext(testCase);
             collector.TestCaseEnd(new TestCaseEndArgs(dataCollection, TestOutcome.Passed));
-
             mock.Verify(sink => sink.SendData(dataCollection,CoverageCollector.PropertyName, ";"), Times.Once);
             collector.TestSessionEnd(new TestSessionEndArgs());
         }
@@ -160,15 +213,15 @@ namespace Stryker.Core.UnitTest.TestRunners
             collector.TestSessionStart(start);
             var testCase = new TestCase("theTest", new Uri("xunit://"), "source.cs");
             MutantControl.HitNormal(0);
+            MutantControl.HitStatic(2);
             collector.TestCaseStart(new TestCaseStartArgs(testCase));
             var dataCollection = new DataCollectionContext(testCase);
             MutantControl.HitNormal(1);
             collector.TestCaseEnd(new TestCaseEndArgs(dataCollection, TestOutcome.Passed));
 
             mock.Verify(sink => sink.SendData(dataCollection,CoverageCollector.PropertyName, "1;"), Times.Once);
-            mock.Verify(sink => sink.SendData(dataCollection,CoverageCollector.OutOfTestsPropertyName, "0"), Times.Once);
+            mock.Verify(sink => sink.SendData(dataCollection,CoverageCollector.OutOfTestsPropertyName, "0,2"), Times.Once);
             collector.TestSessionEnd(new TestSessionEndArgs());
         }
-
     }
 }

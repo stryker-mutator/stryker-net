@@ -21,8 +21,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly ConcurrentBag<VsTestRunner> _availableRunners = new();
         private readonly ILogger _logger;
         private readonly int _countOfRunners;
-        public VsTestContextInformation Context { get; }
-
+        
         /// <summary>
         /// this constructor is for test purposes
         /// </summary>
@@ -49,6 +48,10 @@ namespace Stryker.Core.TestRunners.VsTest
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
             Initialize();
         }
+
+        public int NbRunners => _countOfRunners;
+
+        public VsTestContextInformation Context { get; }
 
         public TestSet DiscoverTests() => Context.Tests;
 
@@ -120,11 +123,26 @@ namespace Stryker.Core.TestRunners.VsTest
                 _runnerAvailableHandler.Set();
             }
         }
+        
         public void Dispose()
         {
-            foreach (var runner in _availableRunners)
+            var toDispose = _countOfRunners;
+            // we take runner to dispose them properly
+            while (toDispose > 0)
             {
+                VsTestRunner runner;
+                while (!_availableRunners.TryTake(out runner))
+                {
+                    if (!_runnerAvailableHandler.WaitOne(60000))
+                    {
+                        // this prevents a deadlock if a runner is stuck in a long running task
+                        return;
+                    }
+                }
+
+                toDispose--;
                 runner.Dispose();
+
             }
             _runnerAvailableHandler.Dispose();
         }

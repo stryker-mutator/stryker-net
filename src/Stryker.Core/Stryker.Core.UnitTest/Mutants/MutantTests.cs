@@ -54,7 +54,7 @@ namespace Stryker.Core.UnitTest.Mutants
 
             var mutant = new Mutant();
 
-            mutant.AnalyzeTestRun(failedTestsMock.Object, resultTestsMock.Object, timedoutTestsMock.Object);
+            mutant.AnalyzeTestRun(failedTestsMock.Object, resultTestsMock.Object, timedoutTestsMock.Object, TestGuidsList.NoTest());
 
             mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);
         }

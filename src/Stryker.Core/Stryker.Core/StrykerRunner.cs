@@ -190,13 +190,13 @@ namespace Stryker.Core
                     {
                         var findDeclaringNodeText = results.ConflictingMutant.Location;
                         _logger.LogInformation("There have been an unexpected interaction between two mutations.");
-                        report.AppendLine("The tests for this mutant was corrupted by another mutant. As a work around, you should").
+                        report.AppendLine("The test results for this mutant were corrupted by another mutant. As a workaround, you can").
                             AppendFormat("Add '// Stryker test apart once' before mutant {0} at {1}.",
                                 results.ConflictingMutant.Id, findDeclaringNodeText).
                             AppendLine().
-                            AppendFormat("Diagnosed mutant {0} was killed by these test(s): ", results.DiagnosedMutant.Id).
-                            AppendLine().
-                            AppendJoin(',', results.RunResults[2].killingTests);
+                            AppendFormat("Diagnosed mutant {0} was killed by these test(s): ", results.DiagnosedMutant.Id).AppendLine().
+                            AppendJoin(',', results.RunResults[2].killingTests).AppendLine().
+                            AppendFormat("Alternatively, you may add this comment to mutant {0} at {1}.", results.DiagnosedMutant.Id, results.DiagnosedMutant.Location) ;
                         break;
                     }
                     default:

@@ -832,7 +832,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             // tests should have been run four times
             var runnerMock = scenario.GetTestRunnerMock();
             runnerMock.Verify(t => t.TestMultipleMutants(It.IsAny<ITimeoutValueCalculator>(),
-                It.IsAny<IReadOnlyList<Mutant>>(), It.IsAny<TestUpdateHandler>()), Times.Exactly(6));
+                It.IsAny<IReadOnlyList<Mutant>>(), It.IsAny<TestUpdateHandler>()), Times.Exactly(7));
         }
 
 

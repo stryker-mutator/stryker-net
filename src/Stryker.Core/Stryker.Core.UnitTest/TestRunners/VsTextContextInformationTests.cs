@@ -24,7 +24,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
 {
-    public class VsTextContextInformationTests
+    public class VsTextContextInformationTests : TestBase
     {
         private readonly string _testAssemblyPath;
         private readonly ProjectInfo _targetProject;

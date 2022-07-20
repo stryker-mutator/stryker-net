@@ -199,10 +199,11 @@ namespace Stryker.Core.UnitTest
             var report = target.GenerateDiagnoseReport(mutantDiagnostic);
 
             report.ShouldBe(@"Run results are not consistent!
-The tests for this mutant was corrupted by another mutant. As a work around, you should
+The test results for this mutant were corrupted by another mutant. As a workaround, you can
 Add '// Stryker test apart once' before mutant 2 at Unknown location.
 Diagnosed mutant 0 was killed by these test(s): 
-SomeTest");
+SomeTest
+Alternatively, you may add this comment to mutant 0 at Unknown location.");
         }
 
         [Fact]

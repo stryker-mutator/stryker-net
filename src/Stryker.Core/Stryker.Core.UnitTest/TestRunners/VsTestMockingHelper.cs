@@ -135,7 +135,8 @@ public class VsTestMockingHelper : TestBase
 
     private TestCase FindOrBuildCase(string testResultId) => TestCases.FirstOrDefault(t => t.FullyQualifiedName == testResultId) ?? BuildCase(testResultId);
 
-    private static void MockTestRun(ITestRunEventsHandler testRunEvents, IReadOnlyList<TestResult> testResults,
+    private static void MockTestRun(ITestRunEventsHandler testRunEvents,
+        IReadOnlyList<TestResult> testResults,
         TestCase timeOutTest = null) =>
         Task.Run(() =>
         {
@@ -490,6 +491,7 @@ public class VsTestMockingHelper : TestBase
     protected MutationTestProcess BuildMutationTestProcess(VsTestRunnerPool runner, StrykerOptions options, IReadOnlyList<TestCase> tests = null, ProjectInfo targetProject = null)
     {
         var testRunResult = new TestRunResult(new TestGuidsList((tests ?? TestCases).Select(t => t.Id)),
+            TestGuidsList.NoTest(),
             TestGuidsList.NoTest(),
             TestGuidsList.NoTest(),
             string.Empty,

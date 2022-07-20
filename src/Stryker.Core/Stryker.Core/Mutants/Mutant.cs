@@ -11,10 +11,8 @@ namespace Stryker.Core.Mutants
         Mutation Mutation { get; }
         MutantStatus ResultStatus { get; }
         string ResultStatusReason { get; }
-        ITestGuids CoveringTests { get; }
         ITestGuids AssessingTests { get; }
         int? Line { get; }
-        bool CountForStats { get; }
         bool IsStaticValue { get; }
         public bool MustBeTestedInIsolation { get; }
         public string Location { get; }
@@ -34,8 +32,8 @@ namespace Stryker.Core.Mutants
 
         public ITestGuids KillingTests { get; set; } = TestGuidsList.NoTest();
         public ITestGuids CoveringTests { get; set; } = TestGuidsList.NoTest();
-        
         public ITestGuids AssessingTests { get; set; } = TestGuidsList.EveryTest();
+        public ITestGuids FalselyCoveringTests { get; private set;} = TestGuidsList.EveryTest();
 
         public int? Line
         {
@@ -63,20 +61,23 @@ namespace Stryker.Core.Mutants
 
         public bool CannotDetermineCoverage { get; set; }
         public bool MustBeTestedInIsolation { get; set; }
-        public void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests)
+        public void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests, ITestGuids nonCoveringTests)
         {
             if (AssessingTests.ContainsAny(failedTests))
             {
                 ResultStatus = MutantStatus.Killed;
                 KillingTests = CoveringTests.Intersect(failedTests);
+                FalselyCoveringTests = AssessingTests.Intersect(nonCoveringTests);
             }
             else if (resultRanTests.IsEveryTest || (resultRanTests.IsEveryTest is not true && AssessingTests.IsIncludedIn(resultRanTests)))
             {
                 ResultStatus = MutantStatus.Survived;
+                FalselyCoveringTests = AssessingTests.Intersect(nonCoveringTests);
             }
             else if (AssessingTests.ContainsAny(timedOutTests))
             {
                 ResultStatus = MutantStatus.Timeout;
+                FalselyCoveringTests = AssessingTests.Intersect(nonCoveringTests);
             }
         }
 
@@ -95,6 +96,5 @@ namespace Stryker.Core.Mutants
             }
             return $"{filename} line {location.Value.StartLinePosition.Line}:{location.Value.StartLinePosition.Character}";
         }
-
     }
 }

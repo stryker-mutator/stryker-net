@@ -145,8 +145,8 @@ namespace Stryker.Core.UnitTest.TestRunners
             };
 
             var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
-
             SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = "1;" });
+            
             var analyzer = new CoverageAnalyser(options);
             analyzer.DetermineTestCoverage(runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
             SetupMockTimeOutTestRun(mockVsTest, new Dictionary<string, string> { ["0"] = "T0=S;T1=S" }, "T0");
@@ -165,11 +165,22 @@ namespace Stryker.Core.UnitTest.TestRunners
             mockVsTest.Setup(x => x.CancelTestRun()).Verifiable();
             SetupMockTestRun(mockVsTest, false, TestCases);
 
-            var result = runner.TestMultipleMutants(null, new[] { Mutant }, ((_, _, _, _) => false));
+            var result = runner.TestMultipleMutants(null, new[] { Mutant }, ((_, _, _, _, _) => false));
             // verify Abort has been called
             Mock.Verify(mockVsTest);
             // and test run is failed
             result.FailingTests.IsEmpty.ShouldBeFalse();
+        }
+
+        [Fact]
+        public void DisposeRunners()
+        {
+            var options = new StrykerOptions();
+            
+            var mockVsTest = BuildVsTestRunnerPool(options, out var pool);
+            pool.Dispose();
+            // each runner must have been disposed, plus the one for test discovery
+            mockVsTest.Verify(r => r.EndSession(), Times.Exactly(pool.NbRunners+1));
         }
 
         [Fact]

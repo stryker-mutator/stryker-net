@@ -8,7 +8,8 @@ namespace Stryker.Core.TestRunners
     public delegate bool TestUpdateHandler(IReadOnlyList<Mutant> testedMutants,
         ITestGuids failedTests,
         ITestGuids ranTests,
-        ITestGuids timedOutTests);
+        ITestGuids timedOutTests,
+        ITestGuids nonCoveringTests);
 
     public interface ITestRunner : IDisposable
     {

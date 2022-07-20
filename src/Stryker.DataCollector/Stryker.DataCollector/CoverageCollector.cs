@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading;
 using System.Xml;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
@@ -24,6 +23,7 @@ namespace Stryker.DataCollector
         private string _controlClassName;
         private Type _controller;
         private FieldInfo _activeMutantField;
+        private FieldInfo _activeMutantSeenField;
 
         private MethodInfo _getCoverageData;
         private IList<int> _mutationCoveredOutsideTests;
@@ -35,6 +35,7 @@ namespace Stryker.DataCollector
 
         public const string PropertyName = "Stryker.Coverage";
         public const string OutOfTestsPropertyName = "Stryker.Coverage.OutOfTests";
+        public const string ActiveMutationSeen = "Stryker.Control.MutantSeen";
 
         public string MutantList => string.Join(",", _mutantTestedBy.Values.Distinct());
 
@@ -46,10 +47,8 @@ namespace Stryker.DataCollector
             var qualifiedName = typeof(CoverageCollector).AssemblyQualifiedName;
             var friendlyName = typeof(CoverageCollector).ExtractAttribute<DataCollectorFriendlyNameAttribute>()
                 .FriendlyName;
-            // ReSharper disable once PossibleNullReferenceException
-            var uri = (typeof(CoverageCollector).GetTypeInfo()
-                    .GetCustomAttributes(typeof(DataCollectorTypeUriAttribute), false).First() as
-                DataCollectorTypeUriAttribute).TypeUri;
+            var uri = typeof(CoverageCollector).GetTypeInfo()
+                .GetCustomAttributes(typeof(DataCollectorTypeUriAttribute), false).Cast<DataCollectorTypeUriAttribute>().First().TypeUri;
             var line =
                 $"friendlyName=\"{friendlyName}\" uri=\"{uri}\" codebase=\"{codeBase}\" assemblyQualifiedName=\"{qualifiedName}\"";
             var configuration = new StringBuilder();
@@ -123,6 +122,7 @@ namespace Stryker.DataCollector
             }
 
             _activeMutantField = _controller.GetField("ActiveMutant");
+            _activeMutantSeenField = _controller.GetField("ActiveMutantSeen");
             var coverageControlField = _controller.GetField("CaptureCoverage");
             _getCoverageData = _controller.GetMethod("GetCoverageData");
 
@@ -132,17 +132,30 @@ namespace Stryker.DataCollector
             }
 
             _activeMutantField.SetValue(null, _activeMutation);
+            // mutant not seen
+            _activeMutantSeenField.SetValue(null, -1);
         }
 
-        private void SetActiveMutation(string id)
+        private void SetActiveMutationForTest(string id)
         {
             _activeMutation = GetActiveMutantForThisTest(id);
             if (_activeMutantField != null)
             {
                 _activeMutantField.SetValue(null, _activeMutation);
+                _activeMutantSeenField.SetValue(null, -1);
             }
         }
 
+        private void EraseActiveMutation()
+        {
+            _activeMutation = -2;
+            if (_activeMutantField != null)
+            {
+                _activeMutantField.SetValue(null, -1);
+                _activeMutantSeenField.SetValue(null, -1);
+            }
+        }
+        
         private void ReadConfiguration(string configuration)
         {
             var node = new XmlDocument();
@@ -165,7 +178,7 @@ namespace Stryker.DataCollector
                 _coverageOn = true;
             }
 
-            SetActiveMutation(AnyId);
+            SetActiveMutationForTest(AnyId);
         }
 
         private int GetActiveMutantForThisTest(string testId)
@@ -220,19 +233,25 @@ namespace Stryker.DataCollector
 
             // we need to set the proper mutant
             var testCase = testCaseStartArgs.TestCase;
-            SetActiveMutation(testCase.Id.ToString());
+            SetActiveMutationForTest(testCase.Id.ToString());
 
-            Log($"Test {testCase.FullyQualifiedName} starts against mutant {_activeMutation} (var).");
+            //Log($"Test {testCase.FullyQualifiedName} starts against mutant {_activeMutation} (var).");
         }
 
         public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
         {
-            Log($"Test {testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName} ends.");
+            //Log($"Test {testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName} ends.");
             if (!_coverageOn)
             {
+                var value = _activeMutantSeenField.GetValue(null);
+                if ((int)value == _activeMutation)
+                {
+                    _dataSink.SendData(testCaseEndArgs.DataCollectionContext, ActiveMutationSeen, value.ToString());
+                }
                 return;
             }
             PublishCoverageData(testCaseEndArgs.DataCollectionContext);
+            EraseActiveMutation();
         }
 
         private void PublishCoverageData(DataCollectionContext dataCollectionContext)
@@ -264,10 +283,6 @@ namespace Stryker.DataCollector
             {
                 _mutationCoveredOutsideTests =
                     covered[1] != null ? covered[0].Union(covered[1]).ToList() : covered[0].ToList();
-            }
-            else if (covered?[1] != null)
-            {
-                _mutationCoveredOutsideTests = covered[1].ToList();
             }
         }
 
