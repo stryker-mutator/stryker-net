@@ -21,7 +21,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
 
         public TestProject(IFileSystem fileSystem, IAnalyzerResult testProjectAnalyzerResult)
         {
-            ValidateIsTestProject(testProjectAnalyzerResult);
+            AssertValidTestProject(testProjectAnalyzerResult);
 
             _fileSystem = fileSystem ?? new FileSystem();
 
@@ -31,10 +31,16 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             foreach (var file in testProjectAnalyzerResult.SourceFiles)
             {
                 var sourceCode = _fileSystem.File.ReadAllText(file);
-                if (!IsGenerated(file, sourceCode))
+                var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode,
+                    path: file,
+                    encoding: Encoding.UTF32,
+                    options: new CSharpParseOptions(LanguageVersion.Latest, DocumentationMode.None));
+
+                if (!syntaxTree.IsGenerated())
                 {
                     testFiles.Add(new TestFile
                     {
+                        SyntaxTree = syntaxTree,
                         FilePath = file,
                         Source = sourceCode
                     });
@@ -44,16 +50,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             TestFiles = testFiles;
         }
 
-        private bool IsGenerated(string file, string sourceCode)
-        {
-            var isGenerated = CSharpSyntaxTree.ParseText(sourceCode,
-                    path: file,
-                    encoding: Encoding.UTF32,
-                    options: new CSharpParseOptions(LanguageVersion.Latest, DocumentationMode.None)).IsGenerated();
-            return isGenerated;
-        }
-
-        private static void ValidateIsTestProject(IAnalyzerResult testProjectAnalyzerResult)
+        private static void AssertValidTestProject(IAnalyzerResult testProjectAnalyzerResult)
         {
             if (testProjectAnalyzerResult.References.Any(r => r.Contains("Microsoft.VisualStudio.QualityTools.UnitTestFramework")))
             {

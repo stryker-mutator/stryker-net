@@ -63,7 +63,7 @@ namespace Stryker.Core.Reporters.Json
 
         private void AddTestFiles(TestProjectsInfo testProjectsInfo)
         {
-            if (testProjectsInfo is not null && testProjectsInfo.TestFiles is not null)
+            if (testProjectsInfo?.TestFiles is not null)
             {
                 TestFiles = new Dictionary<string, JsonTestFile>();
                 foreach (var testFile in testProjectsInfo.TestFiles)

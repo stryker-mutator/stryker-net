@@ -1,11 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
+using Newtonsoft.Json;
 
 namespace Stryker.Core.ProjectComponents.TestProjects
 {
     public sealed class TestFile : IEquatable<TestFile>
     {
+        [JsonIgnore]
+        public SyntaxTree SyntaxTree { get; init; }
         public string FilePath { get; init; }
         public string Source { get; init; }
         public IEnumerable<TestCase> Tests { get; private set; } = new List<TestCase>();
@@ -17,17 +21,13 @@ namespace Stryker.Core.ProjectComponents.TestProjects
                 return;
             }
 
-            var tests = new List<TestCase>(Tests);
-            var test = new TestCase
+            ((IList<TestCase>)Tests).Add(new TestCase
             {
                 Id = id,
                 Name = name,
                 Source = sourceCode,
                 Line = lineNumber
-            };
-
-            tests.Add(test);
-            Tests = tests;
+            });
         }
 
         public bool Equals(TestFile other) => other.FilePath.Equals(FilePath) && other.Source.Equals(Source);
