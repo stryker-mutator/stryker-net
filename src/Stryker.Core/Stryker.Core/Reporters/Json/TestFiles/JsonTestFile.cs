@@ -20,7 +20,8 @@ namespace Stryker.Core.Reporters.Json.TestFiles
                 Tests.Add(new Test
                 {
                     Id = test.Id.ToString(),
-                    Name = test.Name
+                    Name = test.Name,
+                    Location = new Location(test.Node.GetLocation().GetMappedLineSpan())
                 });
             }
         }

@@ -1,4 +1,5 @@
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.TestProjects;
@@ -48,14 +49,22 @@ namespace Stryker.Core.Initialisation
             return process;
         }
 
-        private void EnrichTestProjectsWithTestInfo(InitialTestRun initialTestRun, TestProjectsInfo testProjectsInfo)
+        private static void EnrichTestProjectsWithTestInfo(InitialTestRun initialTestRun, TestProjectsInfo testProjectsInfo)
         {
             foreach (var unitTest in initialTestRun.Result.VsTestDescriptions.Select(desc => desc.Case))
             {
                 var testFile = testProjectsInfo.TestFiles.SingleOrDefault(testFile => testFile.FilePath == unitTest.CodeFilePath);
                 if (testFile is not null)
                 {
-                    testFile.AddTest(unitTest.Id, unitTest.FullyQualifiedName, null, unitTest.LineNumber);
+                    var lineSpan = testFile.SyntaxTree.GetText().Lines[unitTest.LineNumber - 1].Span;
+                    var nodes = testFile.SyntaxTree.GetRoot().DescendantNodes(lineSpan)
+                        .Where(n => n.GetType() == typeof(MethodDeclarationSyntax));
+                    var node = nodes.First(n => n.Span.Contains(lineSpan));
+                    testFile.AddTest(unitTest.Id, unitTest.FullyQualifiedName, node);
+                }
+                else
+                {
+                    // Log debug testfile not found for unit test
                 }
             }
         }

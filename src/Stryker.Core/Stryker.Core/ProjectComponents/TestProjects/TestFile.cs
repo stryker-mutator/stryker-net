@@ -2,19 +2,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Newtonsoft.Json;
 
 namespace Stryker.Core.ProjectComponents.TestProjects
 {
     public sealed class TestFile : IEquatable<TestFile>
     {
-        [JsonIgnore]
         public SyntaxTree SyntaxTree { get; init; }
         public string FilePath { get; init; }
         public string Source { get; init; }
         public IEnumerable<TestCase> Tests { get; private set; } = new List<TestCase>();
 
-        public void AddTest(Guid id, string name, string sourceCode, int lineNumber)
+        public void AddTest(Guid id, string name, SyntaxNode node)
         {
             if (Tests.Any(test => test.Id == id))
             {
@@ -25,8 +23,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             {
                 Id = id,
                 Name = name,
-                Source = sourceCode,
-                Line = lineNumber
+                Node = node
             });
         }
 
