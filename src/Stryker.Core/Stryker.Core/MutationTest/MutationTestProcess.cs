@@ -130,69 +130,78 @@ namespace Stryker.Core.MutationTest
                 result.DeclareResult(monitoredMutant.ResultStatus, testNames);
                 result.DeclareResult(monitoredMutant.ResultStatus, testNames);
                 result.DeclareResult(monitoredMutant.ResultStatus, testNames);
+                // we do not know how to diagnose this
+                return result;
+            }
+
+            if (monitoredMutant.ResultStatus == MutantStatus.NoCoverage)
+            {
+                _logger.LogInformation("Mutant appears as being not covered by any tests.");
+                // first two test sessions will obviously result in NoCoverage
+                result.DeclareResult(MutantStatus.NoCoverage, Enumerable.Empty<string>());
+                result.DeclareResult(MutantStatus.NoCoverage, Enumerable.Empty<string>());
             }
             else
             {
-                if (monitoredMutant.ResultStatus != MutantStatus.NoCoverage)
-                {
-                    _logger.LogInformation("Mutant is covered by the following tests: ");
-                    _logger.LogInformation(string.Join(',', result.CoveringTests));
+                _logger.LogInformation("Mutant is covered by the following tests: ");
+                _logger.LogInformation(string.Join(',', result.CoveringTests));
 
-                    _logger.LogInformation("*** Step 1 normal run ***");
-                    RetestMutantGroup(mutantGroup);
-                    _logger.LogInformation($"Mutant {monitoredMutant.Id} is {monitoredMutant.ResultStatus}.");
-                    result.DeclareResult(monitoredMutant.ResultStatus, GetTestNames(monitoredMutant.KillingTests));
-                    _logger.LogInformation("*** Step 2 solo run ***");
-                    RetestMutantGroup(new List<Mutant> { monitoredMutant });
-                    _logger.LogInformation($"Mutant {monitoredMutant.Id} is {monitoredMutant.ResultStatus}.");
-                    result.DeclareResult(monitoredMutant.ResultStatus, GetTestNames(monitoredMutant.KillingTests));
-                }
-                else
-                {
-                    _logger.LogInformation("Mutant appears as being not covered by any tests.");
-                    result.DeclareResult(MutantStatus.NoCoverage, Enumerable.Empty<string>());
-                    result.DeclareResult(MutantStatus.NoCoverage, Enumerable.Empty<string>());
-                }
-
-                _logger.LogInformation("*** Step 3 run against all tests ***");
-                // we mark the mutant as needing all tests.
-                monitoredMutant.AssessingTests = TestGuidsList.EveryTest();
+                _logger.LogInformation("*** Step 1 normal run ***");
+                RetestMutantGroup(mutantGroup);
+                _logger.LogInformation($"Mutant {monitoredMutant.Id} is {monitoredMutant.ResultStatus}.");
+                result.DeclareResult(monitoredMutant.ResultStatus, GetTestNames(monitoredMutant.KillingTests));
+                _logger.LogInformation("*** Step 2 solo run ***");
                 RetestMutantGroup(new List<Mutant> { monitoredMutant });
-                monitoredMutant.AssessingTests = monitoredMutantCoveringTests;
                 _logger.LogInformation($"Mutant {monitoredMutant.Id} is {monitoredMutant.ResultStatus}.");
                 result.DeclareResult(monitoredMutant.ResultStatus, GetTestNames(monitoredMutant.KillingTests));
             }
-            if (result.RunResults[0].status != result.RunResults[1].status)
-            {
-                var referenceStatus = result.RunResults[0].status;
-                if (monitoredMutant.FalselyCoveringTests.Count > 0)
-                {
-                    if (monitoredMutant.FalselyCoveringTests.Count == monitoredMutant.AssessingTests.Count)
-                    {
-                        _logger.LogWarning("Mutant {mutant} as not been actually tested. It is likely another mutation altered normal test execution.", mutantToDiagnose);
 
-                    }
-                    else
-                    {
-                        _logger.LogWarning("Some tests covering mutant {mutant} did not actually test it. It is likely another mutation altered normal test execution.", mutantToDiagnose);
-                    }
-                }
-                else
-                {
-                    _logger.LogWarning("Inconsistent coverage based tests. There is some unwanted side effect. Using binary search to find problematic mutant.");
-                }
-                monitoredMutant.ResultStatus = referenceStatus;
-                var firstIndex = FindConflictingMutant(mutantGroup, monitoredMutant, referenceStatus);
-                //
-                var conflictingMutant = mutantGroup[firstIndex];
-                _logger.LogInformation("Conflicting mutant is {0}", conflictingMutant.Id);
-                result.ConflictingMutant = conflictingMutant;
-                _logger.LogInformation("Using binary search to find a conflicting test.");
-                // find a conflicting test
-                var testName = FindConflictingTest(referenceStatus, monitoredMutant, conflictingMutant);
-                _logger.LogInformation("Conflicting test is {0}.", testName);
-            }
+            _logger.LogInformation("*** Step 3 run against all tests ***");
+            // we mark the mutant as needing all tests.
+            monitoredMutant.AssessingTests = TestGuidsList.EveryTest();
+            RetestMutantGroup(new List<Mutant> { monitoredMutant });
+            monitoredMutant.AssessingTests = monitoredMutantCoveringTests;
+            _logger.LogInformation($"Mutant {monitoredMutant.Id} is {monitoredMutant.ResultStatus}.");
+            result.DeclareResult(monitoredMutant.ResultStatus, GetTestNames(monitoredMutant.KillingTests));
+            
+            RefineDiagnosis(result, monitoredMutant, mutantGroup);
             return result;
+        }
+
+        private void RefineDiagnosis(MutantDiagnostic result, Mutant monitoredMutant, List<Mutant> mutantGroup)
+        {
+            var mutantToDiagnose = monitoredMutant.Id;
+            if (result.RunResults[0].status == result.RunResults[1].status)
+            {
+                // no sign of a conflict, can't refine
+                return;
+            }
+            
+            var referenceStatus = result.RunResults[0].status;
+            if (monitoredMutant.FalselyCoveringTests.Count > 0)
+            {
+                _logger.LogWarning(
+                    monitoredMutant.FalselyCoveringTests.Count == monitoredMutant.AssessingTests.Count
+                        ? "Mutant {mutant} as not been actually tested. It is likely another mutation altered normal test execution."
+                        : "Some tests covering mutant {mutant} did not actually test it. It is likely another mutation altered normal test execution.",
+                    mutantToDiagnose);
+            }
+            else
+            {
+                _logger.LogWarning(
+                    "Inconsistent coverage based tests. There is some unwanted side effect. Using binary search to find problematic mutant.");
+            }
+
+            monitoredMutant.ResultStatus = referenceStatus;
+            var firstIndex = FindConflictingMutant(mutantGroup, monitoredMutant, referenceStatus);
+            
+            var conflictingMutant = mutantGroup[firstIndex];
+            _logger.LogInformation("Conflicting mutant is {0}", conflictingMutant.Id);
+            result.ConflictingMutant = conflictingMutant;
+            _logger.LogInformation("Using binary search to find a conflicting test.");
+            // find a conflicting test
+            var testName = FindConflictingTest(referenceStatus, monitoredMutant, conflictingMutant);
+            _logger.LogInformation("Conflicting test is {0}.", testName);
         }
 
         private string FindConflictingTest(MutantStatus referenceStatus, Mutant monitoredMutant, Mutant conflictingMutant)
@@ -244,8 +253,6 @@ namespace Stryker.Core.MutationTest
         private int FindConflictingMutant(List<Mutant> group, Mutant monitoredMutant, MutantStatus referenceStatus)
         {
             var mutantToDiagnose = monitoredMutant.Id;
-            // keep the original status as references
-            var originalStatuses = group.ToDictionary(m => m.Id, m => m.ResultStatus);
             // we remove the mutant of interest from the list
             group.Remove(monitoredMutant);
             var firstIndex = 0;

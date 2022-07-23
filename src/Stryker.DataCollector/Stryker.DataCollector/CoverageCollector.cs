@@ -235,12 +235,12 @@ namespace Stryker.DataCollector
             var testCase = testCaseStartArgs.TestCase;
             SetActiveMutationForTest(testCase.Id.ToString());
 
-            //Log($"Test {testCase.FullyQualifiedName} starts against mutant {_activeMutation} (var).");
+            Log($"Test {testCase.FullyQualifiedName} starts against mutant {_activeMutation} (var).");
         }
 
         public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
         {
-            //Log($"Test {testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName} ends.");
+            Log($"Test {testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName} ends.");
             if (!_coverageOn)
             {
                 var value = _activeMutantSeenField.GetValue(null);
