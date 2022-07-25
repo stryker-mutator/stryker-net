@@ -116,10 +116,6 @@ namespace Stryker.Core.Baseline.Providers
 
             using var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
 
-            SetWritingHeaders(requestMessage);
-
-            requestMessage.Headers.Add("x-ms-file-last-write-time", "now");
-
             using var response = await _httpClient.SendAsync(requestMessage);
             if (response.StatusCode == HttpStatusCode.Created)
             {
@@ -145,9 +141,6 @@ namespace Stryker.Core.Baseline.Providers
 
             using var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
 
-            SetWritingHeaders(requestMessage);
-
-            requestMessage.Headers.Add("x-ms-file-last-write-time", "now");
             requestMessage.Headers.Add("x-ms-type", "file");
             requestMessage.Headers.Add("x-ms-content-length", byteSize.ToString());
 
@@ -175,8 +168,6 @@ namespace Stryker.Core.Baseline.Providers
                 Content = new StringContent(report, Encoding.UTF8, "application/json")
             };
 
-            SetWritingHeaders(requestMessage);
-
             requestMessage.Headers.Add("x-ms-range", $"bytes=0-{byteSize - 1}");
             requestMessage.Headers.Add("x-ms-write", "update");
 
@@ -190,13 +181,6 @@ namespace Stryker.Core.Baseline.Providers
             {
                 _logger.LogDebug("Uploaded report to azure file share");
             }
-        }
-
-        private void SetWritingHeaders(HttpRequestMessage requestMessage)
-        {
-            requestMessage.Headers.Add("x-ms-file-permission", "inherit");
-            requestMessage.Headers.Add("x-ms-file-attributes", "None");
-            requestMessage.Headers.Add("x-ms-file-creation-time", "now");
         }
 
         private string ToSafeResponseMessage(string responseMessage) =>
