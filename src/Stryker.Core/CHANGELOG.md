@@ -1,3 +1,14 @@
+# [2.1.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@2.0.0...stryker@2.1.0) (2022-07-26)
+
+
+### Bug Fixes
+
+* **baseline:** increase compatibility of azure file share provider with older SAS keys ([#2115](https://github.com/stryker-mutator/stryker-net/issues/2115)) ([7639793](https://github.com/stryker-mutator/stryker-net/commit/7639793b2ade9faf0f9c04e9dbf84860f03446b6)), closes [#2114](https://github.com/stryker-mutator/stryker-net/issues/2114)
+* **Console print:** Escape paths with Spectre.Console to prevent Exception ([#2113](https://github.com/stryker-mutator/stryker-net/issues/2113)) ([11d627c](https://github.com/stryker-mutator/stryker-net/commit/11d627cee9c736d1dd63db4fb188c075caeb6a75))
+* **Ignore mutants comments:** Stryker properly ignores mutants with comments on static fields ([#2088](https://github.com/stryker-mutator/stryker-net/issues/2088)) ([cb40c0a](https://github.com/stryker-mutator/stryker-net/commit/cb40c0a90fd41571ec8eb84cb729df95763f02b8))
+
+
+
 # [2.0.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.5.3...stryker@2.0.0) (2022-06-01)
 
 

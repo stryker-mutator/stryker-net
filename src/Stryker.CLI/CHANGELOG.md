@@ -1,3 +1,12 @@
+# [2.1.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@2.0.0...dotnet-stryker@2.1.0) (2022-07-26)
+
+
+### Features
+
+* **configuration:** support yaml format for config file ([#2101](https://github.com/stryker-mutator/stryker-net/issues/2101)) ([a673752](https://github.com/stryker-mutator/stryker-net/commit/a67375225904724fc95b7a4b833895f434ee362a))
+
+
+
 # [2.0.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@1.5.3...dotnet-stryker@2.0.0) (2022-06-01)
 
 
