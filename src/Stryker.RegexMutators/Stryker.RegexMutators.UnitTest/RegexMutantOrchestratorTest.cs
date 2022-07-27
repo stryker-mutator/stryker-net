@@ -1,4 +1,4 @@
-﻿using Shouldly;
+using Shouldly;
 using System.Linq;
 using Xunit;
 
@@ -143,6 +143,19 @@ namespace Stryker.RegexMutators.UnitTest
 
             // Assert
             result.Count().ShouldBeGreaterThanOrEqualTo(4);
+        }
+
+        [Fact]
+        public void ShouldHandleIllegalRegexes()
+        {
+            // illegal regex
+            var target = new RegexMutantOrchestrator(@"[abc\d?");
+
+            // Act
+            var result = target.Mutate();
+
+            // no mutation should be generated
+            result.Count().ShouldBeGreaterThanOrEqualTo(0);
         }
     }
 }

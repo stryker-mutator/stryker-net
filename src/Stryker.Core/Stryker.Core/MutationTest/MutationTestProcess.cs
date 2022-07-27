@@ -288,17 +288,7 @@ namespace Stryker.Core.MutationTest
             // at this stage, we verify that the problematic mutant is not the one we diagnose.
             RetestMutantGroup(group.GetRange(lastIndex, 1).Append(monitoredMutant)
                 .ToList());
-            /*
-            RetestMutantGroup(group);
-            foreach (var mutant in group)
-            {
-                if (mutant.ResultStatus != originalStatuses[mutant.Id])
-                {
-                    // the problematic mutant is probably the one we diagnose.
-                    return monitoredMutant.Id;
-                }
-            }
-            */
+
             return firstIndex;
         }
 
