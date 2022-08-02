@@ -316,27 +316,27 @@ namespace Stryker.Core.MutationTest
                 
                 _mutationTestExecutor.Test(mutants,
                     Input.InitialTestRun.TimeoutValueCalculator,
-                    (testedMutants, tests, ranTests, outTests, nonCoveringTests) => TestUpdateHandler(testedMutants, tests, ranTests, outTests, nonCoveringTests, reportedMutants));
-
+                    (testedMutants, testResults, nonCoveringTests)
+                        => TestUpdateHandler(testedMutants, testResults, nonCoveringTests, reportedMutants));
+                
                 OnMutantsTested(mutants, reportedMutants);
             });
         }
 
-        private bool TestUpdateHandler(IEnumerable<Mutant> testedMutants, ITestGuids failedTests, ITestGuids ranTests,
-            ITestGuids timedOutTest, ITestGuids nonCoveringTests,ISet<Mutant> reportedMutants)
+        private bool TestUpdateHandler(IEnumerable<Mutant> testedMutants, ITestRunResults results, ITestGuids nonCoveringTests, ISet<Mutant> reportedMutants)
         {
-            var testsFailingInitially = Input.InitialTestRun.Result.FailingTests.GetGuids().ToHashSet();
+            var testsFailingInitially = Input.InitialTestRun.Result.FailedTests;
             var continueTestRun = _options.OptimizationMode.HasFlag(OptimizationModes.DisableBail);
-            if (testsFailingInitially.Count > 0 && failedTests.GetGuids().Any(id => testsFailingInitially.Contains(id)))
+            
+            if (testsFailingInitially.Count > 0 && results.FailedTests.ContainsAny(testsFailingInitially))
             {
-                // some of the failing tests where failing without any mutation
-                // we discard those tests
-                failedTests = new TestGuidsList(
-                    failedTests.GetGuids().Where(t => !testsFailingInitially.Contains(t)));
+                // some of the failing tests where failing without any mutation, we have to ignore those
+                var filteredFailingTests = new TestGuidsList(results.FailedTests.GetGuids().Except(testsFailingInitially.GetGuids()));
+                results = new TestRunResults(results.RanTests, filteredFailingTests, results.TimedOutTests);
             }
             foreach (var mutant in testedMutants)
             {
-                mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest, nonCoveringTests);
+                mutant.AnalyzeTestRun(results);
 
                 if (mutant.ResultStatus == MutantStatus.NotRun)
                 {
@@ -437,6 +437,6 @@ namespace Stryker.Core.MutationTest
             return blocks;
         }
 
-        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(_mutationTestExecutor.TestRunner, _projectContents.Mutants, Input.InitialTestRun.Result.FailingTests);
+        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(_mutationTestExecutor.TestRunner, _projectContents.Mutants, Input.InitialTestRun.Result.FailedTests);
     }
 }

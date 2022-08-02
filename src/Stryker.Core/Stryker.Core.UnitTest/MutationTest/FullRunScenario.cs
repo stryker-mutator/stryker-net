@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
+using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
 
@@ -299,7 +300,10 @@ namespace Stryker.Core.UnitTest.MutationTest
                     var ids = list.Select(m => m.Id);
                     foreach (var mutant in list)
                     {
-                        update(list, GetFailedTests(mutant.Id, ids), mutant.AssessingTests, TestGuidsList.NoTest(), TestGuidsList.NoTest());
+                        var results = new TestRunResults(mutant.AssessingTests,
+                            GetFailedTests(mutant.Id, ids),
+                            TestGuidsList.NoTest());
+                        update(list, results, TestGuidsList.NoTest());
                     }
                 }))
                 .Returns(successResult);

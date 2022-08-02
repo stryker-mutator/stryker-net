@@ -1,6 +1,9 @@
+using System;
+using System.Collections.Generic;
 using Moq;
 using Shouldly;
 using Stryker.Core.Mutants;
+using Stryker.Core.MutationTest;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
@@ -41,20 +44,20 @@ namespace Stryker.Core.UnitTest.Mutants
         }
 
         [Fact]
-        public void ShouldSetTimedoutState()
+        public void ShouldSetTimedOutState()
         {
             var failedTestsMock = new Mock<ITestGuids>();
-            var resultTestsMock = new Mock<ITestGuids>();
-            var timedoutTestsMock = new Mock<ITestGuids>();
+            var timedOutTestsMock = new Mock<ITestGuids>();
             var coveringTestsMock = new Mock<ITestGuids>();
 
             failedTestsMock.Setup(x => x.IsEmpty).Returns(true);
-            timedoutTestsMock.Setup(x => x.IsEmpty).Returns(false);
+            timedOutTestsMock.Setup(x => x.IsEmpty).Returns(false);
             coveringTestsMock.Setup(x => x.IsEveryTest).Returns(true);
 
             var mutant = new Mutant();
-
-            mutant.AnalyzeTestRun(failedTestsMock.Object, resultTestsMock.Object, timedoutTestsMock.Object, TestGuidsList.NoTest());
+            var empty = new HashSet<Guid>();
+            var results = new TestRunResults( null, empty, null, null);
+            mutant.AnalyzeTestRun(results);
 
             mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);
         }

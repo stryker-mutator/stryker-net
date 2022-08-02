@@ -7,18 +7,14 @@ namespace Stryker.Core.Mutants
 
     public class TestGuidsList : ITestGuids
     {
-        private readonly HashSet<Guid> _testsGuid;
+        private readonly IReadOnlySet<Guid> _testsGuid;
 
         private static readonly TestGuidsList EveryTests = new();
         private static readonly TestGuidsList NoTestAtAll = new(Array.Empty<Guid>());
 
         private TestGuidsList() => _testsGuid = null;
 
-        public TestGuidsList(IEnumerable<TestDescription> testDescriptions) : this(testDescriptions?.Select(t => t.Id))
-        {
-        }
-
-        public TestGuidsList(HashSet<Guid> set) => _testsGuid = set;
+        public TestGuidsList(IReadOnlySet<Guid> set) => _testsGuid = set;
         
         public TestGuidsList(IEnumerable<Guid> guids) => _testsGuid = guids != null ? new HashSet<Guid>(guids) : null;
 
@@ -29,7 +25,7 @@ namespace Stryker.Core.Mutants
         
         public bool IsEveryTest => _testsGuid == null;
         
-        public int Count => _testsGuid?.Count ?? 0;
+        public int Count => _testsGuid?.Count ?? -1;
 
         public ITestGuids Merge(ITestGuids other)
         {

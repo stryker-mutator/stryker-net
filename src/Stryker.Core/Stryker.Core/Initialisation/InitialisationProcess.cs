@@ -81,10 +81,7 @@ namespace Stryker.Core.Initialisation
 
             InitializeDashboardProjectInformation(options, projectInfo);
 
-            if (_testRunner == null)
-            {
-                _testRunner = new VsTestRunnerPool(options, projectInfo);
-            }
+            _testRunner ??= new VsTestRunnerPool(options, projectInfo);
 
             var input = new MutationTestInput
             {

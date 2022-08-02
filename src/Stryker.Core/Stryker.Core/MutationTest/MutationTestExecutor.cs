@@ -36,7 +36,7 @@ namespace Stryker.Core.MutationTest
                 var result = RunTestSession(mutantsToTest, timeoutMs, updateHandler, forceSingle);
 
                 Logger.LogTrace(
-                    $"Test run for {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))} is {(result.FailingTests.Count == 0 ? "success" : "failed")} with output: {result.ResultMessage}");
+                    $"Test run for {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))} is {(result.FailedTests.Count == 0 ? "success" : "failed")} with output: {result.ResultMessage}");
 
                 var remainingMutants = mutantsToTest.Where((m) => m.ResultStatus == MutantStatus.NotRun).ToList();
                 if (remainingMutants.Count == mutantsToTest.Count)
@@ -81,9 +81,9 @@ namespace Stryker.Core.MutationTest
                 foreach (var mutant in mutantsToTest)
                 {
                     var localResult = TestRunner.TestMultipleMutants(timeoutMs, new[] { mutant }, updateHandler);
-                    mutant.AnalyzeTestRun(localResult.FailingTests, localResult.RanTests, localResult.TimedOutTests, localResult.NonCoveringTests);
+                    mutant.AnalyzeTestRun(localResult);
                 }
-
+                
                 return new TestRunResult(true);
             }
 
@@ -95,7 +95,7 @@ namespace Stryker.Core.MutationTest
 
             foreach (var mutant in mutantsToTest)
             {
-                mutant.AnalyzeTestRun(result.FailingTests, result.RanTests, result.TimedOutTests, result.NonCoveringTests);
+                mutant.AnalyzeTestRun(result);
             }
 
             return result;

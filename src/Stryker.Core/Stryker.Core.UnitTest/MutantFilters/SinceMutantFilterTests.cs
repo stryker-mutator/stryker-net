@@ -122,7 +122,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var file = new CsharpFileLeaf { FullPath = Path.Combine("C:/NotMyTests", "myfile.cs") };
             var mutant = new Mutant
             {
-                CoveringTests = new TestGuidsList(new[] {test})
+                CoveringTests = new TestGuidsList(test.Id)
             };
 
 
@@ -249,8 +249,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
             tests.RegisterTests(new[] {test1, test2});
             diffProvider.SetupGet(x => x.Tests).Returns(tests);
             var target = new SinceMutantFilter(diffProvider.Object);
-            var testFile1 = new TestGuidsList(new [] {test1});
-            var testFile2 = new TestGuidsList(new [] {test2});
+            var testFile1 = new TestGuidsList(test1.Id);
+            var testFile2 = new TestGuidsList(test2.Id);
 
             var expectedToStay1 = new Mutant {CoveringTests = testFile1};
             var expectedToStay2 = new Mutant {CoveringTests = testFile1};

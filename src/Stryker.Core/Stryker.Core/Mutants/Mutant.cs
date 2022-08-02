@@ -1,4 +1,6 @@
 using System.IO;
+using System.Linq;
+using Stryker.Core.MutationTest;
 
 namespace Stryker.Core.Mutants
 {
@@ -47,6 +49,7 @@ namespace Stryker.Core.Mutants
         public string ResultStatusReason { get; set; }
 
         public bool CountForStats => ResultStatus != MutantStatus.CompileError && ResultStatus != MutantStatus.Ignored;
+        
         public bool IsStaticValue { get; set; }
 
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
@@ -60,24 +63,26 @@ namespace Stryker.Core.Mutants
         }
 
         public bool CannotDetermineCoverage { get; set; }
+        
         public bool MustBeTestedInIsolation { get; set; }
-        public void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests, ITestGuids nonCoveringTests)
+        
+        public void AnalyzeTestRun(ITestRunResults results)
         {
-            if (AssessingTests.ContainsAny(failedTests))
+            if (AssessingTests.ContainsAny(results.FailedTests))
             {
                 ResultStatus = MutantStatus.Killed;
-                KillingTests = CoveringTests.Intersect(failedTests);
-                FalselyCoveringTests = AssessingTests.Intersect(nonCoveringTests);
+                KillingTests = CoveringTests.Intersect(results.FailedTests);
+                FalselyCoveringTests = AssessingTests.Intersect(results.NonCoveringTests);
             }
-            else if (resultRanTests.IsEveryTest || (resultRanTests.IsEveryTest is not true && AssessingTests.IsIncludedIn(resultRanTests)))
-            {
-                ResultStatus = MutantStatus.Survived;
-                FalselyCoveringTests = AssessingTests.Intersect(nonCoveringTests);
-            }
-            else if (AssessingTests.ContainsAny(timedOutTests))
+            else if (AssessingTests.ContainsAny(results.TimedOutTests))
             {
                 ResultStatus = MutantStatus.Timeout;
-                FalselyCoveringTests = AssessingTests.Intersect(nonCoveringTests);
+                FalselyCoveringTests = AssessingTests.Intersect(results.NonCoveringTests);
+            }
+            else if (results.RanTests.IsEveryTest || AssessingTests.IsIncludedIn(results.RanTests))
+            {
+                ResultStatus = MutantStatus.Survived;
+                FalselyCoveringTests = AssessingTests.Intersect(results.NonCoveringTests);
             }
         }
 

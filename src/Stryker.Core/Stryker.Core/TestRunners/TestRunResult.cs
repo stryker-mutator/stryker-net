@@ -1,13 +1,14 @@
 using System;
 using Stryker.Core.Mutants;
+using Stryker.Core.MutationTest;
 
 namespace Stryker.Core.TestRunners
 {
-    public class TestRunResult
+    public class TestRunResult : ITestRunResults
     {
         public TestRunResult(bool success, string message = null)
         {
-            FailingTests = !success ? TestGuidsList.EveryTest() : TestGuidsList.NoTest();
+            FailedTests = !success ? TestGuidsList.EveryTest() : TestGuidsList.NoTest();
             RanTests = TestGuidsList.EveryTest();
             TimedOutTests = TestGuidsList.NoTest();
             NonCoveringTests = TestGuidsList.NoTest();
@@ -23,7 +24,7 @@ namespace Stryker.Core.TestRunners
             TimeSpan timeSpan)
         {
             RanTests = ranTests;
-            FailingTests = failedTests;
+            FailedTests = failedTests;
             TimedOutTests = timedOutTest;
             NonCoveringTests = nonCoveringTests;
             ResultMessage = message;
@@ -38,7 +39,7 @@ namespace Stryker.Core.TestRunners
             TimeSpan duration) =>
             new(ranTests, failedTest, timedOutTests, nonCoveringTests, message, duration){SessionTimedOut = true};
 
-        public ITestGuids FailingTests { get; }
+        public ITestGuids FailedTests { get; }
         public ITestGuids RanTests { get; }
         public ITestGuids TimedOutTests { get; }
         public ITestGuids NonCoveringTests {get;}

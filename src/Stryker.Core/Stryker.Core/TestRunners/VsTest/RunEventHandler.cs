@@ -8,6 +8,8 @@ using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using Stryker.Core.MutationTest;
+using Stryker.DataCollector;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
@@ -21,6 +23,7 @@ namespace Stryker.Core.TestRunners.VsTest
     {
         private List<TestCase> _testsInTimeOut = new();
         public List<TestResult> TestResults { get; } = new();
+        
         public IReadOnlyList<TestCase> TestsInTimeout => _testsInTimeOut.AsReadOnly();
 
         public SimpleRunResults()
@@ -58,17 +61,20 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly ILogger _logger;
         private readonly string _runnerId;
         private readonly IDictionary<Guid, VsTestDescription> _vsTests;
-        private readonly IDictionary<Guid, TestRun> _runs = new Dictionary<Guid, TestRun>();
+        private readonly Dictionary<Guid, TestRun> _runs = new();
         private readonly Dictionary<Guid, TestCase> _inProgress = new();
         private readonly List<TestResult> _rawResults = new();
         private readonly SimpleRunResults _currentResults = new();
+        private readonly HashSet<Guid> _ranTests = new();
+        private readonly HashSet<Guid> _failedTests = new();
+        private readonly HashSet<Guid> _timedOutTests = new();
+        private readonly HashSet<Guid> _coveringTests = new();
+        
         private readonly object _lck = new();
         private bool _completed;
 
         public event EventHandler VsTestFailed;
         public event EventHandler ResultsUpdated;
-
-        public bool CancelRequested { get; set; }
 
         public RunEventHandler(IDictionary<Guid, VsTestDescription> vsTests, ILogger logger, string runnerId)
         {
@@ -77,42 +83,66 @@ namespace Stryker.Core.TestRunners.VsTest
             _runnerId = runnerId;
         }
 
+        public bool CancelRequested { get; set; }
+
         private void CaptureTestResults(IEnumerable<TestResult> results)
         {
-            var testResults = results as TestResult[] ?? results.ToArray();
-            _rawResults.AddRange(testResults);
-            foreach (var testResult in testResults)
+            foreach (var testResult in results)
             {
                 var id = testResult.TestCase.Id;
-                if (!_runs.ContainsKey(id))
+                _rawResults.Add(testResult);
+                // if this result is failure, we consider the test as failed!
+                if (testResult.Outcome == TestOutcome.Failed)
                 {
-                    if (_vsTests.ContainsKey(id))
-                    {
-                        _runs[id] = new TestRun(_vsTests[id]);
-                    }
-                    else
-                    {
-                        // unknown id. Probable cause: test name has changed due to some parameter having changed
-                        _runs[id] = new TestRun(new VsTestDescription(testResult.TestCase));
-                    }
+                    _failedTests.Add(id);
                 }
 
+                if (EnsureRunExists(id, testResult) && testResult.GetProperties().Any(p => p.Key.Id == CoverageCollector.ActiveMutationSeen))
+                {
+                    // this is the first result, it may contains custom properties
+                    _coveringTests.Add(id);
+                }
+
+                // is test case already finished (according to the initial test run)?
                 if (_runs[id].IsComplete())
                 {
-                    // unexpected result, report it
+                    // extra result, report it
                     _currentResults.TestResults.Add(testResult);
                 }
                 else if (_runs[id].AddResult(testResult))
                 {
-                    _currentResults.TestResults.Add(_runs[id].Result());
+                    // is the case now finished?
+                    var result = _runs[id].Result();
+                    _ranTests.Add(id);
+                    _currentResults.TestResults.Add(result);
                     _inProgress.Remove(id);
                 }
             }
         }
 
+        private bool EnsureRunExists(Guid id, TestResult testResult)
+        {
+            if (_runs.ContainsKey(id))
+            {
+                return false;
+            }
+            if (_vsTests.ContainsKey(id))
+            {
+                _runs[id] = new TestRun(_vsTests[id]);
+            }
+            else
+            {
+                // unknown id. Probable cause: test name has changed due to some parameter having changed
+                _runs[id] = new TestRun(new VsTestDescription(testResult.TestCase));
+            }
+            return true;
+        }
+
         public IRunResults GetRawResults() => new SimpleRunResults(_rawResults, _currentResults.TestsInTimeout);
 
         public IRunResults GetResults() => _currentResults;
+
+        public ITestRunResults GetTestRunResults() => new TestRunResults(_ranTests, _failedTests, _timedOutTests, _coveringTests);
 
         public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
         {
@@ -155,6 +185,14 @@ namespace Stryker.Core.TestRunners.VsTest
             if (!testRunCompleteArgs.IsCanceled && (_inProgress.Any() || _runs.Values.Any(t => !t.IsComplete())))
             {
                 // report ongoing tests and test case with missing results as timeouts.
+                foreach (var id in _inProgress.Keys)
+                {
+                    _timedOutTests.Add(id);
+                }
+                foreach (var (id, result) in _runs.Where( p => !p.Value.IsComplete()))
+                {
+                    _timedOutTests.Add(id);
+                }
                 _currentResults.SetTestsInTimeOut(_inProgress.Values
                     .Union(_runs.Values.Where(t => !t.IsComplete()).Select(t => t.Result().TestCase)).ToList());
             }
@@ -197,11 +235,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 if (timeOut == null)
                 {
-                    while (!_completed)
-                    {
-                        Monitor.Wait(_lck);
-                    }
-
+                    while (!_completed && !Monitor.Wait(_lck));
                     return true;
                 }
                 else
@@ -210,7 +244,10 @@ namespace Stryker.Core.TestRunners.VsTest
                     const int Unit = 500;
                     while (!_completed && delay < timeOut.Value * 3)
                     {
-                        Monitor.Wait(_lck, Unit);
+                        if (Monitor.Wait(_lck, Unit))
+                        {
+                            break;
+                        }
                         delay += Unit;
                     }
 

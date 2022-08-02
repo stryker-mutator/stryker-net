@@ -47,9 +47,9 @@ namespace Stryker.Core.Initialisation
 
             // timings
             _logger.LogDebug("Initial testrun output: {0}.", initTestRunResult.ResultMessage);
-            if (!initTestRunResult.FailingTests.IsEmpty)
+            if (!initTestRunResult.FailedTests.IsEmpty)
             {
-                var failingTestsCount = initTestRunResult.FailingTests.Count;
+                var failingTestsCount = initTestRunResult.FailedTests.Count;
                 _logger.LogWarning($"{(failingTestsCount == 1 ? "A test is ": $"{failingTestsCount} tests are")} failing. Stryker will continue but outcome will be impacted.");
                 if (((double)failingTestsCount) / initTestRunResult.RanTests.Count >= .5)
                 {
