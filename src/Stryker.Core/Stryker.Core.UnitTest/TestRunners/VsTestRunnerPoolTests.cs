@@ -475,6 +475,25 @@ namespace Stryker.Core.UnitTest.TestRunners
             OtherMutant.CoveringTests.IsEveryTest.ShouldBe(true);
         }
 
+        // this verifies that static mutants are flagged as to be tested against all tests
+        [Fact]
+        public void StaticMutantsShouldBeTestedAgainstAllTests()
+        {
+            var options = new StrykerOptions
+            {
+                OptimizationMode = OptimizationModes.CoverageBasedTest
+            };
+            var staticMutant = new Mutant() { Id = 14, IsStaticValue = true };
+            var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
+
+            SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = "1;" });
+            
+            var analyzer = new CoverageAnalyser(options);
+            analyzer.DetermineTestCoverage(runner, new[] { Mutant, OtherMutant, staticMutant }, TestGuidsList.NoTest());
+            // the suspicious mutant should be tested against all tests
+            staticMutant.CoveringTests.IsEveryTest.ShouldBe(true);
+        }
+
         // this verifies that mutant that are covered outside any tests are
         // flagged as to be tested against all tests (except failed ones)
         [Fact]
