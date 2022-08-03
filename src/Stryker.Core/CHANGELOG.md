@@ -1,3 +1,12 @@
+## [2.1.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@2.1.0...stryker@2.1.1) (2022-08-03)
+
+
+### Bug Fixes
+
+* **coverage analysis:** static mutants not marked as needing all tests ([#2121](https://github.com/stryker-mutator/stryker-net/issues/2121)) ([f120710](https://github.com/stryker-mutator/stryker-net/commit/f120710e6a29e66018e230e9df4bdfcab7e643e5))
+
+
+
 # [2.1.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@2.0.0...stryker@2.1.0) (2022-07-26)
 
 
