@@ -120,6 +120,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
             catch (Exception e)
             {
+                _logger.LogCritical("Failed to launch VsTest. {0}", e);
                 throw new GeneralStrykerException("Stryker failed to connect to vstest.console", e);
             }
             return vsTestConsole;
