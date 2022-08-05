@@ -28,12 +28,14 @@ namespace Stryker.Core.Exceptions
             builder.AppendLine();
             builder.AppendLine(Message);
             builder.AppendLine();
-            if (!string.IsNullOrEmpty(Details))
+            if (Details is not null)
             {
                 builder.AppendLine(Details);
             }
             else if (InnerException is not null)
             {
+                builder.AppendLine();
+                builder.AppendLine("Inner Exception: ");
                 builder.AppendLine(InnerException.Message);
                 builder.AppendLine(InnerException.StackTrace);
             }
