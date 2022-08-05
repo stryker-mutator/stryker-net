@@ -19,10 +19,7 @@ namespace Stryker.Core.Exceptions
         {
         }
 
-        public GeneralStrykerException(string message, string details) : base(message)
-        {
-            Details = details;
-        }
+        public GeneralStrykerException(string message, string details) : base(message) => Details = details;
 
         public override string ToString()
         {
@@ -35,9 +32,10 @@ namespace Stryker.Core.Exceptions
             {
                 builder.AppendLine(Details);
             }
-            else if (InnerException != null)
+            else if (InnerException is not null)
             {
-                builder.AppendLine(Details);
+                builder.AppendLine(InnerException.Message);
+                builder.AppendLine(InnerException.StackTrace);
             }
             return builder.ToString();
         }
