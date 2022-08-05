@@ -1,3 +1,12 @@
+## [2.1.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@2.1.1...stryker@2.1.2) (2022-08-05)
+
+
+### Bug Fixes
+
+* **exception logging:** Log vstest exceptions instead of swallowing ([#2123](https://github.com/stryker-mutator/stryker-net/issues/2123)) ([fc95813](https://github.com/stryker-mutator/stryker-net/commit/fc958136e813ca5d6eb56afbed009c5f5c91f802))
+
+
+
 ## [2.1.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@2.1.0...stryker@2.1.1) (2022-08-03)
 
 
