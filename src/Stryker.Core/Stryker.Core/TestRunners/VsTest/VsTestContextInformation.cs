@@ -120,6 +120,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
             catch (Exception e)
             {
+                _logger.LogError("Stryker failed to connect to vstest.console with error: {error}", e.Message);
                 throw new GeneralStrykerException("Stryker failed to connect to vstest.console", e);
             }
             return vsTestConsole;
@@ -298,10 +299,14 @@ namespace Stryker.Core.TestRunners.VsTest
                 : string.Empty;
 
             if (_testFramework.HasFlag(TestFramework.NUnit))
+            {
                 settingsForCoverage = "<CollectDataForEachTestSeparately>true</CollectDataForEachTestSeparately>";
+            }
 
             if (_testFramework.HasFlag(TestFramework.xUnit))
+            {
                 settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
+            }
 
             var timeoutSettings = timeout is > 0
                 ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>" + Environment.NewLine
