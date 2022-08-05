@@ -56,17 +56,29 @@ namespace Stryker.CLI
 
             cmdConfigReader.RegisterCommandLineOptions(app, inputs);
 
+            app.Command("baseline", baselineCmd =>
+            {
+                baselineCmd.Description = "Enables the baseline feature";
+                inputs.WithBaselineInput.SuppliedInput = true;
+
+                baselineCmd.Command("create", createCmd =>
+                {
+                    createCmd.OnExecute(() =>
+                    {
+                        createCmd.Description = "Creates a new baseline by doing a full stryker run";
+                        inputs.BaselineCreateEnabledInput.SuppliedInput = true;
+                        return StartApp(inputs, args, app, cmdConfigReader);
+                    });
+                });
+                baselineCmd.OnExecute(() =>
+                {
+                    return StartApp(inputs, args, app, cmdConfigReader);
+                });
+            });
+
             app.OnExecute(() =>
             {
-                // app started
-                PrintStrykerASCIIName();
-
-                _configReader.Build(inputs, args, app, cmdConfigReader);
-                _loggingInitializer.SetupLogOptions(inputs);
-
-                PrintStrykerVersionInformationAsync();
-                RunStryker(inputs);
-                return ExitCode;
+                return StartApp(inputs, args, app, cmdConfigReader);
             });
 
             try
@@ -86,6 +98,19 @@ namespace Stryker.CLI
 
                 return ExitCodes.OtherError;
             }
+        }
+
+        private int StartApp(StrykerInputs inputs, string[] args, CommandLineApplication app, CommandLineConfigReader cmdConfigReader)
+        {
+            // app started
+            PrintStrykerASCIIName();
+
+            _configReader.Build(inputs, args, app, cmdConfigReader);
+            _loggingInitializer.SetupLogOptions(inputs);
+
+            PrintStrykerVersionInformationAsync();
+            RunStryker(inputs);
+            return ExitCode;
         }
 
         private void RunStryker(IStrykerInputs inputs)

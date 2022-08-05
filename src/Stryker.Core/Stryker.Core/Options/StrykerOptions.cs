@@ -103,6 +103,11 @@ namespace Stryker.Core.Options
         public IEnumerable<Reporter> Reporters { get; init; } = Enumerable.Empty<Reporter>();
 
         /// <summary>
+        /// When true, a new baseline should be created.
+        /// </summary>
+        public bool BaselineCreateEnabled { get; init; }
+
+        /// <summary>
         /// When true, the baseline feature should be enabled.
         /// </summary>
         public bool WithBaseline { get; init; }
