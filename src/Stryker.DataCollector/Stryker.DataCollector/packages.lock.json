@@ -16,9 +16,9 @@
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Direct",
-        "requested": "[17.2.0, )",
-        "resolved": "17.2.0",
-        "contentHash": "7j1KYDHLhU98XnCEbECMncXLydI9fNiFLcFsiBsP3lV6EkHOaj5kTPAWHYkKnPGRC9TbZUboSQq8rWI4dTQsxg==",
+        "requested": "[17.3.0, )",
+        "resolved": "17.3.0",
+        "contentHash": "6NRzi6QbmWV49Psf8A9z1LTJU4nBrlJdCcDOUyD4Ttm1J2wvksu98GlV+52CkxtpgNsUjGr9Mv1Rbb1/dB06yQ==",
         "dependencies": {
           "NuGet.Frameworks": "5.11.0",
           "System.Reflection.Metadata": "1.6.0"
