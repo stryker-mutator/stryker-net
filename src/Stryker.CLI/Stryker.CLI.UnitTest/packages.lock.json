@@ -68,11 +68,11 @@
       },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[17.0.24, )",
-        "resolved": "17.0.24",
-        "contentHash": "PePTkh5aFsCWSUmc3msyRdJS+aJ15DZDmhgnnjuR7lBSfEyeOi3+CfQqpU28+lpmLH1tFv16K2ODcUNg7lzOPA==",
+        "requested": "[17.1.1, )",
+        "resolved": "17.1.1",
+        "contentHash": "IXsc9skbI+xsjgfsIH5xTdXN/QUyeBc1WVjiJ+IwOthFakBZmN2bqwPH/tYX0FeOEzJ6ZfrZyhqdJ/B+rPHLEQ==",
         "dependencies": {
-          "System.IO.Abstractions": "17.0.24"
+          "System.IO.Abstractions": "17.1.1"
         }
       },
       "xunit": {
@@ -1062,8 +1062,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "17.0.24",
-        "contentHash": "hA7bacntMiZv1Yf9xtjwl/GP3GT1mG84QxhAk7ijAUD0pJhJaVVwXScE13vMpXnNtlaRDW6SeyZdWg2j2qrh4w=="
+        "resolved": "17.1.1",
+        "contentHash": "LWOM12Bd0kp/gaH4g1o/O2/6JDcHF/fuctF1IqDZt0aAqU2BwGiMihi9Cdcm5jJz8La1wFWbRPuRui8WeX6m8w=="
       },
       "System.IO.FileSystem": {
         "type": "Transitive",
@@ -1665,7 +1665,7 @@
           "Spectre.Console.Analyzer": "[0.44.0, )",
           "Stryker.DataCollector": "[2.1.2, )",
           "Stryker.RegexMutators": "[2.1.2, )",
-          "System.IO.Abstractions": "[17.0.24, )",
+          "System.IO.Abstractions": "[17.1.1, )",
           "System.Net.Http.Json": "[6.0.0, )"
         }
       },
