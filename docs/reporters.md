@@ -102,10 +102,10 @@ dotnet stryker --reporter "json"
 ```
 
 # Markdown summary reporter
-This reporter outputs a Markdown formatted summary file based on the output of the `ClearTextReporter`.  
+This reporter outputs a Markdown formatted summary file called `mutation-report.md` in the `StrykerOutput/{date-time}/reports` directory based on the output of the `ClearTextReporter`.  
 
 ```bash
-dotnet stryker --reporter "markdownsummary"
+dotnet stryker --reporter "markdown"
 ```
 
 Example:

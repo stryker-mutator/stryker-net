@@ -3,6 +3,7 @@ using System.IO.Abstractions.TestingHelpers;
 using Shouldly;
 using Spectre.Console.Testing;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using Xunit;
 
@@ -117,6 +118,29 @@ namespace Stryker.Core.UnitTest.Reporters
             var expectedSummaryReportPath = $"{Path.Join(options.ReportPath, options.ReportFileName)}.md".Replace("\\", "/");
             console.Output.ShouldContain(expectedSummaryReportPath);
             console.Output.GreenSpanCount().ShouldBe(2);
+        }
+
+        [Fact]
+        public void MarkdownSummaryReporter_ShouldNotOutputForEmptyProject()
+        {
+            // Arrange
+            var options = new StrykerOptions
+            {
+                Thresholds = new Thresholds { High = 75, Low = 50, Break = 10 },
+                OutputPath = Directory.GetCurrentDirectory(),
+                ReportFileName = "mutation-summary"
+            };
+            var mockFileSystem = new MockFileSystem();
+            var console = new TestConsole().EmitAnsiSequences().Width(160);
+
+            var reportGenerator = new MarkdownSummaryReporter(options, mockFileSystem, console);
+            var emptyReport = new CsharpFolderComposite() { FullPath = "/home/user/src/project/", RelativePath = "" };
+
+            // Act
+            reportGenerator.OnAllMutantsTested(emptyReport);
+
+            // Assert
+            mockFileSystem.AllFiles.ShouldBeEmpty();
         }
     }
 }
