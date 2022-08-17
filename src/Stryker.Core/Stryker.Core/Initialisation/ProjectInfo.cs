@@ -13,12 +13,10 @@ namespace Stryker.Core.Initialisation
 
         public ProjectInfo() : this(null) { }
 
-        public ProjectInfo(IFileSystem fileSystem)
-        {
-            _fileSystem = fileSystem ?? new FileSystem();
-        }
+        public ProjectInfo(IFileSystem fileSystem) => _fileSystem = fileSystem ?? new FileSystem();
 
         public IEnumerable<IAnalyzerResult> TestProjectAnalyzerResults { get; set; }
+
         public IAnalyzerResult ProjectUnderTestAnalyzerResult { get; set; }
 
         /// <summary>
@@ -26,12 +24,9 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         public IProjectComponent ProjectContents { get; set; }
 
-        public string GetInjectionFilePath(IAnalyzerResult analyzerResult)
-        {
-            return Path.Combine(
+        public string GetInjectionFilePath(IAnalyzerResult analyzerResult) => Path.Combine(
                 Path.GetDirectoryName(analyzerResult.GetAssemblyPath()),
                 Path.GetFileName(ProjectUnderTestAnalyzerResult.GetAssemblyPath()));
-        }
 
         public virtual void RestoreOriginalAssembly()
         {
@@ -41,6 +36,7 @@ namespace Stryker.Core.Initialisation
                 _fileSystem.File.Copy(GetBackupName(injectionPath), injectionPath, true);
             }
         }
+
         public virtual void BackupOriginalAssembly()
         {
             foreach (var testProject in TestProjectAnalyzerResults)
