@@ -104,16 +104,16 @@ namespace Stryker.Core.Initialisation
             // initial test
             var result = _initialTestProcess.InitialTest(options, _testRunner);
 
-            if (_testRunner.DiscoverTests().Count == 0)
+            if (_testRunner.DiscoverTests().Count != 0)
             {
-                // no test have been discoverd, diagnose this
-                DiagnoseLackOfDetectedTest(_projectInfo);
-                _logger.LogError("No test has been found during initial test run. Stryker will stop.");
+                return result;
             }
-            return result;
+            // no test have been discovered, diagnose this
+            DiagnoseLackOfDetectedTest(_projectInfo);
+            throw new InputException("No test has been detected. Make sure your test project contains test and is compatible with VsTest.");
         }
 
-        private static readonly Dictionary<string, string> _testFrameworks = new()
+        private static readonly Dictionary<string, string> TestFrameworks = new()
         {
             ["xunit.core"] = "xunit.runner.visualstudio",
             ["nunit.framework"] = "NUnit3.TestAdapter",
@@ -124,7 +124,7 @@ namespace Stryker.Core.Initialisation
         {
             foreach (var testProject in projectInfo.TestProjectAnalyzerResults)
             {
-                foreach (var (framework, adapter) in _testFrameworks)
+                foreach (var (framework, adapter) in TestFrameworks)
                 {
                     if (testProject.References.Any(r => r.Contains(framework)) && !testProject.References.Any(r => r.Contains(adapter)))
                     {

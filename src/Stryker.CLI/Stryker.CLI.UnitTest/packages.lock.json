@@ -68,11 +68,11 @@
       },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[17.0.24, )",
-        "resolved": "17.0.24",
-        "contentHash": "PePTkh5aFsCWSUmc3msyRdJS+aJ15DZDmhgnnjuR7lBSfEyeOi3+CfQqpU28+lpmLH1tFv16K2ODcUNg7lzOPA==",
+        "requested": "[17.1.1, )",
+        "resolved": "17.1.1",
+        "contentHash": "IXsc9skbI+xsjgfsIH5xTdXN/QUyeBc1WVjiJ+IwOthFakBZmN2bqwPH/tYX0FeOEzJ6ZfrZyhqdJ/B+rPHLEQ==",
         "dependencies": {
-          "System.IO.Abstractions": "17.0.24"
+          "System.IO.Abstractions": "17.1.1"
         }
       },
       "xunit": {
@@ -632,50 +632,50 @@
       },
       "NuGet.Common": {
         "type": "Transitive",
-        "resolved": "6.2.1",
-        "contentHash": "qmC7zVUdYaz1lE4tw4dceTFnmVho36tut8R/gvxLIixtjGhIZDIvdo4wUUIDLXrDxublaQYMay1+QotTOUIj8g==",
+        "resolved": "6.3.0",
+        "contentHash": "L/Fz6+UwUP+fO70h+0s071iG2PFjfMWhttWCcvy22xNWptyhqAQz+Z4KDoHB9XnO7gVhSERTbJ43rVxUv1ZCQQ==",
         "dependencies": {
-          "NuGet.Frameworks": "6.2.1"
+          "NuGet.Frameworks": "6.3.0"
         }
       },
       "NuGet.Configuration": {
         "type": "Transitive",
-        "resolved": "6.2.1",
-        "contentHash": "tz0p+IlXydW+flKLSzB9me8fgCgOWrzgCx6zq/YHFzlTVFkcqi6RmZbk0qum1nk/HTzc9IjtEw+s//7/0pTkeg==",
+        "resolved": "6.3.0",
+        "contentHash": "+DgS8ctWjM8vMJ28V+SoRLBKFJYAlhfEV4tGybETksDR81T4pdv8AdT2g3eH31z0tfuTyyOpMfUrnddDkHKWVg==",
         "dependencies": {
-          "NuGet.Common": "6.2.1",
+          "NuGet.Common": "6.3.0",
           "System.Security.Cryptography.ProtectedData": "4.4.0"
         }
       },
       "NuGet.Frameworks": {
         "type": "Transitive",
-        "resolved": "6.2.1",
-        "contentHash": "J5AlfS/XIhPIODuAgdh+/anL08M5aZG/wW5TXsNQW5MfRhgVHkCiN/9/MHAzA1BXccchlTjL/uVRL7DVH56LRw=="
+        "resolved": "6.3.0",
+        "contentHash": "JW/WMvvRatkZDQiK/E43P+xuaoYH7slTS36noFcubBGk2NL9rAKU+tWeudBAuzOjYRp1FJdzjo9b86/dZO56iw=="
       },
       "NuGet.Packaging": {
         "type": "Transitive",
-        "resolved": "6.2.1",
-        "contentHash": "uZ4lR9/x9X7uQ1uS8yak+oC803S/CzUzNvRAQ6A5FdBdvVxvTj95s0pYx9vCNVHNtXz/DHK1lbQvxVgYNlelQA==",
+        "resolved": "6.3.0",
+        "contentHash": "nZoKxL0HkG9B4vGBZHikh/0kRdy2/X824l/hPXNQ+Hybi17RsuI0i6Tz/maUAS4OUboc6vUbGrxpr1xEHJsTeQ==",
         "dependencies": {
           "Newtonsoft.Json": "13.0.1",
-          "NuGet.Configuration": "6.2.1",
-          "NuGet.Versioning": "6.2.1",
+          "NuGet.Configuration": "6.3.0",
+          "NuGet.Versioning": "6.3.0",
           "System.Security.Cryptography.Cng": "5.0.0",
           "System.Security.Cryptography.Pkcs": "5.0.0"
         }
       },
       "NuGet.Protocol": {
         "type": "Transitive",
-        "resolved": "6.2.1",
-        "contentHash": "fTlwmUr3NI7R86UKrjSii5nT6Rq+Q09AadQAcqMa0CBwJ2mJyFd2/pR6CL2KN8yTzou5MIpYMg3lwG8C+iVd6Q==",
+        "resolved": "6.3.0",
+        "contentHash": "4hp7afdt4wKmmFD93hb+aOweBUPBfGMJZuNvSjllvh2gHeIlP7+IWmWpigmNLSPCuDF6zAGW/FFjYHRG1YCNmw==",
         "dependencies": {
-          "NuGet.Packaging": "6.2.1"
+          "NuGet.Packaging": "6.3.0"
         }
       },
       "NuGet.Versioning": {
         "type": "Transitive",
-        "resolved": "6.2.1",
-        "contentHash": "+o507LXjsN1YVAgmpqKCQZ70cLsXDoVmR8H0Wgy0muiFnOhkXN2+a6PGFBAIuA7qJch/umTYu1hp7Dlh1Qcrgg=="
+        "resolved": "6.3.0",
+        "contentHash": "9cQMmhbwR92SSep1y4MMapjrJdcnzcnSWHec3yrB9EMyIjOhiXkwYX9lZ8fkYUxBskwXw8mAEwvY8b7yGRFbAg=="
       },
       "RegexParser": {
         "type": "Transitive",
@@ -1062,8 +1062,8 @@
       },
       "System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "17.0.24",
-        "contentHash": "hA7bacntMiZv1Yf9xtjwl/GP3GT1mG84QxhAk7ijAUD0pJhJaVVwXScE13vMpXnNtlaRDW6SeyZdWg2j2qrh4w=="
+        "resolved": "17.1.1",
+        "contentHash": "LWOM12Bd0kp/gaH4g1o/O2/6JDcHF/fuctF1IqDZt0aAqU2BwGiMihi9Cdcm5jJz8La1wFWbRPuRui8WeX6m8w=="
       },
       "System.IO.FileSystem": {
         "type": "Transitive",
@@ -1631,54 +1631,54 @@
       "dotnet-stryker": {
         "type": "Project",
         "dependencies": {
-          "McMaster.Extensions.CommandLineUtils": "4.0.1",
-          "Microsoft.Extensions.Configuration.Binder": "6.0.0",
-          "NuGet.Protocol": "6.2.1",
-          "YamlDotNet": "12.0.0",
-          "stryker": "2.1.1"
+          "McMaster.Extensions.CommandLineUtils": "[4.0.1, )",
+          "Microsoft.Extensions.Configuration.Binder": "[6.0.0, )",
+          "NuGet.Protocol": "[6.3.0, )",
+          "YamlDotNet": "[12.0.0, )",
+          "stryker": "[2.1.2, )"
         }
       },
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "Buildalyzer": "4.1.4",
-          "DotNet.Glob": "3.1.3",
-          "FSharp.Compiler.Service": "38.0.0",
-          "LibGit2Sharp": "0.27.0-preview-0182",
-          "Microsoft.CodeAnalysis.CSharp": "4.2.0",
-          "Microsoft.Extensions.Configuration": "6.0.0",
-          "Microsoft.Extensions.Configuration.Json": "6.0.0",
-          "Microsoft.Extensions.Logging": "6.0.0",
-          "Microsoft.TestPlatform": "17.2.0",
-          "Microsoft.TestPlatform.ObjectModel": "17.2.0",
-          "Microsoft.TestPlatform.Portable": "17.2.0",
-          "Microsoft.TestPlatform.TranslationLayer": "17.2.0",
-          "Microsoft.Web.LibraryManager.Build": "2.1.175",
-          "Mono.Cecil": "0.11.4",
-          "NuGet.Frameworks": "6.2.1",
-          "Serilog": "2.11.0",
-          "Serilog.Extensions.Logging": "3.1.0",
-          "Serilog.Extensions.Logging.File": "3.0.0",
-          "Serilog.Sinks.Console": "4.0.1",
-          "ShellProgressBar": "5.2.0",
-          "Spectre.Console": "0.44.0",
-          "Spectre.Console.Analyzer": "0.44.0",
-          "Stryker.DataCollector": "2.1.1",
-          "Stryker.RegexMutators": "2.1.1",
-          "System.IO.Abstractions": "17.0.24",
-          "System.Net.Http.Json": "6.0.0"
+          "Buildalyzer": "[4.1.4, )",
+          "DotNet.Glob": "[3.1.3, )",
+          "FSharp.Compiler.Service": "[38.0.0, )",
+          "LibGit2Sharp": "[0.27.0-preview-0182, )",
+          "Microsoft.CodeAnalysis.CSharp": "[4.2.0, )",
+          "Microsoft.Extensions.Configuration": "[6.0.0, )",
+          "Microsoft.Extensions.Configuration.Json": "[6.0.0, )",
+          "Microsoft.Extensions.Logging": "[6.0.0, )",
+          "Microsoft.TestPlatform": "[17.2.0, )",
+          "Microsoft.TestPlatform.ObjectModel": "[17.2.0, )",
+          "Microsoft.TestPlatform.Portable": "[17.2.0, )",
+          "Microsoft.TestPlatform.TranslationLayer": "[17.2.0, )",
+          "Microsoft.Web.LibraryManager.Build": "[2.1.175, )",
+          "Mono.Cecil": "[0.11.4, )",
+          "NuGet.Frameworks": "[6.3.0, )",
+          "Serilog": "[2.11.0, )",
+          "Serilog.Extensions.Logging": "[3.1.0, )",
+          "Serilog.Extensions.Logging.File": "[3.0.0, )",
+          "Serilog.Sinks.Console": "[4.0.1, )",
+          "ShellProgressBar": "[5.2.0, )",
+          "Spectre.Console": "[0.44.0, )",
+          "Spectre.Console.Analyzer": "[0.44.0, )",
+          "Stryker.DataCollector": "[2.1.2, )",
+          "Stryker.RegexMutators": "[2.1.2, )",
+          "System.IO.Abstractions": "[17.1.1, )",
+          "System.Net.Http.Json": "[6.0.0, )"
         }
       },
       "stryker.datacollector": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "17.2.0"
+          "Microsoft.TestPlatform.ObjectModel": "[17.2.0, )"
         }
       },
       "stryker.regexmutators": {
         "type": "Project",
         "dependencies": {
-          "RegexParser": "0.5.1"
+          "RegexParser": "[0.5.1, )"
         }
       }
     }
