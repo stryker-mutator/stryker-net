@@ -85,7 +85,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var reportPath = Path.Combine(options.ReportPath, "mutation-summary.md");
             var fileContents = mockFileSystem.File.ReadAllText(reportPath);
 
-            // Spaces are variable - remove them for this comparison.
+            // Spaces are unpredictable - remove them for this comparison.
             var stippedFileContents = fileContents.Replace(" ", string.Empty);
 
             foreach(var file in files)
