@@ -7,8 +7,10 @@ using Grynwald.MarkdownGenerator;
 using Microsoft.Extensions.Options;
 using Spectre.Console;
 using Stryker.Core.Mutants;
+using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using static FSharp.Compiler.AbstractIL.IL.ILExceptionClause;
 
 namespace Stryker.Core.Reporters
 {
@@ -52,7 +54,7 @@ namespace Stryker.Core.Reporters
                 var reportPath = Path.Combine(_options.ReportPath, filename);
                 var reportUri = "file://" + reportPath.Replace("\\", "/");
 
-                GenerateMarkdownReport(_options, reportPath, files);
+                GenerateMarkdownReport(_options, reportPath, files, reportComponent.GetMutationScore());
 
                 _console.WriteLine();
                 _console.MarkupLine("[Green]Your Markdown summary has been generated at:[/]");
@@ -69,7 +71,7 @@ namespace Stryker.Core.Reporters
             }
         }
 
-        private void GenerateMarkdownReport(StrykerOptions options, string reportPath, IEnumerable<IFileLeaf> files)
+        private void GenerateMarkdownReport(StrykerOptions options, string reportPath, IEnumerable<IFileLeaf> files, double mutationScore)
         {
             if (!files.Any())
             {
@@ -77,7 +79,7 @@ namespace Stryker.Core.Reporters
             }
 
             var mdSummaryDocument = new MdDocument();
-            mdSummaryDocument.Root.Add(new MdHeading(2, "Mutation Testing Summary"));
+            mdSummaryDocument.Root.Add(new MdHeading(1, "Mutation Testing Summary"));
 
             var mdSummary = new MdTable(new MdTableRow(new[] { "File", "% score", "# killed", "# timeout", "# survived", "# no cov", "# error" }));
 
@@ -87,8 +89,10 @@ namespace Stryker.Core.Reporters
             }
 
             mdSummaryDocument.Root.Add(mdSummary);
-            mdSummaryDocument.Root.Add(new MdHeading(4, new MdEmphasisSpan($"Coverage Thresholds: high:{_options.Thresholds.High} low:{_options.Thresholds.Low} break:{_options.Thresholds.Break}")));
+            mdSummaryDocument.Root.Add(new MdHeading(2, new MdTextSpan($"The final mutation score is {mutationScore * 100:N2}%")));
+            mdSummaryDocument.Root.Add(new MdHeading(3, new MdEmphasisSpan($"Coverage Thresholds: high:{_options.Thresholds.High} low:{_options.Thresholds.Low} break:{_options.Thresholds.Break}")));
 
+            _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(reportPath));
             _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(reportPath));
             using var mdFile = _fileSystem.File.Create(reportPath);
             mdSummaryDocument.Save(mdFile);

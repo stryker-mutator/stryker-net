@@ -110,12 +110,14 @@ dotnet stryker --reporter "markdown"
 
 Example:
 
-## Mutation Testing Summary
+# Mutation Testing Summary
 
 | File                                                        | % score | \# killed | \# timeout | \# survived | \# no cov | \# error |
 | ----------------------------------------------------------- | ------- | --------- | ---------- | ----------- | --------- | -------- |
 | Entities\\Entity1.cs                          | 100.00  | 1         | 0          | 3           | 0         | 2        |
 | Program.cs                                                  | N\/A    | 0         | 0          | 6           | 0         | 0        |
-| Utils\\EntityExtensions.cs                       | 87.50   | 7         | 0          | 1           | 1         | 0        |
+| Utils\\LoggerUtils.cs | 84.62   | 11        | 0          | 2           | 0         | 0        |
 
-#### *Coverage Thresholds: high:90 low:60 break:60*
+## The final mutation score is 93.70%
+
+### *Coverage Thresholds: high:90 low:60 break:60*
