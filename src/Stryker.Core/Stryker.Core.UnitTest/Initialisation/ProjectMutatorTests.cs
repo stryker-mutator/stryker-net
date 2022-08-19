@@ -2,6 +2,7 @@ using System.IO.Abstractions.TestingHelpers;
 using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -53,7 +54,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             _initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>())).Returns(_mutationTestInput);
             _initialisationProcessMock.Setup(x => x.InitialTest(options))
-                .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500)));
+                .Returns(new InitialTestRun(TestGuidsList.EveryTest(), TestGuidsList.NoTest(), new TimeoutValueCalculator(5)));
             // act
             var result = target.MutateProject(options, _reporterMock.Object);
 

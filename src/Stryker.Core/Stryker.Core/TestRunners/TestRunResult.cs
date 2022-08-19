@@ -6,45 +6,51 @@ namespace Stryker.Core.TestRunners
 {
     public class TestRunResult : ITestRunResults
     {
-        public TestRunResult(bool success, string message = null)
+        public TestRunResult(bool success)
         {
             FailedTests = !success ? TestGuidsList.EveryTest() : TestGuidsList.NoTest();
             RanTests = TestGuidsList.EveryTest();
             TimedOutTests = TestGuidsList.NoTest();
             NonCoveringTests = TestGuidsList.NoTest();
-            ResultMessage = message;
-            Duration = TimeSpan.Zero;
         }
 
         public TestRunResult(ITestGuids ranTests,
             ITestGuids failedTests,
             ITestGuids timedOutTest,
-            ITestGuids nonCoveringTests,
-            string message,
-            TimeSpan timeSpan)
+            ITestGuids nonCoveringTests)
         {
             RanTests = ranTests;
             FailedTests = failedTests;
             TimedOutTests = timedOutTest;
             NonCoveringTests = nonCoveringTests;
-            ResultMessage = message;
-            Duration = timeSpan;
         }
 
         public static TestRunResult TimedOut(ITestGuids ranTests,
             ITestGuids failedTest,
             ITestGuids timedOutTests,
-            ITestGuids nonCoveringTests,
-            string message,
-            TimeSpan duration) =>
-            new(ranTests, failedTest, timedOutTests, nonCoveringTests, message, duration){SessionTimedOut = true};
+            ITestGuids nonCoveringTests) =>
+            new(ranTests, failedTest, timedOutTests, nonCoveringTests){SessionTimedOut = true};
 
         public ITestGuids FailedTests { get; }
         public ITestGuids RanTests { get; }
         public ITestGuids TimedOutTests { get; }
         public ITestGuids NonCoveringTests {get;}
         public bool SessionTimedOut { get; private init; }
-        public string ResultMessage { get; }
+    }
+
+    public class InitialTestRunResult
+    {
+        public ITestGuids RanTests {get;}
+
+        public ITestGuids FailedTests { get; }
+
         public TimeSpan Duration { get; }
+
+        public InitialTestRunResult(ITestGuids ranTests, ITestGuids failedTests, TimeSpan duration)
+        {
+            RanTests = ranTests;
+            FailedTests = failedTests;
+            Duration = duration;
+        }
     }
 }

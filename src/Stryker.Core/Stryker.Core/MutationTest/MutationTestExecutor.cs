@@ -36,7 +36,7 @@ namespace Stryker.Core.MutationTest
                 var result = RunTestSession(mutantsToTest, timeoutMs, updateHandler, forceSingle);
 
                 Logger.LogTrace(
-                    $"Test run for {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))} is {(result.FailedTests.Count == 0 ? "success" : "failed")} with output: {result.ResultMessage}");
+                    $"Test run for {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))} is {(result.FailedTests.Count == 0 ? "success" : "failed")}.");
 
                 var remainingMutants = mutantsToTest.Where((m) => m.ResultStatus == MutantStatus.NotRun).ToList();
                 if (remainingMutants.Count == mutantsToTest.Count)
@@ -76,7 +76,7 @@ namespace Stryker.Core.MutationTest
             TestUpdateHandler updateHandler, bool forceSingle)
         {
             Logger.LogTrace($"Testing {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))}.");
-            if (forceSingle && mutantsToTest.Count > 1)
+            if (forceSingle)
             {
                 foreach (var mutant in mutantsToTest)
                 {

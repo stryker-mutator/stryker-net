@@ -322,6 +322,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 Mutants = scenario.Mutants.Values
             });
 
+            var initialTestRunResult = scenario.GetInitialRunResult();
             var input = new MutationTestInput()
             {
                 ProjectInfo = new ProjectInfo(new MockFileSystem())
@@ -336,7 +337,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectContents = folder
                 },
                 AssemblyReferences = _assemblies,
-                InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
+                InitialTestRun = new InitialTestRun(initialTestRunResult.RanTests, initialTestRunResult.FailedTests, new TimeoutValueCalculator(500))
             };
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
@@ -426,6 +427,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             // setup coverage
             var executor = new MutationTestExecutor(runnerMock.Object);
 
+            var initialTestRunResult = scenario.GetInitialRunResult();
             var input = new MutationTestInput
             {
                 ProjectInfo = new ProjectInfo(new MockFileSystem())
@@ -439,7 +441,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectContents = folder
                 },
                 AssemblyReferences = _assemblies,
-                InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
+                InitialTestRun = new InitialTestRun(initialTestRunResult.RanTests, initialTestRunResult.FailedTests, new TimeoutValueCalculator(500))
             };
 
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
@@ -490,6 +492,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             // setup coverage
             var executor = new MutationTestExecutor(runnerMock.Object);
 
+            var initialTestRunResult = scenario.GetInitialRunResult();
             var input = new MutationTestInput
             {
                 ProjectInfo = new ProjectInfo(new MockFileSystem())
@@ -503,7 +506,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectContents = folder
                 },
                 AssemblyReferences = _assemblies,
-                InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
+                InitialTestRun = new InitialTestRun(initialTestRunResult.RanTests, initialTestRunResult.FailedTests, new TimeoutValueCalculator(500))
             };
 
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
@@ -849,6 +852,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 Mutants = scenario.Mutants.Values
             });
 
+            var initialTestRunResult = scenario.GetInitialRunResult();
             var input = new MutationTestInput
             {
                 ProjectInfo = new ProjectInfo(new MockFileSystem())
@@ -863,7 +867,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectContents = folder
                 },
                 AssemblyReferences = _assemblies,
-                InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
+                InitialTestRun = new InitialTestRun(initialTestRunResult.RanTests, initialTestRunResult.FailedTests, new TimeoutValueCalculator(500))
             };
 
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);

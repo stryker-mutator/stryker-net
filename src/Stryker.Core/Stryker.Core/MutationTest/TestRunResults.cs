@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Stryker.Core.Mutants;
 
 namespace Stryker.Core.MutationTest
@@ -30,6 +29,5 @@ namespace Stryker.Core.MutationTest
             TimedOutTests = timedOutTests;
             NonCoveringTests = TestGuidsList.NoTest();
         }
-
     }
 }

@@ -1,16 +1,21 @@
-using Stryker.Core.TestRunners;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Initialisation
 {
     public class InitialTestRun
     {
-        public InitialTestRun(TestRunResult result, ITimeoutValueCalculator timeoutValueCalculator)
+        public InitialTestRun(ITestGuids ranTests, ITestGuids failedTests, ITimeoutValueCalculator timeoutValueCalculator)
         {
-            Result = result;
+            AllTests = ranTests;
+            FailedTests = failedTests;
+
             TimeoutValueCalculator = timeoutValueCalculator;
         }
+         
+        public ITestGuids AllTests { get; }
 
-        public TestRunResult Result { get; }
+        public ITestGuids FailedTests { get; }
+
         public ITimeoutValueCalculator TimeoutValueCalculator { get;}
     }
 }

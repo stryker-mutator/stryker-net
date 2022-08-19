@@ -6,6 +6,7 @@ using Buildalyzer.Construction;
 using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -64,7 +65,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new ProjectOrchestrator(_buildalyzerProviderMock.Object, _projectMutatorMock.Object);
 
             _initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>())).Returns(_mutationTestInput);
-            _initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>())).Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(5)));
+            _initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>())).Returns(new InitialTestRun(TestGuidsList.EveryTest(), TestGuidsList.NoTest(), new TimeoutValueCalculator(5)));
             _buildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<string>(), It.IsAny<AnalyzerManagerOptions>())).Returns(buildalyzerAnalyzerManagerMock.Object);
             // The analyzer finds two projects
             buildalyzerAnalyzerManagerMock.Setup(x => x.Projects)

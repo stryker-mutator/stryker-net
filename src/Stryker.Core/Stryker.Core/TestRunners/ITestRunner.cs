@@ -13,7 +13,7 @@ namespace Stryker.Core.TestRunners
     {
         TestSet DiscoverTests();
 
-        TestRunResult InitialTest();
+        InitialTestRunResult InitialTest();
 
         IEnumerable<CoverageRunResult> CaptureCoverage();
 

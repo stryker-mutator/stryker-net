@@ -256,11 +256,13 @@ namespace Stryker.Core.UnitTest.MutationTest
             new(GetCoveringTests(id),
                 GetFailedTests(id, null),
                 TestGuidsList.NoTest(),
-                TestGuidsList.NoTest(),
-                string.Empty,
-                TimeSpan.Zero);
+                TestGuidsList.NoTest());
 
-        public TestRunResult GetInitialRunResult() => GetRunResult(InitialRunId);
+        public InitialTestRunResult GetInitialRunResult()
+        {
+            var res = GetRunResult(InitialRunId);
+            return new InitialTestRunResult(res.RanTests, res.FailedTests, TimeSpan.FromMilliseconds(2));
+        }
 
         public Mock<ITestRunner> GetTestRunnerMock()
         {
@@ -273,11 +275,9 @@ namespace Stryker.Core.UnitTest.MutationTest
             var successResult = new TestRunResult(GetGuidList(),
                 TestGuidsList.NoTest(),
                 TestGuidsList.NoTest(),
-                TestGuidsList.NoTest(),
-                string.Empty,
-                TimeSpan.Zero);
+                TestGuidsList.NoTest());
             _runnerMock.Setup(x => x.DiscoverTests()).Returns(TestSet);
-            _runnerMock.Setup(x => x.InitialTest()).Returns(GetRunResult(InitialRunId));
+            _runnerMock.Setup(x => x.InitialTest()).Returns(GetInitialRunResult());
             _runnerMock.Setup(x => x.CaptureCoverage())
                 .Returns(() =>
                 {

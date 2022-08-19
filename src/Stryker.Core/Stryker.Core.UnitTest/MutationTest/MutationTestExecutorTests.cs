@@ -48,7 +48,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var mutant = new Mutant { Id = 1, CoveringTests = TestGuidsList.EveryTest() };
             testRunnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<Mutant>>(), null)).
-                Returns(TestRunResult.TimedOut(TestGuidsList.NoTest(), TestGuidsList.NoTest(),TestGuidsList.NoTest(), TestGuidsList.NoTest(), "", TimeSpan.Zero));
+                Returns(TestRunResult.TimedOut(TestGuidsList.NoTest(), TestGuidsList.NoTest(),TestGuidsList.NoTest(), TestGuidsList.NoTest()));
 
             var target = new MutationTestExecutor(testRunnerMock.Object);
 

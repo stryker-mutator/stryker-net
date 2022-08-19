@@ -36,7 +36,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _vsTestConsole = _context.BuildVsTestWrapper(RunnerId);
         }
 
-        public TestRunResult InitialTest()
+        public InitialTestRunResult InitialTest()
         {
             var testResults = RunTestSession(TestGuidsList.EveryTest());
             // initial test run, register test results
@@ -55,7 +55,20 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             // get the test results, but prevent compression of 'all tests'
-            return BuildTestRunResult(testResults, _context.Tests.Count, false);
+            var resultAsArray = testResults.TestResults.ToArray();
+            var testCases = resultAsArray.Select(t => t.TestCase.Id).ToHashSet();
+            var ranTests = new TestGuidsList(testCases);
+            var failedTests = resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(t => t.TestCase.Id);
+
+            if (ranTests.IsEmpty)
+            {
+                _logger.LogTrace($"{RunnerId}: Initial Test session reports 0 result.");
+            }
+
+            var duration =  TimeSpan.FromTicks(_context.VsTests.Values.Sum(t => t.InitialRunTime.Ticks));
+            
+            var failedTestsDescription = new TestGuidsList(failedTests);
+            return new InitialTestRunResult(ranTests, failedTestsDescription, duration);
         }
 
         public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
@@ -86,9 +99,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     return new TestRunResult(TestGuidsList.NoTest(),
                         TestGuidsList.NoTest(),
                         TestGuidsList.NoTest(),
-                        TestGuidsList.NoTest(),
-                        "Mutants are not covered by any test!",
-                        TimeSpan.Zero);
+                        TestGuidsList.NoTest());
                 }
 
                 if (timeoutCalc != null && testCases != null)
@@ -115,8 +126,6 @@ namespace Stryker.Core.TestRunners.VsTest
                 var tests = results.RanTests.Count >= _context.Tests.Count
                     ? TestGuidsList.EveryTest()
                     : results.RanTests;
-                var failedTest = results.FailedTests;
-                var timedOutTest = results.TimedOutTests;
                 var nonCoveringTests = results.NonCoveringTests;
                 var remainingMutants = update?.Invoke(mutants, results, nonCoveringTests);
 
@@ -160,16 +169,13 @@ namespace Stryker.Core.TestRunners.VsTest
 
             var duration =  TimeSpan.FromTicks(_context.VsTests.Values.Sum(t => t.InitialRunTime.Ticks));
             
-            var message = string.Join(Environment.NewLine,
-                resultAsArray.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage))
-                    .Select(tr => $"{tr.DisplayName}{Environment.NewLine}{Environment.NewLine}{tr.ErrorMessage}"));
             var failedTestsDescription = new TestGuidsList(failedTests);
             var timedOutTests = new TestGuidsList(testResults.TestsInTimeout?.Select(t => t.Id));
             var nonCoveringTests = new TestGuidsList(testResults.TestResults.
                 Where(r => r.GetProperties().All(p => p.Key.Id != CoverageCollector.ActiveMutationSeen)).Select(t => t.TestCase.Id));
             return timeout
-                ? TestRunResult.TimedOut(ranTests, failedTestsDescription, timedOutTests, nonCoveringTests, message, duration)
-                : new TestRunResult(ranTests, failedTestsDescription, timedOutTests, nonCoveringTests, message, duration);
+                ? TestRunResult.TimedOut(ranTests, failedTestsDescription, timedOutTests, nonCoveringTests)
+                : new TestRunResult(ranTests, failedTestsDescription, timedOutTests, nonCoveringTests);
         }
 
         public IRunResults RunTestSession(ITestGuids testsToRun, int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<ITestRunResults> updateHandler = null) =>

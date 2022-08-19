@@ -490,17 +490,11 @@ public class VsTestMockingHelper : TestBase
 
     protected MutationTestProcess BuildMutationTestProcess(VsTestRunnerPool runner, StrykerOptions options, IReadOnlyList<TestCase> tests = null, ProjectInfo targetProject = null)
     {
-        var testRunResult = new TestRunResult(new TestGuidsList((tests ?? TestCases).Select(t => t.Id)),
-            TestGuidsList.NoTest(),
-            TestGuidsList.NoTest(),
-            TestGuidsList.NoTest(),
-            string.Empty,
-            TimeSpan.Zero);
         var input = new MutationTestInput
         {
             ProjectInfo = targetProject ?? _targetProject,
             TestRunner = runner,
-            InitialTestRun = new InitialTestRun(testRunResult, new TimeoutValueCalculator(500))
+            InitialTestRun = new InitialTestRun(new TestGuidsList((tests ?? TestCases).Select(t => t.Id)), TestGuidsList.NoTest(), new TimeoutValueCalculator(500))
         };
         return new MutationTestProcess(input, new Mock<IReporter>().Object, new MutationTestExecutor(input.TestRunner),
             fileSystem: _fileSystem, options: options, mutantFilter: new Mock<IMutantFilter>(MockBehavior.Loose).Object);

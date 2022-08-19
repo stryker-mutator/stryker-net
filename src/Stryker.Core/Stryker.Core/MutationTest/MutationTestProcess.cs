@@ -325,7 +325,7 @@ namespace Stryker.Core.MutationTest
 
         private bool TestUpdateHandler(IEnumerable<Mutant> testedMutants, ITestRunResults results, ITestGuids nonCoveringTests, ISet<Mutant> reportedMutants)
         {
-            var testsFailingInitially = Input.InitialTestRun.Result.FailedTests;
+            var testsFailingInitially = Input.InitialTestRun.FailedTests;
             var continueTestRun = _options.OptimizationMode.HasFlag(OptimizationModes.DisableBail);
             
             if (testsFailingInitially.Count > 0 && results.FailedTests.ContainsAny(testsFailingInitially))
@@ -402,7 +402,7 @@ namespace Stryker.Core.MutationTest
 
             mutantsToGroup = mutantsToGroup.Where(m => m.ResultStatus == MutantStatus.NotRun).ToList();
             
-            var testsCount = Input.InitialTestRun.Result.RanTests.Count;
+            var testsCount = Input.InitialTestRun.AllTests.Count;
             mutantsToGroup = mutantsToGroup.OrderBy(m => m.AssessingTests.Count).ToList();
             while (mutantsToGroup.Count>0)
             {
@@ -437,6 +437,6 @@ namespace Stryker.Core.MutationTest
             return blocks;
         }
 
-        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(_mutationTestExecutor.TestRunner, _projectContents.Mutants, Input.InitialTestRun.Result.FailedTests);
+        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(_mutationTestExecutor.TestRunner, _projectContents.Mutants, Input.InitialTestRun.FailedTests);
     }
 }

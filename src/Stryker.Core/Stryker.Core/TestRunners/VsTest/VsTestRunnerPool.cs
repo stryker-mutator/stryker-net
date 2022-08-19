@@ -58,7 +58,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
             => RunThis(runner => runner.TestMultipleMutants(timeoutCalc, mutants, update));
 
-        public TestRunResult InitialTest()
+        public InitialTestRunResult InitialTest()
             => RunThis(runner => runner.InitialTest());
 
         private void Initialize(Func<VsTestContextInformation, int, VsTestRunner> runnerBuilder = null)

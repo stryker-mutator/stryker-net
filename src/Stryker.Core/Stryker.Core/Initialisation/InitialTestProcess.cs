@@ -46,14 +46,14 @@ namespace Stryker.Core.Initialisation
             stopwatch.Stop();
 
             // timings
-            _logger.LogDebug("Initial testrun output: {0}.", initTestRunResult.ResultMessage);
+            _logger.LogDebug("Initial testrun done.");
             if (!initTestRunResult.FailedTests.IsEmpty)
             {
                 var failingTestsCount = initTestRunResult.FailedTests.Count;
                 _logger.LogWarning($"{(failingTestsCount == 1 ? "A test is ": $"{failingTestsCount} tests are")} failing. Stryker will continue but outcome will be impacted.");
                 if (((double)failingTestsCount) / initTestRunResult.RanTests.Count >= .5)
                 {
-                    throw new InputException("Initial testrun has more than 50% failing tests.", initTestRunResult.ResultMessage);
+                    throw new InputException("Initial testrun has more than 50% failing tests.");
                 }
             }
 
@@ -61,7 +61,7 @@ namespace Stryker.Core.Initialisation
                 (int)stopwatch.ElapsedMilliseconds - (int)initTestRunResult.Duration.TotalMilliseconds,
                 (int)stopwatch.ElapsedMilliseconds);
 
-            return new InitialTestRun(initTestRunResult, TimeoutValueCalculator);
+            return new InitialTestRun(initTestRunResult.RanTests, initTestRunResult.FailedTests, TimeoutValueCalculator);
         }
     }
 }
