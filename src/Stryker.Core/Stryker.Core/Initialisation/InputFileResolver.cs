@@ -149,7 +149,7 @@ namespace Stryker.Core.Initialisation
             return projectUnderTestPath;
         }
 
-        private void ValidateTestProjectsCanBeExecuted(ProjectInfo projectInfo)
+        private static void ValidateTestProjectsCanBeExecuted(ProjectInfo projectInfo)
         {
             // if references contains Microsoft.VisualStudio.QualityTools.UnitTestFramework 
             // we have detected usage of mstest V1 and should exit
