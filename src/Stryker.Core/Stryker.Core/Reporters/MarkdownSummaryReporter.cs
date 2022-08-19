@@ -81,7 +81,21 @@ namespace Stryker.Core.Reporters
             var mdSummaryDocument = new MdDocument();
             mdSummaryDocument.Root.Add(new MdHeading(1, "Mutation Testing Summary"));
 
-            var mdSummary = new MdTable(new MdTableRow(new[] { "File", "% score", "# killed", "# timeout", "# survived", "# no cov", "# error" }));
+            var mdSummary = new MdTable(new MdTableRow(
+                new[]
+                {
+                    "File",
+                    "Score",
+                    "Killed",
+                    "Survived",
+                    "Timeout",
+                    "No Coverage",
+                    "Ingnored",
+                    "Compile Errors",
+                    "Total Detected",
+                    "Total Undetected",
+                    "Total Mutants"
+                }));
 
             foreach (var file in files)
             {
@@ -100,33 +114,48 @@ namespace Stryker.Core.Reporters
 
         private MdTableRow GenerateFileData(IFileLeaf fileScores)
         {
+            var mutationScore = fileScores.GetMutationScore();
             var values = new List<string>();
 
+            // Files
             values.Add(fileScores.RelativePath ?? "All files");
 
-            var mutationScore = fileScores.GetMutationScore();
-
-            if (fileScores.IsComponentExcluded(_options.Mutate))
-            {
-                values.Add("Excluded");
-            }
-            else if (double.IsNaN(mutationScore))
-            {
-                values.Add("N/A");
-            }
-            else
-            {
-                values.Add($"{mutationScore * 100:N2}");
-            }
+            // Score
+            values.Add(double.IsNaN(mutationScore) ? "N/A" : $"{mutationScore * 100:N2}%");
 
             var mutants = fileScores.Mutants.ToList();
 
+            // Killed
             values.Add(mutants.Count(m => m.ResultStatus == MutantStatus.Killed).ToString());
+
+            // Survived
+            values.Add(mutants.Count(m => m.ResultStatus == MutantStatus.Survived).ToString());
+
+            // Timeout
             values.Add(mutants.Count(m => m.ResultStatus == MutantStatus.Timeout).ToString());
-            values.Add((fileScores.TotalMutants().Count() - fileScores.DetectedMutants().Count()).ToString());
+
+            // No Coverage
             values.Add(mutants.Count(m => m.ResultStatus == MutantStatus.NoCoverage).ToString());
+
+            // Ignored
+            values.Add(mutants.Count(m => m.ResultStatus == MutantStatus.Ignored).ToString());
+
+            // Compile Errors
             values.Add(mutants.Count(m => m.ResultStatus == MutantStatus.CompileError).ToString());
 
+            // Total Detected
+            values.Add(mutants
+                    .Count(m => m.ResultStatus == MutantStatus.Killed || m.ResultStatus == MutantStatus.Timeout)
+                    .ToString());
+
+            // Total Undetected
+            values.Add(
+                mutants
+                    .Count(m => m.ResultStatus == MutantStatus.Survived || m.ResultStatus == MutantStatus.NoCoverage)
+                    .ToString());
+
+            // Total
+            values.Add(mutants.Count().ToString());
             return new MdTableRow(values);
         }
     }

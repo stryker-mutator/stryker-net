@@ -91,7 +91,7 @@ namespace Stryker.Core.UnitTest.Reporters
             foreach(var file in files)
             {
                 var escapedFilename = file.RelativePath.Replace("/", "\\/");
-                stippedFileContents.ShouldContain($"|{escapedFilename}|{file.GetMutationScore() * 100:N2}|");
+                stippedFileContents.ShouldContain($"|{escapedFilename}|{file.GetMutationScore() * 100:N2}%|");
             }
         }
 
