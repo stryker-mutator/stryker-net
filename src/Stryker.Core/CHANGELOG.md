@@ -1,3 +1,13 @@
+# [2.2.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@2.1.2...stryker@2.2.0) (2022-08-22)
+
+
+### Features
+
+* **reporters:** Markdown File Summary Reporter ([#2138](https://github.com/stryker-mutator/stryker-net/issues/2138)) ([0ac8347](https://github.com/stryker-mutator/stryker-net/commit/0ac8347a219f80ca7d2cbaa16971780dbeb2f685))
+* **testrunner:** Diagnose failed test discovery and provide fix hints ([#2139](https://github.com/stryker-mutator/stryker-net/issues/2139)) ([90971a2](https://github.com/stryker-mutator/stryker-net/commit/90971a290bff8eab5fcf3e4148cc440ebddf9f86))
+
+
+
 ## [2.1.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@2.1.1...stryker@2.1.2) (2022-08-05)
 
 
