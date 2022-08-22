@@ -25,7 +25,7 @@ namespace Stryker.Core.UnitTest.Reporters
             };
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
 
-            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith());
+            reporter.OnAllMutantsTested(ReportTestHelper.CreateProjectWith());
             var reportPath = Path.Combine(options.ReportPath, "mutation-report.html");
             mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
         }
@@ -43,7 +43,7 @@ namespace Stryker.Core.UnitTest.Reporters
             };
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
 
-            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith());
+            reporter.OnAllMutantsTested(ReportTestHelper.CreateProjectWith());
             var reportPath = Path.Combine(options.ReportPath, "mutation-report.html");
 
             var fileContents = mockFileSystem.GetFile(reportPath).TextContents;
@@ -66,7 +66,7 @@ namespace Stryker.Core.UnitTest.Reporters
             };
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
 
-            reporter.OnAllMutantsTested(JsonReportTestHelper.CreateProjectWith());
+            reporter.OnAllMutantsTested(ReportTestHelper.CreateProjectWith());
             var reportPath = Path.Combine(options.ReportPath, "mutation-report.html");
 
             var fileContents = mockFileSystem.GetFile(reportPath).TextContents;
@@ -88,7 +88,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 ReportFileName = "mutation-report"
             };
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
-            var mutationTree = JsonReportTestHelper.CreateProjectWith();
+            var mutationTree = ReportTestHelper.CreateProjectWith();
 
             reporter.OnAllMutantsTested(mutationTree);
             var reportPath = Path.Combine(options.ReportPath, "mutation-report.html");
@@ -113,7 +113,7 @@ namespace Stryker.Core.UnitTest.Reporters
             };
 
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
-            var mutationTree = JsonReportTestHelper.CreateProjectWith();
+            var mutationTree = ReportTestHelper.CreateProjectWith();
 
             reporter.OnAllMutantsTested(mutationTree);
 
@@ -138,7 +138,7 @@ namespace Stryker.Core.UnitTest.Reporters
             };
 
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
-            var mutationTree = JsonReportTestHelper.CreateProjectWith();
+            var mutationTree = ReportTestHelper.CreateProjectWith();
 
             reporter.OnAllMutantsTested(mutationTree);
 

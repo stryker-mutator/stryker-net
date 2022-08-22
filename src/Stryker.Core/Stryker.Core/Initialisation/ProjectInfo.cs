@@ -17,13 +17,11 @@ namespace Stryker.Core.Initialisation
 
         public ProjectInfo() : this(null) { }
 
-        public ProjectInfo(IFileSystem fileSystem)
-        {
+        public ProjectInfo(IFileSystem fileSystem) => _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectInfo>();
-            _fileSystem = fileSystem ?? new FileSystem();
-        }
 
         public IEnumerable<IAnalyzerResult> TestProjectAnalyzerResults { get; set; }
+
         public IAnalyzerResult ProjectUnderTestAnalyzerResult { get; set; }
 
         /// <summary>

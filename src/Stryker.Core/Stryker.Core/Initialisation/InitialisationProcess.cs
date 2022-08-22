@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -41,7 +42,9 @@ namespace Stryker.Core.Initialisation
         private readonly IInitialTestProcess _initialTestProcess;
         private readonly IAssemblyReferenceResolver _assemblyReferenceResolver;
         private ITestRunner _testRunner;
+        private ProjectInfo _projectInfo;
         private readonly ILogger _logger;
+       
 
         public InitialisationProcess(
             IInputFileResolver inputFileResolver = null,
@@ -61,16 +64,16 @@ namespace Stryker.Core.Initialisation
         public MutationTestInput Initialize(StrykerOptions options)
         {
             // resolve project info
-            var projectInfo = _inputFileResolver.ResolveInput(options);
+             _projectInfo = _inputFileResolver.ResolveInput(options);
 
             // initial build
-            var testProjects = projectInfo.TestProjectAnalyzerResults.ToList();
+            var testProjects = _projectInfo.TestProjectAnalyzerResults.ToList();
             for (var i = 0; i < testProjects.Count; i++)
             {
                 _logger.LogInformation(
                     "Building test project {ProjectFilePath} ({CurrentTestProject}/{OfTotalTestProjects})",
                     testProjects[i].ProjectFilePath, i + 1,
-                    projectInfo.TestProjectAnalyzerResults.Count());
+                    _projectInfo.TestProjectAnalyzerResults.Count());
 
                 _initialBuildProcess.InitialBuild(
                     testProjects[i].TargetsFullFramework(),
@@ -79,23 +82,56 @@ namespace Stryker.Core.Initialisation
                     options.MsBuildPath);
             }
 
-            InitializeDashboardProjectInformation(options, projectInfo);
+            InitializeDashboardProjectInformation(options, _projectInfo);
 
-            _testRunner ??= new VsTestRunnerPool(options, projectInfo);
+            _testRunner ??= new VsTestRunnerPool(options, _projectInfo);
 
             var input = new MutationTestInput
             {
-                ProjectInfo = projectInfo,
-                AssemblyReferences = _assemblyReferenceResolver.LoadProjectReferences(projectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
+                ProjectInfo = _projectInfo,
+                AssemblyReferences = _assemblyReferenceResolver.LoadProjectReferences(_projectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
                 TestRunner = _testRunner,
             };
 
             return input;
         }
 
-        public InitialTestRun InitialTest(StrykerOptions options) =>
+        public InitialTestRun InitialTest(StrykerOptions options)
+        {
             // initial test
-            _initialTestProcess.InitialTest(options, _testRunner);
+            var result = _initialTestProcess.InitialTest(options, _testRunner);
+
+            if (_testRunner.DiscoverTests().Count != 0)
+            {
+                return result;
+            }
+            // no test have been discovered, diagnose this
+            DiagnoseLackOfDetectedTest(_projectInfo);
+            throw new InputException("No test has been detected. Make sure your test project contains test and is compatible with VsTest.");
+        }
+
+        private static readonly Dictionary<string, string> TestFrameworks = new()
+        {
+            ["xunit.core"] = "xunit.runner.visualstudio",
+            ["nunit.framework"] = "NUnit3.TestAdapter",
+            ["Microsoft.VisualStudio.TestPlatform.TestFramework"] = "Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter"
+        };
+
+        public static void DiagnoseLackOfDetectedTest(ProjectInfo projectInfo)
+        {
+            foreach (var testProject in projectInfo.TestProjectAnalyzerResults)
+            {
+                foreach (var (framework, adapter) in TestFrameworks)
+                {
+                    if (testProject.References.Any(r => r.Contains(framework)) && !testProject.References.Any(r => r.Contains(adapter)))
+                    {
+                        throw new InputException($"Project '{testProject.ProjectFilePath}' is not supported by VsTest because it is missing an appropriate VstTest adapter for '{framework}'. " +
+                            $"Adding '{adapter}' to this project references may resolve the issue.");
+                    }
+                }
+            }
+        }
+
 
         private void InitializeDashboardProjectInformation(StrykerOptions options, ProjectInfo projectInfo)
         {
