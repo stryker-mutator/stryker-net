@@ -8,7 +8,7 @@ using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    public static class JsonReportTestHelper
+    public static class ReportTestHelper
     {
         public static IProjectComponent CreateProjectWith(bool duplicateMutant = false, int mutationScore = 60)
         {
