@@ -58,5 +58,24 @@ namespace Stryker.Core.UnitTest.MutationTest
             mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);
             testRunnerMock.Verify(x => x.TestMultipleMutants(timeoutValueCalculator, It.IsAny<IReadOnlyList<Mutant>>(), null), Times.Once);
         }
+
+        [Fact]
+        public void MutationTestExecutor_ShouldSwitchToSingleModeOnDubiousTimeouts()
+        {
+            var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
+            var mutant1 = new Mutant { Id = 1, CoveringTests = TestGuidsList.EveryTest() };
+            var mutant2 = new Mutant { Id = 2, CoveringTests = TestGuidsList.EveryTest() };
+            testRunnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<Mutant>>(), null)).
+                Returns(TestRunResult.TimedOut(TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), "", TimeSpan.Zero));
+
+            var target = new MutationTestExecutor(testRunnerMock.Object);
+
+            var timeoutValueCalculator = new TimeoutValueCalculator(500);
+            target.Test(new List<Mutant> { mutant1, mutant2 }, timeoutValueCalculator, null);
+
+            mutant1.ResultStatus.ShouldBe(MutantStatus.Timeout);
+            mutant2.ResultStatus.ShouldBe(MutantStatus.Timeout);
+            testRunnerMock.Verify(x => x.TestMultipleMutants(timeoutValueCalculator, It.IsAny<IReadOnlyList<Mutant>>(), null), Times.Exactly(3));
+        }
     }
 }

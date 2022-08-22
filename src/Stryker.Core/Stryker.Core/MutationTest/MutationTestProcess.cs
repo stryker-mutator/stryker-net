@@ -158,7 +158,7 @@ namespace Stryker.Core.MutationTest
             }
             foreach (var mutant in testedMutants)
             {
-                mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest);
+                mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest, false);
 
                 if (mutant.ResultStatus == MutantStatus.NotRun)
                 {

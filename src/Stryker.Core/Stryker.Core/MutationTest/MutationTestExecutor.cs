@@ -76,26 +76,32 @@ namespace Stryker.Core.MutationTest
             TestUpdateHandler updateHandler, bool forceSingle)
         {
             Logger.LogTrace($"Testing {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))}.");
-            if (forceSingle && mutantsToTest.Count > 1)
+            if (forceSingle)
             {
                 foreach (var mutant in mutantsToTest)
                 {
                     var localResult = TestRunner.TestMultipleMutants(timeoutMs, new[] { mutant }, updateHandler);
-                    mutant.AnalyzeTestRun(localResult.FailingTests, localResult.RanTests, localResult.TimedOutTests);
+                    if (updateHandler == null || localResult.SessionTimedOut)
+                    {
+                        mutant.AnalyzeTestRun(localResult.FailingTests, localResult.RanTests, localResult.TimedOutTests, localResult.SessionTimedOut);
+                    }
                 }
 
                 return new TestRunResult(true);
             }
 
             var result = TestRunner.TestMultipleMutants(timeoutMs, mutantsToTest.ToList(), updateHandler);
-            if (updateHandler != null)
+            if (updateHandler != null && !result.SessionTimedOut)
             {
                 return result;
             }
 
             foreach (var mutant in mutantsToTest)
             {
-                mutant.AnalyzeTestRun(result.FailingTests, result.RanTests, result.TimedOutTests);
+                mutant.AnalyzeTestRun(result.FailingTests,
+                    result.RanTests,
+                    result.TimedOutTests,
+                    mutantsToTest.Count == 1 && result.SessionTimedOut);
             }
 
             return result;
