@@ -112,7 +112,7 @@ Example:
 
 # Mutation Testing Summary
 
-| File                                                        | Score   | Killed | Survived | Timeout | No Coverage | Ingnored | Compile Errors | Total Detected | Total Undetected | Total Mutants |
+| File                                                        | Score   | Killed | Survived | Timeout | No Coverage | Ignored | Compile Errors | Total Detected | Total Undetected | Total Mutants |
 | ----------------------------------------------------------- | ------- | ------ | -------- | ------- | ----------- | -------- | -------------- | -------------- | ---------------- | ------------- |
 | Utils\\Extensions.cs      | 76.74%  | 66     | 14       | 0       | 6           | 9        | 0              | 66             | 20               | 95            |
 | Entities\\Entity1.cs     | N\/A    | 0      | 0        | 0       | 0           | 0        | 0              | 0              | 0                | 0             |
