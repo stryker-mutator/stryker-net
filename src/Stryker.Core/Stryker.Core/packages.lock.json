@@ -49,6 +49,12 @@
           "FSharp.Core": "[5.0.0]"
         }
       },
+      "Grynwald.MarkdownGenerator": {
+        "type": "Direct",
+        "requested": "[2.5.34, )",
+        "resolved": "2.5.34",
+        "contentHash": "2esww+F8jCv2bfFkQJ7lAUfk7adbjI70i4cXdsd6TQIKIUIVgLNbLw0sZuvjbXpRfjrKu3nOTYiehS5Ua1l0Mw=="
+      },
       "LibGit2Sharp": {
         "type": "Direct",
         "requested": "[0.27.0-preview-0182, )",
