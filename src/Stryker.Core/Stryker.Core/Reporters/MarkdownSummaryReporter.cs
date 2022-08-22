@@ -2,15 +2,11 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Text;
 using Grynwald.MarkdownGenerator;
-using Microsoft.Extensions.Options;
 using Spectre.Console;
 using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using static FSharp.Compiler.AbstractIL.IL.ILExceptionClause;
 
 namespace Stryker.Core.Reporters
 {
