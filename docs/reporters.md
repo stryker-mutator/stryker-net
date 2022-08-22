@@ -112,12 +112,12 @@ Example:
 
 # Mutation Testing Summary
 
-| File                                                        | % score | \# killed | \# timeout | \# survived | \# no cov | \# error |
-| ----------------------------------------------------------- | ------- | --------- | ---------- | ----------- | --------- | -------- |
-| Entities\\Entity1.cs                          | 100.00  | 1         | 0          | 3           | 0         | 2        |
-| Program.cs                                                  | N\/A    | 0         | 0          | 6           | 0         | 0        |
-| Utils\\LoggerUtils.cs | 84.62   | 11        | 0          | 2           | 0         | 0        |
+| File                                                        | Score   | Killed | Survived | Timeout | No Coverage | Ingnored | Compile Errors | Total Detected | Total Undetected | Total Mutants |
+| ----------------------------------------------------------- | ------- | ------ | -------- | ------- | ----------- | -------- | -------------- | -------------- | ---------------- | ------------- |
+| Utils\\Extensions.cs      | 76.74%  | 66     | 14       | 0       | 6           | 9        | 0              | 66             | 20               | 95            |
+| Entities\\Entity1.cs     | N\/A    | 0      | 0        | 0       | 0           | 0        | 0              | 0              | 0                | 0             |
+| Program.cs                        | 87.50%  | 7      | 0        | 0       | 1           | 0        | 0              | 7              | 1                | 8             |
 
-## The final mutation score is 93.70%
+## The final mutation score is 78.70%
 
 ### *Coverage Thresholds: high:90 low:60 break:60*
