@@ -90,7 +90,7 @@ namespace Stryker.Core.Reporters
                     "Survived",
                     "Timeout",
                     "No Coverage",
-                    "Ingnored",
+                    "Ignored",
                     "Compile Errors",
                     "Total Detected",
                     "Total Undetected",
