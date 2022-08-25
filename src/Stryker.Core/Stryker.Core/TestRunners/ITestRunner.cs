@@ -6,8 +6,7 @@ using Stryker.Core.MutationTest;
 
 namespace Stryker.Core.TestRunners
 {
-    public delegate bool TestUpdateHandler(IReadOnlyList<Mutant> testedMutants, ITestRunResults results,
-        ITestGuids nonCoveringTests);
+    public delegate bool TestUpdateHandler(IReadOnlyList<Mutant> testedMutants, ITestRunResults results);
 
     public interface ITestRunner : IDisposable
     {

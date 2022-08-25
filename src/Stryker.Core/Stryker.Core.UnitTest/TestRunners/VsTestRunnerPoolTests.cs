@@ -151,7 +151,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             mockVsTest.Setup(x => x.CancelTestRun()).Verifiable();
             SetupMockTestRun(mockVsTest, false, TestCases);
 
-            var result = runner.TestMultipleMutants(null, new[] { Mutant }, (_, _, _) => false);
+            var result = runner.TestMultipleMutants(null, new[] { Mutant }, (_, _) => false);
             // verify Abort has been called
             Mock.Verify(mockVsTest);
             // and test run is failed

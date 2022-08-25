@@ -62,6 +62,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly ILogger _logger;
         private readonly string _runnerId;
         private readonly IDictionary<Guid, VsTestDescription> _vsTests;
+        private readonly ITestGuids _expectedTests;
         private readonly Dictionary<Guid, TestRun> _runs = new();
         private readonly Dictionary<Guid, TestCase> _inProgress = new();
         private readonly List<TestResult> _rawResults = new();
@@ -77,14 +78,18 @@ namespace Stryker.Core.TestRunners.VsTest
         public event EventHandler VsTestFailed;
         public event EventHandler ResultsUpdated;
 
-        public RunEventHandler(IDictionary<Guid, VsTestDescription> vsTests, ILogger logger, string runnerId)
+        public RunEventHandler(IDictionary<Guid, VsTestDescription> vsTests, ITestGuids expectedTests, ILogger logger,
+            string runnerId)
         {
             _vsTests = vsTests;
+            _expectedTests = expectedTests;
             _logger = logger;
             _runnerId = runnerId;
         }
 
         public bool CancelRequested { get; set; }
+
+        public bool TestSessionDone { get; private set; }
 
         private void CaptureTestResults(IEnumerable<TestResult> results)
         {
@@ -143,10 +148,19 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public IRunResults GetResults() => _currentResults;
 
-        public ITestRunResults GetTestRunResults() => new TestRunResults(new TestGuidsList(_ranTests),
+        public ITestRunResults GetTestRunResults() => new TestRunResults(GetRanTests(),
             new TestGuidsList(_failedTests),
             new TestGuidsList(_timedOutTests),
             new TestGuidsList(_coveringTests));
+
+        private ITestGuids GetRanTests()
+        {
+            if (TestSessionDone && _expectedTests.IsEveryTest && _ranTests.Count >= _vsTests.Count)
+            {
+                return TestGuidsList.EveryTest();
+            }
+            return new TestGuidsList(_ranTests);
+        }
 
         public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
         {
@@ -200,6 +214,8 @@ namespace Stryker.Core.TestRunners.VsTest
                 _currentResults.SetTestsInTimeOut(_inProgress.Values
                     .Union(_runs.Values.Where(t => !t.IsComplete()).Select(t => t.Result().TestCase)).ToList());
             }
+
+            TestSessionDone = true;
 
             ResultsUpdated?.Invoke(this, EventArgs.Empty);
 

@@ -316,7 +316,7 @@ namespace Stryker.Core.MutationTest
                 
                 _mutationTestExecutor.Test(mutants,
                     Input.InitialTestRun.TimeoutValueCalculator,
-                    (testedMutants, testResults, nonCoveringTests)
+                    (testedMutants, testResults)
                         => TestUpdateHandler(testedMutants, testResults, reportedMutants));
                 
                 OnMutantsTested(mutants, reportedMutants);

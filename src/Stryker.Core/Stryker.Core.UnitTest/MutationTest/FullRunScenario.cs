@@ -295,7 +295,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                             GetFailedTests(mutant.Id, ids),
                             TestGuidsList.NoTest(),
                             TestGuidsList.NoTest());
-                        update(list, results, TestGuidsList.NoTest());
+                        update(list, results);
                     }
                 }))
                 .Returns(successResult);

@@ -123,11 +123,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             void HandleUpdate(ITestRunResults results)
             {
-                var tests = results.RanTests.Count >= _context.Tests.Count
-                    ? TestGuidsList.EveryTest()
-                    : results.RanTests;
-                var nonCoveringTests = results.NonCoveringTests;
-                var remainingMutants = update?.Invoke(mutants, results, nonCoveringTests);
+                var remainingMutants = update?.Invoke(mutants, results);
 
                 if (remainingMutants != false
                     || results.RanTests.Count >= expectedTests
@@ -190,7 +186,7 @@ namespace Stryker.Core.TestRunners.VsTest
             Action<ITestRunResults> updateHandler = null,
             int retries = 0)
         {
-            var eventHandler = new RunEventHandler(_context.VsTests, _logger, RunnerId);
+            var eventHandler = new RunEventHandler(_context.VsTests, tests, _logger, RunnerId);
             void HandlerVsTestFailed(object sender, EventArgs e)
             {
                 _vsTestFailed = true;
