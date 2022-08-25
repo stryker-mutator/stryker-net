@@ -46,11 +46,11 @@ namespace Stryker.Core.UnitTest.TestRunners
             collector.Initialize(mock.Object);
 
             collector.TestSessionStart(start);
-            MutantControl.ActiveMutant.ShouldBe(-1);
+            MutantControl.IsActive(-1).ShouldBeTrue();
 
             collector.TestCaseStart(new TestCaseStartArgs(testCase));
 
-            MutantControl.ActiveMutant.ShouldBe(10);
+            MutantControl.IsActive(10).ShouldBeTrue();
         }
 
         [Fact]
@@ -70,7 +70,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             collector.TestSessionStart(start);
 
-            MutantControl.ActiveMutant.ShouldBe(5);
+            MutantControl.IsActive(5).ShouldBeTrue();
         }
 
         [Fact]
@@ -89,7 +89,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             collector.TestSessionStart(start);
 
-            MutantControl.ActiveMutant.ShouldBe(5);
+            MutantControl.IsActive(5).ShouldBeTrue();
         }
 
         [Fact]

@@ -14,7 +14,7 @@ namespace Stryker
         public static bool CaptureCoverage;
         public static bool CaptureTrace;
         // this attribute will be set by the Stryker Data Collector before each test
-        public static int ActiveMutant = -2;
+        private static int _activeMutant = -2;
         public static int ActiveMutantSeen;
         public const int ActiveMutantNotInitValue = -2;
         
@@ -46,6 +46,11 @@ namespace Stryker
             return Interlocked.Exchange(ref _hitTrace, new List<int>(10000));
         }
 
+        public static void SetActiveMutant(int mutant)
+        {
+            _activeMutant = mutant;
+        }
+
         // check with: Stryker.MutantControl.IsActive(ID)
         public static bool IsActive(int id)
         {
@@ -54,16 +59,16 @@ namespace Stryker
                 RegisterCoverage(id);
                 return false;
             }
-            if (ActiveMutant == ActiveMutantNotInitValue)
+            if (_activeMutant == ActiveMutantNotInitValue)
             {
                 string environmentVariable = Environment.GetEnvironmentVariable("ActiveMutation");
                 if (string.IsNullOrEmpty(environmentVariable))
                 {
-                    ActiveMutant = -1;
+                    _activeMutant = -1;
                 }
                 else
                 {
-                    ActiveMutant = int.Parse(environmentVariable);
+                    _activeMutant = int.Parse(environmentVariable);
                 }
             }
 
@@ -72,9 +77,9 @@ namespace Stryker
                 _hitTrace.Add(id);
             }
 
-            if (id == ActiveMutant)
+            if (id == _activeMutant)
             {
-                ActiveMutantSeen = ActiveMutant;
+                ActiveMutantSeen = _activeMutant;
                 return true;
             }
 

@@ -24,7 +24,7 @@ namespace Stryker.DataCollector
         // fields and methods from MutantControl for interaction during tests
         private string _controlClassName;
         private Type _controller;
-        private FieldInfo _activeMutantField;
+        private MethodInfo _setActiveMutant;
         private FieldInfo _activeMutantSeenField;
         private MethodInfo _getCoverageData;
         private MethodInfo _getTraceData;
@@ -90,7 +90,7 @@ namespace Stryker.DataCollector
                 return;
             }
 
-            _activeMutantField = _controller.GetField("ActiveMutant");
+            _setActiveMutant = _controller.GetMethod("SetActiveMutant");
             _activeMutantSeenField = _controller.GetField("ActiveMutantSeen");
             _getCoverageData = _controller.GetMethod("GetCoverageData");
             _getTraceData = _controller.GetMethod("GetTrace");
@@ -98,7 +98,7 @@ namespace Stryker.DataCollector
             _controller.GetField("CaptureCoverage").SetValue(null, _coverageOn);
             _controller.GetField("CaptureTrace").SetValue(null, _traceOn);
 
-            _activeMutantField.SetValue(null, _activeMutation);
+            _setActiveMutant.Invoke(null, new object[] {_activeMutation});
             // mutant not seen
             _activeMutantSeenField.SetValue(null, -1);
         }
@@ -106,22 +106,22 @@ namespace Stryker.DataCollector
         private void SetActiveMutationForTest(string id)
         {
             _activeMutation = GetActiveMutantForThisTest(id);
-            if (_activeMutantField == null)
+            if (_controller == null)
             {
                 return;
             }
-            _activeMutantField.SetValue(null, _activeMutation);
+            _setActiveMutant.Invoke(null, new object[] {_activeMutation});
             _activeMutantSeenField.SetValue(null, -1);
         }
 
         private void EraseActiveMutation()
         {
             _activeMutation = -2;
-            if (_activeMutantField == null)
+            if (_controller == null)
             {
                 return;
             }
-            _activeMutantField.SetValue(null, -1);
+            _setActiveMutant.Invoke(null, new object[] {_activeMutation});
             _activeMutantSeenField.SetValue(null, -1);
         }
         

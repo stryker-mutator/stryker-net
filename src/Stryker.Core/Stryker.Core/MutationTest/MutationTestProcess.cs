@@ -317,13 +317,13 @@ namespace Stryker.Core.MutationTest
                 _mutationTestExecutor.Test(mutants,
                     Input.InitialTestRun.TimeoutValueCalculator,
                     (testedMutants, testResults, nonCoveringTests)
-                        => TestUpdateHandler(testedMutants, testResults, nonCoveringTests, reportedMutants));
+                        => TestUpdateHandler(testedMutants, testResults, reportedMutants));
                 
                 OnMutantsTested(mutants, reportedMutants);
             });
         }
 
-        private bool TestUpdateHandler(IEnumerable<Mutant> testedMutants, ITestRunResults results, ITestGuids nonCoveringTests, ISet<Mutant> reportedMutants)
+        private bool TestUpdateHandler(IEnumerable<Mutant> testedMutants, ITestRunResults results, ISet<Mutant> reportedMutants)
         {
             var testsFailingInitially = Input.InitialTestRun.FailedTests;
             var continueTestRun = _options.OptimizationMode.HasFlag(OptimizationModes.DisableBail);

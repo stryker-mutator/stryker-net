@@ -8,12 +8,12 @@ namespace Stryker
 
         public MutantContext()
         {
-            depth++;
+            depth++; //NOSONAR
         }
 
         public void Dispose()
         {
-            depth--;
+            depth--; //NOSONAR
         }
 
         public static bool InStatic()
