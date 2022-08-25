@@ -255,7 +255,10 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 if (timeOut == null)
                 {
-                    while (!_completed && !Monitor.Wait(_lck));
+                    while (!_completed)
+                    {
+                        Monitor.Wait(_lck);
+                    }
                     return true;
                 }
                 else

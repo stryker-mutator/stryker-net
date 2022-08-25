@@ -12,22 +12,6 @@ namespace Stryker.Core.UnitTest.TestRunners
 {
     public class CoverageCollectorTests : TestBase
     {
-        [Fact]
-        public void ProperlyCaptureParams()
-        {
-            var collector = new CoverageCollector();
-
-            var start = new TestSessionStartArgs
-            {
-                Configuration = CoverageCollector.GetVsTestSettings(true, null, typeof(MutantControl).Namespace, false)
-            };
-            var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
-            collector.Initialize(mock.Object);
-
-            collector.TestSessionStart(start);
-            collector.TestCaseStart(new TestCaseStartArgs(new TestCase("theTest", new Uri("xunit://"), "source.cs")));
-            MutantControl.CaptureCoverage.ShouldBeTrue();
-        }
 
         [Fact]
         public void ProperlySelectMutant()

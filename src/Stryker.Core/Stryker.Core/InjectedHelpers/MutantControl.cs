@@ -10,11 +10,11 @@ namespace Stryker
         private static HashSet<int> _coveredStaticdMutants;
         private static List<int> _hitTrace = new List<int>(10000);
         private static object _coverageLock = new object();
-
-        public static bool CaptureCoverage;
-        public static bool CaptureTrace;
-        // this attribute will be set by the Stryker Data Collector before each test
         private static int _activeMutant = -2;
+
+        private static bool _captureCoverage;
+        private static bool _captureTrace;
+        // this attribute will be set by the Stryker Data Collector before each test
         public static int ActiveMutantSeen;
         public const int ActiveMutantNotInitValue = -2;
         
@@ -51,10 +51,20 @@ namespace Stryker
             _activeMutant = mutant;
         }
 
+        public static void CaptureCoverage(bool mode)
+        {
+            _captureCoverage = mode;
+        }
+
+        public static void CaptureTrace(bool mode)
+        {
+            _captureTrace = mode;
+        }
+
         // check with: Stryker.MutantControl.IsActive(ID)
         public static bool IsActive(int id)
         {
-            if (CaptureCoverage)
+            if (_captureCoverage)
             {
                 RegisterCoverage(id);
                 return false;
@@ -72,7 +82,7 @@ namespace Stryker
                 }
             }
 
-            if (CaptureTrace)
+            if (_captureTrace)
             {
                 _hitTrace.Add(id);
             }

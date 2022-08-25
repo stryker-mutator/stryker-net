@@ -74,48 +74,19 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResults TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var mutantTestsMap = new Dictionary<int, ITestGuids>();
-            var needAll = true;
+            bool needAll ;
             ICollection<Guid> testCases;
-            var timeOutMs = timeoutCalc?.DefaultTimeout;
+            int? timeOutMs;
 
             // if we optimize the number of tests to run
-            if (_context.Options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
+            testCases = TestCases(timeoutCalc, mutants, mutantTestsMap, out needAll, out timeOutMs);
+
+            if (testCases?.Count == 0)
             {
-                needAll = false;
-                foreach (var mutant in mutants)
-                {
-                    var tests = mutant.AssessingTests;
-                    needAll =  needAll || tests.IsEveryTest;
-
-                    mutantTestsMap.Add(mutant.Id, tests);
-                }
-
-                testCases = needAll ? null : mutants.SelectMany(m => m.AssessingTests.GetGuids()).ToList();
-
-                _logger.LogTrace($"{RunnerId}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}] " +
-                                 $"against {(testCases == null ? "all tests." : string.Join(", ", testCases))}.");
-                if (testCases?.Count == 0)
-                {
-                    return new TestRunResults(TestGuidsList.NoTest(),
-                        TestGuidsList.NoTest(),
-                        TestGuidsList.NoTest(),
-                        TestGuidsList.NoTest());
-                }
-
-                if (timeoutCalc != null && testCases != null)
-                {
-                    // compute time out
-                    timeOutMs = timeoutCalc.CalculateTimeoutValue((int)testCases.Sum(id => _context.VsTests[id].InitialRunTime.TotalMilliseconds));
-                }
-            }
-            else
-            {
-                if (mutants.Count > 1)
-                {
-                    throw new GeneralStrykerException("Internal error: trying to test multiple mutants simultaneously without 'perTest' coverage analysis.");
-                }
-                mutantTestsMap.Add(mutants[0].Id, TestGuidsList.EveryTest());
-                testCases = null;
+                return new TestRunResults(TestGuidsList.NoTest(),
+                    TestGuidsList.NoTest(),
+                    TestGuidsList.NoTest(),
+                    TestGuidsList.NoTest());
             }
 
             var numberTestCases = testCases?.Count ?? 0;
@@ -146,6 +117,54 @@ namespace Stryker.Core.TestRunners.VsTest
             var testResults = RunTestSession(new TestGuidsList(testCases), timeOutMs, mutantTestsMap, HandleUpdate);
 
             return BuildTestRunResult(testResults, expectedTests);
+        }
+
+        private ICollection<Guid> TestCases(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, Dictionary<int, ITestGuids> mutantTestsMap,
+            out bool needAll, out int? timeOutMs)
+        {
+            ICollection<Guid> testCases;
+            if (_context.Options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
+            {
+                needAll = false;
+                foreach (var mutant in mutants)
+                {
+                    var tests = mutant.AssessingTests;
+                    needAll = needAll || tests.IsEveryTest;
+
+                    mutantTestsMap.Add(mutant.Id, tests);
+                }
+
+                testCases = needAll ? null : mutants.SelectMany(m => m.AssessingTests.GetGuids()).ToList();
+
+                _logger.LogTrace($"{RunnerId}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}] " +
+                                 $"against {(testCases == null ? "all tests." : string.Join(", ", testCases))}.");
+
+                if (timeoutCalc != null && testCases != null)
+                {
+                    // compute time out
+                    timeOutMs = timeoutCalc.CalculateTimeoutValue((int)testCases.Sum(id =>
+                        _context.VsTests[id].InitialRunTime.TotalMilliseconds));
+                }
+                else
+                {
+                    timeOutMs = timeoutCalc?.DefaultTimeout;
+                }
+            }
+            else
+            {
+                if (mutants.Count > 1)
+                {
+                    throw new GeneralStrykerException(
+                        "Internal error: trying to test multiple mutants simultaneously without 'perTest' coverage analysis.");
+                }
+
+                mutantTestsMap.Add(mutants[0].Id, TestGuidsList.EveryTest());
+                testCases = null;
+                timeOutMs = timeoutCalc?.DefaultTimeout;
+                needAll = true;
+            }
+
+            return testCases;
         }
 
         private TestRunResults BuildTestRunResult(IRunResults testResults, int expectedTests)
