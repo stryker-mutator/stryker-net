@@ -8,6 +8,7 @@ using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.DataCollector;
 
@@ -142,7 +143,10 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public IRunResults GetResults() => _currentResults;
 
-        public ITestRunResults GetTestRunResults() => new TestRunResults(_ranTests, _failedTests, _timedOutTests, _coveringTests);
+        public ITestRunResults GetTestRunResults() => new TestRunResults(new TestGuidsList(_ranTests),
+            new TestGuidsList(_failedTests),
+            new TestGuidsList(_timedOutTests),
+            new TestGuidsList(_coveringTests));
 
         public void HandleTestRunStatsChange(TestRunChangedEventArgs testRunChangedArgs)
         {

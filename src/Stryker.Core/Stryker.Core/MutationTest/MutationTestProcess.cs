@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Linq;
@@ -16,6 +15,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
+using Stryker.Core.TestRunners;
 using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.MutationTest
@@ -330,10 +330,11 @@ namespace Stryker.Core.MutationTest
             
             if (testsFailingInitially.Count > 0 && results.FailedTests.ContainsAny(testsFailingInitially))
             {
-                // some of the failing tests where failing without any mutation, we have to ignore those
+                // some of the failing tests where already failed during initial test, we have to ignore those failures as they are not informative
                 var filteredFailingTests = new TestGuidsList(results.FailedTests.GetGuids().Except(testsFailingInitially.GetGuids()));
-                results = new TestRunResults(results.RanTests, filteredFailingTests, results.TimedOutTests);
+                results = new TestRunResults(results.RanTests, filteredFailingTests, results.TimedOutTests, results.NonCoveringTests);
             }
+
             foreach (var mutant in testedMutants)
             {
                 mutant.AnalyzeTestRun(results);

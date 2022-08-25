@@ -70,11 +70,12 @@
     <None Include="..\..\..\docs\images\stryker-80x80.png" Pack="true" PackagePath="" Visible="false" />
   </ItemGroup>
 
+  <!--
   <ItemGroup>
     <Compile Remove="InjectedHelpers\Coverage\MutantContext.cs" />
     <Compile Remove="InjectedHelpers\MutantControl.cs" />
   </ItemGroup>
-
+  -->
   <ItemGroup>
     <None Remove="Stryker.Core.csproj.DotSettings" />
   </ItemGroup>
@@ -83,4 +84,5 @@
     <ProjectReference Include="..\..\Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj" />
     <ProjectReference Include="..\..\Stryker.RegexMutators\Stryker.RegexMutators\Stryker.RegexMutators.csproj" />
   </ItemGroup>
+  
 </Project>

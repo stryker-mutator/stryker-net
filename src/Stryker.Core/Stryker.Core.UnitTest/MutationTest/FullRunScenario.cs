@@ -225,11 +225,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 }
             }
 
-            if (_failedTestsPerMutant.TryGetValue(mutantId, out var list))
-            {
-                return list;
-            }
-            return TestGuidsList.NoTest();
+            return _failedTestsPerMutant.TryGetValue(mutantId, out var list) ? list : TestGuidsList.NoTest();
         }
 
         private TestGuidsList GetCoveringTests(int mutantId)
@@ -244,15 +240,10 @@ namespace Stryker.Core.UnitTest.MutationTest
                 return TestGuidsList.EveryTest();
             }
 
-            if (_coverageResult.TryGetValue(mutantId, out var list))
-            {
-                return list;
-            }
-            
-            return TestGuidsList.NoTest();
+            return _coverageResult.TryGetValue(mutantId, out var list) ? list : TestGuidsList.NoTest();
         }
 
-        private TestRunResult GetRunResult(int id) =>
+        private TestRunResults GetRunResult(int id) =>
             new(GetCoveringTests(id),
                 GetFailedTests(id, null),
                 TestGuidsList.NoTest(),
@@ -272,7 +263,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             }
 
             _runnerMock = new Mock<ITestRunner>();
-            var successResult = new TestRunResult(GetGuidList(),
+            var successResult = new TestRunResults(GetGuidList(),
                 TestGuidsList.NoTest(),
                 TestGuidsList.NoTest(),
                 TestGuidsList.NoTest());
@@ -302,6 +293,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     {
                         var results = new TestRunResults(mutant.AssessingTests,
                             GetFailedTests(mutant.Id, ids),
+                            TestGuidsList.NoTest(),
                             TestGuidsList.NoTest());
                         update(list, results, TestGuidsList.NoTest());
                     }

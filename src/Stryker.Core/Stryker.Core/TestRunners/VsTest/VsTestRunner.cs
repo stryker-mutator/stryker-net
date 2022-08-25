@@ -71,7 +71,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return new InitialTestRunResult(ranTests, failedTestsDescription, duration);
         }
 
-        public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
+        public TestRunResults TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var mutantTestsMap = new Dictionary<int, ITestGuids>();
             var needAll = true;
@@ -96,7 +96,7 @@ namespace Stryker.Core.TestRunners.VsTest
                                  $"against {(testCases == null ? "all tests." : string.Join(", ", testCases))}.");
                 if (testCases?.Count == 0)
                 {
-                    return new TestRunResult(TestGuidsList.NoTest(),
+                    return new TestRunResults(TestGuidsList.NoTest(),
                         TestGuidsList.NoTest(),
                         TestGuidsList.NoTest(),
                         TestGuidsList.NoTest());
@@ -152,13 +152,13 @@ namespace Stryker.Core.TestRunners.VsTest
             return BuildTestRunResult(testResults, expectedTests);
         }
 
-        private TestRunResult BuildTestRunResult(IRunResults testResults, int expectedTests, bool compressAll = true)
+        private TestRunResults BuildTestRunResult(IRunResults testResults, int expectedTests)
         {
             var resultAsArray = testResults.TestResults.ToArray();
             var testCases = resultAsArray.Select(t => t.TestCase.Id).ToHashSet();
             var ranTestsCount = testCases.Count;
             var timeout = !_aborted && ranTestsCount < expectedTests;
-            var ranTests = compressAll && ranTestsCount >= _context.Tests.Count ? (ITestGuids)TestGuidsList.EveryTest()
+            var ranTests = !timeout && ranTestsCount >= _context.Tests.Count ? (ITestGuids)TestGuidsList.EveryTest()
                 : new TestGuidsList(testCases);
             var failedTests = resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(t => t.TestCase.Id);
 
@@ -167,26 +167,23 @@ namespace Stryker.Core.TestRunners.VsTest
                 _logger.LogTrace($"{RunnerId}: Test session reports 0 result and 0 stuck tests.");
             }
 
-            var duration =  TimeSpan.FromTicks(_context.VsTests.Values.Sum(t => t.InitialRunTime.Ticks));
-            
-            var failedTestsDescription = new TestGuidsList(failedTests);
             var timedOutTests = new TestGuidsList(testResults.TestsInTimeout?.Select(t => t.Id));
             var nonCoveringTests = new TestGuidsList(testResults.TestResults.
                 Where(r => r.GetProperties().All(p => p.Key.Id != CoverageCollector.ActiveMutationSeen)).Select(t => t.TestCase.Id));
             return timeout
-                ? TestRunResult.TimedOut(ranTests, failedTestsDescription, timedOutTests, nonCoveringTests)
-                : new TestRunResult(ranTests, failedTestsDescription, timedOutTests, nonCoveringTests);
+                ? TestRunResults.TimedOut(ranTests, new TestGuidsList(failedTests), timedOutTests, nonCoveringTests)
+                : new TestRunResults(ranTests, new TestGuidsList(failedTests), timedOutTests, nonCoveringTests);
         }
 
         public IRunResults RunTestSession(ITestGuids testsToRun, int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<ITestRunResults> updateHandler = null) =>
             RunTestSession(testsToRun,
-                _context.GenerateRunSettings(timeout, false, mutantTestsMap), timeout, updateHandler).GetResults();
+                _context.GenerateRunSettings(timeout, false, mutantTestsMap, true), timeout, updateHandler).GetResults();
 
         public IRunResults RunCoverageSession(ITestGuids testsToRun) =>
             RunTestSession(testsToRun,
                 _context.GenerateRunSettings(null,
                     true,
-                    null)).GetRawResults();
+                    null, false)).GetRawResults();
         private RunEventHandler RunTestSession(ITestGuids tests,
             string runSettings,
             int? timeOut = null,

@@ -116,7 +116,7 @@ namespace Stryker.Core
                 return new StrykerRunResult(options, rootComponent.GetMutationScore());
             }
 #if !DEBUG
-            catch (Exception ex) when (!(ex is InputException))
+            catch (System.Exception ex) when (ex is not InputException)
             // let the exception be caught by the debugger when in debug
             {
                 _logger.LogError(ex, "An error occurred during the mutation test run ");

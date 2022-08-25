@@ -1,17 +1,18 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
+using System.Threading;
 
 namespace Stryker
 {
     public static class MutantControl
     {
-        private static List<int> _coveredMutants;
-        private static List<int> _coveredStaticdMutants;
-        private static string envName;
-        private static Object _coverageLock = new Object();
+        private static HashSet<int> _coveredMutants;
+        private static HashSet<int> _coveredStaticdMutants;
+        private static List<int> _hitTrace = new List<int>(10000);
+        private static object _coverageLock = new object();
 
         public static bool CaptureCoverage;
+        public static bool CaptureTrace;
         // this attribute will be set by the Stryker Data Collector before each test
         public static int ActiveMutant = -2;
         public static int ActiveMutantSeen;
@@ -29,15 +30,20 @@ namespace Stryker
 
         public static void ResetCoverage()
         {
-            _coveredMutants = new List<int>();
-            _coveredStaticdMutants = new List<int>();
+            _coveredMutants = new HashSet<int>();
+            _coveredStaticdMutants = new HashSet<int>();
         }
 
-        public static IList<int>[] GetCoverageData()
+        public static ISet<int>[] GetCoverageData()
         {
-            IList<int>[] result = new IList<int>[]{_coveredMutants, _coveredStaticdMutants};
+            ISet<int>[] result = new ISet<int>[]{_coveredMutants, _coveredStaticdMutants};
             ResetCoverage();
             return result;
+        }
+
+        public static IList<int> GetTrace()
+        {
+            return Interlocked.Exchange(ref _hitTrace, new List<int>(10000));
         }
 
         // check with: Stryker.MutantControl.IsActive(ID)
@@ -61,11 +67,17 @@ namespace Stryker
                 }
             }
 
+            if (CaptureTrace)
+            {
+                _hitTrace.Add(id);
+            }
+
             if (id == ActiveMutant)
             {
                 ActiveMutantSeen = ActiveMutant;
                 return true;
             }
+
             return false;
         }
 
@@ -73,11 +85,8 @@ namespace Stryker
         {
             lock (_coverageLock)
             {
-                if (!_coveredMutants.Contains(id))
-                {
-                    _coveredMutants.Add(id);
-                }
-                if (MutantContext.InStatic() && !_coveredStaticdMutants.Contains(id))
+                _coveredMutants.Add(id);
+                if (MutantContext.InStatic())
                 {
                     _coveredStaticdMutants.Add(id);
                 }

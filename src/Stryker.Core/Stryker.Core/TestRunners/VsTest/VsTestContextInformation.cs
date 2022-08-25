@@ -286,7 +286,8 @@ namespace Stryker.Core.TestRunners.VsTest
 </RunSettings>";
         }
 
-        public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap)
+        public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap,
+            bool withTrace)
         {
             var projectAnalyzerResult = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault();
             var settingsForCoverage = string.Empty;
@@ -295,7 +296,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 ? CoverageCollector.GetVsTestSettings(
                     forCoverage,
                     mutantTestsMap?.Select(e => (e.Key, e.Value.GetGuids())),
-                    CodeInjection.HelperNamespace)
+                    CodeInjection.HelperNamespace, withTrace)
                 : string.Empty;
 
             if (_testFramework.HasFlag(TestFramework.NUnit))

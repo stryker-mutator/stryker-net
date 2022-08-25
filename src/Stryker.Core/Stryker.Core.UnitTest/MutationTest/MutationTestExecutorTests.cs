@@ -1,4 +1,3 @@
-using System;
 using Moq;
 using Shouldly;
 using Stryker.Core.Mutants;
@@ -17,7 +16,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var mutant = new Mutant { Id = 1 };
-            testRunnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<Mutant>>(), null)).Returns(new TestRunResult(true));
+            testRunnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<Mutant>>(), null)).Returns(TestRunResults.GeneralSuccess());
 
             var target = new MutationTestExecutor(testRunnerMock.Object);
 
@@ -32,7 +31,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var mutant = new Mutant { Id = 1, CoveringTests = TestGuidsList.EveryTest() };
-            testRunnerMock.Setup(x => x.TestMultipleMutants(null, It.IsAny<IReadOnlyList<Mutant>>(), null)).Returns(new TestRunResult(false));
+            testRunnerMock.Setup(x => x.TestMultipleMutants(null, It.IsAny<IReadOnlyList<Mutant>>(), null)).Returns(TestRunResults.GeneralFailure());
 
             var target = new MutationTestExecutor(testRunnerMock.Object);
 
@@ -48,7 +47,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var mutant = new Mutant { Id = 1, CoveringTests = TestGuidsList.EveryTest() };
             testRunnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<Mutant>>(), null)).
-                Returns(TestRunResult.TimedOut(TestGuidsList.NoTest(), TestGuidsList.NoTest(),TestGuidsList.NoTest(), TestGuidsList.NoTest()));
+                Returns(TestRunResults.TimedOut(TestGuidsList.NoTest(), TestGuidsList.NoTest(),TestGuidsList.NoTest(), TestGuidsList.NoTest()));
 
             var target = new MutationTestExecutor(testRunnerMock.Object);
 

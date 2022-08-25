@@ -4,6 +4,7 @@ using Moq;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
+using Stryker.Core.TestRunners;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
@@ -55,8 +56,7 @@ namespace Stryker.Core.UnitTest.Mutants
             coveringTestsMock.Setup(x => x.IsEveryTest).Returns(true);
 
             var mutant = new Mutant();
-            var empty = new HashSet<Guid>();
-            var results = new TestRunResults( null, empty, null, null);
+            var results = new TestRunResults( TestGuidsList.EveryTest(), TestGuidsList.NoTest(), TestGuidsList.EveryTest(), TestGuidsList.EveryTest());
             mutant.AnalyzeTestRun(results);
 
             mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);

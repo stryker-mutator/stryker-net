@@ -8,7 +8,6 @@ namespace Stryker.Core.Mutants
     {
         private readonly IDictionary<Guid, TestDescription> _tests = new Dictionary<Guid, TestDescription>();
         public int Count => _tests.Count;
-        public TestDescription this[Guid guid] => _tests[guid];
 
         public void RegisterTests(IEnumerable<TestDescription> tests)
         {

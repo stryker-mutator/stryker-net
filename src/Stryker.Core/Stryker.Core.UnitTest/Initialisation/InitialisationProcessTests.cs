@@ -152,7 +152,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             testSet.RegisterTest(new TestDescription(Guid.Empty, "test", "test.cs"));
             testRunnerMock.Setup(x => x.DiscoverTests()).Returns(testSet);
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(),It.IsAny<ITestRunner>()))
-                .Returns(new InitialTestRun(new TestRunResult(true), null)); // failing test
+                .Returns(new InitialTestRun(TestGuidsList.EveryTest(), TestGuidsList.NoTest(), null)); // failing test
             assemblyReferenceResolverMock.Setup(x => x.LoadProjectReferences(It.IsAny<string[]>()))
                 .Returns(Enumerable.Empty<PortableExecutableReference>())
                 .Verifiable();
@@ -210,7 +210,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
             testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<ITestRunner>()))
-                .Returns(new InitialTestRun(new TestRunResult(true), null)); // failing test
+                .Returns(new InitialTestRun(TestGuidsList.EveryTest(), TestGuidsList.NoTest(), null)); // failing test
             assemblyReferenceResolverMock.Setup(x => x.LoadProjectReferences(It.IsAny<string[]>()))
                 .Returns(Enumerable.Empty<PortableExecutableReference>())
                 .Verifiable();
