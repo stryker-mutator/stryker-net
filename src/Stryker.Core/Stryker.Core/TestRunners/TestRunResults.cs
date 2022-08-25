@@ -22,6 +22,7 @@ namespace Stryker.Core.TestRunners
         public ITestGuids NonCoveringTests {get;}
 
         public bool SessionTimedOut { get; private init; }
+
         public static TestRunResults TimedOut(ITestGuids ranTests,
             ITestGuids failedTest,
             ITestGuids timedOutTests,

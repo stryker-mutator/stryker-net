@@ -81,15 +81,20 @@ namespace Stryker.Core.MutationTest
                 foreach (var mutant in mutantsToTest)
                 {
                     var localResult = TestRunner.TestMultipleMutants(timeoutMs, new[] { mutant }, updateHandler);
-                    mutant.AnalyzeTestRun(localResult);
+                    if (updateHandler == null || localResult.SessionTimedOut)
+                    {
+                       mutant.AnalyzeTestRun(localResult);
+                    }
                 }
                 
                 return TestRunResults.GeneralSuccess();
             }
 
             var result = TestRunner.TestMultipleMutants(timeoutMs, mutantsToTest.ToList(), updateHandler);
-            if (updateHandler != null)
+
+            if (updateHandler != null || result.SessionTimedOut)
             {
+                // we cannot blindly apply timeout session results to a group of mutants
                 return result;
             }
 

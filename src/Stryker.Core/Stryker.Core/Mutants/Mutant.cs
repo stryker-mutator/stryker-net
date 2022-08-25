@@ -74,7 +74,7 @@ namespace Stryker.Core.Mutants
                 KillingTests = CoveringTests.Intersect(results.FailedTests);
                 FalselyCoveringTests = AssessingTests.Intersect(results.NonCoveringTests);
             }
-            else if (AssessingTests.ContainsAny(results.TimedOutTests))
+            else if (AssessingTests.ContainsAny(results.TimedOutTests) || results.SessionTimedOut)
             {
                 ResultStatus = MutantStatus.Timeout;
                 FalselyCoveringTests = AssessingTests.Intersect(results.NonCoveringTests);

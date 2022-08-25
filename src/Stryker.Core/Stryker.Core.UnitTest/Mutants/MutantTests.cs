@@ -45,19 +45,39 @@ namespace Stryker.Core.UnitTest.Mutants
         }
 
         [Fact]
-        public void ShouldSetTimedOutState()
+        public void ShouldSetTimedOutStateWhenSomeTestTimesOut()
         {
-            var failedTestsMock = new Mock<ITestGuids>();
-            var timedOutTestsMock = new Mock<ITestGuids>();
-            var coveringTestsMock = new Mock<ITestGuids>();
+            var mutant = new Mutant
+            {
+                AssessingTests = TestGuidsList.EveryTest()
+            };
 
-            failedTestsMock.Setup(x => x.IsEmpty).Returns(true);
-            timedOutTestsMock.Setup(x => x.IsEmpty).Returns(false);
-            coveringTestsMock.Setup(x => x.IsEveryTest).Returns(true);
+            var result = new TestRunResults(TestGuidsList.EveryTest(),
+                TestGuidsList.NoTest(),
+                TestGuidsList.EveryTest(),
+                TestGuidsList.NoTest());
 
-            var mutant = new Mutant();
-            var results = new TestRunResults( TestGuidsList.EveryTest(), TestGuidsList.NoTest(), TestGuidsList.EveryTest(), TestGuidsList.EveryTest());
-            mutant.AnalyzeTestRun(results);
+
+            mutant.AnalyzeTestRun(result);
+
+            mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);
+        }
+
+        [Fact]
+        public void ShouldSetTimedOutStateWhenSessionTimesOut()
+        {
+            var mutant = new Mutant
+            {
+                AssessingTests = TestGuidsList.EveryTest()
+            };
+
+            var result = TestRunResults.TimedOut(TestGuidsList.EveryTest(),
+                TestGuidsList.NoTest(),
+                TestGuidsList.EveryTest(),
+                TestGuidsList.NoTest());
+
+
+            mutant.AnalyzeTestRun(result);
 
             mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);
         }

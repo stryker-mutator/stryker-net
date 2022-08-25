@@ -8,5 +8,7 @@ namespace Stryker.Core.MutationTest
         ITestGuids FailedTests { get; }
         ITestGuids TimedOutTests { get; }
         ITestGuids NonCoveringTests {get;}
+        bool SessionTimedOut { get; }
+
     }
 }

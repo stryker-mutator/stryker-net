@@ -10,56 +10,6 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
 {
-    // mock for the actual MutantControl class injected in the mutated assembly.
-    // used for unit test
-   /* public static class MutantControl
-    {
-        public static bool CaptureCoverage;
-        public static bool CaptureTrace;
-        public static int ActiveMutant = -1;
-        public static int ActiveMutantSeen;
-        private static HashSet<int>[] coverageData = { new(), new() };
-        private static List<int> _trace = new();
-
-        public static HashSet<int>[] GetCoverageData()
-        {
-            var result = coverageData ?? throw new ArgumentNullException(nameof(coverageData));
-            ClearCoverageInfo();
-            return result;
-        }
-        public static List<int> GetTrace() => _trace;
-
-        public static void ClearCoverageInfo()
-        {
-            coverageData = new[] { new HashSet<int>(), new HashSet<int>() };
-            _trace.Clear();
-        }
-
-        public static void HitNormal(int mutation)
-        {
-            coverageData[0].Add(mutation);
-            if (CaptureTrace)
-            {
-                _trace.Add(mutation);
-            }
-            if (ActiveMutantSeen < 0)
-            {
-                ActiveMutantSeen = ActiveMutant;
-            }
-        }
-
-        public static void HitStatic(int mutation)
-        {
-            if (CaptureTrace)
-            {
-                _trace.Add(mutation);
-            }
-
-            coverageData[1].Add(mutation);
-        }
-    }
-   */
-
     public class CoverageCollectorTests : TestBase
     {
         [Fact]
