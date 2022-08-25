@@ -95,14 +95,8 @@ namespace Stryker.DataCollector
             _getCoverageData = _controller.GetMethod("GetCoverageData");
             _getTraceData = _controller.GetMethod("GetTrace");
 
-            if (_coverageOn)
-            {
-                _controller.GetField("CaptureCoverage").SetValue(null, true);
-            }
-            else if (_traceOn)
-            {
-                _controller.GetField("CaptureTrace").SetValue(null, true);
-            }
+            _controller.GetField("CaptureCoverage").SetValue(null, _coverageOn);
+            _controller.GetField("CaptureTrace").SetValue(null, _traceOn);
 
             _activeMutantField.SetValue(null, _activeMutation);
             // mutant not seen
