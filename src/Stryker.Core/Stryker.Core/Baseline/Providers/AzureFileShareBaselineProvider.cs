@@ -140,12 +140,8 @@ namespace Stryker.Core.Baseline.Providers
         private async Task<bool> AllocateFileLocationAsync(int byteSize, string fileUrl)
         {
             _logger.LogDebug("Allocating storage for file {0}", fileUrl);
-
-            var uriBuilder = new UriBuilder(fileUrl);
-            var query = HttpUtility.ParseQueryString(_options.AzureFileStorageSas);
-            uriBuilder.Query = query.ToString();
-            var url = uriBuilder.ToString();
-
+            var url = GenerateUri(fileUrl, _options.AzureFileStorageSas).ToString();
+            
             using var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
 
             requestMessage.Headers.Add("x-ms-type", "file");
