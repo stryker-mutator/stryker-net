@@ -25,7 +25,7 @@ namespace Stryker.DataCollector
         private string _controlClassName;
         private Type _controller;
         private MethodInfo _setActiveMutant;
-        private FieldInfo _activeMutantSeenField;
+        private MethodInfo _activeMutantSeen;
         private MethodInfo _getCoverageData;
         private MethodInfo _getTraceData;
 
@@ -91,7 +91,7 @@ namespace Stryker.DataCollector
             }
 
             _setActiveMutant = _controller.GetMethod("SetActiveMutant");
-            _activeMutantSeenField = _controller.GetField("ActiveMutantSeen");
+            _activeMutantSeen = _controller.GetMethod("ActiveMutantSeen");
             _getCoverageData = _controller.GetMethod("GetCoverageData");
             _getTraceData = _controller.GetMethod("GetTrace");
 
@@ -100,7 +100,6 @@ namespace Stryker.DataCollector
 
             _setActiveMutant.Invoke(null, new object[] {_activeMutation});
             // mutant not seen
-            _activeMutantSeenField.SetValue(null, -1);
         }
 
         private void SetActiveMutationForTest(string id)
@@ -111,7 +110,6 @@ namespace Stryker.DataCollector
                 return;
             }
             _setActiveMutant.Invoke(null, new object[] {_activeMutation});
-            _activeMutantSeenField.SetValue(null, -1);
         }
 
         private void EraseActiveMutation()
@@ -122,7 +120,6 @@ namespace Stryker.DataCollector
                 return;
             }
             _setActiveMutant.Invoke(null, new object[] {_activeMutation});
-            _activeMutantSeenField.SetValue(null, -1);
         }
         
         public static string GetVsTestSettings(bool needCoverage,
@@ -262,10 +259,9 @@ namespace Stryker.DataCollector
             Log($"Test {testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName} ends.");
             if (!_coverageOn)
             {
-                var value = _activeMutantSeenField.GetValue(null);
-                if ((int)value == _activeMutation)
+                if ((bool) _activeMutantSeen.Invoke(null, null))
                 {
-                    _dataSink.SendData(testCaseEndArgs.DataCollectionContext, ActiveMutationSeen, value.ToString());
+                    _dataSink.SendData(testCaseEndArgs.DataCollectionContext, ActiveMutationSeen, _activeMutation.ToString());
                 }
 
                 if (_traceOn)

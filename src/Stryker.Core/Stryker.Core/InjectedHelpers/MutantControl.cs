@@ -4,6 +4,11 @@ using System.Threading;
 
 namespace Stryker
 {
+    /// <summary>
+    /// This static class hosts mutant (runtime) switching helper functions.
+    /// As it is injected in every mutated project, it needs to remain compatible with old C# syntax.
+    /// So please refrain from using modern short form (e.g. arrow expression) or syntactic sugar as it may break compatibility in various ways.
+    /// </summary>
     public static class MutantControl
     {
         private static HashSet<int> _coveredMutants;
@@ -15,8 +20,7 @@ namespace Stryker
         private static bool _captureCoverage;
         private static bool _captureTrace;
         // this attribute will be set by the Stryker Data Collector before each test
-        public static int ActiveMutantSeen;
-        public const int ActiveMutantNotInitValue = -2;
+        private static bool _activeMutantSeen;
         
         static MutantControl()
         {
@@ -49,6 +53,12 @@ namespace Stryker
         public static void SetActiveMutant(int mutant)
         {
             _activeMutant = mutant;
+            _activeMutantSeen = false;
+        }
+
+        public static bool ActiveMutantSeen()
+        {
+            return _activeMutantSeen;
         }
 
         public static void CaptureCoverage(bool mode)
@@ -69,31 +79,19 @@ namespace Stryker
                 RegisterCoverage(id);
                 return false;
             }
-            if (_activeMutant == ActiveMutantNotInitValue)
-            {
-                string environmentVariable = Environment.GetEnvironmentVariable("ActiveMutation");
-                if (string.IsNullOrEmpty(environmentVariable))
-                {
-                    _activeMutant = -1;
-                }
-                else
-                {
-                    _activeMutant = int.Parse(environmentVariable);
-                }
-            }
 
             if (_captureTrace)
             {
                 _hitTrace.Add(id);
             }
 
-            if (id == _activeMutant)
+            if (id != _activeMutant)
             {
-                ActiveMutantSeen = _activeMutant;
-                return true;
+                return false;
             }
+            _activeMutantSeen = true;
+            return true;
 
-            return false;
         }
 
         private static void RegisterCoverage(int id)
