@@ -91,8 +91,8 @@ namespace Stryker.CLI
         [JsonExtensionData]
         public Dictionary<string, JsonElement> ExtraData { get; init; }
 
-        [JsonPropertyName("tests-failure-break")]
-        public bool? TestsFailureBreak { get; init; }
+        [JsonPropertyName("break-on-initial-test-failure")]
+        public bool? BreakOnInitialTestFailure { get; init; }
     }
 
     public class Since : IExtraData

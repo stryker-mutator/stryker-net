@@ -1,6 +1,6 @@
 namespace Stryker.Core.Options.Inputs
 {
-    public class TestsFailureBreakInput : Input<bool?>
+    public class BreakOnInitialTestFailureInput : Input<bool?>
     {
         public override bool? Default => false;
 

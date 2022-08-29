@@ -4,12 +4,12 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
-    public class TestsFailureBreakInputTests : TestBase
+    public class BreakOnInitialTestFailureInputTests : TestBase
     {
         [Fact]
         public void ShouldHaveHelpText()
         {
-            var target = new TestsFailureBreakInput();
+            var target = new BreakOnInitialTestFailureInput();
             target.HelpText.ShouldBe(@"Instruct Stryker to break execution when at least one test failed on initial run. | default: 'False'");
         }
         
@@ -17,9 +17,9 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [InlineData(null, false)]
         [InlineData(false, false)]
         [InlineData(true, true)]
-        public void ShouldTranslateInputToTestFailureBreakBehavior(bool? argValue, bool expected)
+        public void ShouldTranslateInputToExpectedResult(bool? argValue, bool expected)
         {
-            var validatedInput = new TestsFailureBreakInput { SuppliedInput = argValue }.Validate();
+            var validatedInput = new BreakOnInitialTestFailureInput { SuppliedInput = argValue }.Validate();
 
             validatedInput.ShouldBe(expected);
         }
