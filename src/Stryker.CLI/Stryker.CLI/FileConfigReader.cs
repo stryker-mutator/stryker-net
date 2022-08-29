@@ -61,6 +61,7 @@ namespace Stryker.CLI
             inputs.IgnoredMethodsInput.SuppliedInput = config.IgnoreMethods;
 
             inputs.ReportFileNameInput.SuppliedInput = config.ReportFileName;
+            inputs.TestsFailureBreakInput.SuppliedInput = config.TestsFailureBreak;
         }
 
         private static FileBasedInput LoadConfig(string configFilePath)

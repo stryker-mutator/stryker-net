@@ -46,7 +46,7 @@ namespace Stryker.Core.Options
         WithBaselineInput WithBaselineInput { get; init; }
         OpenReportInput OpenReportInput { get; init; }
         OpenReportEnabledInput OpenReportEnabledInput { get; init; }
-        TestFailureBreakBehaviorInput TestFailureBreakBehaviorInput { get; init; }
+        TestsFailureBreakInput TestsFailureBreakInput { get; init; }
 
         StrykerOptions ValidateAll();
     }
@@ -102,7 +102,7 @@ namespace Stryker.Core.Options
         public MsBuildPathInput MsBuildPathInput { get; init; } = new();
         public OpenReportInput OpenReportInput { get; init; } = new();
         public OpenReportEnabledInput OpenReportEnabledInput { get; init; } = new();
-        public TestFailureBreakBehaviorInput TestFailureBreakBehaviorInput { get; init; } = new();
+        public TestsFailureBreakInput TestsFailureBreakInput { get; init; } = new();
 
         public StrykerOptions ValidateAll()
         {
@@ -163,7 +163,7 @@ namespace Stryker.Core.Options
                 Since = sinceEnabled,
                 SinceTarget = sinceTarget,
                 ReportTypeToOpen = OpenReportInput.Validate(OpenReportEnabledInput.Validate()),
-                TestFailureBreakBehavior = TestFailureBreakBehaviorInput.Validate()
+                BreakExecutionOnTestsFailure = TestsFailureBreakInput.Validate()
             };
             return _strykerOptionsCache;
         }

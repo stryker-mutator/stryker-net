@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
@@ -51,18 +50,16 @@ namespace Stryker.Core.Initialisation
             if (!initTestRunResult.FailingTests.IsEmpty)
             {
                 var failingTestsCount = initTestRunResult.FailingTests.Count;
-                switch (options.TestFailureBreakBehavior)
+                if (options.BreakExecutionOnTestsFailure)
                 {
-                    case TestFailureBreakBehavior.WhenAny:
-                        throw new InputException("Initial testrun has failing tests.", initTestRunResult.ResultMessage);
-                    case TestFailureBreakBehavior.WhenHalf:
-                        if (((double)failingTestsCount) / initTestRunResult.RanTests.Count >= .5)
-                        {
-                            throw new InputException("Initial testrun has more than 50% failing tests.", initTestRunResult.ResultMessage);
-                        }
-                        break;
+                    throw new InputException("Initial testrun has failing tests.", initTestRunResult.ResultMessage);
                 }
 
+                if (((double)failingTestsCount) / initTestRunResult.RanTests.Count >= .5)
+                {
+                    throw new InputException("Initial testrun has more than 50% failing tests.", initTestRunResult.ResultMessage);
+                }
+                
                 _logger.LogWarning($"{(failingTestsCount == 1 ? "A test is ": $"{failingTestsCount} tests are")} failing. Stryker will continue but outcome will be impacted.");
             }
 

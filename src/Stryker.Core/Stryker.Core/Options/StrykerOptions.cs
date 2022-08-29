@@ -202,9 +202,9 @@ namespace Stryker.Core.Options
         public string ProjectVersion { get; set; }
 
         /// <summary>
-        /// Stryker break behavior when not all tests are passed on initial run.
+        /// Instruct Stryker to break execution when at least one test failed on initial run.
         /// </summary>
-        public TestFailureBreakBehavior TestFailureBreakBehavior { get; set; }
+        public bool BreakExecutionOnTestsFailure { get; set; }
 
         public StrykerOptions Copy(string projectPath, string workingDirectory, string projectUnderTest, IEnumerable<string> testProjects) => new()
         {
@@ -244,7 +244,7 @@ namespace Stryker.Core.Options
             TestCaseFilter = TestCaseFilter,
             Thresholds = Thresholds,
             WithBaseline = WithBaseline,
-            TestFailureBreakBehavior = TestFailureBreakBehavior,
+            BreakExecutionOnTestsFailure = BreakExecutionOnTestsFailure,
         };
     }
 }

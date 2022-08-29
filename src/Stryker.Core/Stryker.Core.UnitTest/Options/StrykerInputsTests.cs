@@ -46,7 +46,7 @@ namespace Stryker.Core.UnitTest.Options
             ThresholdHighInput = new ThresholdHighInput(),
             ThresholdLowInput = new ThresholdLowInput(),
             WithBaselineInput = new WithBaselineInput(),
-            TestFailureBreakBehaviorInput = new TestFailureBreakBehaviorInput()
+            TestsFailureBreakInput = new TestsFailureBreakInput()
         };
 
         [Fact]

@@ -136,8 +136,8 @@ namespace Stryker.CLI
             AddCliInput(inputs.DashboardApiKeyInput, "dashboard-api-key", null, category: InputCategory.Reporting);
             AddCliInput(inputs.AzureFileStorageSasInput, "azure-fileshare-sas", null, category: InputCategory.Reporting);
 
+            AddCliInput(inputs.TestsFailureBreakInput, "tests-failure-break", null, optionType: CommandOptionType.SingleOrNoValue, category: InputCategory.Misc);
             AddCliInput(inputs.DevModeInput, "dev-mode", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
-
         }
 
         private void RegisterCliInput(CommandLineApplication app, CliInput option)
