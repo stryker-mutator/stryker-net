@@ -29,7 +29,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Theory]
         [InlineData(true)]
         [InlineData(false)]
-        public void InitialTestProcess_ShouldThrowExceptionOnFail(bool breakExecutionOnTestsFailure)
+        public void InitialTestProcess_ShouldThrowExceptionOnFail(bool breakOnInitialTestFailure)
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var failedTest = Guid.NewGuid();
@@ -39,7 +39,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             testRunnerMock.Setup(x => x.InitialTest()).Returns(new TestRunResult(ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, TimeSpan.Zero) );
             testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
 
-            _options.BreakExecutionOnTestsFailure = breakExecutionOnTestsFailure;
+            _options.BreakOnInitialTestFailure = breakOnInitialTestFailure;
 
             Assert.Throws<InputException>(() => _target.InitialTest(_options, testRunnerMock.Object));
         }

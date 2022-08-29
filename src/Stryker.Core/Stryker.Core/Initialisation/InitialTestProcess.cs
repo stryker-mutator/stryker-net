@@ -50,7 +50,7 @@ namespace Stryker.Core.Initialisation
             if (!initTestRunResult.FailingTests.IsEmpty)
             {
                 var failingTestsCount = initTestRunResult.FailingTests.Count;
-                if (options.BreakExecutionOnTestsFailure)
+                if (options.BreakOnInitialTestFailure)
                 {
                     throw new InputException("Initial testrun has failing tests.", initTestRunResult.ResultMessage);
                 }
