@@ -594,6 +594,14 @@ Config file: `N/A`
 Stryker will not gracefully recover from compilation errors, instead crash immediately. Used during development to quickly diagnose errors.  
 Also enables more debug logs not generally useful to normal users.
 
+### `break-on-initial-test-failure` <`flag`>
+
+Default: `false`  
+Command line: `--break-on-initial-test-failure`  
+Config file: `N/A`
+
+Instruct Stryker to break execution when at least one test failed on initial test run.
+
 ## Misc
 
 ### `dashboard-api-key` <`string`>
