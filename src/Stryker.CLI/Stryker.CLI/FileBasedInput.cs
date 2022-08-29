@@ -90,6 +90,9 @@ namespace Stryker.CLI
 
         [JsonExtensionData]
         public Dictionary<string, JsonElement> ExtraData { get; init; }
+
+        [JsonPropertyName("test-failure-break")]
+        public string TestFailureBreakBehavior { get; init; }
     }
 
     public class Since : IExtraData

@@ -26,8 +26,10 @@ namespace Stryker.Core.UnitTest.Initialisation
             };
         }
 
-        [Fact]
-        public void InitialTestProcess_ShouldThrowExceptionOnFail()
+        [Theory]
+        [InlineData(TestFailureBreakBehavior.WhenAny)]
+        [InlineData(TestFailureBreakBehavior.WhenHalf)]
+        public void InitialTestProcess_ShouldThrowExceptionOnFail(TestFailureBreakBehavior behavior)
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var failedTest = Guid.NewGuid();
@@ -37,11 +39,31 @@ namespace Stryker.Core.UnitTest.Initialisation
             testRunnerMock.Setup(x => x.InitialTest()).Returns(new TestRunResult(ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, TimeSpan.Zero) );
             testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
 
+            _options.TestFailureBreakBehavior = behavior;
+
             Assert.Throws<InputException>(() => _target.InitialTest(_options, testRunnerMock.Object));
         }
 
         [Fact]
-        public void InitialTestProcess_ShouldNotThrowIfAFewTestsFail()
+        public void InitialTestProcess_ShouldNotThrowExceptionOnFailForNeverBreakBehavior()
+        {
+            var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
+            var failedTest = Guid.NewGuid();
+            var successfulTest = Guid.NewGuid();
+            var ranTests = new TestGuidsList(failedTest, successfulTest);
+            var failedTests = new TestGuidsList(failedTest);
+            testRunnerMock.Setup(x => x.InitialTest()).Returns(new TestRunResult(ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, TimeSpan.Zero) );
+            testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
+
+            _options.TestFailureBreakBehavior = TestFailureBreakBehavior.Never;
+
+            _target.InitialTest(_options, testRunnerMock.Object);
+        }
+
+        [Theory]
+        [InlineData(TestFailureBreakBehavior.WhenHalf)]
+        [InlineData(TestFailureBreakBehavior.Never)]
+        public void InitialTestProcess_ShouldNotThrowIfAFewTestsFail(TestFailureBreakBehavior behavior)
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var test1 = Guid.NewGuid();

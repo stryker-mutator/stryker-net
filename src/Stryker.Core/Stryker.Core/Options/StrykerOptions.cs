@@ -201,6 +201,11 @@ namespace Stryker.Core.Options
         /// </summary>
         public string ProjectVersion { get; set; }
 
+        /// <summary>
+        /// Stryker break behavior when not all tests are passed on initial run.
+        /// </summary>
+        public TestFailureBreakBehavior TestFailureBreakBehavior { get; set; }
+
         public StrykerOptions Copy(string projectPath, string workingDirectory, string projectUnderTest, IEnumerable<string> testProjects) => new()
         {
             AdditionalTimeout = AdditionalTimeout,
@@ -238,7 +243,8 @@ namespace Stryker.Core.Options
             TestProjects = testProjects,
             TestCaseFilter = TestCaseFilter,
             Thresholds = Thresholds,
-            WithBaseline = WithBaseline
+            WithBaseline = WithBaseline,
+            TestFailureBreakBehavior = TestFailureBreakBehavior,
         };
     }
 }
