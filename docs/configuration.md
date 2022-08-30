@@ -552,7 +552,7 @@ Providing a subfolder is optional but allowed. In the case of a custom subfolder
 ### `azure-fileshare-sas` <`string`>
 
 Default: `null`  
-Command line: `--azure-fileshare-sas "adfdf34343242323rewfe323434"`  
+Command line: `--azure-fileshare-sas "se=2022-08-25T14%3A27Z&sp=rwdl&spr=https&sv=2021-06-08&sr=d&sdd=1&sig=XXXXXXXXXXXXX"`  
 Config file: `N/A`
 
 When using the azure file storage [provider](#baselineprovider-string) you must pass credentials for the fileshare to Stryker.
