@@ -87,8 +87,6 @@ namespace Stryker.Core.TestRunners.VsTest
             _runnerId = runnerId;
         }
 
-        public bool CancelRequested { get; set; }
-
         public bool TestSessionDone { get; private set; }
 
         private void CaptureTestResults(IEnumerable<TestResult> results)
@@ -231,7 +229,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 {
                     _logger.LogWarning(sock, $"{_runnerId}: Test session ended unexpectedly.");
                 }
-                else if (!CancelRequested)
+                else
                 {
                     _logger.LogDebug(testRunCompleteArgs.Error, $"{_runnerId}: VsTest error:");
                 }

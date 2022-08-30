@@ -7,23 +7,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 
 namespace Stryker.Core.Testing
 {
     internal static class ProcessExtensions
     {
-#if NET451
-        private static readonly bool _isWindows = true;
-#else
         private static readonly bool _isWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
-#endif
-        private static readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(30);
-
-        public static void KillTree(this Process process)
-        {
-            process.KillTree(_defaultTimeout);
-        }
 
         public static void KillTree(this Process process, TimeSpan timeout)
         {
@@ -114,24 +103,6 @@ namespace Stryker.Core.Testing
             }
 
             return process.ExitCode;
-        }
-
-        public static Task StartAndWaitForExitAsync(this Process subject)
-        {
-            var taskCompletionSource = new TaskCompletionSource<object>();
-
-            subject.EnableRaisingEvents = true;
-
-            subject.Exited += (s, a) =>
-            {
-                taskCompletionSource.SetResult(null);
-
-                subject.Dispose();
-            };
-
-            subject.Start();
-
-            return taskCompletionSource.Task;
         }
     }
 }
