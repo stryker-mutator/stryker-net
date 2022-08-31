@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
@@ -18,16 +17,6 @@ using Stryker.Core.TestRunners.VsTest;
 namespace Stryker.Core.Initialisation
 {
     // For mocking purposes
-    public interface IInitialisationProcessProvider
-    {
-        IInitialisationProcess Provide();
-    }
-
-    [ExcludeFromCodeCoverage]
-    public class InitialisationProcessProvider : IInitialisationProcessProvider
-    {
-        public IInitialisationProcess Provide() => new InitialisationProcess();
-    }
 
     public interface IInitialisationProcess
     {
