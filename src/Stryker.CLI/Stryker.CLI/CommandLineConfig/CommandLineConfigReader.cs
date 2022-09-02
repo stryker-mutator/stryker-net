@@ -100,8 +100,8 @@ namespace Stryker.CLI
                     break;
 
                 case OpenReportInput openReportInput:
-                    inputs.OpenReportEnabledInput.SuppliedInput = true;
                     openReportInput.SuppliedInput = cliInput.Value();
+                    inputs.OpenReportEnabledInput.SuppliedInput = true;
                     break;
             }
         }
@@ -136,7 +136,7 @@ namespace Stryker.CLI
             AddCliInput(inputs.DashboardApiKeyInput, "dashboard-api-key", null, category: InputCategory.Reporting);
             AddCliInput(inputs.AzureFileStorageSasInput, "azure-fileshare-sas", null, category: InputCategory.Reporting);
 
-            AddCliInput(inputs.BreakOnInitialTestFailureInput, "break-on-initial-test-failure", null, optionType: CommandOptionType.SingleOrNoValue, category: InputCategory.Misc);
+            AddCliInput(inputs.BreakOnInitialTestFailureInput, "break-on-initial-test-failure", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
             AddCliInput(inputs.DevModeInput, "dev-mode", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
         }
 
