@@ -11,9 +11,9 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <MicrosoftTestPlatform>17.2.0</MicrosoftTestPlatform>
+    <MicrosoftTestPlatform>17.3.1</MicrosoftTestPlatform>
     <SystemIOAbstractions>17.1.1</SystemIOAbstractions>
-    <MicrosoftExtensionsConfiguration>6.0.0</MicrosoftExtensionsConfiguration>
+    <MicrosoftExtensionsConfiguration>6.0.1</MicrosoftExtensionsConfiguration>
   </PropertyGroup>
 
   <ItemGroup>
