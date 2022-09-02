@@ -144,6 +144,7 @@ namespace Stryker.Core
 
                 foreach (var project in _mutationTestProcesses)
                 {
+                    // Place breakpoint here to see what project is analysed first.
                     project.GetCoverage();
                 }
             }

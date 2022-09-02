@@ -179,6 +179,7 @@ namespace Stryker.DataCollector
             }
         }
 
+        // This method is commented out as thanks to the missing assembly it fails.
         public void TestCaseStart(TestCaseStartArgs testCaseStartArgs)
         {
             //if (_coverageOn)
@@ -206,9 +207,10 @@ namespace Stryker.DataCollector
 
         public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
         {
-            var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => !a.IsDynamic && a.ExportedTypes.Any(t => t.FullName == _controlClassName));
-            // The assembly should be found here. But it isn't. We use this assembly to call a method inside the tested assembly to create a map of covered mutation inside the assembly.
-            // In a normal scenario we are able to find the assembly before the first test is run.
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
+            // The target project assembly should be found in the above list of assemblies. But it isn't.
+            // In a normal scenario we are able to find the assembly before the first test is run. But in this scenario the assembly seems to never be loaded. Not even after the first testcase is ended.
+            // The name of the target project is "TargetProject" or "ExtraProject". It depends on which project is analysed first.
             Debugger.Launch();
 
             Log($"Test {testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName} ends.");
