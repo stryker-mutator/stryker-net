@@ -622,3 +622,11 @@ Command line: `--msbuild-path "c://MsBuild/MsBuild.exe"`
 Config file: `N/A`  
 
 By default stryker tries to autodiscover msbuild on your system. If stryker fails to discover msbuild you may supply the path to msbuild manually with this option.
+
+### `break-on-initial-test-failure` <`flag`>
+
+Default: `false`  
+Command line: `--break-on-initial-test-failure`  
+Config file: `N/A`
+
+Instruct Stryker to break execution when at least one test failed on initial test run.
