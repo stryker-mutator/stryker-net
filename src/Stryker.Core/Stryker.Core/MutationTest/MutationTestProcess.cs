@@ -27,7 +27,7 @@ namespace Stryker.Core.MutationTest
 
     public class MutationTestProcess : IMutationTestProcess
     {
-        private static readonly ILogger Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();;
+        private static readonly ILogger Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
         private readonly IProjectComponent _projectContents;
         private readonly IMutationTestExecutor _mutationTestExecutor;
         private readonly IReporter _reporter;
