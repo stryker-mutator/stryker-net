@@ -125,6 +125,7 @@ namespace Stryker.CLI.UnitTest
             inputs.Setup(x => x.IgnoreMutationsInput).Returns(new IgnoreMutationsInput());
             inputs.Setup(x => x.IgnoredMethodsInput).Returns(new IgnoreMethodsInput());
             inputs.Setup(x => x.ReportFileNameInput).Returns(new ReportFileNameInput());
+            inputs.Setup(x => x.BreakOnInitialTestFailureInput).Returns(new BreakOnInitialTestFailureInput());
 
             return inputs;
         }
