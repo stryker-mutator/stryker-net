@@ -24,6 +24,6 @@ namespace Stryker.Core.MutationTest
             IReporter reporter,
             IMutationTestExecutor mutationTestExecutor,
             StrykerOptions options) =>
-            new MutationTestProcess(mutationTestInput, reporter, mutationTestExecutor, options: options);
+            new MutationTestProcess(mutationTestInput, options, reporter, mutationTestExecutor);
     }
 }

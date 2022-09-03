@@ -1,83 +1,78 @@
+using System;
 using System.Collections.Generic;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using Microsoft.FSharp.Collections;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
-using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
-using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.MutationTest
 {
     public class MutationTestProcess : IMutationTestProcess
     {
-        public MutationTestInput Input { get; }
+        private static readonly ILogger Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
         private readonly IProjectComponent _projectContents;
-        private readonly ILogger _logger;
         private readonly IMutationTestExecutor _mutationTestExecutor;
-        private readonly IFileSystem _fileSystem;
-        private readonly BaseMutantOrchestrator _orchestrator;
         private readonly IReporter _reporter;
         private readonly ICoverageAnalyser _coverageAnalyser;
         private readonly StrykerOptions _options;
-        private readonly Language _language;
-        private IMutationProcess _mutationProcess;
+        private readonly IMutationProcess _mutationProcess;
+        private static readonly Dictionary<Language, Func<MutationTestInput, StrykerOptions, IMutationProcess>> LanguageMap = new();
 
-        public MutationTestProcess(MutationTestInput mutationTestInput,
-            IReporter reporter,
-            IMutationTestExecutor mutationTestExecutor,
-            BaseMutantOrchestrator<SyntaxNode> cSharpOrchestrator = null,
-            BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>> fSharpOrchestrator = null,
-            IFileSystem fileSystem = null,
-            IMutantFilter mutantFilter = null,
-            ICoverageAnalyser coverageAnalyser = null,
-            StrykerOptions options = null)
+        static MutationTestProcess()
         {
-            Input = mutationTestInput;
-            _projectContents = mutationTestInput.ProjectInfo.ProjectContents;
-            _reporter = reporter;
-            _options = options;
-            _mutationTestExecutor = mutationTestExecutor;
-            _fileSystem = fileSystem ?? new FileSystem();
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-            _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options);
-            _language = Input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage();
-            _orchestrator = cSharpOrchestrator ?? fSharpOrchestrator ?? ChooseOrchestrator(_options);
-
-            SetupMutationTestProcess(mutantFilter);
+            DeclareMutationProcessForLanguage<CsharpMutationProcess>(Language.Csharp);
+            DeclareMutationProcessForLanguage<FsharpMutationProcess>(Language.Fsharp);
         }
 
-        private BaseMutantOrchestrator ChooseOrchestrator(StrykerOptions options)
+        public static void DeclareMutationProcessForLanguage<T>(Language language) where T:IMutationProcess
         {
-            if (_language == Language.Fsharp)
+            var constructor = typeof(T).GetConstructor(new[]
+                { typeof(MutationTestInput), typeof(StrykerOptions) });
+            if (constructor == null)
             {
-                return new FsharpMutantOrchestrator(options: options);
+                throw new NotSupportedException(
+                    $"Failed to find a constructor with the appropriate signature for type {typeof(T)}");
             }
 
-            return new CsharpMutantOrchestrator(options: options);
+            LanguageMap[language] = (x, y) => (IMutationProcess)constructor.Invoke(new object[] { x, y });
         }
 
-        private void SetupMutationTestProcess(IMutantFilter mutantFilter) =>
-            _mutationProcess = _language switch
+        public MutationTestProcess(MutationTestInput input,
+            StrykerOptions options,
+            IReporter reporter,
+            IMutationTestExecutor executor,
+            IMutationProcess mutationProcess = null,
+            ICoverageAnalyser coverageAnalyzer = null)
+        {
+            Input = input;
+            _reporter = reporter;
+            _options = options;
+            _mutationTestExecutor = executor;
+            _mutationProcess = mutationProcess ?? BuildMutationProcess();
+            _coverageAnalyser = coverageAnalyzer ?? new CoverageAnalyser(_options);
+            _projectContents = input.ProjectInfo.ProjectContents;
+        }
+
+        public MutationTestInput Input { get; }
+
+        private IMutationProcess BuildMutationProcess()
+        {
+            if (!LanguageMap.ContainsKey(Input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage()))
             {
-                Language.Csharp => new CsharpMutationProcess(Input, _fileSystem, _options, mutantFilter,
-                    (BaseMutantOrchestrator<SyntaxNode>)_orchestrator),
-                Language.Fsharp => new FsharpMutationProcess(Input,
-                    (BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>>)_orchestrator, _fileSystem, _options),
-                _ => throw new GeneralStrykerException(
-                    "no valid language detected || no valid csproj or fsproj was given")
-            };
+                throw new GeneralStrykerException(
+                    "no valid language detected || no valid csproj or fsproj was given.");
+            }
+            return LanguageMap[Input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage()](Input, _options);
+        }
 
         public void Mutate()
         {
@@ -96,7 +91,7 @@ namespace Stryker.Core.MutationTest
 
             var mutantCount = mutantsToTest.Count();
             var buildMutantGroupsForTest = BuildMutantGroupsForTest(mutantsToTest.ToList()).ToList();
-            _logger.LogInformation(
+            Logger.LogInformation(
                 $"Mutations will be tested in {buildMutantGroupsForTest.Count} test runs" +
                 (mutantCount > buildMutantGroupsForTest.Count ? $", instead of {mutantCount}." : "."));
 
@@ -110,12 +105,12 @@ namespace Stryker.Core.MutationTest
         public MutantDiagnostic DiagnoseMutant(IEnumerable<Mutant> mutants, int mutantToDiagnose)
         {
             var monitoredMutant = Input.ProjectInfo.ProjectContents.Mutants.First(m => m.Id == mutantToDiagnose);
-            _logger.LogWarning($"Diagnosing mutant {mutantToDiagnose}.");
+            Logger.LogWarning($"Diagnosing mutant {mutantToDiagnose}.");
             var monitoredMutantCoveringTests = monitoredMutant.CoveringTests;
 
             if (monitoredMutant.ResultStatus is MutantStatus.CompileError or MutantStatus.Ignored)
             {
-                _logger.LogWarning("Stryker does not offer diagnosis for {0} mutants.", monitoredMutant.ResultStatus);
+                Logger.LogWarning("Stryker does not offer diagnosis for {0} mutants.", monitoredMutant.ResultStatus);
                 return null;
             }
 
@@ -124,7 +119,7 @@ namespace Stryker.Core.MutationTest
             if (monitoredMutant.AssessingTests.IsEveryTest)
             {
                 var testNames = GetTestNames(monitoredMutant.KillingTests);
-                _logger.LogInformation("Mutant is tested against all tests, no need for supplemental test runs.");
+                Logger.LogInformation("Mutant is tested against all tests, no need for supplemental test runs.");
                 RetestMutantGroup(new List<Mutant>{monitoredMutant});
                 // all results assumed as identical
                 result.DeclareResult(monitoredMutant.ResultStatus, testNames);
@@ -136,32 +131,32 @@ namespace Stryker.Core.MutationTest
 
             if (monitoredMutant.ResultStatus == MutantStatus.NoCoverage)
             {
-                _logger.LogInformation("Mutant appears as being not covered by any tests.");
+                Logger.LogInformation("Mutant appears as being not covered by any tests.");
                 // first two test sessions will obviously result in NoCoverage
                 result.DeclareResult(MutantStatus.NoCoverage, Enumerable.Empty<string>());
                 result.DeclareResult(MutantStatus.NoCoverage, Enumerable.Empty<string>());
             }
             else
             {
-                _logger.LogInformation("Mutant is covered by the following tests: ");
-                _logger.LogInformation(string.Join(',', result.CoveringTests));
+                Logger.LogInformation("Mutant is covered by the following tests: ");
+                Logger.LogInformation(string.Join(',', result.CoveringTests));
 
-                _logger.LogInformation("*** Step 1 normal run ***");
+                Logger.LogInformation("*** Step 1 normal run ***");
                 RetestMutantGroup(mutantGroup);
-                _logger.LogInformation($"Mutant {monitoredMutant.Id} is {monitoredMutant.ResultStatus}.");
+                Logger.LogInformation($"Mutant {monitoredMutant.Id} is {monitoredMutant.ResultStatus}.");
                 result.DeclareResult(monitoredMutant.ResultStatus, GetTestNames(monitoredMutant.KillingTests));
-                _logger.LogInformation("*** Step 2 solo run ***");
+                Logger.LogInformation("*** Step 2 solo run ***");
                 RetestMutantGroup(new List<Mutant> { monitoredMutant });
-                _logger.LogInformation($"Mutant {monitoredMutant.Id} is {monitoredMutant.ResultStatus}.");
+                Logger.LogInformation($"Mutant {monitoredMutant.Id} is {monitoredMutant.ResultStatus}.");
                 result.DeclareResult(monitoredMutant.ResultStatus, GetTestNames(monitoredMutant.KillingTests));
             }
 
-            _logger.LogInformation("*** Step 3 run against all tests ***");
+            Logger.LogInformation("*** Step 3 run against all tests ***");
             // we mark the mutant as needing all tests.
             monitoredMutant.AssessingTests = TestGuidsList.EveryTest();
             RetestMutantGroup(new List<Mutant> { monitoredMutant });
             monitoredMutant.AssessingTests = monitoredMutantCoveringTests;
-            _logger.LogInformation($"Mutant {monitoredMutant.Id} is {monitoredMutant.ResultStatus}.");
+            Logger.LogInformation($"Mutant {monitoredMutant.Id} is {monitoredMutant.ResultStatus}.");
             result.DeclareResult(monitoredMutant.ResultStatus, GetTestNames(monitoredMutant.KillingTests));
             
             RefineDiagnosis(result, monitoredMutant, mutantGroup);
@@ -180,7 +175,7 @@ namespace Stryker.Core.MutationTest
             var referenceStatus = result.RunResults[0].status;
             if (monitoredMutant.FalselyCoveringTests.Count > 0)
             {
-                _logger.LogWarning(
+                Logger.LogWarning(
                     monitoredMutant.FalselyCoveringTests.Count == monitoredMutant.AssessingTests.Count
                         ? "Mutant {mutant} as not been actually tested. It is likely another mutation altered normal test execution."
                         : "Some tests covering mutant {mutant} did not actually test it. It is likely another mutation altered normal test execution.",
@@ -188,7 +183,7 @@ namespace Stryker.Core.MutationTest
             }
             else
             {
-                _logger.LogWarning(
+                Logger.LogWarning(
                     "Inconsistent coverage based tests. There is some unwanted side effect. Using binary search to find problematic mutant.");
             }
 
@@ -196,12 +191,12 @@ namespace Stryker.Core.MutationTest
             var firstIndex = FindConflictingMutant(mutantGroup, monitoredMutant, referenceStatus);
             
             var conflictingMutant = mutantGroup[firstIndex];
-            _logger.LogInformation("Conflicting mutant is {0}", conflictingMutant.Id);
+            Logger.LogInformation("Conflicting mutant is {0}", conflictingMutant.Id);
             result.ConflictingMutant = conflictingMutant;
-            _logger.LogInformation("Using binary search to find a conflicting test.");
+            Logger.LogInformation("Using binary search to find a conflicting test.");
             // find a conflicting test
             var testName = FindConflictingTest(referenceStatus, monitoredMutant, conflictingMutant);
-            _logger.LogInformation("Conflicting test is {0}.", testName);
+            Logger.LogInformation("Conflicting test is {0}.", testName);
         }
 
         private string FindConflictingTest(MutantStatus referenceStatus, Mutant monitoredMutant, Mutant conflictingMutant)
@@ -300,7 +295,7 @@ namespace Stryker.Core.MutationTest
                 mutant.ResultStatus = MutantStatus.NotRun;
             }
 
-            _logger.LogInformation("Testing a group of {0} mutants against {1} tests.", toTest.Count, toTest.Any(t => t.AssessingTests.IsEveryTest) ? "all" : toTest.Sum(t => t.AssessingTests.Count));
+            Logger.LogInformation("Testing a group of {0} mutants against {1} tests.", toTest.Count, toTest.Any(t => t.AssessingTests.IsEveryTest) ? "all" : toTest.Sum(t => t.AssessingTests.Count));
             TestMutants(new[] { toTest });
         }
 
@@ -356,7 +351,7 @@ namespace Stryker.Core.MutationTest
             {
                 if (mutant.ResultStatus == MutantStatus.NotRun)
                 {
-                    _logger.LogWarning($"Mutation {mutant.Id} was not fully tested.");
+                    Logger.LogWarning($"Mutation {mutant.Id} was not fully tested.");
                 }
 
                 OnMutantTested(mutant, reportedMutants);
@@ -420,6 +415,7 @@ namespace Stryker.Core.MutationTest
                     // if not, check if this mutant is not covered by any of the selected mutants
                     if (nextSet.Count + usedTests.Count > testsCount ||
                         nextSet.ContainsAny(usedTests))
+
                     {
                         continue;
                     }
@@ -435,6 +431,10 @@ namespace Stryker.Core.MutationTest
                 blocks.Add(nextBlock);
             }
             
+            Logger.LogDebug(
+                $"Mutations will be tested in {blocks.Count} test runs" +
+                (mutantsNotRun.Count > blocks.Count ? $", instead of {mutantsNotRun.Count}." : "."));
+
             return blocks;
         }
 

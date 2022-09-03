@@ -1,3 +1,4 @@
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -9,7 +10,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Shouldly;
-using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.MutantFilters;
@@ -91,24 +91,15 @@ namespace Stryker.Core.UnitTest.MutationTest
                 ExcludedMutations = new Mutator[] { }
             };
             var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict, options);
-            var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
-            var coverageAnalyzerMock = new Mock<ICoverageAnalyser>(MockBehavior.Strict);
 
             // setup mocks
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
- 
-            var target = new MutationTestProcess(input,
-                reporterMock.Object,
-                mutationTestExecutorMock.Object,
-                orchestratorMock.Object,
-                fSharpOrchestrator: null,
-                fileSystem,
-                new BroadcastMutantFilter(Enumerable.Empty<IMutantFilter>()),
-                coverageAnalyzerMock.Object,
-                options);
+            var mutator = new CsharpMutationProcess(input, fileSystem, options, null, orchestratorMock.Object);
+
+            var target = new MutationTestProcess(input, options, null, mutationTestExecutorMock.Object, mutator);
 
             // start mutation process
             target.Mutate();
@@ -174,13 +165,10 @@ namespace Stryker.Core.UnitTest.MutationTest
             };
 
             var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict, options);
-            var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Strict);
-            var coverageAnalyzerMock = new Mock<ICoverageAnalyser>(MockBehavior.Strict);
 
             // setup mocks
-            reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()));
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
@@ -191,15 +179,9 @@ namespace Stryker.Core.UnitTest.MutationTest
                 .Returns((IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions o) => mutants.Take(1));
 
 
-            var target = new MutationTestProcess(input,
-                reporterMock.Object,
-                mutationTestExecutorMock.Object,
-                orchestratorMock.Object,
-                fSharpOrchestrator: null,
-                fileSystem,
-                new BroadcastMutantFilter(new[] { mutantFilterMock.Object }),
-                coverageAnalyzerMock.Object,
-                options);
+            var mutator = new CsharpMutationProcess(input, fileSystem, options, new BroadcastMutantFilter(new[] { mutantFilterMock.Object }), orchestratorMock.Object);
+
+            var target = new MutationTestProcess(input, options, null, mutationTestExecutorMock.Object, mutator);
 
             // start mutation process
             target.Mutate();
@@ -256,9 +238,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             // create mocks
             var options = new StrykerOptions();
             var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict, options);
-            var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
-            var coverageAnalyzerMock = new Mock<ICoverageAnalyser>(MockBehavior.Strict);
 
             fileSystem.AddDirectory(Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0"));
 
@@ -266,17 +246,10 @@ namespace Stryker.Core.UnitTest.MutationTest
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
-            reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()));
 
-            var target = new MutationTestProcess(input,
-                reporterMock.Object,
-                mutationTestExecutorMock.Object,
-                orchestratorMock.Object,
-                fSharpOrchestrator: null,
-                fileSystem,
-                new BroadcastMutantFilter(Enumerable.Empty<IMutantFilter>()),
-                coverageAnalyzerMock.Object,
-                options);
+            var mutator = new CsharpMutationProcess(input, fileSystem, options, null, orchestratorMock.Object);
+
+            var target = new MutationTestProcess(input, options, null, mutationTestExecutorMock.Object, mutator);
 
             target.Mutate();
 
@@ -294,7 +267,6 @@ namespace Stryker.Core.UnitTest.MutationTest
             scenario.CreateTest(1);
             // and we need to declare that the mutant is covered
             scenario.DeclareFullCoverageForMutant(1);
- 
             var target = BuildMutationTestProcess(scenario);
 
             target.GetCoverage();
@@ -344,19 +316,13 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var mutationExecutor = new MutationTestExecutor(scenario.GetTestRunnerMock().Object);
 
-            var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
-
             var options = new StrykerOptions()
             {
                 OutputPath = basePath,
                 Concurrency = 1,
                 OptimizationMode = OptimizationModes.None
             };
-            var target = new MutationTestProcess(input,
-                reporterMock.Object,
-                mutationExecutor,
-                mutantFilter: mutantFilterMock.Object,
-                options: options);
+            var target = new MutationTestProcess(input, options, null, mutationExecutor);
 
             target.GetCoverage();
             target.Test(scenario.GetMutants());
@@ -444,8 +410,6 @@ namespace Stryker.Core.UnitTest.MutationTest
                 InitialTestRun = new InitialTestRun(initialTestRunResult.RanTests, initialTestRunResult.FailedTests, new TimeoutValueCalculator(500))
             };
 
-            var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
-
             var options = new StrykerOptions
             {
                 ProjectPath = basePath,
@@ -453,16 +417,13 @@ namespace Stryker.Core.UnitTest.MutationTest
                 OptimizationMode = OptimizationModes.CoverageBasedTest
             };
 
-            var target = new MutationTestProcess(input,
-                null,
-                executor,
-                mutantFilter: mutantFilterMock.Object,
-                options: options);
+            var target = new MutationTestProcess(input, options, null, executor);
+
             // test mutants
             target.GetCoverage();
             
             target.Test(input.ProjectInfo.ProjectContents.Mutants);
-            // first mutant should be marked as survided
+            // first mutant should be marked as survived
             scenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
         }
 
@@ -509,8 +470,6 @@ namespace Stryker.Core.UnitTest.MutationTest
                 InitialTestRun = new InitialTestRun(initialTestRunResult.RanTests, initialTestRunResult.FailedTests, new TimeoutValueCalculator(500))
             };
 
-            var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
-
             var options = new StrykerOptions
             {
                 ProjectPath = basePath,
@@ -518,11 +477,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 OptimizationMode = OptimizationModes.CoverageBasedTest
             };
 
-            var target = new MutationTestProcess(input,
-                null,
-                executor,
-                mutantFilter: mutantFilterMock.Object,
-                options: options);
+            var target = new MutationTestProcess(input, options, null, executor);
             // test mutants
             target.GetCoverage();
             
@@ -599,18 +554,12 @@ namespace Stryker.Core.UnitTest.MutationTest
                 It.IsAny<ITimeoutValueCalculator>(),
                 It.IsAny<TestUpdateHandler>()));
 
-            var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
-
             var options = new StrykerOptions()
             {
                 ProjectPath = basePath
             };
 
-            var target = new MutationTestProcess(input,
-                null,
-                executorMock.Object,
-                mutantFilter: mutantFilterMock.Object,
-                options: options);
+            var target = new MutationTestProcess(input, options, null, executorMock.Object);
 
             Should.Throw<GeneralStrykerException>(() => target.Test(input.ProjectInfo.ProjectContents.Mutants));
         }
@@ -642,8 +591,6 @@ namespace Stryker.Core.UnitTest.MutationTest
             executorMock.SetupGet(x => x.TestRunner).Returns(scenario.GetTestRunnerMock().Object);
             executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<TestUpdateHandler>()));
 
-            var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
-
             var options = new StrykerOptions()
             {
                 ProjectPath = basePath
@@ -651,11 +598,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
-            var target = new MutationTestProcess(input,
-                reporterMock.Object,
-                executorMock.Object,
-                mutantFilter: mutantFilterMock.Object,
-                options: options);
+            var target = new MutationTestProcess(input, options, null, executorMock.Object);
 
             var testResult = target.Test(input.ProjectInfo.ProjectContents.Mutants);
 
@@ -695,18 +638,12 @@ namespace Stryker.Core.UnitTest.MutationTest
             executorMock.SetupGet(x => x.TestRunner).Returns(runnerMock.Object);
             executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<TestUpdateHandler>()));
 
-            var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
-
             var options = new StrykerOptions()
             {
                 ProjectPath = basePath
             };
 
-            var target = new MutationTestProcess(input,
-                reporterMock.Object,
-                executorMock.Object,
-                mutantFilter: mutantFilterMock.Object,
-                options: options);
+            var target = new MutationTestProcess(input, options, null, executorMock.Object);
 
             var testResult = target.Test(folder.Mutants);
 
@@ -870,19 +807,18 @@ namespace Stryker.Core.UnitTest.MutationTest
                 InitialTestRun = new InitialTestRun(initialTestRunResult.RanTests, initialTestRunResult.FailedTests, new TimeoutValueCalculator(500))
             };
 
-            var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Loose);
 
             var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
             var target = new MutationTestProcess(input,
-                null,
-                executor,
-                mutantFilter: mutantFilterMock.Object,
                 options: new StrykerOptions
                 {
                     ProjectPath = basePath,
                     Concurrency = 1,
                     OptimizationMode = OptimizationModes.CoverageBasedTest
-                });
+                },
+                null,
+                executor
+                );
             return target;
         }
 

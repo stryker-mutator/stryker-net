@@ -496,8 +496,9 @@ public class VsTestMockingHelper : TestBase
             TestRunner = runner,
             InitialTestRun = new InitialTestRun(new TestGuidsList((tests ?? TestCases).Select(t => t.Id)), TestGuidsList.NoTest(), new TimeoutValueCalculator(500))
         };
-        return new MutationTestProcess(input, new Mock<IReporter>().Object, new MutationTestExecutor(input.TestRunner),
-            fileSystem: _fileSystem, options: options, mutantFilter: new Mock<IMutantFilter>(MockBehavior.Loose).Object);
+        var mutator = new CsharpMutationProcess(input, _fileSystem, options);
+
+        return new MutationTestProcess(input, options, null, new MutationTestExecutor(runner), mutator);
     }
 
     private class MockStrykerTestHostLauncher : IStrykerTestHostLauncher

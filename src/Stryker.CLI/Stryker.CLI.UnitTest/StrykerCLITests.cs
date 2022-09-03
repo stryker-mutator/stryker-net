@@ -26,9 +26,9 @@ namespace Stryker.CLI.UnitTest
         private readonly StrykerCli _target;
         private readonly StrykerOptions _options;
         private readonly StrykerRunResult _runResults;
-        private readonly Mock<IStrykerRunner> _strykerRunnerMock = new (MockBehavior.Strict);
-        private readonly Mock<IStrykerNugetFeedClient> _nugetClientMock = new (MockBehavior.Strict);
-        private readonly Mock<ILoggingInitializer> _loggingInitializerMock = new ();
+        private readonly Mock<IStrykerRunner> _strykerRunnerMock = new(MockBehavior.Strict);
+        private readonly Mock<IStrykerNugetFeedClient> _nugetClientMock = new(MockBehavior.Strict);
+        private readonly Mock<ILoggingInitializer> _loggingInitializerMock = new();
 
         public StrykerCLITests()
         {
@@ -58,7 +58,7 @@ namespace Stryker.CLI.UnitTest
 
                 target.Run(new string[] { "--help" });
 
-                string expected = @"Stryker: Stryker mutator for .Net
+                var expected = @"Stryker: Stryker mutator for .Net
 
 Stryker mutator for .Net
 
@@ -158,7 +158,7 @@ Options:";
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions()
             {
-                Thresholds = new Stryker.Core.Options.Thresholds
+                Thresholds = new Thresholds
                 {
                     Break = 40
                 }
@@ -184,7 +184,7 @@ Options:";
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions()
             {
-                Thresholds = new Stryker.Core.Options.Thresholds
+                Thresholds = new Thresholds
                 {
                     Break = 0
                 }
@@ -450,6 +450,18 @@ Options:";
             _strykerRunnerMock.VerifyAll();
 
             _inputs.AzureFileStorageSasInput.SuppliedInput.ShouldBe("sas");
+        }
+
+        [Theory]
+        [InlineData("--break-on-initial-test-failure")]
+        public void ShouldSupplyBreakOnInitialTestFailureWhenPassed(params string[] argName)
+        {
+            _target.Run(argName);
+
+            _strykerRunnerMock.VerifyAll();
+
+            _inputs.BreakOnInitialTestFailureInput.SuppliedInput.HasValue.ShouldBeTrue();
+            _inputs.BreakOnInitialTestFailureInput.SuppliedInput.Value.ShouldBeTrue();
         }
     }
 }

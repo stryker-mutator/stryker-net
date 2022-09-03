@@ -47,6 +47,7 @@ namespace Stryker.Core.Options
         OpenReportInput OpenReportInput { get; init; }
         MutantToDiagnoseInput MutantToDiagnose { get; set; }
         OpenReportEnabledInput OpenReportEnabledInput { get; init; }
+        BreakOnInitialTestFailureInput BreakOnInitialTestFailureInput { get; init; }
 
         StrykerOptions ValidateAll();
     }
@@ -103,6 +104,7 @@ namespace Stryker.Core.Options
         public MsBuildPathInput MsBuildPathInput { get; init; } = new();
         public OpenReportInput OpenReportInput { get; init; } = new();
         public OpenReportEnabledInput OpenReportEnabledInput { get; init; } = new();
+        public BreakOnInitialTestFailureInput BreakOnInitialTestFailureInput { get; init; } = new();
 
         public StrykerOptions ValidateAll()
         {
@@ -162,7 +164,8 @@ namespace Stryker.Core.Options
                 FallbackVersion = FallbackVersionInput.Validate(withBaseline, projectVersion, sinceTarget),
                 Since = sinceEnabled,
                 SinceTarget = sinceTarget,
-                ReportTypeToOpen = OpenReportInput.Validate(OpenReportEnabledInput.Validate())
+                ReportTypeToOpen = OpenReportInput.Validate(OpenReportEnabledInput.Validate()),
+                BreakOnInitialTestFailure = BreakOnInitialTestFailureInput.Validate()
             };
             return _strykerOptionsCache;
         }

@@ -28,12 +28,12 @@
       },
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
-        "requested": "[17.2.0, )",
-        "resolved": "17.2.0",
-        "contentHash": "kYmkDYbcDd+jNvmMH4TMtgHjsUYbIsWENM2VcjB0X7TawXbehL5I8OIsu2TgFS/nQCgZE94InrqMxrm7WDy+Lw==",
+        "requested": "[17.3.1, )",
+        "resolved": "17.3.1",
+        "contentHash": "jH9W5uYannaJ3HhrPBkzSidf3WkqP6XI+Yke0ODYVuFWM6GLVtBAyNgXvU/uQXPBsHq4aysLTsrN1FvG2hlKoQ==",
         "dependencies": {
-          "Microsoft.CodeCoverage": "17.2.0",
-          "Microsoft.TestPlatform.TestHost": "17.2.0"
+          "Microsoft.CodeCoverage": "17.3.1",
+          "Microsoft.TestPlatform.TestHost": "17.3.1"
         }
       },
       "Moq": {
@@ -249,11 +249,11 @@
       },
       "Microsoft.CodeAnalysis.Common": {
         "type": "Transitive",
-        "resolved": "4.2.0",
-        "contentHash": "lbusGcuE7D8FtZawQ4G++UFsRQArPzZN1GGXjPQwu3gvCbw7FXDcBq1zDZrZN1vRzPTVe1qyZMvfGhVUzs1TDg==",
+        "resolved": "4.3.0",
+        "contentHash": "Hhaw6DKZHiR+vgOdIqvndfUntJhmDR7MjylUJ55EvWtDyJFLDf2eij8r9tcwXP35FLD+bVNNCO0+KIYuvJjNnA==",
         "dependencies": {
           "Microsoft.CodeAnalysis.Analyzers": "3.3.3",
-          "System.Collections.Immutable": "5.0.0",
+          "System.Collections.Immutable": "6.0.0",
           "System.Memory": "4.5.4",
           "System.Reflection.Metadata": "5.0.0",
           "System.Runtime.CompilerServices.Unsafe": "6.0.0",
@@ -263,16 +263,16 @@
       },
       "Microsoft.CodeAnalysis.CSharp": {
         "type": "Transitive",
-        "resolved": "4.2.0",
-        "contentHash": "5IDwr8zGNBmDpxtzxxZj9IHwoA6HJ1/WWT/JacqPQJ4Vz/oZXaHNlzcBPVCZRGWUw+QvVdAhCKwEyJyuAuH/wg==",
+        "resolved": "4.3.0",
+        "contentHash": "0PU4a2h7L6N9SlF/oNHwj2A/+n0LK/7n6PEGvXyIZq8hc7r/TztB+47mhVLvapT6bWSV7nMT78cNxbQuC6tk6g==",
         "dependencies": {
-          "Microsoft.CodeAnalysis.Common": "[4.2.0]"
+          "Microsoft.CodeAnalysis.Common": "[4.3.0]"
         }
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
-        "resolved": "17.2.0",
-        "contentHash": "MsKhJmwIfHxNDbTIlgQy29UpWSWPpbZOQPhQ7xalRy+ABnl8/neFHZGzSP3XlpW2dKAXHTFrtIcKzW/kopY2Bg=="
+        "resolved": "17.3.1",
+        "contentHash": "WqB7Ik4v8ku0Y9HZShqTStZdq8R1lyhsZr7IMp8zV/OcL5sHVYvlMnardQR+SDQc3dmbniCIl9mYxYM+V7x8MA=="
       },
       "Microsoft.CSharp": {
         "type": "Transitive",
@@ -484,8 +484,8 @@
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "Transitive",
-        "resolved": "17.2.0",
-        "contentHash": "7j1KYDHLhU98XnCEbECMncXLydI9fNiFLcFsiBsP3lV6EkHOaj5kTPAWHYkKnPGRC9TbZUboSQq8rWI4dTQsxg==",
+        "resolved": "17.3.1",
+        "contentHash": "n1WSFCMiFt6KmD5JzV+Wye5Ntomez3YP2+d15bu5PS5Z1U0g+V7VBLdJIaJRnahz5BsXJDTnLYNVOUdntwjx6Q==",
         "dependencies": {
           "NuGet.Frameworks": "5.11.0",
           "System.Reflection.Metadata": "1.6.0"
@@ -498,10 +498,10 @@
       },
       "Microsoft.TestPlatform.TestHost": {
         "type": "Transitive",
-        "resolved": "17.2.0",
-        "contentHash": "bI67J+hers241h7eD2eecS02p9CbKcQDIeoRvO4FgMlTWg2ZTzc0D3uWLYr5U+K5x9O1pNmyMoMDbYIeWY/TWw==",
+        "resolved": "17.3.1",
+        "contentHash": "co/GMz6rGxpzn2aJYTDDim61HvEk+SHBVtbXnu2RSrz20HxkaraEh0kltCsMkmLAX/6Hz5sa6NquLngBlURTow==",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "17.2.0",
+          "Microsoft.TestPlatform.ObjectModel": "17.3.1",
           "Newtonsoft.Json": "9.0.1"
         }
       },
@@ -758,8 +758,11 @@
       },
       "System.Collections.Immutable": {
         "type": "Transitive",
-        "resolved": "5.0.0",
-        "contentHash": "FXkLXiK0sVVewcso0imKQoOxjoPAj42R8HtjjbSjVPAzwDfzoyoznWxgA3c38LDbN9SJux1xXoXYAhz98j7r2g=="
+        "resolved": "6.0.0",
+        "contentHash": "l4zZJ1WU2hqpQQHXz1rvC3etVZN+2DLmQMO79FhOTZHMn8tDRr+WU287sbomD0BETlmKDn0ygUgVy9k5xkkJdA==",
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        }
       },
       "System.ComponentModel.Annotations": {
         "type": "Transitive",
@@ -1325,7 +1328,7 @@
           "FSharp.Compiler.Service": "[38.0.0, )",
           "Grynwald.MarkdownGenerator": "[2.5.34, )",
           "LibGit2Sharp": "[0.27.0-preview-0182, )",
-          "Microsoft.CodeAnalysis.CSharp": "[4.2.0, )",
+          "Microsoft.CodeAnalysis.CSharp": "[4.3.0, )",
           "Microsoft.Extensions.Configuration": "[6.0.0, )",
           "Microsoft.Extensions.Configuration.Json": "[6.0.0, )",
           "Microsoft.Extensions.Logging": "[6.0.0, )",
