@@ -10,35 +10,33 @@ namespace Stryker.Core
     internal static class SyntaxHelper
     {
         // is the expression some king of string ?
-        public static bool IsAStringExpression(this ExpressionSyntax node)
-        {
-            return node.Kind() == SyntaxKind.StringLiteralExpression ||
-                   node.Kind() == SyntaxKind.InterpolatedStringExpression;
-        }
+ 
+        /// <summary>
+        /// Returns true if the node is a string literal
+        /// </summary>
+        /// <param name="node">node to evaluate</param>
+        /// <returns></returns>
+        public static bool IsStringLiteral(this CSharpSyntaxNode node) =>
+            node.Kind() == SyntaxKind.StringLiteralExpression ||
+            node.Kind() == SyntaxKind.InterpolatedStringExpression;
+
 
         // does the expression contain declaration?
-        public static bool ContainsDeclarations(this ExpressionSyntax node)
-        {
-            return node.ContainsNodeThatVerifies(x =>
+        public static bool ContainsDeclarations(this ExpressionSyntax node) =>
+            node.ContainsNodeThatVerifies(x =>
                 x.IsKind(SyntaxKind.DeclarationExpression) || x.IsKind(SyntaxKind.DeclarationPattern));
-        }
 
-        public static bool ContainsNodeThatVerifies(this SyntaxNode node, Func<SyntaxNode, bool> predicate, bool skipBlock = true)
-        {
+        public static bool ContainsNodeThatVerifies(this SyntaxNode node, Func<SyntaxNode, bool> predicate, bool skipBlock = true) =>
             // check if there is a variable declaration at this scope level
-            return node.DescendantNodes((child) =>
+            node.DescendantNodes((child) =>
             {
                 if (skipBlock && child is BlockSyntax)
                 {
                     return false;
                 }
+
                 // including anonymous/lambda declaration
-                if (child.Parent is AnonymousFunctionExpressionSyntax function && function.ExpressionBody == child)
-                {
-                    return false;
-                }
-                return true;
+                return child.Parent is not AnonymousFunctionExpressionSyntax function || function.ExpressionBody != child;
             } ).Any(predicate);
-        }
     }
 }

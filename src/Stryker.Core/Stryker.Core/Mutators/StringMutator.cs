@@ -4,10 +4,11 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutators
 {
-    public class StringMutator : MutatorBase<LiteralExpressionSyntax>, IMutator
+    public class StringMutator: MutatorBase<LiteralExpressionSyntax>
     {
         public override MutationLevel MutationLevel => MutationLevel.Standard;
 
@@ -16,7 +17,7 @@ namespace Stryker.Core.Mutators
             // Get objectCreationSyntax to check if it contains a regex type.
             var root = node.Parent?.Parent?.Parent;
 
-            if (!IsRegexType(root) && IsStringLiteral(node))
+            if (!IsRegexType(root) && node.IsStringLiteral() && node.Parent is not ConstantPatternSyntax)
             {
                 var currentValue = (string)node.Token.Value;
                 var replacementValue = currentValue == "" ? "Stryker was here!" : "";
@@ -30,22 +31,15 @@ namespace Stryker.Core.Mutators
             }
         }
 
-        private bool IsStringLiteral(LiteralExpressionSyntax node)
-        {
-            var kind = node.Kind();
-            return kind == SyntaxKind.StringLiteralExpression
-                && !(node.Parent is ConstantPatternSyntax);
-        }
-
         private bool IsRegexType(SyntaxNode root)
         {
-            if (root is ObjectCreationExpressionSyntax parsedRoot)
+            if (root is not ObjectCreationExpressionSyntax parsedRoot)
             {
-                var type = parsedRoot.Type.ToString();
-                return type == typeof(Regex).Name || type == typeof(Regex).FullName;
+                return false;
             }
+            var type = parsedRoot.Type.ToString();
+            return type == nameof(Regex) || type == typeof(Regex).FullName;
 
-            return false;
         }
     }
 }

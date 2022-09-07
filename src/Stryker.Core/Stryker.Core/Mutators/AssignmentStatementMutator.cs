@@ -5,7 +5,7 @@ using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators
 {
-    public class AssignmentExpressionMutator : MutatorBase<AssignmentExpressionSyntax>, IMutator
+    public class AssignmentExpressionMutator: MutatorBase<AssignmentExpressionSyntax>
     {
         private static readonly Dictionary<SyntaxKind, IEnumerable<SyntaxKind>> KindsToMutate = new Dictionary<SyntaxKind, IEnumerable<SyntaxKind>>
         {
@@ -28,7 +28,7 @@ namespace Stryker.Core.Mutators
             var assignmentKind = node.Kind();
 
             if (assignmentKind == SyntaxKind.AddAssignmentExpression 
-                && (node.Left.IsAStringExpression() || node.Right.IsAStringExpression()))
+                && (node.Left.IsStringLiteral() || node.Right.IsStringLiteral()))
             {
                 yield break;
             }

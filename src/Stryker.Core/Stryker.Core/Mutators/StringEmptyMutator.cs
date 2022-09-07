@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
@@ -11,7 +11,7 @@ namespace Stryker.Core.Mutators
     /// <remarks>
     /// Will only apply the mutation to the lowercase <c>string</c> since that is a reserved keyword in c# and can be distinguished from any variable or member access.
     /// </remarks>
-    public class StringEmptyMutator : MutatorBase<MemberAccessExpressionSyntax>, IMutator
+    public class StringEmptyMutator: MutatorBase<MemberAccessExpressionSyntax>
     {
         public override MutationLevel MutationLevel => MutationLevel.Standard;
 

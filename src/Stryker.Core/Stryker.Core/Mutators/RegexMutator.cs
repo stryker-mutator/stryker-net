@@ -11,7 +11,7 @@ using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Mutators
 {
-    public class RegexMutator : MutatorBase<ObjectCreationExpressionSyntax>, IMutator
+    public class RegexMutator: MutatorBase<ObjectCreationExpressionSyntax>
     {
         private const string PatternArgumentName = "pattern";
         private ILogger Logger { get; }

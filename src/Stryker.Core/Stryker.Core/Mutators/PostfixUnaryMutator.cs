@@ -1,15 +1,15 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators
 {
-    public class PostfixUnaryMutator : MutatorBase<PostfixUnaryExpressionSyntax>, IMutator
+    public class PostfixUnaryMutator: MutatorBase<PostfixUnaryExpressionSyntax>
     {
         public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-        private static readonly Dictionary<SyntaxKind, SyntaxKind> UnaryWithOpposite = new Dictionary<SyntaxKind, SyntaxKind>
+        private static readonly Dictionary<SyntaxKind, SyntaxKind> UnaryWithOpposite = new()
         {
             {SyntaxKind.PostIncrementExpression, SyntaxKind.PostDecrementExpression},
             {SyntaxKind.PostDecrementExpression, SyntaxKind.PostIncrementExpression},

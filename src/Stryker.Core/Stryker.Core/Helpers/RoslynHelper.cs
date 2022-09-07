@@ -25,6 +25,8 @@ namespace Stryker.Core.Helpers
                 _ => null
             };
 
+
+
         /// <summary>
         /// Gets the return type of a (get accessor)
         /// </summary>

@@ -1,11 +1,11 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators
 {
-    public class CheckedMutator : MutatorBase<CheckedExpressionSyntax>, IMutator
+    public class CheckedMutator: MutatorBase<CheckedExpressionSyntax>
     {
         public override MutationLevel MutationLevel => MutationLevel.Standard;
 

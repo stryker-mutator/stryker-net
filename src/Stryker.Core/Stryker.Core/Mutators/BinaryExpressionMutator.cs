@@ -5,7 +5,7 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators
 {
-    public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>, IMutator
+    public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>
     {
         private readonly Dictionary<SyntaxKind, IEnumerable<SyntaxKind>> _kindsToMutate;
 
@@ -38,7 +38,7 @@ namespace Stryker.Core.Mutators
         public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node)
         {
             // skip string additions
-            if (node.Kind() == SyntaxKind.AddExpression && (node.Left.IsAStringExpression() || node.Right.IsAStringExpression()))
+            if (node.Kind() == SyntaxKind.AddExpression && (node.Left.IsStringLiteral() || node.Right.IsStringLiteral()))
             {
                 yield break;
             }

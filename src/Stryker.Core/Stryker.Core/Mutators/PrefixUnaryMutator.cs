@@ -1,11 +1,11 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators
 {
-    public class PrefixUnaryMutator : MutatorBase<PrefixUnaryExpressionSyntax>, IMutator
+    public class PrefixUnaryMutator: MutatorBase<PrefixUnaryExpressionSyntax>
     {
         public override MutationLevel MutationLevel => MutationLevel.Standard;
 
