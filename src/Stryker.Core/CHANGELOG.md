@@ -1,3 +1,23 @@
+# [3.0.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@2.2.0...stryker@3.0.0) (2022-09-07)
+
+
+### Bug Fixes
+
+* **azure-fileshare-baseline:** Use full SAS token format instead of making assumptions and transformations on the token ([#2149](https://github.com/stryker-mutator/stryker-net/issues/2149)) ([9c0694e](https://github.com/stryker-mutator/stryker-net/commit/9c0694e7dda088ed1ae36d8390703691dea8e98e))
+* Stryker not properly flagging mutant as TimedOut ([#2143](https://github.com/stryker-mutator/stryker-net/issues/2143)) ([3299c18](https://github.com/stryker-mutator/stryker-net/commit/3299c182e6f3b8e5f5b3e6a62e3505edde097459))
+
+
+### Features
+
+* **initial test:** Configure stryker to fail when initial testrun fails ([#2151](https://github.com/stryker-mutator/stryker-net/issues/2151)) ([9c47a4b](https://github.com/stryker-mutator/stryker-net/commit/9c47a4b6f9f5d2c32478338ca33e6568e5ee55f3))
+
+
+### BREAKING CHANGES
+
+* **azure-fileshare-baseline:** SAS must contain `sv=` and `sig=` to be valid. SAS without sv= are no longer transformed to valid SAS.
+
+
+
 # [2.2.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@2.1.2...stryker@2.2.0) (2022-08-22)
 
 
