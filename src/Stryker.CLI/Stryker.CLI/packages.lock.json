@@ -579,8 +579,8 @@
       },
       "Serilog.Sinks.Console": {
         "type": "Transitive",
-        "resolved": "4.0.1",
-        "contentHash": "apLOvSJQLlIbKlbx+Y2UDHSP05kJsV7mou+fvJoRGs/iR+jC22r8cuFVMjjfVxz/AD4B2UCltFhE1naRLXwKNw==",
+        "resolved": "4.1.0",
+        "contentHash": "K6N5q+5fetjnJPvCmkWOpJ/V8IEIoMIB1s86OzBrbxwTyHxdx3pmz4H+8+O/Dc/ftUX12DM1aynx/dDowkwzqg==",
         "dependencies": {
           "Serilog": "2.10.0"
         }
@@ -1164,7 +1164,7 @@
           "Serilog": "[2.11.0, )",
           "Serilog.Extensions.Logging": "[3.1.0, )",
           "Serilog.Extensions.Logging.File": "[3.0.0, )",
-          "Serilog.Sinks.Console": "[4.0.1, )",
+          "Serilog.Sinks.Console": "[4.1.0, )",
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.44.0, )",
           "Spectre.Console.Analyzer": "[0.44.0, )",
