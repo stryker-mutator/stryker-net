@@ -23,6 +23,7 @@ namespace Stryker.DataCollector
 
         // fields and methods from MutantControl for interaction during tests
         private string _controlClassName;
+        private readonly object _synchro = new object();
         private Type _controller;
         private MethodInfo _setActiveMutant;
         private MethodInfo _activeMutantSeen;
@@ -71,23 +72,24 @@ namespace Stryker.DataCollector
             Log($"Test Session start with conf {configuration}.");
         }
 
-        private void OnAssemblyLoaded(object sender, AssemblyLoadEventArgs args)
-        {
-            var assembly = args.LoadedAssembly;
-            FindControlType(assembly);
-        }
+        private void OnAssemblyLoaded(object sender, AssemblyLoadEventArgs args) => FindControlType(args.LoadedAssembly);
 
         private void FindControlType(Assembly assembly)
         {
-            if (_controller != null)
+            lock(_synchro)
             {
-                return;
-            }
+                if (_controller != null)
+                {
+                    return;
+                }
 
-            _controller = assembly.ExportedTypes.FirstOrDefault(t => t.FullName == _controlClassName);
-            if (_controller == null)
-            {
-                return;
+                var scan =  assembly.ExportedTypes.FirstOrDefault(t => t.FullName == _controlClassName); 
+                if (scan == null)
+                {
+                    return;
+                }
+
+                _controller = scan;
             }
 
             _setActiveMutant = _controller.GetMethod("SetActiveMutant");
@@ -95,24 +97,19 @@ namespace Stryker.DataCollector
             _getCoverageData = _controller.GetMethod("GetCoverageData");
             _getTraceData = _controller.GetMethod("GetTrace");
 
-            _controller.GetMethod("CaptureCoverage").Invoke(null, new object[] {_coverageOn});
-            _controller.GetMethod("CaptureTrace").Invoke(null, new object[] {_traceOn});
+            _controller.GetMethod("CaptureCoverage")?.Invoke(null, new object[] {_coverageOn});
+            _controller.GetMethod("CaptureTrace")?.Invoke(null, new object[] {_traceOn});
 
-            _setActiveMutant.Invoke(null, new object[] {_activeMutation});
-        }
-
-        private void SetActiveMutationForTest(string id)
-        {
-            _activeMutation = GetActiveMutantForThisTest(id);
             _setActiveMutant?.Invoke(null, new object[] {_activeMutation});
         }
 
-        private void EraseActiveMutation()
+        private void SetActiveMutationForTest(string id = null)
         {
-            _activeMutation = -1;
-            _setActiveMutant?.Invoke(null, new object[] {-1});
+            _activeMutation = id == null ? -1 : GetActiveMutantForThisTest(id);
+
+            _setActiveMutant?.Invoke(null, new object[] {_activeMutation});
         }
-        
+
         public static string GetVsTestSettings(bool needCoverage,
             IEnumerable<(int mutant, IEnumerable<Guid> coveringTests)> mutantTestsMap,
             string helperNameSpace,
@@ -170,6 +167,7 @@ namespace Stryker.DataCollector
             {
                 _controlClassName = nameSpaceNode.Attributes["name"].Value;
             }
+
             var coverage = node.SelectSingleNode("//Parameters/Coverage");
             if (coverage != null)
             {
@@ -263,7 +261,7 @@ namespace Stryker.DataCollector
                 return;
             }
             PublishCoverageData(testCaseEndArgs.DataCollectionContext);
-            EraseActiveMutation();
+            SetActiveMutationForTest();
         }
 
         private void PublishCoverageData(DataCollectionContext dataCollectionContext)
