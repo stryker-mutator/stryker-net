@@ -99,30 +99,18 @@ namespace Stryker.DataCollector
             _controller.GetField("CaptureTrace").SetValue(null, _traceOn);
 
             _setActiveMutant.Invoke(null, new object[] {_activeMutation});
-            // mutant not seen
-            _activeMutantSeenField.SetValue(null, -1);
         }
 
         private void SetActiveMutationForTest(string id)
         {
             _activeMutation = GetActiveMutantForThisTest(id);
-            if (_controller == null)
-            {
-                return;
-            }
-            _setActiveMutant.Invoke(null, new object[] {_activeMutation});
-            _activeMutantSeenField.SetValue(null, -1);
+            _setActiveMutant?.Invoke(null, new object[] {_activeMutation});
         }
 
         private void EraseActiveMutation()
         {
-            _activeMutation = -2;
-            if (_controller == null)
-            {
-                return;
-            }
-            _setActiveMutant.Invoke(null, new object[] {_activeMutation});
-            _activeMutantSeenField.SetValue(null, -1);
+            _activeMutation = -1;
+            _setActiveMutant?.Invoke(null, new object[] {-1});
         }
         
         public static string GetVsTestSettings(bool needCoverage,

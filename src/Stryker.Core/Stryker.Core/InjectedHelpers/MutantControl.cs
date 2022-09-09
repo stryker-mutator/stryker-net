@@ -49,6 +49,7 @@ namespace Stryker
         public static void SetActiveMutant(int mutant)
         {
             _activeMutant = mutant;
+            ActiveMutantSeen = -1;
         }
 
         // check with: Stryker.MutantControl.IsActive(ID)
