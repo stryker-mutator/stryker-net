@@ -58,11 +58,12 @@
       },
       "Spectre.Console.Testing": {
         "type": "Direct",
-        "requested": "[0.44.0, )",
-        "resolved": "0.44.0",
-        "contentHash": "+ngNPcb11WvpG1ndH7YU79iH4XhzOhXneTuxB8ITYXEV/rq2i3wohGfX3uRd+mj63/DUPf5Am78opFLUNWPkbA==",
+        "requested": "[0.45.0, )",
+        "resolved": "0.45.0",
+        "contentHash": "kgcRuZ7laaiirx/lSF56euJSyvjYDhDMiONOQxYtGx8sT1pwRq5CfTRrRorXbCZuJ/CNr6YzXEtT339y5qoZKg==",
         "dependencies": {
-          "Spectre.Console": "0.44.0"
+          "Spectre.Console": "0.45.0",
+          "Spectre.Console.Cli": "0.45.0"
         }
       },
       "System.IO.Abstractions.TestingHelpers": {
@@ -725,13 +726,24 @@
       },
       "Spectre.Console": {
         "type": "Transitive",
-        "resolved": "0.44.0",
-        "contentHash": "QMpKtn5QV1j2nklqDwuRE/XwbDn5jxww+Mt5J6Jn3EeQIzaLcuLyUhCLh/mS8giN6uXbqOV1ep5HlUGxrV1ujQ=="
+        "resolved": "0.45.0",
+        "contentHash": "e//13o8/BCrWmwN26eJ4zCzD2iq7iUlqQd+nDI9nJUdnJ/rYAanYiNFZZ7YHwlv48IKuKtRYYP6/wPt1DG67ww==",
+        "dependencies": {
+          "System.Memory": "4.5.5"
+        }
       },
       "Spectre.Console.Analyzer": {
         "type": "Transitive",
         "resolved": "0.45.0",
         "contentHash": "0OiLWW4sSUB3p/eAufk8AV998LxKR1ztquxzGfPKq1EBO1dS44M40kIaQXdwux+vWiVqfHnfDYdo9Lt5OjPshg=="
+      },
+      "Spectre.Console.Cli": {
+        "type": "Transitive",
+        "resolved": "0.45.0",
+        "contentHash": "SZcYjwEmmYgmTDqOluWFYtURI9bgRtmx3tSdslHsMU9lKWkev3UHEkzDbOtu4XwY+hCn9NOjBRSDWNafa4fyCQ==",
+        "dependencies": {
+          "Spectre.Console": "0.45.0"
+        }
       },
       "System.AppContext": {
         "type": "Transitive",
@@ -926,8 +938,8 @@
       },
       "System.Memory": {
         "type": "Transitive",
-        "resolved": "4.5.4",
-        "contentHash": "1MbJTHS1lZ4bS4FmsJjnuGJOu88ZzTT2rLvrhW7Ygic+pC0NWA+3hgAen0HRdsocuQXCkUTdFn9yHJJhsijDXw=="
+        "resolved": "4.5.5",
+        "contentHash": "XIWiDvKPXaTveaB7HVganDlOCRoj03l+jrwNvcge/t8vhGYKvqV+dMv6G4SAX2NoNmN0wZfVPTAlFwZcZvVOUw=="
       },
       "System.Net.Http.Json": {
         "type": "Transitive",
