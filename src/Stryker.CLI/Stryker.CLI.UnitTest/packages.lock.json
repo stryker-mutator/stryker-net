@@ -730,8 +730,8 @@
       },
       "Spectre.Console.Analyzer": {
         "type": "Transitive",
-        "resolved": "0.44.0",
-        "contentHash": "WhbzH1izhY9JMcN1VOyJc9AEKODJHZ9jfYTyo6AKFKzRJPmko6faSA2/siRhHxjVF6X3WgXBbuQ0FlWu+baGQw=="
+        "resolved": "0.45.0",
+        "contentHash": "0OiLWW4sSUB3p/eAufk8AV998LxKR1ztquxzGfPKq1EBO1dS44M40kIaQXdwux+vWiVqfHnfDYdo9Lt5OjPshg=="
       },
       "System.AppContext": {
         "type": "Transitive",
@@ -1317,7 +1317,7 @@
           "Microsoft.Extensions.Configuration.Binder": "[6.0.0, )",
           "NuGet.Protocol": "[6.3.0, )",
           "YamlDotNet": "[12.0.0, )",
-          "stryker": "[2.2.0, )"
+          "stryker": "[3.0.0, )"
         }
       },
       "stryker": {
@@ -1345,9 +1345,9 @@
           "Serilog.Sinks.Console": "[4.1.0, )",
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.44.0, )",
-          "Spectre.Console.Analyzer": "[0.44.0, )",
-          "Stryker.DataCollector": "[2.2.0, )",
-          "Stryker.RegexMutators": "[2.2.0, )",
+          "Spectre.Console.Analyzer": "[0.45.0, )",
+          "Stryker.DataCollector": "[3.0.0, )",
+          "Stryker.RegexMutators": "[3.0.0, )",
           "System.IO.Abstractions": "[17.1.1, )",
           "System.Net.Http.Json": "[6.0.0, )"
         }
