@@ -14,6 +14,9 @@ New features are welcome! Either as requests or proposals.
 1.	Please create or edit unit tests or integration tests.
 1.	Run the tests and verify they pass
 
+## Adding a new mutator
+Please read the [dedicated document](adding_a_mutator.md).
+
 #### Setup Stryker.NET locally
 While developing on Stryker.NET we advise to work in [the latest Visual Studio](https://www.visualstudio.com/downloads/) and to set Stryker up to run on a UnitTest project on your local disk.
 
