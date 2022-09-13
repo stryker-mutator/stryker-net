@@ -58,7 +58,7 @@
     <PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
     <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
     <PackageReference Include="ShellProgressBar" Version="5.2.0" />
-    <PackageReference Include="Spectre.Console" Version="0.44.0" />
+    <PackageReference Include="Spectre.Console" Version="0.45.0" />
     <PackageReference Include="Spectre.Console.Analyzer" Version="0.45.0" />
     <PackageReference Include="System.IO.Abstractions" Version="$(SystemIOAbstractions)" />                                 <!-- From Directory.Build.props -->
     <PackageReference Include="System.Net.Http.Json" Version="6.0.0" />

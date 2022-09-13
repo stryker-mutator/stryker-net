@@ -1384,7 +1384,7 @@
           "Serilog.Extensions.Logging.File": "[3.0.0, )",
           "Serilog.Sinks.Console": "[4.1.0, )",
           "ShellProgressBar": "[5.2.0, )",
-          "Spectre.Console": "[0.44.0, )",
+          "Spectre.Console": "[0.45.0, )",
           "Spectre.Console.Analyzer": "[0.45.0, )",
           "Stryker.DataCollector": "[3.0.0, )",
           "Stryker.RegexMutators": "[3.0.0, )",
