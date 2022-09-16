@@ -1,3 +1,7 @@
+## [3.0.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.0.0...stryker@3.0.1) (2022-09-16)
+
+
+
 # [3.0.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@2.2.0...stryker@3.0.0) (2022-09-07)
 
 
