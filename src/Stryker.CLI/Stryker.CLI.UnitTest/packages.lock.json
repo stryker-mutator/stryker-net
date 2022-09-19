@@ -1319,8 +1319,8 @@
       },
       "YamlDotNet": {
         "type": "Transitive",
-        "resolved": "12.0.0",
-        "contentHash": "sMp20zI63j7xVoor98vGeDxteLeyuAlM330L7XbXxMMPjLdP1mwoK/5Nn/8Vldc9hUMN5otkg88bVLEtQnPdaw=="
+        "resolved": "12.0.1",
+        "contentHash": "MltVIOIX817Uz/TFkPSaZImdzB86X/k8QY0kFBQx6KI6GsKOk3rIlrptOhb28O0RD2WnibMoYLnCQnqfYduvaw=="
       },
       "dotnet-stryker": {
         "type": "Project",
@@ -1328,7 +1328,7 @@
           "McMaster.Extensions.CommandLineUtils": "[4.0.1, )",
           "Microsoft.Extensions.Configuration.Binder": "[6.0.0, )",
           "NuGet.Protocol": "[6.3.0, )",
-          "YamlDotNet": "[12.0.0, )",
+          "YamlDotNet": "[12.0.1, )",
           "stryker": "[3.0.1, )"
         }
       },
