@@ -13,7 +13,6 @@ using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.MutationTest
 {
-
     public class FsharpMutationProcess : IMutationProcess
     {
         private readonly ProjectComponent<ParsedInput> _projectInfo;
@@ -106,8 +105,8 @@ namespace Stryker.Core.MutationTest
             }
         }
 
-        public void FilterMutants() => throw
-            //fsharp implementation is work in progress
-            new NotImplementedException();
+        public void FilterMutants()
+        {
+        }
     }
 }
