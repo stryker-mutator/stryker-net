@@ -104,10 +104,10 @@
       },
       "Buildalyzer": {
         "type": "Transitive",
-        "resolved": "4.1.4",
-        "contentHash": "O6KGKPeCAe+Ujhd2sl66nu7rrEAM2hBUbi3n79BVBOj9YxuUlbxviOfy3Cq22iIp9rUDPOqOL8E2AYiQwxpUHQ==",
+        "resolved": "4.1.5",
+        "contentHash": "5hyj4/DToqhYIVNymkKle9z/ImqGRfC7EwnQvXqjZP8ywzW5fAA+XDWHWwYNl0cFogk/WPNI9g3oBfSMcQY9qg==",
         "dependencies": {
-          "Buildalyzer.Logger": "4.1.4",
+          "Buildalyzer.Logger": "4.1.5",
           "MSBuild.StructuredLogger": "2.1.507",
           "Microsoft.Build": "16.9.0",
           "Microsoft.Build.Framework": "16.9.0",
@@ -123,8 +123,8 @@
       },
       "Buildalyzer.Logger": {
         "type": "Transitive",
-        "resolved": "4.1.4",
-        "contentHash": "2C2FR877slFBYM/usMkGnmOZlLKejV0uag0IzmARkKkBD75jNPM6q2WLaFAW/yRLPyyArpunYzQ+4AaDyEImHQ=="
+        "resolved": "4.1.5",
+        "contentHash": "aBg4GEMCgo+96YRQaYnuTN6KTQelF4BcvSwBHa+13M4WcBu3rzNJ9jdL60TdR6PQ183YOCNbmNRWTurZvyaNlQ=="
       },
       "Castle.Core": {
         "type": "Transitive",
@@ -1363,7 +1363,7 @@
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "Buildalyzer": "[4.1.4, )",
+          "Buildalyzer": "[4.1.5, )",
           "DotNet.Glob": "[3.1.3, )",
           "FSharp.Compiler.Service": "[38.0.0, )",
           "Grynwald.MarkdownGenerator": "[2.5.34, )",
