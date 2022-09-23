@@ -1,25 +1,12 @@
-using System;
 using System.Collections.Generic;
-using System.Text;
 using Microsoft.FSharp.Collections;
 using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.Mutants.FsharpOrchestrators
 {
-    public class NestedModuleOrchestrator : IFsharpTypehandle<SynModuleDecl>
+    public class LetOrchestrator : IFsharpTypeHandler<SynModuleDecl>
     {
-        public SynModuleDecl Mutate(SynModuleDecl input, FsharpCoreOrchestrator iterator)
-        {
-            var castinput = input as SynModuleDecl.NestedModule;
-
-            var visitedDeclarations = iterator.Mutate(castinput.decls);
-            return SynModuleDecl.NewNestedModule(castinput.moduleInfo, castinput.isRecursive, visitedDeclarations, castinput.isContinuing, castinput.range);
-        }
-    }
-
-    public class LetOrchestrator : IFsharpTypehandle<SynModuleDecl>
-    {
-        public SynModuleDecl Mutate(SynModuleDecl input, FsharpCoreOrchestrator iterator)
+        public SynModuleDecl Mutate(SynModuleDecl input, FsharpMutantOrchestrator iterator)
         {
             var castinput = input as SynModuleDecl.Let;
 
