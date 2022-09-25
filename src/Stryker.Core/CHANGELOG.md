@@ -1,3 +1,7 @@
+## [3.0.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.0.0...stryker@3.0.1) (2022-09-16)
+
+* **html reporter:** Fix Spectre.Console link escaping by updating Spectre.Console ([#2108](https://github.com/stryker-mutator/stryker-net/issues/2108)) ([e207047](https://github.com/stryker-mutator/stryker-net/commit/e2070475911c92da619ebfbb648c9f430ab2a778))
+
 # [3.0.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@2.2.0...stryker@3.0.0) (2022-09-07)
 
 

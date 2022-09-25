@@ -7,6 +7,7 @@ using System.Text;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
 
@@ -71,8 +72,14 @@ namespace Stryker.Core.Initialisation
             // Analyze project under test
             projectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath, options.TargetFramework);
 
-            //to test Fsharp support you would need to create a FsharpProjectComponentsBuilder
-            var inputFiles = new CsharpProjectComponentsBuilder(projectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
+            var language = projectInfo.ProjectUnderTestAnalyzerResult.GetLanguage();
+            if (language == Language.Fsharp)
+            {
+                _logger.LogError("Mutation testing of F# projects is not ready yet. No mutants will be generated.");
+            }
+
+            var builder = GetProjectComponentBuilder(language, options, projectInfo);
+            var inputFiles = builder.Build();
             projectInfo.ProjectContents = inputFiles;
 
             ValidateTestProjectsCanBeExecuted(projectInfo);
@@ -235,5 +242,26 @@ namespace Stryker.Core.Initialisation
             }
             return builder;
         }
+
+        private ProjectComponentsBuilder GetProjectComponentBuilder(
+            Language language,
+            StrykerOptions options,
+            ProjectInfo projectInfo) => language switch
+            {
+                Language.Csharp => new CsharpProjectComponentsBuilder(
+                    projectInfo,
+                    options,
+                    _foldersToExclude,
+                    _logger,
+                    _fileSystem),
+
+                Language.Fsharp => new FsharpProjectComponentsBuilder(
+                    projectInfo,
+                    _foldersToExclude,
+                    _logger,
+                    _fileSystem),
+
+                _ => throw new NotSupportedException()
+            };
     }
 }

@@ -14,10 +14,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Stryker.Core.Mutants
 {
-    /// <summary>
-    /// Mutates abstract syntax trees using mutators and places all mutations inside the abstract syntax tree.
-    /// Orchestrator: to arrange or manipulate, especially by means of clever or thorough planning or maneuvering.
-    /// </summary>
+    /// <inheritdoc/>
     public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxNode>
     {
         private readonly TypeBasedStrategy<SyntaxNode, INodeMutator> _specificOrchestrator =
