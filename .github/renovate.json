@@ -1,0 +1,19 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:base"
+  ],
+  "configMigration": true,
+  "gitAuthor": "renovatebot@stryker-mutator.io",
+  "platformCommit": true,
+  "platformAutomerge": true,
+  "ignorePaths": [
+    "/ExampleProjects/**"
+  ],
+  "packageRules": [
+    {
+      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "automerge": true
+    }
+  ]
+}
