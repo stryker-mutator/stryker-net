@@ -69,16 +69,16 @@ namespace Stryker.Core.Initialisation
             var testProjects = projectInfo.TestProjectAnalyzerResults.ToList();
             for (var i = 0; i < testProjects.Count; i++)
             {
-                //_logger.LogInformation(
-                //    "Building test project {ProjectFilePath} ({CurrentTestProject}/{OfTotalTestProjects})",
-                //    testProjects[i].ProjectFilePath, i + 1,
-                //    projectInfo.TestProjectAnalyzerResults.Count());
+                _logger.LogInformation(
+                    "Building test project {ProjectFilePath} ({CurrentTestProject}/{OfTotalTestProjects})",
+                    testProjects[i].ProjectFilePath, i + 1,
+                    projectInfo.TestProjectAnalyzerResults.Count());
 
-                //_initialBuildProcess.InitialBuild(
-                //    testProjects[i].TargetsFullFramework(),
-                //    testProjects[i].ProjectFilePath,
-                //    options.SolutionPath,
-                //    options.MsBuildPath);
+                _initialBuildProcess.InitialBuild(
+                    testProjects[i].TargetsFullFramework(),
+                    testProjects[i].ProjectFilePath,
+                    options.SolutionPath,
+                    options.MsBuildPath);
             }
 
             InitializeDashboardProjectInformation(options, projectInfo);

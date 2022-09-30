@@ -84,9 +84,15 @@ namespace Stryker.DataCollector
             AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoaded;
 
             // scan loaded assemblies, just in case the test assembly is already loaded
-            var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => !a.IsDynamic && a.ExportedTypes.Any(t => t.FullName == _controlClassName));
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic);
 
-            FindControlType(assembly);
+            foreach (var assembly in assemblies)
+            {
+                FindControlType(assembly);
+            }
+
+            //Debugger.Launch();
+
             if (_singleMutant.HasValue)
             {
                 SetActiveMutation(_singleMutant.Value);
@@ -112,7 +118,6 @@ namespace Stryker.DataCollector
             {
                 return;
             }
-
             _activeMutantField = _mutantControlType.GetField("ActiveMutant");
             var coverageControlField = _mutantControlType.GetField("CaptureCoverage");
             _getCoverageData = _mutantControlType.GetMethod("GetCoverageData");
@@ -205,8 +210,6 @@ namespace Stryker.DataCollector
 
         public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
         {
-            var assembly = AppDomain.CurrentDomain.GetAssemblies().FirstOrDefault(a => !a.IsDynamic && a.ExportedTypes.Any(t => t.FullName == _controlClassName));
-
             Log($"Test {testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName} ends.");
             if (!_coverageOn)
             {
@@ -229,7 +232,9 @@ namespace Stryker.DataCollector
 
             _dataSink.SendData(testCaseEndArgs.DataCollectionContext, PropertyName, coverData);
             if (_mutationCoveredOutsideTests.Count <= 0)
-            { return; }
+            {
+                return;
+            }
             // report any mutations covered before this test executed
             _dataSink.SendData(testCaseEndArgs.DataCollectionContext, OutOfTestsPropertyName, string.Join(",", _mutationCoveredOutsideTests));
             _mutationCoveredOutsideTests.Clear();
