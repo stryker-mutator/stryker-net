@@ -1,6 +1,6 @@
 stages:
 - stage: UpdatePackageLockFiles
-  condition: and(eq(variables['system.pullRequest.isFork'], 'False'), startsWith(variables['system.pullRequest.sourceBranch'], 'dependabot'))
+  condition: and(eq(variables['system.pullRequest.isFork'], 'False'), startsWith(variables['system.pullRequest.sourceBranch'], 'renovate'))
   jobs:
   - job: DisableRestoreLockedMode
     steps:
@@ -31,8 +31,8 @@ stages:
         arguments: --locked-mode --force-evaluate
         workingDirectory: 'integrationtest/'
     - script: |
-        git config --global user.email "support@dependabot.com"
-        git config --global user.name "dependabot"
+        git config --global user.email "renovatebot@stryker-mutator.io"
+        git config --global user.name "renovatebot"
         git add -u .
         git commit -m "Update package lock files"
         git push
