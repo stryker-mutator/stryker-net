@@ -250,8 +250,8 @@
       },
       "Microsoft.CodeAnalysis.Common": {
         "type": "Transitive",
-        "resolved": "4.3.0",
-        "contentHash": "Hhaw6DKZHiR+vgOdIqvndfUntJhmDR7MjylUJ55EvWtDyJFLDf2eij8r9tcwXP35FLD+bVNNCO0+KIYuvJjNnA==",
+        "resolved": "4.3.1",
+        "contentHash": "wexpJffSEEwptwe6UTMxRDZCCtz+XubI4Qewl4JECnNhcQrtb0anhSUEV9Nz7WkoNfWkx1fptR8xh1egoxYrqw==",
         "dependencies": {
           "Microsoft.CodeAnalysis.Analyzers": "3.3.3",
           "System.Collections.Immutable": "6.0.0",
@@ -264,10 +264,10 @@
       },
       "Microsoft.CodeAnalysis.CSharp": {
         "type": "Transitive",
-        "resolved": "4.3.0",
-        "contentHash": "0PU4a2h7L6N9SlF/oNHwj2A/+n0LK/7n6PEGvXyIZq8hc7r/TztB+47mhVLvapT6bWSV7nMT78cNxbQuC6tk6g==",
+        "resolved": "4.3.1",
+        "contentHash": "5C9VHvahL98tumlyaT/loB5rW+K/6q0UU7uLyT1Dv15YjZraRkqML9u2t2e8GaO7XqEOtBVqK/SlxXOPqwzxog==",
         "dependencies": {
-          "Microsoft.CodeAnalysis.Common": "[4.3.0]"
+          "Microsoft.CodeAnalysis.Common": "[4.3.1]"
         }
       },
       "Microsoft.CodeCoverage": {
@@ -1340,7 +1340,7 @@
           "FSharp.Compiler.Service": "[38.0.0, )",
           "Grynwald.MarkdownGenerator": "[2.5.34, )",
           "LibGit2Sharp": "[0.27.0-preview-0182, )",
-          "Microsoft.CodeAnalysis.CSharp": "[4.3.0, )",
+          "Microsoft.CodeAnalysis.CSharp": "[4.3.1, )",
           "Microsoft.Extensions.Configuration": "[6.0.0, )",
           "Microsoft.Extensions.Configuration.Json": "[6.0.0, )",
           "Microsoft.Extensions.Logging": "[6.0.0, )",
@@ -1358,8 +1358,8 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.45.0, )",
           "Spectre.Console.Analyzer": "[0.45.0, )",
-          "Stryker.DataCollector": "[3.0.1, )",
-          "Stryker.RegexMutators": "[3.0.1, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
           "System.IO.Abstractions": "[17.2.3, )",
           "System.Net.Http.Json": "[6.0.0, )"
         }
