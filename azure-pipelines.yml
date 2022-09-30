@@ -173,7 +173,7 @@ stages:
     dependsOn: 'PublishIntegrationTestPackage'
     pool: server
     steps:
-    - task: Delay@1
+    - task: Delay@1.1.10
       inputs:
         delayForMinutes: '1'
 
