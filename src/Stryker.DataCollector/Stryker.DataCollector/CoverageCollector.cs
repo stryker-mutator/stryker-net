@@ -108,7 +108,7 @@ namespace Stryker.DataCollector
                 return;
             }
 
-            _mutantControlType = assembly.ExportedTypes.FirstOrDefault(t => t.FullName == _controlClassName);
+            _mutantControlType = assembly?.ExportedTypes.FirstOrDefault(t => t.FullName == _controlClassName);
             if (_mutantControlType == null)
             {
                 return;
@@ -182,37 +182,31 @@ namespace Stryker.DataCollector
         // This method is commented out as thanks to the missing assembly it fails.
         public void TestCaseStart(TestCaseStartArgs testCaseStartArgs)
         {
-            //if (_coverageOn)
-            //{
-            //    // see if any mutation was executed outside a test
-            //    var covered = RetrieveCoverData();
-            //    if (covered[0] != null)
-            //    {
-            //        _mutationCoveredOutsideTests = covered[1] != null ? covered[0].Union(covered[1]).ToList() : covered[0].ToList();
-            //    }
-            //    else if (covered[1] != null)
-            //    {
-            //        _mutationCoveredOutsideTests = covered[1].ToList();
-            //    }
-            //    return;
-            //}
+            if (_coverageOn)
+            {
+                // see if any mutation was executed outside a test
+                var covered = RetrieveCoverData();
+                if (covered[0] != null)
+                {
+                    _mutationCoveredOutsideTests = covered[1] != null ? covered[0].Union(covered[1]).ToList() : covered[0].ToList();
+                }
+                else if (covered[1] != null)
+                {
+                    _mutationCoveredOutsideTests = covered[1].ToList();
+                }
+                return;
+            }
 
-            //// we need to set the proper mutant
-            //var mutantId = _singleMutant ?? _mutantTestedBy[testCaseStartArgs.TestCase.Id.ToString()];
+            // we need to set the proper mutant
+            var mutantId = _singleMutant ?? _mutantTestedBy[testCaseStartArgs.TestCase.Id.ToString()];
 
-            //SetActiveMutation(mutantId);
+            SetActiveMutation(mutantId);
 
-            //Log($"Test {testCaseStartArgs.TestCase.FullyQualifiedName} starts against mutant {mutantId} (var).");
+            Log($"Test {testCaseStartArgs.TestCase.FullyQualifiedName} starts against mutant {mutantId} (var).");
         }
 
         public void TestCaseEnd(TestCaseEndArgs testCaseEndArgs)
         {
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies();
-            // The target project assembly should be found in the above list of assemblies. But it isn't.
-            // In a normal scenario we are able to find the assembly before the first test is run. But in this scenario the assembly seems to never be loaded. Not even after the first testcase is ended.
-            // The name of the target project is "TargetProject" or "ExtraProject". It depends on which project is analysed first.
-            Debugger.Launch();
-
             Log($"Test {testCaseEndArgs.DataCollectionContext.TestCase.FullyQualifiedName} ends.");
             if (!_coverageOn)
             {

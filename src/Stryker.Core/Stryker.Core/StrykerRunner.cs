@@ -54,6 +54,8 @@ namespace Stryker.Core
 
             try
             {
+                // Initial build
+
                 // Mutate
                 _mutationTestProcesses = projectOrchestrator.MutateProjects(options, reporters).ToList();
 
@@ -105,10 +107,14 @@ namespace Stryker.Core
                 foreach (var project in _mutationTestProcesses)
                 {
                     project.Test(project.Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
-                    project.Restore();
                 }
 
                 reporters.OnAllMutantsTested(rootComponent);
+
+                foreach(var project in _mutationTestProcesses)
+                {
+                    project.Restore();
+                }
 
                 return new StrykerRunResult(options, rootComponent.GetMutationScore());
             }
