@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
 using Stryker.Core.Baseline.Providers;
@@ -30,7 +32,7 @@ namespace Stryker.Core.Initialisation
 
     public interface IInitialisationProcess
     {
-        MutationTestInput Initialize(StrykerOptions options);
+        MutationTestInput Initialize(StrykerOptions options, IEnumerable<IAnalyzerResult> solutionProjects);
         InitialTestRun InitialTest(StrykerOptions options);
     }
 
@@ -58,25 +60,25 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
         }
 
-        public MutationTestInput Initialize(StrykerOptions options)
+        public MutationTestInput Initialize(StrykerOptions options, IEnumerable<IAnalyzerResult> solutionProjects)
         {
             // resolve project info
-            var projectInfo = _inputFileResolver.ResolveInput(options);
+            var projectInfo = _inputFileResolver.ResolveInput(options, solutionProjects);
 
             // initial build
             var testProjects = projectInfo.TestProjectAnalyzerResults.ToList();
             for (var i = 0; i < testProjects.Count; i++)
             {
-                _logger.LogInformation(
-                    "Building test project {ProjectFilePath} ({CurrentTestProject}/{OfTotalTestProjects})",
-                    testProjects[i].ProjectFilePath, i + 1,
-                    projectInfo.TestProjectAnalyzerResults.Count());
+                //_logger.LogInformation(
+                //    "Building test project {ProjectFilePath} ({CurrentTestProject}/{OfTotalTestProjects})",
+                //    testProjects[i].ProjectFilePath, i + 1,
+                //    projectInfo.TestProjectAnalyzerResults.Count());
 
-                _initialBuildProcess.InitialBuild(
-                    testProjects[i].TargetsFullFramework(),
-                    testProjects[i].ProjectFilePath,
-                    options.SolutionPath,
-                    options.MsBuildPath);
+                //_initialBuildProcess.InitialBuild(
+                //    testProjects[i].TargetsFullFramework(),
+                //    testProjects[i].ProjectFilePath,
+                //    options.SolutionPath,
+                //    options.MsBuildPath);
             }
 
             InitializeDashboardProjectInformation(options, projectInfo);

@@ -14,7 +14,8 @@ namespace Stryker.Core.Initialisation
         IAnalyzerResult AnalyzeProject(
             string projectFilePath,
             string solutionFilePath,
-            string targetFramework);
+            string targetFramework,
+            IEnumerable<IAnalyzerResult> solutionProjects);
     }
 
     public class ProjectFileReader : IProjectFileReader
@@ -35,7 +36,8 @@ namespace Stryker.Core.Initialisation
         public IAnalyzerResult AnalyzeProject(
             string projectFilePath,
             string solutionFilePath,
-            string targetFramework)
+            string targetFramework,
+            IEnumerable<IAnalyzerResult> solutionProjects)
         {
             if (solutionFilePath != null)
             {
@@ -51,9 +53,7 @@ namespace Stryker.Core.Initialisation
             }
 
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
-            var analyzerResults = _manager.GetProject(projectFilePath).Build();
-            var analyzerResult = SelectAnalyzerResult(analyzerResults, targetFramework);
-
+            IAnalyzerResult analyzerResult = GetProjectInfo(projectFilePath, targetFramework, solutionProjects);
             LogAnalyzerResult(analyzerResult);
 
             if (!analyzerResult.Succeeded)
@@ -63,7 +63,7 @@ namespace Stryker.Core.Initialisation
                     // buildalyzer failed to find restored packages, retry after nuget restore
                     _logger.LogDebug("Project analyzer result not successful, restoring packages");
                     _nugetRestoreProcess.RestorePackages(solutionFilePath);
-                    analyzerResult = _manager.GetProject(projectFilePath).Build(targetFramework).First();
+                    analyzerResult = GetProjectInfo(projectFilePath, targetFramework, solutionProjects);
                 }
                 else
                 {
@@ -73,6 +73,25 @@ namespace Stryker.Core.Initialisation
             }
 
             return analyzerResult;
+        }
+
+        /// <summary>
+        /// Checks if project info is already present in solution projects. If not, analyze here.
+        /// </summary>
+        /// <returns></returns>
+        private IAnalyzerResult GetProjectInfo(string projectFilePath,
+            string targetFramework,
+            IEnumerable<IAnalyzerResult> solutionProjects)
+        {
+            if (solutionProjects != null)
+            {
+                return solutionProjects.FirstOrDefault(x => x.ProjectFilePath == projectFilePath);
+            }
+            else
+            {
+                var analyzerResults = _manager.GetProject(projectFilePath).Build();
+                return SelectAnalyzerResult(analyzerResults, targetFramework);
+            }
         }
 
         private void LogAnalyzerResult(IAnalyzerResult analyzerResult)

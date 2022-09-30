@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Buildalyzer;
+using Buildalyzer.Environment;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
@@ -25,12 +26,14 @@ namespace Stryker.Core.Initialisation
         private readonly ILogger _logger;
         private readonly IBuildalyzerProvider _buildalyzerProvider;
         private readonly IProjectMutator _projectMutator;
+        private readonly IInitialBuildProcess _initialBuildProcess;
 
         public ProjectOrchestrator(IBuildalyzerProvider buildalyzerProvider = null,
             IProjectMutator projectMutator = null)
         {
             _buildalyzerProvider = buildalyzerProvider ?? new BuildalyzerProvider();
             _projectMutator = projectMutator ?? new ProjectMutator();
+            _initialBuildProcess = new InitialBuildProcess();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectOrchestrator>();
         }
 
@@ -48,11 +51,23 @@ namespace Stryker.Core.Initialisation
                 _logger.LogInformation("Found {0} projects under test", projectsUnderTest.Count());
                 _logger.LogInformation("Found {0} test projects", testProjects.Count());
 
+                _initialBuildProcess.InitialBuild(
+                    projectsUnderTest.First().TargetsFullFramework(),
+                    Path.GetDirectoryName(options.SolutionPath),
+                    options.SolutionPath,
+                    options.MsBuildPath);
+
                 // Mutate all projects in the solution
-                foreach (var project in MutateSolution(options, reporters, projectsUnderTest, testProjects))
+                foreach (var project in MutateSolution(options, reporters, projectsUnderTest, testProjects, solutionProjects))
                 {
                     yield return project;
                 }
+
+                _initialBuildProcess.InitialBuild(
+                    projectsUnderTest.First().TargetsFullFramework(),
+                    Path.GetDirectoryName(options.SolutionPath),
+                    options.SolutionPath,
+                    options.MsBuildPath);
             }
             else
             {
@@ -62,7 +77,7 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private IEnumerable<IMutationTestProcess> MutateSolution(StrykerOptions options, IReporter reporters, IEnumerable<IAnalyzerResult> projectsUnderTest, IEnumerable<IAnalyzerResult> testProjects)
+        private IEnumerable<IMutationTestProcess> MutateSolution(StrykerOptions options, IReporter reporters, IEnumerable<IAnalyzerResult> projectsUnderTest, IEnumerable<IAnalyzerResult> testProjects, IEnumerable<IAnalyzerResult> solutionProjects)
         {
             foreach (var project in projectsUnderTest)
             {
@@ -85,7 +100,7 @@ namespace Stryker.Core.Initialisation
                         projectUnderTest: projectFilePath,
                         testProjects: relatedTestProjects.Select(x => x.ProjectFilePath));
 
-                    yield return _projectMutator.MutateProject(projectOptions, reporters);
+                    yield return _projectMutator.MutateProject(projectOptions, reporters, solutionProjects);
                 }
                 else
                 {
