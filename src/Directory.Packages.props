@@ -1,0 +1,31 @@
+<Project>
+  <ItemGroup>
+    <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.1.1" PrivateAssets="All"/>
+  </ItemGroup>
+
+  <PropertyGroup>
+    <PackageVersion Include="Microsoft.TestPlatform" Version="17.2.0" />
+    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.2.0" />
+    <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.2.0" />
+    <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="17.2.0" />
+    <PackageVersion Include="System.IO.Abstractions" Version="17.2.3" />
+    
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="6.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging" Version="6.0.0" />
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
+    <PackageVersion Include="coverlet.collector" Version="3.1.2">
+    <PackageVersion Include="coverlet.msbuild" Version="3.1.2">
+    <PackageVersion Include="Moq" Version="4.18.2" />
+    <PackageVersion Include="Shouldly" Version="4.1.0" />
+    <PackageVersion Include="Spectre.Console.Testing" />
+    <PackageVersion Include="xunit" Version="2.4.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" PrivateAssets="all" />
+    <PackageVersion Include="Xunit.SkippableFact" Version="1.4.13" />
+    <PackageVersion Include="System.IO.Abstractions.TestingHelpers" Version="17.2.3" />
+  </PropertyGroup>
+</Project>
