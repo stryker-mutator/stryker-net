@@ -4,7 +4,7 @@
     "config:base"
   ],
   "configMigration": true,
-  "gitAuthor": "renovatebot@stryker-mutator.io",
+  "gitAuthor": "Renovatebot <renovatebot@stryker-mutator.io>",
   "platformCommit": true,
   "platformAutomerge": true,
   "ignorePaths": [
