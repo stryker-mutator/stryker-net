@@ -11,4 +11,8 @@
     <RestoreLockedMode Condition="'$(RestoreLockedMode)' == 'true'">true</RestoreLockedMode>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="DotNet.ReproducibleBuilds" />
+  </ItemGroup>
+
 </Project>

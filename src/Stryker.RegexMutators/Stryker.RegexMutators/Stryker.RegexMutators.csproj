@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
-    <PackageReference Include="RegexParser" Version="0.5.1" />
+    <PackageReference Include="RegexParser" />
   </ItemGroup>
 
 </Project>
