@@ -1131,14 +1131,12 @@
       "stryker.datacollector": {
         "type": "Project",
         "dependencies": {
-          "DotNet.ReproducibleBuilds": "1.1.1",
           "Microsoft.TestPlatform.ObjectModel": "17.2.0"
         }
       },
       "stryker.regexmutators": {
         "type": "Project",
         "dependencies": {
-          "DotNet.ReproducibleBuilds": "1.1.1",
           "RegexParser": "0.5.1"
         }
       },
