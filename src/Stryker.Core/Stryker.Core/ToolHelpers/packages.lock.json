@@ -1,7 +1,7 @@
 {
   "version": 2,
   "dependencies": {
-    ".NETStandard,Version=v2.0": {
+    "net6.0": {
       "DotNet.ReproducibleBuilds": {
         "type": "Direct",
         "requested": "[1.1.1, )",
@@ -14,34 +14,16 @@
           "Microsoft.SourceLink.GitLab": "1.1.1"
         }
       },
-      "Microsoft.TestPlatform.ObjectModel": {
+      "Microsoft.TestPlatform.Portable": {
         "type": "Direct",
         "requested": "[17.3.2, )",
         "resolved": "17.3.2",
-        "contentHash": "DJEIfSA2GDC+2m42vKGNR2hm+Uhta4SpCsLZVVvYIiYMjxtk7GzNnv82qvE4SCW3kIYllMg2D0rr8juuj/f7AA==",
-        "dependencies": {
-          "NuGet.Frameworks": "5.11.0",
-          "System.Reflection.Metadata": "1.6.0"
-        }
-      },
-      "NETStandard.Library": {
-        "type": "Direct",
-        "requested": "[2.0.3, )",
-        "resolved": "2.0.3",
-        "contentHash": "st47PosZSHrjECdjeIzZQbzivYBJFv6P2nv4cj2ypdI204DO+vZ7l5raGMiX4eXMJ53RfOIg+/s4DHVZ54Nu2A==",
-        "dependencies": {
-          "Microsoft.NETCore.Platforms": "1.1.0"
-        }
+        "contentHash": "1s/hhpIUXLkTuufdPF0IYHdnTRFk0RK5qFE5YankQ7z4ZnLoGyVi9/AlQxNM3+DI4p25o63+jDJqE+7xixGYzQ=="
       },
       "Microsoft.Build.Tasks.Git": {
         "type": "Transitive",
         "resolved": "1.1.1",
         "contentHash": "AT3HlgTjsqHnWpBHSNeR0KxbLZD7bztlZVj7I8vgeYG9SYqbeFGh0TM/KVtC6fg53nrWHl3VfZFvb5BiQFcY6Q=="
-      },
-      "Microsoft.NETCore.Platforms": {
-        "type": "Transitive",
-        "resolved": "1.1.0",
-        "contentHash": "kz0PEW2lhqygehI/d6XsPCQzD7ff7gUJaVGPVETX611eadGsA3A877GdSlU0LRVMCTH/+P3o2iDTak+S08V2+A=="
       },
       "Microsoft.SourceLink.AzureRepos.Git": {
         "type": "Transitive",
@@ -83,25 +65,6 @@
           "Microsoft.Build.Tasks.Git": "1.1.1",
           "Microsoft.SourceLink.Common": "1.1.1"
         }
-      },
-      "System.Collections.Immutable": {
-        "type": "Transitive",
-        "resolved": "1.5.0",
-        "contentHash": "EXKiDFsChZW0RjrZ4FYHu9aW6+P4MCgEDCklsVseRfhoO0F+dXeMSsMRAlVXIo06kGJ/zv+2w1a2uc2+kxxSaQ=="
-      },
-      "System.Reflection.Metadata": {
-        "type": "Transitive",
-        "resolved": "1.6.0",
-        "contentHash": "COC1aiAJjCoA5GBF+QKL2uLqEBew4JsCkQmoHKbN3TlOZKa2fKLz5CpiRQKDz0RsAOEGsVKqOD5bomsXq/4STQ==",
-        "dependencies": {
-          "System.Collections.Immutable": "1.5.0"
-        }
-      },
-      "NuGet.Frameworks": {
-        "type": "CentralTransitive",
-        "requested": "[6.3.0, )",
-        "resolved": "5.11.0",
-        "contentHash": "eaiXkUjC4NPcquGWzAGMXjuxvLwc6XGKMptSyOGQeT0X70BUZObuybJFZLA0OfTdueLd3US23NBPTBb6iF3V1Q=="
       }
     }
   }

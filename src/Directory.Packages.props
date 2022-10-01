@@ -28,10 +28,10 @@
     <PackageVersion Include="System.Net.Http.Json" Version="6.0.0" />
 
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.3.0" />
-    <PackageVersion Include="Microsoft.TestPlatform" Version="17.2.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.2.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.2.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="17.2.0" />
+    <PackageVersion Include="Microsoft.TestPlatform" Version="17.3.2" />
+    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.3.2" />
+    <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.3.2" />
+    <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="17.3.2" />
     <PackageVersion Include="System.IO.Abstractions" Version="17.2.3" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="6.0.0" />
   </ItemGroup>
