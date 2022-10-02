@@ -186,7 +186,7 @@ stages:
   - job: WindowsTests
     displayName: Run tests on Windows
     steps:
-    - task: NuGetToolInstaller@1
+    - task: NuGetToolInstaller@1.208.1
       displayName: 'Install nuget for stryker full framework'
     - template: pipeline-templates/prepare-integration-test-steps.yml
     - template: pipeline-templates/run-integration-test-steps.yml
