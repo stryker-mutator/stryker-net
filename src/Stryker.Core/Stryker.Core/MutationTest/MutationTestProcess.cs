@@ -42,7 +42,7 @@ namespace Stryker.Core.MutationTest
             DeclareMutationProcessForLanguage<FsharpMutationProcess>(Language.Fsharp);
         }
 
-        public static void DeclareMutationProcessForLanguage<T>(Language language) where T:IMutationProcess
+        public static void DeclareMutationProcessForLanguage<T>(Language language) where T : IMutationProcess
         {
             var constructor = typeof(T).GetConstructor(new[]
                 { typeof(MutationTestInput), typeof(StrykerOptions) });
@@ -68,19 +68,19 @@ namespace Stryker.Core.MutationTest
             _mutationTestExecutor = executor;
             _mutationProcess = mutationProcess ?? BuildMutationProcess();
             _coverageAnalyser = coverageAnalyzer ?? new CoverageAnalyser(_options);
-            _projectContents = input.ProjectInfo.ProjectContents;
+            _projectContents = input.TargetProjectInfo.ProjectContents;
         }
 
         public MutationTestInput Input { get; }
 
         private IMutationProcess BuildMutationProcess()
         {
-            if (!LanguageMap.ContainsKey(Input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage()))
+            if (!LanguageMap.ContainsKey(Input.TargetProjectInfo.AnalyzerResult.GetLanguage()))
             {
                 throw new GeneralStrykerException(
                     "no valid language detected || no valid csproj or fsproj was given.");
             }
-            return LanguageMap[Input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage()](Input, _options);
+            return LanguageMap[Input.TargetProjectInfo.AnalyzerResult.GetLanguage()](Input, _options);
         }
 
         public void Mutate()
@@ -115,7 +115,7 @@ namespace Stryker.Core.MutationTest
             Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
             {
                 var reportedMutants = new HashSet<Mutant>();
-                
+
                 _mutationTestExecutor.Test(mutants,
                     Input.InitialTestRun.TimeoutValueCalculator,
                     (testedMutants, tests, ranTests, outTests) => TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants));
@@ -206,7 +206,7 @@ namespace Stryker.Core.MutationTest
 
             var testsCount = Input.InitialTestRun.Result.RanTests.Count;
             mutantsToGroup = mutantsToGroup.OrderBy(m => m.AssessingTests.Count).ToList();
-            while (mutantsToGroup.Count>0)
+            while (mutantsToGroup.Count > 0)
             {
                 // we pick the first mutant
                 var usedTests = mutantsToGroup[0].AssessingTests;
@@ -236,7 +236,7 @@ namespace Stryker.Core.MutationTest
 
                 blocks.Add(nextBlock);
             }
-            
+
             Logger.LogDebug(
                 $"Mutations will be tested in {blocks.Count} test runs" +
                 (mutantsNotRun.Count > blocks.Count ? $", instead of {mutantsNotRun.Count}." : "."));
