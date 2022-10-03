@@ -1,14 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-	  <TargetFramework>netcoreapp3.1</TargetFramework>
-  </PropertyGroup>
-  
-  <PropertyGroup>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup> 
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.TestPlatform.Portable" Version="$(MicrosoftTestPlatform)" /> <!-- From Directory.Build.props -->
+		<PackageReference Include="Microsoft.TestPlatform.Portable" />
 	</ItemGroup>
 </Project>

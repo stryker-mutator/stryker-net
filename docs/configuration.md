@@ -12,7 +12,10 @@ On some dotnet core projects stryker can run without specifying any custom confi
 On dotnet framework projects the solution path argument is always required. Run at least `dotnet stryker --solution <solution-path>` or specify the solution file path in the config file to start testing. See [solution](#solution-path).
 
 ## Use a config file
-When using Stryker regularly we recommend using a config file. This way you won't have to document how to run Stryker, you can save the config file in version control. To use a config file create a file called `stryker-config.json` in the (unit test) project folder and add a configuration section called stryker-config.
+When using Stryker regularly we recommend using a config file. This way you won't have to document how to run Stryker, you can save the config file in version control. 
+To use a config file create a file called `stryker-config.json` in the (unit test) project folder and add a configuration section called stryker-config.
+
+We support json and yaml as the config file formats
 
 Example `stryker-config.json` file:
 ``` javascript
@@ -23,6 +26,13 @@ Example `stryker-config.json` file:
         "project": "ExampleProject.csproj"
     }
 }
+```
+
+Example `stryker-config.yaml` file:
+``` yaml
+  stryker-config:
+    solution: '../SolutionFile.sln'
+    project: 'ExampleProject.csproj'
 ```
 
 ### `config-file` <`path`>
@@ -539,10 +549,10 @@ The file share url should be in the the format:
 The baseline are stored in a folder called `StrykerOutput/Baselines` by default. Or in `StrykerOutput/<projectName>` if a [project name](#project-infoname-string) is set.
 Providing a subfolder is optional but allowed. In the case of a custom subfolder the complete url to the baselines would become `https://<FILE_SHARE_URL>/<OPTIONAL_SUBFOLDER_NAME>/StrykerOutput/Baselines`
 
-### `azure-storage-sas` <`string`>
+### `azure-fileshare-sas` <`string`>
 
 Default: `null`  
-Command line: `--azure-storage-sas "adfdf34343242323rewfe323434"`  
+Command line: `--azure-fileshare-sas "se=2022-08-25T14%3A27Z&sp=rwdl&spr=https&sv=2021-06-08&sr=d&sdd=1&sig=XXXXXXXXXXXXX"`  
 Config file: `N/A`
 
 When using the azure file storage [provider](#baselineprovider-string) you must pass credentials for the fileshare to Stryker.
@@ -612,3 +622,11 @@ Command line: `--msbuild-path "c://MsBuild/MsBuild.exe"`
 Config file: `N/A`  
 
 By default stryker tries to autodiscover msbuild on your system. If stryker fails to discover msbuild you may supply the path to msbuild manually with this option.
+
+### `break-on-initial-test-failure` <`flag`>
+
+Default: `false`  
+Command line: `--break-on-initial-test-failure`  
+Config file: `N/A`
+
+Instruct Stryker to break execution when at least one test failed on initial test run.

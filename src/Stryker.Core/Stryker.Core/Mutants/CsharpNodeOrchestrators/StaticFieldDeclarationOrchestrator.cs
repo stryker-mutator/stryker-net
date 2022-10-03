@@ -8,7 +8,8 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
     internal class StaticFieldDeclarationOrchestrator : NodeSpecificOrchestrator<FieldDeclarationSyntax, BaseFieldDeclarationSyntax>
     {
         protected override bool CanHandle(FieldDeclarationSyntax t) => t.IsStatic();
-        protected override MutationContext PrepareContext(FieldDeclarationSyntax _, MutationContext context) => context.EnterStatic();
+
+        protected override MutationContext PrepareContext(FieldDeclarationSyntax node, MutationContext context) => base.PrepareContext(node, context).EnterStatic();
 
         protected override BaseFieldDeclarationSyntax InjectMutations(FieldDeclarationSyntax sourceNode, BaseFieldDeclarationSyntax targetNode,
             MutationContext context)

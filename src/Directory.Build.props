@@ -5,18 +5,14 @@
   </PropertyGroup>
   
   <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
     <RestoreLockedMode Condition="'$(RestoreLockedMode)' == 'true'">true</RestoreLockedMode>
   </PropertyGroup>
 
-  <PropertyGroup>
-    <MicrosoftTestPlatform>17.2.0</MicrosoftTestPlatform>
-    <SystemIOAbstractions>17.0.15</SystemIOAbstractions>
-    <MicrosoftExtensionsConfiguration>6.0.0</MicrosoftExtensionsConfiguration>
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="DotNet.ReproducibleBuilds" Version="1.1.1" PrivateAssets="All"/>
+    <PackageReference Include="DotNet.ReproducibleBuilds" PrivateAssets="All" />
   </ItemGroup>
+
 </Project>

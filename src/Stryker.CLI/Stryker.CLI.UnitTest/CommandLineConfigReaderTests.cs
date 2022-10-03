@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Stryker.CLI.UnitTest
 {
-    public class CommandLineConfigHandlerTests
+    public class CommandLineConfigReaderTests
     {
         private readonly CommandLineApplication _app = new CommandLineApplication
         {
@@ -16,12 +16,9 @@ namespace Stryker.CLI.UnitTest
             ExtendedHelpText = "Welcome to Stryker for .Net! Run dotnet stryker to kick off a mutation test run"
         };
         private readonly IStrykerInputs _inputs = new StrykerInputs();
-        private readonly CommandLineConfigHandler _target = new();
+        private readonly CommandLineConfigReader _target = new();
 
-        public CommandLineConfigHandlerTests()
-        {
-            _target.RegisterCommandLineOptions(_app, _inputs);
-        }
+        public CommandLineConfigReaderTests() => _target.RegisterCommandLineOptions(_app, _inputs);
 
         [Fact]
         public void ShouldHandleNoValue()
