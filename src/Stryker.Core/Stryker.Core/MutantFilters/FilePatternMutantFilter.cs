@@ -35,15 +35,15 @@ namespace Stryker.Core.MutantFilters
                 }
 
                 // Check if the mutant is excluded.
-                if (_excludePattern.Any(MatchesPattern))
-                {
-                    return false;
-                }
-
-                return true;
+                return !_excludePattern.Any(MatchesPattern);
 
                 bool MatchesPattern(FilePattern pattern)
                 {
+                    // if we do not have the original node, we cannot exclude the mutation according to its location
+                    if (mutant.Mutation.OriginalNode == null)
+                    {
+                        return false;
+                    }
                     // We check both the full and the relative path to allow for relative paths.
                     return pattern.IsMatch(file.FullPath, mutant.Mutation.OriginalNode.Span) ||
                            pattern.IsMatch(file.RelativePath, mutant.Mutation.OriginalNode.Span);

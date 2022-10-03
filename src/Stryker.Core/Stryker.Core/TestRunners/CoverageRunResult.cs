@@ -1,7 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
-using System.Linq;
 
 namespace Stryker.Core.TestRunners
 {
@@ -42,9 +40,6 @@ namespace Stryker.Core.TestRunners
             : MutationTestingRequirements.NotCovered;
 
         public CoverageConfidence Confidence { get; private set; }
-
-        public IReadOnlyCollection<int> LeakedMutations  => _mutationFlags
-            .Where(p => p.Value.HasFlag(MutationTestingRequirements.CoveredOutsideTest)).Select(p => p.Key).ToImmutableArray();
 
         public CoverageRunResult(Guid testId, CoverageConfidence confidence, IEnumerable<int> coveredMutations,
             IEnumerable<int> detectedStaticMutations, IEnumerable<int> leakedMutations)

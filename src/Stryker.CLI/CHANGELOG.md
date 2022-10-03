@@ -1,3 +1,29 @@
+## [3.0.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.0.0...dotnet-stryker@3.0.1) (2022-09-16)
+
+
+
+# [3.0.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@2.2.0...dotnet-stryker@3.0.0) (2022-09-07)
+
+
+### Features
+
+* **initial test:** Configure stryker to fail when initial testrun fails ([#2151](https://github.com/stryker-mutator/stryker-net/issues/2151)) ([9c47a4b](https://github.com/stryker-mutator/stryker-net/commit/9c47a4b6f9f5d2c32478338ca33e6568e5ee55f3))
+
+
+
+# [2.2.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@2.1.2...dotnet-stryker@2.2.0) (2022-08-22)
+
+
+### Features
+
+* **reporters:** Markdown File Summary Reporter ([#2138](https://github.com/stryker-mutator/stryker-net/issues/2138)) ([0ac8347](https://github.com/stryker-mutator/stryker-net/commit/0ac8347a219f80ca7d2cbaa16971780dbeb2f685))
+
+
+
+## [2.1.2](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@2.1.1...dotnet-stryker@2.1.2) (2022-08-05)
+
+
+
 ## [2.1.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@2.1.0...dotnet-stryker@2.1.1) (2022-08-03)
 
 

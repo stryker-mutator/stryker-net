@@ -44,19 +44,19 @@ namespace Stryker.Core.Mutants
 
         public int? Line => Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
 
-        public void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests)
+        public void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests, bool sessionTimedOut)
         {
             if (AssessingTests.ContainsAny(failedTests))
             {
                 ResultStatus = MutantStatus.Killed;
             }
+            else if (AssessingTests.ContainsAny(timedOutTests) || sessionTimedOut)
+            {
+                ResultStatus = MutantStatus.Timeout;
+            }
             else if (resultRanTests.IsEveryTest || (resultRanTests.IsEveryTest is not true && AssessingTests.IsIncludedIn(resultRanTests)))
             {
                 ResultStatus = MutantStatus.Survived;
-            }
-            else if (AssessingTests.ContainsAny(timedOutTests))
-            {
-                ResultStatus = MutantStatus.Timeout;
             }
         }
     }
