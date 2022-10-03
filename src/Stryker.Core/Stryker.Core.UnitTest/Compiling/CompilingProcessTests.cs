@@ -46,7 +46,7 @@ namespace ExampleProject
             {
                 SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
                             { "AssemblyName", "AssemblyName"},
@@ -90,7 +90,7 @@ namespace ExampleProject
             {
                 SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
                             { "AssemblyName", "AssemblyName"},
@@ -140,7 +140,7 @@ namespace ExampleProject
             {
                 SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
                             { "AssemblyName", "AssemblyName"},
@@ -184,7 +184,7 @@ namespace ExampleProject
             {
                 SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
                             { "AssemblyName", "AssemblyName"},
@@ -235,7 +235,7 @@ namespace ExampleProject
             {
                 SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
                             { "TargetFileName", "TargetFileName.dll"},
@@ -281,7 +281,7 @@ namespace ExampleProject
             {
                 SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
@@ -407,7 +407,7 @@ namespace ExampleProject
             {
                 SourceProjectInfo = new TargetProjectInfo(fileSystem)
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "Project" },

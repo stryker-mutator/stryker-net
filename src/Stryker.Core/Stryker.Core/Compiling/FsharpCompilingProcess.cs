@@ -30,11 +30,11 @@ namespace Stryker.Core.Compiling
         }
 
         private string AssemblyName =>
-            _input.SourceProjectInfo.ProjectUnderTestAnalyzerResult.GetAssemblyName();
+            _input.SourceProjectInfo.AnalyzerResult.GetAssemblyName();
 
         public CompilingProcessResult Compile(IEnumerable<ParsedInput> syntaxTrees, bool devMode)
         {
-            var analyzerResult = _input.SourceProjectInfo.ProjectUnderTestAnalyzerResult;
+            var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
 
             FSharpList<ParsedInput> trees = ListModule.OfSeq(syntaxTrees.Reverse());
             FSharpList<string> dependencies = ListModule.OfSeq(analyzerResult.References);
@@ -55,7 +55,7 @@ namespace Stryker.Core.Compiling
                 pathlist.Add(Path.Combine(injectionPath, _input.SourceProjectInfo.GetInjectionFilePath(testProject)));
 
                 pdblist.Add(Path.Combine(injectionPath,
-                        _input.SourceProjectInfo.ProjectUnderTestAnalyzerResult.GetSymbolFileName()));
+                        _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName()));
 
                 _logger.LogDebug("Injected the mutated assembly file into {0}", injectionPath);
             }

@@ -81,7 +81,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                     },
                     targetFramework: "netcoreapp2.1").Object
                 },
-                ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", Path.Combine(filesystemRoot, "app", "bin", "Debug") },
                         { "TargetFileName", "AppToTest.dll" },

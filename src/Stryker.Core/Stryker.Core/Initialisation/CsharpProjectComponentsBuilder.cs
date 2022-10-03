@@ -36,14 +36,14 @@ namespace Stryker.Core.Initialisation
         public override IProjectComponent Build()
         {
             CsharpFolderComposite inputFiles;
-            if (_projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles != null && _projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
+            if (_projectInfo.AnalyzerResult.SourceFiles != null && _projectInfo.AnalyzerResult.SourceFiles.Any())
             {
-                inputFiles = FindProjectFilesUsingBuildalyzer(_projectInfo.ProjectUnderTestAnalyzerResult, _options);
+                inputFiles = FindProjectFilesUsingBuildalyzer(_projectInfo.AnalyzerResult, _options);
             }
             else
             {
                 _logger.LogWarning("Buildalyzer could not find sourcefiles. This should not happen. Will fallback to filesystem scan. Please report an issue at github.");
-                inputFiles = FindProjectFilesScanningProjectFolders(_projectInfo.ProjectUnderTestAnalyzerResult, _options);
+                inputFiles = FindProjectFilesScanningProjectFolders(_projectInfo.AnalyzerResult, _options);
             }
             return inputFiles;
         }

@@ -24,7 +24,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                         { "TargetFileName", "TestName.dll" }
                     }).Object
                 },
-                ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", "/app/bin/Debug/" },
                         { "TargetFileName", "AppToTest.dll" }
@@ -48,7 +48,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                         { "AssemblyName", "AssemblyName" }
                     }).Object
                 },
-                ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", "/test/bin/Debug/" },
                         { "TargetFileName", "TestName.dll" },
@@ -56,7 +56,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     }).Object
             };
 
-            var options = target.ProjectUnderTestAnalyzerResult.GetCompilationOptions();
+            var options = target.AnalyzerResult.GetCompilationOptions();
 
             options.AllowUnsafe.ShouldBe(true);
             options.OutputKind.ShouldBe(OutputKind.DynamicallyLinkedLibrary);
@@ -79,7 +79,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                         { "AssemblyName", "AssemblyName" }
                     }).Object
                 },
-                ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "AssemblyTitle", "TargetFileName"},
                         { "TargetDir", "/test/bin/Debug/" },
@@ -90,7 +90,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     }).Object
             };
 
-            var options = target.ProjectUnderTestAnalyzerResult.GetCompilationOptions();
+            var options = target.AnalyzerResult.GetCompilationOptions();
 
             options.AllowUnsafe.ShouldBe(true);
             options.OutputKind.ShouldBe(output);
@@ -109,7 +109,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                         { "TargetFileName", "TestName.dll" }
                     }).Object
                 },
-                ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", "/app/bin/Debug/" },
                         { "TargetFileName", "AppToTest.dll" }

@@ -112,7 +112,7 @@ public class VsTestMockingHelper : TestBase
                     },
                     targetFramework: "netcoreapp2.1").Object
             },
-            ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                 properties: new Dictionary<string, string>()
                 {
                     { "TargetDir", Path.Combine(_filesystemRoot, "app", "bin", "Debug") },

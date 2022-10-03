@@ -77,9 +77,9 @@ namespace Stryker.Core.Initialisation
             // Determine project under test
             var projectUnderTest = FindProjectUnderTest(testProjectsInfo, options.ProjectUnderTestName);
 
-            sourceProjectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath, options.TargetFramework);
+            sourceProjectInfo.AnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath, options.TargetFramework);
 
-            var language = TargetProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage();
+            var language = TargetProjectInfo.AnalyzerResult.GetLanguage();
             if (language == Language.Fsharp)
             {
                 _logger.LogError("Mutation testing of F# projects is not ready yet. No mutants will be generated.");

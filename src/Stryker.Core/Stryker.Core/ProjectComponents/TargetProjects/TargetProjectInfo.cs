@@ -14,7 +14,7 @@ namespace Stryker.Core.ProjectComponents.TargetProjects
 
         public IEnumerable<IAnalyzerResult> TestProjectAnalyzerResults { get; set; }
 
-        public IAnalyzerResult ProjectUnderTestAnalyzerResult { get; set; }
+        public IAnalyzerResult AnalyzerResult { get; set; }
 
         /// <summary>
         /// The Folder/File structure found in the project under test.
@@ -23,7 +23,7 @@ namespace Stryker.Core.ProjectComponents.TargetProjects
 
         public string GetInjectionFilePath(IAnalyzerResult analyzerResult) => Path.Combine(
                 Path.GetDirectoryName(analyzerResult.GetAssemblyPath()),
-                Path.GetFileName(ProjectUnderTestAnalyzerResult.GetAssemblyPath()));
+                Path.GetFileName(AnalyzerResult.GetAssemblyPath()));
 
         public virtual void RestoreOriginalAssembly()
         {

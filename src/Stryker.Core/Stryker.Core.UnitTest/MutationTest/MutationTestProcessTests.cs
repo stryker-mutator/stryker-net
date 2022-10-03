@@ -59,7 +59,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 SourceProjectInfo = new TargetProjectInfo(fileSystem)
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
@@ -130,7 +130,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 SourceProjectInfo = new TargetProjectInfo(fileSystem)
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
@@ -212,7 +212,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 SourceProjectInfo = new TargetProjectInfo(fileSystem)
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", Path.Combine(FilesystemRoot, "ProjectUnderTest", "bin", "Debug", "netcoreapp2.0") },
                             { "TargetFileName", "ProjectUnderTest.dll" },
@@ -276,7 +276,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
@@ -329,7 +329,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
@@ -391,7 +391,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                     {
                         { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                         { "TargetFileName", "TestName.dll" },
@@ -452,7 +452,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                     {
                         { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                         { "TargetFileName", "TestName.dll" },
@@ -510,7 +510,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                     {
                         { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                         { "TargetFileName", "TestName.dll" },
@@ -566,7 +566,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                     {
                         { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                         { "TargetFileName", "TestName.dll" },
@@ -612,7 +612,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
@@ -667,7 +667,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
                     ProjectContents = folder,
-                    ProjectUnderTestAnalyzerResult = projectUnderTest
+                    AnalyzerResult = projectUnderTest
                 }
             };
 
@@ -710,7 +710,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
                     ProjectContents = folder,
-                    ProjectUnderTestAnalyzerResult = projectUnderTest
+                    AnalyzerResult = projectUnderTest
                 }
             };
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);

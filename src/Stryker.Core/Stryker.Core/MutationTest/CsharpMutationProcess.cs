@@ -105,7 +105,7 @@ namespace Stryker.Core.MutationTest
                 {
                     // inject the debug symbols into the test project
                     using var symbolDestination = _fileSystem.File.Create(Path.Combine(Path.GetDirectoryName(injectionPath),
-                        _input.SourceProjectInfo.ProjectUnderTestAnalyzerResult.GetSymbolFileName()));
+                        _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName()));
                     msForSymbols.Position = 0;
                     msForSymbols.CopyTo(symbolDestination);
                 }

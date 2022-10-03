@@ -888,7 +888,7 @@ Please specify a test project name filter that results in one project.
             var actual = target.ResolveSourceProjectInfo(options);
 
             // Assert
-            actual.ProjectUnderTestAnalyzerResult.ProjectFilePath.ShouldBe(projectUnderTestPath);
+            actual.AnalyzerResult.ProjectFilePath.ShouldBe(projectUnderTestPath);
         }
 
         [Fact]

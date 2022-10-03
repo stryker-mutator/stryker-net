@@ -36,7 +36,7 @@ namespace Stryker.Core.Compiling
         }
 
         private string AssemblyName =>
-            _input.SourceProjectInfo.ProjectUnderTestAnalyzerResult.GetAssemblyName();
+            _input.SourceProjectInfo.AnalyzerResult.GetAssemblyName();
 
         /// <summary>
         /// Compiles the given input onto the memory stream
@@ -48,14 +48,14 @@ namespace Stryker.Core.Compiling
         /// </summary>
         public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream, bool devMode)
         {
-            var analyzerResult = _input.SourceProjectInfo.ProjectUnderTestAnalyzerResult;
+            var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
             var trees = syntaxTrees.ToList();
             var compilationOptions = analyzerResult.GetCompilationOptions();
 
             var compilation = CSharpCompilation.Create(AssemblyName,
                 syntaxTrees: trees,
                 options: compilationOptions,
-                references: _input.SourceProjectInfo.ProjectUnderTestAnalyzerResult.References.Select(r => MetadataReference.CreateFromFile(r)));
+                references: _input.SourceProjectInfo.AnalyzerResult.References.Select(r => MetadataReference.CreateFromFile(r)));
             RollbackProcessResult rollbackProcessResult;
 
             // C# source generators must be executed before compilation
@@ -142,11 +142,11 @@ namespace Stryker.Core.Compiling
             _logger.LogDebug($"Trying compilation for the {ReadableNumber(retryCount)} time.");
 
             var emitOptions = symbolStream == null ? null : new EmitOptions(false, DebugInformationFormat.PortablePdb,
-                _input.SourceProjectInfo.ProjectUnderTestAnalyzerResult.GetSymbolFileName());
+                _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName());
             var emitResult = compilation.Emit(
                 ms,
                 symbolStream,
-                manifestResources: _input.SourceProjectInfo.ProjectUnderTestAnalyzerResult.GetResources(_logger),
+                manifestResources: _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger),
                 win32Resources: compilation.CreateDefaultWin32Resources(
                     true, // Important!
                     false,

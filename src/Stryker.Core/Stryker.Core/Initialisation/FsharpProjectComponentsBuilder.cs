@@ -34,13 +34,13 @@ namespace Stryker.Core.Initialisation
         public override IProjectComponent Build()
         {
             FsharpFolderComposite inputFiles;
-            if (_projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles != null && _projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
+            if (_projectInfo.AnalyzerResult.SourceFiles != null && _projectInfo.AnalyzerResult.SourceFiles.Any())
             {
-                inputFiles = FindProjectFilesUsingBuildalyzer(_projectInfo.ProjectUnderTestAnalyzerResult);
+                inputFiles = FindProjectFilesUsingBuildalyzer(_projectInfo.AnalyzerResult);
             }
             else
             {
-                inputFiles = FindProjectFilesScanningProjectFolders(_projectInfo.ProjectUnderTestAnalyzerResult);
+                inputFiles = FindProjectFilesScanningProjectFolders(_projectInfo.AnalyzerResult);
             }
             return inputFiles;
         }

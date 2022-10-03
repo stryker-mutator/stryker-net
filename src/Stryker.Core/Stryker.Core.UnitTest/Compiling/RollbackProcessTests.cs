@@ -125,7 +125,7 @@ namespace ExampleProject
             {
                 SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                     {
                         { "TargetDir", "" },
                         { "AssemblyName", "AssemblyName"},
