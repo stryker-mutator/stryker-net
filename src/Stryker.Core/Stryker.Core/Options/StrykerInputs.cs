@@ -30,7 +30,7 @@ namespace Stryker.Core.Options
         OutputPathInput OutputPathInput { get; init; }
         ReportFileNameInput ReportFileNameInput { get; init; }
         ProjectNameInput ProjectNameInput { get; init; }
-        ProjectUnderTestNameInput ProjectUnderTestNameInput { get; init; }
+        TargetProjectNameInput TargetProjectNameInput { get; init; }
         ProjectVersionInput ProjectVersionInput { get; init; }
         ReportersInput ReportersInput { get; init; }
         SinceInput SinceInput { get; init; }
@@ -76,7 +76,7 @@ namespace Stryker.Core.Options
         public AdditionalTimeoutInput AdditionalTimeoutInput { get; init; } = new();
         public LanguageVersionInput LanguageVersionInput { get; init; } = new();
         public ConcurrencyInput ConcurrencyInput { get; init; } = new();
-        public ProjectUnderTestNameInput ProjectUnderTestNameInput { get; init; } = new();
+        public TargetProjectNameInput TargetProjectNameInput { get; init; } = new();
         public TestProjectsInput TestProjectsInput { get; init; } = new();
         public TestCaseFilterInput TestCaseFilterInput { get; init; } = new();
         public WithBaselineInput WithBaselineInput { get; init; } = new();
@@ -139,7 +139,7 @@ namespace Stryker.Core.Options
                     LogLevel = VerbosityInput.Validate(),
                     LogToFile = LogToFileInput.Validate(outputPath)
                 },
-                ProjectUnderTestName = ProjectUnderTestNameInput.Validate(),
+                ProjectUnderTestName = TargetProjectNameInput.Validate(),
                 AdditionalTimeout = AdditionalTimeoutInput.Validate(),
                 ExcludedMutations = IgnoreMutationsInput.Validate(),
                 ExcludedLinqExpressions = IgnoreMutationsInput.ValidateLinqExpressions(),

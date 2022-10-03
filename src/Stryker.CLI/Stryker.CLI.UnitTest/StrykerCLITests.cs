@@ -242,7 +242,7 @@ Options:";
 
             _strykerRunnerMock.VerifyAll();
 
-            _inputs.ProjectUnderTestNameInput.SuppliedInput.ShouldBe("SomeProjectName.csproj");
+            _inputs.TargetProjectNameInput.SuppliedInput.ShouldBe("SomeProjectName.csproj");
         }
 
         [Theory]

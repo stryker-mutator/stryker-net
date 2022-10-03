@@ -35,7 +35,7 @@ namespace Stryker.Core.UnitTest.Options
             CoverageAnalysisInput = new CoverageAnalysisInput(),
             OutputPathInput = new OutputPathInput() { SuppliedInput = Directory.GetCurrentDirectory() },
             ProjectNameInput = new ProjectNameInput(),
-            ProjectUnderTestNameInput = new ProjectUnderTestNameInput(),
+            TargetProjectNameInput = new TargetProjectNameInput(),
             ProjectVersionInput = new ProjectVersionInput(),
             ReportersInput = new ReportersInput(),
             SinceInput = new SinceInput(),

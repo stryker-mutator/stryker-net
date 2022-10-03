@@ -91,7 +91,7 @@ namespace Stryker.CLI.UnitTest
             inputs.Setup(x => x.VerbosityInput).Returns(new VerbosityInput());
             inputs.Setup(x => x.ConcurrencyInput).Returns(new ConcurrencyInput());
             inputs.Setup(x => x.SolutionInput).Returns(new SolutionInput());
-            inputs.Setup(x => x.ProjectUnderTestNameInput).Returns(new ProjectUnderTestNameInput());
+            inputs.Setup(x => x.TargetProjectNameInput).Returns(new TargetProjectNameInput());
             inputs.Setup(x => x.TestProjectsInput).Returns(new TestProjectsInput());
             inputs.Setup(x => x.MsBuildPathInput).Returns(new MsBuildPathInput());
             inputs.Setup(x => x.MutateInput).Returns(new MutateInput());

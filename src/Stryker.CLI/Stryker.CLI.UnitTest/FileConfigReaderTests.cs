@@ -69,7 +69,7 @@ namespace Stryker.CLI.UnitTest
 
             actualInputs.AdditionalTimeoutInput.SuppliedInput.ShouldBe(9999);
             actualInputs.VerbosityInput.SuppliedInput.ShouldBe("trace");
-            actualInputs.ProjectUnderTestNameInput.SuppliedInput.ShouldBe("ExampleProject.csproj");
+            actualInputs.TargetProjectNameInput.SuppliedInput.ShouldBe("ExampleProject.csproj");
             actualInputs.ReportersInput.SuppliedInput.ShouldHaveSingleItem();
             actualInputs.ReportersInput.SuppliedInput.ShouldContain(Reporter.Json.ToString());
             actualInputs.ConcurrencyInput.SuppliedInput.ShouldBe(1);
@@ -115,7 +115,7 @@ namespace Stryker.CLI.UnitTest
 
             actualInputs.AdditionalTimeoutInput.SuppliedInput.ShouldBe(9999);
             actualInputs.VerbosityInput.SuppliedInput.ShouldBe("trace");
-            actualInputs.ProjectUnderTestNameInput.SuppliedInput.ShouldBe("ExampleProject.csproj");
+            actualInputs.TargetProjectNameInput.SuppliedInput.ShouldBe("ExampleProject.csproj");
             actualInputs.ReportersInput.SuppliedInput.ShouldHaveSingleItem();
             actualInputs.ReportersInput.SuppliedInput.ShouldContain(Reporter.Json.ToString());
             actualInputs.ConcurrencyInput.SuppliedInput.ShouldBe(1);
