@@ -58,19 +58,22 @@ namespace Stryker.Core.Initialisation
             _projectInfo = _inputFileResolver.ResolveInput(options, solutionProjects);
 
             // initial build
-            var testProjects = _projectInfo.TestProjectAnalyzerResults.ToList();
-            for (var i = 0; i < testProjects.Count; i++)
+            if (!options.IsSolutionContext)
             {
-                _logger.LogInformation(
-                    "Building test project {ProjectFilePath} ({CurrentTestProject}/{OfTotalTestProjects})",
-                    testProjects[i].ProjectFilePath, i + 1,
-                    _projectInfo.TestProjectAnalyzerResults.Count());
+                var testProjects = _projectInfo.TestProjectAnalyzerResults.ToList();
+                for (var i = 0; i < testProjects.Count; i++)
+                {
+                    _logger.LogInformation(
+                        "Building test project {ProjectFilePath} ({CurrentTestProject}/{OfTotalTestProjects})",
+                        testProjects[i].ProjectFilePath, i + 1,
+                        _projectInfo.TestProjectAnalyzerResults.Count());
 
-                _initialBuildProcess.InitialBuild(
-                    testProjects[i].TargetsFullFramework(),
-                    testProjects[i].ProjectFilePath,
-                    options.SolutionPath,
-                    options.MsBuildPath);
+                    _initialBuildProcess.InitialBuild(
+                        testProjects[i].TargetsFullFramework(),
+                        testProjects[i].ProjectFilePath,
+                        options.SolutionPath,
+                        options.MsBuildPath);
+                }
             }
 
             InitializeDashboardProjectInformation(options, _projectInfo);

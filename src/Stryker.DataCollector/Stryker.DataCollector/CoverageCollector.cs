@@ -276,7 +276,6 @@ namespace Stryker.DataCollector
             }
         }
 
-
         public void TestSessionEnd(TestSessionEndArgs testSessionEndArgs) => Log($"TestSession ends.");
 
         private readonly struct TestCoverageInfo

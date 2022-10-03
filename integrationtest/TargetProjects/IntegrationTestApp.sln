@@ -11,8 +11,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreTestProject.XUnit", 
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedProject", "SharedProject\SharedProject.shproj", "{AE33CEEA-7EB1-438D-ABD4-3208D032C5D3}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestProject.XUnit", "TestProjectFiles\TestProject.XUnit.csproj", "{4F06AFF4-5AD9-41E4-9255-68E1B5A468AE}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TargetProject", "TargetProject\TargetProject.csproj", "{FD5B399F-F31D-4E95-824D-EF3FDC2F610C}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExtraProject", "ExtraProject\ExtraProject.csproj", "{70462F5F-6EC9-43F9-B360-3F61C9636804}"

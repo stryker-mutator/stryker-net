@@ -37,7 +37,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 {
                     new CsharpFileLeaf()
                 });
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>()))
+            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()))
                 .Returns(new ProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -66,9 +66,9 @@ namespace Stryker.Core.UnitTest.Initialisation
                 ProjectVersion = "TheProjectVersion"
             };
 
-            var result = target.Initialize(options);
+            var result = target.Initialize(options, null);
 
-            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
         }
 
         [Fact]
@@ -83,7 +83,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf());
 
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>())).Returns(
+            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(
                 new ProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -114,10 +114,10 @@ namespace Stryker.Core.UnitTest.Initialisation
                 ProjectVersion = "TheProjectVersion"
             };
 
-            target.Initialize(options);
+            target.Initialize(options, null);
             Assert.Throws<InputException>(() => target.InitialTest(options));
 
-            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
             assemblyReferenceResolverMock.Verify();
             initialTestProcessMock.Verify(x => x.InitialTest(It.IsAny<StrykerOptions>(),testRunnerMock.Object), Times.Once);
         }
@@ -135,7 +135,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf());
 
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>())).Returns(
+            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(
                 new ProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -169,10 +169,10 @@ namespace Stryker.Core.UnitTest.Initialisation
                 ProjectVersion = "TheProjectVersion"
             };
 
-            target.Initialize(options);
+            target.Initialize(options, null);
             target.InitialTest(options);
 
-            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
             assemblyReferenceResolverMock.Verify();
             initialTestProcessMock.Verify(x => x.InitialTest(It.IsAny<StrykerOptions>(),testRunnerMock.Object), Times.Once);
         }
@@ -194,7 +194,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf());
 
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>())).Returns(
+            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(
                 new ProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -227,7 +227,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 ProjectVersion = "TheProjectVersion"
             };
 
-            target.Initialize(options);
+            target.Initialize(options, null);
             Assert.Throws<InputException>(() => target.InitialTest(options)).Message.ShouldContain(libraryName);
         }
     }

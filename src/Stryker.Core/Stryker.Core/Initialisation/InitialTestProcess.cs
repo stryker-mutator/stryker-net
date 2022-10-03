@@ -60,7 +60,7 @@ namespace Stryker.Core.Initialisation
                     throw new InputException("Initial testrun has more than 50% failing tests.", initTestRunResult.ResultMessage);
                 }
                 
-                _logger.LogWarning($"{(failingTestsCount == 1 ? "A test is ": $"{failingTestsCount} tests are")} failing. Stryker will continue but outcome will be impacted.");
+                _logger.LogWarning($"{(failingTestsCount == 1 ? "A test is": $"{failingTestsCount} tests are")} failing. Stryker will continue but outcome will be impacted.");
             }
 
             TimeoutValueCalculator = new TimeoutValueCalculator(options.AdditionalTimeout,
