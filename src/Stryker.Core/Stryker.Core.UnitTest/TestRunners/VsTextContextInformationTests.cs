@@ -17,7 +17,7 @@ using Serilog.Events;
 using Shouldly;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TargetProjects;
 using Stryker.Core.TestRunners.VsTest;
 using Stryker.Core.ToolHelpers;
 using Xunit;
@@ -27,7 +27,7 @@ namespace Stryker.Core.UnitTest.TestRunners
     public class VsTextContextInformationTests
     {
         private readonly string _testAssemblyPath;
-        private readonly SourceProjectInfo _targetProject;
+        private readonly TargetProjectInfo _targetProject;
         private readonly MockFileSystem _fileSystem;
         private readonly Uri _executorUri;
         private ConsoleParameters _consoleParameters;
@@ -71,7 +71,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 { Path.Combine(filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"), new MockFileData("Bytecode") },
             });
             content.Add(new CsharpFileLeaf());
-            _targetProject = new SourceProjectInfo(_fileSystem)
+            _targetProject = new TargetProjectInfo(_fileSystem)
             {
                 TestProjectAnalyzerResults = new List<IAnalyzerResult> {
                     TestHelper.SetupProjectAnalyzerResult(

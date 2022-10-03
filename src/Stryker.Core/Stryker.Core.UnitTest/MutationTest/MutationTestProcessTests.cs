@@ -1,4 +1,3 @@
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -18,7 +17,7 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TargetProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using Xunit;
@@ -58,7 +57,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var input = new MutationTestInput()
             {
-                SourceProjectInfo = new SourceProjectInfo(fileSystem)
+                SourceProjectInfo = new TargetProjectInfo(fileSystem)
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -129,7 +128,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var input = new MutationTestInput()
             {
-                SourceProjectInfo = new SourceProjectInfo(fileSystem)
+                SourceProjectInfo = new TargetProjectInfo(fileSystem)
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -211,7 +210,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var input = new MutationTestInput()
             {
-                SourceProjectInfo = new SourceProjectInfo(fileSystem)
+                SourceProjectInfo = new TargetProjectInfo(fileSystem)
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -275,7 +274,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var input = new MutationTestInput()
             {
-                SourceProjectInfo = new SourceProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -328,7 +327,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -339,7 +338,6 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ,
                     ProjectContents = folder
                 },
-                AssemblyReferences = _assemblies,
                 InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
             };
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
@@ -391,7 +389,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var input = new MutationTestInput
             {
-                SourceProjectInfo = new SourceProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                     {
@@ -414,8 +412,8 @@ namespace Stryker.Core.UnitTest.MutationTest
             var target = new MutationTestProcess(input, options, null, executor);
             // test mutants
             target.GetCoverage();
-            
-            target.Test(input.SourceProjectInfo.ProjectContents.Mutants.Where(m=> m.ResultStatus == MutantStatus.NotRun));
+
+            target.Test(input.SourceProjectInfo.ProjectContents.Mutants.Where(m => m.ResultStatus == MutantStatus.NotRun));
             // first mutant should be killed by test 2
             scenario.GetMutantStatus(1).ShouldBe(MutantStatus.Killed);
             // other mutant survives
@@ -452,7 +450,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var input = new MutationTestInput
             {
-                ProjectInfo = new ProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                     {
@@ -462,7 +460,6 @@ namespace Stryker.Core.UnitTest.MutationTest
                     }).Object,
                     ProjectContents = folder
                 },
-                AssemblyReferences = _assemblies,
                 InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
             };
 
@@ -477,8 +474,8 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             // test mutants
             target.GetCoverage();
-            
-            target.Test(input.ProjectInfo.ProjectContents.Mutants);
+
+            target.Test(input.SourceProjectInfo.ProjectContents.Mutants);
             // first mutant should be marked as survived
             scenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
         }
@@ -511,7 +508,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var input = new MutationTestInput
             {
-                ProjectInfo = new ProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                     {
@@ -521,7 +518,6 @@ namespace Stryker.Core.UnitTest.MutationTest
                     }).Object,
                     ProjectContents = folder
                 },
-                AssemblyReferences = _assemblies,
                 InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
             };
 
@@ -535,7 +531,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var target = new MutationTestProcess(input, options, null, executor);
             // test mutants
             target.GetCoverage();
-            
+
             // first mutant should be marked as survived without any test
             scenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
         }
@@ -568,7 +564,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var input = new MutationTestInput
             {
-                SourceProjectInfo = new SourceProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                     {
@@ -614,7 +610,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var input = new MutationTestInput()
             {
-                SourceProjectInfo = new SourceProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -668,7 +664,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }).Object;
             var input = new MutationTestInput()
             {
-                SourceProjectInfo = new SourceProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
                     ProjectContents = folder,
                     ProjectUnderTestAnalyzerResult = projectUnderTest
@@ -711,7 +707,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }).Object;
             var input = new MutationTestInput()
             {
-                SourceProjectInfo = new SourceProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
                     ProjectContents = folder,
                     ProjectUnderTestAnalyzerResult = projectUnderTest

@@ -13,7 +13,7 @@ using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TargetProjects;
 using Stryker.Core.ToolHelpers;
 using Stryker.DataCollector;
 
@@ -28,7 +28,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly Func<string, IStrykerTestHostLauncher> _hostBuilder;
         private readonly ILogger _logger;
         private readonly bool _ownVsTestHelper;
-        private readonly SourceProjectInfo _projectInfo;
+        private readonly TargetProjectInfo _projectInfo;
         private readonly IVsTestHelper _vsTestHelper;
         private readonly Func<ConsoleParameters, IVsTestConsoleWrapper> _wrapperBuilder;
         private bool _disposed;
@@ -46,7 +46,7 @@ namespace Stryker.Core.TestRunners.VsTest
         /// <param name="hostBuilder"></param>
         /// <param name="logger"></param>
         public VsTestContextInformation(StrykerOptions options,
-            SourceProjectInfo projectInfo,
+            TargetProjectInfo projectInfo,
             IVsTestHelper helper = null,
             IFileSystem fileSystem = null,
             Func<ConsoleParameters, IVsTestConsoleWrapper> builder = null,

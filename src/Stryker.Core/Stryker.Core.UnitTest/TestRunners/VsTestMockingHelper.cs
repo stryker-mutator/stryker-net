@@ -19,13 +19,11 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCo
 using Moq;
 using Moq.Language.Flow;
 using Stryker.Core.Initialisation;
-using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.SourceProjects;
-using Stryker.Core.Reporters;
+using Stryker.Core.ProjectComponents.TargetProjects;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
 using Stryker.Core.ToolHelpers;
@@ -42,7 +40,7 @@ public class VsTestMockingHelper : TestBase
     protected Mutant Mutant { get; }
     protected Mutant OtherMutant { get; }
     private readonly string _testAssemblyPath;
-    private readonly SourceProjectInfo _targetProject;
+    private readonly TargetProjectInfo _targetProject;
     private readonly MockFileSystem _fileSystem;
     private readonly Uri _NUnitUri;
     private readonly Uri _xUnitUri;
@@ -98,11 +96,11 @@ public class VsTestMockingHelper : TestBase
         TestCases = new List<TestCase> { firstTest, secondTest };
     }
 
-    protected SourceProjectInfo BuildTestProject(IEnumerable<Mutant> mutants = null)
+    protected TargetProjectInfo BuildTestProject(IEnumerable<Mutant> mutants = null)
     {
         var content = new CsharpFolderComposite();
         content.Add(new CsharpFileLeaf { Mutants = mutants ?? new[] { Mutant, OtherMutant } });
-        return new SourceProjectInfo(_fileSystem)
+        return new TargetProjectInfo(_fileSystem)
         {
             TestProjectAnalyzerResults = new List<IAnalyzerResult>
             {
@@ -449,7 +447,7 @@ public class VsTestMockingHelper : TestBase
             }).Returns(Task.CompletedTask);
 
     protected Mock<IVsTestConsoleWrapper> BuildVsTestRunnerPool(StrykerOptions options,
-        out VsTestRunnerPool runner, IReadOnlyCollection<TestCase> testCases = null, SourceProjectInfo targetProject = null,
+        out VsTestRunnerPool runner, IReadOnlyCollection<TestCase> testCases = null, TargetProjectInfo targetProject = null,
         bool succeed = true)
     {
         testCases ??= TestCases.ToList();
@@ -481,7 +479,7 @@ public class VsTestMockingHelper : TestBase
         return mockedVsTestConsole;
     }
 
-    protected MutationTestProcess BuildMutationTestProcess(VsTestRunnerPool runner, StrykerOptions options, IReadOnlyList<TestCase> tests = null, SourceProjectInfo targetProject = null)
+    protected MutationTestProcess BuildMutationTestProcess(VsTestRunnerPool runner, StrykerOptions options, IReadOnlyList<TestCase> tests = null, TargetProjectInfo targetProject = null)
     {
         var testRunResult = new TestRunResult(null, new TestGuidsList((tests ?? TestCases).Select(t => t.Id)),
             TestGuidsList.NoTest(),

@@ -17,7 +17,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TargetProjects;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Compiling
@@ -123,7 +123,7 @@ namespace ExampleProject
 
             var input = new MutationTestInput()
             {
-                SourceProjectInfo = new SourceProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new TargetProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                     {
@@ -686,7 +686,7 @@ namespace ExampleProject
 
             rollbackedResult.Success.ShouldBeFalse();
             rollbackedResult.Diagnostics.ShouldHaveSingleItem();
-            Should.Throw<CompilationException>(() => { target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, true); });
+            Should.Throw<CompilationException>(() => target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, true));
         }
 
         [Fact]

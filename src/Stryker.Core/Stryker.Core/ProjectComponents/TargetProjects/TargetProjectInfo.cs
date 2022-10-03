@@ -4,13 +4,13 @@ using System.IO.Abstractions;
 using Buildalyzer;
 using Stryker.Core.Initialisation.Buildalyzer;
 
-namespace Stryker.Core.ProjectComponents.SourceProjects
+namespace Stryker.Core.ProjectComponents.TargetProjects
 {
-    public class SourceProjectInfo
+    public class TargetProjectInfo
     {
         private readonly IFileSystem _fileSystem;
 
-        public SourceProjectInfo(IFileSystem fileSystem) => _fileSystem = fileSystem ?? new FileSystem();
+        public TargetProjectInfo(IFileSystem fileSystem) => _fileSystem = fileSystem ?? new FileSystem();
 
         public IEnumerable<IAnalyzerResult> TestProjectAnalyzerResults { get; set; }
 

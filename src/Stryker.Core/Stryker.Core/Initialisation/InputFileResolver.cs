@@ -9,7 +9,7 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TargetProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.Initialisation
@@ -17,7 +17,7 @@ namespace Stryker.Core.Initialisation
     public interface IInputFileResolver
     {
         TestProjectsInfo ResolveTestProjectsInfo(StrykerOptions options);
-        SourceProjectInfo ResolveSourceProjectInfo(StrykerOptions options, TestProjectsInfo testProjectsInfo);
+        TargetProjectInfo ResolveSourceProjectInfo(StrykerOptions options, TestProjectsInfo testProjectsInfo);
     }
 
     /// <summary>
@@ -67,9 +67,9 @@ namespace Stryker.Core.Initialisation
             };
         }
 
-        public SourceProjectInfo ResolveSourceProjectInfo(StrykerOptions options, TestProjectsInfo testProjectsInfo)
+        public TargetProjectInfo ResolveSourceProjectInfo(StrykerOptions options, TestProjectsInfo testProjectsInfo)
         {
-            var sourceProjectInfo = new SourceProjectInfo(_fileSystem)
+            var sourceProjectInfo = new TargetProjectInfo(_fileSystem)
             {
                 TestProjectAnalyzerResults = testProjectsInfo.TestProjects.Select(t => t.TestProjectAnalyzerResult)
             };
@@ -79,7 +79,7 @@ namespace Stryker.Core.Initialisation
 
             sourceProjectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath, options.TargetFramework);
 
-            var language = SourceProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage();
+            var language = TargetProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage();
             if (language == Language.Fsharp)
             {
                 _logger.LogError("Mutation testing of F# projects is not ready yet. No mutants will be generated.");

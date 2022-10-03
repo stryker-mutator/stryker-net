@@ -11,7 +11,7 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TargetProjects;
 using Stryker.DataCollector;
 
 namespace Stryker.Core.TestRunners.VsTest
@@ -42,7 +42,7 @@ namespace Stryker.Core.TestRunners.VsTest
         }
 
         [ExcludeFromCodeCoverage(Justification = "It depends on the deployment of VsTest.")]
-        public VsTestRunnerPool(StrykerOptions options, SourceProjectInfo projectInfo)
+        public VsTestRunnerPool(StrykerOptions options, TargetProjectInfo projectInfo)
         {
             Context = new VsTestContextInformation(options, projectInfo);
             Context.Initialize();

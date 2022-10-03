@@ -10,7 +10,7 @@ using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TargetProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
@@ -124,7 +124,7 @@ namespace Stryker.Core.Initialisation
         }
 
 
-        private void InitializeDashboardProjectInformation(StrykerOptions options, SourceProjectInfo projectInfo)
+        private void InitializeDashboardProjectInformation(StrykerOptions options, TargetProjectInfo projectInfo)
         {
             var dashboardReporterEnabled = options.Reporters.Contains(Reporter.Dashboard) || options.Reporters.Contains(Reporter.All);
             var dashboardBaselineEnabled = options.WithBaseline && options.BaselineProvider == BaselineProvider.Dashboard;

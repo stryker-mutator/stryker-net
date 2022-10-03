@@ -14,18 +14,18 @@ using Stryker.Core.InjectedHelpers;
 using Stryker.Core.MutantFilters.Extensions;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TargetProjects;
 
 namespace Stryker.Core.Initialisation
 {
     public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
     {
-        private readonly SourceProjectInfo _projectInfo;
+        private readonly TargetProjectInfo _projectInfo;
         private readonly StrykerOptions _options;
         private readonly string[] _foldersToExclude;
         private readonly ILogger _logger;
 
-        public CsharpProjectComponentsBuilder(SourceProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) : base(fileSystem)
+        public CsharpProjectComponentsBuilder(TargetProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) : base(fileSystem)
         {
             _projectInfo = projectInfo;
             _options = options;
