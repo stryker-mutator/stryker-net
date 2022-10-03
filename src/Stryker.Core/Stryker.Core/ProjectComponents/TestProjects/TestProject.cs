@@ -15,7 +15,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
     {
         private readonly IFileSystem _fileSystem;
 
-        public IAnalyzerResult TestProjectAnalyzerResult { get; }
+        public IAnalyzerResult AnalyzerResult { get; }
 
         public IEnumerable<TestFile> TestFiles { get; }
 
@@ -25,7 +25,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
 
             _fileSystem = fileSystem ?? new FileSystem();
 
-            TestProjectAnalyzerResult = testProjectAnalyzerResult;
+            AnalyzerResult = testProjectAnalyzerResult;
 
             var testFiles = new List<TestFile>();
             foreach (var file in testProjectAnalyzerResult.SourceFiles)
@@ -59,11 +59,11 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             };
         }
 
-        public bool Equals(TestProject other) => other.TestProjectAnalyzerResult.Equals(TestProjectAnalyzerResult) && other.TestFiles.SequenceEqual(TestFiles);
+        public bool Equals(TestProject other) => other.AnalyzerResult.Equals(AnalyzerResult) && other.TestFiles.SequenceEqual(TestFiles);
 
         public override bool Equals(object obj) => obj is TestProject project && Equals(project);
 
         // Stryker disable once bitwise: Bitwise mutation does not change functional usage of GetHashCode
-        public override int GetHashCode() => TestProjectAnalyzerResult.GetHashCode();
+        public override int GetHashCode() => AnalyzerResult.GetHashCode();
     }
 }

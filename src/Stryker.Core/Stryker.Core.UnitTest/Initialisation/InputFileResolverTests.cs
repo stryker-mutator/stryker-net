@@ -1112,7 +1112,7 @@ Please specify a test project name filter that results in one project.
                 @"..\AnotherProject\AnotherProject.csproj"
             };
 
-            var match = new InputFileResolver().DetermineProjectUnderTestWithNameFilter(shouldMatch, projectReferences);
+            var match = new InputFileResolver().DetermineTargetProjectWithNameFilter(shouldMatch, projectReferences);
 
             match.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
         }

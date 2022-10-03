@@ -58,7 +58,7 @@ namespace Stryker.Core
                 _mutationTestProcesses = projectOrchestrator.MutateProjects(options, reporters).ToList();
                 var combinedTestProjectsInfo = _mutationTestProcesses.Select(mtp => mtp.Input.TestProjectsInfo).Aggregate((a, b) => a + b);
 
-                var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.SourceProjectInfo.ProjectContents).ToList(), options);
+                var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.TargetProjectInfo.ProjectContents).ToList(), options);
 
                 _logger.LogInformation("{0} mutants created", rootComponent.Mutants.Count());
 
@@ -105,7 +105,7 @@ namespace Stryker.Core
                 // Test
                 foreach (var project in _mutationTestProcesses)
                 {
-                    project.Test(project.Input.SourceProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
+                    project.Test(project.Input.TargetProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
                     project.Restore();
                 }
 

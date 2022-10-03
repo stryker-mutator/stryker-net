@@ -11,6 +11,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.TargetProjects;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
@@ -31,9 +32,10 @@ namespace Stryker.Core.Initialisation
         private readonly IInitialBuildProcess _initialBuildProcess;
         private readonly IInitialTestProcess _initialTestProcess;
         private ITestRunner _testRunner;
-        private ProjectInfo _projectInfo;
+        private TargetProjectInfo _targetProjectInfo;
+        private TestProjectsInfo _testProjectsInfo;
         private readonly ILogger _logger;
-       
+
 
         public InitialisationProcess(
             IInputFileResolver inputFileResolver = null,
@@ -52,16 +54,16 @@ namespace Stryker.Core.Initialisation
         {
             // resolve project info
             _testProjectsInfo = _inputFileResolver.ResolveTestProjectsInfo(options);
-            _projectInfo = _inputFileResolver.ResolveSourceProjectInfo(options, testProjectsInfo);
+            _targetProjectInfo = _inputFileResolver.ResolveTargetProjectInfo(options, _testProjectsInfo);
 
             // initial build
-            var testProjects = _projectInfo.TestProjectAnalyzerResults.ToList();
+            var testProjects = _testProjectsInfo.AnalyzerResults.ToList();
             for (var i = 0; i < testProjects.Count; i++)
             {
                 _logger.LogInformation(
                     "Building test project {ProjectFilePath} ({CurrentTestProject}/{OfTotalTestProjects})",
                     testProjects[i].ProjectFilePath, i + 1,
-                    _projectInfo.TestProjectAnalyzerResults.Count());
+                    _targetProjectInfo.TestProjectAnalyzerResults.Count());
 
                 _initialBuildProcess.InitialBuild(
                     testProjects[i].TargetsFullFramework(),
@@ -70,17 +72,17 @@ namespace Stryker.Core.Initialisation
                     options.MsBuildPath);
             }
 
-            InitializeDashboardProjectInformation(options, _projectInfo);
+            InitializeDashboardProjectInformation(options, _targetProjectInfo);
 
             if (_testRunner == null)
             {
-                _testRunner = new VsTestRunnerPool(options, _projectInfo);
+                _testRunner = new VsTestRunnerPool(options, _testProjectsInfo);
             }
 
             var input = new MutationTestInput
             {
                 TestProjectsInfo = _testProjectsInfo,
-                SourceProjectInfo = _projectInfo,
+                TargetProjectInfo = _targetProjectInfo,
                 TestRunner = _testRunner,
             };
 
@@ -108,9 +110,9 @@ namespace Stryker.Core.Initialisation
             ["Microsoft.VisualStudio.TestPlatform.TestFramework"] = "Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter"
         };
 
-        public static void DiagnoseLackOfDetectedTest(ProjectInfo projectInfo)
+        public static void DiagnoseLackOfDetectedTest(TestProjectsInfo testProjectsInfo)
         {
-            foreach (var testProject in projectInfo.TestProjectAnalyzerResults)
+            foreach (var testProject in testProjectsInfo.AnalyzerResults)
             {
                 foreach (var (framework, adapter) in TestFrameworks)
                 {

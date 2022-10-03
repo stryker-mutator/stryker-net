@@ -17,7 +17,7 @@ namespace Stryker.Core.Initialisation
     public interface IInputFileResolver
     {
         TestProjectsInfo ResolveTestProjectsInfo(StrykerOptions options);
-        TargetProjectInfo ResolveSourceProjectInfo(StrykerOptions options, TestProjectsInfo testProjectsInfo);
+        TargetProjectInfo ResolveTargetProjectInfo(StrykerOptions options, TestProjectsInfo testProjectsInfo);
     }
 
     /// <summary>
@@ -67,31 +67,31 @@ namespace Stryker.Core.Initialisation
             };
         }
 
-        public TargetProjectInfo ResolveSourceProjectInfo(StrykerOptions options, TestProjectsInfo testProjectsInfo)
+        public TargetProjectInfo ResolveTargetProjectInfo(StrykerOptions options, TestProjectsInfo testProjectsInfo)
         {
-            var sourceProjectInfo = new TargetProjectInfo(_fileSystem)
+            var targetProjectInfo = new TargetProjectInfo(_fileSystem)
             {
-                TestProjectAnalyzerResults = testProjectsInfo.TestProjects.Select(t => t.TestProjectAnalyzerResult)
+                TestProjectAnalyzerResults = testProjectsInfo.TestProjects.Select(t => t.AnalyzerResult)
             };
 
             // Determine project under test
-            var projectUnderTest = FindProjectUnderTest(testProjectsInfo, options.ProjectUnderTestName);
+            var targetProject = FindProjectUnderTest(testProjectsInfo, options.ProjectUnderTestName);
 
-            sourceProjectInfo.AnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath, options.TargetFramework);
+            targetProjectInfo.AnalyzerResult = _projectFileReader.AnalyzeProject(targetProject, options.SolutionPath, options.TargetFramework);
 
-            var language = TargetProjectInfo.AnalyzerResult.GetLanguage();
+            var language = targetProjectInfo.AnalyzerResult.GetLanguage();
             if (language == Language.Fsharp)
             {
                 _logger.LogError("Mutation testing of F# projects is not ready yet. No mutants will be generated.");
             }
 
-            var builder = GetProjectComponentBuilder(language, options, SourceProjectInfo);
+            var builder = GetProjectComponentBuilder(language, options, targetProjectInfo);
             var inputFiles = builder.Build();
-            projectInfo.ProjectContents = inputFiles;
+            targetProjectInfo.ProjectContents = inputFiles;
 
-            _logger.LogInformation("Found project {0} to mutate.", projectUnderTest);
+            _logger.LogInformation("Found project {0} to mutate.", targetProject);
 
-            return sourceProjectInfo;
+            return targetProjectInfo;
         }
 
         public string FindTestProject(string path)
@@ -150,11 +150,11 @@ namespace Stryker.Core.Initialisation
 
             if (string.IsNullOrEmpty(projectUnderTestNameFilter))
             {
-                projectUnderTestPath = DetermineProjectUnderTestWithoutNameFilter(projectReferences);
+                projectUnderTestPath = DetermineTargetProjectWithoutNameFilter(projectReferences);
             }
             else
             {
-                projectUnderTestPath = DetermineProjectUnderTestWithNameFilter(projectUnderTestNameFilter, projectReferences);
+                projectUnderTestPath = DetermineTargetProjectWithNameFilter(projectUnderTestNameFilter, projectReferences);
             }
 
             _logger.LogDebug("Using {0} as project under test", projectUnderTestPath);
@@ -162,7 +162,7 @@ namespace Stryker.Core.Initialisation
             return projectUnderTestPath;
         }
 
-        internal string DetermineProjectUnderTestWithNameFilter(string projectUnderTestNameFilter, IEnumerable<string> projectReferences)
+        internal string DetermineTargetProjectWithNameFilter(string projectUnderTestNameFilter, IEnumerable<string> projectReferences)
         {
             var stringBuilder = new StringBuilder();
 
@@ -192,7 +192,7 @@ namespace Stryker.Core.Initialisation
             return projectReferencesMatchingNameFilter.Single();
         }
 
-        private string DetermineProjectUnderTestWithoutNameFilter(IEnumerable<string> projectReferences)
+        private string DetermineTargetProjectWithoutNameFilter(IEnumerable<string> projectReferences)
         {
             var stringBuilder = new StringBuilder();
             var referenceChoice = BuildReferenceChoice(projectReferences);
@@ -218,7 +218,7 @@ namespace Stryker.Core.Initialisation
         private static IEnumerable<string> FindProjectsReferencedByAllTestProjects(IEnumerable<TestProject> testProjects)
         {
             var amountOfTestProjects = testProjects.Count();
-            var allProjectReferences = testProjects.SelectMany(t => t.TestProjectAnalyzerResult.ProjectReferences);
+            var allProjectReferences = testProjects.SelectMany(t => t.AnalyzerResult.ProjectReferences);
             var projectReferences = allProjectReferences.GroupBy(x => x).Where(g => g.Count() == amountOfTestProjects).Select(g => g.Key);
             return projectReferences;
         }
@@ -240,7 +240,7 @@ namespace Stryker.Core.Initialisation
         private ProjectComponentsBuilder GetProjectComponentBuilder(
             Language language,
             StrykerOptions options,
-            ProjectInfo projectInfo) => language switch
+            TargetProjectInfo projectInfo) => language switch
             {
                 Language.Csharp => new CsharpProjectComponentsBuilder(
                     projectInfo,
