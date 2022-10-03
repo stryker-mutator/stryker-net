@@ -56,7 +56,7 @@ namespace Stryker.Core.MutationTest
         /// <param name="mutationTestInput"></param>
         /// <param name="options"></param>
         public CsharpMutationProcess(MutationTestInput mutationTestInput, StrykerOptions options) : this(mutationTestInput, null, options, null, null)
-        {}
+        { }
 
         public void Mutate()
         {
@@ -88,12 +88,12 @@ namespace Stryker.Core.MutationTest
             // compile the mutated syntax trees
             var compileResult = _compilingProcess.Compile(_projectInfo.CompilationSyntaxTrees, ms, msForSymbols, _options.DevMode);
 
-            foreach (var testProject in _input.TargetProjectInfo.TestProjectAnalyzerResults)
+            foreach (var testProject in _input.TestProjectsInfo.AnalyzerResults)
             {
-                var injectionPath = _input.TargetProjectInfo.GetInjectionFilePath(testProject);
-                if (!_fileSystem.Directory.Exists(Path.GetDirectoryName(injectionPath)))
+                var injectionPath = _input.TestProjectsInfo.GetInjectionFilePath(testProject, _input.TargetProjectInfo.AnalyzerResult);
+                if (!_fileSystem.Directory.Exists(testProject.GetAssemblyDirectoryPath()))
                 {
-                    _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(injectionPath));
+                    _fileSystem.Directory.CreateDirectory(testProject.GetAssemblyDirectoryPath());
                 }
 
                 // inject the mutated Assembly into the test project
@@ -104,8 +104,7 @@ namespace Stryker.Core.MutationTest
                 if (msForSymbols != null)
                 {
                     // inject the debug symbols into the test project
-                    using var symbolDestination = _fileSystem.File.Create(Path.Combine(Path.GetDirectoryName(injectionPath),
-                        _input.TargetProjectInfo.AnalyzerResult.GetSymbolFileName()));
+                    using var symbolDestination = _fileSystem.File.Create(Path.Combine(testProject.GetAssemblyDirectoryPath(), _input.TargetProjectInfo.AnalyzerResult.GetSymbolFileName()));
                     msForSymbols.Position = 0;
                     msForSymbols.CopyTo(symbolDestination);
                 }

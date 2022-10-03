@@ -863,7 +863,7 @@ Please specify a test project name filter that results in one project.
             var options = new StrykerOptions()
             {
                 ProjectPath = basePath,
-                ProjectUnderTestName = projectUnderTestNameFilter,
+                TargetProjectName = projectUnderTestNameFilter,
                 TestProjects = new List<string> { testProjectPath }
             };
 

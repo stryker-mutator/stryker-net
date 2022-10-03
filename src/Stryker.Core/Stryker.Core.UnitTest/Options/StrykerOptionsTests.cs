@@ -42,7 +42,7 @@ namespace Stryker.Core.UnitTest.Options
                 OptimizationMode = OptimizationModes.DisableBail,
                 OutputPath = "output",
                 ProjectName = "name",
-                ProjectUnderTestName = "project",
+                TargetProjectName = "project",
                 ProjectVersion = "version"
             };
 

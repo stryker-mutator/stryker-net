@@ -1,57 +1,14 @@
-using System.Collections.Generic;
-using System.IO;
-using System.IO.Abstractions;
 using Buildalyzer;
-using Stryker.Core.Initialisation.Buildalyzer;
 
 namespace Stryker.Core.ProjectComponents.TargetProjects
 {
     public class TargetProjectInfo
     {
-        private readonly IFileSystem _fileSystem;
-
-        public TargetProjectInfo(IFileSystem fileSystem) => _fileSystem = fileSystem ?? new FileSystem();
-
-        public IEnumerable<IAnalyzerResult> TestProjectAnalyzerResults { get; set; }
-
         public IAnalyzerResult AnalyzerResult { get; set; }
 
         /// <summary>
         /// The Folder/File structure found in the project under test.
         /// </summary>
         public IProjectComponent ProjectContents { get; set; }
-
-        public string GetInjectionFilePath(IAnalyzerResult analyzerResult) => Path.Combine(
-                Path.GetDirectoryName(analyzerResult.GetAssemblyPath()),
-                Path.GetFileName(AnalyzerResult.GetAssemblyPath()));
-
-        public virtual void RestoreOriginalAssembly()
-        {
-            foreach (var testProject in TestProjectAnalyzerResults)
-            {
-                var injectionPath = GetInjectionFilePath(testProject);
-                _fileSystem.File.Copy(GetBackupName(injectionPath), injectionPath, true);
-            }
-        }
-
-        public virtual void BackupOriginalAssembly()
-        {
-            foreach (var testProject in TestProjectAnalyzerResults)
-            {
-                var injectionPath = GetInjectionFilePath(testProject);
-                var destFileName = GetBackupName(injectionPath);
-                if (!_fileSystem.Directory.Exists(Path.GetDirectoryName(injectionPath)))
-                {
-                    _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(injectionPath));
-                }
-                if (_fileSystem.File.Exists(injectionPath) && !_fileSystem.File.Exists(destFileName))
-                {
-                    // if the backup is here, it means the source is already mutated, so no backup
-                    _fileSystem.File.Move(injectionPath, destFileName, false);
-                }
-            }
-        }
-
-        private static string GetBackupName(string injectionPath) => injectionPath + ".stryker-unchanged";
     }
 }

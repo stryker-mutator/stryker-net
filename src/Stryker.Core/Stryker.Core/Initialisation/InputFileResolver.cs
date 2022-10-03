@@ -61,7 +61,7 @@ namespace Stryker.Core.Initialisation
                 testProjects.Add(new TestProject(_fileSystem, testProjectAnalyzerResult));
             }
 
-            return new TestProjectsInfo
+            return new TestProjectsInfo(_fileSystem)
             {
                 TestProjects = testProjects
             };
@@ -69,13 +69,10 @@ namespace Stryker.Core.Initialisation
 
         public TargetProjectInfo ResolveTargetProjectInfo(StrykerOptions options, TestProjectsInfo testProjectsInfo)
         {
-            var targetProjectInfo = new TargetProjectInfo(_fileSystem)
-            {
-                TestProjectAnalyzerResults = testProjectsInfo.TestProjects.Select(t => t.AnalyzerResult)
-            };
+            var targetProjectInfo = new TargetProjectInfo();
 
             // Determine project under test
-            var targetProject = FindProjectUnderTest(testProjectsInfo, options.ProjectUnderTestName);
+            var targetProject = FindProjectUnderTest(testProjectsInfo, options.TargetProjectName);
 
             targetProjectInfo.AnalyzerResult = _projectFileReader.AnalyzeProject(targetProject, options.SolutionPath, options.TargetFramework);
 

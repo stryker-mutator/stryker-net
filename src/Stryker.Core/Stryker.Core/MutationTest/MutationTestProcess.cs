@@ -85,7 +85,7 @@ namespace Stryker.Core.MutationTest
 
         public void Mutate()
         {
-            Input.TargetProjectInfo.BackupOriginalAssembly();
+            Input.TestProjectsInfo.BackupOriginalAssembly(Input.TargetProjectInfo.AnalyzerResult);
             _mutationProcess.Mutate();
         }
 
@@ -104,7 +104,7 @@ namespace Stryker.Core.MutationTest
             return new StrykerRunResult(_options, _projectContents.GetMutationScore());
         }
 
-        public void Restore() => Input.TargetProjectInfo.RestoreOriginalAssembly();
+        public void Restore() => Input.TestProjectsInfo.RestoreOriginalAssembly(Input.TargetProjectInfo.AnalyzerResult);
 
         private void TestMutants(IEnumerable<Mutant> mutantsToTest)
         {
