@@ -1,3 +1,66 @@
+## [3.0.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.0.0...stryker@3.0.1) (2022-09-16)
+
+* **html reporter:** Fix Spectre.Console link escaping by updating Spectre.Console ([#2108](https://github.com/stryker-mutator/stryker-net/issues/2108)) ([e207047](https://github.com/stryker-mutator/stryker-net/commit/e2070475911c92da619ebfbb648c9f430ab2a778))
+
+# [3.0.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@2.2.0...stryker@3.0.0) (2022-09-07)
+
+
+### Bug Fixes
+
+* **azure-fileshare-baseline:** Use full SAS token format instead of making assumptions and transformations on the token ([#2149](https://github.com/stryker-mutator/stryker-net/issues/2149)) ([9c0694e](https://github.com/stryker-mutator/stryker-net/commit/9c0694e7dda088ed1ae36d8390703691dea8e98e))
+* Stryker not properly flagging mutant as TimedOut ([#2143](https://github.com/stryker-mutator/stryker-net/issues/2143)) ([3299c18](https://github.com/stryker-mutator/stryker-net/commit/3299c182e6f3b8e5f5b3e6a62e3505edde097459))
+
+
+### Features
+
+* **initial test:** Configure stryker to fail when initial testrun fails ([#2151](https://github.com/stryker-mutator/stryker-net/issues/2151)) ([9c47a4b](https://github.com/stryker-mutator/stryker-net/commit/9c47a4b6f9f5d2c32478338ca33e6568e5ee55f3))
+
+
+### BREAKING CHANGES
+
+* **azure-fileshare-baseline:** SAS must contain `sv=` and `sig=` to be valid. SAS without sv= are no longer transformed to valid SAS.
+
+
+
+# [2.2.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@2.1.2...stryker@2.2.0) (2022-08-22)
+
+
+### Features
+
+* **reporters:** Markdown File Summary Reporter ([#2138](https://github.com/stryker-mutator/stryker-net/issues/2138)) ([0ac8347](https://github.com/stryker-mutator/stryker-net/commit/0ac8347a219f80ca7d2cbaa16971780dbeb2f685))
+* **testrunner:** Diagnose failed test discovery and provide fix hints ([#2139](https://github.com/stryker-mutator/stryker-net/issues/2139)) ([90971a2](https://github.com/stryker-mutator/stryker-net/commit/90971a290bff8eab5fcf3e4148cc440ebddf9f86))
+
+
+
+## [2.1.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@2.1.1...stryker@2.1.2) (2022-08-05)
+
+
+### Bug Fixes
+
+* **exception logging:** Log vstest exceptions instead of swallowing ([#2123](https://github.com/stryker-mutator/stryker-net/issues/2123)) ([fc95813](https://github.com/stryker-mutator/stryker-net/commit/fc958136e813ca5d6eb56afbed009c5f5c91f802))
+
+
+
+## [2.1.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@2.1.0...stryker@2.1.1) (2022-08-03)
+
+
+### Bug Fixes
+
+* **coverage analysis:** static mutants not marked as needing all tests ([#2121](https://github.com/stryker-mutator/stryker-net/issues/2121)) ([f120710](https://github.com/stryker-mutator/stryker-net/commit/f120710e6a29e66018e230e9df4bdfcab7e643e5))
+
+
+
+# [2.1.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@2.0.0...stryker@2.1.0) (2022-07-26)
+
+
+### Bug Fixes
+
+* **baseline:** increase compatibility of azure file share provider with older SAS keys ([#2115](https://github.com/stryker-mutator/stryker-net/issues/2115)) ([7639793](https://github.com/stryker-mutator/stryker-net/commit/7639793b2ade9faf0f9c04e9dbf84860f03446b6)), closes [#2114](https://github.com/stryker-mutator/stryker-net/issues/2114)
+* **Console print:** Escape paths with Spectre.Console to prevent Exception ([#2113](https://github.com/stryker-mutator/stryker-net/issues/2113)) ([11d627c](https://github.com/stryker-mutator/stryker-net/commit/11d627cee9c736d1dd63db4fb188c075caeb6a75))
+* **Ignore mutants comments:** Stryker properly ignores mutants with comments on static fields ([#2088](https://github.com/stryker-mutator/stryker-net/issues/2088)) ([cb40c0a](https://github.com/stryker-mutator/stryker-net/commit/cb40c0a90fd41571ec8eb84cb729df95763f02b8))
+
+
+
 # [2.0.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@1.5.3...stryker@2.0.0) (2022-06-01)
 
 

@@ -23,9 +23,16 @@ namespace Stryker.Core.MutationTest
         private readonly IFileSystem _fileSystem;
         private readonly MutationTestInput _input;
         private readonly BaseMutantOrchestrator<SyntaxNode> _orchestrator;
-
         private readonly IMutantFilter _mutantFilter;
 
+        /// <summary>
+        /// This constructor is for tests
+        /// </summary>
+        /// <param name="mutationTestInput"></param>
+        /// <param name="fileSystem"></param>
+        /// <param name="options"></param>
+        /// <param name="mutantFilter"></param>
+        /// <param name="orchestrator"></param>
         public CsharpMutationProcess(MutationTestInput mutationTestInput,
             IFileSystem fileSystem = null,
             StrykerOptions options = null,
@@ -42,6 +49,14 @@ namespace Stryker.Core.MutationTest
 
             _mutantFilter = mutantFilter ?? MutantFilterFactory.Create(options, _input);
         }
+
+        /// <summary>
+        /// This constructor is used by the <see cref="MutationTestProcess"/> initialization logic.
+        /// </summary>
+        /// <param name="mutationTestInput"></param>
+        /// <param name="options"></param>
+        public CsharpMutationProcess(MutationTestInput mutationTestInput, StrykerOptions options) : this(mutationTestInput, null, options, null, null)
+        {}
 
         public void Mutate()
         {

@@ -13,6 +13,7 @@ namespace Stryker.Core.ProjectComponents.SourceProjects
         public SourceProjectInfo(IFileSystem fileSystem) => _fileSystem = fileSystem ?? new FileSystem();
 
         public IEnumerable<IAnalyzerResult> TestProjectAnalyzerResults { get; set; }
+
         public IAnalyzerResult ProjectUnderTestAnalyzerResult { get; set; }
 
         /// <summary>
@@ -32,6 +33,7 @@ namespace Stryker.Core.ProjectComponents.SourceProjects
                 _fileSystem.File.Copy(GetBackupName(injectionPath), injectionPath, true);
             }
         }
+
         public virtual void BackupOriginalAssembly()
         {
             foreach (var testProject in TestProjectAnalyzerResults)

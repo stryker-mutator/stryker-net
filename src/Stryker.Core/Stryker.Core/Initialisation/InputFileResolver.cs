@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.SourceProjects;
@@ -78,8 +79,15 @@ namespace Stryker.Core.Initialisation
 
             sourceProjectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath, options.TargetFramework);
 
-            //to test Fsharp support you would need to create a FsharpProjectComponentsBuilder
-            sourceProjectInfo.ProjectContents = new CsharpProjectComponentsBuilder(sourceProjectInfo, options, _foldersToExclude, _logger, _fileSystem).Build();
+            var language = SourceProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage();
+            if (language == Language.Fsharp)
+            {
+                _logger.LogError("Mutation testing of F# projects is not ready yet. No mutants will be generated.");
+            }
+
+            var builder = GetProjectComponentBuilder(language, options, SourceProjectInfo);
+            var inputFiles = builder.Build();
+            projectInfo.ProjectContents = inputFiles;
 
             _logger.LogInformation("Found project {0} to mutate.", projectUnderTest);
 
@@ -228,5 +236,26 @@ namespace Stryker.Core.Initialisation
             }
             return builder;
         }
+
+        private ProjectComponentsBuilder GetProjectComponentBuilder(
+            Language language,
+            StrykerOptions options,
+            ProjectInfo projectInfo) => language switch
+            {
+                Language.Csharp => new CsharpProjectComponentsBuilder(
+                    projectInfo,
+                    options,
+                    _foldersToExclude,
+                    _logger,
+                    _fileSystem),
+
+                Language.Fsharp => new FsharpProjectComponentsBuilder(
+                    projectInfo,
+                    _foldersToExclude,
+                    _logger,
+                    _fileSystem),
+
+                _ => throw new NotSupportedException()
+            };
     }
 }

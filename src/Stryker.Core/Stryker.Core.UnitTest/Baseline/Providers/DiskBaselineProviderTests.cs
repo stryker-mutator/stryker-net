@@ -25,7 +25,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             var sut = new DiskBaselineProvider(options, fileSystemMock);
 
             // Act
-            await sut.Save(JsonReport.Build(options, JsonReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>()), "baseline/version");
+            await sut.Save(JsonReport.Build(options, ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>()), "baseline/version");
 
             // Assert
             var path = FilePathUtils.NormalizePathSeparators(@"C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/baseline/version/stryker-report.json");
@@ -57,7 +57,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             {
                 ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder"
             };
-            var report = JsonReport.Build(options, JsonReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>());
+            var report = JsonReport.Build(options, ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>());
 
             fileSystemMock.AddFile("C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/baseline/version/stryker-report.json", report.ToJson());
 

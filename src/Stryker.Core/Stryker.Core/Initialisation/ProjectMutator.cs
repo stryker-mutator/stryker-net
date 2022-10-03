@@ -14,28 +14,25 @@ namespace Stryker.Core.Initialisation
 
     public class ProjectMutator : IProjectMutator
     {
-        private readonly IInitialisationProcessProvider _initialisationProcessProvider;
-        private readonly IMutationTestProcessProvider _mutationTestProcessProvider;
+        private readonly IMutationTestProcess _injectedMutationtestProcess;
+        private readonly IInitialisationProcess _injectedInitialisationProcess;
 
-        public ProjectMutator(IInitialisationProcessProvider initialisationProcessProvider = null,
-            IMutationTestProcessProvider mutationTestProcessProvider = null)
+        public ProjectMutator(IInitialisationProcess initialisationProcess = null,
+            IMutationTestProcess mutationTestProcess = null)
         {
-            _initialisationProcessProvider = initialisationProcessProvider ?? new InitialisationProcessProvider();
-            _mutationTestProcessProvider = mutationTestProcessProvider ?? new MutationTestProcessProvider();
+            _injectedInitialisationProcess = initialisationProcess ;
+            _injectedMutationtestProcess = mutationTestProcess;
         }
 
         public IMutationTestProcess MutateProject(StrykerOptions options, IReporter reporters)
         {
             // get a new instance of InitialisationProcess for each project
-            var initialisationProcess = _initialisationProcessProvider.Provide();
+            var initialisationProcess = _injectedInitialisationProcess ?? new InitialisationProcess();
             // initialize
             var input = initialisationProcess.Initialize(options);
 
-            var process = _mutationTestProcessProvider.Provide(
-                mutationTestInput: input,
-                reporter: reporters,
-                mutationTestExecutor: new MutationTestExecutor(input.TestRunner),
-                options: options);
+            var process = _injectedMutationtestProcess ?? new MutationTestProcess(input, options, reporters,
+                new MutationTestExecutor(input.TestRunner));
 
             // initial test
             input.InitialTestRun = initialisationProcess.InitialTest(options);
