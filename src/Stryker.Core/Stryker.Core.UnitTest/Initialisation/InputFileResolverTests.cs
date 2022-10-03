@@ -1100,5 +1100,20 @@ Please specify a test project name filter that results in one project.
 
             ex.Message.ShouldContain("no project", Case.Insensitive);
         }
+
+        [Theory]
+        [InlineData("ExampleProject/ExampleProject.csproj")]
+        [InlineData("ExampleProject\\ExampleProject.csproj")]
+        public void ShouldMatchOnBothForwardAndBackwardsSlash(string shouldMatch)
+        {
+            var projectReferences = new List<string> {
+                @"..\ExampleProject\ExampleProject.csproj",
+                @"..\AnotherProject\AnotherProject.csproj"
+            };
+
+            var match = new InputFileResolver().DetermineProjectUnderTestWithNameFilter(shouldMatch, projectReferences);
+
+            match.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
+        }
     }
 }
