@@ -46,7 +46,16 @@ namespace Stryker.Core.Mutants
             foreach (SynModuleOrNamespace module in input)
             {
                 var mutation = Mutate(module.decls);
-                list.Add(SynModuleOrNamespace.NewSynModuleOrNamespace(module.longId, module.isRecursive, module.kind, mutation, module.xmlDoc, module.attribs, module.accessibility, module.range));
+                list.Add(SynModuleOrNamespace.NewSynModuleOrNamespace(
+                    module.longId,
+                    module.isRecursive,
+                    module.kind,
+                    mutation,
+                    module.xmlDoc,
+                    module.attribs,
+                    module.accessibility,
+                    module.range,
+                    module.trivia));
             }
             return ListModule.OfSeq(list);
         }

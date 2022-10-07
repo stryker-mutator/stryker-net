@@ -131,8 +131,8 @@
       },
       "FSharp.Core": {
         "type": "Transitive",
-        "resolved": "6.0.1",
-        "contentHash": "VrFAiW8dEEekk+0aqlbvMNZzDvYXmgWZwAt68AUBqaWK8RnoEVUNglj66bZzhs4/U63q0EfXlhcEKnH1sTYLjw=="
+        "resolved": "6.0.6",
+        "contentHash": "oSbTFqPtsp+EGkWAHwYIYYHyXLJRnbzVwcmM06kmXNLdWsp3P6XZViPSJJ2qUQS8feNK+nyPA0qtpNZXANGB7w=="
       },
       "LibGit2Sharp.NativeBinaries": {
         "type": "Transitive",
@@ -157,19 +157,19 @@
       },
       "Microsoft.Build.Framework": {
         "type": "Transitive",
-        "resolved": "16.11.0",
-        "contentHash": "ZBKk+0W/fstpsYg7j1nNvqUQ4vjl4xetKwRf7/CCp956lckEOKuCpNO9yj0yO/UlmUaNGU+8csF+oYWIdOZGPw==",
+        "resolved": "17.0.0",
+        "contentHash": "XbFA0z+6Ws2pNeRXYcDF3lKlNgRoSGMm2Q5HKzZD+EbwYMKPKrl/BJnnkMuDJHU0KravYHfhzBnLLJpPeZ3E7A==",
         "dependencies": {
           "System.Security.Permissions": "4.7.0"
         }
       },
       "Microsoft.Build.Tasks.Core": {
         "type": "Transitive",
-        "resolved": "16.11.0",
-        "contentHash": "nEQgJlskVzK0oaBlPNYGbBpU7uPTwTHJ1T2rid3LRc6/CKOuBPtXEWgF1HxsldlHsx5q79sn8AE0RqAhQm7EVQ==",
+        "resolved": "17.0.0",
+        "contentHash": "6772b15xCfwBRkz8MzGZb1YpyvvZmAtCbSx9frZJ0bpXKrhyN/+BP9mOjp2xVaJPyNBOfh9CwUOo+mnJheO/pw==",
         "dependencies": {
-          "Microsoft.Build.Framework": "16.11.0",
-          "Microsoft.Build.Utilities.Core": "16.11.0",
+          "Microsoft.Build.Framework": "17.0.0",
+          "Microsoft.Build.Utilities.Core": "17.0.0",
           "Microsoft.NET.StringTools": "1.0.0",
           "Microsoft.Win32.Registry": "4.3.0",
           "System.CodeDom": "4.4.0",
@@ -189,10 +189,10 @@
       },
       "Microsoft.Build.Utilities.Core": {
         "type": "Transitive",
-        "resolved": "16.11.0",
-        "contentHash": "qJ02OPuYuCkcJRm3AeUV3GT6vQ1yGg4ChKi6wc+X7bSJqu6yuTxwVn7kSPx/4uD/kPyhJkzOPRi1ez5SLdXFeQ==",
+        "resolved": "17.0.0",
+        "contentHash": "+eqDvecetKfsZR9WqLQ96F9xhxFb3m9VOjkyzuaA/2D1cub1aW9XyegZb8+gEpBa+o7dHnIN9FskC+tRXtqLSQ==",
         "dependencies": {
-          "Microsoft.Build.Framework": "16.11.0",
+          "Microsoft.Build.Framework": "17.0.0",
           "Microsoft.NET.StringTools": "1.0.0",
           "Microsoft.Win32.Registry": "4.3.0",
           "System.Collections.Immutable": "5.0.0",
@@ -1659,7 +1659,7 @@
         "dependencies": {
           "Buildalyzer": "[4.1.5, )",
           "DotNet.Glob": "[3.1.3, )",
-          "FSharp.Compiler.Service": "[41.0.1, )",
+          "FSharp.Compiler.Service": "[41.0.6, )",
           "Grynwald.MarkdownGenerator": "[2.5.34, )",
           "LibGit2Sharp": "[0.27.0-preview-0182, )",
           "Microsoft.CodeAnalysis.CSharp": "[4.3.1, )",
@@ -1723,14 +1723,14 @@
       },
       "FSharp.Compiler.Service": {
         "type": "CentralTransitive",
-        "requested": "[41.0.1, )",
-        "resolved": "41.0.1",
-        "contentHash": "L56531sGtef2t9CGqJru8zsG9hb56PFZsPM62M8fosldYeAS0GVv2Y1NqGHg0SIm7VhTxerqZY9dTdQDyUzsBA==",
+        "requested": "[41.0.6, )",
+        "resolved": "41.0.6",
+        "contentHash": "torQ+SBJXue1ykejSWRA2ZpHuqssfRvI+RoEVh8HiSjf70GXd2Ntnw5k4/Y2TwqZfhOwjUj4a52y1nY+wBRDDw==",
         "dependencies": {
-          "FSharp.Core": "[6.0.1]",
-          "Microsoft.Build.Framework": "16.11.0",
-          "Microsoft.Build.Tasks.Core": "16.11.0",
-          "Microsoft.Build.Utilities.Core": "16.11.0",
+          "FSharp.Core": "[6.0.6]",
+          "Microsoft.Build.Framework": "17.0.0",
+          "Microsoft.Build.Tasks.Core": "17.0.0",
+          "Microsoft.Build.Utilities.Core": "17.0.0",
           "System.Buffers": "4.5.1",
           "System.Collections.Immutable": "5.0.0",
           "System.Diagnostics.Process": "4.3.0",
@@ -1744,7 +1744,7 @@
           "System.Reflection.Metadata": "5.0.0",
           "System.Reflection.TypeExtensions": "4.3.0",
           "System.Runtime": "4.3.0",
-          "System.Runtime.CompilerServices.Unsafe": "5.0.0",
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0",
           "System.Runtime.InteropServices": "4.3.0",
           "System.Runtime.Loader": "4.3.0",
           "System.Security.Claims": "4.3.0",

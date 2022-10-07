@@ -91,7 +91,7 @@ namespace Stryker.Core.Initialisation
 
                 // Get the syntax tree for the source file
                 var projectOptions = fSharpChecker.GetProjectOptionsFromScript(
-                    filename: file.FullPath,
+                    fileName: file.FullPath,
                     source: SourceText.ofString(file.SourceCode),
                     previewEnabled: null,
                     loadedTimeStamp: null,

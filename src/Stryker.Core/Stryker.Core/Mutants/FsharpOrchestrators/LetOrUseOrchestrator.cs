@@ -25,9 +25,16 @@ namespace Stryker.Core.Mutants.FsharpOrchestrators
                     binding.returnInfo,
                     iterator.Mutate(binding.expr),
                     binding.range,
-                    binding.debugPoint));
+                    binding.debugPoint,
+                    binding.trivia));
             }
-            return SynExpr.NewLetOrUse(castinput.isRecursive, castinput.isUse, ListModule.OfSeq(childlist), iterator.Mutate(castinput.body), castinput.range);
+            return SynExpr.NewLetOrUse(
+                castinput.isRecursive,
+                castinput.isUse,
+                ListModule.OfSeq(childlist),
+                iterator.Mutate(castinput.body),
+                castinput.range,
+                castinput.trivia);
         }
     }
 }

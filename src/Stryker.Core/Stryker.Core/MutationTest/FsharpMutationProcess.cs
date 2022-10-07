@@ -65,7 +65,18 @@ namespace Stryker.Core.MutationTest
                 //we hardcode the lastcompiled flag to make the compile pass
                 //this needs to be fixed in the FSharp.Compiler.SourceCodeServices package, or made dynamic as it now assumes the bottom of Program.fs is the entry point
                 var lastCompile = item.fileName.Equals("Program.fs") ? new Tuple<bool, bool>(true, true) : item.isLastCompiland;
-                file.MutatedSyntaxTree = ParsedInput.NewImplFile(ParsedImplFileInput.NewParsedImplFileInput(item.fileName, item.isScript, item.qualifiedNameOfFile, item.scopedPragmas, item.hashDirectives, mutatedSyntaxTree, lastCompile));
+
+                var input = ParsedImplFileInput.NewParsedImplFileInput(
+                    item.fileName,
+                    item.isScript,
+                    item.qualifiedNameOfFile,
+                    item.scopedPragmas,
+                    item.hashDirectives,
+                    mutatedSyntaxTree,
+                    lastCompile,
+                    item.trivia);
+                file.MutatedSyntaxTree = ParsedInput.NewImplFile(input);
+
                 if (_options.DevMode)
                 {
                     _logger.LogTrace($"Mutated {file.RelativePath}:{Environment.NewLine}{mutatedSyntaxTree}");

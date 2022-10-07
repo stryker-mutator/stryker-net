@@ -24,13 +24,18 @@ namespace Stryker.Core.Mutants.FsharpOrchestrators
                         SynMatchClause.NewSynMatchClause(
                             NewConst(NewBool(!((Bool)((Const)clause.pat).constant).Item), ((Const)clause.pat).Range),
                             clause.whenExpr,
-                            clause.arrow,
                             clause.resultExpr,
                             clause.range,
-                            clause.debugPoint);
+                            clause.debugPoint,
+                            clause.trivia);
                 }
             }
-            return SynExpr.NewMatch(castinput.matchDebugPoint, castinput.expr, ListModule.OfSeq(list), castinput.range);
+            return SynExpr.NewMatch(
+                castinput.matchDebugPoint,
+                castinput.expr,
+                ListModule.OfSeq(list),
+                castinput.range,
+                castinput.trivia);
         }
     }
 }

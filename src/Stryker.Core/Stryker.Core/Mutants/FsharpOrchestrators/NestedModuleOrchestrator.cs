@@ -9,7 +9,13 @@ namespace Stryker.Core.Mutants.FsharpOrchestrators
             var castinput = input as SynModuleDecl.NestedModule;
 
             var visitedDeclarations = iterator.Mutate(castinput.decls);
-            return SynModuleDecl.NewNestedModule(castinput.moduleInfo, castinput.isRecursive, visitedDeclarations, castinput.isContinuing, castinput.range);
+            return SynModuleDecl.NewNestedModule(
+                castinput.moduleInfo,
+                castinput.isRecursive,
+                visitedDeclarations,
+                castinput.isContinuing,
+                castinput.range,
+                castinput.trivia);
         }
     }
 
