@@ -1,4 +1,4 @@
-﻿using static FSharp.Compiler.SyntaxTree;
+using FSharp.Compiler.Syntax;
 
 namespace Stryker.Core.Mutants.FsharpOrchestrators
 {

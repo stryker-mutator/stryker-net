@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using FSharp.Compiler.SourceCodeServices;
+using FSharp.Compiler.CodeAnalysis;
+using FSharp.Compiler.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Control;
@@ -11,7 +12,7 @@ using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using IFileSystem = System.IO.Abstractions.IFileSystem;
-using ParsedInput = FSharp.Compiler.SyntaxTree.ParsedInput;
+using ParsedInput = FSharp.Compiler.Syntax.ParsedInput;
 
 namespace Stryker.Core.Compiling
 {

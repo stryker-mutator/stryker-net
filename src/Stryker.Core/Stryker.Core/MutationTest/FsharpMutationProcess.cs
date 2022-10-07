@@ -1,3 +1,4 @@
+using FSharp.Compiler.Syntax;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using Stryker.Core.Compiling;
@@ -9,7 +10,6 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.MutationTest
 {

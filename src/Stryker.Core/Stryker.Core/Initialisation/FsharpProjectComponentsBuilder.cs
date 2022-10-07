@@ -1,5 +1,5 @@
 using Buildalyzer;
-using FSharp.Compiler.SourceCodeServices;
+using FSharp.Compiler.CodeAnalysis;
 using FSharp.Compiler.Text;
 using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.Extensions.Logging;
@@ -10,7 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using static FSharp.Compiler.SyntaxTree.ParsedInput;
+using static FSharp.Compiler.Syntax.ParsedInput;
 using IFileSystem = System.IO.Abstractions.IFileSystem;
 
 namespace Stryker.Core.Initialisation
@@ -99,17 +99,23 @@ namespace Stryker.Core.Initialisation
                     useFsiAuxLib: null,
                     useSdkRefs: null,
                     assumeDotNetFramework: null,
-                    extraProjectInfo: null,
                     optionsStamp: null,
                     userOpName: null,
                     sdkDirOverride: null);
 
                 var fSharpOptions = FSharpAsync.RunSynchronously(projectOptions, timeout: null, cancellationToken: null);
-                var result = FSharpAsync.RunSynchronously(fSharpChecker.ParseFile(fileName, SourceText.ofString(file.SourceCode), fSharpChecker.GetParsingOptionsFromProjectOptions(fSharpOptions.Item1).Item1, userOpName: null), timeout: null, cancellationToken: null);
 
-                if (result.ParseTree.Value.IsImplFile)
+                var parseFileResults = fSharpChecker.ParseFile(
+                    fileName,
+                    SourceText.ofString(file.SourceCode),
+                    fSharpChecker.GetParsingOptionsFromProjectOptions(fSharpOptions.Item1).Item1,
+                    userOpName: null,
+                    cache: null);
+                var result = FSharpAsync.RunSynchronously(parseFileResults, timeout: null, cancellationToken: null);
+
+                if (result.ParseTree.IsImplFile)
                 {
-                    var syntaxTree = (ImplFile)result.ParseTree.Value;
+                    var syntaxTree = (ImplFile)result.ParseTree;
 
                     file.SyntaxTree = syntaxTree;
                     folderComposite.Add(file);
@@ -257,17 +263,23 @@ namespace Stryker.Core.Initialisation
                     useFsiAuxLib: null,
                     useSdkRefs: null,
                     assumeDotNetFramework: null,
-                    extraProjectInfo: null,
                     optionsStamp: null,
                     userOpName: null,
                     sdkDirOverride: null);
 
                 var fsharpoptions = FSharpAsync.RunSynchronously(projectOptions, timeout: null, cancellationToken: null);
-                var result = FSharpAsync.RunSynchronously(fSharpChecker.ParseFile(fileLeaf.FullPath, SourceText.ofString(fileLeaf.SourceCode), fSharpChecker.GetParsingOptionsFromProjectOptions(fsharpoptions.Item1).Item1, userOpName: null), timeout: null, cancellationToken: null);
 
-                if (result.ParseTree.Value.IsImplFile)
+                var parseFileResults = fSharpChecker.ParseFile(
+                    fileLeaf.FullPath,
+                    SourceText.ofString(fileLeaf.SourceCode),
+                    fSharpChecker.GetParsingOptionsFromProjectOptions(fsharpoptions.Item1).Item1,
+                    userOpName: null,
+                    cache: null);
+                var result = FSharpAsync.RunSynchronously(parseFileResults, timeout: null, cancellationToken: null);
+
+                if (result.ParseTree.IsImplFile)
                 {
-                    var syntaxTree = (ImplFile)result.ParseTree.Value;
+                    var syntaxTree = (ImplFile)result.ParseTree;
 
                     fileLeaf.SyntaxTree = syntaxTree;
 

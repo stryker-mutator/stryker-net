@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using FSharp.Compiler.Syntax;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants.FsharpOrchestrators;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
-using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.Mutants
 {
