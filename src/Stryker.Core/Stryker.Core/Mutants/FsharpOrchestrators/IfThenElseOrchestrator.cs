@@ -8,7 +8,18 @@ namespace Stryker.Core.Mutants.FsharpOrchestrators
         {
             var castinput = input as SynExpr.IfThenElse;
 
-            return SynExpr.NewIfThenElse(iterator.Mutate(castinput.ifExpr), iterator.Mutate(castinput.thenExpr), iterator.Mutate(castinput.elseExpr.Value), castinput.spIfToThen, castinput.isFromErrorRecovery, castinput.ifToThenRange, castinput.range);
+            return SynExpr.NewIfThenElse(
+                castinput.ifKeyword,
+                castinput.isElif,
+                iterator.Mutate(castinput.ifExpr),
+                castinput.thenKeyword,
+                iterator.Mutate(castinput.thenExpr),
+                castinput.elseKeyword,
+                iterator.Mutate(castinput.elseExpr.Value),
+                castinput.spIfToThen,
+                castinput.isFromErrorRecovery,
+                castinput.ifToThenRange,
+                castinput.range);
         }
     }
 }

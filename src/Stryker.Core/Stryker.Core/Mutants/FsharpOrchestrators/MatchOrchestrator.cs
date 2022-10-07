@@ -20,10 +20,17 @@ namespace Stryker.Core.Mutants.FsharpOrchestrators
                 if (clause.pat.IsConst && ((Const)clause.pat).constant.IsBool)
                 {
                     //inverts boolean, true -> false and false -> true
-                    list[castinput.clauses.ToList().FindIndex(x => x.Equals(clause))] = SynMatchClause.NewSynMatchClause(NewConst(NewBool(!((Bool)((Const)clause.pat).constant).Item), ((Const)clause.pat).Range), clause.whenExpr, clause.resultExpr, clause.range, clause.spInfo);
+                    list[castinput.clauses.ToList().FindIndex(x => x.Equals(clause))] =
+                        SynMatchClause.NewSynMatchClause(
+                            NewConst(NewBool(!((Bool)((Const)clause.pat).constant).Item), ((Const)clause.pat).Range),
+                            clause.whenExpr,
+                            clause.arrow,
+                            clause.resultExpr,
+                            clause.range,
+                            clause.debugPoint);
                 }
             }
-            return SynExpr.NewMatch(castinput.matchSeqPoint, castinput.expr, ListModule.OfSeq(list), castinput.range);
+            return SynExpr.NewMatch(castinput.matchDebugPoint, castinput.expr, ListModule.OfSeq(list), castinput.range);
         }
     }
 }
