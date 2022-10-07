@@ -3,18 +3,15 @@ using FSharp.Compiler.SourceCodeServices;
 using FSharp.Compiler.Text;
 using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.Extensions.Logging;
-using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Control;
 using Stryker.Core.Exceptions;
 using Stryker.Core.ProjectComponents;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
 using static FSharp.Compiler.SyntaxTree.ParsedInput;
 using IFileSystem = System.IO.Abstractions.IFileSystem;
-using ParsedInput = FSharp.Compiler.SyntaxTree.ParsedInput;
 
 namespace Stryker.Core.Initialisation
 {
