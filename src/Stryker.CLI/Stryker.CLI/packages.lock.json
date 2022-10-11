@@ -1449,7 +1449,7 @@
           "Microsoft.TestPlatform.TranslationLayer": "[17.2.0, )",
           "Microsoft.Web.LibraryManager.Build": "[2.1.175, )",
           "Mono.Cecil": "[0.11.4, )",
-          "NuGet.Frameworks": "[6.3.0, )",
+          "NuGet.Frameworks": "[6.3.1, )",
           "Serilog": "[2.12.0, )",
           "Serilog.Extensions.Logging": "[3.1.0, )",
           "Serilog.Extensions.Logging.File": "[3.0.0, )",
@@ -1619,9 +1619,9 @@
       },
       "NuGet.Frameworks": {
         "type": "CentralTransitive",
-        "requested": "[6.3.0, )",
-        "resolved": "6.3.0",
-        "contentHash": "JW/WMvvRatkZDQiK/E43P+xuaoYH7slTS36noFcubBGk2NL9rAKU+tWeudBAuzOjYRp1FJdzjo9b86/dZO56iw=="
+        "requested": "[6.3.1, )",
+        "resolved": "6.3.1",
+        "contentHash": "Ae1vRjHDbNU7EQwQnDlxFRl+O9iQLp2H9Z/sRB/EAmO8+neUOeOfbkLClO7ZNcTcW5p1FDABrPakXICtQ0JCRw=="
       },
       "RegexParser": {
         "type": "CentralTransitive",
