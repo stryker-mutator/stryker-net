@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
-using FSharp.Compiler.SourceCodeServices;
+using FSharp.Compiler.CodeAnalysis;
+using FSharp.Compiler.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Control;
@@ -11,7 +11,8 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
-using ParsedInput = FSharp.Compiler.SyntaxTree.ParsedInput;
+using IFileSystem = System.IO.Abstractions.IFileSystem;
+using ParsedInput = FSharp.Compiler.Syntax.ParsedInput;
 
 namespace Stryker.Core.Compiling
 {
@@ -37,7 +38,16 @@ namespace Stryker.Core.Compiling
             var dependencies = ListModule.OfSeq(analyzerResult.References);
 
             //we need a checker if we want to compile 
-            var checker = FSharpChecker.Create(projectCacheSize: null, keepAssemblyContents: null, keepAllBackgroundResolutions: null, legacyReferenceResolver: null, tryGetMetadataSnapshot: null, suggestNamesForErrors: null, keepAllBackgroundSymbolUses: null, enableBackgroundItemKeyStoreAndSemanticClassification: null);
+            var checker = FSharpChecker.Create(
+                projectCacheSize: null,
+                keepAssemblyContents: null,
+                keepAllBackgroundResolutions: null,
+                legacyReferenceResolver: null,
+                tryGetMetadataSnapshot: null,
+                suggestNamesForErrors: null,
+                keepAllBackgroundSymbolUses: null,
+                enableBackgroundItemKeyStoreAndSemanticClassification: null,
+                enablePartialTypeChecking: null);
 
             var mutatedAssemblyPath = _input.TestProjectsInfo.GetInjectionFilePath(_input.TestProjectsInfo.AnalyzerResults.First(), _input.TargetProjectInfo.AnalyzerResult);
             var pdbPath = Path.Combine(mutatedAssemblyPath, _input.TargetProjectInfo.AnalyzerResult.GetSymbolFileName());
@@ -84,7 +94,7 @@ namespace Stryker.Core.Compiling
             throw new CompilationException("Failed to compile.");
         }
 
-        private (bool, FSharpErrorInfo[]) TryCompilation(FSharpChecker checker, FSharpList<ParsedInput> trees, string assemblyPath, string pdbAssemblyPath, FSharpList<string> dependencies)
+        private (bool, FSharpDiagnostic[]) TryCompilation(FSharpChecker checker, FSharpList<ParsedInput> trees, string assemblyPath, string pdbAssemblyPath, FSharpList<string> dependencies)
         {
             var result = FSharpAsync.RunSynchronously(
                 checker.Compile(

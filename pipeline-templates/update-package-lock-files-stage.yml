@@ -21,14 +21,14 @@ stages:
       inputs:
         command: 'custom'
         custom: 'restore'
-        arguments: --locked-mode --force-evaluate
+        arguments: --force-evaluate
         workingDirectory: 'src/'
     - task: DotNetCoreCLI@2
       displayName: 'Update integrationtest lock files'
       inputs:
         command: 'custom'
         custom: 'restore'
-        arguments: --locked-mode --force-evaluate
+        arguments: --force-evaluate
         workingDirectory: 'integrationtest/'
     - script: |
         git config --global user.email "renovatebot@stryker-mutator.io"
