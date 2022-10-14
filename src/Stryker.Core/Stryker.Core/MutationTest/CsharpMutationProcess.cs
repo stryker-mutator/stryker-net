@@ -11,6 +11,7 @@ using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.MutationTest
 {
@@ -90,7 +91,7 @@ namespace Stryker.Core.MutationTest
 
             foreach (var testProject in _input.TestProjectsInfo.AnalyzerResults)
             {
-                var injectionPath = _input.TestProjectsInfo.GetInjectionFilePath(testProject, _input.TargetProjectInfo.AnalyzerResult);
+                var injectionPath = TestProjectsInfo.GetInjectionFilePath(testProject, _input.TargetProjectInfo.AnalyzerResult);
                 if (!_fileSystem.Directory.Exists(testProject.GetAssemblyDirectoryPath()))
                 {
                     _fileSystem.Directory.CreateDirectory(testProject.GetAssemblyDirectoryPath());

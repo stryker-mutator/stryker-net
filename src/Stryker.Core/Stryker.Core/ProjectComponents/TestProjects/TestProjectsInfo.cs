@@ -49,7 +49,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             }
         }
 
-        public string GetInjectionFilePath(IAnalyzerResult testProject, IAnalyzerResult targetProject) => Path.Combine(testProject.GetAssemblyDirectoryPath(), targetProject.GetAssemblyFileName());
+        public static string GetInjectionFilePath(IAnalyzerResult testProject, IAnalyzerResult targetProject) => Path.Combine(testProject.GetAssemblyDirectoryPath(), targetProject.GetAssemblyFileName());
 
         private static string GetBackupName(string injectionPath) => injectionPath + ".stryker-unchanged";
     }

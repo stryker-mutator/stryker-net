@@ -11,6 +11,7 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
+using Stryker.Core.ProjectComponents.TestProjects;
 using IFileSystem = System.IO.Abstractions.IFileSystem;
 using ParsedInput = FSharp.Compiler.Syntax.ParsedInput;
 
@@ -49,13 +50,13 @@ namespace Stryker.Core.Compiling
                 enableBackgroundItemKeyStoreAndSemanticClassification: null,
                 enablePartialTypeChecking: null);
 
-            var mutatedAssemblyPath = _input.TestProjectsInfo.GetInjectionFilePath(_input.TestProjectsInfo.AnalyzerResults.First(), _input.TargetProjectInfo.AnalyzerResult);
+            var mutatedAssemblyPath = TestProjectsInfo.GetInjectionFilePath(_input.TestProjectsInfo.AnalyzerResults.First(), _input.TargetProjectInfo.AnalyzerResult);
             var pdbPath = Path.Combine(mutatedAssemblyPath, _input.TargetProjectInfo.AnalyzerResult.GetSymbolFileName());
             (var compilationSucces, var errorinfo) = TryCompilation(checker, trees, mutatedAssemblyPath, pdbPath, dependencies);
 
             foreach (var testProject in _input.TestProjectsInfo.AnalyzerResults)
             {
-                var injectionPath = _input.TestProjectsInfo.GetInjectionFilePath(testProject, _input.TargetProjectInfo.AnalyzerResult);
+                var injectionPath = TestProjectsInfo.GetInjectionFilePath(testProject, _input.TargetProjectInfo.AnalyzerResult);
                 var pdbInjectionpath = Path.Combine(testProject.GetAssemblyDirectoryPath(), _input.TargetProjectInfo.AnalyzerResult.GetSymbolFileName());
                 if (!_fileSystem.Directory.Exists(injectionPath.Substring(0, injectionPath.LastIndexOf('\\'))))
                 {

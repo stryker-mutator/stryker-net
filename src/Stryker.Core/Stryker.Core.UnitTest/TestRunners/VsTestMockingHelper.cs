@@ -7,7 +7,6 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Buildalyzer;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
@@ -103,18 +102,8 @@ public class VsTestMockingHelper : TestBase
     {
         var content = new CsharpFolderComposite();
         content.Add(new CsharpFileLeaf { Mutants = mutants ?? new[] { Mutant, OtherMutant } });
-        return new TargetProjectInfo(_fileSystem)
+        return new TargetProjectInfo
         {
-            TestProjectAnalyzerResults = new List<IAnalyzerResult>
-            {
-                TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", Path.GetDirectoryName(_testAssemblyPath) },
-                        { "TargetFileName", Path.GetFileName(_testAssemblyPath) }
-                    },
-                    targetFramework: "netcoreapp2.1").Object
-            },
             AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                 properties: new Dictionary<string, string>()
                 {
@@ -130,7 +119,7 @@ public class VsTestMockingHelper : TestBase
     {
         var content = new CsharpFolderComposite();
         content.Add(new CsharpFileLeaf { Mutants = mutants ?? new[] { Mutant, OtherMutant } });
-        return new TestProjectsInfo
+        return new TestProjectsInfo(_fileSystem)
         {
             TestProjects = new List<TestProject> { new TestProject(_fileSystem, TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>()
