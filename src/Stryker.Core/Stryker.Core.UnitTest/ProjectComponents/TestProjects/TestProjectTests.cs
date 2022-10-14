@@ -10,8 +10,6 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
 {
     public class TestProjectTests
     {
-        private readonly string _filesystemRoot;
-
         [Fact]
         public void TestProjectEqualsWhenAllPropertiesEqual()
         {
