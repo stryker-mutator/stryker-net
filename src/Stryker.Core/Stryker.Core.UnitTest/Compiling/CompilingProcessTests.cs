@@ -6,7 +6,6 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Moq;
@@ -44,19 +43,14 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo(new MockFileSystem())
+                TargetProjectInfo = new TargetProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
                             { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
-                        }).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                        {
-                            { "AssemblyName", "TargetFileName"},
                         }).Object
-                    }
                 }
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
@@ -88,19 +82,14 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo(new MockFileSystem())
+                TargetProjectInfo = new TargetProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
                             { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
-                        }).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                        {
-                            { "AssemblyName", "TargetFileName"},
                         }).Object
-                    }
                 }
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
@@ -138,19 +127,14 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo(new MockFileSystem())
+                TargetProjectInfo = new TargetProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
                             { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
-                        }).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                        {
-                            { "AssemblyName", "TargetFileName"},
                         }).Object
-                    }
                 }
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
@@ -182,24 +166,17 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo(new MockFileSystem())
+                TargetProjectInfo = new TargetProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                        {
-                            { "TargetDir", "" },
-                            { "AssemblyName", "AssemblyName"},
-                            { "TargetFileName", "TargetFileName.dll"},
-                            { "SignAssembly", "true" },
-                            { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
-                        },
-                        projectFilePath: "TestResources").Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                        {
-                            { "AssemblyName", "AssemblyName"},
-                        }).Object
-                    }
+                    {
+                        { "TargetDir", "" },
+                        { "AssemblyName", "AssemblyName" },
+                        { "TargetFileName", "TargetFileName.dll" },
+                        { "SignAssembly", "true" },
+                        { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
+                    }).Object
                 }
-
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
 
@@ -233,7 +210,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo(new MockFileSystem())
+                TargetProjectInfo = new TargetProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -243,12 +220,7 @@ namespace ExampleProject
                             { "SignAssembly", "true" },
                             { "AssemblyOriginatorKeyFile", "DoesNotExist.snk" }
                         },
-                        projectFilePath: "project.csproj").Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                        {
-                            { "AssemblyName", "AssemblyName"},
-                        }).Object
-                    }
+                        projectFilePath: "project.csproj").Object
                 }
 
             };
@@ -279,7 +251,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo(new MockFileSystem())
+                TargetProjectInfo = new TargetProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         properties: new Dictionary<string, string>()
@@ -287,14 +259,7 @@ namespace ExampleProject
                             { "TargetDir", "" },
                             { "TargetFileName", "TargetFileName.dll" },
                             { "AssemblyName", "AssemblyName"},
-                        }).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                        {
-                            { "TargetDir", "" },
-                            { "TargetFileName", "TargetFileName.dll" },
-                            { "AssemblyName", "AssemblyName"},
                         }).Object
-                    }
                 }
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
@@ -405,7 +370,7 @@ namespace ExampleProject
 
             var input = new MutationTestInput
             {
-                TargetProjectInfo = new TargetProjectInfo(fileSystem)
+                TargetProjectInfo = new TargetProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         properties: new Dictionary<string, string>()
@@ -414,15 +379,6 @@ namespace ExampleProject
                             { "AssemblyName", "AssemblyName" },
                             { "TargetFileName", "TargetFileName.dll" },
                         }).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult>
-                    {
-                        TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                        {
-                            { "AssemblyName", "TargetFileName" },
-                            { "TargetDir", "Test" },
-                            { "TargetFileName", "TestTargetFileName.dll" },
-                        }).Object
-                    },
                     ProjectContents = folder
                 },
                 TestRunner = new Mock<ITestRunner>(MockBehavior.Default).Object

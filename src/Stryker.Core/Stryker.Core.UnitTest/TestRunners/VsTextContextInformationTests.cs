@@ -69,7 +69,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 { Path.Combine(filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"), new MockFileData("Bytecode") },
             });
             content.Add(new CsharpFileLeaf());
-            _testProjectsInfo = new TestProjectsInfo
+            _testProjectsInfo = new TestProjectsInfo(_fileSystem)
             {
                 TestProjects = new List<TestProject> {  new TestProject (_fileSystem,
                     TestHelper.SetupProjectAnalyzerResult(

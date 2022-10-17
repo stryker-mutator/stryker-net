@@ -1,5 +1,6 @@
 using System;
-using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
+using Moq;
 using Shouldly;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Xunit;
@@ -13,36 +14,19 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
         {
             // Arrange
             var testCase1Id = Guid.NewGuid();
+            var node = Mock.Of<SyntaxNode>();
             var fileA = new TestFile
             {
                 FilePath = "/c/",
-                Source = "bla",
-                Tests = new List<TestCase>
-                {
-                    new TestCase
-                    {
-                        Id = testCase1Id,
-                        Line = 1,
-                        Name = "test1",
-                        Source = "bla"
-                    }
-                }
+                Source = "bla"
             };
+            fileA.AddTest(testCase1Id, "test1", node);
             var fileB = new TestFile
             {
                 FilePath = "/c/",
-                Source = "bla",
-                Tests = new List<TestCase>
-                {
-                    new TestCase
-                    {
-                        Id = testCase1Id,
-                        Line = 1,
-                        Name = "test1",
-                        Source = "bla"
-                    }
-                }
+                Source = "bla"
             };
+            fileB.AddTest(testCase1Id, "test1", node);
 
             // Assert
             fileA.ShouldBe(fileB);

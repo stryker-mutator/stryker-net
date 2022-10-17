@@ -2,10 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Text;
-using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -123,7 +121,7 @@ namespace ExampleProject
 
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo(new MockFileSystem())
+                TargetProjectInfo = new TargetProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                     {
@@ -133,12 +131,7 @@ namespace ExampleProject
                         { "SignAssembly", "true" },
                         { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
                     },
-                        projectFilePath: "TestResources").Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                    {
-                        { "AssemblyName", "AssemblyName"},
-                    }).Object
-                }
+                    projectFilePath: "TestResources").Object
                 }
             };
 

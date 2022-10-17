@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
-using Buildalyzer;
-using Moq;
+using System.Reflection;
 using Shouldly;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Xunit;
@@ -15,82 +16,45 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
         public void MergeTestProjectsInfo()
         {
             // Arrange
-            var testProjectAnalyzerResult = Mock.Of<IAnalyzerResult>();
-            var testFiles = new List<TestFile>
-            {
-                new TestFile
-                {
-                    FilePath = "/c/",
-                    Source = "bla",
-                    Tests = new List<TestCase>
-                    {
-                        new TestCase
-                        {
-                            Id = Guid.NewGuid(),
-                            Line = 1,
-                            Name = "test1",
-                            Source = "bla"
-                        },
-                        new TestCase
-                        {
-                            Id = Guid.NewGuid(),
-                            Line = 2,
-                            Name = "test2",
-                            Source = "bla"
-                        }
-                    }
-                }
-            };
+            var fileSystem = new MockFileSystem();
+            fileSystem.AddDirectory("/c/testProject");
+            var fileA = File.ReadAllText(
+                Path.Combine(
+                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "/TestResources/ExampleTestFileA.cs")
+                );
+            var fileB = File.ReadAllText(
+                Path.Combine(
+                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "/TestResources/ExampleTestFileB.cs")
+                );
+            fileSystem.AddFile(
+                "/c/testProject/exampleTestFileA.cs",
+                new MockFileData(fileA));
+            fileSystem.AddFile(
+                "/c/testProject/exampleTestFileB.cs",
+                new MockFileData(fileB));
+            var testProjectAnalyzerResultAMock = TestHelper.SetupProjectAnalyzerResult(
+                references: Array.Empty<string>(),
+                sourceFiles: new string[] { "/c/testProject/exampleTestFileA.cs" }
+            );
+            var testProjectAnalyzerResultBMock = TestHelper.SetupProjectAnalyzerResult(
+                references: Array.Empty<string>(),
+                sourceFiles: new string[] { "/c/testProject/exampleTestFileB.cs" }
+            );
 
-            var testProjectsInfoA = new TestProjectsInfo
+            var testProjectA = new TestProject(fileSystem, testProjectAnalyzerResultAMock.Object);
+            var testProjectB = new TestProject(fileSystem, testProjectAnalyzerResultBMock.Object);
+
+            var testProjectsInfoA = new TestProjectsInfo(fileSystem)
             {
-                TestProjects = new List<TestProject>
-                {
-                    new TestProject
-                    {
-                        TestProjectAnalyzerResult = testProjectAnalyzerResult,
-                        TestFiles = testFiles
-                    }
-                }
+                TestProjects = new List<TestProject> { testProjectA }
             };
-            var testProjectsInfoB = new TestProjectsInfo
+            var testProjectsInfoB = new TestProjectsInfo(fileSystem)
             {
-                TestProjects = new List<TestProject>
-                {
-                    new TestProject
-                    {
-                        TestProjectAnalyzerResult = testProjectAnalyzerResult,
-                        TestFiles = testFiles
-                    }
-                }
+                TestProjects = new List<TestProject> { testProjectB }
             };
-            var testProjectsInfoC = new TestProjectsInfo
+            var testProjectsInfoC = new TestProjectsInfo(fileSystem)
             {
-                TestProjects = new List<TestProject>
-                {
-                    new TestProject
-                    {
-                        TestProjectAnalyzerResult = Mock.Of<IAnalyzerResult>(),
-                        TestFiles = new List<TestFile>
-                        {
-                            new TestFile
-                            {
-                                FilePath = "/c/",
-                                Source = "bla",
-                                Tests = new List<TestCase>
-                                {
-                                    new TestCase
-                                    {
-                                        Id = Guid.NewGuid(),
-                                        Line = 1,
-                                        Name = "test1",
-                                        Source = "bla"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
+                TestProjects = new List<TestProject> { testProjectB }
             };
 
             // Act

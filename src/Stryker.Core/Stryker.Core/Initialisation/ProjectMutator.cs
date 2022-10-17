@@ -20,7 +20,7 @@ namespace Stryker.Core.Initialisation
         public ProjectMutator(IInitialisationProcess initialisationProcess = null,
             IMutationTestProcess mutationTestProcess = null)
         {
-            _injectedInitialisationProcess = initialisationProcess ;
+            _injectedInitialisationProcess = initialisationProcess;
             _injectedMutationtestProcess = mutationTestProcess;
         }
 
@@ -61,7 +61,7 @@ namespace Stryker.Core.Initialisation
                 }
                 else
                 {
-                    // Log debug testfile not found for unit test
+                    // TODO: Log debug testfile not found for unit test
                 }
             }
         }

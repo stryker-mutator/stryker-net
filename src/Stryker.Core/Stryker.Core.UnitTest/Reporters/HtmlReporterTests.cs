@@ -67,7 +67,7 @@ namespace Stryker.Core.UnitTest.Reporters
             };
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
 
-            reporter.OnAllMutantsTested(ReportTestHelper.CreateProjectWith());
+            reporter.OnAllMutantsTested(ReportTestHelper.CreateProjectWith(), null);
             var reportPath = Path.Combine(options.ReportPath, "mutation-report.html");
 
             var fileContents = mockFileSystem.GetFile(reportPath).TextContents;

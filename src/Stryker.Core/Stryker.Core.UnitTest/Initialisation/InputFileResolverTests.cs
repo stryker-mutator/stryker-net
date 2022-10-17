@@ -1002,41 +1002,40 @@ Please specify a test project name filter that results in one project.
         }
 
         [Fact]
-        public void ShouldFindProjectUnderTestHappyFlow()
+        public void ShouldFindProjectUnderTestWhenSingleProjectReferenceAndNoFilter()
         {
-            var target = new InputFileResolver();
+            var testProjectsInfo = Mock.Of<TestProjectsInfo>(
+                t => t.AnalyzerResults == new List<IAnalyzerResult> { Mock.Of<IAnalyzerResult>(
+                    a => a.ProjectReferences == new List<string> {
+                    @"..\ExampleProject\ExampleProject.csproj"
+                }) });
 
-            var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: new List<string> { @"..\ExampleProject\ExampleProject.csproj" }).Object;
-
-            var result = target.FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, null);
+            var result = new InputFileResolver().FindProjectUnderTest(testProjectsInfo, null);
             result.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
         }
 
         [Fact]
         public void ShouldThrowOnNoProjectReference()
         {
-            var ex = Assert.Throws<InputException>(() =>
-            {
-                new InputFileResolver().FindProjectUnderTest(new TestProjectsInfo(), null);
-            });
+            var testProjectsInfo = Mock.Of<TestProjectsInfo>(
+                t => t.AnalyzerResults == new List<IAnalyzerResult> { Mock.Of<IAnalyzerResult>(
+                    a => a.ProjectReferences == Enumerable.Empty<string>()) });
+            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindProjectUnderTest(testProjectsInfo, null));
 
             ex.Message.ShouldContain("no project", Case.Insensitive);
         }
 
         [Fact]
-        public void ShouldThrowOnMultipleProjects()
+        public void ShouldThrowOnMultipleProjectsWithoutFilter()
         {
-            var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: new List<string> {
+            var testProjectsInfo = Mock.Of<TestProjectsInfo>(
+                t => t.AnalyzerResults == new List<IAnalyzerResult> { Mock.Of<IAnalyzerResult>(
+                    a => a.ProjectReferences == new List<string> {
                     @"..\ExampleProject\ExampleProject.csproj",
                     @"..\AnotherProject\AnotherProject.csproj"
-                }).Object;
+                }) });
 
-            var ex = Assert.Throws<InputException>(() =>
-            {
-                new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, null);
-            });
+            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindProjectUnderTest(testProjectsInfo, null));
 
             ex.Message.ShouldContain("Test project contains more than one project reference. Please set the project option");
             ex.Message.ShouldContain("Choose one of the following references:");
@@ -1050,13 +1049,14 @@ Please specify a test project name filter that results in one project.
         [InlineData("Example")]
         public void ShouldMatchFromMultipleProjectByName(string shouldMatch)
         {
-            var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: new List<string> {
+            var testProjectsInfo = Mock.Of<TestProjectsInfo>(
+                t => t.AnalyzerResults == new List<IAnalyzerResult> { Mock.Of<IAnalyzerResult>(
+                    a => a.ProjectReferences == new List<string> {
                     @"..\ExampleProject\ExampleProject.csproj",
                     @"..\AnotherProject\AnotherProject.csproj"
-                }).Object;
+                }) });
 
-            var result = new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, shouldMatch);
+            var result = new InputFileResolver().FindProjectUnderTest(testProjectsInfo, shouldMatch);
 
             result.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
         }
@@ -1068,36 +1068,29 @@ Please specify a test project name filter that results in one project.
         [InlineData(".csproj")]
         public void ShouldThrowWhenTheNameMatchesMore(string shouldMatchMoreThanOne)
         {
-            var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: new List<string> {
+            var testProjectsInfo = Mock.Of<TestProjectsInfo>(
+                t => t.AnalyzerResults == new List<IAnalyzerResult> { Mock.Of<IAnalyzerResult>(
+                    a => a.ProjectReferences == new List<string> {
                     @"..\ExampleProject\ExampleProject.csproj",
                     @"..\AnotherProject\AnotherProject.csproj"
-                }).Object;
+                }) });
 
-            var ex = Assert.Throws<InputException>(() =>
-            {
-                new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, shouldMatchMoreThanOne);
-            });
+            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindProjectUnderTest(testProjectsInfo, shouldMatchMoreThanOne));
 
             ex.Message.ShouldContain("more than one", Case.Insensitive);
         }
 
-        [Theory]
-        [InlineData("SomeProject.csproj")]
-        [InlineData("??")]
-        [InlineData("WrongProject.csproj")]
-        public void ShouldThrowWhenTheNameMatchesNone(string shouldMatchNone)
+        [Fact]
+        public void ShouldThrowWhenTheNameMatchesNone()
         {
-            var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: new List<string> {
+            var testProjectsInfo = Mock.Of<TestProjectsInfo>(
+                t => t.AnalyzerResults == new List<IAnalyzerResult> { Mock.Of<IAnalyzerResult>(
+                    a => a.ProjectReferences == new List<string> {
                     @"..\ExampleProject\ExampleProject.csproj",
                     @"..\AnotherProject\AnotherProject.csproj"
-                }).Object;
+                }) });
 
-            var ex = Assert.Throws<InputException>(() =>
-            {
-                new InputFileResolver().FindProjectUnderTest(new List<IAnalyzerResult> { analyzerResult }, shouldMatchNone);
-            });
+            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindProjectUnderTest(testProjectsInfo, "WrongProject.csproj"));
 
             ex.Message.ShouldContain("no project", Case.Insensitive);
         }
