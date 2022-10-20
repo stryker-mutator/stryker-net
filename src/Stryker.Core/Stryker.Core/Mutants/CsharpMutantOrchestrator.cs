@@ -17,18 +17,17 @@ namespace Stryker.Core.Mutants
     /// <inheritdoc/>
     public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxNode>
     {
-        private readonly TypeBasedStrategy<SyntaxNode, INodeMutator> _specificOrchestrator =
+        private static readonly TypeBasedStrategy<SyntaxNode, INodeMutator> SpecificOrchestrator =
             new();
 
-        public IEnumerable<IMutator> Mutators { get; }
-        private ILogger Logger { get; }
+        private static readonly IList<IMutator> Mutators;
 
-        /// <summary>
-        /// <param name="mutators">The mutators that should be active during the mutation process</param>
-        /// </summary>
-        public CsharpMutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerOptions options = null) : base(options)
+        private static ILogger Logger { get; }
+
+        static CsharpMutantOrchestrator()
         {
-            Mutators = mutators ?? new List<IMutator>
+            Logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpMutantOrchestrator>();
+            Mutators = new List<IMutator>
             {
                 // the default list of mutators
                 new BinaryExpressionMutator(),
@@ -49,10 +48,8 @@ namespace Stryker.Core.Mutants
                 new StatementMutator(),
                 new RegexMutator()
             };
-            Mutants = new Collection<Mutant>();
-            Logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpMutantOrchestrator>();
 
-            _specificOrchestrator.RegisterHandlers(new List<INodeMutator>
+            SpecificOrchestrator.RegisterHandlers(new List<INodeMutator>
             {
                 new DontMutateOrchestrator<AttributeListSyntax>(),
                 new DontMutateOrchestrator<ParameterListSyntax>(),
@@ -79,6 +76,14 @@ namespace Stryker.Core.Mutants
         }
 
         /// <summary>
+        /// <param name="options">The options to apply</param>
+        /// </summary>
+        public CsharpMutantOrchestrator(StrykerOptions options = null) : base(options)
+        {
+            Mutants = new Collection<Mutant>();
+        }
+
+        /// <summary>
         /// Recursively mutates a single SyntaxNode
         /// </summary>
         /// <param name="input">The current root node</param>
@@ -87,7 +92,7 @@ namespace Stryker.Core.Mutants
             // search for node specific handler
             GetHandler(input).Mutate(input, new MutationContext(this));
 
-        internal INodeMutator GetHandler(SyntaxNode currentNode) => _specificOrchestrator.FindHandler(currentNode);
+        internal INodeMutator GetHandler(SyntaxNode currentNode) => SpecificOrchestrator.FindHandler(currentNode);
 
         internal IEnumerable<Mutant> GenerateMutationsForNode(SyntaxNode current, MutationContext context)
         {

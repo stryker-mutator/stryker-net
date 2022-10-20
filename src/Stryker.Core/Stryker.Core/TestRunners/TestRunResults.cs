@@ -34,6 +34,5 @@ namespace Stryker.Core.TestRunners
 
         public static TestRunResults GeneralFailure()
             => new(TestGuidsList.EveryTest(), TestGuidsList.EveryTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest());
-
     }
 }
