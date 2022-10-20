@@ -49,7 +49,7 @@ stages:
     displayName: Run Sonar Analysis
     dependsOn: []
     steps:
-    - task: UseDotNet@2
+    - task: UseDotNet@2.207.2
       displayName: 'Use dotnet 6'
       inputs:
         version: 6.x
@@ -62,7 +62,7 @@ stages:
         projectKey: 'stryker-net'
         projectName: 'Stryker .NET'
         projectVersion: '$(PackageVersion)'
-    - task: DotNetCoreCLI@2
+    - task: DotNetCoreCLI@2.210.0
       displayName: 'Run unit tests'
       inputs:
         command: test
@@ -78,11 +78,11 @@ stages:
     dependsOn: []
     timeoutInMinutes: 240
     steps:
-    - task: UseDotNet@2
+    - task: UseDotNet@2.207.2
       displayName: 'Use dotnet 6'
       inputs:
         version: 6.x
-    - task: DotNetCoreCLI@2
+    - task: DotNetCoreCLI@2.210.0
       displayName: 'Install dotnet-stryker'
       inputs:
         command: custom
@@ -99,11 +99,11 @@ stages:
     dependsOn: []
     timeoutInMinutes: 240
     steps:
-    - task: UseDotNet@2
+    - task: UseDotNet@2.207.2
       displayName: 'Use dotnet 6'
       inputs:
         version: 6.x
-    - task: DotNetCoreCLI@2
+    - task: DotNetCoreCLI@2.210.0
       displayName: 'Install dotnet-stryker'
       inputs:
         command: custom
@@ -173,7 +173,7 @@ stages:
     dependsOn: 'PublishIntegrationTestPackage'
     pool: server
     steps:
-    - task: Delay@1
+    - task: Delay@1.1.10
       inputs:
         delayForMinutes: '1'
 
@@ -186,7 +186,7 @@ stages:
   - job: WindowsTests
     displayName: Run tests on Windows
     steps:
-    - task: NuGetToolInstaller@1
+    - task: NuGetToolInstaller@1.208.1
       displayName: 'Install nuget for stryker full framework'
     - template: pipeline-templates/prepare-integration-test-steps.yml
     - template: pipeline-templates/run-integration-test-steps.yml
@@ -197,7 +197,7 @@ stages:
       parameters:
         testName: 'windows-netframework'
         workingDirectory: 'integrationtest/TargetProjects/NetFramework/FullFrameworkApp.Test'
-    - task: DotNetCoreCLI@2
+    - task: DotNetCoreCLI@2.210.0
       displayName: 'Assert integration test results'
       inputs:
         command: test
@@ -214,7 +214,7 @@ stages:
       parameters:
         testName: 'linux-netcore'
         workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
-    - task: DotNetCoreCLI@2
+    - task: DotNetCoreCLI@2.210.0
       displayName: 'Assert integration test results'
       inputs:
         command: test
@@ -231,7 +231,7 @@ stages:
       parameters:
         testName: 'macos-netcore'
         workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
-    - task: DotNetCoreCLI@2
+    - task: DotNetCoreCLI@2.210.0
       displayName: 'Assert integration test results'
       inputs:
         command: test
@@ -241,7 +241,7 @@ stages:
       parameters:
         testName: 'macos-netcore-multi-test-project'
         workingDirectory: 'integrationtest/TargetProjects/TargetProject'
-    - task: DotNetCoreCLI@2
+    - task: DotNetCoreCLI@2.210.0
       displayName: 'Assert integration test results'
       inputs:
         command: test
@@ -259,25 +259,25 @@ stages:
     displayName: Publish Release Artifacts
     steps:
     - template: pipeline-templates/populate-cache-steps.yml
-    - task: UseDotNet@2
+    - task: UseDotNet@2.207.2
       displayName: 'Use dotnet 6'
       inputs:
         version: 6.x
-    - task: DotNetCoreCLI@2
+    - task: DotNetCoreCLI@2.210.0
       displayName: 'Restore vstest binaries'
       inputs:
         command: 'custom'
         custom: 'restore'
         arguments: '--packages ./.vstest/'
         workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
-    - task: DotNetCoreCLI@2
+    - task: DotNetCoreCLI@2.210.0
       displayName: 'Pack Stryker.CLI'
       inputs:
         command: custom
         custom: pack
         arguments: --output $(Build.ArtifactStagingDirectory)/release
         workingDirectory: 'src/Stryker.CLI/Stryker.CLI'
-    - task: DotNetCoreCLI@2
+    - task: DotNetCoreCLI@2.210.0
       displayName: 'Pack Stryker.Core'
       inputs:
         command: custom
@@ -301,11 +301,11 @@ stages:
     displayName: Publish Release Artifacts
     steps:
     - template: pipeline-templates/populate-cache-steps.yml
-    - task: UseDotNet@2
+    - task: UseDotNet@2.207.2
       displayName: 'Use dotnet 6'
       inputs:
         version: 6.x
-    - task: DotNetCoreCLI@2
+    - task: DotNetCoreCLI@2.210.0
       displayName: 'Restore vstest binaries'
       inputs:
         command: 'custom'

@@ -1,8 +1,8 @@
 using System.Linq;
+using FSharp.Compiler.Syntax;
 using Microsoft.FSharp.Collections;
-using static FSharp.Compiler.SyntaxTree;
-using static FSharp.Compiler.SyntaxTree.SynConst;
-using static FSharp.Compiler.SyntaxTree.SynPat;
+using static FSharp.Compiler.Syntax.SynConst;
+using static FSharp.Compiler.Syntax.SynPat;
 
 namespace Stryker.Core.Mutants.FsharpOrchestrators
 {
@@ -20,10 +20,22 @@ namespace Stryker.Core.Mutants.FsharpOrchestrators
                 if (clause.pat.IsConst && ((Const)clause.pat).constant.IsBool)
                 {
                     //inverts boolean, true -> false and false -> true
-                    list[castinput.clauses.ToList().FindIndex(x => x.Equals(clause))] = SynMatchClause.NewClause(NewConst(NewBool(!((Bool)((Const)clause.pat).constant).Item), ((Const)clause.pat).Range), clause.whenExpr, clause.resultExpr, clause.range, clause.spInfo);
+                    list[castinput.clauses.ToList().FindIndex(x => x.Equals(clause))] =
+                        SynMatchClause.NewSynMatchClause(
+                            NewConst(NewBool(!((Bool)((Const)clause.pat).constant).Item), ((Const)clause.pat).Range),
+                            clause.whenExpr,
+                            clause.resultExpr,
+                            clause.range,
+                            clause.debugPoint,
+                            clause.trivia);
                 }
             }
-            return SynExpr.NewMatch(castinput.matchSeqPoint, castinput.expr, ListModule.OfSeq(list), castinput.range);
+            return SynExpr.NewMatch(
+                castinput.matchDebugPoint,
+                castinput.expr,
+                ListModule.OfSeq(list),
+                castinput.range,
+                castinput.trivia);
         }
     }
 }

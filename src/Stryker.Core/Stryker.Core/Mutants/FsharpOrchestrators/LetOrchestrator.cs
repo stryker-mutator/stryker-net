@@ -1,6 +1,6 @@
 using System.Collections.Generic;
+using FSharp.Compiler.Syntax;
 using Microsoft.FSharp.Collections;
-using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.Mutants.FsharpOrchestrators
 {
@@ -13,7 +13,20 @@ namespace Stryker.Core.Mutants.FsharpOrchestrators
             var childlist = new List<SynBinding>();
             foreach (var binding in castinput.bindings)
             {
-                childlist.Add(SynBinding.NewBinding(binding.accessibility, binding.kind, binding.mustInline, binding.isMutable, binding.attributes, binding.xmlDoc, binding.valData, binding.headPat, binding.returnInfo, iterator.Mutate(binding.expr), binding.range, binding.seqPoint));
+                childlist.Add(SynBinding.NewSynBinding(
+                    binding.accessibility,
+                    binding.kind,
+                    binding.isInline,
+                    binding.isMutable,
+                    binding.attributes,
+                    binding.xmlDoc,
+                    binding.valData,
+                    binding.headPat,
+                    binding.returnInfo,
+                    iterator.Mutate(binding.expr),
+                    binding.range,
+                    binding.debugPoint,
+                    binding.trivia));
             }
             return SynModuleDecl.NewLet(castinput.isRecursive, ListModule.OfSeq(childlist), castinput.range);
         }

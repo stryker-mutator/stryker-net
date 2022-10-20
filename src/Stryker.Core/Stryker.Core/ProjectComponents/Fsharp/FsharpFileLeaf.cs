@@ -1,7 +1,6 @@
+using FSharp.Compiler.Syntax;
 using Stryker.Core.Mutants;
-using System;
 using System.Collections.Generic;
-using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.ProjectComponents
 {

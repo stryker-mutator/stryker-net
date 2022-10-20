@@ -14,11 +14,11 @@
           "Microsoft.SourceLink.GitLab": "1.1.1"
         }
       },
-      "RegexParser": {
+      "Microsoft.TestPlatform.Portable": {
         "type": "Direct",
-        "requested": "[0.5.1, )",
-        "resolved": "0.5.1",
-        "contentHash": "cFqI0vxy4E7C83ijq1uFIkIOEnG3kezH+xBkBaQX9FvJKikrt+riQRDC4J4NQ5QXh/p6R3DC8qBVGXloC58zEQ=="
+        "requested": "[17.2.0, )",
+        "resolved": "17.2.0",
+        "contentHash": "ocTh0BzMX01TLrk9jhMv2TY5Irx4ZZTk3Z8UtUT595G1IRt1G2L2yfTQ1WXIv6rnqOsj+ZYOLjExmVAZgFHi4w=="
       },
       "Microsoft.Build.Tasks.Git": {
         "type": "Transitive",
