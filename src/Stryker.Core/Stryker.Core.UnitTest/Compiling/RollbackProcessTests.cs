@@ -497,7 +497,107 @@ namespace ExampleProject
             fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
             rollbackedResult = fixedCompilation.Compilation.Emit(ms);
             rollbackedResult.Success.ShouldBeTrue();
-            // validate that only mutation 8 and 7 were rollbacked
+            // validate that all mutations are rolled back
+            fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
+        }
+
+        [Fact]
+        public void RollbackProcess_ShouldRollbacConstructorWhenLocalRollbackFailsAndNoBlockMutationsFound()
+        {
+            var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
+
+namespace ExampleProject
+{
+    public class StringMagic
+    {
+        public int ActiveMutation = 1;
+        public StringMagic(string first, string second, out string third)
+        {
+            var dummy = """";
+            if(ActiveMutation == 8){
+                while (first.Length > 2)
+                {
+                    dummy = first + second;
+                }
+                while (first.Length < 2)
+                {
+                    dummy =  second - first;
+                }
+            }else{if(ActiveMutation == 7){
+                while (first.Length > 2)
+                {
+                    dummy =  first + second;
+                }
+                while (first.Length < 2)
+                {
+                    dummy =  second - first;
+                }
+            }else{if(ActiveMutation == 6){
+                while (first.Length == 2)
+                {
+                    dummy =  first + second;
+                }
+                while (first.Length < 2)
+                {
+                    dummy =  second + first;
+                }
+            }else{
+                third = ""good"";
+                while (first.Length == 2)
+                {
+                    dummy =  first + second;
+                }
+                while (first.Length < 2)
+                {
+                    dummy =  second + first;
+                }
+            }}}
+        }
+    }
+}");
+            var root = syntaxTree.GetRoot();
+            // we manually inject mutation markers
+            var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+            root = root.ReplaceNode(
+                mutantIf1,
+                mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(8), _ifEngineMarker)
+            );
+            var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
+            root = root.ReplaceNode(
+                mutantIf2,
+                mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(7), _ifEngineMarker)
+            );
+            var mutantIf3 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[2];
+            root = root.ReplaceNode(
+                mutantIf3,
+                mutantIf3.WithAdditionalAnnotations(GetMutationIdMarker(6), _ifEngineMarker)
+            );
+            var annotatedSyntaxTree = root.SyntaxTree;
+
+            var compiler = CSharpCompilation.Create("TestCompilation",
+                syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+                references: new List<PortableExecutableReference>() {
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+                });
+
+            var target = new RollbackProcess();
+
+            using var ms = new MemoryStream();
+            var compileResult = compiler.Emit(ms);
+
+            var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+
+            var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+
+            rollbackedResult.Success.ShouldBeFalse();
+            rollbackedResult.Diagnostics.ShouldHaveSingleItem();
+
+            fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
+            rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+            rollbackedResult.Success.ShouldBeTrue();
+            // validate that all mutations are rolled back
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
         }
 
@@ -606,7 +706,7 @@ namespace ExampleProject
             rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
             rollbackedResult.Success.ShouldBeTrue();
-            // validate that only mutation 8 and 7 were rollbacked
+            // validate that only mutation 8 and 7 were rolled back
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
         }
 
@@ -762,7 +862,7 @@ namespace ExampleProject
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 1 });
         }
 
-        [Fact]
+         [Fact]
         public void RollbackProcess_ShouldOnlyRaiseExceptionOnFinalAttempt()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"
