@@ -143,13 +143,13 @@ namespace Stryker.Core.Compiling
         {
             for (var currentNode = node; currentNode != null; currentNode = currentNode.Parent)
             {
-                if (currentNode.IsKind(SyntaxKind.MethodDeclaration) || currentNode.IsKind(SyntaxKind.GetAccessorDeclaration) || currentNode.IsKind(SyntaxKind.SetAccessorDeclaration))
+                if (currentNode.IsKind(SyntaxKind.MethodDeclaration) || currentNode.IsKind(SyntaxKind.GetAccessorDeclaration) || currentNode.IsKind(SyntaxKind.SetAccessorDeclaration) || currentNode.IsKind(SyntaxKind.ConstructorDeclaration))
                 {
                     return currentNode;
                 }
             }
-
-            return null;
+            // return the all file if not found
+            return node.SyntaxTree.GetRoot();
         }
 
         private void ScanAllMutationsIfsAndIds(SyntaxNode node, IList<MutantInfo> scan)
@@ -226,7 +226,7 @@ namespace Stryker.Core.Compiling
                     }
 
                     var scan = new List<MutantInfo>();
-                    var initNode = FindEnclosingMember(brokenMutation) ?? brokenMutation;
+                    var initNode = FindEnclosingMember(brokenMutation);
                     ScanAllMutationsIfsAndIds(initNode, scan);
 
                     if (scan.Any(x => x.Type == Mutator.Block.ToString()))
