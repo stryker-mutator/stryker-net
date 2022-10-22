@@ -284,7 +284,7 @@ stages:
         custom: pack
         arguments: --output $(Build.ArtifactStagingDirectory)/release
         workingDirectory: 'src/Stryker.Core/Stryker.Core'
-    - task: PublishBuildArtifacts@1
+    - task: PublishBuildArtifacts@1.211.0
       displayName: 'Publish Artifact: release'
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/release'
@@ -318,12 +318,12 @@ stages:
     - script: dotnet pack --output $(Build.ArtifactStagingDirectory)/release
       displayName: 'Pack Stryker.Core'
       workingDirectory: 'src/Stryker.Core/Stryker.Core'
-    - task: PublishBuildArtifacts@1
+    - task: PublishBuildArtifacts@1.211.0
       displayName: 'Publish Artifact: release'
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/release'
         ArtifactName: release
-    - task: PublishBuildArtifacts@1
+    - task: PublishBuildArtifacts@1.211.0
       displayName: 'Publish Artifact: release'
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/release'
