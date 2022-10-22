@@ -20,35 +20,31 @@ namespace Stryker.Core.Mutants
         private static readonly TypeBasedStrategy<SyntaxNode, INodeMutator> SpecificOrchestrator =
             new();
 
-        private static readonly IList<IMutator> Mutators;
-
-        private static ILogger Logger { get; }
-
-        static CsharpMutantOrchestrator()
+        private static readonly IList<IMutator> Mutators = new List<IMutator>
         {
-            Logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpMutantOrchestrator>();
-            Mutators = new List<IMutator>
-            {
-                // the default list of mutators
-                new BinaryExpressionMutator(),
-                new BlockMutator(),
-                new BooleanMutator(),
-                new AssignmentExpressionMutator(),
-                new PrefixUnaryMutator(),
-                new PostfixUnaryMutator(),
-                new CheckedMutator(),
-                new LinqMutator(),
-                new StringMutator(),
-                new StringEmptyMutator(),
-                new InterpolatedStringMutator(),
-                new NegateConditionMutator(),
-                new InitializerMutator(),
-                new ObjectCreationMutator(),
-                new ArrayCreationMutator(),
-                new StatementMutator(),
-                new RegexMutator()
-            };
+            // the default list of mutators
+            new BinaryExpressionMutator(),
+            new BlockMutator(),
+            new BooleanMutator(),
+            new AssignmentExpressionMutator(),
+            new PrefixUnaryMutator(),
+            new PostfixUnaryMutator(),
+            new CheckedMutator(),
+            new LinqMutator(),
+            new StringMutator(),
+            new StringEmptyMutator(),
+            new InterpolatedStringMutator(),
+            new NegateConditionMutator(),
+            new InitializerMutator(),
+            new ObjectCreationMutator(),
+            new ArrayCreationMutator(),
+            new StatementMutator(),
+            new RegexMutator()
+        };
 
+        private static ILogger Logger { get; } = ApplicationLogging.LoggerFactory.CreateLogger<CsharpMutantOrchestrator>();
+
+        static CsharpMutantOrchestrator() =>
             SpecificOrchestrator.RegisterHandlers(new List<INodeMutator>
             {
                 new DontMutateOrchestrator<AttributeListSyntax>(),
@@ -73,7 +69,6 @@ namespace Stryker.Core.Mutants
                 new ExpressionSpecificOrchestrator<ExpressionSyntax>(),
                 new SyntaxNodeOrchestrator()
             });
-        }
 
         /// <summary>
         /// <param name="options">The options to apply</param>
