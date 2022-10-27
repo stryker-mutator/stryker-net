@@ -39,6 +39,12 @@ namespace Stryker.Core.DiffProviders
                 throw new InputException("Could not determine a commit to check for diff. Please check you have provided the correct value for --git-source");
             }
 
+            var testPaths = _options.TestProjects
+                .Select(testProject => testProject.EndsWith(Path.DirectorySeparatorChar)
+                        ? testProject
+                        : testProject + Path.DirectorySeparatorChar)
+                .ToArray();
+
             foreach (var patchChanges in repository.Diff.Compare<Patch>(commit.Tree, DiffTargets.WorkingDirectory))
             {
                 string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_gitInfoProvider.RepositoryPath, patchChanges.Path));
@@ -47,12 +53,8 @@ namespace Stryker.Core.DiffProviders
                 {
                     continue;
                 }
-
-                var fullName = _options.ProjectPath.EndsWith(Path.DirectorySeparatorChar)
-                    ? _options.ProjectPath
-                    : _options.ProjectPath + Path.DirectorySeparatorChar;
-
-                if (diffPath.StartsWith(fullName))
+                
+                if (testPaths.Any(testPath => diffPath.StartsWith(testPath)))
                 {
                     diffResult.ChangedTestFiles.Add(diffPath);
                 }
