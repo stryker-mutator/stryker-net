@@ -33,7 +33,7 @@ namespace Stryker.Core.Mutators
         String,
         [Description("Bitwise operators")]
         Bitwise,
-        [Description("Initializer")]
+        [Description("Array initializer")]
         Initializer,
         [Description("Regular expressions")]
         Regex
