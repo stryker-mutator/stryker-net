@@ -73,7 +73,7 @@ You need to:
 - It is ok to mutate new constructs (such as arrow expression) and leave the old constructs as is. The reverse is not true.
 - Your mutator must return an empty list (or `yield break`) if it cannot generate any mutation.
 - Mutator must not throw.
-- Make sure to update the [mutatation documentation](docs/mutations.md).
+- Make sure to update the [mutations documentation](docs/mutations.md).
 
 [Back to main contributing document](CONTRIBUTING.MD).
 
