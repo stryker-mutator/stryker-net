@@ -28,7 +28,6 @@ namespace Stryker.Core.Options
         MutationLevelInput MutationLevelInput { get; init; }
         MsBuildPathInput MsBuildPathInput { get; init; }
         OutputPathInput OutputPathInput { get; init; }
-        OutputBasePathInput OutputBasePathInput { get; init; }
         ReportFileNameInput ReportFileNameInput { get; init; }
         ProjectNameInput ProjectNameInput { get; init; }
         ProjectUnderTestNameInput ProjectUnderTestNameInput { get; init; }
@@ -65,7 +64,6 @@ namespace Stryker.Core.Options
         public DevModeInput DevModeInput { get; init; } = new();
         public BasePathInput BasePathInput { get; init; } = new();
         public OutputPathInput OutputPathInput { get; init; } = new();
-        public OutputBasePathInput OutputBasePathInput { get; init; } = new();
         public ReportFileNameInput ReportFileNameInput { get; init; } = new();
         public SolutionInput SolutionInput { get; init; } = new();
         public TargetFrameworkInput TargetFrameworkInput { get; init; } = new();

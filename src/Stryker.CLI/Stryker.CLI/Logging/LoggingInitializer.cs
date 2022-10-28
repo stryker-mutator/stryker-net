@@ -33,16 +33,12 @@ namespace Stryker.CLI.Logging
 
         private string CreateOutputPath(IStrykerInputs inputs, IFileSystem fileSystem)
         {
-            var basePath = inputs.OutputBasePathInput.SuppliedInput ?? Path.Combine(inputs.BasePathInput.SuppliedInput, "StrykerOutput");
-            string outputPath;
+            var basePath = inputs.OutputPathInput.SuppliedInput ?? Path.Combine(inputs.BasePathInput.SuppliedInput, "StrykerOutput");
+            var outputPath = basePath;
 
-            if (Path.IsPathRooted(basePath))
+            if (inputs.OutputPathInput.SuppliedInput is null)
             {
-                outputPath = Path.Combine(basePath, DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
-            }
-            else
-            {
-                outputPath = Path.Combine(inputs.BasePathInput.SuppliedInput, basePath, DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
+                outputPath = Path.Combine(outputPath, DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
             }
 
             // outputpath should always be created
@@ -58,10 +54,11 @@ namespace Stryker.CLI.Logging
                 }
                 catch (IOException e)
                 {
-                    Console.WriteLine($"Could't create gitignore file because of error {e.Message}. \n" +
+                    Console.WriteLine($"Couldn't create gitignore file because of error {e.Message}. \n" +
                         "If you use any diff compare features this may mean that stryker logs show up as changes.");
                 }
             }
+
             return outputPath;
         }
     }

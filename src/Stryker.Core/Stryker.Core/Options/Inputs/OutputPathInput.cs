@@ -5,7 +5,7 @@ namespace Stryker.Core.Options.Inputs
 {
     public class OutputPathInput : Input<string>
     {
-        protected override string Description => string.Empty;
+        protected override string Description => @"Changes the output directory for Stryker reports and logs.";
 
         public override string Default => null;
 
