@@ -36,7 +36,7 @@ namespace Stryker.Core.DiffProviders
 
             if (commit == null)
             {
-                throw new InputException("Could not determine a commit to check for diff. Please check you have provided the correct source.");
+                throw new InputException("Could not find a commit to diff. Please check you have provided the correct committish for 'since'.");
             }
 
             var testProjects = _options.TestProjects.ToList();
