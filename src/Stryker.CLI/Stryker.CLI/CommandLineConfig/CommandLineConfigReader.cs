@@ -138,6 +138,8 @@ namespace Stryker.CLI
 
             AddCliInput(inputs.BreakOnInitialTestFailureInput, "break-on-initial-test-failure", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
             AddCliInput(inputs.DevModeInput, "dev-mode", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
+
+            AddCliInput(inputs.OutputBasePathInput, "output", "O", optionType: CommandOptionType.SingleValue, category: InputCategory.Reporting);
         }
 
         private void RegisterCliInput(CommandLineApplication app, CliInput option)
