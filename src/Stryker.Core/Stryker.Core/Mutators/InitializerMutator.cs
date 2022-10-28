@@ -26,17 +26,6 @@ namespace Stryker.Core.Mutators
                     Type = Mutator.Initializer
                 };
             }
-
-            if (node.Kind() == SyntaxKind.ObjectInitializerExpression)
-            {
-                yield return new Mutation()
-                {
-                    OriginalNode = node,
-                    ReplacementNode = SyntaxFactory.InitializerExpression(SyntaxKind.ObjectInitializerExpression),
-                    DisplayName = "Object initializer mutation",
-                    Type = Mutator.Initializer,
-                };
-            }
         }
     }
 }
