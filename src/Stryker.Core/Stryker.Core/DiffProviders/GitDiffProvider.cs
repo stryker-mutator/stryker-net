@@ -36,7 +36,7 @@ namespace Stryker.Core.DiffProviders
 
             if (commit == null)
             {
-                throw new InputException("Could not determine a commit to check for diff. Please check you have provided the correct value for --git-source");
+                throw new InputException("Could not determine a commit to check for diff. Please check you have provided the correct source.");
             }
 
             var testProjects = _options.TestProjects.ToList();
@@ -59,7 +59,7 @@ namespace Stryker.Core.DiffProviders
                 {
                     continue;
                 }
-                
+
                 if (testPaths.Any(testPath => diffPath.StartsWith(testPath)))
                 {
                     diffResult.ChangedTestFiles.Add(diffPath);

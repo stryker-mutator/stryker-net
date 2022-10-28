@@ -33,7 +33,7 @@ namespace Stryker.Core.Initialisation
             _logger.LogInformation("Restoring nuget packages using {0}", "nuget.exe");
             if (string.IsNullOrWhiteSpace(solutionPath))
             {
-                throw new InputException("Solution path is required on .net framework projects. Please provide your solution path using --solution-path ...");
+                throw new InputException("Solution path is required on .net framework projects. Please provide it using 'solution' feature.");
             }
             solutionPath = Path.GetFullPath(solutionPath);
             string solutionDir = Path.GetDirectoryName(solutionPath);
