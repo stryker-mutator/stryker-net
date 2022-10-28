@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using FSharp.Compiler.Syntax;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants.FsharpOrchestrators;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
-using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.Mutants
 {
@@ -46,7 +46,16 @@ namespace Stryker.Core.Mutants
             foreach (SynModuleOrNamespace module in input)
             {
                 var mutation = Mutate(module.decls);
-                list.Add(SynModuleOrNamespace.NewSynModuleOrNamespace(module.longId, module.isRecursive, module.kind, mutation, module.xmlDoc, module.attribs, module.accessibility, module.range));
+                list.Add(SynModuleOrNamespace.NewSynModuleOrNamespace(
+                    module.longId,
+                    module.isRecursive,
+                    module.kind,
+                    mutation,
+                    module.xmlDoc,
+                    module.attribs,
+                    module.accessibility,
+                    module.range,
+                    module.trivia));
             }
             return ListModule.OfSeq(list);
         }

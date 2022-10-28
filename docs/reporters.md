@@ -9,7 +9,7 @@ Stryker supports a variety of reporters. Enabled reporters will be activated dur
 The default reporters are [html](#html-reporter) and [progress](#progress-reporter)
 
 # Html reporter
-Our html reporter will output a html file that will visually display your project and all mutations. This is our recomended reporter for larger projects, since it displays large number of mutations in a clear way. 
+Our html reporter will output a html file that will visually display your project and all mutations. This is our recommended reporter for larger projects, since it displays large number of mutations in a clear way. 
 
 ```bash
 dotnet stryker --reporter "html"
@@ -20,7 +20,7 @@ Example:
 ![html reporter](./images/html-report-net.png)
 
 # Progress reporter
-This reporter outputs the current status of the mutation testrun. It has a nice visual look so you can quickly see the progress. We recomend to use this reporter on large projects. It also shows an indication of the estimated time for Stryker.NET to complete.
+This reporter outputs the current status of the mutation testrun. It has a nice visual look so you can quickly see the progress. We recommend to use this reporter on large projects. It also shows an indication of the estimated time for Stryker.NET to complete.
 
 ```bash
 dotnet stryker --reporter "progress"
@@ -82,7 +82,7 @@ Example:
 ![Cleartext reporter](./images/console-reporter-tree.png)
 
 # Dots reporter
-A basic reporter to display the progress of the mutationtest run. It indicates in a very simple way how many mutants have been tested and their status. This is ideal to use on build servers, as it has little/no performance loss while still giving insight.
+A basic reporter to display the progress of the mutation testrun. It indicates in a very simple way how many mutants have been tested and their status. This is ideal to use on build servers, as it has little/no performance loss while still giving insight.
 
 ```bash
 dotnet stryker --reporter "dots"
