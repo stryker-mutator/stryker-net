@@ -64,7 +64,7 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `^=`                 | <code>&#124;=</code> |
 | `^=`                 | `&=`                 |
 
-## Collection initialization (_initializer_)
+## Initialization (_initializer_)
 | Original | Mutated | 
 | ---------------------------------------- | ------------------------------------ |
 |`new int[] { 1, 2 };`                     | `new int[] { };`                     |
@@ -72,11 +72,7 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 |`new List<int> { 1, 2 };`                 | `new List<int> { };`                 |
 |`new Collection<int> { 1, 2 };`           | `new Collection<int> { };`           |
 |`new Dictionary<int, int> { { 1, 1 } };`  | `new Dictionary<int, int> { };`      |
-
-## Object initialization (_initializer_)
-| Original | Mutated | 
-| ---------------------------------------- | ------------------------------------ |
-|`new SomeClass { Foo = "Bar" };`                     | `new SomeClass { };`                     |
+|`new SomeClass { Foo = "Bar" };`          | `new SomeClass { };`                 |
 
 ## Removal mutators (_statement_, _block_)
 |    Original   |   Mutated  | 
