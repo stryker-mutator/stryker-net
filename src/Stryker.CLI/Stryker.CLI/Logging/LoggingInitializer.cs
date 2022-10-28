@@ -21,7 +21,6 @@ namespace Stryker.CLI.Logging
         public void SetupLogOptions(IStrykerInputs inputs, IFileSystem fileSystem = null)
         {
             fileSystem ??= new FileSystem();
-            var basePath = inputs.BasePathInput.SuppliedInput;
 
             var outputPath = CreateOutputPath(inputs, fileSystem);
             inputs.OutputPathInput.SuppliedInput = outputPath;
@@ -34,30 +33,23 @@ namespace Stryker.CLI.Logging
 
         private string CreateOutputPath(IStrykerInputs inputs, IFileSystem fileSystem)
         {
-            var outputBasePath = inputs.OutputBasePathInput.SuppliedInput;
+            var basePath = inputs.OutputBasePathInput.SuppliedInput ?? Path.Combine(inputs.BasePathInput.SuppliedInput, "StrykerOutput");
             string outputPath;
-            if (outputBasePath is null)
+
+            if (Path.IsPathRooted(basePath))
             {
-                var strykerDir = "StrykerOutput";
-                outputPath = Path.Combine(inputs.BasePathInput.SuppliedInput, strykerDir, DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
+                outputPath = Path.Combine(basePath, DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
             }
             else
             {
-                if (Path.IsPathRooted(outputBasePath))
-                {
-                    outputPath = Path.Combine(outputBasePath, DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
-                }
-                else
-                {
-                    outputPath = Path.Combine(inputs.BasePathInput.SuppliedInput, outputBasePath, DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
-                }
+                outputPath = Path.Combine(inputs.BasePathInput.SuppliedInput, basePath, DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
             }
 
             // outputpath should always be created
             fileSystem.Directory.CreateDirectory(FilePathUtils.NormalizePathSeparators(outputPath));
 
             // add gitignore if it didn't exist yet
-            var gitignorePath = FilePathUtils.NormalizePathSeparators(Path.Combine(outputPath, ".gitignore"));
+            var gitignorePath = FilePathUtils.NormalizePathSeparators(Path.Combine(basePath, ".gitignore"));
             if (!fileSystem.File.Exists(gitignorePath))
             {
                 try
