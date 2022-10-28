@@ -35,6 +35,28 @@ namespace Stryker.Core.UnitTest.Mutators
         }
 
         [Fact]
+        public void ShouldRemoveValuesFromObjectInitializer()
+        {
+            var initializerExpression = SyntaxFactory.InitializerExpression(SyntaxKind.ObjectInitializerExpression,
+                SyntaxFactory.SeparatedList(new List<ExpressionSyntax> {
+                    SyntaxFactory.AssignmentExpression(
+                        SyntaxKind.SimpleAssignmentExpression,
+                        SyntaxFactory.IdentifierName("SomeProperty"),
+                        SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(5))
+                    )
+                }));
+            var target = new InitializerMutator();
+
+            var result = target.ApplyMutations(initializerExpression);
+
+            var mutation = result.ShouldHaveSingleItem();
+            mutation.DisplayName.ShouldBe("Object initializer mutation");
+
+            var replacement = mutation.ReplacementNode.ShouldBeOfType<InitializerExpressionSyntax>();
+            replacement.Expressions.ShouldBeEmpty();
+        }
+
+        [Fact]
         public void ShouldNotMutateEmptyInitializer()
         {
             var emptyInitializerExpression = SyntaxFactory.InitializerExpression(SyntaxKind.ArrayInitializerExpression,
