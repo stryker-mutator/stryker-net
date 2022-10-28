@@ -14,7 +14,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         public void ShouldHaveHelpText()
         {
             var target = new OutputPathInput();
-            target.HelpText.ShouldBe(@"");
+            target.HelpText.ShouldBe("Changes the output path for Stryker logs and reports. This can be an absolute or relative path.");
         }
 
         [Theory]

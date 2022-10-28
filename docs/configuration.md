@@ -369,6 +369,14 @@ Both, method names and constructor names support wildcards.
 }
 ```
 
+### `output` <`string`>
+
+Default: `null`  
+Command line: `[--output|-O] /path/to/output`  
+Config file: `N/A`
+
+Changes the output path for Stryker logs and reports. This can be an absolute or relative path.
+
 ## Optimization
 
 ### `coverage-analysis` <`string`>
