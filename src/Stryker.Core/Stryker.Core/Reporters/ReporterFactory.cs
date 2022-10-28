@@ -31,6 +31,7 @@ namespace Stryker.Core.Reporters
                 { Reporter.Json, new JsonReporter(options) },
                 { Reporter.Html, new Html.reporter.HtmlReporter(options) },
                 { Reporter.Dashboard, new DashboardReporter(options) },
+                { Reporter.Markdown, new MarkdownSummaryReporter(options) },
                 { Reporter.Baseline, new BaselineReporter(options) }
             };
         }

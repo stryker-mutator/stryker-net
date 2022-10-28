@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <VersionPrefix>2.0.0</VersionPrefix>
+    <VersionPrefix>3.0.1</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <PackageId>dotnet-stryker</PackageId>
     <Authors>Richard Werkman, Rouke Broersma</Authors>
@@ -28,9 +28,9 @@
   </PropertyGroup>
   
   <ItemGroup>
-    <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.0.1" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Binder" Version="$(MicrosoftExtensionsConfiguration)" /> <!-- From Directory.Build.props -->
-    <PackageReference Include="NuGet.Protocol" Version="6.2.1" />
+    <PackageReference Include="McMaster.Extensions.CommandLineUtils" />
+    <PackageReference Include="NuGet.Protocol" />
+    <PackageReference Include="YamlDotNet" />
   </ItemGroup>
 
   <ItemGroup>
@@ -41,11 +41,5 @@
     <None Include="..\..\..\LICENSE" Pack="true" PackagePath="" Visible="false" />
     <None Include="..\..\..\README.md" Pack="true" PackagePath="" Visible="false" />
     <None Include="..\..\..\docs\images\stryker-80x80.png" Pack="true" PackagePath="" Visible="false" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Include="..\..\..\.editorconfig" Link="Properties\.editorconfig" />
-    <None Include="..\..\Directory.Build.props" Link="Properties\Directory.Build.props" />
-    <None Include="..\..\Directory.Build.targets" Link="Properties\Directory.Build.targets" />
   </ItemGroup>
 </Project>

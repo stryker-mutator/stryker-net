@@ -1,6 +1,5 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 {

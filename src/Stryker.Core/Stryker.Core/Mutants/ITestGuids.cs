@@ -10,15 +10,9 @@ namespace Stryker.Core.Mutants
         int Count { get; }
         bool IsEmpty { get; }
         bool IsEveryTest { get; }
-    }
-
-    // represents a test list
-    public interface ITestListDescription : ITestGuids
-    {
+        ITestGuids Merge(ITestGuids other);
         bool Contains(Guid testId);
         bool ContainsAny(ITestGuids other);
-        bool IsIncluded(ITestGuids test);
-        TestsGuidList Merge(ITestGuids other);
+        bool IsIncludedIn(ITestGuids other);
     }
-
 }

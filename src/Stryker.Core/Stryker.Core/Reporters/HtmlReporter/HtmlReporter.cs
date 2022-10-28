@@ -31,7 +31,7 @@ namespace Stryker.Core.Reporters.Html.reporter
         {
             var mutationReport = JsonReport.Build(_options, reportComponent);
             var filename = _options.ReportFileName + ".html";
-            var reportPath = Path.Combine(_options.OutputPath, "reports", filename);
+            var reportPath = Path.Combine(_options.ReportPath, filename);
 
             reportPath = FilePathUtils.NormalizePathSeparators(reportPath);
 
@@ -54,11 +54,11 @@ namespace Stryker.Core.Reporters.Html.reporter
             if (_console.Profile.Capabilities.Links)
             {
                 // We must print the report path as the link text because on some terminals links might be supported but not actually clickable: https://github.com/spectreconsole/spectre.console/issues/764
-                _console.MarkupLine($"[Green][link={reportUri}]{reportPath}[/][/]");
+                _console.MarkupLineInterpolated($"[Green][link={reportUri}]{reportPath}[/][/]");
             }
             else
             {
-                _console.MarkupLine($"[Green]{reportUri}[/]");
+                _console.MarkupLineInterpolated($"[Green]{reportUri}[/]");
             }
 
             _console.MarkupLine("[Green]You can open it in your browser of choice.[/]");

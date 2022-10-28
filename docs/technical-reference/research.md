@@ -33,14 +33,14 @@ if(Environment.GetEnvironmentVariable("ActiveMutation") == "1") {
 ```
 
 ## Comparison
-For each option a seperate prototype has been created. The results showed the following pros and cons. 
+For each option a separate prototype has been created. The results showed the following pros and cons. 
 
 ### Mutating source code
 Pros:
 * Exact location can be shown to users.
 
 Cons:
-* Each mutation has to be compiled seperate. So mutating is slow.
+* Each mutation has to be compiled separate. So mutating is slow.
 
 ### Mutating byte code
 Pros:

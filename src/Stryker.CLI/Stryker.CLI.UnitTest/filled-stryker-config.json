@@ -12,7 +12,7 @@
     "disable-bail": true,
     "disable-mix-mutants": true,
     "additional-timeout": 9999,
-    "project": "ExampleProject.csproj",
+    "project": "ExampleProject.csproj", // trailing comment
     "concurrency": 1,
     "solution": "",
     "mutation-level": "",

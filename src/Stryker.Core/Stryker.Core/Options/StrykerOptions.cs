@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
@@ -37,6 +38,7 @@ namespace Stryker.Core.Options
         /// The path all output is written to. For example reports and logging files.
         /// </summary>
         public string OutputPath { get; init; }
+        public string ReportPath =>  Path.Combine(OutputPath ?? ".", "reports");
         /// <summary>
         /// A custom settable name for report files.
         /// </summary>
@@ -199,6 +201,11 @@ namespace Stryker.Core.Options
         /// </summary>
         public string ProjectVersion { get; set; }
 
+        /// <summary>
+        /// Instruct Stryker to break execution when at least one test failed on initial run.
+        /// </summary>
+        public bool BreakOnInitialTestFailure { get; set; }
+
         public StrykerOptions Copy(string projectPath, string workingDirectory, string projectUnderTest, IEnumerable<string> testProjects) => new()
         {
             AdditionalTimeout = AdditionalTimeout,
@@ -236,7 +243,8 @@ namespace Stryker.Core.Options
             TestProjects = testProjects,
             TestCaseFilter = TestCaseFilter,
             Thresholds = Thresholds,
-            WithBaseline = WithBaseline
+            WithBaseline = WithBaseline,
+            BreakOnInitialTestFailure = BreakOnInitialTestFailure,
         };
     }
 }

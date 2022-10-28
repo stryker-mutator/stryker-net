@@ -10,9 +10,13 @@ New features are welcome! Either as requests or proposals.
 
 1.	Please create an issue first, so we know what to expect from you.
 1.	Create a fork on your github account.
-1.	When writing your code, please conform to the [Microsoft coding guidelines](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions)
+1.	When writing your code, please conform to the [Microsoft coding guidelines](https://docs.microsoft.com/en-us/dotnet/csharp/programming-guide/inside-a-program/coding-conventions).
 1.	Please create or edit unit tests or integration tests.
-1.	Run the tests and verify they pass
+1.	Run the tests and verify they pass.
+1. Update documentation.
+
+## Adding a new mutator
+Please read the [dedicated document](adding_a_mutator.md).
 
 #### Setup Stryker.NET locally
 While developing on Stryker.NET we advise to work in [the latest Visual Studio](https://www.visualstudio.com/downloads/) and to set Stryker up to run on a UnitTest project on your local disk.

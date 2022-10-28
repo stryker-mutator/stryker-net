@@ -125,7 +125,7 @@ namespace Stryker.Core
             {
                 // log duration
                 stopwatch.Stop();
-                _logger.LogInformation("Time Elapsed {0}", stopwatch.Elapsed);
+                _logger.LogInformation("Time Elapsed {duration}", stopwatch.Elapsed);
             }
         }
 
@@ -166,10 +166,8 @@ namespace Stryker.Core
                 rootComponent.AddRange(projectComponents);
                 return rootComponent;
             }
-            else
-            {
-                return projectComponents.FirstOrDefault();
-            }
+
+            return projectComponents.FirstOrDefault();
         }
     }
 }

@@ -3,11 +3,13 @@ using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Json;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 
 namespace Stryker.Core.Baseline.Providers
 {
@@ -32,7 +34,8 @@ namespace Stryker.Core.Baseline.Providers
         public async Task<JsonReport> Load(string version)
         {
             var fileUrl = $"{_options.AzureFileStorageUrl}/{_outputPath}/{version}/stryker-report.json";
-            var url = new Uri($"{fileUrl}?sv={_options.AzureFileStorageSas}");
+
+            var url = GenerateUri(fileUrl, _options.AzureFileStorageSas).ToString();
 
             using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
 
@@ -53,14 +56,15 @@ namespace Stryker.Core.Baseline.Providers
 
         public async Task Save(JsonReport report, string version)
         {
-            var fileUrl = $"{_options.AzureFileStorageUrl}/{_outputPath}/{version}/stryker-report.json";
-            var url = new Uri($"{fileUrl}?comp=range&sv={_options.AzureFileStorageSas}");
-
             var existingReport = await Load(version);
 
             var reportJson = report.ToJson();
 
             int byteSize = Encoding.UTF8.GetByteCount(report.ToJson());
+
+            var fileUrl = $"{_options.AzureFileStorageUrl}/{_outputPath}/{version}/stryker-report.json";
+
+            var url = GenerateUri(fileUrl, _options.AzureFileStorageSas, new Dictionary<string, string> { { "comp", "range" } }).Uri;
 
             if (existingReport == null)
             {
@@ -112,13 +116,9 @@ namespace Stryker.Core.Baseline.Providers
         {
             _logger.LogDebug("Creating directory {0}", fileUrl);
 
-            var url = new Uri($"{fileUrl}?restype=directory&sv={_options.AzureFileStorageSas}");
+            var url = GenerateUri(fileUrl, _options.AzureFileStorageSas, new Dictionary<string, string> { { "restype", "directory" } }).ToString();
 
             using var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
-
-            SetWritingHeaders(requestMessage);
-
-            requestMessage.Headers.Add("x-ms-file-last-write-time", "now");
 
             using var response = await _httpClient.SendAsync(requestMessage);
             if (response.StatusCode == HttpStatusCode.Created)
@@ -140,14 +140,10 @@ namespace Stryker.Core.Baseline.Providers
         private async Task<bool> AllocateFileLocationAsync(int byteSize, string fileUrl)
         {
             _logger.LogDebug("Allocating storage for file {0}", fileUrl);
-
-            var url = new Uri($"{fileUrl}?sv={_options.AzureFileStorageSas}");
-
+            var url = GenerateUri(fileUrl, _options.AzureFileStorageSas).ToString();
+            
             using var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
 
-            SetWritingHeaders(requestMessage);
-
-            requestMessage.Headers.Add("x-ms-file-last-write-time", "now");
             requestMessage.Headers.Add("x-ms-type", "file");
             requestMessage.Headers.Add("x-ms-content-length", byteSize.ToString());
 
@@ -175,8 +171,6 @@ namespace Stryker.Core.Baseline.Providers
                 Content = new StringContent(report, Encoding.UTF8, "application/json")
             };
 
-            SetWritingHeaders(requestMessage);
-
             requestMessage.Headers.Add("x-ms-range", $"bytes=0-{byteSize - 1}");
             requestMessage.Headers.Add("x-ms-write", "update");
 
@@ -192,14 +186,23 @@ namespace Stryker.Core.Baseline.Providers
             }
         }
 
-        private void SetWritingHeaders(HttpRequestMessage requestMessage)
-        {
-            requestMessage.Headers.Add("x-ms-file-permission", "inherit");
-            requestMessage.Headers.Add("x-ms-file-attributes", "None");
-            requestMessage.Headers.Add("x-ms-file-creation-time", "now");
-        }
-
         private string ToSafeResponseMessage(string responseMessage) =>
             responseMessage.Replace(_options.AzureFileStorageUrl, "xxxxxxxxxx").Replace(_options.AzureFileStorageSas, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
+
+        private static UriBuilder GenerateUri(string fileUrl, string sasToken, Dictionary<string, string> queryParameters = default)
+        {
+            var uriBuilder = new UriBuilder(fileUrl);
+            var query = HttpUtility.ParseQueryString(sasToken);
+            if (queryParameters != default)
+            {
+                foreach (var para in queryParameters)
+                {
+                    query.Add(para.Key, para.Value);
+                }
+            }
+
+            uriBuilder.Query = query.ToString();
+            return uriBuilder;
+        }
     }
 }
