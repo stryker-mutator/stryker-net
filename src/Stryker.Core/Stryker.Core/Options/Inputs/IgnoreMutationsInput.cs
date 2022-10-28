@@ -15,21 +15,21 @@ namespace Stryker.Core.Options.Inputs
 
         public IEnumerable<Mutator> Validate()
         {
-            if (SuppliedInput is { })
+            if (SuppliedInput is not null)
             {
                 var excludedMutators = new List<Mutator>();
 
                 // Get all mutatorTypes and their descriptions
                 var typeDescriptions = Enum.GetValues(typeof(Mutator))
                     .Cast<Mutator>()
-                    .ToDictionary(x => x, x => x.GetDescription());
+                    .ToDictionary(x => x, x => x.GetDescriptions());
 
                 foreach (var mutatorToExclude in SuppliedInput.Where(w => !w.Contains(".")))
                 {
                     // Find any mutatorType that matches the name passed by the user
                     var mutatorDescriptor = typeDescriptions.FirstOrDefault(
-                        x => string.Equals(x.Key.ToString(), mutatorToExclude, StringComparison.CurrentCultureIgnoreCase) || x.Value.ToString().ToLower().Contains(mutatorToExclude.ToLower()));
-                    if (mutatorDescriptor.Value is { })
+                        x => string.Equals(x.Key.ToString(), mutatorToExclude, StringComparison.CurrentCultureIgnoreCase) || x.Value.Any(description => description.ToLower().Contains(mutatorToExclude.ToLower())));
+                    if (mutatorDescriptor.Value is not null)
                     {
                         excludedMutators.Add(mutatorDescriptor.Key);
                     }

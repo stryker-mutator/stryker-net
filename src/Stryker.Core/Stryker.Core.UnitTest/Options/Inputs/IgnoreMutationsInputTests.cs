@@ -157,5 +157,24 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 
             mutators.ShouldHaveSingleItem().ShouldBe(Mutator.Statement);
         }
+
+        [Fact]
+        public void ShouldIgnoreBasedOnEitherDescription()
+        {
+            var targetWithFirstDescription = new IgnoreMutationsInput
+            {
+                SuppliedInput = new[] { "Arithmetic Operators" }
+            };
+            var targetWithSecondDescription = new IgnoreMutationsInput
+            {
+                SuppliedInput = new[] { "Math Operators" }
+            };
+
+            var mutatorsWithFirstDescription = targetWithFirstDescription.Validate();
+            var mutatorsWithSecondDescription = targetWithSecondDescription.Validate();
+
+            mutatorsWithFirstDescription.ShouldHaveSingleItem().ShouldBe(Mutator.Arithmetic);
+            mutatorsWithSecondDescription.ShouldHaveSingleItem().ShouldBe(Mutator.Arithmetic);
+        }
     }
 }

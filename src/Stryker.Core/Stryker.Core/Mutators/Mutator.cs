@@ -1,7 +1,10 @@
 using System;
-using System.ComponentModel;
+using System.Collections.Generic;
+//using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
+using Stryker.Core.Attributes;
 
 namespace Stryker.Core.Mutators
 {
@@ -10,6 +13,7 @@ namespace Stryker.Core.Mutators
         [Description("Statements")]
         Statement,
         [Description("Arithmetic operators")]
+        [Description("Math operators")]
         Arithmetic,
         [Description("Block statements")]
         Block,
@@ -41,7 +45,7 @@ namespace Stryker.Core.Mutators
 
     public static class EnumExtension
     {
-        public static string GetDescription<T>(this T e) where T : IConvertible
+        public static IEnumerable<string> GetDescriptions<T>(this T e) where T : IConvertible
         {
             if (e is not Enum) return null;
             var type = e.GetType();
@@ -53,12 +57,8 @@ namespace Stryker.Core.Mutators
                 {
                     var memInfo = type.GetMember(type.GetEnumName(val));
 
-                    if (memInfo[0]
-                        .GetCustomAttributes(typeof(DescriptionAttribute), false)
-                        .FirstOrDefault() is DescriptionAttribute descriptionAttribute)
-                    {
-                        return descriptionAttribute.Description;
-                    }
+                    var descriptions = memInfo[0].GetCustomAttributes<DescriptionAttribute>(false).Select(descriptionAttribute => descriptionAttribute.Description).ToList();
+                    return descriptions;
                 }
             }
 
