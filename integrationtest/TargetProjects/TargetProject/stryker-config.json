@@ -2,7 +2,8 @@
   "stryker-config": {
     "reporters": [
       "Dots",
-      "Json"
+      "Json",
+      "Html"
     ],
     "test-projects": [
       "../NetCoreTestProject.XUnit/NetCoreTestProject.XUnit.csproj",

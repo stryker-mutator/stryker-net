@@ -72,31 +72,36 @@ namespace Stryker.Core.MutationTest
             }
         }
 
-        private TestRunResult RunTestSession(IList<Mutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
+        private TestRunResult RunTestSession(ICollection<Mutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
             TestUpdateHandler updateHandler, bool forceSingle)
         {
-            TestRunResult result;
             Logger.LogTrace($"Testing {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))}.");
-            if (forceSingle && mutantsToTest.Count > 1)
+            if (forceSingle)
             {
                 foreach (var mutant in mutantsToTest)
                 {
                     var localResult = TestRunner.TestMultipleMutants(timeoutMs, new[] { mutant }, updateHandler);
-                    mutant.AnalyzeTestRun(localResult.FailingTests, localResult.RanTests, localResult.TimedOutTests);
+                    if (updateHandler == null || localResult.SessionTimedOut)
+                    {
+                        mutant.AnalyzeTestRun(localResult.FailingTests, localResult.RanTests, localResult.TimedOutTests, localResult.SessionTimedOut);
+                    }
                 }
 
                 return new TestRunResult(true);
             }
-            else
+
+            var result = TestRunner.TestMultipleMutants(timeoutMs, mutantsToTest.ToList(), updateHandler);
+            if (updateHandler != null && !result.SessionTimedOut)
             {
-                result = TestRunner.TestMultipleMutants(timeoutMs, mutantsToTest.ToList(), updateHandler);
-                if (updateHandler == null)
-                {
-                    foreach (var mutant in mutantsToTest)
-                    {
-                        mutant.AnalyzeTestRun(result.FailingTests, result.RanTests, result.TimedOutTests);
-                    }
-                }
+                return result;
+            }
+
+            foreach (var mutant in mutantsToTest)
+            {
+                mutant.AnalyzeTestRun(result.FailingTests,
+                    result.RanTests,
+                    result.TimedOutTests,
+                    mutantsToTest.Count == 1 && result.SessionTimedOut);
             }
 
             return result;

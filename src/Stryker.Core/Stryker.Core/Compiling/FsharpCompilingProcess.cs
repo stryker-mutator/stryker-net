@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
-using FSharp.Compiler.SourceCodeServices;
+using FSharp.Compiler.CodeAnalysis;
+using FSharp.Compiler.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Control;
@@ -11,7 +11,8 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
-using ParsedInput = FSharp.Compiler.SyntaxTree.ParsedInput;
+using IFileSystem = System.IO.Abstractions.IFileSystem;
+using ParsedInput = FSharp.Compiler.Syntax.ParsedInput;
 
 namespace Stryker.Core.Compiling
 {
@@ -40,7 +41,16 @@ namespace Stryker.Core.Compiling
             FSharpList<string> dependencies = ListModule.OfSeq(analyzerResult.References);
 
             //we need a checker if we want to compile 
-            var checker = FSharpChecker.Create(projectCacheSize: null, keepAssemblyContents: null, keepAllBackgroundResolutions: null, legacyReferenceResolver: null, tryGetMetadataSnapshot: null, suggestNamesForErrors: null, keepAllBackgroundSymbolUses: null, enableBackgroundItemKeyStoreAndSemanticClassification: null);
+            var checker = FSharpChecker.Create(
+                projectCacheSize: null,
+                keepAssemblyContents: null,
+                keepAllBackgroundResolutions: null,
+                legacyReferenceResolver: null,
+                tryGetMetadataSnapshot: null,
+                suggestNamesForErrors: null,
+                keepAllBackgroundSymbolUses: null,
+                enableBackgroundItemKeyStoreAndSemanticClassification: null,
+                enablePartialTypeChecking: null);
 
             var pathlist = new List<string>();
             var pdblist = new List<string>();
@@ -67,7 +77,7 @@ namespace Stryker.Core.Compiling
             //rollback still needs to be implemented
             RollbackProcessResult rollbackProcessResult = null;
 
-            (var compilationSucces, FSharpErrorInfo[] errorinfo) = TryCompilation(checker, trees, pathlist, dependencies);
+            (var compilationSucces, FSharpDiagnostic[] errorinfo) = TryCompilation(checker, trees, pathlist, dependencies);
 
             if (compilationSucces)
             {
@@ -85,9 +95,9 @@ namespace Stryker.Core.Compiling
             throw new CompilationException("Failed to restore build able state.");
         }
 
-        private (bool, FSharpErrorInfo[]) TryCompilation(FSharpChecker checker, FSharpList<ParsedInput> trees, List<string> pathlist, FSharpList<string> dependencies)
+        private (bool, FSharpDiagnostic[]) TryCompilation(FSharpChecker checker, FSharpList<ParsedInput> trees, List<string> pathlist, FSharpList<string> dependencies)
         {
-            Tuple<FSharpErrorInfo[], int> result = FSharpAsync.RunSynchronously(
+            Tuple<FSharpDiagnostic[], int> result = FSharpAsync.RunSynchronously(
                 checker.Compile(
                     trees, AssemblyName, pathlist.First(), dependencies, pdbFile: null, executable: false, noframework: true, userOpName: null), timeout: null, cancellationToken: null);
             return (result.Item2 == 0, result.Item1);

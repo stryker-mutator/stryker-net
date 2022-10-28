@@ -7,12 +7,12 @@ using Stryker.Core.Options.Inputs;
 
 namespace Stryker.CLI
 {
-    public class CommandLineConfigHandler
+    public class CommandLineConfigReader
     {
         private readonly IDictionary<string, CliInput> _cliInputs = new Dictionary<string, CliInput>();
         private readonly CliInput _configFileInput;
 
-        public CommandLineConfigHandler() => _configFileInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. | default: stryker-config.json", argumentHint: "file-path");
+        public CommandLineConfigReader() => _configFileInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. Supports json and yaml formats. | default: stryker-config.json", argumentHint: "relative-path");
 
         public void RegisterCommandLineOptions(CommandLineApplication app, IStrykerInputs inputs)
         {
@@ -100,8 +100,8 @@ namespace Stryker.CLI
                     break;
 
                 case OpenReportInput openReportInput:
-                    inputs.OpenReportEnabledInput.SuppliedInput = true;
                     openReportInput.SuppliedInput = cliInput.Value();
+                    inputs.OpenReportEnabledInput.SuppliedInput = true;
                     break;
             }
         }
@@ -136,8 +136,8 @@ namespace Stryker.CLI
             AddCliInput(inputs.DashboardApiKeyInput, "dashboard-api-key", null, category: InputCategory.Reporting);
             AddCliInput(inputs.AzureFileStorageSasInput, "azure-fileshare-sas", null, category: InputCategory.Reporting);
 
+            AddCliInput(inputs.BreakOnInitialTestFailureInput, "break-on-initial-test-failure", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
             AddCliInput(inputs.DevModeInput, "dev-mode", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
-
         }
 
         private void RegisterCliInput(CommandLineApplication app, CliInput option)

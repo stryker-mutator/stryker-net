@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "dependencies": {
     ".NETStandard,Version=v2.0": {
       "DotNet.ReproducibleBuilds": {
@@ -84,11 +84,6 @@
           "Microsoft.SourceLink.Common": "1.1.1"
         }
       },
-      "NuGet.Frameworks": {
-        "type": "Transitive",
-        "resolved": "5.11.0",
-        "contentHash": "eaiXkUjC4NPcquGWzAGMXjuxvLwc6XGKMptSyOGQeT0X70BUZObuybJFZLA0OfTdueLd3US23NBPTBb6iF3V1Q=="
-      },
       "System.Collections.Immutable": {
         "type": "Transitive",
         "resolved": "1.5.0",
@@ -101,6 +96,12 @@
         "dependencies": {
           "System.Collections.Immutable": "1.5.0"
         }
+      },
+      "NuGet.Frameworks": {
+        "type": "CentralTransitive",
+        "requested": "[6.3.1, )",
+        "resolved": "5.11.0",
+        "contentHash": "eaiXkUjC4NPcquGWzAGMXjuxvLwc6XGKMptSyOGQeT0X70BUZObuybJFZLA0OfTdueLd3US23NBPTBb6iF3V1Q=="
       }
     }
   }

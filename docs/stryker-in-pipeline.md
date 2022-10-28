@@ -90,7 +90,7 @@ In YAML pipelines add the following after the test step:
 - task: run-stryker@1
   inputs:
     testProject: '*Tests.csproj' #example value
-    parameters: '--reporters "['html', 'progress']" #example value'
+    parameters: '--reporter html --reporter progress' #example value
 ```
 
 To install 'Run Stryker .Net' or for more information go to the [marketplace](https://marketplace.visualstudio.com/items?itemName=raschmitt.run-stryker-net-task).
