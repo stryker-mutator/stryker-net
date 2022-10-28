@@ -43,7 +43,7 @@ namespace Stryker.CLI.Logging
             }
             else if (Path.IsPathRooted(inputs.OutputPathInput.SuppliedInput))
             {
-                basePath = inputs.BasePathInput.SuppliedInput;
+                basePath = inputs.OutputPathInput.SuppliedInput;
                 outputPath = basePath;
             }
             else

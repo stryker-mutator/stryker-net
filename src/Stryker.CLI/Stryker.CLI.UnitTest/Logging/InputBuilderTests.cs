@@ -22,7 +22,44 @@ namespace Stryker.CLI.UnitTest
             inputs.BasePathInput.SuppliedInput = basePath;
             target.SetupLogOptions(inputs, fileSystemMock);
 
-            var gitIgnoreFile = fileSystemMock.AllFiles.FirstOrDefault(x => x.EndsWith(Path.Combine("StrykerOutput", ".gitignore")));
+            var gitIgnoreFile =
+                fileSystemMock.AllFiles.FirstOrDefault(x => x.EndsWith(Path.Combine("StrykerOutput", ".gitignore")));
+            gitIgnoreFile.ShouldNotBeNull();
+            var fileContents = fileSystemMock.GetFile(gitIgnoreFile).Contents;
+            Encoding.Default.GetString(fileContents).ShouldBe("*");
+        }
+
+        [Fact]
+        public void ShouldAddGitIgnoreWithAbsolutePath()
+        {
+            var fileSystemMock = new MockFileSystem();
+            var target = new LoggingInitializer();
+
+            var inputs = new StrykerInputs();
+            inputs.OutputPathInput.SuppliedInput = Path.Combine(Path.GetPathRoot(Directory.GetCurrentDirectory())!, "tmp", "path");
+            target.SetupLogOptions(inputs, fileSystemMock);
+
+            var gitIgnoreFile =
+                fileSystemMock.AllFiles.FirstOrDefault(x => x.EndsWith(Path.Combine("tmp", "path", ".gitignore")));
+            gitIgnoreFile.ShouldNotBeNull();
+            var fileContents = fileSystemMock.GetFile(gitIgnoreFile).Contents;
+            Encoding.Default.GetString(fileContents).ShouldBe("*");
+        }
+
+        [Fact]
+        public void ShouldAddGitIgnoreWithRelativePath()
+        {
+            var fileSystemMock = new MockFileSystem();
+            var basePath = Directory.GetCurrentDirectory();
+            var target = new LoggingInitializer();
+
+            var inputs = new StrykerInputs();
+            inputs.BasePathInput.SuppliedInput = basePath;
+            inputs.OutputPathInput.SuppliedInput = "output";
+            target.SetupLogOptions(inputs, fileSystemMock);
+
+            var gitIgnoreFile =
+                fileSystemMock.AllFiles.FirstOrDefault(x => x.EndsWith(Path.Combine("output", ".gitignore")));
             gitIgnoreFile.ShouldNotBeNull();
             var fileContents = fileSystemMock.GetFile(gitIgnoreFile).Contents;
             Encoding.Default.GetString(fileContents).ShouldBe("*");
