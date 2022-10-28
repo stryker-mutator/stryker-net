@@ -1593,51 +1593,51 @@
       "dotnet-stryker": {
         "type": "Project",
         "dependencies": {
-          "McMaster.Extensions.CommandLineUtils": "[4.0.1, )",
-          "NuGet.Protocol": "[6.3.1, )",
-          "YamlDotNet": "[12.0.2, )",
-          "stryker": "[3.0.1, )"
+          "McMaster.Extensions.CommandLineUtils": "4.0.1",
+          "NuGet.Protocol": "6.3.1",
+          "YamlDotNet": "12.0.2",
+          "stryker": "3.0.1"
         }
       },
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "Buildalyzer": "[4.1.5, )",
-          "DotNet.Glob": "[3.1.3, )",
-          "FSharp.Compiler.Service": "[41.0.6, )",
-          "Grynwald.MarkdownGenerator": "[2.5.34, )",
-          "LibGit2Sharp": "[0.27.0-preview-0182, )",
-          "Microsoft.CodeAnalysis.CSharp": "[4.3.1, )",
-          "Microsoft.Extensions.Logging": "[6.0.0, )",
-          "Microsoft.TestPlatform": "[17.2.0, )",
-          "Microsoft.TestPlatform.ObjectModel": "[17.2.0, )",
-          "Microsoft.TestPlatform.Portable": "[17.2.0, )",
-          "Microsoft.TestPlatform.TranslationLayer": "[17.2.0, )",
-          "Microsoft.Web.LibraryManager.Build": "[2.1.175, )",
-          "Mono.Cecil": "[0.11.4, )",
-          "NuGet.Frameworks": "[6.3.1, )",
-          "Serilog": "[2.12.0, )",
-          "Serilog.Extensions.Logging": "[3.1.0, )",
-          "Serilog.Extensions.Logging.File": "[3.0.0, )",
-          "Serilog.Sinks.Console": "[4.1.0, )",
-          "ShellProgressBar": "[5.2.0, )",
-          "Spectre.Console": "[0.45.0, )",
-          "Spectre.Console.Analyzer": "[0.45.0, )",
-          "Stryker.DataCollector": "[3.0.1, )",
-          "Stryker.RegexMutators": "[3.0.1, )",
-          "System.IO.Abstractions": "[17.2.3, )"
+          "Buildalyzer": "4.1.5",
+          "DotNet.Glob": "3.1.3",
+          "FSharp.Compiler.Service": "41.0.6",
+          "Grynwald.MarkdownGenerator": "2.5.34",
+          "LibGit2Sharp": "0.27.0-preview-0182",
+          "Microsoft.CodeAnalysis.CSharp": "4.3.1",
+          "Microsoft.Extensions.Logging": "6.0.0",
+          "Microsoft.TestPlatform": "17.2.0",
+          "Microsoft.TestPlatform.ObjectModel": "17.2.0",
+          "Microsoft.TestPlatform.Portable": "17.2.0",
+          "Microsoft.TestPlatform.TranslationLayer": "17.2.0",
+          "Microsoft.Web.LibraryManager.Build": "2.1.175",
+          "Mono.Cecil": "0.11.4",
+          "NuGet.Frameworks": "6.3.1",
+          "Serilog": "2.12.0",
+          "Serilog.Extensions.Logging": "3.1.0",
+          "Serilog.Extensions.Logging.File": "3.0.0",
+          "Serilog.Sinks.Console": "4.1.0",
+          "ShellProgressBar": "5.2.0",
+          "Spectre.Console": "0.45.0",
+          "Spectre.Console.Analyzer": "0.45.0",
+          "Stryker.DataCollector": "1.0.0",
+          "Stryker.RegexMutators": "1.0.0",
+          "System.IO.Abstractions": "17.2.3"
         }
       },
       "stryker.datacollector": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "[17.2.0, )"
+          "Microsoft.TestPlatform.ObjectModel": "17.2.0"
         }
       },
       "stryker.regexmutators": {
         "type": "Project",
         "dependencies": {
-          "RegexParser": "[0.5.1, )"
+          "RegexParser": "0.5.1"
         }
       },
       "Buildalyzer": {
