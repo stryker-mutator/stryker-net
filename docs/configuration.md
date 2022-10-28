@@ -390,7 +390,7 @@ coverage information for some mutants (see below), at the expense of a longer st
 Stryker again without coverage analysis and report an issue if this mutant is killed by this run.
 * when using `perTest` mode, mutants that are executed as part as some static constructor/initializer 
 are run against all tests as Stryker cannot reliably capture coverage for those. This is a consequence of static
-constructors/initialisers being called only once during tests. This heuristic is not needed when using
+constructors/initializers being called only once during tests. This heuristic is not needed when using
 `perTestInIsolation` due to test being run one by one.
 
 ### `disable-bail` <`flag`>
@@ -399,7 +399,7 @@ Default: `false`
 Command line: `N/A`  
 Config file: `"disable-bail": true`
 
-Stryker aborts a unit testrun for a mutant as soon as one test fails because this is enough to confirm the mutant is killed. This can reduce the total runtime but also means you miss information about individual unit tests (eg if a unit test does not kill any mutants and is therefore useless). You can disable this behavior and run all unit tests for a mutant to completion. This can be especially useful when you want to find useless unit tests.
+Stryker aborts a unit testrun for a mutant as soon as one test fails because this is enough to confirm the mutant is killed. This can reduce the total runtime but also means you miss information about individual unit tests (e.g. if a unit test does not kill any mutants and is therefore useless). You can disable this behavior and run all unit tests for a mutant to completion. This can be especially useful when you want to find useless unit tests.
 
 ### `disable-mix-mutants` <`flag`>
 
@@ -453,7 +453,7 @@ Use [globbing syntax](https://en.wikipedia.org/wiki/Glob_(programming)) for wild
 
 ## Experimental
 
-**The features in this section are experimental. Results can contain false postives and false negatives.**
+**The features in this section are experimental. Results can contain false positives and false negatives.**
 
 ## Baseline
 
