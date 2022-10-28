@@ -1,7 +1,7 @@
 {
   "version": 1,
   "dependencies": {
-    "net6.0": {
+    ".NETCoreApp,Version=v3.1": {
       "coverlet.collector": {
         "type": "Direct",
         "requested": "[3.1.0, )",

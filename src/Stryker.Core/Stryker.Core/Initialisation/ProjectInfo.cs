@@ -30,11 +30,11 @@ namespace Stryker.Core.Initialisation
 
         public virtual void RestoreOriginalAssembly()
         {
-            //foreach (var testProject in TestProjectAnalyzerResults)
-            //{
-            //    var injectionPath = GetInjectionFilePath(testProject);
-            //    _fileSystem.File.Copy(GetBackupName(injectionPath), injectionPath, true);
-            //}
+            foreach (var testProject in TestProjectAnalyzerResults)
+            {
+                var injectionPath = GetInjectionFilePath(testProject);
+                _fileSystem.File.Copy(GetBackupName(injectionPath), injectionPath, true);
+            }
         }
 
         public virtual void BackupOriginalAssembly()

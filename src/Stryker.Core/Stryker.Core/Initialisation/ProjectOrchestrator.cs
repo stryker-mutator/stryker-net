@@ -5,7 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Buildalyzer;
-using Buildalyzer.Environment;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
@@ -43,24 +42,24 @@ namespace Stryker.Core.Initialisation
             if (options.IsSolutionContext)
             {
                 // Analyze all projects in the solution with buildalyzer
-                var solutionProjects = AnalyzeSolution(options);
+                var solutionAnalyzerResults = AnalyzeSolution(options);
 
-                var projectsUnderTest = FindProjectsUnderTest(solutionProjects);
+                var projectsUnderTestAnalyzerResult = FindProjectsUnderTest(solutionAnalyzerResults);
 
-                var testProjects = solutionProjects.Except(projectsUnderTest);
+                var testProjects = solutionAnalyzerResults.Except(projectsUnderTestAnalyzerResult);
 
-                _logger.LogInformation("Found {0} projects under test", projectsUnderTest.Count());
+                _logger.LogInformation("Found {0} projects under test", projectsUnderTestAnalyzerResult.Count());
                 _logger.LogInformation("Found {0} test projects", testProjects.Count());
 
                 // Build the complete solution
                 _initialBuildProcess.InitialBuild(
-                    projectsUnderTest.First().TargetsFullFramework(),
+                    projectsUnderTestAnalyzerResult.First().TargetsFullFramework(),
                     Path.GetDirectoryName(options.SolutionPath),
                     options.SolutionPath,
                     options.MsBuildPath);
 
                 // Mutate all projects in the solution
-                foreach (var project in MutateSolution(options, reporters, projectsUnderTest, testProjects, solutionProjects))
+                foreach (var project in MutateSolution(options, reporters, projectsUnderTestAnalyzerResult, testProjects, solutionAnalyzerResults))
                 {
                     yield return project;
                 }
@@ -73,7 +72,11 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private IEnumerable<IMutationTestProcess> MutateSolution(StrykerOptions options, IReporter reporters, IEnumerable<IAnalyzerResult> projectsUnderTest, IEnumerable<IAnalyzerResult> testProjects, IEnumerable<IAnalyzerResult> solutionProjects)
+        private IEnumerable<IMutationTestProcess> MutateSolution(StrykerOptions options,
+            IReporter reporters,
+            IEnumerable<IAnalyzerResult> projectsUnderTest,
+            IEnumerable<IAnalyzerResult> testProjects,
+            IEnumerable<IAnalyzerResult> solutionProjects)
         {
             foreach (var project in projectsUnderTest)
             {
