@@ -31,6 +31,6 @@ Packages:
 
 Other:
  * a .fs file to  use for the creation of tests for the F#-components
- * a test project writen in F# to use as input for Stryker.net
+ * a test project written in F# to use as input for Stryker.net
  * a C# project use to test the process of iterating on a SyntaxTree in F#
  * general cleanup of existing code

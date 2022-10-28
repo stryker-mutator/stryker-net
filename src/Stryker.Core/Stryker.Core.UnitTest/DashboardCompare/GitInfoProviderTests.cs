@@ -190,7 +190,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             }, repositoryPath: string.Empty);
 
             Should.Throw<InputException>(act)
-                .Message.ShouldBe("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the --diff feature.");
+                .Message.ShouldBe("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the 'since' feature.");
         }
 
         [Fact]

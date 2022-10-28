@@ -29,7 +29,7 @@ namespace Stryker.Core.MutantFilters
 
             if (_diffResult != null)
             {
-                _logger.LogInformation("{0} files changed", _diffResult.ChangedSourceFiles?.Count ?? 0 + _diffResult.ChangedTestFiles?.Count ?? 0);
+                _logger.LogInformation("{0} files changed", (_diffResult.ChangedSourceFiles?.Count ?? 0) + (_diffResult.ChangedTestFiles?.Count ?? 0));
 
                 if (_diffResult.ChangedSourceFiles != null)
                 {
