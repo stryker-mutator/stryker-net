@@ -33,30 +33,18 @@ namespace Stryker.CLI.Logging
 
         private string CreateOutputPath(IStrykerInputs inputs, IFileSystem fileSystem)
         {
-            string basePath;
-            string outputPath;
+            var outputPath = inputs.OutputPathInput.SuppliedInput ?? Path.Combine("StrykerOutput", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
 
-            if (inputs.OutputPathInput.SuppliedInput is null)
+            if (!Path.IsPathRooted(outputPath))
             {
-                basePath = Path.Combine(inputs.BasePathInput.SuppliedInput, "StrykerOutput");
-                outputPath = Path.Combine(basePath, DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
-            }
-            else if (Path.IsPathRooted(inputs.OutputPathInput.SuppliedInput))
-            {
-                basePath = inputs.OutputPathInput.SuppliedInput;
-                outputPath = basePath;
-            }
-            else
-            {
-                basePath = Path.Combine(inputs.BasePathInput.SuppliedInput, inputs.OutputPathInput.SuppliedInput);
-                outputPath = basePath;
+                outputPath = Path.Combine(inputs.BasePathInput.SuppliedInput, outputPath);
             }
 
             // outputpath should always be created
             fileSystem.Directory.CreateDirectory(FilePathUtils.NormalizePathSeparators(outputPath));
 
             // add gitignore if it didn't exist yet
-            var gitignorePath = FilePathUtils.NormalizePathSeparators(Path.Combine(basePath, ".gitignore"));
+            var gitignorePath = FilePathUtils.NormalizePathSeparators(Path.Combine(outputPath, ".gitignore"));
             if (!fileSystem.File.Exists(gitignorePath))
             {
                 try

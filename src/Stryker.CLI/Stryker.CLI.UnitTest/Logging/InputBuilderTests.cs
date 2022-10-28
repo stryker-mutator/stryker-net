@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
@@ -23,8 +24,9 @@ namespace Stryker.CLI.UnitTest
             target.SetupLogOptions(inputs, fileSystemMock);
 
             var gitIgnoreFile =
-                fileSystemMock.AllFiles.FirstOrDefault(x => x.EndsWith(Path.Combine("StrykerOutput", ".gitignore")));
+                fileSystemMock.AllFiles.Single(x => x.EndsWith(Path.Combine(".gitignore")));
             gitIgnoreFile.ShouldNotBeNull();
+            DateTime.TryParse(Directory.GetParent(gitIgnoreFile)!.Name.Split(".")[0], out _).ShouldBeTrue();
             var fileContents = fileSystemMock.GetFile(gitIgnoreFile).Contents;
             Encoding.Default.GetString(fileContents).ShouldBe("*");
         }
