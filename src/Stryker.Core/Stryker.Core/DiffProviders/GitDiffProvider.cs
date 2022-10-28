@@ -39,7 +39,13 @@ namespace Stryker.Core.DiffProviders
                 throw new InputException("Could not determine a commit to check for diff. Please check you have provided the correct value for --git-source");
             }
 
-            var testPaths = _options.TestProjects
+            var testProjects = _options.TestProjects.ToList();
+            if (!testProjects.Any())
+            {
+                testProjects.Add(_options.ProjectPath);
+            }
+
+            var testPaths = testProjects
                 .Select(testProject => testProject.EndsWith(Path.DirectorySeparatorChar)
                         ? testProject
                         : testProject + Path.DirectorySeparatorChar)
