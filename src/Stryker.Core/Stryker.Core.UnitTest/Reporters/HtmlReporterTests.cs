@@ -1,6 +1,5 @@
 using Moq;
 using Shouldly;
-using Spectre.Console;
 using Spectre.Console.Testing;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
@@ -81,7 +80,6 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void ShouldSupportSpacesInConsole()
         {
-            var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();
             var mockAnsiConsole = new TestConsole().EmitAnsiSequences();
             var options = new StrykerOptions
@@ -90,12 +88,12 @@ namespace Stryker.Core.UnitTest.Reporters
                 OutputPath = " folder \\ next level",
                 ReportFileName = "mutation-report"
             };
-            var reporter = new HtmlReporter(options, mockFileSystem, mockAnsiConsole, mockProcess.Object);
+            var reporter = new HtmlReporter(options, mockFileSystem, mockAnsiConsole, Mock.Of<IWebbrowserOpener>());
             var mutationTree = ReportTestHelper.CreateProjectWith();
 
             reporter.OnAllMutantsTested(mutationTree);
 
-            var reportUri = "file://" + Path.Combine(options.ReportPath, $"{options.ReportFileName}.html").Replace("\\", "/").Replace(" ", "%20");
+            var reportUri = "file://%20folder%20/%20next%20level/reports/mutation-report.html";
             mockAnsiConsole.Output.ShouldContain(reportUri);
         }
 
@@ -169,6 +167,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             // Check if browser open action is invoked
             mockProcess.Verify(m => m.Open(reportUri));
+            mockProcess.VerifyNoOtherCalls();
         }
 
         [Theory]
