@@ -37,17 +37,17 @@ namespace Stryker.Core.Reporters.Html.reporter
 
             WriteHtmlReport(reportPath, mutationReport.ToJsonHtmlSafe());
 
-            var reportUri = "file://" + reportPath.Replace("\\", "/").Replace(" ", "%20");
-
             if (_options.ReportTypeToOpen == Options.Inputs.ReportType.Html)
             {
-                _processWrapper.Open(reportUri);
+                _processWrapper.Open("file://" + reportPath.Replace("\\", "/"));
             }
             else
             {
                 _console.MarkupLine("[Cyan]Hint: by passing \"--open-report or -o\" the report will open automatically once Stryker is done.[/]");
             }
 
+            var reportUri = "file://" + reportPath.Replace("\\", "/").Replace(" ", "%20");
+            
             _console.WriteLine();
             _console.MarkupLine("[Green]Your html report has been generated at:[/]");
 
