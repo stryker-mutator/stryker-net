@@ -57,7 +57,7 @@ if it can, those test cases are processed as usual; otherwise it will provide se
 It will then run all tests.
 ### Run sequence
 Overall, xUnit first discovers every tests at (test) startup. If a list of tests is provided, xUnit filters the discovered lists,
-disacring those which are not part of the provided list. Note that there will be no report for requested tests that have not been
+discarding those which are not part of the provided list. Note that there will be no report for requested tests that have not been
 found during discovery.
 Here is a summarized timeline of tests execution:
 ```
@@ -117,7 +117,7 @@ Basically, each `TestCase` is considered to be a specific test, and NUnit genera
 `ToString()` method for each parameter (e.g: `Test(1,2)` for parameter 1 and 2).
 Then each test is run separately and a test result is provided for each test.
 **Caveat**: if the `ToString()` method is not overridden, multiple test cases will have the same name 
-(eg: `Test(MyClass`). Then, there will be no way to distinguish between tests as well as properly associate test
+(e.g.: `Test(MyClass`). Then, there will be no way to distinguish between tests as well as properly associate test
 results.
 
 ### TestCaseSource
@@ -125,7 +125,7 @@ Each test case is reported during the discovery phase, and NUnit generates a nam
 `ToString()` method for each parameter (e.g: `Test(1,2)` for parameter 1 and 2).
 Then each test is run separately and a test result is provided for each test.
 **Caveat**: if the `ToString()` method is not overridden, multiple test cases will have the same name 
-(eg: `Test(MyClass`). Then, there will be no way to distinguish between tests as well as properly associate test
+(e.g.: `Test(MyClass`). Then, there will be no way to distinguish between tests as well as properly associate test
 results.
 When this happens, NUnit will run the test against all data in the set and return a single result (failed if at least one test failed).
 The drawback is that you can't identify which data set failed the test.
