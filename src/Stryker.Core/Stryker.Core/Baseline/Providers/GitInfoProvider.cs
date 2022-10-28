@@ -71,7 +71,7 @@ namespace Stryker.Core.Baseline.Providers
         {
             if (string.IsNullOrEmpty(RepositoryPath))
             {
-                throw new InputException("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the --diff feature.");
+                throw new InputException("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the 'since' feature.");
             }
 
             return new Repository(RepositoryPath);
