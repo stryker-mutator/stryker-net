@@ -96,7 +96,7 @@ namespace Stryker.Core.UnitTest.Reporters
             reporter.OnAllMutantsTested(mutationTree);
 
             var reportUri = "file://" + Path.Combine(options.ReportPath, $"{options.ReportFileName}.html").Replace("\\", "/").Replace(" ", "%20");
-            mockAnsiConsole.Output.Contains(reportUri);
+            mockAnsiConsole.Output.ShouldContain(reportUri);
         }
 
         [Fact]
