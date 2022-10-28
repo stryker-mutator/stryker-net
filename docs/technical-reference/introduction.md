@@ -7,7 +7,7 @@ custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs
 Welcome to the Stryker.NET technical references! In this wiki you will find background knowledge about Stryker.NET and some technical details.
 
 ### Why Stryker.NET
-Before Stryker moved to .NET there already were some mutation testing tools available for mutantion testing C# code. None seemed to be able to mutate .NET Core projects. With Stryker.NET we wanted to broaden the mutation test landscape. 
+Before Stryker moved to .NET there already were some mutation testing tools available for mutation testing C# code. None seemed to be able to mutate .NET Core projects. With Stryker.NET we wanted to broaden the mutation test landscape. 
 
 ### Goals
 Our long term goals are:
