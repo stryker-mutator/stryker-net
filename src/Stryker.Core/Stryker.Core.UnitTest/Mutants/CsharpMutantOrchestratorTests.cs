@@ -774,6 +774,25 @@ if(StrykerNamespace.MutantControl.IsActive(1)){	x /=x + 2;
         }
 
         [Fact]
+        public void ShouldMutateRecursiveCoalescingAssignmentStatements()
+        {
+            string source = @"public void SomeMethod() {
+    List<int> a = null;
+    List<int> b = null;
+    a ??= b ??= new List<int>();
+}";
+            string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+    List<int> a = null;
+    List<int> b = null;
+if(StrykerNamespace.MutantControl.IsActive(1)){    a = b ??= new List<int>();
+}else{if(StrykerNamespace.MutantControl.IsActive(2)){    a ??= b = new List<int>();
+}else{    a ??= b ??= new List<int>();
+}}}}";
+
+            ShouldMutateSourceInClassToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldMutateIncrementStatementWithIfStatement()
         {
             string source = @"public void SomeMethod() {
