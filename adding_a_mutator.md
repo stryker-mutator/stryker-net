@@ -75,6 +75,6 @@ You need to:
 - Mutator must not throw.
 - Make sure to update the [mutations documentation](docs/mutations.md).
 
-[Back to main contributing document](CONTRIBUTING.MD).
+[Back to main contributing document](CONTRIBUTING.md).
 
 [1]:	https://docs.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/get-started/syntax-analysis "Get started with syntax analysis"
