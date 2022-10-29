@@ -20,7 +20,7 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = replacementNode,
                     DisplayName = $"Flip left and right hand side",
-                    Type = Mutator.Assignment,
+                    Type = Mutator.NullCoalescing, // TODO type in docs toevoegen met sterretje dat dit alleen voor .net geldt met aparte PR
                 };
 
                 yield return new Mutation
@@ -28,7 +28,7 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = replacementNode.Left,
                     DisplayName = $"Replace by the left hand side",
-                    Type = Mutator.Assignment,
+                    Type = Mutator.NullCoalescing,
                 };
 
                 yield return new Mutation
@@ -36,10 +36,9 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = replacementNode.Right,
                     DisplayName = $"Replace by the right hand side",
-                    Type = Mutator.Assignment,
+                    Type = Mutator.NullCoalescing,
                 };
             }
         }
     }
 }
-// TODO type toevoegen en ook in docs toevoegen met sterretje dat dit alleen voor .net geldt met aparte PR
