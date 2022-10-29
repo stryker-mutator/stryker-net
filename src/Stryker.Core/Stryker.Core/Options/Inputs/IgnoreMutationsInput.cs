@@ -13,20 +13,20 @@ namespace Stryker.Core.Options.Inputs
         protected override string Description => @"The given mutators will be excluded for this mutation testrun.
     This argument takes a json array as value. Example: ['string', 'logical']";
 
-        public IEnumerable<Mutator> Validate()
+        public IEnumerable<TEnum> Validate<TEnum>() where TEnum : IConvertible
         {
             if (SuppliedInput is not null)
             {
-                var excludedMutators = new List<Mutator>();
+                var excludedMutators = new List<TEnum>();
 
-                // Get all mutatorTypes and their descriptions
-                var typeDescriptions = Enum.GetValues(typeof(Mutator))
-                    .Cast<Mutator>()
+                // Get all enumTypes and their descriptions
+                var typeDescriptions = Enum.GetValues(typeof(TEnum))
+                    .Cast<TEnum>()
                     .ToDictionary(x => x, x => x.GetDescriptions());
 
                 foreach (var mutatorToExclude in SuppliedInput.Where(w => !w.Contains(".")))
                 {
-                    // Find any mutatorType that matches the name passed by the user
+                    // Find any enumType that matches the name passed by the user
                     var mutatorDescriptor = typeDescriptions.FirstOrDefault(
                         x => string.Equals(x.Key.ToString(), mutatorToExclude, StringComparison.CurrentCultureIgnoreCase) || x.Value.Any(description => description.ToLower().Contains(mutatorToExclude.ToLower())));
                     if (mutatorDescriptor.Value is not null)
@@ -41,7 +41,7 @@ namespace Stryker.Core.Options.Inputs
 
                return excludedMutators;
             }
-            return Enumerable.Empty<Mutator>();
+            return Enumerable.Empty<TEnum>();
         }
 
 

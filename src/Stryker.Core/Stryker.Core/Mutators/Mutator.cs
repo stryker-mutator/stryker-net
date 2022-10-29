@@ -13,7 +13,6 @@ namespace Stryker.Core.Mutators
         [Description("Statements")]
         Statement,
         [Description("Arithmetic operators")]
-        [Description("Math operators")]
         Arithmetic,
         [Description("Block statements")]
         Block,
@@ -57,7 +56,7 @@ namespace Stryker.Core.Mutators
                 {
                     var memInfo = type.GetMember(type.GetEnumName(val));
 
-                    var descriptions = memInfo[0].GetCustomAttributes<DescriptionAttribute>(false).Select(descriptionAttribute => descriptionAttribute.Description).ToList();
+                    var descriptions = memInfo[0].GetCustomAttributes<DescriptionAttribute>(false).Select(descriptionAttribute => descriptionAttribute.Description);
                     return descriptions;
                 }
             }
