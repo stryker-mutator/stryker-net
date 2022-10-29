@@ -9,8 +9,8 @@ Stryker supports a variety of mutators, which are listed below. In parentheses t
 Do you have a suggestion for a (new) mutator? Feel free to create an [issue](https://github.com/stryker-mutator/stryker-net/issues)!
 
 ## Arithmetic Operators (_arithmetic_)
-| Original | Mutated | 
-| ------------- | ------------- | 
+| Original | Mutated |
+| ------------- | ------------- |
 | `+` | `-` |
 | `-` | `+` |
 | `*` | `/` |
@@ -18,7 +18,7 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `%` | `*` |
 
 ## Equality Operators (_equality_)
-| Original | Mutated | 
+| Original | Mutated |
 | ------------- | ------------- |
 | `>` | `<` |
 | `>` | `>=` |
@@ -39,8 +39,8 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `^`                       | `==`                      |
 
 ## Boolean Literals (_boolean_)
-| Original | Mutated | 
-| ------------- | ------------- | 
+| Original | Mutated |
+| ------------- | ------------- |
 | `true`	| `false` |
 | `false`	| `true` |
 | `!person.IsAdult()`		| `person.IsAdult()` |
@@ -63,9 +63,10 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | <code>&#124;=</code> | `^=`                 |
 | `^=`                 | <code>&#124;=</code> |
 | `^=`                 | `&=`                 |
+| `??=`                | `=`                  |
 
 ## Initialization (_initializer_)
-| Original | Mutated | 
+| Original | Mutated |
 | ---------------------------------------- | ------------------------------------ |
 |`new int[] { 1, 2 };`                     | `new int[] { };`                     |
 |`int[] numbers = { 1, 2 };`               | `int[] numbers = { };`               |
@@ -75,8 +76,8 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 |`new SomeClass { Foo = "Bar" };`          | `new SomeClass { };`                 |
 
 ## Removal mutators (_statement_, _block_)
-|    Original   |   Mutated  | 
-| ------------- | ---------- | 
+|    Original   |   Mutated  |
+| ------------- | ---------- |
 | `void Function() { Age++; }`	| `void Function() {} (block emptied)`|
 | `int Function() { Age++; return Age; }` 	| `void Function() { return default; } (block emptied)`|
 | `return;` 	| `removed` |
@@ -91,15 +92,15 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `MyMethodCall();` 	| `removed` |
 
 ## Unary Operators (_unary_)
-|    Original   |   Mutated  | 
-| ------------- | ---------- | 
+|    Original   |   Mutated  |
+| ------------- | ---------- |
 | `-variable`	| `+variable`|
 | `+variable` 	| `-variable`|
 | `~variable` 	| `variable` |
 
 ## Update Operators (_update_)
-|    Original   |   Mutated  | 
-| ------------- | ---------- | 
+|    Original   |   Mutated  |
+| ------------- | ---------- |
 | `variable++`	| `variable--` |
 | `variable--`	| `variable++` |
 | `++variable`	| `--variable` |
@@ -107,7 +108,7 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 
 ## Checked Statements (_checked_)
 | Original | Mutated |
-| ------------- | ------------- | 
+| ------------- | ------------- |
 | `checked(2 + 4)` | `2 + 4` |
 
 ## Linq Methods (_linq_)
@@ -142,7 +143,7 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 
 ## String Literals and Constants (_string_)
 | Original | Mutated |
-| ------------- | ------------- | 
+| ------------- | ------------- |
 | `"foo"` | `""` |
 | `""` | `"Stryker was here!"` |
 | `$"foo {bar}"` | `$""` |

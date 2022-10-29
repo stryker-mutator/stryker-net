@@ -28,6 +28,7 @@ namespace Stryker.Core.UnitTest.Mutators
         [InlineData(SyntaxKind.AndAssignmentExpression, SyntaxKind.OrAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression)]
         [InlineData(SyntaxKind.OrAssignmentExpression, SyntaxKind.AndAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression)]
         [InlineData(SyntaxKind.ExclusiveOrAssignmentExpression, SyntaxKind.OrAssignmentExpression, SyntaxKind.AndAssignmentExpression)]
+        [InlineData(SyntaxKind.CoalesceAssignmentExpression, SyntaxKind.SimpleAssignmentExpression)]
         public void AssignmentMutator_ShouldMutate(SyntaxKind input, SyntaxKind expectedOutput, SyntaxKind? additionalOutput = null)
         {
             var target = new AssignmentExpressionMutator();
@@ -50,6 +51,7 @@ namespace Stryker.Core.UnitTest.Mutators
                 var mutation = result.ShouldHaveSingleItem();
                 mutation.ReplacementNode.IsKind(expectedOutput).ShouldBeTrue();
             }
+
             foreach (var mutation in result)
             {
                 mutation.Type.ShouldBe(Mutator.Assignment);
@@ -107,7 +109,6 @@ namespace Stryker.Core.UnitTest.Mutators
 
             result.ShouldBeEmpty();
         }
-
 
         [Fact]
         public void ShouldNotMutateStringLiteralsRight()
