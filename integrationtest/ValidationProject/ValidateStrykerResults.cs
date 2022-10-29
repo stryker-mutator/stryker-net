@@ -70,6 +70,24 @@ namespace IntegrationTests
             CheckReportMutantCounts(report, total: 103, ignored: 6, survived: 9, killed: 11, timeout: 2, nocoverage: 73);
         }
 
+        [Fact]
+        [Trait("Category", "Solution")]
+        public void SolutionRun()
+        {
+            var directory = new DirectoryInfo("../../../../TargetProjects/StrykerOutput");
+            directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
+
+            var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
+                .OrderByDescending(f => f.LastWriteTime)
+                .First();
+
+            var strykerRunOutput = File.ReadAllText(latestReport.FullName);
+
+            var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
+
+            CheckReportMutantCounts(report, total: 103, ignored: 6, survived: 9, killed: 11, timeout: 2, nocoverage: 73);
+        }
+
         private void CheckReportMutantCounts(JsonReport report, int total, int ignored, int survived, int killed, int timeout, int nocoverage)
         {
             var actualTotal = report.Files.Select(f => f.Value.Mutants.Count()).Sum();
