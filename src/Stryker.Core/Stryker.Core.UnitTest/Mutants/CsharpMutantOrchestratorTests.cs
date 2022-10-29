@@ -793,6 +793,20 @@ if(StrykerNamespace.MutantControl.IsActive(1)){    a = b ??= new List<int>();
         }
 
         [Fact]
+        public void ShouldMutateRecursiveNullCoalescingStatements()
+        {
+            string source = @"public void SomeMethod() {
+    List<int> a = null;
+    List<int> b = null;
+    List<int> c = null;
+    var d = a ?? b ?? c;
+}";
+            string expected = @"";
+
+            ShouldMutateSourceInClassToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldMutateIncrementStatementWithIfStatement()
         {
             string source = @"public void SomeMethod() {
