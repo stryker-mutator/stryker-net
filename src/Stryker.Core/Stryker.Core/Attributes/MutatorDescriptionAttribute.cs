@@ -4,15 +4,15 @@ using System.Diagnostics.CodeAnalysis;
 namespace Stryker.Core.Attributes
 {
     [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
-    public class DescriptionAttribute : Attribute
+    public class MutatorDescriptionAttribute : Attribute
     {
-        public static readonly DescriptionAttribute Default = new DescriptionAttribute();
+        public static readonly MutatorDescriptionAttribute Default = new MutatorDescriptionAttribute();
 
-        public DescriptionAttribute() : this(string.Empty)
+        public MutatorDescriptionAttribute() : this(string.Empty)
         {
         }
 
-        public DescriptionAttribute(string description)
+        public MutatorDescriptionAttribute(string description)
         {
             Description = description;
         }
@@ -20,7 +20,7 @@ namespace Stryker.Core.Attributes
         public string Description { get; set; }
 
         public override bool Equals([NotNullWhen(true)] object obj) =>
-            obj is DescriptionAttribute other && other.Description == Description;
+            obj is MutatorDescriptionAttribute other && other.Description == Description;
 
         public override int GetHashCode() => Description?.GetHashCode() ?? 0;
 

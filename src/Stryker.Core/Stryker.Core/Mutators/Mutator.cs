@@ -9,35 +9,35 @@ namespace Stryker.Core.Mutators
 {
     public enum Mutator
     {
-        [Description("Statements")]
+        [MutatorDescription("Statements")]
         Statement,
-        [Description("Arithmetic operators")]
+        [MutatorDescription("Arithmetic operators")]
         Arithmetic,
-        [Description("Block statements")]
+        [MutatorDescription("Block statements")]
         Block,
-        [Description("Equality operators")]
+        [MutatorDescription("Equality operators")]
         Equality,
-        [Description("Boolean literals")]
+        [MutatorDescription("Boolean literals")]
         Boolean,
-        [Description("Logical operators")]
+        [MutatorDescription("Logical operators")]
         Logical,
-        [Description("Assignment statements")]
+        [MutatorDescription("Assignment statements")]
         Assignment,
-        [Description("Unary operators")]
+        [MutatorDescription("Unary operators")]
         Unary,
-        [Description("Update operators")]
+        [MutatorDescription("Update operators")]
         Update,
-        [Description("Checked statements")]
+        [MutatorDescription("Checked statements")]
         Checked,
-        [Description("Linq methods")]
+        [MutatorDescription("Linq methods")]
         Linq,
-        [Description("String literals")]
+        [MutatorDescription("String literals")]
         String,
-        [Description("Bitwise operators")]
+        [MutatorDescription("Bitwise operators")]
         Bitwise,
-        [Description("Array initializer")]
+        [MutatorDescription("Array initializer")]
         Initializer,
-        [Description("Regular expressions")]
+        [MutatorDescription("Regular expressions")]
         Regex
     }
 
@@ -55,7 +55,7 @@ namespace Stryker.Core.Mutators
                 {
                     var memInfo = type.GetMember(type.GetEnumName(val));
 
-                    var descriptions = memInfo[0].GetCustomAttributes<DescriptionAttribute>(false).Select(descriptionAttribute => descriptionAttribute.Description);
+                    var descriptions = memInfo[0].GetCustomAttributes<MutatorDescriptionAttribute>(false).Select(descriptionAttribute => descriptionAttribute.Description);
                     return descriptions;
                 }
             }

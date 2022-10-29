@@ -4,10 +4,10 @@ namespace Stryker.Core.UnitTest.Mutators
 {
     public enum TestMutator
     {
-        [Description("Simple mutator")]
+        [MutatorDescription("Simple mutator")]
         Simple,
-        [Description("Two descriptions mutator")]
-        [Description("Multi-description mutator")]
+        [MutatorDescription("Two descriptions mutator")]
+        [MutatorDescription("Multi-description mutator")]
         MultipleDescriptions
     }
 }
