@@ -214,7 +214,7 @@ stages:
       parameters:
         testName: 'linux-netcore'
         workingDirectory: 'integrationtest/TargetProjects'
-        strykerCommands: --solution '$(Build.ArtifactStagingDirectory)/integrationtest/TargetProjects/IntegrationTestApp.sln'
+        strykerCommands: --solution '$(Agent.BuildDirectory)/integrationtest/TargetProjects/IntegrationTestApp.sln'
     - task: DotNetCoreCLI@2.210.0
       displayName: 'Assert integration test results'
       inputs:
