@@ -105,6 +105,11 @@ namespace Stryker.Core
                 foreach (var project in _mutationTestProcesses)
                 {
                     project.Test(project.Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
+                }
+
+                // Restory assemblies
+                foreach (var project in _mutationTestProcesses)
+                {
                     project.Restore();
                 }
 
