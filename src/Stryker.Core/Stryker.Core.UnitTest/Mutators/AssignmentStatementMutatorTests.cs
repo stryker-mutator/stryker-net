@@ -1,5 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
 using System.Linq;
@@ -56,6 +57,27 @@ namespace Stryker.Core.UnitTest.Mutators
                 mutation.Type.ShouldBe(Mutator.Assignment);
                 mutation.DisplayName.ShouldBe($"{input} to {mutation.ReplacementNode.Kind()} mutation");
             }
+        }
+
+        [Theory]
+        [InlineData("a += b", "a -= b")]
+        [InlineData("a +=  b", "a -=  b")]
+        [InlineData("a  += b", "a  -= b")]
+        [InlineData("a +=\nb", "a -=\nb")]
+        [InlineData("a\n+= b", "a\n-= b")]
+        public void ShouldKeepTrivia(string originalExpressionString, string expectedExpressionString)
+        {
+            // Arrange
+            var target = new AssignmentExpressionMutator();
+            var originalExpression = SyntaxFactory.ParseExpression(originalExpressionString);
+
+            // Act
+            var result = target.ApplyMutations(originalExpression as AssignmentExpressionSyntax);
+
+            // Assert
+            var mutation = result.ShouldHaveSingleItem();
+
+            mutation.ReplacementNode.ToString().ShouldBe(expectedExpressionString);
         }
 
         [Fact]

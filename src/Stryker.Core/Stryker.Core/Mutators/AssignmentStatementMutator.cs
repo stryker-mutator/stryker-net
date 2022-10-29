@@ -42,10 +42,12 @@ namespace Stryker.Core.Mutators
 
             foreach (var targetAssignmentKind in targetAssignmentKinds)
             {
+                var replacementNode = SyntaxFactory.AssignmentExpression(targetAssignmentKind, node.Left, node.Right);
+                replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithTriviaFrom(node.OperatorToken));
                 yield return new Mutation
                 {
                     OriginalNode = node,
-                    ReplacementNode = SyntaxFactory.AssignmentExpression(targetAssignmentKind, node.Left, node.Right),
+                    ReplacementNode = replacementNode,
                     DisplayName = $"{assignmentKind} to {targetAssignmentKind} mutation",
                     Type = Mutator.Assignment
                 };
