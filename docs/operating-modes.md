@@ -30,7 +30,7 @@ Run
 dotnet stryker -tp "../Tests/Tests.csproj"
 ```
 
-in your target project folder. If your target project uses multiple test projects that you want to include in the Stryker run, you need to specify each test project. You can include multiple test projects like this ([see docs](https://stryker-mutator.io/docs/stryker-net/configuration/#test-projects-string)):
+in your target project folder. If multiple test projects (ex unit tests, specs) target the same source project you need to specify each test project. You can include multiple test projects like this ([see docs](https://stryker-mutator.io/docs/stryker-net/configuration/#test-projects-string)):
 
 ```bash
 dotnet stryker -tp "../Tests/Tests.csproj" -tp "../MoreTests/MoreTests.csproj"
