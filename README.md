@@ -42,9 +42,9 @@ For the full documentation on how to use Stryker.NET, see our [configuration doc
 
 Coming from Stryker.NET pre V2? Take a look at our [migration guide](https://stryker-mutator.io/docs/stryker-net/migration-guide).
 
-## Supported Mutators
+## Supported Mutations
 
-For the full list of all available mutations, see the [mutator docs](https://stryker-mutator.io/docs/stryker-net/Mutators).
+For the full list of all available mutations, see the [mutations docs](https://stryker-mutator.io/docs/stryker-net/mutations).
 
 ## Supported Reporters
 
