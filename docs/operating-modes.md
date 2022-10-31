@@ -8,7 +8,7 @@ custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs
 There are currently two different ways to run Stryker:
 
 - From the test project context
-- From the target project context
+- From the source project context
 
 You will also be able to run Stryker from your solution context in the future.
 
