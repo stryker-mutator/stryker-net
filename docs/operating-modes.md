@@ -14,13 +14,8 @@ You will also be able to run Stryker from your solution context in the future.
 
 ## Test project context
 
-Just run
-
-```bash
-dotnet stryker
-```
-
-in your test project folder. Stryker will automatically detect the source project based on the project reference. If your test project has multiple project references, you need to specify the source project with `--project <filename>` ([docs here](https://stryker-mutator.io/docs/stryker-net/configuration/#project-file-name)). You can only specify one source project at the time.
+Just run `dotnet stryker` in your test project folder.  
+Stryker will automatically detect the source project based on the project reference. If your test project has multiple project references, you need to specify the source project with `--project <filename>` ([docs here](https://stryker-mutator.io/docs/stryker-net/configuration/#project-file-name)). You can only specify one source project at the time.
 
 ## Source project context
 
