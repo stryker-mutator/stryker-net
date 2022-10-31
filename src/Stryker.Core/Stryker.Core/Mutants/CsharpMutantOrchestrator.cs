@@ -62,6 +62,7 @@ namespace Stryker.Core.Mutants
                     (t) => t.Modifiers.Any(x => x.IsKind(SyntaxKind.ConstKeyword))),
                 new AssignmentStatementOrchestrator(),
                 new PostfixUnaryExpressionOrchestrator(),
+                new PrefixUnaryExpressionOrchestrator(),
                 new StaticFieldDeclarationOrchestrator(),
                 new StaticConstructorOrchestrator(),
                 new PropertyDeclarationOrchestrator(),

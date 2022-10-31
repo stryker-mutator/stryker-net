@@ -141,6 +141,15 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
         }
 
         [Fact]
+        public void ShouldProperlyMutatePrefixUnitaryExpressionStatement()
+        {
+            const string Source = @"void Method(int x) {++x;}";
+            const string Expected = @"void Method(int x) {if(StrykerNamespace.MutantControl.IsActive(0)){}else{if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.MutantControl.IsActive(2)){--x;}else{++x;}}}}}";
+
+            ShouldMutateSourceInClassToExpected(Source, Expected);
+        }
+
+        [Fact]
         public void ShouldMutateExpressionBodiedLocalFunction()
         {
             string source = @"void TestMethod(){
