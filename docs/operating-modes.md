@@ -20,17 +20,11 @@ Just run
 dotnet stryker
 ```
 
-in your test project folder. Stryker will automatically detect the target project based on the project reference. If your test project has multiple project references, you need to specify the target project with `--project <filename>` ([docs here](https://stryker-mutator.io/docs/stryker-net/configuration/#project-file-name)). You can only specify one target project at the time.
+in your test project folder. Stryker will automatically detect the source project based on the project reference. If your test project has multiple project references, you need to specify the source project with `--project <filename>` ([docs here](https://stryker-mutator.io/docs/stryker-net/configuration/#project-file-name)). You can only specify one source project at the time.
 
-## Target project context
+## Source project context
 
-Run
-
-```bash
-dotnet stryker -tp "../Tests/Tests.csproj"
-```
-
-in your target project folder. If multiple test projects (ex unit tests, specs) target the same source project you need to specify each test project. You can include multiple test projects like this ([see docs](https://stryker-mutator.io/docs/stryker-net/configuration/#test-projects-string)):
+Run `dotnet stryker -tp "../Tests/Tests.csproj"` in your source project folder. If multiple test projects (ex unit tests, specs) target the same source project you need to specify each test project. You can include multiple test projects like this ([see docs](https://stryker-mutator.io/docs/stryker-net/configuration/#test-projects-string)):
 
 ```bash
 dotnet stryker -tp "../Tests/Tests.csproj" -tp "../MoreTests/MoreTests.csproj"
