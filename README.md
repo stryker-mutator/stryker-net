@@ -44,7 +44,7 @@ Coming from Stryker.NET pre V2? Take a look at our [migration guide](https://str
 
 ## Supported Mutators
 
-For the full list of all available mutations, see the [mutator docs](https://stryker-mutator.io/docs/stryker-net/mutations).
+For the full list of all available mutations, see the [mutations docs](https://stryker-mutator.io/docs/stryker-net/mutations).
 
 ## Supported Reporters
 
