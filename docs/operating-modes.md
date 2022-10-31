@@ -5,7 +5,7 @@ custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs
 ---
 # Operating modes
 
-There are currently two different ways to run Stryker:
+There are currently two ways to run Stryker:
 
 - From the test project context
 - From the source project context
