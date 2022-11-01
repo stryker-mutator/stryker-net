@@ -35,17 +35,13 @@ namespace Stryker.Core.Mutators
             var whenNotNullExpression = (node.WhenNotNull as ConditionalAccessExpressionSyntax).Expression;
             var conditionalAccesExpression = node.WhenNotNull as ConditionalAccessExpressionSyntax;
 
-            switch (whenNotNullExpression)
+            return whenNotNullExpression switch
             {
-                case MemberBindingExpressionSyntax memberBindingExpression:
-                    return CreateConditionalAccessMemberBindingExpressionMutation(node, conditionalAccesExpression, memberBindingExpression);
-                case InvocationExpressionSyntax invocationExpression:
-                    return CreateConditionalAccessInvocationExpressionMutation(node, conditionalAccesExpression, invocationExpression);
-                case ElementBindingExpressionSyntax elementBindingExpression:
-                     return null; //TODO: implement
-                default:
-                    return null;
-            }
+                MemberBindingExpressionSyntax memberBindingExpression => CreateConditionalAccessMemberBindingExpressionMutation(node, conditionalAccesExpression, memberBindingExpression),
+                InvocationExpressionSyntax invocationExpression => CreateConditionalAccessInvocationExpressionMutation(node, conditionalAccesExpression, invocationExpression),
+                ElementBindingExpressionSyntax elementBindingExpression => null,//TODO: implement
+                _ => null,
+            };
         }
 
         private static Mutation CreateConditionalAccessInvocationExpressionMutation(ConditionalAccessExpressionSyntax node, ConditionalAccessExpressionSyntax conditionalAccesExpression, InvocationExpressionSyntax invocationExpression)
