@@ -6,7 +6,7 @@
       "Html",
       "Json"
     ],
-    "verbosity": "trace",
+    "verbosity": "info",
     "project": "TargetProject.csproj",
     "ignore-mutations": [
       "string"

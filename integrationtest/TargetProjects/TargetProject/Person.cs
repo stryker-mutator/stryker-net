@@ -1,10 +1,10 @@
-using System;
-
 namespace TargetProject
 {
     public class Person
     {
+        public string Name { get; set; }
         public int Age { get; set; }
+        public Person Father { get; set; }
 
         public Person() : this(true)
         {
@@ -16,7 +16,8 @@ namespace TargetProject
             if (adult == true)
             {
                 Age = 18;
-            } else
+            }
+            else
             {
                 Age = 16;
             }
@@ -26,5 +27,25 @@ namespace TargetProject
         {
             Age++;
         }
+
+        //public string BestFriendName()
+        //{
+        //    return BestFriend?.Name;
+        //}
+
+        //public Person ThreeConditionalAccessInARow()
+        //{
+        //    return Father?.Father?.Father?.Father;
+        //}
+
+        public Person SimpleMemberAccessFollowedByTwoConditionalAccess()
+        {
+            return Father.Father?.Father?.Father;
+        }
+
+        //public string GetBestFriendsBestFriendName()
+        //{
+        //    return BestFriend?.BestFriendName();
+        //}
     }
 }
