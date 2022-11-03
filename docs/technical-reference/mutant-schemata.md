@@ -25,10 +25,10 @@ This is done by rollbacking all mutations that result in compile errors. The mut
 
 `compile` → `remove compile error codes` → `compile 2nd time`
 
-Sometimes not all errors are returned by the compiler at the first try. Thats why we repeat this process untill we have compiling code. Usually 1-3 retries are needed. With roslyns incremental compilation these retries are fast.
+Sometimes not all errors are returned by the compiler at the first try. That's why we repeat this process until we have compiling code. Usually 1-3 retries are needed. With Roslyn's incremental compilation these retries are fast.
 
 ## Scope
-The scope of some variables can change by placing it insite an if statement. This results in compile errors.
+The scope of some variables can change by placing it inside an if statement. This results in compile errors.
 
 ``` csharp
 if (Environment.GetEnvironmentVariable("ActiveMutation") == "1") {

@@ -23,9 +23,9 @@
       },
       "NUnit3TestAdapter": {
         "type": "Direct",
-        "requested": "[4.2.1, )",
-        "resolved": "4.2.1",
-        "contentHash": "kgH8VKsrcZZgNGQXRpVCrM7TnNz9li3b/snH+YmnXUNqsaWa1Xw9EQWHpbzq4Li2FbTjTE/E5N5HdLNXzZ8BpQ=="
+        "requested": "[4.3.0, )",
+        "resolved": "4.3.0",
+        "contentHash": "oXlDbkGW01VPPgI8P/XQ+PZHqaJoWtV90WuAkR0yN8HC3hiPivy2AaBZP3lqOql4RFqdxvF5qYSuaeWI+7/wGg=="
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",

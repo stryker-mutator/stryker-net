@@ -1,3 +1,4 @@
+using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
@@ -31,15 +32,35 @@ namespace Stryker.Core.UnitTest.Mutators
             var result = target.ApplyMutations(objectCreationExpression);
 
             var mutation = result.ShouldHaveSingleItem();
+            mutation.Type.ShouldBe(Mutator.Initializer);
 
             var replacement = mutation.ReplacementNode.ShouldBeOfType<ObjectCreationExpressionSyntax>();
             replacement.Initializer.Expressions.ShouldBeEmpty();
         }
 
         [Fact]
-        public void ShouldNotMutateEmptyInitializer()
+        public void ShouldRemoveValuesFromObjectInitializer()
         {
-            var objectCreationExpression = SyntaxFactory.ParseExpression("new List<int> { }") as ObjectCreationExpressionSyntax;
+            var objectCreationExpression = SyntaxFactory.ParseExpression("new SomeClass { SomeProperty = SomeValue }") as ObjectCreationExpressionSyntax;
+
+            var target = new ObjectCreationMutator();
+
+            var result = target.ApplyMutations(objectCreationExpression);
+
+            var mutation = result.ShouldHaveSingleItem();
+            mutation.DisplayName.ShouldBe("Object initializer mutation");
+            mutation.Type.ShouldBe(Mutator.Initializer);
+
+            var replacement = mutation.ReplacementNode.ShouldBeOfType<ObjectCreationExpressionSyntax>();
+            replacement.Initializer.Expressions.ShouldBeEmpty();
+        }
+
+        [Theory]
+        [InlineData("new List<int> { }")]
+        [InlineData("new SomeClass { }")]
+        public void ShouldNotMutateEmptyInitializer(string initializer)
+        {
+            var objectCreationExpression = SyntaxFactory.ParseExpression(initializer) as ObjectCreationExpressionSyntax;
 
             var target = new ObjectCreationMutator();
 

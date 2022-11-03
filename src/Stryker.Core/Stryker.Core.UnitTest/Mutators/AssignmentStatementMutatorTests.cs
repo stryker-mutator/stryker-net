@@ -1,5 +1,6 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
 using System.Linq;
@@ -27,6 +28,7 @@ namespace Stryker.Core.UnitTest.Mutators
         [InlineData(SyntaxKind.AndAssignmentExpression, SyntaxKind.OrAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression)]
         [InlineData(SyntaxKind.OrAssignmentExpression, SyntaxKind.AndAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression)]
         [InlineData(SyntaxKind.ExclusiveOrAssignmentExpression, SyntaxKind.OrAssignmentExpression, SyntaxKind.AndAssignmentExpression)]
+        [InlineData(SyntaxKind.CoalesceAssignmentExpression, SyntaxKind.SimpleAssignmentExpression)]
         public void AssignmentMutator_ShouldMutate(SyntaxKind input, SyntaxKind expectedOutput, SyntaxKind? additionalOutput = null)
         {
             var target = new AssignmentExpressionMutator();
@@ -49,11 +51,33 @@ namespace Stryker.Core.UnitTest.Mutators
                 var mutation = result.ShouldHaveSingleItem();
                 mutation.ReplacementNode.IsKind(expectedOutput).ShouldBeTrue();
             }
+
             foreach (var mutation in result)
             {
                 mutation.Type.ShouldBe(Mutator.Assignment);
                 mutation.DisplayName.ShouldBe($"{input} to {mutation.ReplacementNode.Kind()} mutation");
             }
+        }
+
+        [Theory]
+        [InlineData("a += b", "a -= b")]
+        [InlineData("a +=  b", "a -=  b")]
+        [InlineData("a  += b", "a  -= b")]
+        [InlineData("a +=\nb", "a -=\nb")]
+        [InlineData("a\n+= b", "a\n-= b")]
+        public void ShouldKeepTrivia(string originalExpressionString, string expectedExpressionString)
+        {
+            // Arrange
+            var target = new AssignmentExpressionMutator();
+            var originalExpression = SyntaxFactory.ParseExpression(originalExpressionString);
+
+            // Act
+            var result = target.ApplyMutations(originalExpression as AssignmentExpressionSyntax);
+
+            // Assert
+            var mutation = result.ShouldHaveSingleItem();
+
+            mutation.ReplacementNode.ToString().ShouldBe(expectedExpressionString);
         }
 
         [Fact]
@@ -85,7 +109,6 @@ namespace Stryker.Core.UnitTest.Mutators
 
             result.ShouldBeEmpty();
         }
-
 
         [Fact]
         public void ShouldNotMutateStringLiteralsRight()

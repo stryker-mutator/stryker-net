@@ -25,7 +25,7 @@ This process starts with a method: ```Mutate(FSharpList<SynModuleOrNamespace>)``
 The ```FsharpMutantOrchestrator``` is only used as a starting point, after that the ```FsharpCoreOrchestrator``` takes over.
 
 Inside the 'Core' is the actual process. 
-This works by defining a Mutate() method which handles the iteration over a spesific part of a SyntaxTree. (SynExpr for example)
+This works by defining a Mutate() method which handles the iteration over a specific part of a SyntaxTree. (SynExpr for example)
 
 Inside the Mutate method (contained in ```FsharpCoreOrchestrator```) we look for a specific Orchestrator in a Dictionary belonging to the type that the Mutate function handles. (the dictionary gets filled like this: ```_fsharpMutationsSynExpr.Add(typeof(SynExpr.Match), new MatchOrchestrator());```)
 Once a specific orchestrator class has been found we initialize it and use it to iterate further.
