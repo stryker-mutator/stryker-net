@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -8,7 +9,7 @@ using Stryker.Core.Mutants;
 namespace Stryker.Core.Mutators
 {
     /// <summary> Mutator Implementation for Math Mutations </summary>
-    public class MathMutator : MutatorBase<ExpressionSyntax>, IMutator
+    public class MathMutator : MutatorBase<InvocationExpressionSyntax>, IMutator
     {
         public override MutationLevel MutationLevel => MutationLevel.Advanced;
 
@@ -43,74 +44,52 @@ namespace Stryker.Core.Mutators
         };
 
         /// <summary> Apply mutations to an <see cref="InvocationExpressionSyntax"/> </summary>
-        public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node)
+        public override IEnumerable<Mutation> ApplyMutations(InvocationExpressionSyntax node) => node.Expression switch
         {
-            var original = node;
-            if (node.Parent is ConditionalAccessExpressionSyntax || node.Parent is MemberAccessExpressionSyntax)
+            MemberAccessExpressionSyntax memberAccess => ApplyMutationsToMemberCall(node, memberAccess),
+            IdentifierNameSyntax methodName => ApplyMutationsToDirectCall(node, methodName),
+            _ => Enumerable.Empty<Mutation>()
+        };
+
+        private static IEnumerable<Mutation> ApplyMutationsToMemberCall(InvocationExpressionSyntax node, MemberAccessExpressionSyntax memberAccessExpressionSyntax)
+        {
+            if (memberAccessExpressionSyntax.Expression is not IdentifierNameSyntax memberName ||
+                !memberName.Identifier.ValueText.StartsWith("Math"))
             {
                 yield break;
             }
 
-            foreach (var mutation in FindMutableMethodCalls(node, original))
+            foreach (var mutation in ApplyMutationsToMethod(node, memberAccessExpressionSyntax.Name))
             {
                 yield return mutation;
             }
         }
 
-        private static IEnumerable<Mutation> FindMutableMethodCalls(ExpressionSyntax node, ExpressionSyntax original)
+        private static IEnumerable<Mutation> ApplyMutationsToDirectCall(InvocationExpressionSyntax node, IdentifierNameSyntax methodName)
         {
-            while (node is ConditionalAccessExpressionSyntax conditional)
+            foreach (var mutation in ApplyMutationsToMethod(node, methodName))
             {
-                foreach (var subMutants in FindMutableMethodCalls(conditional.Expression, original))
-                {
-                    yield return subMutants;
-                }
-                node = conditional.WhenNotNull;
+                yield return mutation;
             }
+        }
 
-            for (; ; )
+        private static IEnumerable<Mutation> ApplyMutationsToMethod(InvocationExpressionSyntax original, SimpleNameSyntax method)
+        {
+            if (Enum.TryParse(method.Identifier.ValueText, out MathExpression expression) &&
+               KindsToMutate.TryGetValue(expression, out var replacementExpressions))
             {
-                ExpressionSyntax next = null;
-                if (node is not InvocationExpressionSyntax invocationExpression)
+                foreach (var replacementExpression in replacementExpressions)
                 {
-                    yield break;
-                }
-
-                string memberName;
-                SyntaxNode toReplace;
-                switch (invocationExpression.Expression)
-                {
-                    case MemberAccessExpressionSyntax memberAccessExpression:
-                        toReplace = memberAccessExpression.Name;
-                        memberName = memberAccessExpression.Name.Identifier.ValueText;
-                        next = memberAccessExpression.Expression;
-                        break;
-                    case MemberBindingExpressionSyntax memberBindingExpression:
-                        toReplace = memberBindingExpression.Name;
-                        memberName = memberBindingExpression.Name.Identifier.ValueText;
-                        break;
-                    default:
-                        yield break;
-                }
-
-                if (Enum.TryParse(memberName, out MathExpression expression) &&
-                    KindsToMutate.TryGetValue(expression, out var replacementExpressions))
-                {
-                    foreach (var replacementExpression in replacementExpressions)
+                    yield return new Mutation
                     {
-                        yield return new Mutation
-                        {
-                            DisplayName =
-                                $"Math method mutation ({memberName}() to {SyntaxFactory.IdentifierName(replacementExpression.ToString())}())",
-                            OriginalNode = original,
-                            ReplacementNode = original.ReplaceNode(toReplace,
-                                SyntaxFactory.IdentifierName(replacementExpression.ToString())),
-                            Type = Mutator.Math
-                        };
-                    }
+                        DisplayName =
+                            $"Math method mutation ({method.Identifier.ValueText}() to {SyntaxFactory.IdentifierName(replacementExpression.ToString())}())",
+                        OriginalNode = original,
+                        ReplacementNode = original.ReplaceNode(method,
+                            SyntaxFactory.IdentifierName(replacementExpression.ToString())),
+                        Type = Mutator.Math
+                    };
                 }
-
-                node = next;
             }
         }
     }
