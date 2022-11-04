@@ -117,7 +117,6 @@ namespace ExampleProject
                 MutationLevel = MutationLevel.Complete,
                 DevMode = true
             };
-            var listProjected = new[] { new[] { 1d } }.Select(l => l.Count()).ToArray();
 
             var mutator = new CsharpMutantOrchestrator(options: options);
             var helpers = new List<SyntaxTree>();
@@ -161,10 +160,10 @@ namespace ExampleProject
 
             var rollbackProcess = new RollbackProcess();
 
-            var target = new CsharpCompilingProcess(input, rollbackProcess);
+            var target = new CsharpCompilingProcess(input, rollbackProcess, options);
 
             using var ms = new MemoryStream();
-            var result = target.Compile(helpers, ms, null, true);
+            var result = target.Compile(helpers, ms, null);
             result.RollbackResult.RollbackedIds.Count().ShouldBe(2); // should actually be 1 but thanks to issue #1745 rollback doesn't work
         }
 
