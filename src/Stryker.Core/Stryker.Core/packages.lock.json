@@ -42,11 +42,11 @@
       },
       "FSharp.Compiler.Service": {
         "type": "Direct",
-        "requested": "[41.0.6, )",
-        "resolved": "41.0.6",
-        "contentHash": "torQ+SBJXue1ykejSWRA2ZpHuqssfRvI+RoEVh8HiSjf70GXd2Ntnw5k4/Y2TwqZfhOwjUj4a52y1nY+wBRDDw==",
+        "requested": "[41.0.7, )",
+        "resolved": "41.0.7",
+        "contentHash": "9hnZKKutBr96xpu16gbdo8RTdPhjTG8FTtH8p/DPhVOoEoELBEl1bZiodiqdDLP+XDXHstZJo398XCVk7ohp+w==",
         "dependencies": {
-          "FSharp.Core": "[6.0.6]",
+          "FSharp.Core": "[6.0.7]",
           "Microsoft.Build.Framework": "17.0.0",
           "Microsoft.Build.Tasks.Core": "17.0.0",
           "Microsoft.Build.Utilities.Core": "17.0.0",
@@ -241,8 +241,8 @@
       },
       "FSharp.Core": {
         "type": "Transitive",
-        "resolved": "6.0.6",
-        "contentHash": "oSbTFqPtsp+EGkWAHwYIYYHyXLJRnbzVwcmM06kmXNLdWsp3P6XZViPSJJ2qUQS8feNK+nyPA0qtpNZXANGB7w=="
+        "resolved": "6.0.7",
+        "contentHash": "e6wGrq5smV3Yk2fBE/Y0nBG5oFyF59k5Je0a0QDydUpg6liyaafGjD3xvutciKepCP2knspZ/sWViC/F1OyyQQ=="
       },
       "LibGit2Sharp.NativeBinaries": {
         "type": "Transitive",
