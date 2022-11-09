@@ -1460,8 +1460,8 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.45.0, )",
           "Spectre.Console.Analyzer": "[0.45.0, )",
-          "Stryker.DataCollector": "[1.0.0, )",
-          "Stryker.RegexMutators": "[1.0.0, )",
+          "Stryker.DataCollector": "[3.0.1, )",
+          "Stryker.RegexMutators": "[3.0.1, )",
           "System.IO.Abstractions": "[17.2.3, )"
         }
       },
