@@ -158,9 +158,9 @@
       },
       "NuGet.Frameworks": {
         "type": "Direct",
-        "requested": "[6.3.1, )",
-        "resolved": "6.3.1",
-        "contentHash": "Ae1vRjHDbNU7EQwQnDlxFRl+O9iQLp2H9Z/sRB/EAmO8+neUOeOfbkLClO7ZNcTcW5p1FDABrPakXICtQ0JCRw=="
+        "requested": "[6.4.0, )",
+        "resolved": "6.4.0",
+        "contentHash": "qcufbjJIDtyY/Hah7JJfcRVpRYM3scgPqYBnukjO9kfADCFGr2azvVBozuwzljA6w/cR3w8bXLq6vW5xGrsmHw=="
       },
       "Serilog": {
         "type": "Direct",
