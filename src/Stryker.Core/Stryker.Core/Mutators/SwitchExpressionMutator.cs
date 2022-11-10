@@ -5,10 +5,12 @@ using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators
 {
+    /// <summary> Mutator implementation for switch expression</summary>
     public class SwitchExpressionMutator : PatternMutatorBase<SwitchExpressionSyntax>
     {
         protected override Mutator Mutator => Mutator.SwitchExpression;
 
+        /// <summary> Apply mutations to all <see cref="PatternSyntax"/> inside an <see cref="SwitchExpressionSyntax"/></summary>
         public override IEnumerable<Mutation> ApplyMutations(SwitchExpressionSyntax node) => node
             .DescendantNodes()
             .OfType<PatternSyntax>()
