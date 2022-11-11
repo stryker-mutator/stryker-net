@@ -19,18 +19,22 @@ namespace Stryker.Core.Initialisation
             IEnumerable<IAnalyzerResult> solutionProjects);
     }
 
+    /// <summary>
+    /// This class is an abstraction of Buildalyzers AnalyzerManager to make the rest of our code better testable. Mocking AnalyzerManager is really ugly and we want to avoid it.
+    /// </summary>
+    [ExcludeFromCodeCoverage]
     public class ProjectFileReader : IProjectFileReader
     {
         private readonly INugetRestoreProcess _nugetRestoreProcess;
-        private IAnalyzerManager _manager;
+        private IAnalyzerManager _analyzerManager;
         private readonly ILogger _logger;
 
         public ProjectFileReader(
             INugetRestoreProcess nugetRestoreProcess = null,
-            IAnalyzerManager manager = null)
+            IAnalyzerManager analyzerManager = null)
         {
             _nugetRestoreProcess = nugetRestoreProcess ?? new NugetRestoreProcess();
-            _manager = manager ?? new AnalyzerManager();
+            _analyzerManager = analyzerManager ?? new AnalyzerManager();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
         }
 
@@ -40,18 +44,6 @@ namespace Stryker.Core.Initialisation
             string targetFramework,
             IEnumerable<IAnalyzerResult> solutionProjects)
         {
-            if (solutionFilePath != null)
-            {
-                _logger.LogDebug("Analyzing solution file {0}", solutionFilePath);
-                try
-                {
-                    _manager = new AnalyzerManager(solutionFilePath);
-                }
-                catch (InvalidProjectFileException)
-                {
-                    throw new InputException($"Incorrect solution path \"{solutionFilePath}\". Solution file not found. Please review your solution path setting.");
-                }
-            }
 
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
             IAnalyzerResult analyzerResult = GetProjectInfo(projectFilePath, targetFramework, solutionProjects);
@@ -76,6 +68,22 @@ namespace Stryker.Core.Initialisation
             return analyzerResult;
         }
 
+        private void SetAnalyzerManager(string solutionFilePath)
+        {
+            if (_analyzerManager == null && solutionFilePath != null)
+            {
+                _logger.LogDebug("Analyzing solution file {0}", solutionFilePath);
+                try
+                {
+                    _analyzerManager = new AnalyzerManager(solutionFilePath);
+                }
+                catch (InvalidProjectFileException)
+                {
+                    throw new InputException($"Incorrect solution path \"{solutionFilePath}\". Solution file not found. Please review your solution path setting.");
+                }
+            }
+        }
+
         /// <summary>
         /// Checks if project info is already present in solution projects. If not, analyze here.
         /// </summary>
@@ -90,7 +98,7 @@ namespace Stryker.Core.Initialisation
             }
             else
             {
-                var analyzerResults = _manager.GetProject(projectFilePath).Build();
+                var analyzerResults = _analyzerManager.GetProject(projectFilePath).Build();
                 return SelectAnalyzerResult(analyzerResults, targetFramework);
             }
         }
@@ -112,7 +120,6 @@ namespace Stryker.Core.Initialisation
             return analyzerResults.First(a => a.TargetFramework is not null);
         }
 
-        [ExcludeFromCodeCoverage]
         private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
         {
             // dump all properties as it can help diagnosing build issues for user project.
