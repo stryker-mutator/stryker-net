@@ -8,8 +8,6 @@ namespace Stryker.Core.Mutators
     /// <summary> Mutator implementation for is expression</summary>
     public class IsPatternExpressionMutator : PatternMutatorBase<IsPatternExpressionSyntax>
     {
-        protected override Mutator Mutator => Mutator.IsPatternExpression;
-
         /// <summary> Apply mutations to all <see cref="PatternSyntax"/> inside an <see cref="IsPatternExpressionSyntax"/></summary>
         public override IEnumerable<Mutation> ApplyMutations(IsPatternExpressionSyntax node) => node
             .DescendantNodes()

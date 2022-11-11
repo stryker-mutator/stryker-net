@@ -41,10 +41,8 @@ namespace Stryker.Core.Mutators
         Regex,
         [MutatorDescription("Math methods")]
         Math,
-        [MutatorDescription("Switch expression")]
-        SwitchExpression,
-        [MutatorDescription("Is expression")]
-        IsPatternExpression
+        [MutatorDescription("Patterns")]
+        Pattern
     }
 
     public static class EnumExtension

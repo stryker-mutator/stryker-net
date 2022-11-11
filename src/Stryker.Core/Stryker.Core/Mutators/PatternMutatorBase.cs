@@ -11,9 +11,6 @@ namespace Stryker.Core.Mutators
     {
         public override MutationLevel MutationLevel => MutationLevel.Basic;
 
-        /// <summary> Specific Mutator to be specified during inheritence </summary>
-        protected abstract Mutator Mutator { get; }
-
         /// <summary> Dictionary which maps original syntax kinds to target mutations </summary>
         private static Dictionary<SyntaxKind, IEnumerable<SyntaxKind>> KindsToMutate { get; }
 
@@ -48,8 +45,8 @@ namespace Stryker.Core.Mutators
                     {
                         OriginalNode = node,
                         ReplacementNode = replacementNode,
-                        DisplayName = $"{Mutator} mutation",
-                        Type = Mutator
+                        DisplayName = $"Pattern mutation",
+                        Type = Mutator.Pattern
                     };
                 }
             }
@@ -68,8 +65,8 @@ namespace Stryker.Core.Mutators
                     {
                         OriginalNode = node,
                         ReplacementNode = replacementNode,
-                        DisplayName = $"{Mutator} mutation",
-                        Type = Mutator
+                        DisplayName = $"Pattern mutation",
+                        Type = Mutator.Pattern
                     };
                 }
             }
