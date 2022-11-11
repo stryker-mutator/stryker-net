@@ -38,7 +38,9 @@ namespace Stryker.Core.Mutators
         [MutatorDescription("Array initializer")]
         Initializer,
         [MutatorDescription("Regular expressions")]
-        Regex
+        Regex,
+        [MutatorDescription("Math methods")]
+        Math
     }
 
     public static class EnumExtension
