@@ -68,7 +68,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false);
+                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
                 result.Success.ShouldBe(true);
                 ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
             }
@@ -111,17 +111,17 @@ namespace ExampleProject
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
             rollbackProcessMock.Setup(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>(), false))
-                            .Returns((CSharpCompilation compilation, ImmutableArray<Diagnostic> diagnostics, bool devMode, bool _) =>
+                            .Returns((CSharpCompilation compilation, ImmutableArray<Diagnostic> diagnostics, bool _, bool _) =>
                             new RollbackProcessResult()
                             {
                                 Compilation = compilation
                             });
 
-            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, new StrykerOptions());
 
             using (var ms = new MemoryStream())
             {
-                Should.Throw<CompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false));
+                Should.Throw<CompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null));
             }
             rollbackProcessMock.Verify(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), false, false),
                 Times.AtLeast(2));
@@ -168,7 +168,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false);
+                target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
 
                 ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
             }
@@ -219,7 +219,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false);
+                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
                 result.Success.ShouldBe(true);
 
                 var key = Assembly.Load(ms.ToArray()).GetName().GetPublicKey();
@@ -273,7 +273,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                Should.Throw<CompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false));
+                Should.Throw<CompilationException>(() => target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null));
             }
         }
 
@@ -321,7 +321,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null, false);
+                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
                 result.Success.ShouldBe(true);
 
                 Assembly.Load(ms.ToArray()).GetName().Version.ToString().ShouldBe("0.0.0.0");
