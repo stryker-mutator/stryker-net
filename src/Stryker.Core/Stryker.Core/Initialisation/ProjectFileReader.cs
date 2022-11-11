@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.Build.Exceptions;
@@ -94,6 +95,24 @@ namespace Stryker.Core.Initialisation
             }
         }
 
+        private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
+        {
+            if (!analyzerResults.Any() || analyzerResults.All(a => a.TargetFramework is null))
+            {
+                throw new InputException("No valid project analysis results could be found.");
+            }
+
+            if (targetFramework is not null)
+            {
+                return analyzerResults.FirstOrDefault(a => a.TargetFramework == targetFramework) ??
+                    throw new InputException($"Could not find a project analysis for chosen target framework {targetFramework}. \n" +
+                    $"The available target frameworks are {analyzerResults.Select(a => a.TargetFramework).Distinct()}");
+            }
+
+            return analyzerResults.First(a => a.TargetFramework is not null);
+        }
+
+        [ExcludeFromCodeCoverage]
         private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
         {
             // dump all properties as it can help diagnosing build issues for user project.
@@ -117,23 +136,6 @@ namespace Stryker.Core.Initialisation
             _logger.LogTrace("Succeeded: {0}", analyzerResult.Succeeded);
 
             _logger.LogTrace("**** Buildalyzer result ****");
-        }
-
-        private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
-        {
-            if (!analyzerResults.Any() || analyzerResults.All(a => a.TargetFramework is null))
-            {
-                throw new InputException("No valid project analysis results could be found.");
-            }
-
-            if (targetFramework is not null)
-            {
-                return analyzerResults.FirstOrDefault(a => a.TargetFramework == targetFramework) ??
-                    throw new InputException($"Could not find a project analysis for chosen target framework {targetFramework}. \n" +
-                    $"The available target frameworks are {analyzerResults.Select(a => a.TargetFramework).Distinct()}");
-            }
-
-            return analyzerResults.First(a => a.TargetFramework is not null);
         }
     }
 }
