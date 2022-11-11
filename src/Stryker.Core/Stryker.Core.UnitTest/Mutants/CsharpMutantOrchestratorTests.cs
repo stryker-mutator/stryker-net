@@ -1474,10 +1474,10 @@ string Value {get{if(StrykerNamespace.MutantControl.IsActive(0)){return!(Generat
 else		{
 			string[] SizeSuffixes = { (StrykerNamespace.MutantControl.IsActive(2) ? """" : ""bytes""), (StrykerNamespace.MutantControl.IsActive(3) ? """" : ""KB""), (StrykerNamespace.MutantControl.IsActive(4) ? """" : ""MB""), (StrykerNamespace.MutantControl.IsActive(5) ? """" : ""GB"") };
 
-        int mag = (int)Math.Log(value, 1024);
-        decimal adjustedSize = (StrykerNamespace.MutantControl.IsActive(6) ? (decimal)value * (1L << (mag * 10)) : (decimal)value / ((StrykerNamespace.MutantControl.IsActive(7) ? 1L >> (mag * 10) : 1L << ((StrykerNamespace.MutantControl.IsActive(8) ? mag / 10 : mag * 10)))));
+        int mag = (int)(StrykerNamespace.MutantControl.IsActive(7) ? Math.Pow(value, 1024) : (StrykerNamespace.MutantControl.IsActive(6) ? Math.Exp(value, 1024) : Math.Log(value, 1024)));
+        decimal adjustedSize = (StrykerNamespace.MutantControl.IsActive(8) ? (decimal)value * (1L << (mag * 10)) : (decimal)value / ((StrykerNamespace.MutantControl.IsActive(9) ? 1L >> (mag * 10) : 1L << ((StrykerNamespace.MutantControl.IsActive(10) ? mag / 10 : mag * 10)))));
 
-			return (StrykerNamespace.MutantControl.IsActive(9)?$"""":$""{ adjustedSize:n1} {SizeSuffixes[mag]}"");
+			return (StrykerNamespace.MutantControl.IsActive(11)?$"""":$""{ adjustedSize:n1} {SizeSuffixes[mag]}"");
 		}
 }
 return default(string);}";
