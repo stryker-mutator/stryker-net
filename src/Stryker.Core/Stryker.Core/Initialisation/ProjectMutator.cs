@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+using Buildalyzer;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
@@ -6,7 +9,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IProjectMutator
     {
-        IMutationTestProcess MutateProject(StrykerOptions options, IReporter reporters);
+        IMutationTestProcess MutateProject(StrykerOptions options, IReporter reporters, IEnumerable<IAnalyzerResult> solutionProjects = null);
     }
 
     public class ProjectMutator : IProjectMutator
@@ -21,12 +24,12 @@ namespace Stryker.Core.Initialisation
             _injectedMutationtestProcess = mutationTestProcess;
         }
 
-        public IMutationTestProcess MutateProject(StrykerOptions options, IReporter reporters)
+        public IMutationTestProcess MutateProject(StrykerOptions options, IReporter reporters, IEnumerable<IAnalyzerResult> solutionProjects = null)
         {
             // get a new instance of InitialisationProcess for each project
             var initialisationProcess = _injectedInitialisationProcess ?? new InitialisationProcess();
             // initialize
-            var input = initialisationProcess.Initialize(options);
+            var input = initialisationProcess.Initialize(options, solutionProjects);
 
             var process = _injectedMutationtestProcess ?? new MutationTestProcess(input, options, reporters,
                 new MutationTestExecutor(input.TestRunner));

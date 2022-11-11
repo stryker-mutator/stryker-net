@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.Build.Exceptions;
@@ -14,46 +15,38 @@ namespace Stryker.Core.Initialisation
         IAnalyzerResult AnalyzeProject(
             string projectFilePath,
             string solutionFilePath,
-            string targetFramework);
+            string targetFramework,
+            IEnumerable<IAnalyzerResult> solutionProjects);
     }
 
+    /// <summary>
+    /// This class is an abstraction of Buildalyzers AnalyzerManager to make the rest of our code better testable. Mocking AnalyzerManager is really ugly and we want to avoid it.
+    /// </summary>
+    [ExcludeFromCodeCoverage]
     public class ProjectFileReader : IProjectFileReader
     {
         private readonly INugetRestoreProcess _nugetRestoreProcess;
-        private IAnalyzerManager _manager;
+        private IAnalyzerManager _analyzerManager;
         private readonly ILogger _logger;
 
         public ProjectFileReader(
             INugetRestoreProcess nugetRestoreProcess = null,
-            IAnalyzerManager manager = null)
+            IAnalyzerManager analyzerManager = null)
         {
             _nugetRestoreProcess = nugetRestoreProcess ?? new NugetRestoreProcess();
-            _manager = manager ?? new AnalyzerManager();
+            _analyzerManager = analyzerManager ?? new AnalyzerManager();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
         }
 
         public IAnalyzerResult AnalyzeProject(
             string projectFilePath,
             string solutionFilePath,
-            string targetFramework)
+            string targetFramework,
+            IEnumerable<IAnalyzerResult> solutionProjects)
         {
-            if (solutionFilePath != null)
-            {
-                _logger.LogDebug("Analyzing solution file {0}", solutionFilePath);
-                try
-                {
-                    _manager = new AnalyzerManager(solutionFilePath);
-                }
-                catch (InvalidProjectFileException)
-                {
-                    throw new InputException($"Incorrect solution path \"{solutionFilePath}\". Solution file not found. Please review your solution path setting.");
-                }
-            }
 
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
-            var analyzerResults = _manager.GetProject(projectFilePath).Build();
-            var analyzerResult = SelectAnalyzerResult(analyzerResults, targetFramework);
-
+            IAnalyzerResult analyzerResult = GetProjectInfo(projectFilePath, targetFramework, solutionProjects);
             LogAnalyzerResult(analyzerResult);
 
             if (!analyzerResult.Succeeded)
@@ -63,7 +56,7 @@ namespace Stryker.Core.Initialisation
                     // buildalyzer failed to find restored packages, retry after nuget restore
                     _logger.LogDebug("Project analyzer result not successful, restoring packages");
                     _nugetRestoreProcess.RestorePackages(solutionFilePath);
-                    analyzerResult = _manager.GetProject(projectFilePath).Build(targetFramework).First();
+                    analyzerResult = GetProjectInfo(projectFilePath, targetFramework, solutionProjects);
                 }
                 else
                 {
@@ -73,6 +66,58 @@ namespace Stryker.Core.Initialisation
             }
 
             return analyzerResult;
+        }
+
+        private void SetAnalyzerManager(string solutionFilePath)
+        {
+            if (_analyzerManager == null && solutionFilePath != null)
+            {
+                _logger.LogDebug("Analyzing solution file {0}", solutionFilePath);
+                try
+                {
+                    _analyzerManager = new AnalyzerManager(solutionFilePath);
+                }
+                catch (InvalidProjectFileException)
+                {
+                    throw new InputException($"Incorrect solution path \"{solutionFilePath}\". Solution file not found. Please review your solution path setting.");
+                }
+            }
+        }
+
+        /// <summary>
+        /// Checks if project info is already present in solution projects. If not, analyze here.
+        /// </summary>
+        /// <returns></returns>
+        private IAnalyzerResult GetProjectInfo(string projectFilePath,
+            string targetFramework,
+            IEnumerable<IAnalyzerResult> solutionProjects)
+        {
+            if (solutionProjects != null)
+            {
+                return solutionProjects.FirstOrDefault(x => x.ProjectFilePath == projectFilePath);
+            }
+            else
+            {
+                var analyzerResults = _analyzerManager.GetProject(projectFilePath).Build();
+                return SelectAnalyzerResult(analyzerResults, targetFramework);
+            }
+        }
+
+        private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
+        {
+            if (!analyzerResults.Any() || analyzerResults.All(a => a.TargetFramework is null))
+            {
+                throw new InputException("No valid project analysis results could be found.");
+            }
+
+            if (targetFramework is not null)
+            {
+                return analyzerResults.FirstOrDefault(a => a.TargetFramework == targetFramework) ??
+                    throw new InputException($"Could not find a project analysis for chosen target framework {targetFramework}. \n" +
+                    $"The available target frameworks are {analyzerResults.Select(a => a.TargetFramework).Distinct()}");
+            }
+
+            return analyzerResults.First(a => a.TargetFramework is not null);
         }
 
         private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
@@ -98,23 +143,6 @@ namespace Stryker.Core.Initialisation
             _logger.LogTrace("Succeeded: {0}", analyzerResult.Succeeded);
 
             _logger.LogTrace("**** Buildalyzer result ****");
-        }
-
-        private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
-        {
-            if (!analyzerResults.Any() || analyzerResults.All(a => a.TargetFramework is null))
-            {
-                throw new InputException("No valid project analysis results could be found.");
-            }
-
-            if (targetFramework is not null)
-            {
-                return analyzerResults.FirstOrDefault(a => a.TargetFramework == targetFramework) ??
-                    throw new InputException($"Could not find a project analysis for chosen target framework {targetFramework}. \n" +
-                    $"The available target frameworks are {analyzerResults.Select(a => a.TargetFramework).Distinct()}");
-            }
-
-            return analyzerResults.First(a => a.TargetFramework is not null);
         }
     }
 }

@@ -213,13 +213,14 @@ stages:
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'linux-netcore'
-        workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
+        workingDirectory: 'integrationtest/TargetProjects'
+        strykerCommands: --solution '$(Agent.BuildDirectory)/s/integrationtest/TargetProjects/IntegrationTestApp.sln'
     - task: DotNetCoreCLI@2.210.0
       displayName: 'Assert integration test results'
       inputs:
         command: test
         projects: '**/Validation.csproj'
-        arguments: --filter Category=SingleTestProject
+        arguments: --filter Category=Solution
 
   - job: MacOsTests
     displayName: Run tests on Mac OS
