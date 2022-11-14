@@ -33,7 +33,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Setup(m => m.GetEnumerator())
                 .Returns(() => _analyzerResults.GetEnumerator());
 
-            _projectFileReader = new ProjectFileReader(manager: analyzerManagerMock.Object);
+            _projectFileReader = new ProjectFileReader(analyzerManager: analyzerManagerMock.Object);
         }
 
         [Fact]
@@ -53,7 +53,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            var result = _projectFileReader.AnalyzeProject(null, null, null);
+            var result = _projectFileReader.AnalyzeProject(null, null, null, null);
             result.TargetFramework.ShouldBe("X");
         }
 
@@ -74,7 +74,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            var result = _projectFileReader.AnalyzeProject(null, null, "Y");
+            var result = _projectFileReader.AnalyzeProject(null, null, "Y", null);
             result.TargetFramework.ShouldBe("Y");
         }
 
@@ -95,7 +95,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            Func<IAnalyzerResult> analyzeProject = () => _projectFileReader.AnalyzeProject(null, null, "Z");
+            Func<IAnalyzerResult> analyzeProject = () => _projectFileReader.AnalyzeProject(null, null, "Z", null);
             analyzeProject.ShouldThrow<InputException>("");
         }
     }

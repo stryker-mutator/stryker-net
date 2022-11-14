@@ -28,7 +28,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         public ProjectOrchestratorTests()
         {
             _mutationTestProcessMock.Setup(x => x.Mutate());
-            _projectMutatorMock.Setup(x => x.MutateProject(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>()))
+            _projectMutatorMock.Setup(x => x.MutateProject(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>(), It.IsAny<IEnumerable<IAnalyzerResult>>()))
                 .Returns(new Mock<IMutationTestProcess>().Object);
 
             _mutationTestInput = new MutationTestInput()
@@ -44,6 +44,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         public void ShouldInitializeEachProjectInSolution()
         {
             // arrange
+            var initialBuildProcessMock = new Mock<IInitialBuildProcess>(MockBehavior.Strict);
             var buildalyzerAnalyzerManagerMock = new Mock<IAnalyzerManager>(MockBehavior.Strict);
             var projectUnderTestAnalyzerMock = new Mock<IProjectAnalyzer>(MockBehavior.Strict);
             var projectUnderTestAnalyzerResultsMock = new Mock<IAnalyzerResults>(MockBehavior.Strict);
@@ -61,9 +62,10 @@ namespace Stryker.Core.UnitTest.Initialisation
                 ProjectPath = "C:/MyProject",
                 SolutionPath = "C:/MyProject/MyProject.sln"
             };
-            var target = new ProjectOrchestrator(_buildalyzerProviderMock.Object, _projectMutatorMock.Object);
+            var target = new ProjectOrchestrator(_buildalyzerProviderMock.Object, _projectMutatorMock.Object, initialBuildProcessMock.Object);
 
-            _initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>())).Returns(_mutationTestInput);
+            initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
+            _initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(_mutationTestInput);
             _initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>())).Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(5)));
             _buildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<string>(), It.IsAny<AnalyzerManagerOptions>())).Returns(buildalyzerAnalyzerManagerMock.Object);
             // The analyzer finds two projects
@@ -86,6 +88,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             testProjectAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "True" } });
             projectUnderTestAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "False" }, { "ProjectTypeGuids", "not testproject" } });
             projectUnderTestAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns("C:/projectundertest/projectundertest.csproj");
+            projectUnderTestAnalyzerResultMock.Setup(x => x.TargetFramework).Returns("net6.0");
             testProjectProjectFileMock.Setup(x => x.PackageReferences).Returns(new List<IPackageReference>() {
                 testProjectPackageReferenceMock.Object
             });

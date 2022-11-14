@@ -118,8 +118,7 @@ namespace Stryker.Core.CoverageAnalysis
             {
                 mutant.ResultStatus = MutantStatus.NoCoverage;
                 mutant.ResultStatusReason = "Not covered by any test.";
-                _logger.LogInformation(
-                    $"Mutant {mutant.Id} is not covered by any test.");
+                _logger.LogDebug($"Mutant {mutant.Id} is not covered by any test.");
             }
             else if (mutant.AssessingTests.IsEmpty && mutant.ResultStatus == MutantStatus.NotRun)
             {

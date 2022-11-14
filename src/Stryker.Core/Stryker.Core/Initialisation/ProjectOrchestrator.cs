@@ -25,31 +25,41 @@ namespace Stryker.Core.Initialisation
         private readonly ILogger _logger;
         private readonly IBuildalyzerProvider _buildalyzerProvider;
         private readonly IProjectMutator _projectMutator;
+        private readonly IInitialBuildProcess _initialBuildProcess;
 
         public ProjectOrchestrator(IBuildalyzerProvider buildalyzerProvider = null,
-            IProjectMutator projectMutator = null)
+            IProjectMutator projectMutator = null,
+            IInitialBuildProcess initialBuildProcess = null)
         {
             _buildalyzerProvider = buildalyzerProvider ?? new BuildalyzerProvider();
             _projectMutator = projectMutator ?? new ProjectMutator();
+            _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectOrchestrator>();
         }
 
         public IEnumerable<IMutationTestProcess> MutateProjects(StrykerOptions options, IReporter reporters)
         {
-            if (IsSolutionContext(options))
+            if (options.IsSolutionContext)
             {
-                // Build and analyze all projects in the solution with buildalyzer
-                var solutionProjects = AnalyzeSolution(options);
+                // Analyze all projects in the solution with buildalyzer
+                var solutionAnalyzerResults = AnalyzeSolution(options);
 
-                var projectsUnderTest = FindProjectsUnderTest(solutionProjects);
+                var projectsUnderTestAnalyzerResult = FindProjectsUnderTest(solutionAnalyzerResults);
 
-                var testProjects = solutionProjects.Except(projectsUnderTest);
+                var testProjects = solutionAnalyzerResults.Except(projectsUnderTestAnalyzerResult);
 
-                _logger.LogInformation("Found {0} projects under test", projectsUnderTest.Count());
+                _logger.LogInformation("Found {0} projects under test", projectsUnderTestAnalyzerResult.Count());
                 _logger.LogInformation("Found {0} test projects", testProjects.Count());
 
+                // Build the complete solution
+                _initialBuildProcess.InitialBuild(
+                    projectsUnderTestAnalyzerResult.First().TargetsFullFramework(),
+                    Path.GetDirectoryName(options.SolutionPath),
+                    options.SolutionPath,
+                    options.MsBuildPath);
+
                 // Mutate all projects in the solution
-                foreach (var project in MutateSolution(options, reporters, projectsUnderTest, testProjects))
+                foreach (var project in MutateSolution(options, reporters, projectsUnderTestAnalyzerResult, testProjects, solutionAnalyzerResults))
                 {
                     yield return project;
                 }
@@ -62,7 +72,11 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private IEnumerable<IMutationTestProcess> MutateSolution(StrykerOptions options, IReporter reporters, IEnumerable<IAnalyzerResult> projectsUnderTest, IEnumerable<IAnalyzerResult> testProjects)
+        private IEnumerable<IMutationTestProcess> MutateSolution(StrykerOptions options,
+            IReporter reporters,
+            IEnumerable<IAnalyzerResult> projectsUnderTest,
+            IEnumerable<IAnalyzerResult> testProjects,
+            IEnumerable<IAnalyzerResult> solutionProjects)
         {
             foreach (var project in projectsUnderTest)
             {
@@ -85,7 +99,7 @@ namespace Stryker.Core.Initialisation
                         projectUnderTest: projectFilePath,
                         testProjects: relatedTestProjects.Select(x => x.ProjectFilePath));
 
-                    yield return _projectMutator.MutateProject(projectOptions, reporters);
+                    yield return _projectMutator.MutateProject(projectOptions, reporters, solutionProjects);
                 }
                 else
                 {
@@ -127,9 +141,6 @@ namespace Stryker.Core.Initialisation
 
             return projectsAnalyzerResults.ToList();
         }
-
-        private static bool IsSolutionContext(StrykerOptions options) =>
-            options.SolutionPath != null && FilePathUtils.NormalizePathSeparators(options.ProjectPath) == FilePathUtils.NormalizePathSeparators(Path.GetDirectoryName(options.SolutionPath));
 
         private IEnumerable<IAnalyzerResult> FindProjectsUnderTest(IEnumerable<IAnalyzerResult> projectsAnalyzerResults)
         {
