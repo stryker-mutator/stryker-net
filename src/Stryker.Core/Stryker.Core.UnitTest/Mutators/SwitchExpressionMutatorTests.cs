@@ -28,7 +28,7 @@ namespace Stryker.Core.UnitTest.Mutators
             {
                 mutation.OriginalNode.ShouldBeOfType<RelationalPatternSyntax>();
                 mutation.ReplacementNode.ShouldBeOfType<RelationalPatternSyntax>();
-                mutation.DisplayName.ShouldBe($"Pattern mutation");
+                mutation.DisplayName.ShouldBe($"Pattern matching mutation");
             });
 
             result
@@ -52,7 +52,7 @@ namespace Stryker.Core.UnitTest.Mutators
             {
                 mutation.OriginalNode.ShouldBeOfType<BinaryPatternSyntax>();
                 mutation.ReplacementNode.ShouldBeOfType<BinaryPatternSyntax>();
-                mutation.DisplayName.ShouldBe($"Pattern mutation");
+                mutation.DisplayName.ShouldBe($"Pattern matching mutation");
             });
 
             result

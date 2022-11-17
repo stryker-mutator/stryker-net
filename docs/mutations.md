@@ -159,7 +159,7 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | <code>&#124;</code> | `&`                 |
 | `a^b`               | `~(a^b)`            |
 
-## Patterns inside is and switch expressions (_pattern_)
+## Patterns inside is and switch expressions (_patternMatching_)
 | Original | Mutated |
 | ------------- | ------------- |
 | `>` | `<` |
