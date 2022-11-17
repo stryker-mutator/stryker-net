@@ -22,7 +22,7 @@ dotnet stryker
 
 Stryker will automatically detect the source project based on the project reference.
 
-If your test project has multiple project references, you need to specify the source project with `--project <filename>` ([docs here](https://stryker-mutator.io/docs/stryker-net/configuration/#project-file-name)). You can only specify one source project at a time.
+If your test project has multiple project references, you need to specify the source project with `--project <filename>` ([see docs](https://stryker-mutator.io/docs/stryker-net/configuration/#project-file-name)). You can only specify one source project at a time.
 
 ```bash
 cd /my-solution-dir/my-test-project-dir
@@ -47,7 +47,7 @@ dotnet stryker --test-project "../my-test-project-dir/Tests.csproj" --test-proje
 
 ## Solution file context
 
-When running from your project root (where your solution file is located) and passing the solution file, Stryker will analyze your solution and mutate all projects it can find. [docs here](https://stryker-mutator.io/docs/stryker-net/configuration/#solution-path).
+When running from your project root (where your solution file is located) and passing the solution file, Stryker will analyze your solution and mutate all projects it can find ([see docs](https://stryker-mutator.io/docs/stryker-net/configuration/#solution-path)).
 
 ```bash
 cd /my-solution-dir
