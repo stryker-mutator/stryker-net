@@ -229,9 +229,13 @@
       },
       "System.IO.Abstractions": {
         "type": "Direct",
-        "requested": "[17.2.3, )",
-        "resolved": "17.2.3",
-        "contentHash": "VcozGeE4SxIo0cnXrDHhbrh/Gb8KQnZ3BvMelvh+iw0PrIKtuuA46U2Xm4e4pgnaWFgT4RdZfTpWl/WPRdw0WQ=="
+        "requested": "[17.2.26, )",
+        "resolved": "17.2.26",
+        "contentHash": "6hhbvnD2IkWUjto4IIN0pZhZP7G4EBmFxx380CvGJO/1yI+GLmVq/rvl3gbDtR1UJBeGXosEopK0O4rO47p4ag==",
+        "dependencies": {
+          "TestableIO.System.IO.Abstractions": "17.2.26",
+          "TestableIO.System.IO.Abstractions.Wrappers": "17.2.26"
+        }
       },
       "Buildalyzer.Logger": {
         "type": "Transitive",
@@ -1703,16 +1707,29 @@
           "System.Xml.ReaderWriter": "4.0.11"
         }
       },
+      "TestableIO.System.IO.Abstractions": {
+        "type": "Transitive",
+        "resolved": "17.2.26",
+        "contentHash": "BO+O9ed2RQC9A+mdclTfvVHXtqGFZ3C72brUtDfbjrhU0RVf6nxpTbvd6wc03B5nGau2aTfUEKLH3PWp8O25Ag=="
+      },
+      "TestableIO.System.IO.Abstractions.Wrappers": {
+        "type": "Transitive",
+        "resolved": "17.2.26",
+        "contentHash": "xCSeI+J+6Naa1UG6OcZ233TKkIz14OFuQ99765OlTyQSz7U9ozN4rjUemZsRTikIgd1YBvsyH0gYt1/bNyNsUw==",
+        "dependencies": {
+          "TestableIO.System.IO.Abstractions": "17.2.26"
+        }
+      },
       "stryker.datacollector": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "17.2.0"
+          "Microsoft.TestPlatform.ObjectModel": "[17.2.0, )"
         }
       },
       "stryker.regexmutators": {
         "type": "Project",
         "dependencies": {
-          "RegexParser": "0.5.1"
+          "RegexParser": "[0.5.1, )"
         }
       },
       "RegexParser": {
