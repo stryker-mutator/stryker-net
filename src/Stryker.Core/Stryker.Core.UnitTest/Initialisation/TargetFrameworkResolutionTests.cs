@@ -40,7 +40,6 @@ namespace Stryker.Core.UnitTest.Initialisation
         public void ThrowsIfNoResultsWithFrameworks()
         {
             var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
-
             analyzerResultFrameworkXMock.Setup(m => m.Succeeded).Returns(true);
             analyzerResultFrameworkXMock.Setup(m => m.TargetFramework).Returns((string)null);
             _analyzerResults = new[]
