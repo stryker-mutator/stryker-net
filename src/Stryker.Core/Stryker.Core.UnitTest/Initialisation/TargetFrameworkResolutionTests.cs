@@ -37,6 +37,22 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Fact]
+        public void ThrowsIfNoResultsWithFrameworks()
+        {
+            var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
+
+            analyzerResultFrameworkXMock.Setup(m => m.Succeeded).Returns(true);
+            analyzerResultFrameworkXMock.Setup(m => m.TargetFramework).Returns((string)null);
+            _analyzerResults = new[]
+            {
+                analyzerResultFrameworkXMock.Object,
+            };
+
+            Func<IAnalyzerResult> analyzeProject = () => _projectFileReader.AnalyzeProject(null, null, null, null);
+            analyzeProject.ShouldThrow<InputException>();
+        }
+
+        [Fact]
         public void SelectsFirstFrameworkIfNoneSpecified()
         {
             var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
