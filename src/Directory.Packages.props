@@ -1,7 +1,7 @@
 <Project>
   <ItemGroup>
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.1.1" />
-    <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.0.1" />
+    <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.0.2" />
     <PackageVersion Include="NuGet.Protocol" Version="6.4.0" />
     <PackageVersion Include="YamlDotNet" Version="12.0.2" />
     <PackageVersion Include="Grynwald.MarkdownGenerator" Version="2.5.34" />
