@@ -1475,7 +1475,9 @@
           "Spectre.Console.Analyzer": "[0.45.0, )",
           "Stryker.DataCollector": "[3.1.0, )",
           "Stryker.RegexMutators": "[3.1.0, )",
+
           "System.IO.Abstractions": "[17.2.26, )"
+
         }
       },
       "stryker.datacollector": {
