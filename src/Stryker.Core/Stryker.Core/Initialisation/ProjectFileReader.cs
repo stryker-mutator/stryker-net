@@ -105,19 +105,32 @@ namespace Stryker.Core.Initialisation
 
         private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
         {
-            if (!analyzerResults.Any() || analyzerResults.All(a => a.TargetFramework is null))
+            var validResults = analyzerResults.Where(a => a.TargetFramework is not null);
+            if (!validResults.Any())
             {
                 throw new InputException("No valid project analysis results could be found.");
             }
 
-            if (targetFramework is not null)
+            if (targetFramework is null)
             {
-                return analyzerResults.FirstOrDefault(a => a.TargetFramework == targetFramework) ??
-                    throw new InputException($"Could not find a project analysis for chosen target framework {targetFramework}. \n" +
-                    $"The available target frameworks are {analyzerResults.Select(a => a.TargetFramework).Distinct()}");
+                return validResults.First();
             }
 
-            return analyzerResults.First(a => a.TargetFramework is not null);
+            var resultForRequestedFramework = validResults.FirstOrDefault(a => a.TargetFramework == targetFramework);
+            if (resultForRequestedFramework is not null)
+            {
+                return resultForRequestedFramework;
+            }
+
+            var firstAnalyzerResult = validResults.First();
+            var availableFrameworks = validResults.Select(a => a.TargetFramework).Distinct();
+            var firstFramework = firstAnalyzerResult.TargetFramework;
+            _logger.LogWarning(
+                $"Could not find a project analysis for the chosen target framework {targetFramework}. \n" +
+                $"The available target frameworks are: {string.Join(',', availableFrameworks)}. \n" +
+                $"The first available framework will be selected, which is {firstFramework}.");
+
+            return firstAnalyzerResult;
         }
 
         private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
