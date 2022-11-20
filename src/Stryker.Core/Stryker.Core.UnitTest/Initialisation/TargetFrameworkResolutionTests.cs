@@ -37,6 +37,21 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Fact]
+        public void ThrowsIfNoResultsWithFrameworks()
+        {
+            var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
+            analyzerResultFrameworkXMock.Setup(m => m.Succeeded).Returns(true);
+            analyzerResultFrameworkXMock.Setup(m => m.TargetFramework).Returns((string)null);
+            _analyzerResults = new[]
+            {
+                analyzerResultFrameworkXMock.Object,
+            };
+
+            Func<IAnalyzerResult> analyzeProject = () => _projectFileReader.AnalyzeProject(null, null, null, null);
+            analyzeProject.ShouldThrow<InputException>();
+        }
+
+        [Fact]
         public void SelectsFirstFrameworkIfNoneSpecified()
         {
             var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
@@ -79,7 +94,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Fact]
-        public void ThrowsIfSpecifiedButNotAvailable()
+        public void SelectsFirstFrameworkIfSpecifiedButNotAvailable()
         {
             var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
             var analyzerResultFrameworkYMock = new Mock<IAnalyzerResult>();
@@ -95,8 +110,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            Func<IAnalyzerResult> analyzeProject = () => _projectFileReader.AnalyzeProject(null, null, "Z", null);
-            analyzeProject.ShouldThrow<InputException>("");
+            var result = _projectFileReader.AnalyzeProject(null, null, "Z", null);
+            result.TargetFramework.ShouldBe("X");
         }
     }
 }

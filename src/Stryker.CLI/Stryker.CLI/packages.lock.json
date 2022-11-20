@@ -16,9 +16,9 @@
       },
       "McMaster.Extensions.CommandLineUtils": {
         "type": "Direct",
-        "requested": "[4.0.1, )",
-        "resolved": "4.0.1",
-        "contentHash": "nqKyjpNB37t3xYYTkst8r5dU5Cxj3HWirR1H6U5iiSRrUJLBeJQHogHk/HsnDqVnq0+jrzSxYw8lJ02GsTRcrw==",
+        "requested": "[4.0.2, )",
+        "resolved": "4.0.2",
+        "contentHash": "/M/p9fPUfu1dtIa+/xJS3hdp4aNIVr3c0reLFP4ZKo1vZy1sXeWeyaSapoVk8dmT79OxJTpLUGDdv0ReBd8d8A==",
         "dependencies": {
           "System.ComponentModel.Annotations": "5.0.0"
         }
@@ -122,12 +122,12 @@
       },
       "Microsoft.CodeAnalysis.Common": {
         "type": "Transitive",
-        "resolved": "4.3.1",
-        "contentHash": "wexpJffSEEwptwe6UTMxRDZCCtz+XubI4Qewl4JECnNhcQrtb0anhSUEV9Nz7WkoNfWkx1fptR8xh1egoxYrqw==",
+        "resolved": "4.4.0",
+        "contentHash": "JfHupS/B7Jb5MZoYkFFABn3mux0wQgxi2D8F/rJYZeRBK2ZOyk7TjQ2Kq9rh6W/DCh0KNbbSbn5qoFar+ueHqw==",
         "dependencies": {
           "Microsoft.CodeAnalysis.Analyzers": "3.3.3",
           "System.Collections.Immutable": "6.0.0",
-          "System.Memory": "4.5.4",
+          "System.Memory": "4.5.5",
           "System.Reflection.Metadata": "5.0.0",
           "System.Runtime.CompilerServices.Unsafe": "6.0.0",
           "System.Text.Encoding.CodePages": "6.0.0",
@@ -1436,45 +1436,58 @@
           "System.Drawing.Common": "4.7.0"
         }
       },
+      "TestableIO.System.IO.Abstractions": {
+        "type": "Transitive",
+        "resolved": "17.2.26",
+        "contentHash": "BO+O9ed2RQC9A+mdclTfvVHXtqGFZ3C72brUtDfbjrhU0RVf6nxpTbvd6wc03B5nGau2aTfUEKLH3PWp8O25Ag=="
+      },
+      "TestableIO.System.IO.Abstractions.Wrappers": {
+        "type": "Transitive",
+        "resolved": "17.2.26",
+        "contentHash": "xCSeI+J+6Naa1UG6OcZ233TKkIz14OFuQ99765OlTyQSz7U9ozN4rjUemZsRTikIgd1YBvsyH0gYt1/bNyNsUw==",
+        "dependencies": {
+          "TestableIO.System.IO.Abstractions": "17.2.26"
+        }
+      },
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "Buildalyzer": "4.1.6",
-          "DotNet.Glob": "3.1.3",
-          "FSharp.Compiler.Service": "41.0.7",
-          "Grynwald.MarkdownGenerator": "2.5.34",
-          "LibGit2Sharp": "0.27.0-preview-0182",
-          "Microsoft.CodeAnalysis.CSharp": "4.3.1",
-          "Microsoft.Extensions.Logging": "7.0.0",
-          "Microsoft.TestPlatform": "17.2.0",
-          "Microsoft.TestPlatform.ObjectModel": "17.2.0",
-          "Microsoft.TestPlatform.Portable": "17.2.0",
-          "Microsoft.TestPlatform.TranslationLayer": "17.2.0",
-          "Microsoft.Web.LibraryManager.Build": "2.1.175",
-          "Mono.Cecil": "0.11.4",
-          "NuGet.Frameworks": "6.4.0",
-          "Serilog": "2.12.0",
-          "Serilog.Extensions.Logging": "3.1.0",
-          "Serilog.Extensions.Logging.File": "3.0.0",
-          "Serilog.Sinks.Console": "4.1.0",
-          "ShellProgressBar": "5.2.0",
-          "Spectre.Console": "0.45.0",
-          "Spectre.Console.Analyzer": "0.45.0",
-          "Stryker.DataCollector": "1.0.0",
-          "Stryker.RegexMutators": "1.0.0",
-          "System.IO.Abstractions": "17.2.3"
+          "Buildalyzer": "[4.1.6, )",
+          "DotNet.Glob": "[3.1.3, )",
+          "FSharp.Compiler.Service": "[41.0.7, )",
+          "Grynwald.MarkdownGenerator": "[2.5.34, )",
+          "LibGit2Sharp": "[0.27.0-preview-0182, )",
+          "Microsoft.CodeAnalysis.CSharp": "[4.4.0, )",
+          "Microsoft.Extensions.Logging": "[7.0.0, )",
+          "Microsoft.TestPlatform": "[17.2.0, )",
+          "Microsoft.TestPlatform.ObjectModel": "[17.2.0, )",
+          "Microsoft.TestPlatform.Portable": "[17.2.0, )",
+          "Microsoft.TestPlatform.TranslationLayer": "[17.2.0, )",
+          "Microsoft.Web.LibraryManager.Build": "[2.1.175, )",
+          "Mono.Cecil": "[0.11.4, )",
+          "NuGet.Frameworks": "[6.4.0, )",
+          "Serilog": "[2.12.0, )",
+          "Serilog.Extensions.Logging": "[3.1.0, )",
+          "Serilog.Extensions.Logging.File": "[3.0.0, )",
+          "Serilog.Sinks.Console": "[4.1.0, )",
+          "ShellProgressBar": "[5.2.0, )",
+          "Spectre.Console": "[0.45.0, )",
+          "Spectre.Console.Analyzer": "[0.45.0, )",
+          "Stryker.DataCollector": "[3.1.0, )",
+          "Stryker.RegexMutators": "[3.1.0, )",
+          "System.IO.Abstractions": "[17.2.26, )"
         }
       },
       "stryker.datacollector": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "17.2.0"
+          "Microsoft.TestPlatform.ObjectModel": "[17.2.0, )"
         }
       },
       "stryker.regexmutators": {
         "type": "Project",
         "dependencies": {
-          "RegexParser": "0.5.1"
+          "RegexParser": "[0.5.1, )"
         }
       },
       "Buildalyzer": {
@@ -1554,11 +1567,11 @@
       },
       "Microsoft.CodeAnalysis.CSharp": {
         "type": "CentralTransitive",
-        "requested": "[4.3.1, )",
-        "resolved": "4.3.1",
-        "contentHash": "5C9VHvahL98tumlyaT/loB5rW+K/6q0UU7uLyT1Dv15YjZraRkqML9u2t2e8GaO7XqEOtBVqK/SlxXOPqwzxog==",
+        "requested": "[4.4.0, )",
+        "resolved": "4.4.0",
+        "contentHash": "eD2w0xHRoaqK07hjlOKGR9eLNy3nimiGNeCClNax1NDgS/+DBtBqCjXelOa+TNy99kIB3nHhUqDmr46nDXy/RQ==",
         "dependencies": {
-          "Microsoft.CodeAnalysis.Common": "[4.3.1]"
+          "Microsoft.CodeAnalysis.Common": "[4.4.0]"
         }
       },
       "Microsoft.Extensions.Logging": {
@@ -1698,9 +1711,13 @@
       },
       "System.IO.Abstractions": {
         "type": "CentralTransitive",
-        "requested": "[17.2.3, )",
-        "resolved": "17.2.3",
-        "contentHash": "VcozGeE4SxIo0cnXrDHhbrh/Gb8KQnZ3BvMelvh+iw0PrIKtuuA46U2Xm4e4pgnaWFgT4RdZfTpWl/WPRdw0WQ=="
+        "requested": "[17.2.26, )",
+        "resolved": "17.2.26",
+        "contentHash": "6hhbvnD2IkWUjto4IIN0pZhZP7G4EBmFxx380CvGJO/1yI+GLmVq/rvl3gbDtR1UJBeGXosEopK0O4rO47p4ag==",
+        "dependencies": {
+          "TestableIO.System.IO.Abstractions": "17.2.26",
+          "TestableIO.System.IO.Abstractions.Wrappers": "17.2.26"
+        }
       }
     }
   }
