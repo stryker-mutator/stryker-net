@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
@@ -46,7 +46,15 @@ namespace Stryker.Core.Mutators
                 { LinqExpression.Union, LinqExpression.Intersect },
                 { LinqExpression.Intersect, LinqExpression.Union },
                 { LinqExpression.Concat, LinqExpression.Except },
-                { LinqExpression.Except, LinqExpression.Concat }
+                { LinqExpression.Except, LinqExpression.Concat },
+                { LinqExpression.MinBy, LinqExpression.MaxBy },
+                { LinqExpression.MaxBy, LinqExpression.MinBy },
+                { LinqExpression.SkipLast, LinqExpression.TakeLast },
+                { LinqExpression.TakeLast, LinqExpression.SkipLast },
+                { LinqExpression.Order, LinqExpression.OrderDescending },
+                { LinqExpression.OrderDescending, LinqExpression.Order },
+                { LinqExpression.UnionBy, LinqExpression.IntersectBy },
+                { LinqExpression.IntersectBy, LinqExpression.UnionBy }
             };
             RequireArguments = new HashSet<LinqExpression>
             {
@@ -58,7 +66,13 @@ namespace Stryker.Core.Mutators
                 LinqExpression.ThenBy,
                 LinqExpression.ThenByDescending,
                 LinqExpression.Union,
-                LinqExpression.Intersect
+                LinqExpression.Intersect,
+                LinqExpression.SkipLast,
+                LinqExpression.TakeLast,
+                LinqExpression.MaxBy,
+                LinqExpression.MinBy,
+                LinqExpression.IntersectBy,
+                LinqExpression.UnionBy
             };
         }
         /// <summary> Apply mutations to an <see cref="InvocationExpressionSyntax"/> </summary>
@@ -167,6 +181,14 @@ namespace Stryker.Core.Mutators
         Union,
         Intersect,
         Concat,
-        Except
+        Except,
+        IntersectBy,
+        MaxBy,
+        MinBy,
+        Order,
+        OrderDescending,
+        SkipLast,
+        TakeLast,
+        UnionBy
     }
 }
