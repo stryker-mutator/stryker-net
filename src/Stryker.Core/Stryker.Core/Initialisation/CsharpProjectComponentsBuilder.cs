@@ -83,7 +83,7 @@ namespace Stryker.Core.Initialisation
             // Save cache in a singleton so we can use it in other parts of the project
             FolderCompositeCache<CsharpFolderComposite>.Instance.Cache = cache;
 
-            CSharpParseOptions cSharpParseOptions = BuildCsharpParseOptions(analyzerResult, options);
+            var cSharpParseOptions = analyzerResult.GetParseOptions(options);
             InjectMutantHelpers(projectUnderTestFolderComposite, cSharpParseOptions);
 
             foreach (var sourceFile in analyzerResult.SourceFiles)

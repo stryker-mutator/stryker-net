@@ -56,7 +56,7 @@ namespace Stryker.Core.Initialisation
             var testProjects = new List<TestProject>();
             foreach (var testProjectFile in testProjectFiles)
             {
-                var testProjectAnalyzerResult = _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework);
+                var testProjectAnalyzerResult = _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework, IEnumerable <IAnalyzerResult> solutionProjects);
 
                 testProjects.Add(new TestProject(_fileSystem, testProjectAnalyzerResult));
             }
@@ -67,12 +67,12 @@ namespace Stryker.Core.Initialisation
             };
         }
 
-        public TargetProjectInfo ResolveTargetProjectInfo(StrykerOptions options, TestProjectsInfo testProjectsInfo)
+        public TargetProjectInfo ResolveTargetProjectInfo(StrykerOptions options, TestProjectsInfo testProjectsInfo, IEnumerable<IAnalyzerResult> solutionProjects)
         {
             var targetProjectInfo = new TargetProjectInfo();
 
             // Determine project under test
-            var targetProject = FindProjectUnderTest(testProjectsInfo, options.TargetProjectName);
+            var targetProject = FindProjectUnderTest(testProjectsInfo, options.TargetProjectName, solutionProjects);
 
             targetProjectInfo.AnalyzerResult = _projectFileReader.AnalyzeProject(targetProject, options.SolutionPath, options.TargetFramework);
 

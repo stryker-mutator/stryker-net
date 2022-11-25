@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using Stryker.Core.Mutators;
 using Stryker.Core.Options.Inputs;
 
 namespace Stryker.Core.Options
@@ -141,7 +142,7 @@ namespace Stryker.Core.Options
                 },
                 TargetProjectName = TargetProjectNameInput.Validate(),
                 AdditionalTimeout = AdditionalTimeoutInput.Validate(),
-                ExcludedMutations = IgnoreMutationsInput.Validate(),
+                ExcludedMutations = IgnoreMutationsInput.Validate<Mutator>(),
                 ExcludedLinqExpressions = IgnoreMutationsInput.ValidateLinqExpressions(),
                 IgnoredMethods = IgnoredMethodsInput.Validate(),
                 Mutate = MutateInput.Validate(),

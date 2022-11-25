@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
 using NuGet.Frameworks;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Options;
 
 namespace Stryker.Core.Initialisation.Buildalyzer
 {
@@ -39,6 +40,8 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             }
             return compilationOptions;
         }
+
+        public static CSharpParseOptions GetParseOptions(this IAnalyzerResult analyzerResult, StrykerOptions options) => new CSharpParseOptions(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: analyzerResult.PreprocessorSymbols);
 
         public static string AssemblyAttributeFileName(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("GeneratedAssemblyInfoFile",
                 (Path.GetFileNameWithoutExtension(analyzerResult.ProjectFilePath) + ".AssemblyInfo.cs")
@@ -73,7 +76,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
 
         private sealed class AnalyzerAssemblyLoader : IAnalyzerAssemblyLoader
         {
-            public static IAnalyzerAssemblyLoader Instance = new AnalyzerAssemblyLoader();
+            public static readonly IAnalyzerAssemblyLoader Instance = new AnalyzerAssemblyLoader();
 
             private AnalyzerAssemblyLoader() { }
 
@@ -143,8 +146,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
         {
             var property = GetPropertyOrDefault(analyzerResult, name, defaultBoolean.ToString());
 
-            return bool.Parse(property);
-        }
+        private static bool GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, bool defaultBoolean) => bool.Parse(GetPropertyOrDefault(analyzerResult, name, defaultBoolean.ToString()));
 
         private static string GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, string defaultValue = null)
         {

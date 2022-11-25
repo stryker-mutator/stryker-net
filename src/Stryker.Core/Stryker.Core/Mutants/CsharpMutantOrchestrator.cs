@@ -47,7 +47,8 @@ namespace Stryker.Core.Mutants
                 new ObjectCreationMutator(),
                 new ArrayCreationMutator(),
                 new StatementMutator(),
-                new RegexMutator()
+                new RegexMutator(),
+                new MathMutator()
             };
             Mutants = new Collection<Mutant>();
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpMutantOrchestrator>();
@@ -62,6 +63,7 @@ namespace Stryker.Core.Mutants
                     (t) => t.Modifiers.Any(x => x.IsKind(SyntaxKind.ConstKeyword))),
                 new AssignmentStatementOrchestrator(),
                 new PostfixUnaryExpressionOrchestrator(),
+                new PrefixUnaryExpressionOrchestrator(),
                 new StaticFieldDeclarationOrchestrator(),
                 new StaticConstructorOrchestrator(),
                 new PropertyDeclarationOrchestrator(),

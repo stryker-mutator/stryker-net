@@ -23,8 +23,8 @@ pr:
     - '.github/*'
 
 variables:
-  PackageVersion: '3.0.1'
-  VersionBuildNumber: $[counter('3.0.1', 1)]
+  PackageVersion: '3.2.0'
+  VersionBuildNumber: $[counter('3.2.0', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
@@ -213,13 +213,14 @@ stages:
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'linux-netcore'
-        workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
+        workingDirectory: 'integrationtest/TargetProjects'
+        strykerCommands: --solution '$(Agent.BuildDirectory)/s/integrationtest/TargetProjects/IntegrationTestApp.sln'
     - task: DotNetCoreCLI@2.210.0
       displayName: 'Assert integration test results'
       inputs:
         command: test
         projects: '**/Validation.csproj'
-        arguments: --filter Category=SingleTestProject
+        arguments: --filter Category=Solution
 
   - job: MacOsTests
     displayName: Run tests on Mac OS

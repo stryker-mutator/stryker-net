@@ -196,7 +196,7 @@ namespace Stryker.Core.TestRunners.VsTest
             eventHandler.ResultsUpdated += HandlerUpdate;
 
             _aborted = false;
-            var options = new TestPlatformOptions { TestCaseFilter = _context.Options.TestCaseFilter };
+            var options = new TestPlatformOptions { TestCaseFilter = string.IsNullOrWhiteSpace(_context.Options.TestCaseFilter) ? null : _context.Options.TestCaseFilter };
             if (tests.IsEveryTest)
             {
                 _vsTestConsole.RunTestsWithCustomTestHostAsync(_context.TestSources, runSettings, options, eventHandler,

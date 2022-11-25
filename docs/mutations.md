@@ -9,8 +9,8 @@ Stryker supports a variety of mutators, which are listed below. In parentheses t
 Do you have a suggestion for a (new) mutator? Feel free to create an [issue](https://github.com/stryker-mutator/stryker-net/issues)!
 
 ## Arithmetic Operators (_arithmetic_)
-| Original | Mutated | 
-| ------------- | ------------- | 
+| Original | Mutated |
+| ------------- | ------------- |
 | `+` | `-` |
 | `-` | `+` |
 | `*` | `/` |
@@ -18,7 +18,7 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `%` | `*` |
 
 ## Equality Operators (_equality_)
-| Original | Mutated | 
+| Original | Mutated |
 | ------------- | ------------- |
 | `>` | `<` |
 | `>` | `>=` |
@@ -39,8 +39,8 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `^`                       | `==`                      |
 
 ## Boolean Literals (_boolean_)
-| Original | Mutated | 
-| ------------- | ------------- | 
+| Original | Mutated |
+| ------------- | ------------- |
 | `true`	| `false` |
 | `false`	| `true` |
 | `!person.IsAdult()`		| `person.IsAdult()` |
@@ -63,19 +63,21 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | <code>&#124;=</code> | `^=`                 |
 | `^=`                 | <code>&#124;=</code> |
 | `^=`                 | `&=`                 |
+| `??=`                | `=`                  |
 
-## Collection initialization (_initializer_)
-| Original | Mutated | 
+## Initialization (_initializer_)
+| Original | Mutated |
 | ---------------------------------------- | ------------------------------------ |
 |`new int[] { 1, 2 };`                     | `new int[] { };`                     |
 |`int[] numbers = { 1, 2 };`               | `int[] numbers = { };`               |
 |`new List<int> { 1, 2 };`                 | `new List<int> { };`                 |
 |`new Collection<int> { 1, 2 };`           | `new Collection<int> { };`           |
 |`new Dictionary<int, int> { { 1, 1 } };`  | `new Dictionary<int, int> { };`      |
+|`new SomeClass { Foo = "Bar" };`          | `new SomeClass { };`                 |
 
 ## Removal mutators (_statement_, _block_)
-|    Original   |   Mutated  | 
-| ------------- | ---------- | 
+|    Original   |   Mutated  |
+| ------------- | ---------- |
 | `void Function() { Age++; }`	| `void Function() {} (block emptied)`|
 | `int Function() { Age++; return Age; }` 	| `void Function() { return default; } (block emptied)`|
 | `return;` 	| `removed` |
@@ -90,15 +92,15 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `MyMethodCall();` 	| `removed` |
 
 ## Unary Operators (_unary_)
-|    Original   |   Mutated  | 
-| ------------- | ---------- | 
+|    Original   |   Mutated  |
+| ------------- | ---------- |
 | `-variable`	| `+variable`|
 | `+variable` 	| `-variable`|
 | `~variable` 	| `variable` |
 
 ## Update Operators (_update_)
-|    Original   |   Mutated  | 
-| ------------- | ---------- | 
+|    Original   |   Mutated  |
+| ------------- | ---------- |
 | `variable++`	| `variable--` |
 | `variable--`	| `variable++` |
 | `++variable`	| `--variable` |
@@ -106,7 +108,7 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 
 ## Checked Statements (_checked_)
 | Original | Mutated |
-| ------------- | ------------- | 
+| ------------- | ------------- |
 | `checked(2 + 4)` | `2 + 4` |
 
 ## Linq Methods (_linq_)
@@ -138,10 +140,18 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `Intersect()`        | `Union()`             |
 | `Concat()`           | `Except()`            |
 | `Except()`           | `Concat()`            |
+| `MinBy()`            | `MaxBy()`             |
+| `MaxBy()`            | `MinBy()`             |
+| `SkipLast()`         | `TakeLast()`          |
+| `TakeLast()`         | `SkipLast()`          |
+| `Order()`            | `OrderDescending()`   |
+| `OrderDescending()`  | `Order()`             |
+| `UnionBy()`          | `IntersectBy()`       |
+| `IntersectBy()`      | `UnionBy()`           |
 
 ## String Literals and Constants (_string_)
 | Original | Mutated |
-| ------------- | ------------- | 
+| ------------- | ------------- |
 | `"foo"` | `""` |
 | `""` | `"Stryker was here!"` |
 | `$"foo {bar}"` | `$""` |
@@ -159,3 +169,56 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 
 ## Regular Expressions (_regex_)
 For the full list of all available regex mutations, see the [regex mutator docs](./regex-mutations.md).
+
+## Math Methods (_math_)
+|      Original           |         Mutated         |
+| ----------------------- | ----------------------- |
+| `Acos()`                  | `Acosh()`                 |
+| `Acos()`                  | `Asin()`                  |
+| `Acos()`                  | `Atan()`                  |
+| `Acosh()`                 | `Acos()`                  |
+| `Acosh()`                 | `Asinh()`                 |
+| `Acosh()`                 | `Atanh()`                 |
+| `Asin()`                  | `Asinh()`                 |
+| `Asin()`                  | `Acos()`                  |
+| `Asin()`                  | `Atan()`                  |
+| `Asinh()`                 | `Asin()`                  |
+| `Asinh()`                 | `Acosh()`                 |
+| `Asinh()`                 | `Atanh()`                 |
+| `Atan()`                  | `Atanh()`                 |
+| `Atan()`                  | `Acos()`                  |
+| `Atan()`                  | `Asin()`                  |
+| `Atanh()`                 | `Atan()`                  |
+| `Atanh()`                 | `Acosh()`                 |
+| `Atanh()`                 | `Asinh()`                 |
+| `BitDecrement()`          | `BitIncrement()`          |
+| `BitIncrement()`          | `BitDecrement()`          |
+| `Ceiling()`               | `Floor()`                 |
+| `Cos()`                   | `Cosh()`                  |
+| `Cos()`                   | `Sin()`                   |
+| `Cos()`                   | `Tan()`                   |
+| `Cosh()`                  | `Cos()`                   |
+| `Cosh()`                  | `Sinh()`                  |
+| `Cosh()`                  | `Tanh()`                  |
+| `Exp()`                   | `Log()`                   |
+| `Floor()`                 | `Ceiling()`               |
+| `Log()`                   | `Exp()`                   |
+| `Log()`                   | `Pow()`                   |
+| `MaxMagnitude()`          | `MinMagnitude()`          |
+| `MinMagnitude()`          | `MaxMagnitude()`          |
+| `Pow()`                   | `Log()`                   |
+| `ReciprocalEstimate()`    | `ReciprocalSqrtEstimate()` |
+| `ReciprocalSqrtEstimate()` | `ReciprocalEstimate()`   |
+| `ReciprocalSqrtEstimate()` | `Sqrt()`                 |
+| `Sin()`                   | `Sinh()`                  |
+| `Sin()`                   | `Cos()`                   |
+| `Sin()`                   | `Tan()`                   |
+| `Sinh()`                  | `Sin()`                   |
+| `Sinh()`                  | `Cosh()`                  |
+| `Sinh()`                  | `Tanh()`                  |
+| `Tan()`                   | `Tanh()`                  |
+| `Tan()`                   | `Cos()`                   |
+| `Tan()`                   | `Sin()`                   |
+| `Tanh()`                  | `Tan()`                   |
+| `Tanh()`                  | `Cosh()`                  |
+| `Tanh()`                  | `Sinh()`                  |
