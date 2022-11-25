@@ -1,3 +1,4 @@
+using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using Shouldly;
 using Stryker.Core.Exceptions;
@@ -18,14 +19,31 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Fact]
         public void ShouldReturnSolutionPathIfExists()
         {
-            var path = "/c/root/bla/solution.sln";
+            var dir = Directory.GetCurrentDirectory();
+            var path = Path.Combine(dir, "solution.sln");
             var fileSystem = new MockFileSystem();
-            fileSystem.AddDirectory("/c/root/bla");
+            fileSystem.AddDirectory(dir);
             fileSystem.AddFile(path, new MockFileData(""));
 
             var input = new SolutionInput { SuppliedInput = path };
 
             input.Validate(fileSystem).ShouldBe(path);
+        }
+
+        [Fact]
+        public void ShouldReturnFullPathWhenRelativePathGiven()
+        {
+            var dir = Directory.GetCurrentDirectory();
+            var relativePath = "./solution.sln";
+            var fullPath = Path.Combine(dir, "solution.sln");
+            var fileSystem = new MockFileSystem();
+            fileSystem.AddDirectory(dir);
+            fileSystem.AddFile(fullPath, new MockFileData(""));
+            fileSystem.Directory.SetCurrentDirectory(dir);
+
+            var input = new SolutionInput { SuppliedInput = relativePath };
+
+            input.Validate(fileSystem).ShouldBe(fullPath);
         }
 
         [Fact]
