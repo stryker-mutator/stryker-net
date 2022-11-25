@@ -1,3 +1,13 @@
+# [3.2.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.1.0...stryker@3.2.0) (2022-11-21)
+
+
+### Features
+
+* Support csharp 11 ([#2318](https://github.com/stryker-mutator/stryker-net/issues/2318)) ([7b23fa5](https://github.com/stryker-mutator/stryker-net/commit/7b23fa55cd02e88342a18c96db9a071fd041dda0))
+* Use available target framework if chosen target framework is not found ([#2322](https://github.com/stryker-mutator/stryker-net/issues/2322)) ([46435cd](https://github.com/stryker-mutator/stryker-net/commit/46435cd540cf51476aead5ecb0bb02fdc955f964))
+
+
+
 # [3.1.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.0.1...stryker@3.1.0) (2022-11-11)
 
 

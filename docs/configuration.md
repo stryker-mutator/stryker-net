@@ -203,6 +203,7 @@ The levels are:
 | Linq Methods | Standard |
 | Checked Statements | Standard |
 | Regex | Advanced |
+| Math Methods | Advanced |
 | Advanced Linq Methods (not yet implemented) | Complete |
 | Advanced Regex (not yet implemented) | Complete |
 
