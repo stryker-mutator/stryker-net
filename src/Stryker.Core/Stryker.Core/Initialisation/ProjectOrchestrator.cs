@@ -48,7 +48,7 @@ namespace Stryker.Core.Initialisation
 
                 var testProjects = solutionAnalyzerResults.Except(projectsUnderTestAnalyzerResult);
 
-                _logger.LogInformation("Found {0} projects under test", projectsUnderTestAnalyzerResult.Count());
+                _logger.LogInformation("Found {0} source projects", projectsUnderTestAnalyzerResult.Count());
                 _logger.LogInformation("Found {0} test projects", testProjects.Count());
 
                 // Build the complete solution
@@ -110,7 +110,7 @@ namespace Stryker.Core.Initialisation
 
         private List<IAnalyzerResult> AnalyzeSolution(StrykerOptions options)
         {
-            _logger.LogInformation("Identifying projects to mutate. This can take a while.");
+            _logger.LogInformation("Identifying projects to mutate in {0}. This can take a while.", options.SolutionPath);
             var manager = _buildalyzerProvider.Provide(options.SolutionPath);
 
             // build all projects
