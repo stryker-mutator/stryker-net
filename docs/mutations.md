@@ -222,3 +222,10 @@ For the full list of all available regex mutations, see the [regex mutator docs]
 | `Tanh()`                  | `Tan()`                   |
 | `Tanh()`                  | `Cosh()`                  |
 | `Tanh()`                  | `Sinh()`                  |
+
+## Null-coalescing Operators (_nullcoalescing_)
+| Original            | Mutated             |
+|---------------------|---------------------|
+| `a ?? b`            | `b ?? a`                |
+| `a ?? b`            | `a`                 |
+| `a ?? b`            | `b`                 |

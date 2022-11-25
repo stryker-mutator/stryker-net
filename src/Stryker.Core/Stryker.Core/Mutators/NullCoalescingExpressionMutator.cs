@@ -20,7 +20,7 @@ namespace Stryker.Core.Mutators
                     OriginalNode = node,
                     ReplacementNode = replacementNode,
                     DisplayName = $"Flip left and right hand side",
-                    Type = Mutator.NullCoalescing, // TODO type in docs toevoegen met sterretje dat dit alleen voor .net geldt met aparte PR
+                    Type = Mutator.NullCoalescing,
                 };
 
                 yield return new Mutation

@@ -18,7 +18,7 @@ namespace Stryker.Core.UnitTest.Mutators
         }
 
         [Fact]
-        public void ShouldKeepTrivia()
+        public void ShouldMutate()
         {
             // Arrange
             var target = new NullCoalescingExpressionMutator();
