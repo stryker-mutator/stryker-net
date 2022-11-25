@@ -55,6 +55,14 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [InlineData(LinqExpression.Intersect)]
         [InlineData(LinqExpression.Concat)]
         [InlineData(LinqExpression.Except)]
+        [InlineData(LinqExpression.IntersectBy)]
+        [InlineData(LinqExpression.MaxBy)]
+        [InlineData(LinqExpression.MinBy)]
+        [InlineData(LinqExpression.Order)]
+        [InlineData(LinqExpression.OrderDescending)]
+        [InlineData(LinqExpression.SkipLast)]
+        [InlineData(LinqExpression.TakeLast)]
+        [InlineData(LinqExpression.UnionBy)]
         public void ShouldRemoveLinqExpressionWhenFilterIsCorrect(LinqExpression exp)
         {
             // Arrange
@@ -108,6 +116,14 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [InlineData(LinqExpression.Intersect, LinqExpression.Union)]
         [InlineData(LinqExpression.Concat, LinqExpression.Except)]
         [InlineData(LinqExpression.Except, LinqExpression.Concat)]
+        [InlineData(LinqExpression.MinBy, LinqExpression.MaxBy)]
+        [InlineData(LinqExpression.MaxBy, LinqExpression.MinBy)]
+        [InlineData(LinqExpression.SkipLast, LinqExpression.TakeLast)]
+        [InlineData(LinqExpression.TakeLast, LinqExpression.SkipLast)]
+        [InlineData(LinqExpression.Order, LinqExpression.OrderDescending)]
+        [InlineData(LinqExpression.OrderDescending, LinqExpression.Order)]
+        [InlineData(LinqExpression.UnionBy, LinqExpression.IntersectBy)]
+        [InlineData(LinqExpression.IntersectBy, LinqExpression.UnionBy)]
         public void ShouldNotRemoveLinqExpressionWhenFilterIsDifferentName(LinqExpression exp, LinqExpression excludedExp)
         {
             // Arrange
@@ -160,6 +176,14 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [InlineData(LinqExpression.Intersect)]
         [InlineData(LinqExpression.Concat)]
         [InlineData(LinqExpression.Except)]
+        [InlineData(LinqExpression.IntersectBy)]
+        [InlineData(LinqExpression.MaxBy)]
+        [InlineData(LinqExpression.MinBy)]
+        [InlineData(LinqExpression.Order)]
+        [InlineData(LinqExpression.OrderDescending)]
+        [InlineData(LinqExpression.SkipLast)]
+        [InlineData(LinqExpression.TakeLast)]
+        [InlineData(LinqExpression.UnionBy)]
         public void ShouldNotFilterMutationsWhenFilterIsEmpty(LinqExpression exp)
         {
             // Arrange

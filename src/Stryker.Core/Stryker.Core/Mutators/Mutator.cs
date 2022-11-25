@@ -41,6 +41,8 @@ namespace Stryker.Core.Mutators
         Regex,
         [MutatorDescription("Null coalescing")]
         NullCoalescing,
+        [MutatorDescription("Math methods")]
+        Math
     }
 
     public static class EnumExtension

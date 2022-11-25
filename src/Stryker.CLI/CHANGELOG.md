@@ -1,3 +1,27 @@
+# [3.2.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.1.0...dotnet-stryker@3.2.0) (2022-11-21)
+
+
+### Features
+
+* Support csharp 11 ([#2318](https://github.com/stryker-mutator/stryker-net/issues/2318)) ([7b23fa5](https://github.com/stryker-mutator/stryker-net/commit/7b23fa55cd02e88342a18c96db9a071fd041dda0))
+
+
+
+# [3.1.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.0.1...dotnet-stryker@3.1.0) (2022-11-11)
+
+
+### Bug Fixes
+
+* **Project filter:** Project filter should work on Macos ([#2212](https://github.com/stryker-mutator/stryker-net/issues/2212)) ([b283f6a](https://github.com/stryker-mutator/stryker-net/commit/b283f6af64abdacd38e56abdc136964ebe7cabf6))
+
+
+### Features
+
+* **reporting:** Specify output path for reports and logs ([#2267](https://github.com/stryker-mutator/stryker-net/issues/2267)) ([bba21d3](https://github.com/stryker-mutator/stryker-net/commit/bba21d39dd2870ee2c118c2cb15bd6cb9b7849bd))
+* **Run on complete solution:** Run stryker on all projects in a solution ([#2234](https://github.com/stryker-mutator/stryker-net/issues/2234)) ([1a0b274](https://github.com/stryker-mutator/stryker-net/commit/1a0b274616e8d29d9daedc4e606a25e9107f9fa4))
+
+
+
 ## [3.0.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.0.0...dotnet-stryker@3.0.1) (2022-09-16)
 
 

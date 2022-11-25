@@ -1,8 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 using System.Xml;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
@@ -21,7 +23,7 @@ namespace Stryker.DataCollector
         private readonly IDictionary<string, int> _mutantTestedBy = new Dictionary<string, int>();
 
         private string _controlClassName;
-        private Type _controller;
+        private Type _mutantControlType;
         private FieldInfo _activeMutantField;
 
         private MethodInfo _getCoverageData;
@@ -88,15 +90,20 @@ namespace Stryker.DataCollector
         {
             var configuration = testSessionStartArgs.Configuration;
             ReadConfiguration(configuration);
-            // scan loaded assembly, just in case the test assembly is already loaded
-            var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(assembly => !assembly.IsDynamic);
+
+            // if assembly was not loaded yet, wait for assembly to load
+            AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoaded;
+
+            // scan loaded assemblies, just in case the test assembly is already loaded
+            var assemblies = AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.IsDynamic);
 
             foreach (var assembly in assemblies)
             {
                 FindControlType(assembly);
             }
 
-            AppDomain.CurrentDomain.AssemblyLoad += OnAssemblyLoaded;
+            //Debugger.Launch();
+
             Log($"Test Session start with conf {configuration}.");
         }
 
@@ -108,21 +115,19 @@ namespace Stryker.DataCollector
 
         private void FindControlType(Assembly assembly)
         {
-            if (_controller != null)
+            if (_mutantControlType != null)
             {
                 return;
             }
 
-            _controller = assembly.ExportedTypes.FirstOrDefault(t => t.FullName == _controlClassName);
-            if (_controller == null)
+            _mutantControlType = assembly.ExportedTypes?.FirstOrDefault(t => t.FullName == _controlClassName);
+            if (_mutantControlType == null)
             {
                 return;
             }
-
-            _activeMutantField = _controller.GetField("ActiveMutant");
-            var coverageControlField = _controller.GetField("CaptureCoverage");
-            _getCoverageData = _controller.GetMethod("GetCoverageData");
-
+            _activeMutantField = _mutantControlType.GetField("ActiveMutant");
+            var coverageControlField = _mutantControlType.GetField("CaptureCoverage");
+            _getCoverageData = _mutantControlType.GetMethod("GetCoverageData");
             if (_coverageOn)
             {
                 coverageControlField.SetValue(null, true);
@@ -243,7 +248,10 @@ namespace Stryker.DataCollector
             var coverData = testCoverageInfo.GetCoverageAsString();
 
             _dataSink.SendData(dataCollectionContext, PropertyName, coverData);
-            if (!testCoverageInfo.HasLeakedMutations) { return; }
+            if (!testCoverageInfo.HasLeakedMutations)
+            {
+                return;
+            }
 
             // report any mutations covered before this test was executed
             _dataSink.SendData(dataCollectionContext, OutOfTestsPropertyName,

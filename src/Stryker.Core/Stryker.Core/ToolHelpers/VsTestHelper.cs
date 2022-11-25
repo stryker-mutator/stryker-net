@@ -52,7 +52,7 @@ namespace Stryker.Core.ToolHelpers
                     return _platformVsTestToolPath;
                 }
                 var paths = GetVsTestToolPaths();
-                    
+
                 if (!paths.Keys.Any(RuntimeInformation.IsOSPlatform))
                 {
                     throw new PlatformNotSupportedException(
@@ -198,7 +198,7 @@ namespace Stryker.Core.ToolHelpers
             var zipPath = Path.Combine(tempDir, "vstest.zip");
             _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(zipPath));
 
-            using (var file = _fileSystem.FileStream.Create(zipPath, FileMode.Create))
+            using (var file = _fileSystem.FileStream.New(zipPath, FileMode.Create))
             {
                 stream.CopyTo(file);
             }

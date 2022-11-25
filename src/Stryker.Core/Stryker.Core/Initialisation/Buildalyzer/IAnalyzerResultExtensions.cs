@@ -9,27 +9,20 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
 using NuGet.Frameworks;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Options;
 
 namespace Stryker.Core.Initialisation.Buildalyzer
 {
     public static class IAnalyzerResultExtensions
     {
-        public static string GetAssemblyPath(this IAnalyzerResult analyzerResult)
-        {
-            return FilePathUtils.NormalizePathSeparators(Path.Combine(
+        public static string GetAssemblyPath(this IAnalyzerResult analyzerResult) =>
+            FilePathUtils.NormalizePathSeparators(Path.Combine(
                 FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["TargetDir"]),
                 FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["TargetFileName"])));
-        }
 
-        public static string GetAssemblyName(this IAnalyzerResult analyzerResult)
-        {
-            return FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["AssemblyName"]);
-        }
+        public static string GetAssemblyName(this IAnalyzerResult analyzerResult) => FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["AssemblyName"]);
 
-        public static IEnumerable<ResourceDescription> GetResources(this IAnalyzerResult analyzerResult, ILogger logger)
-        {
-            return EmbeddedResourcesGenerator.GetManifestResources(GetAssemblyPath(analyzerResult), logger);
-        }
+        public static IEnumerable<ResourceDescription> GetResources(this IAnalyzerResult analyzerResult, ILogger logger) => EmbeddedResourcesGenerator.GetManifestResources(GetAssemblyPath(analyzerResult), logger);
 
         public static CSharpCompilationOptions GetCompilationOptions(this IAnalyzerResult analyzerResult)
         {
@@ -49,17 +42,14 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             return compilationOptions;
         }
 
-        public static string AssemblyAttributeFileName(this IAnalyzerResult analyzerResult)
-        {
-            return analyzerResult.GetPropertyOrDefault("GeneratedAssemblyInfoFile",
+        public static CSharpParseOptions GetParseOptions(this IAnalyzerResult analyzerResult, StrykerOptions options) => new CSharpParseOptions(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: analyzerResult.PreprocessorSymbols);
+
+        public static string AssemblyAttributeFileName(this IAnalyzerResult analyzerResult) =>
+            analyzerResult.GetPropertyOrDefault("GeneratedAssemblyInfoFile",
                 (Path.GetFileNameWithoutExtension(analyzerResult.ProjectFilePath) + ".AssemblyInfo.cs")
                 .ToLowerInvariant());
-        }
 
-        public static string GetSymbolFileName(this IAnalyzerResult analyzerResult)
-        {
-            return Path.ChangeExtension(analyzerResult.GetAssemblyName(), ".pdb");
-        }
+        public static string GetSymbolFileName(this IAnalyzerResult analyzerResult) => Path.ChangeExtension(analyzerResult.GetAssemblyName(), ".pdb");
 
         public static IEnumerable<ISourceGenerator> GetSourceGenerators(this IAnalyzerResult analyzerResult, ILogger logger = null)
         {
@@ -88,7 +78,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
 
         private sealed class AnalyzerAssemblyLoader : IAnalyzerAssemblyLoader
         {
-            public static IAnalyzerAssemblyLoader Instance = new AnalyzerAssemblyLoader();
+            public static readonly IAnalyzerAssemblyLoader Instance = new AnalyzerAssemblyLoader();
 
             private AnalyzerAssemblyLoader() { }
 
@@ -109,20 +99,15 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             return framework;
         }
 
-        internal static bool TargetsFullFramework(this IAnalyzerResult analyzerResult)
-        {
-            return GetNuGetFramework(analyzerResult).IsDesktop();
-        }
+        internal static bool TargetsFullFramework(this IAnalyzerResult analyzerResult) => GetNuGetFramework(analyzerResult).IsDesktop();
 
-        public static Language GetLanguage(this IAnalyzerResult analyzerResult)
-        {
-            return analyzerResult.GetPropertyOrDefault("Language") switch
+        public static Language GetLanguage(this IAnalyzerResult analyzerResult) =>
+            analyzerResult.GetPropertyOrDefault("Language") switch
             {
                 "F#" => Language.Fsharp,
                 "C#" => Language.Csharp,
                 _ => Language.Undefined,
             };
-        }
 
         public static bool IsTestProject(this IAnalyzerResult analyzerResult)
         {
@@ -134,9 +119,8 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             return isTestProject || hasTestProjectTypeGuid;
         }
 
-        private static OutputKind GetOutputKind(this IAnalyzerResult analyzerResult)
-        {
-            return analyzerResult.GetPropertyOrDefault("OutputType") switch
+        private static OutputKind GetOutputKind(this IAnalyzerResult analyzerResult) =>
+            analyzerResult.GetPropertyOrDefault("OutputType") switch
             {
                 "Exe" => OutputKind.ConsoleApplication,
                 "WinExe" => OutputKind.WindowsApplication,
@@ -145,7 +129,6 @@ namespace Stryker.Core.Initialisation.Buildalyzer
                 "WinMdObj" => OutputKind.WindowsRuntimeMetadata,
                 _ => OutputKind.DynamicallyLinkedLibrary
             };
-        }
 
         private static NullableContextOptions GetNullableContextOptions(this IAnalyzerResult analyzerResult)
         {
@@ -157,24 +140,14 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             return nullableOptions;
         }
 
-        private static bool IsSignedAssembly(this IAnalyzerResult analyzerResult)
-        {
-            return analyzerResult.GetPropertyOrDefault("SignAssembly", false);
-        }
+        private static bool IsSignedAssembly(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("SignAssembly", false);
 
-        private static string GetAssemblyOriginatorKeyFile(this IAnalyzerResult analyzerResult)
-        {
-            return Path.Combine(
+        private static string GetAssemblyOriginatorKeyFile(this IAnalyzerResult analyzerResult) =>
+            Path.Combine(
                 Path.GetDirectoryName(analyzerResult.ProjectFilePath),
                 analyzerResult.GetPropertyOrDefault("AssemblyOriginatorKeyFile"));
-        }
 
-        private static bool GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, bool defaultBoolean)
-        {
-            var property = GetPropertyOrDefault(analyzerResult, name, defaultBoolean.ToString());
-
-            return bool.Parse(property);
-        }
+        private static bool GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, bool defaultBoolean) => bool.Parse(GetPropertyOrDefault(analyzerResult, name, defaultBoolean.ToString()));
 
         private static string GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, string defaultValue = null)
         {

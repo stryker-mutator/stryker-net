@@ -51,7 +51,9 @@ Default: `null`
 Command line: `[-s|--solution] "../solution.sln"`  
 Config file: `"solution": '../solution.sln'`
 
-The solution file is required for dotnet framework projects. You may specify the solution file for dotnet core projects. In some cases this can help with dependency resolution.
+The solution path can be supplied to help with dependency resolution. If stryker is ran from the solution file location the solution file will be analyzed and all projects in the solution will be tested by stryker.
+
+Note: The solution file is required for dotnet framework projects. For dotnet (core) projects the solution file is optional.
 
 ### `project` <`file-name`>
 
@@ -201,6 +203,7 @@ The levels are:
 | Linq Methods | Standard |
 | Checked Statements | Standard |
 | Regex | Advanced |
+| Math Methods | Advanced |
 | Advanced Linq Methods (not yet implemented) | Complete |
 | Advanced Regex (not yet implemented) | Complete |
 

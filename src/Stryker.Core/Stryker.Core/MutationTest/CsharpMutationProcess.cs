@@ -43,7 +43,7 @@ namespace Stryker.Core.MutationTest
             _projectInfo = (ProjectComponent<SyntaxTree>)mutationTestInput.ProjectInfo.ProjectContents;
             _options = options;
             _orchestrator = orchestrator ?? new CsharpMutantOrchestrator(options: _options);
-            _compilingProcess = new CsharpCompilingProcess(mutationTestInput, new RollbackProcess());
+            _compilingProcess = new CsharpCompilingProcess(mutationTestInput, options: options);
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
 
@@ -86,7 +86,7 @@ namespace Stryker.Core.MutationTest
             using var ms = new MemoryStream();
             using var msForSymbols = _options.DevMode ? new MemoryStream() : null;
             // compile the mutated syntax trees
-            var compileResult = _compilingProcess.Compile(_projectInfo.CompilationSyntaxTrees, ms, msForSymbols, _options.DevMode);
+            var compileResult = _compilingProcess.Compile(_projectInfo.CompilationSyntaxTrees, ms, msForSymbols);
 
             foreach (var testProject in _input.ProjectInfo.TestProjectAnalyzerResults)
             {

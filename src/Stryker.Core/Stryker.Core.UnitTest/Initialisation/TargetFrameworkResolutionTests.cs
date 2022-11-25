@@ -33,7 +33,22 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Setup(m => m.GetEnumerator())
                 .Returns(() => _analyzerResults.GetEnumerator());
 
-            _projectFileReader = new ProjectFileReader(manager: analyzerManagerMock.Object);
+            _projectFileReader = new ProjectFileReader(analyzerManager: analyzerManagerMock.Object);
+        }
+
+        [Fact]
+        public void ThrowsIfNoResultsWithFrameworks()
+        {
+            var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
+            analyzerResultFrameworkXMock.Setup(m => m.Succeeded).Returns(true);
+            analyzerResultFrameworkXMock.Setup(m => m.TargetFramework).Returns((string)null);
+            _analyzerResults = new[]
+            {
+                analyzerResultFrameworkXMock.Object,
+            };
+
+            Func<IAnalyzerResult> analyzeProject = () => _projectFileReader.AnalyzeProject(null, null, null, null);
+            analyzeProject.ShouldThrow<InputException>();
         }
 
         [Fact]
@@ -53,7 +68,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            var result = _projectFileReader.AnalyzeProject(null, null, null);
+            var result = _projectFileReader.AnalyzeProject(null, null, null, null);
             result.TargetFramework.ShouldBe("X");
         }
 
@@ -74,12 +89,12 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            var result = _projectFileReader.AnalyzeProject(null, null, "Y");
+            var result = _projectFileReader.AnalyzeProject(null, null, "Y", null);
             result.TargetFramework.ShouldBe("Y");
         }
 
         [Fact]
-        public void ThrowsIfSpecifiedButNotAvailable()
+        public void SelectsFirstFrameworkIfSpecifiedButNotAvailable()
         {
             var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
             var analyzerResultFrameworkYMock = new Mock<IAnalyzerResult>();
@@ -95,8 +110,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            Func<IAnalyzerResult> analyzeProject = () => _projectFileReader.AnalyzeProject(null, null, "Z");
-            analyzeProject.ShouldThrow<InputException>("");
+            var result = _projectFileReader.AnalyzeProject(null, null, "Z", null);
+            result.TargetFramework.ShouldBe("X");
         }
     }
 }

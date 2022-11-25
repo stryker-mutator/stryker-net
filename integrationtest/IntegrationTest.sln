@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29324.140
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32421.90
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Core", "..\src\Stryker.Core\Stryker.Core\Stryker.Core.csproj", "{F63D38D3-849B-400C-93E5-34D1FC2421C7}"
 EndProject
@@ -15,7 +15,11 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TargetProject", "TargetProj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreTestProject.XUnit", "TargetProjects\NetCoreTestProject.XUnit\NetCoreTestProject.XUnit.csproj", "{A81EC439-1B29-4CAF-8200-03A72DEB4297}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NetCoreTestProject.NUnit", "TargetProjects\NetCoreTestProject.NUnit\NetCoreTestProject.NUnit.csproj", "{E080B4EC-73AF-413D-BA53-3493BCB03A08}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreTestProject.NUnit", "TargetProjects\NetCoreTestProject.NUnit\NetCoreTestProject.NUnit.csproj", "{E080B4EC-73AF-413D-BA53-3493BCB03A08}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExtraProject", "TargetProjects\ExtraProject\ExtraProject.csproj", "{C4E920EF-F5FC-4783-8A77-A477F9867DD4}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExtraProject.XUnit", "TargetProjects\ExtraProject.XUnit\ExtraProject.XUnit.csproj", "{7322B3DF-7CD6-469D-A098-5A8A628C164D}"
 EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
@@ -50,6 +54,14 @@ Global
 		{E080B4EC-73AF-413D-BA53-3493BCB03A08}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E080B4EC-73AF-413D-BA53-3493BCB03A08}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E080B4EC-73AF-413D-BA53-3493BCB03A08}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C4E920EF-F5FC-4783-8A77-A477F9867DD4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C4E920EF-F5FC-4783-8A77-A477F9867DD4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C4E920EF-F5FC-4783-8A77-A477F9867DD4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C4E920EF-F5FC-4783-8A77-A477F9867DD4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7322B3DF-7CD6-469D-A098-5A8A628C164D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7322B3DF-7CD6-469D-A098-5A8A628C164D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7322B3DF-7CD6-469D-A098-5A8A628C164D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7322B3DF-7CD6-469D-A098-5A8A628C164D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

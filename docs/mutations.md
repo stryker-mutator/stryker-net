@@ -140,6 +140,14 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `Intersect()`        | `Union()`             |
 | `Concat()`           | `Except()`            |
 | `Except()`           | `Concat()`            |
+| `MinBy()`            | `MaxBy()`             |
+| `MaxBy()`            | `MinBy()`             |
+| `SkipLast()`         | `TakeLast()`          |
+| `TakeLast()`         | `SkipLast()`          |
+| `Order()`            | `OrderDescending()`   |
+| `OrderDescending()`  | `Order()`             |
+| `UnionBy()`          | `IntersectBy()`       |
+| `IntersectBy()`      | `UnionBy()`           |
 
 ## String Literals and Constants (_string_)
 | Original | Mutated |
@@ -161,3 +169,56 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 
 ## Regular Expressions (_regex_)
 For the full list of all available regex mutations, see the [regex mutator docs](./regex-mutations.md).
+
+## Math Methods (_math_)
+|      Original           |         Mutated         |
+| ----------------------- | ----------------------- |
+| `Acos()`                  | `Acosh()`                 |
+| `Acos()`                  | `Asin()`                  |
+| `Acos()`                  | `Atan()`                  |
+| `Acosh()`                 | `Acos()`                  |
+| `Acosh()`                 | `Asinh()`                 |
+| `Acosh()`                 | `Atanh()`                 |
+| `Asin()`                  | `Asinh()`                 |
+| `Asin()`                  | `Acos()`                  |
+| `Asin()`                  | `Atan()`                  |
+| `Asinh()`                 | `Asin()`                  |
+| `Asinh()`                 | `Acosh()`                 |
+| `Asinh()`                 | `Atanh()`                 |
+| `Atan()`                  | `Atanh()`                 |
+| `Atan()`                  | `Acos()`                  |
+| `Atan()`                  | `Asin()`                  |
+| `Atanh()`                 | `Atan()`                  |
+| `Atanh()`                 | `Acosh()`                 |
+| `Atanh()`                 | `Asinh()`                 |
+| `BitDecrement()`          | `BitIncrement()`          |
+| `BitIncrement()`          | `BitDecrement()`          |
+| `Ceiling()`               | `Floor()`                 |
+| `Cos()`                   | `Cosh()`                  |
+| `Cos()`                   | `Sin()`                   |
+| `Cos()`                   | `Tan()`                   |
+| `Cosh()`                  | `Cos()`                   |
+| `Cosh()`                  | `Sinh()`                  |
+| `Cosh()`                  | `Tanh()`                  |
+| `Exp()`                   | `Log()`                   |
+| `Floor()`                 | `Ceiling()`               |
+| `Log()`                   | `Exp()`                   |
+| `Log()`                   | `Pow()`                   |
+| `MaxMagnitude()`          | `MinMagnitude()`          |
+| `MinMagnitude()`          | `MaxMagnitude()`          |
+| `Pow()`                   | `Log()`                   |
+| `ReciprocalEstimate()`    | `ReciprocalSqrtEstimate()` |
+| `ReciprocalSqrtEstimate()` | `ReciprocalEstimate()`   |
+| `ReciprocalSqrtEstimate()` | `Sqrt()`                 |
+| `Sin()`                   | `Sinh()`                  |
+| `Sin()`                   | `Cos()`                   |
+| `Sin()`                   | `Tan()`                   |
+| `Sinh()`                  | `Sin()`                   |
+| `Sinh()`                  | `Cosh()`                  |
+| `Sinh()`                  | `Tanh()`                  |
+| `Tan()`                   | `Tanh()`                  |
+| `Tan()`                   | `Cos()`                   |
+| `Tan()`                   | `Sin()`                   |
+| `Tanh()`                  | `Tan()`                   |
+| `Tanh()`                  | `Cosh()`                  |
+| `Tanh()`                  | `Sinh()`                  |

@@ -27,6 +27,12 @@ namespace Stryker.Core.Options
         public string ProjectPath { get; init; }
 
         /// <summary>
+        /// When true, stryker is mutating all projects in a solution
+        /// </summary>
+        /// <returns></returns>
+        public bool IsSolutionContext => SolutionPath != null && FilePathUtils.NormalizePathSeparators(WorkingDirectory) == FilePathUtils.NormalizePathSeparators(Path.GetDirectoryName(SolutionPath));
+
+        /// <summary>
         /// The path of the root of the scope of stryker.
         /// In the context of a solution run this will be the root of the solution.
         /// In the context of a project run this will be the root of the project under test
