@@ -140,6 +140,14 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `Intersect()`        | `Union()`             |
 | `Concat()`           | `Except()`            |
 | `Except()`           | `Concat()`            |
+| `MinBy()`            | `MaxBy()`             |
+| `MaxBy()`            | `MinBy()`             |
+| `SkipLast()`         | `TakeLast()`          |
+| `TakeLast()`         | `SkipLast()`          |
+| `Order()`            | `OrderDescending()`   |
+| `OrderDescending()`  | `Order()`             |
+| `UnionBy()`          | `IntersectBy()`       |
+| `IntersectBy()`      | `UnionBy()`           |
 
 ## String Literals and Constants (_string_)
 | Original | Mutated |
