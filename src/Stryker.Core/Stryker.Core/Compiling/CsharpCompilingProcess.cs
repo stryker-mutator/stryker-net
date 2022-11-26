@@ -61,7 +61,6 @@ namespace Stryker.Core.Compiling
                 syntaxTrees: trees,
                 options: compilationOptions,
                 references: _input.TargetProjectInfo.AnalyzerResult.References.Select(r => MetadataReference.CreateFromFile(r)));
-            RollbackProcessResult rollbackProcessResult;
 
             // C# source generators must be executed before compilation
             compilation = RunSourceGenerators(analyzerResult, compilation);

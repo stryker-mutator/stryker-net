@@ -4,20 +4,21 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
+using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents.TargetProjects;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.Initialisation
 {
     public interface IInputFileResolver
     {
-        TestProjectsInfo ResolveTestProjectsInfo(StrykerOptions options);
-        TargetProjectInfo ResolveTargetProjectInfo(StrykerOptions options, TestProjectsInfo testProjectsInfo);
+        TestProjectsInfo ResolveTestProjectsInfo(StrykerOptions options, IEnumerable<IAnalyzerResult> solutionProjects);
+        SourceProjectInfo ResolveSourceProjectInfo(StrykerOptions options, TestProjectsInfo testProjectsInfo, IEnumerable<IAnalyzerResult> solutionProjects);
     }
 
     /// <summary>
@@ -41,7 +42,7 @@ namespace Stryker.Core.Initialisation
 
         public InputFileResolver() : this(new FileSystem(), new ProjectFileReader(), null) { }
 
-        public TestProjectsInfo ResolveTestProjectsInfo(StrykerOptions options)
+        public TestProjectsInfo ResolveTestProjectsInfo(StrykerOptions options, IEnumerable<IAnalyzerResult> solutionProjects)
         {
             var testProjectFiles = new List<string>();
             if (options.TestProjects != null && options.TestProjects.Any())
@@ -56,7 +57,7 @@ namespace Stryker.Core.Initialisation
             var testProjects = new List<TestProject>();
             foreach (var testProjectFile in testProjectFiles)
             {
-                var testProjectAnalyzerResult = _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework, IEnumerable <IAnalyzerResult> solutionProjects);
+                var testProjectAnalyzerResult = _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework, solutionProjects);
 
                 testProjects.Add(new TestProject(_fileSystem, testProjectAnalyzerResult));
             }
@@ -67,14 +68,14 @@ namespace Stryker.Core.Initialisation
             };
         }
 
-        public TargetProjectInfo ResolveTargetProjectInfo(StrykerOptions options, TestProjectsInfo testProjectsInfo, IEnumerable<IAnalyzerResult> solutionProjects)
+        public SourceProjectInfo ResolveSourceProjectInfo(StrykerOptions options, TestProjectsInfo testProjectsInfo, IEnumerable<IAnalyzerResult> solutionProjects)
         {
-            var targetProjectInfo = new TargetProjectInfo();
+            var targetProjectInfo = new SourceProjectInfo();
 
             // Determine project under test
             var targetProject = FindProjectUnderTest(testProjectsInfo, options.TargetProjectName, solutionProjects);
 
-            targetProjectInfo.AnalyzerResult = _projectFileReader.AnalyzeProject(targetProject, options.SolutionPath, options.TargetFramework);
+            targetProjectInfo.AnalyzerResult = _projectFileReader.AnalyzeProject(targetProject, options.SolutionPath, options.TargetFramework, solutionProjects);
 
             var language = targetProjectInfo.AnalyzerResult.GetLanguage();
             if (language == Language.Fsharp)
@@ -139,7 +140,7 @@ namespace Stryker.Core.Initialisation
             return projectFiles.Single();
         }
 
-        public string FindProjectUnderTest(TestProjectsInfo testProjectsInfo, string projectUnderTestNameFilter)
+        public string FindProjectUnderTest(TestProjectsInfo testProjectsInfo, string projectUnderTestNameFilter, IEnumerable<IAnalyzerResult> solutionProjects)
         {
             var projectReferences = FindProjectsReferencedByAllTestProjects(testProjectsInfo.TestProjects);
 
@@ -238,7 +239,7 @@ namespace Stryker.Core.Initialisation
         private ProjectComponentsBuilder GetProjectComponentBuilder(
             Language language,
             StrykerOptions options,
-            TargetProjectInfo projectInfo) => language switch
+            SourceProjectInfo projectInfo) => language switch
             {
                 Language.Csharp => new CsharpProjectComponentsBuilder(
                     projectInfo,

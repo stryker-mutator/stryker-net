@@ -12,7 +12,7 @@ using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents.TargetProjects;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
@@ -34,7 +34,7 @@ namespace Stryker.Core.Initialisation
         private readonly IInitialBuildProcess _initialBuildProcess;
         private readonly IInitialTestProcess _initialTestProcess;
         private ITestRunner _testRunner;
-        private TargetProjectInfo _targetProjectInfo;
+        private SourceProjectInfo _targetProjectInfo;
         private TestProjectsInfo _testProjectsInfo;
         private readonly ILogger _logger;
 
@@ -55,14 +55,13 @@ namespace Stryker.Core.Initialisation
         public MutationTestInput Initialize(StrykerOptions options, IEnumerable<IAnalyzerResult> solutionProjects)
         {
             // resolve project info
-            _testProjectsInfo = _inputFileResolver.ResolveTestProjectsInfo(options);
-            _targetProjectInfo = _inputFileResolver.ResolveTargetProjectInfo(options, _testProjectsInfo);
-            _projectInfo = _inputFileResolver.ResolveInput(options, solutionProjects);
+            _testProjectsInfo = _inputFileResolver.ResolveTestProjectsInfo(options, solutionProjects);
+            _targetProjectInfo = _inputFileResolver.ResolveSourceProjectInfo(options, _testProjectsInfo, solutionProjects);
 
             // initial build
             if (!options.IsSolutionContext)
             {
-                var testProjects = _projectInfo.TestProjectAnalyzerResults.ToList();
+                var testProjects = _testProjectsInfo.AnalyzerResults.ToList();
                 for (var i = 0; i < testProjects.Count; i++)
                 {
                     _logger.LogInformation(
@@ -131,7 +130,7 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private void InitializeDashboardProjectInformation(StrykerOptions options, TargetProjectInfo projectInfo)
+        private void InitializeDashboardProjectInformation(StrykerOptions options, SourceProjectInfo projectInfo)
         {
             var dashboardReporterEnabled = options.Reporters.Contains(Reporter.Dashboard) || options.Reporters.Contains(Reporter.All);
             var dashboardBaselineEnabled = options.WithBaseline && options.BaselineProvider == BaselineProvider.Dashboard;

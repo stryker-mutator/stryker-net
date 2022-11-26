@@ -22,7 +22,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.TargetProjects;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
@@ -40,7 +40,7 @@ public class VsTestMockingHelper : TestBase
     protected Mutant Mutant { get; }
     protected Mutant OtherMutant { get; }
     private readonly string _testAssemblyPath;
-    private readonly TargetProjectInfo _targetProjectInfo;
+    private readonly SourceProjectInfo _targetProjectInfo;
     private readonly TestProjectsInfo _testProjectsInfo;
     private readonly MockFileSystem _fileSystem;
     private readonly Uri _NUnitUri;
@@ -98,11 +98,11 @@ public class VsTestMockingHelper : TestBase
         TestCases = new List<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> { firstTest, secondTest };
     }
 
-    protected TargetProjectInfo BuildTargetProjectInfo(IEnumerable<Mutant> mutants = null)
+    protected SourceProjectInfo BuildTargetProjectInfo(IEnumerable<Mutant> mutants = null)
     {
         var content = new CsharpFolderComposite();
         content.Add(new CsharpFileLeaf { Mutants = mutants ?? new[] { Mutant, OtherMutant } });
-        return new TargetProjectInfo
+        return new SourceProjectInfo
         {
             AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                 properties: new Dictionary<string, string>()
@@ -487,7 +487,7 @@ public class VsTestMockingHelper : TestBase
         return mockedVsTestConsole;
     }
 
-    protected MutationTestProcess BuildMutationTestProcess(VsTestRunnerPool runner, StrykerOptions options, IReadOnlyList<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> tests = null, TargetProjectInfo targetProject = null)
+    protected MutationTestProcess BuildMutationTestProcess(VsTestRunnerPool runner, StrykerOptions options, IReadOnlyList<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> tests = null, SourceProjectInfo targetProject = null)
     {
         var testRunResult = new TestRunResult(null, new TestGuidsList((tests ?? TestCases).Select(t => t.Id)),
             TestGuidsList.NoTest(),

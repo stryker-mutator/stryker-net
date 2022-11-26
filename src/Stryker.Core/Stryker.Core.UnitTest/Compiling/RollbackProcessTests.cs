@@ -15,7 +15,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents.TargetProjects;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Compiling
@@ -120,7 +120,7 @@ namespace ExampleProject
 
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo
+                TargetProjectInfo = new SourceProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                     {

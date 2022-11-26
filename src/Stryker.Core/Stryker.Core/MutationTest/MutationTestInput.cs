@@ -1,5 +1,5 @@
 using Stryker.Core.Initialisation;
-using Stryker.Core.ProjectComponents.TargetProjects;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.TestRunners;
 
@@ -13,7 +13,7 @@ namespace Stryker.Core.MutationTest
         /// <summary>
         /// Contains all information about the project to mutate
         /// </summary>
-        public TargetProjectInfo TargetProjectInfo { get; set; }
+        public SourceProjectInfo TargetProjectInfo { get; set; }
 
         /// <summary>
         /// Contains all information about the tests to run

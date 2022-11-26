@@ -10,6 +10,8 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.TestRunners;
 using Xunit;
 
@@ -33,16 +35,23 @@ namespace Stryker.Core.UnitTest.Initialisation
                 {
                     new CsharpFileLeaf()
                 });
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()))
-                .Returns(new ProjectInfo(new MockFileSystem())
+            inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfo(It.IsAny<StrykerOptions>(), It.IsAny<TestProjectsInfo>(), It.IsAny<IEnumerable<IAnalyzerResult>>()))
+                .Returns(new SourceProjectInfo()
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         references: new string[0]).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(
-                        projectFilePath: "C://Example/Dir/ProjectFolder",
-                        targetFramework: "netcoreapp2.1").Object
-                    },
                     ProjectContents = folder
+                });
+            inputFileResolverMock.Setup(x => x.ResolveTestProjectsInfo(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()))
+                .Returns(new TestProjectsInfo(new MockFileSystem())
+                {
+                    TestProjects = new List<TestProject>()
+                    {
+                        // todo add files to mockfilesystem
+                        new TestProject(new MockFileSystem(), TestHelper.SetupProjectAnalyzerResult(
+                                    projectFilePath: "C://Example/Dir/ProjectFolder",
+                                    targetFramework: "netcoreapp2.1").Object),
+                    }
                 });
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<ITestRunner>())).Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(1)));
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
@@ -61,7 +70,8 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var result = target.Initialize(options, null);
 
-            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveSourceProjectInfo(It.IsAny<StrykerOptions>(), It.IsAny<TestProjectsInfo>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveTestProjectsInfo(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
         }
 
         [Fact]

@@ -10,7 +10,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.TargetProjects;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 using Xunit;
@@ -35,7 +35,7 @@ namespace Stryker.Core.UnitTest
                 Mutants = new List<Mutant> { new Mutant { Id = 1 } }
             });
 
-            var projectInfo = Mock.Of<TargetProjectInfo>();
+            var projectInfo = Mock.Of<SourceProjectInfo>();
             projectInfo.ProjectContents = folder;
             Mock.Get(projectInfo).Setup(p => p.RestoreOriginalAssembly());
             var mutationTestInput = new MutationTestInput()
@@ -102,7 +102,7 @@ namespace Stryker.Core.UnitTest
             });
             var mutationTestInput = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo(new MockFileSystem())
+                TargetProjectInfo = new SourceProjectInfo()
                 {
                     ProjectContents = folder
                 }

@@ -18,7 +18,7 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.TargetProjects;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.TestRunners;
 using Xunit;
 
@@ -43,7 +43,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo
+                TargetProjectInfo = new SourceProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -82,7 +82,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo
+                TargetProjectInfo = new SourceProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -127,7 +127,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo
+                TargetProjectInfo = new SourceProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -166,7 +166,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo
+                TargetProjectInfo = new SourceProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                     {
@@ -210,7 +210,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo
+                TargetProjectInfo = new SourceProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -251,7 +251,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo
+                TargetProjectInfo = new SourceProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         properties: new Dictionary<string, string>()
@@ -370,7 +370,7 @@ namespace ExampleProject
 
             var input = new MutationTestInput
             {
-                TargetProjectInfo = new TargetProjectInfo
+                TargetProjectInfo = new SourceProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         properties: new Dictionary<string, string>()

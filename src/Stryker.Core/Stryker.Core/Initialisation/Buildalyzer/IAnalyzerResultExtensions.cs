@@ -142,10 +142,6 @@ namespace Stryker.Core.Initialisation.Buildalyzer
                 Path.GetDirectoryName(analyzerResult.ProjectFilePath),
                 analyzerResult.GetPropertyOrDefault("AssemblyOriginatorKeyFile"));
 
-        private static bool GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, bool defaultBoolean)
-        {
-            var property = GetPropertyOrDefault(analyzerResult, name, defaultBoolean.ToString());
-
         private static bool GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, bool defaultBoolean) => bool.Parse(GetPropertyOrDefault(analyzerResult, name, defaultBoolean.ToString()));
 
         private static string GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, string defaultValue = null)

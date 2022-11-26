@@ -5,7 +5,7 @@ using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Shouldly;
 using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.ProjectComponents.TargetProjects;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation

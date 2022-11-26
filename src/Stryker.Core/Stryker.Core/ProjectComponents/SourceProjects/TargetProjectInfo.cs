@@ -1,8 +1,8 @@
 using Buildalyzer;
 
-namespace Stryker.Core.ProjectComponents.TargetProjects
+namespace Stryker.Core.ProjectComponents.SourceProjects
 {
-    public class TargetProjectInfo
+    public class SourceProjectInfo
     {
         public IAnalyzerResult AnalyzerResult { get; set; }
 
