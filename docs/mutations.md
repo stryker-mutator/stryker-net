@@ -17,7 +17,7 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `/` | `*` |
 | `%` | `*` |
 
-## Equality Operators (_equality_)
+## Equality Operators (_equality_, _patternMatching_)
 | Original | Mutated |
 | ------------- | ------------- |
 | `>` | `<` |
@@ -30,6 +30,8 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `<=` | `<` |
 | `==` | `!=` |
 | `!=` | `==` |
+| `and` | `or` |
+| `or` | `and` |
 
 ## Logical Operators (_logical_)
 | Original                  | Mutated                   |
@@ -158,20 +160,6 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `&`                 | <code>&#124;</code> |
 | <code>&#124;</code> | `&`                 |
 | `a^b`               | `~(a^b)`            |
-
-## Patterns inside is and switch expressions (_patternMatching_)
-| Original | Mutated |
-| ------------- | ------------- |
-| `>` | `<` |
-| `>` | `>=` |
-| `>=` | `<` |
-| `>=` | `>` |
-| `<` | `>` |
-| `<` | `<=` |
-| `<=` | `>` |
-| `<=` | `<` |
-| `and` | `or` |
-| `or` | `and` |
 
 ## Regular Expressions (_regex_)
 For the full list of all available regex mutations, see the [regex mutator docs](./regex-mutations.md).

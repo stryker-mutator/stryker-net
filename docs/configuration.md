@@ -192,7 +192,6 @@ The levels are:
 | ------------- | ------------- | 
 | Arithmetic Operators | Basic|
 | Block (not yet implemented) | Basic|
-| Pattern Matching Expressions | Basic |
 | Equality Operators | Standard |
 | Boolean Literals | Standard|
 | Assignment statements | Standard |
