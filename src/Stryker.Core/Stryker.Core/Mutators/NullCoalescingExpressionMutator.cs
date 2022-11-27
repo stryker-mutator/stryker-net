@@ -19,7 +19,7 @@ namespace Stryker.Core.Mutators
                 {
                     OriginalNode = node,
                     ReplacementNode = replacementNode,
-                    DisplayName = $"Flip left and right hand side",
+                    DisplayName = $"Null coalescing mutation (left to right)",
                     Type = Mutator.NullCoalescing,
                 };
 
@@ -27,7 +27,7 @@ namespace Stryker.Core.Mutators
                 {
                     OriginalNode = node,
                     ReplacementNode = replacementNode.Left,
-                    DisplayName = $"Replace by the left hand side",
+                    DisplayName = $"Null coalescing mutation (remove right)",
                     Type = Mutator.NullCoalescing,
                 };
 
@@ -35,7 +35,7 @@ namespace Stryker.Core.Mutators
                 {
                     OriginalNode = node,
                     ReplacementNode = replacementNode.Right,
-                    DisplayName = $"Replace by the right hand side",
+                    DisplayName = $"Null coalescing mutation (remove left)",
                     Type = Mutator.NullCoalescing,
                 };
             }
