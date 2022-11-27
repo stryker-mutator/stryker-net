@@ -55,11 +55,6 @@ namespace Stryker.Core.DiffProviders
             {
                 string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_gitInfoProvider.RepositoryPath, patchChanges.Path));
 
-                if (diffPath.EndsWith("stryker-config.json"))
-                {
-                    continue;
-                }
-
                 if (testPaths.Any(testPath => diffPath.StartsWith(testPath)))
                 {
                     diffResult.ChangedTestFiles.Add(diffPath);

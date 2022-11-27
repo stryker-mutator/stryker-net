@@ -39,6 +39,8 @@ namespace Stryker.Core.Mutators
         Initializer,
         [MutatorDescription("Regular expressions")]
         Regex,
+        [MutatorDescription("Null coalescing")]
+        NullCoalescing,
         [MutatorDescription("Math methods")]
         Math,
         [MutatorDescription("Pattern matching expressions")]

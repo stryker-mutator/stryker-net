@@ -48,6 +48,7 @@ namespace Stryker.Core.Mutants
                 new ArrayCreationMutator(),
                 new StatementMutator(),
                 new RegexMutator(),
+                new NullCoalescingExpressionMutator(),
                 new MathMutator(),
                 new SwitchExpressionMutator(),
                 new IsPatternExpressionMutator()

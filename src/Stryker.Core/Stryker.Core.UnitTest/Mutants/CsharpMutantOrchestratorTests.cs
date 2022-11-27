@@ -802,6 +802,25 @@ if(StrykerNamespace.MutantControl.IsActive(1)){    a = b ??= new List<int>();
         }
 
         [Fact]
+        public void ShouldMutateRecursiveNullCoalescingStatements()
+        {
+            string source = @"public void SomeMethod() {
+    List<int> a = null;
+    List<int> b = null;
+    List<int> c = null;
+    var d = a ?? b ?? c;
+}";
+            string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+    List<int> a = null;
+    List<int> b = null;
+    List<int> c = null;
+    var d = (StrykerNamespace.MutantControl.IsActive(3)?a :(StrykerNamespace.MutantControl.IsActive(2)?b ?? c:(StrykerNamespace.MutantControl.IsActive(1)?b ?? c ?? a :a ?? (StrykerNamespace.MutantControl.IsActive(6)?b :(StrykerNamespace.MutantControl.IsActive(5)?c:(StrykerNamespace.MutantControl.IsActive(4)?c ?? b :b ?? c))))));
+}}";
+
+            ShouldMutateSourceInClassToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldMutateIncrementStatementWithIfStatement()
         {
             string source = @"public void SomeMethod() {
