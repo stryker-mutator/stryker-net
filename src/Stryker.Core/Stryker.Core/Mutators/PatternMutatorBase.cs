@@ -45,8 +45,8 @@ namespace Stryker.Core.Mutators
                     {
                         OriginalNode = node,
                         ReplacementNode = replacementNode,
-                        DisplayName = $"Pattern matching mutation",
-                        Type = Mutator.PatternMatching
+                        DisplayName = $"Logical mutation",
+                        Type = Mutator.Logical
                     };
                 }
             }
@@ -65,8 +65,8 @@ namespace Stryker.Core.Mutators
                     {
                         OriginalNode = node,
                         ReplacementNode = replacementNode,
-                        DisplayName = $"Pattern matching mutation",
-                        Type = Mutator.PatternMatching
+                        DisplayName = $"Equality mutation",
+                        Type = Mutator.Equality
                     };
                 }
             }
