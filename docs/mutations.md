@@ -30,6 +30,8 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `<=` | `<` |
 | `==` | `!=` |
 | `!=` | `==` |
+| `is` | `is not` |
+| `is not` | `is` |
 
 ## Logical Operators (_logical_)
 | Original                  | Mutated                   |

@@ -11,6 +11,34 @@ namespace Stryker.Core.UnitTest.Mutators
 {
     public class IsPatternExpressionMutatorTests : TestBase
     {
+        [Fact]
+        public void ShouldMutateIsToIsNot()
+        {
+            var target = new IsPatternExpressionMutator();
+
+            var expression = GenerateSimpleConstantPattern(false);
+
+            var mutation = target.ApplyMutations(expression).First();
+
+            mutation.OriginalNode.ShouldBeOfType<ConstantPatternSyntax>();
+            mutation.ReplacementNode.ShouldBeOfType<UnaryPatternSyntax>();
+            mutation.DisplayName.ShouldBe("Equality mutation");
+        }
+
+        [Fact]
+        public void ShouldMutateIsNotToIs()
+        {
+            var target = new IsPatternExpressionMutator();
+
+            var expression = GenerateSimpleConstantPattern(true);
+
+            var mutation = target.ApplyMutations(expression).First();
+
+            mutation.OriginalNode.ShouldBeOfType<UnaryPatternSyntax>();
+            mutation.ReplacementNode.ShouldBeOfType<ConstantPatternSyntax>();
+            mutation.DisplayName.ShouldBe("Equality mutation");
+        }
+
         [Theory]
         [InlineData(">", new[] { SyntaxKind.LessThanToken, SyntaxKind.GreaterThanEqualsToken })]
         [InlineData("<", new[] { SyntaxKind.GreaterThanToken, SyntaxKind.LessThanEqualsToken })]
@@ -22,7 +50,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var expression = GenerateWithRelationalPattern(@operator);
 
-            var result = target.ApplyMutations(expression).ToList();
+            var result = target.ApplyMutations(expression).Skip(1).ToList();
 
             result.ForEach(mutation =>
             {
@@ -46,7 +74,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var expression = GenerateWithBinaryPattern(@operator);
 
-            var result = target.ApplyMutations(expression).ToList();
+            var result = target.ApplyMutations(expression).Skip(1).ToList();
 
             result.ForEach(mutation =>
             {
@@ -67,9 +95,32 @@ namespace Stryker.Core.UnitTest.Mutators
         {
             var target = new IsPatternExpressionMutator();
 
-            var result = target.ApplyMutations(expression).ToList();
+            var result = target.ApplyMutations(expression).Skip(1).ToList();
 
             result.ShouldBeEmpty();
+        }
+
+        private IsPatternExpressionSyntax GenerateSimpleConstantPattern(bool isNotPattern)
+        {
+            SyntaxTree tree = CSharpSyntaxTree.ParseText($@"
+using System;
+
+namespace TestApplication
+{{
+    class Program
+    {{
+        static void Main(string[] args)
+        {{
+            var a = 1 is {(isNotPattern ? "not" : string.Empty)} 1;
+        }}
+    }}
+}}");
+            var isPatternExpression = tree.GetRoot()
+                .DescendantNodes()
+                .OfType<IsPatternExpressionSyntax>()
+                .Single();
+
+            return isPatternExpression;
         }
 
         private IsPatternExpressionSyntax GenerateWithRelationalPattern(string @operator)
