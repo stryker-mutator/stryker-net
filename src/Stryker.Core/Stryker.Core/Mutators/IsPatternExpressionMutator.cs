@@ -41,7 +41,7 @@ namespace Stryker.Core.Mutators
             _ => new Mutation
             {
                 OriginalNode = node.Pattern,
-                ReplacementNode = SyntaxFactory.UnaryPattern(node.Pattern),
+                ReplacementNode = SyntaxFactory.UnaryPattern(node.Pattern.WithLeadingTrivia(SyntaxFactory.Space)),
                 Type = Mutator.Equality,
                 DisplayName = "Equality mutation"
             }
