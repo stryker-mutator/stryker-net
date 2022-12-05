@@ -94,8 +94,8 @@
       },
       "Buildalyzer.Logger": {
         "type": "Transitive",
-        "resolved": "4.1.7",
-        "contentHash": "wDsaGI509wsZ7yZldUPmWNTamyvpwXnoe+osPlblx5wiwCsTZQN6cpIYrNNGNqF6IGnS+VCFyV6htl7nmzidMg=="
+        "resolved": "5.0.0",
+        "contentHash": "T+bvSIWns87XNUnE9doORmjHOuH3arOTChGHA1IQlUBmKHs/WQt/0MWYZuool3egVVn/552+6c2j0eoKxPSqbw=="
       },
       "Castle.Core": {
         "type": "Transitive",
@@ -1618,7 +1618,7 @@
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "Buildalyzer": "[4.1.7, )",
+          "Buildalyzer": "[5.0.0, )",
           "DotNet.Glob": "[3.1.3, )",
           "FSharp.Compiler.Service": "[41.0.7, )",
           "Grynwald.MarkdownGenerator": "[2.5.34, )",
@@ -1639,8 +1639,8 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.45.0, )",
           "Spectre.Console.Analyzer": "[0.45.0, )",
-          "Stryker.DataCollector": "[3.2.0, )",
-          "Stryker.RegexMutators": "[3.2.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
           "System.IO.Abstractions": "[17.2.26, )"
         }
       },
@@ -1658,11 +1658,11 @@
       },
       "Buildalyzer": {
         "type": "CentralTransitive",
-        "requested": "[4.1.7, )",
-        "resolved": "4.1.7",
-        "contentHash": "sf5nPE8J0kVDBwLcxcaATz2ySUmHeJ1XEJISaHDApgwhZTj35qxTEQCtxs72Z0VETTAOa6dI4nYrrv7OYfBLGQ==",
+        "requested": "[5.0.0, )",
+        "resolved": "5.0.0",
+        "contentHash": "iyqVWGyn/hyI/21o6fN0Mp9TYDUKOvzPlIoly4PztyJYDvbX9RgKu1XDTYYlC2CHWrViSgz/FSF9uxee7dxJPg==",
         "dependencies": {
-          "Buildalyzer.Logger": "4.1.7",
+          "Buildalyzer.Logger": "5.0.0",
           "MSBuild.StructuredLogger": "2.1.507",
           "Microsoft.Build": "16.9.0",
           "Microsoft.Build.Framework": "16.9.0",
