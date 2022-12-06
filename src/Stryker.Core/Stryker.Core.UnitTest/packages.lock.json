@@ -1609,15 +1609,15 @@
       },
       "TestableIO.System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "17.2.26",
-        "contentHash": "BO+O9ed2RQC9A+mdclTfvVHXtqGFZ3C72brUtDfbjrhU0RVf6nxpTbvd6wc03B5nGau2aTfUEKLH3PWp8O25Ag=="
+        "resolved": "18.0.1",
+        "contentHash": "nacJfL4mGObg8Ttn3ZCJZ2u9z8ivG43xgUJvQQLKCmDnle4m49NYNOLk8cqB4iPdSqVhnUSy+qcIryWgDHCqeg=="
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "Transitive",
-        "resolved": "17.2.26",
-        "contentHash": "xCSeI+J+6Naa1UG6OcZ233TKkIz14OFuQ99765OlTyQSz7U9ozN4rjUemZsRTikIgd1YBvsyH0gYt1/bNyNsUw==",
+        "resolved": "18.0.1",
+        "contentHash": "3vGUMEHgL7l1Jyvv0WdDzCrwV6xKRhI2xVgWHQDbfVsye/ZBflhWFyVrCanPHzm0r0WSl0ug8DuaKwmelHlLCw==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "17.2.26"
+          "TestableIO.System.IO.Abstractions": "18.0.1"
         }
       },
       "Validation": {
@@ -1694,9 +1694,9 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.45.0, )",
           "Spectre.Console.Analyzer": "[0.45.0, )",
-          "Stryker.DataCollector": "[3.2.0, )",
-          "Stryker.RegexMutators": "[3.2.0, )",
-          "System.IO.Abstractions": "[17.2.26, )"
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
+          "System.IO.Abstractions": "[18.0.1, )"
         }
       },
       "stryker.datacollector": {
@@ -1932,12 +1932,12 @@
       },
       "System.IO.Abstractions": {
         "type": "CentralTransitive",
-        "requested": "[17.2.26, )",
-        "resolved": "17.2.26",
-        "contentHash": "6hhbvnD2IkWUjto4IIN0pZhZP7G4EBmFxx380CvGJO/1yI+GLmVq/rvl3gbDtR1UJBeGXosEopK0O4rO47p4ag==",
+        "requested": "[18.0.1, )",
+        "resolved": "18.0.1",
+        "contentHash": "kyqYIu5Fjnrj9IO8G2jkYPIYvjhEoOBxd0+CRZyKqeuF2NNEUR4UyHMmxv8+F1cRmWQe5RUqYcXotJbQbWKapA==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "17.2.26",
-          "TestableIO.System.IO.Abstractions.Wrappers": "17.2.26"
+          "TestableIO.System.IO.Abstractions": "18.0.1",
+          "TestableIO.System.IO.Abstractions.Wrappers": "18.0.1"
         }
       }
     }
