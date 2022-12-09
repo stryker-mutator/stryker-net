@@ -1,3 +1,12 @@
+# [3.3.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.2.0...dotnet-stryker@3.3.0) (2022-12-09)
+
+
+### Bug Fixes
+
+* **Solution context run:** Allow relative path for solution file  ([#2333](https://github.com/stryker-mutator/stryker-net/issues/2333)) ([01fbf8a](https://github.com/stryker-mutator/stryker-net/commit/01fbf8a0ac56aa9bfc007eaeab6e9e3d954410cd))
+
+
+
 # [3.2.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.1.0...dotnet-stryker@3.2.0) (2022-11-21)
 
 
