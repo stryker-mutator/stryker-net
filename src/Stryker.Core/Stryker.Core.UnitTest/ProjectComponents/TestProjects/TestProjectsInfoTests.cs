@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
+using Buildalyzer;
 using Shouldly;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Xunit;
@@ -12,6 +13,25 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
 {
     public class TestProjectsInfoTests
     {
+        [Fact]
+        public void ShouldGenerateInjectionPath()
+        {
+            var sourceProjectAnalyzerResults = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", "/app/bin/Debug/" },
+                        { "TargetFileName", "AppToTest.dll" }
+                    }).Object;
+
+            var testProjectAnalyzerResults = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", "/test/bin/Debug/" },
+                        { "TargetFileName", "TestName.dll" }
+                    }).Object;
+
+            var expectedPath = FilePathUtils.NormalizePathSeparators("/test/bin/Debug/AppToTest.dll");
+            TestProjectsInfo.GetInjectionFilePath(sourceProjectAnalyzerResults, testProjectAnalyzerResults).ShouldBe(expectedPath);
+        }
+
         [Fact]
         public void MergeTestProjectsInfo()
         {

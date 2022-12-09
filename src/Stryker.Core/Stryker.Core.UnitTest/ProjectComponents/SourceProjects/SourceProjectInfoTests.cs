@@ -8,37 +8,14 @@ using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.Initialisation
+namespace Stryker.Core.UnitTest.ProjectCOmponents.SourceProjects
 {
-    public class ProjectInfoTests : TestBase
+    public class SourceProjectInfoTests : TestBase
     {
-        [Fact]
-        public void ShouldGenerateInjectionPath()
-        {
-            var target = new TargetProjectInfo(new MockFileSystem())
-            {
-                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
-                    TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>() {
-                        { "TargetDir", "/test/bin/Debug/" },
-                        { "TargetFileName", "TestName.dll" }
-                    }).Object
-                },
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>() {
-                        { "TargetDir", "/app/bin/Debug/" },
-                        { "TargetFileName", "AppToTest.dll" }
-                    }).Object
-            };
-
-            var expectedPath = FilePathUtils.NormalizePathSeparators("/test/bin/Debug/AppToTest.dll");
-            target.GetInjectionFilePath(target.TestProjectAnalyzerResults.FirstOrDefault()).ShouldBe(expectedPath);
-        }
-
         [Fact]
         public void ShouldGenerateProperDefaultCompilationOptions()
         {
-            var target = new TargetProjectInfo(new MockFileSystem())
+            var target = new SourceProjectInfo(new MockFileSystem())
             {
                 TestProjectAnalyzerResults = new List<IAnalyzerResult> {
                     TestHelper.SetupProjectAnalyzerResult(
@@ -69,7 +46,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         [InlineData("AppContainerExe", OutputKind.WindowsRuntimeApplication)]
         public void ShouldGenerateProperCompilationOptions(string kindParam, OutputKind output)
         {
-            var target = new TargetProjectInfo(new MockFileSystem())
+            var target = new SourceProjectInfo(new MockFileSystem())
             {
                 TestProjectAnalyzerResults = new List<IAnalyzerResult> {
                     TestHelper.SetupProjectAnalyzerResult(
@@ -100,7 +77,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void ShouldGenerateTestBinariesPath()
         {
-            var target = new TargetProjectInfo(new MockFileSystem())
+            var target = new SourceProjectInfo(new MockFileSystem())
             {
                 TestProjectAnalyzerResults = new List<IAnalyzerResult> {
                     TestHelper.SetupProjectAnalyzerResult(
