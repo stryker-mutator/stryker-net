@@ -34,9 +34,9 @@
       },
       "YamlDotNet": {
         "type": "Direct",
-        "requested": "[12.2.0, )",
-        "resolved": "12.2.0",
-        "contentHash": "2pK57YadH9mdL2mZLxAEfJf3JxWnkNR4GPBl895oJSkKbYl6jut/69lH/Lwkyo6Uc5OV92uOSs++nnAxXdDhWA=="
+        "requested": "[12.2.1, )",
+        "resolved": "12.2.1",
+        "contentHash": "abkCZN4WAI+z0mWGqoiCWgBssBAsTy6ms4g/alrdhs6874fun2JC16XHYGYNEqRzzejfTXO5uS/1RJnehxSDeg=="
       },
       "Buildalyzer.Logger": {
         "type": "Transitive",
@@ -1473,8 +1473,8 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.45.0, )",
           "Spectre.Console.Analyzer": "[0.45.0, )",
-          "Stryker.DataCollector": "[3.3.0, )",
-          "Stryker.RegexMutators": "[3.3.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
           "System.IO.Abstractions": "[17.2.26, )"
         }
       },
