@@ -1,9 +1,9 @@
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Logging;
-using Stryker.Core.Testing;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Logging;
+using Stryker.Core.Testing;
 
 namespace Stryker.Core.ToolHelpers
 {
@@ -30,10 +30,6 @@ namespace Stryker.Core.ToolHelpers
 
         public string GetMsBuildPath(IProcessExecutor _processExecutor)
         {
-            if (File.Exists(@"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe"))
-            {
-                return @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe";
-            }
             // See if any MSBuild.exe can be found in visual studio installation folder
             foreach (string drive in Directory.GetLogicalDrives())
             {
@@ -58,7 +54,10 @@ namespace Stryker.Core.ToolHelpers
                     }
                 }
             }
-
+            if (File.Exists(@"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe"))
+            {
+                return @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe";
+            }
             // Else, find in default locations
             _logger.LogDebug("Unable to find msbuild using vswhere, using fallback locations");
 
