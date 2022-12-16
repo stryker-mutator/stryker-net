@@ -1,3 +1,20 @@
+# [3.3.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.2.0...stryker@3.3.0) (2022-12-09)
+
+
+### Bug Fixes
+
+* **GitDiffProvider:** remove stryker-config exclusion. ([#2338](https://github.com/stryker-mutator/stryker-net/issues/2338)) ([53286d3](https://github.com/stryker-mutator/stryker-net/commit/53286d34467d335175fd8660490525546cad1c14))
+* **Solution context run:** Allow relative path for solution file  ([#2333](https://github.com/stryker-mutator/stryker-net/issues/2333)) ([01fbf8a](https://github.com/stryker-mutator/stryker-net/commit/01fbf8a0ac56aa9bfc007eaeab6e9e3d954410cd))
+
+
+### Features
+
+* **mutators:** Add new methods to LinqMutator ([#2329](https://github.com/stryker-mutator/stryker-net/issues/2329)) ([bdec359](https://github.com/stryker-mutator/stryker-net/commit/bdec359a835e139b6632fb5b2da3a27c5a116ffc))
+* **mutators:** Add null-coalescing operator mutator ([#2284](https://github.com/stryker-mutator/stryker-net/issues/2284)) ([dc7c513](https://github.com/stryker-mutator/stryker-net/commit/dc7c513681559b31e4142e7fbbc1b9a7f271ff97))
+* **solution context run:** discover solution file ([#2340](https://github.com/stryker-mutator/stryker-net/issues/2340)) ([52bc645](https://github.com/stryker-mutator/stryker-net/commit/52bc645d9f16cc4f397045dcb1bf21b87da73283))
+
+
+
 # [3.2.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.1.0...stryker@3.2.0) (2022-11-21)
 
 
