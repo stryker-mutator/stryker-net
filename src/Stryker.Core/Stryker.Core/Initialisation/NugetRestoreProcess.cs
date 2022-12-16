@@ -1,17 +1,17 @@
+using System;
+using System.IO;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
 using Stryker.Core.ToolHelpers;
-using System;
-using System.IO;
-using System.Linq;
 
 namespace Stryker.Core.Initialisation
 {
     public interface INugetRestoreProcess
     {
-        void RestorePackages(string solutionPath);
+        void RestorePackages(string solutionPath, string msbuildPath = null);
     }
 
     /// <summary>
@@ -28,7 +28,7 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<NugetRestoreProcess>();
         }
 
-        public void RestorePackages(string solutionPath)
+        public void RestorePackages(string solutionPath, string msbuildPath = null)
         {
             _logger.LogInformation("Restoring nuget packages using {0}", "nuget.exe");
             if (string.IsNullOrWhiteSpace(solutionPath))
@@ -48,7 +48,7 @@ namespace Stryker.Core.Initialisation
             var nugetPath = nugetWhereExeResult.Output.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault().Trim();
 
             // Locate MSBuild.exe
-            var msbuildPath = new MsBuildHelper().GetMsBuildPath(_processExecutor);
+            msbuildPath ??= new MsBuildHelper().GetMsBuildPath(_processExecutor);
             var msBuildVersionOutput = _processExecutor.Start(solutionDir, msbuildPath, "-version /nologo");
             if (msBuildVersionOutput.ExitCode != ExitCodes.Success)
             {
