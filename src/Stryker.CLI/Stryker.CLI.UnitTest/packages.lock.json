@@ -68,11 +68,11 @@
       },
       "System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[17.2.26, )",
-        "resolved": "17.2.26",
-        "contentHash": "idInRmbmAlVpWrSvEWJLOAo4HZUYQeKCNHTih3f0PXkeGvuZ/kDxMciHvQ8kzgaWVZ68dBz6V1O/gCBV2NOHdQ==",
+        "requested": "[19.1.5, )",
+        "resolved": "19.1.5",
+        "contentHash": "EsxATRfeyoK6Wyda9cofTyeXpSwZ5DoKla11mZ+CdVMxnsL/EXIDh7YH3ULQwZ76N7If4xb2Q5IY7alWzo6J9A==",
         "dependencies": {
-          "System.IO.Abstractions": "17.2.26"
+          "TestableIO.System.IO.Abstractions.TestingHelpers": "19.1.5"
         }
       },
       "xunit": {
@@ -1550,15 +1550,24 @@
       },
       "TestableIO.System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "17.2.26",
-        "contentHash": "BO+O9ed2RQC9A+mdclTfvVHXtqGFZ3C72brUtDfbjrhU0RVf6nxpTbvd6wc03B5nGau2aTfUEKLH3PWp8O25Ag=="
+        "resolved": "19.1.5",
+        "contentHash": "jBsuhMdPQ51kbPrXbSPL8R38ARpTlxvUZNBo2XwelTu5XM0P3xEfjwjkTEfUx3EOHIkM1rEHi/Jg0sjt7hpekA=="
+      },
+      "TestableIO.System.IO.Abstractions.TestingHelpers": {
+        "type": "Transitive",
+        "resolved": "19.1.5",
+        "contentHash": "a7LLIcLnn1dn8GmJedo3sjPU713EMmGeFg4Bor9YZtyppNedOGKyoDN4TiNa5Pj9w7p3U9N8mh4pgNCwEMsE8Q==",
+        "dependencies": {
+          "TestableIO.System.IO.Abstractions": "19.1.5",
+          "TestableIO.System.IO.Abstractions.Wrappers": "19.1.5"
+        }
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "Transitive",
-        "resolved": "17.2.26",
-        "contentHash": "xCSeI+J+6Naa1UG6OcZ233TKkIz14OFuQ99765OlTyQSz7U9ozN4rjUemZsRTikIgd1YBvsyH0gYt1/bNyNsUw==",
+        "resolved": "19.1.5",
+        "contentHash": "hFJ3IYSMw9B6do5uYQSzlbvFVNFS7iS3H5nej8h/9QY468Z1rFWjgNK4aqInYO4Yvft1GpLnzcpsZbqX+TraeA==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "17.2.26"
+          "TestableIO.System.IO.Abstractions": "19.1.5"
         }
       },
       "xunit.abstractions": {
@@ -1639,8 +1648,8 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.45.0, )",
           "Spectre.Console.Analyzer": "[0.45.0, )",
-          "Stryker.DataCollector": "[3.3.0, )",
-          "Stryker.RegexMutators": "[3.3.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
           "System.IO.Abstractions": "[17.2.26, )"
         }
       },
