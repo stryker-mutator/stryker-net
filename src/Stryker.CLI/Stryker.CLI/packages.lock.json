@@ -34,9 +34,9 @@
       },
       "YamlDotNet": {
         "type": "Direct",
-        "requested": "[12.2.1, )",
-        "resolved": "12.2.1",
-        "contentHash": "abkCZN4WAI+z0mWGqoiCWgBssBAsTy6ms4g/alrdhs6874fun2JC16XHYGYNEqRzzejfTXO5uS/1RJnehxSDeg=="
+        "requested": "[12.3.1, )",
+        "resolved": "12.3.1",
+        "contentHash": "5AuPSmnxs77+u8oLEW9iF+DUOzkb+VVsJ1IUPYcRJCho0hkLWGO59ZZOr7Mto31oExP8Nm9Q+4BzVwU6sIDQWA=="
       },
       "Buildalyzer.Logger": {
         "type": "Transitive",
