@@ -66,7 +66,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             target.RestorePackages(solutionPath);
         }
 
-        [Fact]
+        [SkippableFact]
         public void NugetIsUsingSuppliedMsBuild()
         {
             Skip.IfNot(Environment.OSVersion.Platform == PlatformID.Win32NT, "DotnetFramework does not run on Unix");
