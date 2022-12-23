@@ -1,9 +1,9 @@
+using System;
+using System.Collections.Generic;
 using Moq;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Testing;
-using System;
-using System.Collections.Generic;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
@@ -56,7 +56,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Fact]
-        public void InitialBuildProcess_ShoulduseCustomMsbuildIfNotNull()
+        public void InitialBuildProcess_ShouldUseCustomMsbuildIfNotNull()
         {
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
 
