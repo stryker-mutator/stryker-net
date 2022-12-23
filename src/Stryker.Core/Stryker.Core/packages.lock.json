@@ -227,14 +227,19 @@
         "resolved": "0.45.0",
         "contentHash": "0OiLWW4sSUB3p/eAufk8AV998LxKR1ztquxzGfPKq1EBO1dS44M40kIaQXdwux+vWiVqfHnfDYdo9Lt5OjPshg=="
       },
-      "System.IO.Abstractions": {
+      "TestableIO.System.IO.Abstractions": {
         "type": "Direct",
         "requested": "[19.1.5, )",
         "resolved": "19.1.5",
-        "contentHash": "tOS9FtA8fb/IAVjyaUc4+osF8IpK3i4dsOYJ4R2hoLyLS9D3qKR8nEVb/Y+nDQW5KEbTmLVpC6vEm2UnAZi/HQ==",
+        "contentHash": "jBsuhMdPQ51kbPrXbSPL8R38ARpTlxvUZNBo2XwelTu5XM0P3xEfjwjkTEfUx3EOHIkM1rEHi/Jg0sjt7hpekA=="
+      },
+      "TestableIO.System.IO.Abstractions.Wrappers": {
+        "type": "Direct",
+        "requested": "[19.1.5, )",
+        "resolved": "19.1.5",
+        "contentHash": "hFJ3IYSMw9B6do5uYQSzlbvFVNFS7iS3H5nej8h/9QY468Z1rFWjgNK4aqInYO4Yvft1GpLnzcpsZbqX+TraeA==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "19.1.5",
-          "TestableIO.System.IO.Abstractions.Wrappers": "19.1.5"
+          "TestableIO.System.IO.Abstractions": "19.1.5"
         }
       },
       "Buildalyzer.Logger": {
@@ -1705,19 +1710,6 @@
           "System.Text.Encoding": "4.0.11",
           "System.Threading": "4.0.11",
           "System.Xml.ReaderWriter": "4.0.11"
-        }
-      },
-      "TestableIO.System.IO.Abstractions": {
-        "type": "Transitive",
-        "resolved": "19.1.5",
-        "contentHash": "jBsuhMdPQ51kbPrXbSPL8R38ARpTlxvUZNBo2XwelTu5XM0P3xEfjwjkTEfUx3EOHIkM1rEHi/Jg0sjt7hpekA=="
-      },
-      "TestableIO.System.IO.Abstractions.Wrappers": {
-        "type": "Transitive",
-        "resolved": "19.1.5",
-        "contentHash": "hFJ3IYSMw9B6do5uYQSzlbvFVNFS7iS3H5nej8h/9QY468Z1rFWjgNK4aqInYO4Yvft1GpLnzcpsZbqX+TraeA==",
-        "dependencies": {
-          "TestableIO.System.IO.Abstractions": "19.1.5"
         }
       },
       "stryker.datacollector": {
