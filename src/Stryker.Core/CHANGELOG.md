@@ -1,3 +1,17 @@
+# [3.4.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.3.0...stryker@3.4.0) (2022-12-23)
+
+
+### Bug Fixes
+
+* **nugetrestore:** use MsBuild option during nuget restore ([#2359](https://github.com/stryker-mutator/stryker-net/issues/2359)) ([892b69c](https://github.com/stryker-mutator/stryker-net/commit/892b69c1b0c9add9d4e35d8e65b21ac255510617))
+
+
+### Features
+
+* **pattern mutations:** Mutator for relational and logical patterns in is\switch expressions ([#2313](https://github.com/stryker-mutator/stryker-net/issues/2313)) ([70ded11](https://github.com/stryker-mutator/stryker-net/commit/70ded110c3dbf344386e012259c0d8a513ae9bbe))
+
+
+
 # [3.3.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.2.0...stryker@3.3.0) (2022-12-09)
 
 
