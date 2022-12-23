@@ -58,7 +58,6 @@
     <PackageReference Include="ShellProgressBar" />
     <PackageReference Include="Spectre.Console" />
     <PackageReference Include="Spectre.Console.Analyzer" />
-    <PackageReference Include="TestableIO.System.IO.Abstractions" />
     <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" />
   </ItemGroup>
 
