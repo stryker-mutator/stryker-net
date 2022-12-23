@@ -19,6 +19,7 @@ namespace Stryker.Core.ToolHelpers
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<MsBuildHelper>();
             fallbackLocations = new List<string>
             {
+                @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe",
                 @"C:\Windows\Microsoft.Net\Framework64\v4.0.30319\MSBuild.exe",
                 @"C:\Windows\Microsoft.Net\Framework64\v3.5\MSBuild.exe",
                 @"C:\Windows\Microsoft.Net\Framework64\v2.0.50727\MSBuild.exe",
@@ -53,10 +54,6 @@ namespace Stryker.Core.ToolHelpers
                         }
                     }
                 }
-            }
-            if (File.Exists(@"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe"))
-            {
-                return @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe";
             }
             // Else, find in default locations
             _logger.LogDebug("Unable to find msbuild using vswhere, using fallback locations");
