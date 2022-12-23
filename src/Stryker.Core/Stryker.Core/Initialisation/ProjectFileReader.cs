@@ -16,7 +16,8 @@ namespace Stryker.Core.Initialisation
             string projectFilePath,
             string solutionFilePath,
             string targetFramework,
-            IEnumerable<IAnalyzerResult> solutionProjects);
+            IEnumerable<IAnalyzerResult> solutionProjects,
+            string msBuildPath = null);
     }
 
     /// <summary>
@@ -42,7 +43,8 @@ namespace Stryker.Core.Initialisation
             string projectFilePath,
             string solutionFilePath,
             string targetFramework,
-            IEnumerable<IAnalyzerResult> solutionProjects)
+            IEnumerable<IAnalyzerResult> solutionProjects,
+            string msBuildPath = null)
         {
 
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
@@ -55,7 +57,7 @@ namespace Stryker.Core.Initialisation
                 {
                     // buildalyzer failed to find restored packages, retry after nuget restore
                     _logger.LogDebug("Project analyzer result not successful, restoring packages");
-                    _nugetRestoreProcess.RestorePackages(solutionFilePath);
+                    _nugetRestoreProcess.RestorePackages(solutionFilePath, msBuildPath);
                     analyzerResult = GetProjectInfo(projectFilePath, targetFramework, solutionProjects);
                 }
                 else

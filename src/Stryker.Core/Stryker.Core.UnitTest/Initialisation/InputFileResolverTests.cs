@@ -124,13 +124,13 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: new List<string> { projectUnderTestPath },
                 targetFramework: "netcoreapp2.1",
                 projectFilePath: testProjectPath,
                 references: new string[] { "" }).Object);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
@@ -161,13 +161,13 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: new List<string> { projectUnderTestPath },
                 targetFramework: "netcoreapp2.1",
                 projectFilePath: testProjectPath,
                 references: new string[] { "" }).Object);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: new List<string> { projectUnderTestPath },
                 targetFramework: "netcoreapp2.1",
@@ -201,13 +201,13 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: new List<string> { projectUnderTestPath },
                 targetFramework: "netcoreapp2.1",
                 projectFilePath: testProjectPath,
                 references: new string[] { "" }).Object);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
@@ -256,13 +256,13 @@ using System.Reflection;
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: new List<string> { projectUnderTestPath },
                 targetFramework: "netcoreapp2.1",
                 projectFilePath: testProjectPath,
                 references: new string[] { "" }).Object);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
@@ -300,13 +300,13 @@ using System.Reflection;
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: new List<string> { projectUnderTestPath },
                 targetFramework: "netcoreapp2.1",
                 projectFilePath: testProjectPath,
                 references: new string[] { "" }).Object);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
@@ -361,14 +361,14 @@ using System.Reflection;
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string> { projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: testProjectPath,
                     properties: new Dictionary<string, string>(),
                     references: new string[] { "" }).Object);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
@@ -413,14 +413,14 @@ using System.Reflection;
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string> { projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: testProjectPath,
                     properties: new Dictionary<string, string>(),
                     references: new string[] { "" }).Object);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
@@ -490,14 +490,14 @@ using System.Reflection;
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string> { projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: testProjectPath,
                     properties: new Dictionary<string, string>(),
                     references: new string[] { "" }).Object);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
@@ -544,14 +544,14 @@ using System.Reflection;
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string> { projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: testProjectPath,
                     properties: new Dictionary<string, string>(),
                     references: new string[] { "" }).Object);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
@@ -601,14 +601,14 @@ using System.Reflection;
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string> { projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: testProjectPath,
                     properties: new Dictionary<string, string>(),
                     references: new string[] { "" }).Object);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
@@ -663,12 +663,12 @@ using System.Reflection;
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string> { projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: testProjectPath).Object);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
@@ -697,7 +697,7 @@ using System.Reflection;
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<IEnumerable<IAnalyzerResult>>()))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string> { projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
@@ -721,7 +721,7 @@ using System.Reflection;
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<IEnumerable<IAnalyzerResult>>()))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>() { projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
@@ -743,7 +743,7 @@ using System.Reflection;
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<IEnumerable<IAnalyzerResult>>()))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string> { projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
@@ -868,13 +868,13 @@ Please specify a test project name filter that results in one project.
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>()))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string> { projectUnderTestPath },
                     projectFilePath: testProjectPath,
                     properties: new Dictionary<string, string>() { { "Language", "C#" } },
                     references: new string[] { "" }).Object);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>()))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     projectFilePath: projectUnderTestPath,
@@ -902,7 +902,7 @@ Please specify a test project name filter that results in one project.
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<IEnumerable<IAnalyzerResult>>()))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string> { projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
@@ -935,14 +935,14 @@ Please specify a test project name filter that results in one project.
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>()))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string> { projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: testProjectPath,
                     properties: new Dictionary<string, string>(),
                     references: new string[] { "" }).Object);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>()))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
@@ -970,13 +970,13 @@ Please specify a test project name filter that results in one project.
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), null, null, It.IsAny<IEnumerable<IAnalyzerResult>>()))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string> { projectUnderTestPath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: Path.Combine(_filesystemRoot, "TestProject1", "ExampleProject.csproj"),
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }).Object);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>()))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(projectUnderTestPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>() { "" },
                     targetFramework: "netcoreapp2.1",
