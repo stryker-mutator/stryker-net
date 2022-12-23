@@ -66,13 +66,14 @@
           "Spectre.Console.Cli": "0.45.0"
         }
       },
-      "System.IO.Abstractions.TestingHelpers": {
+      "TestableIO.System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[17.2.26, )",
-        "resolved": "17.2.26",
-        "contentHash": "idInRmbmAlVpWrSvEWJLOAo4HZUYQeKCNHTih3f0PXkeGvuZ/kDxMciHvQ8kzgaWVZ68dBz6V1O/gCBV2NOHdQ==",
+        "requested": "[19.1.5, )",
+        "resolved": "19.1.5",
+        "contentHash": "a7LLIcLnn1dn8GmJedo3sjPU713EMmGeFg4Bor9YZtyppNedOGKyoDN4TiNa5Pj9w7p3U9N8mh4pgNCwEMsE8Q==",
         "dependencies": {
-          "System.IO.Abstractions": "17.2.26"
+          "TestableIO.System.IO.Abstractions": "19.1.5",
+          "TestableIO.System.IO.Abstractions.Wrappers": "19.1.5"
         }
       },
       "xunit": {
@@ -1548,19 +1549,6 @@
           "System.Drawing.Common": "4.7.0"
         }
       },
-      "TestableIO.System.IO.Abstractions": {
-        "type": "Transitive",
-        "resolved": "17.2.26",
-        "contentHash": "BO+O9ed2RQC9A+mdclTfvVHXtqGFZ3C72brUtDfbjrhU0RVf6nxpTbvd6wc03B5nGau2aTfUEKLH3PWp8O25Ag=="
-      },
-      "TestableIO.System.IO.Abstractions.Wrappers": {
-        "type": "Transitive",
-        "resolved": "17.2.26",
-        "contentHash": "xCSeI+J+6Naa1UG6OcZ233TKkIz14OFuQ99765OlTyQSz7U9ozN4rjUemZsRTikIgd1YBvsyH0gYt1/bNyNsUw==",
-        "dependencies": {
-          "TestableIO.System.IO.Abstractions": "17.2.26"
-        }
-      },
       "xunit.abstractions": {
         "type": "Transitive",
         "resolved": "2.0.3",
@@ -1639,9 +1627,10 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.45.0, )",
           "Spectre.Console.Analyzer": "[0.45.0, )",
-          "Stryker.DataCollector": "[3.3.0, )",
-          "Stryker.RegexMutators": "[3.3.0, )",
-          "System.IO.Abstractions": "[17.2.26, )"
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
+          "TestableIO.System.IO.Abstractions": "[19.1.5, )",
+          "TestableIO.System.IO.Abstractions.Wrappers": "[19.1.5, )"
         }
       },
       "stryker.datacollector": {
@@ -1893,14 +1882,19 @@
         "resolved": "0.45.0",
         "contentHash": "0OiLWW4sSUB3p/eAufk8AV998LxKR1ztquxzGfPKq1EBO1dS44M40kIaQXdwux+vWiVqfHnfDYdo9Lt5OjPshg=="
       },
-      "System.IO.Abstractions": {
+      "TestableIO.System.IO.Abstractions": {
         "type": "CentralTransitive",
-        "requested": "[17.2.26, )",
-        "resolved": "17.2.26",
-        "contentHash": "6hhbvnD2IkWUjto4IIN0pZhZP7G4EBmFxx380CvGJO/1yI+GLmVq/rvl3gbDtR1UJBeGXosEopK0O4rO47p4ag==",
+        "requested": "[19.1.5, )",
+        "resolved": "19.1.5",
+        "contentHash": "jBsuhMdPQ51kbPrXbSPL8R38ARpTlxvUZNBo2XwelTu5XM0P3xEfjwjkTEfUx3EOHIkM1rEHi/Jg0sjt7hpekA=="
+      },
+      "TestableIO.System.IO.Abstractions.Wrappers": {
+        "type": "CentralTransitive",
+        "requested": "[19.1.5, )",
+        "resolved": "19.1.5",
+        "contentHash": "hFJ3IYSMw9B6do5uYQSzlbvFVNFS7iS3H5nej8h/9QY468Z1rFWjgNK4aqInYO4Yvft1GpLnzcpsZbqX+TraeA==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "17.2.26",
-          "TestableIO.System.IO.Abstractions.Wrappers": "17.2.26"
+          "TestableIO.System.IO.Abstractions": "19.1.5"
         }
       },
       "YamlDotNet": {

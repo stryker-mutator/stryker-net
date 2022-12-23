@@ -17,7 +17,7 @@
     <PackageReference Include="Moq" />
     <PackageReference Include="Shouldly" />
     <PackageReference Include="Spectre.Console.Testing" />
-    <PackageReference Include="System.IO.Abstractions.TestingHelpers"/>
+    <PackageReference Include="TestableIO.System.IO.Abstractions.TestingHelpers"/>
     <PackageReference Include="xunit" />
     <PackageReference Include="xunit.runner.visualstudio" />
   </ItemGroup>
