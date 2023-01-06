@@ -97,7 +97,7 @@ namespace Stryker.Core.Initialisation
                         projectPath: projectFilePath,
                         workingDirectory: options.ProjectPath,
                         projectUnderTest: projectFilePath,
-                        testProjects: relatedTestProjects.Select(x => x.ProjectFilePath));
+                        testProjects: relatedTestProjects.Select(x => x.ProjectFilePath) ?? Enumerable.Empty<string>());
 
                     yield return _projectMutator.MutateProject(projectOptions, reporters, solutionProjects);
                 }
