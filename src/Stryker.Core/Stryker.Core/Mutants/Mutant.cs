@@ -29,9 +29,9 @@ namespace Stryker.Core.Mutants
         public MutantStatus ResultStatus { get; set; }
 
         public ITestGuids CoveringTests { get; set; } = TestGuidsList.NoTest();
-        
+
         public ITestGuids AssessingTests { get; set; } = TestGuidsList.EveryTest();
-        
+
         public string ResultStatusReason { get; set; }
 
         public bool CountForStats => ResultStatus != MutantStatus.CompileError && ResultStatus != MutantStatus.Ignored;
@@ -57,6 +57,9 @@ namespace Stryker.Core.Mutants
             else if (resultRanTests.IsEveryTest || (resultRanTests.IsEveryTest is not true && AssessingTests.IsIncludedIn(resultRanTests)))
             {
                 ResultStatus = MutantStatus.Survived;
+            }
+            else
+            {
             }
         }
     }

@@ -9,7 +9,8 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInitialBuildProcess
     {
-        void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string msbuildPath = null);
+        void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string msbuildPath = null,
+            bool isUnity = false);
     }
 
     public class InitialBuildProcess : IInitialBuildProcess
@@ -23,17 +24,36 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialBuildProcess>();
         }
 
-        public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string msbuildPath = null)
+        public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string msbuildPath = null,
+            bool isUnity = false)
         {
             _logger.LogDebug("Started initial build using {0}", fullFramework ? "msbuild.exe" : "dotnet build");
 
             ProcessResult result;
-            if (fullFramework)
+            if (isUnity)
             {
                 if (string.IsNullOrEmpty(solutionPath))
                 {
-                    throw new InputException("Stryker could not build your project as no solution file was presented. Please pass the solution path to stryker.");
+                    throw new InputException(
+                        "Stryker could not build your project as no solution file was presented. Please pass the solution path to stryker.");
                 }
+
+                solutionPath = Path.GetFullPath(solutionPath);
+                var solutionDir = Path.GetDirectoryName(solutionPath);
+
+                //todo generated from unity build https://docs.unity3d.com/Packages/com.unity.test-framework@1.1/manual/extension-retrieve-test-list.html
+
+                // result = _processExecutor.Start(solutionDir, msbuildPath, $"\"{solutionPath}\"");
+                // CheckBuildResult(result, msbuildPath, $"\"{solutionPath}\"");
+            }
+            else if (fullFramework)
+            {
+                if (string.IsNullOrEmpty(solutionPath))
+                {
+                    throw new InputException(
+                        "Stryker could not build your project as no solution file was presented. Please pass the solution path to stryker.");
+                }
+
                 solutionPath = Path.GetFullPath(solutionPath);
                 var solutionDir = Path.GetDirectoryName(solutionPath);
                 msbuildPath ??= new MsBuildHelper().GetMsBuildPath(_processExecutor);
@@ -60,8 +80,10 @@ namespace Stryker.Core.Initialisation
             if (result.ExitCode != ExitCodes.Success)
             {
                 // Initial build failed
-                throw new InputException(result.Output, $"Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"{buildCommand} {buildPath}\"");
+                throw new InputException(result.Output,
+                    $"Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"{buildCommand} {buildPath}\"");
             }
+
             _logger.LogDebug("Initial build successful");
         }
     }

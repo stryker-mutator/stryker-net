@@ -11,7 +11,6 @@ using Stryker.Core.TestRunners;
 using System.Collections.Generic;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Core.Mutants;
 using Xunit;
 using Shouldly;
@@ -49,7 +48,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectContents = folder
                 });
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<ITestRunner>())).Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(1)));
-            initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
+            initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null, false));
             assemblyReferenceResolverMock.Setup(x => x.LoadProjectReferences(It.IsAny<string[]>()))
                 .Returns(Enumerable.Empty<PortableExecutableReference>());
 
@@ -95,7 +94,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectContents = folder
                 });
 
-            initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
+            initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null, false));
             testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(),It.IsAny<ITestRunner>())).Throws(new InputException("")); // failing test
             assemblyReferenceResolverMock.Setup(x => x.LoadProjectReferences(It.IsAny<string[]>()))
@@ -147,7 +146,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectContents = folder
                 });
 
-            initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
+            initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null, false));
             var testSet = new TestSet();
             testSet.RegisterTest(new TestDescription(Guid.Empty, "test", "test.cs"));
             testRunnerMock.Setup(x => x.DiscoverTests()).Returns(testSet);
@@ -207,7 +206,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ProjectContents = folder
                 });
 
-            initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
+            initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null, false));
             testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<ITestRunner>()))
                 .Returns(new InitialTestRun(new TestRunResult(true), null)); // failing test

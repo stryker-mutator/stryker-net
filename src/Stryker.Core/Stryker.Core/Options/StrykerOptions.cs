@@ -16,6 +16,7 @@ namespace Stryker.Core.Options
         /// A custom settable path to the msBuild exe for .NET Framework projects. When null stryker will search for the path itself.
         /// </summary>
         public string MsBuildPath { get; init; }
+
         /// <summary>
         /// If true, stryker will fail when mutants are not being rollbacked.
         /// </summary>
@@ -30,7 +31,9 @@ namespace Stryker.Core.Options
         /// When true, stryker is mutating all projects in a solution
         /// </summary>
         /// <returns></returns>
-        public bool IsSolutionContext => SolutionPath != null && FilePathUtils.NormalizePathSeparators(WorkingDirectory) == FilePathUtils.NormalizePathSeparators(Path.GetDirectoryName(SolutionPath));
+        public bool IsSolutionContext => SolutionPath != null &&
+                                         FilePathUtils.NormalizePathSeparators(WorkingDirectory) ==
+                                         FilePathUtils.NormalizePathSeparators(Path.GetDirectoryName(SolutionPath));
 
         /// <summary>
         /// The path of the root of the scope of stryker.
@@ -38,25 +41,40 @@ namespace Stryker.Core.Options
         /// In the context of a project run this will be the root of the project under test
         /// In the context of a multi test project run this will be the root of the project under test
         /// </summary>
-        public string WorkingDirectory { get => _workingDirectoryField ?? ProjectPath; init => _workingDirectoryField = value; }
+        public string WorkingDirectory
+        {
+            get => _workingDirectoryField ?? ProjectPath;
+            init => _workingDirectoryField = value;
+        }
+
         private readonly string _workingDirectoryField;
+
         /// <summary>
         /// The path all output is written to. For example reports and logging files.
         /// </summary>
         public string OutputPath { get; init; }
-        public string ReportPath =>  Path.Combine(OutputPath ?? ".", "reports");
+
+        public string ReportPath => Path.Combine(OutputPath ?? ".", "reports");
+
         /// <summary>
         /// A custom settable name for report files.
         /// </summary>
         public string ReportFileName { get; init; }
+
         /// <summary>
         /// The full path of the solution file. Can be null.
         /// </summary>
         public string SolutionPath { get; init; }
+
         /// <summary>
         /// The detected target framework for the current project under test.
         /// </summary>
         public string TargetFramework { get; init; }
+
+        /// <summary>
+        /// Is unity project
+        /// </summary>
+        public bool IsUnity { get; init; }
 
         /// <summary>
         /// The options passed to all logging systems
@@ -191,7 +209,7 @@ namespace Stryker.Core.Options
         public IEnumerable<LinqExpression> ExcludedLinqExpressions { get; init; } = Enumerable.Empty<LinqExpression>();
 
         /// <summary>
-        /// The optimization mode for coverage analysis for the current run. 
+        /// The optimization mode for coverage analysis for the current run.
         /// </summary>
         public OptimizationModes OptimizationMode { get; init; }
 
@@ -212,7 +230,8 @@ namespace Stryker.Core.Options
         /// </summary>
         public bool BreakOnInitialTestFailure { get; set; }
 
-        public StrykerOptions Copy(string projectPath, string workingDirectory, string projectUnderTest, IEnumerable<string> testProjects) => new()
+        public StrykerOptions Copy(string projectPath, string workingDirectory, string projectUnderTest,
+            IEnumerable<string> testProjects) => new()
         {
             AdditionalTimeout = AdditionalTimeout,
             AzureFileStorageSas = AzureFileStorageSas,
@@ -251,6 +270,7 @@ namespace Stryker.Core.Options
             Thresholds = Thresholds,
             WithBaseline = WithBaseline,
             BreakOnInitialTestFailure = BreakOnInitialTestFailure,
+            IsUnity = IsUnity,
         };
     }
 }

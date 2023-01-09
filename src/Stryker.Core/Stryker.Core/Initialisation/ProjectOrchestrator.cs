@@ -56,10 +56,11 @@ namespace Stryker.Core.Initialisation
                     projectsUnderTestAnalyzerResult.First().TargetsFullFramework(),
                     Path.GetDirectoryName(options.SolutionPath),
                     options.SolutionPath,
-                    options.MsBuildPath);
+                    options.MsBuildPath, options.IsUnity);
 
                 // Mutate all projects in the solution
-                foreach (var project in MutateSolution(options, reporters, projectsUnderTestAnalyzerResult, testProjects, solutionAnalyzerResults))
+                foreach (var project in MutateSolution(options, reporters, projectsUnderTestAnalyzerResult,
+                             testProjects, solutionAnalyzerResults))
                 {
                     yield return project;
                 }
@@ -110,7 +111,8 @@ namespace Stryker.Core.Initialisation
 
         private List<IAnalyzerResult> AnalyzeSolution(StrykerOptions options)
         {
-            _logger.LogInformation("Identifying projects to mutate in {0}. This can take a while.", options.SolutionPath);
+            _logger.LogInformation("Identifying projects to mutate in {0}. This can take a while.",
+                options.SolutionPath);
             var manager = _buildalyzerProvider.Provide(options.SolutionPath);
 
             // build all projects

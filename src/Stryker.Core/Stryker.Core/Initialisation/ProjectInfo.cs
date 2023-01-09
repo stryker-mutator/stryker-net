@@ -30,6 +30,7 @@ namespace Stryker.Core.Initialisation
 
         public virtual void RestoreOriginalAssembly()
         {
+            return;//todo investigate why there is no unchanged file copy
             foreach (var testProject in TestProjectAnalyzerResults)
             {
                 var injectionPath = GetInjectionFilePath(testProject);

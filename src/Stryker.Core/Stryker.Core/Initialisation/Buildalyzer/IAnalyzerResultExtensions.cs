@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
@@ -115,8 +116,10 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             var hasTestProjectTypeGuid = analyzerResult
                 .GetPropertyOrDefault("ProjectTypeGuids", "")
                 .Contains("{3AC096D0-A1C2-E12C-1390-A8335801FDAB}");
+            var isUnityTestProject =
+                analyzerResult.References.Any(reference => reference.Contains("TestRunner.dll"));
 
-            return isTestProject || hasTestProjectTypeGuid;
+            return isTestProject || hasTestProjectTypeGuid || isUnityTestProject;
         }
 
         private static OutputKind GetOutputKind(this IAnalyzerResult analyzerResult) =>

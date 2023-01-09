@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using Microsoft.CodeAnalysis;
 
 namespace Stryker.Core.Initialisation
