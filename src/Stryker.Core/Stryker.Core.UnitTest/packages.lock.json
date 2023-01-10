@@ -1687,8 +1687,8 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.45.0, )",
           "Spectre.Console.Analyzer": "[0.46.0, )",
-          "Stryker.DataCollector": "[1.0.0, )",
-          "Stryker.RegexMutators": "[1.0.0, )",
+          "Stryker.DataCollector": "[3.4.0, )",
+          "Stryker.RegexMutators": "[3.4.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[19.1.5, )"
         }
       },
