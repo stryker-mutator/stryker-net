@@ -1685,7 +1685,7 @@
           "Serilog.Extensions.Logging.File": "[3.0.0, )",
           "Serilog.Sinks.Console": "[4.1.0, )",
           "ShellProgressBar": "[5.2.0, )",
-          "Spectre.Console": "[0.45.0, )",
+          "Spectre.Console": "[0.46.0, )",
           "Spectre.Console.Analyzer": "[0.46.0, )",
           "Stryker.DataCollector": "[3.4.0, )",
           "Stryker.RegexMutators": "[3.4.0, )",
@@ -1910,7 +1910,7 @@
       },
       "Spectre.Console": {
         "type": "CentralTransitive",
-        "requested": "[0.45.0, )",
+        "requested": "[0.46.0, )",
         "resolved": "0.46.0",
         "contentHash": "qd2OMEGxfQW1KLuQj56KKHkIK6eB/IUF/AET5CRl/efROHGsvBehx9shfkL0HgJEHLCwRiR7foWi4/LkdPk18g==",
         "dependencies": {
