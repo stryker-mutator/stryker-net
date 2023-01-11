@@ -11,6 +11,7 @@ using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Spectre.Console;
 
 namespace Stryker.Core.MutationTest
 {
@@ -55,8 +56,10 @@ namespace Stryker.Core.MutationTest
         /// </summary>
         /// <param name="mutationTestInput"></param>
         /// <param name="options"></param>
-        public CsharpMutationProcess(MutationTestInput mutationTestInput, StrykerOptions options) : this(mutationTestInput, null, options, null, null)
-        {}
+        public CsharpMutationProcess(MutationTestInput mutationTestInput, StrykerOptions options) : this(
+            mutationTestInput, null, options, null, null)
+        {
+        }
 
         public void Mutate()
         {
@@ -70,10 +73,13 @@ namespace Stryker.Core.MutationTest
                 file.MutatedSyntaxTree = mutatedSyntaxTree.SyntaxTree;
                 if (_options.DevMode)
                 {
-                    _logger.LogTrace($"Mutated {file.FullPath}:{Environment.NewLine}{mutatedSyntaxTree.ToFullString()}");
+                    _logger.LogTrace(
+                        $"Mutated {file.FullPath}:{Environment.NewLine}{mutatedSyntaxTree.ToFullString()}");
                 }
+
                 // Filter the mutants
                 file.Mutants = _orchestrator.GetLatestMutantBatch();
+                File.WriteAllText(file.FullPath, file.MutatedSyntaxTree.ToString());
             }
 
             _logger.LogDebug("{0} mutants created", _projectInfo.Mutants.Count());
@@ -104,7 +110,8 @@ namespace Stryker.Core.MutationTest
                 if (msForSymbols != null)
                 {
                     // inject the debug symbols into the test project
-                    using var symbolDestination = _fileSystem.File.Create(Path.Combine(Path.GetDirectoryName(injectionPath),
+                    using var symbolDestination = _fileSystem.File.Create(Path.Combine(
+                        Path.GetDirectoryName(injectionPath),
                         _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetSymbolFileName()));
                     msForSymbols.Position = 0;
                     msForSymbols.CopyTo(symbolDestination);
@@ -117,7 +124,7 @@ namespace Stryker.Core.MutationTest
             if (compileResult.RollbackResult?.RollbackedIds.Any() ?? false)
             {
                 foreach (var mutant in _projectInfo.Mutants
-                    .Where(x => compileResult.RollbackResult.RollbackedIds.Contains(x.Id)))
+                             .Where(x => compileResult.RollbackResult.RollbackedIds.Contains(x.Id)))
                 {
                     // Ignore compilation errors if the mutation is skipped anyways.
                     if (mutant.ResultStatus == MutantStatus.Ignored)

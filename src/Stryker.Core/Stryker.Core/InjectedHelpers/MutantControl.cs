@@ -64,8 +64,12 @@ namespace Stryker
                 {
                     ActiveMutant = int.Parse(environmentVariable);
                 }
+#if UNITY_EDITOR
+
+                UnityEngine.Debug.Log("environmentVariable ActiveMutation is " + environmentVariable);
+#endif
             }
-            
+
             return id == ActiveMutant;
         }
 

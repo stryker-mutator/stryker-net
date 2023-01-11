@@ -16,7 +16,7 @@ public class UnityTestRunner : ITestRunner
     private readonly ProcessExecutor _processExecutor;
     private readonly StrykerOptions _strykerOptions;
     private readonly ILogger _logger;
-    private readonly TestSet _testSet = new TestSet();
+    private readonly TestSet _testSet = new();
 
 
     public UnityTestRunner(ProcessExecutor processExecutor, StrykerOptions strykerOptions, ILogger logger)
@@ -47,6 +47,11 @@ public class UnityTestRunner : ITestRunner
         var pathToUnity = @"/Applications/Unity/Hub/Editor/2022.2.0f1/Unity.app/Contents/MacOS/Unity";
         var processResult = _processExecutor.Start(pathToProject, pathToUnity,
             @" -batchmode -projectPath='.\' -logFile - -runTests -testResults ./test_resultseditmode.xml -testPlatform='editmode'");
+
+        if (processResult.ExitCode != 0)
+        {
+            throw new Exception("Unity failed with return code " + processResult.ExitCode);
+        }
 
         _logger.LogDebug(processResult.Output);
         _logger.LogDebug("Exit code: " + processResult.ExitCode);
@@ -87,10 +92,11 @@ public class UnityTestRunner : ITestRunner
             File.Delete(pathToTestResultXml);
         }
 
+        Environment.SetEnvironmentVariable("ActiveMutation", mutants.Single().Id.ToString());
         var processResult = _processExecutor.Start(pathToProject, pathToUnity,
-            @" -batchmode -projectPath='.\' -logFile - -runTests -testResults ./test_resultseditmode.xml -testPlatform='editmode'");
+            @$" -batchmode -projectPath='.\' -logFile {Path.Combine(pathToProject, DateTime.Now.ToFileTime() + ".log")} -runTests -testResults ./test_resultseditmode.xml -testPlatform='editmode'");
 
-        if (processResult.ExitCode != 0)
+        if (processResult.ExitCode != 0 && processResult.ExitCode != 2)
         {
             throw new Exception("Unity failed with return code " + processResult.ExitCode);
         }
