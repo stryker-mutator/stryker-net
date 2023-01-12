@@ -79,7 +79,6 @@ namespace Stryker.Core.MutationTest
 
                 // Filter the mutants
                 file.Mutants = _orchestrator.GetLatestMutantBatch();
-                File.WriteAllText(file.FullPath, file.MutatedSyntaxTree.ToString());
             }
 
             _logger.LogDebug("{0} mutants created", _projectInfo.Mutants.Count());
