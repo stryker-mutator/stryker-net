@@ -77,6 +77,10 @@ namespace Stryker.Core.Initialisation
                         options.MsBuildPath, options.IsUnity);
                 }
             }
+            // at initial build process I rewrite csproj and it didn't apply in stryker without reloading.
+            // todo think is it correct solution
+            _projectInfo = _inputFileResolver.ResolveInput(options, solutionProjects);
+
 
             InitializeDashboardProjectInformation(options, _projectInfo);
 

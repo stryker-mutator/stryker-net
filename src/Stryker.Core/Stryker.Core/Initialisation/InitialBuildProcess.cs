@@ -4,6 +4,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.Testing;
 using Stryker.Core.ToolHelpers;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Initialisation
 {
@@ -32,19 +33,13 @@ namespace Stryker.Core.Initialisation
             ProcessResult result;
             if (isUnity)
             {
-                if (string.IsNullOrEmpty(solutionPath))
+                //todo run unity to generate csproj https://docs.unity3d.com/Packages/com.unity.test-framework@1.1/manual/extension-retrieve-test-list.html
+
+                var info = new FileInfo(projectPath);
+                foreach (var fileInfo in info.Directory?.GetFiles("*.csproj")!)
                 {
-                    throw new InputException(
-                        "Stryker could not build your project as no solution file was presented. Please pass the solution path to stryker.");
+                    UpdateOutputPathForUnityProjects(fileInfo.FullName);
                 }
-
-                solutionPath = Path.GetFullPath(solutionPath);
-                var solutionDir = Path.GetDirectoryName(solutionPath);
-
-                //todo generated from unity build https://docs.unity3d.com/Packages/com.unity.test-framework@1.1/manual/extension-retrieve-test-list.html
-
-                // result = _processExecutor.Start(solutionDir, msbuildPath, $"\"{solutionPath}\"");
-                // CheckBuildResult(result, msbuildPath, $"\"{solutionPath}\"");
             }
             else if (fullFramework)
             {
@@ -72,6 +67,14 @@ namespace Stryker.Core.Initialisation
 
                 CheckBuildResult(result, "dotnet build", $"\"{Path.GetFileName(projectPath)}\"");
             }
+        }
+
+        private static void UpdateOutputPathForUnityProjects(string projectPath)
+        {
+            var pattern = new Regex(@"<OutputPath>.*<\/OutputPath>", RegexOptions.Compiled);
+            var updatedCsProjContent = pattern.Replace(File.ReadAllText(projectPath),
+                _ => @"<OutputPath>Library\ScriptAssemblies\</OutputPath>");
+            File.WriteAllText(projectPath, updatedCsProjContent);
         }
 
         private void CheckBuildResult(ProcessResult result, string buildCommand, string buildPath)
