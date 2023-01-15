@@ -228,7 +228,6 @@ namespace Stryker.Core.Initialisation
             foreach (var (name, code) in CodeInjection.MutantHelpers)
             {
                 rootFolderComposite.AddCompilationSyntaxTree(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32, options: cSharpParseOptions));
-                File.WriteAllText(Path.Combine(rootFolderComposite.FullPath, "Assets", name), code);
             }
         }
 
