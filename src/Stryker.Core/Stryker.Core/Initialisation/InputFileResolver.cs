@@ -53,7 +53,7 @@ namespace Stryker.Core.Initialisation
             }
             else
             {
-                testProjectFiles.Add(FindTestProject(options.ProjectPath));
+                testProjectFiles.Add(FindTestProject(options.ProjectUnderTestName));
             }
 
             var testProjectAnalyzerResults = new List<IAnalyzerResult>();
@@ -158,7 +158,7 @@ namespace Stryker.Core.Initialisation
 
         private static void ValidateTestProjectsCanBeExecuted(ProjectInfo projectInfo)
         {
-            // if references contains Microsoft.VisualStudio.QualityTools.UnitTestFramework 
+            // if references contains Microsoft.VisualStudio.QualityTools.UnitTestFramework
             // we have detected usage of mstest V1 and should exit
             if (projectInfo.TestProjectAnalyzerResults.Any(testProject => testProject.References
                 .Any(r => r.Contains("Microsoft.VisualStudio.QualityTools.UnitTestFramework"))))

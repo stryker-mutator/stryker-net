@@ -29,6 +29,7 @@ namespace Stryker.Core.Options.Inputs
             }
             else
             {
+                return default; //todo it will find sln if you didn't specify that and csproj in the same place with sln
                 var solutionFiles = fileSystem.Directory.GetFiles(basePath, "*.*").Where(file => file.EndsWith("sln")).ToArray();
                 if (solutionFiles.Count() > 1)
                 {
