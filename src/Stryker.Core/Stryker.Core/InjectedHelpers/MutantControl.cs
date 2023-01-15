@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 
 namespace Stryker
@@ -15,6 +16,7 @@ namespace Stryker
         public static bool CaptureCoverage;
         public static int ActiveMutant = -2;
         public const int ActiveMutantNotInitValue = -2;
+        private static string _pathToListenActiveMutation = "";
 
         static MutantControl()
         {
@@ -24,10 +26,12 @@ namespace Stryker
         public static void InitCoverage()
         {
             ResetCoverage();
+            _pathToListenActiveMutation = Environment.GetEnvironmentVariable("ActiveMutationPath");
         }
 
         public static void ResetCoverage()
         {
+            _pathToListenActiveMutation = "";
             _coveredMutants = new List<int>();
             _coveredStaticdMutants = new List<int>();
         }
@@ -53,23 +57,11 @@ namespace Stryker
                 RegisterCoverage(id);
                 return false;
             }
-            if (ActiveMutant == ActiveMutantNotInitValue)
-            {
-                string environmentVariable = Environment.GetEnvironmentVariable("ActiveMutation");
-                if (string.IsNullOrEmpty(environmentVariable))
-                {
-                    ActiveMutant = -1;
-                }
-                else
-                {
-                    ActiveMutant = int.Parse(environmentVariable);
-                }
+
+            ActiveMutant = int.Parse(File.ReadAllText(_pathToListenActiveMutation));
 #if UNITY_EDITOR
-
-                UnityEngine.Debug.Log("environmentVariable ActiveMutation is " + environmentVariable);
+            UnityEngine.Debug.Log("environmentVariable ActiveMutation is " +ActiveMutant);
 #endif
-            }
-
             return id == ActiveMutant;
         }
 
