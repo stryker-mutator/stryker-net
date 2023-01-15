@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
@@ -47,7 +48,7 @@ namespace Stryker.Core.Initialisation
             IAssemblyReferenceResolver assemblyReferenceResolver = null)
         {
             _inputFileResolver = inputFileResolver ?? new InputFileResolver();
-            _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
+            _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess(new FileSystem());
             _initialTestProcess = initialTestProcess ?? new InitialTestProcess();
             _testRunner = testRunner;
             _assemblyReferenceResolver = assemblyReferenceResolver ?? new AssemblyReferenceResolver();

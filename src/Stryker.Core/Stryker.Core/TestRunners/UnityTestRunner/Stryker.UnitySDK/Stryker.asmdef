@@ -1,0 +1,6 @@
+{
+    "name": "Stryker",
+    "includePlatforms": [
+        "Editor"
+    ]
+}

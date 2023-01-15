@@ -1,9 +1,12 @@
+using System;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
 using Stryker.Core.ToolHelpers;
 using System.IO;
+using System.IO.Abstractions;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Initialisation
@@ -16,11 +19,13 @@ namespace Stryker.Core.Initialisation
 
     public class InitialBuildProcess : IInitialBuildProcess
     {
+        private readonly IFileSystem _fileSystem;
         private readonly IProcessExecutor _processExecutor;
         private readonly ILogger _logger;
 
-        public InitialBuildProcess(IProcessExecutor processExecutor = null)
+        public InitialBuildProcess(IFileSystem fileSystem, IProcessExecutor processExecutor = null)
         {
+            _fileSystem = fileSystem;
             _processExecutor = processExecutor ?? new ProcessExecutor();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialBuildProcess>();
         }
@@ -40,6 +45,8 @@ namespace Stryker.Core.Initialisation
                 {
                     UpdateOutputPathForUnityProjects(fileInfo.FullName);
                 }
+
+                CopyUnitySDKInTargetUnityProject(projectPath);
             }
             else if (fullFramework)
             {
@@ -66,6 +73,31 @@ namespace Stryker.Core.Initialisation
                 result = _processExecutor.Start(projectPath, "dotnet", $"build \"{buildPath}\"");
 
                 CheckBuildResult(result, "dotnet build", $"\"{Path.GetFileName(projectPath)}\"");
+            }
+        }
+
+        private void CopyUnitySDKInTargetUnityProject(string pathProject)
+        {
+            var unityProjectPath = Directory.GetParent(pathProject).FullName;
+            var allFilesOfSdk = typeof(VsTestHelper).Assembly
+                .GetManifestResourceNames().Where(name => name.Contains("Stryker.UnitySDK")) ?? throw new ArgumentNullException("typeof(VsTestHelper).Assembly\n                .GetManifestResourceNames().Where(name => name.Contains(\"Stryker.UnitySDK\"))");
+
+            var pathToPackageOfSdk = Path.Combine(unityProjectPath, "Packages", "Stryker.UnitySDK");
+            Directory.CreateDirectory(pathToPackageOfSdk);
+
+            File.WriteAllText(Path.Combine(pathToPackageOfSdk, ".gitignore"), "*");
+            foreach (var nameEmbeddedResource in allFilesOfSdk)
+            {
+                using var file = _fileSystem.FileStream.New(
+                    Path.Combine(pathToPackageOfSdk, GetFinalNameOfResource(nameEmbeddedResource)),
+                    FileMode.Create);
+
+                typeof(VsTestHelper).Assembly.GetManifestResourceStream(nameEmbeddedResource).CopyTo(file);
+            }
+
+            string GetFinalNameOfResource(string name)
+            {
+                return name.Split("Stryker.UnitySDK.").Last();
             }
         }
 

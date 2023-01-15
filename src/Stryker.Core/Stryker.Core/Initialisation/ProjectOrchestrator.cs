@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using Buildalyzer;
@@ -33,7 +34,7 @@ namespace Stryker.Core.Initialisation
         {
             _buildalyzerProvider = buildalyzerProvider ?? new BuildalyzerProvider();
             _projectMutator = projectMutator ?? new ProjectMutator();
-            _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
+            _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess(new FileSystem());
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectOrchestrator>();
         }
 

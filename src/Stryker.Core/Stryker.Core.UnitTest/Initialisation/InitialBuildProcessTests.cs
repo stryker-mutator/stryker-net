@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO.Abstractions;
 using Moq;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
@@ -17,7 +18,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             processMock.SetupProcessMockToReturn("", 1);
 
-            var target = new InitialBuildProcess(processMock.Object);
+            var target = new InitialBuildProcess(new FileSystem(), processMock.Object);
 
             var exception = Assert.Throws<InputException>(() => target.InitialBuild(false, "/", "/"));
         }
@@ -29,7 +30,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             processMock.SetupProcessMockToReturn("");
 
-            var target = new InitialBuildProcess(processMock.Object);
+            var target = new InitialBuildProcess(new FileSystem(), processMock.Object);
 
             target.InitialBuild(false, "/", "/");
         }
@@ -43,7 +44,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             processMock.SetupProcessMockToReturn("");
 
-            var target = new InitialBuildProcess(processMock.Object);
+            var target = new InitialBuildProcess(new FileSystem(), processMock.Object);
 
             target.InitialBuild(true, "/", "./ExampleProject.sln");
 
@@ -62,7 +63,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             processMock.SetupProcessMockToReturn("");
 
-            var target = new InitialBuildProcess(processMock.Object);
+            var target = new InitialBuildProcess(new FileSystem(), processMock.Object);
 
             target.InitialBuild(true, "/", "./ExampleProject.sln", "C:/User/Test/Msbuild.exe");
 
@@ -81,7 +82,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             processMock.SetupProcessMockToReturn("");
 
-            var target = new InitialBuildProcess(processMock.Object);
+            var target = new InitialBuildProcess(new FileSystem(), processMock.Object);
 
             target.InitialBuild(false, "./ExampleProject.csproj", null);
 
@@ -100,7 +101,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             processMock.SetupProcessMockToReturn("");
 
-            var target = new InitialBuildProcess(processMock.Object);
+            var target = new InitialBuildProcess(new FileSystem(), processMock.Object);
 
             target.InitialBuild(false, "", "./ExampleProject.sln");
 

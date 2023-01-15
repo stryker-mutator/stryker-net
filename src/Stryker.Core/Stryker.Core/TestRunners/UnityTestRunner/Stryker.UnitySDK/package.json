@@ -1,0 +1,9 @@
+{
+  "name": "com.stryker.unity",
+  "version": "1.0.0",
+  "displayName": "Stryker.UnitySDK",
+  "description": "Plugin for Unity to able run Stryker with Unity projects",
+  "keywords": [
+    "stryker"
+  ]
+}
