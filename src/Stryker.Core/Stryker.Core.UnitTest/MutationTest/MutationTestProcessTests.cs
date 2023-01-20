@@ -18,6 +18,7 @@ using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 using Xunit;
 using Mutation = Stryker.Core.Mutants.Mutation;
@@ -29,6 +30,8 @@ namespace Stryker.Core.UnitTest.MutationTest
         private string CurrentDirectory { get; }
         private string FilesystemRoot { get; }
         private string SourceFile { get; }
+        private MockFileSystem fileSystemMock { get; } = new MockFileSystem();
+
 
         public MutationTestProcessTests()
         {
@@ -56,7 +59,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo(fileSystem)
+                SourceProjectInfo = new SourceProjectInfo()
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -65,15 +68,19 @@ namespace Stryker.Core.UnitTest.MutationTest
                             { "AssemblyName", "AssemblyName" },
                             { "Language", "C#" }
                         }).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    ProjectContents = folder
+                },
+                TestProjectsInfo = new TestProjectsInfo(fileSystemMock)
+                {
+                    TestProjects = new List<TestProject> {
+                        new TestProject(fileSystemMock, TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
                             { "AssemblyName", "AssemblyName" },
                             { "Language", "C#" }
-                        }).Object
-                    },
-                    ProjectContents = folder
+                        }).Object)
+                    }
                 }
             };
 
@@ -127,7 +134,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo(fileSystem)
+                SourceProjectInfo = new SourceProjectInfo()
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -136,15 +143,19 @@ namespace Stryker.Core.UnitTest.MutationTest
                             { "AssemblyName", "AssemblyName" },
                             { "Language", "C#" }
                         }).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    ProjectContents = folder
+                },
+                TestProjectsInfo = new TestProjectsInfo(fileSystemMock)
+                {
+                    TestProjects = new List<TestProject> {
+                        new TestProject(fileSystemMock, TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
                             { "AssemblyName", "AssemblyName" },
                             { "Language", "C#" }
-                        }).Object
-                    },
-                    ProjectContents = folder
+                        }).Object)
+                    }
                 }
             };
 
@@ -191,7 +202,6 @@ namespace Stryker.Core.UnitTest.MutationTest
             mutantToBeSkipped.ResultStatus.ShouldBe(MutantStatus.Ignored);
         }
 
-
         [Fact]
         public void MutateShouldWriteToDisk_IfCompilationIsSuccessful()
         {
@@ -209,25 +219,30 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo(fileSystem)
+                SourceProjectInfo = new SourceProjectInfo()
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", Path.Combine(FilesystemRoot, "ProjectUnderTest", "bin", "Debug", "netcoreapp2.0") },
-                            { "TargetFileName", "ProjectUnderTest.dll" },
-                            { "AssemblyName", "ProjectUnderTest.dll" },
+                            { "TargetFileName", "TestName.dll" },
+                            { "AssemblyName", "AssemblyName" },
                             { "Language", "C#" }
                         }).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    ProjectContents = folder
+                },
+                TestProjectsInfo = new TestProjectsInfo(fileSystemMock)
+                {
+                    TestProjects = new List<TestProject> {
+                        new TestProject(fileSystemMock, TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0") },
-                            { "TargetFileName", "TestProject.dll" },
+                            { "TargetFileName", "TestName.dll" },
                             { "Language", "C#" }
-                        }).Object
-                    },
-                    ProjectContents = folder
+                        }).Object)
+                    }
                 }
             };
+
             var mockMutants = new Collection<Mutant>() { new() { Mutation = new Mutation() } };
 
             // create mocks
@@ -273,16 +288,26 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new SourceProjectInfo()
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
                             { "Language", "C#" }
-                        }).Object
-                    ,
+                        }).Object,
                     ProjectContents = folder
+                },
+                TestProjectsInfo = new TestProjectsInfo(fileSystemMock)
+                {
+                    TestProjects = new List<TestProject> {
+                        new TestProject(fileSystemMock, TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                        {
+                            { "TargetDir", Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0") },
+                            { "TargetFileName", "TestName.dll" },
+                            { "Language", "C#" }
+                        }).Object)
+                    }
                 },
                 InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
             };
@@ -326,19 +351,30 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new SourceProjectInfo()
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
                             { "Language", "C#" }
-                        }).Object
-                    ,
+                        }).Object,
                     ProjectContents = folder
+                },
+                TestProjectsInfo = new TestProjectsInfo(fileSystemMock)
+                {
+                    TestProjects = new List<TestProject> {
+                        new TestProject(fileSystemMock, TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                        {
+                            { "TargetDir", Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0") },
+                            { "TargetFileName", "TestName.dll" },
+                            { "Language", "C#" }
+                        }).Object)
+                    }
                 },
                 InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
             };
+
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
 
@@ -386,17 +422,28 @@ namespace Stryker.Core.UnitTest.MutationTest
             // setup coverage
             var executor = new MutationTestExecutor(runnerMock.Object);
 
-            var input = new MutationTestInput
+            var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new SourceProjectInfo()
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                        { "TargetFileName", "TestName.dll" },
-                        { "Language", "C#" }
-                    }).Object,
+                        {
+                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
+                            { "TargetFileName", "TestName.dll" },
+                            { "Language", "C#" }
+                        }).Object,
                     ProjectContents = folder
+                },
+                TestProjectsInfo = new TestProjectsInfo(fileSystemMock)
+                {
+                    TestProjects = new List<TestProject> {
+                        new TestProject(fileSystemMock, TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                        {
+                            { "TargetDir", Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0") },
+                            { "TargetFileName", "TestName.dll" },
+                            { "Language", "C#" }
+                        }).Object)
+                    }
                 },
                 InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
             };
@@ -412,7 +459,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             // test mutants
             target.GetCoverage();
 
-            target.Test(input.TargetProjectInfo.ProjectContents.Mutants.Where(m => m.ResultStatus == MutantStatus.NotRun));
+            target.Test(input.SourceProjectInfo.ProjectContents.Mutants.Where(m => m.ResultStatus == MutantStatus.NotRun));
             // first mutant should be killed by test 2
             scenario.GetMutantStatus(1).ShouldBe(MutantStatus.Killed);
             // other mutant survives
@@ -447,17 +494,28 @@ namespace Stryker.Core.UnitTest.MutationTest
             // setup coverage
             var executor = new MutationTestExecutor(runnerMock.Object);
 
-            var input = new MutationTestInput
+            var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new SourceProjectInfo()
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                        { "TargetFileName", "TestName.dll" },
-                        { "Language", "C#" }
-                    }).Object,
+                        {
+                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
+                            { "TargetFileName", "TestName.dll" },
+                            { "Language", "C#" }
+                        }).Object,
                     ProjectContents = folder
+                },
+                TestProjectsInfo = new TestProjectsInfo(fileSystemMock)
+                {
+                    TestProjects = new List<TestProject> {
+                        new TestProject(fileSystemMock, TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                        {
+                            { "TargetDir", Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0") },
+                            { "TargetFileName", "TestName.dll" },
+                            { "Language", "C#" }
+                        }).Object)
+                    }
                 },
                 InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
             };
@@ -474,7 +532,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             // test mutants
             target.GetCoverage();
 
-            target.Test(input.TargetProjectInfo.ProjectContents.Mutants);
+            target.Test(input.SourceProjectInfo.ProjectContents.Mutants);
             // first mutant should be marked as survived
             scenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
         }
@@ -505,17 +563,28 @@ namespace Stryker.Core.UnitTest.MutationTest
             // setup coverage
             var executor = new MutationTestExecutor(runnerMock.Object);
 
-            var input = new MutationTestInput
+            var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new SourceProjectInfo()
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                        { "TargetFileName", "TestName.dll" },
-                        { "Language", "C#" }
-                    }).Object,
+                        {
+                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
+                            { "TargetFileName", "TestName.dll" },
+                            { "Language", "C#" }
+                        }).Object,
                     ProjectContents = folder
+                },
+                TestProjectsInfo = new TestProjectsInfo(fileSystemMock)
+                {
+                    TestProjects = new List<TestProject> {
+                        new TestProject(fileSystemMock, TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                        {
+                            { "TargetDir", Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0") },
+                            { "TargetFileName", "TestName.dll" },
+                            { "Language", "C#" }
+                        }).Object)
+                    }
                 },
                 InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
             };
@@ -561,17 +630,28 @@ namespace Stryker.Core.UnitTest.MutationTest
             // setup coverage
             var executor = new MutationTestExecutor(runnerMock.Object);
 
-            var input = new MutationTestInput
+            var input = new MutationTestInput()
             {
-                TargetProjectInfo = new TargetProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new SourceProjectInfo()
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                        { "TargetFileName", "TestName.dll" },
-                        { "Language", "C#" }
-                    }).Object,
+                        {
+                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
+                            { "TargetFileName", "TestName.dll" },
+                            { "Language", "C#" }
+                        }).Object,
                     ProjectContents = folder
+                },
+                TestProjectsInfo = new TestProjectsInfo(fileSystemMock)
+                {
+                    TestProjects = new List<TestProject> {
+                        new TestProject(fileSystemMock, TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                        {
+                            { "TargetDir", Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0") },
+                            { "TargetFileName", "TestName.dll" },
+                            { "Language", "C#" }
+                        }).Object)
+                    }
                 },
                 InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
             };
@@ -588,7 +668,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             // test mutants
             target.GetCoverage();
 
-            target.Test(input.TargetProjectInfo.ProjectContents.Mutants);
+            target.Test(input.SourceProjectInfo.ProjectContents.Mutants);
             // first mutant should be killed by test 2
             scenario.GetMutantStatus(1).ShouldBe(MutantStatus.Killed);
         }

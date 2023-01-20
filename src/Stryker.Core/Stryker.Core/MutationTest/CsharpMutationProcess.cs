@@ -41,7 +41,7 @@ namespace Stryker.Core.MutationTest
             BaseMutantOrchestrator<SyntaxNode> orchestrator = null)
         {
             _input = mutationTestInput;
-            _projectInfo = (ProjectComponent<SyntaxTree>)mutationTestInput.TargetProjectInfo.ProjectContents;
+            _projectInfo = (ProjectComponent<SyntaxTree>)mutationTestInput.SourceProjectInfo.ProjectContents;
             _options = options;
             _orchestrator = orchestrator ?? new CsharpMutantOrchestrator(options: _options);
             _compilingProcess = new CsharpCompilingProcess(mutationTestInput, options: options);
@@ -91,7 +91,7 @@ namespace Stryker.Core.MutationTest
 
             foreach (var testProject in _input.TestProjectsInfo.AnalyzerResults)
             {
-                var injectionPath = TestProjectsInfo.GetInjectionFilePath(testProject, _input.TargetProjectInfo.AnalyzerResult);
+                var injectionPath = TestProjectsInfo.GetInjectionFilePath(testProject, _input.SourceProjectInfo.AnalyzerResult);
                 if (!_fileSystem.Directory.Exists(testProject.GetAssemblyDirectoryPath()))
                 {
                     _fileSystem.Directory.CreateDirectory(testProject.GetAssemblyDirectoryPath());
@@ -105,7 +105,7 @@ namespace Stryker.Core.MutationTest
                 if (msForSymbols != null)
                 {
                     // inject the debug symbols into the test project
-                    using var symbolDestination = _fileSystem.File.Create(Path.Combine(testProject.GetAssemblyDirectoryPath(), _input.TargetProjectInfo.AnalyzerResult.GetSymbolFileName()));
+                    using var symbolDestination = _fileSystem.File.Create(Path.Combine(testProject.GetAssemblyDirectoryPath(), _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName()));
                     msForSymbols.Position = 0;
                     msForSymbols.CopyTo(symbolDestination);
                 }

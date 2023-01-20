@@ -33,7 +33,7 @@ namespace Stryker.Core.Compiling
 
         public CompilingProcessResult Compile(IEnumerable<ParsedInput> syntaxTrees, bool devMode)
         {
-            var analyzerResult = _input.TargetProjectInfo.AnalyzerResult;
+            var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
 
             var trees = ListModule.OfSeq(syntaxTrees.Reverse());
             var dependencies = ListModule.OfSeq(analyzerResult.References);
@@ -50,14 +50,14 @@ namespace Stryker.Core.Compiling
                 enableBackgroundItemKeyStoreAndSemanticClassification: null,
                 enablePartialTypeChecking: null);
 
-            var mutatedAssemblyPath = TestProjectsInfo.GetInjectionFilePath(_input.TestProjectsInfo.AnalyzerResults.First(), _input.TargetProjectInfo.AnalyzerResult);
-            var pdbPath = Path.Combine(mutatedAssemblyPath, _input.TargetProjectInfo.AnalyzerResult.GetSymbolFileName());
+            var mutatedAssemblyPath = TestProjectsInfo.GetInjectionFilePath(_input.TestProjectsInfo.AnalyzerResults.First(), _input.SourceProjectInfo.AnalyzerResult);
+            var pdbPath = Path.Combine(mutatedAssemblyPath, _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName());
             (var compilationSucces, var errorinfo) = TryCompilation(checker, trees, mutatedAssemblyPath, pdbPath, dependencies);
 
             foreach (var testProject in _input.TestProjectsInfo.AnalyzerResults)
             {
-                var injectionPath = TestProjectsInfo.GetInjectionFilePath(testProject, _input.TargetProjectInfo.AnalyzerResult);
-                var pdbInjectionpath = Path.Combine(testProject.GetAssemblyDirectoryPath(), _input.TargetProjectInfo.AnalyzerResult.GetSymbolFileName());
+                var injectionPath = TestProjectsInfo.GetInjectionFilePath(testProject, _input.SourceProjectInfo.AnalyzerResult);
+                var pdbInjectionpath = Path.Combine(testProject.GetAssemblyDirectoryPath(), _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName());
                 if (!_fileSystem.Directory.Exists(injectionPath.Substring(0, injectionPath.LastIndexOf('\\'))))
                 {
                     _fileSystem.Directory.CreateDirectory(injectionPath);
@@ -99,7 +99,7 @@ namespace Stryker.Core.Compiling
         {
             var result = FSharpAsync.RunSynchronously(
                 checker.Compile(
-                    trees, _input.TargetProjectInfo.AnalyzerResult.GetAssemblyName(), assemblyPath, dependencies, pdbFile: pdbAssemblyPath, executable: false, noframework: true, userOpName: null), timeout: null, cancellationToken: null);
+                    trees, _input.SourceProjectInfo.AnalyzerResult.GetAssemblyName(), assemblyPath, dependencies, pdbFile: pdbAssemblyPath, executable: false, noframework: true, userOpName: null), timeout: null, cancellationToken: null);
             return (result.Item2 == 0, result.Item1);
         }
     }

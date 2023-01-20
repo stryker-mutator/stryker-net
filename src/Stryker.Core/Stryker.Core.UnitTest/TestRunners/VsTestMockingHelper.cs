@@ -496,7 +496,7 @@ public class VsTestMockingHelper : TestBase
             TimeSpan.Zero);
         var input = new MutationTestInput
         {
-            TargetProjectInfo = targetProject ?? _targetProjectInfo,
+            SourceProjectInfo = targetProject ?? _targetProjectInfo,
             TestRunner = runner,
             InitialTestRun = new InitialTestRun(testRunResult, new TimeoutValueCalculator(500))
         };

@@ -68,24 +68,24 @@ namespace Stryker.Core.MutationTest
             _mutationTestExecutor = executor;
             _mutationProcess = mutationProcess ?? BuildMutationProcess();
             _coverageAnalyser = coverageAnalyzer ?? new CoverageAnalyser(_options);
-            _projectContents = input.TargetProjectInfo.ProjectContents;
+            _projectContents = input.SourceProjectInfo.ProjectContents;
         }
 
         public MutationTestInput Input { get; }
 
         private IMutationProcess BuildMutationProcess()
         {
-            if (!LanguageMap.ContainsKey(Input.TargetProjectInfo.AnalyzerResult.GetLanguage()))
+            if (!LanguageMap.ContainsKey(Input.SourceProjectInfo.AnalyzerResult.GetLanguage()))
             {
                 throw new GeneralStrykerException(
                     "no valid language detected || no valid csproj or fsproj was given.");
             }
-            return LanguageMap[Input.TargetProjectInfo.AnalyzerResult.GetLanguage()](Input, _options);
+            return LanguageMap[Input.SourceProjectInfo.AnalyzerResult.GetLanguage()](Input, _options);
         }
 
         public void Mutate()
         {
-            Input.TestProjectsInfo.BackupOriginalAssembly(Input.TargetProjectInfo.AnalyzerResult);
+            Input.TestProjectsInfo.BackupOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
             _mutationProcess.Mutate();
         }
 
@@ -104,7 +104,7 @@ namespace Stryker.Core.MutationTest
             return new StrykerRunResult(_options, _projectContents.GetMutationScore());
         }
 
-        public void Restore() => Input.TestProjectsInfo.RestoreOriginalAssembly(Input.TargetProjectInfo.AnalyzerResult);
+        public void Restore() => Input.TestProjectsInfo.RestoreOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
 
         private void TestMutants(IEnumerable<Mutant> mutantsToTest)
         {

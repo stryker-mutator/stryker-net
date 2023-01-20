@@ -13,7 +13,7 @@ namespace Stryker.Core.MutationTest
         /// <summary>
         /// Contains all information about the project to mutate
         /// </summary>
-        public SourceProjectInfo TargetProjectInfo { get; set; }
+        public SourceProjectInfo SourceProjectInfo { get; set; }
 
         /// <summary>
         /// Contains all information about the tests to run

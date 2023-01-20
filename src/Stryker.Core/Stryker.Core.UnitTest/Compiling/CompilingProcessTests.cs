@@ -43,7 +43,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new SourceProjectInfo
+                SourceProjectInfo = new SourceProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -82,7 +82,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new SourceProjectInfo
+                SourceProjectInfo = new SourceProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -127,7 +127,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new SourceProjectInfo
+                SourceProjectInfo = new SourceProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -166,7 +166,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new SourceProjectInfo
+                SourceProjectInfo = new SourceProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                     {
@@ -210,7 +210,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new SourceProjectInfo
+                SourceProjectInfo = new SourceProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                         {
@@ -251,7 +251,7 @@ namespace ExampleProject
 }");
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new SourceProjectInfo
+                SourceProjectInfo = new SourceProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         properties: new Dictionary<string, string>()
@@ -370,7 +370,7 @@ namespace ExampleProject
 
             var input = new MutationTestInput
             {
-                TargetProjectInfo = new SourceProjectInfo
+                SourceProjectInfo = new SourceProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         properties: new Dictionary<string, string>()
@@ -392,7 +392,7 @@ namespace ExampleProject
             var process = new CsharpMutationProcess(input, fileSystem, options);
             process.Mutate();
 
-            var projectContentsMutants = input.TargetProjectInfo.ProjectContents.Mutants;
+            var projectContentsMutants = input.SourceProjectInfo.ProjectContents.Mutants;
             return projectContentsMutants;
         }
     }

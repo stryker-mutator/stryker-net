@@ -120,7 +120,7 @@ namespace ExampleProject
 
             var input = new MutationTestInput()
             {
-                TargetProjectInfo = new SourceProjectInfo
+                SourceProjectInfo = new SourceProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
                     {

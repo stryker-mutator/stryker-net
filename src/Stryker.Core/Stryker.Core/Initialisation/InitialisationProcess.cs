@@ -87,7 +87,7 @@ namespace Stryker.Core.Initialisation
             var input = new MutationTestInput
             {
                 TestProjectsInfo = _testProjectsInfo,
-                TargetProjectInfo = _targetProjectInfo,
+                SourceProjectInfo = _targetProjectInfo,
                 TestRunner = _testRunner,
             };
 
