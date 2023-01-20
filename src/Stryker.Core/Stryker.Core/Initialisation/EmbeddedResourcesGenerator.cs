@@ -1,76 +1,112 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Logging;
-using Mono.Cecil;
+// Borrowed from https://github.com/Testura/Testura.Mutation/blob/ca2785dba8997ab814be4bb69113739db357810f/src/Testura.Mutation.Core/Execution/Compilation/EmbeddedResourceCreator.cs
+
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Resources;
+using System.Resources.NetStandard;
+using System.Xml.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.Logging;
 
 namespace Stryker.Core.Initialisation
 {
     public static class EmbeddedResourcesGenerator
     {
-        private static readonly IDictionary<string, IList<ResourceDescription>> _resourceDescriptions = new Dictionary<string, IList<ResourceDescription>>();
-
-        public static IEnumerable<ResourceDescription> GetManifestResources(string assemblyPath, ILogger logger)
+        public static IEnumerable<ResourceDescription> GetManifestResources(string assemblyName, string projectPath, ILogger logger)
         {
-            if (!_resourceDescriptions.ContainsKey(assemblyPath))
+            var resources = new List<ResourceDescription>();
+            if (!File.Exists(projectPath))
             {
-                using var module = LoadModule(assemblyPath, logger);
-                if (module is null)
+                logger?.LogWarning($"Could not find embedded resources. \n Results may be unreliable if embedded resources are required during test execution.");
+                return resources;
+            }
+
+            var doc = XDocument.Load(projectPath);
+            var rootNamespace = doc.Descendants().FirstOrDefault(d => d.Name.LocalName.Equals("RootNamespace", StringComparison.InvariantCultureIgnoreCase))?.Value;
+            var embeddedResources = doc.Descendants().Where(d => d.Name.LocalName.Equals("EmbeddedResource", StringComparison.InvariantCultureIgnoreCase));
+
+            if (rootNamespace == null)
+            {
+                rootNamespace = assemblyName;
+            }
+
+            if (rootNamespace != string.Empty)
+            {
+                rootNamespace += ".";
+            }
+
+            foreach (var embeddedResource in embeddedResources)
+            {
+                var path = GetEmbeddedPath(embeddedResource);
+                if (path == null)
                 {
-                    yield break;
+                    continue;
                 }
-                _resourceDescriptions.Add(assemblyPath, ReadResourceDescriptionsFromModule(module).ToList());
+
+                var resourceFullFilename = Path.Combine(Path.GetDirectoryName(projectPath), path);
+
+                var resourceName =
+                    path.EndsWith(".resx", StringComparison.OrdinalIgnoreCase) ?
+                        path.Remove(path.Length - 5) + ".resources" :
+                        path;
+
+                resources.Add(new ResourceDescription(
+                    $"{rootNamespace}{string.Join(".", resourceName.Split('\\'))}",
+                    () => ProvideResourceData(resourceFullFilename),
+                    true));
             }
 
-            foreach (var description in _resourceDescriptions[assemblyPath])
-            {
-                yield return description;
-            }
+
+            return resources;
         }
 
-        private static ModuleDefinition LoadModule(string assemblyPath, ILogger logger)
+        private static Stream ProvideResourceData(string resourceFullFilename)
         {
-            try
+            // For non-.resx files just create a FileStream object to read the file as binary data
+            if (!resourceFullFilename.EndsWith(".resx", StringComparison.OrdinalIgnoreCase))
             {
-                return ModuleDefinition.ReadModule(
-                    assemblyPath,
-                    new ReaderParameters(ReadingMode.Deferred)
+                return File.OpenRead(resourceFullFilename);
+            }
+
+            var shortLivedBackingStream = new MemoryStream();
+            using (var resourceWriter = new ResourceWriter(shortLivedBackingStream))
+            {
+                resourceWriter.TypeNameConverter = TypeNameConverter;
+                using (var resourceReader = new ResXResourceReader(resourceFullFilename))
+                {
+                    resourceReader.BasePath = Path.GetDirectoryName(resourceFullFilename);
+                    var dictionaryEnumerator = resourceReader.GetEnumerator();
+                    while (dictionaryEnumerator.MoveNext())
                     {
-                        InMemory = true,
-                        ReadWrite = false,
-                        AssemblyResolver = new CrossPlatformAssemblyResolver()
-                    });
+                        if (dictionaryEnumerator.Key is string resourceKey)
+                        {
+                            resourceWriter.AddResource(resourceKey, dictionaryEnumerator.Value);
+                        }
+                    }
+                }
             }
-            catch (Exception e)
-            {
-                logger?.LogWarning(e,
-                    $"Original project under test {assemblyPath} could not be loaded. \n" +
-                    $"Embedded Resources might be missing.");
 
-                return null;
-            }
+            return new MemoryStream(shortLivedBackingStream.GetBuffer());
         }
 
-        private static IEnumerable<ResourceDescription> ReadResourceDescriptionsFromModule(ModuleDefinition module)
+        /// <summary>
+        /// This is needed to fix a "Could not load file or assembly 'System.Drawing, Version=4.0.0.0"
+        /// exception, although I'm not sure why that exception was occurring.
+        /// </summary>
+        private static string TypeNameConverter(Type objectType) => objectType.AssemblyQualifiedName.Replace("4.0.0.0", "2.0.0.0");
+
+        private static string GetEmbeddedPath(XElement embeddedResource)
         {
-            foreach (EmbeddedResource moduleResource in module.Resources.Where(r => r.ResourceType == ResourceType.Embedded))
+            var paths = embeddedResource.Attribute("Include")?.Value;
+            if (paths != null)
             {
-                var stream = moduleResource.GetResourceStream();
-
-                var bytes = new byte[stream.Length];
-                _ = stream.Read(bytes, 0, bytes.Length);
-
-                var ms = new MemoryStream();
-                ms.Write(bytes, 0, bytes.Length);
-                ms.Position = 0;
-
-                yield return new ResourceDescription(
-                        moduleResource.Name,
-                        () => ms,
-                        moduleResource.IsPublic);
+                return paths;
             }
+
+            paths = embeddedResource.Attribute("Update")?.Value;
+            return paths;
         }
     }
 }

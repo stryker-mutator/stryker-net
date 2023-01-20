@@ -1,4 +1,4 @@
-﻿
+
 using System.Collections.Generic;
 
 namespace FullFrameworkApp
@@ -7,20 +7,13 @@ namespace FullFrameworkApp
     {
         public int Age { get; set; }
 
-        public bool Older(Person otherPerson)
-        {
-            return Age > otherPerson.Age;
-        }
+        public bool Older(Person otherPerson) => Age > otherPerson.Age;
 
-        public bool Younger(Person otherPerson)
-        {
-            return Age < otherPerson.Age;
-        }
+        public bool Younger(Person otherPerson) => Age < otherPerson.Age;
 
-        public bool SameAge(Person otherPerson)
-        {
-            return Age == otherPerson.Age;
-        }
+        public bool SameAge(Person otherPerson) => Age == otherPerson.Age;
+
+        public string HelloInMyLanguage() => Translations.hello;
 
         public static void Aged(Person person)
         {
@@ -30,11 +23,12 @@ namespace FullFrameworkApp
             }
         }
 
+
         public static IEnumerable<Person> People
         {
             get
             {
-                for (int i = 0; i < 10; i++)
+                for (var i = 0; i < 10; i++)
                 {
                     yield return new Person { Age = i };
                 }
