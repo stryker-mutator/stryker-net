@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
 using Stryker.Core.Baseline.Providers;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
@@ -134,6 +135,49 @@ namespace Stryker.Core.UnitTest
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>()), Times.Once);
+        }
+
+        [Fact]
+        public void ShouldThrow_WhenNoProjectsFound()
+        {
+            var projectOrchestratorMock = new Mock<IProjectOrchestrator>(MockBehavior.Strict);
+            var reporterFactoryMock = new Mock<IReporterFactory>(MockBehavior.Strict);
+            var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
+            var inputsMock = new Mock<IStrykerInputs>(MockBehavior.Strict);
+            var fileSystemMock = new MockFileSystem();
+
+            var folder = new CsharpFolderComposite();
+            folder.Add(new CsharpFileLeaf
+            {
+                Mutants = new Collection<Mutant>() { new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored } }
+            });
+            var mutationTestInput = new MutationTestInput()
+            {
+                ProjectInfo = new ProjectInfo(new MockFileSystem())
+                {
+                    ProjectContents = folder
+                }
+            };
+
+            inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
+            {
+                ProjectPath = "C:/test",
+                OptimizationMode = OptimizationModes.None,
+                LogOptions = new LogOptions()
+            });
+
+            projectOrchestratorMock.Setup(x => x.MutateProjects(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>()))
+                .Returns(new List<IMutationTestProcess>() { });
+
+            reporterFactoryMock.Setup(x => x.Create(It.IsAny<StrykerOptions>(), It.IsAny<IGitInfoProvider>())).Returns(reporterMock.Object);
+
+            var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
+
+            Should.Throw<NoTestProjectsException>(() => target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object));
+
+            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
+            reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
+            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>()), Times.Never);
         }
     }
 }
