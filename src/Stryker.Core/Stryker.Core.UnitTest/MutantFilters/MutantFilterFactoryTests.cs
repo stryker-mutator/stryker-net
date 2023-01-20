@@ -55,7 +55,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Assert
             var resultAsBroadcastFilter = result as BroadcastMutantFilter;
 
-            resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(4);
+            resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(5);
         }
 
         [Fact]
@@ -77,7 +77,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Assert
             var resultAsBroadcastFilter = result as BroadcastMutantFilter;
 
-            resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(5);
+            resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(6);
 
             resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(SinceMutantFilter)).Count().ShouldBe(1);
         }
@@ -101,7 +101,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Assert
             var resultAsBroadcastFilter = result.ShouldBeOfType<BroadcastMutantFilter>();
 
-            resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(5);
+            resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(6);
 
             resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(ExcludeLinqExpressionFilter)).Count().ShouldBe(1);
         }
@@ -122,9 +122,34 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var resultAsBroadcastFilter = result as BroadcastMutantFilter;
 
-            resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(6);
+            resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(7);
             resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(BaselineMutantFilter)).Count().ShouldBe(1);
             resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(SinceMutantFilter)).Count().ShouldBe(1);
+        }
+
+        [Fact]
+        public void MutantFilterFactory_Creates_BlockMutantFilter_Last()
+        {
+            // Arrange
+            var options = new StrykerOptions()
+            {
+                WithBaseline = true,
+                ExcludedLinqExpressions = new List<LinqExpression>
+                {
+                    LinqExpression.Distinct
+                },
+            };
+            var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
+            var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
+            var baselineProviderMock = new Mock<IBaselineProvider>(MockBehavior.Loose);
+
+            // Act
+            var result = MutantFilterFactory.Create(options, null, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);
+            var broadcastFilterResult = result as BroadcastMutantFilter;
+
+            // Assert
+            broadcastFilterResult.MutantFilters.Last().ShouldBeOfType<IgnoreBlockMutantFilter>();
+
         }
     }
 }
