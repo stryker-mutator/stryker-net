@@ -47,7 +47,7 @@ namespace Stryker.CLI
             inputs.SinceTargetInput.SuppliedInput = config.Since?.Target;
             inputs.SolutionInput.SuppliedInput = config.Solution;
             inputs.TargetFrameworkInput.SuppliedInput = config.TargetFramework;
-            inputs.UnityInput.SuppliedInput = config.IsUnity;
+            inputs.PathToUnityInput.SuppliedInput = config.PathToUnity;
 
             inputs.ProjectUnderTestNameInput.SuppliedInput = config.Project;
             inputs.ThresholdBreakInput.SuppliedInput = config.Thresholds?.Break;

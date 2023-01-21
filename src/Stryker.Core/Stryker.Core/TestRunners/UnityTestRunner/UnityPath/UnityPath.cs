@@ -2,6 +2,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Stryker.Core.Options;
 
 namespace Stryker.Core.TestRunners.UnityTestRunner.UnityPath;
 
@@ -14,9 +15,14 @@ public class UnityPath : IUnityPath
         _fileSystem = fileSystem;
     }
 
-    public string GetPath(string unityProjectPath)
+    public string GetPath(StrykerOptions options)
     {
-        var unityProjectDirectory = GetUnityProjectDirectory(unityProjectPath);
+        if (!string.IsNullOrEmpty(options.PathToUnity))
+        {
+            return options.PathToUnity;
+        }
+
+        var unityProjectDirectory = GetUnityProjectDirectory(options.ProjectPath);
         var unityVersion = GetUnityVersion(unityProjectDirectory);
 
         var pathToUnity = string.Empty;

@@ -43,8 +43,8 @@ namespace Stryker.CLI
         [JsonPropertyName("target-framework")]
         public string TargetFramework { get; init; }
 
-        [JsonPropertyName("is-unity")]
-        public bool IsUnity { get; init; }
+        [JsonPropertyName("path-to-unity")]
+        public string PathToUnity { get; init; }
 
         [JsonPropertyName("project")]
         public string Project { get; init; }

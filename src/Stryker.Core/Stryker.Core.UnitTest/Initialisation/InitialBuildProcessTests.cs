@@ -4,6 +4,7 @@ using System.IO.Abstractions;
 using Moq;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Options;
 using Stryker.Core.Testing;
 using Xunit;
 
@@ -20,7 +21,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(new FileSystem(), processMock.Object);
 
-            var exception = Assert.Throws<InputException>(() => target.InitialBuild(false, "/", "/"));
+            var exception = Assert.Throws<InputException>(() => target.InitialBuild(false, "/", "/", false, new StrykerOptions()));
         }
 
         [Fact]
@@ -32,7 +33,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(new FileSystem(), processMock.Object);
 
-            target.InitialBuild(false, "/", "/");
+            target.InitialBuild(false, "/", "/", false, new StrykerOptions());
         }
 
         [SkippableFact]
@@ -46,7 +47,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(new FileSystem(), processMock.Object);
 
-            target.InitialBuild(true, "/", "./ExampleProject.sln");
+            target.InitialBuild(true, "/", "./ExampleProject.sln", false, new StrykerOptions());
 
             processMock.Verify(x => x.Start(It.IsAny<string>(),
                 It.Is<string>(applicationParam => applicationParam.Contains("msbuild.exe", StringComparison.InvariantCultureIgnoreCase)),
@@ -65,7 +66,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(new FileSystem(), processMock.Object);
 
-            target.InitialBuild(true, "/", "./ExampleProject.sln", "C:/User/Test/Msbuild.exe");
+            target.InitialBuild(true, "/", "./ExampleProject.sln", false, new StrykerOptions(){MsBuildPath = "C:/User/Test/Msbuild.exe"});
 
             processMock.Verify(x => x.Start(It.IsAny<string>(),
                 It.Is<string>(applicationParam => applicationParam.Contains("C:/User/Test/Msbuild.exe", StringComparison.InvariantCultureIgnoreCase)),
@@ -84,7 +85,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(new FileSystem(), processMock.Object);
 
-            target.InitialBuild(false, "./ExampleProject.csproj", null);
+            target.InitialBuild(false, "./ExampleProject.csproj", null, false, new StrykerOptions());
 
             processMock.Verify(x => x.Start(It.IsAny<string>(),
                 It.Is<string>(applicationParam => applicationParam.Contains("dotnet", StringComparison.InvariantCultureIgnoreCase)),
@@ -103,7 +104,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(new FileSystem(), processMock.Object);
 
-            target.InitialBuild(false, "", "./ExampleProject.sln");
+            target.InitialBuild(false, "", "./ExampleProject.sln", false, new StrykerOptions());
 
             processMock.Verify(x => x.Start(It.IsAny<string>(),
                 It.Is<string>(applicationParam => applicationParam.Contains("dotnet", StringComparison.InvariantCultureIgnoreCase)),

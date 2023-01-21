@@ -64,7 +64,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             };
             var target = new ProjectOrchestrator(_buildalyzerProviderMock.Object, _projectMutatorMock.Object, initialBuildProcessMock.Object);
 
-            initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>()));
+            initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<StrykerOptions>()));
             _initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(_mutationTestInput);
             _initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>())).Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(5)));
             _buildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<string>(), It.IsAny<AnalyzerManagerOptions>())).Returns(buildalyzerAnalyzerManagerMock.Object);

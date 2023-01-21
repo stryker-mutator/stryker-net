@@ -7,6 +7,7 @@ using Stryker.Core.ToolHelpers;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using Stryker.Core.Options;
 using Stryker.Core.TestRunners.UnityTestRunner;
 using Stryker.Core.TestRunners.UnityTestRunner.UnityPath;
 
@@ -14,11 +15,10 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInitialBuildProcess
     {
-        void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string msbuildPath = null,
-            bool isUnity = false);
+        void InitialBuild(bool fullFramework, string projectPath, string solutionPath, bool isUnity,
+            StrykerOptions options);
 
-        void SolutionInitialBuild(string solutionPath, string msbuildPath = null,
-            bool isUnity = false);
+        void SolutionInitialBuild(string solutionPath, bool isUnity, StrykerOptions options);
     }
 
     public class InitialBuildProcess : IInitialBuildProcess
@@ -37,15 +37,15 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialBuildProcess>();
         }
 
-        public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string msbuildPath = null,
-            bool isUnity = false)
+        public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, bool isUnity,
+            StrykerOptions options)
         {
             ProcessResult result;
             if (isUnity)
             {
                 _logger.LogDebug("Started initial build using Unity");
 
-                UnityInitialBuild(solutionPath, projectPath);
+                UnityInitialBuild(options);
             }
             else if (fullFramework)
             {
@@ -59,7 +59,7 @@ namespace Stryker.Core.Initialisation
 
                 solutionPath = Path.GetFullPath(solutionPath);
                 var solutionDir = Path.GetDirectoryName(solutionPath);
-                msbuildPath ??= new MsBuildHelper().GetMsBuildPath(_processExecutor);
+                var msbuildPath = options.MsBuildPath ?? new MsBuildHelper().GetMsBuildPath(_processExecutor);
 
                 // Build project with MSBuild.exe
                 result = _processExecutor.Start(solutionDir, msbuildPath, $"\"{solutionPath}\"");
@@ -79,22 +79,21 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        public void SolutionInitialBuild(string solutionPath, string msbuildPath = null,
-            bool isUnity = false)
+        public void SolutionInitialBuild(string solutionPath, bool isUnity, StrykerOptions options)
         {
             if (isUnity)
             {
-                UnityInitialBuild(solutionPath);
+                UnityInitialBuild(options);
             }
         }
 
-        private void UnityInitialBuild(string solutionPath, string projectPath = null)
+        private void UnityInitialBuild(StrykerOptions options)
         {
-            var unityProjectPath = Directory.GetParent(projectPath ?? solutionPath).FullName;
+            var unityProjectPath = options.ProjectPath;
 
             CopyUnitySdkInTargetUnityProject(unityProjectPath);
             RemoveUnityCompileCache(unityProjectPath);
-            var openUnityResult = OpenUnityForCompiling(unityProjectPath);
+            var openUnityResult = OpenUnityForCompiling(options);
             if (openUnityResult.ExitCode != 0)
             {
                 throw new UnityExecuteException(openUnityResult.ExitCode, openUnityResult.Output);
@@ -102,9 +101,9 @@ namespace Stryker.Core.Initialisation
         }
 
 
-        private ProcessResult OpenUnityForCompiling(string unityProjectPath) =>
-            _processExecutor.Start(unityProjectPath, _unityPath.GetPath(unityProjectPath),
-                $" -quit -batchmode -projectPath={unityProjectPath} -logFile {DateTime.Now.ToFileTime()}.log");
+        private ProcessResult OpenUnityForCompiling(StrykerOptions options) =>
+            _processExecutor.Start(options.ProjectPath, _unityPath.GetPath(options),
+                $" -quit -batchmode -projectPath={options.ProjectPath} -logFile {DateTime.Now.ToFileTime()}.log");
 
         private void RemoveUnityCompileCache(string unityProjectPath)
         {

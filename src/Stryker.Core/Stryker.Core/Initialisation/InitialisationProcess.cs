@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Net;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
@@ -60,6 +61,8 @@ namespace Stryker.Core.Initialisation
             // resolve project info
             _projectInfo = _inputFileResolver.ResolveInput(options, solutionProjects);
 
+            var isUnityProject = IsUnityProject(options);
+
             // initial build
             if (!options.IsSolutionContext)
             {
@@ -74,13 +77,13 @@ namespace Stryker.Core.Initialisation
                     _initialBuildProcess.InitialBuild(
                         testProjects[i].TargetsFullFramework(),
                         testProjects[i].ProjectFilePath,
-                        options.SolutionPath,
-                        options.MsBuildPath, options.IsUnity);
+                        options.SolutionPath, isUnityProject,
+                        options);
                 }
             }
             else
             {
-                _initialBuildProcess.SolutionInitialBuild(options.SolutionPath, options.MsBuildPath, options.IsUnity);
+                _initialBuildProcess.SolutionInitialBuild(options.SolutionPath, isUnityProject, options);
             }
 
             // at initial build process I rewrite csproj and it didn't apply in stryker without reloading.
@@ -92,8 +95,9 @@ namespace Stryker.Core.Initialisation
 
             if (_testRunner == null)
             {
-                if (options.IsUnity)
-                    _testRunner = new UnityTestRunner(new ProcessExecutor(), options, _logger, new UnityPath(new FileSystem()));
+                if (isUnityProject)
+                    _testRunner = new UnityTestRunner(new ProcessExecutor(), options, _logger,
+                        new UnityPath(new FileSystem()));
                 else
                     _testRunner = new VsTestRunnerPool(options, _projectInfo);
             }
@@ -258,6 +262,21 @@ namespace Stryker.Core.Initialisation
             }
 
             return assemblyInformationalVersion;
+        }
+
+        private static bool IsUnityProject(StrykerOptions options)
+        {
+            var unityCsProjFile = Directory
+                .GetFiles(options.ProjectPath ?? options.SolutionPath, "Assembly-CSharp.csproj",
+                    SearchOption.TopDirectoryOnly).FirstOrDefault();
+            if (string.IsNullOrEmpty(unityCsProjFile))
+            {
+                return false;
+            }
+
+            var containsUnityEngineReferences =
+                File.ReadAllText(unityCsProjFile).Contains("<Reference Include=\"UnityEngine.");
+            return containsUnityEngineReferences;
         }
     }
 }

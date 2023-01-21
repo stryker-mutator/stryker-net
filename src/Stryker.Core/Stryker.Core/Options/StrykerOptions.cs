@@ -72,9 +72,9 @@ namespace Stryker.Core.Options
         public string TargetFramework { get; init; }
 
         /// <summary>
-        /// Is unity project
+        /// Override path to Unity
         /// </summary>
-        public bool IsUnity { get; init; }
+        public string PathToUnity { get; init; }
 
         /// <summary>
         /// The options passed to all logging systems
@@ -270,7 +270,7 @@ namespace Stryker.Core.Options
             Thresholds = Thresholds,
             WithBaseline = WithBaseline,
             BreakOnInitialTestFailure = BreakOnInitialTestFailure,
-            IsUnity = IsUnity,
+            PathToUnity = PathToUnity,
         };
     }
 }

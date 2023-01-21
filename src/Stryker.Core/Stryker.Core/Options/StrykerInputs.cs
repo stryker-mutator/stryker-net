@@ -37,7 +37,7 @@ namespace Stryker.Core.Options
         SinceInput SinceInput { get; init; }
         SinceTargetInput SinceTargetInput { get; init; }
         SolutionInput SolutionInput { get; init; }
-        UnityInput UnityInput { get; init; }
+        PathToUnityInput PathToUnityInput { get; init; }
         TargetFrameworkInput TargetFrameworkInput { get; init; }
         TestProjectsInput TestProjectsInput { get; init; }
         TestCaseFilterInput TestCaseFilterInput { get; init; }
@@ -69,7 +69,7 @@ namespace Stryker.Core.Options
         public ReportFileNameInput ReportFileNameInput { get; init; } = new();
         public SolutionInput SolutionInput { get; init; } = new();
         public TargetFrameworkInput TargetFrameworkInput { get; init; } = new();
-        public UnityInput UnityInput { get; init; } = new();
+        public PathToUnityInput PathToUnityInput { get; init; } = new();
         public VerbosityInput VerbosityInput { get; init; } = new();
         public LogToFileInput LogToFileInput { get; init; } = new();
         public MutationLevelInput MutationLevelInput { get; init; } = new();
@@ -130,7 +130,7 @@ namespace Stryker.Core.Options
                 MsBuildPath = MsBuildPathInput.Validate(_fileSystem),
                 SolutionPath = SolutionInput.Validate(basePath, _fileSystem),
                 TargetFramework = TargetFrameworkInput.Validate(),
-                IsUnity = UnityInput.Validate(),
+                PathToUnity = PathToUnityInput.Validate(),
                 Thresholds = new Thresholds
                 {
                     High = ThresholdHighInput.Validate(ThresholdLowInput.SuppliedInput),

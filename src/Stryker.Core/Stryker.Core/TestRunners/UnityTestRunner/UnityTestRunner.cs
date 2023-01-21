@@ -126,7 +126,7 @@ public class UnityTestRunner : ITestRunner
             Path.Combine(_strykerOptions.OutputPath, "unity_" + DateTime.Now.ToFileTime() + ".log");
         _logger.LogDebug("StartUnityProcess started");
 
-        var processResult = _processExecutor.Start(pathToProject, _unityPath.GetPath(pathToProject),
+        var processResult = _processExecutor.Start(pathToProject, _unityPath.GetPath(_strykerOptions),
             @$" -batchmode -projectPath={pathToProject} -logFile {pathToUnityLogFile} -executeMethod Stryker.UnitySDK.RunTests.Run");
         _logger.LogDebug("StartUnityProcess finished");
 

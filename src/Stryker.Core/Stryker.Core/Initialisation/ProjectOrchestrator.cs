@@ -56,8 +56,7 @@ namespace Stryker.Core.Initialisation
                 _initialBuildProcess.InitialBuild(
                     projectsUnderTestAnalyzerResult.First().TargetsFullFramework(),
                     Path.GetDirectoryName(options.SolutionPath),
-                    options.SolutionPath,
-                    options.MsBuildPath, options.IsUnity);
+                    options.SolutionPath, false, options);
 
                 // Mutate all projects in the solution
                 foreach (var project in MutateSolution(options, reporters, projectsUnderTestAnalyzerResult,
