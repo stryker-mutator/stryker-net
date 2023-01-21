@@ -10,6 +10,7 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Testing;
+using Stryker.Core.TestRunners.UnityTestRunner.UnityPath;
 
 namespace Stryker.Core.TestRunners.UnityTestRunner;
 
@@ -19,19 +20,24 @@ public class UnityTestRunner : ITestRunner
     private readonly IProcessExecutor _processExecutor;
     private readonly StrykerOptions _strykerOptions;
     private readonly ILogger _logger;
+    private readonly IUnityPath _unityPath;
     private TestSet _testSet = null;
     private TestRunResult _initialRunTestResult;
     private bool _firstMutationTestStarted;
     private Task _unityProcessTask;
     private string PathToUnityListenFile => Path.Combine(_strykerOptions.OutputPath, "UnityListens.txt");
-    private string PathToActiveMutantsListenFile => Path.Combine(_strykerOptions.OutputPath, "ActiveMutantsListens.txt");
+
+    private string PathToActiveMutantsListenFile =>
+        Path.Combine(_strykerOptions.OutputPath, "ActiveMutantsListens.txt");
 
 
-    public UnityTestRunner(IProcessExecutor processExecutor, StrykerOptions strykerOptions, ILogger logger)
+    public UnityTestRunner(IProcessExecutor processExecutor, StrykerOptions strykerOptions, ILogger logger,
+        IUnityPath unityPath)
     {
         _processExecutor = processExecutor;
         _strykerOptions = strykerOptions;
         _logger = logger;
+        _unityPath = unityPath;
     }
 
     public TestSet DiscoverTests()
@@ -109,20 +115,20 @@ public class UnityTestRunner : ITestRunner
     public void Dispose()
     {
         FinishUnityProcess();
-        //todo add stop job during run
         //todo remove all modifications
         //todo remove installed package
     }
 
     private void StartUnityProcess()
     {
-        var pathToUnity = GetPathToUnity();
         var pathToProject = _strykerOptions.WorkingDirectory;
         var pathToUnityLogFile =
             Path.Combine(_strykerOptions.OutputPath, "unity_" + DateTime.Now.ToFileTime() + ".log");
+        _logger.LogDebug("StartUnityProcess started");
 
-        var processResult = _processExecutor.Start(pathToProject, pathToUnity,
+        var processResult = _processExecutor.Start(pathToProject, _unityPath.GetPath(pathToProject),
             @$" -batchmode -projectPath={pathToProject} -logFile {pathToUnityLogFile} -executeMethod Stryker.UnitySDK.RunTests.Run");
+        _logger.LogDebug("StartUnityProcess finished");
 
         if (processResult.ExitCode != 0 && processResult.ExitCode != TestFailedExitCode)
         {
@@ -154,6 +160,8 @@ public class UnityTestRunner : ITestRunner
 
     private void FinishUnityProcess()
     {
+        _logger.LogDebug("StartUnityProcess FinishUnityProcess");
+
         File.WriteAllText(PathToUnityListenFile, "exit");
         _unityProcessTask.GetAwaiter().GetResult();
     }
@@ -184,15 +192,6 @@ public class UnityTestRunner : ITestRunner
             : new TestGuidsList(_testSet.Extract(ids));
 
         return failedTests;
-    }
-
-    private string GetPathToUnity()
-    {
-        var pathToProject = _strykerOptions.WorkingDirectory;
-        _logger.LogDebug("Unity pathToProject " + pathToProject);
-        //todo add discovery of unity version
-        //todo add platform specific unity path
-        return @"/Applications/Unity/Hub/Editor/2022.2.0f1/Unity.app/Contents/MacOS/Unity";
     }
 
     private static Guid ToGuid(int value)

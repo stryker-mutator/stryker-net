@@ -7,7 +7,8 @@ using Stryker.Core.ToolHelpers;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Text.RegularExpressions;
+using Stryker.Core.TestRunners.UnityTestRunner;
+using Stryker.Core.TestRunners.UnityTestRunner.UnityPath;
 
 namespace Stryker.Core.Initialisation
 {
@@ -15,17 +16,23 @@ namespace Stryker.Core.Initialisation
     {
         void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string msbuildPath = null,
             bool isUnity = false);
+
+        void SolutionInitialBuild(string solutionPath, string msbuildPath = null,
+            bool isUnity = false);
     }
 
     public class InitialBuildProcess : IInitialBuildProcess
     {
         private readonly IFileSystem _fileSystem;
+        private readonly IUnityPath _unityPath;
         private readonly IProcessExecutor _processExecutor;
         private readonly ILogger _logger;
 
-        public InitialBuildProcess(IFileSystem fileSystem, IProcessExecutor processExecutor = null)
+        public InitialBuildProcess(IFileSystem fileSystem, IProcessExecutor processExecutor = null,
+            IUnityPath unityPath = null)
         {
             _fileSystem = fileSystem;
+            _unityPath = unityPath ?? new UnityPath(new FileSystem());
             _processExecutor = processExecutor ?? new ProcessExecutor();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialBuildProcess>();
         }
@@ -33,23 +40,17 @@ namespace Stryker.Core.Initialisation
         public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string msbuildPath = null,
             bool isUnity = false)
         {
-            _logger.LogDebug("Started initial build using {0}", fullFramework ? "msbuild.exe" : "dotnet build");
-
             ProcessResult result;
             if (isUnity)
             {
-                //todo run unity to generate csproj https://docs.unity3d.com/Packages/com.unity.test-framework@1.1/manual/extension-retrieve-test-list.html
+                _logger.LogDebug("Started initial build using Unity");
 
-                var info = new FileInfo(projectPath);
-                foreach (var fileInfo in info.Directory?.GetFiles("*.csproj")!)
-                {
-                    UpdateOutputPathForUnityProjects(fileInfo.FullName);
-                }
-
-                CopyUnitySDKInTargetUnityProject(projectPath);
+                UnityInitialBuild(solutionPath, projectPath);
             }
             else if (fullFramework)
             {
+                _logger.LogDebug("Started initial build using msbuild.exe");
+
                 if (string.IsNullOrEmpty(solutionPath))
                 {
                     throw new InputException(
@@ -66,6 +67,8 @@ namespace Stryker.Core.Initialisation
             }
             else
             {
+                _logger.LogDebug("Started initial build using dotnet build");
+
                 var buildPath = !string.IsNullOrEmpty(solutionPath) ? solutionPath : Path.GetFileName(projectPath);
 
                 _logger.LogDebug("Initial build using path: {buildPath}", buildPath);
@@ -76,11 +79,46 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private void CopyUnitySDKInTargetUnityProject(string pathProject)
+        public void SolutionInitialBuild(string solutionPath, string msbuildPath = null,
+            bool isUnity = false)
         {
-            var unityProjectPath = Directory.GetParent(pathProject).FullName;
+            if (isUnity)
+            {
+                UnityInitialBuild(solutionPath);
+            }
+        }
+
+        private void UnityInitialBuild(string solutionPath, string projectPath = null)
+        {
+            var unityProjectPath = Directory.GetParent(projectPath ?? solutionPath).FullName;
+
+            CopyUnitySdkInTargetUnityProject(unityProjectPath);
+            RemoveUnityCompileCache(unityProjectPath);
+            var openUnityResult = OpenUnityForCompiling(unityProjectPath);
+            if (openUnityResult.ExitCode != 0)
+            {
+                throw new UnityExecuteException(openUnityResult.ExitCode, openUnityResult.Output);
+            }
+        }
+
+
+        private ProcessResult OpenUnityForCompiling(string unityProjectPath) =>
+            _processExecutor.Start(unityProjectPath, _unityPath.GetPath(unityProjectPath),
+                $" -quit -batchmode -projectPath={unityProjectPath} -logFile {DateTime.Now.ToFileTime()}.log");
+
+        private void RemoveUnityCompileCache(string unityProjectPath)
+        {
+            var cachePath = Path.Combine(unityProjectPath, "Library", "ScriptAssemblies");
+            if (Directory.Exists(cachePath))
+            {
+                Directory.Delete(cachePath, true);
+            }
+        }
+
+        private void CopyUnitySdkInTargetUnityProject(string unityProjectPath)
+        {
             var allFilesOfSdk = typeof(VsTestHelper).Assembly
-                .GetManifestResourceNames().Where(name => name.Contains("Stryker.UnitySDK")) ?? throw new ArgumentNullException("typeof(VsTestHelper).Assembly\n                .GetManifestResourceNames().Where(name => name.Contains(\"Stryker.UnitySDK\"))");
+                .GetManifestResourceNames().Where(name => name.Contains("Stryker.UnitySDK"));
 
             var pathToPackageOfSdk = Path.Combine(unityProjectPath, "Packages", "Stryker.UnitySDK");
             Directory.CreateDirectory(pathToPackageOfSdk);
@@ -92,21 +130,13 @@ namespace Stryker.Core.Initialisation
                     Path.Combine(pathToPackageOfSdk, GetFinalNameOfResource(nameEmbeddedResource)),
                     FileMode.Create);
 
-                typeof(VsTestHelper).Assembly.GetManifestResourceStream(nameEmbeddedResource).CopyTo(file);
+                typeof(VsTestHelper).Assembly.GetManifestResourceStream(nameEmbeddedResource)?.CopyTo(file);
             }
 
             string GetFinalNameOfResource(string name)
             {
                 return name.Split("Stryker.UnitySDK.").Last();
             }
-        }
-
-        private static void UpdateOutputPathForUnityProjects(string projectPath)
-        {
-            var pattern = new Regex(@"<OutputPath>.*<\/OutputPath>", RegexOptions.Compiled);
-            var updatedCsProjContent = pattern.Replace(File.ReadAllText(projectPath),
-                _ => @"<OutputPath>Library\ScriptAssemblies\</OutputPath>");
-            File.WriteAllText(projectPath, updatedCsProjContent);
         }
 
         private void CheckBuildResult(ProcessResult result, string buildCommand, string buildPath)
