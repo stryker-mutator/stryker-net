@@ -15,10 +15,10 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInitialBuildProcess
     {
-        void InitialBuild(bool fullFramework, string projectPath, string solutionPath, bool isUnity,
+        void InitialBuild(bool fullFramework, string projectPath, string solutionPath,
             StrykerOptions options);
 
-        void SolutionInitialBuild(string solutionPath, bool isUnity, StrykerOptions options);
+        void SolutionInitialBuild(string solutionPath, StrykerOptions options);
     }
 
     public class InitialBuildProcess : IInitialBuildProcess
@@ -37,11 +37,11 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialBuildProcess>();
         }
 
-        public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, bool isUnity,
+        public void InitialBuild(bool fullFramework, string projectPath, string solutionPath,
             StrykerOptions options)
         {
             ProcessResult result;
-            if (isUnity)
+            if (options.IsUnityProject())
             {
                 _logger.LogDebug("Started initial build using Unity");
 
@@ -79,9 +79,9 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        public void SolutionInitialBuild(string solutionPath, bool isUnity, StrykerOptions options)
+        public void SolutionInitialBuild(string solutionPath, StrykerOptions options)
         {
-            if (isUnity)
+            if (options.IsUnityProject())
             {
                 UnityInitialBuild(options);
             }

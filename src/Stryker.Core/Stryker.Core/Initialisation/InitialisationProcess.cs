@@ -61,8 +61,6 @@ namespace Stryker.Core.Initialisation
             // resolve project info
             _projectInfo = _inputFileResolver.ResolveInput(options, solutionProjects);
 
-            var isUnityProject = IsUnityProject(options);
-
             // initial build
             if (!options.IsSolutionContext)
             {
@@ -77,13 +75,12 @@ namespace Stryker.Core.Initialisation
                     _initialBuildProcess.InitialBuild(
                         testProjects[i].TargetsFullFramework(),
                         testProjects[i].ProjectFilePath,
-                        options.SolutionPath, isUnityProject,
-                        options);
+                        options.SolutionPath, options);
                 }
             }
             else
             {
-                _initialBuildProcess.SolutionInitialBuild(options.SolutionPath, isUnityProject, options);
+                _initialBuildProcess.SolutionInitialBuild(options.SolutionPath, options);
             }
 
             // at initial build process I rewrite csproj and it didn't apply in stryker without reloading.
@@ -95,7 +92,7 @@ namespace Stryker.Core.Initialisation
 
             if (_testRunner == null)
             {
-                if (isUnityProject)
+                if (options.IsUnityProject())
                     _testRunner = new UnityTestRunner(new ProcessExecutor(), options, _logger,
                         new UnityPath(new FileSystem()));
                 else
@@ -262,21 +259,6 @@ namespace Stryker.Core.Initialisation
             }
 
             return assemblyInformationalVersion;
-        }
-
-        private static bool IsUnityProject(StrykerOptions options)
-        {
-            var unityCsProjFile = Directory
-                .GetFiles(options.ProjectPath ?? options.SolutionPath, "Assembly-CSharp.csproj",
-                    SearchOption.TopDirectoryOnly).FirstOrDefault();
-            if (string.IsNullOrEmpty(unityCsProjFile))
-            {
-                return false;
-            }
-
-            var containsUnityEngineReferences =
-                File.ReadAllText(unityCsProjFile).Contains("<Reference Include=\"UnityEngine.");
-            return containsUnityEngineReferences;
         }
     }
 }

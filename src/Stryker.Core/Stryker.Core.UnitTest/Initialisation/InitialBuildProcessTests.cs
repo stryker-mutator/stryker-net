@@ -21,7 +21,8 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(new FileSystem(), processMock.Object);
 
-            var exception = Assert.Throws<InputException>(() => target.InitialBuild(false, "/", "/", false, new StrykerOptions()));
+            var exception =
+                Assert.Throws<InputException>(() => target.InitialBuild(false, "/", "/", new StrykerOptions()));
         }
 
         [Fact]
@@ -33,7 +34,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(new FileSystem(), processMock.Object);
 
-            target.InitialBuild(false, "/", "/", false, new StrykerOptions());
+            target.InitialBuild(false, "/", "/", new StrykerOptions());
         }
 
         [SkippableFact]
@@ -47,13 +48,14 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(new FileSystem(), processMock.Object);
 
-            target.InitialBuild(true, "/", "./ExampleProject.sln", false, new StrykerOptions());
+            target.InitialBuild(true, "/", "./ExampleProject.sln", new StrykerOptions());
 
             processMock.Verify(x => x.Start(It.IsAny<string>(),
-                It.Is<string>(applicationParam => applicationParam.Contains("msbuild.exe", StringComparison.InvariantCultureIgnoreCase)),
-                It.Is<string>(argumentsParam => argumentsParam.Contains("ExampleProject.sln")),
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
-                It.IsAny<int>()),
+                    It.Is<string>(applicationParam =>
+                        applicationParam.Contains("msbuild.exe", StringComparison.InvariantCultureIgnoreCase)),
+                    It.Is<string>(argumentsParam => argumentsParam.Contains("ExampleProject.sln")),
+                    It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                    It.IsAny<int>()),
                 Times.Once);
         }
 
@@ -66,13 +68,15 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(new FileSystem(), processMock.Object);
 
-            target.InitialBuild(true, "/", "./ExampleProject.sln", false, new StrykerOptions(){MsBuildPath = "C:/User/Test/Msbuild.exe"});
+            target.InitialBuild(true, "/", "./ExampleProject.sln",
+                new StrykerOptions() { MsBuildPath = "C:/User/Test/Msbuild.exe" });
 
             processMock.Verify(x => x.Start(It.IsAny<string>(),
-                It.Is<string>(applicationParam => applicationParam.Contains("C:/User/Test/Msbuild.exe", StringComparison.InvariantCultureIgnoreCase)),
-                It.Is<string>(argumentsParam => argumentsParam.Contains("ExampleProject.sln")),
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
-                It.IsAny<int>()),
+                    It.Is<string>(applicationParam => applicationParam.Contains("C:/User/Test/Msbuild.exe",
+                        StringComparison.InvariantCultureIgnoreCase)),
+                    It.Is<string>(argumentsParam => argumentsParam.Contains("ExampleProject.sln")),
+                    It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                    It.IsAny<int>()),
                 Times.Once);
         }
 
@@ -85,13 +89,14 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(new FileSystem(), processMock.Object);
 
-            target.InitialBuild(false, "./ExampleProject.csproj", null, false, new StrykerOptions());
+            target.InitialBuild(false, "./ExampleProject.csproj", null, new StrykerOptions());
 
             processMock.Verify(x => x.Start(It.IsAny<string>(),
-                It.Is<string>(applicationParam => applicationParam.Contains("dotnet", StringComparison.InvariantCultureIgnoreCase)),
-                It.Is<string>(argumentsParam => argumentsParam.Contains("build")),
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
-                It.IsAny<int>()),
+                    It.Is<string>(applicationParam =>
+                        applicationParam.Contains("dotnet", StringComparison.InvariantCultureIgnoreCase)),
+                    It.Is<string>(argumentsParam => argumentsParam.Contains("build")),
+                    It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                    It.IsAny<int>()),
                 Times.Once);
         }
 
@@ -104,13 +109,14 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(new FileSystem(), processMock.Object);
 
-            target.InitialBuild(false, "", "./ExampleProject.sln", false, new StrykerOptions());
+            target.InitialBuild(false, "", "./ExampleProject.sln", new StrykerOptions());
 
             processMock.Verify(x => x.Start(It.IsAny<string>(),
-                It.Is<string>(applicationParam => applicationParam.Contains("dotnet", StringComparison.InvariantCultureIgnoreCase)),
-                It.Is<string>(argumentsParam => argumentsParam.Contains("ExampleProject.sln")),
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
-                It.IsAny<int>()),
+                    It.Is<string>(applicationParam =>
+                        applicationParam.Contains("dotnet", StringComparison.InvariantCultureIgnoreCase)),
+                    It.Is<string>(argumentsParam => argumentsParam.Contains("ExampleProject.sln")),
+                    It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                    It.IsAny<int>()),
                 Times.Once);
         }
     }
