@@ -1,9 +1,14 @@
+using System;
+using System.Xml.Linq;
 using Stryker.Core.Options;
-using Stryker.Core.Testing;
 
 namespace Stryker.Core.TestRunners.UnityTestRunner.RunUnity;
 
-public interface IRunUnity
+public interface IRunUnity : IDisposable
 {
-    ProcessResult RunUnityUntilFinish(StrykerOptions strykerOptions, string projectPath, string runArgumentsForCli);
+    public void ReloadDomain(StrykerOptions strykerOptions, string projectPath,
+        string additionalArgumentsForCli = null);
+
+    public XDocument RunTests(StrykerOptions strykerOptions, string projectPath,
+        string additionalArgumentsForCli = null, string activeMutantId=null);
 }

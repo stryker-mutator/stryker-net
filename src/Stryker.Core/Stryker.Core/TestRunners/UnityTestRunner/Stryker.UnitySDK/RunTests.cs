@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,14 +12,14 @@ using UnityEngine.TestTools;
 
 namespace Stryker.UnitySDK
 {
-	public static class RunTests
+    public static class RunTests
 	{
 		public static bool TestsInProgress = false;
 
-		public static void Run()
+        [InitializeOnLoadMethod]
+        public static void Run()
 		{
-			var enumerator = Coroutine();
-			EditorCoroutine.Start(enumerator);
+			EditorCoroutine.Start(Coroutine());
 		}
 
 		private static IEnumerator Coroutine()
@@ -26,44 +27,50 @@ namespace Stryker.UnitySDK
 			Console.WriteLine("[Stryker] Run coroutine");
 			var textFileToListen = Environment.GetEnvironmentVariable("Stryker.Unity.PathToListen");
 
+            if (string.IsNullOrEmpty(textFileToListen) || !File.Exists(textFileToListen))
+            {
+                yield break;
+            }
+
 			string _runnedPathToOutput = string.Empty;
 			var testRunnerApi = ScriptableObject.CreateInstance<TestRunnerApi>();
 			testRunnerApi.RegisterCallbacks(new TestCallbacks(() => _runnedPathToOutput));
 
 			while (true)
 			{
-				// if (IsActiveVariable("Stryker.Unity.RequestToExit"))
-				// {
-				// 	Console.WriteLine("[Stryker] Got RequestToExit");
-				// 	yield break;
-				// }
 
-				if (TestsInProgress)
-				{
-					yield return new WaitForSeconds(1f);
-					continue;
-				}
-
-
-				var pathToSaveOutput = File.ReadAllText(textFileToListen);
-				if (pathToSaveOutput.Contains("exit"))
+                var command = File.ReadAllText(textFileToListen);
+				if (command == "exit")
 				{
 					Console.WriteLine("[Stryker] Got exit. Close unity");
 
 					EditorApplication.Exit(0);
 					yield break;
 				}
-				else if (pathToSaveOutput != _runnedPathToOutput)
+                if (command == "reloadDomain")
+                {
+                    Console.WriteLine($"[Stryker][{DateTime.Now.ToLongTimeString()}] Got reloadDomain");
+
+                    File.WriteAllText(textFileToListen, string.Empty);
+
+                    EditorUtility.RequestScriptReload();
+                }
+				else if (!string.IsNullOrWhiteSpace(command))
 				{
-					_runnedPathToOutput = pathToSaveOutput;
-					Console.WriteLine("[Stryker] Got RequestToRun");
-					Console.WriteLine("[Stryker] Start testRunnerApi.Execute with path " + pathToSaveOutput);
+					_runnedPathToOutput = command;
+					Console.WriteLine($"[Stryker][{DateTime.Now.ToLongTimeString()}] Got RequestToRunTests");
+					Console.WriteLine("[Stryker] Start testRunnerApi.Execute with path " + command);
 
 					var executionSettings = new ExecutionSettings(new Filter() { testMode = TestMode.EditMode });
 					testRunnerApi.Execute(executionSettings);
 					TestsInProgress = true;
-					Console.WriteLine("[Stryker] Finish testRunnerApi.Execute");
-				}
+
+                    while (TestsInProgress)
+                    {
+                        yield return new WaitForSeconds(1f);
+                    }
+                    File.WriteAllText(textFileToListen, string.Empty);
+                }
 				else
 				{
 					// Console.WriteLine("[Stryker] did not Got RequestToRun. wait 1s");

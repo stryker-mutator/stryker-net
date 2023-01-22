@@ -2,39 +2,28 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
-using Stryker.Core.Testing;
 using Stryker.Core.TestRunners.UnityTestRunner.RunUnity;
 
 namespace Stryker.Core.TestRunners.UnityTestRunner;
 
 public class UnityTestRunner : ITestRunner
 {
-    private const int TestFailedExitCode = 2;
-    private readonly IProcessExecutor _processExecutor;
     private readonly StrykerOptions _strykerOptions;
     private readonly ILogger _logger;
     private readonly IRunUnity _runUnity;
     private TestSet _testSet = null;
     private TestRunResult _initialRunTestResult;
     private bool _firstMutationTestStarted;
-    private Task _unityProcessTask;
-    private string PathToUnityListenFile => Path.Combine(_strykerOptions.OutputPath, "UnityListens.txt");
 
-    private string PathToActiveMutantsListenFile =>
-        Path.Combine(_strykerOptions.OutputPath, "ActiveMutantsListens.txt");
-
-
-    public UnityTestRunner(IProcessExecutor processExecutor, StrykerOptions strykerOptions, ILogger logger,
+    public UnityTestRunner(StrykerOptions strykerOptions, ILogger logger,
         IRunUnity runUnity)
     {
-        _processExecutor = processExecutor;
         _strykerOptions = strykerOptions;
         _logger = logger;
         _runUnity = runUnity;
@@ -45,11 +34,7 @@ public class UnityTestRunner : ITestRunner
         if (_testSet != null)
             return _testSet;
 
-        var pathToTestResultXml =
-            Path.Combine(_strykerOptions.OutputPath, $"test_results_{DateTime.Now.ToFileTime()}.xml");
-        RunTests(pathToTestResultXml, out var duration);
-
-        var testResultsXml = XDocument.Load(pathToTestResultXml);
+        var testResultsXml = RunTests(out var duration);
 
         //todo add valid test file path. It used for checking diff by git and ut of the box dont provides in xml
         _testSet = new TestSet();
@@ -70,7 +55,7 @@ public class UnityTestRunner : ITestRunner
 
     public IEnumerable<CoverageRunResult> CaptureCoverage()
     {
-        throw new System.NotImplementedException();
+        throw new NotImplementedException();
     }
 
     public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants,
@@ -79,16 +64,10 @@ public class UnityTestRunner : ITestRunner
         if (!_firstMutationTestStarted)
         {
             //rerun unity to apply modifications and reload domain
-            FinishUnityProcess();
+            _runUnity.ReloadDomain(_strykerOptions, _strykerOptions.WorkingDirectory);
         }
 
-        ApplyMutantIdToTestRun(mutants);
-
-        var pathToTestResultXml =
-            Path.Combine(_strykerOptions.OutputPath, $"test_results_{DateTime.Now.ToFileTime()}.xml");
-        RunTests(pathToTestResultXml, out var duration);
-
-        var testResultsXml = XDocument.Load(pathToTestResultXml);
+        var testResultsXml = RunTests(out var duration, mutants.Single().Id.ToString());
 
         var passedTests = GetPassedTests(testResultsXml);
         var failedTests = GetFailedTests(testResultsXml);
@@ -98,7 +77,7 @@ public class UnityTestRunner : ITestRunner
         if (remainingMutants == false)
         {
             // all mutants status have been resolved, we can stop
-            _logger.LogDebug($"Each mutant's fate has been established, we can stop.");
+            _logger.LogDebug("Each mutant's fate has been established, we can stop.");
         }
 
         _firstMutationTestStarted = true;
@@ -106,68 +85,23 @@ public class UnityTestRunner : ITestRunner
         return new TestRunResult(passedTests, failedTests, GetTimeoutTestGuidsList(), string.Empty, duration);
     }
 
-    private void ApplyMutantIdToTestRun(IEnumerable<Mutant> mutants)
-    {
-        Environment.SetEnvironmentVariable("ActiveMutationPath", PathToActiveMutantsListenFile);
-        File.WriteAllText(PathToActiveMutantsListenFile, mutants.Single().Id.ToString());
-    }
 
     public void Dispose()
     {
-        FinishUnityProcess();
+        _runUnity.Dispose();
         //todo remove all modifications
         //todo remove installed package
     }
 
-    private void StartUnityProcess()
+    private XDocument RunTests(out TimeSpan duration, string activeMutantId = null)
     {
-        var pathToProject = _strykerOptions.WorkingDirectory;
-
-        var processResult = _runUnity.RunUnityUntilFinish(_strykerOptions, pathToProject,
-            "-executeMethod Stryker.UnitySDK.RunTests.Run");
-        if (processResult.ExitCode != 0 && processResult.ExitCode != TestFailedExitCode)
-        {
-            throw new UnityExecuteException(processResult.ExitCode, processResult.Output);
-        }
-    }
-
-    private void RunTests(string pathToSave, out TimeSpan duration)
-    {
-        _logger.LogDebug("Request to run tests and save at " + pathToSave);
-        Environment.SetEnvironmentVariable("Stryker.Unity.PathToListen", PathToUnityListenFile);
-        File.WriteAllText(PathToUnityListenFile, pathToSave);
-
-        if (_unityProcessTask == null || _unityProcessTask.Status != TaskStatus.Running)
-        {
-            _unityProcessTask = Task.Run(StartUnityProcess);
-        }
-
         var startTime = DateTime.UtcNow;
-        while (!File.Exists(pathToSave) && _unityProcessTask.Status != TaskStatus.Canceled &&
-               _unityProcessTask.Status != TaskStatus.Faulted && _unityProcessTask.Status != TaskStatus.RanToCompletion)
-        {
-        }
 
-        if (_unityProcessTask.Exception != null) throw _unityProcessTask.Exception;
-
-
-        if (File.Exists(pathToSave))
-        {
-            _logger.LogDebug("Test run accomplished and save at " + pathToSave);
-        }
-
+        var xmlTestResults = _runUnity.RunTests(_strykerOptions, _strykerOptions.WorkingDirectory,
+            activeMutantId: activeMutantId);
 
         duration = DateTime.UtcNow - startTime;
-        //hotfix to wait that all xml content was wrote fully
-        Thread.Sleep(100);
-    }
-
-    private void FinishUnityProcess()
-    {
-        _logger.LogDebug("StartUnityProcess FinishUnityProcess");
-
-        File.WriteAllText(PathToUnityListenFile, "exit");
-        _unityProcessTask.GetAwaiter().GetResult();
+        return xmlTestResults;
     }
 
     private static TestGuidsList GetTimeoutTestGuidsList() =>

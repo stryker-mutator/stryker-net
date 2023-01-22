@@ -1,16 +1,14 @@
-using System;
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Logging;
-using Stryker.Core.Testing;
-using Stryker.Core.ToolHelpers;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Logging;
 using Stryker.Core.Options;
-using Stryker.Core.TestRunners.UnityTestRunner;
+using Stryker.Core.Testing;
 using Stryker.Core.TestRunners.UnityTestRunner.RunUnity;
 using Stryker.Core.TestRunners.UnityTestRunner.RunUnity.UnityPath;
+using Stryker.Core.ToolHelpers;
 
 namespace Stryker.Core.Initialisation
 {
@@ -95,18 +93,12 @@ namespace Stryker.Core.Initialisation
 
             CopyUnitySdkInTargetUnityProject(unityProjectPath);
             RemoveUnityCompileCache(unityProjectPath);
-            var openUnityResult = OpenUnityForCompiling(options);
-            if (openUnityResult.ExitCode != 0)
-            {
-                throw new UnityExecuteException(openUnityResult.ExitCode, openUnityResult.Output);
-            }
+            OpenUnityForCompiling(options);
         }
-
-
-        private ProcessResult OpenUnityForCompiling(StrykerOptions options)
+        private void OpenUnityForCompiling(StrykerOptions options)
         {
             var pathToProject = options.GetUnityProjectDirectory();
-            return _runUnity.RunUnityUntilFinish(options, pathToProject, "-quit");
+            _runUnity.ReloadDomain(options, pathToProject);
         }
 
         private void RemoveUnityCompileCache(string unityProjectPath)

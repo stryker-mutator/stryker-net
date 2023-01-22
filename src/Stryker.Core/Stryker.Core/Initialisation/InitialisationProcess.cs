@@ -94,7 +94,7 @@ namespace Stryker.Core.Initialisation
             if (_testRunner == null)
             {
                 if (options.IsUnityProject())
-                    _testRunner = new UnityTestRunner(new ProcessExecutor(), options, _logger,
+                    _testRunner = new UnityTestRunner(options, _logger,
                         RunUnity.GetSingleInstance(() => new ProcessExecutor(), () => new UnityPath(new FileSystem()),
                             () => _logger));
                 else
