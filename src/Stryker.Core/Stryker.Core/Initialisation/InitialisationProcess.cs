@@ -17,7 +17,8 @@ using Stryker.Core.Reporters;
 using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.UnityTestRunner;
-using Stryker.Core.TestRunners.UnityTestRunner.UnityPath;
+using Stryker.Core.TestRunners.UnityTestRunner.RunUnity;
+using Stryker.Core.TestRunners.UnityTestRunner.RunUnity.UnityPath;
 using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.Initialisation
@@ -83,7 +84,7 @@ namespace Stryker.Core.Initialisation
                 _initialBuildProcess.SolutionInitialBuild(options.SolutionPath, options);
             }
 
-            // at initial build process I rewrite csproj and it didn't apply in stryker without reloading.
+            // at initial build process Unity rewrites csproj and they didn't apply in stryker without reloading.
             // todo think is it correct solution
             _projectInfo = _inputFileResolver.ResolveInput(options, solutionProjects);
 
@@ -94,7 +95,8 @@ namespace Stryker.Core.Initialisation
             {
                 if (options.IsUnityProject())
                     _testRunner = new UnityTestRunner(new ProcessExecutor(), options, _logger,
-                        new UnityPath(new FileSystem()));
+                        RunUnity.GetSingleInstance(() => new ProcessExecutor(), () => new UnityPath(new FileSystem()),
+                            () => _logger));
                 else
                     _testRunner = new VsTestRunnerPool(options, _projectInfo);
             }

@@ -1,6 +1,6 @@
 using Stryker.Core.Options;
 
-namespace Stryker.Core.TestRunners.UnityTestRunner.UnityPath;
+namespace Stryker.Core.TestRunners.UnityTestRunner.RunUnity.UnityPath;
 
 public interface IUnityPath
 {

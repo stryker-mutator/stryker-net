@@ -10,7 +10,7 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Testing;
-using Stryker.Core.TestRunners.UnityTestRunner.UnityPath;
+using Stryker.Core.TestRunners.UnityTestRunner.RunUnity;
 
 namespace Stryker.Core.TestRunners.UnityTestRunner;
 
@@ -20,7 +20,7 @@ public class UnityTestRunner : ITestRunner
     private readonly IProcessExecutor _processExecutor;
     private readonly StrykerOptions _strykerOptions;
     private readonly ILogger _logger;
-    private readonly IUnityPath _unityPath;
+    private readonly IRunUnity _runUnity;
     private TestSet _testSet = null;
     private TestRunResult _initialRunTestResult;
     private bool _firstMutationTestStarted;
@@ -32,12 +32,12 @@ public class UnityTestRunner : ITestRunner
 
 
     public UnityTestRunner(IProcessExecutor processExecutor, StrykerOptions strykerOptions, ILogger logger,
-        IUnityPath unityPath)
+        IRunUnity runUnity)
     {
         _processExecutor = processExecutor;
         _strykerOptions = strykerOptions;
         _logger = logger;
-        _unityPath = unityPath;
+        _runUnity = runUnity;
     }
 
     public TestSet DiscoverTests()
@@ -122,14 +122,9 @@ public class UnityTestRunner : ITestRunner
     private void StartUnityProcess()
     {
         var pathToProject = _strykerOptions.WorkingDirectory;
-        var pathToUnityLogFile =
-            Path.Combine(_strykerOptions.OutputPath, "unity_" + DateTime.Now.ToFileTime() + ".log");
-        _logger.LogDebug("StartUnityProcess started");
 
-        var processResult = _processExecutor.Start(pathToProject, _unityPath.GetPath(_strykerOptions),
-            @$" -batchmode -projectPath={pathToProject} -logFile {pathToUnityLogFile} -executeMethod Stryker.UnitySDK.RunTests.Run");
-        _logger.LogDebug("StartUnityProcess finished");
-
+        var processResult = _runUnity.RunUnityUntilFinish(_strykerOptions, pathToProject,
+            "-executeMethod Stryker.UnitySDK.RunTests.Run");
         if (processResult.ExitCode != 0 && processResult.ExitCode != TestFailedExitCode)
         {
             throw new UnityExecuteException(processResult.ExitCode, processResult.Output);
@@ -138,20 +133,29 @@ public class UnityTestRunner : ITestRunner
 
     private void RunTests(string pathToSave, out TimeSpan duration)
     {
-        _logger.LogDebug("RequestToRunTests and save at " + pathToSave);
+        _logger.LogDebug("Request to run tests and save at " + pathToSave);
         Environment.SetEnvironmentVariable("Stryker.Unity.PathToListen", PathToUnityListenFile);
         File.WriteAllText(PathToUnityListenFile, pathToSave);
 
-        if (_unityProcessTask == null || _unityProcessTask.IsCompleted)
+        if (_unityProcessTask == null || _unityProcessTask.Status != TaskStatus.Running)
         {
             _unityProcessTask = Task.Run(StartUnityProcess);
         }
 
         var startTime = DateTime.UtcNow;
-        while (!File.Exists(pathToSave))
+        while (!File.Exists(pathToSave) && _unityProcessTask.Status != TaskStatus.Canceled &&
+               _unityProcessTask.Status != TaskStatus.Faulted && _unityProcessTask.Status != TaskStatus.RanToCompletion)
         {
-            if (_unityProcessTask.Exception != null) throw _unityProcessTask.Exception;
         }
+
+        if (_unityProcessTask.Exception != null) throw _unityProcessTask.Exception;
+
+
+        if (File.Exists(pathToSave))
+        {
+            _logger.LogDebug("Test run accomplished and save at " + pathToSave);
+        }
+
 
         duration = DateTime.UtcNow - startTime;
         //hotfix to wait that all xml content was wrote fully

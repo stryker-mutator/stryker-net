@@ -9,7 +9,8 @@ using System.IO.Abstractions;
 using System.Linq;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners.UnityTestRunner;
-using Stryker.Core.TestRunners.UnityTestRunner.UnityPath;
+using Stryker.Core.TestRunners.UnityTestRunner.RunUnity;
+using Stryker.Core.TestRunners.UnityTestRunner.RunUnity.UnityPath;
 
 namespace Stryker.Core.Initialisation
 {
@@ -24,17 +25,18 @@ namespace Stryker.Core.Initialisation
     public class InitialBuildProcess : IInitialBuildProcess
     {
         private readonly IFileSystem _fileSystem;
-        private readonly IUnityPath _unityPath;
         private readonly IProcessExecutor _processExecutor;
         private readonly ILogger _logger;
+        private readonly IRunUnity _runUnity;
 
         public InitialBuildProcess(IFileSystem fileSystem, IProcessExecutor processExecutor = null,
-            IUnityPath unityPath = null)
+            IRunUnity runUnity = null)
         {
             _fileSystem = fileSystem;
-            _unityPath = unityPath ?? new UnityPath(new FileSystem());
             _processExecutor = processExecutor ?? new ProcessExecutor();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialBuildProcess>();
+            _runUnity = runUnity ?? RunUnity.GetSingleInstance(() => _processExecutor, () => new UnityPath(_fileSystem),
+                () => _logger);
         }
 
         public void InitialBuild(bool fullFramework, string projectPath, string solutionPath,
@@ -89,7 +91,7 @@ namespace Stryker.Core.Initialisation
 
         private void UnityInitialBuild(StrykerOptions options)
         {
-            var unityProjectPath = options.ProjectPath;
+            var unityProjectPath = options.GetUnityProjectDirectory();
 
             CopyUnitySdkInTargetUnityProject(unityProjectPath);
             RemoveUnityCompileCache(unityProjectPath);
@@ -101,9 +103,11 @@ namespace Stryker.Core.Initialisation
         }
 
 
-        private ProcessResult OpenUnityForCompiling(StrykerOptions options) =>
-            _processExecutor.Start(options.ProjectPath, _unityPath.GetPath(options),
-                $" -quit -batchmode -projectPath={options.ProjectPath} -logFile {DateTime.Now.ToFileTime()}.log");
+        private ProcessResult OpenUnityForCompiling(StrykerOptions options)
+        {
+            var pathToProject = options.GetUnityProjectDirectory();
+            return _runUnity.RunUnityUntilFinish(options, pathToProject, "-quit");
+        }
 
         private void RemoveUnityCompileCache(string unityProjectPath)
         {
@@ -120,6 +124,11 @@ namespace Stryker.Core.Initialisation
                 .GetManifestResourceNames().Where(name => name.Contains("Stryker.UnitySDK"));
 
             var pathToPackageOfSdk = Path.Combine(unityProjectPath, "Packages", "Stryker.UnitySDK");
+            if (Directory.Exists(pathToPackageOfSdk))
+            {
+                Directory.Delete(pathToPackageOfSdk, true);
+            }
+
             Directory.CreateDirectory(pathToPackageOfSdk);
 
             File.WriteAllText(Path.Combine(pathToPackageOfSdk, ".gitignore"), "*");

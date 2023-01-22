@@ -11,8 +11,10 @@ public static class UnityStrykerOptionsExtension
         if (options == null)
             return false;
 
+        var path = options.GetUnityProjectDirectory();
+
         var unityCsProjFile = Directory
-            .GetFiles(options.ProjectPath ?? options.SolutionPath, "Assembly-CSharp.csproj",
+            .GetFiles(path, "Assembly-CSharp.csproj",
                 SearchOption.TopDirectoryOnly).FirstOrDefault();
         if (string.IsNullOrEmpty(unityCsProjFile))
         {
@@ -22,5 +24,22 @@ public static class UnityStrykerOptionsExtension
         var containsUnityEngineReferences =
             File.ReadAllText(unityCsProjFile).Contains("<Reference Include=\"UnityEngine.");
         return containsUnityEngineReferences;
+    }
+
+    public static string GetUnityProjectDirectory(this StrykerOptions options)
+    {
+        if (options == null)
+            return null;
+
+        var path = options.ProjectPath ?? options.SolutionPath;
+        var isDirectory = File.GetAttributes(path).HasFlag(FileAttributes.Directory);
+        if (isDirectory)
+        {
+            return path;
+        }
+        else
+        {
+            return Directory.GetParent(path)!.FullName;
+        }
     }
 }
