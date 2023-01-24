@@ -68,12 +68,12 @@
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[19.1.5, )",
-        "resolved": "19.1.5",
-        "contentHash": "a7LLIcLnn1dn8GmJedo3sjPU713EMmGeFg4Bor9YZtyppNedOGKyoDN4TiNa5Pj9w7p3U9N8mh4pgNCwEMsE8Q==",
+        "requested": "[19.1.13, )",
+        "resolved": "19.1.13",
+        "contentHash": "3/vZSP+EKo0iNZAAWixkdSMO/a6snc0J089tr8jugEPorF43VgbYNnNHWHbfSA8vM/P+VJgeJS5E7nYAwh0taA==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "19.1.5",
-          "TestableIO.System.IO.Abstractions.Wrappers": "19.1.5"
+          "TestableIO.System.IO.Abstractions": "19.1.13",
+          "TestableIO.System.IO.Abstractions.Wrappers": "19.1.13"
         }
       },
       "xunit": {
