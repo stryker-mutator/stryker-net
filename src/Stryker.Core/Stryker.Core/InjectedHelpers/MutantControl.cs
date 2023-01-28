@@ -15,6 +15,7 @@ namespace Stryker
         // this attribute will be set by the Stryker Data Collector before each test
         public static bool CaptureCoverage;
         public static int ActiveMutant = -2;
+        public static int Previous = -2;
         public const int ActiveMutantNotInitValue = -2;
         private static string _pathToListenActiveMutation = "";
 
@@ -58,10 +59,16 @@ namespace Stryker
                 return false;
             }
 
+
             ActiveMutant = int.Parse(File.ReadAllText(_pathToListenActiveMutation));
+
+            if (ActiveMutant != Previous)
+            {
 #if UNITY_EDITOR
-            UnityEngine.Debug.Log("environmentVariable ActiveMutation is " +ActiveMutant);
+                UnityEngine.Debug.Log("[Stryker] ActiveMutation is " + int.Parse(File.ReadAllText(_pathToListenActiveMutation)));
 #endif
+                Previous = ActiveMutant;
+            }
             return id == ActiveMutant;
         }
 

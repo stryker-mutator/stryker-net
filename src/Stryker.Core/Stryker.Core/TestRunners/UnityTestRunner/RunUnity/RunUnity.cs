@@ -4,6 +4,7 @@ using System.IO.Abstractions;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.Testing;
@@ -62,15 +63,16 @@ public class RunUnity : IRunUnity
     public XDocument RunTests(StrykerOptions strykerOptions, string projectPath,
         string additionalArgumentsForCli = null, string activeMutantId = null)
     {
-        _logger.LogDebug("Request to close Unity");
+        _logger.LogDebug("Request to run tests Unity");
 
         TryOpenUnity(strykerOptions, projectPath, additionalArgumentsForCli);
 
         var pathToTestResultXml =
             Path.Combine(strykerOptions.OutputPath, $"test_results_{DateTime.Now.ToFileTime()}.xml");
 
-        File.WriteAllText(_pathToActiveMutantsListenFile, activeMutantId);
+        File.WriteAllText(_pathToActiveMutantsListenFile,  activeMutantId);
 
+        _logger.LogDebug("[Unity] ActiveMutant " + CodeInjection.HelperNamespace + "_" +activeMutantId);
         SendCommandToUnity(pathToTestResultXml);
         WaitUntilEndOfCommand();
         ThrowExceptionIfExists();
@@ -82,8 +84,6 @@ public class RunUnity : IRunUnity
     public void Dispose()
     {
         ThrowExceptionIfExists();
-
-        CloseUnity();
     }
 
 
@@ -182,14 +182,5 @@ public class RunUnity : IRunUnity
 
         SendCommandToUnity("exit");
         _unityProcessTask.GetAwaiter().GetResult();
-    }
-
-    private void RemoveUnityCompileCache(string unityProjectPath)
-    {
-        var cachePath = Path.Combine(unityProjectPath, "Library", "ScriptAssemblies");
-        if (Directory.Exists(cachePath))
-        {
-            Directory.Delete(cachePath, true);
-        }
     }
 }

@@ -38,7 +38,6 @@ namespace Stryker.UnitySDK
 
 			while (true)
 			{
-
                 var command = File.ReadAllText(textFileToListen);
 				if (command == "exit")
 				{
@@ -54,6 +53,9 @@ namespace Stryker.UnitySDK
                     File.WriteAllText(textFileToListen, string.Empty);
 
                     EditorUtility.RequestScriptReload();
+                    yield return new WaitForSeconds(1f);
+                    Console.WriteLine($"[Stryker][{DateTime.Now.ToLongTimeString()}] After RequestScriptReload");
+
                 }
 				else if (!string.IsNullOrWhiteSpace(command))
 				{
@@ -73,7 +75,6 @@ namespace Stryker.UnitySDK
                 }
 				else
 				{
-					// Console.WriteLine("[Stryker] did not Got RequestToRun. wait 1s");
 					yield return new WaitForSeconds(1f);
 				}
 			}
