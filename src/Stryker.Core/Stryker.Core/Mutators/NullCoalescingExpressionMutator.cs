@@ -2,6 +2,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 
 namespace Stryker.Core.Mutators
 {
@@ -15,21 +16,29 @@ namespace Stryker.Core.Mutators
             {
                 var replacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.CoalesceExpression, node.Right, node.Left); // Flip left and right
                 replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithTriviaFrom(node.OperatorToken).WithLeadingTrivia(node.Left.GetTrailingTrivia()));
-                yield return new Mutation
-                {
-                    OriginalNode = node,
-                    ReplacementNode = replacementNode,
-                    DisplayName = $"Null coalescing mutation (left to right)",
-                    Type = Mutator.NullCoalescing,
-                };
 
-                yield return new Mutation
+                // Do not create "left to right", or "remove right" mutants when the right
+                // hand side is a throw expression, as they result in invalid code.
+                // I.E. myVar = throw new ArgumentNullExpression ?? a;
+                // and  myVar = throw new ArgumentNullExpression;
+                if (!node.Right.IsKind(SyntaxKind.ThrowExpression))
                 {
-                    OriginalNode = node,
-                    ReplacementNode = replacementNode.Left,
-                    DisplayName = $"Null coalescing mutation (remove right)",
-                    Type = Mutator.NullCoalescing,
-                };
+                    yield return new Mutation
+                    {
+                        OriginalNode = node,
+                        ReplacementNode = replacementNode,
+                        DisplayName = $"Null coalescing mutation (left to right)",
+                        Type = Mutator.NullCoalescing,
+                    };
+
+                    yield return new Mutation
+                    {
+                        OriginalNode = node,
+                        ReplacementNode = replacementNode.Left,
+                        DisplayName = $"Null coalescing mutation (remove right)",
+                        Type = Mutator.NullCoalescing,
+                    };
+                }
 
                 yield return new Mutation
                 {
