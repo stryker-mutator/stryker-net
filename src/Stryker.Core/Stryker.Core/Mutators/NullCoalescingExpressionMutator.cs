@@ -19,8 +19,8 @@ namespace Stryker.Core.Mutators
 
                 // Do not create "left to right", or "remove right" mutants when the right
                 // hand side is a throw expression, as they result in invalid code.
-                // I.E. myVar = throw new ArgumentNullExpression ?? a;
-                // and  myVar = throw new ArgumentNullExpression;
+                // I.E. myVar = throw new ArgumentNullException() ?? a;
+                // and  myVar = throw new ArgumentNullException();
                 if (!node.Right.IsKind(SyntaxKind.ThrowExpression))
                 {
                     yield return new Mutation
