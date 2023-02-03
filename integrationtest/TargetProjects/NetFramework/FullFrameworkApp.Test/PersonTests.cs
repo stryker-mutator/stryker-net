@@ -13,7 +13,6 @@ namespace FullFrameworkApp.Test
 
             Person.Aged(person);
 
-
             Assert.IsTrue(person.SameAge(olderPerson));
         }
 
