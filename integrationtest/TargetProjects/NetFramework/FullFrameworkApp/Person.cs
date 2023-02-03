@@ -23,7 +23,6 @@ namespace FullFrameworkApp
             }
         }
 
-
         public static IEnumerable<Person> People
         {
             get
