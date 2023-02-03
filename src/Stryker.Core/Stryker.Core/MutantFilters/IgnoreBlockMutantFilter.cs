@@ -9,7 +9,7 @@ namespace Stryker.Core.MutantFilters
 {
     public class IgnoreBlockMutantFilter : IMutantFilter
     {
-        private HashSet<MutantStatus> _inactiveStatuses;
+        private readonly HashSet<MutantStatus> _inactiveStatuses;
 
         public string DisplayName => "block already covered filter";
 
