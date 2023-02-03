@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Resources;
@@ -12,6 +13,7 @@ using Microsoft.Extensions.Logging;
 
 namespace Stryker.Core.Initialisation
 {
+    [ExcludeFromCodeCoverage]
     public static class EmbeddedResourcesGenerator
     {
         public static IEnumerable<ResourceDescription> GetManifestResources(string assemblyName, string projectPath, ILogger logger)
