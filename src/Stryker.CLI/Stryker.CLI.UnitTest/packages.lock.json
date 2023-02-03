@@ -68,12 +68,12 @@
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[19.1.5, )",
-        "resolved": "19.1.5",
-        "contentHash": "a7LLIcLnn1dn8GmJedo3sjPU713EMmGeFg4Bor9YZtyppNedOGKyoDN4TiNa5Pj9w7p3U9N8mh4pgNCwEMsE8Q==",
+        "requested": "[19.1.14, )",
+        "resolved": "19.1.14",
+        "contentHash": "V5kp9UGbUCl56DaxluB/9mL/mZT218y3NKskHUmCGFNkNRxMRncC215eEAgQ+lXGvO97pPFN4D0nu8p+GbNnMQ==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "19.1.5",
-          "TestableIO.System.IO.Abstractions.Wrappers": "19.1.5"
+          "TestableIO.System.IO.Abstractions": "19.1.14",
+          "TestableIO.System.IO.Abstractions.Wrappers": "19.1.14"
         }
       },
       "xunit": {
@@ -1551,8 +1551,8 @@
       },
       "TestableIO.System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "19.1.5",
-        "contentHash": "jBsuhMdPQ51kbPrXbSPL8R38ARpTlxvUZNBo2XwelTu5XM0P3xEfjwjkTEfUx3EOHIkM1rEHi/Jg0sjt7hpekA=="
+        "resolved": "19.1.14",
+        "contentHash": "ICEOFbihjuXBTlNC+tYmDY/im1iztJvpUDbJPPKpG0AL7cIEHsaoQUQ0KAR+TBUA0GmWY58ZFBW95TKJ4ib8QA=="
       },
       "xunit.abstractions": {
         "type": "Transitive",
@@ -1634,7 +1634,7 @@
           "Spectre.Console.Analyzer": "[0.46.0, )",
           "Stryker.DataCollector": "[3.4.0, )",
           "Stryker.RegexMutators": "[3.4.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[19.1.5, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[19.1.14, )"
         }
       },
       "stryker.datacollector": {
@@ -1888,11 +1888,11 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[19.1.5, )",
-        "resolved": "19.1.5",
-        "contentHash": "hFJ3IYSMw9B6do5uYQSzlbvFVNFS7iS3H5nej8h/9QY468Z1rFWjgNK4aqInYO4Yvft1GpLnzcpsZbqX+TraeA==",
+        "requested": "[19.1.14, )",
+        "resolved": "19.1.14",
+        "contentHash": "LvNIz+YqGoyn4OYt7gF826eMn50k4Sfzph5wFI+9DrprOgyIBOKnWpt/u1JbDJ2OQAAGYKDnA1NB0BRxsUgeoQ==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "19.1.5"
+          "TestableIO.System.IO.Abstractions": "19.1.14"
         }
       },
       "YamlDotNet": {

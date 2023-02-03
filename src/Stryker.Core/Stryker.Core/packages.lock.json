@@ -229,11 +229,11 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "Direct",
-        "requested": "[19.1.5, )",
-        "resolved": "19.1.5",
-        "contentHash": "hFJ3IYSMw9B6do5uYQSzlbvFVNFS7iS3H5nej8h/9QY468Z1rFWjgNK4aqInYO4Yvft1GpLnzcpsZbqX+TraeA==",
+        "requested": "[19.1.14, )",
+        "resolved": "19.1.14",
+        "contentHash": "LvNIz+YqGoyn4OYt7gF826eMn50k4Sfzph5wFI+9DrprOgyIBOKnWpt/u1JbDJ2OQAAGYKDnA1NB0BRxsUgeoQ==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "19.1.5"
+          "TestableIO.System.IO.Abstractions": "19.1.14"
         }
       },
       "Buildalyzer.Logger": {
@@ -1708,8 +1708,8 @@
       },
       "TestableIO.System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "19.1.5",
-        "contentHash": "jBsuhMdPQ51kbPrXbSPL8R38ARpTlxvUZNBo2XwelTu5XM0P3xEfjwjkTEfUx3EOHIkM1rEHi/Jg0sjt7hpekA=="
+        "resolved": "19.1.14",
+        "contentHash": "ICEOFbihjuXBTlNC+tYmDY/im1iztJvpUDbJPPKpG0AL7cIEHsaoQUQ0KAR+TBUA0GmWY58ZFBW95TKJ4ib8QA=="
       },
       "stryker.datacollector": {
         "type": "Project",
