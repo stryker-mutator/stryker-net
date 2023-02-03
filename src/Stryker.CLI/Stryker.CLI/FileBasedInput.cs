@@ -88,6 +88,9 @@ namespace Stryker.CLI
         [JsonPropertyName("report-file-name")]
         public string ReportFileName { get; init; }
 
+        [JsonPropertyName("break-on-initial-test-failure")]
+        public bool? BreakOnInitialTestFailure { get; init; }
+
         [JsonExtensionData]
         public Dictionary<string, JsonElement> ExtraData { get; init; }
     }

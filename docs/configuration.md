@@ -640,6 +640,6 @@ By default stryker tries to autodiscover msbuild on your system. If stryker fail
 
 Default: `false`  
 Command line: `--break-on-initial-test-failure`  
-Config file: `N/A`
+Config file: `break-on-initial-test-failure`
 
 Instruct Stryker to break execution when at least one test failed on initial test run.

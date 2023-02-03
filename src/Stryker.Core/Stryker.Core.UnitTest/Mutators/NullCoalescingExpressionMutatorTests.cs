@@ -1,4 +1,3 @@
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
@@ -36,6 +35,22 @@ namespace Stryker.Core.UnitTest.Mutators
             {
                 expectedExpressionStrings.ShouldContain(mutant.ReplacementNode.ToString());
             }
+        }
+
+        [Fact]
+        public void ShouldMutateThrowExpression()
+        {
+            // Arrange
+            var target = new NullCoalescingExpressionMutator();
+            var originalExpressionString = "a ?? throw new ArgumentException(nameof(a))";
+            var originalExpression = SyntaxFactory.ParseExpression(originalExpressionString);
+
+            // Act
+            var result = target.ApplyMutations(originalExpression as BinaryExpressionSyntax);
+
+            // Assert
+            var mutant = result.ShouldHaveSingleItem();
+            mutant.ReplacementNode.ToString().ShouldBe("a");
         }
     }
 }

@@ -1,7 +1,7 @@
-using Stryker.Core.Exceptions;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
+using Stryker.Core.Exceptions;
 
 namespace Stryker.Core.Options.Inputs
 {
@@ -15,7 +15,7 @@ namespace Stryker.Core.Options.Inputs
         {
             if (SuppliedInput is not null)
             {
-                if(!SuppliedInput.EndsWith(".sln"))
+                if (!SuppliedInput.EndsWith(".sln"))
                 {
                     throw new InputException($"Given path is not a solution file: {SuppliedInput}");
                 }
