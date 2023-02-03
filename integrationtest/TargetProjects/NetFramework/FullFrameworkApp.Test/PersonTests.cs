@@ -21,7 +21,7 @@ namespace FullFrameworkApp.Test
         public void UseEmbeddedResources()
         {
             var person = new Person() { Age = 10 };
-            Assert.AreEqual(person.HelloInMyLanguage(), "hello");
+            Assert.AreEqual(person.HelloInMyLanguage(), "hello you");
         }
     }
 }

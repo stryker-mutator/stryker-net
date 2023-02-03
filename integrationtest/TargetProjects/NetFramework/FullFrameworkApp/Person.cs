@@ -13,7 +13,7 @@ namespace FullFrameworkApp
 
         public bool SameAge(Person otherPerson) => Age == otherPerson.Age;
 
-        public string HelloInMyLanguage() => Translations.hello;
+        public string HelloInMyLanguage() => Translations.hello + (Age > 16 ? " friend" : " you");
 
         public static void Aged(Person person)
         {
