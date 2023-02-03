@@ -15,16 +15,8 @@ namespace Stryker.Core.UnitTest.ProjectCOmponents.SourceProjects
         [Fact]
         public void ShouldGenerateProperDefaultCompilationOptions()
         {
-            var target = new SourceProjectInfo(new MockFileSystem())
+            var target = new SourceProjectInfo()
             {
-                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
-                    TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>() {
-                        { "TargetDir", "/test/bin/Debug/" },
-                        { "TargetFileName", "TestName.dll" },
-                        { "AssemblyName", "AssemblyName" }
-                    }).Object
-                },
                 AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", "/test/bin/Debug/" },
@@ -46,16 +38,8 @@ namespace Stryker.Core.UnitTest.ProjectCOmponents.SourceProjects
         [InlineData("AppContainerExe", OutputKind.WindowsRuntimeApplication)]
         public void ShouldGenerateProperCompilationOptions(string kindParam, OutputKind output)
         {
-            var target = new SourceProjectInfo(new MockFileSystem())
+            var target = new SourceProjectInfo()
             {
-                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
-                    TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>() {
-                        { "TargetDir", "/test/bin/Debug/" },
-                        { "TargetFileName", "TestName.dll" },
-                        { "AssemblyName", "AssemblyName" }
-                    }).Object
-                },
                 AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "AssemblyTitle", "TargetFileName"},
@@ -72,29 +56,6 @@ namespace Stryker.Core.UnitTest.ProjectCOmponents.SourceProjects
             options.AllowUnsafe.ShouldBe(true);
             options.OutputKind.ShouldBe(output);
             options.NullableContextOptions.ShouldBe(NullableContextOptions.Annotations);
-        }
-
-        [Fact]
-        public void ShouldGenerateTestBinariesPath()
-        {
-            var target = new SourceProjectInfo(new MockFileSystem())
-            {
-                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
-                    TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>() {
-                        { "TargetDir", "/test/bin/Debug/" },
-                        { "TargetFileName", "TestName.dll" }
-                    }).Object
-                },
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>() {
-                        { "TargetDir", "/app/bin/Debug/" },
-                        { "TargetFileName", "AppToTest.dll" }
-                    }).Object
-            };
-
-            var expectedPath = FilePathUtils.NormalizePathSeparators("/test/bin/Debug/TestName.dll");
-            target.TestProjectAnalyzerResults.FirstOrDefault().GetAssemblyPath().ShouldBe(expectedPath);
         }
     }
 }

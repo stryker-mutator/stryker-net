@@ -44,8 +44,7 @@ namespace Stryker.Core.MutationTest
 
         public static void DeclareMutationProcessForLanguage<T>(Language language) where T : IMutationProcess
         {
-            var constructor = typeof(T).GetConstructor(new[]
-                { typeof(MutationTestInput), typeof(StrykerOptions) });
+            var constructor = typeof(T).GetConstructor(new[] { typeof(MutationTestInput), typeof(StrykerOptions) });
             if (constructor == null)
             {
                 throw new NotSupportedException(

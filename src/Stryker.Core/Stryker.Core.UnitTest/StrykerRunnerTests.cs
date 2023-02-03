@@ -37,7 +37,7 @@ namespace Stryker.Core.UnitTest
 
             var projectInfo = Mock.Of<SourceProjectInfo>();
             projectInfo.ProjectContents = folder;
-            Mock.Get(projectInfo).Setup(p => p.RestoreOriginalAssembly());
+
             var mutationTestInput = new MutationTestInput()
             {
                 SourceProjectInfo = projectInfo

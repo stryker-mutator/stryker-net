@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using Moq;
@@ -92,7 +93,15 @@ namespace Stryker.Core.UnitTest.Reporters
             var reporter = new HtmlReporter(options, mockFileSystem, mockAnsiConsole, Mock.Of<IWebbrowserOpener>());
             var mutationTree = ReportTestHelper.CreateProjectWith();
 
-            reporter.OnAllMutantsTested(mutationTree);
+            var testProjectInfo = new TestProjectsInfo(mockFileSystem)
+            {
+                TestProjects = new List<TestProject>()
+                {
+                    
+                }
+            };
+
+            reporter.OnAllMutantsTested(mutationTree, testProjectInfo);
 
             var reportUri = "file://%20folder%20/%20next%20level/reports/mutation-report.html";
             mockAnsiConsole.Output.ShouldContain(reportUri);
@@ -161,7 +170,15 @@ namespace Stryker.Core.UnitTest.Reporters
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
             var mutationTree = ReportTestHelper.CreateProjectWith();
 
-            reporter.OnAllMutantsTested(mutationTree);
+            var testProjectInfo = new TestProjectsInfo(mockFileSystem)
+            {
+                TestProjects = new List<TestProject>()
+                {
+
+                }
+            };
+
+            reporter.OnAllMutantsTested(mutationTree, testProjectInfo);
 
             var reportUri = Path.Combine(options.ReportPath, $"{options.ReportFileName}.html");
             reportUri = "file://" + reportUri.Replace("\\", "/");

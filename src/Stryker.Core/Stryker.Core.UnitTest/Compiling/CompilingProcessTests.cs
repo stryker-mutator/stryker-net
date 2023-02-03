@@ -50,7 +50,10 @@ namespace ExampleProject
                             { "TargetDir", "" },
                             { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
-                        }).Object
+                        },
+                        // add a reference to system so the example code can compile
+                        references: new string[] { typeof(object).Assembly.Location }
+                    ).Object
                 }
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
@@ -84,12 +87,16 @@ namespace ExampleProject
             {
                 SourceProjectInfo = new SourceProjectInfo
                 {
-                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
                             { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
-                        }).Object
+                        },
+                        // add a reference to system so the example code can compile
+                        references: new string[] { typeof(object).Assembly.Location }
+                    ).Object
                 }
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
@@ -134,7 +141,10 @@ namespace ExampleProject
                             { "TargetDir", "" },
                             { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
-                        }).Object
+                        },
+                        // add a reference to system so the example code can compile
+                        references: new string[] { typeof(object).Assembly.Location }
+                    ).Object
                 }
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
@@ -168,14 +178,19 @@ namespace ExampleProject
             {
                 SourceProjectInfo = new SourceProjectInfo
                 {
-                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "" },
-                        { "AssemblyName", "AssemblyName" },
-                        { "TargetFileName", "TargetFileName.dll" },
-                        { "SignAssembly", "true" },
-                        { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
-                    }).Object
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        properties: new Dictionary<string, string>()
+                        {
+                            { "TargetDir", "" },
+                            { "AssemblyName", "AssemblyName" },
+                            { "TargetFileName", "TargetFileName.dll" },
+                            { "SignAssembly", "true" },
+                            { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
+                        },
+                        // add a reference to system so the example code can compile
+                        references: new string[] { typeof(object).Assembly.Location },
+                        projectFilePath: "TestResources"
+                    ).Object
                 }
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
@@ -220,7 +235,10 @@ namespace ExampleProject
                             { "SignAssembly", "true" },
                             { "AssemblyOriginatorKeyFile", "DoesNotExist.snk" }
                         },
-                        projectFilePath: "project.csproj").Object
+                        projectFilePath: "project.csproj",
+                        // add a reference to system so the example code can compile
+                        references: new string[] { typeof(object).Assembly.Location }
+                    ).Object
                 }
 
             };
@@ -259,7 +277,10 @@ namespace ExampleProject
                             { "TargetDir", "" },
                             { "TargetFileName", "TargetFileName.dll" },
                             { "AssemblyName", "AssemblyName"},
-                        }).Object
+                        },
+                        // add a reference to system so the example code can compile
+                        references: new string[] { typeof(object).Assembly.Location }
+                    ).Object
                 }
             };
             var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
@@ -356,7 +377,10 @@ namespace ExampleProject
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
-                { Path.Combine(filesystemRoot, "ExampleProject", "Calculator.cs"), new MockFileData(sourceFile) },
+                {
+                    Path.Combine(filesystemRoot, "ExampleProject", "Calculator.cs"),
+                    new MockFileData(sourceFile)
+                },
                 {
                     Path.Combine(filesystemRoot, "ExampleProject.Test", "bin", "Debug", "netcoreapp2.0", "ExampleProject.dll"),
                     new MockFileData("Bytecode")
@@ -378,7 +402,10 @@ namespace ExampleProject
                             { "TargetDir", "Project" },
                             { "AssemblyName", "AssemblyName" },
                             { "TargetFileName", "TargetFileName.dll" },
-                        }).Object,
+                        },
+                        // add a reference to system so the example code can compile
+                        references: new string[] { typeof(object).Assembly.Location }
+                    ).Object,
                     ProjectContents = folder
                 },
                 TestRunner = new Mock<ITestRunner>(MockBehavior.Default).Object

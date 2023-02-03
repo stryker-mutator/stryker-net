@@ -2,7 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
+using System.IO.Pipes;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -118,19 +120,31 @@ namespace ExampleProject
             var mutant = mutator.Mutate(syntaxTree.GetRoot());
             helpers.Add(mutant.SyntaxTree);
 
+            var references = new List<string> {
+                typeof(object).Assembly.Location,
+                typeof(List<string>).Assembly.Location,
+                typeof(Enumerable).Assembly.Location,
+                typeof(PipeStream).Assembly.Location,
+            };
+            Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(Assembly.Load(a).Location));
+
             var input = new MutationTestInput()
             {
                 SourceProjectInfo = new SourceProjectInfo
                 {
-                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "" },
-                        { "AssemblyName", "AssemblyName"},
-                        { "TargetFileName", "TargetFileName.dll"},
-                        { "SignAssembly", "true" },
-                        { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
-                    },
-                    projectFilePath: "TestResources").Object
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        properties: new Dictionary<string, string>()
+                        {
+                            { "TargetDir", "" },
+                            { "AssemblyName", "AssemblyName"},
+                            { "TargetFileName", "TargetFileName.dll"},
+                            { "SignAssembly", "true" },
+                            { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
+                        },
+                        projectFilePath: "TestResources",
+                        // add a reference to system so the example code can compile
+                        references: references.ToArray()
+                    ).Object
                 }
             };
 
