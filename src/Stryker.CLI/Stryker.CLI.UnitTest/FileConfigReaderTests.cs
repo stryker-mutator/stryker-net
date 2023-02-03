@@ -84,6 +84,7 @@ namespace Stryker.CLI.UnitTest
             actualInputs.IgnoredMethodsInput.SuppliedInput.ShouldContain("Log*");
             actualInputs.TestCaseFilterInput.SuppliedInput.ShouldBe("(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1");
             actualInputs.DashboardUrlInput.SuppliedInput.ShouldBe("https://alternative-stryker-dashboard.io");
+            actualInputs.BreakOnInitialTestFailureInput.SuppliedInput.ShouldNotBeNull().ShouldBeFalse();
         }
 
         [Fact]
@@ -130,6 +131,7 @@ namespace Stryker.CLI.UnitTest
             actualInputs.IgnoredMethodsInput.SuppliedInput.ShouldContain("Log*");
             actualInputs.TestCaseFilterInput.SuppliedInput.ShouldBe("(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1");
             actualInputs.DashboardUrlInput.SuppliedInput.ShouldBe("https://alternative-stryker-dashboard.io");
+            actualInputs.BreakOnInitialTestFailureInput.SuppliedInput.ShouldNotBeNull().ShouldBeTrue();
         }
     }
 }
