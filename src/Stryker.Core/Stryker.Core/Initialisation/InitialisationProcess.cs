@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using Buildalyzer;
@@ -35,7 +34,7 @@ namespace Stryker.Core.Initialisation
         private ITestRunner _testRunner;
         private ProjectInfo _projectInfo;
         private readonly ILogger _logger;
-       
+
 
         public InitialisationProcess(
             IInputFileResolver inputFileResolver = null,
