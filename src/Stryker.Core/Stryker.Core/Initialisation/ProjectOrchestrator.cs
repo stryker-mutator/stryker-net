@@ -44,13 +44,12 @@ namespace Stryker.Core.Initialisation
                 // Analyze all projects in the solution with buildalyzer
                 var solutionAnalyzerResults = AnalyzeSolution(options);
 
-                var projectsUnderTestAnalyzerResult = FindProjectsUnderTest(solutionAnalyzerResults);
+                var projectsUnderTestAnalyzerResult = FindProjectsUnderTest(solutionAnalyzerResults).ToList();
 
-                var testProjects = solutionAnalyzerResults.Except(projectsUnderTestAnalyzerResult);
+                var testProjects = solutionAnalyzerResults.Except(projectsUnderTestAnalyzerResult).ToList();
 
-                _logger.LogInformation("Found {0} source projects", projectsUnderTestAnalyzerResult.Count());
-                _logger.LogInformation("Found {0} test projects", testProjects.Count());
-
+                _logger.LogInformation("Found {0} source projects", projectsUnderTestAnalyzerResult.Count);
+                _logger.LogInformation("Found {0} test projects", testProjects.Count);
                 // Build the complete solution
                 _initialBuildProcess.InitialBuild(
                     projectsUnderTestAnalyzerResult.First().TargetsFullFramework(),
@@ -78,11 +77,59 @@ namespace Stryker.Core.Initialisation
             IEnumerable<IAnalyzerResult> testProjects,
             IEnumerable<IAnalyzerResult> solutionProjects)
         {
+
+            // need to scan traverse dependencies
+            // dependents contains the list of projects depending on each (non test) projects
+            var dependents = new Dictionary<string, HashSet<string>>();
+            foreach (var project in projectsUnderTest)
+            {
+                foreach (var dependent in project.ProjectReferences.ToList())
+                {
+                    if (!dependents.ContainsKey(dependent))
+                    {
+                        dependents[project.ProjectFilePath] = new HashSet<string>();
+                    }
+                    dependents[project.ProjectFilePath].Add(dependent);
+                }
+            }
+
+            // we need to dig recursively, until no further change happens
+            bool foundNewDependency;
+            do
+            {
+                foundNewDependency = false;
+                foreach (var project in dependents.Values)
+                {
+                    foreach (var dependency in project.ToList())
+                    {
+                        if (!dependents.ContainsKey(dependency))
+                        {
+                            continue;
+                        }
+                        foreach (var sub in dependents[dependency])
+                        {
+                            foundNewDependency = project.Add(sub) || foundNewDependency;
+                        }
+                    }
+                }
+            } while (foundNewDependency);
+
             foreach (var project in projectsUnderTest)
             {
                 var projectFilePath = project.ProjectFilePath;
+                HashSet<string> candidateProject;
+                if (dependents.ContainsKey(projectFilePath))
+                {;
+                    candidateProject = dependents[projectFilePath].ToHashSet();
+                }
+                else
+                {
+                    candidateProject = new HashSet<string>();
+                }
+
+                candidateProject.Add(projectFilePath);
                 var relatedTestProjects = testProjects
-                    .Where(testProject => testProject.ProjectReferences.Any(reference => reference == projectFilePath)).ToList();
+                    .Where(testProject => testProject.ProjectReferences.Any(reference => candidateProject.Contains(reference))).ToList();
 
                 if (relatedTestProjects.Any())
                 {

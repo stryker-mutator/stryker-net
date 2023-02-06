@@ -233,13 +233,11 @@ namespace Stryker.Core.Initialisation
         private static StringBuilder BuildReferenceChoice(IEnumerable<string> projectReferences)
         {
             var builder = new StringBuilder();
-            builder.AppendLine($"Choose one of the following references:");
-            builder.AppendLine("");
+            builder.AppendLine("Choose one of the following references:").AppendLine("");
 
             foreach (var projectReference in projectReferences)
             {
-                builder.Append("  ");
-                builder.AppendLine(projectReference.Replace("\\", "/"));
+                builder.Append("  ").AppendLine(projectReference.Replace("\\", "/"));
             }
             return builder;
         }

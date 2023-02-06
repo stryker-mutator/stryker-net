@@ -88,6 +88,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             testProjectAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "True" } });
             projectUnderTestAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "False" }, { "ProjectTypeGuids", "not testproject" } });
             projectUnderTestAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns("C:/projectundertest/projectundertest.csproj");
+            projectUnderTestAnalyzerResultMock.Setup(x => x.ProjectReferences).Returns(new List<string>());
             projectUnderTestAnalyzerResultMock.Setup(x => x.TargetFramework).Returns("net6.0");
             testProjectProjectFileMock.Setup(x => x.PackageReferences).Returns(new List<IPackageReference>() {
                 testProjectPackageReferenceMock.Object

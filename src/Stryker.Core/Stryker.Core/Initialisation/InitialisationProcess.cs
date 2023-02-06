@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using Buildalyzer;
@@ -191,33 +190,29 @@ namespace Stryker.Core.Initialisation
 
         private static string ReadProjectName(ModuleDefinition module, string details)
         {
-            var repositoryUrl = module.Assembly.CustomAttributes
-                .FirstOrDefault(e => e.AttributeType.Name == "AssemblyMetadataAttribute"
-                                     && e.ConstructorArguments.Count == 2
-                                     && e.ConstructorArguments[0].Value.Equals("RepositoryUrl"))?.ConstructorArguments[1].Value as string;
-
-            if (repositoryUrl == null)
+            if (module.Assembly.CustomAttributes
+                    .FirstOrDefault(e => e.AttributeType.Name == "AssemblyMetadataAttribute"
+                                         && e.ConstructorArguments.Count == 2
+                                         && e.ConstructorArguments[0].Value.Equals("RepositoryUrl"))?.ConstructorArguments[1].Value is not string repositoryUrl)
             {
                 throw new InputException($"Failed to retrieve the RepositoryUrl from the AssemblyMetadataAttribute of {module.FileName}", details);
             }
 
-            const string schemeSeparator = "://";
-            var indexOfScheme = repositoryUrl.IndexOf(schemeSeparator, StringComparison.Ordinal);
+            const string SchemeSeparator = "://";
+            var indexOfScheme = repositoryUrl.IndexOf(SchemeSeparator, StringComparison.Ordinal);
             if (indexOfScheme < 0)
             {
-                throw new InputException($"Failed to compute the project name from the repository URL ({repositoryUrl}) because it doesn't contain a scheme ({schemeSeparator})", details);
+                throw new InputException($"Failed to compute the project name from the repository URL ({repositoryUrl}) because it doesn't contain a scheme ({SchemeSeparator})", details);
             }
 
-            return repositoryUrl.Substring(indexOfScheme + schemeSeparator.Length);
+            return repositoryUrl[(indexOfScheme + SchemeSeparator.Length)..];
         }
 
         private static string ReadProjectVersion(ModuleDefinition module, string details)
         {
-            var assemblyInformationalVersion = module.Assembly.CustomAttributes
-                .FirstOrDefault(e => e.AttributeType.Name == "AssemblyInformationalVersionAttribute"
-                                     && e.ConstructorArguments.Count == 1)?.ConstructorArguments[0].Value as string;
-
-            if (assemblyInformationalVersion == null)
+            if (module.Assembly.CustomAttributes
+                    .FirstOrDefault(e => e.AttributeType.Name == "AssemblyInformationalVersionAttribute"
+                                         && e.ConstructorArguments.Count == 1)?.ConstructorArguments[0].Value is not string assemblyInformationalVersion)
             {
                 throw new InputException($"Failed to retrieve the AssemblyInformationalVersionAttribute of {module.FileName}", details);
             }

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using Buildalyzer;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
