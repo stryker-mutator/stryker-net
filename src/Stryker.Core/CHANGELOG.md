@@ -1,3 +1,12 @@
+## [3.5.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.5.0...stryker@3.5.1) (2023-02-06)
+
+
+### Bug Fixes
+
+* **dashboard reporter:** fix dashboard publishing when the project name is computed ([#2397](https://github.com/stryker-mutator/stryker-net/issues/2397)) ([7395b2b](https://github.com/stryker-mutator/stryker-net/commit/7395b2bc4dfd9db962e1ea1e9d13bc7e6235c252)), closes [#1710](https://github.com/stryker-mutator/stryker-net/issues/1710)
+
+
+
 # [3.5.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.4.0...stryker@3.5.0) (2023-02-06)
 
 
