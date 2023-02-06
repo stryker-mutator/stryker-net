@@ -82,11 +82,11 @@ namespace Stryker.Core.Initialisation
             {
                 var projectFilePath = project.ProjectFilePath;
                 var relatedTestProjects = testProjects
-                    .Where(testProject => testProject.ProjectReferences.Any(reference => reference == projectFilePath));
+                    .Where(testProject => testProject.ProjectReferences.Any(reference => reference == projectFilePath)).ToList();
 
                 if (relatedTestProjects.Any())
                 {
-                    _logger.LogDebug("Matched {0} to {1} test projects:", projectFilePath, relatedTestProjects.Count());
+                    _logger.LogDebug("Matched {0} to {1} test projects:", projectFilePath, relatedTestProjects.Count);
 
                     foreach (var relatedTestProjectAnalyzerResults in relatedTestProjects)
                     {

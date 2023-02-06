@@ -400,12 +400,6 @@ namespace ExampleProject
                 SourceCode = sourceFile,
                 SyntaxTree = CSharpSyntaxTree.ParseText(sourceFile)
             };
-            var folder = new CsharpFolderComposite();
-            folder.Add(inputFile);
-            foreach (var (name, code) in CodeInjection.MutantHelpers)
-            {
-                folder.AddCompilationSyntaxTree(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32));
-            }
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
@@ -440,8 +434,7 @@ namespace ExampleProject
                             { "TargetDir", "Test" },
                             { "TargetFileName", "TestTargetFileName.dll" },
                         }).Object
-                    },
-                    ProjectContents = folder
+                    }
                 },
                 AssemblyReferences = new List<PortableExecutableReference>
                 {
@@ -449,6 +442,15 @@ namespace ExampleProject
                 },
                 TestRunner = new Mock<ITestRunner>(MockBehavior.Default).Object
             };
+            var folder = new CsharpFolderComposite();
+            var injector = input.ProjectInfo.CodeInjector;
+            folder.Add(inputFile);
+            foreach (var (name, code) in injector.MutantHelpers)
+            {
+                folder.AddCompilationSyntaxTree(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32));
+            }
+
+            input.ProjectInfo.ProjectContents = folder;
 
             var options = new StrykerOptions
             {

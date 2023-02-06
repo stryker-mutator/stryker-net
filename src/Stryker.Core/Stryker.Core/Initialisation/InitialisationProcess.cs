@@ -78,10 +78,7 @@ namespace Stryker.Core.Initialisation
 
             InitializeDashboardProjectInformation(options, _projectInfo);
 
-            if (_testRunner == null)
-            {
-                _testRunner = new VsTestRunnerPool(options, _projectInfo);
-            }
+            _testRunner ??= new VsTestRunnerPool(options, _projectInfo);
 
             var input = new MutationTestInput
             {
@@ -104,7 +101,11 @@ namespace Stryker.Core.Initialisation
             }
             // no test have been discovered, diagnose this
             DiagnoseLackOfDetectedTest(_projectInfo);
-            throw new InputException("No test has been detected. Make sure your test project contains test and is compatible with VsTest.");
+            if (options.IsSolutionContext)
+            {
+                return result;
+            }
+            throw new InputException("No test has been detected. Make sure your test project contains test and is compatible with VsTest."+string.Join(Environment.NewLine, _projectInfo.ProjectWarnings));
         }
 
         private static readonly Dictionary<string, string> TestFrameworks = new()
@@ -114,7 +115,7 @@ namespace Stryker.Core.Initialisation
             ["Microsoft.VisualStudio.TestPlatform.TestFramework"] = "Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter"
         };
 
-        public static void DiagnoseLackOfDetectedTest(ProjectInfo projectInfo)
+        public void DiagnoseLackOfDetectedTest(ProjectInfo projectInfo)
         {
             foreach (var testProject in projectInfo.TestProjectAnalyzerResults)
             {
@@ -122,8 +123,10 @@ namespace Stryker.Core.Initialisation
                 {
                     if (testProject.References.Any(r => r.Contains(framework)) && !testProject.References.Any(r => r.Contains(adapter)))
                     {
-                        throw new InputException($"Project '{testProject.ProjectFilePath}' is not supported by VsTest because it is missing an appropriate VstTest adapter for '{framework}'. " +
-                            $"Adding '{adapter}' to this project references may resolve the issue.");
+                        var message = $"Project '{testProject.ProjectFilePath}' did not report any test. This may be because it is missing an appropriate VstTest adapter for '{framework}'. " +
+                                      $"Adding '{adapter}' to this project references may resolve the issue.";
+                        projectInfo.ProjectWarnings.Add(message);
+                        _logger.LogWarning(message);
                     }
                 }
             }

@@ -42,7 +42,7 @@ namespace Stryker.Core.MutationTest
             _input = mutationTestInput;
             _projectInfo = (ProjectComponent<SyntaxTree>)mutationTestInput.ProjectInfo.ProjectContents;
             _options = options;
-            _orchestrator = orchestrator ?? new CsharpMutantOrchestrator(options: _options);
+            _orchestrator = orchestrator ?? new CsharpMutantOrchestrator(new MutantPlacer(mutationTestInput.ProjectInfo.CodeInjector), options: _options);
             _compilingProcess = new CsharpCompilingProcess(mutationTestInput, options: options);
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();

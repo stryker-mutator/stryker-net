@@ -3,6 +3,7 @@ using System.IO;
 using System.IO.Abstractions;
 using Buildalyzer;
 using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Core.InjectedHelpers;
 using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Initialisation
@@ -20,10 +21,17 @@ namespace Stryker.Core.Initialisation
         public IAnalyzerResult ProjectUnderTestAnalyzerResult { get; set; }
 
         /// <summary>
+        /// Stores warning messages aggregated during the testing process
+        /// </summary>
+        public IList<string> ProjectWarnings {get;} = new List<string>();
+
+        /// <summary>
         /// The Folder/File structure found in the project under test.
         /// </summary>
         public IProjectComponent ProjectContents { get; set; }
 
+        public CodeInjection CodeInjector { get;} = new();
+        
         public string GetInjectionFilePath(IAnalyzerResult analyzerResult) => Path.Combine(
                 Path.GetDirectoryName(analyzerResult.GetAssemblyPath()),
                 Path.GetFileName(ProjectUnderTestAnalyzerResult.GetAssemblyPath()));

@@ -198,7 +198,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 new ProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                        references: new string[0]).Object,
+                        references: Array.Empty<string>()).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(
                         projectFilePath: "C://Example/Dir/ProjectFolder",
                         targetFramework: "netcoreapp2.1",

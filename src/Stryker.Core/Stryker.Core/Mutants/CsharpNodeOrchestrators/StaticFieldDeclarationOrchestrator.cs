@@ -17,7 +17,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
             var result = base.InjectMutations(sourceNode, targetNode, context);
 
             result = result.ReplaceNodes(result.Declaration.Variables.Where(v => v.Initializer != null).Select(v => v.Initializer.Value),
-                (syntax, _) => MutantPlacer.PlaceStaticContextMarker(syntax));
+                (syntax, _) => context.PlaceStaticContextMarker(syntax));
 
             return result;
         }

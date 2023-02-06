@@ -10,7 +10,6 @@ using Serilog.Events;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
@@ -137,13 +136,6 @@ namespace Stryker.Core.TestRunners.VsTest
             new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(),
                 parameters);
 
-        /// <summary>
-        ///     Build a full path name stored in the log folder.
-        /// </summary>
-        /// <param name="fileName">requested filename</param>
-        /// <returns>A full pathname</returns>
-        public string BuildFilePathName(string fileName) => fileName == null ? null : _fileSystem.Path.Combine(Options.ReportPath ?? ".", fileName);
-
         private ConsoleParameters DetermineConsoleParameters(string runnerId)
         {
             var determineConsoleParameters = new ConsoleParameters
@@ -225,32 +217,6 @@ namespace Stryker.Core.TestRunners.VsTest
             wrapper.EndSession();
         }
 
-        public List<VsTestDescription> FindTestCasesWithinDataSource(VsTestDescription referenceTest)
-        {
-            List<VsTestDescription> result;
-            static string Extractor(string name)
-            {
-                var indexOf = name.IndexOf('(');
-                return indexOf < 0 ? name : name[..indexOf];
-            }
-
-            switch (referenceTest.Framework)
-            {
-                case TestFramework.xUnit:
-                    // find all tests that have the same FQN
-                    result = VsTests.Values.Where(desc => desc.Case.DisplayName == referenceTest.Case.DisplayName).ToList();
-                    break;
-                case TestFramework.NUnit:
-                    var referenceName = Extractor(referenceTest.Case.FullyQualifiedName);
-                    result = VsTests.Values.Where(desc => Extractor(desc.Case.FullyQualifiedName) == referenceName).ToList();
-                    break;
-                default:
-                    result = new List<VsTestDescription> { referenceTest };
-                    break;
-            }
-            return result;
-        }
-
         private void DetectTestFrameworks(ICollection<VsTestDescription> tests)
         {
             if (tests == null)
@@ -295,7 +261,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 ? CoverageCollector.GetVsTestSettings(
                     forCoverage,
                     mutantTestsMap?.Select(e => (e.Key, e.Value.GetGuids())),
-                    CodeInjection.HelperNamespace)
+                    _projectInfo.CodeInjector.HelperNamespace)
                 : string.Empty;
 
             if (_testFramework.HasFlag(TestFramework.NUnit))
