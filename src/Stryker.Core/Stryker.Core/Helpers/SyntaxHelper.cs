@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Stryker.Core
+namespace Stryker.Core.Helpers
 {
     // extension methods for SyntaxNode(s)
     internal static class SyntaxHelper
