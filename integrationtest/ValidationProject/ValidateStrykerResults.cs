@@ -1,10 +1,10 @@
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
 using Newtonsoft.Json;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Json;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 using Xunit;
 
 namespace IntegrationTests
@@ -30,7 +30,7 @@ namespace IntegrationTests
 
                 var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-                CheckReportMutantCounts(report, total: 25, ignored: 0, survived: 1, killed: 8, timeout: 0, nocoverage: 16);
+                CheckReportMutantCounts(report, total: 28, ignored: 2, survived: 2, killed: 9, timeout: 0, nocoverage: 14);
             }
         }
 

@@ -108,7 +108,7 @@ namespace Stryker.Core.Compiling
                 .RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
 
             var errors = diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None).ToList();
-            if (errors.Count>0)
+            if (errors.Count > 0)
             {
                 foreach (var diagnostic in errors)
                 {
@@ -140,7 +140,7 @@ namespace Stryker.Core.Compiling
             ms.SetLength(0);
             symbolStream?.SetLength(0);
 
-            _logger.LogDebug($"Trying compilation for the {ReadableNumber(retryCount)} time.");
+            _logger.LogDebug("Trying compilation for the {retryCount} time.", ReadableNumber(retryCount));
 
             var emitOptions = symbolStream == null ? null : new EmitOptions(false, DebugInformationFormat.PortablePdb,
                 _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetSymbolFileName());
@@ -177,15 +177,12 @@ namespace Stryker.Core.Compiling
             }
         }
 
-        private static string ReadableNumber(int number)
+        private static string ReadableNumber(int number) => number switch
         {
-            return number switch
-            {
-                1 => "first",
-                2 => "second",
-                3 => "third",
-                _ => (number + "th")
-            };
-        }
+            1 => "first",
+            2 => "second",
+            3 => "third",
+            _ => number + "th"
+        };
     }
 }
