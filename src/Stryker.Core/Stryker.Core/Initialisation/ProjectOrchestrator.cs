@@ -77,55 +77,12 @@ namespace Stryker.Core.Initialisation
             IEnumerable<IAnalyzerResult> testProjects,
             IEnumerable<IAnalyzerResult> solutionProjects)
         {
-
-            // need to scan traverse dependencies
-            // dependents contains the list of projects depending on each (non test) projects
-            var dependents = new Dictionary<string, HashSet<string>>();
-            foreach (var project in projectsUnderTest)
-            {
-                foreach (var dependent in project.ProjectReferences.ToList())
-                {
-                    if (!dependents.ContainsKey(dependent))
-                    {
-                        dependents[dependent] = new HashSet<string>();
-                    }
-                    dependents[dependent].Add(project.ProjectFilePath);
-                }
-            }
-
-            // we need to dig recursively, until no further change happens
-            bool foundNewDependency;
-            do
-            {
-                foundNewDependency = false;
-                foreach (var project in dependents.Values)
-                {
-                    foreach (var dependency in project.ToList())
-                    {
-                        if (!dependents.ContainsKey(dependency))
-                        {
-                            continue;
-                        }
-                        foreach (var sub in dependents[dependency])
-                        {
-                            foundNewDependency = project.Add(sub) || foundNewDependency;
-                        }
-                    }
-                }
-            } while (foundNewDependency);
+            var dependents = FindDependentProjects(projectsUnderTest);
 
             foreach (var project in projectsUnderTest)
             {
                 var projectFilePath = project.ProjectFilePath;
-                HashSet<string> candidateProject;
-                if (dependents.ContainsKey(projectFilePath))
-                {;
-                    candidateProject = dependents[projectFilePath].ToHashSet();
-                }
-                else
-                {
-                    candidateProject = new HashSet<string>();
-                }
+                var candidateProject = dependents.ContainsKey(projectFilePath) ? dependents[projectFilePath].ToHashSet() : new HashSet<string>();
 
                 candidateProject.Add(projectFilePath);
                 var relatedTestProjects = testProjects
@@ -153,6 +110,36 @@ namespace Stryker.Core.Initialisation
                     _logger.LogWarning("No test projects could be found for {0}", projectFilePath);
                 }
             }
+        }
+
+        private static Dictionary<string, HashSet<string>> FindDependentProjects(IEnumerable<IAnalyzerResult> projectsUnderTest)
+        {
+            // need to scan traverse dependencies
+            // dependents contains the list of projects depending on each (non test) projects
+            var dependents = new Dictionary<string, HashSet<string>>();
+            foreach (var project in projectsUnderTest)
+            {
+                foreach (var dependent in project.ProjectReferences.ToList())
+                {
+                    if (!dependents.ContainsKey(dependent))
+                    {
+                        dependents[dependent] = new HashSet<string>();
+                    }
+
+                    dependents[dependent].Add(project.ProjectFilePath);
+                }
+            }
+
+            // we need to dig recursively, until no further change happens
+            bool foundNewDependency;
+            do
+            {
+                foundNewDependency = dependents.Values.Aggregate(false, (current2, project) =>
+                    project.Where(dependency => dependents.ContainsKey(dependency)).
+                        Aggregate(current2, (current1, dependency) => dependents[dependency].Aggregate(current1, (current, sub) => project.Add(sub) || current)));
+            } while (foundNewDependency);
+
+            return dependents;
         }
 
         private List<IAnalyzerResult> AnalyzeSolution(StrykerOptions options)

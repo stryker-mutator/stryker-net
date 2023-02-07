@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0. See LICENSE in the project root for license information.
 // From: https://github.com/DotNetAnalyzers/StyleCopAnalyzers/blob/9859cc0cac7269a51afe8800458d9bf40bfdb7e4/StyleCop.Analyzers/StyleCop.Analyzers/GeneratedCodeAnalysisExtensions.cs
 
+using System;
+
 namespace Stryker.Core.MutantFilters.Extensions
 {
     using Microsoft.CodeAnalysis;
@@ -83,6 +85,6 @@ namespace Stryker.Core.MutantFilters.Extensions
             Regex.IsMatch(
                 fileSystem.Path.GetFileName(filePath),
                 @"\.designer\.cs$",
-                RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture);
+                RegexOptions.IgnoreCase | RegexOptions.ExplicitCapture, TimeSpan.FromSeconds(1));
     }
 }

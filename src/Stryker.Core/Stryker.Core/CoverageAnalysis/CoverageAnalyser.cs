@@ -101,7 +101,7 @@ namespace Stryker.Core.CoverageAnalysis
             else if (resultTingRequirements.HasFlag(MutationTestingRequirements.Static) || mutant.IsStaticValue)
             {
                 // static mutations will be tested against every tests, except the one that are trusted not to cover it
-                mutant.CoveringTests =allTestsGuidsExceptTrusted.Merge(testGuids);
+                mutant.CoveringTests = allTestsGuidsExceptTrusted.Merge(testGuids);
                 mutant.AssessingTests = allTestsGuidsExceptTrusted.Merge(assessingTests).Excluding(failedTest);
                 
                 mutant.IsStaticValue = true;
