@@ -94,6 +94,22 @@ namespace Stryker.Core.Initialisation
             // initial test
             var result = _initialTestProcess.InitialTest(options, _testRunner);
 
+            if (!result.Result.FailingTests.IsEmpty)
+            {
+                var failingTestsCount = result.Result.FailingTests.Count;
+                if (options.BreakOnInitialTestFailure)
+                {
+                    throw new InputException("Initial testrun has failing tests.", result.Result.ResultMessage);
+                }
+
+                if (!options.IsSolutionContext && ((double)failingTestsCount) / result.Result.RanTests.Count >= .5)
+                {
+                    throw new InputException("Initial testrun has more than 50% failing tests.", result.Result.ResultMessage);
+                }
+                
+                _logger.LogWarning($"{(failingTestsCount == 1 ? "A test is": $"{failingTestsCount} tests are")} failing. Stryker will continue but outcome will be impacted.");
+            }
+
             if (_testRunner.DiscoverTests().Count != 0)
             {
                 return result;

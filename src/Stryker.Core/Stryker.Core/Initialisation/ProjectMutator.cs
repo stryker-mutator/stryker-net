@@ -13,28 +13,28 @@ namespace Stryker.Core.Initialisation
 
     public class ProjectMutator : IProjectMutator
     {
-        private readonly IMutationTestProcess _injectedMutationtestProcess;
-        private readonly IInitialisationProcess _injectedInitialisationProcess;
+        private readonly IMutationTestProcess _injectedMutationTestProcess;
+        private readonly IInitialisationProcess _injectedInitializationProcess;
 
-        public ProjectMutator(IInitialisationProcess initialisationProcess = null,
+        public ProjectMutator(IInitialisationProcess initializationProcess = null,
             IMutationTestProcess mutationTestProcess = null)
         {
-            _injectedInitialisationProcess = initialisationProcess ;
-            _injectedMutationtestProcess = mutationTestProcess;
+            _injectedInitializationProcess = initializationProcess ;
+            _injectedMutationTestProcess = mutationTestProcess;
         }
 
         public IMutationTestProcess MutateProject(StrykerOptions options, IReporter reporters, IEnumerable<IAnalyzerResult> solutionProjects = null)
         {
-            // get a new instance of InitialisationProcess for each project
-            var initialisationProcess = _injectedInitialisationProcess ?? new InitialisationProcess();
+            // get a new instance of InitializationProcess for each project
+            var initializationProcess = _injectedInitializationProcess ?? new InitialisationProcess();
             // initialize
-            var input = initialisationProcess.Initialize(options, solutionProjects);
+            var input = initializationProcess.Initialize(options, solutionProjects);
 
-            var process = _injectedMutationtestProcess ?? new MutationTestProcess(input, options, reporters,
+            var process = _injectedMutationTestProcess ?? new MutationTestProcess(input, options, reporters,
                 new MutationTestExecutor(input.TestRunner));
 
             // initial test
-            input.InitialTestRun = initialisationProcess.InitialTest(options);
+            input.InitialTestRun = initializationProcess.InitialTest(options);
 
             // mutate
             process.Mutate();

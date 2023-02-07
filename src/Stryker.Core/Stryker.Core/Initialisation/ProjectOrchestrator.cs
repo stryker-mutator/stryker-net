@@ -87,9 +87,9 @@ namespace Stryker.Core.Initialisation
                 {
                     if (!dependents.ContainsKey(dependent))
                     {
-                        dependents[project.ProjectFilePath] = new HashSet<string>();
+                        dependents[dependent] = new HashSet<string>();
                     }
-                    dependents[project.ProjectFilePath].Add(dependent);
+                    dependents[dependent].Add(project.ProjectFilePath);
                 }
             }
 

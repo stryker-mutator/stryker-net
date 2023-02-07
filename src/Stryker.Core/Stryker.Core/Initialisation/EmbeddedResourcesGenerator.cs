@@ -56,7 +56,7 @@ namespace Stryker.Core.Initialisation
 
                 resources.Add(new ResourceDescription(
                     $"{rootNamespace}{string.Join(".", resourceName.Split('\\'))}",
-                    () => ProvideResourceData(resourceFullFilename),
+                    () => ProvideResourceData(resourceFullFilename, logger),
                     true));
             }
 
@@ -64,11 +64,17 @@ namespace Stryker.Core.Initialisation
             return resources;
         }
 
-        private static Stream ProvideResourceData(string resourceFullFilename)
+        private static Stream ProvideResourceData(string resourceFullFilename, ILogger logger)
         {
             // For non-.resx files just create a FileStream object to read the file as binary data
             if (!resourceFullFilename.EndsWith(".resx", StringComparison.OrdinalIgnoreCase))
             {
+                
+                if (!File.Exists(resourceFullFilename))
+                {
+                    logger?.LogWarning($"Could not find resource {resourceFullFilename}.\n Results may be unreliable if resources are required during test execution.");
+                    return new MemoryStream();
+                }
                 return File.OpenRead(resourceFullFilename);
             }
 
