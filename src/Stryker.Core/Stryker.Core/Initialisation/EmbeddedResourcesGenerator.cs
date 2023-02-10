@@ -4,10 +4,8 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
-using System.Linq;
 using System.Resources;
 using System.Resources.NetStandard;
-using System.Xml.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 
@@ -16,46 +14,21 @@ namespace Stryker.Core.Initialisation
     [ExcludeFromCodeCoverage]
     public static class EmbeddedResourcesGenerator
     {
-        public static IEnumerable<ResourceDescription> GetManifestResources(string assemblyName, string projectPath, ILogger logger)
+        public static IEnumerable<ResourceDescription> GetManifestResources(string projectFilePath, string rootNamespace, IEnumerable<string> embeddedResources, ILogger logger)
         {
             var resources = new List<ResourceDescription>();
-            if (!File.Exists(projectPath))
-            {
-                logger?.LogWarning($"Could not find embedded resources. \n Results may be unreliable if embedded resources are required during test execution.");
-                return resources;
-            }
-
-            var doc = XDocument.Load(projectPath);
-            var rootNamespace = doc.Descendants().FirstOrDefault(d => d.Name.LocalName.Equals("RootNamespace", StringComparison.InvariantCultureIgnoreCase))?.Value;
-            var embeddedResources = doc.Descendants().Where(d => d.Name.LocalName.Equals("EmbeddedResource", StringComparison.InvariantCultureIgnoreCase));
-
-            if (rootNamespace == null)
-            {
-                rootNamespace = assemblyName;
-            }
-
-            if (rootNamespace != string.Empty)
-            {
-                rootNamespace += ".";
-            }
 
             foreach (var embeddedResource in embeddedResources)
             {
-                var path = GetEmbeddedPath(embeddedResource);
-                if (path == null)
-                {
-                    continue;
-                }
-
-                var resourceFullFilename = Path.Combine(Path.GetDirectoryName(projectPath), path);
+                var resourceFullFilename = Path.Combine(Path.GetDirectoryName(projectFilePath), embeddedResource);
 
                 var resourceName =
-                    path.EndsWith(".resx", StringComparison.OrdinalIgnoreCase) ?
-                        path.Remove(path.Length - 5) + ".resources" :
-                        path;
+                    embeddedResource.EndsWith(".resx", StringComparison.OrdinalIgnoreCase) ?
+                        embeddedResource.Remove(embeddedResource.Length - 5) + ".resources" :
+                        embeddedResource;
 
                 resources.Add(new ResourceDescription(
-                    $"{rootNamespace}{string.Join(".", resourceName.Split('\\'))}",
+                    $"{rootNamespace}.{string.Join(".", resourceName.Split('\\'))}",
                     () => ProvideResourceData(resourceFullFilename),
                     true));
             }
@@ -98,17 +71,5 @@ namespace Stryker.Core.Initialisation
         /// exception, although I'm not sure why that exception was occurring.
         /// </summary>
         private static string TypeNameConverter(Type objectType) => objectType.AssemblyQualifiedName.Replace("4.0.0.0", "2.0.0.0");
-
-        private static string GetEmbeddedPath(XElement embeddedResource)
-        {
-            var paths = embeddedResource.Attribute("Include")?.Value;
-            if (paths != null)
-            {
-                return paths;
-            }
-
-            paths = embeddedResource.Attribute("Update")?.Value;
-            return paths;
-        }
     }
 }
