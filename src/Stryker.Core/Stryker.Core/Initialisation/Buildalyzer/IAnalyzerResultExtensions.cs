@@ -26,12 +26,11 @@ namespace Stryker.Core.Initialisation.Buildalyzer
         public static IEnumerable<ResourceDescription> GetResources(this IAnalyzerResult analyzerResult, ILogger logger)
         {
             var rootNamespace = analyzerResult.GetRootNamespace();
-            var embeddedResources = analyzerResult.GetItem("EmbeddedResource");
+            var embeddedResources = analyzerResult.GetItem("EmbeddedResource").Select(x => x.ItemSpec);
             return EmbeddedResourcesGenerator.GetManifestResources(
                 analyzerResult.ProjectFilePath,
                 rootNamespace,
-                embeddedResources.Select(x => x.ItemSpec),
-                logger);
+                embeddedResources);
         }
         public static CSharpCompilationOptions GetCompilationOptions(this IAnalyzerResult analyzerResult)
         {

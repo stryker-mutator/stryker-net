@@ -7,14 +7,13 @@ using System.IO;
 using System.Resources;
 using System.Resources.NetStandard;
 using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Logging;
 
 namespace Stryker.Core.Initialisation
 {
     [ExcludeFromCodeCoverage]
     public static class EmbeddedResourcesGenerator
     {
-        public static IEnumerable<ResourceDescription> GetManifestResources(string projectFilePath, string rootNamespace, IEnumerable<string> embeddedResources, ILogger logger)
+        public static IEnumerable<ResourceDescription> GetManifestResources(string projectFilePath, string rootNamespace, IEnumerable<string> embeddedResources)
         {
             var resources = new List<ResourceDescription>();
 
