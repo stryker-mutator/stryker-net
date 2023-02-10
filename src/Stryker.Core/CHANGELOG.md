@@ -1,3 +1,17 @@
+# [3.6.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.5.1...stryker@3.6.0) (2023-02-10)
+
+
+### Bug Fixes
+
+* **embedded resources generation:** Use buildalyzer to find root namespace and embedded resources ([#2404](https://github.com/stryker-mutator/stryker-net/issues/2404)) ([a4969ff](https://github.com/stryker-mutator/stryker-net/commit/a4969ff60debcb6a94a059ba2d2aa84cb54029ef))
+
+
+### Features
+
+* **html report:** Update mutation testing elements to 1.7.14 ([#2405](https://github.com/stryker-mutator/stryker-net/issues/2405)) ([98ad817](https://github.com/stryker-mutator/stryker-net/commit/98ad8178e61c1fad54c208e2712063634a0f6961))
+
+
+
 ## [3.5.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.5.0...stryker@3.5.1) (2023-02-06)
 
 
