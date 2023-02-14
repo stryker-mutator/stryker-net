@@ -7,7 +7,6 @@ using Buildalyzer;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.Initialisation
 {

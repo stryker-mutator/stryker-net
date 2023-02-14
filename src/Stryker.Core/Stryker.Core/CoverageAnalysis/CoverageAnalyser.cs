@@ -2,11 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.CoverageAnalysis
 {

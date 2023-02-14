@@ -4,7 +4,6 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.Initialisation
 {

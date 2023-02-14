@@ -8,7 +8,6 @@ using Stryker.Core.Mutants;
 using Stryker.Core.TestRunners;
 using System.Threading;
 using Stryker.Core.Options;
-using Stryker.Core.TestRunners.VsTest;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation

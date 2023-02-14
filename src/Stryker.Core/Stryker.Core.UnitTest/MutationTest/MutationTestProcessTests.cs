@@ -20,7 +20,6 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
 using Xunit;
 using Mutation = Stryker.Core.Mutants.Mutation;
 

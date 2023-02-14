@@ -5,7 +5,6 @@ using Stryker.Core.TestRunners;
 using System.Collections.Generic;
 using System.Linq;
 using Stryker.Core.Initialisation;
-using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.MutationTest
 {

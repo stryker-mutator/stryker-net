@@ -14,7 +14,7 @@ using Stryker.Core.Options;
 using Stryker.DataCollector;
 
 namespace Stryker.Core.TestRunners.VsTest
-{   
+{
     public sealed class VsTestRunnerPool : ITestRunner
     {
         private readonly AutoResetEvent _runnerAvailableHandler = new(false);

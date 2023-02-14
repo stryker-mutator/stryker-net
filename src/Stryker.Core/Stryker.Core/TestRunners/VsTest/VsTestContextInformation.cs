@@ -9,7 +9,7 @@ using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
@@ -18,18 +18,6 @@ using Stryker.DataCollector;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
-
-
-    public interface IProjectAndTest
-    {
-        bool IsFullFramework { get; }
-
-        string HelperNamespace { get; }
-
-        IReadOnlyList<string> TestAssemblies { get; }
-    }
-
-
     /// <summary>
     ///     Handles VsTest setup and configuration.
     /// </summary>

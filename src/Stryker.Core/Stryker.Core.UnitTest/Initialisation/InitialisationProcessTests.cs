@@ -15,7 +15,6 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Core.Mutants;
 using Xunit;
 using Shouldly;
-using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {

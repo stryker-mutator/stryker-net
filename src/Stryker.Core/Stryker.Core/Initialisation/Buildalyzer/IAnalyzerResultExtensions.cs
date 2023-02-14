@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
@@ -22,8 +23,15 @@ namespace Stryker.Core.Initialisation.Buildalyzer
 
         public static string GetAssemblyName(this IAnalyzerResult analyzerResult) => FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["AssemblyName"]);
 
-        public static IEnumerable<ResourceDescription> GetResources(this IAnalyzerResult analyzerResult, ILogger logger) => EmbeddedResourcesGenerator.GetManifestResources(analyzerResult.GetAssemblyName(), analyzerResult.ProjectFilePath, logger);
-
+        public static IEnumerable<ResourceDescription> GetResources(this IAnalyzerResult analyzerResult, ILogger logger)
+        {
+            var rootNamespace = analyzerResult.GetRootNamespace();
+            var embeddedResources = analyzerResult.GetItem("EmbeddedResource").Select(x => x.ItemSpec);
+            return EmbeddedResourcesGenerator.GetManifestResources(
+                analyzerResult.ProjectFilePath,
+                rootNamespace,
+                embeddedResources);
+        }
         public static CSharpCompilationOptions GetCompilationOptions(this IAnalyzerResult analyzerResult)
         {
             var compilationOptions = new CSharpCompilationOptions(analyzerResult.GetOutputKind())
@@ -147,9 +155,11 @@ namespace Stryker.Core.Initialisation.Buildalyzer
                 Path.GetDirectoryName(analyzerResult.ProjectFilePath),
                 analyzerResult.GetPropertyOrDefault("AssemblyOriginatorKeyFile"));
 
+        private static string GetRootNamespace(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("RootNamespace") ?? analyzerResult.GetAssemblyName();
+
         private static bool GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, bool defaultBoolean) => bool.Parse(GetPropertyOrDefault(analyzerResult, name, defaultBoolean.ToString()));
 
-        private static string GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, string defaultValue = null)
+        private static string GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, string defaultValue = default)
         {
             if (analyzerResult.Properties is null || !analyzerResult.Properties.TryGetValue(name, out var property))
             {
@@ -157,6 +167,16 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             }
 
             return property;
+        }
+
+        private static IEnumerable<IProjectItem> GetItem(this IAnalyzerResult analyzerResult, string name)
+        {
+            if (analyzerResult.Items is null || !analyzerResult.Items.TryGetValue(name, out var item))
+            {
+                return Enumerable.Empty<IProjectItem>();
+            }
+
+            return item;
         }
     }
 }
