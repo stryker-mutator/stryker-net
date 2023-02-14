@@ -20,6 +20,7 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
+using Stryker.Core.TestRunners.VsTest;
 using Xunit;
 using Mutation = Stryker.Core.Mutants.Mutation;
 
@@ -644,10 +645,10 @@ namespace Stryker.Core.UnitTest.MutationTest
             reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
 
             var runnerMock = new Mock<ITestRunner>();
-            runnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
+            runnerMock.Setup(x => x.DiscoverTests( It.IsAny<IProjectAndTest>())).Returns(new TestSet());
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             executorMock.SetupGet(x => x.TestRunner).Returns(runnerMock.Object);
-            executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(),
+            executorMock.Setup(x => x.Test( It.IsAny<IProjectAndTest>(),It.IsAny<IList<Mutant>>(),
                 It.IsAny<ITimeoutValueCalculator>(),
                 It.IsAny<TestUpdateHandler>()));
 
@@ -686,7 +687,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             executorMock.SetupGet(x => x.TestRunner).Returns(scenario.GetTestRunnerMock().Object);
-            executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<TestUpdateHandler>()));
+            executorMock.Setup(x => x.Test( It.IsAny<IProjectAndTest>(),It.IsAny<IList<Mutant>>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<TestUpdateHandler>()));
 
             var options = new StrykerOptions()
             {
@@ -699,7 +700,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var testResult = target.Test(input.ProjectInfo.ProjectContents.Mutants);
 
-            executorMock.Verify(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<TestUpdateHandler>()), Times.Never);
+            executorMock.Verify(x => x.Test( It.IsAny<IProjectAndTest>(),It.IsAny<IList<Mutant>>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<TestUpdateHandler>()), Times.Never);
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
             testResult.MutationScore.ShouldBe(double.NaN);
@@ -733,7 +734,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var runnerMock = new Mock<ITestRunner>();
             var executorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             executorMock.SetupGet(x => x.TestRunner).Returns(runnerMock.Object);
-            executorMock.Setup(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<TestUpdateHandler>()));
+            executorMock.Setup(x => x.Test( It.IsAny<IProjectAndTest>(),It.IsAny<IList<Mutant>>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<TestUpdateHandler>()));
 
             var options = new StrykerOptions()
             {
@@ -744,7 +745,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var testResult = target.Test(folder.Mutants);
 
-            executorMock.Verify(x => x.Test(It.IsAny<IList<Mutant>>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<TestUpdateHandler>()), Times.Never);
+            executorMock.Verify(x => x.Test( It.IsAny<IProjectAndTest>(),It.IsAny<IList<Mutant>>(), It.IsAny<ITimeoutValueCalculator>(), It.IsAny<TestUpdateHandler>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
             testResult.MutationScore.ShouldBe(double.NaN);
         }

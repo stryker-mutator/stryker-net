@@ -92,7 +92,7 @@ namespace Stryker.Core.Initialisation
         public InitialTestRun InitialTest(StrykerOptions options)
         {
             // initial test
-            var result = _initialTestProcess.InitialTest(options, _testRunner);
+            var result = _initialTestProcess.InitialTest(options, _projectInfo, _testRunner);
 
             if (!result.Result.FailingTests.IsEmpty)
             {
@@ -110,7 +110,7 @@ namespace Stryker.Core.Initialisation
                 _logger.LogWarning($"{(failingTestsCount == 1 ? "A test is": $"{failingTestsCount} tests are")} failing. Stryker will continue but outcome will be impacted.");
             }
 
-            if (_testRunner.DiscoverTests().Count != 0)
+            if (_testRunner.DiscoverTests(_projectInfo).Count != 0)
             {
                 return result;
             }

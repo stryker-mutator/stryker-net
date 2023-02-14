@@ -42,39 +42,24 @@ namespace Stryker.Core.TestRunners.VsTest
 
         [ExcludeFromCodeCoverage(Justification = "It depends on the deployment of VsTest.")]
         public VsTestRunnerPool(StrykerOptions options,
-            ProjectInfo projectInfo)
+           IProjectAndTest project)
         {
-            Context = new VsTestContextInformation(options, projectInfo);
-            Context.Initialize();
+            Context = new VsTestContextInformation(options);
+            Context.Initialize(project);
             _countOfRunners = Math.Max(1, options.Concurrency);
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
             Initialize();
         }
 
-        public TestSet DiscoverTests() => Context.Tests;
+        public TestSet DiscoverTests(IProjectAndTest project) => Context.Tests;
 
-        public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
-            => RunThis(runner => runner.TestMultipleMutants(timeoutCalc, mutants, update));
+        public TestRunResult TestMultipleMutants(IProjectAndTest project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
+            => RunThis(runner => runner.TestMultipleMutants(project, timeoutCalc, mutants, update));
 
-        public TestRunResult InitialTest()
-            => RunThis(runner => runner.InitialTest());
+        public TestRunResult InitialTest(IProjectAndTest project)
+            => RunThis(runner => runner.InitialTest(project));
 
-        public IEnumerable<CoverageRunResult> CaptureCoverage()
-        {
-            var optimizationMode = Context.Options.OptimizationMode;
-
-            IEnumerable<CoverageRunResult> resultsToParse;
-            if (optimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
-            {
-                resultsToParse = CaptureCoverageTestByTest();
-            }
-            else
-            {
-                resultsToParse = CaptureCoverageInOneGo();
-            }
-
-            return resultsToParse;
-        }
+        public IEnumerable<CoverageRunResult> CaptureCoverage(IProjectAndTest project) => Context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest) ? CaptureCoverageTestByTest(project) : CaptureCoverageInOneGo(project);
 
         private void Initialize(Func<VsTestContextInformation, int, VsTestRunner> runnerBuilder = null)
         {
@@ -87,18 +72,18 @@ namespace Stryker.Core.TestRunners.VsTest
                 }));
         }
 
-        private IEnumerable<CoverageRunResult> CaptureCoverageInOneGo() => ConvertCoverageResult(RunThis(runner => runner.RunCoverageSession(TestGuidsList.EveryTest()).TestResults), false);
+        private IEnumerable<CoverageRunResult> CaptureCoverageInOneGo(IProjectAndTest project) => ConvertCoverageResult(RunThis(runner => runner.RunCoverageSession(TestGuidsList.EveryTest(), project).TestResults), false);
 
-        private IEnumerable<CoverageRunResult> CaptureCoverageTestByTest() => ConvertCoverageResult(CaptureCoveragePerIsolatedTests(Context.VsTests.Keys).TestResults, true);
+        private IEnumerable<CoverageRunResult> CaptureCoverageTestByTest(IProjectAndTest project) => ConvertCoverageResult(CaptureCoveragePerIsolatedTests(project, Context.VsTests.Keys).TestResults, true);
 
-        private IRunResults CaptureCoveragePerIsolatedTests(IEnumerable<Guid> tests)
+        private IRunResults CaptureCoveragePerIsolatedTests(IProjectAndTest project, IEnumerable<Guid> tests)
         {
             var options = new ParallelOptions { MaxDegreeOfParallelism = _countOfRunners };
             var result = new SimpleRunResults();
             var results = new ConcurrentBag<IRunResults>();
             Parallel.ForEach(tests, options,
                 testCase =>
-                    results.Add(RunThis(runner => runner.RunCoverageSession(new TestGuidsList(testCase)))));
+                    results.Add(RunThis(runner => runner.RunCoverageSession(new TestGuidsList(testCase), project))));
 
             return results.Aggregate(result, (runResults, singleResult) => runResults.Merge(singleResult));
         }

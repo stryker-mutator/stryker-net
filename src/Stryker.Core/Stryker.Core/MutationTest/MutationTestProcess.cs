@@ -116,7 +116,7 @@ namespace Stryker.Core.MutationTest
             {
                 var reportedMutants = new HashSet<Mutant>();
                 
-                _mutationTestExecutor.Test(mutants,
+                _mutationTestExecutor.Test(Input.ProjectInfo, mutants,
                     Input.InitialTestRun.TimeoutValueCalculator,
                     (testedMutants, tests, ranTests, outTests) => TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants));
 
@@ -244,6 +244,6 @@ namespace Stryker.Core.MutationTest
             return blocks;
         }
 
-        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(_mutationTestExecutor.TestRunner, _projectContents.Mutants, Input.InitialTestRun.Result.FailingTests);
+        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(Input.ProjectInfo, _mutationTestExecutor.TestRunner, _projectContents.Mutants, Input.InitialTestRun.Result.FailingTests);
     }
 }

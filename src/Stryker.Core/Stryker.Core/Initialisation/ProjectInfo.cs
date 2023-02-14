@@ -1,14 +1,17 @@
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
 using Buildalyzer;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.Initialisation
 {
-    public class ProjectInfo
+    public class ProjectInfo : IProjectAndTest
     {
         private readonly IFileSystem _fileSystem;
 
@@ -64,5 +67,8 @@ namespace Stryker.Core.Initialisation
         }
 
         private static string GetBackupName(string injectionPath) => injectionPath + ".stryker-unchanged";
+        public bool IsFullFramework => ProjectUnderTestAnalyzerResult.TargetsFullFramework();
+        public string HelperNamespace => CodeInjector.HelperNamespace;
+        public IReadOnlyList<string> TestAssemblies => TestProjectAnalyzerResults.Select( a => a.GetAssemblyPath()).ToList();
     }
 }

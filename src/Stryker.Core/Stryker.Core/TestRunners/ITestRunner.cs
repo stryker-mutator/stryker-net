@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
+using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.TestRunners
 {
@@ -9,15 +10,15 @@ namespace Stryker.Core.TestRunners
         ITestGuids failedTests,
         ITestGuids ranTests,
         ITestGuids timedOutTests);
-
+    
     public interface ITestRunner : IDisposable
     {
-        TestSet DiscoverTests();
+        TestSet DiscoverTests(IProjectAndTest project);
 
-        TestRunResult InitialTest();
+        TestRunResult InitialTest(IProjectAndTest project);
 
-        IEnumerable<CoverageRunResult> CaptureCoverage();
+        IEnumerable<CoverageRunResult> CaptureCoverage(IProjectAndTest project);
 
-        TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update);
+        TestRunResult TestMultipleMutants(IProjectAndTest project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update);
     }
 }

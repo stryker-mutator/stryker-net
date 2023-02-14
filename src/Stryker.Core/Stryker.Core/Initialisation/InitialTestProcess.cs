@@ -4,12 +4,13 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
+using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.Initialisation
 {
     public interface IInitialTestProcess
     {
-        InitialTestRun InitialTest(StrykerOptions options, ITestRunner testRunner);
+        InitialTestRun InitialTest(StrykerOptions options, IProjectAndTest project, ITestRunner testRunner);
     }
 
     public class InitialTestProcess : IInitialTestProcess
@@ -29,9 +30,9 @@ namespace Stryker.Core.Initialisation
         /// <param name="testRunner"></param>
         /// <param name="options">Stryker options</param>
         /// <returns>The duration of the initial testrun</returns>
-        public InitialTestRun InitialTest(StrykerOptions options, ITestRunner testRunner)
+        public InitialTestRun InitialTest(StrykerOptions options, IProjectAndTest project, ITestRunner testRunner)
         {
-            var message = testRunner.DiscoverTests() is var total && total.Count == 0 ? "Unable to detect" : total.Count.ToString();
+            var message = testRunner.DiscoverTests(project) is var total && total.Count == 0 ? "Unable to detect" : total.Count.ToString();
 
             _logger.LogInformation("Total number of tests found: {0}.", message);
 
@@ -41,7 +42,7 @@ namespace Stryker.Core.Initialisation
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
-            var initTestRunResult = testRunner.InitialTest();
+            var initTestRunResult = testRunner.InitialTest(project);
             // Stop stopwatch immediately after testrun
             stopwatch.Stop();
 

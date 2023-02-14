@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Linq;
+using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
@@ -18,6 +18,18 @@ using Stryker.DataCollector;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
+
+
+    public interface IProjectAndTest
+    {
+        bool IsFullFramework { get; }
+
+        string HelperNamespace { get; }
+
+        IReadOnlyList<string> TestAssemblies { get; }
+    }
+
+
     /// <summary>
     ///     Handles VsTest setup and configuration.
     /// </summary>
@@ -27,7 +39,6 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly Func<string, IStrykerTestHostLauncher> _hostBuilder;
         private readonly ILogger _logger;
         private readonly bool _ownVsTestHelper;
-        private readonly ProjectInfo _projectInfo;
         private readonly IVsTestHelper _vsTestHelper;
         private readonly Func<ConsoleParameters, IVsTestConsoleWrapper> _wrapperBuilder;
         private bool _disposed;
@@ -45,7 +56,6 @@ namespace Stryker.Core.TestRunners.VsTest
         /// <param name="hostBuilder"></param>
         /// <param name="logger"></param>
         public VsTestContextInformation(StrykerOptions options,
-            ProjectInfo projectInfo,
             IVsTestHelper helper = null,
             IFileSystem fileSystem = null,
             Func<ConsoleParameters, IVsTestConsoleWrapper> builder = null,
@@ -53,7 +63,6 @@ namespace Stryker.Core.TestRunners.VsTest
             ILogger logger = null)
         {
             Options = options;
-            _projectInfo = projectInfo;
             _ownVsTestHelper = helper == null;
             _fileSystem = fileSystem ?? new FileSystem();
             _vsTestHelper = helper ?? new VsTestHelper(_fileSystem, logger);
@@ -78,7 +87,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestSet Tests { get; } = new();
 
         /// <summary>
-        ///     Stryker options
+        ///    Stryker options
         /// </summary>
         public StrykerOptions Options { get; }
 
@@ -166,13 +175,14 @@ namespace Stryker.Core.TestRunners.VsTest
         ///     Initialize VsTest session. Discovers tests
         /// </summary>
         /// <exception cref="GeneralStrykerException"></exception>
-        public void Initialize()
+        public void Initialize(IProjectAndTest project)
         {
+            /*
             var testBinariesPaths = _projectInfo.TestProjectAnalyzerResults
-                .Select(testProject => testProject.GetAssemblyPath()).ToList();
+                .Select(testProject => testProject.GetAssemblyPath()).ToList();*/
             _sources = new List<string>();
 
-            foreach (var path in testBinariesPaths)
+            foreach (var path in project.TestAssemblies)
             {
                 if (!_fileSystem.File.Exists(path))
                 {
@@ -252,16 +262,15 @@ namespace Stryker.Core.TestRunners.VsTest
 </RunSettings>";
         }
 
-        public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap)
+        public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap, IProjectAndTest project)
         {
-            var projectAnalyzerResult = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault();
             var settingsForCoverage = string.Empty;
             var needDataCollector = forCoverage || mutantTestsMap is { };
             var dataCollectorSettings = needDataCollector
                 ? CoverageCollector.GetVsTestSettings(
                     forCoverage,
                     mutantTestsMap?.Select(e => (e.Key, e.Value.GetGuids())),
-                    _projectInfo.CodeInjector.HelperNamespace)
+                    project.HelperNamespace)
                 : string.Empty;
 
             if (_testFramework.HasFlag(TestFramework.NUnit))
@@ -287,8 +296,8 @@ namespace Stryker.Core.TestRunners.VsTest
                 $@"<RunSettings>
 <RunConfiguration>
   <CollectSourceInformation>false</CollectSourceInformation>
-{(!projectAnalyzerResult.TargetsFullFramework() ? string.Empty : @"<DisableAppDomain>true</DisableAppDomain>
-")}  <MaxCpuCount>1</MaxCpuCount>
+{(project.IsFullFramework ? @"<DisableAppDomain>true</DisableAppDomain>
+" : string.Empty)}  <MaxCpuCount>1</MaxCpuCount>
 {timeoutSettings}{settingsForCoverage}
 <DesignMode>false</DesignMode>
 {testCaseFilter}</RunConfiguration>{dataCollectorSettings}

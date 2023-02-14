@@ -35,9 +35,9 @@ namespace Stryker.Core.TestRunners.VsTest
             _vsTestConsole = _context.BuildVsTestWrapper(RunnerId);
         }
 
-        public TestRunResult InitialTest()
+        public TestRunResult InitialTest(IProjectAndTest project)
         {
-            var testResults = RunTestSession(TestGuidsList.EveryTest());
+            var testResults = RunTestSession(TestGuidsList.EveryTest(), project);
             // initial test run, register test results
             foreach (var result in testResults.TestResults)
             {
@@ -57,7 +57,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return BuildTestRunResult(testResults, _context.Tests.Count, false);
         }
 
-        public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
+        public TestRunResult TestMultipleMutants(IProjectAndTest project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var mutantTestsMap = new Dictionary<int, ITestGuids>();
             var needAll = true;
@@ -132,7 +132,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 _logger.LogDebug($"{RunnerId}: Using {timeOutMs} ms as test run timeout");
             }
 
-            var testResults = RunTestSession(new TestGuidsList(testCases), timeOutMs, mutantTestsMap, HandleUpdate);
+            var testResults = RunTestSession(new TestGuidsList(testCases), project, timeOutMs, mutantTestsMap, HandleUpdate);
 
             return BuildTestRunResult(testResults, expectedTests);
         }
@@ -163,15 +163,15 @@ namespace Stryker.Core.TestRunners.VsTest
                 : new TestRunResult(ranTests, failedTestsDescription, timedOutTests, message, duration);
         }
 
-        public IRunResults RunTestSession(ITestGuids testsToRun, int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<IRunResults> updateHandler = null) =>
+        public IRunResults RunTestSession(ITestGuids testsToRun, IProjectAndTest project,  int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<IRunResults> updateHandler = null) =>
             RunTestSession(testsToRun,
-                _context.GenerateRunSettings(timeout, false, mutantTestsMap), timeout, updateHandler).GetResults();
+                _context.GenerateRunSettings(timeout, false, mutantTestsMap, project), timeout, updateHandler).GetResults();
 
-        public IRunResults RunCoverageSession(ITestGuids testsToRun) =>
+        public IRunResults RunCoverageSession(ITestGuids testsToRun, IProjectAndTest project) =>
             RunTestSession(testsToRun,
                 _context.GenerateRunSettings(null,
                     true,
-                    null)).GetRawResults();
+                    null, project)).GetRawResults();
 
         private RunEventHandler RunTestSession(ITestGuids tests,
             string runSettings,

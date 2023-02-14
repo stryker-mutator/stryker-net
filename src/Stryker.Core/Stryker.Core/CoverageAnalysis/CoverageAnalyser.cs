@@ -6,6 +6,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
+using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.CoverageAnalysis
 {
@@ -20,7 +21,7 @@ namespace Stryker.Core.CoverageAnalysis
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<CoverageAnalyser>();
         }
 
-        public void DetermineTestCoverage(ITestRunner runner, IEnumerable<Mutant> mutants, ITestGuids resultFailingTests)
+        public void DetermineTestCoverage(IProjectAndTest project, ITestRunner runner, IEnumerable<Mutant> mutants, ITestGuids resultFailingTests)
         {
             if (!_options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
                 !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
@@ -33,7 +34,7 @@ namespace Stryker.Core.CoverageAnalysis
                 return;
             }
 
-            ParseCoverage(runner.CaptureCoverage(), mutants, new TestGuidsList(resultFailingTests.GetGuids()));
+            ParseCoverage(runner.CaptureCoverage(project), mutants, new TestGuidsList(resultFailingTests.GetGuids()));
         }
 
         private void ParseCoverage(IEnumerable<CoverageRunResult> coverage, IEnumerable<Mutant> mutantsToScan, TestGuidsList failedTests)
