@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -68,6 +67,6 @@ namespace Stryker.Core.Initialisation
         private static string GetBackupName(string injectionPath) => injectionPath + ".stryker-unchanged";
         public bool IsFullFramework => ProjectUnderTestAnalyzerResult.TargetsFullFramework();
         public string HelperNamespace => CodeInjector.HelperNamespace;
-        public IReadOnlyList<string> TestAssemblies => TestProjectAnalyzerResults.Select( a => a.GetAssemblyPath()).ToList();
+        public IReadOnlyList<string> GetTestAssemblies() => TestProjectAnalyzerResults.Select(a => a.GetAssemblyPath()).ToList();
     }
 }

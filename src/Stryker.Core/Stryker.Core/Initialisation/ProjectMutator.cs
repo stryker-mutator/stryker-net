@@ -27,6 +27,7 @@ namespace Stryker.Core.Initialisation
         {
             // get a new instance of InitializationProcess for each project
             var initializationProcess = _injectedInitializationProcess ?? new InitialisationProcess();
+
             // initialize
             var input = initializationProcess.Initialize(options, solutionProjects);
 

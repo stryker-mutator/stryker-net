@@ -165,12 +165,10 @@ namespace Stryker.Core.TestRunners.VsTest
         /// <exception cref="GeneralStrykerException"></exception>
         public void Initialize(IProjectAndTest project)
         {
-            /*
-            var testBinariesPaths = _projectInfo.TestProjectAnalyzerResults
-                .Select(testProject => testProject.GetAssemblyPath()).ToList();*/
+
             _sources = new List<string>();
 
-            foreach (var path in project.TestAssemblies)
+            foreach (var path in project.GetTestAssemblies())
             {
                 if (!_fileSystem.File.Exists(path))
                 {

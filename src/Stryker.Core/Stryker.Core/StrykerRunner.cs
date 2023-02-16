@@ -54,6 +54,8 @@ namespace Stryker.Core
 
             try
             {
+                //
+
                 // Mutate
                 _mutationTestProcesses = projectOrchestrator.MutateProjects(options, reporters).ToList();
 
@@ -72,7 +74,7 @@ namespace Stryker.Core
                 // Report
                 reporters.OnMutantsCreated(rootComponent);
 
-                var allMutants = rootComponent.Mutants;
+                var allMutants = rootComponent.Mutants.ToList();
                 var mutantsNotRun = rootComponent.NotRunMutants().ToList();
 
                 if (!mutantsNotRun.Any())

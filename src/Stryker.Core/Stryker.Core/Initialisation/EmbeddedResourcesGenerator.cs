@@ -7,7 +7,6 @@ using System.IO;
 using System.Resources;
 using System.Resources.NetStandard;
 using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Logging;
 
 namespace Stryker.Core.Initialisation
 {

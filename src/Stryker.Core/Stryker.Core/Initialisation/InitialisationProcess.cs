@@ -74,7 +74,7 @@ namespace Stryker.Core.Initialisation
                         options.MsBuildPath);
                 }
             }
-
+            
             InitializeDashboardProjectInformation(options, _projectInfo);
 
             _testRunner ??= new VsTestRunnerPool(options, _projectInfo);
@@ -146,7 +146,6 @@ namespace Stryker.Core.Initialisation
                 }
             }
         }
-
 
         private void InitializeDashboardProjectInformation(StrykerOptions options, ProjectInfo projectInfo)
         {

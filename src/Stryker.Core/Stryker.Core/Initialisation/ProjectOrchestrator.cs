@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using Buildalyzer;
@@ -12,20 +13,23 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.Testing;
+using Stryker.Core.TestRunners;
+using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.Initialisation
 {
     public interface IProjectOrchestrator
     {
-        IEnumerable<IMutationTestProcess> MutateProjects(StrykerOptions options, IReporter reporters);
+        IEnumerable<IMutationTestProcess> MutateProjects(StrykerOptions options, IReporter reporters, ITestRunner runner = null);
     }
-
+    
     public class ProjectOrchestrator : IProjectOrchestrator
     {
         private readonly ILogger _logger;
         private readonly IBuildalyzerProvider _buildalyzerProvider;
         private readonly IProjectMutator _projectMutator;
         private readonly IInitialBuildProcess _initialBuildProcess;
+        private ITestRunner _testRunner;
 
         public ProjectOrchestrator(IBuildalyzerProvider buildalyzerProvider = null,
             IProjectMutator projectMutator = null,
@@ -37,7 +41,7 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectOrchestrator>();
         }
 
-        public IEnumerable<IMutationTestProcess> MutateProjects(StrykerOptions options, IReporter reporters)
+        public IEnumerable<IMutationTestProcess> MutateProjects(StrykerOptions options, IReporter reporters, ITestRunner runner = null)
         {
             if (options.IsSolutionContext)
             {
@@ -57,8 +61,13 @@ namespace Stryker.Core.Initialisation
                     options.SolutionPath,
                     options.MsBuildPath);
 
+                // create a test runner
+                var projectAndTest = new SolutionTests(testProjects.Select(t => t.GetAssemblyPath()).ToList());
+                _testRunner = runner ?? new VsTestRunnerPool(options, projectAndTest);
+
+                var dependents = FindDependentProjects(projectsUnderTestAnalyzerResult);
                 // Mutate all projects in the solution
-                foreach (var project in MutateSolution(options, reporters, projectsUnderTestAnalyzerResult, testProjects, solutionAnalyzerResults))
+                foreach (var project in MutateSolution(options, reporters, projectsUnderTestAnalyzerResult, testProjects, solutionAnalyzerResults, dependents))
                 {
                     yield return project;
                 }
@@ -73,11 +82,11 @@ namespace Stryker.Core.Initialisation
 
         private IEnumerable<IMutationTestProcess> MutateSolution(StrykerOptions options,
             IReporter reporters,
-            IEnumerable<IAnalyzerResult> projectsUnderTest,
+            IEnumerable<IAnalyzerResult> projectsUnderTest, 
             IEnumerable<IAnalyzerResult> testProjects,
-            IEnumerable<IAnalyzerResult> solutionProjects)
+            IEnumerable<IAnalyzerResult> solutionProjects,
+            Dictionary<string, HashSet<string>> dependents)
         {
-            var dependents = FindDependentProjects(projectsUnderTest);
 
             foreach (var project in projectsUnderTest)
             {
@@ -125,7 +134,7 @@ namespace Stryker.Core.Initialisation
                     {
                         dependents[dependent] = new HashSet<string>();
                     }
-
+                    // project depends on dependent
                     dependents[dependent].Add(project.ProjectFilePath);
                 }
             }
@@ -185,6 +194,17 @@ namespace Stryker.Core.Initialisation
                     yield return project;
                 }
             }
+        }
+        private class SolutionTests: IProjectAndTest
+        {
+            private readonly IReadOnlyList<string> _testAssemblies;
+
+            public SolutionTests(IReadOnlyList<string> testAssemblies) => _testAssemblies = testAssemblies;
+
+            public bool IsFullFramework { get; }
+            public string HelperNamespace { get; }
+
+            public IReadOnlyList<string> GetTestAssemblies() => _testAssemblies;
         }
     }
 }

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,10 +42,9 @@ namespace Stryker.Core.TestRunners.VsTest
         }
 
         [ExcludeFromCodeCoverage(Justification = "It depends on the deployment of VsTest.")]
-        public VsTestRunnerPool(StrykerOptions options,
-           IProjectAndTest project)
+        public VsTestRunnerPool(StrykerOptions options, IProjectAndTest project, IFileSystem fileSystem = null)
         {
-            Context = new VsTestContextInformation(options);
+            Context = new VsTestContextInformation(options, fileSystem: fileSystem);
             Context.Initialize(project);
             _countOfRunners = Math.Max(1, options.Concurrency);
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();

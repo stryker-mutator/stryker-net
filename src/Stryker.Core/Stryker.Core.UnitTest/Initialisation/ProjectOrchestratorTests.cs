@@ -56,12 +56,23 @@ namespace Stryker.Core.UnitTest.Initialisation
             var testProjectProjectFileMock = new Mock<IProjectFile>(MockBehavior.Strict);
             var testProjectPackageReferenceMock = new Mock<IPackageReference>();
 
+            var fileSystem = new MockFileSystem();
+            var csprojPathName = "C:/projectundertest/projectundertest.csproj";
+            var testCsprojPathName = "C:/testproject/projectUnderTest.csproj";
+            var ProjectUnderTestBin = "C:/projectundertest/bin";
+            var testDll = "test.dll";
+            fileSystem.AddFile(csprojPathName, new MockFileData(""));
+            fileSystem.AddFile(testCsprojPathName, new MockFileData(""));
+            fileSystem.AddDirectory(ProjectUnderTestBin);
+            fileSystem.AddFile(fileSystem.Path.Combine(ProjectUnderTestBin, testDll), new MockFileData(""));
+
             // when a solutionPath is given and it's inside the current directory (basePath)
             var options = new StrykerOptions
             {
                 ProjectPath = "C:/MyProject",
                 SolutionPath = "C:/MyProject/MyProject.sln"
             };
+
             var target = new ProjectOrchestrator(_buildalyzerProviderMock.Object, _projectMutatorMock.Object, initialBuildProcessMock.Object);
 
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
@@ -77,17 +88,20 @@ namespace Stryker.Core.UnitTest.Initialisation
             testProjectAnalyzerMock.Setup(x => x.ProjectFile).Returns(testProjectProjectFileMock.Object);
             testProjectAnalyzerMock.Setup(x => x.Build()).Returns(testProjectAnalyzerResultsMock.Object);
             testProjectAnalyzerResultsMock.Setup(x => x.Results).Returns(new[] { testProjectAnalyzerResultMock.Object });
-            testProjectAnalyzerResultMock.Setup(x => x.ProjectReferences).Returns(new[] { "C:/projectundertest/projectundertest.csproj" });
-            testProjectAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns("C:/testproject/projectUnderTest.csproj");
+            testProjectAnalyzerResultMock.Setup(x => x.ProjectReferences).Returns(new[]
+                {
+                    csprojPathName
+                });
+            testProjectAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns(testCsprojPathName);
             projectUnderTestAnalyzerMock.Setup(x => x.ProjectFile).Returns(projectUnderTestProjectFileMock.Object);
             projectUnderTestAnalyzerMock.Setup(x => x.Build()).Returns(projectUnderTestAnalyzerResultsMock.Object);
             projectUnderTestAnalyzerResultsMock.Setup(x => x.Results).Returns(new[] { projectUnderTestAnalyzerResultMock.Object });
             projectUnderTestProjectFileMock.Setup(x => x.PackageReferences).Returns(new List<IPackageReference>());
             projectUnderTestProjectFileMock.Setup(x => x.Path).Returns("C:/projectUnderTest/");
             // The test project references the microsoft.net.test.sdk
-            testProjectAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "True" } });
+            testProjectAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "True" }, {"TargetDir", ProjectUnderTestBin}, {"TargetFileName", testDll} });
             projectUnderTestAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "False" }, { "ProjectTypeGuids", "not testproject" } });
-            projectUnderTestAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns("C:/projectundertest/projectundertest.csproj");
+            projectUnderTestAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns(csprojPathName);
             projectUnderTestAnalyzerResultMock.Setup(x => x.ProjectReferences).Returns(new List<string>());
             projectUnderTestAnalyzerResultMock.Setup(x => x.TargetFramework).Returns("net6.0");
             testProjectProjectFileMock.Setup(x => x.PackageReferences).Returns(new List<IPackageReference>() {
@@ -95,11 +109,13 @@ namespace Stryker.Core.UnitTest.Initialisation
             });
             testProjectProjectFileMock.Setup(x => x.Path).Returns("C:/testproject/");
 
+            var mockRunner = new Mock<ITestRunner>();
+
             // act
-            var result = target.MutateProjects(options, _reporterMock.Object).ToList();
+            var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
 
             // assert
-            var mutationTestProcess = result.ShouldHaveSingleItem();
+            result.ShouldHaveSingleItem();
         }
     }
 }

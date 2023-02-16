@@ -15,8 +15,8 @@ namespace Stryker.Core.UnitTest.Initialisation
 {
     public class ProjectMutatorTests : TestBase
     {
-        private readonly Mock<IMutationTestProcess> _mutationTestProcessMock = new Mock<IMutationTestProcess>(MockBehavior.Strict);
-        private readonly Mock<IInitialisationProcess> _initialisationProcessMock = new Mock<IInitialisationProcess>(MockBehavior.Strict);
+        private readonly Mock<IMutationTestProcess> _mutationTestProcessMock = new(MockBehavior.Strict);
+        private readonly Mock<IInitialisationProcess> _initializationProcessMock = new(MockBehavior.Strict);
         private readonly Mock<IReporter> _reporterMock = new Mock<IReporter>(MockBehavior.Strict);
         private readonly MutationTestInput _mutationTestInput;
 
@@ -40,10 +40,11 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             // arrange
             var options = new StrykerOptions();
-            var target = new ProjectMutator(_initialisationProcessMock.Object, _mutationTestProcessMock.Object);
+            var target = new ProjectMutator(_initializationProcessMock.Object, _mutationTestProcessMock.Object);
 
-            _initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(_mutationTestInput);
-            _initialisationProcessMock.Setup(x => x.InitialTest(options))
+            _initializationProcessMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()))
+                .Returns(_mutationTestInput);
+            _initializationProcessMock.Setup(x => x.InitialTest(options))
                 .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500)));
             // act
             var result = target.MutateProject(options, _reporterMock.Object);

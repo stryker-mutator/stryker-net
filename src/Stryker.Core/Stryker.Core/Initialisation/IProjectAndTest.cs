@@ -8,5 +8,5 @@ public interface IProjectAndTest
 
     string HelperNamespace { get; }
 
-    IReadOnlyList<string> TestAssemblies { get; }
+    IReadOnlyList<string> GetTestAssemblies();
 }
