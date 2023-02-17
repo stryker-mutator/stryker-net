@@ -21,10 +21,10 @@ namespace Stryker.Core.Initialisation
             {
                 var resourceFullFilename = Path.Combine(Path.GetDirectoryName(projectFilePath), embeddedResource);
 
-                var resourceName =
-                    embeddedResource.EndsWith(".resx", StringComparison.OrdinalIgnoreCase) ?
-                        embeddedResource.Remove(embeddedResource.Length - 5) + ".resources" :
-                        embeddedResource;
+                var resourceName = embeddedResource.Replace("..\\", "");
+                resourceName = resourceName.EndsWith(".resx", StringComparison.OrdinalIgnoreCase) ?
+                        resourceName.Remove(0, 1 + resourceName.LastIndexOf("\\")).Replace(".resx", "") + ".resources" :
+                        resourceName;
 
                 resources.Add(new ResourceDescription(
                     $"{rootNamespace}.{string.Join(".", resourceName.Split('\\'))}",
