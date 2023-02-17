@@ -1,11 +1,8 @@
 changelog:
-  exclude:
-    authors:
-    - renovate
   categories:
   - title: Bug Fixes
     labels:
     - Bugfix
   - title: Features
     labels:
-    - *
+    - Feature
