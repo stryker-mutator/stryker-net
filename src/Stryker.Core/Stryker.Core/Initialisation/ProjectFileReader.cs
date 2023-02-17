@@ -23,7 +23,6 @@ namespace Stryker.Core.Initialisation
     /// <summary>
     /// This class is an abstraction of Buildalyzers AnalyzerManager to make the rest of our code better testable. Mocking AnalyzerManager is really ugly and we want to avoid it.
     /// </summary>
-    [ExcludeFromCodeCoverage]
     public class ProjectFileReader : IProjectFileReader
     {
         private readonly INugetRestoreProcess _nugetRestoreProcess;

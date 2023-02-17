@@ -75,7 +75,6 @@ namespace Stryker.Core.Initialisation
                 }
             }
             
-            InitializeDashboardProjectInformation(options, _projectInfo);
 
             _testRunner ??= new VsTestRunnerPool(options, _projectInfo);
 
@@ -147,92 +146,5 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private void InitializeDashboardProjectInformation(StrykerOptions options, ProjectInfo projectInfo)
-        {
-            var dashboardReporterEnabled = options.Reporters.Contains(Reporter.Dashboard) || options.Reporters.Contains(Reporter.All);
-            var dashboardBaselineEnabled = options.WithBaseline && options.BaselineProvider == BaselineProvider.Dashboard;
-            var requiresProjectInformation = dashboardReporterEnabled || dashboardBaselineEnabled;
-            if (!requiresProjectInformation)
-            {
-                return;
-            }
-
-            // try to read the repository URL + version for the dashboard report or dashboard baseline
-            var missingProjectName = string.IsNullOrEmpty(options.ProjectName);
-            var missingProjectVersion = string.IsNullOrEmpty(options.ProjectVersion);
-            if (missingProjectName || missingProjectVersion)
-            {
-                var subject = missingProjectName switch
-                {
-                    true when missingProjectVersion => "Project name and project version",
-                    true => "Project name",
-                    _ => "Project version"
-                };
-                var projectFilePath = projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath;
-
-                if (!projectInfo.ProjectUnderTestAnalyzerResult.Properties.TryGetValue("TargetPath", out var targetPath))
-                {
-                    throw new InputException($"Can't read {subject.ToLowerInvariant()} because the TargetPath property was not found in {projectFilePath}");
-                }
-
-                _logger.LogTrace("{Subject} missing for the dashboard reporter, reading it from {TargetPath}. " +
-                                 "Note that this requires SourceLink to be properly configured in {ProjectPath}", subject, targetPath, projectFilePath);
-
-                try
-                {
-                    var targetName = Path.GetFileName(targetPath);
-                    using var module = ModuleDefinition.ReadModule(targetPath);
-
-                    var details = $"To solve this issue, either specify the {subject.ToLowerInvariant()} in the stryker configuration or configure [SourceLink](https://github.com/dotnet/sourcelink#readme) in {projectFilePath}";
-                    if (missingProjectName)
-                    {
-                        options.ProjectName = ReadProjectName(module, details);
-                        _logger.LogDebug("Using {ProjectName} as project name for the dashboard reporter. (Read from the AssemblyMetadata/RepositoryUrl assembly attribute of {TargetName})", options.ProjectName, targetName);
-                    }
-
-                    if (missingProjectVersion)
-                    {
-                        options.ProjectVersion = ReadProjectVersion(module, details);
-                        _logger.LogDebug("Using {ProjectVersion} as project version for the dashboard reporter. (Read from the AssemblyInformationalVersion assembly attribute of {TargetName})", options.ProjectVersion, targetName);
-                    }
-                }
-                catch (Exception e) when (e is not InputException)
-                {
-                    throw new InputException($"Failed to read {subject.ToLowerInvariant()} from {targetPath} because of error {e.Message}");
-                }
-            }
-        }
-
-        private static string ReadProjectName(ModuleDefinition module, string details)
-        {
-            if (module.Assembly.CustomAttributes
-                    .FirstOrDefault(e => e.AttributeType.Name == "AssemblyMetadataAttribute"
-                                         && e.ConstructorArguments.Count == 2
-                                         && e.ConstructorArguments[0].Value.Equals("RepositoryUrl"))?.ConstructorArguments[1].Value is not string repositoryUrl)
-            {
-                throw new InputException($"Failed to retrieve the RepositoryUrl from the AssemblyMetadataAttribute of {module.FileName}", details);
-            }
-
-            const string SchemeSeparator = "://";
-            var indexOfScheme = repositoryUrl.IndexOf(SchemeSeparator, StringComparison.Ordinal);
-            if (indexOfScheme < 0)
-            {
-                throw new InputException($"Failed to compute the project name from the repository URL ({repositoryUrl}) because it doesn't contain a scheme ({SchemeSeparator})", details);
-            }
-
-            return repositoryUrl[(indexOfScheme + SchemeSeparator.Length)..];
-        }
-
-        private static string ReadProjectVersion(ModuleDefinition module, string details)
-        {
-            if (module.Assembly.CustomAttributes
-                    .FirstOrDefault(e => e.AttributeType.Name == "AssemblyInformationalVersionAttribute"
-                                         && e.ConstructorArguments.Count == 1)?.ConstructorArguments[0].Value is not string assemblyInformationalVersion)
-            {
-                throw new InputException($"Failed to retrieve the AssemblyInformationalVersionAttribute of {module.FileName}", details);
-            }
-
-            return assemblyInformationalVersion;
-        }
     }
 }

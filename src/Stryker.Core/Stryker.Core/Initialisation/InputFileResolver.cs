@@ -16,6 +16,7 @@ namespace Stryker.Core.Initialisation
     public interface IInputFileResolver
     {
         ProjectInfo ResolveInput(StrykerOptions options, IEnumerable<IAnalyzerResult> solutionProjects);
+        IFileSystem FileSystem { get; }
     }
 
     /// <summary>
@@ -26,25 +27,26 @@ namespace Stryker.Core.Initialisation
     public class InputFileResolver : IInputFileResolver
     {
         private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules", "StrykerOutput" };
-        private readonly IFileSystem _fileSystem;
         private readonly IProjectFileReader _projectFileReader;
         private readonly ILogger _logger;
 
         public InputFileResolver(IFileSystem fileSystem, IProjectFileReader projectFileReader, ILogger<InputFileResolver> logger = null)
         {
-            _fileSystem = fileSystem;
+            FileSystem = fileSystem;
             _projectFileReader = projectFileReader ?? new ProjectFileReader();
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<InputFileResolver>();
         }
 
         public InputFileResolver() : this(new FileSystem(), new ProjectFileReader(), null) { }
 
+        public IFileSystem FileSystem { get; }
+
         /// <summary>
         /// Finds the referencedProjects and looks for all files that should be mutated in those projects
         /// </summary>
         public ProjectInfo ResolveInput(StrykerOptions options, IEnumerable<IAnalyzerResult> solutionProjects)
         {
-            var projectInfo = new ProjectInfo(_fileSystem);
+            var projectInfo = new ProjectInfo(FileSystem);
             // Determine test projects
             var testProjectFiles = new List<string>();
             if (options.TestProjects != null && options.TestProjects.Any())
@@ -98,7 +100,7 @@ namespace Stryker.Core.Initialisation
 
         private string FindProjectFile(string path)
         {
-            if (_fileSystem.File.Exists(path) && (_fileSystem.Path.HasExtension(".csproj") || _fileSystem.Path.HasExtension(".fsproj")))
+            if (FileSystem.File.Exists(path) && (FileSystem.Path.HasExtension(".csproj") || FileSystem.Path.HasExtension(".fsproj")))
             {
                 return path;
             }
@@ -106,7 +108,7 @@ namespace Stryker.Core.Initialisation
             string[] projectFiles;
             try
             {
-                projectFiles = _fileSystem.Directory.GetFiles(path, "*.*").Where(file => file.EndsWith("csproj", StringComparison.OrdinalIgnoreCase) || file.EndsWith("fsproj", StringComparison.OrdinalIgnoreCase)).ToArray();
+                projectFiles = FileSystem.Directory.GetFiles(path, "*.*").Where(file => file.EndsWith("csproj", StringComparison.OrdinalIgnoreCase) || file.EndsWith("fsproj", StringComparison.OrdinalIgnoreCase)).ToArray();
             }
             catch (DirectoryNotFoundException)
             {
@@ -140,16 +142,8 @@ namespace Stryker.Core.Initialisation
         {
             var projectReferences = FindProjectsReferencedByAllTestProjects(testProjects);
 
-            string projectUnderTestPath;
-
-            if (string.IsNullOrEmpty(projectUnderTestNameFilter))
-            {
-                projectUnderTestPath = DetermineProjectUnderTestWithoutNameFilter(projectReferences);
-            }
-            else
-            {
-                projectUnderTestPath = DetermineProjectUnderTestWithNameFilter(projectUnderTestNameFilter, projectReferences);
-            }
+            var projectUnderTestPath = string.IsNullOrEmpty(projectUnderTestNameFilter) ? DetermineProjectUnderTestWithoutNameFilter(projectReferences)
+                : DetermineProjectUnderTestWithNameFilter(projectUnderTestNameFilter, projectReferences);
 
             _logger.LogDebug("Using {0} as project under test", projectUnderTestPath);
 
@@ -252,13 +246,13 @@ namespace Stryker.Core.Initialisation
                     options,
                     _foldersToExclude,
                     _logger,
-                    _fileSystem),
+                    FileSystem),
 
                 Language.Fsharp => new FsharpProjectComponentsBuilder(
                     projectInfo,
                     _foldersToExclude,
                     _logger,
-                    _fileSystem),
+                    FileSystem),
 
                 _ => throw new NotSupportedException()
             };
