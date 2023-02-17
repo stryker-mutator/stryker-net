@@ -1,10 +1,10 @@
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
 using Newtonsoft.Json;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Json;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 using Xunit;
 
 namespace IntegrationTests

@@ -1,3 +1,41 @@
+# [3.6.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.5.1...stryker@3.6.0) (2023-02-10)
+
+
+### Bug Fixes
+
+* **embedded resources generation:** Use buildalyzer to find root namespace and embedded resources ([#2404](https://github.com/stryker-mutator/stryker-net/issues/2404)) ([a4969ff](https://github.com/stryker-mutator/stryker-net/commit/a4969ff60debcb6a94a059ba2d2aa84cb54029ef))
+
+
+### Features
+
+* **html report:** Update mutation testing elements to 1.7.14 ([#2405](https://github.com/stryker-mutator/stryker-net/issues/2405)) ([98ad817](https://github.com/stryker-mutator/stryker-net/commit/98ad8178e61c1fad54c208e2712063634a0f6961))
+
+
+
+## [3.5.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.5.0...stryker@3.5.1) (2023-02-06)
+
+
+### Bug Fixes
+
+* **dashboard reporter:** fix dashboard publishing when the project name is computed ([#2397](https://github.com/stryker-mutator/stryker-net/issues/2397)) ([7395b2b](https://github.com/stryker-mutator/stryker-net/commit/7395b2bc4dfd9db962e1ea1e9d13bc7e6235c252)), closes [#1710](https://github.com/stryker-mutator/stryker-net/issues/1710)
+
+
+
+# [3.5.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.4.0...stryker@3.5.0) (2023-02-06)
+
+
+### Bug Fixes
+
+* **no test projects:** null-reference exception when no test projects are found ([#2377](https://github.com/stryker-mutator/stryker-net/issues/2377)) ([419a8a7](https://github.com/stryker-mutator/stryker-net/commit/419a8a746190d2e4262781525b59aef7791fa56f))
+* **NullCoalescingExpressionMutator:** Don't generate certain mutants when right hand side is ThrowExpression ([#2387](https://github.com/stryker-mutator/stryker-net/issues/2387)) ([#2389](https://github.com/stryker-mutator/stryker-net/issues/2389)) ([e344382](https://github.com/stryker-mutator/stryker-net/commit/e34438259c26cf6b563c7a724b3f7bba14ddf768))
+
+
+### Features
+
+* **embedded resources:** Improve extraction of embedded resources ([#2383](https://github.com/stryker-mutator/stryker-net/issues/2383)) ([43c2918](https://github.com/stryker-mutator/stryker-net/commit/43c2918362a87be6f93b634df78c6ccb80bc6fbb))
+
+
+
 # [3.4.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.3.0...stryker@3.4.0) (2022-12-23)
 
 
