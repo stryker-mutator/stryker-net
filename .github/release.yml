@@ -1,7 +1,4 @@
 changelog:
-  exclude:
-    authors:
-    - renovate
   categories:
   - title: Bug Fixes
     labels:
