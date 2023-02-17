@@ -8,4 +8,4 @@ changelog:
     - Bugfix
   - title: Features
     labels:
-    - Feature
+    - *
