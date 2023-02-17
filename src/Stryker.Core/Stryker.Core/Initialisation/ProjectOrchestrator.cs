@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using Buildalyzer;
@@ -29,7 +28,6 @@ namespace Stryker.Core.Initialisation
         private readonly IBuildalyzerProvider _buildalyzerProvider;
         private readonly IProjectMutator _projectMutator;
         private readonly IInitialBuildProcess _initialBuildProcess;
-        private ITestRunner _testRunner;
 
         public ProjectOrchestrator(IBuildalyzerProvider buildalyzerProvider = null,
             IProjectMutator projectMutator = null,
@@ -63,8 +61,7 @@ namespace Stryker.Core.Initialisation
 
                 // create a test runner
                 var projectAndTest = new SolutionTests(testProjects.Select(t => t.GetAssemblyPath()).ToList());
-                _testRunner = runner ?? new VsTestRunnerPool(options, projectAndTest);
-
+                runner ??= new VsTestRunnerPool(options, projectAndTest);
                 var dependents = FindDependentProjects(projectsUnderTestAnalyzerResult);
                 // Mutate all projects in the solution
                 foreach (var project in MutateSolution(options, reporters, projectsUnderTestAnalyzerResult, testProjects, solutionAnalyzerResults, dependents))
@@ -143,9 +140,22 @@ namespace Stryker.Core.Initialisation
             bool foundNewDependency;
             do
             {
-                foundNewDependency = dependents.Values.Aggregate(false, (current2, project) =>
-                    project.Where(dependency => dependents.ContainsKey(dependency)).
-                        Aggregate(current2, (current1, dependency) => dependents[dependency].Aggregate(current1, (current, sub) => project.Add(sub) || current)));
+                var nextDependence = new Dictionary<string, HashSet<string>>();
+                foundNewDependency = false;
+                foreach (var (project, dependent) in dependents)
+                {
+                    var newList = new HashSet<string>(dependent);
+                    foreach (var sub in dependent)
+                    {
+                        // we need to forward the dependence to the projects which depends on projects which depend on this project
+                        if (!dependents.ContainsKey(sub)) continue;
+                        newList.UnionWith(dependents[sub]);
+                    }
+
+                    foundNewDependency = foundNewDependency || newList.Count > dependent.Count;
+                    nextDependence[project] = newList;
+                }
+                dependents = nextDependence;
             } while (foundNewDependency);
 
             return dependents;
@@ -195,7 +205,8 @@ namespace Stryker.Core.Initialisation
                 }
             }
         }
-        private class SolutionTests: IProjectAndTest
+
+        private sealed class SolutionTests: IProjectAndTest
         {
             private readonly IReadOnlyList<string> _testAssemblies;
 
