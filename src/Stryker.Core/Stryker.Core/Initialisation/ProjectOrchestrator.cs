@@ -93,9 +93,7 @@ namespace Stryker.Core.Initialisation
             var result = new List<ProjectInfo>(projectsUnderTestAnalyzerResult.Count);
             foreach (var project in projectsUnderTestAnalyzerResult)
             {
-                var candidateProject = dependents.ContainsKey(project.ProjectFilePath) ? dependents[project.ProjectFilePath].ToHashSet() : new HashSet<string>();
-
-                candidateProject.Add(project.ProjectFilePath);
+                var candidateProject = dependents[project.ProjectFilePath];
                 var relatedTestProjects = testProjects
                     .Where(testProject => testProject.ProjectReferences.Any(reference => candidateProject.Contains(reference))).ToList();
                 var projectOptions = options.Copy(
@@ -154,19 +152,7 @@ namespace Stryker.Core.Initialisation
         {
             // need to scan traverse dependencies
             // dependents contains the list of projects depending on each (non test) projects
-            var dependents = new Dictionary<string, HashSet<string>>();
-            foreach (var project in projectsUnderTest)
-            {
-                foreach (var dependent in project.ProjectReferences.ToList())
-                {
-                    if (!dependents.ContainsKey(dependent))
-                    {
-                        dependents[dependent] = new HashSet<string>();
-                    }
-                    // project depends on dependent
-                    dependents[dependent].Add(project.ProjectFilePath);
-                }
-            }
+            var dependents = projectsUnderTest.ToDictionary(p=>p.ProjectFilePath, p => new HashSet<string>(new []{p.ProjectFilePath}));
 
             // we need to dig recursively, until no further change happens
             bool foundNewDependency;
