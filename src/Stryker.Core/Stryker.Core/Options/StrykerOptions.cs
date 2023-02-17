@@ -91,7 +91,7 @@ namespace Stryker.Core.Options
         /// <summary>
         /// When multiple possible projects are found by stryker, this filter is used to determine the project that should be mutated.
         /// </summary>
-        public string TargetProjectName { get; init; }
+        public string SourceProjectName { get; init; }
 
         /// <summary>
         /// When not empty, use these test projects to test the project under test.
@@ -212,7 +212,7 @@ namespace Stryker.Core.Options
         /// </summary>
         public bool BreakOnInitialTestFailure { get; set; }
 
-        public StrykerOptions Copy(string projectPath, string workingDirectory, string projectUnderTest, IEnumerable<string> testProjects) => new()
+        public StrykerOptions Copy(string projectPath, string workingDirectory, string sourceProject, IEnumerable<string> testProjects) => new()
         {
             AdditionalTimeout = AdditionalTimeout,
             AzureFileStorageSas = AzureFileStorageSas,
@@ -240,7 +240,7 @@ namespace Stryker.Core.Options
             OutputPath = OutputPath,
             ReportFileName = ReportFileName,
             ProjectName = ProjectName,
-            TargetProjectName = projectUnderTest,
+            SourceProjectName = sourceProject,
             ProjectVersion = ProjectVersion,
             Reporters = Reporters,
             SinceTarget = SinceTarget,

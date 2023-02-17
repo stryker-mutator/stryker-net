@@ -140,7 +140,7 @@ namespace Stryker.Core.Options
                     LogLevel = VerbosityInput.Validate(),
                     LogToFile = LogToFileInput.Validate(outputPath)
                 },
-                TargetProjectName = TargetProjectNameInput.Validate(),
+                SourceProjectName = TargetProjectNameInput.Validate(),
                 AdditionalTimeout = AdditionalTimeoutInput.Validate(),
                 ExcludedMutations = IgnoreMutationsInput.Validate<Mutator>(),
                 ExcludedLinqExpressions = IgnoreMutationsInput.ValidateLinqExpressions(),

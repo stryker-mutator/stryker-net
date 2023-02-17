@@ -73,7 +73,7 @@ namespace Stryker.Core.Initialisation
             var targetProjectInfo = new SourceProjectInfo();
 
             // Determine project under test
-            var targetProject = FindProjectUnderTest(testProjectsInfo, options.TargetProjectName, solutionProjects);
+            var targetProject = FindSourceProject(testProjectsInfo, options.SourceProjectName, solutionProjects);
 
             targetProjectInfo.AnalyzerResult = _projectFileReader.AnalyzeProject(targetProject, options.SolutionPath, options.TargetFramework, solutionProjects);
 
@@ -140,40 +140,40 @@ namespace Stryker.Core.Initialisation
             return projectFiles.Single();
         }
 
-        public string FindProjectUnderTest(TestProjectsInfo testProjectsInfo, string projectUnderTestNameFilter, IEnumerable<IAnalyzerResult> solutionProjects)
+        public string FindSourceProject(TestProjectsInfo testProjectsInfo, string projectUnderTestNameFilter, IEnumerable<IAnalyzerResult> solutionProjects)
         {
             var projectReferences = FindProjectsReferencedByAllTestProjects(testProjectsInfo.TestProjects);
 
-            string projectUnderTestPath;
+            string sourceProjectPath;
 
             if (string.IsNullOrEmpty(projectUnderTestNameFilter))
             {
-                projectUnderTestPath = DetermineTargetProjectWithoutNameFilter(projectReferences);
+                sourceProjectPath = DetermineTargetProjectWithoutNameFilter(projectReferences);
             }
             else
             {
-                projectUnderTestPath = DetermineTargetProjectWithNameFilter(projectUnderTestNameFilter, projectReferences);
+                sourceProjectPath = DetermineTargetProjectWithNameFilter(projectUnderTestNameFilter, projectReferences);
             }
 
-            _logger.LogDebug("Using {0} as project under test", projectUnderTestPath);
+            _logger.LogDebug("Using {0} as project under test", sourceProjectPath);
 
-            return projectUnderTestPath;
+            return sourceProjectPath;
         }
 
-        internal string DetermineTargetProjectWithNameFilter(string projectUnderTestNameFilter, IEnumerable<string> projectReferences)
+        internal string DetermineTargetProjectWithNameFilter(string sourceProjectFilter, IEnumerable<string> projectReferences)
         {
             var stringBuilder = new StringBuilder();
 
             var referenceChoice = BuildReferenceChoice(projectReferences);
 
-            var normalizedProjectUnderTestNameFilter = projectUnderTestNameFilter.Replace("\\", "/");
+            var normalizedProjectUnderTestNameFilter = sourceProjectFilter.Replace("\\", "/");
             var projectReferencesMatchingNameFilter = projectReferences
                 .Where(x => x.Replace("\\", "/").Contains(normalizedProjectUnderTestNameFilter, StringComparison.OrdinalIgnoreCase));
 
             if (!projectReferencesMatchingNameFilter.Any())
             {
                 stringBuilder.Append("No project reference matched the given project filter ");
-                stringBuilder.Append($"'{projectUnderTestNameFilter}'");
+                stringBuilder.Append($"'{sourceProjectFilter}'");
                 stringBuilder.Append(referenceChoice);
 
                 throw new InputException(stringBuilder.ToString());
@@ -181,7 +181,7 @@ namespace Stryker.Core.Initialisation
             else if (projectReferencesMatchingNameFilter.Count() > 1)
             {
                 stringBuilder.Append("More than one project reference matched the given project filter ");
-                stringBuilder.Append($"'{projectUnderTestNameFilter}'");
+                stringBuilder.Append($"'{sourceProjectFilter}'");
                 stringBuilder.AppendLine(", please specify the full name of the project reference.");
                 stringBuilder.Append(referenceChoice);
 

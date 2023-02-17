@@ -8,6 +8,7 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using Xunit;
@@ -26,13 +27,12 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             _mutationTestProcessMock.Setup(x => x.Mutate());
 
-
             _mutationTestInput = new MutationTestInput()
             {
                 SourceProjectInfo = new SourceProjectInfo()
                 {
                     ProjectContents = new CsharpFolderComposite()
-                },
+                }
             };
         }
 

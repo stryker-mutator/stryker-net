@@ -47,13 +47,13 @@ namespace Stryker.Core.UnitTest.Initialisation
             // arrange
             var initialBuildProcessMock = new Mock<IInitialBuildProcess>(MockBehavior.Strict);
             var buildalyzerAnalyzerManagerMock = new Mock<IAnalyzerManager>(MockBehavior.Strict);
-            var projectUnderTestAnalyzerMock = new Mock<IProjectAnalyzer>(MockBehavior.Strict);
-            var projectUnderTestAnalyzerResultsMock = new Mock<IAnalyzerResults>(MockBehavior.Strict);
-            var projectUnderTestAnalyzerResultMock = new Mock<IAnalyzerResult>(MockBehavior.Strict);
+            var sourceProjectAnalyzerMock = new Mock<IProjectAnalyzer>(MockBehavior.Strict);
+            var sourceProjectAnalyzerResultsMock = new Mock<IAnalyzerResults>(MockBehavior.Strict);
+            var sourceProjectAnalyzerResultMock = new Mock<IAnalyzerResult>(MockBehavior.Strict);
             var testProjectAnalyzerMock = new Mock<IProjectAnalyzer>(MockBehavior.Strict);
             var testProjectAnalyzerResultsMock = new Mock<IAnalyzerResults>(MockBehavior.Strict);
             var testProjectAnalyzerResultMock = new Mock<IAnalyzerResult>(MockBehavior.Strict);
-            var projectUnderTestProjectFileMock = new Mock<IProjectFile>(MockBehavior.Strict);
+            var sourceProjectFileMock = new Mock<IProjectFile>(MockBehavior.Strict);
             var testProjectProjectFileMock = new Mock<IProjectFile>(MockBehavior.Strict);
             var testProjectPackageReferenceMock = new Mock<IPackageReference>();
 
@@ -72,24 +72,24 @@ namespace Stryker.Core.UnitTest.Initialisation
             // The analyzer finds two projects
             buildalyzerAnalyzerManagerMock.Setup(x => x.Projects)
                 .Returns(new Dictionary<string, IProjectAnalyzer> {
-                    { "MyProject", projectUnderTestAnalyzerMock.Object },
+                    { "MyProject", sourceProjectAnalyzerMock.Object },
                     { "MyProject.UnitTests", testProjectAnalyzerMock.Object }
                 });
             testProjectAnalyzerMock.Setup(x => x.ProjectFile).Returns(testProjectProjectFileMock.Object);
             testProjectAnalyzerMock.Setup(x => x.Build()).Returns(testProjectAnalyzerResultsMock.Object);
             testProjectAnalyzerResultsMock.Setup(x => x.Results).Returns(new[] { testProjectAnalyzerResultMock.Object });
-            testProjectAnalyzerResultMock.Setup(x => x.ProjectReferences).Returns(new[] { "C:/projectundertest/projectundertest.csproj" });
+            testProjectAnalyzerResultMock.Setup(x => x.ProjectReferences).Returns(new[] { "C:/sourceproject/sourceproject.csproj" });
             testProjectAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns("C:/testproject/projectUnderTest.csproj");
-            projectUnderTestAnalyzerMock.Setup(x => x.ProjectFile).Returns(projectUnderTestProjectFileMock.Object);
-            projectUnderTestAnalyzerMock.Setup(x => x.Build()).Returns(projectUnderTestAnalyzerResultsMock.Object);
-            projectUnderTestAnalyzerResultsMock.Setup(x => x.Results).Returns(new[] { projectUnderTestAnalyzerResultMock.Object });
-            projectUnderTestProjectFileMock.Setup(x => x.PackageReferences).Returns(new List<IPackageReference>());
-            projectUnderTestProjectFileMock.Setup(x => x.Path).Returns("C:/projectUnderTest/");
+            sourceProjectAnalyzerMock.Setup(x => x.ProjectFile).Returns(sourceProjectFileMock.Object);
+            sourceProjectAnalyzerMock.Setup(x => x.Build()).Returns(sourceProjectAnalyzerResultsMock.Object);
+            sourceProjectAnalyzerResultsMock.Setup(x => x.Results).Returns(new[] { sourceProjectAnalyzerResultMock.Object });
+            sourceProjectFileMock.Setup(x => x.PackageReferences).Returns(new List<IPackageReference>());
+            sourceProjectFileMock.Setup(x => x.Path).Returns("C:/sourceproject/");
             // The test project references the microsoft.net.test.sdk
             testProjectAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "True" } });
-            projectUnderTestAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "False" }, { "ProjectTypeGuids", "not testproject" } });
-            projectUnderTestAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns("C:/projectundertest/projectundertest.csproj");
-            projectUnderTestAnalyzerResultMock.Setup(x => x.TargetFramework).Returns("net6.0");
+            sourceProjectAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "False" }, { "ProjectTypeGuids", "not testproject" } });
+            sourceProjectAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns("C:/sourceproject/sourceproject.csproj");
+            sourceProjectAnalyzerResultMock.Setup(x => x.TargetFramework).Returns("net6.0");
             testProjectProjectFileMock.Setup(x => x.PackageReferences).Returns(new List<IPackageReference>() {
                 testProjectPackageReferenceMock.Object
             });

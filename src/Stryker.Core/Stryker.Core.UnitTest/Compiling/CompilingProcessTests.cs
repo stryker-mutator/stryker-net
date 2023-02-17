@@ -6,6 +6,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Moq;
@@ -19,6 +20,7 @@ using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.TestRunners;
 using Xunit;
 
@@ -407,6 +409,21 @@ namespace ExampleProject
                         references: new string[] { typeof(object).Assembly.Location }
                     ).Object,
                     ProjectContents = folder
+                },
+                TestProjectsInfo = new TestProjectsInfo(fileSystem)
+                {
+                     TestProjects = new List<TestProject>() {
+                         new TestProject(fileSystem, TestHelper.SetupProjectAnalyzerResult(
+                            properties: new Dictionary<string, string>()
+                            {
+                                { "TargetDir", "Project" },
+                                { "AssemblyName", "AssemblyName" },
+                                { "TargetFileName", "TargetFileName.dll" },
+                            },
+                            // add a reference to system so the example code can compile
+                            references: new string[] { typeof(object).Assembly.Location }
+                        ).Object),
+                    }
                 },
                 TestRunner = new Mock<ITestRunner>(MockBehavior.Default).Object
             };

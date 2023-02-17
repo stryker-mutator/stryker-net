@@ -184,7 +184,6 @@ namespace Stryker.Core.UnitTest.MutationTest
                 .Callback<IEnumerable<Mutant>, IReadOnlyFileLeaf, StrykerOptions>((mutants, _, __) => mutantsPassedToFilter = mutants)
                 .Returns((IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions o) => mutants.Take(1));
 
-
             var mutator = new CsharpMutationProcess(input, fileSystem, options, new BroadcastMutantFilter(new[] { mutantFilterMock.Object }), orchestratorMock.Object);
 
             var target = new MutationTestProcess(input, options, null, mutationTestExecutorMock.Object, mutator);
