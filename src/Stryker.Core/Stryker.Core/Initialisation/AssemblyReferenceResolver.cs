@@ -14,6 +14,7 @@ namespace Stryker.Core.Initialisation
     /// </summary>
     public class AssemblyReferenceResolver : IAssemblyReferenceResolver
     {
+        private readonly Dictionary<string, AssemblyMetadata> _cache = new();
 
         public AssemblyReferenceResolver() { }
 
@@ -26,8 +27,18 @@ namespace Stryker.Core.Initialisation
         {
             foreach (var path in projectReferencePaths)
             {
-                yield return MetadataReference.CreateFromFile(path);
+                yield return GetReference(path);
             }
+        }
+
+        private PortableExecutableReference GetReference(string path)
+        {
+            if (!_cache.ContainsKey(path))
+            {
+                _cache[path] = AssemblyMetadata.CreateFromFile(path);
+            }
+
+            return _cache[path].GetReference();
         }
     }
 }

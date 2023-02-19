@@ -165,13 +165,13 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public IRunResults RunTestSession(ITestGuids testsToRun, IProjectAndTest project,  int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<IRunResults> updateHandler = null) =>
             RunTestSession(testsToRun,
-                _context.GenerateRunSettings(timeout, false, mutantTestsMap, project), timeout, updateHandler).GetResults();
+                _context.GenerateRunSettings(timeout, false, mutantTestsMap, project.HelperNamespace, project.IsFullFramework), timeout, updateHandler).GetResults();
 
         public IRunResults RunCoverageSession(ITestGuids testsToRun, IProjectAndTest project) =>
             RunTestSession(testsToRun,
                 _context.GenerateRunSettings(null,
                     true,
-                    null, project)).GetRawResults();
+                    null, project.HelperNamespace, project.IsFullFramework)).GetRawResults();
 
         private RunEventHandler RunTestSession(ITestGuids tests,
             string runSettings,

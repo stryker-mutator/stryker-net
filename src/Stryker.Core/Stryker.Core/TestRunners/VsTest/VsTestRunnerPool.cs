@@ -59,7 +59,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult InitialTest(IProjectAndTest project)
             => RunThis(runner => runner.InitialTest(project));
 
-        public IEnumerable<CoverageRunResult> CaptureCoverage(IProjectAndTest project) => Context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest) ? CaptureCoverageTestByTest(project) : CaptureCoverageInOneGo(project);
+        public IEnumerable<CoverageRunResult> CaptureCoverage(IProjectAndTest project) => Context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest) ? CaptureCoverageTestByTest(project.HelperNamespace, project.IsFullFramework) : CaptureCoverageInOneGo(project.HelperNamespace, project.IsFullFramework);
 
         private void Initialize(Func<VsTestContextInformation, int, VsTestRunner> runnerBuilder = null)
         {
@@ -72,18 +72,18 @@ namespace Stryker.Core.TestRunners.VsTest
                 }));
         }
 
-        private IEnumerable<CoverageRunResult> CaptureCoverageInOneGo(IProjectAndTest project) => ConvertCoverageResult(RunThis(runner => runner.RunCoverageSession(TestGuidsList.EveryTest(), project).TestResults), false);
+        private IEnumerable<CoverageRunResult> CaptureCoverageInOneGo(string helperNameSpace, bool isFullFramework) => ConvertCoverageResult(RunThis(runner => runner.RunCoverageSession(TestGuidsList.EveryTest(), helperNameSpace, isFullFramework).TestResults), false);
 
-        private IEnumerable<CoverageRunResult> CaptureCoverageTestByTest(IProjectAndTest project) => ConvertCoverageResult(CaptureCoveragePerIsolatedTests(project, Context.VsTests.Keys).TestResults, true);
+        private IEnumerable<CoverageRunResult> CaptureCoverageTestByTest(string helperNameSpace, bool isFullFramework) => ConvertCoverageResult(CaptureCoveragePerIsolatedTests(helperNameSpace, isFullFramework, Context.VsTests.Keys).TestResults, true);
 
-        private IRunResults CaptureCoveragePerIsolatedTests(IProjectAndTest project, IEnumerable<Guid> tests)
+        private IRunResults CaptureCoveragePerIsolatedTests(string helperNameSpace, bool isFullFramework, IEnumerable<Guid> tests)
         {
             var options = new ParallelOptions { MaxDegreeOfParallelism = _countOfRunners };
             var result = new SimpleRunResults();
             var results = new ConcurrentBag<IRunResults>();
             Parallel.ForEach(tests, options,
                 testCase =>
-                    results.Add(RunThis(runner => runner.RunCoverageSession(new TestGuidsList(testCase), project))));
+                    results.Add(RunThis(runner => runner.RunCoverageSession(new TestGuidsList(testCase), helperNameSpace, isFullFramework))));
 
             return results.Aggregate(result, (runResults, singleResult) => runResults.Merge(singleResult));
         }

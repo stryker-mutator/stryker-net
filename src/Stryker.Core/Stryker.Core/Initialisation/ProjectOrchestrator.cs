@@ -17,6 +17,7 @@ using Stryker.Core.Reporters;
 using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
+using MutationTestInput = Stryker.Core.MutationTest.MutationTestInput;
 
 namespace Stryker.Core.Initialisation
 {
@@ -70,6 +71,18 @@ namespace Stryker.Core.Initialisation
 
                 var dependents = FindDependentProjects(projectsUnderTestAnalyzerResult);
                 var projectInfos = BuildProjectInfos(options, dependents, solutionAnalyzerResults);
+                var mutationInputs = new List<MutationTestInput>();
+                var assemblyResolver = new AssemblyReferenceResolver();
+                foreach (var projectInfo in projectInfos)
+                {
+                    var input = new MutationTestInput
+                    {
+                        ProjectInfo = projectInfo,
+                        AssemblyReferences = assemblyResolver.LoadProjectReferences(projectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
+                        TestRunner = runner,
+                    };
+                    mutationInputs.Add(input);
+                }
 
                 // Mutate all projects in the solution
                 foreach (var project in MutateSolution(options, reporters, projectsUnderTestAnalyzerResult, testProjects, solutionAnalyzerResults, dependents))
@@ -86,23 +99,36 @@ namespace Stryker.Core.Initialisation
         }
 
         private ICollection<ProjectInfo> BuildProjectInfos(StrykerOptions options,
-            Dictionary<string, HashSet<string>> dependents, List<IAnalyzerResult> solutionAnalyzerResults)
+            IReadOnlyDictionary<string, HashSet<string>> dependents, List<IAnalyzerResult> solutionAnalyzerResults)
         {
             var testProjects = solutionAnalyzerResults.Where(p => p.IsTestProject()).ToList();
             var projectsUnderTestAnalyzerResult = solutionAnalyzerResults.Where(p => !p.IsTestProject()).ToList();
             var result = new List<ProjectInfo>(projectsUnderTestAnalyzerResult.Count);
-            foreach (var project in projectsUnderTestAnalyzerResult)
+            foreach (var project in projectsUnderTestAnalyzerResult.Select(p =>p.ProjectFilePath))
             {
-                var candidateProject = dependents[project.ProjectFilePath];
                 var relatedTestProjects = testProjects
-                    .Where(testProject => testProject.ProjectReferences.Any(reference => candidateProject.Contains(reference))).ToList();
-                var projectOptions = options.Copy(
-                    projectPath: project.ProjectFilePath,
-                    workingDirectory: options.ProjectPath,
-                    projectUnderTest: project.ProjectFilePath,
-                    testProjects: relatedTestProjects.Select(x => x.ProjectFilePath));
-                var info = _fileResolver.ResolveInput(projectOptions, solutionAnalyzerResults);
-                result.Add(info);
+                    .Where(testProject => testProject.ProjectReferences.Any(reference => dependents[project].Contains(reference))).Select(p =>p.ProjectFilePath).ToList();
+                if (relatedTestProjects.Count > 0)
+                {
+                    _logger.LogDebug("Matched {0} to {1} test projects:", project, relatedTestProjects.Count);
+
+                    foreach (var relatedTestProjectAnalyzerResults in relatedTestProjects)
+                    {
+                        _logger.LogDebug("{0}", relatedTestProjectAnalyzerResults);
+                    }
+
+                    var projectOptions = options.Copy(
+                        projectPath: project,
+                        workingDirectory: options.ProjectPath,
+                        projectUnderTest: project,
+                        testProjects: relatedTestProjects);
+                    result.Add(_fileResolver.ResolveInput(projectOptions, solutionAnalyzerResults));
+
+                }
+                else
+                {
+                    _logger.LogWarning("No test projects could be found for {0}", project);
+                }
             }
             return result;
         }
@@ -112,17 +138,16 @@ namespace Stryker.Core.Initialisation
             IEnumerable<IAnalyzerResult> projectsUnderTest, 
             IEnumerable<IAnalyzerResult> testProjects,
             IEnumerable<IAnalyzerResult> solutionProjects,
-            Dictionary<string, HashSet<string>> dependents)
+            IReadOnlyDictionary<string, HashSet<string>> dependents)
         {
 
             foreach (var project in projectsUnderTest)
             {
                 var projectFilePath = project.ProjectFilePath;
-                var candidateProject = dependents.ContainsKey(projectFilePath) ? dependents[projectFilePath].ToHashSet() : new HashSet<string>();
+                var candidateProject = dependents[projectFilePath];
 
-                candidateProject.Add(projectFilePath);
                 var relatedTestProjects = testProjects
-                    .Where(testProject => testProject.ProjectReferences.Any(reference => candidateProject.Contains(reference))).ToList();
+                    .Where(testProject => testProject.ProjectReferences.Any(reference => candidateProject.Contains(reference))).Select(p=>p.ProjectFilePath).ToList();
 
                 if (relatedTestProjects.Any())
                 {
@@ -130,14 +155,14 @@ namespace Stryker.Core.Initialisation
 
                     foreach (var relatedTestProjectAnalyzerResults in relatedTestProjects)
                     {
-                        _logger.LogDebug("{0}", relatedTestProjectAnalyzerResults.ProjectFilePath);
+                        _logger.LogDebug("{0}", relatedTestProjectAnalyzerResults);
                     }
 
                     var projectOptions = options.Copy(
                         projectPath: projectFilePath,
                         workingDirectory: options.ProjectPath,
                         projectUnderTest: projectFilePath,
-                        testProjects: relatedTestProjects.Select(x => x.ProjectFilePath));
+                        testProjects: relatedTestProjects);
 
                     yield return _projectMutator.MutateProject(projectOptions, reporters, solutionProjects);
                 }
@@ -163,10 +188,8 @@ namespace Stryker.Core.Initialisation
                 foreach (var (project, dependent) in dependents)
                 {
                     var newList = new HashSet<string>(dependent);
-                    foreach (var sub in dependent)
+                    foreach (var sub in dependent.Where(sub => dependents.ContainsKey(sub)))
                     {
-                        // we need to forward the dependence to the projects which depends on projects which depend on this project
-                        if (!dependents.ContainsKey(sub)) continue;
                         newList.UnionWith(dependents[sub]);
                     }
 

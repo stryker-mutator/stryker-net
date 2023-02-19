@@ -248,7 +248,7 @@ namespace Stryker.Core.TestRunners.VsTest
 </RunSettings>";
         }
 
-        public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap, IProjectAndTest project)
+        public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap, string helperNameSpace, bool isFullFramework)
         {
             var settingsForCoverage = string.Empty;
             var needDataCollector = forCoverage || mutantTestsMap is { };
@@ -256,7 +256,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 ? CoverageCollector.GetVsTestSettings(
                     forCoverage,
                     mutantTestsMap?.Select(e => (e.Key, e.Value.GetGuids())),
-                    project.HelperNamespace)
+                    helperNameSpace)
                 : string.Empty;
 
             if (_testFramework.HasFlag(TestFramework.NUnit))
@@ -282,7 +282,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 $@"<RunSettings>
 <RunConfiguration>
   <CollectSourceInformation>false</CollectSourceInformation>
-{(project.IsFullFramework ? @"<DisableAppDomain>true</DisableAppDomain>
+{(isFullFramework ? @"<DisableAppDomain>true</DisableAppDomain>
 " : string.Empty)}  <MaxCpuCount>1</MaxCpuCount>
 {timeoutSettings}{settingsForCoverage}
 <DesignMode>false</DesignMode>

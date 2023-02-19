@@ -63,7 +63,7 @@ namespace Stryker.Core
 
                 _logger.LogInformation("{0} mutants created", rootComponent.Mutants.Count());
 
-                AnalyseCoverage(options);
+                AnalyzeCoverage(options);
 
                 // Filter
                 foreach (var project in _mutationTestProcesses)
@@ -109,7 +109,7 @@ namespace Stryker.Core
                     project.Test(project.Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
                 }
 
-                // Restory assemblies
+                // Restore assemblies
                 foreach (var project in _mutationTestProcesses)
                 {
                     project.Restore();
@@ -143,7 +143,7 @@ namespace Stryker.Core
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerRunner>();
         }
 
-        private void AnalyseCoverage(StrykerOptions options)
+        private void AnalyzeCoverage(StrykerOptions options)
         {
             if (options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) || options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
             {
