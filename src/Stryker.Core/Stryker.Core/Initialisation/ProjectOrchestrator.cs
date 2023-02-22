@@ -67,7 +67,7 @@ namespace Stryker.Core.Initialisation
                 // create a test runner
                 var projectAndTest = new SolutionTests(testProjects.Select(t => t.GetAssemblyPath()).ToList());
                 runner ??= new VsTestRunnerPool(options, projectAndTest);
-                
+                var initializationProcess = new SolutionInitializationProcess(testRunner: runner);
 
                 var dependents = FindDependentProjects(projectsUnderTestAnalyzerResult);
                 var projectInfos = BuildProjectInfos(options, dependents, solutionAnalyzerResults);
@@ -80,21 +80,23 @@ namespace Stryker.Core.Initialisation
                         ProjectInfo = projectInfo,
                         AssemblyReferences = assemblyResolver.LoadProjectReferences(projectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
                         TestRunner = runner,
+                        InitialTestRun = initializationProcess.InitialTest(options, projectInfo)
                     };
                     mutationInputs.Add(input);
                 }
 
-                // Mutate all projects in the solution
-                foreach (var project in MutateSolution(options, reporters, projectsUnderTestAnalyzerResult, testProjects, solutionAnalyzerResults, dependents))
+                foreach (var mutationTestInput in mutationInputs)
                 {
-                    yield return project;
+                    yield return _projectMutator.MutateProject(options, mutationTestInput, reporters);
                 }
             }
             else
             {
+                var initializationProcess = new InitialisationProcess(testRunner: runner);
+                var input = initializationProcess.Initialize(options, null);
                 // mutate a single project from the test project context
                 _logger.LogInformation("Identifying project to mutate.");
-                yield return _projectMutator.MutateProject(options, reporters);
+                yield return _projectMutator.MutateProject(options, input, reporters);
             }
         }
 
@@ -123,7 +125,6 @@ namespace Stryker.Core.Initialisation
                         projectUnderTest: project,
                         testProjects: relatedTestProjects);
                     result.Add(_fileResolver.ResolveInput(projectOptions, solutionAnalyzerResults));
-
                 }
                 else
                 {
@@ -131,46 +132,6 @@ namespace Stryker.Core.Initialisation
                 }
             }
             return result;
-        }
-
-        private IEnumerable<IMutationTestProcess> MutateSolution(StrykerOptions options,
-            IReporter reporters,
-            IEnumerable<IAnalyzerResult> projectsUnderTest, 
-            IEnumerable<IAnalyzerResult> testProjects,
-            IEnumerable<IAnalyzerResult> solutionProjects,
-            IReadOnlyDictionary<string, HashSet<string>> dependents)
-        {
-
-            foreach (var project in projectsUnderTest)
-            {
-                var projectFilePath = project.ProjectFilePath;
-                var candidateProject = dependents[projectFilePath];
-
-                var relatedTestProjects = testProjects
-                    .Where(testProject => testProject.ProjectReferences.Any(reference => candidateProject.Contains(reference))).Select(p=>p.ProjectFilePath).ToList();
-
-                if (relatedTestProjects.Any())
-                {
-                    _logger.LogDebug("Matched {0} to {1} test projects:", projectFilePath, relatedTestProjects.Count);
-
-                    foreach (var relatedTestProjectAnalyzerResults in relatedTestProjects)
-                    {
-                        _logger.LogDebug("{0}", relatedTestProjectAnalyzerResults);
-                    }
-
-                    var projectOptions = options.Copy(
-                        projectPath: projectFilePath,
-                        workingDirectory: options.ProjectPath,
-                        projectUnderTest: projectFilePath,
-                        testProjects: relatedTestProjects);
-
-                    yield return _projectMutator.MutateProject(projectOptions, reporters, solutionProjects);
-                }
-                else
-                {
-                    _logger.LogWarning("No test projects could be found for {0}", projectFilePath);
-                }
-            }
         }
 
         private static Dictionary<string, HashSet<string>> FindDependentProjects(IEnumerable<IAnalyzerResult> projectsUnderTest)

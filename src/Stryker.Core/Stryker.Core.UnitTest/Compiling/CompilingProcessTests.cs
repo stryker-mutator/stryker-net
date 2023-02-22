@@ -457,8 +457,8 @@ namespace ExampleProject
                 MutationLevel = MutationLevel.Complete,
                 OptimizationMode = OptimizationModes.CoverageBasedTest,
             };
-            var process = new CsharpMutationProcess(input, fileSystem, options);
-            process.Mutate();
+            var process = new CsharpMutationProcess(fileSystem, options);
+            process.Mutate(input);
 
             var projectContentsMutants = input.ProjectInfo.ProjectContents.Mutants;
             return projectContentsMutants;

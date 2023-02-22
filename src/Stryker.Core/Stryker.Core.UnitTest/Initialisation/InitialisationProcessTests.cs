@@ -114,8 +114,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 ProjectVersion = "TheProjectVersion"
             };
 
-            target.Initialize(options, null);
-            Assert.Throws<InputException>(() => target.InitialTest(options));
+            var input = target.Initialize(options, null);
+            Assert.Throws<InputException>(() => target.InitialTest(options, input.ProjectInfo));
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
             assemblyReferenceResolverMock.Verify();
@@ -174,8 +174,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 ProjectVersion = "TheProjectVersion"
             };
 
-            target.Initialize(options, null);
-            Assert.Throws<InputException>(() => target.InitialTest(options));
+            var input = target.Initialize(options, null);
+            Assert.Throws<InputException>(() => target.InitialTest(options, input.ProjectInfo));
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
             assemblyReferenceResolverMock.Verify();
@@ -236,14 +236,14 @@ namespace Stryker.Core.UnitTest.Initialisation
                 ProjectVersion = "TheProjectVersion",
                 BreakOnInitialTestFailure = breakOnInitialTestFailure
             };
-            target.Initialize(options, null);
+            var input = target.Initialize(options, null);
             if (breakOnInitialTestFailure)
             {
-                Assert.Throws<InputException>(() => target.InitialTest(options));
+                Assert.Throws<InputException>(() => target.InitialTest(options, input.ProjectInfo));
             }
             else
             {
-                target.InitialTest(options);
+                target.InitialTest(options, input.ProjectInfo);
             }
         }
 
@@ -294,8 +294,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 ProjectVersion = "TheProjectVersion"
             };
 
-            target.Initialize(options, null);
-            target.InitialTest(options);
+            var input = target.Initialize(options, null);
+            target.InitialTest(options, input.ProjectInfo);
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
             assemblyReferenceResolverMock.Verify();
@@ -352,8 +352,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 ProjectVersion = "TheProjectVersion"
             };
 
-            target.Initialize(options, null);
-            Assert.Throws<InputException>(() => target.InitialTest(options)).Message.ShouldContain(libraryName);
+            var input = target.Initialize(options, null);
+            Assert.Throws<InputException>(() => target.InitialTest(options, input.ProjectInfo)).Message.ShouldContain(libraryName);
         }
     }
 }

@@ -499,7 +499,7 @@ public class VsTestMockingHelper : TestBase
             TestRunner = runner,
             InitialTestRun = new InitialTestRun(testRunResult, new TimeoutValueCalculator(500))
         };
-        var mutator = new CsharpMutationProcess(input, _fileSystem, options);
+        var mutator = new CsharpMutationProcess(_fileSystem, options);
 
         return new MutationTestProcess(input, options, null, new MutationTestExecutor(runner), mutator);
     }

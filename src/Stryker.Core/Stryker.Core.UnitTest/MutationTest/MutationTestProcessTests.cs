@@ -97,7 +97,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
             orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
-            var mutator = new CsharpMutationProcess(input, fileSystem, options, null, orchestratorMock.Object);
+            var mutator = new CsharpMutationProcess(fileSystem, options, null, orchestratorMock.Object);
 
             var target = new MutationTestProcess(input, options, null, mutationTestExecutorMock.Object, mutator);
 
@@ -179,7 +179,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 .Returns((IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions o) => mutants.Take(1));
 
 
-            var mutator = new CsharpMutationProcess(input, fileSystem, options, new BroadcastMutantFilter(new[] { mutantFilterMock.Object }), orchestratorMock.Object);
+            var mutator = new CsharpMutationProcess(fileSystem, options, new BroadcastMutantFilter(new[] { mutantFilterMock.Object }), orchestratorMock.Object);
 
             var target = new MutationTestProcess(input, options, null, mutationTestExecutorMock.Object, mutator);
 
@@ -248,7 +248,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             orchestratorMock.SetupAllProperties();
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
 
-            var mutator = new CsharpMutationProcess(input, fileSystem, options, null, orchestratorMock.Object);
+            var mutator = new CsharpMutationProcess(fileSystem, options, null, orchestratorMock.Object);
 
             var target = new MutationTestProcess(input, options, null, mutationTestExecutorMock.Object, mutator);
 

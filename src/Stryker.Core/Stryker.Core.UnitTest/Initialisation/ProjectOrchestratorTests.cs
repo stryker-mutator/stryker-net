@@ -7,6 +7,7 @@ using Buildalyzer.Construction;
 using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -29,7 +30,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         public ProjectOrchestratorTests()
         {
             _mutationTestProcessMock.Setup(x => x.Mutate());
-            _projectMutatorMock.Setup(x => x.MutateProject(It.IsAny<StrykerOptions>(), It.IsAny<IReporter>(), It.IsAny<IEnumerable<IAnalyzerResult>>()))
+            _projectMutatorMock.Setup(x => x.MutateProject(It.IsAny<StrykerOptions>(),  It.IsAny<MutationTestInput>(), It.IsAny<IReporter>()))
                 .Returns(new Mock<IMutationTestProcess>().Object);
 
             _mutationTestInput = new MutationTestInput()
@@ -81,7 +82,8 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
             _initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(_mutationTestInput);
-            _initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>())).Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(5)));
+            _initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<ProjectInfo>()))
+                .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(5)));
             _buildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<string>(), It.IsAny<AnalyzerManagerOptions>())).Returns(buildalyzerAnalyzerManagerMock.Object);
             // The analyzer finds two projects
             buildalyzerAnalyzerManagerMock.Setup(x => x.Projects)
@@ -123,6 +125,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             testProjectProjectFileMock.Setup(x => x.Path).Returns("C:/testproject/");
 
             var mockRunner = new Mock<ITestRunner>();
+            mockRunner.Setup(r => r.DiscoverTests(It.IsAny<IProjectAndTest>())).Returns(new TestSet());
+            mockRunner.Setup(r => r.InitialTest(It.IsAny<IProjectAndTest>())).Returns(new TestRunResult(true));
 
             // act
             var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
@@ -167,11 +168,11 @@ namespace Stryker.Core.TestRunners.VsTest
             RunTestSession(testsToRun,
                 _context.GenerateRunSettings(timeout, false, mutantTestsMap, project.HelperNamespace, project.IsFullFramework), timeout, updateHandler).GetResults();
 
-        public IRunResults RunCoverageSession(ITestGuids testsToRun, IProjectAndTest project) =>
+        public IRunResults RunCoverageSession(ITestGuids testsToRun, string nameSpace, bool isFullFramework) =>
             RunTestSession(testsToRun,
                 _context.GenerateRunSettings(null,
-                    true,
-                    null, project.HelperNamespace, project.IsFullFramework)).GetRawResults();
+        true,
+                    null, nameSpace, isFullFramework)).GetRawResults();
 
         private RunEventHandler RunTestSession(ITestGuids tests,
             string runSettings,

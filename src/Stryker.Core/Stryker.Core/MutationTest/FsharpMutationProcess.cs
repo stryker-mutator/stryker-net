@@ -10,6 +10,7 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using static Microsoft.FSharp.Core.ByRefKinds;
 
 namespace Stryker.Core.MutationTest
 {
@@ -17,41 +18,37 @@ namespace Stryker.Core.MutationTest
     {
         private readonly ProjectComponent<ParsedInput> _projectInfo;
         private readonly ILogger _logger;
+        private readonly IFileSystem _fileSystem;
         private readonly StrykerOptions _options;
-        private readonly FsharpCompilingProcess _compilingProcess;
         private readonly BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>> _orchestrator;
 
         /// <summary>
         /// This constructor is for tests
         /// </summary>
-        /// <param name="mutationTestInput"></param>
         /// <param name="fileSystem"></param>
         /// <param name="options"></param>
         /// <param name="orchestrator"></param>
-        public FsharpMutationProcess(MutationTestInput mutationTestInput,
+        public FsharpMutationProcess(
             IFileSystem fileSystem,
             StrykerOptions options,
             BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>> orchestrator)
         {
-            var input = mutationTestInput;
-            _projectInfo = (ProjectComponent<ParsedInput>)input.ProjectInfo.ProjectContents;
 
+            _fileSystem = fileSystem;
             _options = options;
             _orchestrator = orchestrator ?? new FsharpMutantOrchestrator(options: _options);
-            _compilingProcess = new FsharpCompilingProcess(mutationTestInput, new RollbackProcess(), fileSystem ?? new FileSystem());
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
         }
 
         /// <summary>
         /// This constructor is used by the <see cref="MutationTestProcess"/> initialization logic.
         /// </summary>
-        /// <param name="mutationTestInput"></param>
         /// <param name="options"></param>
-        public FsharpMutationProcess(MutationTestInput mutationTestInput,
-            StrykerOptions options): this(mutationTestInput, null, options, null){}
+        public FsharpMutationProcess(StrykerOptions options): this(null, options, null){}
 
-        public void Mutate()
+        public void Mutate(MutationTestInput mutationInput)
         {
+            var projectInfo = (ProjectComponent<ParsedInput>)mutationInput.ProjectInfo.ProjectContents;
             // Mutate source files
             foreach (var file in _projectInfo.GetAllFiles().Cast<FsharpFileLeaf>())
             {
@@ -88,15 +85,16 @@ namespace Stryker.Core.MutationTest
 
             _logger.LogDebug("{0} mutants created", _projectInfo.Mutants.Count());
 
-            CompileMutations();
+            CompileMutations(mutationInput);
         }
 
-        private void CompileMutations()
+        private void CompileMutations(MutationTestInput mutationTestInput)
         {
             using var ms = new MemoryStream();
             using var msForSymbols = _options.DevMode ? new MemoryStream() : null;
             // compile the mutated syntax trees
-            var compileResult = _compilingProcess.Compile(_projectInfo.CompilationSyntaxTrees, _options.DevMode);
+            var compilingProcess = new FsharpCompilingProcess(mutationTestInput, new RollbackProcess(), _fileSystem ?? new FileSystem());
+            var compileResult = compilingProcess.Compile(_projectInfo.CompilationSyntaxTrees, _options.DevMode);
 
             // if a rollback took place, mark the rolled back mutants as status:BuildError
             if (compileResult.RollbackResult?.RollbackedIds.Any() ?? false)
@@ -116,7 +114,7 @@ namespace Stryker.Core.MutationTest
             }
         }
 
-        public void FilterMutants()
+        public void FilterMutants(MutationTestInput _)
         {
         }
     }
