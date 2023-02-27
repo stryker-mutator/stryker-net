@@ -5,7 +5,7 @@
     <PackageVersion Include="NuGet.Protocol" Version="6.5.0" />
     <PackageVersion Include="ResXResourceReader.NetStandard" Version="1.1.0" />
     <PackageVersion Include="YamlDotNet" Version="13.0.1" />
-    <PackageVersion Include="Grynwald.MarkdownGenerator" Version="2.5.34" />
+    <PackageVersion Include="Grynwald.MarkdownGenerator" Version="3.0.106" />
     <PackageVersion Include="LibGit2Sharp" Version="0.27.0-preview-0182" />
     <PackageVersion Include="FSharp.Compiler.Service" Version="41.0.7" />
     <PackageVersion Include="DotNet.Glob" Version="3.1.3" />
