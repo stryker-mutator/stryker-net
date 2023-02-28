@@ -94,6 +94,7 @@ namespace Stryker.Core.Initialisation
             {
                 var initializationProcess = new InitialisationProcess(testRunner: runner);
                 var input = initializationProcess.Initialize(options, null);
+                input.InitialTestRun = initializationProcess.InitialTest(options, input.ProjectInfo);
                 // mutate a single project from the test project context
                 _logger.LogInformation("Identifying project to mutate.");
                 yield return _projectMutator.MutateProject(options, input, reporters);
