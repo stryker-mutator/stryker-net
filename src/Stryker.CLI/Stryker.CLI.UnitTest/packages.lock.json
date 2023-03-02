@@ -1631,7 +1631,7 @@
           "Spectre.Console.Analyzer": "[0.46.0, )",
           "Stryker.DataCollector": "[3.6.1, )",
           "Stryker.RegexMutators": "[3.6.1, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[19.1.18, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[19.2.1, )"
         }
       },
       "stryker.datacollector": {
@@ -1891,7 +1891,7 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[19.1.18, )",
+        "requested": "[19.2.1, )",
         "resolved": "19.2.1",
         "contentHash": "2drGatHnWIIkuwP0x7wWcKWdYTtYdnFaXxVyBCeiyXovQ06QWEiCFnz5q5p5Ym7MYumK5P24WbA0gt+P30mpCA==",
         "dependencies": {
