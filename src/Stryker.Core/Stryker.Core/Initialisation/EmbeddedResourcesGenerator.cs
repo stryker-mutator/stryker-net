@@ -4,19 +4,82 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using System.Linq;
 using System.Resources;
 using System.Resources.NetStandard;
 using Microsoft.CodeAnalysis;
+using Mono.Cecil;
 
 namespace Stryker.Core.Initialisation
 {
     [ExcludeFromCodeCoverage]
     public static class EmbeddedResourcesGenerator
     {
-        public static IEnumerable<ResourceDescription> GetManifestResources(string projectFilePath, string rootNamespace, IEnumerable<string> embeddedResources)
+        private static readonly IDictionary<string, IEnumerable<ResourceDescription>> _resourceDescriptions = new Dictionary<string, IEnumerable<ResourceDescription>>();
+
+        public static IEnumerable<ResourceDescription> GetManifestResources(string assemblyPath, string projectFilePath, string rootNamespace, IEnumerable<string> embeddedResources)
+        {
+            if (!_resourceDescriptions.ContainsKey(projectFilePath))
+            {
+                using var module = LoadModule(assemblyPath);
+                if (module is not null)
+                {
+                    _resourceDescriptions.Add(projectFilePath, ReadResourceDescriptionsFromModule(module).ToList());
+                }
+                else // Failed to load module, generate resources from disk as backup
+                {
+                    _resourceDescriptions.Add(projectFilePath, GenerateManifestResources(projectFilePath, rootNamespace, embeddedResources));
+                }
+            }
+
+            foreach (var description in _resourceDescriptions.ContainsKey(projectFilePath) ? _resourceDescriptions[projectFilePath] : Enumerable.Empty<ResourceDescription>())
+            {
+                yield return description;
+            }
+        }
+
+        private static ModuleDefinition LoadModule(string assemblyPath)
+        {
+            try
+            {
+                return ModuleDefinition.ReadModule(
+                    assemblyPath,
+                    new ReaderParameters(ReadingMode.Deferred)
+                    {
+                        InMemory = true,
+                        ReadWrite = false,
+                        AssemblyResolver = new CrossPlatformAssemblyResolver()
+                    });
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        private static IEnumerable<ResourceDescription> ReadResourceDescriptionsFromModule(ModuleDefinition module)
+        {
+            foreach (var moduleResource in module.Resources.Where(r => r.ResourceType == ResourceType.Embedded).Cast<EmbeddedResource>())
+            {
+                var stream = moduleResource.GetResourceStream();
+
+                var bytes = new byte[stream.Length];
+                _ = stream.Read(bytes, 0, bytes.Length);
+
+                var ms = new MemoryStream();
+                ms.Write(bytes, 0, bytes.Length);
+                ms.Position = 0;
+
+                yield return new ResourceDescription(
+                    moduleResource.Name,
+                    () => ms,
+                    moduleResource.IsPublic);
+            }
+        }
+
+        private static IEnumerable<ResourceDescription> GenerateManifestResources(string projectFilePath, string rootNamespace, IEnumerable<string> embeddedResources)
         {
             var resources = new List<ResourceDescription>();
-
             foreach (var embeddedResource in embeddedResources)
             {
                 var resourceFullFilename = Path.Combine(Path.GetDirectoryName(projectFilePath), embeddedResource);
@@ -31,7 +94,6 @@ namespace Stryker.Core.Initialisation
                     () => ProvideResourceData(resourceFullFilename),
                     true));
             }
-
 
             return resources;
         }
@@ -48,16 +110,14 @@ namespace Stryker.Core.Initialisation
             using (var resourceWriter = new ResourceWriter(shortLivedBackingStream))
             {
                 resourceWriter.TypeNameConverter = TypeNameConverter;
-                using (var resourceReader = new ResXResourceReader(resourceFullFilename))
+                using var resourceReader = new ResXResourceReader(resourceFullFilename);
+                resourceReader.BasePath = Path.GetDirectoryName(resourceFullFilename);
+                var dictionaryEnumerator = resourceReader.GetEnumerator();
+                while (dictionaryEnumerator.MoveNext())
                 {
-                    resourceReader.BasePath = Path.GetDirectoryName(resourceFullFilename);
-                    var dictionaryEnumerator = resourceReader.GetEnumerator();
-                    while (dictionaryEnumerator.MoveNext())
+                    if (dictionaryEnumerator.Key is string resourceKey)
                     {
-                        if (dictionaryEnumerator.Key is string resourceKey)
-                        {
-                            resourceWriter.AddResource(resourceKey, dictionaryEnumerator.Value);
-                        }
+                        resourceWriter.AddResource(resourceKey, dictionaryEnumerator.Value);
                     }
                 }
             }
