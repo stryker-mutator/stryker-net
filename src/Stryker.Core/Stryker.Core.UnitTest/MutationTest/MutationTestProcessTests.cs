@@ -33,7 +33,6 @@ namespace Stryker.Core.UnitTest.MutationTest
         private string SourceFile { get; }
         private MockFileSystem fileSystemMock { get; } = new MockFileSystem();
 
-
         public MutationTestProcessTests()
         {
             CurrentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
@@ -42,22 +41,9 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         [Fact]
-        public void ShouldCallMutantOrchestratorAndReporter()
+        public void ShouldCallMutantionProcess_MutateAndFilterMutants()
         {
-            var inputFile = new CsharpFileLeaf()
-            {
-                SourceCode = SourceFile,
-                SyntaxTree = CSharpSyntaxTree.ParseText(SourceFile)
-            };
-            var folder = new CsharpFolderComposite();
-            folder.Add(inputFile);
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                { Path.Combine(FilesystemRoot, "ExampleProject","Recursive.cs"), new MockFileData(SourceFile)},
-                { Path.Combine(FilesystemRoot, "ExampleProject.Test", "bin", "Debug", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") },
-                { Path.Combine(FilesystemRoot, "ExampleProject.Test", "obj", "Release", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") }
-            });
-
+            // Arrange
             var input = new MutationTestInput()
             {
                 SourceProjectInfo = new SourceProjectInfo()
@@ -68,8 +54,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                             { "TargetFileName", "TestName.dll" },
                             { "AssemblyName", "AssemblyName" },
                             { "Language", "C#" }
-                        }).Object,
-                    ProjectContents = folder
+                        }).Object
                 },
                 TestProjectsInfo = new TestProjectsInfo(fileSystemMock)
                 {
@@ -85,129 +70,25 @@ namespace Stryker.Core.UnitTest.MutationTest
                 }
             };
 
-            var mutantToBeSkipped = new Mutant() { Mutation = new Mutation() };
-            var mockMutants = new Collection<Mutant>() { new() { Mutation = new Mutation() }, mutantToBeSkipped };
-
-            // create mocks
             var options = new StrykerOptions()
             {
-                DevMode = true,
                 ExcludedMutations = new Mutator[] { }
             };
-            var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict, options);
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
+            var mutantionProcessMock = new Mock<IMutationProcess>(MockBehavior.Strict);
+            mutantionProcessMock.Setup(x => x.Mutate());
+            mutantionProcessMock.Setup(x => x.FilterMutants());
 
-            // setup mocks
-            orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
-            orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
-            orchestratorMock.SetupAllProperties();
-            var mutator = new CsharpMutationProcess(input, fileSystem, options, null, orchestratorMock.Object);
+            var target = new MutationTestProcess(input, options, null, mutationTestExecutorMock.Object, mutantionProcessMock.Object);
 
-            var target = new MutationTestProcess(input, options, null, mutationTestExecutorMock.Object, mutator);
-
-            // start mutation process
+            // Act
             target.Mutate();
 
             target.FilterMutants();
 
-            // verify the right methods were called
-            orchestratorMock.Verify(x => x.Mutate(It.IsAny<SyntaxNode>()), Times.Once);
-        }
-
-        [Fact]
-        public void FilterMutantsShouldCallMutantFilters()
-        {
-            var inputFile = new CsharpFileLeaf()
-            {
-                SourceCode = SourceFile,
-                SyntaxTree = CSharpSyntaxTree.ParseText(SourceFile)
-            };
-
-            var folder = new CsharpFolderComposite();
-            folder.Add(inputFile);
-
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-                { Path.Combine(FilesystemRoot, "ExampleProject","Recursive.cs"), new MockFileData(SourceFile)},
-                { Path.Combine(FilesystemRoot, "ExampleProject.Test", "bin", "Debug", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") },
-                { Path.Combine(FilesystemRoot, "ExampleProject.Test", "obj", "Release", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") }
-            });
-
-            var input = new MutationTestInput()
-            {
-                SourceProjectInfo = new SourceProjectInfo()
-                {
-                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                        properties: new Dictionary<string, string>()
-                        {
-                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" },
-                            { "AssemblyName", "AssemblyName" },
-                            { "Language", "C#" }
-                        },
-                        // add a reference to system so the example code can compile
-                        references: new string[] {
-                            typeof(object).Assembly.Location,
-                            typeof(Console).Assembly.Location
-                        }
-                    ).Object,
-                    ProjectContents = folder
-                },
-                TestProjectsInfo = new TestProjectsInfo(fileSystemMock)
-                {
-                    TestProjects = new List<TestProject> {
-                        new TestProject(fileSystemMock, TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                            {
-                                { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                                { "TargetFileName", "TestName.dll" },
-                                { "AssemblyName", "AssemblyName" },
-                                { "Language", "C#" }
-                            }
-                        ).Object)
-                    }
-                }
-            };
-
-            var mutantToBeSkipped = new Mutant() { Mutation = new Mutation() };
-            var compileErrorMutant = new Mutant() { Mutation = new Mutation(), ResultStatus = MutantStatus.CompileError };
-            var mockMutants = new Collection<Mutant>() { new Mutant() { Mutation = new Mutation() }, mutantToBeSkipped, compileErrorMutant };
-
-            // create mocks
-            var options = new StrykerOptions()
-            {
-                DevMode = true,
-                ExcludedMutations = new Mutator[] { }
-            };
-
-            var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict, options);
-            var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
-            var mutantFilterMock = new Mock<IMutantFilter>(MockBehavior.Strict);
-
-            // setup mocks
-            orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
-            orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
-            orchestratorMock.SetupAllProperties();
-            mutantFilterMock.SetupGet(x => x.DisplayName).Returns("Mock filter");
-            IEnumerable<Mutant> mutantsPassedToFilter = null;
-            mutantFilterMock.Setup(x => x.FilterMutants(It.IsAny<IEnumerable<Mutant>>(), It.IsAny<IReadOnlyFileLeaf>(), It.IsAny<StrykerOptions>()))
-                .Callback<IEnumerable<Mutant>, IReadOnlyFileLeaf, StrykerOptions>((mutants, _, __) => mutantsPassedToFilter = mutants)
-                .Returns((IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions o) => mutants.Take(1));
-
-            var mutator = new CsharpMutationProcess(input, fileSystem, options, new BroadcastMutantFilter(new[] { mutantFilterMock.Object }), orchestratorMock.Object);
-
-            var target = new MutationTestProcess(input, options, null, mutationTestExecutorMock.Object, mutator);
-
-            // start mutation process
-            target.Mutate();
-
-            target.FilterMutants();
-
-            // verify that compiler error mutants are not passed to filter
-            mutantsPassedToFilter.ShouldNotContain(compileErrorMutant);
-
-            // verify that filtered mutants are skipped
-            inputFile.Mutants.ShouldContain(mutantToBeSkipped);
-            mutantToBeSkipped.ResultStatus.ShouldBe(MutantStatus.Ignored);
+            // Assert
+            mutantionProcessMock.Verify(x => x.Mutate(), Times.Once);
+            mutantionProcessMock.Verify(x => x.FilterMutants(), Times.Once);
         }
 
         [Fact]
