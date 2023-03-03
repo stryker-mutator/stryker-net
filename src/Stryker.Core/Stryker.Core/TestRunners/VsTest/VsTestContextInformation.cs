@@ -163,12 +163,12 @@ namespace Stryker.Core.TestRunners.VsTest
         ///     Initialize VsTest session. Discovers tests
         /// </summary>
         /// <exception cref="GeneralStrykerException"></exception>
-        public void Initialize(IProjectAndTest project)
+        public void Initialize(IReadOnlyList<string> assemblies)
         {
 
             _sources = new List<string>();
 
-            foreach (var path in project.GetTestAssemblies())
+            foreach (var path in assemblies)
             {
                 if (!_fileSystem.File.Exists(path))
                 {

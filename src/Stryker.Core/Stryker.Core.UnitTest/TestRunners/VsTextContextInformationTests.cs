@@ -134,7 +134,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             using var runner = BuildVsTextContext(new StrykerOptions(), out _);
             // make sure we have discovered first and second tests
-            runner.Initialize(_targetProject);
+            runner.Initialize(_targetProject.GetTestAssemblies());
             runner.VsTests.Count.ShouldBe(2);
         }
 
@@ -143,7 +143,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             using var runner = BuildVsTextContext(new StrykerOptions(), out var mock);
             // make sure we have discovered first and second tests
-            runner.Initialize(_targetProject);
+            runner.Initialize(_targetProject.GetTestAssemblies());
             runner.Dispose();
             mock.Verify(m => m.EndSession(), Times.Once);
         }
@@ -152,7 +152,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         public void InitializeAndSetParameters()
         {
             using var runner = BuildVsTextContext(new StrykerOptions(), out _);
-            runner.Initialize(_targetProject);
+            runner.Initialize(_targetProject.GetTestAssemblies());
             _consoleParameters.TraceLevel.ShouldBe(TraceLevel.Off);
             _consoleParameters.LogFilePath.ShouldBeNull();
         }
@@ -161,7 +161,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         public void InitializeAndSetParametersAccordingToOptions()
         {
             using var runner = BuildVsTextContext(new StrykerOptions{LogOptions = new LogOptions{LogToFile = true}}, out _);
-            runner.Initialize(_targetProject);
+            runner.Initialize(_targetProject.GetTestAssemblies());
             // logging should be at defined level
             _consoleParameters.TraceLevel.ShouldBe(TraceLevel.Verbose);
             
@@ -183,7 +183,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         public void InitializeAndSetProperLogLevel(LogEventLevel setLevel, TraceLevel expectedLevel)
         {
             using var runner = BuildVsTextContext(new StrykerOptions{LogOptions = new LogOptions{LogLevel = setLevel}}, out _);
-            runner.Initialize(_targetProject);
+            runner.Initialize(_targetProject.GetTestAssemblies());
             // logging should be a defined level
             _consoleParameters.TraceLevel.ShouldBe(expectedLevel);
         }

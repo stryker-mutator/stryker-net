@@ -479,7 +479,7 @@ public class VsTestMockingHelper : TestBase
             hostBuilder: _ => new MockStrykerTestHostLauncher(succeed, false),
             NullLogger.Instance
         );
-        context.Initialize( targetProject ?? TargetProject);
+        context.Initialize( (targetProject ?? TargetProject).GetTestAssemblies());
         runner = new VsTestRunnerPool(context,
             NullLogger.Instance,
             (information, _) => new VsTestRunner(information, 0, NullLogger.Instance));

@@ -15,14 +15,8 @@ namespace Stryker.Core.Testing
     [ExcludeFromCodeCoverage]
     public class BuildalyzerProvider : IBuildalyzerProvider
     {
-        public IAnalyzerManager Provide(AnalyzerManagerOptions options = null)
-        {
-            return new AnalyzerManager(options);
-        }
+        public IAnalyzerManager Provide(AnalyzerManagerOptions options = null) => new AnalyzerManager(options);
 
-        public IAnalyzerManager Provide(string solutionFilePath, AnalyzerManagerOptions options = null)
-        {
-            return new AnalyzerManager(solutionFilePath, options);
-        }
+        public IAnalyzerManager Provide(string solutionFilePath, AnalyzerManagerOptions options = null) => new AnalyzerManager(solutionFilePath, options);
     }
 }

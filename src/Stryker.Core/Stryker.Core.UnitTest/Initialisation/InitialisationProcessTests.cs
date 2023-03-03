@@ -53,8 +53,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             assemblyReferenceResolverMock.Setup(x => x.LoadProjectReferences(It.IsAny<string[]>()))
                 .Returns(Enumerable.Empty<PortableExecutableReference>());
 
-            var target = new InitialisationProcess(
-                inputFileResolverMock.Object,
+            var target = new InitialisationProcess(inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
                 initialTestProcessMock.Object,
                 testRunnerMock.Object,
@@ -66,8 +65,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 ProjectVersion = "TheProjectVersion"
             };
 
-            var result = target.Initialize(options, null);
-
+            var result = target.Initialize(options, null).ToList();
+            result.Count.ShouldBe(1);
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
         }
 
@@ -102,8 +101,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(Enumerable.Empty<PortableExecutableReference>())
                 .Verifiable();
 
-            var target = new InitialisationProcess(
-                inputFileResolverMock.Object,
+            var target = new InitialisationProcess(inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
                 initialTestProcessMock.Object,
                 testRunnerMock.Object,
@@ -114,7 +112,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 ProjectVersion = "TheProjectVersion"
             };
 
-            var input = target.Initialize(options, null);
+            var input = target.Initialize(options, null).First();
             Assert.Throws<InputException>(() => target.InitialTest(options, input.ProjectInfo));
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
@@ -162,8 +160,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(Enumerable.Empty<PortableExecutableReference>())
                 .Verifiable();
 
-            var target = new InitialisationProcess(
-                inputFileResolverMock.Object,
+            var target = new InitialisationProcess(inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
                 initialTestProcessMock.Object,
                 testRunnerMock.Object,
@@ -174,7 +171,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 ProjectVersion = "TheProjectVersion"
             };
 
-            var input = target.Initialize(options, null);
+            var input = target.Initialize(options, null).First();
             Assert.Throws<InputException>(() => target.InitialTest(options, input.ProjectInfo));
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
@@ -224,8 +221,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(Enumerable.Empty<PortableExecutableReference>())
                 .Verifiable();
 
-            var target = new InitialisationProcess(
-                inputFileResolverMock.Object,
+            var target = new InitialisationProcess(inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
                 initialTestProcessMock.Object,
                 testRunnerMock.Object,
@@ -236,7 +232,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 ProjectVersion = "TheProjectVersion",
                 BreakOnInitialTestFailure = breakOnInitialTestFailure
             };
-            var input = target.Initialize(options, null);
+            var input = target.Initialize(options, null).First();
             if (breakOnInitialTestFailure)
             {
                 Assert.Throws<InputException>(() => target.InitialTest(options, input.ProjectInfo));
@@ -282,8 +278,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(Enumerable.Empty<PortableExecutableReference>())
                 .Verifiable();
 
-            var target = new InitialisationProcess(
-                inputFileResolverMock.Object,
+            var target = new InitialisationProcess(inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
                 initialTestProcessMock.Object,
                 testRunnerMock.Object,
@@ -294,7 +289,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 ProjectVersion = "TheProjectVersion"
             };
 
-            var input = target.Initialize(options, null);
+            var input = target.Initialize(options, null).First();
             target.InitialTest(options, input.ProjectInfo);
 
             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
@@ -340,8 +335,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Returns(Enumerable.Empty<PortableExecutableReference>())
                 .Verifiable();
 
-            var target = new InitialisationProcess(
-                inputFileResolverMock.Object,
+            var target = new InitialisationProcess(inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
                 initialTestProcessMock.Object,
                 testRunnerMock.Object,
@@ -352,7 +346,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 ProjectVersion = "TheProjectVersion"
             };
 
-            var input = target.Initialize(options, null);
+            var input = target.Initialize(options, null).First();
             Assert.Throws<InputException>(() => target.InitialTest(options, input.ProjectInfo)).Message.ShouldContain(libraryName);
         }
     }

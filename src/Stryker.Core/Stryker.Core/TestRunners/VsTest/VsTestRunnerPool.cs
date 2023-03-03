@@ -42,10 +42,10 @@ namespace Stryker.Core.TestRunners.VsTest
         }
 
         [ExcludeFromCodeCoverage(Justification = "It depends on the deployment of VsTest.")]
-        public VsTestRunnerPool(StrykerOptions options, IProjectAndTest project, IFileSystem fileSystem = null)
+        public VsTestRunnerPool(StrykerOptions options, IReadOnlyList<string> testAssemblies, IFileSystem fileSystem = null)
         {
             Context = new VsTestContextInformation(options, fileSystem: fileSystem);
-            Context.Initialize(project);
+            Context.Initialize(testAssemblies);
             _countOfRunners = Math.Max(1, options.Concurrency);
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
             Initialize();

@@ -17,7 +17,6 @@ using Stryker.Core.Reporters;
 using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
-using MutationTestInput = Stryker.Core.MutationTest.MutationTestInput;
 
 namespace Stryker.Core.Initialisation
 {
@@ -28,49 +27,41 @@ namespace Stryker.Core.Initialisation
     
     public class ProjectOrchestrator : IProjectOrchestrator
     {
+        private IInitialisationProcess _initializationProcess;
         private readonly ILogger _logger;
         private readonly IBuildalyzerProvider _buildalyzerProvider;
         private readonly IProjectMutator _projectMutator;
         private readonly IInitialBuildProcess _initialBuildProcess;
         private readonly IInputFileResolver _fileResolver;
+        private ITestRunner _runner;
 
         public ProjectOrchestrator(IBuildalyzerProvider buildalyzerProvider = null,
             IProjectMutator projectMutator = null,
             IInitialBuildProcess initialBuildProcess = null,
-            IInputFileResolver fileResolver = null)
+            IInputFileResolver fileResolver = null,
+            IInitialisationProcess initializationProcess = null)
         {
             _buildalyzerProvider = buildalyzerProvider ?? new BuildalyzerProvider();
             _projectMutator = projectMutator ?? new ProjectMutator();
             _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectOrchestrator>();
             _fileResolver = fileResolver ?? new InputFileResolver();
+            _initializationProcess = initializationProcess;
         }
 
-        public IEnumerable<IMutationTestProcess> MutateProjects(StrykerOptions options, IReporter reporters, ITestRunner runner = null)
+        public IEnumerable<IMutationTestProcess> MutateProjects(StrykerOptions options, IReporter reporters,
+            ITestRunner mockRunnerObject = null)
         {
             if (options.IsSolutionContext)
             {
-                // Analyze all projects in the solution with buildalyzer
-                var solutionAnalyzerResults = AnalyzeSolution(options);
-                var testProjects = solutionAnalyzerResults.Where(p => p.IsTestProject()).ToList();
-                var projectsUnderTestAnalyzerResult = solutionAnalyzerResults.Where(p => !p.IsTestProject()).ToList();
-                _logger.LogInformation("Found {0} source projects", projectsUnderTestAnalyzerResult.Count);
-                _logger.LogInformation("Found {0} test projects", testProjects.Count);
-
-                // Build the complete solution
-                _initialBuildProcess.InitialBuild(
-                    projectsUnderTestAnalyzerResult.First().TargetsFullFramework(),
-                    _fileResolver.FileSystem.Path.GetDirectoryName(options.SolutionPath),
-                    options.SolutionPath,
-                    options.MsBuildPath);
+                _initializationProcess ??= new InitialisationProcess(_fileResolver, _initialBuildProcess,buildalyzerProvider: _buildalyzerProvider);
+                var projectInfos = _initializationProcess.GetMutableProjectsInfo(options);
 
                 // create a test runner
-                var projectAndTest = new SolutionTests(testProjects.Select(t => t.GetAssemblyPath()).ToList());
-                runner ??= new VsTestRunnerPool(options, projectAndTest);
-                var initializationProcess = new SolutionInitializationProcess(testRunner: runner);
+                _runner = mockRunnerObject ?? new VsTestRunnerPool(options,
+                    projectInfos.SelectMany(p =>p.GetTestAssemblies()).ToList(),
+                    fileSystem: _fileResolver.FileSystem);
 
-                var dependents = FindDependentProjects(projectsUnderTestAnalyzerResult);
-                var projectInfos = BuildProjectInfos(options, dependents, solutionAnalyzerResults);
                 var mutationInputs = new List<MutationTestInput>();
                 var assemblyResolver = new AssemblyReferenceResolver();
                 foreach (var projectInfo in projectInfos)
@@ -79,8 +70,8 @@ namespace Stryker.Core.Initialisation
                     {
                         ProjectInfo = projectInfo,
                         AssemblyReferences = assemblyResolver.LoadProjectReferences(projectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
-                        TestRunner = runner,
-                        InitialTestRun = initializationProcess.InitialTest(options, projectInfo)
+                        TestRunner = _runner,
+                        InitialTestRun = _initializationProcess.InitialTest(options, projectInfo, _runner)
                     };
                     mutationInputs.Add(input);
                 }
@@ -92,13 +83,44 @@ namespace Stryker.Core.Initialisation
             }
             else
             {
-                var initializationProcess = new InitialisationProcess(testRunner: runner);
-                var input = initializationProcess.Initialize(options, null);
-                input.InitialTestRun = initializationProcess.InitialTest(options, input.ProjectInfo);
-                // mutate a single project from the test project context
-                _logger.LogInformation("Identifying project to mutate.");
-                yield return _projectMutator.MutateProject(options, input, reporters);
+                var initializationProcess = new InitialisationProcess(testRunner: _runner);
+                var projects = initializationProcess.Initialize(options, null);
+                foreach (var input in projects)
+                {
+                    input.InitialTestRun = initializationProcess.InitialTest(options, input.ProjectInfo, null);
+                    // mutate a single project from the test project context
+                    _logger.LogInformation("Identifying project to mutate.");
+                    yield return _projectMutator.MutateProject(options, input, reporters);
+                }
             }
+        }
+
+        /// <summary>
+        /// Analyze a solution to identify projects and their related test projects
+        /// </summary>
+        /// <param name="options">Stryker options</param>
+        /// <returns>A collection of project info</returns>
+        private ICollection<ProjectInfo> ExtractProjectInfoFromSolution(StrykerOptions options)
+        {
+            // Analyze all projects in the solution with buildalyzer
+            var solutionAnalyzerResults = AnalyzeSolution(options);
+            var testProjects = solutionAnalyzerResults.Where(p => p.IsTestProject()).ToList();
+            var projectsUnderTestAnalyzerResult = solutionAnalyzerResults.Where(p => !p.IsTestProject()).ToList();
+
+            _logger.LogInformation("Found {0} source projects", projectsUnderTestAnalyzerResult.Count);
+            _logger.LogInformation("Found {0} test projects", testProjects.Count);
+
+
+            // Build the complete solution
+            _initialBuildProcess.InitialBuild(
+                projectsUnderTestAnalyzerResult.First().TargetsFullFramework(),
+                _fileResolver.FileSystem.Path.GetDirectoryName(options.SolutionPath),
+                options.SolutionPath,
+                options.MsBuildPath);
+
+            var dependents = FindDependentProjects(projectsUnderTestAnalyzerResult);
+            var projectInfos = BuildProjectInfos(options, dependents, solutionAnalyzerResults);
+            return projectInfos;
         }
 
         private ICollection<ProjectInfo> BuildProjectInfos(StrykerOptions options,
@@ -171,12 +193,12 @@ namespace Stryker.Core.Initialisation
 
             // build all projects
             var projectsAnalyzerResults = new ConcurrentBag<IAnalyzerResult>();
-            _logger.LogDebug("Analysing {count} projects", manager.Projects.Count);
+            _logger.LogDebug("Analyzing {count} projects", manager.Projects.Count);
             try
             {
                 Parallel.ForEach(manager.Projects.Values, project =>
                 {
-                    _logger.LogDebug("Analysing {projectFilePath}", project.ProjectFile.Path);
+                    _logger.LogDebug("Analyzing {projectFilePath}", project.ProjectFile.Path);
                     var buildResult = project.Build();
                     var projectAnalyzerResult = buildResult.Results.FirstOrDefault();
                     if (projectAnalyzerResult is { })
@@ -284,17 +306,6 @@ namespace Stryker.Core.Initialisation
             }
 
             return assemblyInformationalVersion;
-        }
-       private sealed class SolutionTests: IProjectAndTest
-        {
-            private readonly IReadOnlyList<string> _testAssemblies;
-
-            public SolutionTests(IReadOnlyList<string> testAssemblies) => _testAssemblies = testAssemblies;
-
-            public bool IsFullFramework { get; }
-            public string HelperNamespace { get; }
-
-            public IReadOnlyList<string> GetTestAssemblies() => _testAssemblies;
         }
     }
 }

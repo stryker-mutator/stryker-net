@@ -34,7 +34,7 @@ namespace Stryker.Core
         /// <summary>
         /// Starts a mutation test run
         /// </summary>
-        /// <param name="options">The user options</param>
+        /// <param name="inputs">user options</param>
         /// <param name="loggerFactory">This loggerfactory will be used to create loggers during the stryker run</param>
         /// <exception cref="InputException">For managed exceptions</exception>
         public StrykerRunResult RunMutationTest(IStrykerInputs inputs, ILoggerFactory loggerFactory, IProjectOrchestrator projectOrchestrator = null)
@@ -54,8 +54,6 @@ namespace Stryker.Core
 
             try
             {
-                //
-
                 // Mutate
                 _mutationTestProcesses = projectOrchestrator.MutateProjects(options, reporters).ToList();
 

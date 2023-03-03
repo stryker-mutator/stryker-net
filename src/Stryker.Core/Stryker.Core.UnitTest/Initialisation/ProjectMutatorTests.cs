@@ -42,8 +42,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new ProjectMutator(_mutationTestProcessMock.Object);
 
             _initializationProcessMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()))
-                .Returns(_mutationTestInput);
-            _initializationProcessMock.Setup(x => x.InitialTest(options, It.IsAny<ProjectInfo>()))
+                .Returns(new []{_mutationTestInput});
+            _initializationProcessMock.Setup(x => x.InitialTest(options, It.IsAny<ProjectInfo>(), It.IsAny<ITestRunner>()))
                 .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500)));
             // act
             var result = target.MutateProject(options, _mutationTestInput,_reporterMock.Object);

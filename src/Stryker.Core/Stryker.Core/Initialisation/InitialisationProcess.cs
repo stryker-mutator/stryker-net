@@ -1,6 +1,8 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
@@ -8,6 +10,7 @@ using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
+using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
 
@@ -17,8 +20,9 @@ namespace Stryker.Core.Initialisation
 
     public interface IInitialisationProcess
     {
-        MutationTestInput Initialize(StrykerOptions options, IEnumerable<IAnalyzerResult> solutionProjects);
-        InitialTestRun InitialTest(StrykerOptions options, ProjectInfo projectInfo);
+        IEnumerable<MutationTestInput> Initialize(StrykerOptions options, IEnumerable<IAnalyzerResult> solutionProjects);
+        InitialTestRun InitialTest(StrykerOptions options, ProjectInfo projectInfo, ITestRunner testRunner = null);
+        IEnumerable<ProjectInfo> GetMutableProjectsInfo(StrykerOptions options);
     }
 
 
@@ -35,10 +39,11 @@ namespace Stryker.Core.Initialisation
             ["Microsoft.VisualStudio.TestPlatform.TestFramework"] = "Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter"
         };
 
-        public InitialTestRun InitialTest(StrykerOptions options, ProjectInfo projectInfo)
+        public InitialTestRun InitialTest(StrykerOptions options, ProjectInfo projectInfo, ITestRunner testRunner = null)
         {
+            testRunner ??= _testRunner;
             // initial test
-            var result = _initialTestProcess.InitialTest(options, projectInfo, _testRunner);
+            var result = _initialTestProcess.InitialTest(options, projectInfo, testRunner);
 
             if (!result.Result.FailingTests.IsEmpty)
             {
@@ -56,7 +61,7 @@ namespace Stryker.Core.Initialisation
                 _logger.LogWarning($"{(failingTestsCount == 1 ? "A test is": $"{failingTestsCount} tests are")} failing. Stryker will continue but outcome will be impacted.");
             }
 
-            if (_testRunner.DiscoverTests(projectInfo).Count != 0)
+            if (testRunner.DiscoverTests(projectInfo).Count != 0)
             {
                 return result;
             }
@@ -75,42 +80,15 @@ namespace Stryker.Core.Initialisation
             {
                 foreach (var (framework, adapter) in TestFrameworks)
                 {
-                    if (testProject.References.Any(r => r.Contains(framework)) && !testProject.References.Any(r => r.Contains(adapter)))
-                    {
-                        var message = $"Project '{testProject.ProjectFilePath}' did not report any test. This may be because it is missing an appropriate VstTest adapter for '{framework}'. " +
-                                      $"Adding '{adapter}' to this project references may resolve the issue.";
-                        projectInfo.ProjectWarnings.Add(message);
-                        _logger.LogWarning(message);
-                    }
+                    if (!testProject.References.Any(r => r.Contains(framework)) ||
+                        testProject.References.Any(r => r.Contains(adapter))) continue;
+                    var message = $"Project '{testProject.ProjectFilePath}' did not report any test. This may be because it is missing an appropriate VstTest adapter for '{framework}'. " +
+                                  $"Adding '{adapter}' to this project references may resolve the issue.";
+                    projectInfo.ProjectWarnings.Add(message);
+                    _logger.LogWarning(message);
                 }
             }
         }
-    }
-
-    public class SolutionInitializationProcess : InitialisationProcessBase, IInitialisationProcess
-    {
-        private readonly IAssemblyReferenceResolver _referenceResolver;
-
-        public SolutionInitializationProcess(ITestRunner testRunner, IAssemblyReferenceResolver referenceResolver = null, 
-            IInitialTestProcess initialTestProcess = null)
-        {
-            _referenceResolver = referenceResolver ?? new AssemblyReferenceResolver();
-            _initialTestProcess = initialTestProcess ?? new InitialTestProcess();
-            _testRunner = testRunner;
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<SolutionInitializationProcess>();
-        }
-
-        public ProjectInfo ProjectInfo { get; set; }
-        public MutationTestInput Initialize(StrykerOptions options, IEnumerable<IAnalyzerResult> solutionProjects) =>
-            new()
-            {
-                ProjectInfo = ProjectInfo,
-                AssemblyReferences = _referenceResolver
-                    .LoadProjectReferences(ProjectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
-                TestRunner = _testRunner
-
-            };
-       
     }
 
     public class InitialisationProcess : InitialisationProcessBase, IInitialisationProcess
@@ -118,14 +96,17 @@ namespace Stryker.Core.Initialisation
         private readonly IInputFileResolver _inputFileResolver;
         private readonly IInitialBuildProcess _initialBuildProcess;
         private readonly IAssemblyReferenceResolver _assemblyReferenceResolver;
+        private readonly IBuildalyzerProvider _buildalyzerProvider;
 
         public InitialisationProcess(
             IInputFileResolver inputFileResolver = null,
             IInitialBuildProcess initialBuildProcess = null,
             IInitialTestProcess initialTestProcess = null,
             ITestRunner testRunner = null,
-            IAssemblyReferenceResolver assemblyReferenceResolver = null)
+            IAssemblyReferenceResolver assemblyReferenceResolver = null,
+            IBuildalyzerProvider buildalyzerProvider = null)
         {
+            _buildalyzerProvider = buildalyzerProvider ?? new BuildalyzerProvider();
             _inputFileResolver = inputFileResolver ?? new InputFileResolver();
             _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
             _initialTestProcess = initialTestProcess ?? new InitialTestProcess();
@@ -135,39 +116,176 @@ namespace Stryker.Core.Initialisation
         }
 
 
-        public MutationTestInput Initialize(StrykerOptions options, IEnumerable<IAnalyzerResult> solutionProjects)
+        public IEnumerable<ProjectInfo> GetMutableProjectsInfo(StrykerOptions options) => options.IsSolutionContext ? ExtractProjectInfoFromSolution(options) : new[]{ _inputFileResolver.ResolveInput(options, null)};
+
+        /// <summary>
+        /// Analyze a solution to identify projects and their related test projects
+        /// </summary>
+        /// <param name="options">Stryker options</param>
+        /// <returns>A collection of project info</returns>
+        private ICollection<ProjectInfo> ExtractProjectInfoFromSolution(StrykerOptions options)
+        {
+            // Analyze all projects in the solution with buildalyzer
+            var solutionAnalyzerResults = AnalyzeSolution(options);
+            var testProjects = solutionAnalyzerResults.Where(p => p.IsTestProject()).ToList();
+            var projectsUnderTestAnalyzerResult = solutionAnalyzerResults.Where(p => !p.IsTestProject()).ToList();
+
+            _logger.LogInformation("Found {0} source projects", projectsUnderTestAnalyzerResult.Count);
+            _logger.LogInformation("Found {0} test projects", testProjects.Count);
+
+
+            // Build the complete solution
+            _initialBuildProcess.InitialBuild(
+                projectsUnderTestAnalyzerResult.First().TargetsFullFramework(),
+                _inputFileResolver.FileSystem.Path.GetDirectoryName(options.SolutionPath),
+                options.SolutionPath,
+                options.MsBuildPath);
+
+            var dependents = FindDependentProjects(projectsUnderTestAnalyzerResult);
+            var projectInfos = BuildProjectInfos(options, dependents, solutionAnalyzerResults);
+            return projectInfos;
+        }
+
+        private static Dictionary<string, HashSet<string>> FindDependentProjects(IEnumerable<IAnalyzerResult> projectsUnderTest)
+        {
+            // need to scan traverse dependencies
+            // dependents contains the list of projects depending on each (non test) projects
+            var dependents = projectsUnderTest.ToDictionary(p=>p.ProjectFilePath, p => new HashSet<string>(new []{p.ProjectFilePath}));
+
+            // we need to dig recursively, until no further change happens
+            bool foundNewDependency;
+            do
+            {
+                var nextDependence = new Dictionary<string, HashSet<string>>();
+                foundNewDependency = false;
+                foreach (var (project, dependent) in dependents)
+                {
+                    var newList = new HashSet<string>(dependent);
+                    foreach (var sub in dependent.Where(sub => dependents.ContainsKey(sub)))
+                    {
+                        newList.UnionWith(dependents[sub]);
+                    }
+
+                    foundNewDependency = foundNewDependency || newList.Count > dependent.Count;
+                    nextDependence[project] = newList;
+                }
+                dependents = nextDependence;
+            } while (foundNewDependency);
+
+            return dependents;
+        }
+
+        private List<IAnalyzerResult> AnalyzeSolution(StrykerOptions options)
+        {
+            _logger.LogInformation("Identifying projects to mutate in {0}. This can take a while.", options.SolutionPath);
+            var manager = _buildalyzerProvider.Provide(options.SolutionPath);
+
+            // build all projects
+            var projectsAnalyzerResults = new ConcurrentBag<IAnalyzerResult>();
+            _logger.LogDebug("Analyzing {count} projects", manager.Projects.Count);
+            try
+            {
+                Parallel.ForEach(manager.Projects.Values, project =>
+                {
+                    _logger.LogDebug("Analyzing {projectFilePath}", project.ProjectFile.Path);
+                    var buildResult = project.Build();
+                    var projectAnalyzerResult = buildResult.Results.FirstOrDefault();
+                    if (projectAnalyzerResult is { })
+                    {
+                        projectsAnalyzerResults.Add(projectAnalyzerResult);
+                        _logger.LogDebug("Analysis of project {projectFilePath} succeeded", project.ProjectFile.Path);
+                    }
+                    else
+                    {
+                        _logger.LogWarning("Analysis of project {projectFilePath} failed", project.ProjectFile.Path);
+                    }
+                });
+            }
+            catch (AggregateException ex)
+            {
+                throw ex.GetBaseException();
+            }
+
+            return projectsAnalyzerResults.ToList();
+        }
+        private ICollection<ProjectInfo> BuildProjectInfos(StrykerOptions options,
+            IReadOnlyDictionary<string, HashSet<string>> dependents, List<IAnalyzerResult> solutionAnalyzerResults)
+        {
+            var testProjects = solutionAnalyzerResults.Where(p => p.IsTestProject()).ToList();
+            var projectsUnderTestAnalyzerResult = solutionAnalyzerResults.Where(p => !p.IsTestProject()).ToList();
+            var result = new List<ProjectInfo>(projectsUnderTestAnalyzerResult.Count);
+            foreach (var project in projectsUnderTestAnalyzerResult.Select(p =>p.ProjectFilePath))
+            {
+                var relatedTestProjects = testProjects
+                    .Where(testProject => testProject.ProjectReferences.Any(reference => dependents[project].Contains(reference))).Select(p =>p.ProjectFilePath).ToList();
+                if (relatedTestProjects.Count > 0)
+                {
+                    _logger.LogDebug("Matched {0} to {1} test projects:", project, relatedTestProjects.Count);
+
+                    foreach (var relatedTestProjectAnalyzerResults in relatedTestProjects)
+                    {
+                        _logger.LogDebug("{0}", relatedTestProjectAnalyzerResults);
+                    }
+
+                    var projectOptions = options.Copy(
+                        projectPath: project,
+                        workingDirectory: options.ProjectPath,
+                        projectUnderTest: project,
+                        testProjects: relatedTestProjects);
+                    result.Add(_inputFileResolver.ResolveInput(projectOptions, solutionAnalyzerResults));
+                }
+                else
+                {
+                    _logger.LogWarning("No test projects could be found for {0}", project);
+                }
+            }
+            return result;
+        }
+
+        public IEnumerable<MutationTestInput> Initialize(StrykerOptions options, IEnumerable<IAnalyzerResult> solutionProjects)
         {
             // resolve project info
-            var projectInfo = _inputFileResolver.ResolveInput(options, solutionProjects);
+            var projectInfo = GetProjectsInfo(options, solutionProjects).ToList();
 
+            var testProjects = projectInfo.SelectMany(p=>p.TestProjectAnalyzerResults).ToList();
             // initial build
             if (!options.IsSolutionContext)
             {
-                var testProjects = projectInfo.TestProjectAnalyzerResults.ToList();
-                for (var i = 0; i < testProjects.Count; i++)
-                {
-                    _logger.LogInformation(
-                        "Building test project {ProjectFilePath} ({CurrentTestProject}/{OfTotalTestProjects})",
-                        testProjects[i].ProjectFilePath, i + 1,
-                        projectInfo.TestProjectAnalyzerResults.Count());
-
-                    _initialBuildProcess.InitialBuild(
-                        testProjects[i].TargetsFullFramework(),
-                        testProjects[i].ProjectFilePath,
-                        options.SolutionPath,
-                        options.MsBuildPath);
-                }
+                BuildProject(options, testProjects);
             }
-            
 
-            _testRunner ??= new VsTestRunnerPool(options, projectInfo);
-
-            return new MutationTestInput
+            _testRunner ??= new VsTestRunnerPool(options, testProjects.Select(p =>p.GetAssemblyPath()).ToList());
+            foreach (var info in projectInfo)
             {
-                ProjectInfo = projectInfo,
-                AssemblyReferences = _assemblyReferenceResolver.LoadProjectReferences(projectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
-                TestRunner = _testRunner,
-            };
+                yield return new MutationTestInput
+                {
+                    ProjectInfo = info,
+                    AssemblyReferences = _assemblyReferenceResolver.LoadProjectReferences(info.ProjectUnderTestAnalyzerResult.References).ToList(),
+                    TestRunner = _testRunner,
+                };
+            }
+        }
+
+        private void BuildProject(StrykerOptions options, List<IAnalyzerResult> testProjects)
+        {
+            for (var i = 0; i < testProjects.Count; i++)
+            {
+                _logger.LogInformation(
+                    "Building test project {ProjectFilePath} ({CurrentTestProject}/{OfTotalTestProjects})",
+                    testProjects[i].ProjectFilePath, i + 1,
+                    testProjects.Count());
+
+                _initialBuildProcess.InitialBuild(
+                    testProjects[i].TargetsFullFramework(),
+                    testProjects[i].ProjectFilePath,
+                    options.SolutionPath,
+                    options.MsBuildPath);
+            }
+        }
+
+        private IEnumerable<ProjectInfo> GetProjectsInfo(StrykerOptions options, IEnumerable<IAnalyzerResult> solutionProjects)
+        {
+            yield return _inputFileResolver.ResolveInput(options, solutionProjects);
         }
     }
 }
