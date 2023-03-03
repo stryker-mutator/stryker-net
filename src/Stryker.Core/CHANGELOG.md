@@ -1,3 +1,12 @@
+## [3.6.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.6.0...stryker@3.6.1) (2023-02-17)
+
+
+### Features
+
+* **embedded resources:** Support embedded resources outside the root of the project ([#2414](https://github.com/stryker-mutator/stryker-net/issues/2414)) ([59fa56f](https://github.com/stryker-mutator/stryker-net/commit/59fa56f343aac9c837c21c5d4f122aee26c9318a))
+
+
+
 # [3.6.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.5.1...stryker@3.6.0) (2023-02-10)
 
 
