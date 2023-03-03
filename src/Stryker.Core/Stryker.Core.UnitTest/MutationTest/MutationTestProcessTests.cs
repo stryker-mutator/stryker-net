@@ -149,12 +149,15 @@ namespace Stryker.Core.UnitTest.MutationTest
                 {
                     TestProjects = new List<TestProject> {
                         new TestProject(fileSystemMock, TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                        {
-                            { "TargetDir", "/bin/Debug/netcoreapp2.1" },
-                            { "TargetFileName", "TestName.dll" },
-                            { "AssemblyName", "AssemblyName" },
-                            { "Language", "C#" }
-                        }).Object)
+                            {
+                                { "TargetDir", "/bin/Debug/netcoreapp2.1" },
+                                { "TargetFileName", "TestName.dll" },
+                                { "AssemblyName", "AssemblyName" },
+                                { "Language", "C#" }
+                            },
+                            // add a reference to system so the example code can compile
+                            references: new string[] { typeof(object).Assembly.Location }
+                        ).Object)
                     }
                 }
             };
