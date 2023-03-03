@@ -43,8 +43,8 @@ public void SomeMethod()
 }";
 
             var syntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
-            var blockNode = (BlockSyntax)syntaxTree.DescendantNodes().First(t => t is BlockSyntax);
-            var binaryExpressionNode = (ExpressionSyntax)blockNode.DescendantNodes().First(t => t is ExpressionSyntax);
+            var blockNode = syntaxTree.DescendantNodes().OfType<BlockSyntax>().First();
+            var binaryExpressionNode = blockNode.DescendantNodes().OfType<ExpressionSyntax>().First();
 
             var blockMutant = new Mutant
             {
@@ -82,7 +82,7 @@ public void SomeMethod()
     var x = 1 + 1;
 }";
             var syntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
-            var blockNode = (BlockSyntax)syntaxTree.DescendantNodes().First(t => t is BlockSyntax);
+            var blockNode = syntaxTree.DescendantNodes().OfType<BlockSyntax>().First();
             var blockMutant = new Mutant
             {
                 Mutation = new Mutation

@@ -6,8 +6,10 @@ using Shouldly;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
+using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
+using Stryker.Core.Reporters.Json;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
@@ -133,15 +135,21 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Arrange
             var options = new StrykerOptions()
             {
+                // These options are added here to make sure this test covers all branches in the source method.
                 WithBaseline = true,
                 ExcludedLinqExpressions = new List<LinqExpression>
                 {
                     LinqExpression.Distinct
                 },
             };
-            var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
-            var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
-            var baselineProviderMock = new Mock<IBaselineProvider>(MockBehavior.Loose);
+            var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Strict);
+            var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Strict);
+            var baselineProviderMock = new Mock<IBaselineProvider>(MockBehavior.Strict);
+            var branch = "branch";
+            gitInfoProviderMock.Setup(m => m.GetCurrentBranchName()).Returns(branch);
+            baselineProviderMock.Setup(m => m.Load($"baseline/{branch}")).ReturnsAsync(new JsonReport());
+            diffProviderMock.Setup(m => m.ScanDiff()).Returns(new DiffResult());
+            diffProviderMock.Setup(m => m.Tests).Returns(new TestSet());
 
             // Act
             var result = MutantFilterFactory.Create(options, null, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);
@@ -149,7 +157,6 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             // Assert
             broadcastFilterResult.MutantFilters.Last().ShouldBeOfType<IgnoreBlockMutantFilter>();
-
         }
     }
 }

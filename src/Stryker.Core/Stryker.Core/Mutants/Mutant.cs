@@ -1,4 +1,3 @@
-
 using Microsoft.CodeAnalysis.Text;
 
 namespace Stryker.Core.Mutants
@@ -31,9 +30,9 @@ namespace Stryker.Core.Mutants
         public MutantStatus ResultStatus { get; set; }
 
         public ITestGuids CoveringTests { get; set; } = TestGuidsList.NoTest();
-        
+
         public ITestGuids AssessingTests { get; set; } = TestGuidsList.EveryTest();
-        
+
         public string ResultStatusReason { get; set; }
 
         public bool CountForStats => ResultStatus != MutantStatus.CompileError && ResultStatus != MutantStatus.Ignored;

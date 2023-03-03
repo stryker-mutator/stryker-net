@@ -21,7 +21,6 @@ namespace Stryker.Core.MutantFilters
             {
                 MutantStatus.Ignored,
                 MutantStatus.CompileError,
-                MutantStatus.Timeout,
             };
         }
 
