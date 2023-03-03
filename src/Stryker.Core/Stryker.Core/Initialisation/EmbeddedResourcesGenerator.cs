@@ -61,18 +61,18 @@ namespace Stryker.Core.Initialisation
         {
             foreach (var moduleResource in module.Resources.Where(r => r.ResourceType == ResourceType.Embedded).Cast<EmbeddedResource>())
             {
-                var stream = moduleResource.GetResourceStream();
+                var shortLivedBackingStream = moduleResource.GetResourceStream();
 
-                var bytes = new byte[stream.Length];
-                _ = stream.Read(bytes, 0, bytes.Length);
+                var resourceStream = new MemoryStream();
+                shortLivedBackingStream.CopyTo(resourceStream);
 
-                var ms = new MemoryStream();
-                ms.Write(bytes, 0, bytes.Length);
-                ms.Position = 0;
+                // reset streams back to start
+                resourceStream.Position = 0;
+                shortLivedBackingStream.Position = 0;
 
                 yield return new ResourceDescription(
                     moduleResource.Name,
-                    () => ms,
+                    () => resourceStream,
                     moduleResource.IsPublic);
             }
         }
