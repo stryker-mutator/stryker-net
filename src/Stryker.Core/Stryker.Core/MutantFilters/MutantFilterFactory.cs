@@ -38,7 +38,8 @@ namespace Stryker.Core.MutantFilters
                     new FilePatternMutantFilter(options),
                     new IgnoredMethodMutantFilter(),
                     new IgnoreMutationMutantFilter(),
-                    new ExcludeFromCodeCoverageFilter()
+                    new ExcludeFromCodeCoverageFilter(),
+                    new IgnoreBlockMutantFilter(),
                 };
 
             if (options.WithBaseline)
