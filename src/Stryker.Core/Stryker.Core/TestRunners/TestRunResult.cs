@@ -9,6 +9,7 @@ namespace Stryker.Core.TestRunners
     {
         public TestRunResult(bool success, string message = null)
         {
+            VsTestDescriptions = new List<VsTestDescription>();
             FailingTests = !success ? TestGuidsList.EveryTest() : TestGuidsList.NoTest();
             RanTests = TestGuidsList.EveryTest();
             TimedOutTests = TestGuidsList.NoTest();

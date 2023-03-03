@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -136,13 +137,20 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 SourceProjectInfo = new SourceProjectInfo()
                 {
-                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
                             { "AssemblyName", "AssemblyName" },
                             { "Language", "C#" }
-                        }).Object,
+                        },
+                        // add a reference to system so the example code can compile
+                        references: new string[] {
+                            typeof(object).Assembly.Location,
+                            typeof(Console).Assembly.Location
+                        }
+                    ).Object,
                     ProjectContents = folder
                 },
                 TestProjectsInfo = new TestProjectsInfo(fileSystemMock)
@@ -154,9 +162,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                                 { "TargetFileName", "TestName.dll" },
                                 { "AssemblyName", "AssemblyName" },
                                 { "Language", "C#" }
-                            },
-                            // add a reference to system so the example code can compile
-                            references: new string[] { typeof(object).Assembly.Location }
+                            }
                         ).Object)
                     }
                 }
