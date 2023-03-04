@@ -11,11 +11,6 @@ namespace Stryker.Core.UnitTest.Mutators
 {
     public class StringEmptyMutatorTests : TestBase
     {
-        private static readonly StrykerOptions DefaultStrykerOptions = new()
-        {
-            MutationLevel = MutationLevel.Complete
-        };
-
         [Fact]
         public void ShouldBeMutationLevelStandard()
         {
@@ -33,7 +28,7 @@ namespace Stryker.Core.UnitTest.Mutators
                 SyntaxFactory.IdentifierName("Empty"));
             var mutator = new StringEmptyMutator();
 
-            var result = mutator.Mutate(node, DefaultStrykerOptions).ToList();
+            var result = mutator.ApplyMutations(node).ToList();
 
             var mutation = result.ShouldHaveSingleItem();
             mutation.DisplayName.ShouldBe("String mutation");
@@ -50,7 +45,7 @@ namespace Stryker.Core.UnitTest.Mutators
                 SyntaxFactory.IdentifierName("Empty"));
             var mutator = new StringEmptyMutator();
 
-            var result = mutator.Mutate(node, DefaultStrykerOptions).ToList();
+            var result = mutator.ApplyMutations(node).ToList();
 
             result.ShouldBeEmpty();
         }
@@ -63,7 +58,7 @@ namespace Stryker.Core.UnitTest.Mutators
         {
             var expression = (InvocationExpressionSyntax)SyntaxFactory.ParseExpression($"string.IsNullOrEmpty({argument})");
             var target = new StringEmptyMutator();
-            var mutated = target.Mutate(expression, DefaultStrykerOptions).ToList();
+            var mutated = target.ApplyMutations(expression).ToList();
 
             mutated.Count.ShouldBe(2);
             ValidateMutationIsNullCheck(mutated[0], expression);
@@ -78,7 +73,7 @@ namespace Stryker.Core.UnitTest.Mutators
         {
             var expression = (InvocationExpressionSyntax)SyntaxFactory.ParseExpression($"string.IsNullOrWhiteSpace({argument})");
             var target = new StringEmptyMutator();
-            var mutated = target.Mutate(expression, DefaultStrykerOptions).ToList();
+            var mutated = target.ApplyMutations(expression).ToList();
 
             mutated.Count.ShouldBe(3);
             ValidateMutationIsNullCheck(mutated[0], expression);
@@ -94,7 +89,7 @@ namespace Stryker.Core.UnitTest.Mutators
         {
             var expression = (InvocationExpressionSyntax)SyntaxFactory.ParseExpression($"string.{method}(x)");
             var target = new StringEmptyMutator();
-            var mutated = target.Mutate(expression, DefaultStrykerOptions).ToList();
+            var mutated = target.ApplyMutations(expression).ToList();
 
             mutated.ShouldBeEmpty();
         }

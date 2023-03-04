@@ -1,10 +1,8 @@
-using Microsoft.CodeAnalysis;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Stryker.Core.Mutators
 {
@@ -16,24 +14,16 @@ namespace Stryker.Core.Mutators
     /// <remarks>
     /// Will only apply the mutation to the lowercase <c>string</c> since that is a reserved keyword in c# and can be distinguished from any variable or member access.
     /// </remarks>
-    public class StringEmptyMutator : IMutator
+    public class StringEmptyMutator : MutatorBase<ExpressionSyntax>, IMutator
     {
-        public MutationLevel MutationLevel => MutationLevel.Standard;
+        public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-        public IEnumerable<Mutation> Mutate(SyntaxNode node, StrykerOptions options)
+        public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node) => node switch
         {
-            if (MutationLevel > options.MutationLevel)
-            {
-                return Enumerable.Empty<Mutation>();
-            }
-
-            return node switch
-            {
-                MemberAccessExpressionSyntax memberAccess => ApplyMutations(memberAccess),
-                InvocationExpressionSyntax invocation => ApplyMutations(invocation),
-                _ => Enumerable.Empty<Mutation>()
-            };
-        }
+            MemberAccessExpressionSyntax memberAccess => ApplyMutations(memberAccess),
+            InvocationExpressionSyntax invocation => ApplyMutations(invocation),
+            _ => Enumerable.Empty<Mutation>()
+        };
 
         private IEnumerable<Mutation> ApplyMutations(MemberAccessExpressionSyntax node)
         {
