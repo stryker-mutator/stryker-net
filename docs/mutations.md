@@ -165,7 +165,7 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `string.IsNullOrEmpty(x)` | `x != ""` |
 | `string.IsNullOrWhiteSpace(x)` | `x != null` |
 | `string.IsNullOrWhiteSpace(x)` | `x != ""` |
-| `string.IsNullOrWhiteSpace(x)` | `x.Trim().Length != 0` |
+| `string.IsNullOrWhiteSpace(x)` | `System.Text.RegularExpressions.Regex.IsMatch(x, "\\S")` |
 
 ## Bitwise Operators (_bitwise_)
 | Original            | Mutated             |
