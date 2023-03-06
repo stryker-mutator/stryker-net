@@ -133,13 +133,15 @@ namespace Stryker.Core.UnitTest.Mutators
             mutation.DisplayName.ShouldBe("String mutation");
             mutation.Type.ShouldBe(Mutator.String);
 
-            var invocationExpression = mutation.ReplacementNode.ShouldBeOfType<InvocationExpressionSyntax>();
+            var binaryExpression = mutation.ReplacementNode.ShouldBeOfType<BinaryExpressionSyntax>();
 
-            invocationExpression.ArgumentList.Arguments[0].ToString().ShouldBe(original.ArgumentList.Arguments[0].Expression.ToString());
-            var regexLiteral = invocationExpression.ArgumentList.Arguments[1].Expression.ShouldBeOfType<LiteralExpressionSyntax>();
-            regexLiteral.Token.ToString().ShouldBe(@"""\\S""");
+            binaryExpression.Kind().ShouldBe(SyntaxKind.NotEqualsExpression);
+            binaryExpression.Left.ToString().ShouldBe(original.ArgumentList.Arguments[0].Expression.ToString() + ".Trim()");
 
-            invocationExpression.Expression.ToString().ShouldBe("System.Text.RegularExpressions.Regex.IsMatch");
+            var emptyLiteral = binaryExpression.Right.ShouldBeOfType<LiteralExpressionSyntax>();
+
+            emptyLiteral.Kind().ShouldBe(SyntaxKind.StringLiteralExpression);
+            emptyLiteral.Token.ToString().ShouldBe(@"""""");
         }
     }
 }

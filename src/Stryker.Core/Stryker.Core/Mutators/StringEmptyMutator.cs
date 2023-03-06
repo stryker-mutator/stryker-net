@@ -94,14 +94,15 @@ namespace Stryker.Core.Mutators
         private Mutation ApplyIsWhiteSpaceMutation(InvocationExpressionSyntax node) => new()
         {
             OriginalNode = node,
-            ReplacementNode = SyntaxFactory.InvocationExpression(
-                SyntaxFactory.ParseExpression("System.Text.RegularExpressions.Regex.IsMatch"),
-                SyntaxFactory.ArgumentList(SyntaxFactory.SeparatedList(new[]
-                {
-                    node.ArgumentList.Arguments[0],
-                    SyntaxFactory.Argument(
-                        SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal("\\S")))
-                }))),
+            ReplacementNode = SyntaxFactory.BinaryExpression(
+                SyntaxKind.NotEqualsExpression,
+                SyntaxFactory.InvocationExpression(
+                    SyntaxFactory.MemberAccessExpression(
+                        SyntaxKind.SimpleMemberAccessExpression,
+                        node.ArgumentList.Arguments[0].Expression,
+                        SyntaxFactory.IdentifierName("Trim")),
+                    SyntaxFactory.ArgumentList()),
+                SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(""))),
             DisplayName = "String mutation",
             Type = Mutator.String
         };
