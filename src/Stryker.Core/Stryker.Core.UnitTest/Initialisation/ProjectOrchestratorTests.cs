@@ -84,12 +84,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             initialBuildProcessMock.Setup(x =>
                 x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()));
-            _initialisationProcessMock
-                .Setup(x => x.Initialize(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()))
-                .Returns(new List<MutationTestInput>(){_mutationTestInput });
 
-        _initialisationProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<ProjectInfo>(), It.IsAny<ITestRunner>()))
-                .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(5)));
             _buildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<string>(), It.IsAny<AnalyzerManagerOptions>())).Returns(buildalyzerAnalyzerManagerMock.Object);
             // The analyzer finds two projects
             buildalyzerAnalyzerManagerMock.Setup(x => x.Projects)

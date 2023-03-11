@@ -16,7 +16,6 @@ namespace Stryker.Core.UnitTest.Initialisation
     public class ProjectMutatorTests : TestBase
     {
         private readonly Mock<IMutationTestProcess> _mutationTestProcessMock = new(MockBehavior.Strict);
-        private readonly Mock<IInitialisationProcess> _initializationProcessMock = new(MockBehavior.Strict);
         private readonly Mock<IReporter> _reporterMock = new(MockBehavior.Strict);
         private readonly MutationTestInput _mutationTestInput;
 
@@ -41,10 +40,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var options = new StrykerOptions();
             var target = new ProjectMutator(_mutationTestProcessMock.Object);
 
-            _initializationProcessMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()))
-                .Returns(new []{_mutationTestInput});
-            _initializationProcessMock.Setup(x => x.InitialTest(options, It.IsAny<ProjectInfo>(), It.IsAny<ITestRunner>()))
-                .Returns(new InitialTestRun(new TestRunResult(true), new TimeoutValueCalculator(500)));
+
             // act
             var result = target.MutateProject(options, _mutationTestInput,_reporterMock.Object);
 

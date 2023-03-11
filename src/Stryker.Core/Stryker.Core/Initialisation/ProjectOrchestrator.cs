@@ -48,46 +48,23 @@ namespace Stryker.Core.Initialisation
         public IEnumerable<IMutationTestProcess> MutateProjects(StrykerOptions options, IReporter reporters,
             ITestRunner mockRunnerObject = null)
         {
-            if (options.IsSolutionContext)
+
+            _initializationProcess ??= new InitialisationProcess(_fileResolver, _initialBuildProcess,buildalyzerProvider: _buildalyzerProvider);
+            var projectInfos = _initializationProcess.GetMutableProjectsInfo(options);
+
+            _initializationProcess.BuildProjects(options, projectInfos);
+
+            // create a test runner
+            _runner = mockRunnerObject ?? new VsTestRunnerPool(options,
+                projectInfos.SelectMany(p =>p.GetTestAssemblies()).ToList(),
+                fileSystem: _fileResolver.FileSystem);
+            InitializeDashboardProjectInformation(options, projectInfos.First());
+
+            var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);
+
+            foreach (var mutationTestInput in inputs)
             {
-                _initializationProcess ??= new InitialisationProcess(_fileResolver, _initialBuildProcess,buildalyzerProvider: _buildalyzerProvider);
-                var projectInfos = _initializationProcess.GetMutableProjectsInfo(options);
-
-                // create a test runner
-                _runner = mockRunnerObject ?? new VsTestRunnerPool(options,
-                    projectInfos.SelectMany(p =>p.GetTestAssemblies()).ToList(),
-                    fileSystem: _fileResolver.FileSystem);
-
-                var mutationInputs = new List<MutationTestInput>();
-                var assemblyResolver = new AssemblyReferenceResolver();
-                foreach (var projectInfo in projectInfos)
-                {
-                    var input = new MutationTestInput
-                    {
-                        ProjectInfo = projectInfo,
-                        AssemblyReferences = assemblyResolver.LoadProjectReferences(projectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
-                        TestRunner = _runner,
-                        InitialTestRun = _initializationProcess.InitialTest(options, projectInfo, _runner)
-                    };
-                    mutationInputs.Add(input);
-                }
-
-                foreach (var mutationTestInput in mutationInputs)
-                {
-                    yield return _projectMutator.MutateProject(options, mutationTestInput, reporters);
-                }
-            }
-            else
-            {
-                var initializationProcess = new InitialisationProcess(testRunner: _runner);
-                var projects = initializationProcess.Initialize(options, null);
-                foreach (var input in projects)
-                {
-                    input.InitialTestRun = initializationProcess.InitialTest(options, input.ProjectInfo, null);
-                    // mutate a single project from the test project context
-                    _logger.LogInformation("Identifying project to mutate.");
-                    yield return _projectMutator.MutateProject(options, input, reporters);
-                }
+                yield return _projectMutator.MutateProject(options, mutationTestInput, reporters);
             }
         }
 

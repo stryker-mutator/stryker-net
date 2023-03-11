@@ -1,4 +1,3 @@
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -175,8 +174,8 @@ namespace Stryker.Core.UnitTest.MutationTest
             mutantFilterMock.SetupGet(x => x.DisplayName).Returns("Mock filter");
             IEnumerable<Mutant> mutantsPassedToFilter = null;
             mutantFilterMock.Setup(x => x.FilterMutants(It.IsAny<IEnumerable<Mutant>>(), It.IsAny<IReadOnlyFileLeaf>(), It.IsAny<StrykerOptions>()))
-                .Callback<IEnumerable<Mutant>, IReadOnlyFileLeaf, StrykerOptions>((mutants, _, __) => mutantsPassedToFilter = mutants)
-                .Returns((IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions o) => mutants.Take(1));
+                .Callback<IEnumerable<Mutant>, IReadOnlyFileLeaf, StrykerOptions>((mutants, _, _) => mutantsPassedToFilter = mutants)
+                .Returns((IEnumerable<Mutant> mutants, IReadOnlyFileLeaf _, StrykerOptions _) => mutants.Take(1));
 
 
             var mutator = new CsharpMutationProcess(fileSystem, options, new BroadcastMutantFilter(new[] { mutantFilterMock.Object }), orchestratorMock.Object);
@@ -713,7 +712,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf()
             {
-                Mutants = new Collection<Mutant>() { }
+                Mutants = new Collection<Mutant>()
             });
 
             var projectUnderTest = TestHelper.SetupProjectAnalyzerResult(

@@ -37,6 +37,12 @@ namespace Stryker.Core.Initialisation
                 Path.GetDirectoryName(analyzerResult.GetAssemblyPath()),
                 Path.GetFileName(ProjectUnderTestAnalyzerResult.GetAssemblyPath()));
 
+        public string LogError(string message)
+        {
+            ProjectWarnings.Add(message);
+            return message;
+        }
+
         public virtual void RestoreOriginalAssembly()
         {
             foreach (var testProject in TestProjectAnalyzerResults)

@@ -48,14 +48,14 @@ namespace Stryker.Core.Initialisation
         {
             var projectInfo = new ProjectInfo(FileSystem);
             // Determine test projects
-            var testProjectFiles = new List<string>();
+            List<string> testProjectFiles;
             if (options.TestProjects != null && options.TestProjects.Any())
             {
                 testProjectFiles = options.TestProjects.Select(FindTestProject).ToList();
             }
             else
             {
-                testProjectFiles.Add(FindTestProject(options.ProjectPath));
+                testProjectFiles = new List<string> {FindTestProject(options.ProjectPath) };
             }
 
             var testProjectAnalyzerResults = new List<IAnalyzerResult>();
@@ -77,7 +77,7 @@ namespace Stryker.Core.Initialisation
             var language = projectInfo.ProjectUnderTestAnalyzerResult.GetLanguage();
             if (language == Language.Fsharp)
             {
-                _logger.LogError("Mutation testing of F# projects is not ready yet. No mutants will be generated.");
+                _logger.LogError(projectInfo.LogError("Mutation testing of F# projects is not ready yet. No mutants will be generated."));
             }
 
             var builder = GetProjectComponentBuilder(language, options, projectInfo);
@@ -94,7 +94,6 @@ namespace Stryker.Core.Initialisation
         {
             var projectFile = FindProjectFile(path);
             _logger.LogDebug("Using {0} as test project", projectFile);
-
             return projectFile;
         }
 
