@@ -36,6 +36,7 @@ namespace Stryker.Core
         /// </summary>
         /// <param name="inputs">user options</param>
         /// <param name="loggerFactory">This loggerfactory will be used to create loggers during the stryker run</param>
+        /// <param name="projectOrchestrator"></param>
         /// <exception cref="InputException">For managed exceptions</exception>
         public StrykerRunResult RunMutationTest(IStrykerInputs inputs, ILoggerFactory loggerFactory, IProjectOrchestrator projectOrchestrator = null)
         {
@@ -44,6 +45,7 @@ namespace Stryker.Core
 
             SetupLogging(loggerFactory);
 
+            var disposeOrchestrator = projectOrchestrator == null;
             // Setup project orchestrator can't be done sooner since it needs logging
             projectOrchestrator ??= new ProjectOrchestrator();
 
@@ -95,6 +97,10 @@ namespace Stryker.Core
                     }
 
                     reporters.OnAllMutantsTested(rootComponent);
+                    if (disposeOrchestrator)
+                    {
+                        projectOrchestrator.Dispose();
+                    }
                     return new StrykerRunResult(options, rootComponent.GetMutationScore());
                 }
 
@@ -114,6 +120,10 @@ namespace Stryker.Core
                 }
 
                 reporters.OnAllMutantsTested(rootComponent);
+                if (disposeOrchestrator)
+                {
+                    projectOrchestrator.Dispose();
+                }
 
                 return new StrykerRunResult(options, rootComponent.GetMutationScore());
             }

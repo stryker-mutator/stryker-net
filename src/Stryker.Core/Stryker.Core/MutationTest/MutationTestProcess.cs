@@ -98,7 +98,6 @@ namespace Stryker.Core.MutationTest
             }
 
             TestMutants(mutantsToTest);
-            //_mutationTestExecutor.TestRunner.Dispose();
 
             return new StrykerRunResult(_options, _projectContents.GetMutationScore());
         }

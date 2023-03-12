@@ -61,14 +61,13 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult TestMultipleMutants(IProjectAndTest project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var mutantTestsMap = new Dictionary<int, ITestGuids>();
-            var needAll = true;
             ICollection<Guid> testCases;
             var timeOutMs = timeoutCalc?.DefaultTimeout;
 
             // if we optimize the number of tests to run
             if (_context.Options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
             {
-                needAll = false;
+                var needAll = false;
                 foreach (var mutant in mutants)
                 {
                     var tests = mutant.AssessingTests;
@@ -80,16 +79,6 @@ namespace Stryker.Core.TestRunners.VsTest
 
                 _logger.LogTrace($"{RunnerId}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}] " +
                                  $"against {(testCases == null ? "all tests." : string.Join(", ", testCases))}.");
-                if (testCases?.Count == 0)
-                {
-                    return new TestRunResult(TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), "Mutants are not covered by any test!", TimeSpan.Zero);
-                }
-
-                if (timeoutCalc != null && testCases != null)
-                {
-                    // compute time out
-                    timeOutMs = timeoutCalc.CalculateTimeoutValue((int)testCases.Sum(id => _context.VsTests[id].InitialRunTime.TotalMilliseconds));
-                }
             }
             else
             {
@@ -101,8 +90,18 @@ namespace Stryker.Core.TestRunners.VsTest
                 testCases = null;
             }
 
+            if (testCases?.Count == 0)
+            {
+                return new TestRunResult(TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), "Mutants are not covered by any test!", TimeSpan.Zero);
+            }
+            if (timeoutCalc != null && testCases != null)
+            {
+                // compute time out
+                timeOutMs = timeoutCalc.CalculateTimeoutValue((int)testCases.Sum(id => _context.VsTests[id].InitialRunTime.TotalMilliseconds));
+            }
+
             var numberTestCases = testCases?.Count ?? 0;
-            var expectedTests = needAll ? _context.Tests.Count : numberTestCases;
+            var expectedTests = testCases == null ? _context.Tests.Count : numberTestCases;
 
             void HandleUpdate(IRunResults handler)
             {

@@ -15,7 +15,6 @@ namespace Stryker.Core.MutationTest
 {
     public class FsharpMutationProcess : IMutationProcess
     {
-        private readonly ProjectComponent<ParsedInput> _projectInfo;
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly StrykerOptions _options;
@@ -32,7 +31,6 @@ namespace Stryker.Core.MutationTest
             StrykerOptions options,
             BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>> orchestrator)
         {
-
             _fileSystem = fileSystem;
             _options = options;
             _orchestrator = orchestrator ?? new FsharpMutantOrchestrator(options: _options);
@@ -45,11 +43,11 @@ namespace Stryker.Core.MutationTest
         /// <param name="options"></param>
         public FsharpMutationProcess(StrykerOptions options): this(null, options, null){}
 
-        public void Mutate(MutationTestInput mutationInput)
+        public void Mutate(MutationTestInput input)
         {
-            var projectInfo = (ProjectComponent<ParsedInput>)mutationInput.ProjectInfo.ProjectContents;
+            var projectInfo = (ProjectComponent<ParsedInput>)input.ProjectInfo.ProjectContents;
             // Mutate source files
-            foreach (var file in _projectInfo.GetAllFiles().Cast<FsharpFileLeaf>())
+            foreach (var file in projectInfo.GetAllFiles().Cast<FsharpFileLeaf>())
             {
                 _logger.LogDebug($"Mutating {file.RelativePath}");
                 // Mutate the syntax tree
@@ -58,11 +56,11 @@ namespace Stryker.Core.MutationTest
                 // Add the mutated syntax tree for compilation
                 var tree = (ParsedInput.ImplFile)file.SyntaxTree;
                 var item = tree.Item;
-                //we hardcode the lastcompiled flag to make the compile pass
+                //we hard code the lastCompiled flag to make the compile pass
                 //this needs to be fixed in the FSharp.Compiler.SourceCodeServices package, or made dynamic as it now assumes the bottom of Program.fs is the entry point
                 var lastCompile = item.fileName.Equals("Program.fs") ? new Tuple<bool, bool>(true, true) : item.isLastCompiland;
 
-                var input = ParsedImplFileInput.NewParsedImplFileInput(
+                var inputFile = ParsedImplFileInput.NewParsedImplFileInput(
                     item.fileName,
                     item.isScript,
                     item.qualifiedNameOfFile,
@@ -71,7 +69,7 @@ namespace Stryker.Core.MutationTest
                     mutatedSyntaxTree,
                     lastCompile,
                     item.trivia);
-                file.MutatedSyntaxTree = ParsedInput.NewImplFile(input);
+                file.MutatedSyntaxTree = ParsedInput.NewImplFile(inputFile);
 
                 if (_options.DevMode)
                 {
@@ -82,23 +80,24 @@ namespace Stryker.Core.MutationTest
                 file.Mutants = allMutants;
             }
 
-            _logger.LogDebug("{0} mutants created", _projectInfo.Mutants.Count());
+            _logger.LogDebug("{0} mutants created", projectInfo.Mutants.Count());
 
-            CompileMutations(mutationInput);
+            CompileMutations(input);
         }
 
         private void CompileMutations(MutationTestInput mutationTestInput)
         {
+            var projectInfo = (ProjectComponent<ParsedInput>)mutationTestInput.ProjectInfo.ProjectContents;
             using var ms = new MemoryStream();
             using var msForSymbols = _options.DevMode ? new MemoryStream() : null;
             // compile the mutated syntax trees
             var compilingProcess = new FsharpCompilingProcess(mutationTestInput, new RollbackProcess(), _fileSystem ?? new FileSystem());
-            var compileResult = compilingProcess.Compile(_projectInfo.CompilationSyntaxTrees, _options.DevMode);
+            var compileResult = compilingProcess.Compile(projectInfo.CompilationSyntaxTrees, _options.DevMode);
 
             // if a rollback took place, mark the rolled back mutants as status:BuildError
             if (compileResult.RollbackResult?.RollbackedIds.Any() ?? false)
             {
-                foreach (var mutant in _projectInfo.Mutants
+                foreach (var mutant in projectInfo.Mutants
                     .Where(x => compileResult.RollbackResult.RollbackedIds.Contains(x.Id)))
                 {
                     // Ignore compilation errors if the mutation is skipped anyways.
@@ -113,8 +112,9 @@ namespace Stryker.Core.MutationTest
             }
         }
 
-        public void FilterMutants(MutationTestInput _)
+        public void FilterMutants(MutationTestInput input)
         {
+            // mutation filtering logic has not been implemented
         }
     }
 }

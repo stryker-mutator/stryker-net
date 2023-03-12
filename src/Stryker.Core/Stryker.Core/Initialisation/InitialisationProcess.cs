@@ -106,7 +106,7 @@ namespace Stryker.Core.Initialisation
                     _logger.LogInformation(
                         "Building test project {ProjectFilePath} ({CurrentTestProject}/{OfTotalTestProjects})",
                         testProjects[i].ProjectFilePath, i + 1,
-                        testProjects.Count());
+                        testProjects.Count);
 
                     _initialBuildProcess.InitialBuild(
                         testProjects[i].TargetsFullFramework(),

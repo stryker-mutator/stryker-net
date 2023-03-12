@@ -15,8 +15,7 @@ namespace Stryker.Core.Mutants
         private TestGuidsList() => _testsGuid = null;
 
         public TestGuidsList(IEnumerable<TestDescription> testDescriptions) : this(testDescriptions?.Select(t => t.Id))
-        {
-        }
+        {}
 
         public TestGuidsList(HashSet<Guid> set) => _testsGuid = set;
         
