@@ -61,34 +61,9 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult TestMultipleMutants(IProjectAndTest project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var mutantTestsMap = new Dictionary<int, ITestGuids>();
-            ICollection<Guid> testCases;
             var timeOutMs = timeoutCalc?.DefaultTimeout;
 
-            // if we optimize the number of tests to run
-            if (_context.Options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
-            {
-                var needAll = false;
-                foreach (var mutant in mutants)
-                {
-                    var tests = mutant.AssessingTests;
-                    needAll =  needAll || tests.IsEveryTest;
-                    mutantTestsMap.Add(mutant.Id, tests);
-                }
-
-                testCases = needAll ? null : mutants.SelectMany(m => m.AssessingTests.GetGuids()).ToList();
-
-                _logger.LogTrace($"{RunnerId}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}] " +
-                                 $"against {(testCases == null ? "all tests." : string.Join(", ", testCases))}.");
-            }
-            else
-            {
-                if (mutants.Count > 1)
-                {
-                    throw new GeneralStrykerException("Internal error: trying to test multiple mutants simultaneously without 'perTest' coverage analysis.");
-                }
-                mutantTestsMap.Add(mutants[0].Id, TestGuidsList.EveryTest());
-                testCases = null;
-            }
+            var testCases = TestCases(mutants, mutantTestsMap);
 
             if (testCases?.Count == 0)
             {
@@ -135,6 +110,40 @@ namespace Stryker.Core.TestRunners.VsTest
             var testResults = RunTestSession(new TestGuidsList(testCases), project, timeOutMs, mutantTestsMap, HandleUpdate);
 
             return BuildTestRunResult(testResults, expectedTests);
+        }
+
+        private ICollection<Guid> TestCases(IReadOnlyList<Mutant> mutants, Dictionary<int, ITestGuids> mutantTestsMap)
+        {
+            ICollection<Guid> testCases;
+            // if we optimize the number of tests to run
+            if (_context.Options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
+            {
+                var needAll = false;
+                foreach (var mutant in mutants)
+                {
+                    var tests = mutant.AssessingTests;
+                    needAll = needAll || tests.IsEveryTest;
+                    mutantTestsMap.Add(mutant.Id, tests);
+                }
+
+                testCases = needAll ? null : mutants.SelectMany(m => m.AssessingTests.GetGuids()).ToList();
+
+                _logger.LogTrace($"{RunnerId}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}] " +
+                                 $"against {(testCases == null ? "all tests." : string.Join(", ", testCases))}.");
+            }
+            else
+            {
+                if (mutants.Count > 1)
+                {
+                    throw new GeneralStrykerException(
+                        "Internal error: trying to test multiple mutants simultaneously without 'perTest' coverage analysis.");
+                }
+
+                mutantTestsMap.Add(mutants[0].Id, TestGuidsList.EveryTest());
+                testCases = null;
+            }
+
+            return testCases;
         }
 
         private TestRunResult BuildTestRunResult(IRunResults testResults, int expectedTests, bool compressAll = true)

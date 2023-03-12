@@ -21,7 +21,7 @@ namespace Stryker.Core.Initialisation
         IEnumerable<IMutationTestProcess> MutateProjects(StrykerOptions options, IReporter reporters, ITestRunner runner = null);
     }
     
-    public class ProjectOrchestrator : IProjectOrchestrator
+    public sealed class ProjectOrchestrator : IProjectOrchestrator
     {
         private IInitialisationProcess _initializationProcess;
         private readonly ILogger _logger;
