@@ -11,12 +11,14 @@ namespace Stryker.Core.TestRunners.VsTest
     public interface IStrykerTestHostLauncher : ITestHostLauncher
     {
          bool IsProcessCreated { get; }
+         int ErrorCode { get; }
     }
 
     public class StrykerVsTestHostLauncher : IStrykerTestHostLauncher
     {
         private readonly string _id;
         private Process _currentProcess;
+        public int ErrorCode { get; private set; }
 
         private static ILogger Logger { get; }
 
@@ -60,9 +62,12 @@ namespace Stryker.Core.TestRunners.VsTest
 
             _currentProcess.BeginOutputReadLine();
             _currentProcess.BeginErrorReadLine();
+            _currentProcess.Exited += ProcessExited;
 
             return _currentProcess.Id;
         }
+
+        private void ProcessExited(object sender, System.EventArgs e) => ErrorCode = _currentProcess.ExitCode;
 
         private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {

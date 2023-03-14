@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Core.Mutants;
 
@@ -68,5 +69,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public override int GetHashCode() => Case != null ? Case.Id.GetHashCode() : 0;
 
         public override string ToString() => Case.FullyQualifiedName;
+
+        public void ClearInitialResult() => _initialResults.Clear();
     }
 }

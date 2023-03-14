@@ -3,13 +3,11 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Linq;
-using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
@@ -37,7 +35,6 @@ namespace Stryker.Core.TestRunners.VsTest
         ///     Creates an instance.
         /// </summary>
         /// <param name="options">Configuration options</param>
-        /// <param name="projectInfo">Project information</param>
         /// <param name="helper"></param>
         /// <param name="fileSystem"></param>
         /// <param name="builder"></param>
@@ -165,10 +162,9 @@ namespace Stryker.Core.TestRunners.VsTest
         /// <exception cref="GeneralStrykerException"></exception>
         public void Initialize(IReadOnlyList<string> assemblies)
         {
-
             _sources = new List<string>();
 
-            foreach (var path in assemblies)
+            foreach (var path in assemblies.Distinct())
             {
                 if (!_fileSystem.File.Exists(path))
                 {
@@ -195,7 +191,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 _logger.LogError("TestDiscoverer: Test discovery has been aborted!");
             }
-
+            wrapper.EndSession();
             VsTests = new Dictionary<Guid, VsTestDescription>(handler.DiscoveredTestCases.Count);
             foreach (var testCase in handler.DiscoveredTestCases)
             {
@@ -205,12 +201,10 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
 
                 VsTests[testCase.Id].AddSubCase();
-                _logger.LogDebug($"Test Case : name= {testCase.DisplayName} (id= {testCase.Id}, FQN= {testCase.FullyQualifiedName}).");
+                _logger.LogTrace($"Test Case : name= {testCase.DisplayName} (id= {testCase.Id}, FQN= {testCase.FullyQualifiedName}).");
             }
 
             DetectTestFrameworks(VsTests.Values);
-
-            wrapper.EndSession();
         }
 
         private void DetectTestFrameworks(ICollection<VsTestDescription> tests)

@@ -8,7 +8,6 @@ namespace Stryker.Core.Mutants
     public class TestGuidsList : ITestGuids
     {
         private readonly HashSet<Guid> _testsGuid;
-
         private static readonly TestGuidsList EveryTests = new();
         private static readonly TestGuidsList NoTestAtAll = new(Array.Empty<Guid>());
 

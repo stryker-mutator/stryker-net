@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
@@ -39,6 +38,10 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult InitialTest(IProjectAndTest project)
         {
             var testResults = RunTestSession(TestGuidsList.EveryTest(), project);
+            foreach (var test in _context.VsTests.Keys)
+            {
+                _context.VsTests[test].ClearInitialResult();
+            }
             // initial test run, register test results
             foreach (var result in testResults.TestResults)
             {
@@ -157,7 +160,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             if (ranTests.IsEmpty && (testResults.TestsInTimeout == null || testResults.TestsInTimeout.Count == 0))
             {
-                _logger.LogTrace($"{RunnerId}: Test session reports 0 result and 0 stuck tests.");
+                _logger.LogTrace($"{RunnerId}: Test session reports 0 result and 0 stuck test.");
             }
 
             var duration =  TimeSpan.FromTicks(_context.VsTests.Values.Sum(t => t.InitialRunTime.Ticks));
@@ -223,6 +226,11 @@ namespace Stryker.Core.TestRunners.VsTest
                 _logger.LogWarning($"{RunnerId}: VsTest did not report the end of test session in due time, it may have hang. Retrying!");
                 _vsTestConsole.AbortTestRun();
                 _vsTestFailed = true;
+            }
+
+            if (strykerVsTestHostLauncher.ErrorCode > 0)
+            {
+                _logger.LogError("Test session ended with code {0}", strykerVsTestHostLauncher.ErrorCode);
             }
 
             if (!strykerVsTestHostLauncher.IsProcessCreated)
