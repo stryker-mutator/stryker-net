@@ -46,13 +46,13 @@ namespace ExampleProject
             {
                 ProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(projectFilePath: "/c/project.csproj", properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
                             { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
                         }).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(projectFilePath: "/c/testproject.csproj", properties: new Dictionary<string, string>()
                         {
                             { "AssemblyName", "TargetFileName"},
                         }).Object
@@ -93,13 +93,13 @@ namespace ExampleProject
             {
                 ProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(projectFilePath: "/c/project.csproj", properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
                             { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
                         }).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(projectFilePath: "/c/testproject.csproj", properties: new Dictionary<string, string>()
                         {
                             { "AssemblyName", "TargetFileName"},
                         }).Object
@@ -146,13 +146,13 @@ namespace ExampleProject
             {
                 ProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(projectFilePath: "/c/project.csproj", properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
                             { "AssemblyName", "AssemblyName"},
                             { "TargetFileName", "TargetFileName.dll"},
                         }).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(projectFilePath: "/c/testproject.csproj", properties: new Dictionary<string, string>()
                         {
                             { "AssemblyName", "TargetFileName"},
                         }).Object
@@ -297,13 +297,14 @@ namespace ExampleProject
                 ProjectInfo = new ProjectInfo(new MockFileSystem())
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        projectFilePath: "/c/project.csproj",
                         properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
                             { "TargetFileName", "TargetFileName.dll" },
                             { "AssemblyName", "AssemblyName"},
                         }).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(projectFilePath: "/c/testproject.csproj", properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
                             { "TargetFileName", "TargetFileName.dll" },
@@ -420,6 +421,7 @@ namespace ExampleProject
                 ProjectInfo = new ProjectInfo(fileSystem)
                 {
                     ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        projectFilePath: "/c/project.csproj",
                         properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "Project" },
@@ -428,7 +430,7 @@ namespace ExampleProject
                         }).Object,
                     TestProjectAnalyzerResults = new List<IAnalyzerResult>
                     {
-                        TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                        TestHelper.SetupProjectAnalyzerResult(projectFilePath: "/c/testproject.csproj", properties: new Dictionary<string, string>()
                         {
                             { "AssemblyName", "TargetFileName" },
                             { "TargetDir", "Test" },
