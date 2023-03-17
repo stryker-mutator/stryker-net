@@ -1,3 +1,4 @@
+using Microsoft.CodeAnalysis.Text;
 
 namespace Stryker.Core.Mutants
 {
@@ -29,9 +30,9 @@ namespace Stryker.Core.Mutants
         public MutantStatus ResultStatus { get; set; }
 
         public ITestGuids CoveringTests { get; set; } = TestGuidsList.NoTest();
-        
+
         public ITestGuids AssessingTests { get; set; } = TestGuidsList.EveryTest();
-        
+
         public string ResultStatusReason { get; set; }
 
         public bool CountForStats => ResultStatus != MutantStatus.CompileError && ResultStatus != MutantStatus.Ignored;
@@ -43,6 +44,8 @@ namespace Stryker.Core.Mutants
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
 
         public int? Line => Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
+
+        public TextSpan? Span => Mutation?.OriginalNode?.Span;
 
         public void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests, bool sessionTimedOut)
         {

@@ -126,7 +126,7 @@ namespace Stryker.Core.Options
                 MutationLevel = MutationLevelInput.Validate(),
                 DevMode = DevModeInput.Validate(),
                 MsBuildPath = MsBuildPathInput.Validate(_fileSystem),
-                SolutionPath = SolutionInput.Validate(_fileSystem),
+                SolutionPath = SolutionInput.Validate(basePath, _fileSystem),
                 TargetFramework = TargetFrameworkInput.Validate(),
                 Thresholds = new Thresholds
                 {

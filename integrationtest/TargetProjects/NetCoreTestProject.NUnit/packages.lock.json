@@ -23,9 +23,9 @@
       },
       "NUnit3TestAdapter": {
         "type": "Direct",
-        "requested": "[4.3.1, )",
-        "resolved": "4.3.1",
-        "contentHash": "R+bGFtsUpLWywjT1nb3xMmoVa2AIw6ClIGC+XjW9lYE8hwJeos+NdR/mtg4RXbBphmC9epALrnUc6MM7mUG8+Q=="
+        "requested": "[4.4.2, )",
+        "resolved": "4.4.2",
+        "contentHash": "vA/iHYcR+LYw+pRWQugckC/zW2fXHaqMr2uA82NOBt8v4YK4wMJrQ7QC8XLc7PjetEZ96cPbBTWsDDtmQiRZTA=="
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
@@ -523,7 +523,7 @@
       "targetproject": {
         "type": "Project",
         "dependencies": {
-          "Library": "[3.2.0, )"
+          "Library": "[3.6.1, )"
         }
       }
     }

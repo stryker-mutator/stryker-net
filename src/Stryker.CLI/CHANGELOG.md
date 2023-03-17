@@ -1,3 +1,43 @@
+## [3.6.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.6.0...dotnet-stryker@3.6.1) (2023-02-17)
+
+
+
+# [3.6.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.5.1...dotnet-stryker@3.6.0) (2023-02-10)
+
+
+
+## [3.5.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.5.0...dotnet-stryker@3.5.1) (2023-02-06)
+
+
+
+# [3.5.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.4.0...dotnet-stryker@3.5.0) (2023-02-06)
+
+
+### Bug Fixes
+
+* **no test projects:** null-reference exception when no test projects are found ([#2377](https://github.com/stryker-mutator/stryker-net/issues/2377)) ([419a8a7](https://github.com/stryker-mutator/stryker-net/commit/419a8a746190d2e4262781525b59aef7791fa56f))
+
+
+### Features
+
+* Adding break-on-initial-test-failure option to the config file ([#2390](https://github.com/stryker-mutator/stryker-net/issues/2390)) ([2a31a82](https://github.com/stryker-mutator/stryker-net/commit/2a31a820a182baaa56452f907e3ceea6f50a78e3))
+* **embedded resources:** Improve extraction of embedded resources ([#2383](https://github.com/stryker-mutator/stryker-net/issues/2383)) ([43c2918](https://github.com/stryker-mutator/stryker-net/commit/43c2918362a87be6f93b634df78c6ccb80bc6fbb))
+
+
+
+# [3.4.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.3.0...dotnet-stryker@3.4.0) (2022-12-23)
+
+
+
+# [3.3.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.2.0...dotnet-stryker@3.3.0) (2022-12-09)
+
+
+### Bug Fixes
+
+* **Solution context run:** Allow relative path for solution file  ([#2333](https://github.com/stryker-mutator/stryker-net/issues/2333)) ([01fbf8a](https://github.com/stryker-mutator/stryker-net/commit/01fbf8a0ac56aa9bfc007eaeab6e9e3d954410cd))
+
+
+
 # [3.2.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.1.0...dotnet-stryker@3.2.0) (2022-11-21)
 
 

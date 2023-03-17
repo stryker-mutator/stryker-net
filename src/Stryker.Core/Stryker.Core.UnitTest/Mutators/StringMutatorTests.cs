@@ -74,5 +74,47 @@ namespace Stryker.Core.UnitTest.Mutators
 
             result.ShouldBeEmpty();
         }
+
+        [Fact]
+        public void ShouldNotMutateOnGuidExpression()
+        {
+            var expressionSyntax = SyntaxFactory.ParseExpression("new Guid(\"00000-0000\")");
+            var literalExpression = expressionSyntax.DescendantNodes().OfType<LiteralExpressionSyntax>().First();
+            var mutator = new StringMutator();
+            var result = mutator.ApplyMutations(literalExpression).ToList();
+
+            result.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void ShouldNotMutateOnFullyDefinedGuidExpression()
+        {
+            var expressionSyntax = SyntaxFactory.ParseExpression("new System.Guid(\"00000-0000\")");
+            var literalExpression = expressionSyntax.DescendantNodes().OfType<LiteralExpressionSyntax>().First();
+            var mutator = new StringMutator();
+            var result = mutator.ApplyMutations(literalExpression).ToList();
+
+            result.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void ShouldNotMutateOnGuidInClass()
+        {
+            var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
+namespace Stryker.Core.UnitTest.Mutators
+{
+    public class Test {
+        public Guid GetGuid(){
+            return new Guid(""00000-0000"");
+        }
+    }
+}
+");
+            var literalExpression = syntaxTree.GetRoot().DescendantNodes().OfType<LiteralExpressionSyntax>().First();
+            var mutator = new StringMutator();
+            var result = mutator.ApplyMutations(literalExpression).ToList();
+
+            result.ShouldBeEmpty();
+        }
     }
 }

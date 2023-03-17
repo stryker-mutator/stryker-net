@@ -30,6 +30,8 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `<=` | `<` |
 | `==` | `!=` |
 | `!=` | `==` |
+| `is` | `is not` |
+| `is not` | `is` |
 
 ## Logical Operators (_logical_)
 | Original                  | Mutated                   |
@@ -37,6 +39,8 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `&&`                      | <code>&#124;&#124;</code> |
 | <code>&#124;&#124;</code> | `&&`                      |
 | `^`                       | `==`                      |
+| `and`                     | `or`                      |
+| `or`                      | `and`                     |
 
 ## Boolean Literals (_boolean_)
 | Original | Mutated |
@@ -157,6 +161,11 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `$"foo {bar}"` | `$""` |
 | `@"foo"` | `@""` |
 | `string.Empty` | `"Stryker was here!"` |
+| `string.IsNullOrEmpty(x)` | `x != null` |
+| `string.IsNullOrEmpty(x)` | `x != ""` |
+| `string.IsNullOrWhiteSpace(x)` | `x != null` |
+| `string.IsNullOrWhiteSpace(x)` | `x != ""` |
+| `string.IsNullOrWhiteSpace(x)` | `x.Trim() != ""` |
 
 ## Bitwise Operators (_bitwise_)
 | Original            | Mutated             |
@@ -222,3 +231,10 @@ For the full list of all available regex mutations, see the [regex mutator docs]
 | `Tanh()`                  | `Tan()`                   |
 | `Tanh()`                  | `Cosh()`                  |
 | `Tanh()`                  | `Sinh()`                  |
+
+## Null-coalescing Operators (_nullcoalescing_)
+| Original            | Mutated             |
+|---------------------|---------------------|
+| `a ?? b`            | `b ?? a`                |
+| `a ?? b`            | `a`                 |
+| `a ?? b`            | `b`                 |

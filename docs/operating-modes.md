@@ -7,9 +7,27 @@ custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs
 
 There are currently three ways to run Stryker:
 
+- From the solution context
 - From the test project context
 - From the source project context
-- From the solution context
+
+## Solution file context
+
+When running from your project root (where your solution file is located), Stryker will try and discover a (single) solution file and mutate all projects it can find. 
+
+```bash
+cd /my-solution-dir
+dotnet stryker
+```
+
+You can also pass a solution file using the solution option ([see docs](https://stryker-mutator.io/docs/stryker-net/configuration/#solution-path)).
+
+```bash
+cd /my-solution-dir
+dotnet stryker --solution "/my-solution-dir/mysolution.sln"
+```
+
+> Note that Stryker prioritizes the solution context over the project context if solution and project files are located in the same folder. 
 
 ## Test project context
 
@@ -29,6 +47,8 @@ cd /my-solution-dir/my-test-project-dir
 dotnet stryker --project <filename>
 ```
 
+> Note that Stryker prioritizes the solution context over the project context if solution and project files are located in the same folder. 
+
 ## Source project context
 
 Stryker can also be ran from the source project context. In this case the test project location needs to be passed with `--test-project`.
@@ -45,13 +65,4 @@ cd /my-solution-dir/my-source-project-dir
 dotnet stryker --test-project "../my-test-project-dir/Tests.csproj" --test-project "../my-test-project-dir/MoreTests.csproj"
 ```
 
-## Solution file context
 
-When running from your project root (where your solution file is located) and passing the solution file, Stryker will analyze your solution and mutate all projects it can find ([see docs](https://stryker-mutator.io/docs/stryker-net/configuration/#solution-path)).
-
-```bash
-cd /my-solution-dir
-dotnet stryker --solution "/my-solution-dir/mysolution.sln"
-```
-
-Note that the solution option is required when using this operating mode.

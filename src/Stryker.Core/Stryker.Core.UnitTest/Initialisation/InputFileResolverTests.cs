@@ -137,8 +137,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
             var testProjectInfo = new TestProjectsInfo(fileSystem)
             {
                 TestProjects = new List<TestProject>
@@ -182,8 +182,8 @@ namespace Stryker.Core.UnitTest.Initialisation
                 properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
             var testProjectInfo = new TestProjectsInfo(fileSystem)
             {
                 TestProjects = new List<TestProject>
@@ -223,7 +223,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
             var testProjectInfo = new TestProjectsInfo(fileSystem)
             {
                 TestProjects = new List<TestProject>
@@ -285,8 +285,8 @@ using System.Reflection;
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
             var testProjectInfo = new TestProjectsInfo(fileSystem)
             {
                 TestProjects = new List<TestProject>
@@ -336,8 +336,8 @@ using System.Reflection;
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
             var testProjectInfo = new TestProjectsInfo(fileSystem)
             {
                 TestProjects = new List<TestProject>
@@ -406,8 +406,8 @@ using System.Reflection;
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
             var testProjectInfo = new TestProjectsInfo(fileSystem)
             {
                 TestProjects = new List<TestProject>
@@ -466,8 +466,8 @@ using System.Reflection;
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
             var testProjectInfo = new TestProjectsInfo(fileSystem)
             {
                 TestProjects = new List<TestProject>
@@ -551,8 +551,8 @@ using System.Reflection;
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
             var testProjectInfo = new TestProjectsInfo(fileSystem)
             {
                 TestProjects = new List<TestProject>
@@ -613,8 +613,8 @@ using System.Reflection;
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
             var testProjectInfo = new TestProjectsInfo(fileSystem)
             {
                 TestProjects = new List<TestProject>
@@ -680,8 +680,8 @@ using System.Reflection;
                         { "Language", "C#" }
                     }).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
             var testProjectInfo = new TestProjectsInfo(fileSystem)
             {
                 TestProjects = new List<TestProject>
@@ -748,8 +748,8 @@ using System.Reflection;
                         { "Language", "C#" }
                     }).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
             var testProjectInfo = new TestProjectsInfo(fileSystem)
             {
                 TestProjects = new List<TestProject>
@@ -795,8 +795,8 @@ using System.Reflection;
                         { "Language", "C#" }
                     }).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
             var testProjectInfo = new TestProjectsInfo(fileSystem)
             {
                 TestProjects = new List<TestProject>
@@ -821,7 +821,7 @@ using System.Reflection;
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<IEnumerable<IAnalyzerResult>>()))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>() { sourcePath },
                     targetFramework: "netcoreapp2.1",
@@ -843,7 +843,7 @@ using System.Reflection;
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<IEnumerable<IAnalyzerResult>>()))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string> { sourcePath },
                     targetFramework: "netcoreapp2.1",
@@ -979,8 +979,8 @@ Please specify a test project name filter that results in one project.
                     references: new string[] { },
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourceProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourceProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
             var testProjectInfo = new TestProjectsInfo(fileSystem)
             {
                 TestProjects = new List<TestProject>
@@ -1051,8 +1051,8 @@ Please specify a test project name filter that results in one project.
                     projectFilePath: sourcePath,
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
             var testProjectInfo = new TestProjectsInfo(fileSystem)
             {
                 TestProjects = new List<TestProject>
@@ -1105,8 +1105,8 @@ Please specify a test project name filter that results in one project.
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
             var testProjectInfo = new TestProjectsInfo(fileSystem)
             {
                 TestProjects = new List<TestProject>

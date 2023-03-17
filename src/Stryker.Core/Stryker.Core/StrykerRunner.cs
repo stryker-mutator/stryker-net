@@ -163,6 +163,11 @@ namespace Stryker.Core
         /// <returns>The root folder component</returns>
         private IProjectComponent AddRootFolderIfMultiProject(IEnumerable<IProjectComponent> projectComponents, StrykerOptions options)
         {
+            if (!projectComponents.Any())
+            {
+                throw new NoTestProjectsException();
+            }
+
             if (projectComponents.Count() > 1)
             {
                 var rootComponent = new Solution
