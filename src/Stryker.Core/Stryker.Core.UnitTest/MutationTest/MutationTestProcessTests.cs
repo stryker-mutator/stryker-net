@@ -1,4 +1,3 @@
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -61,14 +60,14 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 ProjectInfo = new ProjectInfo(fileSystem)
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(projectFilePath: "/c/project.csproj", properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
                             { "AssemblyName", "AssemblyName" },
                             { "Language", "C#" }
                         }).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(projectFilePath: "/c/testproject.csproj", properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
@@ -121,7 +120,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             var folder = new CsharpFolderComposite();
             folder.Add(inputFile);
-            
+
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
                 { Path.Combine(FilesystemRoot, "ExampleProject","Recursive.cs"), new MockFileData(SourceFile)},
@@ -133,14 +132,14 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 ProjectInfo = new ProjectInfo(fileSystem)
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(projectFilePath: "/c/project.csproj", properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
                             { "AssemblyName", "AssemblyName" },
                             { "Language", "C#" }
                         }).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(projectFilePath: "/c/testproject.csproj", properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "/bin/Debug/netcoreapp2.1" },
                             { "TargetFileName", "TestName.dll" },
@@ -216,14 +215,14 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 ProjectInfo = new ProjectInfo(fileSystem)
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(projectFilePath: "/c/project.csproj", properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", Path.Combine(FilesystemRoot, "ProjectUnderTest", "bin", "Debug", "netcoreapp2.0") },
                             { "TargetFileName", "ProjectUnderTest.dll" },
                             { "AssemblyName", "ProjectUnderTest.dll" },
                             { "Language", "C#" }
                         }).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(projectFilePath: "/c/testproject.csproj", properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0") },
                             { "TargetFileName", "TestProject.dll" },
@@ -255,7 +254,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             target.Mutate();
 
             // Verify the created assembly is written to disk on the right location
-            string expectedPath = Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0", "ProjectUnderTest.dll");
+            var expectedPath = Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0", "ProjectUnderTest.dll");
             fileSystem.ShouldContainFile(expectedPath);
         }
 
@@ -407,7 +406,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                     ProjectContents = folder
                 },
                 AssemblyReferences = _assemblies,
-                InitialTestRun =  new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
+                InitialTestRun = new InitialTestRun(scenario.GetInitialRunResult(), new TimeoutValueCalculator(500))
             };
 
             var options = new StrykerOptions
@@ -420,8 +419,8 @@ namespace Stryker.Core.UnitTest.MutationTest
             var target = new MutationTestProcess(input, options, null, executor);
             // test mutants
             target.GetCoverage();
-            
-            target.Test(input.ProjectInfo.ProjectContents.Mutants.Where(m=> m.ResultStatus == MutantStatus.NotRun));
+
+            target.Test(input.ProjectInfo.ProjectContents.Mutants.Where(m => m.ResultStatus == MutantStatus.NotRun));
             // first mutant should be killed by test 2
             scenario.GetMutantStatus(1).ShouldBe(MutantStatus.Killed);
             // other mutant survives
@@ -483,7 +482,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             // test mutants
             target.GetCoverage();
-            
+
             target.Test(input.ProjectInfo.ProjectContents.Mutants);
             // first mutant should be marked as survived
             scenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
@@ -541,7 +540,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var target = new MutationTestProcess(input, options, null, executor);
             // test mutants
             target.GetCoverage();
-            
+
             // first mutant should be marked as survived without any test
             scenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
         }
@@ -599,7 +598,7 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             // test mutants
             target.GetCoverage();
-            
+
             target.Test(input.ProjectInfo.ProjectContents.Mutants);
             // first mutant should be killed by test 2
             scenario.GetMutantStatus(1).ShouldBe(MutantStatus.Killed);
@@ -664,7 +663,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         [Fact]
         public void ShouldNotTest_WhenThereAreNoMutationsAtAll()
         {
-            string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
+            var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
             var scenario = new FullRunScenario();
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf()
@@ -708,7 +707,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         [Fact]
         public void ShouldNotTest_WhenThereAreNoTestableMutations()
         {
-            string basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
+            var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
 
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf()
