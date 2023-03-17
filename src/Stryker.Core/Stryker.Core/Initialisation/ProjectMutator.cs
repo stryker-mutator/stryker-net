@@ -61,7 +61,7 @@ namespace Stryker.Core.Initialisation
                 {
                     var lineSpan = testFile.SyntaxTree.GetText().Lines[unitTest.LineNumber - 1].Span;
                     var nodes = testFile.SyntaxTree.GetRoot().DescendantNodes(lineSpan)
-                        .Where(n => n.GetType() == typeof(MethodDeclarationSyntax));
+                        .Where(n => n is MethodDeclarationSyntax);
                     var node = nodes.First(n => n.Span.Contains(lineSpan));
                     testFile.AddTest(unitTest.Id, unitTest.FullyQualifiedName, node);
                 }

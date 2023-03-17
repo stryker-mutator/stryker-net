@@ -13,8 +13,6 @@ namespace Stryker.Core.ProjectComponents.TestProjects
 {
     public sealed class TestProject : IEquatable<TestProject>
     {
-        private readonly IFileSystem _fileSystem;
-
         public IAnalyzerResult AnalyzerResult { get; }
 
         public IEnumerable<TestFile> TestFiles { get; }
@@ -23,14 +21,14 @@ namespace Stryker.Core.ProjectComponents.TestProjects
         {
             AssertValidTestProject(testProjectAnalyzerResult);
 
-            _fileSystem = fileSystem ?? new FileSystem();
+            fileSystem = fileSystem ?? new FileSystem();
 
             AnalyzerResult = testProjectAnalyzerResult;
 
             var testFiles = new List<TestFile>();
             foreach (var file in testProjectAnalyzerResult.SourceFiles)
             {
-                var sourceCode = _fileSystem.File.ReadAllText(file);
+                var sourceCode = fileSystem.File.ReadAllText(file);
                 var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode,
                     path: file,
                     encoding: Encoding.UTF32,
@@ -56,7 +54,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             {
                 throw new InputException("Please upgrade your test projects to MsTest V2. Stryker.NET uses VSTest which does not support MsTest V1.",
                     @"See https://devblogs.microsoft.com/devops/upgrade-to-mstest-v2/ for upgrade instructions.");
-            };
+            }
         }
 
         public bool Equals(TestProject other) => other.AnalyzerResult.Equals(AnalyzerResult) && other.TestFiles.SequenceEqual(TestFiles);

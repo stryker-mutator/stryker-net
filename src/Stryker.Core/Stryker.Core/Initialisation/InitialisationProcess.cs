@@ -33,7 +33,6 @@ namespace Stryker.Core.Initialisation
         private readonly IInitialBuildProcess _initialBuildProcess;
         private readonly IInitialTestProcess _initialTestProcess;
         private ITestRunner _testRunner;
-        private SourceProjectInfo _targetProjectInfo;
         private TestProjectsInfo _testProjectsInfo;
         private readonly ILogger _logger;
 
@@ -55,7 +54,7 @@ namespace Stryker.Core.Initialisation
         {
             // resolve project info
             _testProjectsInfo = _inputFileResolver.ResolveTestProjectsInfo(options, solutionProjects);
-            _targetProjectInfo = _inputFileResolver.ResolveSourceProjectInfo(options, _testProjectsInfo, solutionProjects);
+            var targetProjectInfo = _inputFileResolver.ResolveSourceProjectInfo(options, _testProjectsInfo, solutionProjects);
 
             // initial build
             if (!options.IsSolutionContext)
@@ -66,7 +65,7 @@ namespace Stryker.Core.Initialisation
                     _logger.LogInformation(
                         "Building test project {ProjectFilePath} ({CurrentTestProject}/{OfTotalTestProjects})",
                         testProjects[i].ProjectFilePath, i + 1,
-                        testProjects.Count());
+                        testProjects.Count);
 
                     _initialBuildProcess.InitialBuild(
                         testProjects[i].TargetsFullFramework(),
@@ -76,7 +75,7 @@ namespace Stryker.Core.Initialisation
                 }
             }
 
-            InitializeDashboardProjectInformation(options, _targetProjectInfo);
+            InitializeDashboardProjectInformation(options, targetProjectInfo);
 
             if (_testRunner == null)
             {
@@ -86,7 +85,7 @@ namespace Stryker.Core.Initialisation
             var input = new MutationTestInput
             {
                 TestProjectsInfo = _testProjectsInfo,
-                SourceProjectInfo = _targetProjectInfo,
+                SourceProjectInfo = targetProjectInfo,
                 TestRunner = _testRunner,
             };
 
