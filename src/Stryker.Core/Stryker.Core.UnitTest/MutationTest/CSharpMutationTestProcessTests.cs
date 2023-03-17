@@ -56,7 +56,9 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 SourceProjectInfo = new SourceProjectInfo()
                 {
-                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        projectFilePath: "/c/ProjectUnderTest/ProjectUnderTest.csproj",
+                        properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", Path.Combine(FilesystemRoot, "ProjectUnderTest", "bin", "Debug", "netcoreapp2.0") },
                             { "TargetFileName", "ProjectUnderTest.dll" },
