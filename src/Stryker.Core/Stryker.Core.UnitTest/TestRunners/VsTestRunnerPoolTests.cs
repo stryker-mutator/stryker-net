@@ -231,7 +231,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             // verify Abort has been called
             Mock.Verify(mockVsTest);
             // verify only one test has been run
-            result.RanTests.Count.ShouldBe(1);
+            result.ExecutedTests.Count.ShouldBe(1);
         }
 
         [Fact]
@@ -258,7 +258,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             // mutant 1 is not covered
             result = runner.TestMultipleMutants(null, new[] { OtherMutant }, null);
             // tests are ok
-            result.RanTests.IsEmpty.ShouldBeTrue();
+            result.ExecutedTests.IsEmpty.ShouldBeTrue();
         }
 
         [Fact]
@@ -344,7 +344,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T0", true), ("T1", true) });
             result = runner.TestMultipleMutants(null, new[] { Mutant }, null);
             result.FailingTests.IsEmpty.ShouldBeTrue();
-            result.RanTests.IsEveryTest.ShouldBeTrue();
+            result.ExecutedTests.IsEveryTest.ShouldBeTrue();
         }
 
         [Fact]
@@ -378,13 +378,13 @@ namespace Stryker.Core.UnitTest.TestRunners
             SetupMockTestRun(mockVsTest, new[] { ("T0", false), ("T0", true), ("T1", true) });
 
             result = runner.TestMultipleMutants(null, new[] { Mutant }, null);
-            result.RanTests.IsEveryTest.ShouldBeTrue();
+            result.ExecutedTests.IsEveryTest.ShouldBeTrue();
             result.FailingTests.IsEmpty.ShouldBeFalse();
             result.FailingTests.GetGuids().ShouldContain(TestCases[0].Id);
             // test session will fail on the other test result
             SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T0", false), ("T1", true) });
             result = runner.TestMultipleMutants(null, new[] { Mutant }, null);
-            result.RanTests.IsEveryTest.ShouldBeTrue();
+            result.ExecutedTests.IsEveryTest.ShouldBeTrue();
             result.FailingTests.IsEmpty.ShouldBeFalse();
             result.FailingTests.GetGuids().ShouldContain(TestCases[0].Id);
         }
@@ -406,7 +406,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             result.FailingTests.IsEmpty.ShouldBeTrue();
             result.TimedOutTests.Count.ShouldBe(1);
             result.TimedOutTests.GetGuids().ShouldContain(TestCases[0].Id);
-            result.RanTests.IsEveryTest.ShouldBeFalse();
+            result.ExecutedTests.IsEveryTest.ShouldBeFalse();
         }
 
         [Fact]
@@ -422,7 +422,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             // test session will fail
             SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T0", true), ("T0", false), ("T1", true) });
             result = runner.TestMultipleMutants(null, new[] { Mutant }, null);
-            result.RanTests.IsEveryTest.ShouldBeTrue();
+            result.ExecutedTests.IsEveryTest.ShouldBeTrue();
             result.FailingTests.IsEmpty.ShouldBeFalse();
             result.FailingTests.GetGuids().ShouldContain(TestCases[0].Id);
         }
@@ -440,7 +440,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             // test session will fail
             SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T2", true), ("T1", true), ("T0", true) });
             result = runner.TestMultipleMutants(null, new[] { Mutant }, null);
-            result.RanTests.IsEveryTest.ShouldBeTrue();
+            result.ExecutedTests.IsEveryTest.ShouldBeTrue();
             result.FailingTests.IsEmpty.ShouldBeTrue();
         }
 

@@ -203,7 +203,7 @@ namespace Stryker.Core.MutationTest
 
             mutantsToGroup = mutantsToGroup.Where(m => m.ResultStatus == MutantStatus.NotRun).ToList();
 
-            var testsCount = Input.InitialTestRun.Result.RanTests.Count;
+            var testsCount = Input.InitialTestRun.Result.ExecutedTests.Count;
             mutantsToGroup = mutantsToGroup.OrderBy(m => m.AssessingTests.Count).ToList();
             while (mutantsToGroup.Count > 0)
             {

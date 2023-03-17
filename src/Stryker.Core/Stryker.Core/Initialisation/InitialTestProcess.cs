@@ -55,7 +55,7 @@ namespace Stryker.Core.Initialisation
                     throw new InputException("Initial testrun has failing tests.", initTestRunResult.ResultMessage);
                 }
 
-                if (((double)failingTestsCount) / initTestRunResult.RanTests.Count >= .5)
+                if (((double)failingTestsCount) / initTestRunResult.ExecutedTests.Count >= .5)
                 {
                     throw new InputException("Initial testrun has more than 50% failing tests.", initTestRunResult.ResultMessage);
                 }

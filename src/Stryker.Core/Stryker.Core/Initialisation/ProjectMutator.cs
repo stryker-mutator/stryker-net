@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using Buildalyzer;
-using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.Logging;
+using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.TestProjects;
@@ -17,6 +18,7 @@ namespace Stryker.Core.Initialisation
 
     public class ProjectMutator : IProjectMutator
     {
+        private readonly ILogger _logger;
         private readonly IMutationTestProcess _injectedMutationtestProcess;
         private readonly IInitialisationProcess _injectedInitialisationProcess;
 
@@ -25,6 +27,7 @@ namespace Stryker.Core.Initialisation
         {
             _injectedInitialisationProcess = initialisationProcess;
             _injectedMutationtestProcess = mutationTestProcess;
+            _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectOrchestrator>();
         }
 
         public IMutationTestProcess MutateProject(StrykerOptions options, IReporter reporters, IEnumerable<IAnalyzerResult> solutionProjects = null)
@@ -49,7 +52,7 @@ namespace Stryker.Core.Initialisation
             return process;
         }
 
-        private static void EnrichTestProjectsWithTestInfo(InitialTestRun initialTestRun, TestProjectsInfo testProjectsInfo)
+        private void EnrichTestProjectsWithTestInfo(InitialTestRun initialTestRun, TestProjectsInfo testProjectsInfo)
         {
             foreach (var unitTest in initialTestRun.Result.VsTestDescriptions.Select(desc => desc.Case))
             {
@@ -64,7 +67,7 @@ namespace Stryker.Core.Initialisation
                 }
                 else
                 {
-                    // TODO: Log debug testfile not found for unit test
+                    _logger.LogDebug("Could not locate unit test in any testfile. This should not happen and results in incorrect test reporting.");
                 }
             }
         }
