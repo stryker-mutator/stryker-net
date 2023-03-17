@@ -1,10 +1,11 @@
-// Borrowed from https://github.com/Testura/Testura.Mutation/blob/ca2785dba8997ab814be4bb69113739db357810f/src/Testura.Mutation.Core/Execution/Compilation/EmbeddedResourceCreator.cs
+// Partially borrowed from https://github.com/Testura/Testura.Mutation/blob/ca2785dba8997ab814be4bb69113739db357810f/src/Testura.Mutation.Core/Execution/Compilation/EmbeddedResourceCreator.cs
 
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Resources;
 using System.Resources.NetStandard;
 using Microsoft.CodeAnalysis;
@@ -26,7 +27,16 @@ namespace Stryker.Core.Initialisation
                 {
                     _resourceDescriptions.Add(projectFilePath, ReadResourceDescriptionsFromModule(module).ToList());
                 }
-                else // Failed to load module, generate resources from disk as backup
+
+                // Failed to load some or all resources from module, generate missing resources from disk
+                if (module is not null && _resourceDescriptions[projectFilePath].Count() < embeddedResources.Count())
+                {
+                    var missingEmbeddedResources = embeddedResources.Where(r => _resourceDescriptions[projectFilePath].Any(fr => GetResourceDescriptionInternalName(fr) == GenerateResourceName(r)));
+                    _resourceDescriptions[projectFilePath] = _resourceDescriptions[projectFilePath].Concat(GenerateManifestResources(projectFilePath, rootNamespace, missingEmbeddedResources));
+                }
+
+                // Failed to load module, generate all resources from disk
+                if (module is null)
                 {
                     _resourceDescriptions.Add(projectFilePath, GenerateManifestResources(projectFilePath, rootNamespace, embeddedResources));
                 }
@@ -84,10 +94,7 @@ namespace Stryker.Core.Initialisation
             {
                 var resourceFullFilename = Path.Combine(Path.GetDirectoryName(projectFilePath), embeddedResource);
 
-                var resourceName = embeddedResource.Replace("..\\", "");
-                resourceName = resourceName.EndsWith(".resx", StringComparison.OrdinalIgnoreCase) ?
-                        resourceName.Remove(0, 1 + resourceName.LastIndexOf("\\")).Replace(".resx", "") + ".resources" :
-                        resourceName;
+                var resourceName = GenerateResourceName(embeddedResource);
 
                 resources.Add(new ResourceDescription(
                     $"{rootNamespace}.{string.Join(".", resourceName.Split('\\'))}",
@@ -130,5 +137,10 @@ namespace Stryker.Core.Initialisation
         /// exception, although I'm not sure why that exception was occurring.
         /// </summary>
         private static string TypeNameConverter(Type objectType) => objectType.AssemblyQualifiedName.Replace("4.0.0.0", "2.0.0.0");
+        private static string GenerateResourceName(string filePath) => filePath.Replace("..\\", "").EndsWith(".resx", StringComparison.OrdinalIgnoreCase) ?
+                        filePath.Remove(0, 1 + filePath.LastIndexOf("\\")).Replace(".resx", "") + ".resources" : filePath;
+
+        private static string GetResourceDescriptionInternalName(ResourceDescription resource) => (string)typeof(ResourceDescription).GetField("ResourceName", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(resource);
+
     }
 }
