@@ -167,17 +167,15 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             _sources.Add(source);
-            DiscoverTestsInSources(new [] {source});
+            DiscoverTestsInSources(source);
         }
-
-        private void DiscoverTests() => DiscoverTestsInSources(_sources);
-
-        private void DiscoverTestsInSources(IEnumerable<string> newSource)
+        
+        private void DiscoverTestsInSources(string newSource)
         {
             var wrapper = BuildVsTestWrapper("TestDiscoverer");
             var messages = new List<string>();
             var handler = new DiscoveryEventHandler(messages);
-            wrapper.DiscoverTests(newSource, GenerateRunSettingsForDiscovery(), handler);
+            wrapper.DiscoverTests(new List<string> { newSource }, GenerateRunSettingsForDiscovery(), handler);
 
             handler.WaitEnd();
             if (handler.Aborted)

@@ -28,7 +28,6 @@ namespace Stryker.Core.Initialisation
         /// <returns>The duration of the initial test run</returns>
         public InitialTestRun InitialTest(StrykerOptions options, IProjectAndTest project, ITestRunner testRunner)
         {
-            // TODO : restore message
             var message = testRunner.DiscoverTests(project) is var total&& total.Count == 0 ? "Unable to detect" : total.Count.ToString();
 
             _logger.LogInformation("Total number of tests found: {0}. Initial test run started.", message);
