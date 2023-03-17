@@ -148,7 +148,8 @@ namespace Stryker.Core.Initialisation
                     resourceName.Remove(0, 1 + resourceName.LastIndexOf("\\")).Replace(".resx", "") + ".resources" : filePath;
         }
 
-        private static string GetResourceDescriptionInternalName(ResourceDescription resource) => (string)typeof(ResourceDescription).GetField("ResourceName", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(resource);
+        private static string GetResourceDescriptionInternalName(ResourceDescription resource) =>
+            (string)typeof(ResourceDescription).GetField("ResourceName", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(resource);
 
     }
 }
