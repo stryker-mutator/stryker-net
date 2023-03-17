@@ -8,6 +8,7 @@ using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
@@ -19,7 +20,7 @@ namespace Stryker.Core.TestRunners.VsTest
     /// <summary>
     ///     Handles VsTest setup and configuration.
     /// </summary>
-    public sealed class VsTestContextInformation : IDisposable
+    public sealed class VsTestContextInformation : IDisposable, ITestContext
     {
         private readonly IFileSystem _fileSystem;
         private readonly Func<string, IStrykerTestHostLauncher> _hostBuilder;
@@ -28,7 +29,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly IVsTestHelper _vsTestHelper;
         private readonly Func<ConsoleParameters, IVsTestConsoleWrapper> _wrapperBuilder;
         private bool _disposed;
-        private List<string> _sources;
+        private readonly List<string> _sources = new();
         private TestFramework _testFramework;
 
         /// <summary>
@@ -156,43 +157,36 @@ namespace Stryker.Core.TestRunners.VsTest
             return determineConsoleParameters;
         }
 
-        /// <summary>
-        ///     Initialize VsTest session. Discovers tests
-        /// </summary>
-        /// <exception cref="GeneralStrykerException"></exception>
-        public void Initialize(IReadOnlyList<string> assemblies)
+        public void AddTestSource(string source)
         {
-            _sources = new List<string>();
 
-            foreach (var path in assemblies.Distinct())
+            if (!_fileSystem.File.Exists(source))
             {
-                if (!_fileSystem.File.Exists(path))
-                {
-                    throw new GeneralStrykerException(
-                        $"The test project binaries could not be found at {path}, exiting...");
-                }
-
-                _sources.Add(path);
+                throw new GeneralStrykerException(
+                    $"The test project binaries could not be found at {source}, exiting...");
             }
 
-            DiscoverTests();
-            Tests.RegisterTests(VsTests.Values.Select(t => t.Description));
+            _sources.Add(source);
+            DiscoverTestsInSources(new [] {source});
         }
 
-        private void DiscoverTests()
+        private void DiscoverTests() => DiscoverTestsInSources(_sources);
+
+        private void DiscoverTestsInSources(IEnumerable<string> newSource)
         {
             var wrapper = BuildVsTestWrapper("TestDiscoverer");
             var messages = new List<string>();
             var handler = new DiscoveryEventHandler(messages);
-            wrapper.DiscoverTests(_sources, GenerateRunSettingsForDiscovery(), handler);
+            wrapper.DiscoverTests(newSource, GenerateRunSettingsForDiscovery(), handler);
 
             handler.WaitEnd();
             if (handler.Aborted)
             {
                 _logger.LogError("TestDiscoverer: Test discovery has been aborted!");
             }
+
             wrapper.EndSession();
-            VsTests = new Dictionary<Guid, VsTestDescription>(handler.DiscoveredTestCases.Count);
+            VsTests ??= new Dictionary<Guid, VsTestDescription>(handler.DiscoveredTestCases.Count);
             foreach (var testCase in handler.DiscoveredTestCases)
             {
                 if (!VsTests.ContainsKey(testCase.Id))
@@ -201,10 +195,12 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
 
                 VsTests[testCase.Id].AddSubCase();
-                _logger.LogTrace($"Test Case : name= {testCase.DisplayName} (id= {testCase.Id}, FQN= {testCase.FullyQualifiedName}).");
+                _logger.LogTrace(
+                    $"Test Case : name= {testCase.DisplayName} (id= {testCase.Id}, FQN= {testCase.FullyQualifiedName}).");
             }
 
             DetectTestFrameworks(VsTests.Values);
+            Tests.RegisterTests(VsTests.Values.Select(t => t.Description));
         }
 
         private void DetectTestFrameworks(ICollection<VsTestDescription> tests)

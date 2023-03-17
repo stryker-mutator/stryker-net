@@ -130,7 +130,6 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
 
                 testCases = needAll ? null : mutants.SelectMany(m => m.AssessingTests.GetGuids()).ToList();
-
                 _logger.LogTrace($"{RunnerId}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}] " +
                                  $"against {(testCases == null ? "all tests." : string.Join(", ", testCases))}.");
             }

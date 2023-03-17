@@ -42,16 +42,22 @@ namespace Stryker.Core.TestRunners.VsTest
         }
 
         [ExcludeFromCodeCoverage(Justification = "It depends on the deployment of VsTest.")]
-        public VsTestRunnerPool(StrykerOptions options, IReadOnlyList<string> testAssemblies, IFileSystem fileSystem = null)
+        public VsTestRunnerPool(StrykerOptions options, IFileSystem fileSystem = null)
         {
             Context = new VsTestContextInformation(options, fileSystem: fileSystem);
-            Context.Initialize(testAssemblies);
             _countOfRunners = Math.Max(1, options.Concurrency);
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
             Initialize();
         }
 
-        public TestSet DiscoverTests(IProjectAndTest project) => Context.Tests;
+        public TestSet DiscoverTests(IProjectAndTest project)
+        {
+            foreach (var testAssembly in project.GetTestAssemblies())
+            {
+                Context.AddTestSource(testAssembly);
+            }
+            return Context.Tests;
+        }
 
         public TestRunResult TestMultipleMutants(IProjectAndTest project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
             => RunThis(runner => runner.TestMultipleMutants(project, timeoutCalc, mutants, update));

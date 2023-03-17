@@ -19,6 +19,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCo
 using Moq;
 using Moq.Language.Flow;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
@@ -479,7 +480,10 @@ public class VsTestMockingHelper : TestBase
             hostBuilder: _ => new MockStrykerTestHostLauncher(succeed, false),
             NullLogger.Instance
         );
-        context.Initialize( (targetProject ?? TargetProject).GetTestAssemblies());
+        foreach (var path in (targetProject ?? TargetProject).TestProjectAnalyzerResults.Select(p => p.GetAssemblyPath()))
+        {
+            context.AddTestSource(path);
+        }
         runner = new VsTestRunnerPool(context,
             NullLogger.Instance,
             (information, _) => new VsTestRunner(information, 0, NullLogger.Instance));

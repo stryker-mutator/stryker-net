@@ -56,7 +56,6 @@ namespace Stryker.Core.Initialisation
 
             // create a test runner
             _runner = runner ?? new VsTestRunnerPool(options,
-                projectInfos.SelectMany(p =>p.GetTestAssemblies()).ToList(),
                 fileSystem: _fileResolver.FileSystem);
             InitializeDashboardProjectInformation(options, projectInfos.First());
 

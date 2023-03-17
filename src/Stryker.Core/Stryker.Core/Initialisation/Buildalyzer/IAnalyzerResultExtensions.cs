@@ -9,6 +9,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
 using NuGet.Frameworks;
+using Spectre.Console.Rendering;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 
@@ -117,9 +118,14 @@ namespace Stryker.Core.Initialisation.Buildalyzer
                 _ => Language.Undefined,
             };
 
+        private static readonly string[] KnownTestPackages = new[] { "MSTest.TestFramework", "xunit", "NUnit" };
+
         public static bool IsTestProject(this IAnalyzerResult analyzerResult)
         {
-            var isTestProject = analyzerResult.GetPropertyOrDefault("IsTestProject", false);
+            if (!bool.TryParse(analyzerResult.GetPropertyOrDefault("IsTestProject"), out var isTestProject))
+            {
+                isTestProject = KnownTestPackages.Any(n => analyzerResult.PackageReferences.ContainsKey(n));
+            }
             var hasTestProjectTypeGuid = analyzerResult
                 .GetPropertyOrDefault("ProjectTypeGuids", "")
                 .Contains("{3AC096D0-A1C2-E12C-1390-A8335801FDAB}");

@@ -89,10 +89,11 @@ namespace Stryker.Core.Initialisation
         {
             if (options.IsSolutionContext)
             {
+                var framework = projects.Any(p => p.ProjectUnderTestAnalyzerResult.TargetsFullFramework());
                 // Build the complete solution
                 _logger.LogInformation("Building solution {0}",  options.SolutionPath);
                 _initialBuildProcess.InitialBuild(
-                    projects.First().ProjectUnderTestAnalyzerResult.TargetsFullFramework(),
+                    framework,
                     _inputFileResolver.FileSystem.Path.GetDirectoryName(options.SolutionPath),
                     options.SolutionPath,
                     options.MsBuildPath);

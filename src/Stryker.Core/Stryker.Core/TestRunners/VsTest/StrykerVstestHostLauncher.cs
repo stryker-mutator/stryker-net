@@ -67,7 +67,12 @@ namespace Stryker.Core.TestRunners.VsTest
             return _currentProcess.Id;
         }
 
-        private void ProcessExited(object sender, System.EventArgs e) => ErrorCode = _currentProcess.ExitCode;
+        private void ProcessExited(object sender, System.EventArgs e)
+        {
+            var process = (Process) sender;
+            process.WaitForExit();
+            ErrorCode = process.ExitCode;
+        }
 
         private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
         {
