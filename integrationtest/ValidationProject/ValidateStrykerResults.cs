@@ -1,10 +1,10 @@
+using System.IO;
+using System.Linq;
+using System.Runtime.InteropServices;
 using Newtonsoft.Json;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Json;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices;
 using Xunit;
 
 namespace IntegrationTests
@@ -31,6 +31,7 @@ namespace IntegrationTests
                 var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
                 CheckReportMutantCounts(report, total: 25, ignored: 0, survived: 1, killed: 8, timeout: 0, nocoverage: 16);
+                CheckReportTestCounts(report, total: 2);
             }
         }
 
@@ -50,6 +51,7 @@ namespace IntegrationTests
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
             CheckReportMutantCounts(report, total: 108, ignored: 36, survived: 4, killed: 9, timeout: 2, nocoverage: 55);
+            CheckReportTestCounts(report, total: 12);
         }
 
         [Fact]
@@ -68,6 +70,7 @@ namespace IntegrationTests
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
             CheckReportMutantCounts(report, total: 108, ignored: 6, survived: 9, killed: 11, timeout: 2, nocoverage: 78);
+            CheckReportTestCounts(report, total: 17);
         }
 
         [Fact]
@@ -86,6 +89,7 @@ namespace IntegrationTests
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
             CheckReportMutantCounts(report, total: 111, ignored: 36, survived: 4, killed: 12, timeout: 2, nocoverage: 55);
+            CheckReportTestCounts(report, total: 18);
         }
 
         private void CheckReportMutantCounts(JsonReport report, int total, int ignored, int survived, int killed, int timeout, int nocoverage)
@@ -104,6 +108,15 @@ namespace IntegrationTests
                 () => actualKilled.ShouldBe(killed),
                 () => actualTimeout.ShouldBe(timeout),
                 () => actualNoCoverage.ShouldBe(nocoverage)
+            );
+        }
+
+        private void CheckReportTestCounts(JsonReport report, int total)
+        {
+            var actualTotal = report.TestFiles.Sum(tf => tf.Value.Tests.Count);
+
+            report.TestFiles.ShouldSatisfyAllConditions(
+                () => actualTotal.ShouldBe(total)
             );
         }
     }
