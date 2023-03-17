@@ -114,7 +114,7 @@ stages:
       condition: succeeded()
       displayName: Run Stryker on Stryker.Core
       workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
-    - task: PublishMutationReport@0
+    - task: PublishMutationReport@1
       inputs:
         reportPattern: 'src/Stryker.Core/Stryker.Core.UnitTest/**/mutation-report.html'
 
