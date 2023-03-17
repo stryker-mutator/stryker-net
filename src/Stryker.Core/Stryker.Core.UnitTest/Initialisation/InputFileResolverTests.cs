@@ -907,7 +907,7 @@ Please specify a test project name filter that results in one project.
             var target = new InputFileResolver(fileSystem, null);
 
             var exception = Assert.Throws<InputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject", "GivenTestProject.csproj")));
-            exception.Message.ShouldStartWith("No .csproj file found, please check your project directory at");
+            exception.Message.ShouldStartWith("No .csproj or .sln file found, please check your project directory at");
         }
 
         [Fact]
