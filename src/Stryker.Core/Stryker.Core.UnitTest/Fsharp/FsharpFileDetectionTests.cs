@@ -1,14 +1,13 @@
-using Xunit;
-using Moq;
-using Stryker.Core.Initialisation;
 using System.Collections.Generic;
-using System.Linq;
-using Shouldly;
-using Stryker.Core.Options;
-using System.IO.Abstractions.TestingHelpers;
 using System.IO;
+using System.IO.Abstractions.TestingHelpers;
+using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
+using Moq;
+using Shouldly;
+using Stryker.Core.Initialisation;
+using Stryker.Core.Options;
 
 namespace Stryker.Core.UnitTest.Fsharp
 {
@@ -60,13 +59,13 @@ namespace Stryker.Core.UnitTest.Fsharp
                     { Path.Combine(_filesystemRoot, "ExampleProject", "node_modules", "Some package"), new MockFileData("bla") }, // node_modules should be excluded
                 });
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, "fsharp", null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, "fsharp", null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>() { _sourceProjectPath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: _testProjectPath,
                     references: new string[] { "" }).Object);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(_sourceProjectPath, null, "fsharp", null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_sourceProjectPath, null, "fsharp", null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>() { _sourceProjectPath },
                     targetFramework: "netcoreapp2.1",

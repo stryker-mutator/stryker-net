@@ -57,6 +57,7 @@ namespace Stryker.Core.Initialisation
             var testProjects = new List<TestProject>();
             foreach (var testProjectFile in testProjectFiles)
             {
+                // Analyze the test project
                 var testProjectAnalyzerResult = _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework, solutionProjects);
 
                 testProjects.Add(new TestProject(_fileSystem, testProjectAnalyzerResult));
@@ -72,7 +73,7 @@ namespace Stryker.Core.Initialisation
         {
             var targetProjectInfo = new SourceProjectInfo();
 
-            // Determine project under test
+            // Analyze source project
             var targetProject = FindSourceProject(testProjectsInfo, options.SourceProjectName, solutionProjects);
 
             targetProjectInfo.AnalyzerResult = _projectFileReader.AnalyzeProject(targetProject, options.SolutionPath, options.TargetFramework, solutionProjects);
@@ -114,7 +115,7 @@ namespace Stryker.Core.Initialisation
             }
             catch (DirectoryNotFoundException)
             {
-                throw new InputException($"No .csproj file found, please check your project directory at {path}");
+                throw new InputException($"No .csproj or .sln file found, please check your project directory at {path}");
             }
 
             _logger.LogTrace("Scanned the directory {0} for {1} files: found {2}", path, "*.csproj", projectFiles);
@@ -133,7 +134,7 @@ namespace Stryker.Core.Initialisation
             }
             else if (!projectFiles.Any())
             {
-                throw new InputException($"No .csproj file found, please check your project directory at {path}");
+                throw new InputException($"No .csproj or .sln file found, please check your project or solution directory at {path}");
             }
             _logger.LogTrace("Found project file {file} in path {path}", projectFiles.Single(), path);
 

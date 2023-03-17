@@ -18,5 +18,7 @@ namespace Stryker.Core.MutantFilters
         Since,
 
         Baseline,
+
+        IgnoreBlockRemoval,
     }
 }

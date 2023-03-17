@@ -200,7 +200,36 @@ private bool Out(out string test)
 	return true;
 }";
             string expected = @"void TestMethod()
-{if(StrykerNamespace.MutantControl.IsActive(0)){}else{if(StrykerNamespace.MutantControl.IsActive(16)){
+{if(StrykerNamespace.MutantControl.IsActive(0)){}else{if(StrykerNamespace.MutantControl.IsActive(19)){
+	int i = 0;
+	if (i + 8 == 8)
+	{
+		i = i + 1;
+		if (i + 8 == 9)
+		{
+			i = i + 1;
+		};
+	}
+	else
+	{
+		i = i + 3;
+		if (i == i + i - 8)
+		{
+			i = i + 1;
+		};
+	}
+
+	if (!Out(out var test))
+	{
+		return i + 1;
+	}
+
+	if (i is not int x)
+	{
+		return x + 1;
+	}
+}
+else{if(StrykerNamespace.MutantControl.IsActive(16)){
 	int i = 0;
 	if (i + 8 == 8)
 	{
@@ -254,14 +283,14 @@ else{
 	}
 }
 	if (i is int x)
-{if(StrykerNamespace.MutantControl.IsActive(19)){}else	{
-		return (StrykerNamespace.MutantControl.IsActive(20)?x - 1:x + 1);
+{if(StrykerNamespace.MutantControl.IsActive(20)){}else	{
+		return (StrykerNamespace.MutantControl.IsActive(21)?x - 1:x + 1);
 	}
 }}
-}}
+}}}
 private bool Out(out string test)
-{{test= default(string);}if(StrykerNamespace.MutantControl.IsActive(21)){}else{
-	return (StrykerNamespace.MutantControl.IsActive(22)?false:true);
+{{test= default(string);}if(StrykerNamespace.MutantControl.IsActive(22)){}else{
+	return (StrykerNamespace.MutantControl.IsActive(23)?false:true);
 }return default(bool);}";
 
             ShouldMutateSourceInClassToExpected(source, expected);
@@ -797,6 +826,25 @@ if(StrykerNamespace.MutantControl.IsActive(1)){    a = b ??= new List<int>();
 }else{if(StrykerNamespace.MutantControl.IsActive(2)){    a ??= b = new List<int>();
 }else{    a ??= b ??= new List<int>();
 }}}}";
+
+            ShouldMutateSourceInClassToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldMutateRecursiveNullCoalescingStatements()
+        {
+            string source = @"public void SomeMethod() {
+    List<int> a = null;
+    List<int> b = null;
+    List<int> c = null;
+    var d = a ?? b ?? c;
+}";
+            string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+    List<int> a = null;
+    List<int> b = null;
+    List<int> c = null;
+    var d = (StrykerNamespace.MutantControl.IsActive(3)?a :(StrykerNamespace.MutantControl.IsActive(2)?b ?? c:(StrykerNamespace.MutantControl.IsActive(1)?b ?? c ?? a :a ?? (StrykerNamespace.MutantControl.IsActive(6)?b :(StrykerNamespace.MutantControl.IsActive(5)?c:(StrykerNamespace.MutantControl.IsActive(4)?c ?? b :b ?? c))))));
+}}";
 
             ShouldMutateSourceInClassToExpected(source, expected);
         }
