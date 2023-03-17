@@ -27,6 +27,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             var rootNamespace = analyzerResult.GetRootNamespace();
             var embeddedResources = analyzerResult.GetItem("EmbeddedResource").Select(x => x.ItemSpec);
             return EmbeddedResourcesGenerator.GetManifestResources(
+                analyzerResult.GetAssemblyPath(),
                 analyzerResult.ProjectFilePath,
                 rootNamespace,
                 embeddedResources);
