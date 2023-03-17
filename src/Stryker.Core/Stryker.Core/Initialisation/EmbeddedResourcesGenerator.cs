@@ -137,8 +137,16 @@ namespace Stryker.Core.Initialisation
         /// exception, although I'm not sure why that exception was occurring.
         /// </summary>
         private static string TypeNameConverter(Type objectType) => objectType.AssemblyQualifiedName.Replace("4.0.0.0", "2.0.0.0");
-        private static string GenerateResourceName(string filePath) => filePath.Replace("..\\", "").EndsWith(".resx", StringComparison.OrdinalIgnoreCase) ?
-                        filePath.Remove(0, 1 + filePath.LastIndexOf("\\")).Replace(".resx", "") + ".resources" : filePath;
+
+        private static string GenerateResourceName(string filePath)
+        {
+            // Remove relative path sequences
+            var resourceName = filePath.Replace("..\\", "");
+
+            // If the resource is a resx file, take the file name and replace the extension with 'resources', otherwise return full resource name
+            return resourceName.EndsWith(".resx", StringComparison.OrdinalIgnoreCase) ?
+                    resourceName.Remove(0, 1 + resourceName.LastIndexOf("\\")).Replace(".resx", "") + ".resources" : filePath;
+        }
 
         private static string GetResourceDescriptionInternalName(ResourceDescription resource) => (string)typeof(ResourceDescription).GetField("ResourceName", BindingFlags.Instance | BindingFlags.NonPublic).GetValue(resource);
 
