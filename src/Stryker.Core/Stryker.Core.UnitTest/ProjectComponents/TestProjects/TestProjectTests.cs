@@ -15,17 +15,14 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
         {
             // Arrange
             var fileSystem = new MockFileSystem();
-            fileSystem.AddDirectory("/c/testProject");
-            var fileA = File.ReadAllText(
-                Path.Combine(
-                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "/TestResources/ExampleTestFileA.cs")
-                );
-            fileSystem.AddFile(
-                "/c/testProject/exampleTestFileA.cs",
-                new MockFileData(fileA));
+            var rootPath = Path.Combine("c", "TestProject");
+            var fileAPath = Path.Combine(rootPath, "ExampleTestFileA.cs");
+            fileSystem.AddDirectory(rootPath);
+            var fileA = File.ReadAllText(Path.Combine(".", "TestResources", "ExampleTestFileA.cs"));
+            fileSystem.AddFile(fileAPath, new MockFileData(fileA));
             var testProjectAnalyzerResultMock = TestHelper.SetupProjectAnalyzerResult(
                 references: Array.Empty<string>(),
-                sourceFiles: new string[] { "/c/testProject/exampleTestFileA.cs" }
+                sourceFiles: new string[] { fileAPath }
             );
 
             var testProjectA = new TestProject(fileSystem, testProjectAnalyzerResultMock.Object);
@@ -41,28 +38,21 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
         {
             // Arrange
             var fileSystem = new MockFileSystem();
-            fileSystem.AddDirectory("/c/testProject");
-            var fileA = File.ReadAllText(
-                Path.Combine(
-                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "/TestResources/ExampleTestFileA.cs")
-                );
-            var fileB = File.ReadAllText(
-                Path.Combine(
-                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "/TestResources/ExampleTestFileB.cs")
-                );
-            fileSystem.AddFile(
-                "/c/testProject/exampleTestFileA.cs",
-                new MockFileData(fileA));
-            fileSystem.AddFile(
-                "/c/testProject/exampleTestFileB.cs",
-                new MockFileData(fileB));
+            var rootPath = Path.Combine("c", "TestProject");
+            var fileAPath = Path.Combine(rootPath, "ExampleTestFileA.cs");
+            var fileBPath = Path.Combine(rootPath, "ExampleTestFileB.cs");
+            fileSystem.AddDirectory(rootPath);
+            var fileA = File.ReadAllText(Path.Combine(".", "TestResources", "ExampleTestFileA.cs"));
+            var fileB = File.ReadAllText(Path.Combine(".", "TestResources", "ExampleTestFileB.cs"));
+            fileSystem.AddFile(fileAPath, new MockFileData(fileA));
+            fileSystem.AddFile(fileBPath, new MockFileData(fileB));
             var testProjectAnalyzerResultAMock = TestHelper.SetupProjectAnalyzerResult(
                 references: Array.Empty<string>(),
-                sourceFiles: new string[] { "/c/testProject/exampleTestFileA.cs" }
+                sourceFiles: new string[] { fileAPath }
             );
             var testProjectAnalyzerResultBMock = TestHelper.SetupProjectAnalyzerResult(
                 references: Array.Empty<string>(),
-                sourceFiles: new string[] { "/c/testProject/exampleTestFileB.cs" }
+                sourceFiles: new string[] { fileBPath }
             );
 
             var testProjectA = new TestProject(fileSystem, testProjectAnalyzerResultAMock.Object);

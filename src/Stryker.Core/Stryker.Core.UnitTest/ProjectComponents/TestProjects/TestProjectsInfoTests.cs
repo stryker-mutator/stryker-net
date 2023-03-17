@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
-using System.Reflection;
-using Buildalyzer;
+using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Xunit;
@@ -29,7 +28,10 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
                     }).Object;
 
             var expectedPath = FilePathUtils.NormalizePathSeparators("/test/bin/Debug/AppToTest.dll");
-            TestProjectsInfo.GetInjectionFilePath(sourceProjectAnalyzerResults, testProjectAnalyzerResults).ShouldBe(expectedPath);
+
+            var result = TestProjectsInfo.GetInjectionFilePath(testProjectAnalyzerResults, sourceProjectAnalyzerResults);
+
+            result.ShouldBe(expectedPath);
         }
 
         [Fact]
@@ -37,32 +39,28 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
         {
             // Arrange
             var fileSystem = new MockFileSystem();
-            fileSystem.AddDirectory("/c/testProject");
-            var fileA = File.ReadAllText(
-                Path.Combine(
-                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "/TestResources/ExampleTestFileA.cs")
-                );
-            var fileB = File.ReadAllText(
-                Path.Combine(
-                    Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "/TestResources/ExampleTestFileB.cs")
-                );
-            fileSystem.AddFile(
-                "/c/testProject/exampleTestFileA.cs",
-                new MockFileData(fileA));
-            fileSystem.AddFile(
-                "/c/testProject/exampleTestFileB.cs",
-                new MockFileData(fileB));
+            var rootPath = Path.Combine("c", "TestProject");
+            var fileAPath = Path.Combine(rootPath, "ExampleTestFileA.cs");
+            var fileBPath = Path.Combine(rootPath, "ExampleTestFileB.cs");
+            fileSystem.AddDirectory(rootPath);
+            var fileA = File.ReadAllText(Path.Combine(".", "TestResources", "ExampleTestFileA.cs"));
+            var fileB = File.ReadAllText(Path.Combine(".", "TestResources", "ExampleTestFileB.cs"));
+            fileSystem.AddFile(fileAPath, new MockFileData(fileA));
+            fileSystem.AddFile(fileBPath, new MockFileData(fileB));
             var testProjectAnalyzerResultAMock = TestHelper.SetupProjectAnalyzerResult(
                 references: Array.Empty<string>(),
-                sourceFiles: new string[] { "/c/testProject/exampleTestFileA.cs" }
+                sourceFiles: new string[] { fileAPath }
             );
             var testProjectAnalyzerResultBMock = TestHelper.SetupProjectAnalyzerResult(
                 references: Array.Empty<string>(),
-                sourceFiles: new string[] { "/c/testProject/exampleTestFileB.cs" }
+                sourceFiles: new string[] { fileBPath }
             );
 
             var testProjectA = new TestProject(fileSystem, testProjectAnalyzerResultAMock.Object);
             var testProjectB = new TestProject(fileSystem, testProjectAnalyzerResultBMock.Object);
+            testProjectA.TestFiles.First().AddTest(Guid.NewGuid(), "test1", SyntaxFactory.Block());
+            testProjectA.TestFiles.First().AddTest(Guid.NewGuid(), "test2", SyntaxFactory.Block());
+            testProjectB.TestFiles.First().AddTest(Guid.NewGuid(), "test3", SyntaxFactory.Block());
 
             var testProjectsInfoA = new TestProjectsInfo(fileSystem)
             {
@@ -82,7 +80,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
 
             // Assert
             testProjectsInfoABC.TestFiles.Count().ShouldBe(2);
-            testProjectsInfoABC.TestFiles.First().Tests.Count().ShouldBe(2);
+            testProjectsInfoABC.TestFiles.ElementAt(0).Tests.Count().ShouldBe(2);
             testProjectsInfoABC.TestFiles.ElementAt(1).Tests.Count().ShouldBe(1);
         }
     }

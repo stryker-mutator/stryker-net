@@ -1,6 +1,5 @@
 using System;
-using Microsoft.CodeAnalysis;
-using Moq;
+using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Xunit;
@@ -14,7 +13,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
         {
             // Arrange
             var guid = Guid.NewGuid();
-            var node = Mock.Of<SyntaxNode>();
+            var node = SyntaxFactory.Block();
             var testCaseA = new TestCase
             {
                 Id = guid,
@@ -34,13 +33,12 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
         }
 
         [Theory]
-        [InlineData("fd4896a2-1bd9-4e83-9e81-308059525bc9", "2")]
-        [InlineData("00000000-0000-0000-0000-000000000000", "1")]
-        [InlineData("00000000-0000-0000-0000-000000000000", "2")]
+        [InlineData("fd4896a2-1bd9-4e83-9e81-308059525bc9", "node2")]
+        [InlineData("00000000-0000-0000-0000-000000000000", "node1")]
         public void TestCaseNotEqualsWhenNotAllPropertiesEqual(string id, string name)
         {
             // Arrange
-            var node = Mock.Of<SyntaxNode>();
+            var node = SyntaxFactory.Block();
             var testCaseA = new TestCase
             {
                 Id = new Guid(id),
@@ -50,7 +48,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
             var testCaseB = new TestCase
             {
                 Id = Guid.Empty,
-                Name = "2",
+                Name = "node2",
                 Node = node
             };
 

@@ -1,6 +1,5 @@
 using System;
-using Microsoft.CodeAnalysis;
-using Moq;
+using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Xunit;
@@ -14,7 +13,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
         {
             // Arrange
             var testCase1Id = Guid.NewGuid();
-            var node = Mock.Of<SyntaxNode>();
+            var node = SyntaxFactory.Block();
             var fileA = new TestFile
             {
                 FilePath = "/c/",

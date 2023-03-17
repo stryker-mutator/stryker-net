@@ -13,7 +13,6 @@ namespace Stryker.Core.ProjectComponents.TestProjects
 
         public override bool Equals(object obj) => obj is TestCase @case && Equals(@case);
 
-        // Stryker disable once bitwise: Bitwise mutation does not change functional usage of GetHashCode
         public override int GetHashCode() => (Id, Name).GetHashCode();
     }
 }

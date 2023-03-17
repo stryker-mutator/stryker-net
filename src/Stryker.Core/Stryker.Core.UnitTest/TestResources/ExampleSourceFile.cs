@@ -25,7 +25,6 @@ namespace ExampleProject
                     Lorem Dolor Sit";
         }
 
-
         private void StringSplit()
         {
             var testString = "";
