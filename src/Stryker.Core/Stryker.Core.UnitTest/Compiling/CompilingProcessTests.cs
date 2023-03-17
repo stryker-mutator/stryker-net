@@ -47,7 +47,9 @@ namespace ExampleProject
             {
                 SourceProjectInfo = new SourceProjectInfo
                 {
-                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        projectFilePath: "/c/project.csproj",
+                        properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
                             { "AssemblyName", "AssemblyName"},
@@ -90,6 +92,7 @@ namespace ExampleProject
                 SourceProjectInfo = new SourceProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        projectFilePath: "/c/project.csproj",
                         properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
@@ -138,7 +141,9 @@ namespace ExampleProject
             {
                 SourceProjectInfo = new SourceProjectInfo
                 {
-                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        projectFilePath: "/c/project.csproj",
+                        properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
                             { "AssemblyName", "AssemblyName"},
@@ -274,6 +279,7 @@ namespace ExampleProject
                 SourceProjectInfo = new SourceProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        projectFilePath: "/c/project.csproj",
                         properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "" },
@@ -399,6 +405,7 @@ namespace ExampleProject
                 SourceProjectInfo = new SourceProjectInfo
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        projectFilePath: "/c/project.csproj",
                         properties: new Dictionary<string, string>()
                         {
                             { "TargetDir", "Project" },
@@ -414,6 +421,7 @@ namespace ExampleProject
                 {
                      TestProjects = new List<TestProject>() {
                          new TestProject(fileSystem, TestHelper.SetupProjectAnalyzerResult(
+                            projectFilePath: "/c/test.csproj",
                             properties: new Dictionary<string, string>()
                             {
                                 { "TargetDir", "Project" },
