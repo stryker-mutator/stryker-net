@@ -72,10 +72,10 @@ namespace Stryker.Core.Mutators
         private Mutation ApplyIsNullMutation(InvocationExpressionSyntax node) => new()
         {
             OriginalNode = node,
-            ReplacementNode = SyntaxFactory.BinaryExpression(
+            ReplacementNode = SyntaxFactory.ParenthesizedExpression(SyntaxFactory.BinaryExpression(
                 SyntaxKind.NotEqualsExpression,
                 node.ArgumentList.Arguments[0].Expression,
-                SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression)),
+                SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression))),
             DisplayName = "String mutation",
             Type = Mutator.String
         };
@@ -83,10 +83,10 @@ namespace Stryker.Core.Mutators
         private Mutation ApplyIsEmptyMutation(InvocationExpressionSyntax node) => new()
         {
             OriginalNode = node,
-            ReplacementNode = SyntaxFactory.BinaryExpression(
+            ReplacementNode = SyntaxFactory.ParenthesizedExpression(SyntaxFactory.BinaryExpression(
                 SyntaxKind.NotEqualsExpression,
                 node.ArgumentList.Arguments[0].Expression,
-                SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(""))),
+                SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal("")))),
             DisplayName = "String mutation",
             Type = Mutator.String
         };

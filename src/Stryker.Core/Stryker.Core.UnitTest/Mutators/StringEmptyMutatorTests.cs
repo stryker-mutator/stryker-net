@@ -100,7 +100,8 @@ namespace Stryker.Core.UnitTest.Mutators
             mutation.DisplayName.ShouldBe("String mutation");
             mutation.Type.ShouldBe(Mutator.String);
 
-            var binaryExpression = mutation.ReplacementNode.ShouldBeOfType<BinaryExpressionSyntax>();
+            var parenthesizedExpression = mutation.ReplacementNode.ShouldBeOfType<ParenthesizedExpressionSyntax>();
+            var binaryExpression = parenthesizedExpression.Expression.ShouldBeOfType<BinaryExpressionSyntax>();
 
             binaryExpression.Kind().ShouldBe(SyntaxKind.NotEqualsExpression);
             binaryExpression.Left.ToString().ShouldBe(original.ArgumentList.Arguments[0].Expression.ToString());
@@ -116,7 +117,8 @@ namespace Stryker.Core.UnitTest.Mutators
             mutation.DisplayName.ShouldBe("String mutation");
             mutation.Type.ShouldBe(Mutator.String);
 
-            var binaryExpression = mutation.ReplacementNode.ShouldBeOfType<BinaryExpressionSyntax>();
+            var parenthesizedExpression = mutation.ReplacementNode.ShouldBeOfType<ParenthesizedExpressionSyntax>();
+            var binaryExpression = parenthesizedExpression.Expression.ShouldBeOfType<BinaryExpressionSyntax>();
 
             binaryExpression.Kind().ShouldBe(SyntaxKind.NotEqualsExpression);
             binaryExpression.Left.ToString().ShouldBe(original.ArgumentList.Arguments[0].Expression.ToString());
