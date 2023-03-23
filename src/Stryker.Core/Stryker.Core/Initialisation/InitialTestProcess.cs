@@ -28,8 +28,6 @@ namespace Stryker.Core.Initialisation
         /// <returns>The duration of the initial test run</returns>
         public InitialTestRun InitialTest(StrykerOptions options, IProjectAndTest project, ITestRunner testRunner)
         {
-            var message = testRunner.GetTests(project) is var total&& total.Count == 0 ? "Unable to detect" : total.Count.ToString();
-
             // Setup a stopwatch to record the initial test duration
             var stopwatch = new Stopwatch();
             stopwatch.Start();

@@ -111,7 +111,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 // Set roll forward on no candidate fx so vstest console can start on incompatible dotnet core runtimes
                 Environment.SetEnvironmentVariable("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2");
                 vsTestConsole.StartSession();
-                vsTestConsole.InitializeExtensions(TestSources.Select(_fileSystem.Path.GetDirectoryName).Take(1));
+                vsTestConsole.InitializeExtensions(Enumerable.Empty<string>() /*TestSources.Select(_fileSystem.Path.GetDirectoryName).Take(1¨*/);
             }
             catch (Exception e)
             {

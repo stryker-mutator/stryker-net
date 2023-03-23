@@ -58,16 +58,6 @@ namespace Stryker.Core.Initialisation
             _runner = runner ?? new VsTestRunnerPool(options,
                 fileSystem: _fileResolver.FileSystem);
             InitializeDashboardProjectInformation(options, projectInfos.First());
-            /*
-            // register test sources
-            foreach (var projectInfo in projectInfos)
-            {
-                foreach (var source in projectInfo.GetTestAssemblies())
-                {
-                    _runner.DiscoverTests(source);
-                }
-            }
-            */
             var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);
 
             foreach (var mutationTestInput in inputs)

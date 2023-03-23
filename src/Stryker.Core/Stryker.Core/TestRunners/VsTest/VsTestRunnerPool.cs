@@ -50,7 +50,7 @@ namespace Stryker.Core.TestRunners.VsTest
             Initialize();
         }
 
-        public bool DiscoverTests(string testSource) => Context.AddTestSource(testSource);
+        public bool DiscoverTests(string assembly) => Context.AddTestSource(assembly);
 
         public TestSet GetTests(IProjectAndTest project) => Context.GetTestsForSources(project.GetTestAssemblies());
 
