@@ -12,7 +12,9 @@ namespace Stryker.Core.TestRunners
     
     public interface ITestRunner : IDisposable
     {
-        TestSet DiscoverTests(IProjectAndTest project);
+        bool DiscoverTests(string assembly);
+
+        TestSet GetTests(IProjectAndTest project);
 
         TestRunResult InitialTest(IProjectAndTest project);
 

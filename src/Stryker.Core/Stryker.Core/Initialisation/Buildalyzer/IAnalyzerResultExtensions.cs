@@ -9,7 +9,6 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
 using NuGet.Frameworks;
-using Spectre.Console.Rendering;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 

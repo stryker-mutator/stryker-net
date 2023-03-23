@@ -108,11 +108,11 @@ namespace Stryker.Core.UnitTest.TestRunners
             mockedVsTestConsole.Setup(x => x.InitializeExtensions(It.IsAny<IEnumerable<string>>()));
             mockedVsTestConsole.Setup(x => x.EndSession());
             mockedVsTestConsole.Setup(x =>
-                x.DiscoverTests(It.Is<IEnumerable<string>>(d => d.Any(e => e == _testAssemblyPath)),
+                x.DiscoverTestsAsync(It.Is<IEnumerable<string>>(d => d.Any(e => e == _testAssemblyPath)),
                     It.IsAny<string>(),
                     It.IsAny<ITestDiscoveryEventsHandler>())).Callback(
                 (IEnumerable<string> _, string _, ITestDiscoveryEventsHandler discoveryEventsHandler) =>
-                    DiscoverTests(discoveryEventsHandler, TestCases, false));
+                    DiscoverTests(discoveryEventsHandler, TestCases, false)).Returns(Task.CompletedTask);
 
             var vsTestConsoleWrapper = mockedVsTestConsole.Object;
             return new VsTestContextInformation(

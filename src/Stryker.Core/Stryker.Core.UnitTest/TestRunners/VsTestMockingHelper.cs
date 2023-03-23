@@ -466,11 +466,11 @@ public class VsTestMockingHelper : TestBase
         mockedVsTestConsole.Setup(x => x.AbortTestRun());
         mockedVsTestConsole.Setup(x => x.EndSession());
         mockedVsTestConsole.Setup(x =>
-            x.DiscoverTests(It.Is<IEnumerable<string>>(d => d.Any(e => e == _testAssemblyPath)),
+            x.DiscoverTestsAsync(It.Is<IEnumerable<string>>(d => d.Any(e => e == _testAssemblyPath)),
                 It.IsAny<string>(),
                 It.IsAny<ITestDiscoveryEventsHandler>())).Callback(
             (IEnumerable<string> _, string _, ITestDiscoveryEventsHandler discoveryEventsHandler) =>
-                DiscoverTests(discoveryEventsHandler, testCases, false));
+                DiscoverTests(discoveryEventsHandler, testCases, false)).Returns(Task.CompletedTask);
 
         var context = new VsTestContextInformation(
             options,

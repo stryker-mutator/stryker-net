@@ -126,7 +126,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             testProjectProjectFileMock.Setup(x => x.Path).Returns("C:/testproject/");
 
             var mockRunner = new Mock<ITestRunner>();
-            mockRunner.Setup(r => r.DiscoverTests(It.IsAny<IProjectAndTest>())).Returns(new TestSet());
+            mockRunner.Setup(r => r.DiscoverTests(It.IsAny<string>())).Returns(true);
+            mockRunner.Setup(r => r.GetTests(It.IsAny<IProjectAndTest>())).Returns(new TestSet());
             mockRunner.Setup(r => r.InitialTest(It.IsAny<IProjectAndTest>())).Returns(new TestRunResult(true));
 
             // act

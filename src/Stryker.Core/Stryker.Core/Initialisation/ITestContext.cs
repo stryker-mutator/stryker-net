@@ -14,6 +14,4 @@ public interface ITestContext
     ///     Tests (Stryker format)
     /// </summary>
     TestSet Tests { get; }
-
-    void AddTestSource(string source);
 }

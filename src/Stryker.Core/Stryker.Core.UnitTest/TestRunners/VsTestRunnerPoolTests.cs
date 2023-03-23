@@ -23,7 +23,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         public void InitializeProperly()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
-            runner.DiscoverTests(TargetProject).Count.ShouldBe(2);
+            runner.GetTests(TargetProject).Count.ShouldBe(2);
         }
 
         [Fact]

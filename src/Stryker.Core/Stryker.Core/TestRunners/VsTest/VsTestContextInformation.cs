@@ -29,7 +29,6 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly IVsTestHelper _vsTestHelper;
         private readonly Func<ConsoleParameters, IVsTestConsoleWrapper> _wrapperBuilder;
         private bool _disposed;
-        private readonly List<string> _sources = new();
         private TestFramework _testFramework;
 
         /// <summary>
@@ -62,10 +61,12 @@ namespace Stryker.Core.TestRunners.VsTest
         /// </summary>
         public IDictionary<Guid, VsTestDescription> VsTests { get; private set; }
 
+        public IDictionary<string, ISet<Guid>> TestsPerSource { get; private set; } = new Dictionary<string, ISet<Guid>>();
+
         /// <summary>
         ///     Test assemblies
         /// </summary>
-        public IEnumerable<string> TestSources => _sources;
+        public IEnumerable<string> TestSources => TestsPerSource.Keys;
 
         /// <summary>
         ///     Tests (Stryker format)
@@ -110,7 +111,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 // Set roll forward on no candidate fx so vstest console can start on incompatible dotnet core runtimes
                 Environment.SetEnvironmentVariable("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2");
                 vsTestConsole.StartSession();
-                vsTestConsole.InitializeExtensions(_sources.Select(_fileSystem.Path.GetDirectoryName));
+                vsTestConsole.InitializeExtensions(TestSources.Select(_fileSystem.Path.GetDirectoryName).Take(1));
             }
             catch (Exception e)
             {
@@ -119,7 +120,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
             return vsTestConsole;
         }
-
+        
         /// <summary>
         ///     Builds a new process launcher used for a test session.
         /// </summary>
@@ -157,7 +158,18 @@ namespace Stryker.Core.TestRunners.VsTest
             return determineConsoleParameters;
         }
 
-        public void AddTestSource(string source)
+
+        public TestSet GetTestsForSources(IEnumerable<string> sources)
+        {
+            var result = new TestSet();
+            foreach (var source in sources)
+            {
+                result.RegisterTests(TestsPerSource[source].Select(id => Tests[id]));
+            }
+            return result;
+        }
+
+        public bool AddTestSource(string source)
         {
 
             if (!_fileSystem.File.Exists(source))
@@ -166,8 +178,12 @@ namespace Stryker.Core.TestRunners.VsTest
                     $"The test project binaries could not be found at {source}, exiting...");
             }
 
-            _sources.Add(source);
-            DiscoverTestsInSources(source);
+            if (!TestsPerSource.ContainsKey(source))
+            {
+                DiscoverTestsInSources(source);
+            }
+
+            return TestsPerSource[source].Count > 0;
         }
         
         private void DiscoverTestsInSources(string newSource)
@@ -175,7 +191,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var wrapper = BuildVsTestWrapper("TestDiscoverer");
             var messages = new List<string>();
             var handler = new DiscoveryEventHandler(messages);
-            wrapper.DiscoverTests(new List<string> { newSource }, GenerateRunSettingsForDiscovery(), handler);
+            wrapper.DiscoverTestsAsync(new List<string> { newSource }, GenerateRunSettingsForDiscovery(), handler);
 
             handler.WaitEnd();
             if (handler.Aborted)
@@ -184,6 +200,8 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             wrapper.EndSession();
+
+            TestsPerSource[newSource] = handler.DiscoveredTestCases.Select(c => c.Id).ToHashSet();
             VsTests ??= new Dictionary<Guid, VsTestDescription>(handler.DiscoveredTestCases.Count);
             foreach (var testCase in handler.DiscoveredTestCases)
             {
@@ -229,7 +247,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return $@"<RunSettings>
  <RunConfiguration>
   <CollectSourceInformation>true</CollectSourceInformation>
-  <MaxCpuCount>{Options.Concurrency}</MaxCpuCount>
+  <MaxCpuCount>{Math.Max(1, Options.Concurrency)}</MaxCpuCount>
   <DesignMode>false</DesignMode>
 {testCaseFilter}
  </RunConfiguration>

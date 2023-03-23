@@ -71,8 +71,11 @@ namespace Stryker.Core.Initialisation
         }
 
         private static string GetBackupName(string injectionPath) => injectionPath + ".stryker-unchanged";
+
         public bool IsFullFramework => ProjectUnderTestAnalyzerResult.TargetsFullFramework();
+
         public string HelperNamespace => CodeInjector.HelperNamespace;
+
         public IReadOnlyList<string> GetTestAssemblies() => TestProjectAnalyzerResults.Select(a => a.GetAssemblyPath()).ToList();
     }
 }

@@ -5,11 +5,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
 
@@ -162,7 +164,7 @@ namespace Stryker.Core.Initialisation
 
             // build all projects
             var projectsAnalyzerResults = new ConcurrentBag<IAnalyzerResult>();
-            _logger.LogDebug("Analyzing {count} projects", manager.Projects.Count);
+            _logger.LogDebug("Analyzing {count} projects.", manager.Projects.Count);
             try
             {
                 Parallel.ForEach(manager.Projects.Values, project =>
@@ -173,11 +175,11 @@ namespace Stryker.Core.Initialisation
                     if (projectAnalyzerResult is { })
                     {
                         projectsAnalyzerResults.Add(projectAnalyzerResult);
-                        _logger.LogDebug("Analysis of project {projectFilePath} succeeded", project.ProjectFile.Path);
+                        _logger.LogDebug("Analysis of project {projectFilePath} succeeded.", project.ProjectFile.Path);
                     }
                     else
                     {
-                        _logger.LogWarning("Analysis of project {projectFilePath} failed", project.ProjectFile.Path);
+                        _logger.LogWarning("Analysis of project {projectFilePath} failed.", project.ProjectFile.Path);
                     }
                 });
             }
@@ -242,8 +244,15 @@ namespace Stryker.Core.Initialisation
 
         private InitialTestRun InitialTest(StrykerOptions options, ProjectInfo projectInfo, ITestRunner testRunner)
         {
+            DiscoverTests(projectInfo, testRunner);
+
             // initial test
+            _logger.LogInformation("Number of tests found: {0} for project {1}. Initial test run started.",
+                testRunner.GetTests(projectInfo).Count,
+                projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath);
+
             var result = _initialTestProcess.InitialTest(options, projectInfo, testRunner);
+
 
             if (!result.Result.FailingTests.IsEmpty)
             {
@@ -253,7 +262,7 @@ namespace Stryker.Core.Initialisation
                     throw new InputException("Initial testrun has failing tests.", result.Result.ResultMessage);
                 }
 
-                if (!options.IsSolutionContext && ((double)failingTestsCount) / result.Result.RanTests.Count >= .5)
+                if (!options.IsSolutionContext && (double)failingTestsCount / result.Result.RanTests.Count >= .5)
                 {
                     throw new InputException("Initial testrun has more than 50% failing tests.", result.Result.ResultMessage);
                 }
@@ -261,7 +270,7 @@ namespace Stryker.Core.Initialisation
                 _logger.LogWarning($"{(failingTestsCount == 1 ? "A test is": $"{failingTestsCount} tests are")} failing. Stryker will continue but outcome will be impacted.");
             }
 
-            if (testRunner.DiscoverTests(projectInfo).Count != 0)
+            if (!result.Result.RanTests.IsEmpty)
             {
                 return result;
             }
@@ -272,6 +281,41 @@ namespace Stryker.Core.Initialisation
                 return result;
             }
             throw new InputException("No test has been detected. Make sure your test project contains test and is compatible with VsTest."+string.Join(Environment.NewLine, projectInfo.ProjectWarnings));
+        }
+
+        private void DiscoverTests(ProjectInfo projectInfo, ITestRunner testRunner)
+        {
+            foreach (var testProject in projectInfo.TestProjectAnalyzerResults)
+            {
+                if (testRunner.DiscoverTests(testProject.GetAssemblyPath()))
+                {
+                    continue;
+                }
+
+                var causeFound = false;
+                foreach (var (framework, adapter) in TestFrameworks)
+                {
+                    if (!testProject.References.Any(r => r.Contains(framework)) ||
+                        testProject.References.Any(r => r.Contains(adapter)))
+                    {
+                        continue;
+                    }
+
+                    causeFound = true;
+                    var message =
+                        $"Project '{testProject.ProjectFilePath}' did not report any test. This may be because it is missing an appropriate VstTest adapter for '{framework}'. " +
+                        $"Adding '{adapter}' to this project references may resolve the issue.";
+                    projectInfo.ProjectWarnings.Add(message);
+                    _logger.LogWarning(message);
+                }
+
+                if (!causeFound)
+                {
+                    var message = $"No test detected for project '{testProject.ProjectFilePath}'. No cause identified.";
+                    projectInfo.ProjectWarnings.Add(message);
+                    _logger.LogWarning(message);
+                }
+            }
         }
 
         private void DiagnoseLackOfDetectedTest(ProjectInfo projectInfo)

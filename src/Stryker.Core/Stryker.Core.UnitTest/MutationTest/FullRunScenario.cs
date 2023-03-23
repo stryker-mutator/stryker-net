@@ -163,7 +163,8 @@ namespace Stryker.Core.UnitTest.MutationTest
                 TestGuidsList.NoTest(),
                 string.Empty,
                 TimeSpan.Zero);
-            runnerMock.Setup(x => x.DiscoverTests( It.IsAny<IProjectAndTest>())).Returns(TestSet);
+            runnerMock.Setup(x => x.DiscoverTests( It.IsAny<string>())).Returns(true);
+            runnerMock.Setup(x => x.GetTests( It.IsAny<IProjectAndTest>())).Returns(TestSet);
             runnerMock.Setup(x => x.InitialTest( It.IsAny<IProjectAndTest>())).Returns(GetRunResult(InitialRunId));
             runnerMock.Setup(x => x.CaptureCoverage( It.IsAny<IProjectAndTest>()))
                 .Returns(() =>

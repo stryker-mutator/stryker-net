@@ -175,16 +175,17 @@ namespace Stryker.Core.TestRunners.VsTest
         }
 
         public IRunResults RunTestSession(ITestGuids testsToRun, IProjectAndTest project,  int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<IRunResults> updateHandler = null) =>
-            RunTestSession(testsToRun,
+            RunTestSession(testsToRun, project.GetTestAssemblies(),
                 _context.GenerateRunSettings(timeout, false, mutantTestsMap, project.HelperNamespace, project.IsFullFramework), timeout, updateHandler).GetResults();
 
-        public IRunResults RunCoverageSession(ITestGuids testsToRun, string nameSpace, bool isFullFramework) =>
-            RunTestSession(testsToRun,
+        public IRunResults RunCoverageSession(ITestGuids testsToRun, IReadOnlyCollection<string> testAssemblies, string nameSpace, bool isFullFramework) =>
+            RunTestSession(testsToRun,  testAssemblies,
                 _context.GenerateRunSettings(null,
         true,
                     null, nameSpace, isFullFramework)).GetRawResults();
 
         private RunEventHandler RunTestSession(ITestGuids tests,
+            IEnumerable<string> sources,
             string runSettings,
             int? timeOut = null,
             Action<IRunResults> updateHandler = null,
@@ -210,8 +211,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var options = new TestPlatformOptions { TestCaseFilter = string.IsNullOrWhiteSpace(_context.Options.TestCaseFilter) ? null : _context.Options.TestCaseFilter };
             if (tests.IsEveryTest)
             {
-                _vsTestConsole.RunTestsWithCustomTestHostAsync(_context.TestSources, runSettings, options, eventHandler,
-                    strykerVsTestHostLauncher);
+                _vsTestConsole.RunTestsWithCustomTestHostAsync(sources, runSettings, options, eventHandler, strykerVsTestHostLauncher);
             }
             else
             {
@@ -248,7 +248,7 @@ namespace Stryker.Core.TestRunners.VsTest
             PrepareVsTestConsole();
             _vsTestFailed = false;
 
-            return RunTestSession(tests, runSettings, timeOut, updateHandler, retries + 1);
+            return RunTestSession(tests, sources, runSettings, timeOut, updateHandler, retries + 1);
         }
 
         private void PrepareVsTestConsole()
