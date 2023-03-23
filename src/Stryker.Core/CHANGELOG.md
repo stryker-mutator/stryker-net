@@ -1,3 +1,12 @@
+## [3.7.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.7.0...stryker@3.7.1) (2023-03-23)
+
+
+### Bug Fixes
+
+* **String mutations:** Generate empty string mutations parenthesized ([#2447](https://github.com/stryker-mutator/stryker-net/issues/2447)) ([0650cb1](https://github.com/stryker-mutator/stryker-net/commit/0650cb18a2082de58f94e5dedb5fe74a4f248bd6))
+
+
+
 # [3.7.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.6.1...stryker@3.7.0) (2023-03-20)
 
 

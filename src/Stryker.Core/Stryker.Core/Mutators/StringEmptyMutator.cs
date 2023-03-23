@@ -72,10 +72,12 @@ namespace Stryker.Core.Mutators
         private Mutation ApplyIsNullMutation(InvocationExpressionSyntax node) => new()
         {
             OriginalNode = node,
-            ReplacementNode = SyntaxFactory.BinaryExpression(
-                SyntaxKind.NotEqualsExpression,
-                node.ArgumentList.Arguments[0].Expression,
-                SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression)),
+            ReplacementNode =
+                SyntaxFactory.ParenthesizedExpression(
+                    SyntaxFactory.BinaryExpression(
+                        SyntaxKind.NotEqualsExpression,
+                        node.ArgumentList.Arguments[0].Expression,
+                        SyntaxFactory.LiteralExpression(SyntaxKind.NullLiteralExpression))),
             DisplayName = "String mutation",
             Type = Mutator.String
         };
@@ -83,10 +85,11 @@ namespace Stryker.Core.Mutators
         private Mutation ApplyIsEmptyMutation(InvocationExpressionSyntax node) => new()
         {
             OriginalNode = node,
-            ReplacementNode = SyntaxFactory.BinaryExpression(
-                SyntaxKind.NotEqualsExpression,
-                node.ArgumentList.Arguments[0].Expression,
-                SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(""))),
+            ReplacementNode = SyntaxFactory.ParenthesizedExpression(
+                SyntaxFactory.BinaryExpression(
+                    SyntaxKind.NotEqualsExpression,
+                    node.ArgumentList.Arguments[0].Expression,
+                    SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal("")))),
             DisplayName = "String mutation",
             Type = Mutator.String
         };
@@ -94,15 +97,17 @@ namespace Stryker.Core.Mutators
         private Mutation ApplyIsWhiteSpaceMutation(InvocationExpressionSyntax node) => new()
         {
             OriginalNode = node,
-            ReplacementNode = SyntaxFactory.BinaryExpression(
-                SyntaxKind.NotEqualsExpression,
-                SyntaxFactory.InvocationExpression(
-                    SyntaxFactory.MemberAccessExpression(
-                        SyntaxKind.SimpleMemberAccessExpression,
-                        node.ArgumentList.Arguments[0].Expression,
-                        SyntaxFactory.IdentifierName("Trim")),
-                    SyntaxFactory.ArgumentList()),
-                SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(""))),
+            ReplacementNode =
+                SyntaxFactory.ParenthesizedExpression(
+                    SyntaxFactory.BinaryExpression(
+                        SyntaxKind.NotEqualsExpression,
+                        SyntaxFactory.InvocationExpression(
+                            SyntaxFactory.MemberAccessExpression(
+                                SyntaxKind.SimpleMemberAccessExpression,
+                                node.ArgumentList.Arguments[0].Expression,
+                                SyntaxFactory.IdentifierName("Trim")),
+                            SyntaxFactory.ArgumentList()),
+                        SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal("")))),
             DisplayName = "String mutation",
             Type = Mutator.String
         };
