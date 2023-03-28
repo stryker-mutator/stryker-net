@@ -1,8 +1,6 @@
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using Buildalyzer;
-using Microsoft.Build.Exceptions;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
@@ -26,7 +24,7 @@ namespace Stryker.Core.Initialisation
     public class ProjectFileReader : IProjectFileReader
     {
         private readonly INugetRestoreProcess _nugetRestoreProcess;
-        private IAnalyzerManager _analyzerManager;
+        private readonly IAnalyzerManager _analyzerManager;
         private readonly ILogger _logger;
 
         public ProjectFileReader(

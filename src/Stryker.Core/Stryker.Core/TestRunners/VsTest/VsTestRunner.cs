@@ -57,8 +57,9 @@ namespace Stryker.Core.TestRunners.VsTest
                 _context.VsTests[result.TestCase.Id].RegisterInitialTestResult(result);
             }
 
+            var totalCountOfTests = _context.GetTestsForSources(project.GetTestAssemblies()).Count;
             // get the test results, but prevent compression of 'all tests'
-            return BuildTestRunResult(testResults, _context.Tests.Count, false);
+            return BuildTestRunResult(testResults, totalCountOfTests, totalCountOfTests,false);
         }
 
         public TestRunResult TestMultipleMutants(IProjectAndTest project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
@@ -79,12 +80,13 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             var numberTestCases = testCases?.Count ?? 0;
-            var expectedTests = testCases == null ? _context.Tests.Count : numberTestCases;
+            var totalCountOfTests = _context.GetTestsForSources(project.GetTestAssemblies()).Count;
+            var expectedTests = testCases == null ? totalCountOfTests : numberTestCases;
 
             void HandleUpdate(IRunResults handler)
             {
                 var handlerTestResults = handler.TestResults;
-                var tests = handlerTestResults.Count == _context.Tests.Count
+                var tests = handlerTestResults.Select(p =>p.TestCase.Id).Distinct().Count()>= totalCountOfTests
                     ? (ITestGuids)TestGuidsList.EveryTest()
                     : new WrappedGuidsEnumeration(handlerTestResults.Select(t => t.TestCase.Id));
                 var failedTest = new WrappedGuidsEnumeration(handlerTestResults.Where(tr => tr.Outcome == TestOutcome.Failed)
@@ -112,7 +114,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             var testResults = RunTestSession(new TestGuidsList(testCases), project, timeOutMs, mutantTestsMap, HandleUpdate);
 
-            return BuildTestRunResult(testResults, expectedTests);
+            return BuildTestRunResult(testResults, expectedTests, totalCountOfTests);
         }
 
         private ICollection<Guid> TestCases(IReadOnlyList<Mutant> mutants, Dictionary<int, ITestGuids> mutantTestsMap)
@@ -148,13 +150,14 @@ namespace Stryker.Core.TestRunners.VsTest
             return testCases;
         }
 
-        private TestRunResult BuildTestRunResult(IRunResults testResults, int expectedTests, bool compressAll = true)
+        private TestRunResult BuildTestRunResult(IRunResults testResults, int expectedTests, int totalCountOfTests,
+            bool compressAll = true)
         {
             var resultAsArray = testResults.TestResults.ToArray();
             var testCases = resultAsArray.Select(t => t.TestCase.Id).ToHashSet();
             var ranTestsCount = testCases.Count;
             var timeout = !_aborted && ranTestsCount < expectedTests;
-            var ranTests = compressAll && ranTestsCount >= _context.Tests.Count ? (ITestGuids)TestGuidsList.EveryTest() : new WrappedGuidsEnumeration(testCases);
+            var ranTests = compressAll && ranTestsCount >= totalCountOfTests ? (ITestGuids)TestGuidsList.EveryTest() : new WrappedGuidsEnumeration(testCases);
             var failedTests = resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(t => t.TestCase.Id);
 
             if (ranTests.IsEmpty && (testResults.TestsInTimeout == null || testResults.TestsInTimeout.Count == 0))
