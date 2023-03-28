@@ -69,7 +69,7 @@ namespace Stryker.Core.Initialisation
             // Determine project under test
             var projectUnderTest = options.IsSolutionContext ? options.ProjectUnderTestName : FindProjectUnderTest(projectInfo.TestProjectAnalyzerResults, options.ProjectUnderTestName);
 
-            _logger.LogInformation("The project {0} will be mutated.", projectUnderTest);
+            _logger.LogInformation("The project {0} will be mutated.", FileSystem.Path.GetRelativePath(options.WorkingDirectory, projectUnderTest));
 
             // Analyze project under test
             projectInfo.ProjectUnderTestAnalyzerResult = _projectFileReader.AnalyzeProject(projectUnderTest, options.SolutionPath, options.TargetFramework, solutionProjects, options.MsBuildPath);
@@ -85,7 +85,6 @@ namespace Stryker.Core.Initialisation
             projectInfo.ProjectContents = inputFiles;
 
             ValidateTestProjectsCanBeExecuted(projectInfo);
-            _logger.LogInformation("Analysis complete.");
 
             return projectInfo;
         }

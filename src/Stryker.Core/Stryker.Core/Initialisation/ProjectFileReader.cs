@@ -47,42 +47,27 @@ namespace Stryker.Core.Initialisation
         {
 
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
-            IAnalyzerResult analyzerResult = GetProjectInfo(projectFilePath, targetFramework, solutionProjects);
+            var analyzerResult = GetProjectInfo(projectFilePath, targetFramework, solutionProjects);
             LogAnalyzerResult(analyzerResult);
 
-            if (!analyzerResult.Succeeded)
+            if (analyzerResult.Succeeded)
             {
-                if (analyzerResult.TargetsFullFramework())
-                {
-                    // buildalyzer failed to find restored packages, retry after nuget restore
-                    _logger.LogDebug("Project analyzer result not successful, restoring packages");
-                    _nugetRestoreProcess.RestorePackages(solutionFilePath, msBuildPath);
-                    analyzerResult = GetProjectInfo(projectFilePath, targetFramework, solutionProjects);
-                }
-                else
-                {
-                    // buildalyzer failed, but seems to work anyway.
-                    _logger.LogDebug("Project analyzer result not successful");
-                }
+                return analyzerResult;
+            }
+            if (analyzerResult.TargetsFullFramework())
+            {
+                // buildalyzer failed to find restored packages, retry after nuget restore
+                _logger.LogDebug("Project analyzer result not successful, restoring packages");
+                _nugetRestoreProcess.RestorePackages(solutionFilePath, msBuildPath);
+                analyzerResult = GetProjectInfo(projectFilePath, targetFramework, solutionProjects);
+            }
+            else
+            {
+                // buildalyzer failed, but seems to work anyway.
+                _logger.LogDebug("Project analyzer result not successful");
             }
 
             return analyzerResult;
-        }
-
-        private void SetAnalyzerManager(string solutionFilePath)
-        {
-            if (_analyzerManager == null && solutionFilePath != null)
-            {
-                _logger.LogDebug("Analyzing solution file {0}", solutionFilePath);
-                try
-                {
-                    _analyzerManager = new AnalyzerManager(solutionFilePath);
-                }
-                catch (InvalidProjectFileException)
-                {
-                    throw new InputException($"Incorrect solution path \"{solutionFilePath}\". Solution file not found. Please review your solution path setting.");
-                }
-            }
         }
 
         /// <summary>

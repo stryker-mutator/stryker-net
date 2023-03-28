@@ -174,7 +174,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 : new TestRunResult(ranTests, failedTestsDescription, timedOutTests, message, duration);
         }
 
-        public IRunResults RunTestSession(ITestGuids testsToRun, IProjectAndTest project,  int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<IRunResults> updateHandler = null) =>
+        public IRunResults RunTestSession(ITestGuids testsToRun, IProjectAndTest project, int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<IRunResults> updateHandler = null) =>
             RunTestSession(testsToRun, project.GetTestAssemblies(),
                 _context.GenerateRunSettings(timeout, false, mutantTestsMap, project.HelperNamespace, project.IsFullFramework), timeout, updateHandler).GetResults();
 
