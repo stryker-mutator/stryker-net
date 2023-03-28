@@ -9,6 +9,9 @@ using Stryker.Core.Options.Inputs;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Html.reporter;
 using Stryker.Core.Reporters.HtmlReporter.ProcessWrapper;
+using System.IO;
+using System.IO.Abstractions.TestingHelpers;
+using Stryker.Core.Reporters.HtmlReporter;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
@@ -97,7 +100,7 @@ namespace Stryker.Core.UnitTest.Reporters
             {
                 TestProjects = new List<TestProject>()
                 {
-                    
+
                 }
             };
 
