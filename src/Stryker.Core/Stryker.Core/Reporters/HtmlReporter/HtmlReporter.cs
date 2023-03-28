@@ -2,13 +2,16 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using Microsoft.Build.Logging.StructuredLogger;
 using Spectre.Console;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.Reporters.HtmlReporter;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.HtmlReporter.ProcessWrapper;
 using Stryker.Core.Reporters.Json;
+using Task = System.Threading.Tasks.Task;
 
 namespace Stryker.Core.Reporters.Html.reporter
 {
@@ -18,6 +21,7 @@ namespace Stryker.Core.Reporters.Html.reporter
         private readonly IFileSystem _fileSystem;
         private readonly IAnsiConsole _console;
         private readonly IWebbrowserOpener _processWrapper;
+        private readonly SseServer _sseServer;
 
         public HtmlReporter(StrykerOptions options, IFileSystem fileSystem = null,
             IAnsiConsole console = null, IWebbrowserOpener processWrapper = null)
@@ -26,6 +30,7 @@ namespace Stryker.Core.Reporters.Html.reporter
             _fileSystem = fileSystem ?? new FileSystem();
             _console = console ?? AnsiConsole.Console;
             _processWrapper = processWrapper ?? new WebbrowserOpener();
+            _sseServer = new SseServer(_console);
         }
 
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
@@ -99,14 +104,8 @@ namespace Stryker.Core.Reporters.Html.reporter
             // This reporter does not currently report when mutants are created
         }
 
-        public void OnMutantTested(IReadOnlyMutant result)
-        {
-            // This reporter does not currently report when mutants are tested
-        }
+        public void OnMutantTested(IReadOnlyMutant result) => _sseServer.PublishNewMutantData(result);
 
-        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
-        {
-            // This reporter does not currently report when the mutation testrun starts
-        }
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested) => _sseServer.Start();
     }
 }
