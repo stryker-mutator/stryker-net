@@ -5,6 +5,7 @@ using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Stryker.Core.Mutants;
+using Stryker.Core.Reporters.Json.SourceFiles;
 
 namespace Stryker.Core.Reporters.HtmlReporter.Realtime;
 
@@ -61,15 +62,11 @@ public class RealtimeMutantHandler : IRealtimeMutantHandler
 
     public void SendMutantResultEvent(IReadOnlyMutant testedMutant)
     {
+        var jsonMutant = new JsonMutant(testedMutant);
+
         foreach (var writer in _writers)
         {
-            var mutationResult = new
-            {
-                Type = testedMutant.Mutation.Type.ToString(),
-                Status = testedMutant.ResultStatus.ToString(),
-            };
-
-            writer.Write($"event: mutation\ndata: {JsonSerializer.Serialize(mutationResult)}\n\n");
+            writer.Write($"event: mutation\ndata: {JsonSerializer.Serialize(jsonMutant)}\n\n");
             writer.Flush();
         }
     }
