@@ -1,34 +1,30 @@
 ﻿using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Text.Json;
 using System.Threading.Tasks;
 using Stryker.Core.Mutants;
-using Spectre.Console;
 
-namespace Stryker.Core.Reporters.HtmlReporter;
+namespace Stryker.Core.Reporters.HtmlReporter.Realtime;
 
-public class SseServer
+public class RealtimeMutantHandler : IRealtimeMutantHandler
 {
-    private readonly IAnsiConsole _console;
     private readonly HttpListener _listener;
     private readonly List<StreamWriter> _writers;
 
-    public SseServer(IAnsiConsole console)
+    public RealtimeMutantHandler()
     {
-        _console = console;
         _listener = new HttpListener();
+        // TODO: this should definitely be configurable
         _listener.Prefixes.Add("http://localhost:8080/");
         _writers = new List<StreamWriter>();
     }
 
-    public void Start()
+    public void OpenSseEndpoint()
     {
         _listener.Start();
 
-        _console.WriteLine("Listening for SSE connections on http://localhost:8080/");
-
-        // Start listening for new connections in a separate thread
         Task.Run(ListenForConnectionsAsync);
     }
 
@@ -50,20 +46,31 @@ public class SseServer
         }
     }
 
-    public void PublishNewMutantData(IReadOnlyMutant result)
+    public void CloseSseEndpoint()
     {
-        // Loop through connected clients and send the message to each writer
+        foreach (var writer in _writers)
+        {
+            writer.Write("event: finished\ndata: {}\n\n");
+            writer.Flush();
+        }
+
+        Task.WaitAll(_writers.Select(writer => writer.BaseStream.FlushAsync()).ToArray());
+
+        _listener.Close();
+    }
+
+    public void SendMutantResultEvent(IReadOnlyMutant testedMutant)
+    {
         foreach (var writer in _writers)
         {
             var mutationResult = new
             {
-                Type = result.Mutation.Type.ToString(),
-                Status = result.ResultStatus.ToString(),
+                Type = testedMutant.Mutation.Type.ToString(),
+                Status = testedMutant.ResultStatus.ToString(),
             };
-            writer.Write($"data: {JsonSerializer.Serialize(mutationResult)}\n\n");
+
+            writer.Write($"event: mutation\ndata: {JsonSerializer.Serialize(mutationResult)}\n\n");
             writer.Flush();
         }
     }
-
 }
-

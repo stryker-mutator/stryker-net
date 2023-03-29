@@ -9,6 +9,7 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.HtmlReporter;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.HtmlReporter.ProcessWrapper;
+using Stryker.Core.Reporters.HtmlReporter.Realtime;
 using Stryker.Core.Reporters.Json;
 
 namespace Stryker.Core.Reporters.HtmlReporter;
@@ -19,21 +20,27 @@ public class HtmlReporter : IReporter
     private readonly IFileSystem _fileSystem;
     private readonly IAnsiConsole _console;
     private readonly IWebbrowserOpener _processWrapper;
-    private readonly SseServer _sseServer;
+    private readonly IRealtimeMutantHandler _mutantHandler;
 
-    public HtmlReporter(StrykerOptions options, IFileSystem fileSystem = null,
-        IAnsiConsole console = null, IWebbrowserOpener processWrapper = null)
+    public HtmlReporter(
+        StrykerOptions options,
+        IFileSystem fileSystem = null,
+        IAnsiConsole console = null,
+        IWebbrowserOpener processWrapper = null,
+        IRealtimeMutantHandler mutantHandler = null)
     {
         _options = options;
         _fileSystem = fileSystem ?? new FileSystem();
         _console = console ?? AnsiConsole.Console;
         _processWrapper = processWrapper ?? new WebbrowserOpener();
-        _sseServer = new SseServer(_console);
+        _mutantHandler = mutantHandler ?? new RealtimeMutantHandler();
     }
 
     public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
     {
-        var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
+        _mutantHandler.CloseSseEndpoint();
+
+        var mutationReport = JsonReport.Build(_options, reportComponent);
         var filename = _options.ReportFileName + ".html";
         var reportPath = Path.Combine(_options.ReportPath, filename);
 
@@ -102,7 +109,7 @@ public class HtmlReporter : IReporter
         // This reporter does not currently report when mutants are created
     }
 
-    public void OnMutantTested(IReadOnlyMutant result) => _sseServer.PublishNewMutantData(result);
+    public void OnMutantTested(IReadOnlyMutant result) => _mutantHandler.SendMutantResultEvent(result);
 
-    public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested) => _sseServer.Start();
+    public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested) => _mutantHandler.OpenSseEndpoint();
 }
