@@ -8,7 +8,6 @@ using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
@@ -20,7 +19,7 @@ namespace Stryker.Core.TestRunners.VsTest
     /// <summary>
     ///     Handles VsTest setup and configuration.
     /// </summary>
-    public sealed class VsTestContextInformation : IDisposable, ITestContext
+    public sealed class VsTestContextInformation : IDisposable
     {
         private readonly IFileSystem _fileSystem;
         private readonly Func<string, IStrykerTestHostLauncher> _hostBuilder;
