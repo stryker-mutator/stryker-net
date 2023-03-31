@@ -20,6 +20,21 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new InitialBuildProcess(processMock.Object);
 
             var exception = Assert.Throws<InputException>(() => target.InitialBuild(false, "/", "/"));
+            Assert.Equal("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"dotnet build \"\"\"", exception.Details);
+        }
+
+        [Fact]
+        public void InitialBuildProcess_WithPathAsBuildCommand_ShouldThrowStrykerInputExceptionOnFailWithQuotes()
+        {
+            var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
+
+            processMock.SetupProcessMockToReturn("", 1);
+
+            var target = new InitialBuildProcess(processMock.Object);
+
+            var exception = Assert.Throws<InputException>(() => target.InitialBuild(true, "/", "/", @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"));
+            Assert.Equal("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"\"" +
+                         @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" + "\" \"C:\\\"\"", exception.Details);
         }
 
         [Fact]
