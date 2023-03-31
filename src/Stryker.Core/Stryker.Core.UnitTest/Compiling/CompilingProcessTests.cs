@@ -229,6 +229,59 @@ namespace ExampleProject
         }
 
         [Fact]
+        public void CompilingProcessTests_AssemblyShouldCompileUnsigned_WhenSignAssemblyTrue_ButKeyFileMissing()
+        {
+            var syntaxTree = CSharpSyntaxTree.ParseText(@"
+
+namespace ExampleProject
+{
+    public class Calculator
+    {
+        public int Subtract(int first, int second)
+        {
+            return first - second;
+        }
+    }
+}");
+            var input = new MutationTestInput()
+            {
+                ProjectInfo = new ProjectInfo(new MockFileSystem())
+                {
+                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                        {
+                            { "TargetDir", "" },
+                            { "AssemblyName", "AssemblyName"},
+                            { "TargetFileName", "TargetFileName.dll"},
+                            { "SignAssembly", "true" }
+                        },
+                        projectFilePath: "TestResources").Object,
+                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                        {
+                            { "AssemblyName", "AssemblyName"},
+                        }).Object
+                    }
+                },
+                AssemblyReferences = new List<PortableExecutableReference>() {
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location)
+                },
+
+            };
+            var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
+
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
+
+            using (var ms = new MemoryStream())
+            {
+                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
+                result.Success.ShouldBe(true);
+
+                var key = Assembly.Load(ms.ToArray()).GetName().GetPublicKey();
+                key.Length.ShouldBe(0, "Assembly was signed");
+                ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
+            }
+        }
+
+        [Fact]
         public void CompilingProcessTests_ProperlyFailsWhenSigningKeyIsNotFound()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"
