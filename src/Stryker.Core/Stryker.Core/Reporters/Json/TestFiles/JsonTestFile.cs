@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.Reporters.Json.TestFiles
@@ -11,11 +12,11 @@ namespace Stryker.Core.Reporters.Json.TestFiles
 
         public JsonTestFile(TestFile testFile)
         {
-            Source = testFile.Source;
+            Source = testFile?.Source;
             Language = "cs";
             Tests = new HashSet<Test>();
 
-            foreach (var test in testFile.Tests)
+            foreach (var test in testFile?.Tests ?? Enumerable.Empty<TestCase>())
             {
                 Tests.Add(new Test
                 {
