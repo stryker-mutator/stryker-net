@@ -229,6 +229,28 @@ class Program
                 .ShouldBeEmpty();
         }
 
+        [Fact]
+        public void ShouldMutateReturnStatementToReturnDefault()
+        {
+            var block = @"{
+                var x = 42;
+                return x;
+            }";
+            var statements = GetMutations(block);
+            statements.ShouldHaveSingleItem().ReplacementNode.ShouldBeOfType<BlockSyntax>().Statements.ShouldHaveSingleItem().ShouldBeOfType<ReturnStatementSyntax>();
+        }
+
+        [Fact]
+        public void ShouldNotAddDefaultReturnIfReturnExpressionIsEmpty()
+        {
+            var block = @"{
+                var x = 42;
+                return;
+            }";
+            var statements = GetMutations(block);
+            statements.ShouldHaveSingleItem().ReplacementNode.ShouldBeOfType<BlockSyntax>().Statements.ShouldBeEmpty();
+        }
+
         private static IEnumerable<Mutation> GetMutations(string source)
         {
             var statements = CSharpSyntaxTree

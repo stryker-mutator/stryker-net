@@ -23,10 +23,21 @@ namespace Stryker.Core.Mutators
                 yield break;
             }
 
+            var replacementNode = SyntaxFactory.Block();
+            if (node.DescendantNodes().OfType<ReturnStatementSyntax>()
+                .Any(returnStatement => returnStatement.Expression is not null))
+            {
+                replacementNode = replacementNode.AddStatements(
+                    SyntaxFactory.ReturnStatement(SyntaxFactory.LiteralExpression(
+                        SyntaxKind.DefaultLiteralExpression).WithLeadingTrivia(SyntaxFactory.Space)
+                    )
+                );
+            }
+
             yield return new Mutation
             {
                 OriginalNode = node,
-                ReplacementNode = SyntaxFactory.Block(),
+                ReplacementNode = replacementNode,
                 DisplayName = MutationName,
                 Type = Mutator.Block
             };
