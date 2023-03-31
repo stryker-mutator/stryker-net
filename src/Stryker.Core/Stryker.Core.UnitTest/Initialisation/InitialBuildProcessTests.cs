@@ -24,7 +24,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"dotnet build \"" + @"C:\Projects\Example.csproj" + "\"\"");
         }
 
-        [Fact]
+        [SkippableFact]
         public void InitialBuildProcess_WithPathAsBuildCommand_ShouldThrowStrykerInputExceptionOnFailWithQuotes()
         {
             Skip.IfNot(Environment.OSVersion.Platform == PlatformID.Win32NT, "MSBuild is only available on Windows");
