@@ -37,7 +37,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             {
                 var injectionPath = GetInjectionFilePath(testProject, targetProject);
                 var backupFilePath = GetBackupName(injectionPath);
-                if (!_fileSystem.File.Exists(backupFilePath))
+                if (_fileSystem.File.Exists(backupFilePath))
                 {
                     _fileSystem.File.Copy(backupFilePath, injectionPath, true);
                 }
