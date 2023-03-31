@@ -50,7 +50,7 @@ namespace Stryker.Core.Initialisation
                 // Build with dotnet build
                 result = _processExecutor.Start(projectPath, "dotnet", $"build \"{buildPath}\"");
 
-                CheckBuildResult(result, "dotnet build", $"\"{Path.GetFileName(projectPath)}\"");
+                CheckBuildResult(result, "dotnet build", $"\"{projectPath}\"");
             }
         }
 
