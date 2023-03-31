@@ -160,7 +160,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
                 return assemblyKeyFileProp;
             }
 
-            return Path.Combine(Path.GetDirectoryName(analyzerResult.ProjectFilePath), analyzerResult.GetPropertyOrDefault("AssemblyOriginatorKeyFile"));
+            return Path.Combine(Path.GetDirectoryName(analyzerResult.ProjectFilePath), assemblyKeyFileProp);
         }
 
         private static string GetRootNamespace(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("RootNamespace") ?? analyzerResult.GetAssemblyName();
