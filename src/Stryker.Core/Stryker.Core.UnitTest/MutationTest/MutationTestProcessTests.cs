@@ -52,8 +52,8 @@ namespace Stryker.Core.UnitTest.MutationTest
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
                 { Path.Combine(FilesystemRoot, "ExampleProject","Recursive.cs"), new MockFileData(SourceFile)},
-                { Path.Combine(FilesystemRoot, "ExampleProject.Test", "bin", "Debug", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") },
-                { Path.Combine(FilesystemRoot, "ExampleProject.Test", "obj", "Release", "netcoreapp2.0", "ExampleProject.dll"), new MockFileData("Bytecode") }
+                { Path.Combine(FilesystemRoot, "ExampleProject.Test", "bin", "Debug", "netcoreapp2.1", "ExampleProject.dll"), new MockFileData("Bytecode") },
+                { Path.Combine(FilesystemRoot, "ExampleProject.Test", "obj", "Release", "netcoreapp2.1", "ExampleProject.dll"), new MockFileData("Bytecode") }
             });
 
             var input = new MutationTestInput()
@@ -194,8 +194,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             inputFile.Mutants.ShouldContain(mutantToBeSkipped);
             mutantToBeSkipped.ResultStatus.ShouldBe(MutantStatus.Ignored);
         }
-
-
+        
         [Fact]
         public void MutateShouldWriteToDisk_IfCompilationIsSuccessful()
         {
@@ -209,6 +208,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
                 { Path.Combine(FilesystemRoot, "SomeFile.cs"), new MockFileData("SomeFile")},
+                { Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0", "ProjectUnderTest.dll"), new MockFileData("empty")}
             });
 
             var input = new MutationTestInput()
@@ -254,8 +254,9 @@ namespace Stryker.Core.UnitTest.MutationTest
             target.Mutate();
 
             // Verify the created assembly is written to disk on the right location
-            var expectedPath = Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0", "ProjectUnderTest.dll");
-            fileSystem.ShouldContainFile(expectedPath);
+            fileSystem.ShouldContainFile(Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0", "ProjectUnderTest.dll"));
+            // verify the original assembly has been backed up
+            fileSystem.ShouldContainFile(Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0", "ProjectUnderTest.dll.stryker-unchanged"));
         }
 
         [Fact]

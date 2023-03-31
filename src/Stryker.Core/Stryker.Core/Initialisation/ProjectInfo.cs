@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -48,7 +49,18 @@ namespace Stryker.Core.Initialisation
             foreach (var testProject in TestProjectAnalyzerResults)
             {
                 var injectionPath = GetInjectionFilePath(testProject);
-                _fileSystem.File.Copy(GetBackupName(injectionPath), injectionPath, true);
+                try
+                {
+                    _fileSystem.File.Move(GetBackupName(injectionPath), injectionPath, true);
+                }
+                catch (FileNotFoundException e)
+                {
+                    LogError($"Failed to restore original assembly {injectionPath}, {e}");
+                }
+                catch (UnauthorizedAccessException e)
+                {
+                    LogError($"Failed to restore original assembly {injectionPath}, {e}");
+                }
             }
         }
 
@@ -60,7 +72,7 @@ namespace Stryker.Core.Initialisation
                 var destFileName = GetBackupName(injectionPath);
                 if (!_fileSystem.Directory.Exists(Path.GetDirectoryName(injectionPath)))
                 {
-                    _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(injectionPath));
+                    return;
                 }
                 if (_fileSystem.File.Exists(injectionPath) && !_fileSystem.File.Exists(destFileName))
                 {

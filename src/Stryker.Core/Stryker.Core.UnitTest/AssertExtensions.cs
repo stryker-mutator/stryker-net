@@ -84,5 +84,16 @@ Files found:
 {string.Join($", {Environment.NewLine}", fileSystem.AllFiles)}");
             }
         }
+        public static void ShouldNotContainFile(this MockFileSystem fileSystem, string expectedFilePath)
+        {
+            if (fileSystem.FileExists(expectedFilePath))
+            {
+                throw new ShouldAssertException($@"This file should not exist there.
+Expected: ""{expectedFilePath}"".
+
+Files found:
+{string.Join($", {Environment.NewLine}", fileSystem.AllFiles)}");
+            }
+        }
     }
 }

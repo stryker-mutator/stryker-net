@@ -1,6 +1,8 @@
 using System.Collections.Generic;
+using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+using System.Security.AccessControl;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Shouldly;
@@ -116,8 +118,128 @@ namespace Stryker.Core.UnitTest.Initialisation
                     }).Object
             };
 
-            string expectedPath = FilePathUtils.NormalizePathSeparators("/test/bin/Debug/TestName.dll");
+            var expectedPath = FilePathUtils.NormalizePathSeparators("/test/bin/Debug/TestName.dll");
             target.TestProjectAnalyzerResults.FirstOrDefault().GetAssemblyPath().ShouldBe(expectedPath);
+        }
+
+        [Fact]
+        public void ShouldBackupBinaries()
+        {
+            var mockFileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { Path.Combine( "test", "bin", "Debug",  "AppToTest.dll"), new MockFileData("empty")}
+            });
+            
+            var target = new ProjectInfo(mockFileSystem)
+            {
+                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
+                    TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", "/test/bin/Debug/" },
+                        { "TargetFileName", "TestName.dll" }
+                    }).Object
+                },
+                ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", "/app/bin/Debug/" },
+                        { "TargetFileName", "AppToTest.dll" }
+                    }).Object
+            };
+
+            target.BackupOriginalAssembly();
+            mockFileSystem.ShouldContainFile(mockFileSystem.Path.Combine("test", "bin", "Debug",  "AppToTest.dll.stryker-unchanged"));
+        }
+
+        [Fact]
+        public void ShouldRestoreBinaries()
+        {
+            var mockFileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { Path.Combine( "test", "bin", "Debug",  "AppToTest.dll"), new MockFileData("empty")},
+                { Path.Combine( "test", "bin", "Debug",  "AppToTest.dll.stryker-unchanged"), new MockFileData("empty")}
+            });
+            
+            var target = new ProjectInfo(mockFileSystem)
+            {
+                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
+                    TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", "/test/bin/Debug/" },
+                        { "TargetFileName", "TestName.dll" }
+                    }).Object
+                },
+                ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", "/app/bin/Debug/" },
+                        { "TargetFileName", "AppToTest.dll" }
+                    }).Object
+            };
+
+            target.RestoreOriginalAssembly();
+            mockFileSystem.ShouldNotContainFile(mockFileSystem.Path.Combine("test", "bin", "Debug",  "AppToTest.dll.stryker-unchanged"));
+        }
+
+        [Fact]
+        public void ShouldLogErrorWhenBackupNotFound()
+        {
+            var mockFileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { Path.Combine( "test", "bin", "Debug",  "AppToTest.dll"), new MockFileData("empty")},
+            });
+            
+            var target = new ProjectInfo(mockFileSystem)
+            {
+                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
+                    TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", "/test/bin/Debug/" },
+                        { "TargetFileName", "TestName.dll" }
+                    }).Object
+                },
+                ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", "/app/bin/Debug/" },
+                        { "TargetFileName", "AppToTest.dll" }
+                    }).Object
+            };
+
+            target.RestoreOriginalAssembly();
+            target.ProjectWarnings.Count.ShouldBe(1);
+            target.ProjectWarnings[0].ShouldContain("Failed to restore original assembly");
+        }
+
+        [Fact]
+        public void ShouldLogErrorWhenCantRestore()
+        {
+            var mockFileData = new MockFileData("empty")
+            {
+                Attributes = FileAttributes.ReadOnly
+            };
+            var mockFileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { Path.Combine( "test", "bin", "Debug",  "AppToTest.dll"), mockFileData},
+                { Path.Combine( "test", "bin", "Debug",  "AppToTest.dll.stryker-unchanged"), mockFileData},
+            });
+            
+            var target = new ProjectInfo(mockFileSystem)
+            {
+                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
+                    TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", "/test/bin/Debug/" },
+                        { "TargetFileName", "TestName.dll" }
+                    }).Object
+                },
+                ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", "/app/bin/Debug/" },
+                        { "TargetFileName", "AppToTest.dll" }
+                    }).Object
+            };
+
+            target.RestoreOriginalAssembly();
+            target.ProjectWarnings.Count.ShouldBe(1);
+            target.ProjectWarnings[0].ShouldContain("Failed to restore original assembly");
         }
     }
 }
