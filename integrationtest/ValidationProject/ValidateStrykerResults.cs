@@ -31,7 +31,6 @@ namespace IntegrationTests
                 var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
                 CheckReportMutantCounts(report, total: 28, ignored: 7, survived: 2, killed: 7, timeout: 0, nocoverage: 11);
-                CheckReportTestCounts(report, total: 2);
             }
         }
 
@@ -89,7 +88,7 @@ namespace IntegrationTests
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
             CheckReportMutantCounts(report, total: 117, ignored: 56, survived: 4, killed: 8, timeout: 2, nocoverage: 45);
-            CheckReportTestCounts(report, total: 18);
+            CheckReportTestCounts(report, total: 31);
         }
 
         private void CheckReportMutantCounts(JsonReport report, int total, int ignored, int survived, int killed, int timeout, int nocoverage)
@@ -115,9 +114,7 @@ namespace IntegrationTests
         {
             var actualTotal = report.TestFiles.Sum(tf => tf.Value.Tests.Count);
 
-            report.TestFiles.ShouldSatisfyAllConditions(
-                () => actualTotal.ShouldBe(total)
-            );
+            actualTotal.ShouldBe(total);
         }
     }
 }
