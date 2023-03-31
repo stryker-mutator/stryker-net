@@ -27,6 +27,8 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void InitialBuildProcess_WithPathAsBuildCommand_ShouldThrowStrykerInputExceptionOnFailWithQuotes()
         {
+            Skip.IfNot(Environment.OSVersion.Platform == PlatformID.Win32NT, "MSBuild is only available on Windows");
+
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
 
             processMock.SetupProcessMockToReturn("", 1);
