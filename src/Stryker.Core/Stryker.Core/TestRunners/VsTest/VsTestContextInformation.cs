@@ -60,12 +60,7 @@ namespace Stryker.Core.TestRunners.VsTest
         /// </summary>
         public IDictionary<Guid, VsTestDescription> VsTests { get; private set; }
 
-        public IDictionary<string, ISet<Guid>> TestsPerSource { get; private set; } = new Dictionary<string, ISet<Guid>>();
-
-        /// <summary>
-        ///     Test assemblies
-        /// </summary>
-        public IEnumerable<string> TestSources => TestsPerSource.Keys;
+        public IDictionary<string, ISet<Guid>> TestsPerSource { get; } = new Dictionary<string, ISet<Guid>>();
 
         /// <summary>
         ///     Tests (Stryker format)
@@ -245,9 +240,8 @@ namespace Stryker.Core.TestRunners.VsTest
 
             return $@"<RunSettings>
  <RunConfiguration>
-  <CollectSourceInformation>true</CollectSourceInformation>
   <MaxCpuCount>{Math.Max(1, Options.Concurrency)}</MaxCpuCount>
-  <DesignMode>false</DesignMode>
+  <DesignMode>true</DesignMode>
 {testCaseFilter}
  </RunConfiguration>
 </RunSettings>";
