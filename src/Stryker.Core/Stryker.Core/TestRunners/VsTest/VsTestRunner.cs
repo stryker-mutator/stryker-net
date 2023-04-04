@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
@@ -212,13 +213,14 @@ namespace Stryker.Core.TestRunners.VsTest
 
             _aborted = false;
             var options = new TestPlatformOptions { TestCaseFilter = string.IsNullOrWhiteSpace(_context.Options.TestCaseFilter) ? null : _context.Options.TestCaseFilter };
+            Task session = null;
             if (tests.IsEveryTest)
             {
-                _vsTestConsole.RunTestsWithCustomTestHostAsync(sources, runSettings, options, eventHandler, strykerVsTestHostLauncher);
+                session = _vsTestConsole.RunTestsWithCustomTestHostAsync(sources, runSettings, options, eventHandler, strykerVsTestHostLauncher);
             }
             else
             {
-                _vsTestConsole.RunTestsWithCustomTestHostAsync(tests.GetGuids().Select(t => _context.VsTests[t].Case), runSettings,
+                session = _vsTestConsole.RunTestsWithCustomTestHostAsync(tests.GetGuids().Select(t => _context.VsTests[t].Case), runSettings,
                     options, eventHandler, strykerVsTestHostLauncher);
             }
 
@@ -229,14 +231,16 @@ namespace Stryker.Core.TestRunners.VsTest
                 _vsTestConsole.AbortTestRun();
                 _vsTestFailed = true;
             }
-
+            
+            session.Wait(10000);
             if (strykerVsTestHostLauncher.ErrorCode > 0)
             {
-                _logger.LogError("Test session ended with code {0}", strykerVsTestHostLauncher.ErrorCode);
+                _logger.LogError($"{RunnerId}: Test session ended with code {strykerVsTestHostLauncher.ErrorCode}");
             }
 
             if (!strykerVsTestHostLauncher.IsProcessCreated)
             {
+                _logger.LogCritical($"{RunnerId}: VsTest did not start, critical error.");
                 throw new GeneralStrykerException("*** Failed to create a TestRunner, Stryker cannot recover from this! ***");
             }
 

@@ -317,7 +317,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 });
 
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
-            testRunnerMock.Setup(x => x.DiscoverTests( It.IsAny<string>())).Returns(true);
+            testRunnerMock.Setup(x => x.DiscoverTests( It.IsAny<string>())).Returns(false);
             testRunnerMock.Setup(x => x.GetTests( It.IsAny<IProjectAndTest>())).Returns(new TestSet());
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(),  It.IsAny<IProjectAndTest>(),It.IsAny<ITestRunner>()))
                 .Returns(new InitialTestRun(new TestRunResult(TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), string.Empty, TimeSpan.Zero), null)); // failing test

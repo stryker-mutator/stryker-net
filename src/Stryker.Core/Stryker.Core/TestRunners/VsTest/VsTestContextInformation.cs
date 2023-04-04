@@ -152,7 +152,6 @@ namespace Stryker.Core.TestRunners.VsTest
             return determineConsoleParameters;
         }
 
-
         public TestSet GetTestsForSources(IEnumerable<string> sources)
         {
             var result = new TestSet();
