@@ -327,21 +327,5 @@ namespace Stryker.Core.Initialisation
                 }
             }
         }
-
-        private void DiagnoseLackOfDetectedTest(ProjectInfo projectInfo)
-        {
-            foreach (var testProject in projectInfo.TestProjectAnalyzerResults)
-            {
-                foreach (var (framework, adapter) in TestFrameworks)
-                {
-                    if (!testProject.References.Any(r => r.Contains(framework)) ||
-                        testProject.References.Any(r => r.Contains(adapter))) continue;
-                    var message = $"Project '{testProject.ProjectFilePath}' did not report any test. This may be because it is missing an appropriate VstTest adapter for '{framework}'. " +
-                                  $"Adding '{adapter}' to this project references may resolve the issue.";
-                        projectInfo.ProjectWarnings.Add(message);
-                    _logger.LogWarning(message);
-                }
-            }
-        }
     }
 }
