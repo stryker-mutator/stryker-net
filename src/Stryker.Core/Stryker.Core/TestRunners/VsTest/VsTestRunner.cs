@@ -23,6 +23,8 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly VsTestContextInformation _context;
         private readonly int _id;
         private readonly ILogger _logger;
+        // safety timeout for VsTestWrapper operations. We assume VsTest crashed if the timeout triggers
+        private const int VsTestWrapperTimeOutInMs = 2000;
 
         private string RunnerId => $"Runner {_id}";
 
@@ -225,24 +227,30 @@ namespace Stryker.Core.TestRunners.VsTest
             }
 
             // Wait for test completed report
-            if (!eventHandler.WaitEnd(timeOut+2000))
+            if (!eventHandler.WaitEnd(timeOut+VsTestWrapperTimeOutInMs) || !session.Wait(VsTestWrapperTimeOutInMs))
             {
-                _logger.LogWarning($"{RunnerId}: VsTest did not report the end of test session in due time, it may have hang. Retrying!");
-                _vsTestConsole.AbortTestRun();
+
+                // VsTestWrapper aborts the current test sessions on timeout, except on critical error, so we have an internal timeout (+ grace period)
+                // to detect and properly handle those events. 
+                if (!strykerVsTestHostLauncher.IsProcessCreated)
+                {
+                    // VsTestWrapper did not launch a test session for some reason
+                    _logger.LogError($"{RunnerId}: VsTest did not start properly.");
+                }
+                else
+                {
+                    // VsTestHost appears stuck and can't be aborted
+                    _logger.LogError($"{RunnerId}: VsTest did not report the end of test session in due time, it may have hang.");
+                    _vsTestConsole.AbortTestRun();
+                }
                 _vsTestFailed = true;
+
             }
-            
-            session.Wait(10000);
-            if (strykerVsTestHostLauncher.ErrorCode > 0)
+            else if (strykerVsTestHostLauncher.ErrorCode > 0)
             {
                 _logger.LogError($"{RunnerId}: Test session ended with code {strykerVsTestHostLauncher.ErrorCode}");
             }
-
-            if (!strykerVsTestHostLauncher.IsProcessCreated)
-            {
-                _logger.LogError($"{RunnerId}: VsTest did not start, critical error.");
-                //throw new GeneralStrykerException("*** Failed to create a TestRunner, Stryker cannot recover from this! ***");
-            }
+            
 
             eventHandler.ResultsUpdated -= HandlerUpdate;
             eventHandler.VsTestFailed -= HandlerVsTestFailed;
@@ -254,6 +262,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             PrepareVsTestConsole();
             _vsTestFailed = false;
+            _logger.LogWarning($"{RunnerId}: Retrying the test session.");
 
             return RunTestSession(tests, sources, runSettings, timeOut, updateHandler, retries + 1);
         }
