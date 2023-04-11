@@ -125,7 +125,7 @@ namespace Stryker.Core
                 _logger.LogError(ex, "An error occurred during the mutation test run ");
                 throw;
             }
-            
+
 #endif
             finally
             {

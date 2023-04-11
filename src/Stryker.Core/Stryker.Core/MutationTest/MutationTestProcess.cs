@@ -139,7 +139,7 @@ namespace Stryker.Core.MutationTest
             {
                 mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest, false);
 
-                if (mutant.ResultStatus == MutantStatus.NotRun)
+                if (mutant.ResultStatus == MutantStatus.Pending)
                 {
                     continueTestRun = true; // Not all mutants in this group were tested so we continue
                 }
@@ -154,7 +154,7 @@ namespace Stryker.Core.MutationTest
         {
             foreach (var mutant in mutants)
             {
-                if (mutant.ResultStatus == MutantStatus.NotRun)
+                if (mutant.ResultStatus == MutantStatus.Pending)
                 {
                     Logger.LogWarning($"Mutation {mutant.Id} was not fully tested.");
                 }
@@ -165,7 +165,7 @@ namespace Stryker.Core.MutationTest
 
         private void OnMutantTested(Mutant mutant, ISet<Mutant> reportedMutants)
         {
-            if (mutant.ResultStatus == MutantStatus.NotRun || reportedMutants.Contains(mutant))
+            if (mutant.ResultStatus == MutantStatus.Pending || reportedMutants.Contains(mutant))
             {
                 // skip duplicates or useless notifications
                 return;
@@ -180,7 +180,7 @@ namespace Stryker.Core.MutationTest
             {
                 return false;
             }
-            if (mutantsToTest.Any(x => x.ResultStatus != MutantStatus.NotRun))
+            if (mutantsToTest.Any(x => x.ResultStatus != MutantStatus.Pending))
             {
                 throw new GeneralStrykerException("Only mutants to run should be passed to the mutation test process. If you see this message please report an issue.");
             }
@@ -201,7 +201,7 @@ namespace Stryker.Core.MutationTest
             blocks.AddRange(mutantsToGroup.Where(m => m.AssessingTests.IsEveryTest).Select(m => new List<Mutant> { m }));
             mutantsToGroup.RemoveAll(m => m.AssessingTests.IsEveryTest);
 
-            mutantsToGroup = mutantsToGroup.Where(m => m.ResultStatus == MutantStatus.NotRun).ToList();
+            mutantsToGroup = mutantsToGroup.Where(m => m.ResultStatus == MutantStatus.Pending).ToList();
 
             var testsCount = Input.InitialTestRun.Result.ExecutedTests.Count;
             mutantsToGroup = mutantsToGroup.OrderBy(m => m.AssessingTests.Count).ToList();

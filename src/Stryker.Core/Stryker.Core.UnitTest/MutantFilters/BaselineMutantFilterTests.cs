@@ -251,7 +251,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             {
                 new Mutant
                 {
-                    ResultStatus = MutantStatus.NotRun
+                    ResultStatus = MutantStatus.Pending
                 }
             };
 
@@ -314,11 +314,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
             {
                 new Mutant
                 {
-                    ResultStatus = MutantStatus.NotRun
+                    ResultStatus = MutantStatus.Pending
                 },
                 new Mutant
                 {
-                    ResultStatus = MutantStatus.NotRun
+                    ResultStatus = MutantStatus.Pending
                 }
             };
 
@@ -357,7 +357,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Assert
             foreach (var result in results)
             {
-                result.ResultStatus.ShouldBe(MutantStatus.NotRun);
+                result.ResultStatus.ShouldBe(MutantStatus.Pending);
                 result.ResultStatusReason.ShouldBe("Result based on previous run was inconclusive");
             }
             results.Count().ShouldBe(2);
