@@ -6,13 +6,11 @@ using System.Linq;
 using System.Threading.Tasks;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
 
@@ -43,13 +41,6 @@ namespace Stryker.Core.Initialisation
         private readonly IBuildalyzerProvider _buildalyzerProvider;
         protected IInitialTestProcess _initialTestProcess;
         protected ILogger _logger;
-
-        private static readonly Dictionary<string, string> TestFrameworks = new()
-        {
-            ["xunit.core"] = "xunit.runner.visualstudio",
-            ["nunit.framework"] = "NUnit3.TestAdapter",
-            ["Microsoft.VisualStudio.TestPlatform.TestFramework"] = "Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter"
-        };
 
         public InitialisationProcess(
             IInputFileResolver inputFileResolver = null,
@@ -293,6 +284,13 @@ namespace Stryker.Core.Initialisation
             throw new InputException("No test has been detected. Make sure your test project contains test and is compatible with VsTest."+string.Join(Environment.NewLine, projectInfo.ProjectWarnings));
         }
 
+        private static readonly Dictionary<string, (string assembly, string package)> TestFrameworks = new()
+        {
+            ["xunit.core"] = ("xunit.runner.visualstudio","xunit.runner.visualstudio"),
+            ["nunit.framework"] = ("NUnit3.TestAdapter", "NUnit3TestAdapter"),
+            ["Microsoft.VisualStudio.TestPlatform.TestFramework"] = ("Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter","MSTest.TestAdapter")
+        };
+
         private void DiscoverTests(ProjectInfo projectInfo, ITestRunner testRunner)
         {
             foreach (var testProject in projectInfo.TestProjectAnalyzerResults)
@@ -303,18 +301,28 @@ namespace Stryker.Core.Initialisation
                 }
 
                 var causeFound = false;
-                foreach (var (framework, adapter) in TestFrameworks)
+                foreach (var (framework, (adapter, package)) in
+                         TestFrameworks.Where(t => testProject.References.Any(r => r.Contains(t.Key))))
                 {
-                    if (!testProject.References.Any(r => r.Contains(framework)) ||
-                        testProject.References.Any(r => r.Contains(adapter)))
+
+                    if (testProject.References.Any(r => r.Contains(adapter)))
                     {
                         continue;
                     }
 
                     causeFound = true;
                     var message =
-                        $"Project '{testProject.ProjectFilePath}' did not report any test. This may be because it is missing an appropriate VstTest adapter for '{framework}'. " +
-                        $"Adding '{adapter}' to this project references may resolve the issue.";
+                        $"Project '{testProject.ProjectFilePath}' did not report any test.";
+                    if (testProject.PackageReferences?.ContainsKey(package) == true)
+                    {
+                        message+=$" This may be because the test adapter package, {package}, failed to deploy. " +
+                                 "Check if any dependency is missing or there is a version conflict.";
+                    }
+                    else
+                    {
+                        message+=$" This may be because it is missing an appropriate VstTest adapter for '{framework}'. " +
+                                 $"Adding '{adapter}' to this project references may resolve the issue.";
+                    }
                     projectInfo.ProjectWarnings.Add(message);
                     _logger.LogWarning(message);
                 }

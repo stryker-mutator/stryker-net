@@ -9,5 +9,6 @@
 
   <ItemGroup>
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
+    <PackageReference Include="Microsoft.TestPlatform.Portable" />
   </ItemGroup>
 </Project>
