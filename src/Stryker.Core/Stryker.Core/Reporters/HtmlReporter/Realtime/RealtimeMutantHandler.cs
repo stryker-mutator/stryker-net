@@ -66,7 +66,7 @@ public class RealtimeMutantHandler : IRealtimeMutantHandler
 
         foreach (var writer in _writers)
         {
-            writer.Write($"event: mutation\ndata: {JsonSerializer.Serialize(jsonMutant)}\n\n");
+            writer.Write($"event: mutation\ndata: {JsonSerializer.Serialize(jsonMutant, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase})}\n\n");
             writer.Flush();
         }
     }

@@ -5,6 +5,7 @@ using System.Linq;
 using Spectre.Console;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using Stryker.Core.Options.Inputs;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters.HtmlReporter;
 using Stryker.Core.ProjectComponents.TestProjects;
@@ -38,26 +39,14 @@ public class HtmlReporter : IReporter
 
     public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
     {
-        _mutantHandler.CloseSseEndpoint();
+        var reportPath = BuildReportPath();
+        WriteHtmlReport(reportPath, reportComponent);
 
-        var mutationReport = JsonReport.Build(_options, reportComponent);
-        var filename = _options.ReportFileName + ".html";
-        var reportPath = Path.Combine(_options.ReportPath, filename);
-
-        reportPath = FilePathUtils.NormalizePathSeparators(reportPath);
-
-        WriteHtmlReport(reportPath, mutationReport.ToJsonHtmlSafe());
-
-        if (_options.ReportTypeToOpen == Options.Inputs.ReportType.Html)
+        if (_options.ReportTypeToOpen == ReportType.Html)
         {
-            _processWrapper.Open("file://" + reportPath.Replace("\\", "/"));
+            _mutantHandler.CloseSseEndpoint();
+            return;
         }
-        else
-        {
-            var aqua = new Style(Color.Aqua);
-            _console.WriteLine("Hint: by passing \"--open-report or -o\" the report will open automatically once Stryker is done.", aqua);
-        }
-
         var reportUri = "file://" + reportPath.Replace("\\", "/").Replace(" ", "%20");
 
         var green = new Style(Color.Green);
@@ -77,8 +66,33 @@ public class HtmlReporter : IReporter
         _console.WriteLine("You can open it in your browser of choice.", green);
     }
 
-    private void WriteHtmlReport(string filePath, string mutationReport)
+    private void OpenReportInBrowser(IReadOnlyProjectComponent reportComponent, string reportPath)
     {
+        WriteHtmlReport(reportPath, reportComponent);
+
+        if (_options.ReportTypeToOpen == ReportType.Html)
+        {
+            _processWrapper.Open("file://" + reportPath.Replace("\\", "/"));
+        }
+        else
+        {
+            var aqua = new Style(Color.Aqua);
+            _console.WriteLine("Hint: by passing \"--open-report or -o\" the report will open automatically once Stryker is done.", aqua);
+        }
+    }
+
+    private string BuildReportPath()
+    {
+        var filename = _options.ReportFileName + ".html";
+        var reportPath = Path.Combine(_options.ReportPath, filename);
+        var reportPathNormalized = FilePathUtils.NormalizePathSeparators(reportPath);
+        return reportPathNormalized;
+    }
+
+    private void WriteHtmlReport(string filePath, IReadOnlyProjectComponent reportComponent)
+    {
+        var mutationReport = JsonReport.Build(_options, reportComponent).ToJsonHtmlSafe();
+
         _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
         using var htmlStream = typeof(HtmlReporter).Assembly
@@ -100,16 +114,36 @@ public class HtmlReporter : IReporter
         fileContent = fileContent.Replace("##REPORT_JS##", jsReader.ReadToEnd());
         fileContent = fileContent.Replace("##REPORT_TITLE##", "Stryker.NET Report");
         fileContent = fileContent.Replace("##REPORT_JSON##", mutationReport);
+        fileContent = fileContent.Replace("##SSE_ENDPOINT##", "http://localhost:8080/");
 
         file.WriteLine(fileContent);
     }
 
     public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
     {
-        // This reporter does not currently report when mutants are created
+        if (_options.ReportTypeToOpen == ReportType.Html)
+        {
+            _mutantHandler.OpenSseEndpoint();
+            OpenReportInBrowser(reportComponent, BuildReportPath());
+            return;
+        }
+
+        var aqua = new Style(Color.Aqua);
+        _console.WriteLine("Hint: by passing \"--open-report or -o\" the report will open automatically and update the report in realtime.", aqua);
     }
 
-    public void OnMutantTested(IReadOnlyMutant result) => _mutantHandler.SendMutantResultEvent(result);
+    public void OnMutantTested(IReadOnlyMutant result)
+    {
+        if (_options.ReportTypeToOpen != ReportType.Html)
+        {
+            return;
+        }
 
-    public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested) => _mutantHandler.OpenSseEndpoint();
+        _mutantHandler.SendMutantResultEvent(result);
+    }
+
+    public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
+    {
+        // This reporter does not currently report when the mutation test run starts
+    }
 }
