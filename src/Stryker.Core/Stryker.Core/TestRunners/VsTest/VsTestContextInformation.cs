@@ -51,7 +51,8 @@ namespace Stryker.Core.TestRunners.VsTest
             _fileSystem = fileSystem ?? new FileSystem();
             _vsTestHelper = helper ?? new VsTestHelper(_fileSystem, logger);
             _wrapperBuilder = builder ?? BuildActualVsTestWrapper;
-            _hostBuilder = hostBuilder ?? (name => new StrykerVsTestHostLauncher(name));
+            var devMode = options.DevMode;
+            _hostBuilder = hostBuilder ?? (name => new StrykerVsTestHostLauncher(name, devMode));
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestContextInformation>();
         }
 

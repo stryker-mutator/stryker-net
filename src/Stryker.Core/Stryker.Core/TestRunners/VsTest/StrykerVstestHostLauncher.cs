@@ -17,6 +17,7 @@ namespace Stryker.Core.TestRunners.VsTest
     public class StrykerVsTestHostLauncher : IStrykerTestHostLauncher
     {
         private readonly string _id;
+        private readonly bool _devMode;
         private Process _currentProcess;
         public int ErrorCode { get; private set; }
 
@@ -24,7 +25,11 @@ namespace Stryker.Core.TestRunners.VsTest
 
         static StrykerVsTestHostLauncher() => Logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerVsTestHostLauncher>();
 
-        public StrykerVsTestHostLauncher(string id) => _id = id;
+        public StrykerVsTestHostLauncher(string id, bool devMode)
+        {
+            _id = id;
+            _devMode = devMode;
+        }
 
         public bool IsDebug => false;
 
@@ -52,9 +57,11 @@ namespace Stryker.Core.TestRunners.VsTest
             };
             _currentProcess = new Process { StartInfo = processInfo, EnableRaisingEvents = true };
 
-            _currentProcess.OutputDataReceived += Process_OutputDataReceived;
-            _currentProcess.ErrorDataReceived += Process_ErrorDataReceived;
-
+            if (_devMode)
+            {
+                _currentProcess.OutputDataReceived += Process_OutputDataReceived;
+                _currentProcess.ErrorDataReceived += Process_ErrorDataReceived;
+            }
             if (!_currentProcess.Start())
             {
                 Logger.LogError($"Runner {_id}: Failed to start process {processInfo.Arguments}.");
