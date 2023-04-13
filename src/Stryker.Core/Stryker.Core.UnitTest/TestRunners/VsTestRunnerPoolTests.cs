@@ -99,11 +99,10 @@ namespace Stryker.Core.UnitTest.TestRunners
         public void HandleVsTestCreationFailure()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner, succeed: false);
-            SetupMockTestRun(mockVsTest, new[] { ("T0", false), ("T1", true) });
+            SetupFailingTestRun(mockVsTest);
 
             Action action = () => runner.InitialTest(TargetProject);
-            //TODO: update tests once test have been conducted
-            //action.ShouldThrow<GeneralStrykerException>();
+            action.ShouldThrow<GeneralStrykerException>();
         }
 
         [Fact]
@@ -121,9 +120,10 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             SetupFailingTestRun(mockVsTest);
-            runner.TestMultipleMutants(TargetProject, null, new[] { Mutant }, null);
-            // the test will always end in a crash, VsTestRunner should retry at least once
-            mockVsTest.Verify(m => m.EndSession(), Times.AtLeastOnce());
+            var action = () =>  runner.TestMultipleMutants(TargetProject, null, new[] { Mutant }, null);
+            action.ShouldThrow<GeneralStrykerException>();
+            // the test will always end in a crash, VsTestRunner should retry at least a gew times
+            mockVsTest.Verify(m => m.EndSession(), Times.AtLeast(4));
         }
 
         [Fact]

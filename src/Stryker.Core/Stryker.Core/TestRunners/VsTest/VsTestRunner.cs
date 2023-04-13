@@ -255,9 +255,15 @@ namespace Stryker.Core.TestRunners.VsTest
             eventHandler.ResultsUpdated -= HandlerUpdate;
             eventHandler.VsTestFailed -= HandlerVsTestFailed;
 
-            if (!_vsTestFailed || retries > 5)
+            if (!_vsTestFailed)
             {
                 return eventHandler;
+            }
+
+            if (retries >= 5)
+            {
+                throw new GeneralStrykerException(
+                    $"{RunnerId}: failed to run a test session despite {retries + 1} attempts. Aborting session.");
             }
 
             PrepareVsTestConsole();
