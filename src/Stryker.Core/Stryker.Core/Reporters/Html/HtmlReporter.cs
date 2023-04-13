@@ -33,7 +33,7 @@ public class HtmlReporter : IReporter
         _fileSystem = fileSystem ?? new FileSystem();
         _console = console ?? AnsiConsole.Console;
         _processWrapper = processWrapper ?? new WebbrowserOpener();
-        _mutantHandler = mutantHandler ?? new RealtimeMutantHandler();
+        _mutantHandler = mutantHandler ?? new RealtimeMutantHandler(_options);
     }
 
     public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
