@@ -78,6 +78,12 @@ namespace Stryker.Core.Initialisation
                     continue;
                 }
 
+                if (!FileSystem.File.Exists(sourceFile))
+                {
+                    _logger.LogWarning($"F# project builder: skipping non existing file {sourceFile}.");
+                    continue;
+                }
+
                 var relativePath = Path.GetRelativePath(projectUnderTestDir, sourceFile);
                 var folderComposite = GetOrBuildFolderComposite(cache, Path.GetDirectoryName(relativePath), projectUnderTestDir, projectRoot, inputFiles);
                 var fileName = Path.GetFileName(sourceFile);
