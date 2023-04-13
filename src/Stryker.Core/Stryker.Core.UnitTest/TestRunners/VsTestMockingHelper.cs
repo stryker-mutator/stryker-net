@@ -523,6 +523,7 @@ public class VsTestMockingHelper : TestBase
         public bool IsDebug { get; }
 
         public bool IsProcessCreated { get; }
+
         public int ErrorCode { get; }
     }
 
