@@ -6,8 +6,8 @@ using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.Reporters.Html.ProcessWrapper;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.Reporters.HtmlReporter.ProcessWrapper;
 using Stryker.Core.Reporters.Json;
 
 namespace Stryker.Core.Reporters

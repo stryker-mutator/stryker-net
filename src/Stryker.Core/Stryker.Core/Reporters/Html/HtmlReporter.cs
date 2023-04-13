@@ -7,13 +7,12 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.Reporters.HtmlReporter;
+using Stryker.Core.Reporters.Html.ProcessWrapper;
+using Stryker.Core.Reporters.Html.Realtime;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.Reporters.HtmlReporter.ProcessWrapper;
-using Stryker.Core.Reporters.HtmlReporter.Realtime;
 using Stryker.Core.Reporters.Json;
 
-namespace Stryker.Core.Reporters.HtmlReporter;
+namespace Stryker.Core.Reporters.Html;
 
 public class HtmlReporter : IReporter
 {

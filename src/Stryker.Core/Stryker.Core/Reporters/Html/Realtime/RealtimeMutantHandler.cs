@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Json.SourceFiles;
 
-namespace Stryker.Core.Reporters.HtmlReporter.Realtime;
+namespace Stryker.Core.Reporters.Html.Realtime;
 
 public class RealtimeMutantHandler : IRealtimeMutantHandler
 {

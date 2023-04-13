@@ -283,7 +283,7 @@ StrykerLogs/
 **/*.ncrunchsolution
 **/*.ncrunchproject
 *.orig
-/src/Stryker.Core/Stryker.Core/Reporters/HtmlReporter/Files/
+/src/Stryker.Core/Stryker.Core/Reporters/Html/Files/
 /src/Stryker.Core/Stryker.Core/ToolHelpers/.vstest/
 *.buildlog
 *.DotSettings

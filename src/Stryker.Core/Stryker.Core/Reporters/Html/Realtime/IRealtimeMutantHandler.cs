@@ -1,6 +1,6 @@
 ﻿using Stryker.Core.Mutants;
 
-namespace Stryker.Core.Reporters.HtmlReporter.Realtime;
+namespace Stryker.Core.Reporters.Html.Realtime;
 
 public interface IRealtimeMutantHandler
 {

@@ -4,19 +4,16 @@ using System.IO.Abstractions.TestingHelpers;
 using Moq;
 using Shouldly;
 using Spectre.Console.Testing;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.Reporters.Html.reporter;
-using Stryker.Core.Reporters.HtmlReporter.ProcessWrapper;
-using System.IO;
-using System.IO.Abstractions.TestingHelpers;
-using Stryker.Core.Mutants;
-using Stryker.Core.Reporters.HtmlReporter;
-using Stryker.Core.Reporters.HtmlReporter.Realtime;
+using Stryker.Core.Reporters.Html;
+using Stryker.Core.Reporters.Html.ProcessWrapper;
+using Stryker.Core.Reporters.Html.Realtime;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.Reporters
+namespace Stryker.Core.UnitTest.Reporters.Html
 {
     public class HtmlReporterTests : TestBase
     {

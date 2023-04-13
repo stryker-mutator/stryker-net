@@ -30,8 +30,8 @@
   <ItemGroup>
     <EmbeddedResource Include="InjectedHelpers\MutantControl.cs" />
     <EmbeddedResource Include="InjectedHelpers\Coverage\MutantContext.cs" />
-    <EmbeddedResource Include="Reporters\HtmlReporter\Files\dist\mutation-test-elements.js" />
-    <EmbeddedResource Include="Reporters\HtmlReporter\Files\mutation-report.html" />
+    <EmbeddedResource Include="Reporters\Html\Files\dist\mutation-test-elements.js" />
+    <EmbeddedResource Include="Reporters\Html\Files\mutation-report.html" />
 
     <EmbeddedResource Include="ToolHelpers\.vstest\Microsoft.TestPlatform.Portable\*\*.nupkg" />
   </ItemGroup>
