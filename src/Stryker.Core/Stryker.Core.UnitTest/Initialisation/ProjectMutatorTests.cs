@@ -34,7 +34,6 @@ namespace ExtraProject.XUnit
     public class UnitTest1
     {
         [Fact]
-        [Fact]
         public void Test1()
         {
             // example test

@@ -1,11 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using Moq;
+using Newtonsoft.Json;
 using Shouldly;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -18,6 +23,27 @@ namespace Stryker.Core.UnitTest.Reporters
 {
     public class JsonReporterTests : TestBase
     {
+        private readonly IFileSystem _fileSystemMock = new MockFileSystem();
+        private readonly string _testFilePath = "c:\\mytestfile.cs";
+        private readonly string _testFileContents = @"using Xunit;
+
+namespace ExtraProject.XUnit
+{
+    public class UnitTest1
+    {
+        [Fact]
+        public void Test1()
+        {
+            // example test
+        }
+    }
+}
+";
+        public JsonReporterTests()
+        {
+            _fileSystemMock.File.WriteAllText(_testFilePath, _testFileContents);
+        }
+
         [Fact]
         public void JsonMutantPositionLine_ThrowsArgumentExceptionWhenSetToLessThan1()
         {
@@ -130,6 +156,7 @@ namespace Stryker.Core.UnitTest.Reporters
         [Fact]
         public void JsonReporter_OnAllMutantsTestedShouldWriteJsonToFile()
         {
+            // arrange
             var mockFileSystem = new MockFileSystem();
             var options = new StrykerOptions
             {
@@ -137,15 +164,44 @@ namespace Stryker.Core.UnitTest.Reporters
                 OutputPath = Directory.GetCurrentDirectory(),
                 ReportFileName = "mutation-report"
             };
+
+            var testProjectsInfo = new TestProjectsInfo(_fileSystemMock)
+            {
+                TestProjects = new List<TestProject>
+                {
+                    new TestProject(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
+                        sourceFiles: new string[] { _testFilePath }).Object)
+                }
+            };
+            var node = CSharpSyntaxTree.ParseText(_testFileContents).GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
+            testProjectsInfo.TestProjects.First().TestFiles.First().AddTest(Guid.Empty, "myUnitTestName", node);
+
             var reporter = new JsonReporter(options, mockFileSystem);
 
-            reporter.OnAllMutantsTested(ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>());
+            // act
+            reporter.OnAllMutantsTested(ReportTestHelper.CreateProjectWith(), testProjectsInfo);
+
+            // assert
             var reportPath = Path.Combine(options.ReportPath, "mutation-report.json");
             mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
             var fileContents = mockFileSystem.File.ReadAllText(reportPath);
-            fileContents.ShouldContain(@"""thresholds"":{");
-            fileContents.ShouldContain(@"""high"":80");
-            fileContents.ShouldContain(@"""low"":60");
+
+            var report = JsonConvert.DeserializeObject<JsonReport>(fileContents);
+
+            report.ShouldNotBeNull();
+            report.Thresholds.ShouldContainKeyAndValue("high", 80);
+            report.Thresholds.ShouldContainKeyAndValue("low", 60);
+
+            var testFile = report.TestFiles.ShouldHaveSingleItem();
+            testFile.Key.ShouldBe(_testFilePath);
+            testFile.Value.Language.ShouldBe("cs");
+            testFile.Value.Source.ShouldBe(_testFileContents);
+
+            var test = testFile.Value.Tests.ShouldHaveSingleItem();
+            test.Name.ShouldBe("myUnitTestName");
+            test.Id.ShouldBe(Guid.Empty.ToString());
+            test.Location.Start.Line.ShouldBe(7);
+            test.Location.End.Line.ShouldBe(11);
         }
     }
 }
