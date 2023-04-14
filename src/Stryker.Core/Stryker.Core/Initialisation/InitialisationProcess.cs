@@ -143,44 +143,49 @@ namespace Stryker.Core.Initialisation
             var missingProjectVersion = string.IsNullOrEmpty(options.ProjectVersion);
             if (missingProjectName || missingProjectVersion)
             {
-                var subject = missingProjectName switch
-                {
-                    true when missingProjectVersion => "Project name and project version",
-                    true => "Project name",
-                    _ => "Project version"
-                };
-                var projectFilePath = projectInfo.AnalyzerResult.ProjectFilePath;
+                InnerInitializeDashboardProjectInformation(options, projectInfo, missingProjectName, missingProjectVersion);
+            }
+        }
 
-                if (!projectInfo.AnalyzerResult.Properties.TryGetValue("TargetPath", out var targetPath))
+        private void InnerInitializeDashboardProjectInformation(StrykerOptions options, SourceProjectInfo projectInfo, bool missingProjectName, bool missingProjectVersion)
+        {
+            var subject = missingProjectName switch
+            {
+                true when missingProjectVersion => "Project name and project version",
+                true => "Project name",
+                _ => "Project version"
+            };
+            var projectFilePath = projectInfo.AnalyzerResult.ProjectFilePath;
+
+            if (!projectInfo.AnalyzerResult.Properties.TryGetValue("TargetPath", out var targetPath))
+            {
+                throw new InputException($"Can't read {subject.ToLowerInvariant()} because the TargetPath property was not found in {projectFilePath}");
+            }
+
+            _logger.LogTrace("{Subject} missing for the dashboard reporter, reading it from {TargetPath}. " +
+                             "Note that this requires SourceLink to be properly configured in {ProjectPath}", subject, targetPath, projectFilePath);
+
+            try
+            {
+                var targetName = Path.GetFileName(targetPath);
+                using var module = ModuleDefinition.ReadModule(targetPath);
+
+                var details = $"To solve this issue, either specify the {subject.ToLowerInvariant()} in the stryker configuration or configure [SourceLink](https://github.com/dotnet/sourcelink#readme) in {projectFilePath}";
+                if (missingProjectName)
                 {
-                    throw new InputException($"Can't read {subject.ToLowerInvariant()} because the TargetPath property was not found in {projectFilePath}");
+                    options.ProjectName = ReadProjectName(module, details);
+                    _logger.LogDebug("Using {ProjectName} as project name for the dashboard reporter. (Read from the AssemblyMetadata/RepositoryUrl assembly attribute of {TargetName})", options.ProjectName, targetName);
                 }
 
-                _logger.LogTrace("{Subject} missing for the dashboard reporter, reading it from {TargetPath}. " +
-                                 "Note that this requires SourceLink to be properly configured in {ProjectPath}", subject, targetPath, projectFilePath);
-
-                try
+                if (missingProjectVersion)
                 {
-                    var targetName = Path.GetFileName(targetPath);
-                    using var module = ModuleDefinition.ReadModule(targetPath);
-
-                    var details = $"To solve this issue, either specify the {subject.ToLowerInvariant()} in the stryker configuration or configure [SourceLink](https://github.com/dotnet/sourcelink#readme) in {projectFilePath}";
-                    if (missingProjectName)
-                    {
-                        options.ProjectName = ReadProjectName(module, details);
-                        _logger.LogDebug("Using {ProjectName} as project name for the dashboard reporter. (Read from the AssemblyMetadata/RepositoryUrl assembly attribute of {TargetName})", options.ProjectName, targetName);
-                    }
-
-                    if (missingProjectVersion)
-                    {
-                        options.ProjectVersion = ReadProjectVersion(module, details);
-                        _logger.LogDebug("Using {ProjectVersion} as project version for the dashboard reporter. (Read from the AssemblyInformationalVersion assembly attribute of {TargetName})", options.ProjectVersion, targetName);
-                    }
+                    options.ProjectVersion = ReadProjectVersion(module, details);
+                    _logger.LogDebug("Using {ProjectVersion} as project version for the dashboard reporter. (Read from the AssemblyInformationalVersion assembly attribute of {TargetName})", options.ProjectVersion, targetName);
                 }
-                catch (Exception e) when (e is not InputException)
-                {
-                    throw new InputException($"Failed to read {subject.ToLowerInvariant()} from {targetPath} because of error {e.Message}");
-                }
+            }
+            catch (Exception e) when (e is not InputException)
+            {
+                throw new InputException($"Failed to read {subject.ToLowerInvariant()} from {targetPath} because of error {e.Message}");
             }
         }
 
