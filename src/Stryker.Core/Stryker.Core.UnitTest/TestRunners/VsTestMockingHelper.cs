@@ -40,7 +40,7 @@ public class VsTestMockingHelper : TestBase
     protected Mutant Mutant { get; }
     protected Mutant OtherMutant { get; }
     private readonly string _testAssemblyPath;
-    private readonly SourceProjectInfo _targetProjectInfo;
+    private readonly SourceProjectInfo _sourceProjectInfo;
     private readonly TestProjectsInfo _testProjectsInfo;
     private readonly MockFileSystem _fileSystem;
     private readonly Uri _NUnitUri;
@@ -92,13 +92,13 @@ public class VsTestMockingHelper : TestBase
         _unexpectedCoverageProperty = TestProperty.Register(CoverageCollector.OutOfTestsPropertyName, CoverageCollector.OutOfTestsPropertyName, typeof(string), typeof(TestResult));
         Mutant = new Mutant { Id = 0 };
         OtherMutant = new Mutant { Id = 1 };
-        _targetProjectInfo = BuildTargetProjectInfo();
+        _sourceProjectInfo = BuildSourceProjectInfo();
         _testProjectsInfo = BuildTestProjectsInfo();
 
         TestCases = new List<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> { firstTest, secondTest };
     }
 
-    protected SourceProjectInfo BuildTargetProjectInfo(IEnumerable<Mutant> mutants = null)
+    protected SourceProjectInfo BuildSourceProjectInfo(IEnumerable<Mutant> mutants = null)
     {
         var content = new CsharpFolderComposite();
         content.Add(new CsharpFileLeaf { Mutants = mutants ?? new[] { Mutant, OtherMutant } });
@@ -487,7 +487,7 @@ public class VsTestMockingHelper : TestBase
         return mockedVsTestConsole;
     }
 
-    protected MutationTestProcess BuildMutationTestProcess(VsTestRunnerPool runner, StrykerOptions options, IReadOnlyList<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> tests = null, SourceProjectInfo targetProject = null)
+    protected MutationTestProcess BuildMutationTestProcess(VsTestRunnerPool runner, StrykerOptions options, IReadOnlyList<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> tests = null, SourceProjectInfo sourceProject = null)
     {
         var testRunResult = new TestRunResult(null, new TestGuidsList((tests ?? TestCases).Select(t => t.Id)),
             TestGuidsList.NoTest(),
@@ -496,7 +496,7 @@ public class VsTestMockingHelper : TestBase
             TimeSpan.Zero);
         var input = new MutationTestInput
         {
-            SourceProjectInfo = targetProject ?? _targetProjectInfo,
+            SourceProjectInfo = sourceProject ?? _sourceProjectInfo,
             TestRunner = runner,
             InitialTestRun = new InitialTestRun(testRunResult, new TimeoutValueCalculator(500))
         };

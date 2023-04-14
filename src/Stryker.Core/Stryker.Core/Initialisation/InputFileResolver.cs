@@ -153,7 +153,7 @@ namespace Stryker.Core.Initialisation
             }
             else
             {
-                sourceProjectPath = DetermineTargetProjectWithNameFilter(projectUnderTestNameFilter, projectReferences);
+                sourceProjectPath = DetermineSourceProjectWithNameFilter(projectUnderTestNameFilter, projectReferences);
             }
 
             _logger.LogDebug("Using {0} as project under test", sourceProjectPath);
@@ -161,7 +161,7 @@ namespace Stryker.Core.Initialisation
             return sourceProjectPath;
         }
 
-        internal string DetermineTargetProjectWithNameFilter(string sourceProjectFilter, IEnumerable<string> projectReferences)
+        internal string DetermineSourceProjectWithNameFilter(string sourceProjectFilter, IEnumerable<string> projectReferences)
         {
             var stringBuilder = new StringBuilder();
 

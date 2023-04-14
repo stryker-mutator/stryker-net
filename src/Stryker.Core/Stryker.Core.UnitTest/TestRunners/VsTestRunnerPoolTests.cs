@@ -270,14 +270,14 @@ namespace Stryker.Core.UnitTest.TestRunners
                 Concurrency = Math.Max(Environment.ProcessorCount / 2, 1)
             };
 
-            var project = BuildTargetProjectInfo(new[] { Mutant, OtherMutant, new Mutant { Id = 2 }, new Mutant { Id = 4 } });
+            var project = BuildSourceProjectInfo(new[] { Mutant, OtherMutant, new Mutant { Id = 2 }, new Mutant { Id = 4 } });
             // make sure we have 4 mutants
             var myTestCases = TestCases.ToList();
             myTestCases.Add(BuildCase("T2"));
             myTestCases.Add(BuildCase("T3"));
             var mockVsTest = BuildVsTestRunnerPool(options, out var runner, myTestCases);
 
-            var tester = BuildMutationTestProcess(runner, options, targetProject: project);
+            var tester = BuildMutationTestProcess(runner, options, sourceProject: project);
             SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = "1;" });
             tester.GetCoverage();
             SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string> { ["0,1"] = "T0=S,T1=F" });

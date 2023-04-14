@@ -31,11 +31,11 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             return a;
         }
 
-        public virtual void RestoreOriginalAssembly(IAnalyzerResult targetProject)
+        public virtual void RestoreOriginalAssembly(IAnalyzerResult sourceProject)
         {
             foreach (var testProject in AnalyzerResults)
             {
-                var injectionPath = GetInjectionFilePath(testProject, targetProject);
+                var injectionPath = GetInjectionFilePath(testProject, sourceProject);
                 var backupFilePath = GetBackupName(injectionPath);
                 if (_fileSystem.File.Exists(backupFilePath))
                 {
@@ -44,15 +44,15 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             }
         }
 
-        public virtual void BackupOriginalAssembly(IAnalyzerResult targetProject)
+        public virtual void BackupOriginalAssembly(IAnalyzerResult sourceProject)
         {
             foreach (var testProject in AnalyzerResults)
             {
-                var injectionPath = GetInjectionFilePath(testProject, targetProject);
+                var injectionPath = GetInjectionFilePath(testProject, sourceProject);
                 var backupFilePath = GetBackupName(injectionPath);
-                if (!_fileSystem.Directory.Exists(targetProject.GetAssemblyDirectoryPath()))
+                if (!_fileSystem.Directory.Exists(sourceProject.GetAssemblyDirectoryPath()))
                 {
-                    _fileSystem.Directory.CreateDirectory(targetProject.GetAssemblyDirectoryPath());
+                    _fileSystem.Directory.CreateDirectory(sourceProject.GetAssemblyDirectoryPath());
                 }
                 if (_fileSystem.File.Exists(injectionPath))
                 {
@@ -69,7 +69,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             }
         }
 
-        public static string GetInjectionFilePath(IAnalyzerResult testProject, IAnalyzerResult targetProject) => Path.Combine(testProject.GetAssemblyDirectoryPath(), targetProject.GetAssemblyFileName());
+        public static string GetInjectionFilePath(IAnalyzerResult testProject, IAnalyzerResult sourceProject) => Path.Combine(testProject.GetAssemblyDirectoryPath(), sourceProject.GetAssemblyFileName());
 
         private static string GetBackupName(string injectionPath) => injectionPath + ".stryker-unchanged";
     }

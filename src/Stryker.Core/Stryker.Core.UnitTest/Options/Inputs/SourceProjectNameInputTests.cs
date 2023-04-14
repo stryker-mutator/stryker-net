@@ -5,19 +5,19 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
-    public class TargetProjectNameInputTests : TestBase
+    public class SourceProjectNameInputTests : TestBase
     {
         [Fact]
         public void ShouldHaveHelpText()
         {
-            var target = new TargetProjectNameInput();
+            var target = new SourceProjectNameInput();
             target.HelpText.ShouldBe(@"Used to find the project to test in the project references of the test project. Example: ""ExampleProject.csproj"" | default: ''");
         }
 
         [Fact]
         public void ShouldReturnName()
         {
-            var target = new TargetProjectNameInput { SuppliedInput = "name" };
+            var target = new SourceProjectNameInput { SuppliedInput = "name" };
 
             var result = target.Validate();
 
@@ -27,7 +27,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [Fact]
         public void ShouldHaveDefault()
         {
-            var target = new TargetProjectNameInput { SuppliedInput = null };
+            var target = new SourceProjectNameInput { SuppliedInput = null };
 
             var result = target.Validate();
 
@@ -38,7 +38,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [InlineData("")]
         public void ShouldThrowOnEmpty(string value)
         {
-            var target = new TargetProjectNameInput { SuppliedInput = value };
+            var target = new SourceProjectNameInput { SuppliedInput = value };
 
             var exception = Should.Throw<InputException>(() => target.Validate());
 
