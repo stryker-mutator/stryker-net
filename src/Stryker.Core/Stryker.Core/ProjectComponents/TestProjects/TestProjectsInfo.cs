@@ -6,23 +6,22 @@ using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
-using Stryker.Core.MutationTest;
 
 namespace Stryker.Core.ProjectComponents.TestProjects
 {
     public class TestProjectsInfo
     {
         private readonly IFileSystem _fileSystem;
-        private readonly ILogger<MutationTestProcess> _logger;
+        private readonly ILogger<TestProjectsInfo> _logger;
 
         public IEnumerable<TestProject> TestProjects { get; set; }
         public IEnumerable<TestFile> TestFiles => TestProjects.SelectMany(testProject => testProject.TestFiles);
         public IEnumerable<IAnalyzerResult> AnalyzerResults => TestProjects.Select(testProject => testProject.AnalyzerResult);
 
-        public TestProjectsInfo(IFileSystem fileSystem)
+        public TestProjectsInfo(IFileSystem fileSystem, ILogger<TestProjectsInfo> logger = null)
         {
             _fileSystem = fileSystem ?? new FileSystem();
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
+            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<TestProjectsInfo>();
         }
 
         public static TestProjectsInfo operator +(TestProjectsInfo a, TestProjectsInfo b)
@@ -65,7 +64,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
                 else
                 {
                     _logger.LogWarning("Could not locate source assembly {injectionPath}", injectionPath);
-                } 
+                }
             }
         }
 
