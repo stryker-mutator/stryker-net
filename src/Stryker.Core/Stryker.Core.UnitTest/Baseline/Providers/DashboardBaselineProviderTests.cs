@@ -3,6 +3,7 @@ using Moq;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Clients;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.UnitTest.Reporters;
 using Xunit;
@@ -38,7 +39,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
 
             var target = new DashboardBaselineProvider(strykerOptions, dashboardClient.Object);
 
-            await target.Save(JsonReport.Build(strykerOptions, ReportTestHelper.CreateProjectWith()), "version");
+            await target.Save(JsonReport.Build(strykerOptions, ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>()), "version");
 
             dashboardClient.Verify(x => x.PublishReport(It.IsAny<JsonReport>(), It.Is<string>(x => x == "version")), Times.Once);
         }

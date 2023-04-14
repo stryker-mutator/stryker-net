@@ -96,7 +96,7 @@ namespace Stryker.Core.Initialisation
                     var projectOptions = options.Copy(
                         projectPath: projectFilePath,
                         workingDirectory: options.ProjectPath,
-                        projectUnderTest: projectFilePath,
+                        sourceProject: projectFilePath,
                         testProjects: relatedTestProjects.Select(x => x.ProjectFilePath));
 
                     yield return _projectMutator.MutateProject(projectOptions, reporters, solutionProjects);

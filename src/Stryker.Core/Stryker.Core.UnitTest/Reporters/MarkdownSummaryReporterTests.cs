@@ -27,7 +27,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var reportGenerator = new MarkdownSummaryReporter(options, mockFileSystem, console);
 
             // Act
-            reportGenerator.OnAllMutantsTested(ReportTestHelper.CreateProjectWith());
+            reportGenerator.OnAllMutantsTested(ReportTestHelper.CreateProjectWith(), null);
 
             // Assert
             var reportPath = Path.Combine(options.ReportPath, "mutation-summary.md");
@@ -50,7 +50,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var reportGenerator = new MarkdownSummaryReporter(options, mockFileSystem, console);
 
             // Act
-            reportGenerator.OnAllMutantsTested(ReportTestHelper.CreateProjectWith());
+            reportGenerator.OnAllMutantsTested(ReportTestHelper.CreateProjectWith(), null);
 
             // Assert
             var reportPath = Path.Combine(options.ReportPath, "mutation-summary.md");
@@ -78,7 +78,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var mockReport = ReportTestHelper.CreateProjectWith();
 
             // Act
-            reportGenerator.OnAllMutantsTested(mockReport);
+            reportGenerator.OnAllMutantsTested(mockReport, null);
 
             // Assert
             var files = mockReport.GetAllFiles();
@@ -88,7 +88,7 @@ namespace Stryker.Core.UnitTest.Reporters
             // Spaces are unpredictable - remove them for this comparison.
             var stippedFileContents = fileContents.Replace(" ", string.Empty);
 
-            foreach(var file in files)
+            foreach (var file in files)
             {
                 var escapedFilename = file.RelativePath.Replace("/", "\\/");
                 stippedFileContents.ShouldContain($"|{escapedFilename}|{file.GetMutationScore() * 100:N2}%|");
@@ -112,7 +112,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var mockReport = ReportTestHelper.CreateProjectWith();
 
             // Act
-            reportGenerator.OnAllMutantsTested(mockReport);
+            reportGenerator.OnAllMutantsTested(mockReport, null);
 
             // Assert
             var expectedSummaryReportPath = $"{Path.Join(options.ReportPath, options.ReportFileName)}.md".Replace("\\", "/");
@@ -137,7 +137,7 @@ namespace Stryker.Core.UnitTest.Reporters
             var emptyReport = new CsharpFolderComposite() { FullPath = "/home/user/src/project/", RelativePath = "" };
 
             // Act
-            reportGenerator.OnAllMutantsTested(emptyReport);
+            reportGenerator.OnAllMutantsTested(emptyReport, null);
 
             // Assert
             mockFileSystem.AllFiles.ShouldBeEmpty();

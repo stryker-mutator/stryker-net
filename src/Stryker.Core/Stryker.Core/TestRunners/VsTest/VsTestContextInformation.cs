@@ -8,12 +8,12 @@ using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.ToolHelpers;
 using Stryker.DataCollector;
 
@@ -28,7 +28,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly Func<string, IStrykerTestHostLauncher> _hostBuilder;
         private readonly ILogger _logger;
         private readonly bool _ownVsTestHelper;
-        private readonly ProjectInfo _projectInfo;
+        private readonly TestProjectsInfo _testProjectsInfo;
         private readonly IVsTestHelper _vsTestHelper;
         private readonly Func<ConsoleParameters, IVsTestConsoleWrapper> _wrapperBuilder;
         private bool _disposed;
@@ -46,7 +46,7 @@ namespace Stryker.Core.TestRunners.VsTest
         /// <param name="hostBuilder"></param>
         /// <param name="logger"></param>
         public VsTestContextInformation(StrykerOptions options,
-            ProjectInfo projectInfo,
+            TestProjectsInfo testProjectsInfo,
             IVsTestHelper helper = null,
             IFileSystem fileSystem = null,
             Func<ConsoleParameters, IVsTestConsoleWrapper> builder = null,
@@ -54,7 +54,7 @@ namespace Stryker.Core.TestRunners.VsTest
             ILogger logger = null)
         {
             Options = options;
-            _projectInfo = projectInfo;
+            _testProjectsInfo = testProjectsInfo;
             _ownVsTestHelper = helper == null;
             _fileSystem = fileSystem ?? new FileSystem();
             _vsTestHelper = helper ?? new VsTestHelper(_fileSystem, logger);
@@ -176,7 +176,7 @@ namespace Stryker.Core.TestRunners.VsTest
         /// <exception cref="GeneralStrykerException"></exception>
         public void Initialize()
         {
-            var testBinariesPaths = _projectInfo.TestProjectAnalyzerResults
+            var testBinariesPaths = _testProjectsInfo.AnalyzerResults
                 .Select(testProject => testProject.GetAssemblyPath()).ToList();
             _sources = new List<string>();
 
@@ -288,7 +288,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap)
         {
-            var projectAnalyzerResult = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault();
+            var projectAnalyzerResult = _testProjectsInfo.AnalyzerResults.FirstOrDefault();
             var settingsForCoverage = string.Empty;
             var needDataCollector = forCoverage || mutantTestsMap is { };
             var dataCollectorSettings = needDataCollector

@@ -26,12 +26,12 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
                     Start = new Position
                     {
                         Column = 17,
-                        Line = 17
+                        Line = 16
                     },
                     End = new Position
                     {
                         Column = 62,
-                        Line = 17
+                        Line = 16
                     }
                 }
             };
@@ -62,12 +62,12 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
                     Start = new Position
                     {
                         Column = 13,
-                        Line = 24
+                        Line = 23
                     },
                     End = new Position
                     {
                         Column = 38,
-                        Line = 26
+                        Line = 25
                     }
                 }
             };
@@ -100,12 +100,12 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
                     Start = new Position
                     {
                         Column = 30,
-                        Line = 34
+                        Line = 32
                     },
                     End = new Position
                     {
                         Column = 34,
-                        Line = 34
+                        Line = 32
                     }
                 }
             };

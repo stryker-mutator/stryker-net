@@ -11,6 +11,8 @@ using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
@@ -30,9 +32,8 @@ namespace Stryker.Core.Initialisation
         private readonly IInputFileResolver _inputFileResolver;
         private readonly IInitialBuildProcess _initialBuildProcess;
         private readonly IInitialTestProcess _initialTestProcess;
-        private readonly IAssemblyReferenceResolver _assemblyReferenceResolver;
         private ITestRunner _testRunner;
-        private ProjectInfo _projectInfo;
+        private TestProjectsInfo _testProjectsInfo;
         private readonly ILogger _logger;
 
 
@@ -40,32 +41,31 @@ namespace Stryker.Core.Initialisation
             IInputFileResolver inputFileResolver = null,
             IInitialBuildProcess initialBuildProcess = null,
             IInitialTestProcess initialTestProcess = null,
-            ITestRunner testRunner = null,
-            IAssemblyReferenceResolver assemblyReferenceResolver = null)
+            ITestRunner testRunner = null)
         {
             _inputFileResolver = inputFileResolver ?? new InputFileResolver();
             _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
             _initialTestProcess = initialTestProcess ?? new InitialTestProcess();
             _testRunner = testRunner;
-            _assemblyReferenceResolver = assemblyReferenceResolver ?? new AssemblyReferenceResolver();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
         }
 
         public MutationTestInput Initialize(StrykerOptions options, IEnumerable<IAnalyzerResult> solutionProjects)
         {
             // resolve project info
-            _projectInfo = _inputFileResolver.ResolveInput(options, solutionProjects);
+            _testProjectsInfo = _inputFileResolver.ResolveTestProjectsInfo(options, solutionProjects);
+            var targetProjectInfo = _inputFileResolver.ResolveSourceProjectInfo(options, _testProjectsInfo, solutionProjects);
 
             // initial build
             if (!options.IsSolutionContext)
             {
-                var testProjects = _projectInfo.TestProjectAnalyzerResults.ToList();
+                var testProjects = _testProjectsInfo.AnalyzerResults.ToList();
                 for (var i = 0; i < testProjects.Count; i++)
                 {
                     _logger.LogInformation(
                         "Building test project {ProjectFilePath} ({CurrentTestProject}/{OfTotalTestProjects})",
                         testProjects[i].ProjectFilePath, i + 1,
-                        _projectInfo.TestProjectAnalyzerResults.Count());
+                        testProjects.Count);
 
                     _initialBuildProcess.InitialBuild(
                         testProjects[i].TargetsFullFramework(),
@@ -75,17 +75,17 @@ namespace Stryker.Core.Initialisation
                 }
             }
 
-            InitializeDashboardProjectInformation(options, _projectInfo);
+            InitializeDashboardProjectInformation(options, targetProjectInfo);
 
             if (_testRunner == null)
             {
-                _testRunner = new VsTestRunnerPool(options, _projectInfo);
+                _testRunner = new VsTestRunnerPool(options, _testProjectsInfo);
             }
 
             var input = new MutationTestInput
             {
-                ProjectInfo = _projectInfo,
-                AssemblyReferences = _assemblyReferenceResolver.LoadProjectReferences(_projectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
+                TestProjectsInfo = _testProjectsInfo,
+                SourceProjectInfo = targetProjectInfo,
                 TestRunner = _testRunner,
             };
 
@@ -102,7 +102,7 @@ namespace Stryker.Core.Initialisation
                 return result;
             }
             // no test have been discovered, diagnose this
-            DiagnoseLackOfDetectedTest(_projectInfo);
+            DiagnoseLackOfDetectedTest(_testProjectsInfo);
             throw new InputException("No test has been detected. Make sure your test project contains test and is compatible with VsTest.");
         }
 
@@ -113,9 +113,9 @@ namespace Stryker.Core.Initialisation
             ["Microsoft.VisualStudio.TestPlatform.TestFramework"] = "Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter"
         };
 
-        public static void DiagnoseLackOfDetectedTest(ProjectInfo projectInfo)
+        public static void DiagnoseLackOfDetectedTest(TestProjectsInfo testProjectsInfo)
         {
-            foreach (var testProject in projectInfo.TestProjectAnalyzerResults)
+            foreach (var testProject in testProjectsInfo.AnalyzerResults)
             {
                 foreach (var (framework, adapter) in TestFrameworks)
                 {
@@ -128,8 +128,7 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-
-        private void InitializeDashboardProjectInformation(StrykerOptions options, ProjectInfo projectInfo)
+        private void InitializeDashboardProjectInformation(StrykerOptions options, SourceProjectInfo projectInfo)
         {
             var dashboardReporterEnabled = options.Reporters.Contains(Reporter.Dashboard) || options.Reporters.Contains(Reporter.All);
             var dashboardBaselineEnabled = options.WithBaseline && options.BaselineProvider == BaselineProvider.Dashboard;
@@ -144,44 +143,49 @@ namespace Stryker.Core.Initialisation
             var missingProjectVersion = string.IsNullOrEmpty(options.ProjectVersion);
             if (missingProjectName || missingProjectVersion)
             {
-                var subject = missingProjectName switch
-                {
-                    true when missingProjectVersion => "Project name and project version",
-                    true => "Project name",
-                    _ => "Project version"
-                };
-                var projectFilePath = projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath;
+                InnerInitializeDashboardProjectInformation(options, projectInfo, missingProjectName, missingProjectVersion);
+            }
+        }
 
-                if (!projectInfo.ProjectUnderTestAnalyzerResult.Properties.TryGetValue("TargetPath", out var targetPath))
+        private void InnerInitializeDashboardProjectInformation(StrykerOptions options, SourceProjectInfo projectInfo, bool missingProjectName, bool missingProjectVersion)
+        {
+            var subject = missingProjectName switch
+            {
+                true when missingProjectVersion => "Project name and project version",
+                true => "Project name",
+                _ => "Project version"
+            };
+            var projectFilePath = projectInfo.AnalyzerResult.ProjectFilePath;
+
+            if (!projectInfo.AnalyzerResult.Properties.TryGetValue("TargetPath", out var targetPath))
+            {
+                throw new InputException($"Can't read {subject.ToLowerInvariant()} because the TargetPath property was not found in {projectFilePath}");
+            }
+
+            _logger.LogTrace("{Subject} missing for the dashboard reporter, reading it from {TargetPath}. " +
+                             "Note that this requires SourceLink to be properly configured in {ProjectPath}", subject, targetPath, projectFilePath);
+
+            try
+            {
+                var targetName = Path.GetFileName(targetPath);
+                using var module = ModuleDefinition.ReadModule(targetPath);
+
+                var details = $"To solve this issue, either specify the {subject.ToLowerInvariant()} in the stryker configuration or configure [SourceLink](https://github.com/dotnet/sourcelink#readme) in {projectFilePath}";
+                if (missingProjectName)
                 {
-                    throw new InputException($"Can't read {subject.ToLowerInvariant()} because the TargetPath property was not found in {projectFilePath}");
+                    options.ProjectName = ReadProjectName(module, details);
+                    _logger.LogDebug("Using {ProjectName} as project name for the dashboard reporter. (Read from the AssemblyMetadata/RepositoryUrl assembly attribute of {TargetName})", options.ProjectName, targetName);
                 }
 
-                _logger.LogTrace("{Subject} missing for the dashboard reporter, reading it from {TargetPath}. " +
-                                 "Note that this requires SourceLink to be properly configured in {ProjectPath}", subject, targetPath, projectFilePath);
-
-                try
+                if (missingProjectVersion)
                 {
-                    var targetName = Path.GetFileName(targetPath);
-                    using var module = ModuleDefinition.ReadModule(targetPath);
-
-                    var details = $"To solve this issue, either specify the {subject.ToLowerInvariant()} in the stryker configuration or configure [SourceLink](https://github.com/dotnet/sourcelink#readme) in {projectFilePath}";
-                    if (missingProjectName)
-                    {
-                        options.ProjectName = ReadProjectName(module, details);
-                        _logger.LogDebug("Using {ProjectName} as project name for the dashboard reporter. (Read from the AssemblyMetadata/RepositoryUrl assembly attribute of {TargetName})", options.ProjectName, targetName);
-                    }
-
-                    if (missingProjectVersion)
-                    {
-                        options.ProjectVersion = ReadProjectVersion(module, details);
-                        _logger.LogDebug("Using {ProjectVersion} as project version for the dashboard reporter. (Read from the AssemblyInformationalVersion assembly attribute of {TargetName})", options.ProjectVersion, targetName);
-                    }
+                    options.ProjectVersion = ReadProjectVersion(module, details);
+                    _logger.LogDebug("Using {ProjectVersion} as project version for the dashboard reporter. (Read from the AssemblyInformationalVersion assembly attribute of {TargetName})", options.ProjectVersion, targetName);
                 }
-                catch (Exception e) when (e is not InputException)
-                {
-                    throw new InputException($"Failed to read {subject.ToLowerInvariant()} from {targetPath} because of error {e.Message}");
-                }
+            }
+            catch (Exception e) when (e is not InputException)
+            {
+                throw new InputException($"Failed to read {subject.ToLowerInvariant()} from {targetPath} because of error {e.Message}");
             }
         }
 

@@ -2,12 +2,14 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Moq;
 using Shouldly;
 using Spectre.Console.Testing;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 using Xunit;
 
@@ -38,7 +40,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             rootFolder.Add(folder);
 
-            target.OnAllMutantsTested(rootFolder);
+            target.OnAllMutantsTested(rootFolder, It.IsAny<TestProjectsInfo>());
 
             console.Output.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
@@ -91,7 +93,7 @@ All mutants have been tested, and your mutation score has been calculated
 
             rootFolder.Add(folder);
 
-            target.OnAllMutantsTested(rootFolder);
+            target.OnAllMutantsTested(rootFolder, It.IsAny<TestProjectsInfo>());
 
             console.Output.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
@@ -143,7 +145,7 @@ All mutants have been tested, and your mutation score has been calculated
             });
             rootFolder.Add(folder);
 
-            target.OnAllMutantsTested(rootFolder);
+            target.OnAllMutantsTested(rootFolder, It.IsAny<TestProjectsInfo>());
 
             console.Output.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
@@ -196,7 +198,7 @@ All mutants have been tested, and your mutation score has been calculated
                 }
             });
 
-            target.OnAllMutantsTested(folder);
+            target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
             console.Output.RedSpanCount().ShouldBe(2);
         }
@@ -238,7 +240,7 @@ All mutants have been tested, and your mutation score has been calculated
                 }
             });
 
-            target.OnAllMutantsTested(folder);
+            target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
             console.Output.YellowSpanCount().ShouldBe(2);
         }
@@ -275,7 +277,7 @@ All mutants have been tested, and your mutation score has been calculated
                 }
             });
 
-            target.OnAllMutantsTested(folder);
+            target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
             console.Output.GreenSpanCount().ShouldBe(2);
         }

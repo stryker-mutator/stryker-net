@@ -5,6 +5,7 @@ using Spectre.Console;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.Reporters.Json
 {
@@ -21,9 +22,9 @@ namespace Stryker.Core.Reporters.Json
             _console = console ?? AnsiConsole.Console;
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
-            var mutationReport = JsonReport.Build(_options, reportComponent);
+            var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
             var filename = _options.ReportFileName + ".json";
             var reportPath = Path.Combine(_options.ReportPath, filename);
             var reportUri = "file://" + reportPath.Replace("\\", "/");
