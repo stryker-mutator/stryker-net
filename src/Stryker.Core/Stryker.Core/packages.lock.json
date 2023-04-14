@@ -82,11 +82,11 @@
       },
       "LibGit2Sharp": {
         "type": "Direct",
-        "requested": "[0.27.0-preview-0182, )",
-        "resolved": "0.27.0-preview-0182",
-        "contentHash": "YgSFGX7q+KwzkjiD04sZ6Zr8GVrG4o7dHUwM9eDsliT350HxX83smtJc8kyMBiBLyjX4X3qB7aIs2KJL3Uh1og==",
+        "requested": "[0.27.2, )",
+        "resolved": "0.27.2",
+        "contentHash": "TYIfwuumwmZFjxwRFz5y2MyTA8jc19MejSyRRTCS/TflhrdQPH7H84ueyCpY0+xkNWThEd+dCnkuf7XuH3tt+A==",
         "dependencies": {
-          "LibGit2Sharp.NativeBinaries": "[2.0.315-alpha.0.9]"
+          "LibGit2Sharp.NativeBinaries": "[2.0.320]"
         }
       },
       "Microsoft.CodeAnalysis.CSharp": {
@@ -235,11 +235,11 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "Direct",
-        "requested": "[19.2.4, )",
-        "resolved": "19.2.4",
-        "contentHash": "n4GbToLpyV2YB9UBryMu7Mzdc3dA5CYpYR3D2SuV6CtR8D4PszG5jA4XEXxWzThRFr7RNOfI3+eVUtuXzlwjDg==",
+        "requested": "[19.2.11, )",
+        "resolved": "19.2.11",
+        "contentHash": "Ck3YdnuympYCu2Qox8vsQXyU0xuGVpgONXWx2sjt/8LvmlO7qp8ctTByQMURaQTmd9s99HFv6XY6M2w1TcovLA==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "19.2.4"
+          "TestableIO.System.IO.Abstractions": "19.2.11"
         }
       },
       "Buildalyzer.Logger": {
@@ -254,8 +254,8 @@
       },
       "LibGit2Sharp.NativeBinaries": {
         "type": "Transitive",
-        "resolved": "2.0.315-alpha.0.9",
-        "contentHash": "Cl9E9ZRZm2ma5k/gD/9+f5WAh/9ayhENos/jLkSmPmzkuKl8qkTaLHA9j70qEZ1RSRceDlIwbfSYzVD5JaxHzg=="
+        "resolved": "2.0.320",
+        "contentHash": "7vIqOhB+5LOi9arXi8IdlkWURpQEiMtnwVP//djA7cQvIVfpC4bZSnQIDe4kwwvsU/w1oH0YkBTgMmpkVndNbg=="
       },
       "Microsoft.Build": {
         "type": "Transitive",
@@ -1720,8 +1720,8 @@
       },
       "TestableIO.System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "19.2.4",
-        "contentHash": "VS97RgZwZswoBHwCNUurFr6OWa/oSmRWj9bYIe1JLpPo4EB8uX+jLNowNfx34MP3AooPFbnTVXUzM5vNBtVORA=="
+        "resolved": "19.2.11",
+        "contentHash": "xxrLhkHNrGBaan/l82mSw446L4VKjmtdiZv4z7CXHsm0ka3xEwXZVxsjxhzOrK3aj703EoCfPMVCz+SiALrkbA=="
       },
       "stryker.datacollector": {
         "type": "Project",

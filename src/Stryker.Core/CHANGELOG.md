@@ -1,3 +1,29 @@
+## [3.7.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.7.0...stryker@3.7.1) (2023-03-23)
+
+
+### Bug Fixes
+
+* **String mutations:** Generate empty string mutations parenthesized ([#2447](https://github.com/stryker-mutator/stryker-net/issues/2447)) ([0650cb1](https://github.com/stryker-mutator/stryker-net/commit/0650cb18a2082de58f94e5dedb5fe74a4f248bd6))
+
+
+
+# [3.7.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.6.1...stryker@3.7.0) (2023-03-20)
+
+
+### Bug Fixes
+
+* **dashboard reporter:** Print the -o hint in actual cyan instead of the literal markup ([#2406](https://github.com/stryker-mutator/stryker-net/issues/2406)) ([e8cfa7d](https://github.com/stryker-mutator/stryker-net/commit/e8cfa7d7ecb2f9b590bda658798c999ebae9377e))
+* **StringMutator:** don't mutate strings in Guid ctor ([#2428](https://github.com/stryker-mutator/stryker-net/issues/2428)) ([1baa6ca](https://github.com/stryker-mutator/stryker-net/commit/1baa6ca8054e15ccea7042ab6b1ce1d0221c5299))
+
+
+### Features
+
+* **MutantFilters:** Ignore Block mutations for blocks that already contain active mutants ([#2382](https://github.com/stryker-mutator/stryker-net/issues/2382)) ([d912c9b](https://github.com/stryker-mutator/stryker-net/commit/d912c9b6cf3d5e0703ea34440de3c667c8dc2f47))
+* **string mutations:** Add string.IsNullOrEmpty and string.IsNullOrWhiteSpace mutations ([#2429](https://github.com/stryker-mutator/stryker-net/issues/2429)) ([47b6745](https://github.com/stryker-mutator/stryker-net/commit/47b67453f6410577b928959b7cee3d87e94b0896))
+* Try loading embedded resources from on-disk module before generating ([#2433](https://github.com/stryker-mutator/stryker-net/issues/2433)) ([e919891](https://github.com/stryker-mutator/stryker-net/commit/e9198910741629020ae6f7dec6ebb8340c2205f1))
+
+
+
 ## [3.6.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.6.0...stryker@3.6.1) (2023-02-17)
 
 

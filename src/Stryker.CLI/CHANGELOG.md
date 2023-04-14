@@ -1,3 +1,16 @@
+## [3.7.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.7.0...dotnet-stryker@3.7.1) (2023-03-23)
+
+
+
+# [3.7.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.6.1...dotnet-stryker@3.7.0) (2023-03-20)
+
+
+### Features
+
+* **target framework:** Added target-framework command line option ([#2419](https://github.com/stryker-mutator/stryker-net/issues/2419)) ([b5c2b1b](https://github.com/stryker-mutator/stryker-net/commit/b5c2b1b422a790008d113f936ed2ece246adc972))
+
+
+
 ## [3.6.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.6.0...dotnet-stryker@3.6.1) (2023-02-17)
 
 

@@ -32,6 +32,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
                 rootNamespace,
                 embeddedResources);
         }
+
         public static CSharpCompilationOptions GetCompilationOptions(this IAnalyzerResult analyzerResult)
         {
             var compilationOptions = new CSharpCompilationOptions(analyzerResult.GetOutputKind())
@@ -42,9 +43,9 @@ namespace Stryker.Core.Initialisation.Buildalyzer
                 .WithModuleName(analyzerResult.GetAssemblyName())
                 .WithOverflowChecks(analyzerResult.GetPropertyOrDefault("CheckForOverflowUnderflow", false));
 
-            if (analyzerResult.IsSignedAssembly())
+            if (analyzerResult.IsSignedAssembly() && analyzerResult.GetAssemblyOriginatorKeyFile() is var keyFile && keyFile is not null)
             {
-                compilationOptions = compilationOptions.WithCryptoKeyFile(analyzerResult.GetAssemblyOriginatorKeyFile())
+                compilationOptions = compilationOptions.WithCryptoKeyFile(keyFile)
                     .WithStrongNameProvider(new DesktopStrongNameProvider());
             }
             return compilationOptions;
@@ -147,9 +148,16 @@ namespace Stryker.Core.Initialisation.Buildalyzer
 
         private static bool IsSignedAssembly(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("SignAssembly", false);
 
-        private static string GetAssemblyOriginatorKeyFile(this IAnalyzerResult analyzerResult) => Path.Combine(
-                Path.GetDirectoryName(analyzerResult.ProjectFilePath),
-                analyzerResult.GetPropertyOrDefault("AssemblyOriginatorKeyFile"));
+        private static string GetAssemblyOriginatorKeyFile(this IAnalyzerResult analyzerResult)
+        {
+            var assemblyKeyFileProp = analyzerResult.GetPropertyOrDefault("AssemblyOriginatorKeyFile");
+            if (assemblyKeyFileProp is null)
+            {
+                return assemblyKeyFileProp;
+            }
+
+            return Path.Combine(Path.GetDirectoryName(analyzerResult.ProjectFilePath), assemblyKeyFileProp);
+        }
 
         private static string GetRootNamespace(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("RootNamespace") ?? analyzerResult.GetAssemblyName();
 
