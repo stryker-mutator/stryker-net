@@ -56,9 +56,9 @@ namespace Stryker.Core.ProjectComponents.TestProjects
                 }
                 if (_fileSystem.File.Exists(injectionPath))
                 {
+                    // Only create backup if there isn't already a backup
                     if (!_fileSystem.File.Exists(backupFilePath))
                     {
-                        // if the backup is here, it means the source is already mutated, so no backup
                         _fileSystem.File.Move(injectionPath, backupFilePath, false);
                     }
                 }
