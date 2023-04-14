@@ -31,7 +31,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             return a;
         }
 
-        public virtual void RestoreOriginalAssembly(IAnalyzerResult sourceProject)
+        public void RestoreOriginalAssembly(IAnalyzerResult sourceProject)
         {
             foreach (var testProject in AnalyzerResults)
             {
@@ -44,7 +44,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             }
         }
 
-        public virtual void BackupOriginalAssembly(IAnalyzerResult sourceProject)
+        public void BackupOriginalAssembly(IAnalyzerResult sourceProject)
         {
             foreach (var testProject in AnalyzerResults)
             {
