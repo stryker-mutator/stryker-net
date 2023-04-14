@@ -320,7 +320,7 @@ namespace Stryker.Core.Initialisation
                     }
                     else
                     {
-                        message+=$" This may be because it is missing an appropriate VstTest adapter for '{framework}'. " +
+                        message+=$" This may be because it is missing an appropriate VsTest adapter for '{framework}'. " +
                                  $"Adding '{adapter}' to this project references may resolve the issue.";
                     }
                     projectInfo.ProjectWarnings.Add(message);
