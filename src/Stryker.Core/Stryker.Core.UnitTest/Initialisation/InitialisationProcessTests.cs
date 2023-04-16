@@ -1,19 +1,22 @@
 using System;
+using System.Collections.Generic;
+using System.IO.Abstractions.TestingHelpers;
+using System.Linq;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Mono.Collections.Generic;
 using Moq;
+using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.TestRunners;
-using System.Collections.Generic;
-using System.IO.Abstractions.TestingHelpers;
-using System.Linq;
-using Stryker.Core.Mutants;
+using Stryker.Core.TestRunners.VsTest;
 using Xunit;
-using Shouldly;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
@@ -31,15 +34,10 @@ namespace Stryker.Core.UnitTest.Initialisation
                 {
                     new CsharpFileLeaf()
                 });
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()))
-                .Returns(new ProjectInfo(new MockFileSystem())
+            inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfo(It.IsAny<StrykerOptions>(), It.IsAny<TestProjectsInfo>(), It.IsAny<IEnumerable<IAnalyzerResult>>()))
+                .Returns(new SourceProjectInfo
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                        references: Array.Empty<string>()).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(
-                        projectFilePath: "C://Example/Dir/ProjectFolder",
-                        targetFramework: "netcoreapp2.1").Object
-                    },
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(references: Array.Empty<string>()).Object,
                     ProjectContents = folder
                 });
 
@@ -53,7 +51,8 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var result = target.GetMutableProjectsInfo(options).ToList();
             result.Count.ShouldBe(1);
-            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveSourceProjectInfo(It.IsAny<StrykerOptions>(), It.IsAny<TestProjectsInfo>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveTestProjectsInfo(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
         }
 
         [Fact]
@@ -63,35 +62,34 @@ namespace Stryker.Core.UnitTest.Initialisation
             var inputFileResolverMock = new Mock<IInputFileResolver>(MockBehavior.Strict);
             var initialBuildProcessMock = new Mock<IInitialBuildProcess>(MockBehavior.Strict);
             var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
-            var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf());
 
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(
-                new ProjectInfo(new MockFileSystem())
-                {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                        references: new string[0]).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(
-                        projectFilePath: "C://Example/Dir/ProjectFolder",
-                        targetFramework: "netcoreapp2.1").Object
-                    },
-                    ProjectContents = folder
+            inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfo(It.IsAny<StrykerOptions>(), It.IsAny<TestProjectsInfo>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(
+                new SourceProjectInfo() {
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        references: Array.Empty<string>()).Object,
                 });
-
+            inputFileResolverMock.Setup(x => x.ResolveTestProjectsInfo(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()))
+                .Returns(new TestProjectsInfo(new MockFileSystem())
+                {
+                    TestProjects = new List<TestProject>()
+                    {
+                        // todo add files to mockfilesystem
+                        new TestProject(new MockFileSystem(), TestHelper.SetupProjectAnalyzerResult(
+                                    projectFilePath: "C://Example/Dir/ProjectFolder",
+                                    targetFramework: "netcoreapp2.1").Object),
+                    }
+                });
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
             testRunnerMock.Setup(x => x.GetTests( It.IsAny<IProjectAndTest>())).Returns(new TestSet());
             testRunnerMock.Setup(x => x.DiscoverTests( It.IsAny<string>())).Returns(true);
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTest>(),It.IsAny<ITestRunner>())).Throws(new InputException("")); // failing test
-            assemblyReferenceResolverMock.Setup(x => x.LoadProjectReferences(It.IsAny<string[]>()))
-                .Returns(Enumerable.Empty<PortableExecutableReference>())
-                .Verifiable();
 
             var target = new InitialisationProcess(inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
-                initialTestProcessMock.Object,
-                assemblyReferenceResolverMock.Object);
+                initialTestProcessMock.Object);
             var options = new StrykerOptions
             {
                 ProjectName = "TheProjectName",
@@ -101,34 +99,38 @@ namespace Stryker.Core.UnitTest.Initialisation
             var projects = target.GetMutableProjectsInfo(options);
             target.BuildProjects(options, projects);
             Assert.Throws<InputException>(() => target.GetMutationTestInputs(options, projects, testRunnerMock.Object));
-            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
-            assemblyReferenceResolverMock.Verify();
+            inputFileResolverMock.Verify(x => x.ResolveTestProjectsInfo(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
             initialTestProcessMock.Verify(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTest>(), testRunnerMock.Object), Times.Once);
         }
 
         [Fact]
         public void InitialisationProcess_ShouldThrowIfHalfTestsAreFailing()
         {
+            var fileSystemMock = new MockFileSystem();
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var inputFileResolverMock = new Mock<IInputFileResolver>(MockBehavior.Strict);
             var initialBuildProcessMock = new Mock<IInitialBuildProcess>(MockBehavior.Strict);
             var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
-            var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf());
 
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(
-                new ProjectInfo(new MockFileSystem())
-                {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                        references: Array.Empty<string>()).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(
+            var testProjectInfo = new TestProjectsInfo(fileSystemMock)
+            {
+                TestProjects = new List<TestProject> {
+                    new TestProject(fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
                         projectFilePath: "C://Example/Dir/ProjectFolder",
-                        targetFramework: "netcoreapp2.1").Object
-                    },
-                    ProjectContents = folder
+                        targetFramework: "netcoreapp2.1").Object)
+                    }
+            };
+
+            inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfo(It.IsAny<StrykerOptions>(), It.IsAny<TestProjectsInfo>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(
+                new SourceProjectInfo() {
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        references: Array.Empty<string>()).Object,
                 });
+
+            inputFileResolverMock.Setup(x => x.ResolveTestProjectsInfo(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(testProjectInfo);
 
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
             var failedTest = Guid.NewGuid();
@@ -141,16 +143,13 @@ namespace Stryker.Core.UnitTest.Initialisation
             testRunnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(true);
             testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTest>())).Returns(testSet);
             var failedTests = new TestGuidsList(failedTest);
-            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTest>(),It.IsAny<ITestRunner>())).Returns( new InitialTestRun(
-                new TestRunResult(ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, TimeSpan.Zero), new TimeoutValueCalculator(0) )); // failing test
-            assemblyReferenceResolverMock.Setup(x => x.LoadProjectReferences(It.IsAny<string[]>()))
-                .Returns(Enumerable.Empty<PortableExecutableReference>())
-                .Verifiable();
+            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTest>(),It.IsAny<ITestRunner>())).Returns(
+                new InitialTestRun(
+                new TestRunResult(Array.Empty<VsTestDescription>() ,ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, TimeSpan.Zero), new TimeoutValueCalculator(0) )); // failing test
 
             var target = new InitialisationProcess(inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
-                initialTestProcessMock.Object,
-                assemblyReferenceResolverMock.Object);
+                initialTestProcessMock.Object);
             var options = new StrykerOptions
             {
                 ProjectName = "TheProjectName",
@@ -159,8 +158,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             var projects = target.GetMutableProjectsInfo(options);
             target.BuildProjects(options, projects);
             Assert.Throws<InputException>(() => target.GetMutationTestInputs(options, projects, testRunnerMock.Object));
-            inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
-            assemblyReferenceResolverMock.Verify();
+            inputFileResolverMock.Verify(x => x.ResolveSourceProjectInfo(It.IsAny<StrykerOptions>(), It.IsAny<TestProjectsInfo>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveTestProjectsInfo(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
             initialTestProcessMock.Verify(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTest>(), testRunnerMock.Object), Times.Once);
         }
 
@@ -173,21 +172,15 @@ namespace Stryker.Core.UnitTest.Initialisation
             var inputFileResolverMock = new Mock<IInputFileResolver>(MockBehavior.Strict);
             var initialBuildProcessMock = new Mock<IInitialBuildProcess>(MockBehavior.Strict);
             var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
-            var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf());
 
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(
-                new ProjectInfo(new MockFileSystem())
-                {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                        references: new string[0]).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(
-                        projectFilePath: "C://Example/Dir/ProjectFolder",
-                        targetFramework: "netcoreapp2.1").Object
-                    },
-                    ProjectContents = folder
+
+            inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfo(It.IsAny<StrykerOptions>(), It.IsAny<TestProjectsInfo>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(
+                new SourceProjectInfo() {
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        references: Array.Empty<string>()).Object,
                 });
 
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
@@ -202,15 +195,11 @@ namespace Stryker.Core.UnitTest.Initialisation
             testRunnerMock.Setup(x => x.GetTests( It.IsAny<IProjectAndTest>())).Returns(testSet);
             var failedTests = new TestGuidsList(failedTest);
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTest>(),It.IsAny<ITestRunner>())).Returns( new InitialTestRun(
-                new TestRunResult(ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, TimeSpan.Zero), new TimeoutValueCalculator(0) )); // failing test
-            assemblyReferenceResolverMock.Setup(x => x.LoadProjectReferences(It.IsAny<string[]>()))
-                .Returns(Enumerable.Empty<PortableExecutableReference>())
-                .Verifiable();
+                new TestRunResult(Array.Empty<VsTestDescription>() ,ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, TimeSpan.Zero), new TimeoutValueCalculator(0) )); // failing test
 
             var target = new InitialisationProcess(inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
-                initialTestProcessMock.Object,
-                assemblyReferenceResolverMock.Object);
+                initialTestProcessMock.Object);
             var options = new StrykerOptions
             {
                 ProjectName = "TheProjectName",
@@ -235,26 +224,32 @@ namespace Stryker.Core.UnitTest.Initialisation
         [Fact]
         public void InitialisationProcess_ShouldRunTestSession()
         {
+            var fileSystemMock = new MockFileSystem();
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var inputFileResolverMock = new Mock<IInputFileResolver>(MockBehavior.Strict);
             var initialBuildProcessMock = new Mock<IInitialBuildProcess>(MockBehavior.Strict);
             var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
-            var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf());
 
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(
-                new ProjectInfo(new MockFileSystem())
-                {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                        references: new string[0]).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(
+            var testProjectInfo = new TestProjectsInfo(fileSystemMock)
+            {
+                TestProjects = new List<TestProject> {
+                    new TestProject(fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
                         projectFilePath: "C://Example/Dir/ProjectFolder",
-                        targetFramework: "netcoreapp2.1").Object
-                    },
-                    ProjectContents = folder
+                        targetFramework: "netcoreapp2.1").Object)
+                    }
+            };
+
+            inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfo(It.IsAny<StrykerOptions>(), It.IsAny<TestProjectsInfo>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(
+                new SourceProjectInfo()
+                {
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        references: new string[0]).Object,
                 });
+
+            inputFileResolverMock.Setup(x => x.ResolveTestProjectsInfo(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(testProjectInfo);
 
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
             var testSet = new TestSet();
@@ -263,14 +258,10 @@ namespace Stryker.Core.UnitTest.Initialisation
             testRunnerMock.Setup(x => x.GetTests( It.IsAny<IProjectAndTest>())).Returns(testSet);
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTest>(),It.IsAny<ITestRunner>()))
                 .Returns(new InitialTestRun(new TestRunResult(true), null)); // failing test
-            assemblyReferenceResolverMock.Setup(x => x.LoadProjectReferences(It.IsAny<string[]>()))
-                .Returns(Enumerable.Empty<PortableExecutableReference>())
-                .Verifiable();
 
             var target = new InitialisationProcess(inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
-                initialTestProcessMock.Object,
-                assemblyReferenceResolverMock.Object);
+                initialTestProcessMock.Object);
             var options = new StrykerOptions
             {
                 ProjectName = "TheProjectName",
@@ -281,8 +272,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             target.BuildProjects(options, projects);
             var input = target.GetMutationTestInputs(options, projects, testRunnerMock.Object).First();
  
-             inputFileResolverMock.Verify(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
-             assemblyReferenceResolverMock.Verify();
+            inputFileResolverMock.Verify(x => x.ResolveSourceProjectInfo(It.IsAny<StrykerOptions>(), It.IsAny<TestProjectsInfo>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
+            inputFileResolverMock.Verify(x => x.ResolveTestProjectsInfo(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
              initialTestProcessMock.Verify(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTest>(), testRunnerMock.Object), Times.Once);
         }
 
@@ -294,41 +285,43 @@ namespace Stryker.Core.UnitTest.Initialisation
         [InlineData("")]
         public void InitialisationProcess_ShouldThrowOnWhenNoTestDetected(string libraryName)
         {
+            var fileSystemMock = new MockFileSystem();
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var inputFileResolverMock = new Mock<IInputFileResolver>(MockBehavior.Strict);
             var initialBuildProcessMock = new Mock<IInitialBuildProcess>(MockBehavior.Strict);
             var initialTestProcessMock = new Mock<IInitialTestProcess>(MockBehavior.Strict);
-            var assemblyReferenceResolverMock = new Mock<IAssemblyReferenceResolver>(MockBehavior.Strict);
 
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf());
 
-            inputFileResolverMock.Setup(x => x.ResolveInput(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(
-                new ProjectInfo(new MockFileSystem())
-                {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                        references: Array.Empty<string>()).Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(
+            var testProjectInfo = new TestProjectsInfo(fileSystemMock)
+            {
+                TestProjects = new List<TestProject> {
+                    new TestProject(fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
                         projectFilePath: "C://Example/Dir/ProjectFolder",
                         targetFramework: "netcoreapp2.1",
-                        references: new[] { libraryName}).Object
-                    },
-                    ProjectContents = folder
+                        references: new[] { libraryName }).Object)
+                    }
+            };
+
+            inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfo(It.IsAny<StrykerOptions>(), It.IsAny<TestProjectsInfo>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(
+                new SourceProjectInfo()
+                {
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        references: new string[0]).Object,
                 });
+
+            inputFileResolverMock.Setup(x => x.ResolveTestProjectsInfo(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(testProjectInfo);
 
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
             testRunnerMock.Setup(x => x.DiscoverTests( It.IsAny<string>())).Returns(false);
             testRunnerMock.Setup(x => x.GetTests( It.IsAny<IProjectAndTest>())).Returns(new TestSet());
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(),  It.IsAny<IProjectAndTest>(),It.IsAny<ITestRunner>()))
-                .Returns(new InitialTestRun(new TestRunResult(TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), string.Empty, TimeSpan.Zero), null)); // failing test
-            assemblyReferenceResolverMock.Setup(x => x.LoadProjectReferences(It.IsAny<string[]>()))
-                .Returns(Enumerable.Empty<PortableExecutableReference>())
-                .Verifiable();
+                .Returns(new InitialTestRun(new TestRunResult(Array.Empty<VsTestDescription>(),  TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), string.Empty, TimeSpan.Zero), null)); // failing test
 
             var target = new InitialisationProcess(inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
-                initialTestProcessMock.Object,
-                assemblyReferenceResolverMock.Object);
+                initialTestProcessMock.Object);
             var options = new StrykerOptions
             {
                 ProjectName = "TheProjectName",

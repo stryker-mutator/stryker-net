@@ -1,3 +1,8 @@
+using System;
+using System.Net.Http;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Moq.Protected;
@@ -5,14 +10,10 @@ using Shouldly;
 using Stryker.Core.Clients;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.UnitTest.Reporters;
-using System;
-using System.Net.Http;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Clients
@@ -88,7 +89,8 @@ namespace Stryker.Core.UnitTest.Clients
 
             var reporters = new[] { Reporter.Dashboard };
 
-            var options = new StrykerOptions {
+            var options = new StrykerOptions
+            {
                 DashboardUrl = "http://www.example.com",
                 DashboardApiKey = "Access_Token",
                 ProjectName = "github.com/JohnDoe/project",
@@ -192,7 +194,7 @@ namespace Stryker.Core.UnitTest.Clients
 
             var readonlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose).Object;
 
-            var jsonReport = JsonReport.Build(options, readonlyInputComponent);
+            var jsonReport = JsonReport.Build(options, readonlyInputComponent, It.IsAny<TestProjectsInfo>());
             var json = jsonReport.ToJson();
 
             handlerMock
@@ -253,7 +255,7 @@ namespace Stryker.Core.UnitTest.Clients
 
             var readonlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose).Object;
 
-            var jsonReport = JsonReport.Build(options, readonlyInputComponent);
+            var jsonReport = JsonReport.Build(options, readonlyInputComponent, It.IsAny<TestProjectsInfo>());
             var json = jsonReport.ToJson();
 
             handlerMock

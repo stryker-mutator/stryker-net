@@ -59,7 +59,8 @@ namespace Stryker.Core
                 // Mutate
                 _mutationTestProcesses = projectOrchestrator.MutateProjects(options, reporters).ToList();
 
-                IReadOnlyProjectComponent rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.ProjectInfo.ProjectContents).ToList(), options);
+                var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.SourceProjectInfo.ProjectContents).ToList(), options);
+                var combinedTestProjectsInfo = _mutationTestProcesses.Select(mtp => mtp.Input.TestProjectsInfo).Aggregate((a, b) => a + b);
 
                 _logger.LogInformation("{0} mutants created", rootComponent.Mutants.Count());
 
@@ -96,7 +97,7 @@ namespace Stryker.Core
                         _logger.LogWarning("It\'s a mutant-free world, nothing to test.");
                     }
 
-                    reporters.OnAllMutantsTested(rootComponent);
+                    reporters.OnAllMutantsTested(rootComponent, combinedTestProjectsInfo);
                     if (disposeOrchestrator)
                     {
                         projectOrchestrator.Dispose();
@@ -110,7 +111,7 @@ namespace Stryker.Core
                 // Test
                 foreach (var project in _mutationTestProcesses)
                 {
-                    project.Test(project.Input.ProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
+                    project.Test(project.Input.SourceProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
                 }
 
                 // Restore assemblies
@@ -119,7 +120,7 @@ namespace Stryker.Core
                     project.Restore();
                 }
 
-                reporters.OnAllMutantsTested(rootComponent);
+                reporters.OnAllMutantsTested(rootComponent, combinedTestProjectsInfo);
                 if (disposeOrchestrator)
                 {
                     projectOrchestrator.Dispose();

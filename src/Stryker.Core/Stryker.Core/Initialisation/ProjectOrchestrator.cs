@@ -9,6 +9,7 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
@@ -66,7 +67,7 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private void InitializeDashboardProjectInformation(StrykerOptions options, ProjectInfo projectInfo)
+        private void InitializeDashboardProjectInformation(StrykerOptions options, SourceProjectInfo projectInfo)
         {
             var dashboardReporterEnabled = options.Reporters.Contains(Reporter.Dashboard) || options.Reporters.Contains(Reporter.All);
             var dashboardBaselineEnabled = options.WithBaseline && options.BaselineProvider == BaselineProvider.Dashboard;
@@ -85,9 +86,9 @@ namespace Stryker.Core.Initialisation
                 true => "Project name",
                 _ => "Project version"
             };
-            var projectFilePath = projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath;
+            var projectFilePath = projectInfo.AnalyzerResult.ProjectFilePath;
 
-            if (!projectInfo.ProjectUnderTestAnalyzerResult.Properties.TryGetValue("TargetPath", out var targetPath))
+            if (!projectInfo.AnalyzerResult.Properties.TryGetValue("TargetPath", out var targetPath))
             {
                 throw new InputException($"Can't read {subject.ToLowerInvariant()} because the TargetPath property was not found in {projectFilePath}");
             }

@@ -74,7 +74,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             if (testCases?.Count == 0)
             {
-                return new TestRunResult(TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), "Mutants are not covered by any test!", TimeSpan.Zero);
+                    return new TestRunResult(_context.VsTests.Values, TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), "Mutants are not covered by any test!", TimeSpan.Zero);
             }
             if (timeoutCalc != null && testCases != null)
             {
@@ -168,7 +168,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 _logger.LogTrace($"{RunnerId}: Test session reports 0 result and 0 stuck test.");
             }
 
-            var duration =  TimeSpan.FromTicks(_context.VsTests.Values.Sum(t => t.InitialRunTime.Ticks));
+            var duration = TimeSpan.FromTicks(_context.VsTests.Values.Sum(t => t.InitialRunTime.Ticks));
 
             var message = string.Join(Environment.NewLine,
                 resultAsArray.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage))
@@ -176,8 +176,8 @@ namespace Stryker.Core.TestRunners.VsTest
             var failedTestsDescription = new WrappedGuidsEnumeration(failedTests);
             var timedOutTests = new WrappedGuidsEnumeration(testResults.TestsInTimeout?.Select(t => t.Id));
             return timeout
-                ? TestRunResult.TimedOut(ranTests, failedTestsDescription, timedOutTests, message, duration)
-                : new TestRunResult(ranTests, failedTestsDescription, timedOutTests, message, duration);
+                ? TestRunResult.TimedOut(_context.VsTests.Values, ranTests, failedTestsDescription, timedOutTests, message, duration)
+                : new TestRunResult(_context.VsTests.Values, ranTests, failedTestsDescription, timedOutTests, message, duration);
         }
 
         public IRunResults RunTestSession(ITestGuids testsToRun, IProjectAndTest project, int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<IRunResults> updateHandler = null) =>

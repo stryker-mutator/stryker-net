@@ -1,7 +1,8 @@
+using System.Collections.Generic;
 using Spectre.Console;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
-using System.Collections.Generic;
+using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.Reporters
 {
@@ -12,10 +13,7 @@ namespace Stryker.Core.Reporters
     {
         private readonly IAnsiConsole _console;
 
-        public ConsoleDotProgressReporter(IAnsiConsole console = null)
-        {
-            _console = console ?? AnsiConsole.Console;
-        }
+        public ConsoleDotProgressReporter(IAnsiConsole console = null) => _console = console ?? AnsiConsole.Console;
 
         public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent) { }
 
@@ -37,9 +35,6 @@ namespace Stryker.Core.Reporters
             };
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
-        {
-            _console.WriteLine();
-        }
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo) => _console.WriteLine();
     }
 }

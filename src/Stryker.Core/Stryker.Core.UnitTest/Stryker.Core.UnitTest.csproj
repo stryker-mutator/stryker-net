@@ -5,6 +5,8 @@
 
   <ItemGroup>
     <Compile Remove="TestResources\ExampleSourceFile.cs" />
+    <Compile Remove="TestResources\ExampleTestFileA.cs" />
+    <Compile Remove="TestResources\ExampleTestFileB.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="TestResources\StrongNameKeyFile.snk" />
@@ -13,6 +15,12 @@
     <None Remove="TestResources\FsharpExampleSourceFile.fs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="TestResources\ExampleTestFileB.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="TestResources\ExampleTestFileA.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="TestResources\StrongNameKeyFile.snk">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

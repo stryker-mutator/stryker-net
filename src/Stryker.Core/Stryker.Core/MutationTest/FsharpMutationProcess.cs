@@ -45,7 +45,7 @@ namespace Stryker.Core.MutationTest
 
         public void Mutate(MutationTestInput input)
         {
-            var projectInfo = (ProjectComponent<ParsedInput>)input.ProjectInfo.ProjectContents;
+            var projectInfo = (ProjectComponent<ParsedInput>)input.SourceProjectInfo.ProjectContents;
             // Mutate source files
             foreach (var file in projectInfo.GetAllFiles().Cast<FsharpFileLeaf>())
             {
@@ -87,7 +87,7 @@ namespace Stryker.Core.MutationTest
 
         private void CompileMutations(MutationTestInput mutationTestInput)
         {
-            var projectInfo = (ProjectComponent<ParsedInput>)mutationTestInput.ProjectInfo.ProjectContents;
+            var projectInfo = (ProjectComponent<ParsedInput>)mutationTestInput.SourceProjectInfo.ProjectContents;
             using var ms = new MemoryStream();
             using var msForSymbols = _options.DevMode ? new MemoryStream() : null;
             // compile the mutated syntax trees

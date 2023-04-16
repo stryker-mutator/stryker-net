@@ -2,24 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.IO.Abstractions.TestingHelpers;
 using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Compiling;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Compiling
@@ -29,15 +27,9 @@ namespace Stryker.Core.UnitTest.Compiling
         private readonly SyntaxAnnotation _ifEngineMarker = new("Injector", "IfInstrumentationEngine");
         private readonly SyntaxAnnotation _conditionalEngineMarker = new("Injector", "ConditionalInstrumentationEngine");
 
-        private SyntaxAnnotation GetMutationIdMarker(int id)
-        {
-            return new("MutationId", id.ToString());
-        }
+        private SyntaxAnnotation GetMutationIdMarker(int id) => new("MutationId", id.ToString());
 
-        private SyntaxAnnotation GetMutationTypeMarker(Mutator type)
-        {
-            return new("MutationType", type.ToString());
-        }
+        private SyntaxAnnotation GetMutationTypeMarker(Mutator type) => new("MutationType", type.ToString());
 
         [Fact]
         public void RollbackProcess_ShouldRollbackError_RollbackedCompilationShouldCompile()
@@ -128,35 +120,33 @@ namespace ExampleProject
 
             var mutant = mutator.Mutate(syntaxTree.GetRoot());
             helpers.Add(mutant.SyntaxTree);
-            var references = new List<PortableExecutableReference>() {
-                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(List<string>).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(PipeStream).Assembly.Location),
-            };
 
-            Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(MetadataReference.CreateFromFile(Assembly.Load(a).Location)));
+            var references = new List<string> {
+                typeof(object).Assembly.Location,
+                typeof(List<string>).Assembly.Location,
+                typeof(Enumerable).Assembly.Location,
+                typeof(PipeStream).Assembly.Location,
+            };
+            Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(Assembly.Load(a).Location));
 
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new SourceProjectInfo
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "" },
-                        { "AssemblyName", "AssemblyName"},
-                        { "TargetFileName", "TargetFileName.dll"},
-                        { "SignAssembly", "true" },
-                        { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
-                    },
-                        projectFilePath: "TestResources").Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                    {
-                        { "AssemblyName", "AssemblyName"},
-                    }).Object
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        properties: new Dictionary<string, string>()
+                        {
+                            { "TargetDir", "" },
+                            { "AssemblyName", "AssemblyName"},
+                            { "TargetFileName", "TargetFileName.dll"},
+                            { "SignAssembly", "true" },
+                            { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
+                        },
+                        projectFilePath: "TestResources",
+                        // add a reference to system so the example code can compile
+                        references: references.ToArray()
+                    ).Object
                 }
-                },
-                AssemblyReferences = references
             };
 
             var rollbackProcess = new RollbackProcess();
@@ -803,7 +793,7 @@ namespace ExampleProject
 
             rollbackedResult.Success.ShouldBeFalse();
             rollbackedResult.Diagnostics.ShouldHaveSingleItem();
-            Should.Throw<CompilationException>(() => { target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, true); });
+            Should.Throw<CompilationException>(() => target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, true));
         }
 
         [Fact]

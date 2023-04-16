@@ -44,7 +44,7 @@ namespace Stryker.Core.Options
         /// The path all output is written to. For example reports and logging files.
         /// </summary>
         public string OutputPath { get; init; }
-        public string ReportPath =>  Path.Combine(OutputPath ?? ".", "reports");
+        public string ReportPath => Path.Combine(OutputPath ?? ".", "reports");
         /// <summary>
         /// A custom settable name for report files.
         /// </summary>
@@ -91,7 +91,7 @@ namespace Stryker.Core.Options
         /// <summary>
         /// When multiple possible projects are found by stryker, this filter is used to determine the project that should be mutated.
         /// </summary>
-        public string ProjectUnderTestName { get; init; }
+        public string SourceProjectName { get; init; }
 
         /// <summary>
         /// When not empty, use these test projects to test the project under test.
@@ -240,7 +240,7 @@ namespace Stryker.Core.Options
         private string _projectName;
         private string _projectVersion;
 
-        public StrykerOptions Copy(string projectPath, string workingDirectory, string projectUnderTest, IEnumerable<string> testProjects) => new()
+        public StrykerOptions Copy(string projectPath, string workingDirectory, string sourceProject, IEnumerable<string> testProjects) => new()
         {
             _parentOptions = this,
             AdditionalTimeout = AdditionalTimeout,
@@ -269,7 +269,7 @@ namespace Stryker.Core.Options
             OutputPath = OutputPath,
             ReportFileName = ReportFileName,
             ProjectName = ProjectName,
-            ProjectUnderTestName = projectUnderTest,
+            SourceProjectName = sourceProject,
             ProjectVersion = ProjectVersion,
             Reporters = Reporters,
             SinceTarget = SinceTarget,

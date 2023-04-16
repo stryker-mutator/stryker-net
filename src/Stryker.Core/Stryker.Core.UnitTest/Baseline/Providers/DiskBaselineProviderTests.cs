@@ -1,8 +1,10 @@
 using System.IO.Abstractions.TestingHelpers;
 using System.Threading.Tasks;
+using Moq;
 using Shouldly;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.UnitTest.Reporters;
 using Xunit;
@@ -23,12 +25,12 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             var sut = new DiskBaselineProvider(options, fileSystemMock);
 
             // Act
-            await sut.Save(JsonReport.Build(options, ReportTestHelper.CreateProjectWith()), "baseline/version");
+            await sut.Save(JsonReport.Build(options, ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>()), "baseline/version");
 
             // Assert
             var path = FilePathUtils.NormalizePathSeparators(@"C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/baseline/version/stryker-report.json");
 
-            MockFileData file = fileSystemMock.GetFile(path);
+            var file = fileSystemMock.GetFile(path);
             file.ShouldNotBeNull();
         }
 
@@ -55,7 +57,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             {
                 ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder"
             };
-            var report = JsonReport.Build(options, ReportTestHelper.CreateProjectWith());
+            var report = JsonReport.Build(options, ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>());
 
             fileSystemMock.AddFile("C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/baseline/version/stryker-report.json", report.ToJson());
 

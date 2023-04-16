@@ -6,6 +6,7 @@ using Spectre.Console;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.HtmlReporter.ProcessWrapper;
 using Stryker.Core.Reporters.Json;
 
@@ -27,9 +28,9 @@ namespace Stryker.Core.Reporters.Html.reporter
             _processWrapper = processWrapper ?? new WebbrowserOpener();
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
-            var mutationReport = JsonReport.Build(_options, reportComponent);
+            var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
             var filename = _options.ReportFileName + ".html";
             var reportPath = Path.Combine(_options.ReportPath, filename);
 

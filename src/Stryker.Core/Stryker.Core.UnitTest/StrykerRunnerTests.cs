@@ -12,6 +12,8 @@ using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using Xunit;
@@ -36,12 +38,12 @@ namespace Stryker.Core.UnitTest
                 Mutants = new List<Mutant> { new Mutant { Id = 1 } }
             });
 
-            var projectInfo = Mock.Of<ProjectInfo>();
+            var projectInfo = Mock.Of<SourceProjectInfo>();
             projectInfo.ProjectContents = folder;
-            Mock.Get(projectInfo).Setup(p => p.RestoreOriginalAssembly());
+
             var mutationTestInput = new MutationTestInput()
             {
-                ProjectInfo = projectInfo
+                SourceProjectInfo = projectInfo
             };
 
             inputsMock.Setup(x => x.ValidateAll()).Returns(new StrykerOptions
@@ -60,7 +62,7 @@ namespace Stryker.Core.UnitTest
             reporterFactoryMock.Setup(x => x.Create(It.IsAny<StrykerOptions>(), It.IsAny<IGitInfoProvider>())).Returns(reporterMock.Object);
 
             reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IEnumerable<IReadOnlyMutant>>()));
-            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>()));
+            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()));
 
             mutationTestProcessMock.SetupGet(x => x.Input).Returns(mutationTestInput);
             mutationTestProcessMock.Setup(x => x.GetCoverage());
@@ -83,7 +85,7 @@ namespace Stryker.Core.UnitTest
             mutationTestProcessMock.Verify(x => x.Test(It.IsAny<IEnumerable<Mutant>>()), Times.Once);
             reporterMock.Verify(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()), Times.Once);
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IEnumerable<IReadOnlyMutant>>()), Times.Once);
-            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>()), Times.Once);
+            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()), Times.Once);
         }
 
         [Fact]
@@ -103,7 +105,7 @@ namespace Stryker.Core.UnitTest
             });
             var mutationTestInput = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new SourceProjectInfo()
                 {
                     ProjectContents = folder
                 }
@@ -126,7 +128,7 @@ namespace Stryker.Core.UnitTest
 
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>()));
             reporterMock.Setup(x => x.OnStartMutantTestRun(It.IsAny<IEnumerable<IReadOnlyMutant>>()));
-            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>()));
+            reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()));
 
             var target = new StrykerRunner(reporterFactory: reporterFactoryMock.Object);
 
@@ -136,7 +138,7 @@ namespace Stryker.Core.UnitTest
 
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
-            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>()), Times.Once);
+            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()), Times.Once);
         }
 
         [Fact]
@@ -155,7 +157,7 @@ namespace Stryker.Core.UnitTest
             });
             var mutationTestInput = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new SourceProjectInfo()
                 {
                     ProjectContents = folder
                 }
@@ -179,7 +181,7 @@ namespace Stryker.Core.UnitTest
 
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
             reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
-            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>()), Times.Never);
+            reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()), Times.Never);
         }
     }
 }

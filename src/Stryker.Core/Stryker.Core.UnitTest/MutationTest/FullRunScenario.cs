@@ -6,6 +6,7 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
+using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.UnitTest.MutationTest
 {
@@ -15,7 +16,7 @@ namespace Stryker.Core.UnitTest.MutationTest
     internal class FullRunScenario
     {
         private readonly Dictionary<int, Mutant> _mutants = new();
-        private readonly Dictionary<int, TestDescription> _tests = new ();
+        private readonly Dictionary<int, TestDescription> _tests = new();
 
         private readonly Dictionary<int, TestGuidsList> _coverageResult = new();
         private readonly Dictionary<int, TestGuidsList> _failedTestsPerRun = new();
@@ -37,7 +38,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             {
                 id = _mutants.Keys.Append(-1).Max() + 1;
             }
-            var mutant = new Mutant { Id = id};
+            var mutant = new Mutant { Id = id };
             _mutants[id] = mutant;
             return mutant;
         }
@@ -97,7 +98,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         {
             if (id == -1)
             {
-                id = _tests.Keys.Append(-1).Max()+1;
+                id = _tests.Keys.Append(-1).Max() + 1;
             }
 
             var test = new TestDescription(Guid.NewGuid(), name ?? $"test {id}", file);
@@ -151,14 +152,16 @@ namespace Stryker.Core.UnitTest.MutationTest
             return _coverageResult.TryGetValue(id, out var list) ? list : TestGuidsList.NoTest();
         }
 
-        private TestRunResult GetRunResult(int id) => new(GetCoveringTests(id), GetFailedTests(id), TestGuidsList.NoTest(), string.Empty, TimeSpan.Zero);
+        private TestRunResult GetRunResult(int id) => new(Enumerable.Empty<VsTestDescription>(), GetCoveringTests(id), GetFailedTests(id), TestGuidsList.NoTest(), string.Empty, TimeSpan.Zero);
 
         public TestRunResult GetInitialRunResult() => GetRunResult(InitialRunId);
 
         public Mock<ITestRunner> GetTestRunnerMock()
         {
             var runnerMock = new Mock<ITestRunner>();
-            var successResult = new TestRunResult(GetGuidList(),
+            var successResult = new TestRunResult(
+                Enumerable.Empty<VsTestDescription>(),
+                GetGuidList(),
                 TestGuidsList.NoTest(),
                 TestGuidsList.NoTest(),
                 string.Empty,
@@ -186,7 +189,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 {
                     foreach (var m in list)
                     {
-                        update(list, GetFailedTests(m.Id),  GetCoveringTests(m.Id), TestGuidsList.NoTest());
+                        update(list, GetFailedTests(m.Id), GetCoveringTests(m.Id), TestGuidsList.NoTest());
                     }
                 }))
                 .Returns(successResult);

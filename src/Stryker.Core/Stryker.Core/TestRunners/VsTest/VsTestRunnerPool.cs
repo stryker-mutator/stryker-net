@@ -12,6 +12,7 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.DataCollector;
 
 namespace Stryker.Core.TestRunners.VsTest

@@ -42,7 +42,7 @@ namespace Stryker.Core.MutationTest
             DeclareMutationProcessForLanguage<FsharpMutationProcess>(Language.Fsharp);
         }
 
-        public static void DeclareMutationProcessForLanguage<T>(Language language) where T:IMutationProcess
+        public static void DeclareMutationProcessForLanguage<T>(Language language) where T : IMutationProcess
         {
             var constructor = typeof(T).GetConstructor(new[] { typeof(StrykerOptions) });
             if (constructor == null)
@@ -67,24 +67,24 @@ namespace Stryker.Core.MutationTest
             _mutationTestExecutor = executor;
             _mutationProcess = mutationProcess ?? BuildMutationProcess();
             _coverageAnalyser = coverageAnalyzer ?? new CoverageAnalyser(_options);
-            _projectContents = input.ProjectInfo.ProjectContents;
+            _projectContents = input.SourceProjectInfo.ProjectContents;
         }
 
         public MutationTestInput Input { get; }
 
         private IMutationProcess BuildMutationProcess()
         {
-            if (!LanguageMap.ContainsKey(Input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage()))
+            if (!LanguageMap.ContainsKey(Input.SourceProjectInfo.AnalyzerResult.GetLanguage()))
             {
                 throw new GeneralStrykerException(
                     "no valid language detected || no valid csproj or fsproj was given.");
             }
-            return LanguageMap[Input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage()](_options);
+            return LanguageMap[Input.SourceProjectInfo.AnalyzerResult.GetLanguage()](_options);
         }
 
         public void Mutate()
         {
-            Input.ProjectInfo.BackupOriginalAssembly();
+            Input.TestProjectsInfo.BackupOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
             _mutationProcess.Mutate(Input);
         }
 
@@ -102,7 +102,7 @@ namespace Stryker.Core.MutationTest
             return new StrykerRunResult(_options, _projectContents.GetMutationScore());
         }
 
-        public void Restore() => Input.ProjectInfo.RestoreOriginalAssembly();
+        public void Restore() => Input.TestProjectsInfo.RestoreOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
 
         private void TestMutants(IEnumerable<Mutant> mutantsToTest)
         {
@@ -113,8 +113,8 @@ namespace Stryker.Core.MutationTest
             Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
             {
                 var reportedMutants = new HashSet<Mutant>();
-                
-                _mutationTestExecutor.Test(Input.ProjectInfo, mutants,
+
+                _mutationTestExecutor.Test(Input.SourceProjectInfo, mutants,
                     Input.InitialTestRun.TimeoutValueCalculator,
                     (testedMutants, tests, ranTests, outTests) => TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants));
 
@@ -202,9 +202,9 @@ namespace Stryker.Core.MutationTest
 
             mutantsToGroup = mutantsToGroup.Where(m => m.ResultStatus == MutantStatus.NotRun).ToList();
 
-            var testsCount = Input.InitialTestRun.Result.RanTests.Count;
+            var testsCount = Input.InitialTestRun.Result.ExecutedTests.Count;
             mutantsToGroup = mutantsToGroup.OrderBy(m => m.AssessingTests.Count).ToList();
-            while (mutantsToGroup.Count>0)
+            while (mutantsToGroup.Count > 0)
             {
                 // we pick the first mutant
                 var usedTests = mutantsToGroup[0].AssessingTests;
@@ -234,7 +234,7 @@ namespace Stryker.Core.MutationTest
 
                 blocks.Add(nextBlock);
             }
-            
+
             Logger.LogDebug(
                 $"Mutations will be tested in {blocks.Count} test runs" +
                 (mutantsNotRun.Count > blocks.Count ? $", instead of {mutantsNotRun.Count}." : "."));
@@ -242,6 +242,6 @@ namespace Stryker.Core.MutationTest
             return blocks;
         }
 
-        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(Input.ProjectInfo, _mutationTestExecutor.TestRunner, _projectContents.Mutants, Input.InitialTestRun.Result.FailingTests);
+        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(Input.SourceProjectInfo, _mutationTestExecutor.TestRunner, _projectContents.Mutants, Input.InitialTestRun.Result.FailingTests);
     }
 }
