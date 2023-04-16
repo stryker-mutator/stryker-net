@@ -4,7 +4,7 @@
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.0.2" />
     <PackageVersion Include="NuGet.Protocol" Version="6.5.0" />
     <PackageVersion Include="ResXResourceReader.NetStandard" Version="1.1.0" />
-    <PackageVersion Include="YamlDotNet" Version="13.0.2" />
+    <PackageVersion Include="YamlDotNet" Version="13.1.0" />
     <PackageVersion Include="Grynwald.MarkdownGenerator" Version="3.0.106" />
     <PackageVersion Include="LibGit2Sharp" Version="0.27.2" />
     <PackageVersion Include="FSharp.Compiler.Service" Version="41.0.7" />
