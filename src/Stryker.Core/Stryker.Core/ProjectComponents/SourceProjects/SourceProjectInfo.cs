@@ -28,7 +28,7 @@ namespace Stryker.Core.ProjectComponents.SourceProjects
         public IReadOnlyCollection<string> Warnings => _warnings;
 
         public IReadOnlyList<string> GetTestAssemblies() =>
-            TestProjectsInfo.AnalyzerResults.Select(a => a.GetAssemblyPath()).ToList();
+            TestProjectsInfo.GetTestAssemblies();
 
         public string LogError(string error)
         {

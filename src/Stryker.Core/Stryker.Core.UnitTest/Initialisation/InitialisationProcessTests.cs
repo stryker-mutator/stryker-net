@@ -40,12 +40,21 @@ namespace Stryker.Core.UnitTest.Initialisation
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(references: Array.Empty<string>()).Object,
                     ProjectContents = folder
                 });
-
+            inputFileResolverMock.Setup(x => x.ResolveTestProjectsInfo(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()))
+                .Returns(new TestProjectsInfo(new MockFileSystem())
+                {
+                    TestProjects = new List<TestProject>()
+                    {
+                        // todo add files to mockfilesystem
+                        new TestProject(new MockFileSystem(), TestHelper.SetupProjectAnalyzerResult(
+                            projectFilePath: "C://Example/Dir/ProjectFolder",
+                            targetFramework: "netcoreapp2.1").Object),
+                    }
+                });
             var target = new InitialisationProcess(inputFileResolverMock.Object);
 
             var options = new StrykerOptions
-            {
-                ProjectName = "TheProjectName",
+            { ProjectName = "TheProjectName",
                 ProjectVersion = "TheProjectVersion"
             };
 
@@ -182,7 +191,17 @@ namespace Stryker.Core.UnitTest.Initialisation
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         references: Array.Empty<string>()).Object,
                 });
-
+            inputFileResolverMock.Setup(x => x.ResolveTestProjectsInfo(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()))
+                .Returns(new TestProjectsInfo(new MockFileSystem())
+                {
+                    TestProjects = new List<TestProject>()
+                    {
+                        // todo add files to mockfilesystem
+                        new TestProject(new MockFileSystem(), TestHelper.SetupProjectAnalyzerResult(
+                            projectFilePath: "C://Example/Dir/ProjectFolder",
+                            targetFramework: "netcoreapp2.1").Object),
+                    }
+                });
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
             var failedTest = Guid.NewGuid();
             var ranTests = new TestGuidsList(failedTest, Guid.NewGuid(), Guid.NewGuid());

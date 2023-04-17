@@ -22,7 +22,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
 {
-    public class VsTextContextInformationTests
+    public class VsTextContextInformationTests: TestBase
     {
         private readonly string _testAssemblyPath;
         private readonly TestProjectsInfo _testProjectsInfo;
@@ -133,9 +133,9 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             using var runner = BuildVsTextContext(new StrykerOptions(), out _);
             // make sure we have discovered first and second tests
-            foreach (var testAssembly in _testProjectsInfo.TestFiles)
+            foreach (var testAssembly in _testProjectsInfo.GetTestAssemblies())
             {
-                runner.AddTestSource(testAssembly.FilePath);
+                runner.AddTestSource(testAssembly);
             }
             runner.VsTests.Count.ShouldBe(2);
         }
@@ -145,9 +145,9 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             using var runner = BuildVsTextContext(new StrykerOptions(), out var mock);
             // make sure we have discovered first and second tests
-            foreach (var testAssembly in _testProjectsInfo.TestFiles)
+            foreach (var testAssembly in _testProjectsInfo.GetTestAssemblies())
             {
-                runner.AddTestSource(testAssembly.FilePath);
+                runner.AddTestSource(testAssembly);
             }
             runner.Dispose();
             mock.Verify(m => m.EndSession(), Times.Once);

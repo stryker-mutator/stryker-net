@@ -66,7 +66,11 @@ namespace Stryker.Core.Initialisation
                 if (!options.IsSolutionContext)
                 {
                     // project mode
-                    return new[] { _inputFileResolver.ResolveSourceProjectInfo(options, _inputFileResolver.ResolveTestProjectsInfo(options, null),null) };
+                    var resolveTestProjectsInfo = _inputFileResolver.ResolveTestProjectsInfo(options, null);
+                    var resolveSourceProjectInfo = _inputFileResolver.ResolveSourceProjectInfo(options, resolveTestProjectsInfo,null);
+                    resolveSourceProjectInfo.TestProjectsInfo = resolveTestProjectsInfo;
+                    ;
+                    return new[] { resolveSourceProjectInfo };
                 }
 
                 // Analyze all projects in the solution with buildalyzer

@@ -92,7 +92,6 @@ namespace Stryker.Core.Initialisation
             targetProjectInfo.ProjectContents = inputFiles;
 
             _logger.LogInformation("Found project {0} to mutate.", targetProject);
-
             return targetProjectInfo;
         }
 

@@ -92,8 +92,8 @@ public class VsTestMockingHelper : TestBase
         _unexpectedCoverageProperty = TestProperty.Register(CoverageCollector.OutOfTestsPropertyName, CoverageCollector.OutOfTestsPropertyName, typeof(string), typeof(TestResult));
         Mutant = new Mutant { Id = 0 };
         OtherMutant = new Mutant { Id = 1 };
-        SourceProjectInfo = BuildSourceProjectInfo();
         _testProjectsInfo = BuildTestProjectsInfo();
+        SourceProjectInfo = BuildSourceProjectInfo();
 
         TestCases = new List<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> { firstTest, secondTest };
     }
@@ -105,31 +105,28 @@ public class VsTestMockingHelper : TestBase
         return new SourceProjectInfo
         {
             AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                properties: new Dictionary<string, string>()
+                properties: new Dictionary<string, string>
                 {
                     { "TargetDir", Path.Combine(_filesystemRoot, "app", "bin", "Debug") },
                     { "TargetFileName", "AppToTest.dll" },
                     { "Language", "C#" }
                 },targetFramework: "netcoreapp2.1").Object,
-            ProjectContents = content
+            ProjectContents = content,
+            TestProjectsInfo = _testProjectsInfo
         };
     }
 
-    protected TestProjectsInfo BuildTestProjectsInfo(IEnumerable<Mutant> mutants = null)
-    {
-        var content = new CsharpFolderComposite();
-        content.Add(new CsharpFileLeaf { Mutants = mutants ?? new[] { Mutant, OtherMutant } });
-        return new TestProjectsInfo(_fileSystem)
+    protected TestProjectsInfo BuildTestProjectsInfo() =>
+        new(_fileSystem)
         {
-            TestProjects = new List<TestProject> { new TestProject(_fileSystem, TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", Path.GetDirectoryName(_testAssemblyPath) },
-                        { "TargetFileName", Path.GetFileName(_testAssemblyPath) }
-                    },
-                    targetFramework: "netcoreapp2.1").Object)}
+            TestProjects = new List<TestProject> { new(_fileSystem, TestHelper.SetupProjectAnalyzerResult(
+                properties: new Dictionary<string, string>
+                {
+                    { "TargetDir", Path.GetDirectoryName(_testAssemblyPath) },
+                    { "TargetFileName", Path.GetFileName(_testAssemblyPath) }
+                },
+                targetFramework: "netcoreapp2.1").Object)}
         };
-    }
 
     protected IReadOnlyList<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> TestCases { get; }
 
@@ -479,7 +476,7 @@ public class VsTestMockingHelper : TestBase
             hostBuilder: _ => new MockStrykerTestHostLauncher(succeed, false),
             NullLogger.Instance
         );
-        foreach (var path in (testProjectsInfo ?? _testProjectsInfo).TestFiles.Select(p => p.FilePath))
+        foreach (var path in (testProjectsInfo ?? _testProjectsInfo).GetTestAssemblies())
         {
             context.AddTestSource(path);
         }

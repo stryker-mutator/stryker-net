@@ -18,6 +18,8 @@ namespace Stryker.Core.ProjectComponents.TestProjects
         public IEnumerable<TestFile> TestFiles => TestProjects.SelectMany(testProject => testProject.TestFiles);
         public IEnumerable<IAnalyzerResult> AnalyzerResults => TestProjects.Select(testProject => testProject.AnalyzerResult);
 
+        public IReadOnlyList<string> GetTestAssemblies() =>
+            AnalyzerResults.Select(a => a.GetAssemblyPath()).ToList();
         public TestProjectsInfo(IFileSystem fileSystem, ILogger<TestProjectsInfo> logger = null)
         {
             _fileSystem = fileSystem ?? new FileSystem();

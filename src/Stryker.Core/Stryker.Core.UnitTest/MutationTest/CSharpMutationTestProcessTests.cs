@@ -22,7 +22,7 @@ namespace Stryker.Core.UnitTest.MutationTest
         private string CurrentDirectory { get; }
         private string FilesystemRoot { get; }
         private string SourceFile { get; }
-        private MockFileSystem fileSystemMock { get; } = new MockFileSystem();
+        private MockFileSystem FileSystemMock { get; } = new();
 
         public CSharpMutationTestProcessTests()
         {
@@ -60,17 +60,17 @@ namespace Stryker.Core.UnitTest.MutationTest
                             { "Language", "C#" }
                         },
                         references: new[] { typeof(object).Assembly.Location }).Object,
-                    ProjectContents = folder
-                },
-                TestProjectsInfo = new TestProjectsInfo(fileSystemMock)
-                {
-                    TestProjects = new List<TestProject> {
-                        new TestProject(fileSystemMock, TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                        {
-                            { "TargetDir", Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0") },
-                            { "TargetFileName", "TestName.dll" },
-                            { "Language", "C#" }
-                        }).Object)
+                    ProjectContents = folder,
+                    TestProjectsInfo = new TestProjectsInfo(fileSystem)
+                    {
+                        TestProjects = new List<TestProject> {
+                            new(fileSystem, TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                            {
+                                { "TargetDir", Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0") },
+                                { "TargetFileName", "TestName.dll" },
+                                { "Language", "C#" }
+                            }).Object)
+                        }
                     }
                 }
             };

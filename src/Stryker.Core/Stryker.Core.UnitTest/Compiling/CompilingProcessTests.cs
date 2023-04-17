@@ -449,32 +449,33 @@ namespace ExampleProject
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         projectFilePath: "/c/project.csproj",
-                        properties: new Dictionary<string, string>()
+                        properties: new Dictionary<string, string>
                         {
                             { "TargetDir", "Project" },
                             { "AssemblyName", "AssemblyName" },
                             { "TargetFileName", "TargetFileName.dll" },
                         },
                         // add a reference to system so the example code can compile
-                        references: new string[] { typeof(object).Assembly.Location }
+                        references: new[] { typeof(object).Assembly.Location }
                     ).Object,
-                },
-                TestProjectsInfo = new TestProjectsInfo(fileSystem)
-                {
-                     TestProjects = new List<TestProject>() {
-                         new TestProject(fileSystem, TestHelper.SetupProjectAnalyzerResult(
-                            projectFilePath: "/c/test.csproj",
-                            properties: new Dictionary<string, string>()
-                            {
-                                { "TargetDir", "Project" },
-                                { "AssemblyName", "AssemblyName" },
-                                { "TargetFileName", "TargetFileName.dll" },
-                            },
-                            // add a reference to system so the example code can compile
-                            references: new string[] { typeof(object).Assembly.Location }
-                        ).Object),
+                    TestProjectsInfo = new TestProjectsInfo(fileSystem)
+                    {
+                        TestProjects = new List<TestProject> {
+                            new TestProject(fileSystem, TestHelper.SetupProjectAnalyzerResult(
+                                projectFilePath: "/c/test.csproj",
+                                properties: new Dictionary<string, string>
+                                {
+                                    { "TargetDir", "Project" },
+                                    { "AssemblyName", "AssemblyName" },
+                                    { "TargetFileName", "TargetFileName.dll" },
+                                },
+                                // add a reference to system so the example code can compile
+                                references: new[] { typeof(object).Assembly.Location }
+                            ).Object),
+                        }
                     }
-                },
+                    },
+
                 TestRunner = new Mock<ITestRunner>(MockBehavior.Default).Object
             };
             var folder = new CsharpFolderComposite();
