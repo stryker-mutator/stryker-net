@@ -18,7 +18,7 @@ namespace Stryker.Core.Initialisation
     public interface IInputFileResolver
     {
         TestProjectsInfo ResolveTestProjectsInfo(StrykerOptions options, IEnumerable<IAnalyzerResult> solutionProjects);
-        SourceProjectInfo ResolveSourceProjectInfo(StrykerOptions options, TestProjectsInfo testProjectsInfo, IEnumerable<IAnalyzerResult> solutionProjects);
+        SourceProjectInfo ResolveSourceProjectInfo(StrykerOptions options, IEnumerable<IAnalyzerResult> testProjectsInfo, IEnumerable<IAnalyzerResult> solutionProjects);
         IFileSystem FileSystem { get; }
     }
 
@@ -72,12 +72,12 @@ namespace Stryker.Core.Initialisation
             };
         }
 
-        public SourceProjectInfo ResolveSourceProjectInfo(StrykerOptions options, TestProjectsInfo testProjectsInfo, IEnumerable<IAnalyzerResult> solutionProjects)
+        public SourceProjectInfo ResolveSourceProjectInfo(StrykerOptions options, IEnumerable<IAnalyzerResult> testProjects, IEnumerable<IAnalyzerResult> solutionProjects)
         {
             var targetProjectInfo = new SourceProjectInfo();
 
             // Analyze source project
-            var targetProject = FindSourceProject(testProjectsInfo, options.SourceProjectName, solutionProjects);
+            var targetProject = FindSourceProject(testProjects, options.SourceProjectName, solutionProjects);
 
             targetProjectInfo.AnalyzerResult = _projectFileReader.AnalyzeProject(targetProject, options.SolutionPath, options.TargetFramework, solutionProjects);
 
@@ -142,9 +142,9 @@ namespace Stryker.Core.Initialisation
             return projectFiles.Single();
         }
 
-        public string FindSourceProject(TestProjectsInfo testProjectsInfo, string projectUnderTestNameFilter, IEnumerable<IAnalyzerResult> solutionProjects)
+        public string FindSourceProject(IEnumerable<IAnalyzerResult> testProjects, string projectUnderTestNameFilter, IEnumerable<IAnalyzerResult> solutionProjects)
         {
-            var projectReferences = FindProjectsReferencedByAllTestProjects(testProjectsInfo.TestProjects);
+            var projectReferences = FindProjectsReferencedByAllTestProjects(testProjects);
 
             string sourceProjectPath;
 
@@ -216,10 +216,10 @@ namespace Stryker.Core.Initialisation
             return projectReferences.Single();
         }
 
-        private static IEnumerable<string> FindProjectsReferencedByAllTestProjects(IEnumerable<TestProject> testProjects)
+        private static IEnumerable<string> FindProjectsReferencedByAllTestProjects(IEnumerable<IAnalyzerResult> testProjects)
         {
             var amountOfTestProjects = testProjects.Count();
-            var allProjectReferences = testProjects.SelectMany(t => t.AnalyzerResult.ProjectReferences);
+            var allProjectReferences = testProjects.SelectMany(t => t.ProjectReferences);
             var projectReferences = allProjectReferences.GroupBy(x => x).Where(g => g.Count() == amountOfTestProjects).Select(g => g.Key);
             return projectReferences;
         }

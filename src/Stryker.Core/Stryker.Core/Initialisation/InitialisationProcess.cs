@@ -67,7 +67,7 @@ namespace Stryker.Core.Initialisation
                 {
                     // project mode
                     var resolveTestProjectsInfo = _inputFileResolver.ResolveTestProjectsInfo(options, null);
-                    var resolveSourceProjectInfo = _inputFileResolver.ResolveSourceProjectInfo(options, resolveTestProjectsInfo,null);
+                    var resolveSourceProjectInfo = _inputFileResolver.ResolveSourceProjectInfo(options, resolveTestProjectsInfo.AnalyzerResults,null);
                     resolveSourceProjectInfo.TestProjectsInfo = resolveTestProjectsInfo;
                     ;
                     return new[] { resolveSourceProjectInfo };
@@ -224,7 +224,7 @@ namespace Stryker.Core.Initialisation
                         options.ProjectPath,
                          project,
                         testProjects: relatedTestProjects);
-                    result.Add(_inputFileResolver.ResolveSourceProjectInfo(projectOptions, testProjectInfos  ,solutionAnalyzerResults));
+                    result.Add(_inputFileResolver.ResolveSourceProjectInfo(projectOptions, analyzerResultsForTestProjects  ,solutionAnalyzerResults));
                 }
                 else
                 {
