@@ -69,7 +69,7 @@ namespace Stryker.Core.Initialisation
                     var resolveTestProjectsInfo = _inputFileResolver.ResolveTestProjectsInfo(options, null);
                     var resolveSourceProjectInfo = _inputFileResolver.ResolveSourceProjectInfo(options, resolveTestProjectsInfo.AnalyzerResults,null);
                     resolveSourceProjectInfo.TestProjectsInfo = resolveTestProjectsInfo;
-                    ;
+                    
                     return new[] { resolveSourceProjectInfo };
                 }
 
@@ -82,7 +82,7 @@ namespace Stryker.Core.Initialisation
                 _logger.LogInformation("Found {0} test projects", testProjects.Count);
 
                 var dependents = FindDependentProjects(projectsUnderTestAnalyzerResult);
-                return BuildProjectInfos(options, dependents, solutionAnalyzerResults);
+                return BuildProjectInfos(options, dependents, projectsUnderTestAnalyzerResult, testProjects, solutionAnalyzerResults);
             }
             finally
             {
@@ -197,10 +197,10 @@ namespace Stryker.Core.Initialisation
         }
 
         private IReadOnlyCollection<SourceProjectInfo> BuildProjectInfos(StrykerOptions options,
-            IReadOnlyDictionary<string, HashSet<string>> dependents, IReadOnlyCollection<IAnalyzerResult> solutionAnalyzerResults)
+            IReadOnlyDictionary<string, HashSet<string>> dependents, List<IAnalyzerResult> projectsUnderTestAnalyzerResult,
+            List<IAnalyzerResult> testProjects,
+            IReadOnlyCollection<IAnalyzerResult> solutionAnalyzerResults)
         {
-            var testProjects = solutionAnalyzerResults.Where(p => p.IsTestProject()).ToList();
-            var projectsUnderTestAnalyzerResult = solutionAnalyzerResults.Where(p => !p.IsTestProject()).ToList();
             var result = new List<SourceProjectInfo>(projectsUnderTestAnalyzerResult.Count);
             foreach (var project in projectsUnderTestAnalyzerResult.Select(p =>p.ProjectFilePath))
             {
@@ -210,8 +210,6 @@ namespace Stryker.Core.Initialisation
                 var relatedTestProjects = analyzerResultsForTestProjects.Select(p =>p.ProjectFilePath).ToList();
                 if (relatedTestProjects.Count > 0)
                 {
-                    var testProjectInfos =
-                        _inputFileResolver.ResolveTestProjectsInfo(options, analyzerResultsForTestProjects);
                     _logger.LogDebug("Matched {0} to {1} test projects:", projectLogName, relatedTestProjects.Count);
 
                     foreach (var relatedTestProjectAnalyzerResults in relatedTestProjects)
@@ -224,7 +222,10 @@ namespace Stryker.Core.Initialisation
                         options.ProjectPath,
                          project,
                         testProjects: relatedTestProjects);
-                    result.Add(_inputFileResolver.ResolveSourceProjectInfo(projectOptions, analyzerResultsForTestProjects  ,solutionAnalyzerResults));
+                    var resolveSourceProjectInfo = _inputFileResolver.ResolveSourceProjectInfo(projectOptions, analyzerResultsForTestProjects, solutionAnalyzerResults);
+                    resolveSourceProjectInfo.TestProjectsInfo =
+                        _inputFileResolver.ResolveTestProjectsInfo(projectOptions, solutionAnalyzerResults);
+                    result.Add(resolveSourceProjectInfo);
                 }
                 else
                 {
@@ -242,6 +243,7 @@ namespace Stryker.Core.Initialisation
                 result.Add(new MutationTestInput
                 {
                     SourceProjectInfo = info,
+                    TestProjectsInfo = info.TestProjectsInfo,
                     TestRunner = runner,
                     InitialTestRun = InitialTest(options, info, runner)
                 });
