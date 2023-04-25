@@ -26,27 +26,26 @@ namespace Stryker.Core.UnitTest.Initialisation
     {
         private readonly string _currentDirectory;
         private readonly string _filesystemRoot;
-        private readonly string _basePath;
-        private readonly string sourceFile;
-        private readonly string testProjectPath;
-        private readonly string sourcePath;
-        private readonly string defaultTestProjectFileContents;
-        private readonly string defaultSourceProjectFileContents;
+        private readonly string _sourceFile;
+        private readonly string _testProjectPath;
+        private readonly string _sourcePath;
+        private readonly string _defaultTestProjectFileContents;
+        private readonly string _defaultSourceProjectFileContents;
         private readonly StrykerOptions _options;
 
         public InputFileResolverTests()
         {
             _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             _filesystemRoot = Path.GetPathRoot(_currentDirectory);
-            _basePath = Path.Combine(_filesystemRoot, "TestProject");
+            var basePath = Path.Combine(_filesystemRoot, "TestProject");
             _options = new StrykerOptions()
             {
-                ProjectPath = _basePath
+                ProjectPath = basePath
             };
-            sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
-            testProjectPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj"));
-            sourcePath = FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"));
-            defaultTestProjectFileContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
+            _sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            _testProjectPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj"));
+            _sourcePath = FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"));
+            _defaultTestProjectFileContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.0</TargetFramework>
         <IsPackable>false</IsPackable>
@@ -61,7 +60,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         <ProjectReference Include=""..\ExampleProject\ExampleProject.csproj"" />
     </ItemGroup>
 </Project>";
-            defaultSourceProjectFileContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
+            _defaultSourceProjectFileContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.0</TargetFramework>
         <IsPackable>false</IsPackable>
@@ -84,7 +83,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var version = new Version(major, minor, build, revision);
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: new List<string> { sourcePath },
+                projectReferences: new List<string> { _sourcePath },
                 targetFramework: tfm).Object;
 
             var nuGetFramework = analyzerResult.GetNuGetFramework();
@@ -102,7 +101,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         public void ProjectAnalyzerShouldRaiseExceptionsForIllFormedFramework(string tfm)
         {
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: new List<string> { sourcePath },
+                projectReferences: new List<string> { _sourcePath },
                 targetFramework: tfm).Object;
 
             Action lambda = () => analyzerResult.GetNuGetFramework();
@@ -115,10 +114,10 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
-                    { sourcePath, new MockFileData(defaultTestProjectFileContents)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { testProjectPath, new MockFileData(defaultTestProjectFileContents)},
+                    { _sourcePath, new MockFileData(_defaultTestProjectFileContents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(_sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(_sourceFile)},
+                    { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
                     { Path.Combine(_filesystemRoot, "ExampleProject", "bin", "Debug", "netcoreapp2.0"), new MockFileData("Bytecode") }, // bin should be excluded
                     { Path.Combine(_filesystemRoot, "ExampleProject", "obj", "Release", "netcoreapp2.0"), new MockFileData("Bytecode") }, // obj should be excluded
                     { Path.Combine(_filesystemRoot, "ExampleProject", "node_modules", "Some package"), new MockFileData("bla") }, // node_modules should be excluded
@@ -126,22 +125,22 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             var testProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: new List<string> { sourcePath },
+                projectReferences: new List<string> { _sourcePath },
                 targetFramework: "netcoreapp2.1",
-                projectFilePath: testProjectPath,
-                references: new string[] { "" }).Object;
+                projectFilePath: _testProjectPath,
+                references: new[] { "" }).Object;
             var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: sourcePath,
+                    projectFilePath: _sourcePath,
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testProjectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveSourceProjectInfo(_options, new [] {testProjectAnalyzerResult}, new List<IAnalyzerResult> { testProjectAnalyzerResult, sourceProjectAnalyzerResult });
+            var result = target.ResolveSourceProjectInfos(_options, new [] {testProjectAnalyzerResult}, new List<IAnalyzerResult> { testProjectAnalyzerResult, sourceProjectAnalyzerResult }).First();
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
@@ -151,11 +150,11 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
-                    { sourcePath, new MockFileData(defaultTestProjectFileContents)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Plain.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { testProjectPath, new MockFileData(defaultTestProjectFileContents)},
+                    { _sourcePath, new MockFileData(_defaultTestProjectFileContents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(_sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Plain.cs"), new MockFileData(_sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(_sourceFile)},
+                    { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
                     { Path.Combine(_filesystemRoot, "ExampleProject", "bin", "Debug", "netcoreapp2.1"), new MockFileData("Bytecode") }, // bin should be excluded
                     { Path.Combine(_filesystemRoot, "ExampleProject", "obj", "Debug", "netcoreapp2.1", "ExampleProject.AssemblyInfo.cs"), new MockFileData("Bytecode") }, // obj should be excluded
                     { Path.Combine(_filesystemRoot, "ExampleProject", "obj", "Release", "netcoreapp2.1"), new MockFileData("Bytecode") }, // obj should be excluded
@@ -164,23 +163,23 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: new List<string> { sourcePath },
+                projectReferences: new List<string> { _sourcePath },
                 targetFramework: "netcoreapp2.1",
-                projectFilePath: testProjectPath,
-                references: new string[] { "" }).Object;
+                projectFilePath: _testProjectPath,
+                references: new[] { "" }).Object;
             var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                 targetFramework: "netcoreapp2.1",
-                projectFilePath: sourcePath,
+                projectFilePath: _sourcePath,
                 sourceFiles: fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray(),
                 properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveSourceProjectInfo(_options, new [] {testPojectAnalyzerResult}, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult });
+            var result = target.ResolveSourceProjectInfos(_options, new[] { testPojectAnalyzerResult }, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult }).First();
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
         }
@@ -190,30 +189,30 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
-                    { sourcePath, new MockFileData(defaultTestProjectFileContents)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Plain.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Plain.xaml.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { testProjectPath, new MockFileData(defaultTestProjectFileContents)},
+                    { _sourcePath, new MockFileData(_defaultTestProjectFileContents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(_sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Plain.cs"), new MockFileData(_sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Plain.xaml.cs"), new MockFileData(_sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(_sourceFile)},
+                    { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
                     { Path.Combine(_filesystemRoot, "ExampleProject", "obj", "Debug", "netcoreapp2.1", "ExampleProject.AssemblyInfo.cs"), new MockFileData("Bytecode") }
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(projectReferences: new List<string> { sourcePath }).Object;
+            var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(projectReferences: new List<string> { _sourcePath }).Object;
             var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
                     sourceFiles: fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray(),
-                    projectFilePath: sourcePath,
+                    projectFilePath: _sourcePath,
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveSourceProjectInfo(_options, new [] {testPojectAnalyzerResult}, new List<IAnalyzerResult> { });
+            var result = target.ResolveSourceProjectInfos(_options, new[] { testPojectAnalyzerResult }, new List<IAnalyzerResult>()).First();
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(5);
         }
@@ -223,11 +222,11 @@ namespace Stryker.Core.UnitTest.Initialisation
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
-                    { sourcePath, new MockFileData(defaultTestProjectFileContents)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Plain.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { testProjectPath, new MockFileData(defaultTestProjectFileContents)},
+                    { _sourcePath, new MockFileData(_defaultTestProjectFileContents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(_sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Plain.cs"), new MockFileData(_sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(_sourceFile)},
+                    { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
                     { Path.Combine(_filesystemRoot, "ExampleProject", "bin", "Debug", "netcoreapp2.1"), new MockFileData("Bytecode") }, // bin should be excluded
                     { Path.Combine(_filesystemRoot, "ExampleProject", "obj", "Debug", "netcoreapp2.1", "ExampleProject.AssemblyInfo.cs"), new MockFileData(@"//------------------------------------------------------------------------------
 // <auto-generated>
@@ -253,24 +252,24 @@ using System.Reflection;
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: new List<string> { sourcePath },
+                projectReferences: new List<string> { _sourcePath },
                 targetFramework: "netcoreapp2.1",
-                projectFilePath: testProjectPath,
-                references: new string[] { "" }).Object;
+                projectFilePath: _testProjectPath,
+                references: new[] { "" }).Object;
             var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: sourcePath,
+                    projectFilePath: _sourcePath,
                     sourceFiles: fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray(),
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveSourceProjectInfo(_options, new [] {testPojectAnalyzerResult}, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult });
+            var result = target.ResolveSourceProjectInfos(_options, new[] { testPojectAnalyzerResult }, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult }).First();
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
             var mutatedFile = ((ProjectComponent<SyntaxTree>)result.ProjectContents).CompilationSyntaxTrees.First(s => s != null && s.FilePath.Contains("AssemblyInfo.cs"));
@@ -290,31 +289,31 @@ using System.Reflection;
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
-                    { sourcePath, new MockFileData(defaultTestProjectFileContents)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { testProjectPath, new MockFileData(defaultTestProjectFileContents)},
+                    { _sourcePath, new MockFileData(_defaultTestProjectFileContents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(_sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(_sourceFile)},
+                    { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: new List<string> { sourcePath },
+                projectReferences: new List<string> { _sourcePath },
                 targetFramework: "netcoreapp2.1",
-                projectFilePath: testProjectPath,
-                references: new string[] { "" }).Object;
+                projectFilePath: _testProjectPath,
+                references: new[] { "" }).Object;
             var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: sourcePath,
+                    projectFilePath: _sourcePath,
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveSourceProjectInfo(_options, new [] {testPojectAnalyzerResult}, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult });
+            var result = target.ResolveSourceProjectInfos(_options, new[] { testPojectAnalyzerResult }, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult }).First();
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
@@ -322,7 +321,7 @@ using System.Reflection;
         [Fact]
         public void InitializeShouldResolveImportedProject()
         {
-            var sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            var readAllText = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
             var sharedItems = @"<?xml version=""1.0"" encoding=""utf-8""?>
                 <Project xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
@@ -352,32 +351,32 @@ using System.Reflection;
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
                     { Path.Combine(_filesystemRoot, "SharedProject", "Example.projitems"), new MockFileData(sharedItems)},
-                    { Path.Combine(_filesystemRoot, "SharedProject", "Shared.cs"), new MockFileData(sourceFile)},
-                    { sourcePath, new MockFileData(projectFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { testProjectPath, new MockFileData(defaultTestProjectFileContents)},
+                    { Path.Combine(_filesystemRoot, "SharedProject", "Shared.cs"), new MockFileData(readAllText)},
+                    { _sourcePath, new MockFileData(projectFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(readAllText)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(readAllText)},
+                    { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: new List<string> { sourcePath },
+                projectReferences: new List<string> { _sourcePath },
                 targetFramework: "netcoreapp2.1",
-                projectFilePath: testProjectPath,
-                references: new string[] { "" }).Object;
+                projectFilePath: _testProjectPath,
+                references: new[] { "" }).Object;
             var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: sourcePath,
+                    projectFilePath: _sourcePath,
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveSourceProjectInfo(_options, new [] {testPojectAnalyzerResult}, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult });
+            var result = target.ResolveSourceProjectInfos(_options, new[] { testPojectAnalyzerResult }, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult }).First();
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
         }
@@ -385,7 +384,7 @@ using System.Reflection;
         [Fact]
         public void InitializeShouldNotResolveImportedPropsFile()
         {
-            var sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            var contents = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
             var projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
@@ -404,33 +403,33 @@ using System.Reflection;
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
                     { Path.Combine(_filesystemRoot, "NonSharedProject", "Example.props"), new MockFileData("")},
-                    { Path.Combine(_filesystemRoot, "NonSharedProject", "NonSharedSource.cs"), new MockFileData(sourceFile)},
-                    { sourcePath, new MockFileData(projectFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { testProjectPath, new MockFileData(defaultTestProjectFileContents)},
+                    { Path.Combine(_filesystemRoot, "NonSharedProject", "NonSharedSource.cs"), new MockFileData(contents)},
+                    { _sourcePath, new MockFileData(projectFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(contents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(contents)},
+                    { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: new List<string> { sourcePath },
+                projectReferences: new List<string> { _sourcePath },
                 targetFramework: "netcoreapp2.1",
-                projectFilePath: testProjectPath,
+                projectFilePath: _testProjectPath,
                 properties: new Dictionary<string, string>(),
-                references: new string[] { "" }).Object;
+                references: new[] { "" }).Object;
             var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: sourcePath,
+                    projectFilePath: _sourcePath,
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveSourceProjectInfo(_options, new [] {testPojectAnalyzerResult}, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult });
+            var result = target.ResolveSourceProjectInfos(_options, new[] { testPojectAnalyzerResult }, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult }).First();
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
@@ -438,7 +437,7 @@ using System.Reflection;
         [Fact]
         public void InitializeShouldResolveMultipleImportedProjects()
         {
-            var sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            var contents = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
             var sharedItems = @"<?xml version=""1.0"" encoding=""utf-8""?>
                 <Project xmlns=""http://schemas.microsoft.com/developer/msbuild/2003"">
@@ -480,35 +479,35 @@ using System.Reflection;
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
                     { Path.Combine(_filesystemRoot, "SharedProject1", "Example.projitems"), new MockFileData(sharedItems)},
-                    { Path.Combine(_filesystemRoot, "SharedProject1", "Shared.cs"), new MockFileData(sourceFile)},
+                    { Path.Combine(_filesystemRoot, "SharedProject1", "Shared.cs"), new MockFileData(contents)},
                     { Path.Combine(_filesystemRoot, "SharedProject2", "Example.projitems"), new MockFileData(sharedItems2)},
-                    { Path.Combine(_filesystemRoot, "SharedProject2", "Shared.cs"), new MockFileData(sourceFile)},
-                    { sourcePath, new MockFileData(projectFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { testProjectPath, new MockFileData(defaultTestProjectFileContents)}
+                    { Path.Combine(_filesystemRoot, "SharedProject2", "Shared.cs"), new MockFileData(contents)},
+                    { _sourcePath, new MockFileData(projectFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(contents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(contents)},
+                    { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)}
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string> { sourcePath },
+                    projectReferences: new List<string> { _sourcePath },
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: testProjectPath,
+                    projectFilePath: _testProjectPath,
                     properties: new Dictionary<string, string>(),
-                    references: new string[] { "" }).Object;
+                    references: new[] { "" }).Object;
             var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: sourcePath,
+                    projectFilePath: _sourcePath,
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveSourceProjectInfo(_options, new [] {testPojectAnalyzerResult}, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult });
+            var result = target.ResolveSourceProjectInfos(_options, new[] { testPojectAnalyzerResult }, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult }).First();
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
         }
@@ -516,7 +515,7 @@ using System.Reflection;
         [Fact]
         public void InitializeShouldThrowOnMissingSharedProject()
         {
-            var sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            var contents = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
             var projectFile = @"
 <Project Sdk=""Microsoft.NET.Sdk"">
@@ -537,39 +536,39 @@ using System.Reflection;
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
-                    { Path.Combine(_filesystemRoot, "SharedProject", "Shared.cs"), new MockFileData(sourceFile)},
-                    { sourcePath, new MockFileData(projectFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { testProjectPath, new MockFileData(defaultTestProjectFileContents)}
+                    { Path.Combine(_filesystemRoot, "SharedProject", "Shared.cs"), new MockFileData(contents)},
+                    { _sourcePath, new MockFileData(projectFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(contents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(contents)},
+                    { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)}
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string> { sourcePath },
+                    projectReferences: new List<string> { _sourcePath },
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: testProjectPath,
+                    projectFilePath: _testProjectPath,
                     properties: new Dictionary<string, string>(),
-                    references: new string[] { "" }).Object;
+                    references: new[] { "" }).Object;
             var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: sourcePath,
+                    projectFilePath: _sourcePath,
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            Assert.Throws<FileNotFoundException>(() => target.ResolveSourceProjectInfo(_options, new [] {testPojectAnalyzerResult}, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult }));
+            Assert.Throws<FileNotFoundException>(() => target.ResolveSourceProjectInfos(_options, new [] {testPojectAnalyzerResult}, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult }));
         }
 
         [Fact]
         public void InitializeShouldResolvePropertiesInSharedProjectImports()
         {
-            var sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            var contents = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
             var sharedFile = "<Project />";
 
@@ -594,37 +593,37 @@ using System.Reflection;
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
                     { Path.Combine(_filesystemRoot, "SharedProject", "Example.projitems"), new MockFileData(sharedFile)},
-                    { Path.Combine(_filesystemRoot, "SharedProject", "Shared.cs"), new MockFileData(sourceFile)},
-                    { sourcePath, new MockFileData(projectFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { testProjectPath, new MockFileData(defaultTestProjectFileContents)}
+                    { Path.Combine(_filesystemRoot, "SharedProject", "Shared.cs"), new MockFileData(contents)},
+                    { _sourcePath, new MockFileData(projectFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(contents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(contents)},
+                    { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)}
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string> { sourcePath },
+                    projectReferences: new List<string> { _sourcePath },
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: testProjectPath,
+                    projectFilePath: _testProjectPath,
                     properties: new Dictionary<string, string>(),
-                    references: new string[] { "" }).Object;
+                    references: new[] { "" }).Object;
             var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: sourcePath,
+                    projectFilePath: _sourcePath,
                     properties: new Dictionary<string, string>()
                     {
                         { "SharedDir", "SharedProject" },
                         { "Language", "C#" }
                     }).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
 
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveSourceProjectInfo(_options, new [] {testPojectAnalyzerResult}, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult });
+            var result = target.ResolveSourceProjectInfos(_options, new[] { testPojectAnalyzerResult }, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult }).First();
 
             var allFiles = result.ProjectContents.GetAllFiles();
 
@@ -634,7 +633,7 @@ using System.Reflection;
         [Fact]
         public void InitializeShouldThrowIfImportPropertyCannotBeResolved()
         {
-            var sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            var contents = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
 
             var sharedFile = "<Project />";
 
@@ -658,35 +657,35 @@ using System.Reflection;
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
                     { Path.Combine(_filesystemRoot, "SharedProject", "Example.projitems"), new MockFileData(sharedFile)},
-                    { Path.Combine(_filesystemRoot, "SharedProject", "Shared.cs"), new MockFileData(sourceFile)},
-                    { sourcePath, new MockFileData(projectFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { testProjectPath, new MockFileData(defaultTestProjectFileContents)}
+                    { Path.Combine(_filesystemRoot, "SharedProject", "Shared.cs"), new MockFileData(contents)},
+                    { _sourcePath, new MockFileData(projectFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(contents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(contents)},
+                    { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)}
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string> { sourcePath },
+                    projectReferences: new List<string> { _sourcePath },
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: testProjectPath,
-                    references: new string[] { "" }).Object;
+                    projectFilePath: _testProjectPath,
+                    references: new[] { "" }).Object;
             var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: sourcePath,
+                    projectFilePath: _sourcePath,
                     properties: new Dictionary<string, string>()
                     {
                         { "Language", "C#" }
                     }).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var exception = Assert.Throws<InputException>(() => target.ResolveSourceProjectInfo(_options, new [] {testPojectAnalyzerResult}, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult }));
-            exception.Message.ShouldBe($"Missing MSBuild property (SharedDir) in project reference (..{FilePathUtils.NormalizePathSeparators("/$(SharedDir)/Example.projitems")}). Please check your project file ({sourcePath}) and try again.");
+            var exception = Assert.Throws<InputException>(() => target.ResolveSourceProjectInfos(_options, new [] {testPojectAnalyzerResult}, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult }));
+            exception.Message.ShouldBe($"Missing MSBuild property (SharedDir) in project reference (..{FilePathUtils.NormalizePathSeparators("/$(SharedDir)/Example.projitems")}). Please check your project file ({_sourcePath}) and try again.");
         }
 
         [Theory]
@@ -697,35 +696,35 @@ using System.Reflection;
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(_defaultTestProjectFileContents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(_sourceFile)},
+                    { Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj"), new MockFileData(_defaultTestProjectFileContents)},
                     { Path.Combine(_filesystemRoot, "TestProject", folderName, "somecsharpfile.cs"), new MockFileData("Bytecode") },
                     { Path.Combine(_filesystemRoot, "TestProject", folderName, "subfolder", "somecsharpfile.cs"), new MockFileData("Bytecode") },
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string> { sourcePath },
+                    projectReferences: new List<string> { _sourcePath },
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: testProjectPath,
+                    projectFilePath: _testProjectPath,
                     properties: new Dictionary<string, string>(),
-                    references: new string[] { "" }).Object;
+                    references: new[] { "" }).Object;
             var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: sourcePath,
+                    projectFilePath: _sourcePath,
                     properties: new Dictionary<string, string>()
                     {
                         { "Language", "C#" }
                     }).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var result = target.ResolveSourceProjectInfo(_options, new [] {testPojectAnalyzerResult}, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult });
+            var result = target.ResolveSourceProjectInfos(_options, new[] { testPojectAnalyzerResult }, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult }).First();
 
             ((CsharpFolderComposite)result.ProjectContents).Children.Count().ShouldBe(1);
         }
@@ -741,9 +740,9 @@ using System.Reflection;
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string>() { sourcePath },
+                    projectReferences: new List<string>() { _sourcePath },
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: sourcePath).Object);
+                    projectFilePath: _sourcePath).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -755,17 +754,17 @@ using System.Reflection;
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject2.csproj"), new MockFileData(defaultTestProjectFileContents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(_defaultTestProjectFileContents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject2.csproj"), new MockFileData(_defaultTestProjectFileContents)},
                     { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             projectFileReaderMock.Setup(x => x.AnalyzeProject(It.IsAny<string>(), It.IsAny<string>(), null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string> { sourcePath },
+                    projectReferences: new List<string> { _sourcePath },
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: testProjectPath).Object);
+                    projectFilePath: _testProjectPath).Object);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
@@ -786,8 +785,8 @@ Please specify a test project name filter that results in one project.
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
-                { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
-                { Path.Combine(_filesystemRoot, @"ExampleProject\ExampleProject2", "ExampleProject2.csproj"), new MockFileData(defaultTestProjectFileContents)},
+                { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(_defaultTestProjectFileContents)},
+                { Path.Combine(_filesystemRoot, @"ExampleProject\ExampleProject2", "ExampleProject2.csproj"), new MockFileData(_defaultTestProjectFileContents)},
                 { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
             });
 
@@ -803,8 +802,8 @@ Please specify a test project name filter that results in one project.
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
-                { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
-                { Path.Combine(_filesystemRoot, "ExampleProject", "TestProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
+                { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(_defaultTestProjectFileContents)},
+                { Path.Combine(_filesystemRoot, "ExampleProject", "TestProject.csproj"), new MockFileData(_defaultTestProjectFileContents)},
                 { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
             });
             var target = new InputFileResolver(fileSystem, null);
@@ -819,13 +818,13 @@ Please specify a test project name filter that results in one project.
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
-                { Path.Combine(_filesystemRoot, "ExampleProject", "AlternateProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
+                { Path.Combine(_filesystemRoot, "ExampleProject", "AlternateProject.csproj"), new MockFileData(_defaultTestProjectFileContents)},
                 { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
             });
             var target = new InputFileResolver(fileSystem, null);
 
             var exception = Assert.Throws<InputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject", "GivenTestProject.csproj")));
-            exception.Message.ShouldStartWith("No .csproj or .sln file found, please check your project directory at");
+            exception.Message.ShouldStartWith("No .csproj or .fsproj file found, please check your project directory at");
         }
 
         [Fact]
@@ -833,8 +832,8 @@ Please specify a test project name filter that results in one project.
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
-                { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
-                { Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
+                { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(_defaultTestProjectFileContents)},
+                { Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj"), new MockFileData(_defaultTestProjectFileContents)},
                 { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
             });
             var target = new InputFileResolver(fileSystem, null);
@@ -849,8 +848,8 @@ Please specify a test project name filter that results in one project.
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
-                { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
-                { Path.Combine(_filesystemRoot, "ExampleProject","SubFolder", "TestProject.csproj"), new MockFileData(defaultTestProjectFileContents)},
+                { Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"), new MockFileData(_defaultTestProjectFileContents)},
+                { Path.Combine(_filesystemRoot, "ExampleProject","SubFolder", "TestProject.csproj"), new MockFileData(_defaultTestProjectFileContents)},
                 { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
             });
             var target = new InputFileResolver(fileSystem, null);
@@ -872,8 +871,8 @@ Please specify a test project name filter that results in one project.
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
-                { sourceProjectPath, new MockFileData(defaultTestProjectFileContents)},
-                { testProjectPath, new MockFileData(defaultTestProjectFileContents)},
+                { sourceProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+                { testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
                 { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData("content")}
             });
 
@@ -903,7 +902,7 @@ Please specify a test project name filter that results in one project.
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
             // Act
-            var result = target.ResolveSourceProjectInfo(_options, new [] {testPojectAnalyzerResult}, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult });
+            var result = target.ResolveSourceProjectInfos(_options, new[] { testPojectAnalyzerResult }, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult }).First();
 
             // Assert
             result.AnalyzerResult.ProjectFilePath.ShouldBe(sourceProjectPath);
@@ -914,17 +913,17 @@ Please specify a test project name filter that results in one project.
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
-                { sourcePath, new MockFileData(defaultTestProjectFileContents)},
-                { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(sourceFile)},
-                { testProjectPath, new MockFileData(defaultTestProjectFileContents)}
+                { _sourcePath, new MockFileData(_defaultTestProjectFileContents)},
+                { Path.Combine(_filesystemRoot, "ExampleProject", "Recursive.cs"), new MockFileData(_sourceFile)},
+                { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)}
             });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string> { sourcePath },
+                    projectReferences: new List<string> { _sourcePath },
                     targetFramework: "netcoreapp2.1",
                     properties: new Dictionary<string, string>() { { "Language", "C#" } },
-                    projectFilePath: testProjectPath,
+                    projectFilePath: _testProjectPath,
                     references: new string[] { "Microsoft.VisualStudio.QualityTools.UnitTestFramework" }).Object;
 
             // Act
@@ -940,35 +939,35 @@ Please specify a test project name filter that results in one project.
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
-                    { sourcePath, new MockFileData(defaultTestProjectFileContents)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "app.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "app.xaml"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "app.xaml.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(sourceFile)},
-                    { testProjectPath, new MockFileData(defaultTestProjectFileContents)}
+                    { _sourcePath, new MockFileData(_defaultTestProjectFileContents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "app.cs"), new MockFileData(_sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "app.xaml"), new MockFileData(_sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "app.xaml.cs"), new MockFileData(_sourceFile)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "OneFolderDeeper", "Recursive.cs"), new MockFileData(_sourceFile)},
+                    { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)}
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
 
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string> { sourcePath },
+                    projectReferences: new List<string> { _sourcePath },
                     targetFramework: "netcoreapp2.1",
                     properties: new Dictionary<string, string>() { },
-                    projectFilePath: testProjectPath,
+                    projectFilePath: _testProjectPath,
                     references: new string[] { "" }).Object;
             var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>(),
                     targetFramework: "netcoreapp2.1",
-                    projectFilePath: sourcePath,
+                    projectFilePath: _sourcePath,
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
             // Act
-            var result = target.ResolveSourceProjectInfo(_options, new [] {testPojectAnalyzerResult}, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult });
+            var result = target.ResolveSourceProjectInfos(_options, new[] { testPojectAnalyzerResult }, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult }).First();
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
@@ -979,10 +978,10 @@ Please specify a test project name filter that results in one project.
             // Arrange
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
                 {
-                    { sourcePath, new MockFileData(defaultSourceProjectFileContents)},
-                    { Path.Combine(_filesystemRoot, "ExampleProject", "myFile.cs"), new MockFileData(sourceFile)},
-                    { Path.Combine(_filesystemRoot, "TestProject1", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents) },
-                    { Path.Combine(_filesystemRoot, "TestProject2", "ExampleProject.csproj"), new MockFileData(defaultTestProjectFileContents) },
+                    { _sourcePath, new MockFileData(_defaultSourceProjectFileContents)},
+                    { Path.Combine(_filesystemRoot, "ExampleProject", "myFile.cs"), new MockFileData(_sourceFile)},
+                    { Path.Combine(_filesystemRoot, "TestProject1", "ExampleProject.csproj"), new MockFileData(_defaultTestProjectFileContents) },
+                    { Path.Combine(_filesystemRoot, "TestProject2", "ExampleProject.csproj"), new MockFileData(_defaultTestProjectFileContents) },
                 });
 
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
@@ -997,7 +996,7 @@ Please specify a test project name filter that results in one project.
                 }
             };
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    projectReferences: new List<string> { sourcePath },
+                    projectReferences: new List<string> { _sourcePath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: Path.Combine(_filesystemRoot, "TestProject1", "ExampleProject.csproj"),
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }).Object;
@@ -1009,14 +1008,14 @@ Please specify a test project name filter that results in one project.
                     properties: new Dictionary<string, string>() { { "Language", "C#" } }
                 ).Object;
 
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(testPojectAnalyzerResult);
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_sourcePath, null, null, It.IsAny<IEnumerable<IAnalyzerResult>>(), null)).Returns(sourceProjectAnalyzerResult);
 
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
             // Act
-            var result = target.ResolveSourceProjectInfo(_options, new [] {testPojectAnalyzerResult}, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult });
+            var result = target.ResolveSourceProjectInfos(_options, new[] { testPojectAnalyzerResult }, new List<IAnalyzerResult> { testPojectAnalyzerResult, sourceProjectAnalyzerResult }).First();
 
             // Assert
             result.ProjectContents.GetAllFiles().Count().ShouldBe(1);
@@ -1025,42 +1024,33 @@ Please specify a test project name filter that results in one project.
         [Fact]
         public void ShouldFindSourceProjectWhenSingleProjectReferenceAndNoFilter()
         {
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>());
             var testProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(projectReferences: new List<string> { @"..\ExampleProject\ExampleProject.csproj" }).Object;
-            var testProjectsInfo = new TestProjectsInfo(fileSystem) {
-                TestProjects = new List<TestProject>()
-                {
-                    new(fileSystem, testProjectAnalyzerResult)
-                }
-            };
 
-            var result = new InputFileResolver().FindSourceProject(new []{testProjectAnalyzerResult}, null, new List<IAnalyzerResult>());
+            var result = new InputFileResolver().FindSourceProject(new []{testProjectAnalyzerResult}, null);
             result.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
         }
 
         [Fact]
         public void ShouldThrowOnNoProjectReference()
         {
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>());
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: Enumerable.Empty<string>()).Object;
 
-            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testPojectAnalyzerResult}, null, new List<IAnalyzerResult>()));
+            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testPojectAnalyzerResult}, null));
 
-            ex.Message.ShouldContain("no project", Case.Insensitive);
+            ex.Message.ShouldContain("no project");
         }
 
         [Fact]
         public void ShouldThrowOnMultipleProjectsWithoutFilter()
         {
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>());
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: new List<string> {
                     @"..\ExampleProject\ExampleProject.csproj",
                     @"..\AnotherProject\AnotherProject.csproj"
                 }).Object;
 
-            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testPojectAnalyzerResult}, null, new List<IAnalyzerResult>()));
+            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testPojectAnalyzerResult}, null));
 
             ex.Message.ShouldContain("Test project contains more than one project reference. Please set the project option");
             ex.Message.ShouldContain("Choose one of the following references:");
@@ -1074,7 +1064,6 @@ Please specify a test project name filter that results in one project.
         [InlineData("Example")]
         public void ShouldMatchFromMultipleProjectByName(string shouldMatch)
         {
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>());
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: new List<string> {
                     @"..\ExampleProject\ExampleProject.csproj",
@@ -1082,8 +1071,8 @@ Please specify a test project name filter that results in one project.
                 }).Object;
 
 
-
-            var result = new InputFileResolver().FindSourceProject(new [] {testPojectAnalyzerResult}, shouldMatch, new List<IAnalyzerResult>());
+            var options = new StrykerOptions { SourceProjectName = shouldMatch };
+            var result = new InputFileResolver().FindSourceProject(new [] {testPojectAnalyzerResult}, options);
 
             result.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
         }
@@ -1095,22 +1084,21 @@ Please specify a test project name filter that results in one project.
         [InlineData(".csproj")]
         public void ShouldThrowWhenTheNameMatchesMore(string shouldMatchMoreThanOne)
         {
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>());
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: new List<string> {
                     @"..\ExampleProject\ExampleProject.csproj",
                     @"..\AnotherProject\AnotherProject.csproj"
                 }).Object;
 
-            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testPojectAnalyzerResult}, shouldMatchMoreThanOne, new List<IAnalyzerResult>()));
+            var options = new StrykerOptions { SourceProjectName = shouldMatchMoreThanOne };
+            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testPojectAnalyzerResult}, options));
 
-            ex.Message.ShouldContain("more than one", Case.Insensitive);
+            ex.Message.ShouldContain("more than one");
         }
 
         [Fact]
         public void ShouldThrowWhenTheNameMatchesNone()
         {
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>());
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: new List<string> {
                     @"..\ExampleProject\ExampleProject.csproj",
@@ -1118,9 +1106,10 @@ Please specify a test project name filter that results in one project.
                 }).Object;
 
 
-            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testPojectAnalyzerResult}, "WrongProject.csproj", new List<IAnalyzerResult>()));
+            var options = new StrykerOptions { SourceProjectName = "WrongProject.csproj" };
+            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testPojectAnalyzerResult}, options));
 
-            ex.Message.ShouldContain("no project", Case.Insensitive);
+            ex.Message.ShouldContain("no project");
         }
 
         [Theory]
@@ -1133,7 +1122,8 @@ Please specify a test project name filter that results in one project.
                 @"..\AnotherProject\AnotherProject.csproj"
             };
 
-            var match = new InputFileResolver().DetermineSourceProjectWithNameFilter(shouldMatch, projectReferences);
+            var options = new StrykerOptions { SourceProjectName = shouldMatch };
+            var match = new InputFileResolver().DetermineSourceProjectWithNameFilter(options, projectReferences);
 
             match.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
         }

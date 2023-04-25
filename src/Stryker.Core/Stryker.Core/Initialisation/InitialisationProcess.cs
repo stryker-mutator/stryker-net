@@ -2,7 +2,6 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
 using Buildalyzer;
@@ -65,12 +64,9 @@ namespace Stryker.Core.Initialisation
             {
                 if (!options.IsSolutionContext)
                 {
+                    var testProjectsResult = _inputFileResolver.ResolveTestProjects(options, null);
                     // project mode
-                    var resolveTestProjectsInfo = _inputFileResolver.ResolveTestProjectsInfo(options, null);
-                    var resolveSourceProjectInfo = _inputFileResolver.ResolveSourceProjectInfo(options, resolveTestProjectsInfo.AnalyzerResults,null);
-                    resolveSourceProjectInfo.TestProjectsInfo = resolveTestProjectsInfo;
-                    
-                    return new[] { resolveSourceProjectInfo };
+                    return _inputFileResolver.ResolveSourceProjectInfos(options, testProjectsResult,null);
                 }
 
                 // Analyze all projects in the solution with buildalyzer
@@ -89,6 +85,7 @@ namespace Stryker.Core.Initialisation
                 _logger.LogInformation("Analysis complete.");
             }
         }
+
 
         /// <inheritdoc/>
         public void BuildProjects(StrykerOptions options, IEnumerable<SourceProjectInfo> projects)
@@ -197,8 +194,9 @@ namespace Stryker.Core.Initialisation
         }
 
         private IReadOnlyCollection<SourceProjectInfo> BuildProjectInfos(StrykerOptions options,
-            IReadOnlyDictionary<string, HashSet<string>> dependents, List<IAnalyzerResult> projectsUnderTestAnalyzerResult,
-            List<IAnalyzerResult> testProjects,
+            IReadOnlyDictionary<string, HashSet<string>> dependents,
+            IReadOnlyCollection<IAnalyzerResult> projectsUnderTestAnalyzerResult,
+            IReadOnlyCollection<IAnalyzerResult> testProjects,
             IReadOnlyCollection<IAnalyzerResult> solutionAnalyzerResults)
         {
             var result = new List<SourceProjectInfo>(projectsUnderTestAnalyzerResult.Count);
@@ -222,10 +220,14 @@ namespace Stryker.Core.Initialisation
                         options.ProjectPath,
                          project,
                         testProjects: relatedTestProjects);
-                    var resolveSourceProjectInfo = _inputFileResolver.ResolveSourceProjectInfo(projectOptions, analyzerResultsForTestProjects, solutionAnalyzerResults);
-                    resolveSourceProjectInfo.TestProjectsInfo =
-                        _inputFileResolver.ResolveTestProjectsInfo(projectOptions, solutionAnalyzerResults);
-                    result.Add(resolveSourceProjectInfo);
+                    var resolveSourceProjectInfo = _inputFileResolver.ResolveSourceProjectInfos(projectOptions, analyzerResultsForTestProjects, solutionAnalyzerResults);
+
+                    resolveSourceProjectInfo.Single().TestProjectsInfo =
+                        new TestProjectsInfo(_inputFileResolver.FileSystem)
+                        {
+                            TestProjects = analyzerResultsForTestProjects.Select(testProjectAnalyzerResult => new TestProject(_inputFileResolver.FileSystem, testProjectAnalyzerResult)).ToList()
+                        };
+                    result.Add(resolveSourceProjectInfo.Single());
                 }
                 else
                 {

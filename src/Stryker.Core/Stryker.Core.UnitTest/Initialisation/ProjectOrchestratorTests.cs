@@ -75,8 +75,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             // when a solutionPath is given and it's inside the current directory (basePath)
             var options = new StrykerOptions
             {
-                ProjectPath = "C:/MyProject",
-                SolutionPath = "C:/MyProject/MyProject.sln"
+                ProjectPath = "C:/sourceproject",
+                SolutionPath = "C:/sourceproject/MyProject.sln"
             };
 
             var target = new ProjectOrchestrator(_buildalyzerProviderMock.Object, _projectMutatorMock.Object,
