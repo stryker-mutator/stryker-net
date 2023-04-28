@@ -39,5 +39,10 @@ namespace Stryker.Core.Mutants
         }
 
         public IEnumerable<Guid> GetGuids() => _guids;
+
+        public ITestGuids Intersect(ITestGuids other)
+        {
+            return new WrappedGuidsEnumeration(_guids.Intersect(other.GetGuids()));
+        }
     }
 }

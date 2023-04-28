@@ -12,6 +12,7 @@ namespace Stryker.Core.Mutants
         MutantStatus ResultStatus { get; }
         string ResultStatusReason { get; }
         ITestGuids CoveringTests { get; }
+        ITestGuids KillingTests { get; }
         ITestGuids AssessingTests { get; }
         int? Line { get; }
         bool CountForStats { get; }
@@ -30,6 +31,8 @@ namespace Stryker.Core.Mutants
         public MutantStatus ResultStatus { get; set; }
 
         public ITestGuids CoveringTests { get; set; } = TestGuidsList.NoTest();
+
+        public ITestGuids KillingTests { get; set; } = TestGuidsList.NoTest();
 
         public ITestGuids AssessingTests { get; set; } = TestGuidsList.EveryTest();
 
@@ -52,6 +55,7 @@ namespace Stryker.Core.Mutants
             if (AssessingTests.ContainsAny(failedTests))
             {
                 ResultStatus = MutantStatus.Killed;
+                KillingTests = AssessingTests.Intersect(failedTests);
             }
             else if (AssessingTests.ContainsAny(timedOutTests) || sessionTimedOut)
             {

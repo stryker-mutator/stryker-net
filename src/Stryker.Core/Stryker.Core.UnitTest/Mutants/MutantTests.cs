@@ -1,3 +1,4 @@
+using System;
 using Moq;
 using Shouldly;
 using Stryker.Core.Mutants;
@@ -38,6 +39,63 @@ namespace Stryker.Core.UnitTest.Mutants
             };
 
             mutant.CountForStats.ShouldBe(doesCount);
+        }
+
+        [Fact]
+        public void ShouldSetKilledStateWhenAssesingTestFailed()
+        {
+            var failingTest = Guid.NewGuid();
+            var succeedingTest = Guid.NewGuid();
+            var mutant = new Mutant
+            {
+                AssessingTests = new TestGuidsList(new[] { failingTest })
+            };
+
+            mutant.AnalyzeTestRun(new TestGuidsList(new[] { failingTest }),
+                new TestGuidsList(new[] { succeedingTest }),
+                TestGuidsList.NoTest(),
+                false);
+
+            mutant.ResultStatus.ShouldBe(MutantStatus.Killed);
+            var killingTest = mutant.KillingTests.GetGuids().ShouldHaveSingleItem();
+            killingTest.ShouldBe(failingTest);
+        }
+
+        [Fact]
+        public void ShouldSetSurvivedWhenNonAssesingTestFailed()
+        {
+            var failingTest = Guid.NewGuid();
+            var succeedingTest = Guid.NewGuid();
+            var mutant = new Mutant
+            {
+                AssessingTests = new TestGuidsList(new[] { succeedingTest })
+            };
+
+            mutant.AnalyzeTestRun(new TestGuidsList(new[] { failingTest }),
+                new TestGuidsList(new[] { succeedingTest }),
+                TestGuidsList.NoTest(),
+                false);
+
+            mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
+            mutant.KillingTests.GetGuids().ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void ShouldSetSurvivedWhenNoTestSucceeds()
+        {
+            var succeedingTest = Guid.NewGuid();
+            var mutant = new Mutant
+            {
+                AssessingTests = new TestGuidsList(new[] { succeedingTest })
+            };
+
+            mutant.AnalyzeTestRun(TestGuidsList.NoTest(),
+                new TestGuidsList(new[] { succeedingTest }),
+                TestGuidsList.NoTest(),
+                false);
+
+            mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
+            mutant.KillingTests.GetGuids().ShouldBeEmpty();
         }
 
         [Fact]

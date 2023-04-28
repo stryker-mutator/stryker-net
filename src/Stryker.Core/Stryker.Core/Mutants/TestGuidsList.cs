@@ -92,5 +92,10 @@ namespace Stryker.Core.Mutants
             }
             return _testsGuid.Overlaps(other.GetGuids());
         }
+
+        public ITestGuids Intersect(ITestGuids other)
+        {
+            return new TestGuidsList(_testsGuid.Intersect(other.GetGuids()));
+        }
     }
 }
