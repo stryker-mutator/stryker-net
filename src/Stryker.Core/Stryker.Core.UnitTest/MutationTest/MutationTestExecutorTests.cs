@@ -1,13 +1,14 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Moq;
 using Shouldly;
+using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.TestRunners;
-using System.Collections.Generic;
-using Stryker.Core.Initialisation;
-using Xunit;
 using Stryker.Core.TestRunners.VsTest;
+using Xunit;
 
 namespace Stryker.Core.UnitTest.MutationTest
 {
@@ -49,7 +50,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
             var mutant = new Mutant { Id = 1, CoveringTests = TestGuidsList.EveryTest() };
             testRunnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<Mutant>>(), null)).
-                Returns(TestRunResult.TimedOut(new List<VsTestDescription>(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.EveryTest(), "", TimeSpan.Zero));
+                Returns(TestRunResult.TimedOut(new List<VsTestDescription>(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.EveryTest(), "", Enumerable.Empty<string>(), TimeSpan.Zero));
 
             var target = new MutationTestExecutor(testRunnerMock.Object);
 
@@ -67,7 +68,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             var mutant1 = new Mutant { Id = 1, CoveringTests = TestGuidsList.EveryTest() };
             var mutant2 = new Mutant { Id = 2, CoveringTests = TestGuidsList.EveryTest() };
             testRunnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<Mutant>>(), null)).
-                Returns(TestRunResult.TimedOut(new List<VsTestDescription>(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), "", TimeSpan.Zero));
+                Returns(TestRunResult.TimedOut(new List<VsTestDescription>(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), "", Enumerable.Empty<string>(), TimeSpan.Zero));
 
             var target = new MutationTestExecutor(testRunnerMock.Object);
 

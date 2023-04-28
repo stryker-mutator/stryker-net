@@ -38,7 +38,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var successfulTest = Guid.NewGuid();
             var ranTests = new TestGuidsList(failedTest, successfulTest);
             var failedTests = new TestGuidsList(failedTest);
-            testRunnerMock.Setup(x => x.InitialTest()).Returns(new TestRunResult(Enumerable.Empty<VsTestDescription>(), ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, TimeSpan.Zero));
+            testRunnerMock.Setup(x => x.InitialTest()).Returns(new TestRunResult(Enumerable.Empty<VsTestDescription>(), ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero));
             testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
 
             _options.BreakOnInitialTestFailure = breakOnInitialTestFailure;
@@ -61,7 +61,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             }
             var ranTests = new TestGuidsList(testList);
             var failedTests = new TestGuidsList(test1);
-            testRunnerMock.Setup(x => x.InitialTest()).Returns(new TestRunResult(Enumerable.Empty<VsTestDescription>(), ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, TimeSpan.Zero));
+            testRunnerMock.Setup(x => x.InitialTest()).Returns(new TestRunResult(Enumerable.Empty<VsTestDescription>(), ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero));
             testRunnerMock.Setup(x => x.DiscoverTests()).Returns(new TestSet());
 
             _target.InitialTest(_options, testRunnerMock.Object);

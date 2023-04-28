@@ -152,7 +152,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             return _coverageResult.TryGetValue(id, out var list) ? list : TestGuidsList.NoTest();
         }
 
-        private TestRunResult GetRunResult(int id) => new(Enumerable.Empty<VsTestDescription>(), GetCoveringTests(id), GetFailedTests(id), TestGuidsList.NoTest(), string.Empty, TimeSpan.Zero);
+        private TestRunResult GetRunResult(int id) => new(Enumerable.Empty<VsTestDescription>(), GetCoveringTests(id), GetFailedTests(id), TestGuidsList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero);
 
         public TestRunResult GetInitialRunResult() => GetRunResult(InitialRunId);
 
@@ -165,6 +165,7 @@ namespace Stryker.Core.UnitTest.MutationTest
                 TestGuidsList.NoTest(),
                 TestGuidsList.NoTest(),
                 string.Empty,
+                Enumerable.Empty<string>(),
                 TimeSpan.Zero);
             runnerMock.Setup(x => x.DiscoverTests()).Returns(TestSet);
             runnerMock.Setup(x => x.InitialTest()).Returns(GetRunResult(InitialRunId));
