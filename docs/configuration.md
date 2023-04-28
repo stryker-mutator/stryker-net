@@ -409,7 +409,7 @@ constructors/initializers being called only once during tests. This heuristic is
 ### `disable-bail` <`flag`>
 
 Default: `false`  
-Command line: `N/A`  
+Command line: `--disable-bail`  
 Config file: `"disable-bail": true`
 
 Stryker aborts a unit testrun for a mutant as soon as one test fails because this is enough to confirm the mutant is killed. This can reduce the total runtime but also means you miss information about individual unit tests (e.g. if a unit test does not kill any mutants and is therefore useless). You can disable this behavior and run all unit tests for a mutant to completion. This can be especially useful when you want to find useless unit tests.
