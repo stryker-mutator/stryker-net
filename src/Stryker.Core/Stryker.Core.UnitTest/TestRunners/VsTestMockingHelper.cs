@@ -493,6 +493,7 @@ public class VsTestMockingHelper : TestBase
             TestGuidsList.NoTest(),
             TestGuidsList.NoTest(),
             string.Empty,
+            Enumerable.Empty<string>(),
             TimeSpan.Zero);
         var input = new MutationTestInput
         {

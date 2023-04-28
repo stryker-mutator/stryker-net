@@ -23,6 +23,7 @@ namespace Stryker.Core.TestRunners
             ITestGuids failedTests,
             ITestGuids timedOutTest,
             string message,
+            IEnumerable<string> messages,
             TimeSpan timeSpan)
         {
             VsTestDescriptions = vsTestDescriptions;
@@ -30,6 +31,7 @@ namespace Stryker.Core.TestRunners
             FailingTests = failedTests;
             TimedOutTests = timedOutTest;
             ResultMessage = message;
+            Messages = messages;
             Duration = timeSpan;
         }
 
@@ -39,13 +41,15 @@ namespace Stryker.Core.TestRunners
             ITestGuids failedTest,
             ITestGuids timedOutTests,
             string message,
-            TimeSpan duration) => new TestRunResult(vsTestDescriptions, ranTests, failedTest, timedOutTests, message, duration) { SessionTimedOut = true };
+            IEnumerable<string> messages,
+            TimeSpan duration) => new TestRunResult(vsTestDescriptions, ranTests, failedTest, timedOutTests, message, messages, duration) { SessionTimedOut = true };
 
         public ITestGuids FailingTests { get; }
         public ITestGuids ExecutedTests { get; }
         public ITestGuids TimedOutTests { get; }
         public bool SessionTimedOut { get; private init; }
         public string ResultMessage { get; }
+        public IEnumerable<string> Messages { get; }
         public TimeSpan Duration { get; }
         public IEnumerable<VsTestDescription> VsTestDescriptions { get; }
     }
