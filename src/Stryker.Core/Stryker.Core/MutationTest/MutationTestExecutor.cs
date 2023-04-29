@@ -1,10 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.TestRunners;
-using System.Collections.Generic;
-using System.Linq;
-using Stryker.Core.Initialisation;
 
 namespace Stryker.Core.MutationTest
 {
@@ -36,8 +37,11 @@ namespace Stryker.Core.MutationTest
                 var result = RunTestSession(project, mutantsToTest, timeoutMs, updateHandler, forceSingle);
 
                 Logger.LogTrace(
-                    $"Test run for {string.Join(" ,", mutantsToTest.Select(x => x.DisplayName))} is {(result.FailingTests.Count == 0 ? "success" : "failed")} with output: {result.ResultMessage}");
-
+                    $"Test run for {string.Join(", ", mutantsToTest.Select(x => x.DisplayName))} is {(result.FailingTests.Count == 0 ? "success" : "failed")} with output: {result.ResultMessage}");
+                if (result.Messages is not null && result.Messages.Any())
+                {
+                    Logger.LogTrace($"Messages for {string.Join(", ", mutantsToTest.Select(x => x.DisplayName))}: {Environment.NewLine}{string.Join("", result.Messages)}");
+                }
                 var remainingMutants = mutantsToTest.Where((m) => m.ResultStatus == MutantStatus.NotRun).ToList();
                 if (remainingMutants.Count == mutantsToTest.Count)
                 {

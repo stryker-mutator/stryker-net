@@ -74,7 +74,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             if (testCases?.Count == 0)
             {
-                    return new TestRunResult(_context.VsTests.Values, TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), "Mutants are not covered by any test!", TimeSpan.Zero);
+                    return new TestRunResult(_context.VsTests.Values, TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), "Mutants are not covered by any test!", Enumerable.Empty<string>(), TimeSpan.Zero);
             }
             if (timeoutCalc != null && testCases != null)
             {
@@ -173,11 +173,12 @@ namespace Stryker.Core.TestRunners.VsTest
             var message = string.Join(Environment.NewLine,
                 resultAsArray.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage))
                     .Select(tr => $"{tr.DisplayName}{Environment.NewLine}{Environment.NewLine}{tr.ErrorMessage}"));
+            var messages = resultAsArray.Select(tr => $"{tr.DisplayName}{Environment.NewLine}{Environment.NewLine}{string.Join(Environment.NewLine, tr.Messages.Select(tm => tm.Text))}");
             var failedTestsDescription = new WrappedGuidsEnumeration(failedTests);
             var timedOutTests = new WrappedGuidsEnumeration(testResults.TestsInTimeout?.Select(t => t.Id));
             return timeout
-                ? TestRunResult.TimedOut(_context.VsTests.Values, ranTests, failedTestsDescription, timedOutTests, message, duration)
-                : new TestRunResult(_context.VsTests.Values, ranTests, failedTestsDescription, timedOutTests, message, duration);
+                ? TestRunResult.TimedOut(_context.VsTests.Values, ranTests, failedTestsDescription, timedOutTests, message, messages, duration)
+                : new TestRunResult(_context.VsTests.Values, ranTests, failedTestsDescription, timedOutTests, message, messages, duration);
         }
 
         public IRunResults RunTestSession(ITestGuids testsToRun, IProjectAndTest project, int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<IRunResults> updateHandler = null) =>

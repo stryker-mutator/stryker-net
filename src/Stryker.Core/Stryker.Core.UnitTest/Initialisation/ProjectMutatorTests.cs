@@ -79,6 +79,7 @@ namespace ExtraProject.XUnit
                 failedTests: new TestGuidsList(failedTest),
                 timedOutTest: TestGuidsList.NoTest(),
                 message: "testrun succesful",
+                Enumerable.Empty<string>(),
                 timeSpan: TimeSpan.FromSeconds(2));
 
             var initialTestrun = new InitialTestRun(initialTestRunResult, new TimeoutValueCalculator(500));

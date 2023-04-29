@@ -11,7 +11,7 @@
     <PackageVersion Include="DotNet.Glob" Version="3.1.3" />
     <PackageVersion Include="Buildalyzer" Version="5.0.0" />
     <PackageVersion Include="Microsoft.Web.LibraryManager.Build" Version="2.1.175" />
-    <PackageVersion Include="Mono.Cecil" Version="0.11.4" />
+    <PackageVersion Include="Mono.Cecil" Version="0.11.5" />
     <PackageVersion Include="NuGet.Frameworks" Version="6.5.0" />
     <PackageVersion Include="Serilog" Version="2.12.0" />
     <PackageVersion Include="Serilog.Extensions.Logging" Version="3.1.0" />
@@ -26,7 +26,7 @@
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.5.0" />
     <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.5.0" />
     <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="17.5.0" />
-    <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="19.2.11" /> 
+    <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="19.2.18" /> 
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
@@ -35,11 +35,11 @@
     <PackageVersion Include="coverlet.msbuild" Version="3.2.0" />
     <PackageVersion Include="Moq" Version="4.18.4" />
     <PackageVersion Include="RegexParser" Version="0.5.1" />
-    <PackageVersion Include="Shouldly" Version="4.2.0" />
+    <PackageVersion Include="Shouldly" Version="4.2.1" />
     <PackageVersion Include="Spectre.Console.Testing" Version="0.46.0" />
     <PackageVersion Include="xunit" Version="2.4.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
     <PackageVersion Include="Xunit.SkippableFact" Version="1.4.13" />
-    <PackageVersion Include="TestableIO.System.IO.Abstractions.TestingHelpers" Version="19.2.11" />
+    <PackageVersion Include="TestableIO.System.IO.Abstractions.TestingHelpers" Version="19.2.18" />
   </ItemGroup>
 </Project>
