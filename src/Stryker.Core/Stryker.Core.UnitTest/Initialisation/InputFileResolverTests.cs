@@ -1033,10 +1033,10 @@ Please specify a test project name filter that results in one project.
         [Fact]
         public void ShouldThrowOnNoProjectReference()
         {
-            var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            var testProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: Enumerable.Empty<string>()).Object;
 
-            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testPojectAnalyzerResult}, null));
+            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testProjectAnalyzerResult}, null));
 
             ex.Message.ShouldContain("no project");
         }
@@ -1044,13 +1044,13 @@ Please specify a test project name filter that results in one project.
         [Fact]
         public void ShouldThrowOnMultipleProjectsWithoutFilter()
         {
-            var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+            var testProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: new List<string> {
                     @"..\ExampleProject\ExampleProject.csproj",
                     @"..\AnotherProject\AnotherProject.csproj"
                 }).Object;
 
-            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testPojectAnalyzerResult}, null));
+            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testProjectAnalyzerResult}, null));
 
             ex.Message.ShouldContain("Test project contains more than one project reference. Please set the project option");
             ex.Message.ShouldContain("Choose one of the following references:");

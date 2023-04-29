@@ -68,7 +68,7 @@ namespace Stryker.Core.Initialisation
                     // project mode
                     return _inputFileResolver.ResolveSourceProjectInfos(options, testProjectsResult,null);
                 }
-
+                    
                 // Analyze all projects in the solution with buildalyzer
                 var solutionAnalyzerResults = AnalyzeSolution(options);
                 var testProjects = solutionAnalyzerResults.Where(p => p.IsTestProject()).ToList();
@@ -121,7 +121,7 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private static Dictionary<string, HashSet<string>> FindDependentProjects(IList<IAnalyzerResult> projectsUnderTest)
+        private static Dictionary<string, HashSet<string>> FindDependentProjects(IReadOnlyCollection<IAnalyzerResult> projectsUnderTest)
         {
             // need to scan traverse dependencies
             // dependents contains the list of projects depending on each (non test) projects

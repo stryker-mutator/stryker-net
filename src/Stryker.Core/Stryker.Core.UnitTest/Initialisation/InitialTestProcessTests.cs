@@ -42,7 +42,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             }
             var ranTests = new TestGuidsList(testList);
             var failedTests = new TestGuidsList(test1);
-            testRunnerMock.Setup(x => x.InitialTest(It.IsAny<IProjectAndTest>())).Returns(new TestRunResult(Enumerable.Empty<VsTestDescription>(), ranTests, failedTests, TestGuidsList.NoTest(), Enumerable.Empty<string>(), string.Empty, TimeSpan.Zero) );
+            testRunnerMock.Setup(x => x.InitialTest(It.IsAny<IProjectAndTest>())).Returns(new TestRunResult(Enumerable.Empty<VsTestDescription>(), ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero) );
             testRunnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(true);
             testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTest>())).Returns(new TestSet());
 
