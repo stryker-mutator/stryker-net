@@ -127,6 +127,7 @@ namespace Stryker.CLI.UnitTest
             inputs.Setup(x => x.ReportFileNameInput).Returns(new ReportFileNameInput());
             inputs.Setup(x => x.BreakOnInitialTestFailureInput).Returns(new BreakOnInitialTestFailureInput());
             inputs.Setup(x => x.OutputPathInput).Returns(new OutputPathInput());
+            inputs.Setup(x => x.PortInput).Returns(new PortInput());
 
             return inputs;
         }
