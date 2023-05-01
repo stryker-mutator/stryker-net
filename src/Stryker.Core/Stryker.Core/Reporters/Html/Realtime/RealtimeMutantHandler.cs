@@ -7,10 +7,12 @@ namespace Stryker.Core.Reporters.Html.Realtime;
 
 public class RealtimeMutantHandler : IRealtimeMutantHandler
 {
+    public int Port => _server.Port;
+
     private readonly ISseServer _server;
 
     public RealtimeMutantHandler(StrykerOptions options, ISseServer server = null)
-        => _server = server ?? new SseServer(options);
+        => _server = server ?? new SseServer();
 
     public void OpenSseEndpoint() => _server.OpenSseEndpoint();
 

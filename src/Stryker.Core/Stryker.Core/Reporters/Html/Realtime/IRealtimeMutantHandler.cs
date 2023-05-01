@@ -4,6 +4,8 @@ namespace Stryker.Core.Reporters.Html.Realtime;
 
 public interface IRealtimeMutantHandler
 {
+    public int Port { get; }
+
     /// <summary>
     /// Opens the Server Sent Event endpoint for the mutation report to listen to.
     /// </summary>

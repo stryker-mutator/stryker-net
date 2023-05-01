@@ -113,7 +113,7 @@ public class HtmlReporter : IReporter
         fileContent = fileContent.Replace("##REPORT_JS##", jsReader.ReadToEnd());
         fileContent = fileContent.Replace("##REPORT_TITLE##", "Stryker.NET Report");
         fileContent = fileContent.Replace("##REPORT_JSON##", mutationReport);
-        fileContent = fileContent.Replace("##SSE_ENDPOINT##", $"http://localhost:{_options.Port}/");
+        fileContent = fileContent.Replace("##SSE_ENDPOINT##", $"http://localhost:{_mutantHandler.Port}/");
 
         file.WriteLine(fileContent);
     }
