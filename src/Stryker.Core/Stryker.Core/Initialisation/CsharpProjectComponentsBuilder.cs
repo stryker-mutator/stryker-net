@@ -86,7 +86,7 @@ namespace Stryker.Core.Initialisation
 
             foreach (var sourceFile in analyzerResult.SourceFiles)
             {
-                var relativePath = Path.GetRelativePath(sourceProjectDir, sourceFile);
+                var relativePath = string.IsNullOrEmpty(sourceProjectDir) ? sourceFile : Path.GetRelativePath(sourceProjectDir, sourceFile);
                 var folderComposite = GetOrBuildFolderComposite(cache, Path.GetDirectoryName(relativePath), sourceProjectDir, projectUnderTestFolderComposite);
 
                 var file = new CsharpFileLeaf()

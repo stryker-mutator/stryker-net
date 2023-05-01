@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
+using Stryker.Core.Testing;
 
 namespace Stryker.Core.Initialisation
 {
@@ -16,6 +17,7 @@ namespace Stryker.Core.Initialisation
             string targetFramework,
             IEnumerable<IAnalyzerResult> solutionProjects,
             string msBuildPath = null);
+        IAnalyzerManager AnalyzeSolution(string solutionPath);
     }
 
     /// <summary>
@@ -24,18 +26,27 @@ namespace Stryker.Core.Initialisation
     public class ProjectFileReader : IProjectFileReader
     {
         private readonly INugetRestoreProcess _nugetRestoreProcess;
-        private readonly IAnalyzerManager _analyzerManager;
+        private readonly IBuildalyzerProvider _analyzerProvider;
+        private IAnalyzerManager _analyzerManager;
         private readonly ILogger _logger;
 
         public ProjectFileReader(
             INugetRestoreProcess nugetRestoreProcess = null,
-            IAnalyzerManager analyzerManager = null)
+            IBuildalyzerProvider analyzerProvider = null)
         {
             _nugetRestoreProcess = nugetRestoreProcess ?? new NugetRestoreProcess();
-            _analyzerManager = analyzerManager ?? new AnalyzerManager();
+            _analyzerProvider = analyzerProvider ?? new BuildalyzerProvider();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
         }
 
+        private IAnalyzerManager AnalyzerManager
+        {
+            get
+            {
+                _analyzerManager ??= _analyzerProvider.Provide();
+                return _analyzerManager;
+            }
+        }
         public IAnalyzerResult AnalyzeProject(
             string projectFilePath,
             string solutionFilePath,
@@ -68,6 +79,8 @@ namespace Stryker.Core.Initialisation
             return analyzerResult;
         }
 
+        public IAnalyzerManager AnalyzeSolution(string solutionPath) => _analyzerProvider.Provide(solutionPath);
+
         /// <summary>
         /// Checks if project info is already present in solution projects. If not, analyze here.
         /// </summary>
@@ -82,7 +95,7 @@ namespace Stryker.Core.Initialisation
             }
             else
             {
-                var analyzerResults = _analyzerManager.GetProject(projectFilePath).Build();
+                var analyzerResults = AnalyzerManager.GetProject(projectFilePath).Build();
                 return SelectAnalyzerResult(analyzerResults, targetFramework);
             }
         }

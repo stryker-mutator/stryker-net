@@ -58,7 +58,6 @@ namespace Stryker.Core.UnitTest.Initialisation
             var result = target.GetMutableProjectsInfo(options).ToList();
             result.Count.ShouldBe(1);
             inputFileResolverMock.Verify(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
-            inputFileResolverMock.Verify(x => x.ResolveTestProjects(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
         }
 
         [Fact]
@@ -100,7 +99,6 @@ namespace Stryker.Core.UnitTest.Initialisation
             var projects = target.GetMutableProjectsInfo(options);
             target.BuildProjects(options, projects);
             Assert.Throws<InputException>(() => target.GetMutationTestInputs(options, projects, testRunnerMock.Object));
-            inputFileResolverMock.Verify(x => x.ResolveTestProjects(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
             initialTestProcessMock.Verify(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTest>(), testRunnerMock.Object), Times.Once);
         }
 
@@ -152,7 +150,6 @@ namespace Stryker.Core.UnitTest.Initialisation
             target.BuildProjects(options, projects);
             Assert.Throws<InputException>(() => target.GetMutationTestInputs(options, projects, testRunnerMock.Object));
             inputFileResolverMock.Verify(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
-            inputFileResolverMock.Verify(x => x.ResolveTestProjects(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
             initialTestProcessMock.Verify(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTest>(), testRunnerMock.Object), Times.Once);
         }
 
@@ -260,7 +257,6 @@ namespace Stryker.Core.UnitTest.Initialisation
             var input = target.GetMutationTestInputs(options, projects, testRunnerMock.Object).First();
  
             inputFileResolverMock.Verify(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
-            inputFileResolverMock.Verify(x => x.ResolveTestProjects(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>()), Times.Once);
             initialTestProcessMock.Verify(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTest>(), testRunnerMock.Object), Times.Once);
         }
 

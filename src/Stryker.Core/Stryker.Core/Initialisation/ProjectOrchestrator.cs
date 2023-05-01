@@ -11,7 +11,6 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.Reporters;
-using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
 
@@ -26,19 +25,16 @@ namespace Stryker.Core.Initialisation
     {
         private IInitialisationProcess _initializationProcess;
         private readonly ILogger _logger;
-        private readonly IBuildalyzerProvider _buildalyzerProvider;
         private readonly IProjectMutator _projectMutator;
         private readonly IInitialBuildProcess _initialBuildProcess;
         private readonly IInputFileResolver _fileResolver;
         private ITestRunner _runner;
 
-        public ProjectOrchestrator(IBuildalyzerProvider buildalyzerProvider = null,
-            IProjectMutator projectMutator = null,
+        public ProjectOrchestrator(IProjectMutator projectMutator = null,
             IInitialBuildProcess initialBuildProcess = null,
             IInputFileResolver fileResolver = null,
             IInitialisationProcess initializationProcess = null)
         {
-            _buildalyzerProvider = buildalyzerProvider ?? new BuildalyzerProvider();
             _projectMutator = projectMutator ?? new ProjectMutator();
             _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectOrchestrator>();
@@ -50,7 +46,7 @@ namespace Stryker.Core.Initialisation
             ITestRunner runner = null)
         {
 
-            _initializationProcess ??= new InitialisationProcess(_fileResolver, _initialBuildProcess,buildalyzerProvider: _buildalyzerProvider);
+            _initializationProcess ??= new InitialisationProcess(_fileResolver, _initialBuildProcess);
             var projectInfos = _initializationProcess.GetMutableProjectsInfo(options);
 
             _initializationProcess.BuildProjects(options, projectInfos);

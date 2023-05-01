@@ -1,19 +1,14 @@
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
-using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
-using Stryker.Core.Testing;
 using Stryker.Core.ProjectComponents.SourceProjects;
-using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.Initialisation
@@ -39,17 +34,14 @@ namespace Stryker.Core.Initialisation
     {
         private readonly IInputFileResolver _inputFileResolver;
         private readonly IInitialBuildProcess _initialBuildProcess;
-        private readonly IBuildalyzerProvider _buildalyzerProvider;
         private readonly IInitialTestProcess _initialTestProcess;
         private readonly ILogger _logger;
 
         public InitialisationProcess(
             IInputFileResolver inputFileResolver = null,
             IInitialBuildProcess initialBuildProcess = null,
-            IInitialTestProcess initialTestProcess = null,
-            IBuildalyzerProvider buildalyzerProvider = null)
+            IInitialTestProcess initialTestProcess = null)
         {
-            _buildalyzerProvider = buildalyzerProvider ?? new BuildalyzerProvider();
             _inputFileResolver = inputFileResolver ?? new InputFileResolver();
             _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
             _initialTestProcess = initialTestProcess ?? new InitialTestProcess();
@@ -62,23 +54,8 @@ namespace Stryker.Core.Initialisation
             _logger.LogInformation("Analysis starting.");
             try
             {
-                if (!options.IsSolutionContext)
-                {
-                    var testProjectsResult = _inputFileResolver.ResolveTestProjects(options, null);
-                    // project mode
-                    return _inputFileResolver.ResolveSourceProjectInfos(options, testProjectsResult,null);
-                }
-                    
-                // Analyze all projects in the solution with buildalyzer
-                var solutionAnalyzerResults = AnalyzeSolution(options);
-                var testProjects = solutionAnalyzerResults.Where(p => p.IsTestProject()).ToList();
-                var projectsUnderTestAnalyzerResult = solutionAnalyzerResults.Where(p => !p.IsTestProject()).ToList();
-
-                _logger.LogInformation("Found {0} source projects", projectsUnderTestAnalyzerResult.Count);
-                _logger.LogInformation("Found {0} test projects", testProjects.Count);
-
-                var dependents = FindDependentProjects(projectsUnderTestAnalyzerResult);
-                return BuildProjectInfos(options, dependents, projectsUnderTestAnalyzerResult, testProjects, solutionAnalyzerResults);
+                // project mode
+                return _inputFileResolver.ResolveSourceProjectInfos(options, null,null);
             }
             finally
             {
@@ -119,122 +96,6 @@ namespace Stryker.Core.Initialisation
                         options.MsBuildPath);
                 }
             }
-        }
-
-        private static Dictionary<string, HashSet<string>> FindDependentProjects(IReadOnlyCollection<IAnalyzerResult> projectsUnderTest)
-        {
-            // need to scan traverse dependencies
-            // dependents contains the list of projects depending on each (non test) projects
-            var dependents = projectsUnderTest.ToDictionary(p=>p.ProjectFilePath, p => new HashSet<string>(new []{p.ProjectFilePath}));
-            // register explicit dependencies
-            foreach (var result in projectsUnderTest)
-            {
-                foreach (var reference in result.ProjectReferences)
-                {
-                    dependents[reference].Add(result.ProjectFilePath);
-                }
-            }
-            
-            // we need to dig recursively to find recursive dependencies, until none are discovered
-            bool foundNewDependency;
-            do
-            {
-                var nextDependence = new Dictionary<string, HashSet<string>>();
-                foundNewDependency = false;
-                foreach (var (project, dependent) in dependents)
-                {
-                    var newList = new HashSet<string>(dependent);
-                    foreach (var sub in dependent.Where(sub => dependents.ContainsKey(sub)))
-                    {
-                        newList.UnionWith(dependents[sub]);
-                    }
-
-                    foundNewDependency = foundNewDependency || newList.Count > dependent.Count;
-                    nextDependence[project] = newList;
-                }
-                dependents = nextDependence;
-            } while (foundNewDependency);
-
-            return dependents;
-        }
-
-        private List<IAnalyzerResult> AnalyzeSolution(StrykerOptions options)
-        {
-            _logger.LogInformation("Identifying projects to mutate in {0}. This can take a while.",  options.SolutionPath);
-            var manager = _buildalyzerProvider.Provide(options.SolutionPath);
-
-            // build all projects
-            var projectsAnalyzerResults = new ConcurrentBag<IAnalyzerResult>();
-            _logger.LogDebug("Analyzing {count} projects.", manager.Projects.Count);
-            try
-            {
-                Parallel.ForEach(manager.Projects.Values, project =>
-                {
-                    var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
-                    _logger.LogDebug("Analyzing {projectFilePath}", projectLogName);
-                    var buildResult = project.Build();
-                    var projectAnalyzerResult = buildResult.Results.FirstOrDefault();
-                    if (projectAnalyzerResult is { })
-                    {
-                        projectsAnalyzerResults.Add(projectAnalyzerResult);
-                        _logger.LogDebug("Analysis of project {projectFilePath} succeeded.", projectLogName);
-                    }
-                    else
-                    {
-                        _logger.LogWarning("Analysis of project {projectFilePath} failed.", projectLogName);
-                    }
-                });
-            }
-            catch (AggregateException ex)
-            {
-                throw ex.GetBaseException();
-            }
-
-            return projectsAnalyzerResults.ToList();
-        }
-
-        private IReadOnlyCollection<SourceProjectInfo> BuildProjectInfos(StrykerOptions options,
-            IReadOnlyDictionary<string, HashSet<string>> dependents,
-            IReadOnlyCollection<IAnalyzerResult> projectsUnderTestAnalyzerResult,
-            IReadOnlyCollection<IAnalyzerResult> testProjects,
-            IReadOnlyCollection<IAnalyzerResult> solutionAnalyzerResults)
-        {
-            var result = new List<SourceProjectInfo>(projectsUnderTestAnalyzerResult.Count);
-            foreach (var project in projectsUnderTestAnalyzerResult.Select(p =>p.ProjectFilePath))
-            {
-                var projectLogName = Path.GetRelativePath(Path.GetDirectoryName(options.SolutionPath), project);
-                var analyzerResultsForTestProjects = testProjects
-                    .Where(testProject => testProject.ProjectReferences.Any(reference => dependents[project].Contains(reference)));
-                var relatedTestProjects = analyzerResultsForTestProjects.Select(p =>p.ProjectFilePath).ToList();
-                if (relatedTestProjects.Count > 0)
-                {
-                    _logger.LogDebug("Matched {0} to {1} test projects:", projectLogName, relatedTestProjects.Count);
-
-                    foreach (var relatedTestProjectAnalyzerResults in relatedTestProjects)
-                    {
-                        _logger.LogDebug("{0}", relatedTestProjectAnalyzerResults);
-                    }
-
-                    var projectOptions = options.Copy(
-                        project,
-                        options.ProjectPath,
-                         project,
-                        testProjects: relatedTestProjects);
-                    var resolveSourceProjectInfo = _inputFileResolver.ResolveSourceProjectInfos(projectOptions, analyzerResultsForTestProjects, solutionAnalyzerResults);
-
-                    resolveSourceProjectInfo.Single().TestProjectsInfo =
-                        new TestProjectsInfo(_inputFileResolver.FileSystem)
-                        {
-                            TestProjects = analyzerResultsForTestProjects.Select(testProjectAnalyzerResult => new TestProject(_inputFileResolver.FileSystem, testProjectAnalyzerResult)).ToList()
-                        };
-                    result.Add(resolveSourceProjectInfo.Single());
-                }
-                else
-                {
-                    _logger.LogWarning("Project {0} will not be mutated because Stryker did not find a test project for it.", projectLogName);
-                }
-            }
-            return result;
         }
 
         public IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(StrykerOptions options, IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner)
