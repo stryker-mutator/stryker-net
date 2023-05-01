@@ -67,7 +67,7 @@ With this extension you add the mutation report to your build summary so you can
 In YAML pipelines add the following after the test step:
 
 ```yaml
-- task: PublishMutationReport@0
+- task: PublishMutationReport@1
   displayName: 'Publish Mutation Test Report'
   inputs:
     reportPattern: '**/mutation-report.html'
