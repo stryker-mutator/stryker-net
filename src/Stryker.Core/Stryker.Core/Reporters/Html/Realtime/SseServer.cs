@@ -31,9 +31,15 @@ public class SseServer : ISseServer
     {
         while (true)
         {
+            if (!_listener.IsListening)
+            {
+                return;
+            }
+
             var context = await _listener.GetContextAsync();
             var response = context.Response;
             response.ContentType = "text/event-stream";
+            // The file:// protocols needs this, since we can't add a file location as an allowed origin.
             response.Headers.Add("Access-Control-Allow-Origin", "*");
             response.Headers.Add("Access-Control-Allow-Methods", "GET, OPTIONS");
             response.Headers.Add("Access-Control-Allow-Headers", "Content-Type");
