@@ -1,6 +1,7 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Moq;
+using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Html.Realtime;
 using Stryker.Core.Reporters.Html.Realtime.Events;
@@ -45,7 +46,7 @@ public class RealtimeMutantHandlerTest : TestBase
 
         _sseEventSenderMock.Verify(sse
             => sse.SendEvent(It.Is<SseEvent<JsonMutant>>(@event
-                => @event.Data.Id == "1" && @event.EventName == "mutant-tested")
+                => @event.Data.Id == "1" && @event.Event == "mutant-tested")
             ));
     }
 
@@ -58,8 +59,17 @@ public class RealtimeMutantHandlerTest : TestBase
 
         _sseEventSenderMock.Verify(sse
             => sse.SendEvent(It.Is<SseEvent<string>>(@event
-                => @event.Data.Length == 0 && @event.EventName == "finished")
+                => @event.Data.Length == 0 && @event.Event == "finished")
             ));
         _sseEventSenderMock.Verify(sse => sse.CloseSseEndpoint());
+    }
+
+    [Fact]
+    public void ShouldSetPort()
+    {
+        var sut = new RealtimeMutantHandler(null, _sseEventSenderMock.Object);
+        _sseEventSenderMock.Setup(s => s.Port).Returns(8080);
+
+        sut.Port.ShouldBeEquivalentTo(8080);
     }
 }

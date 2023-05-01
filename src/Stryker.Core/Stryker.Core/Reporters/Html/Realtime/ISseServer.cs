@@ -7,6 +7,6 @@ public interface ISseServer
     public int Port { get; set; }
 
     public void OpenSseEndpoint();
-    public void SendEvent<T>(SseEvent<T> @event);
+    public void SendEvent<T>(SseEvent<T> sseEvent);
     public void CloseSseEndpoint();
 }
