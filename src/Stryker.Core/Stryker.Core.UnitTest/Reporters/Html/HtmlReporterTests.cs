@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
+using Buildalyzer;
 using Moq;
 using Shouldly;
 using Spectre.Console.Testing;
@@ -148,11 +150,14 @@ namespace Stryker.Core.UnitTest.Reporters.Html
                 OutputPath = Directory.GetCurrentDirectory(),
                 ReportFileName = "mutation-report"
             };
-
+            var testProjectInfo = new TestProjectsInfo(mockFileSystem)
+            {
+                TestProjects = Array.Empty<TestProject>()
+            };
             var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object, mutantHandler: _handlerMock.Object);
             var mutationTree = ReportTestHelper.CreateProjectWith();
 
-            reporter.OnAllMutantsTested(mutationTree, It.IsAny<TestProjectsInfo>());
+            reporter.OnMutantsCreated(mutationTree, testProjectInfo);
 
             var reportUri = Path.Combine(options.ReportPath, $"{options.ReportFileName}.html");
             reportUri = "file://" + reportUri.Replace("\\", "/");
@@ -178,13 +183,10 @@ namespace Stryker.Core.UnitTest.Reporters.Html
 
             var testProjectInfo = new TestProjectsInfo(mockFileSystem)
             {
-                TestProjects = new List<TestProject>()
-                {
-
-                }
+                TestProjects = Array.Empty<TestProject>()
             };
 
-            reporter.OnAllMutantsTested(mutationTree, testProjectInfo);
+            reporter.OnMutantsCreated(mutationTree, testProjectInfo);
 
             var reportUri = Path.Combine(options.ReportPath, $"{options.ReportFileName}.html");
             reportUri = "file://" + reportUri.Replace("\\", "/");

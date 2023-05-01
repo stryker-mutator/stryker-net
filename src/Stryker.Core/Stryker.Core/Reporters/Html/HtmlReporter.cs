@@ -65,9 +65,9 @@ public class HtmlReporter : IReporter
         _console.WriteLine("You can open it in your browser of choice.", green);
     }
 
-    private void OpenReportInBrowser(IReadOnlyProjectComponent reportComponent, string reportPath)
+    private void OpenReportInBrowser(IReadOnlyProjectComponent reportComponent, string reportPath, TestProjectsInfo testProjectsInfo)
     {
-        WriteHtmlReport(reportPath, reportComponent, new TestProjectsInfo(null));
+        WriteHtmlReport(reportPath, reportComponent, testProjectsInfo);
 
         if (_options.ReportTypeToOpen == ReportType.Html)
         {
@@ -118,12 +118,12 @@ public class HtmlReporter : IReporter
         file.WriteLine(fileContent);
     }
 
-    public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
+    public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
     {
         if (_options.ReportTypeToOpen == ReportType.Html)
         {
             _mutantHandler.OpenSseEndpoint();
-            OpenReportInBrowser(reportComponent, BuildReportPath());
+            OpenReportInBrowser(reportComponent, BuildReportPath(), testProjectsInfo);
             return;
         }
 

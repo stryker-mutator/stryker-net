@@ -34,6 +34,6 @@ public class SseEventTest : TestBase
         var jsonMutant = new JsonMutant(mutant);
         var sut = new SseEvent<JsonMutant> { Type = SseEventType.Mutation, Data = jsonMutant };
 
-        sut.ToString().ShouldBeEquivalentTo("event: mutation" + "\n" + @"data:{""id"":""1"",""mutatorName"":""test mutation"",""description"":null,""replacement"":""\u0022B\u0022"",""location"":{""start"":{""line"":1,""column"":1},""end"":{""line"":1,""column"":4}},""status"":""Killed"",""statusReason"":null,""static"":false,""coveredBy"":null,""killedBy"":null,""testsCompleted"":null,""duration"":null}" + "\n\n");
+        sut.ToString().ShouldBeEquivalentTo("event: mutation" + "\n" + @"data:{""id"":""1"",""mutatorName"":""test mutation"",""description"":null,""replacement"":""\u0022B\u0022"",""location"":{""start"":{""line"":1,""column"":1},""end"":{""line"":1,""column"":4}},""status"":""Killed"",""statusReason"":null,""static"":false,""coveredBy"":[],""killedBy"":null,""testsCompleted"":null,""duration"":null}" + "\n\n");
     }
 }

@@ -64,7 +64,7 @@ namespace Stryker.Core.Reporters
             _console.WriteLine();
         }
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
             // Method to implement the interface
         }

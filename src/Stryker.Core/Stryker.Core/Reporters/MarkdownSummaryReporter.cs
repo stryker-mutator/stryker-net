@@ -32,7 +32,7 @@ namespace Stryker.Core.Reporters
             // This reporter does not report during the testrun
         }
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
             // This reporter does not report during the testrun
         }

@@ -7,7 +7,7 @@
       "files": [
         "dist/mutation-test-elements.js"
       ],
-      "destination": "Reporters/HtmlReporter/Files"
+      "destination": "Reporters/Html/Files"
     }
   ]
 }

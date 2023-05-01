@@ -30,7 +30,7 @@ namespace Stryker.Core.Reporters
             _baselineProvider.Save(mutationReport, baselineVersion).Wait();
         }
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
             // This reporter does not report during the testrun
         }
