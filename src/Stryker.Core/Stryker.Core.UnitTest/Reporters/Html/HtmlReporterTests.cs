@@ -212,7 +212,7 @@ namespace Stryker.Core.UnitTest.Reporters.Html
 
             reporter.OnMutantTested(new Mutant());
 
-            _handlerMock.Verify(h => h.SendMutantResultEvent(It.IsAny<Mutant>()));
+            _handlerMock.Verify(h => h.SendMutantTestedEvent(It.IsAny<Mutant>()));
         }
 
         [Fact]
@@ -236,7 +236,7 @@ namespace Stryker.Core.UnitTest.Reporters.Html
         [Theory]
         [InlineData(ReportType.Dashboard)]
         [InlineData(null)]
-        public void ShouldNotOpenHtmlReportIfOptionIsProvided(ReportType? reportType)
+        public void ShouldNotOpenHtmlReportIfHtmlOptionIsNotProvided(ReportType? reportType)
         {
             var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();

@@ -11,9 +11,9 @@ namespace Stryker.Core.UnitTest.Reporters.Html.Realtime;
 
 public class RealtimeMutantHandlerTest : TestBase
 {
-    private readonly Mock<ISseEventSender> _sseEventSenderMock;
+    private readonly Mock<ISseServer> _sseEventSenderMock;
 
-    public RealtimeMutantHandlerTest() => _sseEventSenderMock = new Mock<ISseEventSender>();
+    public RealtimeMutantHandlerTest() => _sseEventSenderMock = new Mock<ISseServer>();
 
     [Fact]
     public void ShouldOpenSseEndpoint()
@@ -41,11 +41,11 @@ public class RealtimeMutantHandlerTest : TestBase
         };
         var sut = new RealtimeMutantHandler(null, _sseEventSenderMock.Object);
 
-        sut.SendMutantResultEvent(mutant);
+        sut.SendMutantTestedEvent(mutant);
 
         _sseEventSenderMock.Verify(sse
             => sse.SendEvent(It.Is<SseEvent<JsonMutant>>(@event
-                => @event.Data.Id == "1" && @event.Type == SseEventType.Mutation)
+                => @event.Data.Id == "1" && @event.EventName == "mutant-tested")
             ));
     }
 
@@ -58,7 +58,7 @@ public class RealtimeMutantHandlerTest : TestBase
 
         _sseEventSenderMock.Verify(sse
             => sse.SendEvent(It.Is<SseEvent<string>>(@event
-                => @event.Data.Length == 0 && @event.Type == SseEventType.Finished)
+                => @event.Data.Length == 0 && @event.EventName == "finished")
             ));
         _sseEventSenderMock.Verify(sse => sse.CloseSseEndpoint());
     }

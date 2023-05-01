@@ -43,7 +43,8 @@ namespace Stryker.Core.UnitTest.Options
                 OutputPath = "output",
                 ProjectName = "name",
                 SourceProjectName = "project",
-                ProjectVersion = "version"
+                ProjectVersion = "version",
+                Port = 8081,
             };
 
             var result = target.Copy("C://Dev//Test", "C://Dev", "test", new[] { "project1" });

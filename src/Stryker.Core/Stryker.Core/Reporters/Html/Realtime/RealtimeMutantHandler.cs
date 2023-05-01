@@ -7,22 +7,22 @@ namespace Stryker.Core.Reporters.Html.Realtime;
 
 public class RealtimeMutantHandler : IRealtimeMutantHandler
 {
-    private readonly ISseEventSender _eventSender;
+    private readonly ISseServer _server;
 
-    public RealtimeMutantHandler(StrykerOptions options, ISseEventSender eventSender = null)
-        => _eventSender = eventSender ?? new SseEventSender(options);
+    public RealtimeMutantHandler(StrykerOptions options, ISseServer server = null)
+        => _server = server ?? new SseServer(options);
 
-    public void OpenSseEndpoint() => _eventSender.OpenSseEndpoint();
+    public void OpenSseEndpoint() => _server.OpenSseEndpoint();
 
     public void CloseSseEndpoint()
     {
-        _eventSender.SendEvent(new SseEvent<string> { Type = SseEventType.Finished, Data = "" });
-        _eventSender.CloseSseEndpoint();
+        _server.SendEvent(new SseEvent<string> { EventName = "finished", Data = "" });
+        _server.CloseSseEndpoint();
     }
 
-    public void SendMutantResultEvent(IReadOnlyMutant testedMutant)
+    public void SendMutantTestedEvent(IReadOnlyMutant testedMutant)
     {
         var jsonMutant = new JsonMutant(testedMutant);
-        _eventSender.SendEvent(new SseEvent<JsonMutant> { Type = SseEventType.Mutation, Data = jsonMutant });
+        _server.SendEvent(new SseEvent<JsonMutant> { EventName = "mutant-tested", Data = jsonMutant });
     }
 }

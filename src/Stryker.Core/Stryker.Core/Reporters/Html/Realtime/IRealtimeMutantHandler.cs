@@ -14,5 +14,5 @@ public interface IRealtimeMutantHandler
     /// </summary>
     public void CloseSseEndpoint();
 
-    public void SendMutantResultEvent(IReadOnlyMutant testedMutant);
+    public void SendMutantTestedEvent(IReadOnlyMutant testedMutant);
 }

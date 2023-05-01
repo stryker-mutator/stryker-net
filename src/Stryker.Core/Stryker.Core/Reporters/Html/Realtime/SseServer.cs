@@ -8,16 +8,15 @@ using Stryker.Core.Reporters.Html.Realtime.Events;
 
 namespace Stryker.Core.Reporters.Html.Realtime;
 
-public class SseEventSender : ISseEventSender
+public class SseServer : ISseServer
 {
     private readonly HttpListener _listener;
     private readonly List<StreamWriter> _writers;
 
-    public SseEventSender(StrykerOptions options)
+    public SseServer(StrykerOptions options)
     {
         _listener = new HttpListener();
-        // TODO: configurable
-        _listener.Prefixes.Add("http://localhost:8080/");
+        _listener.Prefixes.Add($"http://localhost:{options.Port}/");
         _writers = new List<StreamWriter>();
     }
 

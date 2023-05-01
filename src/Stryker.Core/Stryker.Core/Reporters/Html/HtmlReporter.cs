@@ -113,7 +113,7 @@ public class HtmlReporter : IReporter
         fileContent = fileContent.Replace("##REPORT_JS##", jsReader.ReadToEnd());
         fileContent = fileContent.Replace("##REPORT_TITLE##", "Stryker.NET Report");
         fileContent = fileContent.Replace("##REPORT_JSON##", mutationReport);
-        fileContent = fileContent.Replace("##SSE_ENDPOINT##", "http://localhost:8080/");
+        fileContent = fileContent.Replace("##SSE_ENDPOINT##", $"http://localhost:{_options.Port}/");
 
         file.WriteLine(fileContent);
     }
@@ -138,7 +138,7 @@ public class HtmlReporter : IReporter
             return;
         }
 
-        _mutantHandler.SendMutantResultEvent(result);
+        _mutantHandler.SendMutantTestedEvent(result);
     }
 
     public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
