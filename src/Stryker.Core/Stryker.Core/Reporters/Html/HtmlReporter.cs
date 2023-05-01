@@ -39,7 +39,7 @@ public class HtmlReporter : IReporter
     public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
     {
         var reportPath = BuildReportPath();
-        WriteHtmlReport(reportPath, reportComponent);
+        WriteHtmlReport(reportPath, reportComponent, testProjectsInfo);
 
         if (_options.ReportTypeToOpen == ReportType.Html)
         {
@@ -67,7 +67,7 @@ public class HtmlReporter : IReporter
 
     private void OpenReportInBrowser(IReadOnlyProjectComponent reportComponent, string reportPath)
     {
-        WriteHtmlReport(reportPath, reportComponent);
+        WriteHtmlReport(reportPath, reportComponent, new TestProjectsInfo(null));
 
         if (_options.ReportTypeToOpen == ReportType.Html)
         {
@@ -88,11 +88,11 @@ public class HtmlReporter : IReporter
         return reportPathNormalized;
     }
 
-    private void WriteHtmlReport(string filePath, IReadOnlyProjectComponent reportComponent)
+    private void WriteHtmlReport(string filePath, IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
     {
-        var mutationReport = JsonReport.Build(_options, reportComponent).ToJsonHtmlSafe();
+        var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo).ToJsonHtmlSafe();
 
-        _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+        _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
 
         using var htmlStream = typeof(HtmlReporter).Assembly
             .GetManifestResourceStream(typeof(HtmlReporter)
@@ -104,8 +104,8 @@ public class HtmlReporter : IReporter
                 .Assembly.GetManifestResourceNames()
                 .Single(m => m.Contains("mutation-test-elements.js")));
 
-        using var htmlReader = new StreamReader(htmlStream);
-        using var jsReader = new StreamReader(jsStream);
+        using var htmlReader = new StreamReader(htmlStream!);
+        using var jsReader = new StreamReader(jsStream!);
 
         using var file = _fileSystem.File.CreateText(filePath);
         var fileContent = htmlReader.ReadToEnd();
