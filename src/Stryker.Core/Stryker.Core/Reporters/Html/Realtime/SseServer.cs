@@ -3,7 +3,6 @@ using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text.Json;
 using System.Threading.Tasks;
 using Stryker.Core.Reporters.Html.Realtime.Events;
 
@@ -65,14 +64,12 @@ public class SseServer : ISseServer
         }
     }
 
-    public void SendEvent<T>(SseEvent<T> sseEvent)
+    public void SendEvent<T>(SseEvent<T> @event)
     {
-        var data = JsonSerializer.Serialize(sseEvent.Data, new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase });
-        var eventString = $"event: {sseEvent.Event}\ndata:{data}\n\n";
-
+        var serialized = @event.Serialize();
         foreach (var writer in _writers)
         {
-            writer.Write(eventString);
+            writer.Write($"{serialized}\n\n");
             writer.Flush();
         }
     }

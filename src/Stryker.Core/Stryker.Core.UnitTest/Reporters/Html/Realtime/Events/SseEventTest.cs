@@ -1,5 +1,4 @@
-﻿using Shouldly;
-using Stryker.Core.Reporters.Html.Realtime.Events;
+﻿using Stryker.Core.Reporters.Html.Realtime.Events;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters.Html.Realtime.Events;
@@ -7,15 +6,27 @@ namespace Stryker.Core.UnitTest.Reporters.Html.Realtime.Events;
 public class SseEventTest : TestBase
 {
     [Fact]
-    public void ShouldSetProperties()
+    public void ShouldSerializeFinishedCorrectly()
     {
-        var sut = new SseEvent<string>
+        var @event = new SseEvent<string>
         {
-            Event = "mutant-tested",
-            Data = "testData",
+            Event = SseEventType.Finished,
+            Data = ""
         };
 
-        sut.Event.ShouldBeEquivalentTo("mutant-tested");
-        sut.Data.ShouldBeEquivalentTo("testData");
+        @event.Serialize().ShouldBeSemantically("event:finished\ndata:\"\"");
+    }
+
+    [Fact]
+    public void ShouldSerializeMutantTestedCorrectly()
+    {
+        var @object = new { Id = "1", Status = "Survived" };
+        var @event = new SseEvent<object>
+        {
+            Event = SseEventType.MutantTested,
+            Data = @object
+        };
+
+        @event.Serialize().ShouldBeSemantically("event:mutant-tested\ndata:{\"id\":\"1\",\"status\":\"Survived\"}");
     }
 }

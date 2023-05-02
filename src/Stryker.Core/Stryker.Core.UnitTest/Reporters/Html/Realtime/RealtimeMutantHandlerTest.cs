@@ -1,5 +1,4 @@
 ﻿using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Moq;
 using Shouldly;
 using Stryker.Core.Mutants;
@@ -46,7 +45,7 @@ public class RealtimeMutantHandlerTest : TestBase
 
         _sseEventSenderMock.Verify(sse
             => sse.SendEvent(It.Is<SseEvent<JsonMutant>>(@event
-                => @event.Data.Id == "1" && @event.Event == "mutant-tested")
+                => @event.Data.Id == "1" && @event.Event == SseEventType.MutantTested)
             ));
     }
 
@@ -59,7 +58,7 @@ public class RealtimeMutantHandlerTest : TestBase
 
         _sseEventSenderMock.Verify(sse
             => sse.SendEvent(It.Is<SseEvent<string>>(@event
-                => @event.Data.Length == 0 && @event.Event == "finished")
+                => @event.Data.Length == 0 && @event.Event == SseEventType.Finished)
             ));
         _sseEventSenderMock.Verify(sse => sse.CloseSseEndpoint());
     }

@@ -18,13 +18,13 @@ public class RealtimeMutantHandler : IRealtimeMutantHandler
 
     public void CloseSseEndpoint()
     {
-        _server.SendEvent(new SseEvent<string> { Event = "finished", Data = "" });
+        _server.SendEvent(new SseEvent<string> { Event = SseEventType.Finished, Data = "" });
         _server.CloseSseEndpoint();
     }
 
     public void SendMutantTestedEvent(IReadOnlyMutant testedMutant)
     {
         var jsonMutant = new JsonMutant(testedMutant);
-        _server.SendEvent(new SseEvent<JsonMutant> { Event = "mutant-tested", Data = jsonMutant });
+        _server.SendEvent(new SseEvent<JsonMutant> { Event = SseEventType.MutantTested, Data = jsonMutant });
     }
 }
