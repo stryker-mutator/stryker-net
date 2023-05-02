@@ -42,13 +42,8 @@ public class SseServer : ISseServer
 
     private async Task ListenForConnectionsAsync()
     {
-        while (true)
+        while (_listener.IsListening)
         {
-            if (!_listener.IsListening)
-            {
-                return;
-            }
-
             var context = await _listener.GetContextAsync();
             var response = context.Response;
             response.ContentType = "text/event-stream";
