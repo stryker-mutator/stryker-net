@@ -65,6 +65,34 @@ public class HtmlReporter : IReporter
         _console.WriteLine("You can open it in your browser of choice.", green);
     }
 
+    public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+    {
+        if (_options.ReportTypeToOpen == ReportType.Html)
+        {
+            _mutantHandler.OpenSseEndpoint();
+            OpenReportInBrowser(reportComponent, BuildReportPath(), testProjectsInfo);
+            return;
+        }
+
+        var aqua = new Style(Color.Aqua);
+        _console.WriteLine("Hint: by passing \"--open-report or -o\" the report will open automatically and update the report in realtime.", aqua);
+    }
+
+    public void OnMutantTested(IReadOnlyMutant result)
+    {
+        if (_options.ReportTypeToOpen != ReportType.Html)
+        {
+            return;
+        }
+
+        _mutantHandler.SendMutantTestedEvent(result);
+    }
+
+    public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
+    {
+        // This reporter does not currently report when the mutation test run starts
+    }
+
     private void OpenReportInBrowser(IReadOnlyProjectComponent reportComponent, string reportPath, TestProjectsInfo testProjectsInfo)
     {
         WriteHtmlReport(reportPath, reportComponent, testProjectsInfo);
@@ -116,33 +144,5 @@ public class HtmlReporter : IReporter
         fileContent = fileContent.Replace("##SSE_ENDPOINT##", $"http://localhost:{_mutantHandler.Port}/");
 
         file.WriteLine(fileContent);
-    }
-
-    public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
-    {
-        if (_options.ReportTypeToOpen == ReportType.Html)
-        {
-            _mutantHandler.OpenSseEndpoint();
-            OpenReportInBrowser(reportComponent, BuildReportPath(), testProjectsInfo);
-            return;
-        }
-
-        var aqua = new Style(Color.Aqua);
-        _console.WriteLine("Hint: by passing \"--open-report or -o\" the report will open automatically and update the report in realtime.", aqua);
-    }
-
-    public void OnMutantTested(IReadOnlyMutant result)
-    {
-        if (_options.ReportTypeToOpen != ReportType.Html)
-        {
-            return;
-        }
-
-        _mutantHandler.SendMutantTestedEvent(result);
-    }
-
-    public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
-    {
-        // This reporter does not currently report when the mutation test run starts
     }
 }
