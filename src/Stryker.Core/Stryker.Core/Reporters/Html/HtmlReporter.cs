@@ -110,7 +110,7 @@ public class HtmlReporter : IReporter
     {
         var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo).ToJsonHtmlSafe();
 
-        _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(filePath)!);
+        _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
         using var htmlStream = typeof(HtmlReporter).Assembly
             .GetManifestResourceStream(typeof(HtmlReporter)
