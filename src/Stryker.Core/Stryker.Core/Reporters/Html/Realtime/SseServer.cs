@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -64,7 +65,7 @@ public class SseServer : ISseServer
         var serialized = @event.Serialize();
         foreach (var writer in _writers)
         {
-            writer.Write($"{serialized}\n\n");
+            writer.Write($"{serialized}{Environment.NewLine}{Environment.NewLine}");
             writer.Flush();
         }
     }
