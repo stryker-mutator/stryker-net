@@ -1,13 +1,10 @@
 ﻿using System;
-using System.IO;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.EventSource;
 using Stryker.Core.Reporters.Html.Realtime;
 using Stryker.Core.Reporters.Html.Realtime.Events;
 using Xunit;
-using Xunit.Abstractions;
 
 namespace Stryker.Core.UnitTest.Reporters.Html.Realtime;
 
@@ -32,12 +29,9 @@ public class SseServerTest : TestBase
             data = e.Message.Data;
             eventReceived.Set();
         };
-        sseClient.Opened += (_, _) =>
-        {
-        };
 
         Task.Run(() => sseClient.StartAsync());
-        Thread.Sleep(1000);
+        Thread.Sleep(100);
 
         _sut.SendEvent(new SseEvent<string> { Event = SseEventType.Finished, Data = "" });
         eventReceived.WaitOne();
@@ -64,7 +58,7 @@ public class SseServerTest : TestBase
         };
 
         Task.Run(() => sseClient.StartAsync());
-        Thread.Sleep(1000);
+        Thread.Sleep(100);
 
         _sut.SendEvent(new SseEvent<object>
         {
