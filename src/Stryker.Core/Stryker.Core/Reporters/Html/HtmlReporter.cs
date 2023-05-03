@@ -72,7 +72,7 @@ public class HtmlReporter : IReporter
 
             var reportPath = BuildReportPath();
             WriteHtmlReport(reportPath, reportComponent, testProjectsInfo);
-            OpenReportInBrowser(reportPath, testProjectsInfo);
+            OpenReportInBrowser(reportPath);
             return;
         }
 
@@ -95,7 +95,7 @@ public class HtmlReporter : IReporter
         // This reporter does not currently report when the mutation test run starts
     }
 
-    private void OpenReportInBrowser(string reportPath, TestProjectsInfo testProjectsInfo) =>
+    private void OpenReportInBrowser(string reportPath) =>
         _processWrapper.Open("file://" + reportPath.Replace("\\", "/"));
 
     private string BuildReportPath()
