@@ -113,7 +113,11 @@ namespace Stryker.Core
                 {
                     project.Test(project.Input.SourceProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
                 }
-
+                // dispose and stop runners
+                if (disposeOrchestrator)
+                {
+                    projectOrchestrator.Dispose();
+                }
                 // Restore assemblies
                 foreach (var project in _mutationTestProcesses)
                 {
@@ -121,10 +125,7 @@ namespace Stryker.Core
                 }
 
                 reporters.OnAllMutantsTested(rootComponent, combinedTestProjectsInfo);
-                if (disposeOrchestrator)
-                {
-                    projectOrchestrator.Dispose();
-                }
+
 
                 return new StrykerRunResult(options, rootComponent.GetMutationScore());
             }
