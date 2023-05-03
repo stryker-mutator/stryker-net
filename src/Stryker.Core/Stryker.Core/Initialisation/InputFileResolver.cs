@@ -77,11 +77,16 @@ namespace Stryker.Core.Initialisation
                 var solutionAnalyzerResults = AnalyzeSolution(options);
                 var solutionTestProjects = solutionAnalyzerResults.Where(p => p.IsTestProject()).ToList();
                 var projectsUnderTestAnalyzerResult = solutionAnalyzerResults.Where(p => !p.IsTestProject()).ToList();
-
                 _logger.LogInformation("Found {0} source projects", projectsUnderTestAnalyzerResult.Count);
                 _logger.LogInformation("Found {0} test projects", solutionTestProjects.Count);
 
                 var dependents = FindDependentProjects(projectsUnderTestAnalyzerResult);
+                if (!string.IsNullOrEmpty(options.SourceProjectName))
+                {
+                    var normalizedProjectUnderTestNameFilter = options.SourceProjectName.Replace("\\", "/");
+                    projectsUnderTestAnalyzerResult = projectsUnderTestAnalyzerResult.Where(p =>
+                        p.ProjectFilePath.Replace('\\', '/').Contains(normalizedProjectUnderTestNameFilter)).ToList();
+                }
                 return BuildProjectInfos(options, dependents, projectsUnderTestAnalyzerResult, solutionTestProjects, solutionAnalyzerResults);
             }
 
@@ -288,7 +293,6 @@ namespace Stryker.Core.Initialisation
         public string FindSourceProject(IEnumerable<IAnalyzerResult> testProjects, StrykerOptions options)
         {
             var projectReferences = FindProjectsReferencedByAllTestProjects(testProjects);
-
             var sourceProjectPath = string.IsNullOrEmpty(options?.SourceProjectName) ? DetermineTargetProjectWithoutNameFilter(projectReferences) : DetermineSourceProjectWithNameFilter(options, projectReferences);
 
             _logger.LogDebug("Using {0} as project under test", sourceProjectPath);
@@ -302,7 +306,19 @@ namespace Stryker.Core.Initialisation
 
             var referenceChoice = BuildReferenceChoice(projectReferences);
 
-            var projectReferencesMatchingNameFilter = FilterSourceProjects(options, projectReferences);
+            IEnumerable<string> projectReferencesMatchingNameFilter;
+            if (string.IsNullOrEmpty(options.SourceProjectName))
+            {
+                projectReferencesMatchingNameFilter = projectReferences;
+            }
+            else
+            {
+                var normalizedProjectUnderTestNameFilter = options.SourceProjectName.Replace("\\", "/");
+                var projectReferencesMatchingNameFilter1 = projectReferences
+                    .Where(x => x.Replace("\\", "/")
+                        .Contains(normalizedProjectUnderTestNameFilter, StringComparison.OrdinalIgnoreCase));
+                projectReferencesMatchingNameFilter = projectReferencesMatchingNameFilter1;
+            }
 
             if (!projectReferencesMatchingNameFilter.Any())
             {
@@ -325,25 +341,13 @@ namespace Stryker.Core.Initialisation
             return projectReferencesMatchingNameFilter.Single();
         }
 
-        private static IEnumerable<string> FilterSourceProjects(StrykerOptions options, IEnumerable<string> projectFileNames)
-        {
-            if (string.IsNullOrEmpty(options.SourceProjectName))
-            {
-                return projectFileNames;
-            }
-            var normalizedProjectUnderTestNameFilter = options.SourceProjectName.Replace("\\", "/");
-            var projectReferencesMatchingNameFilter = projectFileNames
-                .Where(x => x.Replace("\\", "/")
-                    .Contains(normalizedProjectUnderTestNameFilter, StringComparison.OrdinalIgnoreCase));
-            return projectReferencesMatchingNameFilter;
-        }
-
         private string DetermineTargetProjectWithoutNameFilter(IEnumerable<string> projectReferences)
         {
             var stringBuilder = new StringBuilder();
             var referenceChoice = BuildReferenceChoice(projectReferences);
 
-            if (projectReferences.Count() > 1) // Too many references found
+            var count = projectReferences.Count();
+            if (count > 1) // Too many references found
             {
                 stringBuilder.AppendLine("Test project contains more than one project reference. Please set the project option (https://stryker-mutator.io/docs/stryker-net/configuration#project-file-name) to specify which project to mutate.");
                 stringBuilder.Append(referenceChoice);
@@ -351,7 +355,7 @@ namespace Stryker.Core.Initialisation
                 throw new InputException(stringBuilder.ToString());
             }
 
-            if (!projectReferences.Any()) // No references found
+            if (count==0) // No references found
             {
                 stringBuilder.AppendLine("No project references found. Please add a project reference to your test project and retry.");
 
@@ -398,7 +402,6 @@ namespace Stryker.Core.Initialisation
                     _foldersToExclude,
                     _logger,
                     FileSystem),
-
                 _ => throw new NotSupportedException()
             };
     }

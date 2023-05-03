@@ -47,6 +47,7 @@ namespace Stryker.Core.Initialisation
                 return _analyzerManager;
             }
         }
+
         public IAnalyzerResult AnalyzeProject(
             string projectFilePath,
             string solutionFilePath,
