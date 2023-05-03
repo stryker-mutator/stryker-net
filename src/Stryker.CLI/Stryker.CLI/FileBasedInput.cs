@@ -91,9 +91,6 @@ namespace Stryker.CLI
         [JsonPropertyName("break-on-initial-test-failure")]
         public bool? BreakOnInitialTestFailure { get; init; }
 
-        [JsonPropertyName("port")]
-        public int Port { get; init; }
-
         [JsonExtensionData]
         public Dictionary<string, JsonElement> ExtraData { get; init; }
     }
