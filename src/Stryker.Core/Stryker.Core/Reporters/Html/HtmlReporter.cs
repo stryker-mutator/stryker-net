@@ -44,7 +44,6 @@ public class HtmlReporter : IReporter
         if (_options.ReportTypeToOpen == ReportType.Html)
         {
             _mutantHandler.CloseSseEndpoint();
-            return;
         }
         var reportUri = "file://" + reportPath.Replace("\\", "/").Replace(" ", "%20");
 
@@ -70,7 +69,10 @@ public class HtmlReporter : IReporter
         if (_options.ReportTypeToOpen == ReportType.Html)
         {
             _mutantHandler.OpenSseEndpoint();
-            OpenReportInBrowser(reportComponent, BuildReportPath(), testProjectsInfo);
+
+            var reportPath = BuildReportPath();
+            WriteHtmlReport(reportPath, reportComponent, testProjectsInfo);
+            OpenReportInBrowser(reportPath, testProjectsInfo);
             return;
         }
 
@@ -93,20 +95,8 @@ public class HtmlReporter : IReporter
         // This reporter does not currently report when the mutation test run starts
     }
 
-    private void OpenReportInBrowser(IReadOnlyProjectComponent reportComponent, string reportPath, TestProjectsInfo testProjectsInfo)
-    {
-        WriteHtmlReport(reportPath, reportComponent, testProjectsInfo);
-
-        if (_options.ReportTypeToOpen == ReportType.Html)
-        {
-            _processWrapper.Open("file://" + reportPath.Replace("\\", "/"));
-        }
-        else
-        {
-            var aqua = new Style(Color.Aqua);
-            _console.WriteLine("Hint: by passing \"--open-report or -o\" the report will open automatically once Stryker is done.", aqua);
-        }
-    }
+    private void OpenReportInBrowser(string reportPath, TestProjectsInfo testProjectsInfo) =>
+        _processWrapper.Open("file://" + reportPath.Replace("\\", "/"));
 
     private string BuildReportPath()
     {
