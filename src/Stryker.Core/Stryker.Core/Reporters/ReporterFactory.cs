@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Options;
-using Stryker.Core.Reporters.Html.reporter;
+using Stryker.Core.Reporters.Html;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Progress;
 
@@ -29,7 +29,7 @@ namespace Stryker.Core.Reporters
                 { Reporter.ClearText, new ClearTextReporter(options) },
                 { Reporter.ClearTextTree, new ClearTextTreeReporter(options) },
                 { Reporter.Json, new JsonReporter(options) },
-                { Reporter.Html, new Html.reporter.HtmlReporter(options) },
+                { Reporter.Html, new HtmlReporter(options) },
                 { Reporter.Dashboard, new DashboardReporter(options) },
                 { Reporter.Markdown, new MarkdownSummaryReporter(options) },
                 { Reporter.Baseline, new BaselineReporter(options) }

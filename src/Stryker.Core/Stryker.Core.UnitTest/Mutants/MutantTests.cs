@@ -27,7 +27,7 @@ namespace Stryker.Core.UnitTest.Mutants
         [InlineData(MutantStatus.Ignored, false)]
         [InlineData(MutantStatus.Killed, true)]
         [InlineData(MutantStatus.NoCoverage, true)]
-        [InlineData(MutantStatus.NotRun, true)]
+        [InlineData(MutantStatus.Pending, true)]
         [InlineData(MutantStatus.Survived, true)]
         [InlineData(MutantStatus.Timeout, true)]
         public void ShouldCountForStats(MutantStatus status, bool doesCount)

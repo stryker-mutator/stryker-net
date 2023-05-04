@@ -6,7 +6,7 @@ using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
-using Stryker.Core.Reporters.HtmlReporter.ProcessWrapper;
+using Stryker.Core.Reporters.Html.ProcessWrapper;
 using Stryker.Core.Reporters.Json;
 using Xunit;
 

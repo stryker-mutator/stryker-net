@@ -387,7 +387,7 @@ namespace ExampleProject
             var projectContentsMutants = MutateAndCompileSource(sourceFile);
             // those results can change if mutators are added.
             projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.CompileError).ShouldBe(9);
-            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.NotRun).ShouldBe(0);
+            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.Pending).ShouldBe(0);
         }
 
         [Fact]
@@ -413,7 +413,7 @@ namespace ExampleProject
             var projectContentsMutants = MutateAndCompileSource(sourceFile);
             // those results can change if mutators are added.
             projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.CompileError).ShouldBe(1);
-            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.NotRun).ShouldBe(3);
+            projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.Pending).ShouldBe(3);
         }
 
         private static IEnumerable<Mutant> MutateAndCompileSource(string sourceFile)

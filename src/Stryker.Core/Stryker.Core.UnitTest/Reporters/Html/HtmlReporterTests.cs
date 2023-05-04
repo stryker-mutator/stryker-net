@@ -1,20 +1,28 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
+using Buildalyzer;
 using Moq;
 using Shouldly;
 using Spectre.Console.Testing;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.Reporters.Html.reporter;
-using Stryker.Core.Reporters.HtmlReporter.ProcessWrapper;
+using Stryker.Core.Reporters.Html;
+using Stryker.Core.Reporters.Html.ProcessWrapper;
+using Stryker.Core.Reporters.Html.Realtime;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.Reporters
+namespace Stryker.Core.UnitTest.Reporters.Html
 {
     public class HtmlReporterTests : TestBase
     {
+        private readonly Mock<IRealtimeMutantHandler> _handlerMock;
+
+        public HtmlReporterTests() => _handlerMock = new Mock<IRealtimeMutantHandler>();
+
         [Fact]
         public void ShouldWriteJsonToFile()
         {
@@ -26,7 +34,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 OutputPath = Directory.GetCurrentDirectory(),
                 ReportFileName = "mutation-report"
             };
-            var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
+            var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object, mutantHandler: _handlerMock.Object);
 
             reporter.OnAllMutantsTested(ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>());
             var reportPath = Path.Combine(options.ReportPath, "mutation-report.html");
@@ -44,7 +52,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 OutputPath = Directory.GetCurrentDirectory(),
                 ReportFileName = "mutation-report"
             };
-            var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
+            var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object, mutantHandler: _handlerMock.Object);
 
             reporter.OnAllMutantsTested(ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>());
             var reportPath = Path.Combine(options.ReportPath, "mutation-report.html");
@@ -67,7 +75,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 OutputPath = " folder \\ next level",
                 ReportFileName = "mutation-report"
             };
-            var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
+            var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object, mutantHandler: _handlerMock.Object);
 
             reporter.OnAllMutantsTested(ReportTestHelper.CreateProjectWith(), null);
             var reportPath = Path.Combine(options.ReportPath, "mutation-report.html");
@@ -90,14 +98,14 @@ namespace Stryker.Core.UnitTest.Reporters
                 OutputPath = " folder \\ next level",
                 ReportFileName = "mutation-report"
             };
-            var reporter = new HtmlReporter(options, mockFileSystem, mockAnsiConsole, Mock.Of<IWebbrowserOpener>());
+            var reporter = new HtmlReporter(options, mockFileSystem, mockAnsiConsole, Mock.Of<IWebbrowserOpener>(),  mutantHandler: _handlerMock.Object);
             var mutationTree = ReportTestHelper.CreateProjectWith();
 
             var testProjectInfo = new TestProjectsInfo(mockFileSystem)
             {
                 TestProjects = new List<TestProject>()
                 {
-                    
+
                 }
             };
 
@@ -118,7 +126,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 OutputPath = Directory.GetCurrentDirectory(),
                 ReportFileName = "mutation-report"
             };
-            var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
+            var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object, mutantHandler: _handlerMock.Object);
             var mutationTree = ReportTestHelper.CreateProjectWith();
 
             reporter.OnAllMutantsTested(mutationTree, It.IsAny<TestProjectsInfo>());
@@ -132,7 +140,7 @@ namespace Stryker.Core.UnitTest.Reporters
         }
 
         [Fact]
-        public void ShouldOpenHtmlReportIfOptionIsProvided()
+        public void ShouldOpenHtmlReportImmediatelyIfOptionIsProvided()
         {
             var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();
@@ -142,11 +150,14 @@ namespace Stryker.Core.UnitTest.Reporters
                 OutputPath = Directory.GetCurrentDirectory(),
                 ReportFileName = "mutation-report"
             };
-
-            var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
+            var testProjectInfo = new TestProjectsInfo(mockFileSystem)
+            {
+                TestProjects = Array.Empty<TestProject>()
+            };
+            var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object, mutantHandler: _handlerMock.Object);
             var mutationTree = ReportTestHelper.CreateProjectWith();
 
-            reporter.OnAllMutantsTested(mutationTree, It.IsAny<TestProjectsInfo>());
+            reporter.OnMutantsCreated(mutationTree, testProjectInfo);
 
             var reportUri = Path.Combine(options.ReportPath, $"{options.ReportFileName}.html");
             reportUri = "file://" + reportUri.Replace("\\", "/");
@@ -156,7 +167,7 @@ namespace Stryker.Core.UnitTest.Reporters
         }
 
         [Fact]
-        public void ShouldOpenHtmlReportIfOptionIsProvidedAndSpacesInPath()
+        public void ShouldOpenHtmlReportImmediatelyIfOptionIsProvidedAndSpacesInPath()
         {
             var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();
@@ -167,18 +178,15 @@ namespace Stryker.Core.UnitTest.Reporters
                 ReportFileName = "mutation-report"
             };
 
-            var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
+            var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object, mutantHandler: _handlerMock.Object);
             var mutationTree = ReportTestHelper.CreateProjectWith();
 
             var testProjectInfo = new TestProjectsInfo(mockFileSystem)
             {
-                TestProjects = new List<TestProject>()
-                {
-
-                }
+                TestProjects = Array.Empty<TestProject>()
             };
 
-            reporter.OnAllMutantsTested(mutationTree, testProjectInfo);
+            reporter.OnMutantsCreated(mutationTree, testProjectInfo);
 
             var reportUri = Path.Combine(options.ReportPath, $"{options.ReportFileName}.html");
             reportUri = "file://" + reportUri.Replace("\\", "/");
@@ -188,10 +196,67 @@ namespace Stryker.Core.UnitTest.Reporters
             mockProcess.VerifyNoOtherCalls();
         }
 
+        [Fact]
+        public void ShouldCloseSseEndpointAfterReportingAllMutantsTested()
+        {
+            var mockProcess = new Mock<IWebbrowserOpener>();
+            var mockFileSystem = new MockFileSystem();
+            var options = new StrykerOptions
+            {
+                ReportTypeToOpen = ReportType.Html,
+                Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 },
+                OutputPath = Directory.GetCurrentDirectory(),
+                ReportFileName = "mutation-report"
+            };
+            var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object, mutantHandler: _handlerMock.Object);
+            var mutationTree = ReportTestHelper.CreateProjectWith();
+
+            reporter.OnAllMutantsTested(mutationTree, It.IsAny<TestProjectsInfo>());
+
+            _handlerMock.Verify(s => s.CloseSseEndpoint());
+        }
+
+        [Fact]
+        public void ShouldSendMutantEventIfOpenReportOptionIsProvided()
+        {
+            var mockProcess = new Mock<IWebbrowserOpener>();
+            var mockFileSystem = new MockFileSystem();
+            var options = new StrykerOptions
+            {
+                ReportTypeToOpen = ReportType.Html,
+                Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 },
+                OutputPath = Directory.GetCurrentDirectory(),
+                ReportFileName = "mutation-report"
+            };
+            var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object, mutantHandler: _handlerMock.Object);
+
+            reporter.OnMutantTested(new Mutant());
+
+            _handlerMock.Verify(h => h.SendMutantTestedEvent(It.IsAny<Mutant>()));
+        }
+
+        [Fact]
+        public void ShouldNotSendMutantEventIfOpenReportOptionIsProvided()
+        {
+            var mockProcess = new Mock<IWebbrowserOpener>();
+            var mockFileSystem = new MockFileSystem();
+            var options = new StrykerOptions
+            {
+                Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 },
+                OutputPath = Directory.GetCurrentDirectory(),
+                ReportFileName = "mutation-report"
+            };
+            var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object, mutantHandler: _handlerMock.Object);
+
+            reporter.OnMutantTested(new Mutant());
+
+            _handlerMock.VerifyNoOtherCalls();
+        }
+
         [Theory]
         [InlineData(ReportType.Dashboard)]
         [InlineData(null)]
-        public void ShouldNotOpenHtmlReportIfOptionIsProvided(ReportType? reportType)
+        public void ShouldNotOpenHtmlReportIfHtmlOptionIsNotProvided(ReportType? reportType)
         {
             var mockProcess = new Mock<IWebbrowserOpener>();
             var mockFileSystem = new MockFileSystem();
@@ -201,7 +266,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 OutputPath = Directory.GetCurrentDirectory()
             };
 
-            var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object);
+            var reporter = new HtmlReporter(options, mockFileSystem, processWrapper: mockProcess.Object, mutantHandler: _handlerMock.Object);
             var mutationTree = ReportTestHelper.CreateProjectWith();
 
             reporter.OnAllMutantsTested(mutationTree, It.IsAny<TestProjectsInfo>());

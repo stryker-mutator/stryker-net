@@ -53,7 +53,7 @@ namespace Stryker.Core.Reporters.Json
             mutationReport.Serialize(file);
         }
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
             // This reporter does not currently report when mutants are created
         }
