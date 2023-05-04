@@ -19,8 +19,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInputFileResolver
     {
-        IReadOnlyCollection<SourceProjectInfo> ResolveSourceProjectInfos(StrykerOptions options, IEnumerable<IAnalyzerResult> testProjects, IEnumerable<IAnalyzerResult> solutionProjects);
-        IEnumerable<IAnalyzerResult> ResolveTestProjects(StrykerOptions options, IEnumerable<IAnalyzerResult> solutionProjects);
+        IReadOnlyCollection<SourceProjectInfo> ResolveSourceProjectInfos(StrykerOptions options);
         IFileSystem FileSystem { get; }
     }
 
@@ -46,54 +45,46 @@ namespace Stryker.Core.Initialisation
 
         public IFileSystem FileSystem { get; }
 
-        public IEnumerable<IAnalyzerResult> ResolveTestProjects(StrykerOptions options, IEnumerable<IAnalyzerResult> solutionProjects)
+        public IReadOnlyCollection<SourceProjectInfo> ResolveSourceProjectInfos(StrykerOptions options)
         {
-            List<string> testProjectFiles;
-            if (options.TestProjects != null && options.TestProjects.Any())
+            if (!options.IsSolutionContext)
             {
-                testProjectFiles = options.TestProjects.Select(FindTestProject).ToList();
-            }
-            else
-            {
-                testProjectFiles = new List<string> {FindTestProject(options.ProjectPath) };
-            }
-
-            var testProjects = new List<IAnalyzerResult>();
-            foreach (var testProjectFile in testProjectFiles)
-            {
-                // Analyze the test project
-                testProjects.Add(_projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework, solutionProjects));
-            }
-
-            return testProjects;
-        }
-        
-        public IReadOnlyCollection<SourceProjectInfo> ResolveSourceProjectInfos(StrykerOptions options, IEnumerable<IAnalyzerResult> testProjects, IEnumerable<IAnalyzerResult> solutionProjects)
-        {
-
-            if (options.IsSolutionContext)
-            {
-                // Analyze all projects in the solution with buildalyzer
-                var solutionAnalyzerResults = AnalyzeSolution(options);
-                var solutionTestProjects = solutionAnalyzerResults.Where(p => p.IsTestProject()).ToList();
-                var projectsUnderTestAnalyzerResult = solutionAnalyzerResults.Where(p => !p.IsTestProject()).ToList();
-                _logger.LogInformation("Found {0} source projects", projectsUnderTestAnalyzerResult.Count);
-                _logger.LogInformation("Found {0} test projects", solutionTestProjects.Count);
-
-                var dependents = FindDependentProjects(projectsUnderTestAnalyzerResult);
-                if (!string.IsNullOrEmpty(options.SourceProjectName))
+                List<string> testProjectFileNames;
+                if (options.TestProjects != null && options.TestProjects.Any())
                 {
-                    var normalizedProjectUnderTestNameFilter = options.SourceProjectName.Replace("\\", "/");
-                    projectsUnderTestAnalyzerResult = projectsUnderTestAnalyzerResult.Where(p =>
-                        p.ProjectFilePath.Replace('\\', '/').Contains(normalizedProjectUnderTestNameFilter)).ToList();
+                    testProjectFileNames = options.TestProjects.Select(FindTestProject).ToList();
                 }
-                return BuildProjectInfos(options, dependents, projectsUnderTestAnalyzerResult, solutionTestProjects, solutionAnalyzerResults);
+                else
+                {
+                    testProjectFileNames = new List<string> {FindTestProject(options.ProjectPath) };
+                }
+
+                var testProjects = testProjectFileNames.Select(testProjectFile => _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework)).ToList();
+
+                var analyzerResult = _projectFileReader.AnalyzeProject(FindSourceProject(testProjects, options),
+                    options.SolutionPath, options.TargetFramework);
+                return new[]
+                {
+                    BuildSourceProjectInfo(options, analyzerResult, testProjects, FindSourceProject(testProjects, options))
+                };
             }
 
             // Analyze source project
-            testProjects = ResolveTestProjects(options, solutionProjects);
-            var analyzerResult = _projectFileReader.AnalyzeProject(FindSourceProject(testProjects, options), options.SolutionPath, options.TargetFramework, solutionProjects);
-            return new []{BuildSourceProjectInfo(options, analyzerResult, testProjects, FindSourceProject(testProjects, options))};
+            // Analyze all projects in the solution with buildalyzer
+            var solutionAnalyzerResults = AnalyzeSolution(options);
+            var solutionTestProjects = solutionAnalyzerResults.Where(p => p.IsTestProject()).ToList();
+            var projectsUnderTestAnalyzerResult = solutionAnalyzerResults.Where(p => !p.IsTestProject()).ToList();
+            _logger.LogInformation("Found {0} source projects", projectsUnderTestAnalyzerResult.Count);
+            _logger.LogInformation("Found {0} test projects", solutionTestProjects.Count);
+
+            var dependents = FindDependentProjects(projectsUnderTestAnalyzerResult);
+            if (!string.IsNullOrEmpty(options.SourceProjectName))
+            {
+                var normalizedProjectUnderTestNameFilter = options.SourceProjectName.Replace("\\", "/");
+                projectsUnderTestAnalyzerResult = projectsUnderTestAnalyzerResult.Where(p =>
+                    p.ProjectFilePath.Replace('\\', '/').Contains(normalizedProjectUnderTestNameFilter)).ToList();
+            }
+            return BuildProjectInfos(options, dependents, projectsUnderTestAnalyzerResult, solutionTestProjects, solutionAnalyzerResults);
         }
 
         private static Dictionary<string, HashSet<string>> FindDependentProjects(IReadOnlyCollection<IAnalyzerResult> projectsUnderTest)
@@ -195,7 +186,7 @@ namespace Stryker.Core.Initialisation
                         options.ProjectPath,
                          project,
                         testProjects: relatedTestProjects);
-                    var resolveSourceProjectInfo = ResolveSourceProjectInfos(projectOptions, analyzerResultsForTestProjects, solutionAnalyzerResults);
+                    var resolveSourceProjectInfo = ResolveSourceProjectInfos(projectOptions);
 
                     resolveSourceProjectInfo.Single().TestProjectsInfo =
                         new TestProjectsInfo(FileSystem)

@@ -11,11 +11,9 @@ namespace Stryker.Core.Initialisation
 {
     public interface IProjectFileReader
     {
-        IAnalyzerResult AnalyzeProject(
-            string projectFilePath,
+        IAnalyzerResult AnalyzeProject(string projectFilePath,
             string solutionFilePath,
             string targetFramework,
-            IEnumerable<IAnalyzerResult> solutionProjects,
             string msBuildPath = null);
         IAnalyzerManager AnalyzeSolution(string solutionPath);
     }
@@ -48,16 +46,14 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        public IAnalyzerResult AnalyzeProject(
-            string projectFilePath,
+        public IAnalyzerResult AnalyzeProject(string projectFilePath,
             string solutionFilePath,
             string targetFramework,
-            IEnumerable<IAnalyzerResult> solutionProjects,
             string msBuildPath = null)
         {
 
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
-            var analyzerResult = GetProjectInfo(projectFilePath, targetFramework, solutionProjects);
+            var analyzerResult = GetProjectInfo(projectFilePath, targetFramework);
             LogAnalyzerResult(analyzerResult);
 
             if (analyzerResult.Succeeded)
@@ -69,7 +65,7 @@ namespace Stryker.Core.Initialisation
                 // buildalyzer failed to find restored packages, retry after nuget restore
                 _logger.LogDebug("Project analyzer result not successful, restoring packages");
                 _nugetRestoreProcess.RestorePackages(solutionFilePath, msBuildPath);
-                analyzerResult = GetProjectInfo(projectFilePath, targetFramework, solutionProjects);
+                analyzerResult = GetProjectInfo(projectFilePath, targetFramework);
             }
             else
             {
@@ -87,18 +83,10 @@ namespace Stryker.Core.Initialisation
         /// </summary>
         /// <returns></returns>
         private IAnalyzerResult GetProjectInfo(string projectFilePath,
-            string targetFramework,
-            IEnumerable<IAnalyzerResult> solutionProjects)
+            string targetFramework)
         {
-            if (solutionProjects != null)
-            {
-                return solutionProjects.FirstOrDefault(x => x.ProjectFilePath == projectFilePath);
-            }
-            else
-            {
-                var analyzerResults = AnalyzerManager.GetProject(projectFilePath).Build();
-                return SelectAnalyzerResult(analyzerResults, targetFramework);
-            }
+            var analyzerResults = AnalyzerManager.GetProject(projectFilePath).Build();
+            return SelectAnalyzerResult(analyzerResults, targetFramework);
         }
 
         private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)

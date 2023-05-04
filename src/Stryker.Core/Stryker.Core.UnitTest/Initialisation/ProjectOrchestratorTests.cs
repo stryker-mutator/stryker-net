@@ -118,14 +118,9 @@ namespace Stryker.Core.UnitTest.Initialisation
             testProjectAnalyzerResultMock.Setup(x => x.Succeeded).Returns(true);
             // The test project references the microsoft.net.test.sdk
             testProjectAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "True" }, {"TargetDir", projectUnderTestBin}, {"TargetFileName", testDll}, {"Language", "C#"} });
+            testProjectAnalyzerResultMock.Setup(x => x.SourceFiles).Returns(Array.Empty<string>());
 
             sourceProjectAnalyzerResultMock.Setup(x => x.ProjectReferences).Returns(new List<string>());
-            sourceProjectAnalyzerMock.Setup(x => x.ProjectFile).Returns(sourceProjectFileMock.Object);
-            sourceProjectAnalyzerMock.Setup(x => x.Build()).Returns(sourceProjectAnalyzerResultsMock.Object);
-            sourceProjectAnalyzerResultsMock.Setup(x => x.Results).Returns(new[] { sourceProjectAnalyzerResultMock.Object });
-            sourceProjectFileMock.Setup(x => x.PackageReferences).Returns(new List<IPackageReference>());
-            sourceProjectFileMock.Setup(x => x.Path).Returns(projectPath);
-            testProjectAnalyzerResultMock.Setup(x => x.SourceFiles).Returns(Array.Empty<string>());
             sourceProjectAnalyzerResultMock.Setup(x => x.References).Returns(Array.Empty<string>());
             sourceProjectAnalyzerResultMock.Setup(x => x.SourceFiles).Returns(new []{csPathName});
             sourceProjectAnalyzerResultMock.Setup(x => x.PreprocessorSymbols).Returns(new []{"NET"});
@@ -133,6 +128,17 @@ namespace Stryker.Core.UnitTest.Initialisation
             sourceProjectAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns(csprojPathName);
             sourceProjectAnalyzerResultMock.Setup(x => x.TargetFramework).Returns("net6.0");
             sourceProjectAnalyzerResultMock.Setup(x => x.Succeeded).Returns(true);
+
+            IEnumerable<IAnalyzerResult> analyzerResults = new[] { sourceProjectAnalyzerResultMock.Object };
+            sourceProjectAnalyzerResultsMock.Setup(x => x.Results).Returns(analyzerResults);
+            sourceProjectAnalyzerResultsMock.Setup(x => x.GetEnumerator()).Returns(() => analyzerResults.GetEnumerator());
+
+            sourceProjectAnalyzerMock.Setup(x => x.ProjectFile).Returns(sourceProjectFileMock.Object);
+            sourceProjectAnalyzerMock.Setup(x => x.Build()).Returns(sourceProjectAnalyzerResultsMock.Object);
+
+            sourceProjectFileMock.Setup(x => x.PackageReferences).Returns(new List<IPackageReference>());
+            sourceProjectFileMock.Setup(x => x.Path).Returns(projectPath);
+
 
             testProjectProjectFileMock.Setup(x => x.PackageReferences).Returns(new List<IPackageReference>
             {

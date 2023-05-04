@@ -55,7 +55,7 @@ namespace Stryker.Core.Initialisation
             try
             {
                 // project mode
-                return _inputFileResolver.ResolveSourceProjectInfos(options, null,null);
+                return _inputFileResolver.ResolveSourceProjectInfos(options);
             }
             finally
             {
@@ -108,14 +108,15 @@ namespace Stryker.Core.Initialisation
                     SourceProjectInfo = info,
                     TestProjectsInfo = info.TestProjectsInfo,
                     TestRunner = runner,
-                    InitialTestRun = InitialTest(options, info, runner)
+                    InitialTestRun = InitialTest(options, info, runner, projects.Count==1)
                 });
             }
 
             return result;
         }
 
-        private InitialTestRun InitialTest(StrykerOptions options, SourceProjectInfo projectInfo, ITestRunner testRunner)
+        private InitialTestRun InitialTest(StrykerOptions options, SourceProjectInfo projectInfo,
+            ITestRunner testRunner, bool throwIfFails)
         {
             DiscoverTests(projectInfo, testRunner);
 
@@ -135,7 +136,7 @@ namespace Stryker.Core.Initialisation
                     throw new InputException("Initial testrun has failing tests.", result.Result.ResultMessage);
                 }
 
-                if (!options.IsSolutionContext && (double)failingTestsCount / result.Result.ExecutedTests.Count >= .5)
+                if (throwIfFails && (double)failingTestsCount / result.Result.ExecutedTests.Count >= .5)
                 {
                     throw new InputException("Initial testrun has more than 50% failing tests.", result.Result.ResultMessage);
                 }
@@ -143,12 +144,7 @@ namespace Stryker.Core.Initialisation
                 _logger.LogWarning($"{(failingTestsCount == 1 ? "A test is": $"{failingTestsCount} tests are")} failing. Stryker will continue but outcome will be impacted.");
             }
 
-            if (!result.Result.ExecutedTests.IsEmpty)
-            {
-                return result;
-            }
-            // no test have been discovered, diagnose this
-            if (options.IsSolutionContext)
+            if (!result.Result.ExecutedTests.IsEmpty || !throwIfFails)
             {
                 return result;
             }
