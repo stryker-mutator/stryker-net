@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -283,7 +284,7 @@ namespace Stryker.Core.Initialisation
 
         public string FindSourceProject(IEnumerable<IAnalyzerResult> testProjects, StrykerOptions options)
         {
-            var projectReferences = FindProjectsReferencedByAllTestProjects(testProjects);
+            var projectReferences = FindProjectsReferencedByAllTestProjects(testProjects.ToList());
             var sourceProjectPath = string.IsNullOrEmpty(options?.SourceProjectName) ? DetermineTargetProjectWithoutNameFilter(projectReferences) : DetermineSourceProjectWithNameFilter(options, projectReferences);
 
             _logger.LogDebug("Using {0} as project under test", sourceProjectPath);
@@ -291,31 +292,20 @@ namespace Stryker.Core.Initialisation
             return sourceProjectPath;
         }
 
-        internal string DetermineSourceProjectWithNameFilter(StrykerOptions options, IEnumerable<string> projectReferences)
+        internal string DetermineSourceProjectWithNameFilter(StrykerOptions options, IReadOnlyCollection<string> projectReferences)
         {
             var stringBuilder = new StringBuilder();
 
-            var referenceChoice = BuildReferenceChoice(projectReferences);
-
-            IEnumerable<string> projectReferencesMatchingNameFilter;
-            if (string.IsNullOrEmpty(options.SourceProjectName))
-            {
-                projectReferencesMatchingNameFilter = projectReferences;
-            }
-            else
-            {
-                var normalizedProjectUnderTestNameFilter = options.SourceProjectName.Replace("\\", "/");
-                var projectReferencesMatchingNameFilter1 = projectReferences
-                    .Where(x => x.Replace("\\", "/")
-                        .Contains(normalizedProjectUnderTestNameFilter, StringComparison.OrdinalIgnoreCase));
-                projectReferencesMatchingNameFilter = projectReferencesMatchingNameFilter1;
-            }
+            var normalizedProjectUnderTestNameFilter = options.SourceProjectName.Replace("\\", "/");
+            var projectReferencesMatchingNameFilter = projectReferences
+                .Where(x => x.Replace("\\", "/")
+                    .Contains(normalizedProjectUnderTestNameFilter, StringComparison.OrdinalIgnoreCase)).ToImmutableList();
 
             if (!projectReferencesMatchingNameFilter.Any())
             {
                 stringBuilder.Append("No project reference matched the given project filter ");
                 stringBuilder.Append($"'{options.SourceProjectName}'");
-                stringBuilder.Append(referenceChoice);
+                stringBuilder.Append(BuildReferenceChoice(projectReferences));
 
                 throw new InputException(stringBuilder.ToString());
             }
@@ -324,7 +314,7 @@ namespace Stryker.Core.Initialisation
                 stringBuilder.Append("More than one project reference matched the given project filter ");
                 stringBuilder.Append($"'{options.SourceProjectName}'");
                 stringBuilder.AppendLine(", please specify the full name of the project reference.");
-                stringBuilder.Append(referenceChoice);
+                stringBuilder.Append(BuildReferenceChoice(projectReferences));
 
                 throw new InputException(stringBuilder.ToString());
             }
@@ -332,21 +322,19 @@ namespace Stryker.Core.Initialisation
             return projectReferencesMatchingNameFilter.Single();
         }
 
-        private string DetermineTargetProjectWithoutNameFilter(IEnumerable<string> projectReferences)
+        private string DetermineTargetProjectWithoutNameFilter(IReadOnlyCollection<string> projectReferences)
         {
             var stringBuilder = new StringBuilder();
-            var referenceChoice = BuildReferenceChoice(projectReferences);
 
-            var count = projectReferences.Count();
-            if (count > 1) // Too many references found
+            if (projectReferences.Count > 1) // Too many references found
             {
                 stringBuilder.AppendLine("Test project contains more than one project reference. Please set the project option (https://stryker-mutator.io/docs/stryker-net/configuration#project-file-name) to specify which project to mutate.");
-                stringBuilder.Append(referenceChoice);
+                stringBuilder.Append(BuildReferenceChoice(projectReferences));
 
                 throw new InputException(stringBuilder.ToString());
             }
 
-            if (count==0) // No references found
+            if (projectReferences.Count==0) // No references found
             {
                 stringBuilder.AppendLine("No project references found. Please add a project reference to your test project and retry.");
 
@@ -356,11 +344,11 @@ namespace Stryker.Core.Initialisation
             return projectReferences.Single();
         }
 
-        private static IEnumerable<string> FindProjectsReferencedByAllTestProjects(IEnumerable<IAnalyzerResult> testProjects)
+        private static IReadOnlyCollection<string> FindProjectsReferencedByAllTestProjects(IReadOnlyCollection<IAnalyzerResult> testProjects)
         {
             var amountOfTestProjects = testProjects.Count();
             var allProjectReferences = testProjects.SelectMany(t => t.ProjectReferences);
-            var projectReferences = allProjectReferences.GroupBy(x => x).Where(g => g.Count() == amountOfTestProjects).Select(g => g.Key);
+            var projectReferences = allProjectReferences.GroupBy(x => x).Where(g => g.Count() == amountOfTestProjects).Select(g => g.Key).ToImmutableList();
             return projectReferences;
         }
 
