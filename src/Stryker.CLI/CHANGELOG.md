@@ -1,3 +1,12 @@
+# [3.8.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.7.1...dotnet-stryker@3.8.0) (2023-05-04)
+
+
+### Features
+
+* **reporting:** Report on tests in mutation report ([#1850](https://github.com/stryker-mutator/stryker-net/issues/1850)) ([98f4e97](https://github.com/stryker-mutator/stryker-net/commit/98f4e97bb90fdc5f142c18eb34e51373d1f64868))
+
+
+
 ## [3.7.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.7.0...dotnet-stryker@3.7.1) (2023-03-23)
 
 
