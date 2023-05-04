@@ -11,7 +11,7 @@ namespace Stryker.Core.Reporters.Progress
         private readonly IProgressBarReporter _progressBarReporter;
         public ProgressReporter(IProgressBarReporter progressBarReporter) => _progressBarReporter = progressBarReporter;
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
         }
 

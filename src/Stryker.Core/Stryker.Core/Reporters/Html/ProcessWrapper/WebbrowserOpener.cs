@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Stryker.Core.Reporters.HtmlReporter.ProcessWrapper
+namespace Stryker.Core.Reporters.Html.ProcessWrapper
 {
     [ExcludeFromCodeCoverage]
     public class WebbrowserOpener : IWebbrowserOpener

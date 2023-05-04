@@ -73,7 +73,7 @@ namespace Stryker.Core
                 }
 
                 // Report
-                reporters.OnMutantsCreated(rootComponent);
+                reporters.OnMutantsCreated(rootComponent, combinedTestProjectsInfo);
 
                 var allMutants = rootComponent.Mutants.ToList();
                 var mutantsNotRun = rootComponent.NotRunMutants().ToList();
@@ -111,7 +111,7 @@ namespace Stryker.Core
                 // Test
                 foreach (var project in _mutationTestProcesses)
                 {
-                    project.Test(project.Input.SourceProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.NotRun).ToList());
+                    project.Test(project.Input.SourceProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.Pending).ToList());
                 }
                 // dispose and stop runners
                 if (disposeOrchestrator)
@@ -136,7 +136,7 @@ namespace Stryker.Core
                 _logger.LogError(ex, "An error occurred during the mutation test run ");
                 throw;
             }
-            
+
 #endif
             finally
             {

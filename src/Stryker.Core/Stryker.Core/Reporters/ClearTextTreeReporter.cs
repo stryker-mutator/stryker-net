@@ -24,7 +24,7 @@ namespace Stryker.Core.Reporters
             _console = console ?? AnsiConsole.Console;
         }
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
             // This reporter does not report during the testrun
         }

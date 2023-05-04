@@ -42,7 +42,7 @@ namespace Stryker.Core.MutationTest
                 {
                     Logger.LogTrace($"Messages for {string.Join(", ", mutantsToTest.Select(x => x.DisplayName))}: {Environment.NewLine}{string.Join("", result.Messages)}");
                 }
-                var remainingMutants = mutantsToTest.Where((m) => m.ResultStatus == MutantStatus.NotRun).ToList();
+                var remainingMutants = mutantsToTest.Where((m) => m.ResultStatus == MutantStatus.Pending).ToList();
                 if (remainingMutants.Count == mutantsToTest.Count)
                 {
                     // the test failed to get any conclusive results

@@ -35,7 +35,7 @@ namespace Stryker.Core.Mutants
 
         public void StoreMutations(IEnumerable<Mutant> proposedMutations, MutationControl control)
         {
-            var mutations = proposedMutations.Where(m => m.ResultStatus == MutantStatus.NotRun);
+            var mutations = proposedMutations.Where(m => m.ResultStatus == MutantStatus.Pending);
             if (!mutations.Any())
             {
                 return;

@@ -15,7 +15,7 @@ namespace Stryker.Core.Reporters
 
         public ConsoleDotProgressReporter(IAnsiConsole console = null) => _console = console ?? AnsiConsole.Console;
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent) { }
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo) { }
 
         public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested) { }
 

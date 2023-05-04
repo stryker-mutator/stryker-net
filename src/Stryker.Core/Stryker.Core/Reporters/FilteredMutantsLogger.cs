@@ -19,7 +19,7 @@ namespace Stryker.Core.Reporters
 
         public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
         {
-            var skippedMutants = reportComponent.Mutants.Where(m => m.ResultStatus != MutantStatus.NotRun);
+            var skippedMutants = reportComponent.Mutants.Where(m => m.ResultStatus != MutantStatus.Pending);
 
             var skippedMutantGroups = skippedMutants.GroupBy(x => new { x.ResultStatus, x.ResultStatusReason }).OrderBy(x => x.Key.ResultStatusReason);
 
@@ -38,7 +38,7 @@ namespace Stryker.Core.Reporters
             }
 
             var notRunMutantsWithResultStatusReason = reportComponent.Mutants
-                .Where(m => m.ResultStatus == MutantStatus.NotRun && !string.IsNullOrEmpty(m.ResultStatusReason))
+                .Where(m => m.ResultStatus == MutantStatus.Pending && !string.IsNullOrEmpty(m.ResultStatusReason))
                 .GroupBy(x => x.ResultStatusReason);
 
             foreach (var notRunMutantReason in notRunMutantsWithResultStatusReason)
@@ -49,7 +49,7 @@ namespace Stryker.Core.Reporters
                     notRunMutantReason.Key);
             }
 
-            var notRunCount = reportComponent.Mutants.Count(m => m.ResultStatus == MutantStatus.NotRun);
+            var notRunCount = reportComponent.Mutants.Count(m => m.ResultStatus == MutantStatus.Pending);
             _logger.LogInformation(LeftPadAndFormatForMutantCount(notRunCount, "total mutants will be tested"), notRunCount);
         }
 

@@ -115,13 +115,13 @@ namespace Stryker.Core.CoverageAnalysis
                 mutant.AssessingTests = testGuids.Merge(dubiousTests).Excluding(failedTest);
             }
             // assess status according to actual coverage
-            if (mutant.CoveringTests.IsEmpty && mutant.ResultStatus == MutantStatus.NotRun)
+            if (mutant.CoveringTests.IsEmpty && mutant.ResultStatus == MutantStatus.Pending)
             {
                 mutant.ResultStatus = MutantStatus.NoCoverage;
                 mutant.ResultStatusReason = "Not covered by any test.";
                 _logger.LogDebug($"Mutant {mutant.Id} is not covered by any test.");
             }
-            else if (mutant.AssessingTests.IsEmpty && mutant.ResultStatus == MutantStatus.NotRun)
+            else if (mutant.AssessingTests.IsEmpty && mutant.ResultStatus == MutantStatus.Pending)
             {
                 mutant.ResultStatus = MutantStatus.Survived;
                 mutant.ResultStatusReason = "Only covered by already failing tests.";

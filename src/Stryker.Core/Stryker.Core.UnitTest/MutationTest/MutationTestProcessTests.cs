@@ -198,7 +198,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             // test mutants
             target.GetCoverage();
 
-            target.Test(_input.SourceProjectInfo.ProjectContents.Mutants.Where(m => m.ResultStatus == MutantStatus.NotRun));
+            target.Test(_input.SourceProjectInfo.ProjectContents.Mutants.Where(m => m.ResultStatus == MutantStatus.Pending));
             // first mutant should be killed by test 2
             _testScenario.GetMutantStatus(1).ShouldBe(MutantStatus.Killed);
             // other mutant survives
