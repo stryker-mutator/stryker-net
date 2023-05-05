@@ -10,15 +10,13 @@ namespace Stryker.Core.Reporters.Json
 {
     public class JsonReport
     {
-        public string SchemaVersion { get; init; } = "1";
+        public string SchemaVersion { get; init; } = "2";
         public IDictionary<string, int> Thresholds { get; init; } = new Dictionary<string, int>();
         public string ProjectRoot { get; init; }
         public IDictionary<string, SourceFile> Files { get; init; } = new Dictionary<string, SourceFile>();
         public IDictionary<string, JsonTestFile> TestFiles { get; set; } = null;
 
-        public JsonReport()
-        {
-        }
+        public JsonReport() { }
 
         private JsonReport(StrykerOptions options, IReadOnlyProjectComponent mutationReport, TestProjectsInfo testProjectsInfo)
         {
