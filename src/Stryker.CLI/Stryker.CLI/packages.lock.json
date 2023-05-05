@@ -1706,7 +1706,7 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[19.2.18, )",
+        "requested": "[19.2.22, )",
         "resolved": "19.2.22",
         "contentHash": "66QMIO/VTxISS2FH9oJBxt0nX5Jb3dTT01zWfehkNLG+x7ti/Upj58gLpUXEWN8eE6zL+Yi/6QSaDvIkf2ZlUA==",
         "dependencies": {

@@ -76,12 +76,12 @@
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[19.2.18, )",
-        "resolved": "19.2.18",
-        "contentHash": "+voI7t1OPXpyoosTdlaL/gqszY7ttIHedMn5a41tAQ7uOpCPFO1e9GmOgNmAq54QQ9YFkg2MG3j2rOYB7EV5xw==",
+        "requested": "[19.2.22, )",
+        "resolved": "19.2.22",
+        "contentHash": "9nyGYwVvI3M3d1NrZIupHy1wro+/P3SMV9SMJOWezdaP7pBSvxMVk+R3Dl6zqVLRxuXrSX9jI8Je+HB+yqynfw==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "19.2.18",
-          "TestableIO.System.IO.Abstractions.Wrappers": "19.2.18"
+          "TestableIO.System.IO.Abstractions": "19.2.22",
+          "TestableIO.System.IO.Abstractions.Wrappers": "19.2.22"
         }
       },
       "xunit": {
@@ -1976,7 +1976,7 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[19.2.18, )",
+        "requested": "[19.2.22, )",
         "resolved": "19.2.22",
         "contentHash": "66QMIO/VTxISS2FH9oJBxt0nX5Jb3dTT01zWfehkNLG+x7ti/Upj58gLpUXEWN8eE6zL+Yi/6QSaDvIkf2ZlUA==",
         "dependencies": {
