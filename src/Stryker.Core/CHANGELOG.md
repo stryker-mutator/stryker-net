@@ -1,3 +1,12 @@
+## [3.8.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.8.0...stryker@3.8.1) (2023-05-05)
+
+
+### Bug Fixes
+
+* **baseline:** json reports with testfiles are now correctly deserialized ([#2498](https://github.com/stryker-mutator/stryker-net/issues/2498)) ([38793e1](https://github.com/stryker-mutator/stryker-net/commit/38793e16a4f8edd1be5766433c9443de62ff447d))
+
+
+
 # [3.8.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.7.1...stryker@3.8.0) (2023-05-04)
 
 
