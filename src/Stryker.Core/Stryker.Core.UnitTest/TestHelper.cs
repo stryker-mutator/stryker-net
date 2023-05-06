@@ -12,7 +12,9 @@ namespace Stryker.Core.UnitTest
             IEnumerable<string> projectReferences = null,
             string targetFramework = null,
             IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> packageReferences = null,
-            string[] references = null)
+            string[] references = null,
+            string[] preprocessorSymbols = null
+            )
         {
             var analyzerResultMock = new Mock<IAnalyzerResult>();
 
@@ -43,6 +45,10 @@ namespace Stryker.Core.UnitTest
             if (references != null)
             {
                 analyzerResultMock.Setup(x => x.References).Returns(references);
+            }
+            if (preprocessorSymbols is not null)
+            {
+                analyzerResultMock.Setup(x => x.PreprocessorSymbols).Returns(preprocessorSymbols);
             }
 
             return analyzerResultMock;

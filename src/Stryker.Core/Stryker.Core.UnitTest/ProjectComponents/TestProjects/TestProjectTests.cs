@@ -1,7 +1,8 @@
 using System;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
-using System.Reflection;
+using System.Linq;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Xunit;
@@ -60,6 +61,31 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
 
             // Assert
             testProjectA.ShouldNotBe(testProjectB);
+        }
+
+        [Fact]
+        public void TestProject_ParseTestFile_WithCsharpParseOptions()
+        {
+            // Arrange
+            var fileSystem = new MockFileSystem();
+            var rootPath = Path.Combine("c", "TestProject");
+            var filePath = Path.Combine(rootPath, "ExampleTestFilePreprocessorSymbols.cs");
+            fileSystem.AddDirectory(rootPath);
+
+            var testProjectAnalyzerResultMock = TestHelper.SetupProjectAnalyzerResult(
+                references: Array.Empty<string>(),
+                sourceFiles: new string[] { filePath },
+                preprocessorSymbols: new string[] { "NET6_0_OR_GREATER" }
+            );
+            var file = File.ReadAllText(Path.Combine(".", "TestResources", "ExampleTestFilePreprocessorSymbols.cs"));
+            fileSystem.AddFile(filePath, new MockFileData(file));
+
+            // Act
+            var testProject = new TestProject(fileSystem, testProjectAnalyzerResultMock.Object);
+
+            // Assert
+            var nodes = testProject.TestFiles.First().SyntaxTree.GetRoot().DescendantNodes();
+            testProject.TestFiles.First().SyntaxTree.GetRoot().DescendantNodes().Where(n => n is MethodDeclarationSyntax).Count().ShouldBe(4);
         }
     }
 }
