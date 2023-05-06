@@ -6,96 +6,95 @@ using Stryker.Core.Options.Inputs;
 using Stryker.Core.Reporters;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.Options.Inputs
+namespace Stryker.Core.UnitTest.Options.Inputs;
+
+public class DashboardApiKeyInputTests : TestBase
 {
-    public class DashboardApiKeyInputTests : TestBase
+    const string StrykerDashboardApiKey = "STRYKER_DASHBOARD_API_KEY";
+
+    [Fact]
+    public void ShouldHaveHelpText()
     {
-        const string StrykerDashboardApiKey = "STRYKER_DASHBOARD_API_KEY";
+        var target = new DashboardApiKeyInput();
+        target.HelpText.ShouldBe(@"Api key for dashboard reporter.");
+    }
 
-        [Fact]
-        public void ShouldHaveHelpText()
+    [Fact]
+    public void ShouldThrowWhenNull()
+    {
+        var key = Environment.GetEnvironmentVariable(StrykerDashboardApiKey);
+        var target = new DashboardApiKeyInput();
+        try
         {
-            var target = new DashboardApiKeyInput();
-            target.HelpText.ShouldBe(@"Api key for dashboard reporter.");
+            Environment.SetEnvironmentVariable(StrykerDashboardApiKey, string.Empty);
+
+            var ex = Should.Throw<InputException>(() =>
+            {
+                target.Validate(true, BaselineProvider.Dashboard, new[] { Reporter.Dashboard });
+            });
+            ex.Message.ShouldContain($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {DashboardUrlInput.DefaultUrl}");
         }
-
-        [Fact]
-        public void ShouldThrowWhenNull()
+        finally
         {
-            var key = Environment.GetEnvironmentVariable(StrykerDashboardApiKey);
-            var target = new DashboardApiKeyInput();
-            try
-            {
-                Environment.SetEnvironmentVariable(StrykerDashboardApiKey, string.Empty);
-
-                var ex = Should.Throw<InputException>(() =>
-                {
-                    target.Validate(true, BaselineProvider.Dashboard, new[] { Reporter.Dashboard });
-                });
-                ex.Message.ShouldContain($"An API key is required when the {Reporter.Dashboard} reporter is turned on! You can get an API key at {DashboardUrlInput.DefaultUrl}");
-            }
-            finally
-            {
-                Environment.SetEnvironmentVariable(StrykerDashboardApiKey, key);
-            }
+            Environment.SetEnvironmentVariable(StrykerDashboardApiKey, key);
         }
+    }
 
-        [Fact]
-        public void ShouldSkipValidationWhenDashboardNotEnabled()
+    [Fact]
+    public void ShouldSkipValidationWhenDashboardNotEnabled()
+    {
+        var key = Environment.GetEnvironmentVariable(StrykerDashboardApiKey);
+        var target = new DashboardApiKeyInput();
+        try
         {
-            var key = Environment.GetEnvironmentVariable(StrykerDashboardApiKey);
-            var target = new DashboardApiKeyInput();
-            try
-            {
-                Environment.SetEnvironmentVariable(StrykerDashboardApiKey, string.Empty);
+            Environment.SetEnvironmentVariable(StrykerDashboardApiKey, string.Empty);
 
-                var result = target.Validate(false, BaselineProvider.Disk, new[] { Reporter.ClearText });
+            var result = target.Validate(false, BaselineProvider.Disk, new[] { Reporter.ClearText });
 
-                result.ShouldBeNull();
-            }
-            finally
-            {
-                Environment.SetEnvironmentVariable(StrykerDashboardApiKey, key);
-            }
+            result.ShouldBeNull();
         }
-
-        [Fact]
-        public void ShouldTakeEnvironmentVariableValueWhenAvailable()
+        finally
         {
-            var key = Environment.GetEnvironmentVariable(StrykerDashboardApiKey);
-            var target = new DashboardApiKeyInput();
-            try
-            {
-                Environment.SetEnvironmentVariable(StrykerDashboardApiKey, "my key");
-
-                var result = target.Validate(true, BaselineProvider.Dashboard, new[] { Reporter.Dashboard });
-
-                result.ShouldBe("my key");
-            }
-            finally
-            {
-                Environment.SetEnvironmentVariable(StrykerDashboardApiKey, key);
-            }
+            Environment.SetEnvironmentVariable(StrykerDashboardApiKey, key);
         }
+    }
 
-        [Fact]
-        public void ShouldOverrideEnvironmentVariableWhenInputSupplied()
+    [Fact]
+    public void ShouldTakeEnvironmentVariableValueWhenAvailable()
+    {
+        var key = Environment.GetEnvironmentVariable(StrykerDashboardApiKey);
+        var target = new DashboardApiKeyInput();
+        try
         {
-            var key = Environment.GetEnvironmentVariable(StrykerDashboardApiKey);
-            var target = new DashboardApiKeyInput();
-            target.SuppliedInput = "my key";
-            try
-            {
-                Environment.SetEnvironmentVariable(StrykerDashboardApiKey, "not my key");
+            Environment.SetEnvironmentVariable(StrykerDashboardApiKey, "my key");
 
-                var result = target.Validate(true, BaselineProvider.Dashboard, new[] { Reporter.Dashboard });
+            var result = target.Validate(true, BaselineProvider.Dashboard, new[] { Reporter.Dashboard });
 
-                result.ShouldBe("my key");
-            }
-            finally
-            {
-                Environment.SetEnvironmentVariable(StrykerDashboardApiKey, key);
-            }
+            result.ShouldBe("my key");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(StrykerDashboardApiKey, key);
+        }
+    }
+
+    [Fact]
+    public void ShouldOverrideEnvironmentVariableWhenInputSupplied()
+    {
+        var key = Environment.GetEnvironmentVariable(StrykerDashboardApiKey);
+        var target = new DashboardApiKeyInput();
+        target.SuppliedInput = "my key";
+        try
+        {
+            Environment.SetEnvironmentVariable(StrykerDashboardApiKey, "not my key");
+
+            var result = target.Validate(true, BaselineProvider.Dashboard, new[] { Reporter.Dashboard });
+
+            result.ShouldBe("my key");
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(StrykerDashboardApiKey, key);
         }
     }
 }

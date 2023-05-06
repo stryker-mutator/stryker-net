@@ -1,9 +1,8 @@
-namespace Stryker.Core.Baseline.Providers
+namespace Stryker.Core.Baseline.Providers;
+
+public enum BaselineProvider
 {
-    public enum BaselineProvider
-    {
-        Dashboard,
-        Disk,
-        AzureFileStorage
-    }
+    Dashboard,
+    Disk,
+    AzureFileStorage
 }

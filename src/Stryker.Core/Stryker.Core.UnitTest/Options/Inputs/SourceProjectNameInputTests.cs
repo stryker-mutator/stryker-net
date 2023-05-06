@@ -3,46 +3,45 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.Options.Inputs
+namespace Stryker.Core.UnitTest.Options.Inputs;
+
+public class SourceProjectNameInputTests : TestBase
 {
-    public class SourceProjectNameInputTests : TestBase
+    [Fact]
+    public void ShouldHaveHelpText()
     {
-        [Fact]
-        public void ShouldHaveHelpText()
-        {
-            var target = new SourceProjectNameInput();
-            target.HelpText.ShouldBe(@"Used to find the project to test in the project references of the test project. Example: ""ExampleProject.csproj"" | default: ''");
-        }
+        var target = new SourceProjectNameInput();
+        target.HelpText.ShouldBe(@"Used to find the project to test in the project references of the test project. Example: ""ExampleProject.csproj"" | default: ''");
+    }
 
-        [Fact]
-        public void ShouldReturnName()
-        {
-            var target = new SourceProjectNameInput { SuppliedInput = "name" };
+    [Fact]
+    public void ShouldReturnName()
+    {
+        var target = new SourceProjectNameInput { SuppliedInput = "name" };
 
-            var result = target.Validate();
+        var result = target.Validate();
 
-            result.ShouldBe("name");
-        }
+        result.ShouldBe("name");
+    }
 
-        [Fact]
-        public void ShouldHaveDefault()
-        {
-            var target = new SourceProjectNameInput { SuppliedInput = null };
+    [Fact]
+    public void ShouldHaveDefault()
+    {
+        var target = new SourceProjectNameInput { SuppliedInput = null };
 
-            var result = target.Validate();
+        var result = target.Validate();
 
-            result.ShouldBe("");
-        }
+        result.ShouldBe("");
+    }
 
-        [Theory]
-        [InlineData("")]
-        public void ShouldThrowOnEmpty(string value)
-        {
-            var target = new SourceProjectNameInput { SuppliedInput = value };
+    [Theory]
+    [InlineData("")]
+    public void ShouldThrowOnEmpty(string value)
+    {
+        var target = new SourceProjectNameInput { SuppliedInput = value };
 
-            var exception = Should.Throw<InputException>(() => target.Validate());
+        var exception = Should.Throw<InputException>(() => target.Validate());
 
-            exception.Message.ShouldBe("Project file cannot be empty.");
-        }
+        exception.Message.ShouldBe("Project file cannot be empty.");
     }
 }

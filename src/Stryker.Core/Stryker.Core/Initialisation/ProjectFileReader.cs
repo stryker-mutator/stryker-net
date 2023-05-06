@@ -8,156 +8,155 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 
-namespace Stryker.Core.Initialisation
+namespace Stryker.Core.Initialisation;
+
+public interface IProjectFileReader
 {
-    public interface IProjectFileReader
+    IAnalyzerResult AnalyzeProject(
+        string projectFilePath,
+        string solutionFilePath,
+        string targetFramework,
+        IEnumerable<IAnalyzerResult> solutionProjects,
+        string msBuildPath = null);
+}
+
+/// <summary>
+/// This class is an abstraction of Buildalyzers AnalyzerManager to make the rest of our code better testable. Mocking AnalyzerManager is really ugly and we want to avoid it.
+/// </summary>
+[ExcludeFromCodeCoverage]
+public class ProjectFileReader : IProjectFileReader
+{
+    private readonly INugetRestoreProcess _nugetRestoreProcess;
+    private IAnalyzerManager _analyzerManager;
+    private readonly ILogger _logger;
+
+    public ProjectFileReader(
+        INugetRestoreProcess nugetRestoreProcess = null,
+        IAnalyzerManager analyzerManager = null)
     {
-        IAnalyzerResult AnalyzeProject(
-            string projectFilePath,
-            string solutionFilePath,
-            string targetFramework,
-            IEnumerable<IAnalyzerResult> solutionProjects,
-            string msBuildPath = null);
+        _nugetRestoreProcess = nugetRestoreProcess ?? new NugetRestoreProcess();
+        _analyzerManager = analyzerManager ?? new AnalyzerManager();
+        _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
     }
 
-    /// <summary>
-    /// This class is an abstraction of Buildalyzers AnalyzerManager to make the rest of our code better testable. Mocking AnalyzerManager is really ugly and we want to avoid it.
-    /// </summary>
-    [ExcludeFromCodeCoverage]
-    public class ProjectFileReader : IProjectFileReader
+    public IAnalyzerResult AnalyzeProject(
+        string projectFilePath,
+        string solutionFilePath,
+        string targetFramework,
+        IEnumerable<IAnalyzerResult> solutionProjects,
+        string msBuildPath = null)
     {
-        private readonly INugetRestoreProcess _nugetRestoreProcess;
-        private IAnalyzerManager _analyzerManager;
-        private readonly ILogger _logger;
 
-        public ProjectFileReader(
-            INugetRestoreProcess nugetRestoreProcess = null,
-            IAnalyzerManager analyzerManager = null)
+        _logger.LogDebug("Analyzing project file {0}", projectFilePath);
+        IAnalyzerResult analyzerResult = GetProjectInfo(projectFilePath, targetFramework, solutionProjects);
+        LogAnalyzerResult(analyzerResult);
+
+        if (!analyzerResult.Succeeded)
         {
-            _nugetRestoreProcess = nugetRestoreProcess ?? new NugetRestoreProcess();
-            _analyzerManager = analyzerManager ?? new AnalyzerManager();
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
-        }
-
-        public IAnalyzerResult AnalyzeProject(
-            string projectFilePath,
-            string solutionFilePath,
-            string targetFramework,
-            IEnumerable<IAnalyzerResult> solutionProjects,
-            string msBuildPath = null)
-        {
-
-            _logger.LogDebug("Analyzing project file {0}", projectFilePath);
-            IAnalyzerResult analyzerResult = GetProjectInfo(projectFilePath, targetFramework, solutionProjects);
-            LogAnalyzerResult(analyzerResult);
-
-            if (!analyzerResult.Succeeded)
+            if (analyzerResult.TargetsFullFramework())
             {
-                if (analyzerResult.TargetsFullFramework())
-                {
-                    // buildalyzer failed to find restored packages, retry after nuget restore
-                    _logger.LogDebug("Project analyzer result not successful, restoring packages");
-                    _nugetRestoreProcess.RestorePackages(solutionFilePath, msBuildPath);
-                    analyzerResult = GetProjectInfo(projectFilePath, targetFramework, solutionProjects);
-                }
-                else
-                {
-                    // buildalyzer failed, but seems to work anyway.
-                    _logger.LogDebug("Project analyzer result not successful");
-                }
-            }
-
-            return analyzerResult;
-        }
-
-        private void SetAnalyzerManager(string solutionFilePath)
-        {
-            if (_analyzerManager == null && solutionFilePath != null)
-            {
-                _logger.LogDebug("Analyzing solution file {0}", solutionFilePath);
-                try
-                {
-                    _analyzerManager = new AnalyzerManager(solutionFilePath);
-                }
-                catch (InvalidProjectFileException)
-                {
-                    throw new InputException($"Incorrect solution path \"{solutionFilePath}\". Solution file not found. Please review your solution path setting.");
-                }
-            }
-        }
-
-        /// <summary>
-        /// Checks if project info is already present in solution projects. If not, analyze here.
-        /// </summary>
-        /// <returns></returns>
-        private IAnalyzerResult GetProjectInfo(string projectFilePath,
-            string targetFramework,
-            IEnumerable<IAnalyzerResult> solutionProjects)
-        {
-            if (solutionProjects != null)
-            {
-                return solutionProjects.FirstOrDefault(x => x.ProjectFilePath == projectFilePath);
+                // buildalyzer failed to find restored packages, retry after nuget restore
+                _logger.LogDebug("Project analyzer result not successful, restoring packages");
+                _nugetRestoreProcess.RestorePackages(solutionFilePath, msBuildPath);
+                analyzerResult = GetProjectInfo(projectFilePath, targetFramework, solutionProjects);
             }
             else
             {
-                var analyzerResults = _analyzerManager.GetProject(projectFilePath).Build();
-                return SelectAnalyzerResult(analyzerResults, targetFramework);
+                // buildalyzer failed, but seems to work anyway.
+                _logger.LogDebug("Project analyzer result not successful");
             }
         }
 
-        private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
+        return analyzerResult;
+    }
+
+    private void SetAnalyzerManager(string solutionFilePath)
+    {
+        if (_analyzerManager == null && solutionFilePath != null)
         {
-            var validResults = analyzerResults.Where(a => a.TargetFramework is not null);
-            if (!validResults.Any())
+            _logger.LogDebug("Analyzing solution file {0}", solutionFilePath);
+            try
             {
-                throw new InputException("No valid project analysis results could be found.");
+                _analyzerManager = new AnalyzerManager(solutionFilePath);
             }
-
-            if (targetFramework is null)
+            catch (InvalidProjectFileException)
             {
-                return validResults.First();
+                throw new InputException($"Incorrect solution path \"{solutionFilePath}\". Solution file not found. Please review your solution path setting.");
             }
-
-            var resultForRequestedFramework = validResults.FirstOrDefault(a => a.TargetFramework == targetFramework);
-            if (resultForRequestedFramework is not null)
-            {
-                return resultForRequestedFramework;
-            }
-
-            var firstAnalyzerResult = validResults.First();
-            var availableFrameworks = validResults.Select(a => a.TargetFramework).Distinct();
-            var firstFramework = firstAnalyzerResult.TargetFramework;
-            _logger.LogWarning(
-                $"Could not find a project analysis for the chosen target framework {targetFramework}. \n" +
-                $"The available target frameworks are: {string.Join(',', availableFrameworks)}. \n" +
-                $"The first available framework will be selected, which is {firstFramework}.");
-
-            return firstAnalyzerResult;
         }
+    }
 
-        private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
+    /// <summary>
+    /// Checks if project info is already present in solution projects. If not, analyze here.
+    /// </summary>
+    /// <returns></returns>
+    private IAnalyzerResult GetProjectInfo(string projectFilePath,
+        string targetFramework,
+        IEnumerable<IAnalyzerResult> solutionProjects)
+    {
+        if (solutionProjects != null)
         {
-            // dump all properties as it can help diagnosing build issues for user project.
-            _logger.LogTrace("**** Buildalyzer result ****");
-
-            _logger.LogTrace("Project: {0}", analyzerResult.ProjectFilePath);
-            _logger.LogTrace("TargetFramework: {0}", analyzerResult.TargetFramework);
-
-            foreach (var property in analyzerResult?.Properties ?? new Dictionary<string, string>())
-            {
-                _logger.LogTrace("Property {0}={1}", property.Key, property.Value);
-            }
-            foreach (var sourceFile in analyzerResult?.SourceFiles ?? Enumerable.Empty<string>())
-            {
-                _logger.LogTrace("SourceFile {0}", sourceFile);
-            }
-            foreach (var reference in analyzerResult?.References ?? Enumerable.Empty<string>())
-            {
-                _logger.LogTrace("References: {0}", reference);
-            }
-            _logger.LogTrace("Succeeded: {0}", analyzerResult.Succeeded);
-
-            _logger.LogTrace("**** Buildalyzer result ****");
+            return solutionProjects.FirstOrDefault(x => x.ProjectFilePath == projectFilePath);
         }
+        else
+        {
+            var analyzerResults = _analyzerManager.GetProject(projectFilePath).Build();
+            return SelectAnalyzerResult(analyzerResults, targetFramework);
+        }
+    }
+
+    private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
+    {
+        var validResults = analyzerResults.Where(a => a.TargetFramework is not null);
+        if (!validResults.Any())
+        {
+            throw new InputException("No valid project analysis results could be found.");
+        }
+
+        if (targetFramework is null)
+        {
+            return validResults.First();
+        }
+
+        var resultForRequestedFramework = validResults.FirstOrDefault(a => a.TargetFramework == targetFramework);
+        if (resultForRequestedFramework is not null)
+        {
+            return resultForRequestedFramework;
+        }
+
+        var firstAnalyzerResult = validResults.First();
+        var availableFrameworks = validResults.Select(a => a.TargetFramework).Distinct();
+        var firstFramework = firstAnalyzerResult.TargetFramework;
+        _logger.LogWarning(
+            $"Could not find a project analysis for the chosen target framework {targetFramework}. \n" +
+            $"The available target frameworks are: {string.Join(',', availableFrameworks)}. \n" +
+            $"The first available framework will be selected, which is {firstFramework}.");
+
+        return firstAnalyzerResult;
+    }
+
+    private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
+    {
+        // dump all properties as it can help diagnosing build issues for user project.
+        _logger.LogTrace("**** Buildalyzer result ****");
+
+        _logger.LogTrace("Project: {0}", analyzerResult.ProjectFilePath);
+        _logger.LogTrace("TargetFramework: {0}", analyzerResult.TargetFramework);
+
+        foreach (var property in analyzerResult?.Properties ?? new Dictionary<string, string>())
+        {
+            _logger.LogTrace("Property {0}={1}", property.Key, property.Value);
+        }
+        foreach (var sourceFile in analyzerResult?.SourceFiles ?? Enumerable.Empty<string>())
+        {
+            _logger.LogTrace("SourceFile {0}", sourceFile);
+        }
+        foreach (var reference in analyzerResult?.References ?? Enumerable.Empty<string>())
+        {
+            _logger.LogTrace("References: {0}", reference);
+        }
+        _logger.LogTrace("Succeeded: {0}", analyzerResult.Succeeded);
+
+        _logger.LogTrace("**** Buildalyzer result ****");
     }
 }

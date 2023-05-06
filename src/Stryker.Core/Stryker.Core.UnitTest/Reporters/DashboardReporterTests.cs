@@ -10,93 +10,92 @@ using Stryker.Core.Reporters.Html.ProcessWrapper;
 using Stryker.Core.Reporters.Json;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.Reporters
+namespace Stryker.Core.UnitTest.Reporters;
+
+public class DashboardReporterTests : TestBase
 {
-    public class DashboardReporterTests : TestBase
+    [Fact]
+    public void ShouldUploadHumanReadableWhenCompareToDashboardEnabled()
     {
-        [Fact]
-        public void ShouldUploadHumanReadableWhenCompareToDashboardEnabled()
+        // Arrange
+        var reporters = new[] { Reporter.Dashboard };
+
+        var options = new StrykerOptions
         {
-            // Arrange
-            var reporters = new[] { Reporter.Dashboard };
+            DashboardApiKey = "Access_Token",
+            ProjectName = "github.com/JohnDoe/project",
+            ProjectVersion = "version/human/readable",
+            Reporters = reporters
+        };
 
-            var options = new StrykerOptions
-            {
-                DashboardApiKey = "Access_Token",
-                ProjectName = "github.com/JohnDoe/project",
-                ProjectVersion = "version/human/readable",
-                Reporters = reporters
-            };
+        var mockProcess = new Mock<IWebbrowserOpener>();
+        var dashboardClientMock = new Mock<IDashboardClient>();
 
-            var mockProcess = new Mock<IWebbrowserOpener>();
-            var dashboardClientMock = new Mock<IDashboardClient>();
+        dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<JsonReport>(), "version/human/readable"));
+        var branchProviderMock = new Mock<IGitInfoProvider>();
 
-            dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<JsonReport>(), "version/human/readable"));
-            var branchProviderMock = new Mock<IGitInfoProvider>();
+        var target = new DashboardReporter(options, dashboardClient: dashboardClientMock.Object, processWrapper: mockProcess.Object);
 
-            var target = new DashboardReporter(options, dashboardClient: dashboardClientMock.Object, processWrapper: mockProcess.Object);
+        // Act
+        target.OnAllMutantsTested(ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>());
 
-            // Act
-            target.OnAllMutantsTested(ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>());
+        // Assert
+        dashboardClientMock.Verify(x => x.PublishReport(It.IsAny<JsonReport>(), "version/human/readable"), Times.Once);
+    }
 
-            // Assert
-            dashboardClientMock.Verify(x => x.PublishReport(It.IsAny<JsonReport>(), "version/human/readable"), Times.Once);
-        }
-
-        [Fact]
-        public void ShouldOpenDashboardReportIfOptionIsProvided()
+    [Fact]
+    public void ShouldOpenDashboardReportIfOptionIsProvided()
+    {
+        var reporters = new[] { Reporter.Dashboard };
+        var options = new StrykerOptions
         {
-            var reporters = new[] { Reporter.Dashboard };
-            var options = new StrykerOptions
-            {
-                ReportTypeToOpen = ReportType.Dashboard,
-                DashboardApiKey = "Access_Token",
-                ProjectName = "github.com/JohnDoe/project",
-                ProjectVersion = "version/human/readable",
-                Reporters = reporters
-            };
-            var mockProcess = new Mock<IWebbrowserOpener>();
-            var dashboardClientMock = new Mock<IDashboardClient>();
+            ReportTypeToOpen = ReportType.Dashboard,
+            DashboardApiKey = "Access_Token",
+            ProjectName = "github.com/JohnDoe/project",
+            ProjectVersion = "version/human/readable",
+            Reporters = reporters
+        };
+        var mockProcess = new Mock<IWebbrowserOpener>();
+        var dashboardClientMock = new Mock<IDashboardClient>();
 
-            dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<JsonReport>(), "version/human/readable"))
-                .Returns(Task.FromResult("https://dashboard.com"));
+        dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<JsonReport>(), "version/human/readable"))
+            .Returns(Task.FromResult("https://dashboard.com"));
 
-            var reporter = new DashboardReporter(options, dashboardClientMock.Object, processWrapper: mockProcess.Object);
-            var mutationTree = ReportTestHelper.CreateProjectWith();
+        var reporter = new DashboardReporter(options, dashboardClientMock.Object, processWrapper: mockProcess.Object);
+        var mutationTree = ReportTestHelper.CreateProjectWith();
 
-            reporter.OnAllMutantsTested(mutationTree, It.IsAny<TestProjectsInfo>());
+        reporter.OnAllMutantsTested(mutationTree, It.IsAny<TestProjectsInfo>());
 
-            // Check if browser open action is invoked
-            mockProcess.Verify(m => m.Open("https://dashboard.com"));
-        }
+        // Check if browser open action is invoked
+        mockProcess.Verify(m => m.Open("https://dashboard.com"));
+    }
 
-        [Theory]
-        [InlineData(ReportType.Html)]
-        [InlineData(null)]
-        public void ShouldNotOpenDashboardReportIfOptionIsProvided(ReportType? reportType)
+    [Theory]
+    [InlineData(ReportType.Html)]
+    [InlineData(null)]
+    public void ShouldNotOpenDashboardReportIfOptionIsProvided(ReportType? reportType)
+    {
+        var reporters = new[] { Reporter.Dashboard };
+        var options = new StrykerOptions
         {
-            var reporters = new[] { Reporter.Dashboard };
-            var options = new StrykerOptions
-            {
-                ReportTypeToOpen = reportType,
-                DashboardApiKey = "Access_Token",
-                ProjectName = "github.com/JohnDoe/project",
-                ProjectVersion = "version/human/readable",
-                Reporters = reporters
-            };
-            var mockProcess = new Mock<IWebbrowserOpener>();
-            var dashboardClientMock = new Mock<IDashboardClient>();
+            ReportTypeToOpen = reportType,
+            DashboardApiKey = "Access_Token",
+            ProjectName = "github.com/JohnDoe/project",
+            ProjectVersion = "version/human/readable",
+            Reporters = reporters
+        };
+        var mockProcess = new Mock<IWebbrowserOpener>();
+        var dashboardClientMock = new Mock<IDashboardClient>();
 
-            dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<JsonReport>(), "version/human/readable"))
-                .Returns(Task.FromResult("https://dashboard.com"));
+        dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<JsonReport>(), "version/human/readable"))
+            .Returns(Task.FromResult("https://dashboard.com"));
 
-            var reporter = new DashboardReporter(options, dashboardClientMock.Object, processWrapper: mockProcess.Object);
-            var mutationTree = ReportTestHelper.CreateProjectWith();
+        var reporter = new DashboardReporter(options, dashboardClientMock.Object, processWrapper: mockProcess.Object);
+        var mutationTree = ReportTestHelper.CreateProjectWith();
 
-            reporter.OnAllMutantsTested(mutationTree, It.IsAny<TestProjectsInfo>());
+        reporter.OnAllMutantsTested(mutationTree, It.IsAny<TestProjectsInfo>());
 
-            // Check if browser open action is invoked
-            mockProcess.VerifyNoOtherCalls();
-        }
+        // Check if browser open action is invoked
+        mockProcess.VerifyNoOtherCalls();
     }
 }

@@ -1,11 +1,10 @@
 using Stryker.Core.Reporters.Json;
 using System.Threading.Tasks;
 
-namespace Stryker.Core.Baseline.Providers
+namespace Stryker.Core.Baseline.Providers;
+
+public interface IBaselineProvider
 {
-    public interface IBaselineProvider
-    {
-        Task<JsonReport> Load(string version);
-        Task Save(JsonReport report, string version);
-    }
+    Task<JsonReport> Load(string version);
+    Task Save(JsonReport report, string version);
 }

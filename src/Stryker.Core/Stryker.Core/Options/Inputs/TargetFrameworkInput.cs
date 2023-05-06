@@ -1,26 +1,25 @@
 using Stryker.Core.Exceptions;
 
-namespace Stryker.Core.Options.Inputs
+namespace Stryker.Core.Options.Inputs;
+
+public class TargetFrameworkInput : Input<string>
 {
-    public class TargetFrameworkInput : Input<string>
+    public override string Default => null;
+
+    protected override string Description => "The framework to build the project against.";
+
+    public string Validate()
     {
-        public override string Default => null;
-
-        protected override string Description => "The framework to build the project against.";
-
-        public string Validate()
+        if (SuppliedInput is not null)
         {
-            if (SuppliedInput is not null)
+            if (string.IsNullOrWhiteSpace(SuppliedInput))
             {
-                if (string.IsNullOrWhiteSpace(SuppliedInput))
-                {
-                    throw new InputException("Target framework cannot be empty. Please provide a valid value from this list: https://docs.microsoft.com/en-us/dotnet/standard/frameworks");
-                }
-
-                return SuppliedInput;
+                throw new InputException("Target framework cannot be empty. Please provide a valid value from this list: https://docs.microsoft.com/en-us/dotnet/standard/frameworks");
             }
 
-            return Default;
+            return SuppliedInput;
         }
+
+        return Default;
     }
 }

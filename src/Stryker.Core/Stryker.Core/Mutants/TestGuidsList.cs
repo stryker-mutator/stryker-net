@@ -2,95 +2,94 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Stryker.Core.Mutants
+namespace Stryker.Core.Mutants;
+
+
+public class TestGuidsList : ITestGuids
 {
+    private readonly HashSet<Guid> _testsGuid;
 
-    public class TestGuidsList : ITestGuids
+    private static readonly TestGuidsList EveryTests = new();
+    private static readonly TestGuidsList NoTestAtAll = new(Array.Empty<Guid>());
+
+    private TestGuidsList() => _testsGuid = null;
+
+    public TestGuidsList(IEnumerable<TestDescription> testDescriptions) : this(testDescriptions?.Select(t => t.Id))
     {
-        private readonly HashSet<Guid> _testsGuid;
+    }
 
-        private static readonly TestGuidsList EveryTests = new();
-        private static readonly TestGuidsList NoTestAtAll = new(Array.Empty<Guid>());
+    public TestGuidsList(HashSet<Guid> set) => _testsGuid = set;
+    
+    public TestGuidsList(IEnumerable<Guid> guids) => _testsGuid = guids != null ? new HashSet<Guid>(guids) : null;
 
-        private TestGuidsList() => _testsGuid = null;
+    public TestGuidsList(params Guid[] guids) : this((IEnumerable<Guid>)guids)
+    {}
 
-        public TestGuidsList(IEnumerable<TestDescription> testDescriptions) : this(testDescriptions?.Select(t => t.Id))
+    public bool IsEmpty => _testsGuid is { Count: 0 };
+    
+    public bool IsEveryTest => _testsGuid == null;
+    
+    public int Count => _testsGuid?.Count ?? 0;
+
+    public ITestGuids Merge(ITestGuids other)
+    {
+        if (IsEveryTest)
         {
+            return this;
         }
 
-        public TestGuidsList(HashSet<Guid> set) => _testsGuid = set;
-        
-        public TestGuidsList(IEnumerable<Guid> guids) => _testsGuid = guids != null ? new HashSet<Guid>(guids) : null;
+        var result = new HashSet<Guid>(_testsGuid);
+        result.UnionWith(other.GetGuids());
+        return new TestGuidsList(result);
+    }
 
-        public TestGuidsList(params Guid[] guids) : this((IEnumerable<Guid>)guids)
-        {}
-
-        public bool IsEmpty => _testsGuid is { Count: 0 };
-        
-        public bool IsEveryTest => _testsGuid == null;
-        
-        public int Count => _testsGuid?.Count ?? 0;
-
-        public ITestGuids Merge(ITestGuids other)
+    public TestGuidsList Merge(TestGuidsList other)
+    {
+        if (IsEveryTest)
         {
-            if (IsEveryTest)
-            {
-                return this;
-            }
-
-            var result = new HashSet<Guid>(_testsGuid);
-            result.UnionWith(other.GetGuids());
-            return new TestGuidsList(result);
+            return this;
         }
 
-        public TestGuidsList Merge(TestGuidsList other)
-        {
-            if (IsEveryTest)
-            {
-                return this;
-            }
+        var result = new HashSet<Guid>(_testsGuid);
+        result.UnionWith(other.GetGuids());
+        return new TestGuidsList(result);
+    }
 
-            var result = new HashSet<Guid>(_testsGuid);
-            result.UnionWith(other.GetGuids());
-            return new TestGuidsList(result);
+    public bool Contains(Guid testId) => IsEveryTest || _testsGuid.Contains(testId);
+
+    public bool IsIncludedIn(ITestGuids other) => other.IsEveryTest || _testsGuid?.IsSubsetOf(other.GetGuids())==true;
+    
+    public TestGuidsList Excluding(TestGuidsList testsToSkip)
+    {
+        if (IsEmpty || testsToSkip.IsEmpty)
+        {
+            return this;
         }
 
-        public bool Contains(Guid testId) => IsEveryTest || _testsGuid.Contains(testId);
-
-        public bool IsIncludedIn(ITestGuids other) => other.IsEveryTest || _testsGuid?.IsSubsetOf(other.GetGuids())==true;
-        
-        public TestGuidsList Excluding(TestGuidsList testsToSkip)
+        if (IsEveryTest)
         {
-            if (IsEmpty || testsToSkip.IsEmpty)
-            {
-                return this;
-            }
-
-            if (IsEveryTest)
-            {
-                throw new InvalidOperationException("Can't exclude from EveryTest");
-            }
-
-            return testsToSkip.IsEveryTest ? NoTest() : new TestGuidsList(_testsGuid.Except(testsToSkip._testsGuid));
+            throw new InvalidOperationException("Can't exclude from EveryTest");
         }
 
-        public static TestGuidsList EveryTest() => EveryTests;
+        return testsToSkip.IsEveryTest ? NoTest() : new TestGuidsList(_testsGuid.Except(testsToSkip._testsGuid));
+    }
 
-        public static TestGuidsList NoTest() => NoTestAtAll;
+    public static TestGuidsList EveryTest() => EveryTests;
 
-        public IEnumerable<Guid> GetGuids() => _testsGuid;
+    public static TestGuidsList NoTest() => NoTestAtAll;
 
-        public bool ContainsAny(ITestGuids other)
+    public IEnumerable<Guid> GetGuids() => _testsGuid;
+
+    public bool ContainsAny(ITestGuids other)
+    {
+        if (other.IsEmpty || IsEmpty)
         {
-            if (other.IsEmpty || IsEmpty)
-            {
-                return false;
-            }
-            if (IsEveryTest || other.IsEveryTest)
-            {
-                return true;
-            }
-            return _testsGuid.Overlaps(other.GetGuids());
+            return false;
         }
+        if (IsEveryTest || other.IsEveryTest)
+        {
+            return true;
+        }
+        return _testsGuid.Overlaps(other.GetGuids());
     }
 }

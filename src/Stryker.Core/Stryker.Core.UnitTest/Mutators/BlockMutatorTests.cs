@@ -7,14 +7,14 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.Mutators
+namespace Stryker.Core.UnitTest.Mutators;
+
+public class BlockMutatorTests
 {
-    public class BlockMutatorTests
+    [Fact]
+    public void ShouldMutateNonEmptyConstructorOnClass()
     {
-        [Fact]
-        public void ShouldMutateNonEmptyConstructorOnClass()
-        {
-            var source = @"
+        var source = @"
 class Program
 {
     int doesNotNeedToBeInitialized;
@@ -25,14 +25,14 @@ class Program
     }
 }";
 
-            var mutation = GetMutations(source).ShouldHaveSingleItem();
-            mutation.ReplacementNode.ChildNodes().ShouldBeEmpty();
-        }
+        var mutation = GetMutations(source).ShouldHaveSingleItem();
+        mutation.ReplacementNode.ChildNodes().ShouldBeEmpty();
+    }
 
-        [Fact]
-        public void ShouldNotMutateStructConstructorAssignments()
-        {
-            var source = @"
+    [Fact]
+    public void ShouldNotMutateStructConstructorAssignments()
+    {
+        var source = @"
 struct Program
 {
     int mustBeInitialized;
@@ -53,13 +53,13 @@ struct Program
     }
 }";
 
-            GetMutations(source).ShouldBeEmpty();
-        }
+        GetMutations(source).ShouldBeEmpty();
+    }
 
-        [Fact]
-        public void ShouldNotMutateSwitchCasesBlock()
-        {
-            var source = @"
+    [Fact]
+    public void ShouldNotMutateSwitchCasesBlock()
+    {
+        var source = @"
 struct Program
 {
     int mustBeInitialized;
@@ -76,14 +76,14 @@ struct Program
         }
     }
 }";
-            // there should be only a mutation for the whole method body
-            GetMutations(source).ShouldHaveSingleItem();
-        }
+        // there should be only a mutation for the whole method body
+        GetMutations(source).ShouldHaveSingleItem();
+    }
 
-        [Fact]
-        public void ShouldMutateLocalFunctionsInStructConstructors()
-        {
-            var source = @"
+    [Fact]
+    public void ShouldMutateLocalFunctionsInStructConstructors()
+    {
+        var source = @"
 struct Program
 {
     int mustBeInitialized;
@@ -101,15 +101,15 @@ struct Program
     }
 }";
 
-            GetMutations(source).Count().ShouldBe(
-                1,
-                "Should mutate the local function and only the local function");
-        }
+        GetMutations(source).Count().ShouldBe(
+            1,
+            "Should mutate the local function and only the local function");
+    }
 
-        [Fact]
-        public void ShouldMutateStructConstructorNonAssignmentsAtRoot()
-        {
-            var source = @"
+    [Fact]
+    public void ShouldMutateStructConstructorNonAssignmentsAtRoot()
+    {
+        var source = @"
 struct Program
 {
     Program(int value)
@@ -118,13 +118,13 @@ struct Program
     }
 }";
 
-            GetMutations(source).Count().ShouldBe(1);
-        }
+        GetMutations(source).Count().ShouldBe(1);
+    }
 
-        [Fact]
-        public void ShouldMutateStructConstructorNonAssignmentChild()
-        {
-            var source = @"
+    [Fact]
+    public void ShouldMutateStructConstructorNonAssignmentChild()
+    {
+        var source = @"
 struct Program
 {
     int mustBeInitialized;
@@ -140,13 +140,13 @@ struct Program
     }
 }";
 
-            GetMutations(source).Count().ShouldBe(1);
-        }
+        GetMutations(source).Count().ShouldBe(1);
+    }
 
-        [Fact]
-        public void ShouldMutateVoidReturnsAsEmptyInMethod()
-        {
-            var source = @"
+    [Fact]
+    public void ShouldMutateVoidReturnsAsEmptyInMethod()
+    {
+        var source = @"
 class Program
 {
     void Method(bool input)
@@ -158,13 +158,13 @@ class Program
     }
 }";
 
-            GetMutations(source).ShouldAllBe(mutation => !mutation.ReplacementNode.ChildNodes().Any());
-        }
+        GetMutations(source).ShouldAllBe(mutation => !mutation.ReplacementNode.ChildNodes().Any());
+    }
 
-        [Fact]
-        public void ShouldMutateVoidReturnsAsEmptyInLocalFunction()
-        {
-            var source = @"
+    [Fact]
+    public void ShouldMutateVoidReturnsAsEmptyInLocalFunction()
+    {
+        var source = @"
 class Program
 {
     int Method(bool input)
@@ -178,22 +178,22 @@ class Program
     }
 }";
 
-            var mutation = GetMutations(source)
-                .Where(mutation => mutation.OriginalNode.Parent is LocalFunctionStatementSyntax
-                {
-                    Identifier: { Text: "LocalFunction" }
-                })
-                .ShouldHaveSingleItem();
-            mutation.ReplacementNode.ChildNodes().ShouldBeEmpty();
-        }
+        var mutation = GetMutations(source)
+            .Where(mutation => mutation.OriginalNode.Parent is LocalFunctionStatementSyntax
+            {
+                Identifier: { Text: "LocalFunction" }
+            })
+            .ShouldHaveSingleItem();
+        mutation.ReplacementNode.ChildNodes().ShouldBeEmpty();
+    }
 
-        [Fact]
-        public void ShouldNotMutateAlreadyEmptyBlocks()
-        {
-            // E.g. empty constructors bodies and method overrides are totally valid
-            // and produce false positives if mutated.
+    [Fact]
+    public void ShouldNotMutateAlreadyEmptyBlocks()
+    {
+        // E.g. empty constructors bodies and method overrides are totally valid
+        // and produce false positives if mutated.
 
-            var source = @"
+        var source = @"
 class Program
 {
     private Program()
@@ -206,13 +206,13 @@ class Program
         // Nothing to do
     }
 }";
-            GetMutations(source).ShouldBeEmpty();
-        }
+        GetMutations(source).ShouldBeEmpty();
+    }
 
-        [Fact]
-        public void ShouldNotMutateInfiniteWhileLoops()
-        {
-            var source = @"
+    [Fact]
+    public void ShouldNotMutateInfiniteWhileLoops()
+    {
+        var source = @"
 class Program
 {
     void Method()
@@ -224,28 +224,27 @@ class Program
         }
     }
 }";
-            GetMutations(source)
-                .Where(mutation => mutation.OriginalNode.Parent is WhileStatementSyntax)
-                .ShouldBeEmpty();
-        }
+        GetMutations(source)
+            .Where(mutation => mutation.OriginalNode.Parent is WhileStatementSyntax)
+            .ShouldBeEmpty();
+    }
 
-        private static IEnumerable<Mutation> GetMutations(string source)
-        {
-            var statements = CSharpSyntaxTree
-                .ParseText(source)
-                .GetRoot()
-                .DescendantNodes()
-                .OfType<BlockSyntax>();
+    private static IEnumerable<Mutation> GetMutations(string source)
+    {
+        var statements = CSharpSyntaxTree
+            .ParseText(source)
+            .GetRoot()
+            .DescendantNodes()
+            .OfType<BlockSyntax>();
 
-            var target = new BlockMutator();
-            return statements.SelectMany(target.ApplyMutations);
-        }
+        var target = new BlockMutator();
+        return statements.SelectMany(target.ApplyMutations);
+    }
 
-        private static void AssertDefaultReturn(Mutation mutation)
-        {
-            var block = mutation.ReplacementNode.ShouldBeOfType<BlockSyntax>();
-            var returnStatement = block.Statements.OfType<ReturnStatementSyntax>().ShouldHaveSingleItem();
-            returnStatement.Expression?.Kind().ShouldBe(SyntaxKind.DefaultLiteralExpression);
-        }
+    private static void AssertDefaultReturn(Mutation mutation)
+    {
+        var block = mutation.ReplacementNode.ShouldBeOfType<BlockSyntax>();
+        var returnStatement = block.Statements.OfType<ReturnStatementSyntax>().ShouldHaveSingleItem();
+        returnStatement.Expression?.Kind().ShouldBe(SyntaxKind.DefaultLiteralExpression);
     }
 }

@@ -8,54 +8,53 @@ using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.ProjectCOmponents.SourceProjects
+namespace Stryker.Core.UnitTest.ProjectCOmponents.SourceProjects;
+
+public class SourceProjectInfoTests : TestBase
 {
-    public class SourceProjectInfoTests : TestBase
+    [Fact]
+    public void ShouldGenerateProperDefaultCompilationOptions()
     {
-        [Fact]
-        public void ShouldGenerateProperDefaultCompilationOptions()
+        var target = new SourceProjectInfo()
         {
-            var target = new SourceProjectInfo()
-            {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>() {
-                        { "TargetDir", "/test/bin/Debug/" },
-                        { "TargetFileName", "TestName.dll" },
-                        { "AssemblyName", "AssemblyName" }
-                    }).Object
-            };
+            AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                properties: new Dictionary<string, string>() {
+                    { "TargetDir", "/test/bin/Debug/" },
+                    { "TargetFileName", "TestName.dll" },
+                    { "AssemblyName", "AssemblyName" }
+                }).Object
+        };
 
-            var options = target.AnalyzerResult.GetCompilationOptions();
+        var options = target.AnalyzerResult.GetCompilationOptions();
 
-            options.AllowUnsafe.ShouldBe(true);
-            options.OutputKind.ShouldBe(OutputKind.DynamicallyLinkedLibrary);
-            options.NullableContextOptions.ShouldBe(NullableContextOptions.Enable);
-        }
+        options.AllowUnsafe.ShouldBe(true);
+        options.OutputKind.ShouldBe(OutputKind.DynamicallyLinkedLibrary);
+        options.NullableContextOptions.ShouldBe(NullableContextOptions.Enable);
+    }
 
-        [Theory]
-        [InlineData("Exe", OutputKind.ConsoleApplication)]
-        [InlineData("WinExe", OutputKind.WindowsApplication)]
-        [InlineData("AppContainerExe", OutputKind.WindowsRuntimeApplication)]
-        public void ShouldGenerateProperCompilationOptions(string kindParam, OutputKind output)
+    [Theory]
+    [InlineData("Exe", OutputKind.ConsoleApplication)]
+    [InlineData("WinExe", OutputKind.WindowsApplication)]
+    [InlineData("AppContainerExe", OutputKind.WindowsRuntimeApplication)]
+    public void ShouldGenerateProperCompilationOptions(string kindParam, OutputKind output)
+    {
+        var target = new SourceProjectInfo()
         {
-            var target = new SourceProjectInfo()
-            {
-                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>() {
-                        { "AssemblyTitle", "TargetFileName"},
-                        { "TargetDir", "/test/bin/Debug/" },
-                        { "TargetFileName", "TargetFileName.dll"},
-                        { "OutputType", kindParam },
-                        { "Nullable", "Annotations" },
-                        { "AssemblyName", "AssemblyName" }
-                    }).Object
-            };
+            AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                properties: new Dictionary<string, string>() {
+                    { "AssemblyTitle", "TargetFileName"},
+                    { "TargetDir", "/test/bin/Debug/" },
+                    { "TargetFileName", "TargetFileName.dll"},
+                    { "OutputType", kindParam },
+                    { "Nullable", "Annotations" },
+                    { "AssemblyName", "AssemblyName" }
+                }).Object
+        };
 
-            var options = target.AnalyzerResult.GetCompilationOptions();
+        var options = target.AnalyzerResult.GetCompilationOptions();
 
-            options.AllowUnsafe.ShouldBe(true);
-            options.OutputKind.ShouldBe(output);
-            options.NullableContextOptions.ShouldBe(NullableContextOptions.Annotations);
-        }
+        options.AllowUnsafe.ShouldBe(true);
+        options.OutputKind.ShouldBe(output);
+        options.NullableContextOptions.ShouldBe(NullableContextOptions.Annotations);
     }
 }

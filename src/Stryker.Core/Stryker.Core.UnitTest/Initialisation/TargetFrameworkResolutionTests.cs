@@ -8,110 +8,109 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.Initialisation
+namespace Stryker.Core.UnitTest.Initialisation;
+
+public class TargetFrameworkResolutionTests : TestBase
 {
-    public class TargetFrameworkResolutionTests : TestBase
+    private IEnumerable<IAnalyzerResult> _analyzerResults = Enumerable.Empty<IAnalyzerResult>();
+    private readonly ProjectFileReader _projectFileReader;
+
+    public TargetFrameworkResolutionTests()
     {
-        private IEnumerable<IAnalyzerResult> _analyzerResults = Enumerable.Empty<IAnalyzerResult>();
-        private readonly ProjectFileReader _projectFileReader;
+        var analyzerManagerMock = new Mock<IAnalyzerManager>();
+        var projectAnalyzerMock = new Mock<IProjectAnalyzer>();
+        var analyzerResultsMock = new Mock<IAnalyzerResults>();
 
-        public TargetFrameworkResolutionTests()
+        analyzerManagerMock
+            .Setup(m => m.GetProject(It.IsAny<string>()))
+            .Returns(projectAnalyzerMock.Object);
+
+        projectAnalyzerMock
+            .Setup(m => m.Build())
+            .Returns(analyzerResultsMock.Object);
+
+        analyzerResultsMock
+            .Setup(m => m.GetEnumerator())
+            .Returns(() => _analyzerResults.GetEnumerator());
+
+        _projectFileReader = new ProjectFileReader(analyzerManager: analyzerManagerMock.Object);
+    }
+
+    [Fact]
+    public void ThrowsIfNoResultsWithFrameworks()
+    {
+        var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
+        analyzerResultFrameworkXMock.Setup(m => m.Succeeded).Returns(true);
+        analyzerResultFrameworkXMock.Setup(m => m.TargetFramework).Returns((string)null);
+        _analyzerResults = new[]
         {
-            var analyzerManagerMock = new Mock<IAnalyzerManager>();
-            var projectAnalyzerMock = new Mock<IProjectAnalyzer>();
-            var analyzerResultsMock = new Mock<IAnalyzerResults>();
+            analyzerResultFrameworkXMock.Object,
+        };
 
-            analyzerManagerMock
-                .Setup(m => m.GetProject(It.IsAny<string>()))
-                .Returns(projectAnalyzerMock.Object);
+        Func<IAnalyzerResult> analyzeProject = () => _projectFileReader.AnalyzeProject(null, null, null, null);
+        analyzeProject.ShouldThrow<InputException>();
+    }
 
-            projectAnalyzerMock
-                .Setup(m => m.Build())
-                .Returns(analyzerResultsMock.Object);
+    [Fact]
+    public void SelectsFirstFrameworkIfNoneSpecified()
+    {
+        var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
+        var analyzerResultFrameworkYMock = new Mock<IAnalyzerResult>();
 
-            analyzerResultsMock
-                .Setup(m => m.GetEnumerator())
-                .Returns(() => _analyzerResults.GetEnumerator());
+        analyzerResultFrameworkXMock.Setup(m => m.Succeeded).Returns(true);
+        analyzerResultFrameworkYMock.Setup(m => m.Succeeded).Returns(true);
+        analyzerResultFrameworkXMock.Setup(m => m.TargetFramework).Returns("X");
+        analyzerResultFrameworkYMock.Setup(m => m.TargetFramework).Returns("Y");
 
-            _projectFileReader = new ProjectFileReader(analyzerManager: analyzerManagerMock.Object);
-        }
-
-        [Fact]
-        public void ThrowsIfNoResultsWithFrameworks()
+        _analyzerResults = new[]
         {
-            var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
-            analyzerResultFrameworkXMock.Setup(m => m.Succeeded).Returns(true);
-            analyzerResultFrameworkXMock.Setup(m => m.TargetFramework).Returns((string)null);
-            _analyzerResults = new[]
-            {
-                analyzerResultFrameworkXMock.Object,
-            };
+            analyzerResultFrameworkXMock.Object,
+            analyzerResultFrameworkYMock.Object
+        };
 
-            Func<IAnalyzerResult> analyzeProject = () => _projectFileReader.AnalyzeProject(null, null, null, null);
-            analyzeProject.ShouldThrow<InputException>();
-        }
+        var result = _projectFileReader.AnalyzeProject(null, null, null, null);
+        result.TargetFramework.ShouldBe("X");
+    }
 
-        [Fact]
-        public void SelectsFirstFrameworkIfNoneSpecified()
+    [Fact]
+    public void SelectsRespectiveFrameworkIfSpecifiedAndAvailable()
+    {
+        var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
+        var analyzerResultFrameworkYMock = new Mock<IAnalyzerResult>();
+
+        analyzerResultFrameworkXMock.Setup(m => m.Succeeded).Returns(true);
+        analyzerResultFrameworkYMock.Setup(m => m.Succeeded).Returns(true);
+        analyzerResultFrameworkXMock.Setup(m => m.TargetFramework).Returns("X");
+        analyzerResultFrameworkYMock.Setup(m => m.TargetFramework).Returns("Y");
+
+        _analyzerResults = new[]
         {
-            var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
-            var analyzerResultFrameworkYMock = new Mock<IAnalyzerResult>();
+            analyzerResultFrameworkXMock.Object,
+            analyzerResultFrameworkYMock.Object
+        };
 
-            analyzerResultFrameworkXMock.Setup(m => m.Succeeded).Returns(true);
-            analyzerResultFrameworkYMock.Setup(m => m.Succeeded).Returns(true);
-            analyzerResultFrameworkXMock.Setup(m => m.TargetFramework).Returns("X");
-            analyzerResultFrameworkYMock.Setup(m => m.TargetFramework).Returns("Y");
+        var result = _projectFileReader.AnalyzeProject(null, null, "Y", null);
+        result.TargetFramework.ShouldBe("Y");
+    }
 
-            _analyzerResults = new[]
-            {
-                analyzerResultFrameworkXMock.Object,
-                analyzerResultFrameworkYMock.Object
-            };
+    [Fact]
+    public void SelectsFirstFrameworkIfSpecifiedButNotAvailable()
+    {
+        var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
+        var analyzerResultFrameworkYMock = new Mock<IAnalyzerResult>();
 
-            var result = _projectFileReader.AnalyzeProject(null, null, null, null);
-            result.TargetFramework.ShouldBe("X");
-        }
+        analyzerResultFrameworkXMock.Setup(m => m.Succeeded).Returns(true);
+        analyzerResultFrameworkYMock.Setup(m => m.Succeeded).Returns(true);
+        analyzerResultFrameworkXMock.Setup(m => m.TargetFramework).Returns("X");
+        analyzerResultFrameworkYMock.Setup(m => m.TargetFramework).Returns("Y");
 
-        [Fact]
-        public void SelectsRespectiveFrameworkIfSpecifiedAndAvailable()
+        _analyzerResults = new[]
         {
-            var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
-            var analyzerResultFrameworkYMock = new Mock<IAnalyzerResult>();
+            analyzerResultFrameworkXMock.Object,
+            analyzerResultFrameworkYMock.Object
+        };
 
-            analyzerResultFrameworkXMock.Setup(m => m.Succeeded).Returns(true);
-            analyzerResultFrameworkYMock.Setup(m => m.Succeeded).Returns(true);
-            analyzerResultFrameworkXMock.Setup(m => m.TargetFramework).Returns("X");
-            analyzerResultFrameworkYMock.Setup(m => m.TargetFramework).Returns("Y");
-
-            _analyzerResults = new[]
-            {
-                analyzerResultFrameworkXMock.Object,
-                analyzerResultFrameworkYMock.Object
-            };
-
-            var result = _projectFileReader.AnalyzeProject(null, null, "Y", null);
-            result.TargetFramework.ShouldBe("Y");
-        }
-
-        [Fact]
-        public void SelectsFirstFrameworkIfSpecifiedButNotAvailable()
-        {
-            var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
-            var analyzerResultFrameworkYMock = new Mock<IAnalyzerResult>();
-
-            analyzerResultFrameworkXMock.Setup(m => m.Succeeded).Returns(true);
-            analyzerResultFrameworkYMock.Setup(m => m.Succeeded).Returns(true);
-            analyzerResultFrameworkXMock.Setup(m => m.TargetFramework).Returns("X");
-            analyzerResultFrameworkYMock.Setup(m => m.TargetFramework).Returns("Y");
-
-            _analyzerResults = new[]
-            {
-                analyzerResultFrameworkXMock.Object,
-                analyzerResultFrameworkYMock.Object
-            };
-
-            var result = _projectFileReader.AnalyzeProject(null, null, "Z", null);
-            result.TargetFramework.ShouldBe("X");
-        }
+        var result = _projectFileReader.AnalyzeProject(null, null, "Z", null);
+        result.TargetFramework.ShouldBe("X");
     }
 }

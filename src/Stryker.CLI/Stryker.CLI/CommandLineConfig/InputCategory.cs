@@ -1,11 +1,10 @@
-﻿namespace Stryker.CLI
+﻿namespace Stryker.CLI;
+
+public enum InputCategory
 {
-    public enum InputCategory
-    {
-        Generic,
-        Build,
-        Mutation,
-        Reporting,
-        Misc
-    }
+    Generic,
+    Build,
+    Mutation,
+    Reporting,
+    Misc
 }

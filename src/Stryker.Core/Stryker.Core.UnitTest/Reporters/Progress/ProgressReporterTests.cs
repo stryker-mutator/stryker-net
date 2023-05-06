@@ -3,37 +3,36 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Progress;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.Reporters.Progress
+namespace Stryker.Core.UnitTest.Reporters.Progress;
+
+public class ProgressReporterTests : TestBase
 {
-    public class ProgressReporterTests : TestBase
+    private readonly Mock<IProgressBarReporter> _progressBarReporter;
+
+    private readonly ProgressReporter _progressReporter;
+
+    public ProgressReporterTests()
     {
-        private readonly Mock<IProgressBarReporter> _progressBarReporter;
+        _progressBarReporter = new Mock<IProgressBarReporter>();
 
-        private readonly ProgressReporter _progressReporter;
+        _progressReporter = new ProgressReporter(_progressBarReporter.Object);
+    }
 
-        public ProgressReporterTests()
-        {
-            _progressBarReporter = new Mock<IProgressBarReporter>();
+    [Fact]
+    public void ProgressReporter_ShouldCallBothReporters_OnReportInitialState()
+    {
+        var mutants = new Mutant[3] { new Mutant(), new Mutant(), new Mutant() };
 
-            _progressReporter = new ProgressReporter(_progressBarReporter.Object);
-        }
+        _progressReporter.OnStartMutantTestRun(mutants);
+        _progressBarReporter.Verify(x => x.ReportInitialState(mutants.Length), Times.Once);
+    }
 
-        [Fact]
-        public void ProgressReporter_ShouldCallBothReporters_OnReportInitialState()
-        {
-            var mutants = new Mutant[3] { new Mutant(), new Mutant(), new Mutant() };
+    [Fact]
+    public void ProgressReporter_ShouldCallBothReporters_OnReportRunTest()
+    {
+        var mutant = new Mutant();
+        _progressReporter.OnMutantTested(mutant);
 
-            _progressReporter.OnStartMutantTestRun(mutants);
-            _progressBarReporter.Verify(x => x.ReportInitialState(mutants.Length), Times.Once);
-        }
-
-        [Fact]
-        public void ProgressReporter_ShouldCallBothReporters_OnReportRunTest()
-        {
-            var mutant = new Mutant();
-            _progressReporter.OnMutantTested(mutant);
-
-            _progressBarReporter.Verify(x => x.ReportRunTest(mutant), Times.Once);
-        }
+        _progressBarReporter.Verify(x => x.ReportRunTest(mutant), Times.Once);
     }
 }

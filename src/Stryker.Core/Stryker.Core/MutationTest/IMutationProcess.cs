@@ -1,9 +1,8 @@
-namespace Stryker.Core.MutationTest
-{
-    public interface IMutationProcess
-    {
-        void Mutate();
+namespace Stryker.Core.MutationTest;
 
-        void FilterMutants();
-    }
+public interface IMutationProcess
+{
+    void Mutate();
+
+    void FilterMutants();
 }

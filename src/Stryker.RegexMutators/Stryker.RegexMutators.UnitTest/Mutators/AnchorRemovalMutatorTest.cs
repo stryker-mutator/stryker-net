@@ -6,267 +6,266 @@ using Stryker.RegexMutators.Mutators;
 using System.Collections.Generic;
 using Xunit;
 
-namespace Stryker.RegexMutators.UnitTest.Mutators
+namespace Stryker.RegexMutators.UnitTest.Mutators;
+
+public class AnchorRemovalMutatorTest
 {
-    public class AnchorRemovalMutatorTest
+    [Fact]
+    public void ShouldRemoveStartOfLineNode()
     {
-        [Fact]
-        public void ShouldRemoveStartOfLineNode()
+        // Arrange
+        var startOfLineNode = new StartOfLineNode();
+        var childNodes = new List<RegexNode>
         {
-            // Arrange
-            var startOfLineNode = new StartOfLineNode();
-            var childNodes = new List<RegexNode>
-            {
-                startOfLineNode,
-                new CharacterNode('a'),
-                new CharacterNode('b'),
-                new CharacterNode('c')
-            };
-            var rootNode = new ConcatenationNode(childNodes);
-            var target = new AnchorRemovalMutator();
+            startOfLineNode,
+            new CharacterNode('a'),
+            new CharacterNode('b'),
+            new CharacterNode('c')
+        };
+        var rootNode = new ConcatenationNode(childNodes);
+        var target = new AnchorRemovalMutator();
 
-            // Act
-            var result = target.ApplyMutations(startOfLineNode, rootNode);
+        // Act
+        var result = target.ApplyMutations(startOfLineNode, rootNode);
 
-            // Assert
-            var mutation = result.ShouldHaveSingleItem();
-            mutation.OriginalNode.ShouldBe(startOfLineNode);
-            mutation.ReplacementNode.ShouldBeNull();
-            mutation.ReplacementPattern.ShouldBe("abc");
-            mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
-            mutation.Description.ShouldBe("Anchor \"^\" was removed at offset 0.");
-        }
+        // Assert
+        var mutation = result.ShouldHaveSingleItem();
+        mutation.OriginalNode.ShouldBe(startOfLineNode);
+        mutation.ReplacementNode.ShouldBeNull();
+        mutation.ReplacementPattern.ShouldBe("abc");
+        mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
+        mutation.Description.ShouldBe("Anchor \"^\" was removed at offset 0.");
+    }
 
-        [Fact]
-        public void ShouldRemoveEndOfLineNode()
+    [Fact]
+    public void ShouldRemoveEndOfLineNode()
+    {
+        // Arrange
+        var endOfLineNode = new EndOfLineNode();
+        var childNodes = new List<RegexNode>
         {
-            // Arrange
-            var endOfLineNode = new EndOfLineNode();
-            var childNodes = new List<RegexNode>
-            {
-                new CharacterNode('a'),
-                new CharacterNode('b'),
-                new CharacterNode('c'),
-                endOfLineNode
-            };
-            var rootNode = new ConcatenationNode(childNodes);
-            var target = new AnchorRemovalMutator();
+            new CharacterNode('a'),
+            new CharacterNode('b'),
+            new CharacterNode('c'),
+            endOfLineNode
+        };
+        var rootNode = new ConcatenationNode(childNodes);
+        var target = new AnchorRemovalMutator();
 
-            // Act
-            var result = target.ApplyMutations(endOfLineNode, rootNode);
+        // Act
+        var result = target.ApplyMutations(endOfLineNode, rootNode);
 
-            // Assert
-            var mutation = result.ShouldHaveSingleItem();
-            mutation.OriginalNode.ShouldBe(endOfLineNode);
-            mutation.ReplacementNode.ShouldBeNull();
-            mutation.ReplacementPattern.ShouldBe("abc");
-            mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
-            mutation.Description.ShouldBe("Anchor \"$\" was removed at offset 3.");
-        }
+        // Assert
+        var mutation = result.ShouldHaveSingleItem();
+        mutation.OriginalNode.ShouldBe(endOfLineNode);
+        mutation.ReplacementNode.ShouldBeNull();
+        mutation.ReplacementPattern.ShouldBe("abc");
+        mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
+        mutation.Description.ShouldBe("Anchor \"$\" was removed at offset 3.");
+    }
 
-        [Fact]
-        public void ShouldRemoveStartOfStringNode()
+    [Fact]
+    public void ShouldRemoveStartOfStringNode()
+    {
+        // Arrange
+        var startOfStringNode = new StartOfStringNode();
+        var childNodes = new List<RegexNode>
         {
-            // Arrange
-            var startOfStringNode = new StartOfStringNode();
-            var childNodes = new List<RegexNode>
-            {
-                startOfStringNode,
-                new CharacterNode('a'),
-                new CharacterNode('b'),
-                new CharacterNode('c')
-            };
-            var rootNode = new ConcatenationNode(childNodes);
-            var target = new AnchorRemovalMutator();
+            startOfStringNode,
+            new CharacterNode('a'),
+            new CharacterNode('b'),
+            new CharacterNode('c')
+        };
+        var rootNode = new ConcatenationNode(childNodes);
+        var target = new AnchorRemovalMutator();
 
-            // Act
-            var result = target.ApplyMutations(startOfStringNode, rootNode);
+        // Act
+        var result = target.ApplyMutations(startOfStringNode, rootNode);
 
-            // Assert
-            var mutation = result.ShouldHaveSingleItem();
-            mutation.OriginalNode.ShouldBe(startOfStringNode);
-            mutation.ReplacementNode.ShouldBeNull();
-            mutation.ReplacementPattern.ShouldBe("abc");
-            mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
-            mutation.Description.ShouldBe("Anchor \"\\A\" was removed at offset 0.");
-        }
+        // Assert
+        var mutation = result.ShouldHaveSingleItem();
+        mutation.OriginalNode.ShouldBe(startOfStringNode);
+        mutation.ReplacementNode.ShouldBeNull();
+        mutation.ReplacementPattern.ShouldBe("abc");
+        mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
+        mutation.Description.ShouldBe("Anchor \"\\A\" was removed at offset 0.");
+    }
 
-        [Fact]
-        public void ShouldRemoveEndOfStringNode()
+    [Fact]
+    public void ShouldRemoveEndOfStringNode()
+    {
+        // Arrange
+        var endOfStringNode = new EndOfStringNode();
+        var childNodes = new List<RegexNode>
         {
-            // Arrange
-            var endOfStringNode = new EndOfStringNode();
-            var childNodes = new List<RegexNode>
-            {
-                new CharacterNode('a'),
-                new CharacterNode('b'),
-                new CharacterNode('c'),
-                endOfStringNode
-            };
-            var rootNode = new ConcatenationNode(childNodes);
-            var target = new AnchorRemovalMutator();
+            new CharacterNode('a'),
+            new CharacterNode('b'),
+            new CharacterNode('c'),
+            endOfStringNode
+        };
+        var rootNode = new ConcatenationNode(childNodes);
+        var target = new AnchorRemovalMutator();
 
-            // Act
-            var result = target.ApplyMutations(endOfStringNode, rootNode);
+        // Act
+        var result = target.ApplyMutations(endOfStringNode, rootNode);
 
-            // Assert
-            var mutation = result.ShouldHaveSingleItem();
-            mutation.OriginalNode.ShouldBe(endOfStringNode);
-            mutation.ReplacementNode.ShouldBeNull();
-            mutation.ReplacementPattern.ShouldBe("abc");
-            mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
-            mutation.Description.ShouldBe("Anchor \"\\z\" was removed at offset 3.");
-        }
+        // Assert
+        var mutation = result.ShouldHaveSingleItem();
+        mutation.OriginalNode.ShouldBe(endOfStringNode);
+        mutation.ReplacementNode.ShouldBeNull();
+        mutation.ReplacementPattern.ShouldBe("abc");
+        mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
+        mutation.Description.ShouldBe("Anchor \"\\z\" was removed at offset 3.");
+    }
 
-        [Fact]
-        public void ShouldRemoveEndOfStringZNode()
+    [Fact]
+    public void ShouldRemoveEndOfStringZNode()
+    {
+        // Arrange
+        var endOfStringZNode = new EndOfStringZNode();
+        var childNodes = new List<RegexNode>
         {
-            // Arrange
-            var endOfStringZNode = new EndOfStringZNode();
-            var childNodes = new List<RegexNode>
-            {
-                new CharacterNode('a'),
-                new CharacterNode('b'),
-                new CharacterNode('c'),
-                endOfStringZNode
-            };
-            var rootNode = new ConcatenationNode(childNodes);
-            var target = new AnchorRemovalMutator();
+            new CharacterNode('a'),
+            new CharacterNode('b'),
+            new CharacterNode('c'),
+            endOfStringZNode
+        };
+        var rootNode = new ConcatenationNode(childNodes);
+        var target = new AnchorRemovalMutator();
 
-            // Act
-            var result = target.ApplyMutations(endOfStringZNode, rootNode);
+        // Act
+        var result = target.ApplyMutations(endOfStringZNode, rootNode);
 
-            // Assert
-            var mutation = result.ShouldHaveSingleItem();
-            mutation.OriginalNode.ShouldBe(endOfStringZNode);
-            mutation.ReplacementNode.ShouldBeNull();
-            mutation.ReplacementPattern.ShouldBe("abc");
-            mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
-            mutation.Description.ShouldBe("Anchor \"\\Z\" was removed at offset 3.");
-        }
+        // Assert
+        var mutation = result.ShouldHaveSingleItem();
+        mutation.OriginalNode.ShouldBe(endOfStringZNode);
+        mutation.ReplacementNode.ShouldBeNull();
+        mutation.ReplacementPattern.ShouldBe("abc");
+        mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
+        mutation.Description.ShouldBe("Anchor \"\\Z\" was removed at offset 3.");
+    }
 
-        [Fact]
-        public void ShouldRemoveWordBoundaryNode()
+    [Fact]
+    public void ShouldRemoveWordBoundaryNode()
+    {
+        // Arrange
+        var wordBoundaryNode = new WordBoundaryNode();
+        var childNodes = new List<RegexNode>
         {
-            // Arrange
-            var wordBoundaryNode = new WordBoundaryNode();
-            var childNodes = new List<RegexNode>
-            {
-                wordBoundaryNode,
-                new CharacterNode('a'),
-                new CharacterNode('b'),
-                new CharacterNode('c')
-            };
-            var rootNode = new ConcatenationNode(childNodes);
-            var target = new AnchorRemovalMutator();
+            wordBoundaryNode,
+            new CharacterNode('a'),
+            new CharacterNode('b'),
+            new CharacterNode('c')
+        };
+        var rootNode = new ConcatenationNode(childNodes);
+        var target = new AnchorRemovalMutator();
 
-            // Act
-            var result = target.ApplyMutations(wordBoundaryNode, rootNode);
+        // Act
+        var result = target.ApplyMutations(wordBoundaryNode, rootNode);
 
-            // Assert
-            var mutation = result.ShouldHaveSingleItem();
-            mutation.OriginalNode.ShouldBe(wordBoundaryNode);
-            mutation.ReplacementNode.ShouldBeNull();
-            mutation.ReplacementPattern.ShouldBe("abc");
-            mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
-            mutation.Description.ShouldBe("Anchor \"\\b\" was removed at offset 0.");
-        }
+        // Assert
+        var mutation = result.ShouldHaveSingleItem();
+        mutation.OriginalNode.ShouldBe(wordBoundaryNode);
+        mutation.ReplacementNode.ShouldBeNull();
+        mutation.ReplacementPattern.ShouldBe("abc");
+        mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
+        mutation.Description.ShouldBe("Anchor \"\\b\" was removed at offset 0.");
+    }
 
-        [Fact]
-        public void ShouldRemoveNonWordBoundaryNode()
+    [Fact]
+    public void ShouldRemoveNonWordBoundaryNode()
+    {
+        // Arrange
+        var nonWordBoundaryNode = new NonWordBoundaryNode();
+        var childNodes = new List<RegexNode>
         {
-            // Arrange
-            var nonWordBoundaryNode = new NonWordBoundaryNode();
-            var childNodes = new List<RegexNode>
-            {
-                nonWordBoundaryNode,
-                new CharacterNode('a'),
-                new CharacterNode('b'),
-                new CharacterNode('c')
-            };
-            var rootNode = new ConcatenationNode(childNodes);
-            var target = new AnchorRemovalMutator();
+            nonWordBoundaryNode,
+            new CharacterNode('a'),
+            new CharacterNode('b'),
+            new CharacterNode('c')
+        };
+        var rootNode = new ConcatenationNode(childNodes);
+        var target = new AnchorRemovalMutator();
 
-            // Act
-            var result = target.ApplyMutations(nonWordBoundaryNode, rootNode);
+        // Act
+        var result = target.ApplyMutations(nonWordBoundaryNode, rootNode);
 
-            // Assert
-            var mutation = result.ShouldHaveSingleItem();
-            mutation.OriginalNode.ShouldBe(nonWordBoundaryNode);
-            mutation.ReplacementNode.ShouldBeNull();
-            mutation.ReplacementPattern.ShouldBe("abc");
-            mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
-            mutation.Description.ShouldBe("Anchor \"\\B\" was removed at offset 0.");
-        }
+        // Assert
+        var mutation = result.ShouldHaveSingleItem();
+        mutation.OriginalNode.ShouldBe(nonWordBoundaryNode);
+        mutation.ReplacementNode.ShouldBeNull();
+        mutation.ReplacementPattern.ShouldBe("abc");
+        mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
+        mutation.Description.ShouldBe("Anchor \"\\B\" was removed at offset 0.");
+    }
 
-        [Fact]
-        public void ShouldRemoveContiguousMatchNode()
+    [Fact]
+    public void ShouldRemoveContiguousMatchNode()
+    {
+        // Arrange
+        var contiguousMatchNode = new ContiguousMatchNode();
+        var childNodes = new List<RegexNode>
         {
-            // Arrange
-            var contiguousMatchNode = new ContiguousMatchNode();
-            var childNodes = new List<RegexNode>
-            {
-                contiguousMatchNode,
-                new CharacterNode('a'),
-                new CharacterNode('b'),
-                new CharacterNode('c')
-            };
-            var rootNode = new ConcatenationNode(childNodes);
-            var target = new AnchorRemovalMutator();
+            contiguousMatchNode,
+            new CharacterNode('a'),
+            new CharacterNode('b'),
+            new CharacterNode('c')
+        };
+        var rootNode = new ConcatenationNode(childNodes);
+        var target = new AnchorRemovalMutator();
 
-            // Act
-            var result = target.ApplyMutations(contiguousMatchNode, rootNode);
+        // Act
+        var result = target.ApplyMutations(contiguousMatchNode, rootNode);
 
-            // Assert
-            var mutation = result.ShouldHaveSingleItem();
-            mutation.OriginalNode.ShouldBe(contiguousMatchNode);
-            mutation.ReplacementNode.ShouldBeNull();
-            mutation.ReplacementPattern.ShouldBe("abc");
-            mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
-            mutation.Description.ShouldBe("Anchor \"\\G\" was removed at offset 0.");
-        }
+        // Assert
+        var mutation = result.ShouldHaveSingleItem();
+        mutation.OriginalNode.ShouldBe(contiguousMatchNode);
+        mutation.ReplacementNode.ShouldBeNull();
+        mutation.ReplacementPattern.ShouldBe("abc");
+        mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
+        mutation.Description.ShouldBe("Anchor \"\\G\" was removed at offset 0.");
+    }
 
-        [Fact]
-        public void MutateShouldNotMutateNonAnchorNode()
+    [Fact]
+    public void MutateShouldNotMutateNonAnchorNode()
+    {
+        // Arrange
+        var characterNode = new CharacterNode('a');
+        var rootNode = new ConcatenationNode(characterNode);
+        var target = new AnchorRemovalMutator();
+
+        // Act
+        var result = target.Mutate(characterNode, rootNode);
+
+        // Assert
+        result.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void MutationShouldNotContainOriginalNodesPrefixInDescription()
+    {
+        // Arrange
+        var prefix = new CommentGroupNode("This is a comment.");
+        var startOfLineNode = new StartOfLineNode() { Prefix = prefix };
+        var childNodes = new List<RegexNode>
         {
-            // Arrange
-            var characterNode = new CharacterNode('a');
-            var rootNode = new ConcatenationNode(characterNode);
-            var target = new AnchorRemovalMutator();
+            startOfLineNode,
+            new CharacterNode('a'),
+            new CharacterNode('b'),
+            new CharacterNode('c')
+        };
+        var rootNode = new ConcatenationNode(childNodes);
+        var target = new AnchorRemovalMutator();
 
-            // Act
-            var result = target.Mutate(characterNode, rootNode);
+        // Act
+        var result = target.ApplyMutations(startOfLineNode, rootNode);
 
-            // Assert
-            result.ShouldBeEmpty();
-        }
-
-        [Fact]
-        public void MutationShouldNotContainOriginalNodesPrefixInDescription()
-        {
-            // Arrange
-            var prefix = new CommentGroupNode("This is a comment.");
-            var startOfLineNode = new StartOfLineNode() { Prefix = prefix };
-            var childNodes = new List<RegexNode>
-            {
-                startOfLineNode,
-                new CharacterNode('a'),
-                new CharacterNode('b'),
-                new CharacterNode('c')
-            };
-            var rootNode = new ConcatenationNode(childNodes);
-            var target = new AnchorRemovalMutator();
-
-            // Act
-            var result = target.ApplyMutations(startOfLineNode, rootNode);
-
-            // Assert
-            var mutation = result.ShouldHaveSingleItem();
-            mutation.OriginalNode.ShouldBe(startOfLineNode);
-            mutation.ReplacementNode.ShouldBeNull();
-            mutation.ReplacementPattern.ShouldBe("(?#This is a comment.)abc");
-            mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
-            mutation.Description.ShouldBe("Anchor \"^\" was removed at offset 22.");
-        }
+        // Assert
+        var mutation = result.ShouldHaveSingleItem();
+        mutation.OriginalNode.ShouldBe(startOfLineNode);
+        mutation.ReplacementNode.ShouldBeNull();
+        mutation.ReplacementPattern.ShouldBe("(?#This is a comment.)abc");
+        mutation.DisplayName.ShouldBe("Regex anchor removal mutation");
+        mutation.Description.ShouldBe("Anchor \"^\" was removed at offset 22.");
     }
 }

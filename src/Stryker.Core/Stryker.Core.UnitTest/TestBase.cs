@@ -1,12 +1,11 @@
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 
-namespace Stryker.Core.UnitTest
+namespace Stryker.Core.UnitTest;
+
+public abstract class TestBase
 {
-    public abstract class TestBase
-    {
-        protected TestBase() =>
-            // initialize loggerfactory to prevent exceptions
-            ApplicationLogging.LoggerFactory = new LoggerFactory();
-    }
+    protected TestBase() =>
+        // initialize loggerfactory to prevent exceptions
+        ApplicationLogging.LoggerFactory = new LoggerFactory();
 }

@@ -15,87 +15,86 @@ using Stryker.Core.ProjectComponents.TestProjects;
 using Xunit;
 using Mutation = Stryker.Core.Mutants.Mutation;
 
-namespace Stryker.Core.UnitTest.MutationTest
+namespace Stryker.Core.UnitTest.MutationTest;
+
+public class CSharpMutationTestProcessTests : TestBase
 {
-    public class CSharpMutationTestProcessTests : TestBase
+    private string CurrentDirectory { get; }
+    private string FilesystemRoot { get; }
+    private string SourceFile { get; }
+    private MockFileSystem fileSystemMock { get; } = new MockFileSystem();
+
+    public CSharpMutationTestProcessTests()
     {
-        private string CurrentDirectory { get; }
-        private string FilesystemRoot { get; }
-        private string SourceFile { get; }
-        private MockFileSystem fileSystemMock { get; } = new MockFileSystem();
+        CurrentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+        FilesystemRoot = Path.GetPathRoot(CurrentDirectory);
+        SourceFile = File.ReadAllText(CurrentDirectory + "/TestResources/ExampleSourceFile.cs");
+    }
 
-        public CSharpMutationTestProcessTests()
+    [Fact]
+    public void MutateShouldWriteToDisk_IfCompilationIsSuccessful()
+    {
+        var folder = new CsharpFolderComposite();
+        folder.Add(new CsharpFileLeaf
         {
-            CurrentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            FilesystemRoot = Path.GetPathRoot(CurrentDirectory);
-            SourceFile = File.ReadAllText(CurrentDirectory + "/TestResources/ExampleSourceFile.cs");
-        }
+            SourceCode = SourceFile,
+            SyntaxTree = CSharpSyntaxTree.ParseText(SourceFile)
+        });
 
-        [Fact]
-        public void MutateShouldWriteToDisk_IfCompilationIsSuccessful()
+        var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
-            var folder = new CsharpFolderComposite();
-            folder.Add(new CsharpFileLeaf
-            {
-                SourceCode = SourceFile,
-                SyntaxTree = CSharpSyntaxTree.ParseText(SourceFile)
-            });
+            { Path.Combine(FilesystemRoot, "SomeFile.cs"), new MockFileData("SomeFile")},
+        });
 
-            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+        var input = new MutationTestInput()
+        {
+            SourceProjectInfo = new SourceProjectInfo()
             {
-                { Path.Combine(FilesystemRoot, "SomeFile.cs"), new MockFileData("SomeFile")},
-            });
-
-            var input = new MutationTestInput()
+                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    projectFilePath: "/c/ProjectUnderTest/ProjectUnderTest.csproj",
+                    properties: new Dictionary<string, string>()
+                    {
+                        { "TargetDir", Path.Combine(FilesystemRoot, "ProjectUnderTest", "bin", "Debug", "netcoreapp2.0") },
+                        { "TargetFileName", "ProjectUnderTest.dll" },
+                        { "AssemblyName", "AssemblyName" },
+                        { "Language", "C#" }
+                    },
+                    references: new string[] { typeof(object).Assembly.Location }).Object,
+                ProjectContents = folder
+            },
+            TestProjectsInfo = new TestProjectsInfo(fileSystemMock)
             {
-                SourceProjectInfo = new SourceProjectInfo()
-                {
-                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                        projectFilePath: "/c/ProjectUnderTest/ProjectUnderTest.csproj",
-                        properties: new Dictionary<string, string>()
-                        {
-                            { "TargetDir", Path.Combine(FilesystemRoot, "ProjectUnderTest", "bin", "Debug", "netcoreapp2.0") },
-                            { "TargetFileName", "ProjectUnderTest.dll" },
-                            { "AssemblyName", "AssemblyName" },
-                            { "Language", "C#" }
-                        },
-                        references: new string[] { typeof(object).Assembly.Location }).Object,
-                    ProjectContents = folder
-                },
-                TestProjectsInfo = new TestProjectsInfo(fileSystemMock)
-                {
-                    TestProjects = new List<TestProject> {
-                        new TestProject(fileSystemMock, TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                        {
-                            { "TargetDir", Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0") },
-                            { "TargetFileName", "TestName.dll" },
-                            { "Language", "C#" }
-                        }).Object)
-                    }
+                TestProjects = new List<TestProject> {
+                    new TestProject(fileSystemMock, TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
+                    {
+                        { "TargetDir", Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0") },
+                        { "TargetFileName", "TestName.dll" },
+                        { "Language", "C#" }
+                    }).Object)
                 }
-            };
+            }
+        };
 
-            var mockMutants = new Collection<Mutant>() { new() { Mutation = new Mutation() } };
+        var mockMutants = new Collection<Mutant>() { new() { Mutation = new Mutation() } };
 
-            // create mocks
-            var options = new StrykerOptions();
-            var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict, options);
-            var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
+        // create mocks
+        var options = new StrykerOptions();
+        var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict, options);
+        var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
 
-            fileSystem.AddDirectory(Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0"));
+        fileSystem.AddDirectory(Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0"));
 
-            // setup mocks
-            orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
-            orchestratorMock.SetupAllProperties();
-            orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
+        // setup mocks
+        orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
+        orchestratorMock.SetupAllProperties();
+        orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
 
-            var target = new CsharpMutationProcess(input, fileSystem, options, null, orchestratorMock.Object);
+        var target = new CsharpMutationProcess(input, fileSystem, options, null, orchestratorMock.Object);
 
-            target.Mutate();
+        target.Mutate();
 
-            // Verify the created assembly is written to disk on the right location
-            var expectedPath = Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0", "ProjectUnderTest.dll");
-            fileSystem.ShouldContainFile(expectedPath);
-        }
+        // Verify the created assembly is written to disk on the right location
+        var expectedPath = Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0", "ProjectUnderTest.dll");
+        fileSystem.ShouldContainFile(expectedPath);
     }
 }

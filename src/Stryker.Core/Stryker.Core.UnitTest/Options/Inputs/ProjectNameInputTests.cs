@@ -4,36 +4,35 @@ using Stryker.Core.Options.Inputs;
 using Stryker.Core.Reporters;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.Options.Inputs
+namespace Stryker.Core.UnitTest.Options.Inputs;
+
+public class ProjectNameInputTests : TestBase
 {
-    public class ProjectNameInputTests : TestBase
+    [Fact]
+    public void ShouldHaveHelpText()
     {
-        [Fact]
-        public void ShouldHaveHelpText()
-        {
-            var target = new ProjectNameInput();
-            target.HelpText.ShouldBe(@"The organizational name for your project. Required when dashboard reporter is turned on.
+        var target = new ProjectNameInput();
+        target.HelpText.ShouldBe(@"The organizational name for your project. Required when dashboard reporter is turned on.
 For example: Your project might be called 'consumer-loans' and it might contains sub-modules 'consumer-loans-frontend' and 'consumer-loans-backend'. | default: ''");
-        }
+    }
 
-        [Fact]
-        public void ShouldReturnName()
-        {
-            var input = new ProjectNameInput { SuppliedInput = "name" };
+    [Fact]
+    public void ShouldReturnName()
+    {
+        var input = new ProjectNameInput { SuppliedInput = "name" };
 
-            var result = input.Validate();
+        var result = input.Validate();
 
-            result.ShouldBe("name");
-        }
+        result.ShouldBe("name");
+    }
 
-        [Fact]
-        public void ShouldHaveDefault()
-        {
-            var input = new ProjectNameInput { SuppliedInput = null };
+    [Fact]
+    public void ShouldHaveDefault()
+    {
+        var input = new ProjectNameInput { SuppliedInput = null };
 
-            var result = input.Validate();
+        var result = input.Validate();
 
-            result.ShouldBe(string.Empty);
-        }
+        result.ShouldBe(string.Empty);
     }
 }

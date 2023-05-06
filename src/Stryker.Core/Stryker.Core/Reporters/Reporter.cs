@@ -1,16 +1,15 @@
-namespace Stryker.Core.Reporters
+namespace Stryker.Core.Reporters;
+
+public enum Reporter
 {
-    public enum Reporter
-    {
-        All,
-        Progress,
-        Dots,
-        ClearText,
-        ClearTextTree,
-        Json,
-        Html,
-        Dashboard,
-        Markdown,
-        Baseline
-    }
+    All,
+    Progress,
+    Dots,
+    ClearText,
+    ClearTextTree,
+    Json,
+    Html,
+    Dashboard,
+    Markdown,
+    Baseline
 }

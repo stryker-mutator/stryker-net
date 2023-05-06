@@ -17,17 +17,17 @@ using Stryker.Core.TestRunners.VsTest;
 using Xunit;
 using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
-namespace Stryker.Core.UnitTest.Initialisation
+namespace Stryker.Core.UnitTest.Initialisation;
+
+public class ProjectMutatorTests : TestBase
 {
-    public class ProjectMutatorTests : TestBase
-    {
-        private readonly Mock<IMutationTestProcess> _mutationTestProcessMock = new Mock<IMutationTestProcess>(MockBehavior.Strict);
-        private readonly Mock<IInitialisationProcess> _initialisationProcessMock = new Mock<IInitialisationProcess>(MockBehavior.Strict);
-        private readonly Mock<IReporter> _reporterMock = new Mock<IReporter>(MockBehavior.Strict);
-        private readonly MutationTestInput _mutationTestInput;
-        private readonly IFileSystem _fileSystemMock = new MockFileSystem();
-        private readonly string _testFilePath = "c:\\mytestfile.cs";
-        private readonly string _testFileContents = @"using Xunit;
+    private readonly Mock<IMutationTestProcess> _mutationTestProcessMock = new Mock<IMutationTestProcess>(MockBehavior.Strict);
+    private readonly Mock<IInitialisationProcess> _initialisationProcessMock = new Mock<IInitialisationProcess>(MockBehavior.Strict);
+    private readonly Mock<IReporter> _reporterMock = new Mock<IReporter>(MockBehavior.Strict);
+    private readonly MutationTestInput _mutationTestInput;
+    private readonly IFileSystem _fileSystemMock = new MockFileSystem();
+    private readonly string _testFilePath = "c:\\mytestfile.cs";
+    private readonly string _testFileContents = @"using Xunit;
 
 namespace ExtraProject.XUnit
 {
@@ -42,60 +42,59 @@ namespace ExtraProject.XUnit
 }
 ";
 
-        public ProjectMutatorTests()
-        {
-            _mutationTestProcessMock.Setup(x => x.Mutate());
-            _fileSystemMock.File.WriteAllText(_testFilePath, _testFileContents);
+    public ProjectMutatorTests()
+    {
+        _mutationTestProcessMock.Setup(x => x.Mutate());
+        _fileSystemMock.File.WriteAllText(_testFilePath, _testFileContents);
 
-            _mutationTestInput = new MutationTestInput()
+        _mutationTestInput = new MutationTestInput()
+        {
+            TestProjectsInfo = new TestProjectsInfo(_fileSystemMock)
             {
-                TestProjectsInfo = new TestProjectsInfo(_fileSystemMock)
+                TestProjects = new List<TestProject>
                 {
-                    TestProjects = new List<TestProject>
-                    {
-                        new TestProject(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
-                            sourceFiles: new string[] { _testFilePath }).Object)
-                    }
+                    new TestProject(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
+                        sourceFiles: new string[] { _testFilePath }).Object)
                 }
-            };
-        }
+            }
+        };
+    }
 
-        [Fact]
-        public void ShouldInitializeEachProjectInSolution()
+    [Fact]
+    public void ShouldInitializeEachProjectInSolution()
+    {
+        // arrange
+        var options = new StrykerOptions();
+        var target = new ProjectMutator(_initialisationProcessMock.Object, _mutationTestProcessMock.Object);
+        var failedTest = Guid.NewGuid();
+        var successfulTest = Guid.NewGuid();
+        var testCase1 = new VsTest.TestCase("mytestname", new Uri(_testFilePath), _testFileContents)
         {
-            // arrange
-            var options = new StrykerOptions();
-            var target = new ProjectMutator(_initialisationProcessMock.Object, _mutationTestProcessMock.Object);
-            var failedTest = Guid.NewGuid();
-            var successfulTest = Guid.NewGuid();
-            var testCase1 = new VsTest.TestCase("mytestname", new Uri(_testFilePath), _testFileContents)
-            {
-                CodeFilePath = _testFilePath,
-                LineNumber = 7,
-            };
-            var tests = new List<VsTestDescription> { new VsTestDescription(testCase1) };
-            var initialTestRunResult = new TestRunResult(
-                vsTestDescriptions: tests,
-                executedTests: new TestGuidsList(failedTest, successfulTest),
-                failedTests: new TestGuidsList(failedTest),
-                timedOutTest: TestGuidsList.NoTest(),
-                message: "testrun succesful",
-                Enumerable.Empty<string>(),
-                timeSpan: TimeSpan.FromSeconds(2));
+            CodeFilePath = _testFilePath,
+            LineNumber = 7,
+        };
+        var tests = new List<VsTestDescription> { new VsTestDescription(testCase1) };
+        var initialTestRunResult = new TestRunResult(
+            vsTestDescriptions: tests,
+            executedTests: new TestGuidsList(failedTest, successfulTest),
+            failedTests: new TestGuidsList(failedTest),
+            timedOutTest: TestGuidsList.NoTest(),
+            message: "testrun succesful",
+            Enumerable.Empty<string>(),
+            timeSpan: TimeSpan.FromSeconds(2));
 
-            var initialTestrun = new InitialTestRun(initialTestRunResult, new TimeoutValueCalculator(500));
+        var initialTestrun = new InitialTestRun(initialTestRunResult, new TimeoutValueCalculator(500));
 
-            _initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(_mutationTestInput);
-            _initialisationProcessMock.Setup(x => x.InitialTest(options))
-                .Returns(initialTestrun);
+        _initialisationProcessMock.Setup(x => x.Initialize(It.IsAny<StrykerOptions>(), It.IsAny<IEnumerable<IAnalyzerResult>>())).Returns(_mutationTestInput);
+        _initialisationProcessMock.Setup(x => x.InitialTest(options))
+            .Returns(initialTestrun);
 
-            // act
-            var result = target.MutateProject(options, _reporterMock.Object);
+        // act
+        var result = target.MutateProject(options, _reporterMock.Object);
 
-            // assert
-            result.ShouldNotBeNull();
-            var testFile = _mutationTestInput.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
-            testFile.Tests.Count().ShouldBe(1);
-        }
+        // assert
+        result.ShouldNotBeNull();
+        var testFile = _mutationTestInput.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
+        testFile.Tests.Count().ShouldBe(1);
     }
 }

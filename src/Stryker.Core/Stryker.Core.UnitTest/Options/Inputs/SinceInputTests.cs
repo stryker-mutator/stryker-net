@@ -2,63 +2,62 @@ using Shouldly;
 using Stryker.Core.Options.Inputs;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.Options.Inputs
+namespace Stryker.Core.UnitTest.Options.Inputs;
+
+public class SinceInputTests : TestBase
 {
-    public class SinceInputTests : TestBase
+    [Fact]
+    public void ShouldHaveHelpText()
     {
-        [Fact]
-        public void ShouldHaveHelpText()
-        {
-            var target = new SinceInput();
-            target.HelpText.ShouldBe(@"Enables diff compare. Only test changed files. | default: 'False'");
-        }
+        var target = new SinceInput();
+        target.HelpText.ShouldBe(@"Enables diff compare. Only test changed files. | default: 'False'");
+    }
 
-        [Fact]
-        public void ShouldBeEnabledWhenTrue()
-        {
-            var target = new SinceInput { SuppliedInput = true };
+    [Fact]
+    public void ShouldBeEnabledWhenTrue()
+    {
+        var target = new SinceInput { SuppliedInput = true };
 
-            var result = target.Validate(withBaseline: null);
+        var result = target.Validate(withBaseline: null);
 
-            result.ShouldBeTrue();
-        }
+        result.ShouldBeTrue();
+    }
 
-        [Fact]
-        public void ShouldBeEnabledWhenTrueEvenIfWithBaselineFalse()
-        {
-            var target = new SinceInput { SuppliedInput = true };
+    [Fact]
+    public void ShouldBeEnabledWhenTrueEvenIfWithBaselineFalse()
+    {
+        var target = new SinceInput { SuppliedInput = true };
 
-            var result = target.Validate(withBaseline: false);
+        var result = target.Validate(withBaseline: false);
 
-            result.ShouldBeTrue();
-        }
+        result.ShouldBeTrue();
+    }
 
-        [Fact]
-        public void ShouldProvideDefaultWhenNull()
-        {
-            var target = new SinceInput();
+    [Fact]
+    public void ShouldProvideDefaultWhenNull()
+    {
+        var target = new SinceInput();
 
-            var result = target.Validate(withBaseline: null);
+        var result = target.Validate(withBaseline: null);
 
-            result.ShouldBe(target.Default.Value);
-        }
+        result.ShouldBe(target.Default.Value);
+    }
 
-        [Fact]
-        public void ShouldNotBeEnabledWhenFalse()
-        {
-            var target = new SinceInput { SuppliedInput = false };
+    [Fact]
+    public void ShouldNotBeEnabledWhenFalse()
+    {
+        var target = new SinceInput { SuppliedInput = false };
 
-            var result = target.Validate(withBaseline: null);
+        var result = target.Validate(withBaseline: null);
 
-            result.ShouldBeFalse();
-        }
+        result.ShouldBeFalse();
+    }
 
-        [Fact]
-        public void ShouldBeEnabledWithBaseline()
-        {
-            var sinceEnabled = new SinceInput().Validate(withBaseline: true);
+    [Fact]
+    public void ShouldBeEnabledWithBaseline()
+    {
+        var sinceEnabled = new SinceInput().Validate(withBaseline: true);
 
-            sinceEnabled.ShouldBeTrue();
-        }
+        sinceEnabled.ShouldBeTrue();
     }
 }
