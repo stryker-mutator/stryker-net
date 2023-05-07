@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
@@ -85,7 +86,7 @@ namespace Stryker.Core.Initialisation
                 projectsUnderTestAnalyzerResult = projectsUnderTestAnalyzerResult.Where(p =>
                     p.ProjectFilePath.Replace('\\', '/').Contains(normalizedProjectUnderTestNameFilter)).ToList();
             }
-            return BuildProjectInfos(options, dependents, projectsUnderTestAnalyzerResult, solutionTestProjects, solutionAnalyzerResults);
+            return BuildProjectInfos(options, dependents, projectsUnderTestAnalyzerResult, solutionTestProjects);
         }
 
         private static Dictionary<string, HashSet<string>> FindDependentProjects(IReadOnlyCollection<IAnalyzerResult> projectsUnderTest)
@@ -163,8 +164,7 @@ namespace Stryker.Core.Initialisation
         private IReadOnlyCollection<SourceProjectInfo> BuildProjectInfos(StrykerOptions options,
             IReadOnlyDictionary<string, HashSet<string>> dependents,
             IReadOnlyCollection<IAnalyzerResult> projectsUnderTestAnalyzerResult,
-            IReadOnlyCollection<IAnalyzerResult> testProjects,
-            IReadOnlyCollection<IAnalyzerResult> solutionAnalyzerResults)
+            IReadOnlyCollection<IAnalyzerResult> testProjects)
         {
             var result = new List<SourceProjectInfo>(projectsUnderTestAnalyzerResult.Count);
             foreach (var project in projectsUnderTestAnalyzerResult.Select(p =>p.ProjectFilePath))
@@ -301,54 +301,58 @@ namespace Stryker.Core.Initialisation
                 .Where(x => x.Replace("\\", "/")
                     .Contains(normalizedProjectUnderTestNameFilter, StringComparison.OrdinalIgnoreCase)).ToImmutableList();
 
-            if (!projectReferencesMatchingNameFilter.Any())
+            var count = projectReferencesMatchingNameFilter.Count;
+            if (count == 1)
             {
-                stringBuilder.Append("No project reference matched the given project filter ");
-                stringBuilder.Append($"'{options.SourceProjectName}'");
-                stringBuilder.Append(BuildReferenceChoice(projectReferences));
-
-                throw new InputException(stringBuilder.ToString());
-            }
-            else if (projectReferencesMatchingNameFilter.Count() > 1)
-            {
-                stringBuilder.Append("More than one project reference matched the given project filter ");
-                stringBuilder.Append($"'{options.SourceProjectName}'");
-                stringBuilder.AppendLine(", please specify the full name of the project reference.");
-                stringBuilder.Append(BuildReferenceChoice(projectReferences));
-
-                throw new InputException(stringBuilder.ToString());
+                return projectReferencesMatchingNameFilter.Single();
             }
 
-            return projectReferencesMatchingNameFilter.Single();
+            if (count == 0)
+            {
+                stringBuilder.Append("No project reference matched the given project filter ")
+                .Append($"'{options.SourceProjectName}'");
+            }
+            else
+            {
+                stringBuilder.Append("More than one project reference matched the given project filter ")
+                .Append($"'{options.SourceProjectName}'")
+                .AppendLine(", please specify the full name of the project reference.");
+                
+            }
+
+            stringBuilder.Append(BuildReferenceChoice(projectReferences));
+
+            throw new InputException(stringBuilder.ToString());
+
         }
 
         private string DetermineTargetProjectWithoutNameFilter(IReadOnlyCollection<string> projectReferences)
         {
-            var stringBuilder = new StringBuilder();
 
-            if (projectReferences.Count > 1) // Too many references found
+            var count = projectReferences.Count;
+            if (count == 1)
             {
-                stringBuilder.AppendLine("Test project contains more than one project reference. Please set the project option (https://stryker-mutator.io/docs/stryker-net/configuration#project-file-name) to specify which project to mutate.");
-                stringBuilder.Append(BuildReferenceChoice(projectReferences));
-
-                throw new InputException(stringBuilder.ToString());
+                return projectReferences.Single();
             }
 
-            if (projectReferences.Count==0) // No references found
+            var stringBuilder = new StringBuilder();
+            if (count > 1) // Too many references found
+            {
+                stringBuilder.AppendLine("Test project contains more than one project reference. Please set the project option (https://stryker-mutator.io/docs/stryker-net/configuration#project-file-name) to specify which project to mutate.")
+                .Append(BuildReferenceChoice(projectReferences));
+            }
+            else  // No references found
             {
                 stringBuilder.AppendLine("No project references found. Please add a project reference to your test project and retry.");
 
-                throw new InputException(stringBuilder.ToString());
             }
-
-            return projectReferences.Single();
+            throw new InputException(stringBuilder.ToString());
         }
 
         private static IReadOnlyCollection<string> FindProjectsReferencedByAllTestProjects(IReadOnlyCollection<IAnalyzerResult> testProjects)
         {
-            var amountOfTestProjects = testProjects.Count();
             var allProjectReferences = testProjects.SelectMany(t => t.ProjectReferences);
-            var projectReferences = allProjectReferences.GroupBy(x => x).Where(g => g.Count() == amountOfTestProjects).Select(g => g.Key).ToImmutableList();
+            var projectReferences = allProjectReferences.GroupBy(x => x).Where(g => g.Count() == testProjects.Count).Select(g => g.Key).ToImmutableList();
             return projectReferences;
         }
 
