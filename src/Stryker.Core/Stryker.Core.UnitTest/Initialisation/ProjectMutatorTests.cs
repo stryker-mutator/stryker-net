@@ -65,14 +65,20 @@ namespace ExtraProject.XUnit
             // arrange
             var options = new StrykerOptions();
             var target = new ProjectMutator(_mutationTestProcessMock.Object);
-            var failedTest = Guid.NewGuid();
-            var successfulTest = Guid.NewGuid();
             var testCase1 = new VsTest.TestCase("mytestname", new Uri(_testFilePath), _testFileContents)
             {
                 CodeFilePath = _testFilePath,
                 LineNumber = 7,
+   
             };
-            var tests = new List<VsTestDescription> { new VsTestDescription(testCase1) };
+            var failedTest = testCase1.Id;
+            var testCase2 = new VsTest.TestCase("mytestname", new Uri(_testFilePath), _testFileContents)
+            {
+                CodeFilePath = _testFilePath,
+                LineNumber = 7,
+            };
+            var successfulTest = testCase2.Id;
+            var tests = new List<VsTestDescription> { new VsTestDescription(testCase1), new VsTestDescription(testCase2) };
             var initialTestRunResult = new TestRunResult(
                 vsTestDescriptions: tests,
                 executedTests: new TestGuidsList(failedTest, successfulTest),

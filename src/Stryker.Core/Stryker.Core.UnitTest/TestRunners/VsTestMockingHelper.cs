@@ -488,7 +488,7 @@ public class VsTestMockingHelper : TestBase
 
     protected MutationTestProcess BuildMutationTestProcess(VsTestRunnerPool runner, StrykerOptions options, IReadOnlyList<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> tests = null, SourceProjectInfo sourceProject = null)
     {
-        var testRunResult = new TestRunResult(null, new TestGuidsList((tests ?? TestCases).Select(t => t.Id)),
+        var testRunResult = new TestRunResult(new List<VsTestDescription>(), new TestGuidsList((tests ?? TestCases).Select(t => t.Id)),
             TestGuidsList.NoTest(),
             TestGuidsList.NoTest(),
             string.Empty,
