@@ -6,7 +6,6 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
@@ -67,7 +66,7 @@ namespace Stryker.Core.Initialisation
                     options.SolutionPath, options.TargetFramework);
                 return new[]
                 {
-                    BuildSourceProjectInfo(options, analyzerResult, testProjects, FindSourceProject(testProjects, options))
+                    BuildSourceProjectInfo(options, analyzerResult, testProjects)
                 };
             }
 
@@ -167,11 +166,11 @@ namespace Stryker.Core.Initialisation
             IReadOnlyCollection<IAnalyzerResult> testProjects)
         {
             var result = new List<SourceProjectInfo>(projectsUnderTestAnalyzerResult.Count);
-            foreach (var project in projectsUnderTestAnalyzerResult.Select(p =>p.ProjectFilePath))
+            foreach (var project in projectsUnderTestAnalyzerResult)
             {
-                var projectLogName = Path.GetRelativePath(Path.GetDirectoryName(options.SolutionPath), project);
+                var projectLogName = Path.GetRelativePath(Path.GetDirectoryName(options.SolutionPath), project.ProjectFilePath);
                 var analyzerResultsForTestProjects = testProjects
-                    .Where(testProject => testProject.ProjectReferences.Any(reference => dependents[project].Contains(reference)));
+                    .Where(testProject => testProject.ProjectReferences.Any(reference => dependents[project.ProjectFilePath].Contains(reference)));
                 var relatedTestProjects = analyzerResultsForTestProjects.Select(p =>p.ProjectFilePath).ToList();
                 if (relatedTestProjects.Count > 0)
                 {
@@ -182,19 +181,9 @@ namespace Stryker.Core.Initialisation
                         _logger.LogDebug("{0}", relatedTestProjectAnalyzerResults);
                     }
 
-                    var projectOptions = options.Copy(
-                        project,
-                        options.ProjectPath,
-                         project,
-                        testProjects: relatedTestProjects);
-                    var resolveSourceProjectInfo = ResolveSourceProjectInfos(projectOptions);
+                    var sourceProject = BuildSourceProjectInfo(options, project, analyzerResultsForTestProjects);
 
-                    resolveSourceProjectInfo.Single().TestProjectsInfo =
-                        new TestProjectsInfo(FileSystem)
-                        {
-                            TestProjects = analyzerResultsForTestProjects.Select(testProjectAnalyzerResult => new TestProject(FileSystem, testProjectAnalyzerResult)).ToList()
-                        };
-                    result.Add(resolveSourceProjectInfo.Single());
+                    result.Add(sourceProject);
                 }
                 else
                 {
@@ -206,8 +195,7 @@ namespace Stryker.Core.Initialisation
 
         private SourceProjectInfo BuildSourceProjectInfo(StrykerOptions options,
             IAnalyzerResult analyzerResult,
-            IEnumerable<IAnalyzerResult> analyzerResults,
-            string targetProject)
+            IEnumerable<IAnalyzerResult> analyzerResults)
         {
             var targetProjectInfo = new SourceProjectInfo
             {
@@ -226,7 +214,7 @@ namespace Stryker.Core.Initialisation
             var inputFiles = builder.Build();
             targetProjectInfo.ProjectContents = inputFiles;
 
-            _logger.LogInformation("Found project {0} to mutate.", targetProject);
+            _logger.LogInformation("Found project {0} to mutate.", analyzerResult.ProjectFilePath);
             targetProjectInfo.TestProjectsInfo = new(FileSystem)
             {
                 TestProjects = analyzerResults.Select(testProjectAnalyzerResult => new TestProject(FileSystem, testProjectAnalyzerResult)).ToList()
