@@ -1,3 +1,12 @@
+## [3.8.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.8.1...stryker@3.8.2) (2023-05-07)
+
+
+### Bug Fixes
+
+* **tests report:** Correctly parse test files with preprocessor symbols ([#2502](https://github.com/stryker-mutator/stryker-net/issues/2502)) ([86b4720](https://github.com/stryker-mutator/stryker-net/commit/86b4720028f17b83a2ba297bc6774a89d992332b))
+
+
+
 ## [3.8.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.8.0...stryker@3.8.1) (2023-05-05)
 
 
