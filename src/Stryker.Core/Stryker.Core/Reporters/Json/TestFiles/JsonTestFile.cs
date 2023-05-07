@@ -10,6 +10,8 @@ namespace Stryker.Core.Reporters.Json.TestFiles
         public string Source { get; init; }
         public ISet<Test> Tests { get; set; }
 
+        public JsonTestFile() { }
+
         public JsonTestFile(TestFile testFile)
         {
             Source = testFile?.Source;

@@ -1,3 +1,11 @@
+## [3.8.2](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.8.1...dotnet-stryker@3.8.2) (2023-05-07)
+
+
+
+## [3.8.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.8.0...dotnet-stryker@3.8.1) (2023-05-05)
+
+
+
 # [3.8.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.7.1...dotnet-stryker@3.8.0) (2023-05-04)
 
 

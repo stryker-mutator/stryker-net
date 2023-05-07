@@ -76,12 +76,12 @@
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[19.2.18, )",
-        "resolved": "19.2.18",
-        "contentHash": "+voI7t1OPXpyoosTdlaL/gqszY7ttIHedMn5a41tAQ7uOpCPFO1e9GmOgNmAq54QQ9YFkg2MG3j2rOYB7EV5xw==",
+        "requested": "[19.2.22, )",
+        "resolved": "19.2.22",
+        "contentHash": "9nyGYwVvI3M3d1NrZIupHy1wro+/P3SMV9SMJOWezdaP7pBSvxMVk+R3Dl6zqVLRxuXrSX9jI8Je+HB+yqynfw==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "19.2.18",
-          "TestableIO.System.IO.Abstractions.Wrappers": "19.2.18"
+          "TestableIO.System.IO.Abstractions": "19.2.22",
+          "TestableIO.System.IO.Abstractions.Wrappers": "19.2.22"
         }
       },
       "xunit": {
@@ -1524,8 +1524,8 @@
       },
       "TestableIO.System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "19.2.18",
-        "contentHash": "gckCkitQe+BJY4ggHZUrnRsvzCzDY+Pgt4NlwIZBHu9fIghqdWju+DDq4+ZkmN/wXcPwD/4Et8w5HxF9fqMQmg=="
+        "resolved": "19.2.22",
+        "contentHash": "YofgN+s+OQz4tlNSb2fX1ncB5SRD38mU54QIdwGRS3UG7b63KAKPhp1MCcGTnN/eK4Tq1vFuZ6wa2AvEzGj5Uw=="
       },
       "Validation": {
         "type": "Transitive",
@@ -1604,7 +1604,7 @@
           "Spectre.Console.Analyzer": "[0.46.0, )",
           "Stryker.DataCollector": "[1.0.0, )",
           "Stryker.RegexMutators": "[1.0.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[19.2.18, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[19.2.22, )"
         }
       },
       "stryker.datacollector": {
@@ -1847,11 +1847,11 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[19.2.18, )",
-        "resolved": "19.2.18",
-        "contentHash": "45M8D9Aus5Ji2IQ588li7s1VHbAF9tb9xEExPWIS8jBiJy2fthp2GPTa5KhPdsrc28+bZiVN30DpWYW6F5/P7w==",
+        "requested": "[19.2.22, )",
+        "resolved": "19.2.22",
+        "contentHash": "66QMIO/VTxISS2FH9oJBxt0nX5Jb3dTT01zWfehkNLG+x7ti/Upj58gLpUXEWN8eE6zL+Yi/6QSaDvIkf2ZlUA==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "19.2.18"
+          "TestableIO.System.IO.Abstractions": "19.2.22"
         }
       }
     }
