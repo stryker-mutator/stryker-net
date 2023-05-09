@@ -15,5 +15,12 @@
       "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
       "automerge": true
     }
-  ]
+  ],
+  "azure-pipelines": {
+    "enabled": true,
+    "fileMatch": [
+      "azure.*pipelines?.*\\.ya?ml$",
+      "pipeline-templates\/.*\\.ya?ml$"
+    ]
+  }
 }
