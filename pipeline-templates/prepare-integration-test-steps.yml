@@ -4,13 +4,13 @@ steps:
   inputs:
     version: 6.x
 
-- task: DotNetCoreCLI@2
+- task: DotNetCoreCLI@2.217.0
   displayName: 'Run unit tests'
   inputs:
     command: test
     projects: 'src/**/*.UnitTest.csproj'
 
-- task: DotNetCoreCLI@2
+- task: DotNetCoreCLI@2.217.0
   displayName: 'Install integrationtest dotnet tool (fork)'
   condition: eq(variables['System.PullRequest.IsFork'], 'True')
   inputs:
@@ -20,7 +20,7 @@ steps:
     includeNuGetOrg: false
     workingDirectory: 'pipeline-templates'
 
-- task: DotNetCoreCLI@2
+- task: DotNetCoreCLI@2.217.0
   displayName: 'Install integrationtest dotnet tool (source)'
   condition: eq(variables['System.PullRequest.IsFork'], 'False')
   inputs:

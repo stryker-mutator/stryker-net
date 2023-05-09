@@ -16,14 +16,14 @@ stages:
       displayName: 'Use dotnet 6'
       inputs:
         version: 6.x
-    - task: DotNetCoreCLI@2
+    - task: DotNetCoreCLI@2.217.0
       displayName: 'Update stryker cli and stryker core lock files'
       inputs:
         command: 'custom'
         custom: 'restore'
         arguments: --force-evaluate
         workingDirectory: 'src/'
-    - task: DotNetCoreCLI@2
+    - task: DotNetCoreCLI@2.217.0
       displayName: 'Update integrationtest lock files'
       inputs:
         command: 'custom'
