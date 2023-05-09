@@ -1,11 +1,11 @@
 steps:
-- task: Cache@2
+- task: Cache@2.198.0
   displayName: 'Cache NuGet packages'
   inputs:
     key: nuget | **/packages.lock.json
     path: $(NUGET_PACKAGES)
 
-- task: Cache@2
+- task: Cache@2.198.0
   displayName: 'Cache Library Manager libraries (Windows)'
   inputs:
     key:  libman | **/libman.json
@@ -13,7 +13,7 @@ steps:
     path: $(LibManCacheWindows)
   condition: eq(variables['Agent.OS'], 'Windows_NT')
 
-- task: Cache@2
+- task: Cache@2.198.0
   displayName: 'Cache Libary Manager libraries (macOS, Linux)'
   inputs:
     key: libman | **/libman.json
