@@ -9,7 +9,7 @@ steps:
   displayName: 'Run integration test ${{ parameters.testName }}'
   failOnStderr: false
 
-- task: PublishPipelineArtifact@0
+- task: PublishPipelineArtifact@1
   inputs:
     artifactName: ${{ parameters.testName }}
     targetPath: '${{ parameters.workingDirectory }}/StrykerOutput'
