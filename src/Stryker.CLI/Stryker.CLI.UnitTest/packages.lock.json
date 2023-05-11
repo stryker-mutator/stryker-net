@@ -1621,7 +1621,7 @@
           "NuGet.Frameworks": "[6.5.0, )",
           "ResXResourceReader.NetStandard": "[1.1.0, )",
           "Serilog": "[2.12.0, )",
-          "Serilog.Extensions.Logging": "[3.1.0, )",
+          "Serilog.Extensions.Logging": "[7.0.0, )",
           "Serilog.Extensions.Logging.File": "[3.0.0, )",
           "Serilog.Sinks.Console": "[4.1.0, )",
           "ShellProgressBar": "[5.2.0, )",
@@ -1830,12 +1830,12 @@
       },
       "Serilog.Extensions.Logging": {
         "type": "CentralTransitive",
-        "requested": "[3.1.0, )",
-        "resolved": "3.1.0",
-        "contentHash": "IWfem7wfrFbB3iw1OikqPFNPEzfayvDuN4WP7Ue1AVFskalMByeWk3QbtUXQR34SBkv1EbZ3AySHda/ErDgpcg==",
+        "requested": "[7.0.0, )",
+        "resolved": "7.0.0",
+        "contentHash": "9faU0zNQqU7I6soVhLUMYaGNpgWv6cKlKb2S5AnS8gXxzW/em5Ladm/6FMrWTnX41cdbdGPOWNAo6adi4WaJ6A==",
         "dependencies": {
-          "Microsoft.Extensions.Logging": "2.0.0",
-          "Serilog": "2.9.0"
+          "Microsoft.Extensions.Logging": "7.0.0",
+          "Serilog": "2.12.0"
         }
       },
       "Serilog.Extensions.Logging.File": {
