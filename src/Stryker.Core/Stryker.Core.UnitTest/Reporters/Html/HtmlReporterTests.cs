@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
-using Buildalyzer;
 using Moq;
 using Shouldly;
 using Spectre.Console.Testing;
@@ -98,7 +97,7 @@ namespace Stryker.Core.UnitTest.Reporters.Html
                 OutputPath = " folder \\ next level",
                 ReportFileName = "mutation-report"
             };
-            var reporter = new HtmlReporter(options, mockFileSystem, mockAnsiConsole, Mock.Of<IWebbrowserOpener>(),  mutantHandler: _handlerMock.Object);
+            var reporter = new HtmlReporter(options, mockFileSystem, mockAnsiConsole, Mock.Of<IWebbrowserOpener>(), mutantHandler: _handlerMock.Object);
             var mutationTree = ReportTestHelper.CreateProjectWith();
 
             var testProjectInfo = new TestProjectsInfo(mockFileSystem)
@@ -160,7 +159,6 @@ namespace Stryker.Core.UnitTest.Reporters.Html
             reporter.OnMutantsCreated(mutationTree, testProjectInfo);
 
             var reportUri = Path.Combine(options.ReportPath, $"{options.ReportFileName}.html");
-            reportUri = "file://" + reportUri.Replace("\\", "/");
 
             // Check if browser open action is invoked
             mockProcess.Verify(m => m.Open(reportUri));
@@ -189,7 +187,6 @@ namespace Stryker.Core.UnitTest.Reporters.Html
             reporter.OnMutantsCreated(mutationTree, testProjectInfo);
 
             var reportUri = Path.Combine(options.ReportPath, $"{options.ReportFileName}.html");
-            reportUri = "file://" + reportUri.Replace("\\", "/");
 
             // Check if browser open action is invoked
             mockProcess.Verify(m => m.Open(reportUri));
