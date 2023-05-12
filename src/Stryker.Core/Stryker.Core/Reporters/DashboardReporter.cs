@@ -6,9 +6,9 @@ using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.Reporters.Html.ProcessWrapper;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
+using Stryker.Core.Reporters.WebBrowserOpener;
 
 namespace Stryker.Core.Reporters
 {
@@ -27,7 +27,7 @@ namespace Stryker.Core.Reporters
             _dashboardClient = dashboardClient ?? new DashboardClient(options);
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
             _console = console ?? AnsiConsole.Console;
-            _processWrapper = processWrapper ?? new WebbrowserOpener();
+            _processWrapper = processWrapper ?? new CrossPlatformBrowserOpener();
         }
 
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)

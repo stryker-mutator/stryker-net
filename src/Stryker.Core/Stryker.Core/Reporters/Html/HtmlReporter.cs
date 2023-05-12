@@ -7,10 +7,10 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.Reporters.Html.ProcessWrapper;
-using Stryker.Core.Reporters.Html.Realtime;
 using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Core.Reporters.Html.Realtime;
 using Stryker.Core.Reporters.Json;
+using Stryker.Core.Reporters.WebBrowserOpener;
 
 namespace Stryker.Core.Reporters.Html;
 
@@ -32,7 +32,7 @@ public class HtmlReporter : IReporter
         _options = options;
         _fileSystem = fileSystem ?? new FileSystem();
         _console = console ?? AnsiConsole.Console;
-        _processWrapper = processWrapper ?? new WebbrowserOpener();
+        _processWrapper = processWrapper ?? new CrossPlatformBrowserOpener();
         _mutantHandler = mutantHandler ?? new RealtimeMutantHandler(_options);
     }
 
@@ -95,8 +95,7 @@ public class HtmlReporter : IReporter
         // This reporter does not currently report when the mutation test run starts
     }
 
-    private void OpenReportInBrowser(string reportPath) =>
-        _processWrapper.Open("file://" + reportPath.Replace("\\", "/"));
+    private void OpenReportInBrowser(string reportPath) => _processWrapper.Open(reportPath);
 
     private string BuildReportPath()
     {

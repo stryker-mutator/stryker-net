@@ -11,8 +11,8 @@ using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Html;
-using Stryker.Core.Reporters.Html.ProcessWrapper;
 using Stryker.Core.Reporters.Html.Realtime;
+using Stryker.Core.Reporters.WebBrowserOpener;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters.Html
