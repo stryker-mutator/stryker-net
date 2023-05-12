@@ -21,7 +21,7 @@ namespace Stryker.Core.CoverageAnalysis
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<CoverageAnalyser>();
         }
 
-        public void DetermineTestCoverage(IProjectAndTest project, ITestRunner runner, IEnumerable<Mutant> mutants, ITestGuids resultFailingTests)
+        public void DetermineTestCoverage(IProjectAndTests project, ITestRunner runner, IEnumerable<Mutant> mutants, ITestGuids resultFailingTests)
         {
             if (!_options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
                 !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))

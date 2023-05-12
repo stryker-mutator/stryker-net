@@ -38,7 +38,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _vsTestConsole = _context.BuildVsTestWrapper(RunnerId);
         }
 
-        public TestRunResult InitialTest(IProjectAndTest project)
+        public TestRunResult InitialTest(IProjectAndTests project)
         {
             var testResults = RunTestSession(TestGuidsList.EveryTest(), project);
             foreach (var test in _context.VsTests.Keys)
@@ -65,7 +65,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return BuildTestRunResult(testResults, totalCountOfTests, totalCountOfTests,false);
         }
 
-        public TestRunResult TestMultipleMutants(IProjectAndTest project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
+        public TestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var mutantTestsMap = new Dictionary<int, ITestGuids>();
             var timeOutMs = timeoutCalc?.DefaultTimeout;
@@ -181,7 +181,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 : new TestRunResult(_context.VsTests.Values, ranTests, failedTestsDescription, timedOutTests, message, messages, duration);
         }
 
-        public IRunResults RunTestSession(ITestGuids testsToRun, IProjectAndTest project, int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<IRunResults> updateHandler = null) =>
+        public IRunResults RunTestSession(ITestGuids testsToRun, IProjectAndTests project, int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<IRunResults> updateHandler = null) =>
             RunTestSession(testsToRun, project.GetTestAssemblies(),
                 _context.GenerateRunSettings(timeout, false, mutantTestsMap, project.HelperNamespace, project.IsFullFramework), timeout, updateHandler).GetResults();
 
@@ -216,7 +216,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             _aborted = false;
             var options = new TestPlatformOptions { TestCaseFilter = string.IsNullOrWhiteSpace(_context.Options.TestCaseFilter) ? null : _context.Options.TestCaseFilter };
-            Task session = null;
+            Task session;
             if (tests.IsEveryTest)
             {
                 session = _vsTestConsole.RunTestsWithCustomTestHostAsync(sources, runSettings, options, eventHandler, strykerVsTestHostLauncher);

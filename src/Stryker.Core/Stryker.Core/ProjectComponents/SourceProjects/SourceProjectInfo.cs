@@ -8,7 +8,7 @@ using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.ProjectComponents.SourceProjects
 {
-    public class SourceProjectInfo : IProjectAndTest
+    public class SourceProjectInfo : IProjectAndTests
     {
         private readonly List<string> _warnings = new();
 

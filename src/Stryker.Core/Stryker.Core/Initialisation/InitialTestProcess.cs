@@ -8,7 +8,7 @@ namespace Stryker.Core.Initialisation
 {
     public interface IInitialTestProcess
     {
-        InitialTestRun InitialTest(StrykerOptions options, IProjectAndTest project, ITestRunner testRunner);
+        InitialTestRun InitialTest(StrykerOptions options, IProjectAndTests project, ITestRunner testRunner);
     }
 
     public class InitialTestProcess : IInitialTestProcess
@@ -26,7 +26,7 @@ namespace Stryker.Core.Initialisation
         /// <param name="testRunner"></param>
         /// <param name="options">Stryker options</param>
         /// <returns>The duration of the initial test run</returns>
-        public InitialTestRun InitialTest(StrykerOptions options, IProjectAndTest project, ITestRunner testRunner)
+        public InitialTestRun InitialTest(StrykerOptions options, IProjectAndTests project, ITestRunner testRunner)
         {
             // Setup a stopwatch to record the initial test duration
             var stopwatch = new Stopwatch();

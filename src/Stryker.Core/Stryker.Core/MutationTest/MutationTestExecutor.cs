@@ -15,7 +15,7 @@ namespace Stryker.Core.MutationTest
     public interface IMutationTestExecutor
     {
         ITestRunner TestRunner { get; }
-        void Test(IProjectAndTest project, IList<Mutant> mutantsToTest, ITimeoutValueCalculator timeoutMs, TestUpdateHandler updateHandler);
+        void Test(IProjectAndTests project, IList<Mutant> mutantsToTest, ITimeoutValueCalculator timeoutMs, TestUpdateHandler updateHandler);
     }
 
     public class MutationTestExecutor : IMutationTestExecutor
@@ -29,7 +29,7 @@ namespace Stryker.Core.MutationTest
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
         }
 
-        public void Test(IProjectAndTest project, IList<Mutant> mutantsToTest, ITimeoutValueCalculator timeoutMs, TestUpdateHandler updateHandler)
+        public void Test(IProjectAndTests project, IList<Mutant> mutantsToTest, ITimeoutValueCalculator timeoutMs, TestUpdateHandler updateHandler)
         {
             var forceSingle = false;
             while (mutantsToTest.Any())
@@ -76,7 +76,7 @@ namespace Stryker.Core.MutationTest
             }
         }
 
-        private TestRunResult RunTestSession(IProjectAndTest projectAndTest, ICollection<Mutant> mutantsToTest,
+        private TestRunResult RunTestSession(IProjectAndTests projectAndTests, ICollection<Mutant> mutantsToTest,
             ITimeoutValueCalculator timeoutMs,
             TestUpdateHandler updateHandler, bool forceSingle)
         {
@@ -85,7 +85,7 @@ namespace Stryker.Core.MutationTest
             {
                 foreach (var mutant in mutantsToTest)
                 {
-                    var localResult = TestRunner.TestMultipleMutants(projectAndTest, timeoutMs, new[] { mutant }, updateHandler);
+                    var localResult = TestRunner.TestMultipleMutants(projectAndTests, timeoutMs, new[] { mutant }, updateHandler);
                     if (updateHandler == null || localResult.SessionTimedOut)
                     {
                         mutant.AnalyzeTestRun(localResult.FailingTests,
@@ -98,7 +98,7 @@ namespace Stryker.Core.MutationTest
                 return new TestRunResult(true);
             }
 
-            var result = TestRunner.TestMultipleMutants(projectAndTest, timeoutMs, mutantsToTest.ToList(), updateHandler);
+            var result = TestRunner.TestMultipleMutants(projectAndTests, timeoutMs, mutantsToTest.ToList(), updateHandler);
             if (updateHandler != null && !result.SessionTimedOut)
             {
                 return result;
