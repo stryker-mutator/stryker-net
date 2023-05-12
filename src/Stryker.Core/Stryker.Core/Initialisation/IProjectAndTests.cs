@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.Initialisation;
 
-public interface IProjectAndTest
+public interface IProjectAndTests
 {
     bool IsFullFramework { get; }
 

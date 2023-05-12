@@ -14,12 +14,12 @@ namespace Stryker.Core.TestRunners
     {
         bool DiscoverTests(string assembly);
 
-        TestSet GetTests(IProjectAndTest project);
+        TestSet GetTests(IProjectAndTests project);
 
-        TestRunResult InitialTest(IProjectAndTest project);
+        TestRunResult InitialTest(IProjectAndTests project);
 
-        IEnumerable<CoverageRunResult> CaptureCoverage(IProjectAndTest project);
+        IEnumerable<CoverageRunResult> CaptureCoverage(IProjectAndTests project);
 
-        TestRunResult TestMultipleMutants(IProjectAndTest project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update);
+        TestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update);
     }
 }

@@ -148,8 +148,8 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var mockRunner = new Mock<ITestRunner>();
             mockRunner.Setup(r => r.DiscoverTests(It.IsAny<string>())).Returns(true);
-            mockRunner.Setup(r => r.GetTests(It.IsAny<IProjectAndTest>())).Returns(new TestSet());
-            mockRunner.Setup(r => r.InitialTest(It.IsAny<IProjectAndTest>())).Returns(new TestRunResult(true));
+            mockRunner.Setup(r => r.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
+            mockRunner.Setup(r => r.InitialTest(It.IsAny<IProjectAndTests>())).Returns(new TestRunResult(true));
 
             // act
             var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();

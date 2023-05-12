@@ -5,7 +5,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
-using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutantFilters;
@@ -13,7 +12,6 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
-using static Microsoft.FSharp.Core.ByRefKinds;
 
 namespace Stryker.Core.MutationTest
 {
