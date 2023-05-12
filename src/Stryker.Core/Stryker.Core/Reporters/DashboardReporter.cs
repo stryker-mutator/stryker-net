@@ -18,16 +18,16 @@ namespace Stryker.Core.Reporters
         private readonly IDashboardClient _dashboardClient;
         private readonly ILogger<DashboardReporter> _logger;
         private readonly IAnsiConsole _console;
-        private readonly IWebbrowserOpener _processWrapper;
+        private readonly IWebbrowserOpener _browser;
 
         public DashboardReporter(StrykerOptions options, IDashboardClient dashboardClient = null, ILogger<DashboardReporter> logger = null,
-            IAnsiConsole console = null, IWebbrowserOpener processWrapper = null)
+            IAnsiConsole console = null, IWebbrowserOpener browser = null)
         {
             _options = options;
             _dashboardClient = dashboardClient ?? new DashboardClient(options);
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
             _console = console ?? AnsiConsole.Console;
-            _processWrapper = processWrapper ?? new CrossPlatformBrowserOpener();
+            _browser = browser ?? new CrossPlatformBrowserOpener();
         }
 
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
@@ -40,7 +40,7 @@ namespace Stryker.Core.Reporters
             {
                 if (_options.ReportTypeToOpen == Options.Inputs.ReportType.Dashboard)
                 {
-                    _processWrapper.Open(reportUri);
+                    _browser.Open(reportUri);
                 }
                 else
                 {

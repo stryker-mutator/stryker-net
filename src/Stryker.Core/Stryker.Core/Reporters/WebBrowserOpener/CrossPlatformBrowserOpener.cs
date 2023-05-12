@@ -15,7 +15,6 @@ namespace Stryker.Core.Reporters.WebBrowserOpener
 
         public Process Open(string path)
         {
-            var logger = ApplicationLogging.LoggerFactory.CreateLogger("WebBrowserOpener");
             ProcessStartInfo processInfo;
             if (IsWsl)
             {
@@ -32,8 +31,8 @@ namespace Stryker.Core.Reporters.WebBrowserOpener
                 if (wslPathProcess.Start())
                 {
                     var windowsPath = wslPathProcess.StandardOutput.ReadToEnd();
-                    logger.LogInformation(windowsPath);
                     var powershellCommand = $"Start-Process {windowsPath}";
+
                     processInfo = new ProcessStartInfo
                     {
                         FileName = "powershell.exe",
@@ -43,8 +42,8 @@ namespace Stryker.Core.Reporters.WebBrowserOpener
                 }
                 else
                 {
-                    logger.LogInformation("Failed to auto open browser");
-                    throw new Exception();
+                    ApplicationLogging.LoggerFactory.CreateLogger<CrossPlatformBrowserOpener>().LogError("Failed to auto-open browser. Please report your runtime and OS info.");
+                    return null;
                 }
             }
             else

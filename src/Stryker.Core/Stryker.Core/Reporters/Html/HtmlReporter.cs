@@ -19,20 +19,20 @@ public class HtmlReporter : IReporter
     private readonly StrykerOptions _options;
     private readonly IFileSystem _fileSystem;
     private readonly IAnsiConsole _console;
-    private readonly IWebbrowserOpener _processWrapper;
+    private readonly IWebbrowserOpener _browser;
     private readonly IRealtimeMutantHandler _mutantHandler;
 
     public HtmlReporter(
         StrykerOptions options,
         IFileSystem fileSystem = null,
         IAnsiConsole console = null,
-        IWebbrowserOpener processWrapper = null,
+        IWebbrowserOpener browser = null,
         IRealtimeMutantHandler mutantHandler = null)
     {
         _options = options;
         _fileSystem = fileSystem ?? new FileSystem();
         _console = console ?? AnsiConsole.Console;
-        _processWrapper = processWrapper ?? new CrossPlatformBrowserOpener();
+        _browser = browser ?? new CrossPlatformBrowserOpener();
         _mutantHandler = mutantHandler ?? new RealtimeMutantHandler(_options);
     }
 
@@ -95,7 +95,7 @@ public class HtmlReporter : IReporter
         // This reporter does not currently report when the mutation test run starts
     }
 
-    private void OpenReportInBrowser(string reportPath) => _processWrapper.Open(reportPath);
+    private void OpenReportInBrowser(string reportPath) => _browser.Open(reportPath);
 
     private string BuildReportPath()
     {
