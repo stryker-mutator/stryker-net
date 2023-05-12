@@ -1,6 +1,5 @@
-using System.Collections.Generic;
-
 namespace Stryker.Core.Initialisation;
+using System.Collections.Generic;
 
 public interface IProjectAndTests
 {

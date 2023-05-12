@@ -1,11 +1,10 @@
-namespace Stryker.Core.Options.Inputs
+namespace Stryker.Core.Options.Inputs;
+
+public class OpenReportEnabledInput : Input<bool>
 {
-    public class OpenReportEnabledInput : Input<bool>
-    {
-        public override bool Default => false;
+    public override bool Default => false;
 
-        protected override string Description => "";
+    protected override string Description => "";
 
-        public bool Validate() => SuppliedInput;
-    }
+    public bool Validate() => SuppliedInput;
 }

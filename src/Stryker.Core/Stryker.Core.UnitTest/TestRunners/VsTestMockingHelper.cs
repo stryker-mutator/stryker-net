@@ -1,3 +1,4 @@
+namespace Stryker.Core.UnitTest.TestRunners;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -28,8 +29,6 @@ using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
 using Stryker.Core.ToolHelpers;
 using Stryker.DataCollector;
-
-namespace Stryker.Core.UnitTest.TestRunners;
 
 /// <summary>
 /// This class has a set of methods that can be used to mock VsTest behavior. 

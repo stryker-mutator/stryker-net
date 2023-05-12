@@ -1,7 +1,6 @@
+namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-
-namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 internal class PrefixUnaryExpressionOrchestrator : ExpressionSpecificOrchestrator<PrefixUnaryExpressionSyntax>
 {

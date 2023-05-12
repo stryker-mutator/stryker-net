@@ -1,9 +1,8 @@
-﻿using Stryker.Core.Mutants;
+﻿namespace Stryker.Core.Reporters.Html.Realtime;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Html.Realtime.Events;
 using Stryker.Core.Reporters.Json.SourceFiles;
-
-namespace Stryker.Core.Reporters.Html.Realtime;
 
 public class RealtimeMutantHandler : IRealtimeMutantHandler
 {

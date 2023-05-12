@@ -1,10 +1,8 @@
-﻿using RegexParser.Nodes;
+﻿namespace Stryker.RegexMutators.Mutators;
+using RegexParser.Nodes;
 using System.Collections.Generic;
 
-namespace Stryker.RegexMutators.Mutators
+public interface IRegexMutator
 {
-    public interface IRegexMutator
-    {
-        IEnumerable<RegexMutation> Mutate(RegexNode node, RegexNode root);
-    }
+    IEnumerable<RegexMutation> Mutate(RegexNode node, RegexNode root);
 }

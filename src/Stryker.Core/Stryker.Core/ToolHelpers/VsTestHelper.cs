@@ -1,3 +1,4 @@
+namespace Stryker.Core.ToolHelpers;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -11,242 +12,239 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Stryker.Core.Logging;
 
-namespace Stryker.Core.ToolHelpers
+public interface IVsTestHelper
 {
-    public interface IVsTestHelper
+    string GetCurrentPlatformVsTestToolPath();
+    void Cleanup(int tries = 5);
+}
+
+/// <summary>
+/// Locates VsTest folder. Installs one if none is found. 
+/// </summary>
+/// This class is not unit tested currently, so proceed with caution
+[ExcludeFromCodeCoverage(Justification = "Deeply dependent on current platform, need a lot of work for mocking.")]
+public class VsTestHelper : IVsTestHelper
+{
+    private readonly ILogger _logger;
+    private readonly IFileSystem _fileSystem;
+    private readonly Dictionary<OSPlatform, string> _vsTestPaths = new();
+    private string _platformVsTestToolPath;
+    private readonly object _lck = new();
+
+    public VsTestHelper(IFileSystem fileSystem = null, ILogger logger = null)
     {
-        string GetCurrentPlatformVsTestToolPath();
-        void Cleanup(int tries = 5);
+        _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestHelper>();
+        _fileSystem = fileSystem ?? new FileSystem();
     }
 
     /// <summary>
-    /// Locates VsTest folder. Installs one if none is found. 
+    /// Finds VsTest path version corresponding to current platform (ie OS)
     /// </summary>
-    /// This class is not unit tested currently, so proceed with caution
-    [ExcludeFromCodeCoverage(Justification = "Deeply dependent on current platform, need a lot of work for mocking.")]
-    public class VsTestHelper : IVsTestHelper
+    /// <returns>VsTest full path.</returns>
+    /// <exception cref="PlatformNotSupportedException">When it fails to find a VsTest install for the current platform</exception>
+    public string GetCurrentPlatformVsTestToolPath()
     {
-        private readonly ILogger _logger;
-        private readonly IFileSystem _fileSystem;
-        private readonly Dictionary<OSPlatform, string> _vsTestPaths = new();
-        private string _platformVsTestToolPath;
-        private readonly object _lck = new();
-
-        public VsTestHelper(IFileSystem fileSystem = null, ILogger logger = null)
+        lock (_lck)
         {
-            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestHelper>();
-            _fileSystem = fileSystem ?? new FileSystem();
+            if (!string.IsNullOrEmpty(_platformVsTestToolPath))
+            {
+                return _platformVsTestToolPath;
+            }
+            var paths = GetVsTestToolPaths();
+
+            if (!paths.Keys.Any(RuntimeInformation.IsOSPlatform))
+            {
+                throw new PlatformNotSupportedException(
+                    $"The current OS is not any of the following currently supported: {string.Join(", ", paths.Keys)}");
+            }
+
+            var osPlatform = paths.Keys.First(RuntimeInformation.IsOSPlatform);
+            _platformVsTestToolPath = paths[osPlatform];
+            _logger.LogDebug("Using vstest.console: {0} for OS {1}", osPlatform, _platformVsTestToolPath);
         }
 
-        /// <summary>
-        /// Finds VsTest path version corresponding to current platform (ie OS)
-        /// </summary>
-        /// <returns>VsTest full path.</returns>
-        /// <exception cref="PlatformNotSupportedException">When it fails to find a VsTest install for the current platform</exception>
-        public string GetCurrentPlatformVsTestToolPath()
+        return _platformVsTestToolPath;
+    }
+
+    /// <summary>
+    /// Gets VsTest installations
+    /// </summary>
+    /// <returns>a dictionary with the folder for each detected platform</returns>
+    /// <exception cref="ApplicationException">If it fails to find and deploy VsTest</exception>
+    private Dictionary<OSPlatform, string> GetVsTestToolPaths()
+    {
+        // If any of the found paths is for the current OS, just return the paths as we have what we need
+        if (_vsTestPaths.Any(p => RuntimeInformation.IsOSPlatform(p.Key)))
         {
-            lock (_lck)
-            {
-                if (!string.IsNullOrEmpty(_platformVsTestToolPath))
-                {
-                    return _platformVsTestToolPath;
-                }
-                var paths = GetVsTestToolPaths();
-
-                if (!paths.Keys.Any(RuntimeInformation.IsOSPlatform))
-                {
-                    throw new PlatformNotSupportedException(
-                        $"The current OS is not any of the following currently supported: {string.Join(", ", paths.Keys)}");
-                }
-
-                var osPlatform = paths.Keys.First(RuntimeInformation.IsOSPlatform);
-                _platformVsTestToolPath = paths[osPlatform];
-                _logger.LogDebug("Using vstest.console: {0} for OS {1}", osPlatform, _platformVsTestToolPath);
-            }
-
-            return _platformVsTestToolPath;
-        }
-
-        /// <summary>
-        /// Gets VsTest installations
-        /// </summary>
-        /// <returns>a dictionary with the folder for each detected platform</returns>
-        /// <exception cref="ApplicationException">If it fails to find and deploy VsTest</exception>
-        private Dictionary<OSPlatform, string> GetVsTestToolPaths()
-        {
-            // If any of the found paths is for the current OS, just return the paths as we have what we need
-            if (_vsTestPaths.Any(p => RuntimeInformation.IsOSPlatform(p.Key)))
-            {
-                return _vsTestPaths;
-            }
-
-            var nugetPackageFolders = CollectNugetPackageFolders();
-
-            if (SearchNugetPackageFolders(nugetPackageFolders) is var nugetAssemblies
-                && nugetAssemblies.Any(p => RuntimeInformation.IsOSPlatform(p.Key)))
-            {
-                Merge(_vsTestPaths, nugetAssemblies);
-                _logger.LogDebug("Using vstest from nuget package folders");
-            }
-            else if (DeployEmbeddedVsTestBinaries() is var deployPath)
-            {
-                Merge(_vsTestPaths, SearchNugetPackageFolders(new List<string> { deployPath }, versionDependent: false));
-                _logger.LogDebug("Using vstest from deployed vstest package");
-            }
-
             return _vsTestPaths;
         }
 
-        private static void Merge(IDictionary<OSPlatform, string> to, Dictionary<OSPlatform, string> from)
+        var nugetPackageFolders = CollectNugetPackageFolders();
+
+        if (SearchNugetPackageFolders(nugetPackageFolders) is var nugetAssemblies
+            && nugetAssemblies.Any(p => RuntimeInformation.IsOSPlatform(p.Key)))
         {
-            foreach (var val in from)
+            Merge(_vsTestPaths, nugetAssemblies);
+            _logger.LogDebug("Using vstest from nuget package folders");
+        }
+        else if (DeployEmbeddedVsTestBinaries() is var deployPath)
+        {
+            Merge(_vsTestPaths, SearchNugetPackageFolders(new List<string> { deployPath }, versionDependent: false));
+            _logger.LogDebug("Using vstest from deployed vstest package");
+        }
+
+        return _vsTestPaths;
+    }
+
+    private static void Merge(IDictionary<OSPlatform, string> to, Dictionary<OSPlatform, string> from)
+    {
+        foreach (var val in from)
+        {
+            to[val.Key] = val.Value;
+        }
+    }
+
+    private Dictionary<OSPlatform, string> SearchNugetPackageFolders(IEnumerable<string> nugetPackageFolders, bool versionDependent = true)
+    {
+        var vsTestPaths = new Dictionary<OSPlatform, string>();
+
+        var versionString = FileVersionInfo.GetVersionInfo(typeof(IVsTestConsoleWrapper).Assembly.Location).ProductVersion;
+        const string PortablePackageName = "microsoft.testplatform.portable";
+        bool dllFound = false, exeFound = false;
+
+        foreach (var nugetPackageFolder in nugetPackageFolders)
+        {
+            if (dllFound && exeFound)
             {
-                to[val.Key] = val.Value;
+                break;
+            }
+
+            string searchFolder;
+            if (versionDependent)
+            {
+                var portablePackageFolder = Path.Combine(nugetPackageFolder, PortablePackageName, versionString);
+
+                if (!_fileSystem.Directory.Exists(portablePackageFolder))
+                {
+                    return vsTestPaths;
+                }
+                searchFolder = portablePackageFolder;
+            }
+            else
+            {
+                searchFolder = nugetPackageFolder;
+            }
+
+            var dllPath = FilePathUtils.NormalizePathSeparators(
+                _fileSystem.Directory.GetFiles(
+                    searchFolder,
+                    "vstest.console.dll",
+                    SearchOption.AllDirectories).FirstOrDefault());
+            var exePath = FilePathUtils.NormalizePathSeparators(
+                _fileSystem.Directory.GetFiles(
+                    searchFolder,
+                    "vstest.console.exe",
+                    SearchOption.AllDirectories).FirstOrDefault());
+
+            if (!dllFound && _fileSystem.File.Exists(dllPath))
+            {
+                vsTestPaths[OSPlatform.Linux] = dllPath;
+                vsTestPaths[OSPlatform.OSX] = dllPath;
+                dllFound = true;
+            }
+            if (!exeFound && _fileSystem.File.Exists(exePath))
+            {
+                vsTestPaths[OSPlatform.Windows] = exePath;
+                exeFound = true;
             }
         }
 
-        private Dictionary<OSPlatform, string> SearchNugetPackageFolders(IEnumerable<string> nugetPackageFolders, bool versionDependent = true)
+        return vsTestPaths;
+    }
+
+    private IEnumerable<string> CollectNugetPackageFolders()
+    {
+        var userProfilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+        var path = Path.Combine(userProfilePath, ".nuget", "packages");
+        if (_fileSystem.Directory.Exists(path))
         {
-            var vsTestPaths = new Dictionary<OSPlatform, string>();
-
-            var versionString = FileVersionInfo.GetVersionInfo(typeof(IVsTestConsoleWrapper).Assembly.Location).ProductVersion;
-            const string PortablePackageName = "microsoft.testplatform.portable";
-            bool dllFound = false, exeFound = false;
-
-            foreach (var nugetPackageFolder in nugetPackageFolders)
-            {
-                if (dllFound && exeFound)
-                {
-                    break;
-                }
-
-                string searchFolder;
-                if (versionDependent)
-                {
-                    var portablePackageFolder = Path.Combine(nugetPackageFolder, PortablePackageName, versionString);
-
-                    if (!_fileSystem.Directory.Exists(portablePackageFolder))
-                    {
-                        return vsTestPaths;
-                    }
-                    searchFolder = portablePackageFolder;
-                }
-                else
-                {
-                    searchFolder = nugetPackageFolder;
-                }
-
-                var dllPath = FilePathUtils.NormalizePathSeparators(
-                    _fileSystem.Directory.GetFiles(
-                        searchFolder,
-                        "vstest.console.dll",
-                        SearchOption.AllDirectories).FirstOrDefault());
-                var exePath = FilePathUtils.NormalizePathSeparators(
-                    _fileSystem.Directory.GetFiles(
-                        searchFolder,
-                        "vstest.console.exe",
-                        SearchOption.AllDirectories).FirstOrDefault());
-
-                if (!dllFound && _fileSystem.File.Exists(dllPath))
-                {
-                    vsTestPaths[OSPlatform.Linux] = dllPath;
-                    vsTestPaths[OSPlatform.OSX] = dllPath;
-                    dllFound = true;
-                }
-                if (!exeFound && _fileSystem.File.Exists(exePath))
-                {
-                    vsTestPaths[OSPlatform.Windows] = exePath;
-                    exeFound = true;
-                }
-            }
-
-            return vsTestPaths;
+            yield return path;
         }
 
-        private IEnumerable<string> CollectNugetPackageFolders()
+        static bool TryGetNonEmptyEnvironmentVariable(string variable, out string value)
         {
-            var userProfilePath = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
-            var path = Path.Combine(userProfilePath, ".nuget", "packages");
-            if (_fileSystem.Directory.Exists(path))
-            {
-                yield return path;
-            }
-
-            static bool TryGetNonEmptyEnvironmentVariable(string variable, out string value)
-            {
-                value = Environment.GetEnvironmentVariable(variable);
-                return !string.IsNullOrWhiteSpace(value);
-            }
-
-            if (TryGetNonEmptyEnvironmentVariable("NUGET_PACKAGES", out var nugetPackagesLocation)
-                && _fileSystem.Directory.Exists(nugetPackagesLocation))
-            {
-                yield return nugetPackagesLocation;
-            }
+            value = Environment.GetEnvironmentVariable(variable);
+            return !string.IsNullOrWhiteSpace(value);
         }
 
-        private string DeployEmbeddedVsTestBinaries()
+        if (TryGetNonEmptyEnvironmentVariable("NUGET_PACKAGES", out var nugetPackagesLocation)
+            && _fileSystem.Directory.Exists(nugetPackagesLocation))
         {
-            var vsTestZip = typeof(VsTestHelper).Assembly
-                .GetManifestResourceNames()
-                .Single(r => r.Contains("Microsoft.TestPlatform.Portable", StringComparison.InvariantCultureIgnoreCase));
+            yield return nugetPackagesLocation;
+        }
+    }
 
-            var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), ".vstest");
+    private string DeployEmbeddedVsTestBinaries()
+    {
+        var vsTestZip = typeof(VsTestHelper).Assembly
+            .GetManifestResourceNames()
+            .Single(r => r.Contains("Microsoft.TestPlatform.Portable", StringComparison.InvariantCultureIgnoreCase));
 
-            using var stream = typeof(VsTestHelper).Assembly
-                .GetManifestResourceStream(vsTestZip);
-            var zipPath = Path.Combine(tempDir, "vstest.zip");
-            _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(zipPath));
+        var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), ".vstest");
 
-            using (var file = _fileSystem.FileStream.New(zipPath, FileMode.Create))
-            {
-                stream.CopyTo(file);
-            }
+        using var stream = typeof(VsTestHelper).Assembly
+            .GetManifestResourceStream(vsTestZip);
+        var zipPath = Path.Combine(tempDir, "vstest.zip");
+        _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(zipPath));
 
-            _logger.LogDebug("VsTest zip was copied to: {0}", zipPath);
-
-            ZipFile.ExtractToDirectory(zipPath, tempDir);
-            _fileSystem.File.Delete(zipPath);
-
-            _logger.LogDebug("VsTest zip was unzipped to: {0}", tempDir);
-
-            return tempDir;
+        using (var file = _fileSystem.FileStream.New(zipPath, FileMode.Create))
+        {
+            stream.CopyTo(file);
         }
 
-        /// <summary>
-        /// Removes any VsTest instance that were deployed by Stryker.
-        /// </summary>
-        /// <param name="tries">Remaining attempts.</param>
-        public void Cleanup(int tries = 5)
+        _logger.LogDebug("VsTest zip was copied to: {0}", zipPath);
+
+        ZipFile.ExtractToDirectory(zipPath, tempDir);
+        _fileSystem.File.Delete(zipPath);
+
+        _logger.LogDebug("VsTest zip was unzipped to: {0}", tempDir);
+
+        return tempDir;
+    }
+
+    /// <summary>
+    /// Removes any VsTest instance that were deployed by Stryker.
+    /// </summary>
+    /// <param name="tries">Remaining attempts.</param>
+    public void Cleanup(int tries = 5)
+    {
+        var nugetPackageFolders = CollectNugetPackageFolders();
+
+        try
         {
-            var nugetPackageFolders = CollectNugetPackageFolders();
-
-            try
+            foreach (var vsTestConsole in _vsTestPaths.Values)
             {
-                foreach (var vsTestConsole in _vsTestPaths.Values)
+                var path = vsTestConsole;
+                // If vstest path is not in nuget package folder, clean it up
+                if (nugetPackageFolders.Any(nf => path.Contains(nf)) || !_fileSystem.Directory.Exists(Path.GetDirectoryName(path)))
                 {
-                    var path = vsTestConsole;
-                    // If vstest path is not in nuget package folder, clean it up
-                    if (nugetPackageFolders.Any(nf => path.Contains(nf)) || !_fileSystem.Directory.Exists(Path.GetDirectoryName(path)))
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    foreach (var entry in _fileSystem.Directory
-                                 .EnumerateFiles(Path.GetDirectoryName(path), "*", SearchOption.AllDirectories))
-                    {
-                        _fileSystem.File.Delete(entry);
-                    }
+                foreach (var entry in _fileSystem.Directory
+                             .EnumerateFiles(Path.GetDirectoryName(path), "*", SearchOption.AllDirectories))
+                {
+                    _fileSystem.File.Delete(entry);
                 }
             }
-            catch (Exception)
+        }
+        catch (Exception)
+        {
+            _logger.LogDebug($"Tried cleaning up used vstest resources but we weren't ready to clean. " +
+                $"{(tries != 0 ? $"Trying {tries} more times." : "Out of tries, we're giving up sorry.")}");
+            if (tries > 0)
             {
-                _logger.LogDebug($"Tried cleaning up used vstest resources but we weren't ready to clean. " +
-                    $"{(tries != 0 ? $"Trying {tries} more times." : "Out of tries, we're giving up sorry.")}");
-                if (tries > 0)
-                {
-                    Cleanup(tries - 1);
-                }
+                Cleanup(tries - 1);
             }
         }
     }

@@ -1,3 +1,4 @@
+namespace Stryker.Core.UnitTest.Options.Inputs;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,28 +9,25 @@ using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.Options.Inputs
+public class DisableBailInputTests : TestBase
 {
-    public class DisableBailInputTests : TestBase
+    [Fact]
+    public void ShouldHaveHelpText()
     {
-        [Fact]
-        public void ShouldHaveHelpText()
-        {
-            var target = new DisableBailInput();
-            target.HelpText.ShouldBe(@"Disable abort unit testrun as soon as the first unit test fails. | default: 'False'");
-        }
+        var target = new DisableBailInput();
+        target.HelpText.ShouldBe(@"Disable abort unit testrun as soon as the first unit test fails. | default: 'False'");
+    }
 
-        [Theory]
-        [InlineData(false, OptimizationModes.None)]
-        [InlineData(true, OptimizationModes.DisableBail)]
-        [InlineData(null, OptimizationModes.None)]
-        public void ShouldValidate(bool? input, OptimizationModes expected)
-        {
-            var target = new DisableBailInput { SuppliedInput = input };
+    [Theory]
+    [InlineData(false, OptimizationModes.None)]
+    [InlineData(true, OptimizationModes.DisableBail)]
+    [InlineData(null, OptimizationModes.None)]
+    public void ShouldValidate(bool? input, OptimizationModes expected)
+    {
+        var target = new DisableBailInput { SuppliedInput = input };
 
-            var result = target.Validate();
+        var result = target.Validate();
 
-            result.ShouldBe(expected);
-        }
+        result.ShouldBe(expected);
     }
 }

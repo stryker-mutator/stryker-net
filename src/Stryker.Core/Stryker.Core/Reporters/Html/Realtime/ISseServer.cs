@@ -1,6 +1,5 @@
-﻿using Stryker.Core.Reporters.Html.Realtime.Events;
-
-namespace Stryker.Core.Reporters.Html.Realtime;
+﻿namespace Stryker.Core.Reporters.Html.Realtime;
+using Stryker.Core.Reporters.Html.Realtime.Events;
 
 public interface ISseServer
 {

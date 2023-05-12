@@ -1,3 +1,4 @@
+namespace Stryker.Core.UnitTest.Reporters;
 using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
@@ -6,59 +7,56 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.ProjectComponents;
 
-namespace Stryker.Core.UnitTest.Reporters
+public static class ReportTestHelper
 {
-    public static class ReportTestHelper
+    public static IProjectComponent CreateProjectWith(bool duplicateMutant = false, int mutationScore = 60)
     {
-        public static IProjectComponent CreateProjectWith(bool duplicateMutant = false, int mutationScore = 60)
+        var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
+        var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
+
+        var mutation = new Mutation()
         {
-            var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
-            var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
+            OriginalNode = originalNode,
+            ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
+            DisplayName = "This name should display",
+            Type = Mutator.Arithmetic
+        };
 
-            var mutation = new Mutation()
+        var folder = new CsharpFolderComposite { FullPath = "/home/user/src/project/", RelativePath = "" };
+        int mutantCount = 0;
+        for (var i = 1; i <= 2; i++)
+        {
+            var addedFolder = new CsharpFolderComposite
             {
-                OriginalNode = originalNode,
-                ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
-                DisplayName = "This name should display",
-                Type = Mutator.Arithmetic
+                RelativePath = $"{i}",
+                FullPath = $"/home/user/src/project/{i}",
             };
+            folder.Add(addedFolder);
 
-            var folder = new CsharpFolderComposite { FullPath = "/home/user/src/project/", RelativePath = "" };
-            int mutantCount = 0;
-            for (var i = 1; i <= 2; i++)
+            for (var y = 0; y <= 4; y++)
             {
-                var addedFolder = new CsharpFolderComposite
+                var m = new Collection<Mutant>();
+                addedFolder.Add(new CsharpFileLeaf()
                 {
-                    RelativePath = $"{i}",
-                    FullPath = $"/home/user/src/project/{i}",
-                };
-                folder.Add(addedFolder);
+                    RelativePath = $"{i}/SomeFile{y}.cs",
+                    FullPath = $"/home/user/src/project/{i}/SomeFile{y}.cs",
+                    Mutants = m,
+                    SourceCode = "void M(){ int i = 0 + 8; }"
+                });
 
-                for (var y = 0; y <= 4; y++)
+                for (var z = 0; z <= 5; z++)
                 {
-                    var m = new Collection<Mutant>();
-                    addedFolder.Add(new CsharpFileLeaf()
+                    m.Add(new Mutant()
                     {
-                        RelativePath = $"{i}/SomeFile{y}.cs",
-                        FullPath = $"/home/user/src/project/{i}/SomeFile{y}.cs",
-                        Mutants = m,
-                        SourceCode = "void M(){ int i = 0 + 8; }"
+                        Id = duplicateMutant ? 2 : ++mutantCount,
+                        ResultStatus = 100 / 6 * z < mutationScore ? MutantStatus.Killed : MutantStatus.Survived,
+                        Mutation = mutation,
+                        CoveringTests = TestGuidsList.EveryTest()
                     });
-
-                    for (var z = 0; z <= 5; z++)
-                    {
-                        m.Add(new Mutant()
-                        {
-                            Id = duplicateMutant ? 2 : ++mutantCount,
-                            ResultStatus = 100 / 6 * z < mutationScore ? MutantStatus.Killed : MutantStatus.Survived,
-                            Mutation = mutation,
-                            CoveringTests = TestGuidsList.EveryTest()
-                        });
-                    }
                 }
             }
-
-            return folder;
         }
+
+        return folder;
     }
 }

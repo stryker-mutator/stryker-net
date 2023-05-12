@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+namespace Stryker.Core.UnitTest.Reporters.Html.Realtime;
+using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Shouldly;
 using Stryker.Core.Mutants;
@@ -6,8 +7,6 @@ using Stryker.Core.Reporters.Html.Realtime;
 using Stryker.Core.Reporters.Html.Realtime.Events;
 using Stryker.Core.Reporters.Json.SourceFiles;
 using Xunit;
-
-namespace Stryker.Core.UnitTest.Reporters.Html.Realtime;
 
 public class RealtimeMutantHandlerTest : TestBase
 {

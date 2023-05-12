@@ -1,3 +1,4 @@
+namespace Stryker.CLI.Logging;
 using System;
 using System.IO;
 using System.IO.Abstractions;
@@ -6,60 +7,57 @@ using DotNet.Globbing.Token;
 using Stryker.Core;
 using Stryker.Core.Options;
 
-namespace Stryker.CLI.Logging
+public interface ILoggingInitializer
 {
-    public interface ILoggingInitializer
+    void SetupLogOptions(IStrykerInputs inputs, IFileSystem fileSystem = null);
+}
+
+public class LoggingInitializer : ILoggingInitializer
+{
+    /// <summary>
+    /// Creates the needed paths for logging and initializes the logger factory
+    /// </summary>
+    /// <param name="fileSystem">Mock filesystem</param>
+    public void SetupLogOptions(IStrykerInputs inputs, IFileSystem fileSystem = null)
     {
-        void SetupLogOptions(IStrykerInputs inputs, IFileSystem fileSystem = null);
+        fileSystem ??= new FileSystem();
+
+        var outputPath = CreateOutputPath(inputs, fileSystem);
+        inputs.OutputPathInput.SuppliedInput = outputPath;
+
+        var logLevel = inputs.VerbosityInput.Validate();
+        var logToFile = inputs.LogToFileInput.Validate(outputPath);
+
+        ApplicationLogging.ConfigureLogger(logLevel, logToFile, outputPath);
     }
 
-    public class LoggingInitializer : ILoggingInitializer
+    private string CreateOutputPath(IStrykerInputs inputs, IFileSystem fileSystem)
     {
-        /// <summary>
-        /// Creates the needed paths for logging and initializes the logger factory
-        /// </summary>
-        /// <param name="fileSystem">Mock filesystem</param>
-        public void SetupLogOptions(IStrykerInputs inputs, IFileSystem fileSystem = null)
+        var outputPath = inputs.OutputPathInput.SuppliedInput ?? Path.Combine("StrykerOutput", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
+
+        if (!Path.IsPathRooted(outputPath))
         {
-            fileSystem ??= new FileSystem();
-
-            var outputPath = CreateOutputPath(inputs, fileSystem);
-            inputs.OutputPathInput.SuppliedInput = outputPath;
-
-            var logLevel = inputs.VerbosityInput.Validate();
-            var logToFile = inputs.LogToFileInput.Validate(outputPath);
-
-            ApplicationLogging.ConfigureLogger(logLevel, logToFile, outputPath);
+            outputPath = Path.Combine(inputs.BasePathInput.SuppliedInput, outputPath);
         }
 
-        private string CreateOutputPath(IStrykerInputs inputs, IFileSystem fileSystem)
+        // outputpath should always be created
+        fileSystem.Directory.CreateDirectory(FilePathUtils.NormalizePathSeparators(outputPath));
+
+        // add gitignore if it didn't exist yet
+        var gitignorePath = FilePathUtils.NormalizePathSeparators(Path.Combine(outputPath, ".gitignore"));
+        if (!fileSystem.File.Exists(gitignorePath))
         {
-            var outputPath = inputs.OutputPathInput.SuppliedInput ?? Path.Combine("StrykerOutput", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
-
-            if (!Path.IsPathRooted(outputPath))
+            try
             {
-                outputPath = Path.Combine(inputs.BasePathInput.SuppliedInput, outputPath);
+                fileSystem.File.WriteAllText(gitignorePath, "*");
             }
-
-            // outputpath should always be created
-            fileSystem.Directory.CreateDirectory(FilePathUtils.NormalizePathSeparators(outputPath));
-
-            // add gitignore if it didn't exist yet
-            var gitignorePath = FilePathUtils.NormalizePathSeparators(Path.Combine(outputPath, ".gitignore"));
-            if (!fileSystem.File.Exists(gitignorePath))
+            catch (IOException e)
             {
-                try
-                {
-                    fileSystem.File.WriteAllText(gitignorePath, "*");
-                }
-                catch (IOException e)
-                {
-                    AnsiConsole.WriteLine($"Could't create gitignore file because of error {e.Message}. \n" +
-                        "If you use any diff compare features this may mean that stryker logs show up as changes.");
-                }
+                AnsiConsole.WriteLine($"Could't create gitignore file because of error {e.Message}. \n" +
+                    "If you use any diff compare features this may mean that stryker logs show up as changes.");
             }
-
-            return outputPath;
         }
+
+        return outputPath;
     }
 }

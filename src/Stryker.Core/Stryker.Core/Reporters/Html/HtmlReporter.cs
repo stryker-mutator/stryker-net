@@ -1,3 +1,4 @@
+namespace Stryker.Core.Reporters.Html;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -11,8 +12,6 @@ using Stryker.Core.Reporters.Html.ProcessWrapper;
 using Stryker.Core.Reporters.Html.Realtime;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
-
-namespace Stryker.Core.Reporters.Html;
 
 public class HtmlReporter : IReporter
 {

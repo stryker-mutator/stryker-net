@@ -1,32 +1,30 @@
+namespace Stryker.Core.Reporters.Json.TestFiles;
 using System.Collections.Generic;
 using System.Linq;
 using Stryker.Core.ProjectComponents.TestProjects;
 
-namespace Stryker.Core.Reporters.Json.TestFiles
+public class JsonTestFile
 {
-    public class JsonTestFile
+    public string Language { get; init; }
+    public string Source { get; init; }
+    public ISet<Test> Tests { get; set; }
+
+    public JsonTestFile() { }
+
+    public JsonTestFile(TestFile testFile)
     {
-        public string Language { get; init; }
-        public string Source { get; init; }
-        public ISet<Test> Tests { get; set; }
+        Source = testFile?.Source;
+        Language = "cs";
+        Tests = new HashSet<Test>();
 
-        public JsonTestFile() { }
-
-        public JsonTestFile(TestFile testFile)
+        foreach (var test in testFile?.Tests ?? Enumerable.Empty<TestCase>())
         {
-            Source = testFile?.Source;
-            Language = "cs";
-            Tests = new HashSet<Test>();
-
-            foreach (var test in testFile?.Tests ?? Enumerable.Empty<TestCase>())
+            Tests.Add(new Test
             {
-                Tests.Add(new Test
-                {
-                    Id = test.Id.ToString(),
-                    Name = test.Name,
-                    Location = new Location(test.Node.GetLocation().GetMappedLineSpan())
-                });
-            }
+                Id = test.Id.ToString(),
+                Name = test.Name,
+                Location = new Location(test.Node.GetLocation().GetMappedLineSpan())
+            });
         }
     }
 }

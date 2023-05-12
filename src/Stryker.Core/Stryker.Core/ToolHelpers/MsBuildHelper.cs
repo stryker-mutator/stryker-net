@@ -1,3 +1,4 @@
+namespace Stryker.Core.ToolHelpers;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -5,67 +6,64 @@ using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
 
-namespace Stryker.Core.ToolHelpers
+public class MsBuildHelper
 {
-    public class MsBuildHelper
+    private readonly IFileSystem _fileSystem;
+    private readonly ILogger _logger;
+    private readonly IEnumerable<string> fallbackLocations;
+
+    public MsBuildHelper(IFileSystem fileSystem = null, ILogger logger = null)
     {
-        private readonly IFileSystem _fileSystem;
-        private readonly ILogger _logger;
-        private readonly IEnumerable<string> fallbackLocations;
-
-        public MsBuildHelper(IFileSystem fileSystem = null, ILogger logger = null)
+        _fileSystem = fileSystem ?? new FileSystem();
+        _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<MsBuildHelper>();
+        fallbackLocations = new List<string>
         {
-            _fileSystem = fileSystem ?? new FileSystem();
-            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<MsBuildHelper>();
-            fallbackLocations = new List<string>
-            {
-                @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe",
-                @"C:\Windows\Microsoft.Net\Framework64\v4.0.30319\MSBuild.exe",
-                @"C:\Windows\Microsoft.Net\Framework64\v3.5\MSBuild.exe",
-                @"C:\Windows\Microsoft.Net\Framework64\v2.0.50727\MSBuild.exe",
-                @"C:\Windows\Microsoft.Net\Framework\v4.0.30319\MSBuild.exe",
-                @"C:\Windows\Microsoft.Net\Framework\v3.5\MSBuild.exe",
-                @"C:\Windows\Microsoft.Net\Framework\v2.0.50727\MSBuild.exe",
-            };
-        }
+            @"C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\MSBuild\15.0\Bin\MSBuild.exe",
+            @"C:\Windows\Microsoft.Net\Framework64\v4.0.30319\MSBuild.exe",
+            @"C:\Windows\Microsoft.Net\Framework64\v3.5\MSBuild.exe",
+            @"C:\Windows\Microsoft.Net\Framework64\v2.0.50727\MSBuild.exe",
+            @"C:\Windows\Microsoft.Net\Framework\v4.0.30319\MSBuild.exe",
+            @"C:\Windows\Microsoft.Net\Framework\v3.5\MSBuild.exe",
+            @"C:\Windows\Microsoft.Net\Framework\v2.0.50727\MSBuild.exe",
+        };
+    }
 
-        public string GetMsBuildPath(IProcessExecutor _processExecutor)
+    public string GetMsBuildPath(IProcessExecutor _processExecutor)
+    {
+        // See if any MSBuild.exe can be found in visual studio installation folder
+        foreach (string drive in Directory.GetLogicalDrives())
         {
-            // See if any MSBuild.exe can be found in visual studio installation folder
-            foreach (string drive in Directory.GetLogicalDrives())
+            var visualStudioPath = Path.Combine(drive, "Program Files (x86)", "Microsoft Visual Studio");
+            if (_fileSystem.Directory.Exists(visualStudioPath))
             {
-                var visualStudioPath = Path.Combine(drive, "Program Files (x86)", "Microsoft Visual Studio");
-                if (_fileSystem.Directory.Exists(visualStudioPath))
+                _logger.LogDebug("Using vswhere.exe to locate msbuild");
+
+                var vsWherePath = Path.Combine(visualStudioPath, "Installer", "vswhere.exe");
+                var vsWhereCommand = "-latest -requires Microsoft.Component.MSBuild -products * -find MSBuild\\**\\Bin\\MSBuild.exe";
+                var vsWhereResult = _processExecutor.Start(visualStudioPath, vsWherePath, vsWhereCommand);
+
+                if (vsWhereResult.ExitCode == ExitCodes.Success)
                 {
-                    _logger.LogDebug("Using vswhere.exe to locate msbuild");
-
-                    var vsWherePath = Path.Combine(visualStudioPath, "Installer", "vswhere.exe");
-                    var vsWhereCommand = "-latest -requires Microsoft.Component.MSBuild -products * -find MSBuild\\**\\Bin\\MSBuild.exe";
-                    var vsWhereResult = _processExecutor.Start(visualStudioPath, vsWherePath, vsWhereCommand);
-
-                    if (vsWhereResult.ExitCode == ExitCodes.Success)
+                    var msBuildPath = vsWhereResult.Output.Trim();
+                    if (_fileSystem.File.Exists(msBuildPath))
                     {
-                        var msBuildPath = vsWhereResult.Output.Trim();
-                        if (_fileSystem.File.Exists(msBuildPath))
-                        {
-                            _logger.LogDebug($"Msbuild executable path found at {msBuildPath}");
+                        _logger.LogDebug($"Msbuild executable path found at {msBuildPath}");
 
-                            return msBuildPath;
-                        }
+                        return msBuildPath;
                     }
                 }
             }
-            // Else, find in default locations
-            _logger.LogDebug("Unable to find msbuild using vswhere, using fallback locations");
-
-            foreach (string possiblePath in fallbackLocations)
-            {
-                if (_fileSystem.File.Exists(possiblePath))
-                {
-                    return possiblePath;
-                }
-            }
-            throw new FileNotFoundException("MsBuild.exe could not be located. If you have MsBuild.exe available but still see this error please create an issue.");
         }
+        // Else, find in default locations
+        _logger.LogDebug("Unable to find msbuild using vswhere, using fallback locations");
+
+        foreach (string possiblePath in fallbackLocations)
+        {
+            if (_fileSystem.File.Exists(possiblePath))
+            {
+                return possiblePath;
+            }
+        }
+        throw new FileNotFoundException("MsBuild.exe could not be located. If you have MsBuild.exe available but still see this error please create an issue.");
     }
 }

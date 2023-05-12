@@ -1,8 +1,7 @@
-﻿namespace Stryker.Core.Compiling
+namespace Stryker.Core.Compiling;
+
+public class CompilingProcessResult
 {
-    public class CompilingProcessResult
-    {
-        public bool Success { get; set; }
-        public RollbackProcessResult RollbackResult { get; set; }
-    }
+    public bool Success { get; set; }
+    public RollbackProcessResult RollbackResult { get; set; }
 }

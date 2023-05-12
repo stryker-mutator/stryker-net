@@ -1,9 +1,7 @@
+namespace Stryker.Core.ProjectComponents;
 using FSharp.Compiler.Syntax;
 
-namespace Stryker.Core.ProjectComponents
+public class FsharpFolderComposite : FolderComposite<ParsedInput>, IReadOnlyFolderComposite
 {
-    public class FsharpFolderComposite : FolderComposite<ParsedInput>, IReadOnlyFolderComposite
-    {
 
-    }
 }

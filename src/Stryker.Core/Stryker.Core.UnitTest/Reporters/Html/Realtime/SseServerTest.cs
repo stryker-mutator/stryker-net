@@ -1,12 +1,11 @@
-﻿using System;
+namespace Stryker.Core.UnitTest.Reporters.Html.Realtime;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.EventSource;
 using Stryker.Core.Reporters.Html.Realtime;
 using Stryker.Core.Reporters.Html.Realtime.Events;
 using Xunit;
-
-namespace Stryker.Core.UnitTest.Reporters.Html.Realtime;
 
 public class SseServerTest : TestBase
 {

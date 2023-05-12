@@ -1,6 +1,5 @@
-﻿using System.Text.Json;
-
-namespace Stryker.Core.Reporters.Html.Realtime.Events;
+﻿namespace Stryker.Core.Reporters.Html.Realtime.Events;
+using System.Text.Json;
 
 public class SseEvent<T>
 {

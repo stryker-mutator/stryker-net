@@ -1,8 +1,8 @@
-﻿using System;
-using System.Linq;
-
-namespace Stryker.DataCollector
+﻿namespace Stryker.DataCollector
 {
+    using System;
+    using System.Linq;
+
     internal static class Helpers
     {
         public static T ExtractAttribute<T>(this Type type) where T : Attribute

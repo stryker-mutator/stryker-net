@@ -1,9 +1,7 @@
+namespace Stryker.Core.Logging;
 using Microsoft.Extensions.Logging;
 
-namespace Stryker.Core.Logging
+public static class ApplicationLogging
 {
-    public static class ApplicationLogging
-    {
-        public static ILoggerFactory LoggerFactory { get; set; }
-    }
+    public static ILoggerFactory LoggerFactory { get; set; }
 }

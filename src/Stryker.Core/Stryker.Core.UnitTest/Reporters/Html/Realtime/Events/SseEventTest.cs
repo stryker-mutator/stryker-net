@@ -1,7 +1,6 @@
-﻿using Stryker.Core.Reporters.Html.Realtime.Events;
+﻿namespace Stryker.Core.UnitTest.Reporters.Html.Realtime.Events;
+using Stryker.Core.Reporters.Html.Realtime.Events;
 using Xunit;
-
-namespace Stryker.Core.UnitTest.Reporters.Html.Realtime.Events;
 
 public class SseEventTest : TestBase
 {

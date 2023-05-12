@@ -1,9 +1,7 @@
+namespace Stryker.Core.ProjectComponents;
 using Microsoft.CodeAnalysis;
 
-namespace Stryker.Core.ProjectComponents
+public class CsharpFolderComposite : FolderComposite<SyntaxTree>, IReadOnlyFolderComposite
 {
-    public class CsharpFolderComposite : FolderComposite<SyntaxTree>, IReadOnlyFolderComposite
-    {
 
-    }
 }
