@@ -16,10 +16,12 @@ namespace Stryker.Core.Reporters.WebBrowserOpener
             ProcessStartInfo processInfo;
             if (IsWsl)
             {
+                var windowsPath = Process.Start("wslpath", $"-wa {path}").StandardOutput.ReadToEnd();
+                var powershellCommand = $"Start-Process {windowsPath}";
                 processInfo = new ProcessStartInfo
                 {
                     FileName = "powershell.exe",
-                    Arguments = $"-NoProfile -Command Start-Process `wslpath -wa {path}`",
+                    Arguments = $"-NoProfile -Command {{{powershellCommand}}}",
                     UseShellExecute = true
                 };
             }
