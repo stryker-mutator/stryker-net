@@ -67,12 +67,12 @@
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[19.2.22, )",
-        "resolved": "19.2.22",
-        "contentHash": "9nyGYwVvI3M3d1NrZIupHy1wro+/P3SMV9SMJOWezdaP7pBSvxMVk+R3Dl6zqVLRxuXrSX9jI8Je+HB+yqynfw==",
+        "requested": "[19.2.26, )",
+        "resolved": "19.2.26",
+        "contentHash": "/GV/mTwTJHbMVt2pxJAfglbW9jmw80E5y702MVntCvpjuZ/6X7SLRzn6avP988CJl4VGq9vZUgJEpRdq4lH85g==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "19.2.22",
-          "TestableIO.System.IO.Abstractions.Wrappers": "19.2.22"
+          "TestableIO.System.IO.Abstractions": "19.2.26",
+          "TestableIO.System.IO.Abstractions.Wrappers": "19.2.26"
         }
       },
       "xunit": {
@@ -1627,8 +1627,8 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.46.0, )",
           "Spectre.Console.Analyzer": "[0.46.0, )",
-          "Stryker.DataCollector": "[3.8.2, )",
-          "Stryker.RegexMutators": "[3.8.2, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[19.2.26, )"
         }
       },
