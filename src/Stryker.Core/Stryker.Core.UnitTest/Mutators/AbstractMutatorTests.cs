@@ -88,9 +88,10 @@ namespace Stryker.Core.UnitTest.Mutators
             {
                 MutationLevel = MutationLevel.Standard
             };
-            target.Mutate(originalNode, options);
+            var result = target.Mutate(originalNode, options);
 
             // ApplyMutations should not have been called
+            result.ShouldBeEmpty();
         }
 
         [Fact]

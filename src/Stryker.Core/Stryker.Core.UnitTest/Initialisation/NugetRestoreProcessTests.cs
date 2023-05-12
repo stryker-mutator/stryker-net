@@ -64,6 +64,9 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new NugetRestoreProcess(processExecutorMock.Object);
 
             target.RestorePackages(solutionPath);
+
+            processExecutorMock.Verify( p => p.Start(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(3));
         }
 
         [SkippableFact]
@@ -144,10 +147,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new NugetRestoreProcess(processExecutorMock.Object);
 
-            var exception = Should.Throw<InputException>(() =>
-            {
-                target.RestorePackages(solutionPath);
-            });
+            Should.Throw<InputException>(() => target.RestorePackages(solutionPath) );
         }
 
         [SkippableFact]
@@ -199,6 +199,8 @@ C:\Users\LEON\bin\NuGet.exe"
             var target = new NugetRestoreProcess(processExecutorMock.Object);
 
             target.RestorePackages(solutionPath);
+            processExecutorMock.Verify( p => p.Start(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(3));
         }
     }
 }
