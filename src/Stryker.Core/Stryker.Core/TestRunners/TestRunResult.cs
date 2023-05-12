@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using Stryker.Core.Mutants;
 using Stryker.Core.TestRunners.VsTest;
 
@@ -26,7 +27,7 @@ namespace Stryker.Core.TestRunners
             IEnumerable<string> messages,
             TimeSpan timeSpan)
         {
-            VsTestDescriptions = vsTestDescriptions;
+            VsTestDescriptions = vsTestDescriptions.Where( p => executedTests.Contains(p.Id)).ToList();
             ExecutedTests = executedTests;
             FailingTests = failedTests;
             TimedOutTests = timedOutTest;
@@ -42,7 +43,7 @@ namespace Stryker.Core.TestRunners
             ITestGuids timedOutTests,
             string message,
             IEnumerable<string> messages,
-            TimeSpan duration) => new TestRunResult(vsTestDescriptions, ranTests, failedTest, timedOutTests, message, messages, duration) { SessionTimedOut = true };
+            TimeSpan duration) => new(vsTestDescriptions, ranTests, failedTest, timedOutTests, message, messages, duration) { SessionTimedOut = true };
 
         public ITestGuids FailingTests { get; }
         public ITestGuids ExecutedTests { get; }

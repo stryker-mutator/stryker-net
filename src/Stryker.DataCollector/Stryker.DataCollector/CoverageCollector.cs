@@ -120,7 +120,7 @@ namespace Stryker.DataCollector
                 return;
             }
 
-            _mutantControlType = assembly.ExportedTypes?.FirstOrDefault(t => t.FullName == _controlClassName);
+            _mutantControlType = assembly.DefinedTypes?.FirstOrDefault(t => t.FullName == _controlClassName);
             if (_mutantControlType == null)
             {
                 return;
@@ -240,13 +240,19 @@ namespace Stryker.DataCollector
         private void PublishCoverageData(DataCollectionContext dataCollectionContext)
         {
             var covered = RetrieveCoverData();
+            if (covered == null)
+            {
+                // no test covered any mutations, so the controller was never properly initialized
+                _dataSink.SendData(dataCollectionContext, PropertyName, ";");
+                return;
+            }
+
             var testCoverageInfo = new TestCoverageInfo(
                 covered[0],
                 covered[1],
                 _mutationCoveredOutsideTests);
 
             var coverData = testCoverageInfo.GetCoverageAsString();
-
             _dataSink.SendData(dataCollectionContext, PropertyName, coverData);
             if (!testCoverageInfo.HasLeakedMutations)
             {

@@ -3,7 +3,6 @@ using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
-using Microsoft.CodeAnalysis;
 using Moq;
 using Shouldly;
 using Stryker.Core.Exceptions;
@@ -72,8 +71,8 @@ namespace Stryker.Core.UnitTest.MutationTest
             };
             var mutationTestExecutorMock = new Mock<IMutationTestExecutor>(MockBehavior.Strict);
             var mutantionProcessMock = new Mock<IMutationProcess>(MockBehavior.Strict);
-            mutantionProcessMock.Setup(x => x.Mutate());
-            mutantionProcessMock.Setup(x => x.FilterMutants());
+            mutantionProcessMock.Setup(x => x.Mutate(It.IsAny<MutationTestInput>()));
+            mutantionProcessMock.Setup(x => x.FilterMutants(It.IsAny<MutationTestInput>()));
 
             var target = new MutationTestProcess(_input, options, null, mutationTestExecutorMock.Object, mutantionProcessMock.Object);
 
@@ -83,8 +82,8 @@ namespace Stryker.Core.UnitTest.MutationTest
             target.FilterMutants();
 
             // Assert
-            mutantionProcessMock.Verify(x => x.Mutate(), Times.Once);
-            mutantionProcessMock.Verify(x => x.FilterMutants(), Times.Once);
+            mutantionProcessMock.Verify(x => x.Mutate(It.IsAny<MutationTestInput>()), Times.Once);
+            mutantionProcessMock.Verify(x => x.FilterMutants(It.IsAny<MutationTestInput>()), Times.Once);
         }
 
         [Fact]
@@ -339,8 +338,6 @@ namespace Stryker.Core.UnitTest.MutationTest
         public void ShouldThrowExceptionWhenOtherStatusThanNotRunIsPassed(MutantStatus status)
         {
             var mutants = new List<Mutant> { new Mutant { Id = 1, ResultStatus = status } };
-            var scenario = new FullRunScenario();
-            var folder = new CsharpFolderComposite();
 
             var mutationProcessMock = Mock.Of<IMutationProcess>();
             Should.Throw<GeneralStrykerException>(() => new MutationTestProcess(_input, null, null, null, mutationProcessMock).Test(mutants));

@@ -40,14 +40,14 @@ public class VsTestMockingHelper : TestBase
     protected Mutant Mutant { get; }
     protected Mutant OtherMutant { get; }
     private readonly string _testAssemblyPath;
-    private readonly SourceProjectInfo _sourceProjectInfo;
+    public SourceProjectInfo SourceProjectInfo { get; }
     private readonly TestProjectsInfo _testProjectsInfo;
     private readonly MockFileSystem _fileSystem;
     private readonly Uri _NUnitUri;
     private readonly Uri _xUnitUri;
     private readonly TestProperty _coverageProperty;
     private readonly TestProperty _unexpectedCoverageProperty;
-    protected readonly TimeSpan _testDefaultDuration = TimeSpan.FromSeconds(1);
+    protected readonly TimeSpan TestDefaultDuration = TimeSpan.FromSeconds(1);
     private readonly string _filesystemRoot;
 
     public VsTestMockingHelper()
@@ -92,8 +92,8 @@ public class VsTestMockingHelper : TestBase
         _unexpectedCoverageProperty = TestProperty.Register(CoverageCollector.OutOfTestsPropertyName, CoverageCollector.OutOfTestsPropertyName, typeof(string), typeof(TestResult));
         Mutant = new Mutant { Id = 0 };
         OtherMutant = new Mutant { Id = 1 };
-        _sourceProjectInfo = BuildSourceProjectInfo();
         _testProjectsInfo = BuildTestProjectsInfo();
+        SourceProjectInfo = BuildSourceProjectInfo();
 
         TestCases = new List<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> { firstTest, secondTest };
     }
@@ -105,31 +105,28 @@ public class VsTestMockingHelper : TestBase
         return new SourceProjectInfo
         {
             AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                properties: new Dictionary<string, string>()
+                properties: new Dictionary<string, string>
                 {
                     { "TargetDir", Path.Combine(_filesystemRoot, "app", "bin", "Debug") },
                     { "TargetFileName", "AppToTest.dll" },
                     { "Language", "C#" }
-                }).Object,
-            ProjectContents = content
+                },targetFramework: "netcoreapp2.1").Object,
+            ProjectContents = content,
+            TestProjectsInfo = _testProjectsInfo
         };
     }
 
-    protected TestProjectsInfo BuildTestProjectsInfo(IEnumerable<Mutant> mutants = null)
-    {
-        var content = new CsharpFolderComposite();
-        content.Add(new CsharpFileLeaf { Mutants = mutants ?? new[] { Mutant, OtherMutant } });
-        return new TestProjectsInfo(_fileSystem)
+    protected TestProjectsInfo BuildTestProjectsInfo() =>
+        new(_fileSystem)
         {
-            TestProjects = new List<TestProject> { new TestProject(_fileSystem, TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", Path.GetDirectoryName(_testAssemblyPath) },
-                        { "TargetFileName", Path.GetFileName(_testAssemblyPath) }
-                    },
-                    targetFramework: "netcoreapp2.1").Object)}
+            TestProjects = new List<TestProject> { new(_fileSystem, TestHelper.SetupProjectAnalyzerResult(
+                properties: new Dictionary<string, string>
+                {
+                    { "TargetDir", Path.GetDirectoryName(_testAssemblyPath) },
+                    { "TargetFileName", Path.GetFileName(_testAssemblyPath) }
+                },
+                targetFramework: "netcoreapp2.1").Object)}
         };
-    }
 
     protected IReadOnlyList<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> TestCases { get; }
 
@@ -192,7 +189,7 @@ public class VsTestMockingHelper : TestBase
             {
                 Outcome = success ? TestOutcome.Passed : TestOutcome.Failed,
                 ComputerName = ".",
-                Duration = _testDefaultDuration
+                Duration = TestDefaultDuration
             });
         }
         SetupMockTestRun(mockVsTest, results);
@@ -465,22 +462,24 @@ public class VsTestMockingHelper : TestBase
         mockedVsTestConsole.Setup(x => x.AbortTestRun());
         mockedVsTestConsole.Setup(x => x.EndSession());
         mockedVsTestConsole.Setup(x =>
-            x.DiscoverTests(It.Is<IEnumerable<string>>(d => d.Any(e => e == _testAssemblyPath)),
+            x.DiscoverTestsAsync(It.Is<IEnumerable<string>>(d => d.Any(e => e == _testAssemblyPath)),
                 It.IsAny<string>(),
                 It.IsAny<ITestDiscoveryEventsHandler>())).Callback(
             (IEnumerable<string> _, string _, ITestDiscoveryEventsHandler discoveryEventsHandler) =>
-                DiscoverTests(discoveryEventsHandler, testCases, false));
+                DiscoverTests(discoveryEventsHandler, testCases, false)).Returns(Task.CompletedTask);
 
         var context = new VsTestContextInformation(
             options,
-            testProjectsInfo ?? _testProjectsInfo,
             new Mock<IVsTestHelper>().Object,
             _fileSystem,
             _ => mockedVsTestConsole.Object,
             hostBuilder: _ => new MockStrykerTestHostLauncher(succeed, false),
             NullLogger.Instance
         );
-        context.Initialize();
+        foreach (var path in (testProjectsInfo ?? _testProjectsInfo).GetTestAssemblies())
+        {
+            context.AddTestSource(path);
+        }
         runner = new VsTestRunnerPool(context,
             NullLogger.Instance,
             (information, _) => new VsTestRunner(information, 0, NullLogger.Instance));
@@ -489,7 +488,7 @@ public class VsTestMockingHelper : TestBase
 
     protected MutationTestProcess BuildMutationTestProcess(VsTestRunnerPool runner, StrykerOptions options, IReadOnlyList<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> tests = null, SourceProjectInfo sourceProject = null)
     {
-        var testRunResult = new TestRunResult(null, new TestGuidsList((tests ?? TestCases).Select(t => t.Id)),
+        var testRunResult = new TestRunResult(new List<VsTestDescription>(), new TestGuidsList((tests ?? TestCases).Select(t => t.Id)),
             TestGuidsList.NoTest(),
             TestGuidsList.NoTest(),
             string.Empty,
@@ -497,11 +496,11 @@ public class VsTestMockingHelper : TestBase
             TimeSpan.Zero);
         var input = new MutationTestInput
         {
-            SourceProjectInfo = sourceProject ?? _sourceProjectInfo,
+            SourceProjectInfo = sourceProject ?? SourceProjectInfo,
             TestRunner = runner,
             InitialTestRun = new InitialTestRun(testRunResult, new TimeoutValueCalculator(500))
         };
-        var mutator = new CsharpMutationProcess(input, _fileSystem, options);
+        var mutator = new CsharpMutationProcess(_fileSystem, options);
 
         return new MutationTestProcess(input, options, null, new MutationTestExecutor(runner), mutator);
     }
@@ -521,6 +520,8 @@ public class VsTestMockingHelper : TestBase
         public bool IsDebug { get; }
 
         public bool IsProcessCreated { get; }
+
+        public int ErrorCode { get; }
     }
 
 }

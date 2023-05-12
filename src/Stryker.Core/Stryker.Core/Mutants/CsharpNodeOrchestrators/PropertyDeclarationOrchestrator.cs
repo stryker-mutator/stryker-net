@@ -31,7 +31,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
             if (children.Initializer != null)
             {
                 children = children.ReplaceNode(children.Initializer.Value,
-                    MutantPlacer.PlaceStaticContextMarker(children.Initializer.Value));
+                    context.PlaceStaticContextMarker(children.Initializer.Value));
             }
             return children;
         }

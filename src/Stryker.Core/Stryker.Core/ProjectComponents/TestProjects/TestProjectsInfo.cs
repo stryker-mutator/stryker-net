@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -18,10 +19,14 @@ namespace Stryker.Core.ProjectComponents.TestProjects
         public IEnumerable<TestFile> TestFiles => TestProjects.SelectMany(testProject => testProject.TestFiles);
         public IEnumerable<IAnalyzerResult> AnalyzerResults => TestProjects.Select(testProject => testProject.AnalyzerResult);
 
+        public IReadOnlyList<string> GetTestAssemblies() =>
+            AnalyzerResults.Select(a => a.GetAssemblyPath()).ToList();
+
         public TestProjectsInfo(IFileSystem fileSystem, ILogger<TestProjectsInfo> logger = null)
         {
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<TestProjectsInfo>();
+            TestProjects = Array.Empty<TestProject>();
         }
 
         public static TestProjectsInfo operator +(TestProjectsInfo a, TestProjectsInfo b)

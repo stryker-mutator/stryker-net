@@ -84,7 +84,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
                 MutationLevel = MutationLevel.Complete,
                 OptimizationMode = OptimizationModes.CoverageBasedTest,
             };
-            _target = new CsharpMutantOrchestrator(options: options);
+            _target = new CsharpMutantOrchestrator(new MutantPlacer(_injector), options: options);
 
             string source = @"private void Move()
 			{

@@ -167,9 +167,10 @@ namespace Stryker.Core.UnitTest.MutationTest
                 string.Empty,
                 Enumerable.Empty<string>(),
                 TimeSpan.Zero);
-            runnerMock.Setup(x => x.DiscoverTests()).Returns(TestSet);
-            runnerMock.Setup(x => x.InitialTest()).Returns(GetRunResult(InitialRunId));
-            runnerMock.Setup(x => x.CaptureCoverage())
+            runnerMock.Setup(x => x.DiscoverTests( It.IsAny<string>())).Returns(true);
+            runnerMock.Setup(x => x.GetTests( It.IsAny<IProjectAndTest>())).Returns(TestSet);
+            runnerMock.Setup(x => x.InitialTest( It.IsAny<IProjectAndTest>())).Returns(GetRunResult(InitialRunId));
+            runnerMock.Setup(x => x.CaptureCoverage( It.IsAny<IProjectAndTest>()))
                 .Returns(() =>
                 {
                     var result = new List<CoverageRunResult>(_tests.Count);
@@ -182,9 +183,9 @@ namespace Stryker.Core.UnitTest.MutationTest
                     }
                     return result;
                 });
-            runnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<ITimeoutValueCalculator>(),
+            runnerMock.Setup(x => x.TestMultipleMutants( It.IsAny<IProjectAndTest>(), It.IsAny<ITimeoutValueCalculator>(),
                     It.IsAny<IReadOnlyList<Mutant>>(), It.IsAny<TestUpdateHandler>())).
-                Callback((Action<ITimeoutValueCalculator, IReadOnlyList<Mutant>, TestUpdateHandler>)((test1, list,
+                Callback((Action<IProjectAndTest, ITimeoutValueCalculator, IReadOnlyList<Mutant>, TestUpdateHandler>)((_, test1, list,
                     update) =>
                 {
                     foreach (var m in list)

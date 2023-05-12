@@ -20,6 +20,8 @@ namespace Stryker.Core.UnitTest.Mutants
         [InlineData(4)]
         public void MutantPlacer_ShouldPlaceWithIfStatement(int id)
         {
+            var codeInjection = new CodeInjection();
+            var placer = new MutantPlacer(codeInjection);
             // 1 + 8;
             var originalNode = SyntaxFactory.ExpressionStatement(SyntaxFactory.BinaryExpression(SyntaxKind.AddExpression,
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
@@ -32,9 +34,9 @@ namespace Stryker.Core.UnitTest.Mutants
 
             var mutants = new List<(Mutant, StatementSyntax)> { (new Mutant { Id = id, Mutation = new Mutation { ReplacementNode = mutatedNode } }, mutatedNode) };
 
-            var result = MutantPlacer.PlaceStatementControlledMutations(originalNode, mutants);
+            var result = placer.PlaceStatementControlledMutations(originalNode, mutants);
 
-            result.ToFullString().Replace(CodeInjection.HelperNamespace, "StrykerNamespace").ShouldBeSemantically("if (StrykerNamespace.MutantControl.IsActive(" + id + @"))
+            result.ToFullString().Replace(codeInjection.HelperNamespace, "StrykerNamespace").ShouldBeSemantically("if (StrykerNamespace.MutantControl.IsActive(" + id + @"))
             {
                 1 - 8;
             } else {
@@ -83,6 +85,8 @@ namespace Stryker.Core.UnitTest.Mutants
         [InlineData(16)]
         public void MutantPlacer_ShouldPlaceWithConditionalExpression(int id)
         {
+            var codeInjection = new CodeInjection();
+            var placer = new MutantPlacer(codeInjection);
             // 1 + 8;
             var originalNode = SyntaxFactory.BinaryExpression(SyntaxKind.AddExpression,
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
@@ -95,10 +99,10 @@ namespace Stryker.Core.UnitTest.Mutants
 
             var mutants = new List<(Mutant, ExpressionSyntax)> { (new Mutant { Id = id, Mutation = new Mutation { ReplacementNode = mutatedNode } }, mutatedNode) };
 
-            var result = MutantPlacer.PlaceExpressionControlledMutations(originalNode, mutants);
+            var result = placer.PlaceExpressionControlledMutations(originalNode, mutants);
 
             result.ToFullString()
-                .ShouldBeSemantically(@$"({CodeInjection.HelperNamespace}.MutantControl.IsActive({id})?1-8:1+8)");
+                .ShouldBeSemantically(@$"({codeInjection.HelperNamespace}.MutantControl.IsActive({id})?1-8:1+8)");
 
             var removedResult = MutantPlacer.RemoveMutant(result);
 
@@ -196,20 +200,24 @@ namespace Stryker.Core.UnitTest.Mutants
         [Fact]
         public void ShouldStaticMarkerInStaticFieldInitializers()
         {
+            var codeInjection = new CodeInjection();
+            var placer = new MutantPlacer(codeInjection);
             var source = "class Test {static int x = 2;}";
-            var expected = $"class Test {{static int x = {CodeInjection.HelperNamespace}.MutantContext.TrackValue(()=>2);}}";
+            var expected = $"class Test {{static int x = {codeInjection.HelperNamespace}.MutantContext.TrackValue(()=>2);}}";
 
             CheckMutantPlacerProperlyPlaceAndRemoveHelpers<ExpressionSyntax>(source, expected,
-                MutantPlacer.PlaceStaticContextMarker, syntax => syntax.Kind() == SyntaxKind.NumericLiteralExpression);
+                placer.PlaceStaticContextMarker, syntax => syntax.Kind() == SyntaxKind.NumericLiteralExpression);
         }
 
         [Fact]
         public void ShouldRollBackFailedConstructor()
         {
+            var codeInjection = new CodeInjection();
+            var placer = new MutantPlacer(codeInjection);
             var source = @"class Test {
 static TestClass()=> Value-='a';}";
 
-            var orchestrator = new CsharpMutantOrchestrator(options: new StrykerOptions
+            var orchestrator = new CsharpMutantOrchestrator(placer, options: new StrykerOptions
             {
                 OptimizationMode = OptimizationModes.CoverageBasedTest,
                 MutationLevel = MutationLevel.Complete
@@ -232,7 +240,7 @@ static TestClass()=> Value-='a';}";
             restored = MutantPlacer.RemoveMutant(node);
             actualNode = actualNode.ReplaceNode(node, restored);
 
-            var expectedNode = CSharpSyntaxTree.ParseText(source.Replace("StrykerNamespace", CodeInjection.HelperNamespace)).GetRoot();
+            var expectedNode = CSharpSyntaxTree.ParseText(source.Replace("StrykerNamespace", codeInjection.HelperNamespace)).GetRoot();
             expectedNode.ShouldNotContainErrors();
             actualNode.ShouldBeSemantically(expectedNode);
             actualNode.ShouldNotContainErrors();

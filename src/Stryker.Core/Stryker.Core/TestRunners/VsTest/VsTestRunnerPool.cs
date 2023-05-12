@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -42,39 +43,25 @@ namespace Stryker.Core.TestRunners.VsTest
         }
 
         [ExcludeFromCodeCoverage(Justification = "It depends on the deployment of VsTest.")]
-        public VsTestRunnerPool(StrykerOptions options, TestProjectsInfo testProjectsInfo)
+        public VsTestRunnerPool(StrykerOptions options, IFileSystem fileSystem = null)
         {
-            Context = new VsTestContextInformation(options, testProjectsInfo);
-            Context.Initialize();
+            Context = new VsTestContextInformation(options, fileSystem: fileSystem);
             _countOfRunners = Math.Max(1, options.Concurrency);
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunnerPool>();
             Initialize();
         }
 
-        public TestSet DiscoverTests() => Context.Tests;
+        public bool DiscoverTests(string assembly) => Context.AddTestSource(assembly);
 
-        public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
-            => RunThis(runner => runner.TestMultipleMutants(timeoutCalc, mutants, update));
+        public TestSet GetTests(IProjectAndTest project) => Context.GetTestsForSources(project.GetTestAssemblies());
 
-        public TestRunResult InitialTest()
-            => RunThis(runner => runner.InitialTest());
+        public TestRunResult TestMultipleMutants(IProjectAndTest project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
+            => RunThis(runner => runner.TestMultipleMutants(project, timeoutCalc, mutants, update));
 
-        public IEnumerable<CoverageRunResult> CaptureCoverage()
-        {
-            var optimizationMode = Context.Options.OptimizationMode;
+        public TestRunResult InitialTest(IProjectAndTest project)
+            => RunThis(runner => runner.InitialTest(project));
 
-            IEnumerable<CoverageRunResult> resultsToParse;
-            if (optimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest))
-            {
-                resultsToParse = CaptureCoverageTestByTest();
-            }
-            else
-            {
-                resultsToParse = CaptureCoverageInOneGo();
-            }
-
-            return resultsToParse;
-        }
+        public IEnumerable<CoverageRunResult> CaptureCoverage(IProjectAndTest project) => Context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest) ? CaptureCoverageTestByTest(project) : CaptureCoverageInOneGo(project);
 
         private void Initialize(Func<VsTestContextInformation, int, VsTestRunner> runnerBuilder = null)
         {
@@ -87,18 +74,18 @@ namespace Stryker.Core.TestRunners.VsTest
                 }));
         }
 
-        private IEnumerable<CoverageRunResult> CaptureCoverageInOneGo() => ConvertCoverageResult(RunThis(runner => runner.RunCoverageSession(TestGuidsList.EveryTest()).TestResults), false);
+        private IEnumerable<CoverageRunResult> CaptureCoverageInOneGo(IProjectAndTest project) => ConvertCoverageResult(RunThis(runner => runner.RunCoverageSession(TestGuidsList.EveryTest(), project.GetTestAssemblies(), project.HelperNamespace, project.IsFullFramework).TestResults), false);
 
-        private IEnumerable<CoverageRunResult> CaptureCoverageTestByTest() => ConvertCoverageResult(CaptureCoveragePerIsolatedTests(Context.VsTests.Keys).TestResults, true);
+        private IEnumerable<CoverageRunResult> CaptureCoverageTestByTest(IProjectAndTest project) => ConvertCoverageResult(CaptureCoveragePerIsolatedTests(project, Context.VsTests.Keys).TestResults, true);
 
-        private IRunResults CaptureCoveragePerIsolatedTests(IEnumerable<Guid> tests)
+        private IRunResults CaptureCoveragePerIsolatedTests(IProjectAndTest project, IEnumerable<Guid> tests)
         {
             var options = new ParallelOptions { MaxDegreeOfParallelism = _countOfRunners };
             var result = new SimpleRunResults();
             var results = new ConcurrentBag<IRunResults>();
             Parallel.ForEach(tests, options,
                 testCase =>
-                    results.Add(RunThis(runner => runner.RunCoverageSession(new TestGuidsList(testCase)))));
+                    results.Add(RunThis(runner => runner.RunCoverageSession(new TestGuidsList(testCase), project.GetTestAssemblies(), project.HelperNamespace, project.IsFullFramework))));
 
             return results.Aggregate(result, (runResults, singleResult) => runResults.Merge(singleResult));
         }

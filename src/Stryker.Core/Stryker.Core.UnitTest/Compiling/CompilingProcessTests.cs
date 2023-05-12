@@ -425,12 +425,6 @@ namespace ExampleProject
                 SourceCode = sourceFile,
                 SyntaxTree = CSharpSyntaxTree.ParseText(sourceFile)
             };
-            var folder = new CsharpFolderComposite();
-            folder.Add(inputFile);
-            foreach (var (name, code) in CodeInjection.MutantHelpers)
-            {
-                folder.AddCompilationSyntaxTree(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32));
-            }
 
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
@@ -455,43 +449,52 @@ namespace ExampleProject
                 {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         projectFilePath: "/c/project.csproj",
-                        properties: new Dictionary<string, string>()
+                        properties: new Dictionary<string, string>
                         {
                             { "TargetDir", "Project" },
                             { "AssemblyName", "AssemblyName" },
                             { "TargetFileName", "TargetFileName.dll" },
                         },
                         // add a reference to system so the example code can compile
-                        references: new string[] { typeof(object).Assembly.Location }
+                        references: new[] { typeof(object).Assembly.Location }
                     ).Object,
-                    ProjectContents = folder
-                },
-                TestProjectsInfo = new TestProjectsInfo(fileSystem)
-                {
-                     TestProjects = new List<TestProject>() {
-                         new TestProject(fileSystem, TestHelper.SetupProjectAnalyzerResult(
-                            projectFilePath: "/c/test.csproj",
-                            properties: new Dictionary<string, string>()
-                            {
-                                { "TargetDir", "Project" },
-                                { "AssemblyName", "AssemblyName" },
-                                { "TargetFileName", "TargetFileName.dll" },
-                            },
-                            // add a reference to system so the example code can compile
-                            references: new string[] { typeof(object).Assembly.Location }
-                        ).Object),
+                    TestProjectsInfo = new TestProjectsInfo(fileSystem)
+                    {
+                        TestProjects = new List<TestProject> {
+                            new TestProject(fileSystem, TestHelper.SetupProjectAnalyzerResult(
+                                projectFilePath: "/c/test.csproj",
+                                properties: new Dictionary<string, string>
+                                {
+                                    { "TargetDir", "Project" },
+                                    { "AssemblyName", "AssemblyName" },
+                                    { "TargetFileName", "TargetFileName.dll" },
+                                },
+                                // add a reference to system so the example code can compile
+                                references: new[] { typeof(object).Assembly.Location }
+                            ).Object),
+                        }
                     }
-                },
+                    },
+
                 TestRunner = new Mock<ITestRunner>(MockBehavior.Default).Object
             };
+            var folder = new CsharpFolderComposite();
+            var injector = input.SourceProjectInfo.CodeInjector;
+            folder.Add(inputFile);
+            foreach (var (name, code) in injector.MutantHelpers)
+            {
+                folder.AddCompilationSyntaxTree(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32));
+            }
+
+            input.SourceProjectInfo.ProjectContents = folder;
 
             var options = new StrykerOptions
             {
                 MutationLevel = MutationLevel.Complete,
                 OptimizationMode = OptimizationModes.CoverageBasedTest,
             };
-            var process = new CsharpMutationProcess(input, fileSystem, options);
-            process.Mutate();
+            var process = new CsharpMutationProcess(fileSystem, options);
+            process.Mutate(input);
 
             var projectContentsMutants = input.SourceProjectInfo.ProjectContents.Mutants;
             return projectContentsMutants;

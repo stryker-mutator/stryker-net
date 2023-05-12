@@ -34,8 +34,9 @@ namespace Stryker.Core
         /// <summary>
         /// Starts a mutation test run
         /// </summary>
-        /// <param name="options">The user options</param>
+        /// <param name="inputs">user options</param>
         /// <param name="loggerFactory">This loggerfactory will be used to create loggers during the stryker run</param>
+        /// <param name="projectOrchestrator"></param>
         /// <exception cref="InputException">For managed exceptions</exception>
         public StrykerRunResult RunMutationTest(IStrykerInputs inputs, ILoggerFactory loggerFactory, IProjectOrchestrator projectOrchestrator = null)
         {
@@ -44,6 +45,7 @@ namespace Stryker.Core
 
             SetupLogging(loggerFactory);
 
+            var disposeOrchestrator = projectOrchestrator == null;
             // Setup project orchestrator can't be done sooner since it needs logging
             projectOrchestrator ??= new ProjectOrchestrator();
 
@@ -62,7 +64,7 @@ namespace Stryker.Core
 
                 _logger.LogInformation("{0} mutants created", rootComponent.Mutants.Count());
 
-                AnalyseCoverage(options);
+                AnalyzeCoverage(options);
 
                 // Filter
                 foreach (var project in _mutationTestProcesses)
@@ -73,7 +75,7 @@ namespace Stryker.Core
                 // Report
                 reporters.OnMutantsCreated(rootComponent, combinedTestProjectsInfo);
 
-                var allMutants = rootComponent.Mutants;
+                var allMutants = rootComponent.Mutants.ToList();
                 var mutantsNotRun = rootComponent.NotRunMutants().ToList();
 
                 if (!mutantsNotRun.Any())
@@ -96,6 +98,10 @@ namespace Stryker.Core
                     }
 
                     reporters.OnAllMutantsTested(rootComponent, combinedTestProjectsInfo);
+                    if (disposeOrchestrator)
+                    {
+                        projectOrchestrator.Dispose();
+                    }
                     return new StrykerRunResult(options, rootComponent.GetMutationScore());
                 }
 
@@ -107,14 +113,19 @@ namespace Stryker.Core
                 {
                     project.Test(project.Input.SourceProjectInfo.ProjectContents.Mutants.Where(x => x.ResultStatus == MutantStatus.Pending).ToList());
                 }
-
-                // Restory assemblies
+                // dispose and stop runners
+                if (disposeOrchestrator)
+                {
+                    projectOrchestrator.Dispose();
+                }
+                // Restore assemblies
                 foreach (var project in _mutationTestProcesses)
                 {
                     project.Restore();
                 }
 
                 reporters.OnAllMutantsTested(rootComponent, combinedTestProjectsInfo);
+
 
                 return new StrykerRunResult(options, rootComponent.GetMutationScore());
             }
@@ -142,7 +153,7 @@ namespace Stryker.Core
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerRunner>();
         }
 
-        private void AnalyseCoverage(StrykerOptions options)
+        private void AnalyzeCoverage(StrykerOptions options)
         {
             if (options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) || options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
             {

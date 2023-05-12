@@ -34,7 +34,7 @@ namespace Stryker.Core.MutationTest
         private readonly ICoverageAnalyser _coverageAnalyser;
         private readonly StrykerOptions _options;
         private readonly IMutationProcess _mutationProcess;
-        private static readonly Dictionary<Language, Func<MutationTestInput, StrykerOptions, IMutationProcess>> LanguageMap = new();
+        private static readonly Dictionary<Language, Func<StrykerOptions, IMutationProcess>> LanguageMap = new();
 
         static MutationTestProcess()
         {
@@ -44,14 +44,14 @@ namespace Stryker.Core.MutationTest
 
         public static void DeclareMutationProcessForLanguage<T>(Language language) where T : IMutationProcess
         {
-            var constructor = typeof(T).GetConstructor(new[] { typeof(MutationTestInput), typeof(StrykerOptions) });
+            var constructor = typeof(T).GetConstructor(new[] { typeof(StrykerOptions) });
             if (constructor == null)
             {
                 throw new NotSupportedException(
                     $"Failed to find a constructor with the appropriate signature for type {typeof(T)}");
             }
 
-            LanguageMap[language] = (x, y) => (IMutationProcess)constructor.Invoke(new object[] { x, y });
+            LanguageMap[language] = y => (IMutationProcess)constructor.Invoke(new object[] { y });
         }
 
         public MutationTestProcess(MutationTestInput input,
@@ -79,16 +79,16 @@ namespace Stryker.Core.MutationTest
                 throw new GeneralStrykerException(
                     "no valid language detected || no valid csproj or fsproj was given.");
             }
-            return LanguageMap[Input.SourceProjectInfo.AnalyzerResult.GetLanguage()](Input, _options);
+            return LanguageMap[Input.SourceProjectInfo.AnalyzerResult.GetLanguage()](_options);
         }
 
         public void Mutate()
         {
             Input.TestProjectsInfo.BackupOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
-            _mutationProcess.Mutate();
+            _mutationProcess.Mutate(Input);
         }
 
-        public void FilterMutants() => _mutationProcess.FilterMutants();
+        public void FilterMutants() => _mutationProcess.FilterMutants(Input);
 
         public StrykerRunResult Test(IEnumerable<Mutant> mutantsToTest)
         {
@@ -98,7 +98,6 @@ namespace Stryker.Core.MutationTest
             }
 
             TestMutants(mutantsToTest);
-            _mutationTestExecutor.TestRunner.Dispose();
 
             return new StrykerRunResult(_options, _projectContents.GetMutationScore());
         }
@@ -115,7 +114,7 @@ namespace Stryker.Core.MutationTest
             {
                 var reportedMutants = new HashSet<Mutant>();
 
-                _mutationTestExecutor.Test(mutants,
+                _mutationTestExecutor.Test(Input.SourceProjectInfo, mutants,
                     Input.InitialTestRun.TimeoutValueCalculator,
                     (testedMutants, tests, ranTests, outTests) => TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants));
 
@@ -243,6 +242,6 @@ namespace Stryker.Core.MutationTest
             return blocks;
         }
 
-        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(_mutationTestExecutor.TestRunner, _projectContents.Mutants, Input.InitialTestRun.Result.FailingTests);
+        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(Input.SourceProjectInfo, _mutationTestExecutor.TestRunner, _projectContents.Mutants, Input.InitialTestRun.Result.FailingTests);
     }
 }

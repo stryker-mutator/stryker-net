@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
@@ -20,7 +21,7 @@ namespace Stryker.Core.CoverageAnalysis
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<CoverageAnalyser>();
         }
 
-        public void DetermineTestCoverage(ITestRunner runner, IEnumerable<Mutant> mutants, ITestGuids resultFailingTests)
+        public void DetermineTestCoverage(IProjectAndTest project, ITestRunner runner, IEnumerable<Mutant> mutants, ITestGuids resultFailingTests)
         {
             if (!_options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
                 !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
@@ -33,7 +34,7 @@ namespace Stryker.Core.CoverageAnalysis
                 return;
             }
 
-            ParseCoverage(runner.CaptureCoverage(), mutants, new TestGuidsList(resultFailingTests.GetGuids()));
+            ParseCoverage(runner.CaptureCoverage(project), mutants, new TestGuidsList(resultFailingTests.GetGuids()));
         }
 
         private void ParseCoverage(IEnumerable<CoverageRunResult> coverage, IEnumerable<Mutant> mutantsToScan, TestGuidsList failedTests)
@@ -101,7 +102,7 @@ namespace Stryker.Core.CoverageAnalysis
             else if (resultTingRequirements.HasFlag(MutationTestingRequirements.Static) || mutant.IsStaticValue)
             {
                 // static mutations will be tested against every tests, except the one that are trusted not to cover it
-                mutant.CoveringTests =allTestsGuidsExceptTrusted.Merge(testGuids);
+                mutant.CoveringTests = allTestsGuidsExceptTrusted.Merge(testGuids);
                 mutant.AssessingTests = allTestsGuidsExceptTrusted.Merge(assessingTests).Excluding(failedTest);
                 
                 mutant.IsStaticValue = true;

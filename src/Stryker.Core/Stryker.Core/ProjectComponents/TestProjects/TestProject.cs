@@ -21,7 +21,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
         {
             AssertValidTestProject(testProjectAnalyzerResult);
 
-            fileSystem = fileSystem ?? new FileSystem();
+            fileSystem ??= new FileSystem();
 
             AnalyzerResult = testProjectAnalyzerResult;
 

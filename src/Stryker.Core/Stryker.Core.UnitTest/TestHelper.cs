@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using Buildalyzer;
 using Moq;
 
@@ -22,9 +23,19 @@ namespace Stryker.Core.UnitTest
             {
                 analyzerResultMock.Setup(x => x.Properties).Returns(properties);
             }
+            else
+            {
+                properties = new Dictionary<string, string>();
+                analyzerResultMock.Setup(x => x.Properties).Returns(properties);
+            }
             if (projectFilePath != null)
             {
                 analyzerResultMock.Setup(x => x.ProjectFilePath).Returns(projectFilePath);
+                if (!properties.ContainsKey("TargetDir"))
+                {
+                    properties["TargetDir"] = Path.Combine(Path.GetFullPath(projectFilePath), "bin", "Debug", targetFramework ?? "net");
+                    properties["TargetFileName"] = Path.GetFileNameWithoutExtension(projectFilePath)+".dll";
+                }
             }
             if (sourceFiles != null)
             {

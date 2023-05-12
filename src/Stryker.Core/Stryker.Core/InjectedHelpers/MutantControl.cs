@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Stryker
 {
-    public static class MutantControl
+    internal static class MutantControl
     {
         private static List<int> _coveredMutants;
         private static List<int> _coveredStaticdMutants;
