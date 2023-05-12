@@ -19,7 +19,7 @@ namespace Stryker.Core.Reporters.WebBrowserOpener
                 processInfo = new ProcessStartInfo
                 {
                     FileName = "powershell.exe",
-                    Arguments = $"-NoProfile -Command Start-Process -FilePath {path}",
+                    Arguments = $"-NoProfile -Command Start-Process `wslpath -wa {path}`",
                     UseShellExecute = true
                 };
             }
