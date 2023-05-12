@@ -1,3 +1,19 @@
+# [3.9.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.8.2...stryker@3.9.0) (2023-05-12)
+
+
+### Bug Fixes
+
+* **reporting:** More reliable auto-open browser ([#2523](https://github.com/stryker-mutator/stryker-net/issues/2523)) ([6e5f386](https://github.com/stryker-mutator/stryker-net/commit/6e5f386a5cf1822bcddd2bc08e350156b5d0123a))
+
+
+### Features
+
+* **html report:** Update mutation testing elements to 2.0.1 ([#2514](https://github.com/stryker-mutator/stryker-net/issues/2514)) ([c116bd9](https://github.com/stryker-mutator/stryker-net/commit/c116bd9bc4c3dc030dc5025873810f2341945fa0))
+* Record for each unit test which mutant they kill ([#2491](https://github.com/stryker-mutator/stryker-net/issues/2491)) ([da7cffd](https://github.com/stryker-mutator/stryker-net/commit/da7cffd244a9edd2855cffad3807948987abf18f))
+* **solution mode:** Improve solution handling ([#2400](https://github.com/stryker-mutator/stryker-net/issues/2400)) ([6b48029](https://github.com/stryker-mutator/stryker-net/commit/6b480299fb00430c75054acc226341c17ecbafc3))
+
+
+
 ## [3.8.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.8.1...stryker@3.8.2) (2023-05-07)
 
 
