@@ -1,3 +1,38 @@
+## [3.8.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.8.1...stryker@3.8.2) (2023-05-07)
+
+
+### Bug Fixes
+
+* **tests report:** Correctly parse test files with preprocessor symbols ([#2502](https://github.com/stryker-mutator/stryker-net/issues/2502)) ([86b4720](https://github.com/stryker-mutator/stryker-net/commit/86b4720028f17b83a2ba297bc6774a89d992332b))
+
+
+
+## [3.8.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.8.0...stryker@3.8.1) (2023-05-05)
+
+
+### Bug Fixes
+
+* **baseline:** json reports with testfiles are now correctly deserialized ([#2498](https://github.com/stryker-mutator/stryker-net/issues/2498)) ([38793e1](https://github.com/stryker-mutator/stryker-net/commit/38793e16a4f8edd1be5766433c9443de62ff447d))
+
+
+
+# [3.8.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.7.1...stryker@3.8.0) (2023-05-04)
+
+
+### Bug Fixes
+
+* **initial-build:** add quotes around buildCommand when necessary ([#2455](https://github.com/stryker-mutator/stryker-net/issues/2455)) ([7689a6e](https://github.com/stryker-mutator/stryker-net/commit/7689a6e0e622ecbfea855625706aa2e1f64be2f6))
+
+
+### Features
+
+* Add trace logging with vstest console messages ([#2490](https://github.com/stryker-mutator/stryker-net/issues/2490)) ([f072f1b](https://github.com/stryker-mutator/stryker-net/commit/f072f1b4a3bb1f4e78cbe52dcccaee47ef0a8c59))
+* **compiling:** signing key is not required even if SignAssembly is…set to true ([#2457](https://github.com/stryker-mutator/stryker-net/issues/2457)) ([f6aa688](https://github.com/stryker-mutator/stryker-net/commit/f6aa68874a2b43db2c99f7cabd9da39444521da2))
+* **reporting:** add support for realtime reporting ([#2469](https://github.com/stryker-mutator/stryker-net/issues/2469)) ([959ded0](https://github.com/stryker-mutator/stryker-net/commit/959ded0bd751d5d2b234eddfc8eca83c9a5bc75f)), closes [stryker-mutator/mutation-testing-elements#2434](https://github.com/stryker-mutator/mutation-testing-elements/issues/2434)
+* **reporting:** Report on tests in mutation report ([#1850](https://github.com/stryker-mutator/stryker-net/issues/1850)) ([98f4e97](https://github.com/stryker-mutator/stryker-net/commit/98f4e97bb90fdc5f142c18eb34e51373d1f64868))
+
+
+
 ## [3.7.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.7.0...stryker@3.7.1) (2023-03-23)
 
 

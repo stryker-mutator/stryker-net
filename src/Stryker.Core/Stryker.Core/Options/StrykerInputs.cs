@@ -164,7 +164,7 @@ namespace Stryker.Core.Options
                 Since = sinceEnabled,
                 SinceTarget = sinceTarget,
                 ReportTypeToOpen = OpenReportInput.Validate(OpenReportEnabledInput.Validate()),
-                BreakOnInitialTestFailure = BreakOnInitialTestFailureInput.Validate()
+                BreakOnInitialTestFailure = BreakOnInitialTestFailureInput.Validate(),
             };
             return _strykerOptionsCache;
         }

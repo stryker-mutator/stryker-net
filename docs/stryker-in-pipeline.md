@@ -67,7 +67,7 @@ With this extension you add the mutation report to your build summary so you can
 In YAML pipelines add the following after the test step:
 
 ```yaml
-- task: PublishMutationReport@0
+- task: PublishMutationReport@1
   displayName: 'Publish Mutation Test Report'
   inputs:
     reportPattern: '**/mutation-report.html'
@@ -78,19 +78,3 @@ You now get a new tab on your build pipeline where you can click through the com
 ![mutation report in a build](./images/devops-report-publisher-tab.png)
 
 To install 'Mutation Report Publisher' or for more information go to the [marketplace](https://marketplace.visualstudio.com/items?itemName=stryker-mutator.mutation-report-publisher).
-
-### Run Stryker .Net
-> ⚠ This is not an official [Stryker Mutator](https://stryker-mutator.io/) extension. This extension is not cross platform and only works on Windows.
-
-This is an Azure Devops extension to run mutation testing with Stryker .Net without having to install Stryker yourself. 
-
-In YAML pipelines add the following after the test step:
-
-```yaml
-- task: run-stryker@1
-  inputs:
-    testProject: '*Tests.csproj' #example value
-    parameters: '--reporter html --reporter progress' #example value
-```
-
-To install 'Run Stryker .Net' or for more information go to the [marketplace](https://marketplace.visualstudio.com/items?itemName=raschmitt.run-stryker-net-task).

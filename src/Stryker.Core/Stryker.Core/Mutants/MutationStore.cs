@@ -23,13 +23,19 @@ namespace Stryker.Core.Mutants
         private readonly List<Mutant> _expressionMutants = new();
         private readonly Stack<List<Mutant>> _statementMutants = new();
         private readonly Stack<List<Mutant>> _blockMutants = new();
+        private readonly MutantPlacer _placer;
+
+        public MutationStore(MutantPlacer placer)
+        {
+            _placer = placer;
+        }
 
         public bool HasBlockLevel => _blockMutants.Count > 0 && _blockMutants.Peek().Count > 0;
         public bool HasStatementLevel => (_statementMutants.Count > 0 && _statementMutants.Peek().Count > 0) || HasBlockLevel;
 
         public void StoreMutations(IEnumerable<Mutant> proposedMutations, MutationControl control)
         {
-            var mutations = proposedMutations.Where(m => m.ResultStatus == MutantStatus.NotRun);
+            var mutations = proposedMutations.Where(m => m.ResultStatus == MutantStatus.Pending);
             if (!mutations.Any())
             {
                 return;
@@ -68,7 +74,7 @@ namespace Stryker.Core.Mutants
 
         public StatementSyntax PlaceBlockMutations(StatementSyntax block, Func<Mutation, StatementSyntax> mutationFunc)
         {
-            var result = MutantPlacer.PlaceStatementControlledMutations(block, _blockMutants.Peek().Select(m => (m, mutationFunc(m.Mutation))));
+            var result = _placer.PlaceStatementControlledMutations(block, _blockMutants.Peek().Select(m => (m, mutationFunc(m.Mutation))));
             _blockMutants.Peek().Clear();
             return result;
         }
@@ -79,14 +85,14 @@ namespace Stryker.Core.Mutants
             {
                 return block;
             }
-            var result = MutantPlacer.PlaceStatementControlledMutations(block, _statementMutants.Peek().Select(m => (m, mutationFunc(m.Mutation))));
+            var result = _placer.PlaceStatementControlledMutations(block, _statementMutants.Peek().Select(m => (m, mutationFunc(m.Mutation))));
             _statementMutants.Peek().Clear();
             return result;
         }
 
         public ExpressionSyntax PlaceExpressionMutations(ExpressionSyntax expression, Func<Mutation, ExpressionSyntax> converter)
         {
-            var result = MutantPlacer.PlaceExpressionControlledMutations(expression, _expressionMutants.Select(m => (m, converter(m.Mutation))));
+            var result = _placer.PlaceExpressionControlledMutations(expression, _expressionMutants.Select(m => (m, converter(m.Mutation))));
             _expressionMutants.Clear();
             return result;
         }

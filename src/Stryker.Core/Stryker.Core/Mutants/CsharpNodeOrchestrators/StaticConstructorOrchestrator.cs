@@ -1,4 +1,3 @@
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
@@ -31,7 +30,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                 mutated = MutantPlacer.ConvertExpressionToBody(mutated);
             }
 
-            return mutated.ReplaceNode(mutated.Body!, MutantPlacer.PlaceStaticContextMarker(mutated.Body));
+            return mutated.ReplaceNode(mutated.Body!, context.PlaceStaticContextMarker(mutated.Body));
         }
     }
 }

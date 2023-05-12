@@ -8,8 +8,6 @@ namespace Stryker.Core.Exceptions
     /// </summary>
     public class GeneralStrykerException : Exception
     {
-        public string Details { get; }
-
         public GeneralStrykerException(string message)
             : base(message)
         {
@@ -19,8 +17,6 @@ namespace Stryker.Core.Exceptions
         {
         }
 
-        public GeneralStrykerException(string message, string details) : base(message) => Details = details;
-
         public override string ToString()
         {
             var builder = new StringBuilder();
@@ -28,11 +24,7 @@ namespace Stryker.Core.Exceptions
             builder.AppendLine();
             builder.AppendLine(Message);
             builder.AppendLine();
-            if (Details is not null)
-            {
-                builder.AppendLine(Details);
-            }
-            else if (InnerException is not null)
+            if (InnerException is not null)
             {
                 builder.AppendLine();
                 builder.AppendLine("Inner Exception: ");

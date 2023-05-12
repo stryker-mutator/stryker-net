@@ -1,6 +1,7 @@
 <Project>
   <ItemGroup>
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.1.1" />
+    <PackageVersion Include="LaunchDarkly.EventSource" Version="5.0.1" />
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.0.2" />
     <PackageVersion Include="NuGet.Protocol" Version="6.5.0" />
     <PackageVersion Include="ResXResourceReader.NetStandard" Version="1.1.0" />
@@ -14,7 +15,7 @@
     <PackageVersion Include="Mono.Cecil" Version="0.11.5" />
     <PackageVersion Include="NuGet.Frameworks" Version="6.5.0" />
     <PackageVersion Include="Serilog" Version="2.12.0" />
-    <PackageVersion Include="Serilog.Extensions.Logging" Version="3.1.0" />
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="7.0.0" />
     <PackageVersion Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
     <PackageVersion Include="Serilog.Sinks.Console" Version="4.1.0" />
     <PackageVersion Include="ShellProgressBar" Version="5.2.0" />
@@ -22,15 +23,15 @@
     <PackageVersion Include="Spectre.Console.Analyzer" Version="0.46.0" />
     <PackageVersion Include="System.Net.Http.Json" Version="7.0.1" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0" />
-    <PackageVersion Include="Microsoft.TestPlatform" Version="17.2.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.2.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.2.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="17.2.0" />
-    <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="19.2.18" /> 
+    <PackageVersion Include="Microsoft.TestPlatform" Version="17.5.0" />
+    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.5.0" />
+    <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.5.0" />
+    <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="17.5.0" />
+    <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="19.2.22" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.3.2" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.5.0" />
     <PackageVersion Include="coverlet.collector" Version="3.2.0" />
     <PackageVersion Include="coverlet.msbuild" Version="3.2.0" />
     <PackageVersion Include="Moq" Version="4.18.4" />
@@ -40,6 +41,6 @@
     <PackageVersion Include="xunit" Version="2.4.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.4.5" />
     <PackageVersion Include="Xunit.SkippableFact" Version="1.4.13" />
-    <PackageVersion Include="TestableIO.System.IO.Abstractions.TestingHelpers" Version="19.2.18" />
+    <PackageVersion Include="TestableIO.System.IO.Abstractions.TestingHelpers" Version="19.2.22" />
   </ItemGroup>
 </Project>

@@ -109,10 +109,11 @@ namespace ExampleProject
                 MutationLevel = MutationLevel.Complete,
                 DevMode = true
             };
-
-            var mutator = new CsharpMutantOrchestrator(options: options);
+            var codeInjection = new CodeInjection();
+            var placer = new MutantPlacer(codeInjection);
+            var mutator = new CsharpMutantOrchestrator( placer, options: options);
             var helpers = new List<SyntaxTree>();
-            foreach (var (name, code) in CodeInjection.MutantHelpers)
+            foreach (var (name, code) in codeInjection.MutantHelpers)
             {
                 helpers.Add(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32));
             }

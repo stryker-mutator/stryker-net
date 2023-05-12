@@ -14,7 +14,7 @@ namespace Stryker.Core.Mutants
     /// Implements multiple (reversible) patterns for injecting code in the mutated assembly?
     /// Each pattern is implemented in a dedicated class.
     /// </summary>
-    public static class MutantPlacer
+    public class MutantPlacer
     {
         private const string MutationIdMarker = "MutationId";
         private const string MutationTypeMarker = "MutationType";
@@ -31,11 +31,11 @@ namespace Stryker.Core.Mutants
         private static readonly AnonymousFunctionExpressionToBodyEngine anonymousFunctionExpressionToBodyEngine = new();
         private static readonly EndingReturnEngine endingReturnEngine = new();
         private static readonly DefaultInitializationEngine defaultInitializationEngine = new();
-        private static ExpressionSyntax _binaryExpression;
-        private static SyntaxNode _placeHolderNode;
-
         private static readonly IDictionary<string, IInstrumentCode> InstrumentEngines = new Dictionary<string, IInstrumentCode>();
 
+        private readonly CodeInjection _injection;
+        private ExpressionSyntax _binaryExpression;
+        private SyntaxNode _placeHolderNode;
         public static IEnumerable<string> MutationMarkers => new[] { MutationIdMarker, MutationTypeMarker, Injector };
 
         static MutantPlacer()
@@ -52,6 +52,8 @@ namespace Stryker.Core.Mutants
             RegisterEngine(staticInitializerEngine);
             RegisterEngine(localFunctionExpressionToBodyEngine);
         }
+
+        public MutantPlacer(CodeInjection injection) => _injection = injection;
 
         /// <summary>
         ///  register an instrumentation engine
@@ -83,16 +85,16 @@ namespace Stryker.Core.Mutants
         public static AnonymousFunctionExpressionSyntax AddEndingReturn(AnonymousFunctionExpressionSyntax function) =>
             function.WithBlock(endingReturnEngine.InjectReturn(function.Block));
 
-        public static BlockSyntax PlaceStaticContextMarker(BlockSyntax block) =>
-            staticEngine.PlaceStaticContextMarker(block);
+        public BlockSyntax PlaceStaticContextMarker(BlockSyntax block) =>
+            staticEngine.PlaceStaticContextMarker(block, _injection);
 
-        public static ExpressionSyntax PlaceStaticContextMarker(ExpressionSyntax expression) =>
-            staticInitializerEngine.PlaceValueMarker(expression);
+        public ExpressionSyntax PlaceStaticContextMarker(ExpressionSyntax expression) =>
+            staticInitializerEngine.PlaceValueMarker(expression, _injection);
 
         public static BlockSyntax AddDefaultInitializers(BlockSyntax block, IEnumerable<ParameterSyntax> parameters) =>
             defaultInitializationEngine.AddDefaultInitializers(block, parameters);
 
-        public static StatementSyntax PlaceStatementControlledMutations(StatementSyntax original,
+        public StatementSyntax PlaceStatementControlledMutations(StatementSyntax original,
             IEnumerable<(Mutant mutant, StatementSyntax mutation)> mutants) =>
             mutants.Aggregate(original, (syntaxNode, mutationInfo) =>
                 IfEngine.InjectIf(GetBinaryExpression(mutationInfo.mutant.Id), syntaxNode, mutationInfo.mutation)
@@ -100,7 +102,7 @@ namespace Stryker.Core.Mutants
                     .WithAdditionalAnnotations(new SyntaxAnnotation(MutationIdMarker, mutationInfo.mutant.Id.ToString()))
                     .WithAdditionalAnnotations(new SyntaxAnnotation(MutationTypeMarker, mutationInfo.mutant.Mutation.Type.ToString())));
 
-        public static ExpressionSyntax PlaceExpressionControlledMutations(ExpressionSyntax original,
+        public ExpressionSyntax PlaceExpressionControlledMutations(ExpressionSyntax original,
             IEnumerable<(Mutant mutant, ExpressionSyntax mutation)> mutants) =>
             mutants.Aggregate(original, (current, mutationInfo) =>
                 conditionalEngine.PlaceWithConditionalExpression(GetBinaryExpression(mutationInfo.mutant.Id), current, mutationInfo.mutation)
@@ -133,7 +135,7 @@ namespace Stryker.Core.Mutants
             {
                 if (annotation.Kind == MutationIdMarker)
                 {
-                    id = int.Parse(annotation.Data);
+                    id = int.Parse(annotation.Data!);
                 }
                 else if (annotation.Kind == Injector)
                 {
@@ -160,12 +162,15 @@ namespace Stryker.Core.Mutants
         /// </summary>
         /// <param name="mutantId"></param>
         /// <returns></returns>
-        private static ExpressionSyntax GetBinaryExpression(int mutantId)
+        private  ExpressionSyntax GetBinaryExpression(int mutantId)
         {
             if (_binaryExpression == null)
             {
-                _binaryExpression = SyntaxFactory.ParseExpression(CodeInjection.SelectorExpression);
-                _placeHolderNode = _binaryExpression.DescendantNodes().First(n => n is IdentifierNameSyntax identifier && identifier.Identifier.Text == "ID");
+                _binaryExpression = SyntaxFactory.ParseExpression(_injection.SelectorExpression);
+                _placeHolderNode = _binaryExpression.DescendantNodes().First(n => n is IdentifierNameSyntax
+                {
+                    Identifier.Text: "ID"
+                });
             }
 
             return _binaryExpression.ReplaceNode(_placeHolderNode,

@@ -78,7 +78,7 @@ namespace Stryker.Core.UnitTest.Reporters
                     new Mutant() { ResultStatus = MutantStatus.Ignored, ResultStatusReason = "Mutator excluded" },
                     new Mutant() { ResultStatus = MutantStatus.CompileError, ResultStatusReason = "CompileError" },
                     new Mutant() { ResultStatus = MutantStatus.Ignored, ResultStatusReason = "In excluded file" },
-                    new Mutant() { ResultStatus = MutantStatus.NotRun },
+                    new Mutant() { ResultStatus = MutantStatus.Pending },
                 }
             });
 

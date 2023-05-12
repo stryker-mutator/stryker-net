@@ -19,11 +19,11 @@ namespace Stryker.Core.Reporters
 
         public BroadcastReporter(IEnumerable<IReporter> reporters) => Reporters = reporters;
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
             foreach (var reporter in Reporters)
             {
-                reporter.OnMutantsCreated(reportComponent);
+                reporter.OnMutantsCreated(reportComponent, testProjectsInfo);
             }
             // todo: refactor to lifecycle event
             if ((reportComponent.Mutants ?? Enumerable.Empty<IReadOnlyMutant>()).Any())

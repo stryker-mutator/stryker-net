@@ -6,8 +6,8 @@ using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.Reporters.Html.ProcessWrapper;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.Reporters.HtmlReporter.ProcessWrapper;
 using Stryker.Core.Reporters.Json;
 
 namespace Stryker.Core.Reporters
@@ -64,7 +64,7 @@ namespace Stryker.Core.Reporters
             _console.WriteLine();
         }
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
             // Method to implement the interface
         }

@@ -20,14 +20,14 @@ namespace Stryker.Core.Mutants
         private readonly TypeBasedStrategy<SyntaxNode, INodeMutator> _specificOrchestrator =
             new();
 
-        public IEnumerable<IMutator> Mutators { get; }
         private ILogger Logger { get; }
 
         /// <summary>
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
         /// </summary>
-        public CsharpMutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerOptions options = null) : base(options)
+        public CsharpMutantOrchestrator(MutantPlacer placer, IEnumerable<IMutator> mutators = null, StrykerOptions options = null) : base(options)
         {
+            Placer = placer;
             Mutators = mutators ?? new List<IMutator>
             {
                 // the default list of mutators
@@ -83,6 +83,9 @@ namespace Stryker.Core.Mutants
             });
         }
 
+        public IEnumerable<IMutator> Mutators { get; }
+        public MutantPlacer Placer { get; }
+
         /// <summary>
         /// Recursively mutates a single SyntaxNode
         /// </summary>
@@ -132,7 +135,7 @@ namespace Stryker.Core.Mutants
             {
                 Id = id,
                 Mutation = mutation,
-                ResultStatus = mutantIgnored ? MutantStatus.Ignored : MutantStatus.NotRun,
+                ResultStatus = mutantIgnored ? MutantStatus.Ignored : MutantStatus.Pending,
                 IsStaticValue = context.InStaticValue,
                 ResultStatusReason = mutantIgnored ? context.FilterComment : null
             };

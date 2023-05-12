@@ -1,9 +1,7 @@
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.Text.RegularExpressions;
 using Stryker.Core.Exceptions;
-using Stryker.Core.InjectedHelpers;
 using System.Xml.Linq;
 using System.Linq;
 using Stryker.Core.ProjectComponents;

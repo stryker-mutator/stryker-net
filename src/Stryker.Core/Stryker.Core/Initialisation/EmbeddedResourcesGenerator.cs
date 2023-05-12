@@ -110,6 +110,11 @@ namespace Stryker.Core.Initialisation
             // For non-.resx files just create a FileStream object to read the file as binary data
             if (!resourceFullFilename.EndsWith(".resx", StringComparison.OrdinalIgnoreCase))
             {
+                
+                if (!File.Exists(resourceFullFilename))
+                {
+                    return new MemoryStream();
+                }
                 return File.OpenRead(resourceFullFilename);
             }
 

@@ -13,7 +13,7 @@ namespace Stryker.Core.Instrumentation
     {
         private const string MutantContextValueTrackName = "TrackValue";
 
-        public ExpressionSyntax PlaceValueMarker(ExpressionSyntax node)
+        public ExpressionSyntax PlaceValueMarker(ExpressionSyntax node, CodeInjection codeInjection)
         {
             if (node is InitializerExpressionSyntax)
             {
@@ -22,7 +22,7 @@ namespace Stryker.Core.Instrumentation
             }
             // enclose the expression into a lambda, such as: initializer => MutantContext.TrackValue(()=>initializer);
             return SyntaxFactory.InvocationExpression(
-                    CodeInjection.GetContextClassAccessExpression(MutantContextValueTrackName),
+                    codeInjection.GetContextClassAccessExpression(MutantContextValueTrackName),
                     SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(
                         SyntaxFactory.Argument(SyntaxFactory.ParenthesizedLambdaExpression(node)))))
                 .WithAdditionalAnnotations(Marker);

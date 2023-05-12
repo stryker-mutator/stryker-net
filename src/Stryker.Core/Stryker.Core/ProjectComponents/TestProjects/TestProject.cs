@@ -21,7 +21,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
         {
             AssertValidTestProject(testProjectAnalyzerResult);
 
-            fileSystem = fileSystem ?? new FileSystem();
+            fileSystem ??= new FileSystem();
 
             AnalyzerResult = testProjectAnalyzerResult;
 
@@ -32,7 +32,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
                 var syntaxTree = CSharpSyntaxTree.ParseText(sourceCode,
                     path: file,
                     encoding: Encoding.UTF32,
-                    options: new CSharpParseOptions(LanguageVersion.Latest, DocumentationMode.None));
+                    options: new CSharpParseOptions(LanguageVersion.Latest, DocumentationMode.None, preprocessorSymbols: testProjectAnalyzerResult.PreprocessorSymbols));
 
                 if (!syntaxTree.IsGenerated())
                 {

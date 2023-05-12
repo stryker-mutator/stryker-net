@@ -21,15 +21,5 @@ namespace Stryker.Core
                 return filePath;
             }
         }
-
-        public static string ToFullPath(this string path)
-        {
-            if (path == null)
-            {
-                return null;
-            }
-
-            return Path.GetFullPath(path);
-        }
     }
 }
