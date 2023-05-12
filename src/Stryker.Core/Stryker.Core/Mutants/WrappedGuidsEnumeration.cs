@@ -18,7 +18,7 @@ namespace Stryker.Core.Mutants
 
         public ITestGuids Merge(ITestGuids other) => MergeList(this, other);
 
-        public bool Contains(Guid testId) => _guids.Any( g => g == testId);
+        public bool Contains(Guid testId) => _guids.Any(g => g == testId);
 
         public bool ContainsAny(ITestGuids other) => _guids.Any(other.Contains);
 
@@ -39,5 +39,7 @@ namespace Stryker.Core.Mutants
         }
 
         public IEnumerable<Guid> GetGuids() => _guids;
+
+        public ITestGuids Intersect(ITestGuids other) => IsEveryTest ? new WrappedGuidsEnumeration(other.GetGuids()) : new WrappedGuidsEnumeration(_guids.Intersect(other.GetGuids()));
     }
 }
