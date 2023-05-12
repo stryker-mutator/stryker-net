@@ -40,6 +40,7 @@ namespace Stryker.Core.Reporters.Json.SourceFiles
             Static = mutant.IsStaticValue;
 
             CoveredBy = mutant.CoveringTests.GetGuids()?.Select(g => g.ToString());
+            KilledBy = mutant.KillingTests.GetGuids()?.Select(g => g.ToString());
         }
     }
 }
