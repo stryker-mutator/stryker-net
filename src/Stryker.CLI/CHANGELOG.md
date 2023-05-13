@@ -1,3 +1,13 @@
+# [3.9.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.8.2...dotnet-stryker@3.9.0) (2023-05-12)
+
+
+### Features
+
+* Record for each unit test which mutant they kill ([#2491](https://github.com/stryker-mutator/stryker-net/issues/2491)) ([da7cffd](https://github.com/stryker-mutator/stryker-net/commit/da7cffd244a9edd2855cffad3807948987abf18f))
+* **solution mode:** Improve solution handling ([#2400](https://github.com/stryker-mutator/stryker-net/issues/2400)) ([6b48029](https://github.com/stryker-mutator/stryker-net/commit/6b480299fb00430c75054acc226341c17ecbafc3))
+
+
+
 ## [3.8.2](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.8.1...dotnet-stryker@3.8.2) (2023-05-07)
 
 
