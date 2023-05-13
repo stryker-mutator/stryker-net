@@ -90,7 +90,10 @@ namespace Stryker.Core.Initialisation.Buildalyzer
 
             private AnalyzerAssemblyLoader() { }
 
-            public void AddDependencyLocation(string fullPath) { }
+            public void AddDependencyLocation(string fullPath)
+            {
+                // discard any specific folder
+            }
 
             public Assembly LoadFromPath(string fullPath) => Assembly.LoadFrom(fullPath);
         }

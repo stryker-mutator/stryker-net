@@ -11,7 +11,7 @@ namespace Stryker.Core.Clients
 {
     public interface IDashboardClient
     {
-        Task<string> PublishReport(JsonReport json, string version);
+        Task<string> PublishReport(JsonReport report, string version);
         Task<JsonReport> PullReport(string version);
     }
 

@@ -13,6 +13,7 @@ namespace Stryker.Core.Reporters.Progress
 
         public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
+            // we don't track mutant creation
         }
 
         public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested) => _progressBarReporter.ReportInitialState(mutantsToBeTested.Count());
