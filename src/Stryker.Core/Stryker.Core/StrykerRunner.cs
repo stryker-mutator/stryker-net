@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO.Abstractions;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
@@ -10,6 +11,11 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
+using Stryker.Core.Testing;
+using Stryker.Core.TestRunners;
+using Stryker.Core.TestRunners.UnityTestRunner;
+using Stryker.Core.TestRunners.UnityTestRunner.RunUnity;
+using Stryker.Core.TestRunners.UnityTestRunner.RunUnity.UnityPath;
 
 namespace Stryker.Core
 {
@@ -56,8 +62,13 @@ namespace Stryker.Core
 
             try
             {
+                ITestRunner runner = null;
+                if (options.IsUnityProject())
+                {
+                    runner = new UnityTestRunner(options, loggerFactory.CreateLogger<UnityTestRunner>(), RunUnity.GetSingleInstance());
+                }
                 // Mutate
-                _mutationTestProcesses = projectOrchestrator.MutateProjects(options, reporters).ToList();
+                _mutationTestProcesses = projectOrchestrator.MutateProjects(options, reporters, runner).ToList();
 
                 var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.SourceProjectInfo.ProjectContents).ToList(), options);
                 var combinedTestProjectsInfo = _mutationTestProcesses.Select(mtp => mtp.Input.TestProjectsInfo).Aggregate((a, b) => a + b);

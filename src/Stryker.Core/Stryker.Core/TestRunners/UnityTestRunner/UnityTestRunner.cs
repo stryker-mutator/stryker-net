@@ -50,13 +50,7 @@ public class UnityTestRunner : ITestRunner
 
     public TestSet GetTests(IProjectAndTests project) => _testSet;
 
-    public TestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc,
-        IReadOnlyList<Mutant> mutants,
-        TestUpdateHandler update) =>
-        throw new NotImplementedException();
-
     public TestRunResult InitialTest(IProjectAndTests project) => _initialRunTestResult;
-
 
     public IEnumerable<CoverageRunResult> CaptureCoverage(IProjectAndTests project) =>
         throw new NotImplementedException();
@@ -66,8 +60,8 @@ public class UnityTestRunner : ITestRunner
 
     //todo remove all modifications
     //todo remove installed package
-    public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants,
-        TestUpdateHandler update)
+    public TestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc,
+        IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
     {
         if (!_firstMutationTestStarted)
             //rerun unity to apply modifications and reload domain
