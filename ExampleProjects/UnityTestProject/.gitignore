@@ -1,0 +1,47 @@
+# UNITY
+# -----
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]in/
+/[Bb]uild/
+[Bb]uilds/
+ProfilerReports/
+StrykerOutput
+
+# Visual Studio cache directory
+.vs/
+
+/*.csproj
+/*.sln.DotSettings
+
+*.unityproj
+/*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.opendb
+*.psb
+
+# Unity3D generated meta files
+*.pidb.meta
+*.pdb.meta
+
+# Rider IDE
+.idea
+*.userproperties
+
+Assets/Temp/
+Assets/Temp.meta
+
+MemoryCaptures/
+
+/UserSettings/
+/CodeCoverage/
+/Logs/
+

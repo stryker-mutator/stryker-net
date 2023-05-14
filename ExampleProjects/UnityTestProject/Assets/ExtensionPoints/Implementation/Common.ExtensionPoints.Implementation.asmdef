@@ -1,0 +1,8 @@
+{
+  "name": "Common.ExtensionPoints.Implementation",
+  "references": [
+    "Common.ExtensionPoints.PublicAPI",
+    "UniTask",
+    "Zenject"
+  ]
+}

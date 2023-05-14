@@ -1,0 +1,29 @@
+{
+  "name": "Common.ExtensionPoints.Tests",
+  "references": [
+        "UnityEngine.TestRunner",
+        "UnityEditor.TestRunner",
+        "Zenject",
+        "UniTask",        
+        "Zenject-TestFramework",
+        "Common.ExtensionPoints.PublicAPI",
+        "Common.ExtensionPoints.Implementation"
+    ],
+    "includePlatforms": ["Editor"],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": true,
+    "precompiledReferences": [
+        "nunit.framework.dll",
+        "Newtonsoft.Json.dll",
+        "FluentAssertions.dll",
+        "NSubstitute.dll",
+        "Sirenix.Serialization.dll"
+    ],
+    "autoReferenced": false,
+    "defineConstraints": [
+        "UNITY_INCLUDE_TESTS"
+    ],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
