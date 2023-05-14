@@ -31,9 +31,7 @@ namespace Stryker.Core.Options
         /// When true, stryker is mutating all projects in a solution
         /// </summary>
         /// <returns></returns>
-        public bool IsSolutionContext => SolutionPath != null &&
-                                         FilePathUtils.NormalizePathSeparators(WorkingDirectory) ==
-                                         FilePathUtils.NormalizePathSeparators(Path.GetDirectoryName(SolutionPath));
+        public bool IsSolutionContext => SolutionPath != null && FilePathUtils.NormalizePathSeparators(WorkingDirectory) == FilePathUtils.NormalizePathSeparators(Path.GetDirectoryName(SolutionPath));
 
         /// <summary>
         /// The path of the root of the scope of stryker.
@@ -41,30 +39,21 @@ namespace Stryker.Core.Options
         /// In the context of a project run this will be the root of the project under test
         /// In the context of a multi test project run this will be the root of the project under test
         /// </summary>
-        public string WorkingDirectory
-        {
-            get => _workingDirectoryField ?? ProjectPath;
-            init => _workingDirectoryField = value;
-        }
-
+        public string WorkingDirectory { get => _workingDirectoryField ?? ProjectPath; init => _workingDirectoryField = value; }
         private readonly string _workingDirectoryField;
-
         /// <summary>
         /// The path all output is written to. For example reports and logging files.
         /// </summary>
         public string OutputPath { get; init; }
-
         public string ReportPath => Path.Combine(OutputPath ?? ".", "reports");
         /// <summary>
         /// A custom settable name for report files.
         /// </summary>
         public string ReportFileName { get; init; }
-
         /// <summary>
         /// The full path of the solution file. Can be null.
         /// </summary>
         public string SolutionPath { get; init; }
-
         /// <summary>
         /// The detected target framework for the current project under test.
         /// </summary>
@@ -257,8 +246,7 @@ namespace Stryker.Core.Options
         private string _projectName;
         private string _projectVersion;
 
-        public StrykerOptions Copy(string projectPath, string workingDirectory, string sourceProject,
-            IEnumerable<string> testProjects) => new()
+        public StrykerOptions Copy(string projectPath, string workingDirectory, string sourceProject, IEnumerable<string> testProjects) => new()
         {
             _parentOptions = this,
             AdditionalTimeout = AdditionalTimeout,

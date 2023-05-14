@@ -24,12 +24,8 @@ namespace Stryker.Core.UnitTest.Initialisation
 {
     public class ProjectOrchestratorTests : TestBase
     {
-        private readonly Mock<IBuildalyzerProvider> _buildalyzerProviderMock =
-            new Mock<IBuildalyzerProvider>(MockBehavior.Strict);
-
-        private readonly Mock<IMutationTestProcess> _mutationTestProcessMock =
-            new Mock<IMutationTestProcess>(MockBehavior.Strict);
-
+        private readonly Mock<IBuildalyzerProvider> _buildalyzerProviderMock = new Mock<IBuildalyzerProvider>(MockBehavior.Strict);
+        private readonly Mock<IMutationTestProcess> _mutationTestProcessMock = new Mock<IMutationTestProcess>(MockBehavior.Strict);
         private readonly Mock<IProjectMutator> _projectMutatorMock = new Mock<IProjectMutator>(MockBehavior.Strict);
         private readonly Mock<IReporter> _reporterMock = new Mock<IReporter>(MockBehavior.Strict);
         private readonly MutationTestInput _mutationTestInput;
@@ -39,8 +35,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         public ProjectOrchestratorTests()
         {
             _mutationTestProcessMock.Setup(x => x.Mutate());
-            _projectMutatorMock.Setup(x => x.MutateProject(It.IsAny<StrykerOptions>(),  It.IsAny<MutationTestInput>(),
-                    It.IsAny<IReporter>()))
+            _projectMutatorMock.Setup(x => x.MutateProject(It.IsAny<StrykerOptions>(),  It.IsAny<MutationTestInput>(), It.IsAny<IReporter>()))
                 .Returns(new Mock<IMutationTestProcess>().Object);
             _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             _filesystemRoot = Path.GetPathRoot(_currentDirectory);
@@ -98,8 +93,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<StrykerOptions>()));
             // The analyzer finds two projects
             buildalyzerAnalyzerManagerMock.Setup(x => x.Projects)
-                .Returns(new Dictionary<string, IProjectAnalyzer>
-                {
+                .Returns(new Dictionary<string, IProjectAnalyzer> {
                     { "MyProject", sourceProjectAnalyzerMock.Object },
                     { "MyProject.UnitTests", testProjectAnalyzerMock.Object }
                 });
@@ -110,31 +104,27 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             testProjectAnalyzerMock.Setup(x => x.ProjectFile).Returns(testProjectProjectFileMock.Object);
             testProjectAnalyzerMock.Setup(x => x.Build()).Returns(testProjectAnalyzerResultsMock.Object);
-            IEnumerable<IAnalyzerResult> testAnalyzerResults = new[] { testProjectAnalyzerResultMock.Object };testProjectAnalyzerResultsMock.Setup(x => x.Results)
-                .Returns(testAnalyzerResults);
+            IEnumerable<IAnalyzerResult> testAnalyzerResults = new[] { testProjectAnalyzerResultMock.Object };
+            testProjectAnalyzerResultsMock.Setup(x => x.Results).Returns(testAnalyzerResults);
             testProjectAnalyzerResultsMock
                 .Setup(m => m.GetEnumerator())
                 .Returns(() => testAnalyzerResults.GetEnumerator());
-            testProjectAnalyzerResultMock.Setup(x => x.ProjectReferences)
-                .Returns(new[] { csprojPathName });
-            testProjectAnalyzerResultMock.Setup(x => x.ProjectFilePath)
-                .Returns(testCsprojPathName);
+
+            testProjectAnalyzerResultMock.Setup(x => x.ProjectReferences).Returns(new[] { csprojPathName });
+            testProjectAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns(testCsprojPathName);
             testProjectAnalyzerResultMock.Setup(x => x.TargetFramework).Returns("net6.0");
             testProjectAnalyzerResultMock.Setup(x => x.References).Returns(Array.Empty<string>());
             testProjectAnalyzerResultMock.Setup(x => x.Succeeded).Returns(true);
             // The test project references the microsoft.net.test.sdk
-            testProjectAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string>
-                { { "IsTestProject", "True" } , {"TargetDir", projectUnderTestBin}, {"TargetFileName", testDll}, {"Language", "C#"} });
+            testProjectAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "True" }, {"TargetDir", projectUnderTestBin}, {"TargetFileName", testDll}, {"Language", "C#"} });
             testProjectAnalyzerResultMock.Setup(x => x.SourceFiles).Returns(Array.Empty<string>());
 
             sourceProjectAnalyzerResultMock.Setup(x => x.ProjectReferences).Returns(new List<string>());
             sourceProjectAnalyzerResultMock.Setup(x => x.References).Returns(Array.Empty<string>());
             sourceProjectAnalyzerResultMock.Setup(x => x.SourceFiles).Returns(new []{csPathName});
             sourceProjectAnalyzerResultMock.Setup(x => x.PreprocessorSymbols).Returns(new []{"NET"});
-            sourceProjectAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string>
-                { { "IsTestProject", "False" }, { "ProjectTypeGuids", "not testproject" }, {"Language", "C#"} });
-            sourceProjectAnalyzerResultMock.Setup(x => x.ProjectFilePath)
-                .Returns(csprojPathName);
+            sourceProjectAnalyzerResultMock.Setup(x => x.Properties).Returns(new Dictionary<string, string> { { "IsTestProject", "False" }, { "ProjectTypeGuids", "not testproject" }, {"Language", "C#"} });
+            sourceProjectAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns(csprojPathName);
             sourceProjectAnalyzerResultMock.Setup(x => x.TargetFramework).Returns("net6.0");
             sourceProjectAnalyzerResultMock.Setup(x => x.Succeeded).Returns(true);
 
@@ -150,7 +140,6 @@ namespace Stryker.Core.UnitTest.Initialisation
 
 
             testProjectProjectFileMock.Setup(x => x.PackageReferences).Returns(new List<IPackageReference>
-
             {
                 testProjectPackageReferenceMock.Object
             });

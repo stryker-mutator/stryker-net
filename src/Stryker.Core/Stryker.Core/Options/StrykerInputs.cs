@@ -134,8 +134,7 @@ namespace Stryker.Core.Options
                 Thresholds = new Thresholds
                 {
                     High = ThresholdHighInput.Validate(ThresholdLowInput.SuppliedInput),
-                    Low = ThresholdLowInput.Validate(ThresholdBreakInput.SuppliedInput,
-                        ThresholdHighInput.SuppliedInput),
+                    Low = ThresholdLowInput.Validate(ThresholdBreakInput.SuppliedInput, ThresholdHighInput.SuppliedInput),
                     Break = ThresholdBreakInput.Validate(ThresholdLowInput.SuppliedInput),
                 },
                 Reporters = reporters,
@@ -151,8 +150,7 @@ namespace Stryker.Core.Options
                 IgnoredMethods = IgnoredMethodsInput.Validate(),
                 Mutate = MutateInput.Validate(),
                 LanguageVersion = LanguageVersionInput.Validate(),
-                OptimizationMode = CoverageAnalysisInput.Validate() | DisableBailInput.Validate() |
-                                   DisableMixMutantsInput.Validate(),
+                OptimizationMode = CoverageAnalysisInput.Validate() | DisableBailInput.Validate() | DisableMixMutantsInput.Validate(),
                 TestProjects = TestProjectsInput.Validate(),
                 TestCaseFilter = TestCaseFilterInput.Validate(),
                 DashboardUrl = DashboardUrlInput.Validate(),

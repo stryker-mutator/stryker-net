@@ -31,7 +31,9 @@ namespace Stryker.Core.Mutants
         public MutantStatus ResultStatus { get; set; }
 
         public ITestGuids CoveringTests { get; set; } = TestGuidsList.NoTest();
-public ITestGuids KillingTests { get; set; } = TestGuidsList.NoTest();
+
+        public ITestGuids KillingTests { get; set; } = TestGuidsList.NoTest();
+
         public ITestGuids AssessingTests { get; set; } = TestGuidsList.EveryTest();
 
         public string ResultStatusReason { get; set; }
@@ -62,9 +64,6 @@ public ITestGuids KillingTests { get; set; } = TestGuidsList.NoTest();
             else if (resultRanTests.IsEveryTest || (resultRanTests.IsEveryTest is not true && AssessingTests.IsIncludedIn(resultRanTests)))
             {
                 ResultStatus = MutantStatus.Survived;
-            }
-            else
-            {
             }
         }
     }

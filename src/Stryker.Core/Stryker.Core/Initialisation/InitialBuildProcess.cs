@@ -16,8 +16,6 @@ namespace Stryker.Core.Initialisation
     {
         void InitialBuild(bool fullFramework, string projectPath, string solutionPath,
             StrykerOptions options);
-
-        void SolutionInitialBuild(string solutionPath, StrykerOptions options);
     }
 
     public class InitialBuildProcess : IInitialBuildProcess
@@ -76,14 +74,6 @@ namespace Stryker.Core.Initialisation
                 result = _processExecutor.Start(projectPath, "dotnet", $"build \"{buildPath}\"");
 
                 CheckBuildResult(result, "dotnet build", $"\"{projectPath}\"");
-            }
-        }
-
-        public void SolutionInitialBuild(string solutionPath, StrykerOptions options)
-        {
-            if (options.IsUnityProject())
-            {
-                UnityInitialBuild(options);
             }
         }
 

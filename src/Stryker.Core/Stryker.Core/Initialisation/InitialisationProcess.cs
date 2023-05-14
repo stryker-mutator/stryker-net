@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Net;
-using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
 using Stryker.Core.Exceptions;
@@ -13,12 +11,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.SourceProjects;
-using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.UnityTestRunner;
-using Stryker.Core.TestRunners.UnityTestRunner.RunUnity;
-using Stryker.Core.TestRunners.UnityTestRunner.RunUnity.UnityPath;
-using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.Initialisation
 {
@@ -156,18 +149,14 @@ namespace Stryker.Core.Initialisation
             {
                 return result;
             }
-
-
-            throw new InputException(
-                "No test has been detected. Make sure your test project contains test and is compatible with VsTest."+string.Join(Environment.NewLine, projectInfo.Warnings));
+            throw new InputException("No test has been detected. Make sure your test project contains test and is compatible with VsTest."+string.Join(Environment.NewLine, projectInfo.Warnings));
         }
 
         private static readonly Dictionary<string, (string assembly, string package)> TestFrameworks = new()
         {
             ["xunit.core"] = ("xunit.runner.visualstudio","xunit.runner.visualstudio"),
             ["nunit.framework"] = ("NUnit3.TestAdapter", "NUnit3TestAdapter"),
-            ["Microsoft.VisualStudio.TestPlatform.TestFramework"] =
-                ("Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter","MSTest.TestAdapter")
+            ["Microsoft.VisualStudio.TestPlatform.TestFramework"] = ("Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter","MSTest.TestAdapter")
         };
 
         private void DiscoverTests(SourceProjectInfo projectInfo, ITestRunner testRunner)
@@ -213,21 +202,6 @@ namespace Stryker.Core.Initialisation
                     _logger.LogWarning(message);
                 }
             }
-        }
-
-        private static string ReadProjectVersion(ModuleDefinition module, string details)
-        {
-            var assemblyInformationalVersion = module.Assembly.CustomAttributes
-                .FirstOrDefault(e => e.AttributeType.Name == "AssemblyInformationalVersionAttribute"
-                                     && e.ConstructorArguments.Count == 1)?.ConstructorArguments[0].Value as string;
-
-            if (assemblyInformationalVersion == null)
-            {
-                throw new InputException(
-                    $"Failed to retrieve the AssemblyInformationalVersionAttribute of {module.FileName}", details);
-            }
-
-            return assemblyInformationalVersion;
         }
     }
 }
