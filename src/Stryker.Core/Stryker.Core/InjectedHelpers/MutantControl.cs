@@ -27,7 +27,7 @@ namespace Stryker
         public static void InitCoverage()
         {
             ResetCoverage();
-            _pathToListenActiveMutation = Environment.GetEnvironmentVariable("ActiveMutationPath");
+            _pathToListenActiveMutation = Path.Combine(Environment.GetEnvironmentVariable("ActiveMutationPath"), typeof(MutantControl).Namespace + ".txt");
         }
 
         public static void ResetCoverage()

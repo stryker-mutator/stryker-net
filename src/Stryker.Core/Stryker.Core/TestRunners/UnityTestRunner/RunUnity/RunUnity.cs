@@ -61,7 +61,7 @@ public class RunUnity : IRunUnity
     }
 
     public XDocument RunTests(StrykerOptions strykerOptions, string projectPath,
-        string additionalArgumentsForCli = null, string activeMutantId = null)
+        string additionalArgumentsForCli = null, string helperNamespace = null, string activeMutantId = null)
     {
         _logger.LogDebug("Request to run tests Unity");
 
@@ -70,13 +70,28 @@ public class RunUnity : IRunUnity
         var pathToTestResultXml =
             Path.Combine(strykerOptions.OutputPath, $"test_results_{DateTime.Now.ToFileTime()}.xml");
 
-        File.WriteAllText(_pathToActiveMutantsListenFile,  activeMutantId);
+        var pathToActiveMutantForSpecificProject = Path.Combine(_pathToActiveMutantsListenFile, helperNamespace + ".txt");
+        if(!string.IsNullOrEmpty(activeMutantId))
+        {
+            _logger.LogDebug("Run tests for Mutant: {0} {1}", helperNamespace, activeMutantId);
+            File.WriteAllText(pathToActiveMutantForSpecificProject,  activeMutantId);
+        }
 
         SendCommandToUnity(pathToTestResultXml);
         WaitUntilEndOfCommand();
+        ResetActiveMutant();
+
         ThrowExceptionIfExists();
 
         return XDocument.Load(pathToTestResultXml);
+
+        void ResetActiveMutant()
+        {
+            if (!string.IsNullOrEmpty(activeMutantId))
+            {
+                File.WriteAllText(pathToActiveMutantForSpecificProject, "-1");
+            }
+        }
     }
 
 
@@ -115,7 +130,7 @@ public class RunUnity : IRunUnity
 
         _pathToUnityListenFile = Path.Combine(strykerOptions.OutputPath, "UnityListens.txt");
         Environment.SetEnvironmentVariable("Stryker.Unity.PathToListen", _pathToUnityListenFile);
-        _pathToActiveMutantsListenFile = Path.Combine(strykerOptions.OutputPath, "ActiveMutantsListens.txt");
+        _pathToActiveMutantsListenFile = strykerOptions.OutputPath;
         Environment.SetEnvironmentVariable("ActiveMutationPath", _pathToActiveMutantsListenFile);
 
         CleanupCommandBuffer();

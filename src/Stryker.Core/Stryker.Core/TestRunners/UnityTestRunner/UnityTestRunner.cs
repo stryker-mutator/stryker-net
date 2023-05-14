@@ -67,7 +67,7 @@ public class UnityTestRunner : ITestRunner
             //rerun unity to apply modifications and reload domain
             _runUnity.ReloadDomain(_strykerOptions, _strykerOptions.WorkingDirectory);
 
-        var testResultsXml = RunTests(out var duration, mutants.Single().Id.ToString());
+        var testResultsXml = RunTests(out var duration, mutants.Single().Id.ToString(), project.HelperNamespace);
 
         var passedTests = GetPassedTests(testResultsXml);
         var failedTests = GetFailedTests(testResultsXml);
@@ -84,12 +84,12 @@ public class UnityTestRunner : ITestRunner
             GetTimeoutTestGuidsList(), string.Empty, Enumerable.Empty<string>(), duration);
     }
 
-    private XDocument RunTests(out TimeSpan duration, string activeMutantId = null)
+    private XDocument RunTests(out TimeSpan duration, string activeMutantId = null, string helperNamespace = null)
     {
         var startTime = DateTime.UtcNow;
 
         var xmlTestResults = _runUnity.RunTests(_strykerOptions, _strykerOptions.WorkingDirectory,
-            activeMutantId: activeMutantId);
+            activeMutantId: activeMutantId, helperNamespace: helperNamespace);
 
         duration = DateTime.UtcNow - startTime;
         return xmlTestResults;

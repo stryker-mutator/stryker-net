@@ -10,5 +10,5 @@ public interface IRunUnity : IDisposable
         string additionalArgumentsForCli = null);
 
     public XDocument RunTests(StrykerOptions strykerOptions, string projectPath,
-        string additionalArgumentsForCli = null, string activeMutantId=null);
+        string additionalArgumentsForCli = null, string helperNamespace = null, string activeMutantId = null);
 }
