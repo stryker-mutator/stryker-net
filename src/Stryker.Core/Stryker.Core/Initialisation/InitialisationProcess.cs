@@ -7,13 +7,12 @@ using System.Net;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
-using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
-using Stryker.Core.Reporters;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.UnityTestRunner;
@@ -27,8 +26,17 @@ namespace Stryker.Core.Initialisation
 
     public interface IInitialisationProcess
     {
-        MutationTestInput Initialize(StrykerOptions options, IEnumerable<IAnalyzerResult> solutionProjects);
-        InitialTestRun InitialTest(StrykerOptions options);
+        /// <summary>
+        /// Gets all projects to mutate based on the given options
+        /// </summary>
+        /// <param name="options">stryker options</param>
+        /// <returns>an enumeration of <see cref="ProjectInfo"/>, one for each found project (if any).</returns>
+        IReadOnlyCollection<SourceProjectInfo> GetMutableProjectsInfo(StrykerOptions options);
+
+        void BuildProjects(StrykerOptions options, IEnumerable<SourceProjectInfo> projects);
+
+        IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(StrykerOptions options,
+            IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner);
     }
 
     public class InitialisationProcess : IInitialisationProcess
@@ -36,42 +44,59 @@ namespace Stryker.Core.Initialisation
         private readonly IInputFileResolver _inputFileResolver;
         private readonly IInitialBuildProcess _initialBuildProcess;
         private readonly IInitialTestProcess _initialTestProcess;
-        private readonly IAssemblyReferenceResolver _assemblyReferenceResolver;
-        private ITestRunner _testRunner;
-        private ProjectInfo _projectInfo;
         private readonly ILogger _logger;
-
 
         public InitialisationProcess(
             IInputFileResolver inputFileResolver = null,
             IInitialBuildProcess initialBuildProcess = null,
-            IInitialTestProcess initialTestProcess = null,
-            ITestRunner testRunner = null,
-            IAssemblyReferenceResolver assemblyReferenceResolver = null)
+            IInitialTestProcess initialTestProcess = null)
         {
             _inputFileResolver = inputFileResolver ?? new InputFileResolver();
             _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess(new FileSystem());
             _initialTestProcess = initialTestProcess ?? new InitialTestProcess();
-            _testRunner = testRunner;
-            _assemblyReferenceResolver = assemblyReferenceResolver ?? new AssemblyReferenceResolver();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
         }
 
-        public MutationTestInput Initialize(StrykerOptions options, IEnumerable<IAnalyzerResult> solutionProjects)
+        /// <inheritdoc/>
+        public IReadOnlyCollection<SourceProjectInfo> GetMutableProjectsInfo(StrykerOptions options)
         {
-            // resolve project info
-            _projectInfo = _inputFileResolver.ResolveInput(options, solutionProjects);
-
-            // initial build
-            if (!options.IsSolutionContext)
+            _logger.LogInformation("Analysis starting.");
+            try
             {
-                var testProjects = _projectInfo.TestProjectAnalyzerResults.ToList();
+                // project mode
+                return _inputFileResolver.ResolveSourceProjectInfos(options);
+            }
+            finally
+            {
+                _logger.LogInformation("Analysis complete.");
+            }
+        }
+
+
+        /// <inheritdoc/>
+        public void BuildProjects(StrykerOptions options, IEnumerable<SourceProjectInfo> projects)
+        {
+            if (options.IsSolutionContext)
+            {
+                var framework = projects.Any(p => p.IsFullFramework);
+                // Build the complete solution
+                _logger.LogInformation("Building solution {0}", Path.GetRelativePath(options.WorkingDirectory ,options.SolutionPath));
+                _initialBuildProcess.InitialBuild(
+                    framework,
+                    _inputFileResolver.FileSystem.Path.GetDirectoryName(options.SolutionPath),
+                    options.SolutionPath,
+                    options);
+            }
+            else
+            {
+                // build every test projects
+                var testProjects = projects.SelectMany(p => p.TestProjectsInfo.AnalyzerResults).ToList();
                 for (var i = 0; i < testProjects.Count; i++)
                 {
                     _logger.LogInformation(
                         "Building test project {ProjectFilePath} ({CurrentTestProject}/{OfTotalTestProjects})",
                         testProjects[i].ProjectFilePath, i + 1,
-                        _projectInfo.TestProjectAnalyzerResults.Count());
+                        testProjects.Count);
 
                     _initialBuildProcess.InitialBuild(
                         testProjects[i].TargetsFullFramework(),
@@ -79,173 +104,115 @@ namespace Stryker.Core.Initialisation
                         options.SolutionPath, options);
                 }
             }
-            else
-            {
-                _initialBuildProcess.SolutionInitialBuild(options.SolutionPath, options);
-            }
-
-            // at initial build process Unity rewrites csproj and they didn't apply in stryker without reloading.
-            // todo think is it correct solution
-            _projectInfo = _inputFileResolver.ResolveInput(options, solutionProjects);
-
-
-            InitializeDashboardProjectInformation(options, _projectInfo);
-
-            if (_testRunner == null)
-            {
-                if (options.IsUnityProject())
-                    _testRunner = new UnityTestRunner(options, _logger,
-                        RunUnity.GetSingleInstance(() => new ProcessExecutor(), () => new UnityPath(new FileSystem()),
-                            () => _logger));
-                else
-                    _testRunner = new VsTestRunnerPool(options, _projectInfo);
-            }
-
-            var input = new MutationTestInput
-            {
-                ProjectInfo = _projectInfo,
-                AssemblyReferences = _assemblyReferenceResolver
-                    .LoadProjectReferences(_projectInfo.ProjectUnderTestAnalyzerResult.References).ToList(),
-                TestRunner = _testRunner,
-            };
-
-            return input;
         }
 
-        public InitialTestRun InitialTest(StrykerOptions options)
+        public IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(StrykerOptions options, IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner)
         {
-            // initial test
-            var result = _initialTestProcess.InitialTest(options, _testRunner);
+            var result = new List<MutationTestInput>();
+            foreach (var info in projects)
+            {
+                result.Add(new MutationTestInput
+                {
+                    SourceProjectInfo = info,
+                    TestProjectsInfo = info.TestProjectsInfo,
+                    TestRunner = runner,
+                    InitialTestRun = InitialTest(options, info, runner, projects.Count==1)
+                });
+            }
 
-            if (_testRunner.DiscoverTests().Count != 0)
+            return result;
+        }
+
+        private InitialTestRun InitialTest(StrykerOptions options, SourceProjectInfo projectInfo,
+            ITestRunner testRunner, bool throwIfFails)
+        {
+            DiscoverTests(projectInfo, testRunner);
+
+            // initial test
+            _logger.LogInformation("Number of tests found: {0} for project {1}. Initial test run started.",
+                testRunner.GetTests(projectInfo).Count,
+                projectInfo.AnalyzerResult.ProjectFilePath);
+
+            var result = _initialTestProcess.InitialTest(options, projectInfo, testRunner);
+
+
+            if (!result.Result.FailingTests.IsEmpty)
+            {
+                var failingTestsCount = result.Result.FailingTests.Count;
+                if (options.BreakOnInitialTestFailure)
+                {
+                    throw new InputException("Initial testrun has failing tests.", result.Result.ResultMessage);
+                }
+
+                if (throwIfFails && (double)failingTestsCount / result.Result.ExecutedTests.Count >= .5)
+                {
+                    throw new InputException("Initial testrun has more than 50% failing tests.", result.Result.ResultMessage);
+                }
+
+                _logger.LogWarning($"{(failingTestsCount == 1 ? "A test is": $"{failingTestsCount} tests are")} failing. Stryker will continue but outcome will be impacted.");
+            }
+
+            if (!result.Result.ExecutedTests.IsEmpty || !throwIfFails)
             {
                 return result;
             }
 
-            // no test have been discovered, diagnose this
-            DiagnoseLackOfDetectedTest(_projectInfo);
+
             throw new InputException(
-                "No test has been detected. Make sure your test project contains test and is compatible with VsTest.");
+                "No test has been detected. Make sure your test project contains test and is compatible with VsTest."+string.Join(Environment.NewLine, projectInfo.Warnings));
         }
 
-        private static readonly Dictionary<string, string> TestFrameworks = new()
+        private static readonly Dictionary<string, (string assembly, string package)> TestFrameworks = new()
         {
-            ["xunit.core"] = "xunit.runner.visualstudio",
-            ["nunit.framework"] = "NUnit3.TestAdapter",
+            ["xunit.core"] = ("xunit.runner.visualstudio","xunit.runner.visualstudio"),
+            ["nunit.framework"] = ("NUnit3.TestAdapter", "NUnit3TestAdapter"),
             ["Microsoft.VisualStudio.TestPlatform.TestFramework"] =
-                "Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter"
+                ("Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter","MSTest.TestAdapter")
         };
 
-        public static void DiagnoseLackOfDetectedTest(ProjectInfo projectInfo)
+        private void DiscoverTests(SourceProjectInfo projectInfo, ITestRunner testRunner)
         {
-            foreach (var testProject in projectInfo.TestProjectAnalyzerResults)
+            foreach (var testProject in projectInfo.TestProjectsInfo.AnalyzerResults)
             {
-                foreach (var (framework, adapter) in TestFrameworks)
+                if (testRunner.DiscoverTests(testProject.GetAssemblyPath()))
                 {
-                    if (testProject.References.Any(r => r.Contains(framework)) &&
-                        !testProject.References.Any(r => r.Contains(adapter)))
-                    {
-                        throw new InputException(
-                            $"Project '{testProject.ProjectFilePath}' is not supported by VsTest because it is missing an appropriate VstTest adapter for '{framework}'. " +
-                            $"Adding '{adapter}' to this project references may resolve the issue.");
-                    }
-                }
-            }
-        }
-
-
-        private void InitializeDashboardProjectInformation(StrykerOptions options, ProjectInfo projectInfo)
-        {
-            var dashboardReporterEnabled = options.Reporters.Contains(Reporter.Dashboard) ||
-                                           options.Reporters.Contains(Reporter.All);
-            var dashboardBaselineEnabled =
-                options.WithBaseline && options.BaselineProvider == BaselineProvider.Dashboard;
-            var requiresProjectInformation = dashboardReporterEnabled || dashboardBaselineEnabled;
-            if (!requiresProjectInformation)
-            {
-                return;
-            }
-
-            // try to read the repository URL + version for the dashboard report or dashboard baseline
-            var missingProjectName = string.IsNullOrEmpty(options.ProjectName);
-            var missingProjectVersion = string.IsNullOrEmpty(options.ProjectVersion);
-            if (missingProjectName || missingProjectVersion)
-            {
-                var subject = missingProjectName switch
-                {
-                    true when missingProjectVersion => "Project name and project version",
-                    true => "Project name",
-                    _ => "Project version"
-                };
-                var projectFilePath = projectInfo.ProjectUnderTestAnalyzerResult.ProjectFilePath;
-
-                if (!projectInfo.ProjectUnderTestAnalyzerResult.Properties.TryGetValue("TargetPath",
-                        out var targetPath))
-                {
-                    throw new InputException(
-                        $"Can't read {subject.ToLowerInvariant()} because the TargetPath property was not found in {projectFilePath}");
+                    continue;
                 }
 
-                _logger.LogTrace("{Subject} missing for the dashboard reporter, reading it from {TargetPath}. " +
-                                 "Note that this requires SourceLink to be properly configured in {ProjectPath}",
-                    subject, targetPath, projectFilePath);
-
-                try
+                var causeFound = false;
+                foreach (var (framework, (adapter, package)) in
+                         TestFrameworks.Where(t => testProject.References.Any(r => r.Contains(t.Key))))
                 {
-                    var targetName = Path.GetFileName(targetPath);
-                    using var module = ModuleDefinition.ReadModule(targetPath);
 
-                    var details =
-                        $"To solve this issue, either specify the {subject.ToLowerInvariant()} in the stryker configuration or configure [SourceLink](https://github.com/dotnet/sourcelink#readme) in {projectFilePath}";
-                    if (missingProjectName)
+                    if (testProject.References.Any(r => r.Contains(adapter)))
                     {
-                        options.ProjectName = ReadProjectName(module, details);
-                        _logger.LogDebug(
-                            "Using {ProjectName} as project name for the dashboard reporter. (Read from the AssemblyMetadata/RepositoryUrl assembly attribute of {TargetName})",
-                            options.ProjectName, targetName);
+                        continue;
                     }
 
-                    if (missingProjectVersion)
+                    causeFound = true;
+                    var message =
+                        $"Project '{testProject.ProjectFilePath}' did not report any test.";
+                    if (testProject.PackageReferences?.ContainsKey(package) == true)
                     {
-                        options.ProjectVersion = ReadProjectVersion(module, details);
-                        _logger.LogDebug(
-                            "Using {ProjectVersion} as project version for the dashboard reporter. (Read from the AssemblyInformationalVersion assembly attribute of {TargetName})",
-                            options.ProjectVersion, targetName);
+                        message+=$" This may be because the test adapter package, {package}, failed to deploy. " +
+                                 "Check if any dependency is missing or there is a version conflict.";
                     }
+                    else
+                    {
+                        message+=$" This may be because it is missing an appropriate VsTest adapter for '{framework}'. " +
+                                 $"Adding '{adapter}' to this project references may resolve the issue.";
+                    }
+                    projectInfo.LogError(message);
+                    _logger.LogWarning(message);
                 }
-                catch (Exception e) when (e is not InputException)
+
+                if (!causeFound)
                 {
-                    throw new InputException(
-                        $"Failed to read {subject.ToLowerInvariant()} from {targetPath} because of error {e.Message}");
+                    var message = $"No test detected for project '{testProject.ProjectFilePath}'. No cause identified.";
+                    projectInfo.LogError(message);
+                    _logger.LogWarning(message);
                 }
             }
-        }
-
-        private static string ReadProjectName(ModuleDefinition module, string details)
-        {
-            var repositoryUrl = module.Assembly.CustomAttributes
-                .FirstOrDefault(e => e.AttributeType.Name == "AssemblyMetadataAttribute"
-                                     && e.ConstructorArguments.Count == 2
-                                     && e.ConstructorArguments[0].Value.Equals("RepositoryUrl"))
-                ?.ConstructorArguments[1].Value as string;
-
-            if (repositoryUrl == null)
-            {
-                throw new InputException(
-                    $"Failed to retrieve the RepositoryUrl from the AssemblyMetadataAttribute of {module.FileName}",
-                    details);
-            }
-
-            const string schemeSeparator = "://";
-            var indexOfScheme = repositoryUrl.IndexOf(schemeSeparator, StringComparison.Ordinal);
-            if (indexOfScheme < 0)
-            {
-                throw new InputException(
-                    $"Failed to compute the project name from the repository URL ({repositoryUrl}) because it doesn't contain a scheme ({schemeSeparator})",
-                    details);
-            }
-
-            return repositoryUrl.Substring(indexOfScheme + schemeSeparator.Length);
         }
 
         private static string ReadProjectVersion(ModuleDefinition module, string details)

@@ -68,5 +68,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public override int GetHashCode() => Case != null ? Case.Id.GetHashCode() : 0;
 
         public override string ToString() => Case.FullyQualifiedName;
+
+        public void ClearInitialResult() => _initialResults.Clear();
     }
 }

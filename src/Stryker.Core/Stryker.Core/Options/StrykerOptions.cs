@@ -55,7 +55,6 @@ namespace Stryker.Core.Options
         public string OutputPath { get; init; }
 
         public string ReportPath => Path.Combine(OutputPath ?? ".", "reports");
-
         /// <summary>
         /// A custom settable name for report files.
         /// </summary>
@@ -109,7 +108,7 @@ namespace Stryker.Core.Options
         /// <summary>
         /// When multiple possible projects are found by stryker, this filter is used to determine the project that should be mutated.
         /// </summary>
-        public string ProjectUnderTestName { get; init; }
+        public string SourceProjectName { get; init; }
 
         /// <summary>
         /// When not empty, use these test projects to test the project under test.
@@ -217,22 +216,51 @@ namespace Stryker.Core.Options
         /// This name is used in the dashboard report
         /// Is settable because this version can be detected by using DotNet.ReproducibleBuilds and thus can be overridden by stryker internally
         /// </summary>
-        public string ProjectName { get; set; }
+        public string ProjectName
+        {
+            get => _projectName;
+            set
+            {
+                _projectName = value;
+                if (_parentOptions is not null)
+                {
+                    _parentOptions.ProjectName = value;
+                }
+            }
+        }
 
         /// <summary>
         /// This projectversion is used in the dashboard report
         /// Is settable because this version can be detected by using DotNet.ReproducibleBuilds and thus can be overridden by stryker internally
         /// </summary>
-        public string ProjectVersion { get; set; }
+        public string ProjectVersion
+        {
+            get => _projectVersion;
+            set
+            {
+                _projectVersion = value;
+                if (_parentOptions is not null)
+                {
+                    _parentOptions.ProjectVersion = value;
+                }
+            }
+        }
 
         /// <summary>
         /// Instruct Stryker to break execution when at least one test failed on initial run.
         /// </summary>
         public bool BreakOnInitialTestFailure { get; set; }
 
-        public StrykerOptions Copy(string projectPath, string workingDirectory, string projectUnderTest,
+        // Keep a reference on the parent instance in order to flow get/set properties (ProjectName and ProjectVersion) up to the parent
+        // This is required for the dashboard reporter to work properly
+        private StrykerOptions _parentOptions;
+        private string _projectName;
+        private string _projectVersion;
+
+        public StrykerOptions Copy(string projectPath, string workingDirectory, string sourceProject,
             IEnumerable<string> testProjects) => new()
         {
+            _parentOptions = this,
             AdditionalTimeout = AdditionalTimeout,
             AzureFileStorageSas = AzureFileStorageSas,
             AzureFileStorageUrl = AzureFileStorageUrl,
@@ -259,7 +287,7 @@ namespace Stryker.Core.Options
             OutputPath = OutputPath,
             ReportFileName = ReportFileName,
             ProjectName = ProjectName,
-            ProjectUnderTestName = projectUnderTest,
+            SourceProjectName = sourceProject,
             ProjectVersion = ProjectVersion,
             Reporters = Reporters,
             SinceTarget = SinceTarget,

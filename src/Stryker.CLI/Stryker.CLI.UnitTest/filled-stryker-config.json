@@ -16,6 +16,7 @@
     "concurrency": 1,
     "solution": "",
     "mutation-level": "",
+    "break-on-initial-test-failure": false,
     "since": {
       "enabled": false,
       "target": "main",

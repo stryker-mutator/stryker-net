@@ -17,10 +17,7 @@ namespace Stryker.Core.Exceptions
         {
         }
 
-        public InputException(string message, string details) : base(message)
-        {
-            Details = details;
-        }
+        public InputException(string message, string details) : base(message) => Details = details;
 
         public override string ToString()
         {

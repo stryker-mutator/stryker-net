@@ -8,9 +8,6 @@ using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Serilog.Events;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
-using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
@@ -28,25 +25,21 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly Func<string, IStrykerTestHostLauncher> _hostBuilder;
         private readonly ILogger _logger;
         private readonly bool _ownVsTestHelper;
-        private readonly ProjectInfo _projectInfo;
         private readonly IVsTestHelper _vsTestHelper;
         private readonly Func<ConsoleParameters, IVsTestConsoleWrapper> _wrapperBuilder;
         private bool _disposed;
-        private List<string> _sources;
         private TestFramework _testFramework;
 
         /// <summary>
         ///     Creates an instance.
         /// </summary>
         /// <param name="options">Configuration options</param>
-        /// <param name="projectInfo">Project information</param>
         /// <param name="helper"></param>
         /// <param name="fileSystem"></param>
         /// <param name="builder"></param>
         /// <param name="hostBuilder"></param>
         /// <param name="logger"></param>
         public VsTestContextInformation(StrykerOptions options,
-            ProjectInfo projectInfo,
             IVsTestHelper helper = null,
             IFileSystem fileSystem = null,
             Func<ConsoleParameters, IVsTestConsoleWrapper> builder = null,
@@ -54,12 +47,12 @@ namespace Stryker.Core.TestRunners.VsTest
             ILogger logger = null)
         {
             Options = options;
-            _projectInfo = projectInfo;
             _ownVsTestHelper = helper == null;
             _fileSystem = fileSystem ?? new FileSystem();
             _vsTestHelper = helper ?? new VsTestHelper(_fileSystem, logger);
             _wrapperBuilder = builder ?? BuildActualVsTestWrapper;
-            _hostBuilder = hostBuilder ?? (name => new StrykerVsTestHostLauncher(name));
+            var devMode = options.DevMode;
+            _hostBuilder = hostBuilder ?? (name => new StrykerVsTestHostLauncher(name, devMode));
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestContextInformation>();
         }
 
@@ -68,10 +61,7 @@ namespace Stryker.Core.TestRunners.VsTest
         /// </summary>
         public IDictionary<Guid, VsTestDescription> VsTests { get; private set; }
 
-        /// <summary>
-        ///     Test assemblies
-        /// </summary>
-        public IEnumerable<string> TestSources => _sources;
+        public IDictionary<string, ISet<Guid>> TestsPerSource { get; } = new Dictionary<string, ISet<Guid>>();
 
         /// <summary>
         ///     Tests (Stryker format)
@@ -79,7 +69,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestSet Tests { get; } = new();
 
         /// <summary>
-        ///     Stryker options
+        ///    Stryker options
         /// </summary>
         public StrykerOptions Options { get; }
 
@@ -116,7 +106,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 // Set roll forward on no candidate fx so vstest console can start on incompatible dotnet core runtimes
                 Environment.SetEnvironmentVariable("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2");
                 vsTestConsole.StartSession();
-                vsTestConsole.InitializeExtensions(_sources.Select(_fileSystem.Path.GetDirectoryName));
+                vsTestConsole.InitializeExtensions(Enumerable.Empty<string>());
             }
             catch (Exception e)
             {
@@ -125,7 +115,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
             return vsTestConsole;
         }
-
+        
         /// <summary>
         ///     Builds a new process launcher used for a test session.
         /// </summary>
@@ -136,13 +126,6 @@ namespace Stryker.Core.TestRunners.VsTest
         private IVsTestConsoleWrapper BuildActualVsTestWrapper(ConsoleParameters parameters) =>
             new VsTestConsoleWrapper(_vsTestHelper.GetCurrentPlatformVsTestToolPath(),
                 parameters);
-
-        /// <summary>
-        ///     Build a full path name stored in the log folder.
-        /// </summary>
-        /// <param name="fileName">requested filename</param>
-        /// <returns>A full pathname</returns>
-        public string BuildFilePathName(string fileName) => fileName == null ? null : _fileSystem.Path.Combine(Options.ReportPath ?? ".", fileName);
 
         private ConsoleParameters DetermineConsoleParameters(string runnerId)
         {
@@ -170,37 +153,39 @@ namespace Stryker.Core.TestRunners.VsTest
             return determineConsoleParameters;
         }
 
-        /// <summary>
-        ///     Initialize VsTest session. Discovers tests
-        /// </summary>
-        /// <exception cref="GeneralStrykerException"></exception>
-        public void Initialize()
+        public TestSet GetTestsForSources(IEnumerable<string> sources)
         {
-            var testBinariesPaths = _projectInfo.TestProjectAnalyzerResults
-                .Select(testProject => testProject.GetAssemblyPath()).ToList();
-            _sources = new List<string>();
-
-            foreach (var path in testBinariesPaths)
+            var result = new TestSet();
+            foreach (var source in sources)
             {
-                if (!_fileSystem.File.Exists(path))
-                {
-                    throw new GeneralStrykerException(
-                        $"The test project binaries could not be found at {path}, exiting...");
-                }
-
-                _sources.Add(path);
+                result.RegisterTests(TestsPerSource[source].Select(id => Tests[id]));
             }
-
-            DiscoverTests();
-            Tests.RegisterTests(VsTests.Values.Select(t => t.Description));
+            return result;
         }
 
-        private void DiscoverTests()
+        public bool AddTestSource(string source)
+        {
+
+            if (!_fileSystem.File.Exists(source))
+            {
+                throw new GeneralStrykerException(
+                    $"The test project binaries could not be found at {source}, exiting...");
+            }
+
+            if (!TestsPerSource.ContainsKey(source))
+            {
+                DiscoverTestsInSources(source);
+            }
+
+            return TestsPerSource[source].Count > 0;
+        }
+        
+        private void DiscoverTestsInSources(string newSource)
         {
             var wrapper = BuildVsTestWrapper("TestDiscoverer");
             var messages = new List<string>();
             var handler = new DiscoveryEventHandler(messages);
-            wrapper.DiscoverTests(_sources, GenerateRunSettingsForDiscovery(), handler);
+            wrapper.DiscoverTestsAsync(new List<string> { newSource }, GenerateRunSettingsForDiscovery(), handler);
 
             handler.WaitEnd();
             if (handler.Aborted)
@@ -208,7 +193,10 @@ namespace Stryker.Core.TestRunners.VsTest
                 _logger.LogError("TestDiscoverer: Test discovery has been aborted!");
             }
 
-            VsTests = new Dictionary<Guid, VsTestDescription>(handler.DiscoveredTestCases.Count);
+            wrapper.EndSession();
+
+            TestsPerSource[newSource] = handler.DiscoveredTestCases.Select(c => c.Id).ToHashSet();
+            VsTests ??= new Dictionary<Guid, VsTestDescription>(handler.DiscoveredTestCases.Count);
             foreach (var testCase in handler.DiscoveredTestCases)
             {
                 if (!VsTests.ContainsKey(testCase.Id))
@@ -217,38 +205,12 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
 
                 VsTests[testCase.Id].AddSubCase();
-                _logger.LogDebug($"Test Case : name= {testCase.DisplayName} (id= {testCase.Id}, FQN= {testCase.FullyQualifiedName}).");
+                _logger.LogTrace(
+                    $"Test Case : name= {testCase.DisplayName} (id= {testCase.Id}, FQN= {testCase.FullyQualifiedName}).");
             }
 
             DetectTestFrameworks(VsTests.Values);
-
-            wrapper.EndSession();
-        }
-
-        public List<VsTestDescription> FindTestCasesWithinDataSource(VsTestDescription referenceTest)
-        {
-            List<VsTestDescription> result;
-            static string Extractor(string name)
-            {
-                var indexOf = name.IndexOf('(');
-                return indexOf < 0 ? name : name[..indexOf];
-            }
-
-            switch (referenceTest.Framework)
-            {
-                case TestFramework.xUnit:
-                    // find all tests that have the same FQN
-                    result = VsTests.Values.Where(desc => desc.Case.DisplayName == referenceTest.Case.DisplayName).ToList();
-                    break;
-                case TestFramework.NUnit:
-                    var referenceName = Extractor(referenceTest.Case.FullyQualifiedName);
-                    result = VsTests.Values.Where(desc => Extractor(desc.Case.FullyQualifiedName) == referenceName).ToList();
-                    break;
-                default:
-                    result = new List<VsTestDescription> { referenceTest };
-                    break;
-            }
-            return result;
+            Tests.RegisterTests(VsTests.Values.Select(t => t.Description));
         }
 
         private void DetectTestFrameworks(ICollection<VsTestDescription> tests)
@@ -278,24 +240,22 @@ namespace Stryker.Core.TestRunners.VsTest
 
             return $@"<RunSettings>
  <RunConfiguration>
-  <CollectSourceInformation>true</CollectSourceInformation>
-  <MaxCpuCount>{Options.Concurrency}</MaxCpuCount>
-  <DesignMode>false</DesignMode>
+  <MaxCpuCount>{Math.Max(1, Options.Concurrency)}</MaxCpuCount>
+  <DesignMode>true</DesignMode>
 {testCaseFilter}
  </RunConfiguration>
 </RunSettings>";
         }
 
-        public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap)
+        public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap, string helperNameSpace, bool isFullFramework)
         {
-            var projectAnalyzerResult = _projectInfo.TestProjectAnalyzerResults.FirstOrDefault();
             var settingsForCoverage = string.Empty;
             var needDataCollector = forCoverage || mutantTestsMap is { };
             var dataCollectorSettings = needDataCollector
                 ? CoverageCollector.GetVsTestSettings(
                     forCoverage,
                     mutantTestsMap?.Select(e => (e.Key, e.Value.GetGuids())),
-                    CodeInjection.HelperNamespace)
+                    helperNameSpace)
                 : string.Empty;
 
             if (_testFramework.HasFlag(TestFramework.NUnit))
@@ -321,8 +281,8 @@ namespace Stryker.Core.TestRunners.VsTest
                 $@"<RunSettings>
 <RunConfiguration>
   <CollectSourceInformation>false</CollectSourceInformation>
-{(!projectAnalyzerResult.TargetsFullFramework() ? string.Empty : @"<DisableAppDomain>true</DisableAppDomain>
-")}  <MaxCpuCount>1</MaxCpuCount>
+{(isFullFramework ? @"<DisableAppDomain>true</DisableAppDomain>
+" : string.Empty)}  <MaxCpuCount>1</MaxCpuCount>
 {timeoutSettings}{settingsForCoverage}
 <DesignMode>false</DesignMode>
 {testCaseFilter}</RunConfiguration>{dataCollectorSettings}

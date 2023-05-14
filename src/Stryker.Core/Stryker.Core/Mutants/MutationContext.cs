@@ -16,9 +16,13 @@ namespace Stryker.Core.Mutants
     internal class MutationContext
     {
         private readonly CsharpMutantOrchestrator _mainOrchestrator;
-        private readonly MutationStore _store = new();
+        private readonly MutationStore _store;
 
-        public MutationContext(CsharpMutantOrchestrator mutantOrchestrator) => _mainOrchestrator = mutantOrchestrator;
+        public MutationContext(CsharpMutantOrchestrator mutantOrchestrator)
+        {
+            _mainOrchestrator = mutantOrchestrator;
+            _store = new MutationStore(_mainOrchestrator.Placer);
+        }
 
         private MutationContext(MutationContext parent)
         {
@@ -133,6 +137,10 @@ namespace Stryker.Core.Mutants
         public ExpressionSyntax InjectExpressionLevel(ExpressionSyntax mutatedNode, ExpressionSyntax sourceNode)
             => _store.PlaceExpressionMutations(mutatedNode, m => sourceNode.InjectMutation(m));
 
+        public BlockSyntax PlaceStaticContextMarker(BlockSyntax block) => _mainOrchestrator.Placer.PlaceStaticContextMarker(block);
+
+        public ExpressionSyntax PlaceStaticContextMarker(ExpressionSyntax block) => _mainOrchestrator.Placer.PlaceStaticContextMarker(block);
+
         /// <summary>
         /// Injects pending statement level mutations.
         /// </summary>
@@ -146,7 +154,7 @@ namespace Stryker.Core.Mutants
         /// Injects pending block level mutations.
         /// </summary>
         /// <param name="mutatedNode">Target node that will contain the mutations</param>
-        /// <param name="sourceNode">Source node, used to generate mutations</param>
+        /// <param name="originalNode">Source node, used to generate mutations</param>
         /// <returns>A mutated node containing the mutations.</returns>
         public StatementSyntax InjectBlockLevel(StatementSyntax mutatedNode, StatementSyntax originalNode) => _store.PlaceBlockMutations(mutatedNode, m => originalNode.InjectMutation(m));
 

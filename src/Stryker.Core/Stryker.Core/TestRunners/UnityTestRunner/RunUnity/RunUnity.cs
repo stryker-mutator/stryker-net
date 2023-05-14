@@ -72,7 +72,6 @@ public class RunUnity : IRunUnity
 
         File.WriteAllText(_pathToActiveMutantsListenFile,  activeMutantId);
 
-        _logger.LogDebug("[Unity] ActiveMutant " + CodeInjection.HelperNamespace + "_" +activeMutantId);
         SendCommandToUnity(pathToTestResultXml);
         WaitUntilEndOfCommand();
         ThrowExceptionIfExists();

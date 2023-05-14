@@ -84,7 +84,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
                 MutationLevel = MutationLevel.Complete,
                 OptimizationMode = OptimizationModes.CoverageBasedTest,
             };
-            _target = new CsharpMutantOrchestrator(options: options);
+            _target = new CsharpMutantOrchestrator(new MutantPlacer(_injector), options: options);
 
             string source = @"private void Move()
 			{
@@ -1046,12 +1046,12 @@ if(StrykerNamespace.MutantControl.IsActive(3)){// Stryker restore all
             ShouldMutateSourceInClassToExpected(source, expected);
 
             _target.Mutants.Count.ShouldBe(4);
-            _target.Mutants.ElementAt(0).ResultStatus.ShouldBe(MutantStatus.NotRun);
+            _target.Mutants.ElementAt(0).ResultStatus.ShouldBe(MutantStatus.Pending);
             _target.Mutants.ElementAt(1).ResultStatus.ShouldBe(MutantStatus.Ignored);
             _target.Mutants.ElementAt(1).ResultStatusReason.ShouldBe("comment");
             _target.Mutants.ElementAt(2).ResultStatus.ShouldBe(MutantStatus.Ignored);
             _target.Mutants.ElementAt(2).ResultStatusReason.ShouldBe("comment");
-            _target.Mutants.ElementAt(3).ResultStatus.ShouldBe(MutantStatus.NotRun);
+            _target.Mutants.ElementAt(3).ResultStatus.ShouldBe(MutantStatus.Pending);
         }
 
         [Fact]

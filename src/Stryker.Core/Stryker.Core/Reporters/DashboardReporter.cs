@@ -6,8 +6,9 @@ using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.Reporters.HtmlReporter.ProcessWrapper;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
+using Stryker.Core.Reporters.WebBrowserOpener;
 
 namespace Stryker.Core.Reporters
 {
@@ -17,21 +18,21 @@ namespace Stryker.Core.Reporters
         private readonly IDashboardClient _dashboardClient;
         private readonly ILogger<DashboardReporter> _logger;
         private readonly IAnsiConsole _console;
-        private readonly IWebbrowserOpener _processWrapper;
+        private readonly IWebbrowserOpener _browser;
 
         public DashboardReporter(StrykerOptions options, IDashboardClient dashboardClient = null, ILogger<DashboardReporter> logger = null,
-            IAnsiConsole console = null, IWebbrowserOpener processWrapper = null)
+            IAnsiConsole console = null, IWebbrowserOpener browser = null)
         {
             _options = options;
             _dashboardClient = dashboardClient ?? new DashboardClient(options);
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DashboardReporter>();
             _console = console ?? AnsiConsole.Console;
-            _processWrapper = processWrapper ?? new WebbrowserOpener();
+            _browser = browser ?? new CrossPlatformBrowserOpener();
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
-            var mutationReport = JsonReport.Build(_options, reportComponent);
+            var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
 
             var reportUri = _dashboardClient.PublishReport(mutationReport, _options.ProjectVersion).Result;
 
@@ -39,27 +40,20 @@ namespace Stryker.Core.Reporters
             {
                 if (_options.ReportTypeToOpen == Options.Inputs.ReportType.Dashboard)
                 {
-                    _processWrapper.Open(reportUri);
+                    _browser.Open(reportUri);
                 }
                 else
                 {
-                    _console.Write("[Cyan]Hint: by passing \"--open-report:dashboard or -o:dashboard\" the report will open automatically once Stryker is done.[/]");
+                    var aqua = new Style(Color.Aqua);
+                    _console.WriteLine("Hint: by passing \"--open-report:dashboard or -o:dashboard\" the report will open automatically once Stryker is done.", aqua);
                 }
 
+                var green = new Style(Color.Green);
                 _console.WriteLine();
-                _console.MarkupLine("[Green]Your report has been uploaded at:[/]");
-
-                if (_console.Profile.Capabilities.Links)
-                {
-                    // We must print the report path as the link text because on some terminals links might be supported but not actually clickable: https://github.com/spectreconsole/spectre.console/issues/764
-                    _console.MarkupLine($"[Green][link={reportUri}]{reportUri}[/][/]");
-                }
-                else
-                {
-                    _console.MarkupLine($"[Green]{reportUri}[/]");
-                }
-
-                _console.MarkupLine("[Green]You can open it in your browser of choice.[/]");
+                _console.WriteLine("Your report has been uploaded at:", green);
+                // We must print the report path as the link text because on some terminals links might be supported but not actually clickable: https://github.com/spectreconsole/spectre.console/issues/764
+                _console.WriteLine(reportUri, _console.Profile.Capabilities.Links ? green.Combine(new Style(link: reportUri)) : green);
+                _console.WriteLine("You can open it in your browser of choice.", green);
             }
             else
             {
@@ -70,7 +64,7 @@ namespace Stryker.Core.Reporters
             _console.WriteLine();
         }
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
             // Method to implement the interface
         }

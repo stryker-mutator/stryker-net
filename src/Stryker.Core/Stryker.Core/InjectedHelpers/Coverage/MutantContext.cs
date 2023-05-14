@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Stryker
 {
-    public sealed class MutantContext: IDisposable
+    internal sealed class MutantContext: IDisposable
     {
         [ThreadStatic] private static int depth;
 

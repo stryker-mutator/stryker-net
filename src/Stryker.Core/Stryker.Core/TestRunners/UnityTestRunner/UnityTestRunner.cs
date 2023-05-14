@@ -1,25 +1,24 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners.UnityTestRunner.RunUnity;
+using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.TestRunners.UnityTestRunner;
 
 public class UnityTestRunner : ITestRunner
 {
-    private readonly StrykerOptions _strykerOptions;
     private readonly ILogger _logger;
     private readonly IRunUnity _runUnity;
-    private TestSet _testSet = null;
-    private TestRunResult _initialRunTestResult;
+    private readonly StrykerOptions _strykerOptions;
     private bool _firstMutationTestStarted;
+    private TestRunResult _initialRunTestResult;
+    private TestSet _testSet;
 
     public UnityTestRunner(StrykerOptions strykerOptions, ILogger logger,
         IRunUnity runUnity)
@@ -29,10 +28,9 @@ public class UnityTestRunner : ITestRunner
         _runUnity = runUnity;
     }
 
-    public TestSet DiscoverTests()
+    public bool DiscoverTests(string assembly)
     {
-        if (_testSet != null)
-            return _testSet;
+        if (_testSet != null) return true;
 
         var testResultsXml = RunTests(out var duration);
 
@@ -44,28 +42,36 @@ public class UnityTestRunner : ITestRunner
             .Select(element => new TestDescription(ToGuid(int.Parse(element.Attribute("id").Value)),
                 element.Attribute("name").Value, element.Attribute("fullname").Value)));
 
-        _initialRunTestResult = new TestRunResult(GetPassedTests(testResultsXml), GetFailedTests(testResultsXml),
-            GetTimeoutTestGuidsList(), string.Empty, duration);
-
-        return _testSet;
+        _initialRunTestResult = new TestRunResult(Enumerable.Empty<VsTestDescription>(), GetPassedTests(testResultsXml),
+            GetFailedTests(testResultsXml),
+            GetTimeoutTestGuidsList(), string.Empty, Enumerable.Empty<string>(), duration);
+        return true;
     }
 
-    public TestRunResult InitialTest() => _initialRunTestResult;
+    public TestSet GetTests(IProjectAndTests project) => _testSet;
 
-
-    public IEnumerable<CoverageRunResult> CaptureCoverage()
-    {
+    public TestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc,
+        IReadOnlyList<Mutant> mutants,
+        TestUpdateHandler update) =>
         throw new NotImplementedException();
-    }
 
+    public TestRunResult InitialTest(IProjectAndTests project) => _initialRunTestResult;
+
+
+    public IEnumerable<CoverageRunResult> CaptureCoverage(IProjectAndTests project) =>
+        throw new NotImplementedException();
+
+
+    public void Dispose() => _runUnity.Dispose();
+
+    //todo remove all modifications
+    //todo remove installed package
     public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants,
         TestUpdateHandler update)
     {
         if (!_firstMutationTestStarted)
-        {
             //rerun unity to apply modifications and reload domain
             _runUnity.ReloadDomain(_strykerOptions, _strykerOptions.WorkingDirectory);
-        }
 
         var testResultsXml = RunTests(out var duration, mutants.Single().Id.ToString());
 
@@ -75,22 +81,13 @@ public class UnityTestRunner : ITestRunner
             update?.Invoke(mutants, failedTests, TestGuidsList.EveryTest(), GetTimeoutTestGuidsList());
 
         if (remainingMutants == false)
-        {
             // all mutants status have been resolved, we can stop
             _logger.LogDebug("Each mutant's fate has been established, we can stop.");
-        }
 
         _firstMutationTestStarted = true;
 
-        return new TestRunResult(passedTests, failedTests, GetTimeoutTestGuidsList(), string.Empty, duration);
-    }
-
-
-    public void Dispose()
-    {
-        _runUnity.Dispose();
-        //todo remove all modifications
-        //todo remove installed package
+        return new TestRunResult(Enumerable.Empty<VsTestDescription>(), passedTests, failedTests,
+            GetTimeoutTestGuidsList(), string.Empty, Enumerable.Empty<string>(), duration);
     }
 
     private XDocument RunTests(out TimeSpan duration, string activeMutantId = null)

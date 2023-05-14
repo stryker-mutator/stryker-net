@@ -12,19 +12,12 @@ namespace Stryker.Core.Exceptions
     public class CompilationException : Exception
     {
         public CompilationException()
-            : base()
         {
         }
 
         public CompilationException(string message)
             : base(message)
         {
-        }
-
-        public CompilationException(string message, string details)
-            : base(message)
-        {
-            Details = details;
         }
 
         public CompilationException(string message, Exception innerException) : base(message, innerException)

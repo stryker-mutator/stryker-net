@@ -12,63 +12,58 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Spectre.Console;
+using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.MutationTest
 {
     public class CsharpMutationProcess : IMutationProcess
     {
-        private readonly ProjectComponent<SyntaxTree> _projectInfo;
         private readonly ILogger _logger;
         private readonly StrykerOptions _options;
-        private readonly CsharpCompilingProcess _compilingProcess;
         private readonly IFileSystem _fileSystem;
-        private readonly MutationTestInput _input;
         private readonly BaseMutantOrchestrator<SyntaxNode> _orchestrator;
         private readonly IMutantFilter _mutantFilter;
 
         /// <summary>
         /// This constructor is for tests
         /// </summary>
-        /// <param name="mutationTestInput"></param>
         /// <param name="fileSystem"></param>
         /// <param name="options"></param>
         /// <param name="mutantFilter"></param>
         /// <param name="orchestrator"></param>
-        public CsharpMutationProcess(MutationTestInput mutationTestInput,
+        public CsharpMutationProcess(
             IFileSystem fileSystem = null,
             StrykerOptions options = null,
             IMutantFilter mutantFilter = null,
             BaseMutantOrchestrator<SyntaxNode> orchestrator = null)
         {
-            _input = mutationTestInput;
-            _projectInfo = (ProjectComponent<SyntaxTree>)mutationTestInput.ProjectInfo.ProjectContents;
             _options = options;
-            _orchestrator = orchestrator ?? new CsharpMutantOrchestrator(options: _options);
-            _compilingProcess = new CsharpCompilingProcess(mutationTestInput, options: options);
+            _orchestrator = orchestrator;
             _fileSystem = fileSystem ?? new FileSystem();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
 
-            _mutantFilter = mutantFilter ?? MutantFilterFactory.Create(options, _input);
+            _mutantFilter = mutantFilter;
         }
 
         /// <summary>
         /// This constructor is used by the <see cref="MutationTestProcess"/> initialization logic.
         /// </summary>
-        /// <param name="mutationTestInput"></param>
         /// <param name="options"></param>
-        public CsharpMutationProcess(MutationTestInput mutationTestInput, StrykerOptions options) : this(
-            mutationTestInput, null, options, null, null)
+        public CsharpMutationProcess( StrykerOptions options) : this(
+             null, options)
         {
         }
 
-        public void Mutate()
+        public void Mutate(MutationTestInput input)
         {
+            var projectInfo = input.SourceProjectInfo.ProjectContents;
+            var orchestrator = _orchestrator ?? new CsharpMutantOrchestrator(new MutantPlacer(input.SourceProjectInfo.CodeInjector), options: _options);
             // Mutate source files
-            foreach (var file in _projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
+            foreach (var file in projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
             {
                 _logger.LogDebug($"Mutating {file.FullPath}");
                 // Mutate the syntax tree
-                var mutatedSyntaxTree = _orchestrator.Mutate(file.SyntaxTree.GetRoot());
+                var mutatedSyntaxTree = orchestrator.Mutate(file.SyntaxTree.GetRoot());
                 // Add the mutated syntax tree for compilation
                 file.MutatedSyntaxTree = mutatedSyntaxTree.SyntaxTree;
                 if (_options.DevMode)
@@ -78,27 +73,30 @@ namespace Stryker.Core.MutationTest
                 }
 
                 // Filter the mutants
-                file.Mutants = _orchestrator.GetLatestMutantBatch();
+                file.Mutants = orchestrator.GetLatestMutantBatch();
             }
 
-            _logger.LogDebug("{0} mutants created", _projectInfo.Mutants.Count());
+            _logger.LogDebug("{0} mutants created", projectInfo.Mutants.Count());
 
-            CompileMutations();
+            CompileMutations(input);
         }
 
-        private void CompileMutations()
+        private void CompileMutations(MutationTestInput input)
         {
+            var info = input.SourceProjectInfo;
+            var projectInfo =  (ProjectComponent<SyntaxTree>) info.ProjectContents;
             using var ms = new MemoryStream();
             using var msForSymbols = _options.DevMode ? new MemoryStream() : null;
             // compile the mutated syntax trees
-            var compileResult = _compilingProcess.Compile(_projectInfo.CompilationSyntaxTrees, ms, msForSymbols);
+            var compilingProcess = new CsharpCompilingProcess(input, options: _options);
+            var compileResult = compilingProcess.Compile(projectInfo.CompilationSyntaxTrees, ms, msForSymbols);
 
-            foreach (var testProject in _input.ProjectInfo.TestProjectAnalyzerResults)
+            foreach (var testProject in info.TestProjectsInfo.AnalyzerResults)
             {
-                var injectionPath = _input.ProjectInfo.GetInjectionFilePath(testProject);
-                if (!_fileSystem.Directory.Exists(Path.GetDirectoryName(injectionPath)))
+                var injectionPath = TestProjectsInfo.GetInjectionFilePath(testProject, input.SourceProjectInfo.AnalyzerResult);
+                if (!_fileSystem.Directory.Exists(testProject.GetAssemblyDirectoryPath()))
                 {
-                    _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(injectionPath));
+                    _fileSystem.Directory.CreateDirectory(testProject.GetAssemblyDirectoryPath());
                 }
 
                 // inject the mutated Assembly into the test project
@@ -110,8 +108,7 @@ namespace Stryker.Core.MutationTest
                 {
                     // inject the debug symbols into the test project
                     using var symbolDestination = _fileSystem.File.Create(Path.Combine(
-                        Path.GetDirectoryName(injectionPath),
-                        _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetSymbolFileName()));
+                        testProject.GetAssemblyDirectoryPath(), input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName()));
                     msForSymbols.Position = 0;
                     msForSymbols.CopyTo(symbolDestination);
                 }
@@ -122,7 +119,7 @@ namespace Stryker.Core.MutationTest
             // if a rollback took place, mark the rolled back mutants as status:BuildError
             if (compileResult.RollbackResult?.RollbackedIds.Any() ?? false)
             {
-                foreach (var mutant in _projectInfo.Mutants
+                foreach (var mutant in projectInfo.Mutants
                              .Where(x => compileResult.RollbackResult.RollbackedIds.Contains(x.Id)))
                 {
                     // Ignore compilation errors if the mutation is skipped anyways.
@@ -137,13 +134,14 @@ namespace Stryker.Core.MutationTest
             }
         }
 
-        public void FilterMutants()
+        public void FilterMutants(MutationTestInput input)
         {
-            foreach (var file in _projectInfo.GetAllFiles())
+            var mutantFilter = _mutantFilter ?? MutantFilterFactory.Create(_options, input);
+            foreach (var file in input.SourceProjectInfo.ProjectContents.GetAllFiles())
             {
                 // CompileError is a final status and can not be changed during filtering.
                 var mutantsToFilter = file.Mutants.Where(x => x.ResultStatus != MutantStatus.CompileError);
-                _mutantFilter.FilterMutants(mutantsToFilter, file, _options);
+                mutantFilter.FilterMutants(mutantsToFilter, file, _options);
             }
         }
     }

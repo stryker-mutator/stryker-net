@@ -38,7 +38,8 @@ namespace Stryker.Core.MutantFilters
                     new FilePatternMutantFilter(options),
                     new IgnoredMethodMutantFilter(),
                     new IgnoreMutationMutantFilter(),
-                    new ExcludeFromCodeCoverageFilter()
+                    new ExcludeFromCodeCoverageFilter(),
+                    new IgnoreBlockMutantFilter(),
                 };
 
             if (options.WithBaseline)
@@ -48,7 +49,7 @@ namespace Stryker.Core.MutantFilters
             }
             if (options.Since || options.WithBaseline)
             {
-                enabledFilters.Add(new SinceMutantFilter(_diffProvider ?? new GitDiffProvider(options, _input.TestRunner.DiscoverTests())));
+                enabledFilters.Add(new SinceMutantFilter(_diffProvider ?? new GitDiffProvider(options, _input.TestRunner.GetTests(_input.SourceProjectInfo))));
             }
             if (options.ExcludedLinqExpressions.Any())
             {

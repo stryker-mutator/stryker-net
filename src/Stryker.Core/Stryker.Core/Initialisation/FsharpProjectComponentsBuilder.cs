@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Control;
 using Stryker.Core.Exceptions;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -17,11 +18,11 @@ namespace Stryker.Core.Initialisation
 {
     internal class FsharpProjectComponentsBuilder : ProjectComponentsBuilder
     {
-        private readonly ProjectInfo _projectInfo;
+        private readonly SourceProjectInfo _projectInfo;
         private readonly string[] _foldersToExclude;
         private readonly ILogger _logger;
 
-        public FsharpProjectComponentsBuilder(ProjectInfo projectInfo, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) : base(fileSystem)
+        public FsharpProjectComponentsBuilder(SourceProjectInfo projectInfo, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) : base(fileSystem)
         {
             _projectInfo = projectInfo;
             _foldersToExclude = foldersToExclude;
@@ -31,13 +32,13 @@ namespace Stryker.Core.Initialisation
         public override IProjectComponent Build()
         {
             FsharpFolderComposite inputFiles;
-            if (_projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles != null && _projectInfo.ProjectUnderTestAnalyzerResult.SourceFiles.Any())
+            if (_projectInfo.AnalyzerResult.SourceFiles != null && _projectInfo.AnalyzerResult.SourceFiles.Any())
             {
-                inputFiles = FindProjectFilesUsingBuildalyzer(_projectInfo.ProjectUnderTestAnalyzerResult);
+                inputFiles = FindProjectFilesUsingBuildalyzer(_projectInfo.AnalyzerResult);
             }
             else
             {
-                inputFiles = FindProjectFilesScanningProjectFolders(_projectInfo.ProjectUnderTestAnalyzerResult);
+                inputFiles = FindProjectFilesScanningProjectFolders(_projectInfo.AnalyzerResult);
             }
             return inputFiles;
         }
@@ -45,8 +46,8 @@ namespace Stryker.Core.Initialisation
         private FsharpFolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult)
         {
             var inputFiles = new FsharpFolderComposite();
-            var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
-            var projectRoot = Path.GetDirectoryName(projectUnderTestDir);
+            var sourceProjectDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
+            var projectRoot = Path.GetDirectoryName(sourceProjectDir);
             var rootFolderComposite = new FsharpFolderComposite()
             {
                 FullPath = projectRoot,
@@ -78,8 +79,14 @@ namespace Stryker.Core.Initialisation
                     continue;
                 }
 
-                var relativePath = Path.GetRelativePath(projectUnderTestDir, sourceFile);
-                var folderComposite = GetOrBuildFolderComposite(cache, Path.GetDirectoryName(relativePath), projectUnderTestDir, projectRoot, inputFiles);
+                if (!FileSystem.File.Exists(sourceFile))
+                {
+                    _logger.LogWarning($"F# project builder: skipping non existing file {sourceFile}.");
+                    continue;
+                }
+
+                var relativePath = Path.GetRelativePath(sourceProjectDir, sourceFile);
+                var folderComposite = GetOrBuildFolderComposite(cache, Path.GetDirectoryName(relativePath), sourceProjectDir, projectRoot, inputFiles);
                 var fileName = Path.GetFileName(sourceFile);
 
                 var file = new FsharpFileLeaf()
@@ -130,7 +137,7 @@ namespace Stryker.Core.Initialisation
         }
 
         // get the FolderComposite object representing the the project's folder 'targetFolder'. Build the needed FolderComposite(s) for a complete path
-        private FsharpFolderComposite GetOrBuildFolderComposite(IDictionary<string, FsharpFolderComposite> cache, string targetFolder, string projectUnderTestDir,
+        private FsharpFolderComposite GetOrBuildFolderComposite(IDictionary<string, FsharpFolderComposite> cache, string targetFolder, string sourceProjectDir,
             string projectRoot, FsharpFolderComposite inputFiles)
         {
             if (cache.ContainsKey(targetFolder))
@@ -146,7 +153,7 @@ namespace Stryker.Core.Initialisation
                 {
                     // we have not scanned this folder yet
                     var sub = Path.GetFileName(folder);
-                    var fullPath = FileSystem.Path.Combine(projectUnderTestDir, sub);
+                    var fullPath = FileSystem.Path.Combine(sourceProjectDir, sub);
                     var newComposite = new FsharpFolderComposite
                     {
                         FullPath = fullPath,
@@ -179,10 +186,10 @@ namespace Stryker.Core.Initialisation
         private FsharpFolderComposite FindProjectFilesScanningProjectFolders(IAnalyzerResult analyzerResult)
         {
             var inputFiles = new FsharpFolderComposite();
-            var projectUnderTestDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
+            var sourceProjectDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
             foreach (var dir in ExtractProjectFolders(analyzerResult))
             {
-                var folder = FileSystem.Path.Combine(Path.GetDirectoryName(projectUnderTestDir), dir);
+                var folder = FileSystem.Path.Combine(Path.GetDirectoryName(sourceProjectDir), dir);
 
                 _logger.LogDebug($"Scanning {folder}");
                 if (!FileSystem.Directory.Exists(folder))
@@ -190,7 +197,7 @@ namespace Stryker.Core.Initialisation
                     throw new DirectoryNotFoundException($"Can't find {folder}");
                 }
 
-                inputFiles.Add(FindInputFiles(projectUnderTestDir, analyzerResult));
+                inputFiles.Add(FindInputFiles(sourceProjectDir, analyzerResult));
             }
 
             return inputFiles;
@@ -216,7 +223,7 @@ namespace Stryker.Core.Initialisation
         /// <summary>
         /// Recursively scans the given directory for files to mutate
         /// </summary>
-        private FsharpFolderComposite FindInputFiles(string path, string projectUnderTestDir, string parentFolder)
+        private FsharpFolderComposite FindInputFiles(string path, string sourceProjectDir, string parentFolder)
         {
             var lastPathComponent = Path.GetFileName(path);
 
@@ -228,7 +235,7 @@ namespace Stryker.Core.Initialisation
 
             foreach (var folder in FileSystem.Directory.EnumerateDirectories(folderComposite.FullPath).Where(x => !_foldersToExclude.Contains(Path.GetFileName(x))))
             {
-                folderComposite.Add(FindInputFiles(folder, projectUnderTestDir, folderComposite.RelativePath));
+                folderComposite.Add(FindInputFiles(folder, sourceProjectDir, folderComposite.RelativePath));
             }
             var fSharpChecker = FSharpChecker.Create(
                 projectCacheSize: null,

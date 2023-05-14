@@ -52,7 +52,7 @@ namespace Stryker.Core.Clients
             }
             catch(Exception exception)
             {
-                _logger.LogError(exception, "Failed to upload report to the dashboard");
+                _logger.LogError(exception, "Failed to upload report to the dashboard at {DashboardUrl}", url);
                 return null;
             }
         }

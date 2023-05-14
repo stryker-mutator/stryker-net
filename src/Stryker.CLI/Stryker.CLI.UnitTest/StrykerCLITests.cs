@@ -242,7 +242,7 @@ Options:";
 
             _strykerRunnerMock.VerifyAll();
 
-            _inputs.ProjectUnderTestNameInput.SuppliedInput.ShouldBe("SomeProjectName.csproj");
+            _inputs.SourceProjectNameInput.SuppliedInput.ShouldBe("SomeProjectName.csproj");
         }
 
         [Theory]
@@ -452,6 +452,17 @@ Options:";
 
             _inputs.BreakOnInitialTestFailureInput.SuppliedInput.HasValue.ShouldBeTrue();
             _inputs.BreakOnInitialTestFailureInput.SuppliedInput.Value.ShouldBeTrue();
+        }
+
+        [Theory]
+        [InlineData("--target-framework", "net7.0")]
+        public void ShouldSupplyTargetFrameworkWhenPassed(params string[] argName)
+        {
+            _target.Run(argName);
+
+            _strykerRunnerMock.VerifyAll();
+
+            _inputs.TargetFrameworkInput.SuppliedInput.ShouldBe("net7.0");
         }
     }
 }

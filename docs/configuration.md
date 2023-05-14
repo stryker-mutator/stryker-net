@@ -141,7 +141,7 @@ Valid language versions:
 ### `target-framework` <`string`>
 
 Default: randomly selected
-Command line: `N/A`  
+Command line: `target-framework`  
 Config file: `"target-framework": "netcoreapp3.1"`
 
 If the project targets multiple frameworks, this way you can specify the particular framework to build against. If you specify a non-existent target, Stryker will build the project against a random one (or the only one if so).
@@ -409,7 +409,7 @@ constructors/initializers being called only once during tests. This heuristic is
 ### `disable-bail` <`flag`>
 
 Default: `false`  
-Command line: `N/A`  
+Command line: `--disable-bail`  
 Config file: `"disable-bail": true`
 
 Stryker aborts a unit testrun for a mutant as soon as one test fails because this is enough to confirm the mutant is killed. This can reduce the total runtime but also means you miss information about individual unit tests (e.g. if a unit test does not kill any mutants and is therefore useless). You can disable this behavior and run all unit tests for a mutant to completion. This can be especially useful when you want to find useless unit tests.
@@ -640,6 +640,6 @@ By default stryker tries to autodiscover msbuild on your system. If stryker fail
 
 Default: `false`  
 Command line: `--break-on-initial-test-failure`  
-Config file: `N/A`
+Config file: `break-on-initial-test-failure`
 
 Instruct Stryker to break execution when at least one test failed on initial test run.

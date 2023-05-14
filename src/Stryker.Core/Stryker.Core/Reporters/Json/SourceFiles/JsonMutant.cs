@@ -1,5 +1,5 @@
-
 using System.Collections.Generic;
+using System.Linq;
 using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Reporters.Json.SourceFiles
@@ -8,7 +8,7 @@ namespace Stryker.Core.Reporters.Json.SourceFiles
     {
         public string Id { get; init; }
         public string MutatorName { get; init; }
-        public string Description {  get; init; }
+        public string Description { get; init; }
 
         public string Replacement { get; init; }
         public Location Location { get; init; }
@@ -38,6 +38,9 @@ namespace Stryker.Core.Reporters.Json.SourceFiles
             StatusReason = mutant.ResultStatusReason;
 
             Static = mutant.IsStaticValue;
+
+            CoveredBy = mutant.CoveringTests.GetGuids()?.Select(g => g.ToString());
+            KilledBy = mutant.KillingTests.GetGuids()?.Select(g => g.ToString());
         }
     }
 }

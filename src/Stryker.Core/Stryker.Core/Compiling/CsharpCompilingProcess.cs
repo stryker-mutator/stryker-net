@@ -42,7 +42,7 @@ namespace Stryker.Core.Compiling
         }
 
         private string AssemblyName =>
-            _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetAssemblyName();
+            _input.SourceProjectInfo.AnalyzerResult.GetAssemblyName();
 
         /// <summary>
         /// Compiles the given input onto the memory stream
@@ -53,14 +53,14 @@ namespace Stryker.Core.Compiling
         /// </summary>
         public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream)
         {
-            var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
+            var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
             var trees = syntaxTrees.ToList();
             var compilationOptions = analyzerResult.GetCompilationOptions();
 
             var compilation = CSharpCompilation.Create(AssemblyName,
                 syntaxTrees: trees,
                 options: compilationOptions,
-                references: _input.AssemblyReferences);
+                references: _input.SourceProjectInfo.AnalyzerResult.References.Select(r => MetadataReference.CreateFromFile(r)));
 
             // C# source generators must be executed before compilation
             compilation = RunSourceGenerators(analyzerResult, compilation);
@@ -108,7 +108,7 @@ namespace Stryker.Core.Compiling
                 .RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
 
             var errors = diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None).ToList();
-            if (errors.Count>0)
+            if (errors.Count > 0)
             {
                 foreach (var diagnostic in errors)
                 {
@@ -140,14 +140,14 @@ namespace Stryker.Core.Compiling
             ms.SetLength(0);
             symbolStream?.SetLength(0);
 
-            _logger.LogDebug($"Trying compilation for the {ReadableNumber(retryCount)} time.");
+            _logger.LogDebug("Trying compilation for the {retryCount} time.", ReadableNumber(retryCount));
 
             var emitOptions = symbolStream == null ? null : new EmitOptions(false, DebugInformationFormat.PortablePdb,
-                _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetSymbolFileName());
+                _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName());
             var emitResult = compilation.Emit(
                 ms,
                 symbolStream,
-                manifestResources: _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetResources(_logger),
+                manifestResources: _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger),
                 win32Resources: compilation.CreateDefaultWin32Resources(
                     true, // Important!
                     false,
@@ -177,15 +177,12 @@ namespace Stryker.Core.Compiling
             }
         }
 
-        private static string ReadableNumber(int number)
+        private static string ReadableNumber(int number) => number switch
         {
-            return number switch
-            {
-                1 => "first",
-                2 => "second",
-                3 => "third",
-                _ => (number + "th")
-            };
-        }
+            1 => "first",
+            2 => "second",
+            3 => "third",
+            _ => number + "th"
+        };
     }
 }

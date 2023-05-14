@@ -1,3 +1,70 @@
+# [3.9.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.8.2...dotnet-stryker@3.9.0) (2023-05-12)
+
+
+### Features
+
+* Record for each unit test which mutant they kill ([#2491](https://github.com/stryker-mutator/stryker-net/issues/2491)) ([da7cffd](https://github.com/stryker-mutator/stryker-net/commit/da7cffd244a9edd2855cffad3807948987abf18f))
+* **solution mode:** Improve solution handling ([#2400](https://github.com/stryker-mutator/stryker-net/issues/2400)) ([6b48029](https://github.com/stryker-mutator/stryker-net/commit/6b480299fb00430c75054acc226341c17ecbafc3))
+
+
+
+## [3.8.2](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.8.1...dotnet-stryker@3.8.2) (2023-05-07)
+
+
+
+## [3.8.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.8.0...dotnet-stryker@3.8.1) (2023-05-05)
+
+
+
+# [3.8.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.7.1...dotnet-stryker@3.8.0) (2023-05-04)
+
+
+### Features
+
+* **reporting:** Report on tests in mutation report ([#1850](https://github.com/stryker-mutator/stryker-net/issues/1850)) ([98f4e97](https://github.com/stryker-mutator/stryker-net/commit/98f4e97bb90fdc5f142c18eb34e51373d1f64868))
+
+
+
+## [3.7.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.7.0...dotnet-stryker@3.7.1) (2023-03-23)
+
+
+
+# [3.7.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.6.1...dotnet-stryker@3.7.0) (2023-03-20)
+
+
+### Features
+
+* **target framework:** Added target-framework command line option ([#2419](https://github.com/stryker-mutator/stryker-net/issues/2419)) ([b5c2b1b](https://github.com/stryker-mutator/stryker-net/commit/b5c2b1b422a790008d113f936ed2ece246adc972))
+
+
+
+## [3.6.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.6.0...dotnet-stryker@3.6.1) (2023-02-17)
+
+
+
+# [3.6.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.5.1...dotnet-stryker@3.6.0) (2023-02-10)
+
+
+
+## [3.5.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.5.0...dotnet-stryker@3.5.1) (2023-02-06)
+
+
+
+# [3.5.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.4.0...dotnet-stryker@3.5.0) (2023-02-06)
+
+
+### Bug Fixes
+
+* **no test projects:** null-reference exception when no test projects are found ([#2377](https://github.com/stryker-mutator/stryker-net/issues/2377)) ([419a8a7](https://github.com/stryker-mutator/stryker-net/commit/419a8a746190d2e4262781525b59aef7791fa56f))
+
+
+### Features
+
+* Adding break-on-initial-test-failure option to the config file ([#2390](https://github.com/stryker-mutator/stryker-net/issues/2390)) ([2a31a82](https://github.com/stryker-mutator/stryker-net/commit/2a31a820a182baaa56452f907e3ceea6f50a78e3))
+* **embedded resources:** Improve extraction of embedded resources ([#2383](https://github.com/stryker-mutator/stryker-net/issues/2383)) ([43c2918](https://github.com/stryker-mutator/stryker-net/commit/43c2918362a87be6f93b634df78c6ccb80bc6fbb))
+
+
+
 # [3.4.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.3.0...dotnet-stryker@3.4.0) (2022-12-23)
 
 

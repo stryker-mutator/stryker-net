@@ -2,6 +2,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
@@ -16,7 +17,7 @@ namespace Stryker.Core.Mutators
             // Get objectCreationSyntax to check if it contains a regex type.
             var root = node.Parent?.Parent?.Parent;
 
-            if (!IsRegexType(root) && IsStringLiteral(node))
+            if (!IsSpecialType(root) && IsStringLiteral(node))
             {
                 var currentValue = (string)node.Token.Value;
                 var replacementValue = currentValue == "" ? "Stryker was here!" : "";
@@ -37,15 +38,16 @@ namespace Stryker.Core.Mutators
                 && !(node.Parent is ConstantPatternSyntax);
         }
 
-        private bool IsRegexType(SyntaxNode root)
+        private bool IsSpecialType(SyntaxNode root) => root switch
         {
-            if (root is ObjectCreationExpressionSyntax parsedRoot)
-            {
-                var type = parsedRoot.Type.ToString();
-                return type == typeof(Regex).Name || type == typeof(Regex).FullName;
-            }
+            ObjectCreationExpressionSyntax ctor => IsCtorOfType(ctor, typeof(Regex)) || IsCtorOfType(ctor, typeof(Guid)),
+            _ => false
+        };
 
-            return false;
+        private bool IsCtorOfType(ObjectCreationExpressionSyntax ctor, Type type)
+        {
+            var ctorType = ctor.Type.ToString();
+            return ctorType == type.Name || ctorType == type.FullName;
         }
     }
 }

@@ -1,3 +1,4 @@
+using Microsoft.CodeAnalysis.Text;
 
 namespace Stryker.Core.Mutants
 {
@@ -11,6 +12,7 @@ namespace Stryker.Core.Mutants
         MutantStatus ResultStatus { get; }
         string ResultStatusReason { get; }
         ITestGuids CoveringTests { get; }
+        ITestGuids KillingTests { get; }
         ITestGuids AssessingTests { get; }
         int? Line { get; }
         bool CountForStats { get; }
@@ -29,7 +31,7 @@ namespace Stryker.Core.Mutants
         public MutantStatus ResultStatus { get; set; }
 
         public ITestGuids CoveringTests { get; set; } = TestGuidsList.NoTest();
-
+public ITestGuids KillingTests { get; set; } = TestGuidsList.NoTest();
         public ITestGuids AssessingTests { get; set; } = TestGuidsList.EveryTest();
 
         public string ResultStatusReason { get; set; }
@@ -44,11 +46,14 @@ namespace Stryker.Core.Mutants
 
         public int? Line => Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
 
+        public TextSpan? Span => Mutation?.OriginalNode?.Span;
+
         public void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests, bool sessionTimedOut)
         {
             if (AssessingTests.ContainsAny(failedTests))
             {
                 ResultStatus = MutantStatus.Killed;
+                KillingTests = AssessingTests.Intersect(failedTests);
             }
             else if (AssessingTests.ContainsAny(timedOutTests) || sessionTimedOut)
             {

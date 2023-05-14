@@ -161,6 +161,11 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `$"foo {bar}"` | `$""` |
 | `@"foo"` | `@""` |
 | `string.Empty` | `"Stryker was here!"` |
+| `string.IsNullOrEmpty(x)` | `(x != null)` |
+| `string.IsNullOrEmpty(x)` | `(x != "")` |
+| `string.IsNullOrWhiteSpace(x)` | `(x != null)` |
+| `string.IsNullOrWhiteSpace(x)` | `(x != "")` |
+| `string.IsNullOrWhiteSpace(x)` | `(x.Trim() != "")` |
 
 ## Bitwise Operators (_bitwise_)
 | Original            | Mutated             |

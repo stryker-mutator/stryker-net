@@ -35,7 +35,7 @@ namespace Stryker.Core.UnitTest.Options
             CoverageAnalysisInput = new CoverageAnalysisInput(),
             OutputPathInput = new OutputPathInput() { SuppliedInput = Directory.GetCurrentDirectory() },
             ProjectNameInput = new ProjectNameInput(),
-            ProjectUnderTestNameInput = new ProjectUnderTestNameInput(),
+            SourceProjectNameInput = new SourceProjectNameInput(),
             ProjectVersionInput = new ProjectVersionInput(),
             ReportersInput = new ReportersInput(),
             SinceInput = new SinceInput(),
@@ -46,7 +46,7 @@ namespace Stryker.Core.UnitTest.Options
             ThresholdHighInput = new ThresholdHighInput(),
             ThresholdLowInput = new ThresholdLowInput(),
             WithBaselineInput = new WithBaselineInput(),
-            BreakOnInitialTestFailureInput = new BreakOnInitialTestFailureInput()
+            BreakOnInitialTestFailureInput = new BreakOnInitialTestFailureInput(),
         };
 
         [Fact]

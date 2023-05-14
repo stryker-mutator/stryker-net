@@ -1,4 +1,4 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace FullFrameworkApp.Test
 {
@@ -14,6 +14,13 @@ namespace FullFrameworkApp.Test
             Person.Aged(person);
 
             Assert.IsTrue(person.SameAge(olderPerson));
+        }
+
+        [TestMethod]
+        public void UseEmbeddedResources()
+        {
+            var person = new Person() { Age = 10 };
+            Assert.AreEqual(person.HelloInMyLanguage(), "hello you");
         }
     }
 }

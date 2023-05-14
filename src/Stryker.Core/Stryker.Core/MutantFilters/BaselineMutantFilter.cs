@@ -101,7 +101,7 @@ namespace Stryker.Core.MutantFilters
             {
                 foreach (var matchingMutant in matchingMutants)
                 {
-                    matchingMutant.ResultStatus = MutantStatus.NotRun;
+                    matchingMutant.ResultStatus = MutantStatus.Pending;
                     matchingMutant.ResultStatusReason = "Result based on previous run was inconclusive";
                 }
             }

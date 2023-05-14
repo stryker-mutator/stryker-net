@@ -3,11 +3,11 @@
   "defaultProvider": "jsdelivr",
   "libraries": [
     {
-      "library": "mutation-testing-elements@1.7.12",
+      "library": "mutation-testing-elements@2.0.1",
       "files": [
         "dist/mutation-test-elements.js"
       ],
-      "destination": "Reporters/HtmlReporter/Files"
+      "destination": "Reporters/Html/Files"
     }
   ]
 }
