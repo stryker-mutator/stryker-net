@@ -157,7 +157,7 @@ namespace Stryker.Core.Compiling
 
             LogEmitResult(emitResult);
 
-            return (rollbackProcessResult, emitResult, ++retryCount);
+            return (rollbackProcessResult, emitResult, retryCount+1);
         }
 
         private void LogEmitResult(EmitResult result)

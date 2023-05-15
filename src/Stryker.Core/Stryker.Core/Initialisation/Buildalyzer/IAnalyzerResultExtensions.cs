@@ -95,19 +95,19 @@ namespace Stryker.Core.Initialisation.Buildalyzer
                 // discard any specific folder
             }
 
-            public Assembly LoadFromPath(string fullPath) => Assembly.LoadFrom(fullPath);
+            public Assembly LoadFromPath(string fullPath) => Assembly.LoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
         }
 
         internal static NuGetFramework GetNuGetFramework(this IAnalyzerResult analyzerResult)
         {
             var framework = NuGetFramework.Parse(analyzerResult.TargetFramework ?? "");
-            if (framework == NuGetFramework.UnsupportedFramework)
+            if (framework != NuGetFramework.UnsupportedFramework)
             {
-                var atPath = string.IsNullOrEmpty(analyzerResult.ProjectFilePath) ? "" : $" at '{analyzerResult.ProjectFilePath}'";
-                var message = $"The target framework '{analyzerResult.TargetFramework}' is not supported. Please fix the target framework in the csproj{atPath}.";
-                throw new InputException(message);
+                return framework;
             }
-            return framework;
+            var atPath = string.IsNullOrEmpty(analyzerResult.ProjectFilePath) ? "" : $" at '{analyzerResult.ProjectFilePath}'";
+            var message = $"The target framework '{analyzerResult.TargetFramework}' is not supported. Please fix the target framework in the csproj{atPath}.";
+            throw new InputException(message);
         }
 
         internal static bool TargetsFullFramework(this IAnalyzerResult analyzerResult) => GetNuGetFramework(analyzerResult).IsDesktop();
@@ -119,13 +119,13 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             _ => Language.Undefined,
         };
 
-        private static readonly string[] KnownTestPackages = new[] { "MSTest.TestFramework", "xunit", "NUnit" };
+        private static readonly string[] knownTestPackages = { "MSTest.TestFramework", "xunit", "NUnit" };
 
         public static bool IsTestProject(this IAnalyzerResult analyzerResult)
         {
             if (!bool.TryParse(analyzerResult.GetPropertyOrDefault("IsTestProject"), out var isTestProject))
             {
-                isTestProject = KnownTestPackages.Any(n => analyzerResult.PackageReferences.ContainsKey(n));
+                isTestProject = knownTestPackages.Any(n => analyzerResult.PackageReferences.ContainsKey(n));
             }
             var hasTestProjectTypeGuid = analyzerResult
                 .GetPropertyOrDefault("ProjectTypeGuids", "")

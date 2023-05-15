@@ -35,6 +35,9 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public bool IsProcessCreated => _currentProcess != null;
 
+        public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo) =>
+            LaunchTestHost(defaultTestHostStartInfo, CancellationToken.None);
+
         public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo, CancellationToken cancellationToken)
         {
             var processInfo = new ProcessStartInfo(defaultTestHostStartInfo.FileName, defaultTestHostStartInfo.Arguments)
@@ -96,8 +99,5 @@ namespace Stryker.Core.TestRunners.VsTest
                 Logger.LogTrace($"{_id}: {e.Data} (VsTest output)");
             }
         }
-
-        public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo) =>
-            LaunchTestHost(defaultTestHostStartInfo, CancellationToken.None);
     }
 }

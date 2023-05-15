@@ -1,4 +1,5 @@
 using System;
+using System.Runtime.Serialization;
 using System.Text;
 
 namespace Stryker.Core.Exceptions
@@ -8,6 +9,7 @@ namespace Stryker.Core.Exceptions
     /// Everything that the user can fix themselves should be shown to them
     ///  using this kind of exception.
     /// </summary>
+    [Serializable]
     public class InputException : Exception
     {
         public string Details { get; }
@@ -16,6 +18,8 @@ namespace Stryker.Core.Exceptions
             : base(message)
         {
         }
+
+        protected InputException(SerializationInfo info, StreamingContext context) : base(info, context) { }
 
         public InputException(string message, string details) : base(message) => Details = details;
 

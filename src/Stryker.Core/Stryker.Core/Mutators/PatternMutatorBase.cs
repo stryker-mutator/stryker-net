@@ -12,9 +12,10 @@ namespace Stryker.Core.Mutators
         public override MutationLevel MutationLevel => MutationLevel.Basic;
 
         /// <summary> Dictionary which maps original syntax kinds to target mutations </summary>
-        private static Dictionary<SyntaxKind, IEnumerable<SyntaxKind>> KindsToMutate { get; }
+        /// <remarks>This could be a static field, but sonar does not like static fields for generic types, and the extra runtime cost is negligible.</remarks>
+        private Dictionary<SyntaxKind, IEnumerable<SyntaxKind>> KindsToMutate { get; }
 
-        static PatternMutatorBase() => KindsToMutate = new()
+        protected PatternMutatorBase() => KindsToMutate = new()
         {
             [SyntaxKind.AndPattern] = new[] { SyntaxKind.OrPattern },
             [SyntaxKind.OrPattern] = new[] { SyntaxKind.AndPattern },

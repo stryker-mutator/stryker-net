@@ -77,7 +77,7 @@ namespace Stryker.Core.Instrumentation
                 throw new ArgumentNullException(nameof(node));
             }
 
-            if (node.Statements.Last().IsKind(SyntaxKind.ReturnStatement))
+            if (!node.Statements.Last().IsKind(SyntaxKind.ReturnStatement))
             {
                 throw new InvalidOperationException($"No return at the end of: {node}");
             }

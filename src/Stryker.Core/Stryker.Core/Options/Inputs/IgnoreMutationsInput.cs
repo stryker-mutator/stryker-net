@@ -39,7 +39,7 @@ namespace Stryker.Core.Options.Inputs
                     }
                 }
 
-               return excludedMutators;
+                return excludedMutators;
             }
             return Enumerable.Empty<TEnum>();
         }

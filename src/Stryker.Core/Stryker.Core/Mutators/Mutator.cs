@@ -49,22 +49,23 @@ namespace Stryker.Core.Mutators
     {
         public static IEnumerable<string> GetDescriptions<T>(this T e) where T : IConvertible
         {
-            if (e is not Enum) return null;
+            if (e is not Enum) return Array.Empty<string>();
             var type = e.GetType();
             var values = Enum.GetValues(type);
 
             foreach (int val in values)
             {
-                if (val == e.ToInt32(CultureInfo.InvariantCulture))
+                if (val != e.ToInt32(CultureInfo.InvariantCulture))
                 {
-                    var memInfo = type.GetMember(type.GetEnumName(val));
-
-                    var descriptions = memInfo[0].GetCustomAttributes<MutatorDescriptionAttribute>(false).Select(descriptionAttribute => descriptionAttribute.Description);
-                    return descriptions;
+                    continue;
                 }
+                var memInfo = type.GetMember(type.GetEnumName(val));
+
+                var descriptions = memInfo[0].GetCustomAttributes<MutatorDescriptionAttribute>(false).Select(descriptionAttribute => descriptionAttribute.Description);
+                return descriptions;
             }
 
-            return null;
+            return Array.Empty<string>();
         }
     }
 }

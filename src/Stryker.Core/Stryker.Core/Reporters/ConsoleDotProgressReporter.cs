@@ -38,7 +38,7 @@ namespace Stryker.Core.Reporters
                 case MutantStatus.Timeout:
                     _console.Write("T");
                     break;
-            };
+            }
         }
 
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo) => _console.WriteLine();

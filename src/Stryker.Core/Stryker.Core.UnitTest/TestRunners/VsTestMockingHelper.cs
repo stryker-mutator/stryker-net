@@ -134,8 +134,8 @@ public class VsTestMockingHelper : TestBase
         Task.Run(() => discoveryEventsHandler.HandleDiscoveredTests(tests)).
             ContinueWith((_, u) => discoveryEventsHandler.HandleDiscoveryComplete((int)u, null, aborted), tests.Count);
 
-    protected Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase BuildCase(string name, TestFramework framework = TestFramework.xUnit, string displayName = null)
-        => new(name, framework == TestFramework.xUnit ? _xUnitUri : _NUnitUri, _testAssemblyPath) { Id = new Guid(), DisplayName = displayName ?? name };
+    protected Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase BuildCase(string name, TestFrameworks framework = TestFrameworks.xUnit, string displayName = null)
+        => new(name, framework == TestFrameworks.xUnit ? _xUnitUri : _NUnitUri, _testAssemblyPath) { Id = new Guid(), DisplayName = displayName ?? name };
 
     private Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase FindOrBuildCase(string testResultId) => TestCases.FirstOrDefault(t => t.FullyQualifiedName == testResultId) ?? BuildCase(testResultId);
 

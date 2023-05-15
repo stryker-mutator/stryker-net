@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading;
 using System.Xml;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
@@ -101,8 +99,6 @@ namespace Stryker.DataCollector
             {
                 FindControlType(assembly);
             }
-
-            //Debugger.Launch();
 
             Log($"Test Session start with conf {configuration}.");
         }

@@ -574,7 +574,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
 
-            var buildCase = BuildCase("unexpected", Core.TestRunners.TestFramework.NUnit);
+            var buildCase = BuildCase("unexpected", Core.TestRunners.TestFrameworks.NUnit);
             SetupMockCoverageRun(mockVsTest, new[] { new TestResult(buildCase) { Outcome = TestOutcome.Passed } });
 
             var analyzer = new CoverageAnalyser(options);
