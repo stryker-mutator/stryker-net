@@ -56,7 +56,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public void AddSubCase() => _subCases++;
 
-        protected bool Equals(VsTestDescription other) => Equals(Case.Id, other.Case.Id);
+        private bool Equals(VsTestDescription other) => Equals(Case.Id, other.Case.Id);
 
         public override bool Equals(object obj)
         {
