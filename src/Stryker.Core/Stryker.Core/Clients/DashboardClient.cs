@@ -86,7 +86,7 @@ namespace Stryker.Core.Clients
             return url;
         }
 
-        private class DashboardResult
+        private sealed class DashboardResult
         {
             public string Href { get; init; } //NOSONAR: init accessor is used for json serialization
         }

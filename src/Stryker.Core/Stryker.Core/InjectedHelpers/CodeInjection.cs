@@ -18,7 +18,7 @@ namespace Stryker.Core.InjectedHelpers
         private const string StrykerNamespace = "Stryker";
         private static readonly string Selector;
 
-        static CodeInjection()
+        static CodeInjection() //NOSONAR : no way to get read of static constructors
         {
             var helper = GetSourceFromResource("Stryker.Core.InjectedHelpers.MutantControl.cs");
             var extractor = new Regex(PatternForCheck);
