@@ -45,7 +45,7 @@ namespace Stryker.Core.Initialisation
                 throw new InputException("Nuget.exe should be installed to restore .net framework nuget packages. Install nuget.exe and make sure it's included in your path.");
             }
             // Get the first nuget.exe path from the where.exe output
-            var nugetPath = nugetWhereExeResult.Output.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault().Trim();
+            var nugetPath = nugetWhereExeResult.Output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).First().Trim();
 
             // Locate MSBuild.exe
             msbuildPath ??= new MsBuildHelper().GetMsBuildPath(_processExecutor);

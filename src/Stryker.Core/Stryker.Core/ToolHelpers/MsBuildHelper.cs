@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
@@ -58,14 +59,7 @@ namespace Stryker.Core.ToolHelpers
             // Else, find in default locations
             _logger.LogDebug("Unable to find msbuild using vswhere, using fallback locations");
 
-            foreach (string possiblePath in fallbackLocations)
-            {
-                if (_fileSystem.File.Exists(possiblePath))
-                {
-                    return possiblePath;
-                }
-            }
-            throw new FileNotFoundException("MsBuild.exe could not be located. If you have MsBuild.exe available but still see this error please create an issue.");
+            return fallbackLocations.FirstOrDefault(s => _fileSystem.File.Exists(s)) ?? throw new FileNotFoundException("MsBuild.exe could not be located. If you have MsBuild.exe available but still see this error please create an issue.");
         }
     }
 }

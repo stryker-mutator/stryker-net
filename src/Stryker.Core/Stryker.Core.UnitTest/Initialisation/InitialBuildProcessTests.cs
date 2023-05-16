@@ -50,6 +50,9 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new InitialBuildProcess(processMock.Object);
 
             target.InitialBuild(false, "/", "/");
+
+            processMock.Verify( p => p.Start(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Once);
         }
 
         [SkippableFact]

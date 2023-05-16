@@ -28,7 +28,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly IVsTestHelper _vsTestHelper;
         private readonly Func<ConsoleParameters, IVsTestConsoleWrapper> _wrapperBuilder;
         private bool _disposed;
-        private TestFramework _testFramework;
+        private TestFrameworks _testFramework;
 
         /// <summary>
         ///     Creates an instance.
@@ -221,14 +221,14 @@ namespace Stryker.Core.TestRunners.VsTest
                 return;
             }
 
-            if (tests.Any(testCase => testCase.Framework == TestFramework.NUnit))
+            if (tests.Any(testCase => testCase.Framework == TestFrameworks.NUnit))
             {
-                _testFramework |= TestFramework.NUnit;
+                _testFramework |= TestFrameworks.NUnit;
             }
 
-            if (tests.Any(testCase => testCase.Framework == TestFramework.xUnit))
+            if (tests.Any(testCase => testCase.Framework == TestFrameworks.xUnit))
             {
-                _testFramework |= TestFramework.xUnit;
+                _testFramework |= TestFrameworks.xUnit;
             }
         }
 
@@ -258,12 +258,12 @@ namespace Stryker.Core.TestRunners.VsTest
                     helperNameSpace)
                 : string.Empty;
 
-            if (_testFramework.HasFlag(TestFramework.NUnit))
+            if (_testFramework.HasFlag(TestFrameworks.NUnit))
             {
                 settingsForCoverage = "<CollectDataForEachTestSeparately>true</CollectDataForEachTestSeparately>";
             }
 
-            if (_testFramework.HasFlag(TestFramework.xUnit))
+            if (_testFramework.HasFlag(TestFrameworks.xUnit))
             {
                 settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
             }

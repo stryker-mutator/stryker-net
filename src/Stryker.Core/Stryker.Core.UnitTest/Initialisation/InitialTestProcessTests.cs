@@ -47,6 +47,8 @@ namespace Stryker.Core.UnitTest.Initialisation
             testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
 
             _target.InitialTest(_options, null, testRunnerMock.Object);
+
+            testRunnerMock.Verify(p => p.InitialTest(It.IsAny<IProjectAndTests>()), Times.Once);
         }
 
         [Fact]

@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.IO.Abstractions.TestingHelpers;
 using Moq;
+using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
@@ -90,9 +91,9 @@ namespace Stryker.Core.UnitTest.Reporters
             };
             var target = new BroadcastReporter(reporters);
 
-            target.OnAllMutantsTested(exampleInputComponent, It.IsAny<TestProjectsInfo>());
             target.OnMutantsCreated(exampleInputComponent, exampleTestProjectsInfo);
             target.OnMutantTested(exampleMutant);
+            target.OnAllMutantsTested(exampleInputComponent, It.IsAny<TestProjectsInfo>());
 
             reporterMock.Verify(x => x.OnAllMutantsTested(exampleInputComponent, It.IsAny<TestProjectsInfo>()), Times.Exactly(2));
             reporterMock.Verify(x => x.OnMutantsCreated(exampleInputComponent, exampleTestProjectsInfo), Times.Exactly(2));
@@ -111,9 +112,11 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var target = new BroadcastReporter(reporters);
 
-            target.OnAllMutantsTested(exampleInputComponent, It.IsAny<TestProjectsInfo>());
             target.OnMutantsCreated(exampleInputComponent, exampleTestProjectsInfo);
             target.OnMutantTested(exampleMutant);
+            target.OnAllMutantsTested(exampleInputComponent, It.IsAny<TestProjectsInfo>());
+
+            target.Reporters.ShouldBeEmpty();
         }
     }
 }

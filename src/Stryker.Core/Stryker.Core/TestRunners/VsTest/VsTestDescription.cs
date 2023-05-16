@@ -7,7 +7,7 @@ using Stryker.Core.Mutants;
 namespace Stryker.Core.TestRunners.VsTest
 {
 
-    public class VsTestDescription
+    public sealed class VsTestDescription
     {
         private readonly ICollection<TestResult> _initialResults = new List<TestResult>();
         private int _subCases;
@@ -18,15 +18,15 @@ namespace Stryker.Core.TestRunners.VsTest
             Description = new TestDescription(testCase.Id, testCase.DisplayName, testCase.CodeFilePath);
         }
 
-        public TestFramework Framework
+        public TestFrameworks Framework
         {
             get
             {
                 if (Case.ExecutorUri.AbsoluteUri.Contains("nunit"))
                 {
-                    return TestFramework.NUnit;
+                    return TestFrameworks.NUnit;
                 }
-                return Case.ExecutorUri.AbsoluteUri.Contains("xunit") ? TestFramework.xUnit : TestFramework.MsTest;
+                return Case.ExecutorUri.AbsoluteUri.Contains("xunit") ? TestFrameworks.xUnit : TestFrameworks.MsTest;
             }
         }
 
@@ -36,7 +36,7 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             get
             {
-                if (Framework == TestFramework.xUnit)
+                if (Framework == TestFrameworks.xUnit)
                 {
                     // xUnit returns the run time for the case within each result, so the first one is sufficient
                     return _initialResults.FirstOrDefault()?.Duration ?? TimeSpan.Zero;

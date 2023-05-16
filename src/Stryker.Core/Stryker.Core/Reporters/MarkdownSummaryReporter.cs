@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -56,15 +57,10 @@ namespace Stryker.Core.Reporters
                 _console.WriteLine();
                 _console.MarkupLine("[Green]Your Markdown summary has been generated at:[/]");
 
-                if (_console.Profile.Capabilities.Links)
-                {
-                    // We must print the report path as the link text because on some terminals links might be supported but not actually clickable: https://github.com/spectreconsole/spectre.console/issues/764
-                    _console.MarkupLineInterpolated($"[Green][link={reportUri}]{reportPath}[/][/]");
-                }
-                else
-                {
-                    _console.MarkupLineInterpolated($"[Green]{reportUri}[/]");
-                }
+                // We must print the report path as the link text because on some terminals links might be supported but not actually clickable: https://github.com/spectreconsole/spectre.console/issues/764
+                _console.MarkupLineInterpolated(_console.Profile.Capabilities.Links
+                    ? (FormattableString)$"[Green][link={reportUri}]{reportPath}[/][/]"
+                    : (FormattableString)$"[Green]{reportUri}[/]");
             }
         }
 
@@ -143,17 +139,17 @@ namespace Stryker.Core.Reporters
 
             // Total Detected
             values.Add(mutants
-                    .Count(m => m.ResultStatus == MutantStatus.Killed || m.ResultStatus == MutantStatus.Timeout)
+                    .Count(m => m.ResultStatus is MutantStatus.Killed or MutantStatus.Timeout)
                     .ToString());
 
             // Total Undetected
             values.Add(
                 mutants
-                    .Count(m => m.ResultStatus == MutantStatus.Survived || m.ResultStatus == MutantStatus.NoCoverage)
+                    .Count(m => m.ResultStatus is MutantStatus.Survived or MutantStatus.NoCoverage)
                     .ToString());
 
             // Total
-            values.Add(mutants.Count().ToString());
+            values.Add(mutants.Count.ToString());
             return new MdTableRow(values);
         }
     }

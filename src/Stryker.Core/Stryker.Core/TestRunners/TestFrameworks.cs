@@ -3,7 +3,7 @@ using System;
 namespace Stryker.Core.TestRunners
 {
     [Flags]
-    public enum TestFramework
+    public enum TestFrameworks
     {
         MsTest = 1,
         xUnit = 2,

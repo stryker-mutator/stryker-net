@@ -10,6 +10,59 @@ using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 {
+    internal abstract class NodeOrchestratorBase
+    {
+        protected static readonly Regex _pattern = new("^\\s*\\/\\/\\s*Stryker", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(20));
+        protected static readonly Regex _parser = new("^\\s*\\/\\/\\s*Stryker\\s*(disable|restore)\\s*(once|)\\s*([^:]*)\\s*:?(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(20));
+        protected static readonly ILogger _logger = ApplicationLogging.LoggerFactory.CreateLogger<NodeOrchestratorBase>();
+
+        public static MutationContext ParseStrykerComment(MutationContext context, Match match, SyntaxNode node)
+        {
+            const int ModeGroup = 1;
+            const int OnceGroup = 2;
+            const int MutatorsGroup = 3;
+            const int CommentGroup = 4;
+
+            // get the ignore comment
+            var comment = match.Groups[CommentGroup].Value.Trim();
+            if (string.IsNullOrEmpty(comment))
+            {
+                comment = "Ignored via code comment.";
+            }
+
+            var disable = match.Groups[ModeGroup].Value.ToLower() switch
+            {
+                "disable" => true,
+                _ => false,
+            };
+
+            Mutator[] filteredMutators;
+            if (match.Groups[MutatorsGroup].Value.ToLower().Trim() == "all")
+            {
+                filteredMutators = Enum.GetValues<Mutator>();
+            }
+            else
+            {
+                var labels = match.Groups[MutatorsGroup].Value.ToLower().Split(',');
+                filteredMutators = new Mutator[labels.Length];
+                for (var i = 0; i < labels.Length; i++)
+                {
+                    if (Enum.TryParse<Mutator>(labels[i], true, out var value))
+                    {
+                        filteredMutators[i] = value;
+                    }
+                    else
+                    {
+                        _logger.LogError(
+                            $"{labels[i]} not recognized as a mutator at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}. Legal values are {string.Join(',', Enum.GetValues<Mutator>())}.");
+                    }
+                }
+            }
+
+            return context.FilterMutators(disable, filteredMutators, match.Groups[OnceGroup].Value.ToLower() == "once", comment);
+        }
+    }
+
     /// <summary>
     /// This purpose of each implementation of this class is to support one specific C# code construct during the mutation process.
     /// Indeed some constructs need to be handled specifically to ensure successful mutations.
@@ -20,13 +73,8 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
     /// <typeparam name="TBase">Roslyn type which represents a generalization of this type</typeparam>
     /// <remarks>Those classes are an implementation of the 'Strategy' pattern. They must remain stateless, as the same instance is used for all syntax node of
     /// the given type. They can still embark some readonly options/parameters, as kong as they remain constant during parsing.</remarks>
-    internal abstract class NodeSpecificOrchestrator<TNode, TBase> : INodeMutator where TBase : SyntaxNode where TNode : TBase
+    internal abstract class NodeSpecificOrchestrator<TNode, TBase> : NodeOrchestratorBase, INodeMutator where TBase : SyntaxNode where TNode : TBase
     {
-        private static readonly Regex _pattern = new("^\\s*\\/\\/\\s*Stryker", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-        private static readonly Regex _parser = new("^\\s*\\/\\/\\s*Stryker\\s*(disable|restore)\\s*(once|)\\s*([^:]*)\\s*:?(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase);
-
-        private static readonly ILogger _logger = ApplicationLogging.LoggerFactory.CreateLogger<NodeSpecificOrchestrator<TNode, TBase>>();
-
         /// <summary>
         /// Get the Roslyn type handled by this class
         /// </summary>
@@ -113,52 +161,6 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                 _logger.LogWarning($"Invalid Stryker comments at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}.");
             }
             return context;
-        }
-
-        private static MutationContext ParseStrykerComment(MutationContext context, Match match, TNode node)
-        {
-            const int ModeGroup = 1;
-            const int OnceGroup = 2;
-            const int MutatorsGroup = 3;
-            const int CommentGroup = 4;
-
-            // get the ignore comment
-            var comment = match.Groups[CommentGroup].Value.Trim();
-            if (string.IsNullOrEmpty(comment))
-            {
-                comment = "Ignored via code comment.";
-            }
-
-            var disable = match.Groups[ModeGroup].Value.ToLower() switch
-            {
-                "disable" => true,
-                _ => false,
-            };
-
-            Mutator[] filteredMutators;
-            if (match.Groups[MutatorsGroup].Value.ToLower().Trim() == "all")
-            {
-                filteredMutators = Enum.GetValues<Mutator>();
-            }
-            else
-            {
-                var labels = match.Groups[MutatorsGroup].Value.ToLower().Split(',');
-                filteredMutators = new Mutator[labels.Length];
-                for (var i = 0; i < labels.Length; i++)
-                {
-                    if (Enum.TryParse<Mutator>(labels[i], true, out var value))
-                    {
-                        filteredMutators[i] = value;
-                    }
-                    else
-                    {
-                        _logger.LogError(
-                            $"{labels[i]} not recognized as a mutator at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}. Legal values are {string.Join(',', Enum.GetValues<Mutator>())}.");
-                    }
-                }
-            }
-
-            return context.FilterMutators(disable, filteredMutators, match.Groups[OnceGroup].Value.ToLower() == "once", comment);
         }
 
         protected virtual void RestoreContext(MutationContext context) { }

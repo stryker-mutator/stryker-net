@@ -14,7 +14,7 @@ namespace Stryker.Core.Reporters
     /// </summary>
     public class BroadcastReporter : IReporter
     {
-        private readonly object _mutex = new object();
+        private readonly object _mutex = new();
         public IEnumerable<IReporter> Reporters { get; }
 
         public BroadcastReporter(IEnumerable<IReporter> reporters) => Reporters = reporters;

@@ -15,9 +15,15 @@ namespace Stryker.Core.Reporters
 
         public ConsoleDotProgressReporter(IAnsiConsole console = null) => _console = console ?? AnsiConsole.Console;
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo) { }
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+        {
+            // don't report on mutant creation
+        }
 
-        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested) { }
+        public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
+        {
+            // nothing to initialize
+        }
 
         public void OnMutantTested(IReadOnlyMutant result)
         {
@@ -32,7 +38,7 @@ namespace Stryker.Core.Reporters
                 case MutantStatus.Timeout:
                     _console.Write("T");
                     break;
-            };
+            }
         }
 
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo) => _console.WriteLine();

@@ -20,7 +20,7 @@ namespace Stryker.Core.Instrumentation
                 // we cannot track array initializer with this construction
                 return node;
             }
-            // enclose the expression into a lambda, such as: initializer => MutantContext.TrackValue(()=>initializer);
+            // inject a MutantContext construction with the expression as a lambda expression (used the parameter)
             return SyntaxFactory.InvocationExpression(
                     codeInjection.GetContextClassAccessExpression(MutantContextValueTrackName),
                     SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(
@@ -30,7 +30,7 @@ namespace Stryker.Core.Instrumentation
 
         protected override SyntaxNode Revert(ExpressionSyntax node)
         {
-            // remove the enclosed initializer such as: MutantContext.TrackValue(()=>initializer); ==> initializer
+            // extract the original expression for the parameter list
             if (node is InvocationExpressionSyntax invocation
                 && CodeInjection.IsContextAccessExpression(invocation.Expression, MutantContextValueTrackName)
                 && invocation.ArgumentList.Arguments.First().Expression is ParenthesizedLambdaExpressionSyntax parenthesized)
