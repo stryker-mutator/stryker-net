@@ -3,7 +3,7 @@
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.1.1" />
     <PackageVersion Include="LaunchDarkly.EventSource" Version="5.0.1" />
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.0.2" />
-    <PackageVersion Include="NuGet.Protocol" Version="6.5.0" />
+    <PackageVersion Include="NuGet.Protocol" Version="6.6.0" />
     <PackageVersion Include="ResXResourceReader.NetStandard" Version="1.1.0" />
     <PackageVersion Include="YamlDotNet" Version="13.1.0" />
     <PackageVersion Include="Grynwald.MarkdownGenerator" Version="3.0.106" />
