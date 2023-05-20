@@ -11,7 +11,7 @@ namespace Stryker.Core
     /// <summary>
     /// Contains information about which files and which parts of a file should be in- or excluded.
     /// </summary>
-    public sealed class FilePattern
+    public sealed class FilePattern : IEquatable<FilePattern>
     {
         private static readonly Regex _textSpanGroupRegex = new Regex("(\\{(\\d+)\\.\\.(\\d+)\\})+$");
         private static readonly Regex _textSpanRegex = new Regex("\\{(\\d+)\\.\\.(\\d+)\\}");
@@ -45,10 +45,7 @@ namespace Stryker.Core
         /// </summary>
         /// <param name="pattern">The pattern to parse.</param>
         /// <returns>The <see cref="FilePattern"/></returns>
-        public static FilePattern Parse(string pattern)
-        {
-            return Parse(pattern, spansEnabled: true);
-        }
+        public static FilePattern Parse(string pattern) => Parse(pattern, spansEnabled: true);
 
         /// <summary>
         /// Parses a given file pattern string.
