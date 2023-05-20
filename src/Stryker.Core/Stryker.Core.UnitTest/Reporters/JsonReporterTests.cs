@@ -169,8 +169,8 @@ namespace ExtraProject.XUnit
             {
                 TestProjects = new List<TestProject>
                 {
-                    new TestProject(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
-                        sourceFiles: new string[] { _testFilePath }).Object)
+                    new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
+                        sourceFiles: new[] { _testFilePath }).Object)
                 }
             };
             var node = CSharpSyntaxTree.ParseText(_testFileContents).GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
@@ -202,6 +202,50 @@ namespace ExtraProject.XUnit
             test.Id.ShouldBe(Guid.Empty.ToString());
             test.Location.Start.Line.ShouldBe(7);
             test.Location.End.Line.ShouldBe(11);
+        }
+
+        [Fact]
+        public void JsonReporter_ShouldSupportDuplicateTestFiles()
+        {
+            // arrange
+            var mockFileSystem = new MockFileSystem();
+            var options = new StrykerOptions
+            {
+                Thresholds = new Thresholds { High = 80, Low = 60, Break = 0 },
+                OutputPath = Directory.GetCurrentDirectory(),
+                ReportFileName = "mutation-report"
+            };
+
+            var testProjectsInfo = new TestProjectsInfo(_fileSystemMock)
+            {
+                TestProjects = new List<TestProject>
+                {
+                    new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
+                        sourceFiles: new[] { _testFilePath }).Object),
+                    new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(sourceFiles: new[] { _testFilePath }).Object)
+                }
+            };
+            var node = CSharpSyntaxTree.ParseText(_testFileContents).GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
+            testProjectsInfo.TestProjects.First().TestFiles.First().AddTest(Guid.Empty, "myUnitTestName", node);
+            testProjectsInfo.TestProjects.First().TestFiles.First().AddTest(Guid.NewGuid(), "myOtherTestName", node);
+            testProjectsInfo.TestProjects.ElementAt(1).TestFiles.First().AddTest(Guid.Empty, "myUnitTestName", node);
+            testProjectsInfo.TestProjects.ElementAt(1).TestFiles.First().AddTest(Guid.NewGuid(), "myLastTestName", node);
+
+            var reporter = new JsonReporter(options, mockFileSystem);
+
+            // act
+            reporter.OnAllMutantsTested(ReportTestHelper.CreateProjectWith(), testProjectsInfo);
+
+            // assert
+            var reportPath = Path.Combine(options.ReportPath, "mutation-report.json");
+            mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
+            var fileContents = mockFileSystem.File.ReadAllText(reportPath);
+
+            var report = JsonConvert.DeserializeObject<JsonReport>(fileContents);
+
+            var testFile = report.TestFiles.ShouldHaveSingleItem();
+
+            testFile.Value.Tests.Count().ShouldBe(3); // not three
         }
     }
 }
