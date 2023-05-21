@@ -1626,7 +1626,7 @@
           "Serilog.Sinks.Console": "[4.1.0, )",
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.47.0, )",
-          "Spectre.Console.Analyzer": "[0.46.0, )",
+          "Spectre.Console.Analyzer": "[0.47.0, )",
           "Stryker.DataCollector": "[3.9.0, )",
           "Stryker.RegexMutators": "[3.9.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[19.2.29, )"
@@ -1884,9 +1884,9 @@
       },
       "Spectre.Console.Analyzer": {
         "type": "CentralTransitive",
-        "requested": "[0.46.0, )",
-        "resolved": "0.46.0",
-        "contentHash": "kbCnMdBdtRRtQtR+KKleYcCCe4QbK81LuZ5VR339/k545ggx0XcU29RMLxXdwhT0GQiGzZ7s2WpMO7LbGk+pEQ=="
+        "requested": "[0.47.0, )",
+        "resolved": "0.47.0",
+        "contentHash": "B2t1ha50pgEn1er2j5cv9RnJRX0bGhJDubkWr+KOcX5KjwVD83DvLXBVfixkiawuPFvh/Ggm1Wu07Qk96BbazA=="
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",

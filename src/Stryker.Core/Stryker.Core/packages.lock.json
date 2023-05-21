@@ -229,9 +229,9 @@
       },
       "Spectre.Console.Analyzer": {
         "type": "Direct",
-        "requested": "[0.46.0, )",
-        "resolved": "0.46.0",
-        "contentHash": "kbCnMdBdtRRtQtR+KKleYcCCe4QbK81LuZ5VR339/k545ggx0XcU29RMLxXdwhT0GQiGzZ7s2WpMO7LbGk+pEQ=="
+        "requested": "[0.47.0, )",
+        "resolved": "0.47.0",
+        "contentHash": "B2t1ha50pgEn1er2j5cv9RnJRX0bGhJDubkWr+KOcX5KjwVD83DvLXBVfixkiawuPFvh/Ggm1Wu07Qk96BbazA=="
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "Direct",
