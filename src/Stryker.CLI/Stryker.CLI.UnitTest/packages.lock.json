@@ -57,12 +57,12 @@
       },
       "Spectre.Console.Testing": {
         "type": "Direct",
-        "requested": "[0.46.0, )",
-        "resolved": "0.46.0",
-        "contentHash": "2djEW8nnqNg2hEqigoikCy73FWVMCexJi/KX1p+t+SZrWZFFX0kJgKT9lZi3jlojMJVTSqHJh690MIHU2L48DQ==",
+        "requested": "[0.47.0, )",
+        "resolved": "0.47.0",
+        "contentHash": "SO2dh3A5A7KG2iX6Bj2bGjyN5CPMcK76YY69AJ8RHv/e0c51BI0UeQTV+BRINQR6fHlM19L7iZd9kNaRmoDjmA==",
         "dependencies": {
-          "Spectre.Console": "0.46.0",
-          "Spectre.Console.Cli": "0.46.0"
+          "Spectre.Console": "0.47.0",
+          "Spectre.Console.Cli": "0.47.0"
         }
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
@@ -610,10 +610,10 @@
       },
       "Spectre.Console.Cli": {
         "type": "Transitive",
-        "resolved": "0.46.0",
-        "contentHash": "Q5HQEI3Ofv/jVYaggksipN3z2Hy0J7q3bogeidIIuQ/QGsY110DGw6n7+tp9nTswT70SDXvXfrXpeGKTJ7TwmA==",
+        "resolved": "0.47.0",
+        "contentHash": "S2cZCbve4fAgRtigNUNZbF+NLQJcAapSqSbbDYqLtqXJcIZ6tKiRTveYe05d+oLY2bAmP7sgnLdzVknGXruy2Q==",
         "dependencies": {
-          "Spectre.Console": "0.46.0"
+          "Spectre.Console": "0.47.0"
         }
       },
       "System.AppContext": {
@@ -1627,8 +1627,8 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.47.0, )",
           "Spectre.Console.Analyzer": "[0.46.0, )",
-          "Stryker.DataCollector": "[3.9.0, )",
-          "Stryker.RegexMutators": "[3.9.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[19.2.29, )"
         }
       },
