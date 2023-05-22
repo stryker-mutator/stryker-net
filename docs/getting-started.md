@@ -18,7 +18,7 @@ Nuget is required for dotnet framework. Follow the instructions at [Install nuge
 
 Make sure NuGet targets and build tasks are installed. You can install them with visual studio by going to Tools > Get Tools and Features > Individual components > Code tools
 
-[NuGet targets and build tasks feature](./images/install-nuget-targets.png)
+![NuGet targets and build tasks feature](./images/install-nuget-targets.png)
 
 ## Migrating
 
