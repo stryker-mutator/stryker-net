@@ -116,6 +116,16 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         [Fact]
+        public void DoNotTestWhenNoTestPResent()
+        {
+            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner, testCases: new List<TestCase>());
+            SetupMockTestRun(mockVsTest, true, TestCases);
+            var result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
+            // tests are successful => run should be successful
+            result.ExecutedTests.IsEmpty.ShouldBeTrue();
+        }
+
+        [Fact]
         public void RecycleRunnerOnError()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);

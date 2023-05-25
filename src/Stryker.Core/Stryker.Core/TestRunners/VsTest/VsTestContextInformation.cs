@@ -163,9 +163,11 @@ namespace Stryker.Core.TestRunners.VsTest
             return result;
         }
 
+        // keeps only test assemblies which have tests.
+        public bool IsValidSourceList(IEnumerable<string> sources) => sources.Any( s=> TestsPerSource.TryGetValue(s, out var result ) && result.Count >0);
+
         public bool AddTestSource(string source)
         {
-
             if (!_fileSystem.File.Exists(source))
             {
                 throw new GeneralStrykerException(
