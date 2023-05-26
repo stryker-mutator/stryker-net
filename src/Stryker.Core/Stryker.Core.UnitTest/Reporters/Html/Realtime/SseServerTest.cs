@@ -34,7 +34,7 @@ public class SseServerTest : TestBase
         Thread.Sleep(100);
 
         _sut.SendEvent(new SseEvent<string> { Event = SseEventType.Finished, Data = "" });
-        eventReceived.WaitOne();
+        Assert.True(eventReceived.WaitOne(500), "SSEWait timeout. Please retry");
 
         @event.ShouldBeSemantically("finished");
         data.ShouldBeSemantically("\"\"");
@@ -65,7 +65,7 @@ public class SseServerTest : TestBase
             Event = SseEventType.MutantTested,
             Data = @object
         });
-        eventReceived.WaitOne();
+        Assert.True(eventReceived.WaitOne(500), "SSEWait timeout. Please retry");
 
         @event.ShouldBeSemantically("mutant-tested");
         data.ShouldBeSemantically("{\"id\":\"1\",\"status\":\"Survived\"}");
