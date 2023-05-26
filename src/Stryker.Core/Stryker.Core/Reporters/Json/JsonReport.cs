@@ -66,7 +66,14 @@ namespace Stryker.Core.Reporters.Json
                 TestFiles = new Dictionary<string, JsonTestFile>();
                 foreach (var testFile in testProjectsInfo.TestFiles)
                 {
-                    TestFiles.Add(testFile.FilePath, new JsonTestFile(testFile));
+                    if (TestFiles.TryGetValue(testFile.FilePath, out var jsonFile))
+                    {
+                        jsonFile.AddTestFile(testFile);
+                    }
+                    else
+                    {
+                        TestFiles.Add(testFile.FilePath, new JsonTestFile(testFile));
+                    }
                 }
             }
         }
