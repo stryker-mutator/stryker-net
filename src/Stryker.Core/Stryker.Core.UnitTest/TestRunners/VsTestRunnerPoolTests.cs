@@ -116,7 +116,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         [Fact]
-        public void DoNotTestWhenNoTestPResent()
+        public void DoNotTestWhenNoTestPresent()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner, testCases: new List<TestCase>());
             SetupMockTestRun(mockVsTest, true, TestCases);

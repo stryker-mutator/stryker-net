@@ -258,39 +258,25 @@ namespace Stryker.Core.TestRunners.VsTest
                     options, eventHandler, strykerVsTestHostLauncher);
             }
 
-            // do we have a timeout provided ?
-            if (timeOut.HasValue)
+            if (!eventHandler.WaitEnd(timeOut + VsTestWrapperTimeOutInMs) ||
+                !session.Wait(VsTestWrapperTimeOutInMs))
             {
-                if (!eventHandler.WaitEnd(timeOut + VsTestWrapperTimeOutInMs) ||
-                    !session.Wait(VsTestWrapperTimeOutInMs))
+                // VsTestWrapper aborts the current test sessions on timeout, except on critical error, so we have an internal timeout (+ grace period)
+                // to detect and properly handle those events. 
+                if (!strykerVsTestHostLauncher.IsProcessCreated)
                 {
-                    // VsTestWrapper aborts the current test sessions on timeout, except on critical error, so we have an internal timeout (+ grace period)
-                    // to detect and properly handle those events. 
-                    if (!strykerVsTestHostLauncher.IsProcessCreated)
-                    {
-                        // VsTestWrapper did not launch a test session for some reason
-                        _logger.LogError($"{RunnerId}: VsTest did not start properly.");
-                    }
-                    else
-                    {
-                        // VsTestHost appears stuck and can't be aborted
-                        _logger.LogError(
-                            $"{RunnerId}: VsTest did not report the end of test session in due time, it may have hang.");
-                        _vsTestConsole.AbortTestRun();
-                    }
+                    // VsTestWrapper did not launch a test session for some reason
+                    _logger.LogError($"{RunnerId}: VsTest did not start properly.");
+                }
+                else
+                {
+                    // VsTestHost appears stuck and can't be aborted
+                    _logger.LogError(
+                        $"{RunnerId}: VsTest did not report the end of test session in due time, it may have hang.");
+                    _vsTestConsole.AbortTestRun();
+                }
 
-                    vsTestFailed = true;
-                }
-                else if (strykerVsTestHostLauncher.ErrorCode > 0)
-                {
-                    _logger.LogError($"{RunnerId}: Test session ended with code {strykerVsTestHostLauncher.ErrorCode}");
-                }
-            }
-            else
-            {
-                // hard wait
-                eventHandler.WaitEnd(null);
-                session.Wait();
+                vsTestFailed = true;
             }
 
 
