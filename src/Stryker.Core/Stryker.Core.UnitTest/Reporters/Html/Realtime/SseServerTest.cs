@@ -15,7 +15,7 @@ public class SseServerTest : TestBase
     public SseServerTest() => _sut = new SseServer();
 
     [Fact]
-    public void ShouldSendFinishedEventCorrectlyAsync()
+    public void ShouldSendFinishedEventCorrectly()
     {
         _sut.OpenSseEndpoint();
 
@@ -41,7 +41,7 @@ public class SseServerTest : TestBase
     }
 
     [Fact]
-    public void ShouldSendMutantTestedEventCorrectlyAsync()
+    public void ShouldSendMutantTestedEventCorrectly()
     {
         _sut.OpenSseEndpoint();
 
