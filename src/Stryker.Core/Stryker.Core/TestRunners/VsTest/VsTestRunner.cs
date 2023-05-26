@@ -258,30 +258,39 @@ namespace Stryker.Core.TestRunners.VsTest
                     options, eventHandler, strykerVsTestHostLauncher);
             }
 
-            // Wait for test completed report
-            if ((timeOut.HasValue && !eventHandler.WaitEnd(timeOut + VsTestWrapperTimeOutInMs)) ||
-                !session.Wait(VsTestWrapperTimeOutInMs))
+            // do we have a timeout provided ?
+            if (timeOut.HasValue)
             {
-                // VsTestWrapper aborts the current test sessions on timeout, except on critical error, so we have an internal timeout (+ grace period)
-                // to detect and properly handle those events. 
-                if (!strykerVsTestHostLauncher.IsProcessCreated)
+                if (!eventHandler.WaitEnd(timeOut + VsTestWrapperTimeOutInMs) ||
+                    !session.Wait(VsTestWrapperTimeOutInMs))
                 {
-                    // VsTestWrapper did not launch a test session for some reason
-                    _logger.LogError($"{RunnerId}: VsTest did not start properly.");
-                }
-                else
-                {
-                    // VsTestHost appears stuck and can't be aborted
-                    _logger.LogError(
-                        $"{RunnerId}: VsTest did not report the end of test session in due time, it may have hang.");
-                    _vsTestConsole.AbortTestRun();
-                }
+                    // VsTestWrapper aborts the current test sessions on timeout, except on critical error, so we have an internal timeout (+ grace period)
+                    // to detect and properly handle those events. 
+                    if (!strykerVsTestHostLauncher.IsProcessCreated)
+                    {
+                        // VsTestWrapper did not launch a test session for some reason
+                        _logger.LogError($"{RunnerId}: VsTest did not start properly.");
+                    }
+                    else
+                    {
+                        // VsTestHost appears stuck and can't be aborted
+                        _logger.LogError(
+                            $"{RunnerId}: VsTest did not report the end of test session in due time, it may have hang.");
+                        _vsTestConsole.AbortTestRun();
+                    }
 
-                vsTestFailed = true;
+                    vsTestFailed = true;
+                }
+                else if (strykerVsTestHostLauncher.ErrorCode > 0)
+                {
+                    _logger.LogError($"{RunnerId}: Test session ended with code {strykerVsTestHostLauncher.ErrorCode}");
+                }
             }
-            else if (strykerVsTestHostLauncher.ErrorCode > 0)
+            else
             {
-                _logger.LogError($"{RunnerId}: Test session ended with code {strykerVsTestHostLauncher.ErrorCode}");
+                // hard wait
+                eventHandler.WaitEnd(null);
+                session.Wait();
             }
 
 
