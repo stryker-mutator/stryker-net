@@ -18,11 +18,15 @@ namespace Stryker.Core.Reporters.Json.TestFiles
             Language = "cs";
             Tests = new HashSet<Test>();
 
+            AddTestFile(testFile);
+        }
+
+        public void AddTestFile(TestFile testFile)
+        {
             foreach (var test in testFile?.Tests ?? Enumerable.Empty<TestCase>())
             {
-                Tests.Add(new Test
+                Tests.Add(new Test(test.Id.ToString())
                 {
-                    Id = test.Id.ToString(),
                     Name = test.Name,
                     Location = new Location(test.Node.GetLocation().GetMappedLineSpan())
                 });

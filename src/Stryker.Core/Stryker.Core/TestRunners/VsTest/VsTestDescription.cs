@@ -6,7 +6,6 @@ using Stryker.Core.Mutants;
 
 namespace Stryker.Core.TestRunners.VsTest
 {
-
     public sealed class VsTestDescription
     {
         private readonly ICollection<TestResult> _initialResults = new List<TestResult>();
@@ -55,19 +54,6 @@ namespace Stryker.Core.TestRunners.VsTest
         public void RegisterInitialTestResult(TestResult result) => _initialResults.Add(result);
 
         public void AddSubCase() => _subCases++;
-
-        private bool Equals(VsTestDescription other) => Equals(Case.Id, other.Case.Id);
-
-        public override bool Equals(object obj)
-        {
-            if (obj is null) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == GetType() && Equals((VsTestDescription) obj);
-        }
-
-        public override int GetHashCode() => Case != null ? Case.Id.GetHashCode() : 0;
-
-        public override string ToString() => Case.FullyQualifiedName;
 
         public void ClearInitialResult() => _initialResults.Clear();
     }
