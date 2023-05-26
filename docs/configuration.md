@@ -51,7 +51,9 @@ Default: `null`
 Command line: `[-s|--solution] "../solution.sln"`  
 Config file: `"solution": '../solution.sln'`
 
-The solution file is required for dotnet framework projects. You may specify the solution file for dotnet core projects. In some cases this can help with dependency resolution.
+The solution path can be supplied to help with dependency resolution. If stryker is ran from the solution file location the solution file will be analyzed and all projects in the solution will be tested by stryker.
+
+Note: The solution file is required for dotnet framework projects. For dotnet (core) projects the solution file is optional.
 
 ### `project` <`file-name`>
 
@@ -130,6 +132,8 @@ Valid language versions:
 - Csharp7_3
 - Csharp8
 - Csharp9
+- Csharp10
+- Csharp11
 - Preview (next language version)
 
 *\* Csharp version 1 is not allowed because stryker injects helper code that uses csharp 2 language features.*
@@ -137,7 +141,7 @@ Valid language versions:
 ### `target-framework` <`string`>
 
 Default: randomly selected
-Command line: `N/A`  
+Command line: `target-framework`  
 Config file: `"target-framework": "netcoreapp3.1"`
 
 If the project targets multiple frameworks, this way you can specify the particular framework to build against. If you specify a non-existent target, Stryker will build the project against a random one (or the only one if so).
@@ -201,6 +205,7 @@ The levels are:
 | Linq Methods | Standard |
 | Checked Statements | Standard |
 | Regex | Advanced |
+| Math Methods | Advanced |
 | Advanced Linq Methods (not yet implemented) | Complete |
 | Advanced Regex (not yet implemented) | Complete |
 
@@ -369,6 +374,14 @@ Both, method names and constructor names support wildcards.
 }
 ```
 
+### `output` <`string`>
+
+Default: `null`  
+Command line: `[--output|-O] /path/to/output`  
+Config file: `N/A`
+
+Changes the output path for Stryker logs and reports. This can be an absolute or relative path.
+
 ## Optimization
 
 ### `coverage-analysis` <`string`>
@@ -390,16 +403,16 @@ coverage information for some mutants (see below), at the expense of a longer st
 Stryker again without coverage analysis and report an issue if this mutant is killed by this run.
 * when using `perTest` mode, mutants that are executed as part as some static constructor/initializer 
 are run against all tests as Stryker cannot reliably capture coverage for those. This is a consequence of static
-constructors/initialisers being called only once during tests. This heuristic is not needed when using
+constructors/initializers being called only once during tests. This heuristic is not needed when using
 `perTestInIsolation` due to test being run one by one.
 
 ### `disable-bail` <`flag`>
 
 Default: `false`  
-Command line: `N/A`  
+Command line: `--disable-bail`  
 Config file: `"disable-bail": true`
 
-Stryker aborts a unit testrun for a mutant as soon as one test fails because this is enough to confirm the mutant is killed. This can reduce the total runtime but also means you miss information about individual unit tests (eg if a unit test does not kill any mutants and is therefore useless). You can disable this behavior and run all unit tests for a mutant to completion. This can be especially useful when you want to find useless unit tests.
+Stryker aborts a unit testrun for a mutant as soon as one test fails because this is enough to confirm the mutant is killed. This can reduce the total runtime but also means you miss information about individual unit tests (e.g. if a unit test does not kill any mutants and is therefore useless). You can disable this behavior and run all unit tests for a mutant to completion. This can be especially useful when you want to find useless unit tests.
 
 ### `disable-mix-mutants` <`flag`>
 
@@ -453,7 +466,7 @@ Use [globbing syntax](https://en.wikipedia.org/wiki/Glob_(programming)) for wild
 
 ## Experimental
 
-**The features in this section are experimental. Results can contain false postives and false negatives.**
+**The features in this section are experimental. Results can contain false positives and false negatives.**
 
 ## Baseline
 
@@ -552,7 +565,7 @@ Providing a subfolder is optional but allowed. In the case of a custom subfolder
 ### `azure-fileshare-sas` <`string`>
 
 Default: `null`  
-Command line: `--azure-fileshare-sas "adfdf34343242323rewfe323434"`  
+Command line: `--azure-fileshare-sas "se=2022-08-25T14%3A27Z&sp=rwdl&spr=https&sv=2021-06-08&sr=d&sdd=1&sig=XXXXXXXXXXXXX"`  
 Config file: `N/A`
 
 When using the azure file storage [provider](#baselineprovider-string) you must pass credentials for the fileshare to Stryker.
@@ -622,3 +635,11 @@ Command line: `--msbuild-path "c://MsBuild/MsBuild.exe"`
 Config file: `N/A`  
 
 By default stryker tries to autodiscover msbuild on your system. If stryker fails to discover msbuild you may supply the path to msbuild manually with this option.
+
+### `break-on-initial-test-failure` <`flag`>
+
+Default: `false`  
+Command line: `--break-on-initial-test-failure`  
+Config file: `break-on-initial-test-failure`
+
+Instruct Stryker to break execution when at least one test failed on initial test run.

@@ -52,7 +52,7 @@ namespace Stryker.Core.ToolHelpers
                     return _platformVsTestToolPath;
                 }
                 var paths = GetVsTestToolPaths();
-                    
+
                 if (!paths.Keys.Any(RuntimeInformation.IsOSPlatform))
                 {
                     throw new PlatformNotSupportedException(
@@ -115,25 +115,10 @@ namespace Stryker.Core.ToolHelpers
 
             foreach (var nugetPackageFolder in nugetPackageFolders)
             {
-                if (dllFound && exeFound)
+                var searchFolder = versionDependent ? Path.Combine(nugetPackageFolder, PortablePackageName, versionString) : nugetPackageFolder;
+                if (!_fileSystem.Directory.Exists(searchFolder))
                 {
-                    break;
-                }
-
-                string searchFolder;
-                if (versionDependent)
-                {
-                    var portablePackageFolder = Path.Combine(nugetPackageFolder, PortablePackageName, versionString);
-
-                    if (!_fileSystem.Directory.Exists(portablePackageFolder))
-                    {
-                        return vsTestPaths;
-                    }
-                    searchFolder = portablePackageFolder;
-                }
-                else
-                {
-                    searchFolder = nugetPackageFolder;
+                    continue;
                 }
 
                 var dllPath = FilePathUtils.NormalizePathSeparators(
@@ -157,6 +142,10 @@ namespace Stryker.Core.ToolHelpers
                 {
                     vsTestPaths[OSPlatform.Windows] = exePath;
                     exeFound = true;
+                }
+                if (dllFound && exeFound)
+                {
+                    break;
                 }
             }
 
@@ -198,7 +187,7 @@ namespace Stryker.Core.ToolHelpers
             var zipPath = Path.Combine(tempDir, "vstest.zip");
             _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(zipPath));
 
-            using (var file = _fileSystem.FileStream.Create(zipPath, FileMode.Create))
+            using (var file = _fileSystem.FileStream.New(zipPath, FileMode.Create))
             {
                 stream.CopyTo(file);
             }

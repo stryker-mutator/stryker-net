@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using Buildalyzer;
 using Moq;
 
@@ -12,7 +13,9 @@ namespace Stryker.Core.UnitTest
             IEnumerable<string> projectReferences = null,
             string targetFramework = null,
             IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> packageReferences = null,
-            string[] references = null)
+            string[] references = null,
+            string[] preprocessorSymbols = null
+            )
         {
             var analyzerResultMock = new Mock<IAnalyzerResult>();
 
@@ -20,9 +23,19 @@ namespace Stryker.Core.UnitTest
             {
                 analyzerResultMock.Setup(x => x.Properties).Returns(properties);
             }
+            else
+            {
+                properties = new Dictionary<string, string>();
+                analyzerResultMock.Setup(x => x.Properties).Returns(properties);
+            }
             if (projectFilePath != null)
             {
                 analyzerResultMock.Setup(x => x.ProjectFilePath).Returns(projectFilePath);
+                if (!properties.ContainsKey("TargetDir"))
+                {
+                    properties["TargetDir"] = Path.Combine(Path.GetFullPath(projectFilePath), "bin", "Debug", targetFramework ?? "net");
+                    properties["TargetFileName"] = Path.GetFileNameWithoutExtension(projectFilePath)+".dll";
+                }
             }
             if (sourceFiles != null)
             {
@@ -43,6 +56,10 @@ namespace Stryker.Core.UnitTest
             if (references != null)
             {
                 analyzerResultMock.Setup(x => x.References).Returns(references);
+            }
+            if (preprocessorSymbols is not null)
+            {
+                analyzerResultMock.Setup(x => x.PreprocessorSymbols).Returns(preprocessorSymbols);
             }
 
             return analyzerResultMock;

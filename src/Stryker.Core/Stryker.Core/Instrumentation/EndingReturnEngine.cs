@@ -72,7 +72,12 @@ namespace Stryker.Core.Instrumentation
 
         protected override SyntaxNode Revert(BlockSyntax node)
         {
-            if (node?.Statements.Last().IsKind(SyntaxKind.ReturnStatement) != true)
+            if (node == null)
+            {
+                throw new ArgumentNullException(nameof(node));
+            }
+
+            if (!node.Statements.Last().IsKind(SyntaxKind.ReturnStatement))
             {
                 throw new InvalidOperationException($"No return at the end of: {node}");
             }

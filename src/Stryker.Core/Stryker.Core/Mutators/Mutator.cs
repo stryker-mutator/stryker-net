@@ -1,68 +1,71 @@
 using System;
-using System.ComponentModel;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
+using Stryker.Core.Attributes;
 
 namespace Stryker.Core.Mutators
 {
     public enum Mutator
     {
-        [Description("Statements")]
+        [MutatorDescription("Statements")]
         Statement,
-        [Description("Arithmetic operators")]
+        [MutatorDescription("Arithmetic operators")]
         Arithmetic,
-        [Description("Block statements")]
+        [MutatorDescription("Block statements")]
         Block,
-        [Description("Equality operators")]
+        [MutatorDescription("Equality operators")]
         Equality,
-        [Description("Boolean literals")]
+        [MutatorDescription("Boolean literals")]
         Boolean,
-        [Description("Logical operators")]
+        [MutatorDescription("Logical operators")]
         Logical,
-        [Description("Assignment statements")]
+        [MutatorDescription("Assignment statements")]
         Assignment,
-        [Description("Unary operators")]
+        [MutatorDescription("Unary operators")]
         Unary,
-        [Description("Update operators")]
+        [MutatorDescription("Update operators")]
         Update,
-        [Description("Checked statements")]
+        [MutatorDescription("Checked statements")]
         Checked,
-        [Description("Linq methods")]
+        [MutatorDescription("Linq methods")]
         Linq,
-        [Description("String literals")]
+        [MutatorDescription("String literals")]
         String,
-        [Description("Bitwise operators")]
+        [MutatorDescription("Bitwise operators")]
         Bitwise,
-        [Description("Array initializer")]
+        [MutatorDescription("Array initializer")]
         Initializer,
-        [Description("Regular expressions")]
-        Regex
+        [MutatorDescription("Regular expressions")]
+        Regex,
+        [MutatorDescription("Null coalescing")]
+        NullCoalescing,
+        [MutatorDescription("Math methods")]
+        Math
     }
 
     public static class EnumExtension
     {
-        public static string GetDescription<T>(this T e) where T : IConvertible
+        public static IEnumerable<string> GetDescriptions<T>(this T e) where T : IConvertible
         {
-            if (e is not Enum) return null;
+            if (e is not Enum) return Array.Empty<string>();
             var type = e.GetType();
             var values = Enum.GetValues(type);
 
             foreach (int val in values)
             {
-                if (val == e.ToInt32(CultureInfo.InvariantCulture))
+                if (val != e.ToInt32(CultureInfo.InvariantCulture))
                 {
-                    var memInfo = type.GetMember(type.GetEnumName(val));
-
-                    if (memInfo[0]
-                        .GetCustomAttributes(typeof(DescriptionAttribute), false)
-                        .FirstOrDefault() is DescriptionAttribute descriptionAttribute)
-                    {
-                        return descriptionAttribute.Description;
-                    }
+                    continue;
                 }
+                var memInfo = type.GetMember(type.GetEnumName(val));
+
+                var descriptions = memInfo[0].GetCustomAttributes<MutatorDescriptionAttribute>(false).Select(descriptionAttribute => descriptionAttribute.Description);
+                return descriptions;
             }
 
-            return null;
+            return Array.Empty<string>();
         }
     }
 }

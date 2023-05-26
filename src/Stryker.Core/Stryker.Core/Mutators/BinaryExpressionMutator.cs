@@ -2,38 +2,47 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutators
 {
     public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>, IMutator
     {
-        private readonly Dictionary<SyntaxKind, IEnumerable<SyntaxKind>> _kindsToMutate;
+        private readonly struct MutationData
+        {
+            public readonly Mutator Mutator;
+            public readonly IEnumerable<SyntaxKind> KindsToMutate;
+
+            public MutationData(Mutator mutator, params SyntaxKind[] kindsToMutate)
+            {
+                Mutator = mutator;
+                KindsToMutate = kindsToMutate;
+            }
+
+        }
+
+        private static readonly Dictionary<SyntaxKind, MutationData> _kindsToMutate = new Dictionary<SyntaxKind, MutationData>()
+        {
+            { SyntaxKind.SubtractExpression, new MutationData(Mutator.Arithmetic, SyntaxKind.AddExpression) },
+            { SyntaxKind.AddExpression, new MutationData(Mutator.Arithmetic, SyntaxKind.SubtractExpression) },
+            { SyntaxKind.MultiplyExpression, new MutationData(Mutator.Arithmetic, SyntaxKind.DivideExpression) },
+            { SyntaxKind.DivideExpression, new MutationData(Mutator.Arithmetic, SyntaxKind.MultiplyExpression) },
+            { SyntaxKind.ModuloExpression, new MutationData(Mutator.Arithmetic, SyntaxKind.MultiplyExpression) },
+            { SyntaxKind.GreaterThanExpression, new MutationData(Mutator.Equality, SyntaxKind.LessThanExpression, SyntaxKind.GreaterThanOrEqualExpression) },
+            { SyntaxKind.LessThanExpression, new MutationData(Mutator.Equality, SyntaxKind.GreaterThanExpression, SyntaxKind.LessThanOrEqualExpression) },
+            { SyntaxKind.GreaterThanOrEqualExpression, new MutationData(Mutator.Equality, SyntaxKind.LessThanExpression, SyntaxKind.GreaterThanExpression) },
+            { SyntaxKind.LessThanOrEqualExpression, new MutationData(Mutator.Equality, SyntaxKind.GreaterThanExpression, SyntaxKind.LessThanExpression) },
+            { SyntaxKind.EqualsExpression, new MutationData(Mutator.Equality, SyntaxKind.NotEqualsExpression) },
+            { SyntaxKind.NotEqualsExpression, new MutationData(Mutator.Equality, SyntaxKind.EqualsExpression) },
+            { SyntaxKind.LogicalAndExpression, new MutationData(Mutator.Logical, SyntaxKind.LogicalOrExpression) },
+            { SyntaxKind.LogicalOrExpression, new MutationData(Mutator.Logical, SyntaxKind.LogicalAndExpression) },
+            { SyntaxKind.LeftShiftExpression, new MutationData(Mutator.Bitwise, SyntaxKind.RightShiftExpression) },
+            { SyntaxKind.RightShiftExpression, new MutationData(Mutator.Bitwise, SyntaxKind.LeftShiftExpression) },
+            { SyntaxKind.BitwiseOrExpression, new MutationData(Mutator.Bitwise, SyntaxKind.BitwiseAndExpression) },
+            { SyntaxKind.BitwiseAndExpression, new MutationData(Mutator.Bitwise, SyntaxKind.BitwiseOrExpression) },
+        };
 
         public override MutationLevel MutationLevel => MutationLevel.Basic;
-
-        public BinaryExpressionMutator()
-        {
-            _kindsToMutate = new Dictionary<SyntaxKind, IEnumerable<SyntaxKind>>
-            {
-                {SyntaxKind.SubtractExpression, new List<SyntaxKind> { SyntaxKind.AddExpression} },
-                {SyntaxKind.AddExpression, new List<SyntaxKind> {SyntaxKind.SubtractExpression } },
-                {SyntaxKind.MultiplyExpression, new List<SyntaxKind> {SyntaxKind.DivideExpression } },
-                {SyntaxKind.DivideExpression, new List<SyntaxKind> {SyntaxKind.MultiplyExpression } },
-                {SyntaxKind.ModuloExpression, new List<SyntaxKind> {SyntaxKind.MultiplyExpression } },
-                {SyntaxKind.GreaterThanExpression, new List<SyntaxKind> {SyntaxKind.LessThanExpression, SyntaxKind.GreaterThanOrEqualExpression } },
-                {SyntaxKind.LessThanExpression, new List<SyntaxKind> {SyntaxKind.GreaterThanExpression, SyntaxKind.LessThanOrEqualExpression } },
-                {SyntaxKind.GreaterThanOrEqualExpression, new List<SyntaxKind> { SyntaxKind.LessThanExpression, SyntaxKind.GreaterThanExpression } },
-                {SyntaxKind.LessThanOrEqualExpression, new List<SyntaxKind> { SyntaxKind.GreaterThanExpression, SyntaxKind.LessThanExpression } },
-                {SyntaxKind.EqualsExpression, new List<SyntaxKind> {SyntaxKind.NotEqualsExpression } },
-                {SyntaxKind.NotEqualsExpression, new List<SyntaxKind> {SyntaxKind.EqualsExpression } },
-                {SyntaxKind.LogicalAndExpression, new List<SyntaxKind> {SyntaxKind.LogicalOrExpression } },
-                {SyntaxKind.LogicalOrExpression, new List<SyntaxKind> {SyntaxKind.LogicalAndExpression } },
-                {SyntaxKind.LeftShiftExpression, new List<SyntaxKind> {SyntaxKind.RightShiftExpression } },
-                {SyntaxKind.RightShiftExpression, new List<SyntaxKind> {SyntaxKind.LeftShiftExpression } },
-                {SyntaxKind.BitwiseOrExpression, new List<SyntaxKind> {SyntaxKind.BitwiseAndExpression } },
-                {SyntaxKind.BitwiseAndExpression, new List<SyntaxKind> {SyntaxKind.BitwiseOrExpression } },
-            };
-        }
 
         public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node)
         {
@@ -43,20 +52,19 @@ namespace Stryker.Core.Mutators
                 yield break;
             }
 
-            if (_kindsToMutate.ContainsKey(node.Kind()))
+            if (_kindsToMutate.TryGetValue(node.Kind(), out var mutationData))
             {
-                foreach (var mutationKind in _kindsToMutate[node.Kind()])
+                foreach (var mutationKind in mutationData.KindsToMutate)
                 {
                     var replacementNode = SyntaxFactory.BinaryExpression(mutationKind, node.Left, node.Right);
                     // make sure the trivia stays in place for displaying
                     replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithTriviaFrom(node.OperatorToken));
-                    var mutatorType = GetMutatorType(mutationKind);
                     yield return new Mutation()
                     {
                         OriginalNode = node,
                         ReplacementNode = replacementNode,
-                        DisplayName = $"{mutatorType} mutation",
-                        Type = mutatorType
+                        DisplayName = $"{mutationData.Mutator} mutation",
+                        Type = mutationData.Mutator
                     };
                 }
             }
@@ -66,27 +74,6 @@ namespace Stryker.Core.Mutators
                 yield return GetLogicalMutation(node);
                 yield return GetIntegralMutation(node);
             }
-        }
-
-        private static Mutator GetMutatorType(SyntaxKind kind)
-        {
-            var kindString = kind.ToString();
-            if (kindString.StartsWith("Logical"))
-            {
-                return Mutator.Logical;
-            }
-
-            if (kindString.Contains("Equals")
-                || kindString.Contains("Greater")
-                || kindString.Contains("Less"))
-            {
-                return Mutator.Equality;
-            }
-            if (kindString.StartsWith("Bitwise") || kindString.Contains("Shift"))
-            {
-                return Mutator.Bitwise;
-            }
-            return Mutator.Arithmetic;
         }
 
         private static Mutation GetLogicalMutation(BinaryExpressionSyntax node)

@@ -11,22 +11,32 @@ namespace Stryker.Core.TestRunners.VsTest
     public interface IStrykerTestHostLauncher : ITestHostLauncher
     {
          bool IsProcessCreated { get; }
+         int ErrorCode { get; }
     }
 
     public class StrykerVsTestHostLauncher : IStrykerTestHostLauncher
     {
         private readonly string _id;
+        private readonly bool _devMode;
         private Process _currentProcess;
+        public int ErrorCode { get; private set; }
 
         private static ILogger Logger { get; }
 
         static StrykerVsTestHostLauncher() => Logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerVsTestHostLauncher>();
 
-        public StrykerVsTestHostLauncher(string id) => _id = id;
+        public StrykerVsTestHostLauncher(string id, bool devMode)
+        {
+            _id = id;
+            _devMode = devMode;
+        }
 
         public bool IsDebug => false;
 
         public bool IsProcessCreated => _currentProcess != null;
+
+        public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo) =>
+            LaunchTestHost(defaultTestHostStartInfo, CancellationToken.None);
 
         public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo, CancellationToken cancellationToken)
         {
@@ -50,9 +60,11 @@ namespace Stryker.Core.TestRunners.VsTest
             };
             _currentProcess = new Process { StartInfo = processInfo, EnableRaisingEvents = true };
 
-            _currentProcess.OutputDataReceived += Process_OutputDataReceived;
-            _currentProcess.ErrorDataReceived += Process_ErrorDataReceived;
-
+            if (_devMode)
+            {
+                _currentProcess.OutputDataReceived += Process_OutputDataReceived;
+                _currentProcess.ErrorDataReceived += Process_ErrorDataReceived;
+            }
             if (!_currentProcess.Start())
             {
                 Logger.LogError($"Runner {_id}: Failed to start process {processInfo.Arguments}.");
@@ -60,8 +72,16 @@ namespace Stryker.Core.TestRunners.VsTest
 
             _currentProcess.BeginOutputReadLine();
             _currentProcess.BeginErrorReadLine();
+            _currentProcess.Exited += ProcessExited;
 
             return _currentProcess.Id;
+        }
+
+        private void ProcessExited(object sender, System.EventArgs e)
+        {
+            var process = (Process) sender;
+            process.WaitForExit();
+            ErrorCode = process.ExitCode;
         }
 
         private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)
@@ -79,8 +99,5 @@ namespace Stryker.Core.TestRunners.VsTest
                 Logger.LogTrace($"{_id}: {e.Data} (VsTest output)");
             }
         }
-
-        public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo) =>
-            LaunchTestHost(defaultTestHostStartInfo, CancellationToken.None);
     }
 }

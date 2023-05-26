@@ -6,28 +6,26 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
-using Buildalyzer;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Moq;
 using Serilog.Events;
 using Shouldly;
-using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.TestRunners.VsTest;
 using Stryker.Core.ToolHelpers;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
 {
-    public class VsTextContextInformationTests
+    public class VsTextContextInformationTests: TestBase
     {
         private readonly string _testAssemblyPath;
-        private readonly ProjectInfo _targetProject;
+        private readonly TestProjectsInfo _testProjectsInfo;
         private readonly MockFileSystem _fileSystem;
         private readonly Uri _executorUri;
         private ConsoleParameters _consoleParameters;
@@ -70,36 +68,37 @@ namespace Stryker.Core.UnitTest.TestRunners
                 { _testAssemblyPath!, new MockFileData("Bytecode") },
                 { Path.Combine(filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"), new MockFileData("Bytecode") },
             });
-            content.Add(new CsharpFileLeaf() );
-            _targetProject = new ProjectInfo(_fileSystem)
+            content.Add(new CsharpFileLeaf());
+            _testProjectsInfo = new TestProjectsInfo(_fileSystem)
             {
-                TestProjectAnalyzerResults = new List<IAnalyzerResult> {
+                TestProjects = new List<TestProject> {  new TestProject (_fileSystem,
                     TestHelper.SetupProjectAnalyzerResult(
                     properties: new Dictionary<string, string>() {
                         { "TargetDir", Path.GetDirectoryName(_testAssemblyPath) },
                         { "TargetFileName", Path.GetFileName(_testAssemblyPath) }
                     },
-                    targetFramework: "netcoreapp2.1").Object
-                },
-                ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                    properties: new Dictionary<string, string>() {
-                        { "TargetDir", Path.Combine(filesystemRoot, "app", "bin", "Debug") },
-                        { "TargetFileName", "AppToTest.dll" },
-                        { "Language", "C#" }
-                    }).Object,
-                ProjectContents = content
+                    targetFramework: "netcoreapp2.1").Object)
+                }
+
             };
 
-            TestCases = new List<TestCase> { firstTest, secondTest };
-       }
+            TestCases = new List<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> { firstTest, secondTest };
+        }
 
-        private static void DiscoverTests(ITestDiscoveryEventsHandler discoveryEventsHandler, ICollection<TestCase> tests, bool aborted) =>
+        private static void DiscoverTests(ITestDiscoveryEventsHandler discoveryEventsHandler, ICollection<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> tests, bool aborted)
+        {
+            if (tests is null)
+            {
+                throw new ArgumentNullException(nameof(tests));
+            }
+
             Task.Run(() => discoveryEventsHandler.HandleDiscoveredTests(tests)).
                 ContinueWith((_, u) => discoveryEventsHandler.HandleDiscoveryComplete((int)u, null, aborted), tests.Count);
+        }
 
-        public List<TestCase> TestCases { get; set; }
+        public List<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> TestCases { get; set; }
 
-        private TestCase BuildCase(string name) => new(name, _executorUri, _testAssemblyPath) { Id = new Guid() };
+        private Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase BuildCase(string name) => new(name, _executorUri, _testAssemblyPath) { Id = new Guid() };
 
         private VsTestContextInformation BuildVsTextContext(StrykerOptions options, out Mock<IVsTestConsoleWrapper> mockedVsTestConsole)
         {
@@ -108,16 +107,15 @@ namespace Stryker.Core.UnitTest.TestRunners
             mockedVsTestConsole.Setup(x => x.InitializeExtensions(It.IsAny<IEnumerable<string>>()));
             mockedVsTestConsole.Setup(x => x.EndSession());
             mockedVsTestConsole.Setup(x =>
-                x.DiscoverTests(It.Is<IEnumerable<string>>(d => d.Any(e => e == _testAssemblyPath)),
+                x.DiscoverTestsAsync(It.Is<IEnumerable<string>>(d => d.Any(e => e == _testAssemblyPath)),
                     It.IsAny<string>(),
                     It.IsAny<ITestDiscoveryEventsHandler>())).Callback(
                 (IEnumerable<string> _, string _, ITestDiscoveryEventsHandler discoveryEventsHandler) =>
-                    DiscoverTests(discoveryEventsHandler, TestCases, false));
+                    DiscoverTests(discoveryEventsHandler, TestCases, false)).Returns(Task.CompletedTask);
 
             var vsTestConsoleWrapper = mockedVsTestConsole.Object;
             return new VsTestContextInformation(
                 options,
-                _targetProject,
                 new Mock<IVsTestHelper>().Object,
                 _fileSystem,
                 parameters =>
@@ -135,7 +133,10 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             using var runner = BuildVsTextContext(new StrykerOptions(), out _);
             // make sure we have discovered first and second tests
-            runner.Initialize();
+            foreach (var testAssembly in _testProjectsInfo.GetTestAssemblies())
+            {
+                runner.AddTestSource(testAssembly);
+            }
             runner.VsTests.Count.ShouldBe(2);
         }
 
@@ -144,7 +145,10 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             using var runner = BuildVsTextContext(new StrykerOptions(), out var mock);
             // make sure we have discovered first and second tests
-            runner.Initialize();
+            foreach (var testAssembly in _testProjectsInfo.GetTestAssemblies())
+            {
+                runner.AddTestSource(testAssembly);
+            }
             runner.Dispose();
             mock.Verify(m => m.EndSession(), Times.Once);
         }
@@ -153,7 +157,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         public void InitializeAndSetParameters()
         {
             using var runner = BuildVsTextContext(new StrykerOptions(), out _);
-            runner.Initialize();
+            runner.AddTestSource(_testAssemblyPath);
             _consoleParameters.TraceLevel.ShouldBe(TraceLevel.Off);
             _consoleParameters.LogFilePath.ShouldBeNull();
         }
@@ -161,14 +165,14 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void InitializeAndSetParametersAccordingToOptions()
         {
-            using var runner = BuildVsTextContext(new StrykerOptions{LogOptions = new LogOptions{LogToFile = true}}, out _);
-            runner.Initialize();
+            using var runner = BuildVsTextContext(new StrykerOptions { LogOptions = new LogOptions { LogToFile = true } }, out _);
+            runner.AddTestSource(_testAssemblyPath);
             // logging should be at defined level
             _consoleParameters.TraceLevel.ShouldBe(TraceLevel.Verbose);
-            
+
             // we should have the testdiscoverer log file name
             _consoleParameters.LogFilePath.ShouldBe($"\"logs{_fileSystem.Path.DirectorySeparatorChar}TestDiscoverer_VsTest-log.txt\"");
-            
+
             // the log folders should exist
             _fileSystem.AllDirectories.Last().ShouldMatch(".*logs$");
         }
@@ -183,9 +187,9 @@ namespace Stryker.Core.UnitTest.TestRunners
         [InlineData((LogEventLevel)(-1), TraceLevel.Off)]
         public void InitializeAndSetProperLogLevel(LogEventLevel setLevel, TraceLevel expectedLevel)
         {
-            using var runner = BuildVsTextContext(new StrykerOptions{LogOptions = new LogOptions{LogLevel = setLevel}}, out _);
-            runner.Initialize();
+            using var runner = BuildVsTextContext(new StrykerOptions { LogOptions = new LogOptions { LogLevel = setLevel } }, out _);
             // logging should be a defined level
+            runner.AddTestSource(_testAssemblyPath);
             _consoleParameters.TraceLevel.ShouldBe(expectedLevel);
         }
     }

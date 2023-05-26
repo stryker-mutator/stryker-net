@@ -1,39 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.IO.Abstractions;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using Microsoft.FSharp.Collections;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
-using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
-using static FSharp.Compiler.SyntaxTree;
 
 namespace Stryker.Core.MutationTest
 {
-    public interface IMutationTestProcessProvider
-    {
-        IMutationTestProcess Provide(MutationTestInput mutationTestInput, IReporter reporter, IMutationTestExecutor mutationTestExecutor, StrykerOptions options);
-    }
-
-    public class MutationTestProcessProvider : IMutationTestProcessProvider
-    {
-        public IMutationTestProcess Provide(MutationTestInput mutationTestInput,
-            IReporter reporter,
-            IMutationTestExecutor mutationTestExecutor,
-            StrykerOptions options) =>
-            new MutationTestProcess(mutationTestInput, reporter, mutationTestExecutor, options: options);
-    }
-
     public interface IMutationTestProcess
     {
         MutationTestInput Input { get; }
@@ -46,70 +27,68 @@ namespace Stryker.Core.MutationTest
 
     public class MutationTestProcess : IMutationTestProcess
     {
-        public MutationTestInput Input { get; }
+        private static readonly ILogger Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
         private readonly IProjectComponent _projectContents;
-        private readonly ILogger _logger;
         private readonly IMutationTestExecutor _mutationTestExecutor;
-        private readonly IFileSystem _fileSystem;
-        private readonly BaseMutantOrchestrator _orchestrator;
         private readonly IReporter _reporter;
         private readonly ICoverageAnalyser _coverageAnalyser;
         private readonly StrykerOptions _options;
-        private readonly Language _language;
-        private IMutationProcess _mutationProcess;
+        private readonly IMutationProcess _mutationProcess;
+        private static readonly Dictionary<Language, Func<StrykerOptions, IMutationProcess>> LanguageMap = new();
 
-        public MutationTestProcess(MutationTestInput mutationTestInput,
-            IReporter reporter,
-            IMutationTestExecutor mutationTestExecutor,
-            BaseMutantOrchestrator<SyntaxNode> cSharpOrchestrator = null,
-            BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>> fSharpOrchestrator = null,
-            IFileSystem fileSystem = null,
-            IMutantFilter mutantFilter = null,
-            ICoverageAnalyser coverageAnalyser = null,
-            StrykerOptions options = null)
+        static MutationTestProcess()
         {
-            Input = mutationTestInput;
-            _projectContents = mutationTestInput.ProjectInfo.ProjectContents;
-            _reporter = reporter;
-            _options = options;
-            _mutationTestExecutor = mutationTestExecutor;
-            _fileSystem = fileSystem ?? new FileSystem();
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-            _coverageAnalyser = coverageAnalyser ?? new CoverageAnalyser(_options);
-            _language = Input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetLanguage();
-            _orchestrator = cSharpOrchestrator ?? fSharpOrchestrator ?? ChooseOrchestrator(_options);
-
-            SetupMutationTestProcess(mutantFilter);
+            DeclareMutationProcessForLanguage<CsharpMutationProcess>(Language.Csharp);
+            DeclareMutationProcessForLanguage<FsharpMutationProcess>(Language.Fsharp);
         }
 
-        private BaseMutantOrchestrator ChooseOrchestrator(StrykerOptions options)
+        public static void DeclareMutationProcessForLanguage<T>(Language language) where T : IMutationProcess
         {
-            if (_language == Language.Fsharp)
+            var constructor = typeof(T).GetConstructor(new[] { typeof(StrykerOptions) });
+            if (constructor == null)
             {
-                return new FsharpMutantOrchestrator(options: options);
+                throw new NotSupportedException(
+                    $"Failed to find a constructor with the appropriate signature for type {typeof(T)}");
             }
 
-            return new CsharpMutantOrchestrator(options: options);
+            LanguageMap[language] = y => (IMutationProcess)constructor.Invoke(new object[] { y });
         }
 
-        private void SetupMutationTestProcess(IMutantFilter mutantFilter) =>
-            _mutationProcess = _language switch
+        public MutationTestProcess(MutationTestInput input,
+            StrykerOptions options,
+            IReporter reporter,
+            IMutationTestExecutor executor,
+            IMutationProcess mutationProcess = null,
+            ICoverageAnalyser coverageAnalyzer = null)
+        {
+            Input = input;
+            _reporter = reporter;
+            _options = options;
+            _mutationTestExecutor = executor;
+            _mutationProcess = mutationProcess ?? BuildMutationProcess();
+            _coverageAnalyser = coverageAnalyzer ?? new CoverageAnalyser(_options);
+            _projectContents = input.SourceProjectInfo.ProjectContents;
+        }
+
+        public MutationTestInput Input { get; }
+
+        private IMutationProcess BuildMutationProcess()
+        {
+            if (!LanguageMap.ContainsKey(Input.SourceProjectInfo.AnalyzerResult.GetLanguage()))
             {
-                Language.Csharp => new CsharpMutationProcess(Input, _fileSystem, _options, mutantFilter,
-                    (BaseMutantOrchestrator<SyntaxNode>)_orchestrator),
-                Language.Fsharp => new FsharpMutationProcess(Input,
-                    (BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>>)_orchestrator, _fileSystem, _options),
-                _ => throw new GeneralStrykerException(
-                    "no valid language detected || no valid csproj or fsproj was given")
-            };
+                throw new GeneralStrykerException(
+                    "no valid language detected || no valid csproj or fsproj was given.");
+            }
+            return LanguageMap[Input.SourceProjectInfo.AnalyzerResult.GetLanguage()](_options);
+        }
 
         public void Mutate()
         {
-            Input.ProjectInfo.BackupOriginalAssembly();
-            _mutationProcess.Mutate();
+            Input.TestProjectsInfo.BackupOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
+            _mutationProcess.Mutate(Input);
         }
 
-        public void FilterMutants() => _mutationProcess.FilterMutants();
+        public void FilterMutants() => _mutationProcess.FilterMutants(Input);
 
         public StrykerRunResult Test(IEnumerable<Mutant> mutantsToTest)
         {
@@ -119,12 +98,11 @@ namespace Stryker.Core.MutationTest
             }
 
             TestMutants(mutantsToTest);
-            _mutationTestExecutor.TestRunner.Dispose();
 
             return new StrykerRunResult(_options, _projectContents.GetMutationScore());
         }
 
-        public void Restore() => Input.ProjectInfo.RestoreOriginalAssembly();
+        public void Restore() => Input.TestProjectsInfo.RestoreOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
 
         private void TestMutants(IEnumerable<Mutant> mutantsToTest)
         {
@@ -135,8 +113,8 @@ namespace Stryker.Core.MutationTest
             Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
             {
                 var reportedMutants = new HashSet<Mutant>();
-                
-                _mutationTestExecutor.Test(mutants,
+
+                _mutationTestExecutor.Test(Input.SourceProjectInfo, mutants,
                     Input.InitialTestRun.TimeoutValueCalculator,
                     (testedMutants, tests, ranTests, outTests) => TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants));
 
@@ -158,9 +136,9 @@ namespace Stryker.Core.MutationTest
             }
             foreach (var mutant in testedMutants)
             {
-                mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest);
+                mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest, false);
 
-                if (mutant.ResultStatus == MutantStatus.NotRun)
+                if (mutant.ResultStatus == MutantStatus.Pending)
                 {
                     continueTestRun = true; // Not all mutants in this group were tested so we continue
                 }
@@ -175,9 +153,9 @@ namespace Stryker.Core.MutationTest
         {
             foreach (var mutant in mutants)
             {
-                if (mutant.ResultStatus == MutantStatus.NotRun)
+                if (mutant.ResultStatus == MutantStatus.Pending)
                 {
-                    _logger.LogWarning($"Mutation {mutant.Id} was not fully tested.");
+                    Logger.LogWarning($"Mutation {mutant.Id} was not fully tested.");
                 }
 
                 OnMutantTested(mutant, reportedMutants);
@@ -186,7 +164,7 @@ namespace Stryker.Core.MutationTest
 
         private void OnMutantTested(Mutant mutant, ISet<Mutant> reportedMutants)
         {
-            if (mutant.ResultStatus == MutantStatus.NotRun || reportedMutants.Contains(mutant))
+            if (mutant.ResultStatus == MutantStatus.Pending || reportedMutants.Contains(mutant))
             {
                 // skip duplicates or useless notifications
                 return;
@@ -201,7 +179,7 @@ namespace Stryker.Core.MutationTest
             {
                 return false;
             }
-            if (mutantsToTest.Any(x => x.ResultStatus != MutantStatus.NotRun))
+            if (mutantsToTest.Any(x => x.ResultStatus != MutantStatus.Pending))
             {
                 throw new GeneralStrykerException("Only mutants to run should be passed to the mutation test process. If you see this message please report an issue.");
             }
@@ -222,11 +200,11 @@ namespace Stryker.Core.MutationTest
             blocks.AddRange(mutantsToGroup.Where(m => m.AssessingTests.IsEveryTest).Select(m => new List<Mutant> { m }));
             mutantsToGroup.RemoveAll(m => m.AssessingTests.IsEveryTest);
 
-            mutantsToGroup = mutantsToGroup.Where(m => m.ResultStatus == MutantStatus.NotRun).ToList();
+            mutantsToGroup = mutantsToGroup.Where(m => m.ResultStatus == MutantStatus.Pending).ToList();
 
-            var testsCount = Input.InitialTestRun.Result.RanTests.Count;
+            var testsCount = Input.InitialTestRun.Result.ExecutedTests.Count;
             mutantsToGroup = mutantsToGroup.OrderBy(m => m.AssessingTests.Count).ToList();
-            while (mutantsToGroup.Count>0)
+            while (mutantsToGroup.Count > 0)
             {
                 // we pick the first mutant
                 var usedTests = mutantsToGroup[0].AssessingTests;
@@ -240,6 +218,7 @@ namespace Stryker.Core.MutationTest
                     {
                         break;
                     }
+
                     if (nextSet.ContainsAny(usedTests))
                     {
                         continue;
@@ -255,14 +234,14 @@ namespace Stryker.Core.MutationTest
 
                 blocks.Add(nextBlock);
             }
-            
-            _logger.LogDebug(
+
+            Logger.LogDebug(
                 $"Mutations will be tested in {blocks.Count} test runs" +
                 (mutantsNotRun.Count > blocks.Count ? $", instead of {mutantsNotRun.Count}." : "."));
 
             return blocks;
         }
 
-        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(_mutationTestExecutor.TestRunner, _projectContents.Mutants, Input.InitialTestRun.Result.FailingTests);
+        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(Input.SourceProjectInfo, _mutationTestExecutor.TestRunner, _projectContents.Mutants, Input.InitialTestRun.Result.FailingTests);
     }
 }

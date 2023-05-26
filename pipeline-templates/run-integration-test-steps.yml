@@ -4,12 +4,12 @@ parameters:
   strykerCommands: ''
 
 steps:
-- script: $(Agent.BuildDirectory)/tools/dotnet-stryker ${{ parameters.strykerCommands }} --dev-mode -L -V trace
+- script: $(Agent.BuildDirectory)/tools/dotnet-stryker ${{ parameters.strykerCommands }} --dev-mode -L
   workingDirectory: ${{ parameters.workingDirectory }}
   displayName: 'Run integration test ${{ parameters.testName }}'
   failOnStderr: false
 
-- task: PublishPipelineArtifact@0
+- task: PublishPipelineArtifact@1
   inputs:
     artifactName: ${{ parameters.testName }}
     targetPath: '${{ parameters.workingDirectory }}/StrykerOutput'

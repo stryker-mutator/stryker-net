@@ -42,8 +42,8 @@ namespace Stryker.Core.UnitTest.Options
                 OptimizationMode = OptimizationModes.DisableBail,
                 OutputPath = "output",
                 ProjectName = "name",
-                ProjectUnderTestName = "project",
-                ProjectVersion = "version"
+                SourceProjectName = "project",
+                ProjectVersion = "version",
             };
 
             var result = target.Copy("C://Dev//Test", "C://Dev", "test", new[] { "project1" });
@@ -51,6 +51,27 @@ namespace Stryker.Core.UnitTest.Options
             result.AdditionalTimeout.ShouldBe(1);
             result.ProjectPath.ShouldBe("C://Dev//Test");
             result.WorkingDirectory.ShouldBe("C://Dev");
+            result.ProjectName.ShouldBe("name");
+            result.ProjectVersion.ShouldBe("version");
+        }
+
+        [Fact]
+        public void ShouldFlowProjectNameAndProjectVersionToParentOptions()
+        {
+            var target = new StrykerOptions
+            {
+                ProjectName = "",
+                ProjectVersion = "",
+            };
+
+            var copy = target.Copy("C://Dev//Test", "C://Dev", "test", new[] { "project1" });
+            copy.ProjectName = "project-name";
+            copy.ProjectVersion = "project-version";
+
+            // We need this because Stryker.Core.Initialisation.InitialisationProcess.InitializeDashboardProjectInformation operates
+            // on a copy of the StrykerOptions that were passed to the Stryker.Core.Clients.DashboardClient constructor.
+            target.ProjectName.ShouldBe("project-name");
+            target.ProjectVersion.ShouldBe("project-version");
         }
     }
 }

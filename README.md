@@ -10,7 +10,7 @@
 
 ## Introduction
 
-Stryker offers mutation testing for your .NET Core and .NET Framework projects. It allows you to test your tests by temporarily inserting bugs in your source code
+Stryker offers mutation testing for your .NET Core and .NET Framework projects. It allows you to test your tests by temporarily inserting bugs in your source code.
 
 For an introduction to mutation testing and Stryker's features, see [stryker-mutator.io](https://stryker-mutator.io/). Looking for mutation testing in [JavaScript & Typescript](https://stryker-mutator.github.io/stryker) or [Scala](https://stryker-mutator.github.io/stryker4s)?
 
@@ -19,6 +19,7 @@ For an introduction to mutation testing and Stryker's features, see [stryker-mut
 Minimum target version:
  - dotnet core 1.1
  - dotnet framework 4.5
+ - dotnet standard 1.3
 
  Tested against:
   - dotnet core 3.1
@@ -32,19 +33,19 @@ cd /my/unit/test/project/folder
 dotnet stryker
 ```
 
-For more information read our [getting started](https://stryker-mutator.io/docs/stryker-net/getting-started)
+For more information read our [getting started](https://stryker-mutator.io/docs/stryker-net/getting-started).
 
 ## Documentation
 
-For the full documentation on how to use Stryker.NET, see our [configuration docs](https://stryker-mutator.io/docs/stryker-net/Configuration)
+For the full documentation on how to use Stryker.NET, see our [configuration docs](https://stryker-mutator.io/docs/stryker-net/Configuration).
 
 ## Migrating
 
 Coming from Stryker.NET pre V2? Take a look at our [migration guide](https://stryker-mutator.io/docs/stryker-net/migration-guide).
 
-## Supported Mutators
+## Supported Mutations
 
-For the full list of all available mutations, see the [mutator docs](https://stryker-mutator.io/docs/stryker-net/Mutators).
+For the full list of all available mutations, see the [mutations docs](https://stryker-mutator.io/docs/stryker-net/mutations).
 
 ## Supported Reporters
 
@@ -54,4 +55,4 @@ For the full list of all available reporters, see the [reporter docs](https://st
 
 Want to help develop Stryker.NET? Check out our [contribution guide](/CONTRIBUTING.md).
 
-Issues for the HTML report should be issued at https://github.com/stryker-mutator/mutation-testing-elements
+Issues for the HTML report should be issued at [mutation-testing-elements](https://github.com/stryker-mutator/mutation-testing-elements).

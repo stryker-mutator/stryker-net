@@ -2,7 +2,7 @@
 {
     public enum MutantStatus
     {
-        NotRun,
+        Pending,
         Killed,
         Survived,
         Timeout,

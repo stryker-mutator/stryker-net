@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.IO.Abstractions;
+using Spectre.Console;
+using DotNet.Globbing.Token;
 using Stryker.Core;
 using Stryker.Core.Options;
 
@@ -20,9 +22,8 @@ namespace Stryker.CLI.Logging
         public void SetupLogOptions(IStrykerInputs inputs, IFileSystem fileSystem = null)
         {
             fileSystem ??= new FileSystem();
-            var basePath = inputs.BasePathInput.SuppliedInput;
 
-            var outputPath = CreateOutputPath(basePath, fileSystem);
+            var outputPath = CreateOutputPath(inputs, fileSystem);
             inputs.OutputPathInput.SuppliedInput = outputPath;
 
             var logLevel = inputs.VerbosityInput.Validate();
@@ -31,16 +32,20 @@ namespace Stryker.CLI.Logging
             ApplicationLogging.ConfigureLogger(logLevel, logToFile, outputPath);
         }
 
-        private string CreateOutputPath(string basePath, IFileSystem fileSystem)
+        private string CreateOutputPath(IStrykerInputs inputs, IFileSystem fileSystem)
         {
-            var strykerDir = "StrykerOutput";
+            var outputPath = inputs.OutputPathInput.SuppliedInput ?? Path.Combine("StrykerOutput", DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
 
-            var outputPath = Path.Combine(basePath, strykerDir, DateTime.Now.ToString("yyyy-MM-dd.HH-mm-ss"));
+            if (!Path.IsPathRooted(outputPath))
+            {
+                outputPath = Path.Combine(inputs.BasePathInput.SuppliedInput, outputPath);
+            }
+
             // outputpath should always be created
             fileSystem.Directory.CreateDirectory(FilePathUtils.NormalizePathSeparators(outputPath));
 
             // add gitignore if it didn't exist yet
-            var gitignorePath = FilePathUtils.NormalizePathSeparators(Path.Combine(basePath, strykerDir, ".gitignore"));
+            var gitignorePath = FilePathUtils.NormalizePathSeparators(Path.Combine(outputPath, ".gitignore"));
             if (!fileSystem.File.Exists(gitignorePath))
             {
                 try
@@ -49,10 +54,11 @@ namespace Stryker.CLI.Logging
                 }
                 catch (IOException e)
                 {
-                    Console.WriteLine($"Could't create gitignore file because of error {e.Message}. \n" +
+                    AnsiConsole.WriteLine($"Could't create gitignore file because of error {e.Message}. \n" +
                         "If you use any diff compare features this may mean that stryker logs show up as changes.");
                 }
             }
+
             return outputPath;
         }
     }

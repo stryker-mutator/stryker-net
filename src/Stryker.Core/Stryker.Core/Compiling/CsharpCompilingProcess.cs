@@ -10,33 +10,39 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
+using Stryker.Core.Options;
 
 namespace Stryker.Core.Compiling
 {
     public interface ICompilingProcess
     {
-        CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream, bool devMode);
+        CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream);
     }
 
     /// <summary>
     /// This process is in control of compiling the assembly and rolling back mutations that cannot compile
     /// Compiles the given input onto the memory stream
+    /// </summary>
     public class CsharpCompilingProcess : ICompilingProcess
     {
+        private const int MaxAttempt = 50;
         private readonly MutationTestInput _input;
+        private readonly StrykerOptions _options;
         private readonly IRollbackProcess _rollbackProcess;
         private readonly ILogger _logger;
 
         public CsharpCompilingProcess(MutationTestInput input,
-            IRollbackProcess rollbackProcess)
+            IRollbackProcess rollbackProcess = null,
+            StrykerOptions options = null)
         {
             _input = input;
-            _rollbackProcess = rollbackProcess;
+            _options = options ?? new StrykerOptions();
+            _rollbackProcess = rollbackProcess ?? new RollbackProcess();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpCompilingProcess>();
         }
 
         private string AssemblyName =>
-            _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetAssemblyName();
+            _input.SourceProjectInfo.AnalyzerResult.GetAssemblyName();
 
         /// <summary>
         /// Compiles the given input onto the memory stream
@@ -44,27 +50,24 @@ namespace Stryker.Core.Compiling
         /// <param name="syntaxTrees">The syntax trees to compile</param>
         /// <param name="ilStream">The memory stream to store the compilation result onto</param>
         /// <param name="symbolStream">The memory stream to store the debug symbol</param>
-        /// <param name="devMode">set to true to activate devmode (provides more information in case of internal failure)</param>
         /// </summary>
-        public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream, bool devMode)
+        public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream)
         {
-            var analyzerResult = _input.ProjectInfo.ProjectUnderTestAnalyzerResult;
+            var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
             var trees = syntaxTrees.ToList();
             var compilationOptions = analyzerResult.GetCompilationOptions();
 
             var compilation = CSharpCompilation.Create(AssemblyName,
                 syntaxTrees: trees,
                 options: compilationOptions,
-                references: _input.AssemblyReferences);
-            RollbackProcessResult rollbackProcessResult;
+                references: _input.SourceProjectInfo.AnalyzerResult.References.Select(r => MetadataReference.CreateFromFile(r)));
 
             // C# source generators must be executed before compilation
             compilation = RunSourceGenerators(analyzerResult, compilation);
 
             // first try compiling
-            EmitResult emitResult;
             var retryCount = 1;
-            (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, compilation, null, false, devMode, retryCount);
+            (var rollbackProcessResult, var emitResult, retryCount) = TryCompilation(ilStream, symbolStream, compilation, null, false, retryCount);
 
             // If compiling failed and the error has no location, log and throw exception.
             if (!emitResult.Success && emitResult.Diagnostics.Any(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error))
@@ -74,11 +77,10 @@ namespace Stryker.Core.Compiling
                 throw new CompilationException("General Build Failure detected.");
             }
 
-            const int maxAttempt = 50;
-            for (var count = 1; !emitResult.Success && count < maxAttempt; count++)
+            for (var count = 1; !emitResult.Success && count < MaxAttempt; count++)
             {
                 // compilation did not succeed. let's compile a couple times more for good measure
-                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, rollbackProcessResult?.Compilation ?? compilation, emitResult, retryCount == maxAttempt - 1, devMode, retryCount);
+                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, rollbackProcessResult?.Compilation ?? compilation, emitResult, retryCount == MaxAttempt - 1, retryCount);
             }
 
             if (emitResult.Success)
@@ -98,15 +100,15 @@ namespace Stryker.Core.Compiling
             throw new CompilationException("Failed to restore build able state.");
         }
 
-        private CSharpCompilation RunSourceGenerators(IAnalyzerResult analyzerResult, CSharpCompilation compilation)
+        private CSharpCompilation RunSourceGenerators(IAnalyzerResult analyzerResult, Compilation compilation)
         {
             var generators = analyzerResult.GetSourceGenerators(_logger);
             _ = CSharpGeneratorDriver
-                .Create(generators)
+                .Create(generators, parseOptions: analyzerResult.GetParseOptions(_options))
                 .RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
 
-            var errors = diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None);
-            if (errors.Any())
+            var errors = diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None).ToList();
+            if (errors.Count > 0)
             {
                 foreach (var diagnostic in errors)
                 {
@@ -123,7 +125,6 @@ namespace Stryker.Core.Compiling
             CSharpCompilation compilation,
             EmitResult previousEmitResult,
             bool lastAttempt,
-            bool devMode,
             int retryCount)
         {
             RollbackProcessResult rollbackProcessResult = null;
@@ -131,7 +132,7 @@ namespace Stryker.Core.Compiling
             if (previousEmitResult != null)
             {
                 // remove broken mutations
-                rollbackProcessResult = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, lastAttempt, devMode);
+                rollbackProcessResult = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, lastAttempt, _options.DevMode);
                 compilation = rollbackProcessResult.Compilation;
             }
 
@@ -139,14 +140,14 @@ namespace Stryker.Core.Compiling
             ms.SetLength(0);
             symbolStream?.SetLength(0);
 
-            _logger.LogDebug($"Trying compilation for the {ReadableNumber(retryCount)} time.");
+            _logger.LogDebug("Trying compilation for the {retryCount} time.", ReadableNumber(retryCount));
 
             var emitOptions = symbolStream == null ? null : new EmitOptions(false, DebugInformationFormat.PortablePdb,
-                _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetSymbolFileName());
+                _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName());
             var emitResult = compilation.Emit(
                 ms,
                 symbolStream,
-                manifestResources: _input.ProjectInfo.ProjectUnderTestAnalyzerResult.GetResources(_logger),
+                manifestResources: _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger),
                 win32Resources: compilation.CreateDefaultWin32Resources(
                     true, // Important!
                     false,
@@ -156,7 +157,7 @@ namespace Stryker.Core.Compiling
 
             LogEmitResult(emitResult);
 
-            return (rollbackProcessResult, emitResult, ++retryCount);
+            return (rollbackProcessResult, emitResult, retryCount+1);
         }
 
         private void LogEmitResult(EmitResult result)
@@ -176,15 +177,12 @@ namespace Stryker.Core.Compiling
             }
         }
 
-        private static string ReadableNumber(int number)
+        private static string ReadableNumber(int number) => number switch
         {
-            return number switch
-            {
-                1 => "first",
-                2 => "second",
-                3 => "third",
-                _ => (number + "th")
-            };
-        }
+            1 => "first",
+            2 => "second",
+            3 => "third",
+            _ => number + "th"
+        };
     }
 }

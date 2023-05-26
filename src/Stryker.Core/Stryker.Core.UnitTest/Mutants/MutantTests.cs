@@ -1,3 +1,4 @@
+using System;
 using Moq;
 using Shouldly;
 using Stryker.Core.Mutants;
@@ -27,7 +28,7 @@ namespace Stryker.Core.UnitTest.Mutants
         [InlineData(MutantStatus.Ignored, false)]
         [InlineData(MutantStatus.Killed, true)]
         [InlineData(MutantStatus.NoCoverage, true)]
-        [InlineData(MutantStatus.NotRun, true)]
+        [InlineData(MutantStatus.Pending, true)]
         [InlineData(MutantStatus.Survived, true)]
         [InlineData(MutantStatus.Timeout, true)]
         public void ShouldCountForStats(MutantStatus status, bool doesCount)
@@ -41,20 +42,90 @@ namespace Stryker.Core.UnitTest.Mutants
         }
 
         [Fact]
-        public void ShouldSetTimedoutState()
+        public void ShouldSetKilledStateWhenAssesingTestFailed()
         {
-            var failedTestsMock = new Mock<ITestGuids>();
-            var resultTestsMock = new Mock<ITestGuids>();
-            var timedoutTestsMock = new Mock<ITestGuids>();
-            var coveringTestsMock = new Mock<ITestGuids>();
+            var failingTest = Guid.NewGuid();
+            var succeedingTest = Guid.NewGuid();
+            var mutant = new Mutant
+            {
+                AssessingTests = new TestGuidsList(new[] { failingTest })
+            };
 
-            failedTestsMock.Setup(x => x.IsEmpty).Returns(true);
-            timedoutTestsMock.Setup(x => x.IsEmpty).Returns(false);
-            coveringTestsMock.Setup(x => x.IsEveryTest).Returns(true);
+            mutant.AnalyzeTestRun(new TestGuidsList(new[] { failingTest }),
+                new TestGuidsList(new[] { succeedingTest }),
+                TestGuidsList.NoTest(),
+                false);
 
-            var mutant = new Mutant();
+            mutant.ResultStatus.ShouldBe(MutantStatus.Killed);
+            var killingTest = mutant.KillingTests.GetGuids().ShouldHaveSingleItem();
+            killingTest.ShouldBe(failingTest);
+        }
 
-            mutant.AnalyzeTestRun(failedTestsMock.Object, resultTestsMock.Object, timedoutTestsMock.Object);
+        [Fact]
+        public void ShouldSetSurvivedWhenNonAssesingTestFailed()
+        {
+            var failingTest = Guid.NewGuid();
+            var succeedingTest = Guid.NewGuid();
+            var mutant = new Mutant
+            {
+                AssessingTests = new TestGuidsList(new[] { succeedingTest })
+            };
+
+            mutant.AnalyzeTestRun(new TestGuidsList(new[] { failingTest }),
+                new TestGuidsList(new[] { succeedingTest }),
+                TestGuidsList.NoTest(),
+                false);
+
+            mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
+            mutant.KillingTests.GetGuids().ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void ShouldSetSurvivedWhenNoTestSucceeds()
+        {
+            var succeedingTest = Guid.NewGuid();
+            var mutant = new Mutant
+            {
+                AssessingTests = new TestGuidsList(new[] { succeedingTest })
+            };
+
+            mutant.AnalyzeTestRun(TestGuidsList.NoTest(),
+                new TestGuidsList(new[] { succeedingTest }),
+                TestGuidsList.NoTest(),
+                false);
+
+            mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
+            mutant.KillingTests.GetGuids().ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void ShouldSetTimedOutStateWhenSomeTestTimesOut()
+        {
+            var mutant = new Mutant
+            {
+                AssessingTests = TestGuidsList.EveryTest()
+            };
+
+            mutant.AnalyzeTestRun(TestGuidsList.NoTest(),
+                TestGuidsList.EveryTest(),
+                TestGuidsList.EveryTest(),
+                false);
+
+            mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);
+        }
+
+        [Fact]
+        public void ShouldSetTimedOutStateWhenSessionTimesOut()
+        {
+            var mutant = new Mutant
+            {
+                AssessingTests = TestGuidsList.EveryTest()
+            };
+
+            mutant.AnalyzeTestRun(TestGuidsList.NoTest(),
+                TestGuidsList.NoTest(),
+                TestGuidsList.NoTest(),
+                true);
 
             mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);
         }

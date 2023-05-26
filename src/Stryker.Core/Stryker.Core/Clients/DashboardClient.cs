@@ -11,7 +11,7 @@ namespace Stryker.Core.Clients
 {
     public interface IDashboardClient
     {
-        Task<string> PublishReport(JsonReport json, string version);
+        Task<string> PublishReport(JsonReport report, string version);
         Task<JsonReport> PullReport(string version);
     }
 
@@ -52,7 +52,7 @@ namespace Stryker.Core.Clients
             }
             catch(Exception exception)
             {
-                _logger.LogError(exception, "Failed to upload report to the dashboard");
+                _logger.LogError(exception, "Failed to upload report to the dashboard at {DashboardUrl}", url);
                 return null;
             }
         }
@@ -86,9 +86,9 @@ namespace Stryker.Core.Clients
             return url;
         }
 
-        private class DashboardResult
+        private sealed class DashboardResult
         {
-            public string Href { get; init; }
+            public string Href { get; init; } //NOSONAR: init accessor is used for json serialization
         }
     }
 }

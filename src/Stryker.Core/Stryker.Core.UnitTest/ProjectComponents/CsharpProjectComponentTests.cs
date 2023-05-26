@@ -170,7 +170,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
         [InlineData(MutantStatus.Killed, 1)]
         [InlineData(MutantStatus.Timeout, 1)]
         [InlineData(MutantStatus.Survived, 0)]
-        [InlineData(MutantStatus.NotRun, double.NaN)]
+        [InlineData(MutantStatus.Pending, double.NaN)]
         public void ReportComponent_ShouldCalculateMutationScore_OnlyKilledIsSuccessful(MutantStatus status, double expectedScore)
         {
             var target = new CsharpFolderComposite();

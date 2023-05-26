@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using Moq;
@@ -10,6 +9,7 @@ using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Json.SourceFiles;
@@ -56,7 +56,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var inputComponent = new Mock<IReadOnlyProjectComponent>().Object;
 
-            var jsonReport = JsonReport.Build(options, inputComponent);
+            var jsonReport = JsonReport.Build(options, inputComponent, It.IsAny<TestProjectsInfo>());
 
             gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns(branchName);
 
@@ -93,7 +93,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var inputComponent = new Mock<IReadOnlyProjectComponent>().Object;
 
-            var jsonReport = JsonReport.Build(options, inputComponent);
+            var jsonReport = JsonReport.Build(options, inputComponent, It.IsAny<TestProjectsInfo>());
 
             gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns(branchName);
 
@@ -131,7 +131,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var inputComponent = new Mock<IReadOnlyProjectComponent>().Object;
 
-            var jsonReport = JsonReport.Build(options, inputComponent);
+            var jsonReport = JsonReport.Build(options, inputComponent, It.IsAny<TestProjectsInfo>());
 
             gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns(branchName);
 
@@ -210,13 +210,13 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var jsonFileComponents = new Dictionary<string, SourceFile>
             {
-                ["foo.cs"] =  jsonReportFileComponent
+                ["foo.cs"] = jsonReportFileComponent
             };
 
             var baseline = new MockJsonReport(null, jsonFileComponents);
 
             baselineProvider.Setup(mock => mock.Load(It.IsAny<string>()))
-                .Returns(Task.FromResult((JsonReport) baseline));
+                .Returns(Task.FromResult((JsonReport)baseline));
 
             baselineMutantHelper.Setup(mock => mock.GetMutantSourceCode(It.IsAny<string>(), It.IsAny<JsonMutant>())).Returns(string.Empty);
 
@@ -251,7 +251,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             {
                 new Mutant
                 {
-                    ResultStatus = MutantStatus.NotRun
+                    ResultStatus = MutantStatus.Pending
                 }
             };
 
@@ -314,11 +314,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
             {
                 new Mutant
                 {
-                    ResultStatus = MutantStatus.NotRun
+                    ResultStatus = MutantStatus.Pending
                 },
                 new Mutant
                 {
-                    ResultStatus = MutantStatus.NotRun
+                    ResultStatus = MutantStatus.Pending
                 }
             };
 
@@ -355,9 +355,9 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var results = target.FilterMutants(mutants, file, options);
 
             // Assert
-            foreach(var result in results)
+            foreach (var result in results)
             {
-                result.ResultStatus.ShouldBe(MutantStatus.NotRun);
+                result.ResultStatus.ShouldBe(MutantStatus.Pending);
                 result.ResultStatusReason.ShouldBe("Result based on previous run was inconclusive");
             }
             results.Count().ShouldBe(2);

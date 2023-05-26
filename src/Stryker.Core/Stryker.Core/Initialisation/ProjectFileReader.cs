@@ -1,78 +1,122 @@
 using System.Collections.Generic;
 using System.Linq;
 using Buildalyzer;
-using Microsoft.Build.Exceptions;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
+using Stryker.Core.Testing;
 
 namespace Stryker.Core.Initialisation
 {
     public interface IProjectFileReader
     {
-        IAnalyzerResult AnalyzeProject(
-            string projectFilePath,
+        IAnalyzerResult AnalyzeProject(string projectFilePath,
             string solutionFilePath,
-            string targetFramework);
+            string targetFramework,
+            string msBuildPath = null);
+        IAnalyzerManager AnalyzeSolution(string solutionPath);
     }
 
+    /// <summary>
+    /// This class is an abstraction of Buildalyzers AnalyzerManager to make the rest of our code better testable. Mocking AnalyzerManager is really ugly and we want to avoid it.
+    /// </summary>
     public class ProjectFileReader : IProjectFileReader
     {
         private readonly INugetRestoreProcess _nugetRestoreProcess;
-        private IAnalyzerManager _manager;
+        private readonly IBuildalyzerProvider _analyzerProvider;
+        private IAnalyzerManager _analyzerManager;
         private readonly ILogger _logger;
 
         public ProjectFileReader(
             INugetRestoreProcess nugetRestoreProcess = null,
-            IAnalyzerManager manager = null)
+            IBuildalyzerProvider analyzerProvider = null)
         {
             _nugetRestoreProcess = nugetRestoreProcess ?? new NugetRestoreProcess();
-            _manager = manager ?? new AnalyzerManager();
+            _analyzerProvider = analyzerProvider ?? new BuildalyzerProvider();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
         }
 
-        public IAnalyzerResult AnalyzeProject(
-            string projectFilePath,
-            string solutionFilePath,
-            string targetFramework)
+        private IAnalyzerManager AnalyzerManager
         {
-            if (solutionFilePath != null)
+            get
             {
-                _logger.LogDebug("Analyzing solution file {0}", solutionFilePath);
-                try
-                {
-                    _manager = new AnalyzerManager(solutionFilePath);
-                }
-                catch (InvalidProjectFileException)
-                {
-                    throw new InputException($"Incorrect solution path \"{solutionFilePath}\". Solution file not found. Please review your solution path setting.");
-                }
+                _analyzerManager ??= _analyzerProvider.Provide();
+                return _analyzerManager;
             }
+        }
+
+        public IAnalyzerResult AnalyzeProject(string projectFilePath,
+            string solutionFilePath,
+            string targetFramework,
+            string msBuildPath = null)
+        {
 
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
-            var analyzerResults = _manager.GetProject(projectFilePath).Build();
-            var analyzerResult = SelectAnalyzerResult(analyzerResults, targetFramework);
-
+            var analyzerResult = GetProjectInfo(projectFilePath, targetFramework);
             LogAnalyzerResult(analyzerResult);
 
-            if (!analyzerResult.Succeeded)
+            if (analyzerResult.Succeeded)
             {
-                if (analyzerResult.TargetsFullFramework())
-                {
-                    // buildalyzer failed to find restored packages, retry after nuget restore
-                    _logger.LogDebug("Project analyzer result not successful, restoring packages");
-                    _nugetRestoreProcess.RestorePackages(solutionFilePath);
-                    analyzerResult = _manager.GetProject(projectFilePath).Build(targetFramework).First();
-                }
-                else
-                {
-                    // buildalyzer failed, but seems to work anyway.
-                    _logger.LogDebug("Project analyzer result not successful");
-                }
+                return analyzerResult;
+            }
+            if (analyzerResult.TargetsFullFramework())
+            {
+                // buildalyzer failed to find restored packages, retry after nuget restore
+                _logger.LogDebug("Project analyzer result not successful, restoring packages");
+                _nugetRestoreProcess.RestorePackages(solutionFilePath, msBuildPath);
+                analyzerResult = GetProjectInfo(projectFilePath, targetFramework);
+            }
+            else
+            {
+                // buildalyzer failed, but seems to work anyway.
+                _logger.LogDebug("Project analyzer result not successful");
             }
 
             return analyzerResult;
+        }
+
+        public IAnalyzerManager AnalyzeSolution(string solutionPath) => _analyzerProvider.Provide(solutionPath);
+
+        /// <summary>
+        /// Checks if project info is already present in solution projects. If not, analyze here.
+        /// </summary>
+        /// <returns></returns>
+        private IAnalyzerResult GetProjectInfo(string projectFilePath,
+            string targetFramework)
+        {
+            var analyzerResults = AnalyzerManager.GetProject(projectFilePath).Build();
+            return SelectAnalyzerResult(analyzerResults, targetFramework);
+        }
+
+        private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
+        {
+            var validResults = analyzerResults.Where(a => a.TargetFramework is not null);
+            if (!validResults.Any())
+            {
+                throw new InputException("No valid project analysis results could be found.");
+            }
+
+            if (targetFramework is null)
+            {
+                return validResults.First();
+            }
+
+            var resultForRequestedFramework = validResults.FirstOrDefault(a => a.TargetFramework == targetFramework);
+            if (resultForRequestedFramework is not null)
+            {
+                return resultForRequestedFramework;
+            }
+
+            var firstAnalyzerResult = validResults.First();
+            var availableFrameworks = validResults.Select(a => a.TargetFramework).Distinct();
+            var firstFramework = firstAnalyzerResult.TargetFramework;
+            _logger.LogWarning(
+                $"Could not find a project analysis for the chosen target framework {targetFramework}. \n" +
+                $"The available target frameworks are: {string.Join(',', availableFrameworks)}. \n" +
+                $"The first available framework will be selected, which is {firstFramework}.");
+
+            return firstAnalyzerResult;
         }
 
         private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
@@ -98,23 +142,6 @@ namespace Stryker.Core.Initialisation
             _logger.LogTrace("Succeeded: {0}", analyzerResult.Succeeded);
 
             _logger.LogTrace("**** Buildalyzer result ****");
-        }
-
-        private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
-        {
-            if (!analyzerResults.Any() || analyzerResults.All(a => a.TargetFramework is null))
-            {
-                throw new InputException("No valid project analysis results could be found.");
-            }
-
-            if (targetFramework is not null)
-            {
-                return analyzerResults.FirstOrDefault(a => a.TargetFramework == targetFramework) ??
-                    throw new InputException($"Could not find a project analysis for chosen target framework {targetFramework}. \n" +
-                    $"The available target frameworks are {analyzerResults.Select(a => a.TargetFramework).Distinct()}");
-            }
-
-            return analyzerResults.First(a => a.TargetFramework is not null);
         }
     }
 }

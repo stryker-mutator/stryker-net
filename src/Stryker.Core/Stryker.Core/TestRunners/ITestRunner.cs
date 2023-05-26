@@ -9,15 +9,17 @@ namespace Stryker.Core.TestRunners
         ITestGuids failedTests,
         ITestGuids ranTests,
         ITestGuids timedOutTests);
-
+    
     public interface ITestRunner : IDisposable
     {
-        TestSet DiscoverTests();
+        bool DiscoverTests(string assembly);
 
-        TestRunResult InitialTest();
+        TestSet GetTests(IProjectAndTests project);
 
-        IEnumerable<CoverageRunResult> CaptureCoverage();
+        TestRunResult InitialTest(IProjectAndTests project);
 
-        TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update);
+        IEnumerable<CoverageRunResult> CaptureCoverage(IProjectAndTests project);
+
+        TestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update);
     }
 }

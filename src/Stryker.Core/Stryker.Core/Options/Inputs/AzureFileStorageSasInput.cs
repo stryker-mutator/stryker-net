@@ -1,3 +1,5 @@
+using System.Linq;
+using System.Web;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Exceptions;
 
@@ -18,8 +20,16 @@ namespace Stryker.Core.Options.Inputs
                     throw new InputException("The azure file storage shared access signature is required when azure file storage is used for dashboard compare.");
                 }
 
-                // Normalize the SAS
-                return SuppliedInput.Replace("?sv=", "");
+                var query = HttpUtility.ParseQueryString(SuppliedInput);
+
+                var hasImportantKey = query.AllKeys.Where(x => x.Equals("sv", System.StringComparison.InvariantCultureIgnoreCase) || x.Equals("sig", System.StringComparison.InvariantCultureIgnoreCase));
+
+                if (hasImportantKey.Count() < 2)
+                {
+                    throw new InputException("The azure file storage shared access signature is not in the correct format");
+                }
+
+                return SuppliedInput;
             }
             return Default;
         }

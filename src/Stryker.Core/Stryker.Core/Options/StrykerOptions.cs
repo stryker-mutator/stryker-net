@@ -27,6 +27,12 @@ namespace Stryker.Core.Options
         public string ProjectPath { get; init; }
 
         /// <summary>
+        /// When true, stryker is mutating all projects in a solution
+        /// </summary>
+        /// <returns></returns>
+        public bool IsSolutionContext => SolutionPath != null && FilePathUtils.NormalizePathSeparators(WorkingDirectory) == FilePathUtils.NormalizePathSeparators(Path.GetDirectoryName(SolutionPath));
+
+        /// <summary>
         /// The path of the root of the scope of stryker.
         /// In the context of a solution run this will be the root of the solution.
         /// In the context of a project run this will be the root of the project under test
@@ -38,7 +44,7 @@ namespace Stryker.Core.Options
         /// The path all output is written to. For example reports and logging files.
         /// </summary>
         public string OutputPath { get; init; }
-        public string ReportPath =>  Path.Combine(OutputPath ?? ".", "reports");
+        public string ReportPath => Path.Combine(OutputPath ?? ".", "reports");
         /// <summary>
         /// A custom settable name for report files.
         /// </summary>
@@ -85,7 +91,7 @@ namespace Stryker.Core.Options
         /// <summary>
         /// When multiple possible projects are found by stryker, this filter is used to determine the project that should be mutated.
         /// </summary>
-        public string ProjectUnderTestName { get; init; }
+        public string SourceProjectName { get; init; }
 
         /// <summary>
         /// When not empty, use these test projects to test the project under test.
@@ -190,7 +196,7 @@ namespace Stryker.Core.Options
         public IEnumerable<LinqExpression> ExcludedLinqExpressions { get; init; } = Enumerable.Empty<LinqExpression>();
 
         /// <summary>
-        /// The optimization mode for coverage analysis for the current run. 
+        /// The optimization mode for coverage analysis for the current run.
         /// </summary>
         public OptimizationModes OptimizationMode { get; init; }
 
@@ -198,16 +204,50 @@ namespace Stryker.Core.Options
         /// This name is used in the dashboard report
         /// Is settable because this version can be detected by using DotNet.ReproducibleBuilds and thus can be overridden by stryker internally
         /// </summary>
-        public string ProjectName { get; set; }
+        public string ProjectName
+        {
+            get => _projectName;
+            set
+            {
+                _projectName = value;
+                if (_parentOptions is not null)
+                {
+                    _parentOptions.ProjectName = value;
+                }
+            }
+        }
 
         /// <summary>
         /// This projectversion is used in the dashboard report
         /// Is settable because this version can be detected by using DotNet.ReproducibleBuilds and thus can be overridden by stryker internally
         /// </summary>
-        public string ProjectVersion { get; set; }
-
-        public StrykerOptions Copy(string projectPath, string workingDirectory, string projectUnderTest, IEnumerable<string> testProjects) => new()
+        public string ProjectVersion
         {
+            get => _projectVersion;
+            set
+            {
+                _projectVersion = value;
+                if (_parentOptions is not null)
+                {
+                    _parentOptions.ProjectVersion = value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Instruct Stryker to break execution when at least one test failed on initial run.
+        /// </summary>
+        public bool BreakOnInitialTestFailure { get; set; }
+
+        // Keep a reference on the parent instance in order to flow get/set properties (ProjectName and ProjectVersion) up to the parent
+        // This is required for the dashboard reporter to work properly
+        private StrykerOptions _parentOptions;
+        private string _projectName;
+        private string _projectVersion;
+
+        public StrykerOptions Copy(string projectPath, string workingDirectory, string sourceProject, IEnumerable<string> testProjects) => new()
+        {
+            _parentOptions = this,
             AdditionalTimeout = AdditionalTimeout,
             AzureFileStorageSas = AzureFileStorageSas,
             AzureFileStorageUrl = AzureFileStorageUrl,
@@ -234,7 +274,7 @@ namespace Stryker.Core.Options
             OutputPath = OutputPath,
             ReportFileName = ReportFileName,
             ProjectName = ProjectName,
-            ProjectUnderTestName = projectUnderTest,
+            SourceProjectName = sourceProject,
             ProjectVersion = ProjectVersion,
             Reporters = Reporters,
             SinceTarget = SinceTarget,
@@ -243,7 +283,8 @@ namespace Stryker.Core.Options
             TestProjects = testProjects,
             TestCaseFilter = TestCaseFilter,
             Thresholds = Thresholds,
-            WithBaseline = WithBaseline
+            WithBaseline = WithBaseline,
+            BreakOnInitialTestFailure = BreakOnInitialTestFailure,
         };
     }
 }

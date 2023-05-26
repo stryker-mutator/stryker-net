@@ -91,7 +91,7 @@ namespace Stryker.CLI.UnitTest
             inputs.Setup(x => x.VerbosityInput).Returns(new VerbosityInput());
             inputs.Setup(x => x.ConcurrencyInput).Returns(new ConcurrencyInput());
             inputs.Setup(x => x.SolutionInput).Returns(new SolutionInput());
-            inputs.Setup(x => x.ProjectUnderTestNameInput).Returns(new ProjectUnderTestNameInput());
+            inputs.Setup(x => x.SourceProjectNameInput).Returns(new SourceProjectNameInput());
             inputs.Setup(x => x.TestProjectsInput).Returns(new TestProjectsInput());
             inputs.Setup(x => x.MsBuildPathInput).Returns(new MsBuildPathInput());
             inputs.Setup(x => x.MutateInput).Returns(new MutateInput());
@@ -125,6 +125,8 @@ namespace Stryker.CLI.UnitTest
             inputs.Setup(x => x.IgnoreMutationsInput).Returns(new IgnoreMutationsInput());
             inputs.Setup(x => x.IgnoredMethodsInput).Returns(new IgnoreMethodsInput());
             inputs.Setup(x => x.ReportFileNameInput).Returns(new ReportFileNameInput());
+            inputs.Setup(x => x.BreakOnInitialTestFailureInput).Returns(new BreakOnInitialTestFailureInput());
+            inputs.Setup(x => x.OutputPathInput).Returns(new OutputPathInput());
 
             return inputs;
         }

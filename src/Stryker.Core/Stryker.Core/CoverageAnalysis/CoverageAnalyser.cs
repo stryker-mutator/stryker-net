@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
@@ -20,7 +21,7 @@ namespace Stryker.Core.CoverageAnalysis
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<CoverageAnalyser>();
         }
 
-        public void DetermineTestCoverage(ITestRunner runner, IEnumerable<Mutant> mutants, ITestGuids resultFailingTests)
+        public void DetermineTestCoverage(IProjectAndTests project, ITestRunner runner, IEnumerable<Mutant> mutants, ITestGuids resultFailingTests)
         {
             if (!_options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
                 !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
@@ -33,7 +34,7 @@ namespace Stryker.Core.CoverageAnalysis
                 return;
             }
 
-            ParseCoverage(runner.CaptureCoverage(), mutants, new TestGuidsList(resultFailingTests.GetGuids()));
+            ParseCoverage(runner.CaptureCoverage(project), mutants, new TestGuidsList(resultFailingTests.GetGuids()));
         }
 
         private void ParseCoverage(IEnumerable<CoverageRunResult> coverage, IEnumerable<Mutant> mutantsToScan, TestGuidsList failedTests)
@@ -101,7 +102,7 @@ namespace Stryker.Core.CoverageAnalysis
             else if (resultTingRequirements.HasFlag(MutationTestingRequirements.Static) || mutant.IsStaticValue)
             {
                 // static mutations will be tested against every tests, except the one that are trusted not to cover it
-                mutant.CoveringTests =allTestsGuidsExceptTrusted.Merge(testGuids);
+                mutant.CoveringTests = allTestsGuidsExceptTrusted.Merge(testGuids);
                 mutant.AssessingTests = allTestsGuidsExceptTrusted.Merge(assessingTests).Excluding(failedTest);
                 
                 mutant.IsStaticValue = true;
@@ -112,25 +113,25 @@ namespace Stryker.Core.CoverageAnalysis
             {
                 mutant.CoveringTests = testGuids.Merge(dubiousTests);
                 mutant.AssessingTests = testGuids.Merge(dubiousTests).Excluding(failedTest);
-                if (mutant.CoveringTests.IsEmpty && mutant.ResultStatus == MutantStatus.NotRun)
-                {
-                    mutant.ResultStatus = MutantStatus.NoCoverage;
-                    mutant.ResultStatusReason = "Not covered by any test.";
-                    _logger.LogInformation(
-                        $"Mutant {mutant.Id} is not covered by any test.");
-                }
-                else if (mutant.AssessingTests.IsEmpty && mutant.ResultStatus == MutantStatus.NotRun)
-                {
-                    mutant.ResultStatus = MutantStatus.Survived;
-                    mutant.ResultStatusReason = "Only covered by already failing tests.";
-                    _logger.LogInformation(
-                        $"Mutant {mutant.Id} is only covered by failing tests.");
-                }
-                else
-                {
-                    _logger.LogDebug(
-                        $"Mutant {mutant.Id} will be tested against ({mutant.AssessingTests.Count}) tests.");
-                }
+            }
+            // assess status according to actual coverage
+            if (mutant.CoveringTests.IsEmpty && mutant.ResultStatus == MutantStatus.Pending)
+            {
+                mutant.ResultStatus = MutantStatus.NoCoverage;
+                mutant.ResultStatusReason = "Not covered by any test.";
+                _logger.LogDebug($"Mutant {mutant.Id} is not covered by any test.");
+            }
+            else if (mutant.AssessingTests.IsEmpty && mutant.ResultStatus == MutantStatus.Pending)
+            {
+                mutant.ResultStatus = MutantStatus.Survived;
+                mutant.ResultStatusReason = "Only covered by already failing tests.";
+                _logger.LogInformation(
+                    $"Mutant {mutant.Id} is only covered by failing tests.");
+            }
+            else
+            {
+                _logger.LogDebug(
+                    $"Mutant {mutant.Id} will be tested against ({(mutant.AssessingTests.IsEveryTest ? "all" : mutant.AssessingTests.Count)}) tests.");
             }
         }
 

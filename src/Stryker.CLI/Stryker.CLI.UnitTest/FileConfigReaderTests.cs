@@ -69,7 +69,7 @@ namespace Stryker.CLI.UnitTest
 
             actualInputs.AdditionalTimeoutInput.SuppliedInput.ShouldBe(9999);
             actualInputs.VerbosityInput.SuppliedInput.ShouldBe("trace");
-            actualInputs.ProjectUnderTestNameInput.SuppliedInput.ShouldBe("ExampleProject.csproj");
+            actualInputs.SourceProjectNameInput.SuppliedInput.ShouldBe("ExampleProject.csproj");
             actualInputs.ReportersInput.SuppliedInput.ShouldHaveSingleItem();
             actualInputs.ReportersInput.SuppliedInput.ShouldContain(Reporter.Json.ToString());
             actualInputs.ConcurrencyInput.SuppliedInput.ShouldBe(1);
@@ -84,6 +84,7 @@ namespace Stryker.CLI.UnitTest
             actualInputs.IgnoredMethodsInput.SuppliedInput.ShouldContain("Log*");
             actualInputs.TestCaseFilterInput.SuppliedInput.ShouldBe("(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1");
             actualInputs.DashboardUrlInput.SuppliedInput.ShouldBe("https://alternative-stryker-dashboard.io");
+            actualInputs.BreakOnInitialTestFailureInput.SuppliedInput.ShouldNotBeNull().ShouldBeFalse();
         }
 
         [Fact]
@@ -115,7 +116,7 @@ namespace Stryker.CLI.UnitTest
 
             actualInputs.AdditionalTimeoutInput.SuppliedInput.ShouldBe(9999);
             actualInputs.VerbosityInput.SuppliedInput.ShouldBe("trace");
-            actualInputs.ProjectUnderTestNameInput.SuppliedInput.ShouldBe("ExampleProject.csproj");
+            actualInputs.SourceProjectNameInput.SuppliedInput.ShouldBe("ExampleProject.csproj");
             actualInputs.ReportersInput.SuppliedInput.ShouldHaveSingleItem();
             actualInputs.ReportersInput.SuppliedInput.ShouldContain(Reporter.Json.ToString());
             actualInputs.ConcurrencyInput.SuppliedInput.ShouldBe(1);
@@ -130,6 +131,7 @@ namespace Stryker.CLI.UnitTest
             actualInputs.IgnoredMethodsInput.SuppliedInput.ShouldContain("Log*");
             actualInputs.TestCaseFilterInput.SuppliedInput.ShouldBe("(FullyQualifiedName~UnitTest1&TestCategory=CategoryA)|Priority=1");
             actualInputs.DashboardUrlInput.SuppliedInput.ShouldBe("https://alternative-stryker-dashboard.io");
+            actualInputs.BreakOnInitialTestFailureInput.SuppliedInput.ShouldNotBeNull().ShouldBeTrue();
         }
     }
 }

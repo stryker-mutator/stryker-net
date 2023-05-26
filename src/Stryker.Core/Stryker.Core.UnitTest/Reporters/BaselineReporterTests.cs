@@ -2,6 +2,7 @@ using Moq;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Json;
 using Xunit;
@@ -19,7 +20,8 @@ namespace Stryker.Core.UnitTest.Reporters
             var readOnlyInputComponent = new Mock<IReadOnlyProjectComponent>(MockBehavior.Loose);
             readOnlyInputComponent.Setup(s => s.FullPath).Returns("/home/usr/dev/project");
 
-            var options = new StrykerOptions {
+            var options = new StrykerOptions
+            {
                 ProjectVersion = "new-feature",
                 SinceTarget = "master",
                 WithBaseline = true
@@ -29,7 +31,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var target = new BaselineReporter(options, baselineProvider.Object, gitInfoProvider.Object);
 
-            target.OnAllMutantsTested(readOnlyInputComponent.Object);
+            target.OnAllMutantsTested(readOnlyInputComponent.Object, It.IsAny<TestProjectsInfo>());
 
             baselineProvider.Verify(x => x.Save(It.IsAny<JsonReport>(), It.Is<string>(x => x == "baseline/new-feature")), Times.Once);
             baselineProvider.Verify(x => x.Save(It.IsAny<JsonReport>(), It.Is<string>(x => x == "new-feature")), Times.Never);

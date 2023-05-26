@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
@@ -22,6 +23,8 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly VsTestContextInformation _context;
         private readonly int _id;
         private readonly ILogger _logger;
+        // safety timeout for VsTestWrapper operations. We assume VsTest crashed if the timeout triggers
+        private const int VsTestWrapperTimeOutInMs = 2000;
 
         private string RunnerId => $"Runner {_id}";
 
@@ -35,9 +38,13 @@ namespace Stryker.Core.TestRunners.VsTest
             _vsTestConsole = _context.BuildVsTestWrapper(RunnerId);
         }
 
-        public TestRunResult InitialTest()
+        public TestRunResult InitialTest(IProjectAndTests project)
         {
-            var testResults = RunTestSession(TestGuidsList.EveryTest());
+            var testResults = RunTestSession(TestGuidsList.EveryTest(), project);
+            foreach (var test in _context.VsTests.Keys)
+            {
+                _context.VsTests[test].ClearInitialResult();
+            }
             // initial test run, register test results
             foreach (var result in testResults.TestResults)
             {
@@ -53,60 +60,36 @@ namespace Stryker.Core.TestRunners.VsTest
                 _context.VsTests[result.TestCase.Id].RegisterInitialTestResult(result);
             }
 
+            var totalCountOfTests = _context.GetTestsForSources(project.GetTestAssemblies()).Count;
             // get the test results, but prevent compression of 'all tests'
-            return BuildTestRunResult(testResults, _context.Tests.Count, false);
+            return BuildTestRunResult(testResults, totalCountOfTests, totalCountOfTests,false);
         }
 
-        public TestRunResult TestMultipleMutants(ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
+        public TestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var mutantTestsMap = new Dictionary<int, ITestGuids>();
-            var needAll = true;
-            ICollection<Guid> testCases;
             var timeOutMs = timeoutCalc?.DefaultTimeout;
 
-            // if we optimize the number of tests to run
-            if (_context.Options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
+            var testCases = TestCases(mutants, mutantTestsMap);
+
+            if (testCases?.Count == 0)
             {
-                needAll = false;
-                foreach (var mutant in mutants)
-                {
-                    var tests = mutant.AssessingTests;
-                    needAll =  needAll || tests.IsEveryTest;
-                    mutantTestsMap.Add(mutant.Id, tests);
-                }
-
-                testCases = needAll ? null : mutants.SelectMany(m => m.AssessingTests.GetGuids()).ToList();
-
-                _logger.LogTrace($"{RunnerId}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}] " +
-                                 $"against {(testCases == null ? "all tests." : string.Join(", ", testCases))}.");
-                if (testCases?.Count == 0)
-                {
-                    return new TestRunResult(TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), "Mutants are not covered by any test!", TimeSpan.Zero);
-                }
-
-                if (timeoutCalc != null && testCases != null)
-                {
-                    // compute time out
-                    timeOutMs = timeoutCalc.CalculateTimeoutValue((int)testCases.Sum(id => _context.VsTests[id].InitialRunTime.TotalMilliseconds));
-                }
+                    return new TestRunResult(_context.VsTests.Values, TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), "Mutants are not covered by any test!", Enumerable.Empty<string>(), TimeSpan.Zero);
             }
-            else
+            if (timeoutCalc != null && testCases != null)
             {
-                if (mutants.Count > 1)
-                {
-                    throw new GeneralStrykerException("Internal error: trying to test multiple mutants simultaneously without 'perTest' coverage analysis.");
-                }
-                mutantTestsMap.Add(mutants[0].Id, TestGuidsList.EveryTest());
-                testCases = null;
+                // compute time out
+                timeOutMs = timeoutCalc.CalculateTimeoutValue((int)testCases.Sum(id => _context.VsTests[id].InitialRunTime.TotalMilliseconds));
             }
 
             var numberTestCases = testCases?.Count ?? 0;
-            var expectedTests = needAll ? _context.Tests.Count : numberTestCases;
+            var totalCountOfTests = _context.GetTestsForSources(project.GetTestAssemblies()).Count;
+            var expectedTests = testCases == null ? totalCountOfTests : numberTestCases;
 
             void HandleUpdate(IRunResults handler)
             {
                 var handlerTestResults = handler.TestResults;
-                var tests = handlerTestResults.Count == _context.Tests.Count
+                var tests = handlerTestResults.Select(p =>p.TestCase.Id).Distinct().Count()>= totalCountOfTests
                     ? (ITestGuids)TestGuidsList.EveryTest()
                     : new WrappedGuidsEnumeration(handlerTestResults.Select(t => t.TestCase.Id));
                 var failedTest = new WrappedGuidsEnumeration(handlerTestResults.Where(tr => tr.Outcome == TestOutcome.Failed)
@@ -132,48 +115,84 @@ namespace Stryker.Core.TestRunners.VsTest
                 _logger.LogDebug($"{RunnerId}: Using {timeOutMs} ms as test run timeout");
             }
 
-            var testResults = RunTestSession(new TestGuidsList(testCases), timeOutMs, mutantTestsMap, HandleUpdate);
+            var testResults = RunTestSession(new TestGuidsList(testCases), project, timeOutMs, mutantTestsMap, HandleUpdate);
 
-            return BuildTestRunResult(testResults, expectedTests);
+            return BuildTestRunResult(testResults, expectedTests, totalCountOfTests);
         }
 
-        private TestRunResult BuildTestRunResult(IRunResults testResults, int expectedTests, bool compressAll = true)
+        private ICollection<Guid> TestCases(IReadOnlyList<Mutant> mutants, Dictionary<int, ITestGuids> mutantTestsMap)
+        {
+            ICollection<Guid> testCases;
+            // if we optimize the number of tests to run
+            if (_context.Options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
+            {
+                var needAll = false;
+                foreach (var mutant in mutants)
+                {
+                    var tests = mutant.AssessingTests;
+                    needAll = needAll || tests.IsEveryTest;
+                    mutantTestsMap.Add(mutant.Id, tests);
+                }
+
+                testCases = needAll ? null : mutants.SelectMany(m => m.AssessingTests.GetGuids()).ToList();
+                _logger.LogTrace($"{RunnerId}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}] " +
+                                 $"against {(testCases == null ? "all tests." : string.Join(", ", testCases))}.");
+            }
+            else
+            {
+                if (mutants.Count > 1)
+                {
+                    throw new GeneralStrykerException(
+                        "Internal error: trying to test multiple mutants simultaneously without 'perTest' coverage analysis.");
+                }
+
+                mutantTestsMap.Add(mutants[0].Id, TestGuidsList.EveryTest());
+                testCases = null;
+            }
+
+            return testCases;
+        }
+
+        private TestRunResult BuildTestRunResult(IRunResults testResults, int expectedTests, int totalCountOfTests,
+            bool compressAll = true)
         {
             var resultAsArray = testResults.TestResults.ToArray();
             var testCases = resultAsArray.Select(t => t.TestCase.Id).ToHashSet();
             var ranTestsCount = testCases.Count;
             var timeout = !_aborted && ranTestsCount < expectedTests;
-            var ranTests = compressAll && ranTestsCount >= _context.Tests.Count ? (ITestGuids)TestGuidsList.EveryTest() : new WrappedGuidsEnumeration(testCases);
+            var ranTests = compressAll && ranTestsCount >= totalCountOfTests ? (ITestGuids)TestGuidsList.EveryTest() : new WrappedGuidsEnumeration(testCases);
             var failedTests = resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(t => t.TestCase.Id);
 
             if (ranTests.IsEmpty && (testResults.TestsInTimeout == null || testResults.TestsInTimeout.Count == 0))
             {
-                _logger.LogTrace($"{RunnerId}: Test session reports 0 result and 0 stuck tests.");
+                _logger.LogTrace($"{RunnerId}: Test session reports 0 result and 0 stuck test.");
             }
 
-            var duration =  TimeSpan.FromTicks(_context.VsTests.Values.Sum(t => t.InitialRunTime.Ticks));
+            var duration = TimeSpan.FromTicks(_context.VsTests.Values.Sum(t => t.InitialRunTime.Ticks));
 
             var message = string.Join(Environment.NewLine,
                 resultAsArray.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage))
                     .Select(tr => $"{tr.DisplayName}{Environment.NewLine}{Environment.NewLine}{tr.ErrorMessage}"));
+            var messages = resultAsArray.Select(tr => $"{tr.DisplayName}{Environment.NewLine}{Environment.NewLine}{string.Join(Environment.NewLine, tr.Messages.Select(tm => tm.Text))}");
             var failedTestsDescription = new WrappedGuidsEnumeration(failedTests);
             var timedOutTests = new WrappedGuidsEnumeration(testResults.TestsInTimeout?.Select(t => t.Id));
             return timeout
-                ? TestRunResult.TimedOut(ranTests, failedTestsDescription, timedOutTests, message, duration)
-                : new TestRunResult(ranTests, failedTestsDescription, timedOutTests, message, duration);
+                ? TestRunResult.TimedOut(_context.VsTests.Values, ranTests, failedTestsDescription, timedOutTests, message, messages, duration)
+                : new TestRunResult(_context.VsTests.Values, ranTests, failedTestsDescription, timedOutTests, message, messages, duration);
         }
 
-        public IRunResults RunTestSession(ITestGuids testsToRun, int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<IRunResults> updateHandler = null) =>
-            RunTestSession(testsToRun,
-                _context.GenerateRunSettings(timeout, false, mutantTestsMap), timeout, updateHandler).GetResults();
+        public IRunResults RunTestSession(ITestGuids testsToRun, IProjectAndTests project, int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<IRunResults> updateHandler = null) =>
+            RunTestSession(testsToRun, project.GetTestAssemblies(),
+                _context.GenerateRunSettings(timeout, false, mutantTestsMap, project.HelperNamespace, project.IsFullFramework), timeout, updateHandler).GetResults();
 
-        public IRunResults RunCoverageSession(ITestGuids testsToRun) =>
-            RunTestSession(testsToRun,
+        public IRunResults RunCoverageSession(ITestGuids testsToRun, IReadOnlyCollection<string> testAssemblies, string nameSpace, bool isFullFramework) =>
+            RunTestSession(testsToRun,  testAssemblies,
                 _context.GenerateRunSettings(null,
-                    true,
-                    null)).GetRawResults();
+        true,
+                    null, nameSpace, isFullFramework)).GetRawResults();
 
         private RunEventHandler RunTestSession(ITestGuids tests,
+            IEnumerable<string> sources,
             string runSettings,
             int? timeOut = null,
             Action<IRunResults> updateHandler = null,
@@ -196,43 +215,63 @@ namespace Stryker.Core.TestRunners.VsTest
             eventHandler.ResultsUpdated += HandlerUpdate;
 
             _aborted = false;
-            var options = new TestPlatformOptions { TestCaseFilter = _context.Options.TestCaseFilter };
+            var options = new TestPlatformOptions { TestCaseFilter = string.IsNullOrWhiteSpace(_context.Options.TestCaseFilter) ? null : _context.Options.TestCaseFilter };
+            Task session;
             if (tests.IsEveryTest)
             {
-                _vsTestConsole.RunTestsWithCustomTestHostAsync(_context.TestSources, runSettings, options, eventHandler,
-                    strykerVsTestHostLauncher);
+                session = _vsTestConsole.RunTestsWithCustomTestHostAsync(sources, runSettings, options, eventHandler, strykerVsTestHostLauncher);
             }
             else
             {
-                _vsTestConsole.RunTestsWithCustomTestHostAsync(tests.GetGuids().Select(t => _context.VsTests[t].Case), runSettings,
+                session = _vsTestConsole.RunTestsWithCustomTestHostAsync(tests.GetGuids().Select(t => _context.VsTests[t].Case), runSettings,
                     options, eventHandler, strykerVsTestHostLauncher);
             }
 
             // Wait for test completed report
-            if (!eventHandler.WaitEnd(timeOut))
+            if (!eventHandler.WaitEnd(timeOut+VsTestWrapperTimeOutInMs) || !session.Wait(VsTestWrapperTimeOutInMs))
             {
-                _logger.LogWarning($"{RunnerId}: VsTest did not report the end of test session in due time, it may have hang. Retrying!");
-                _vsTestConsole.AbortTestRun();
-                _vsTestFailed = true;
-            }
 
-            if (!strykerVsTestHostLauncher.IsProcessCreated)
-            {
-                throw new GeneralStrykerException("*** Failed to create a TestRunner, Stryker cannot recover from this! ***");
+                // VsTestWrapper aborts the current test sessions on timeout, except on critical error, so we have an internal timeout (+ grace period)
+                // to detect and properly handle those events. 
+                if (!strykerVsTestHostLauncher.IsProcessCreated)
+                {
+                    // VsTestWrapper did not launch a test session for some reason
+                    _logger.LogError($"{RunnerId}: VsTest did not start properly.");
+                }
+                else
+                {
+                    // VsTestHost appears stuck and can't be aborted
+                    _logger.LogError($"{RunnerId}: VsTest did not report the end of test session in due time, it may have hang.");
+                    _vsTestConsole.AbortTestRun();
+                }
+                _vsTestFailed = true;
+
             }
+            else if (strykerVsTestHostLauncher.ErrorCode > 0)
+            {
+                _logger.LogError($"{RunnerId}: Test session ended with code {strykerVsTestHostLauncher.ErrorCode}");
+            }
+            
 
             eventHandler.ResultsUpdated -= HandlerUpdate;
             eventHandler.VsTestFailed -= HandlerVsTestFailed;
 
-            if (!_vsTestFailed || retries > 5)
+            if (!_vsTestFailed)
             {
                 return eventHandler;
             }
 
+            if (retries >= 5)
+            {
+                throw new GeneralStrykerException(
+                    $"{RunnerId}: failed to run a test session despite {retries + 1} attempts. Aborting session.");
+            }
+
             PrepareVsTestConsole();
             _vsTestFailed = false;
+            _logger.LogWarning($"{RunnerId}: Retrying the test session.");
 
-            return RunTestSession(tests, runSettings, timeOut, updateHandler, retries + 1);
+            return RunTestSession(tests, sources, runSettings, timeOut, updateHandler, retries + 1);
         }
 
         private void PrepareVsTestConsole()

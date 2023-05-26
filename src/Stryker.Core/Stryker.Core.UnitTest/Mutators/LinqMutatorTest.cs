@@ -45,7 +45,7 @@ namespace TestApplication
         }
 
         [Fact]
-        public void ShouldBeMutationLevelAdvanced()
+        public void ShouldBeMutationLevelStandard()
         {
             var target = new LinqMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
@@ -82,6 +82,14 @@ namespace TestApplication
         [InlineData(LinqExpression.Intersect, LinqExpression.Union)]
         [InlineData(LinqExpression.Concat, LinqExpression.Except)]
         [InlineData(LinqExpression.Except, LinqExpression.Concat)]
+        [InlineData(LinqExpression.MinBy, LinqExpression.MaxBy)]
+        [InlineData(LinqExpression.MaxBy, LinqExpression.MinBy)]
+        [InlineData(LinqExpression.SkipLast, LinqExpression.TakeLast)]
+        [InlineData(LinqExpression.TakeLast, LinqExpression.SkipLast)]
+        [InlineData(LinqExpression.Order, LinqExpression.OrderDescending)]
+        [InlineData(LinqExpression.OrderDescending, LinqExpression.Order)]
+        [InlineData(LinqExpression.UnionBy, LinqExpression.IntersectBy)]
+        [InlineData(LinqExpression.IntersectBy, LinqExpression.UnionBy)]
         public void ShouldMutate(LinqExpression original, LinqExpression expected)
         {
             var target = new LinqMutator();

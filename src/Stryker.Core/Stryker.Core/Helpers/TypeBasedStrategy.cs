@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.Helpers
 {
@@ -32,15 +33,14 @@ namespace Stryker.Core.Helpers
         {
             for (; item != null && type != null; type = type.BaseType)
             {
-                if (_handlerMapping.TryGetValue(type, out var handlers))
+                if (!_handlerMapping.TryGetValue(type, out var handlers))
                 {
-                    foreach (var typeHandler in handlers)
-                    {
-                        if (typeHandler.CanHandle(item))
-                        {
-                            return typeHandler;
-                        }
-                    }
+                    continue;
+                }
+                var match =  handlers.FirstOrDefault( th => th.CanHandle(item));
+                if (match != null)
+                {
+                    return match;
                 }
             }
 

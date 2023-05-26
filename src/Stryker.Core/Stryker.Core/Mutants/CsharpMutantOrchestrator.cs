@@ -14,23 +14,20 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Stryker.Core.Mutants
 {
-    /// <summary>
-    /// Mutates abstract syntax trees using mutators and places all mutations inside the abstract syntax tree.
-    /// Orchestrator: to arrange or manipulate, especially by means of clever or thorough planning or maneuvering.
-    /// </summary>
+    /// <inheritdoc/>
     public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxNode>
     {
         private readonly TypeBasedStrategy<SyntaxNode, INodeMutator> _specificOrchestrator =
             new();
 
-        public IEnumerable<IMutator> Mutators { get; }
         private ILogger Logger { get; }
 
         /// <summary>
         /// <param name="mutators">The mutators that should be active during the mutation process</param>
         /// </summary>
-        public CsharpMutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerOptions options = null) : base(options)
+        public CsharpMutantOrchestrator(MutantPlacer placer, IEnumerable<IMutator> mutators = null, StrykerOptions options = null) : base(options)
         {
+            Placer = placer;
             Mutators = mutators ?? new List<IMutator>
             {
                 // the default list of mutators
@@ -50,7 +47,11 @@ namespace Stryker.Core.Mutants
                 new ObjectCreationMutator(),
                 new ArrayCreationMutator(),
                 new StatementMutator(),
-                new RegexMutator()
+                new RegexMutator(),
+                new NullCoalescingExpressionMutator(),
+                new MathMutator(),
+                new SwitchExpressionMutator(),
+                new IsPatternExpressionMutator()
             };
             Mutants = new Collection<Mutant>();
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpMutantOrchestrator>();
@@ -65,6 +66,7 @@ namespace Stryker.Core.Mutants
                     (t) => t.Modifiers.Any(x => x.IsKind(SyntaxKind.ConstKeyword))),
                 new AssignmentStatementOrchestrator(),
                 new PostfixUnaryExpressionOrchestrator(),
+                new PrefixUnaryExpressionOrchestrator(),
                 new StaticFieldDeclarationOrchestrator(),
                 new StaticConstructorOrchestrator(),
                 new PropertyDeclarationOrchestrator(),
@@ -80,6 +82,9 @@ namespace Stryker.Core.Mutants
                 new SyntaxNodeOrchestrator()
             });
         }
+
+        public IEnumerable<IMutator> Mutators { get; }
+        public MutantPlacer Placer { get; }
 
         /// <summary>
         /// Recursively mutates a single SyntaxNode
@@ -130,7 +135,7 @@ namespace Stryker.Core.Mutants
             {
                 Id = id,
                 Mutation = mutation,
-                ResultStatus = mutantIgnored ? MutantStatus.Ignored : MutantStatus.NotRun,
+                ResultStatus = mutantIgnored ? MutantStatus.Ignored : MutantStatus.Pending,
                 IsStaticValue = context.InStaticValue,
                 ResultStatusReason = mutantIgnored ? context.FilterComment : null
             };

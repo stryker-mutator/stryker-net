@@ -8,6 +8,12 @@ custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs
 
 This guide instructs how to update major versions of Stryker.NET.
 
+## V2.x --> V3.x
+
+### :pushpin: Baseline
+
+The allowed format of the [azure-fileshare-sas](./configuration.md#azure-fileshare-sas-string) option has changed. SAS must contain `sv=` and `sig=` to be valid. SAS without sv= are no longer transformed to valid SAS. If you supply stryker with an azure fileshare sas that does not include `sv=` or `sig=` you will have to update your azure-fileshare-sas.
+
 ## V1.x --> V2.x
 
 ### ⏭ Updated runtime

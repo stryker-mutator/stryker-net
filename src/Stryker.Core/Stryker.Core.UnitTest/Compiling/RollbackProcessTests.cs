@@ -2,24 +2,22 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
-using System.IO.Abstractions.TestingHelpers;
 using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Compiling;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Compiling
@@ -29,15 +27,9 @@ namespace Stryker.Core.UnitTest.Compiling
         private readonly SyntaxAnnotation _ifEngineMarker = new("Injector", "IfInstrumentationEngine");
         private readonly SyntaxAnnotation _conditionalEngineMarker = new("Injector", "ConditionalInstrumentationEngine");
 
-        private SyntaxAnnotation GetMutationIdMarker(int id)
-        {
-            return new("MutationId", id.ToString());
-        }
+        private SyntaxAnnotation GetMutationIdMarker(int id) => new("MutationId", id.ToString());
 
-        private SyntaxAnnotation GetMutationTypeMarker(Mutator type)
-        {
-            return new("MutationType", type.ToString());
-        }
+        private SyntaxAnnotation GetMutationTypeMarker(Mutator type) => new("MutationType", type.ToString());
 
         [Fact]
         public void RollbackProcess_ShouldRollbackError_RollbackedCompilationShouldCompile()
@@ -117,54 +109,52 @@ namespace ExampleProject
                 MutationLevel = MutationLevel.Complete,
                 DevMode = true
             };
-            var listProjected = new[] { new[] { 1d } }.Select(l => l.Count()).ToArray();
-
-            var mutator = new CsharpMutantOrchestrator(options: options);
+            var codeInjection = new CodeInjection();
+            var placer = new MutantPlacer(codeInjection);
+            var mutator = new CsharpMutantOrchestrator( placer, options: options);
             var helpers = new List<SyntaxTree>();
-            foreach (var (name, code) in CodeInjection.MutantHelpers)
+            foreach (var (name, code) in codeInjection.MutantHelpers)
             {
                 helpers.Add(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32));
             }
 
             var mutant = mutator.Mutate(syntaxTree.GetRoot());
             helpers.Add(mutant.SyntaxTree);
-            var references = new List<PortableExecutableReference>() {
-                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(List<string>).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-                MetadataReference.CreateFromFile(typeof(PipeStream).Assembly.Location),
-            };
 
-            Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(MetadataReference.CreateFromFile(Assembly.Load(a).Location)));
+            var references = new List<string> {
+                typeof(object).Assembly.Location,
+                typeof(List<string>).Assembly.Location,
+                typeof(Enumerable).Assembly.Location,
+                typeof(PipeStream).Assembly.Location,
+            };
+            Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(Assembly.Load(a).Location));
 
             var input = new MutationTestInput()
             {
-                ProjectInfo = new ProjectInfo(new MockFileSystem())
+                SourceProjectInfo = new SourceProjectInfo
                 {
-                    ProjectUnderTestAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                    {
-                        { "TargetDir", "" },
-                        { "AssemblyName", "AssemblyName"},
-                        { "TargetFileName", "TargetFileName.dll"},
-                        { "SignAssembly", "true" },
-                        { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
-                    },
-                        projectFilePath: "TestResources").Object,
-                    TestProjectAnalyzerResults = new List<IAnalyzerResult> { TestHelper.SetupProjectAnalyzerResult(properties: new Dictionary<string, string>()
-                    {
-                        { "AssemblyName", "AssemblyName"},
-                    }).Object
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        properties: new Dictionary<string, string>()
+                        {
+                            { "TargetDir", "" },
+                            { "AssemblyName", "AssemblyName"},
+                            { "TargetFileName", "TargetFileName.dll"},
+                            { "SignAssembly", "true" },
+                            { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
+                        },
+                        projectFilePath: "TestResources",
+                        // add a reference to system so the example code can compile
+                        references: references.ToArray()
+                    ).Object
                 }
-                },
-                AssemblyReferences = references
             };
 
             var rollbackProcess = new RollbackProcess();
 
-            var target = new CsharpCompilingProcess(input, rollbackProcess);
+            var target = new CsharpCompilingProcess(input, rollbackProcess, options);
 
             using var ms = new MemoryStream();
-            var result = target.Compile(helpers, ms, null, true);
+            var result = target.Compile(helpers, ms, null);
             result.RollbackResult.RollbackedIds.Count().ShouldBe(2); // should actually be 1 but thanks to issue #1745 rollback doesn't work
         }
 
@@ -497,7 +487,107 @@ namespace ExampleProject
             fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
             rollbackedResult = fixedCompilation.Compilation.Emit(ms);
             rollbackedResult.Success.ShouldBeTrue();
-            // validate that only mutation 8 and 7 were rollbacked
+            // validate that all mutations are rolled back
+            fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
+        }
+
+        [Fact]
+        public void RollbackProcess_ShouldRollbacConstructorWhenLocalRollbackFailsAndNoBlockMutationsFound()
+        {
+            var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
+
+namespace ExampleProject
+{
+    public class StringMagic
+    {
+        public int ActiveMutation = 1;
+        public StringMagic(string first, string second, out string third)
+        {
+            var dummy = """";
+            if(ActiveMutation == 8){
+                while (first.Length > 2)
+                {
+                    dummy = first + second;
+                }
+                while (first.Length < 2)
+                {
+                    dummy =  second - first;
+                }
+            }else{if(ActiveMutation == 7){
+                while (first.Length > 2)
+                {
+                    dummy =  first + second;
+                }
+                while (first.Length < 2)
+                {
+                    dummy =  second - first;
+                }
+            }else{if(ActiveMutation == 6){
+                while (first.Length == 2)
+                {
+                    dummy =  first + second;
+                }
+                while (first.Length < 2)
+                {
+                    dummy =  second + first;
+                }
+            }else{
+                third = ""good"";
+                while (first.Length == 2)
+                {
+                    dummy =  first + second;
+                }
+                while (first.Length < 2)
+                {
+                    dummy =  second + first;
+                }
+            }}}
+        }
+    }
+}");
+            var root = syntaxTree.GetRoot();
+            // we manually inject mutation markers
+            var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+            root = root.ReplaceNode(
+                mutantIf1,
+                mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(8), _ifEngineMarker)
+            );
+            var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
+            root = root.ReplaceNode(
+                mutantIf2,
+                mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(7), _ifEngineMarker)
+            );
+            var mutantIf3 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[2];
+            root = root.ReplaceNode(
+                mutantIf3,
+                mutantIf3.WithAdditionalAnnotations(GetMutationIdMarker(6), _ifEngineMarker)
+            );
+            var annotatedSyntaxTree = root.SyntaxTree;
+
+            var compiler = CSharpCompilation.Create("TestCompilation",
+                syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+                references: new List<PortableExecutableReference>() {
+                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                    MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+                });
+
+            var target = new RollbackProcess();
+
+            using var ms = new MemoryStream();
+            var compileResult = compiler.Emit(ms);
+
+            var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+
+            var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+
+            rollbackedResult.Success.ShouldBeFalse();
+            rollbackedResult.Diagnostics.ShouldHaveSingleItem();
+
+            fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
+            rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+            rollbackedResult.Success.ShouldBeTrue();
+            // validate that all mutations are rolled back
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
         }
 
@@ -606,7 +696,7 @@ namespace ExampleProject
             rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
             rollbackedResult.Success.ShouldBeTrue();
-            // validate that only mutation 8 and 7 were rollbacked
+            // validate that only mutation 8 and 7 were rolled back
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
         }
 
@@ -703,7 +793,7 @@ namespace ExampleProject
 
             rollbackedResult.Success.ShouldBeFalse();
             rollbackedResult.Diagnostics.ShouldHaveSingleItem();
-            Should.Throw<CompilationException>(() => { target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, true); });
+            Should.Throw<CompilationException>(() => target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, true));
         }
 
         [Fact]
@@ -762,7 +852,7 @@ namespace ExampleProject
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 1 });
         }
 
-        [Fact]
+         [Fact]
         public void RollbackProcess_ShouldOnlyRaiseExceptionOnFinalAttempt()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"

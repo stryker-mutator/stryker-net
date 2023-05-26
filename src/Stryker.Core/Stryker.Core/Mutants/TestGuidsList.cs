@@ -7,29 +7,28 @@ namespace Stryker.Core.Mutants
 
     public class TestGuidsList : ITestGuids
     {
-        private readonly HashSet<Guid> _testsGuid;
+        private readonly HashSet<Guid> _testGuids;
 
         private static readonly TestGuidsList EveryTests = new();
         private static readonly TestGuidsList NoTestAtAll = new(Array.Empty<Guid>());
 
-        private TestGuidsList() => _testsGuid = null;
+        private TestGuidsList() => _testGuids = null;
 
         public TestGuidsList(IEnumerable<TestDescription> testDescriptions) : this(testDescriptions?.Select(t => t.Id))
-        {
-        }
+        { }
 
-        public TestGuidsList(HashSet<Guid> set) => _testsGuid = set;
-        
-        public TestGuidsList(IEnumerable<Guid> guids) => _testsGuid = guids != null ? new HashSet<Guid>(guids) : null;
+        public TestGuidsList(HashSet<Guid> set) => _testGuids = set;
+
+        public TestGuidsList(IEnumerable<Guid> guids) => _testGuids = guids != null ? new HashSet<Guid>(guids) : null;
 
         public TestGuidsList(params Guid[] guids) : this((IEnumerable<Guid>)guids)
-        {}
+        { }
 
-        public bool IsEmpty => _testsGuid is { Count: 0 };
-        
-        public bool IsEveryTest => _testsGuid == null;
-        
-        public int Count => _testsGuid?.Count ?? 0;
+        public bool IsEmpty => _testGuids is { Count: 0 };
+
+        public bool IsEveryTest => _testGuids == null;
+
+        public int Count => _testGuids?.Count ?? 0;
 
         public ITestGuids Merge(ITestGuids other)
         {
@@ -38,7 +37,7 @@ namespace Stryker.Core.Mutants
                 return this;
             }
 
-            var result = new HashSet<Guid>(_testsGuid);
+            var result = new HashSet<Guid>(_testGuids);
             result.UnionWith(other.GetGuids());
             return new TestGuidsList(result);
         }
@@ -50,15 +49,15 @@ namespace Stryker.Core.Mutants
                 return this;
             }
 
-            var result = new HashSet<Guid>(_testsGuid);
+            var result = new HashSet<Guid>(_testGuids);
             result.UnionWith(other.GetGuids());
             return new TestGuidsList(result);
         }
 
-        public bool Contains(Guid testId) => IsEveryTest || _testsGuid.Contains(testId);
+        public bool Contains(Guid testId) => IsEveryTest || _testGuids.Contains(testId);
 
-        public bool IsIncludedIn(ITestGuids other) => other.IsEveryTest || _testsGuid?.IsSubsetOf(other.GetGuids())==true;
-        
+        public bool IsIncludedIn(ITestGuids other) => other.IsEveryTest || _testGuids?.IsSubsetOf(other.GetGuids()) == true;
+
         public TestGuidsList Excluding(TestGuidsList testsToSkip)
         {
             if (IsEmpty || testsToSkip.IsEmpty)
@@ -71,14 +70,14 @@ namespace Stryker.Core.Mutants
                 throw new InvalidOperationException("Can't exclude from EveryTest");
             }
 
-            return testsToSkip.IsEveryTest ? NoTest() : new TestGuidsList(_testsGuid.Except(testsToSkip._testsGuid));
+            return testsToSkip.IsEveryTest ? NoTest() : new TestGuidsList(_testGuids.Except(testsToSkip._testGuids));
         }
 
         public static TestGuidsList EveryTest() => EveryTests;
 
         public static TestGuidsList NoTest() => NoTestAtAll;
 
-        public IEnumerable<Guid> GetGuids() => _testsGuid;
+        public IEnumerable<Guid> GetGuids() => _testGuids;
 
         public bool ContainsAny(ITestGuids other)
         {
@@ -90,7 +89,9 @@ namespace Stryker.Core.Mutants
             {
                 return true;
             }
-            return _testsGuid.Overlaps(other.GetGuids());
+            return _testGuids.Overlaps(other.GetGuids());
         }
+
+        public ITestGuids Intersect(ITestGuids other) => IsEveryTest ? new TestGuidsList(other.GetGuids()) : new TestGuidsList(_testGuids.Intersect(other.GetGuids()));
     }
 }

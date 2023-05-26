@@ -15,9 +15,9 @@ namespace Stryker.Core.Instrumentation
         /// </summary>
         /// <param name="block"></param>
         /// <returns></returns>
-        public BlockSyntax PlaceStaticContextMarker(BlockSyntax block) =>
+        public BlockSyntax PlaceStaticContextMarker(BlockSyntax block, CodeInjection injector) =>
             SyntaxFactory.Block( 
-                SyntaxFactory.UsingStatement(null, CodeInjection.GetContextClassConstructor(), block)).WithAdditionalAnnotations(Marker);
+                SyntaxFactory.UsingStatement(null, injector.GetContextClassConstructor(), block)).WithAdditionalAnnotations(Marker);
  
         protected override SyntaxNode Revert(BlockSyntax node)
         {

@@ -5,6 +5,7 @@ using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options.Inputs;
+using Stryker.Core.UnitTest.Mutators;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
@@ -24,9 +25,9 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             var target = new IgnoreMutationsInput { SuppliedInput = new[] { "gibberish" } };
 
-            var ex = Should.Throw<InputException>(() => target.Validate());
+            var ex = Should.Throw<InputException>(() => target.Validate<Mutator>());
 
-            ex.Message.ShouldBe($"Invalid excluded mutation (gibberish). The excluded mutations options are [Statement, Arithmetic, Block, Equality, Boolean, Logical, Assignment, Unary, Update, Checked, Linq, String, Bitwise, Initializer, Regex]");
+            ex.Message.ShouldBe($"Invalid excluded mutation (gibberish). The excluded mutations options are [Statement, Arithmetic, Block, Equality, Boolean, Logical, Assignment, Unary, Update, Checked, Linq, String, Bitwise, Initializer, Regex, NullCoalescing, Math]");
         }
 
         [Fact]
@@ -34,7 +35,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             var target = new IgnoreMutationsInput { SuppliedInput = new string[] { } };
 
-            var result = target.Validate();
+            var result = target.Validate<Mutator>();
 
             result.ShouldBeEmpty();
         }
@@ -44,7 +45,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             var target = new IgnoreMutationsInput { SuppliedInput = new string[] { "linq.Sum", "string.empty", "logical.equal" } };
 
-            var result = target.Validate();
+            var result = target.Validate<Mutator>();
 
             result.ShouldBeEmpty();
         }
@@ -57,7 +58,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
                 Mutator.Regex.ToString(),
             } };
 
-            var result = target.Validate();
+            var result = target.Validate<Mutator>();
 
             result.Count().ShouldBe(2);
             result.First().ShouldBe(Mutator.String);
@@ -153,9 +154,28 @@ namespace Stryker.Core.UnitTest.Options.Inputs
                 SuppliedInput = new[] { "statement" }
             };
 
-            var mutators = target.Validate();
+            var mutators = target.Validate<Mutator>();
 
             mutators.ShouldHaveSingleItem().ShouldBe(Mutator.Statement);
+        }
+
+        [Fact]
+        public void ShouldIgnoreBasedOnEitherDescription()
+        {
+            var targetWithFirstDescription = new IgnoreMutationsInput
+            {
+                SuppliedInput = new[] { "Multi-description mutator" }
+            };
+            var targetWithSecondDescription = new IgnoreMutationsInput
+            {
+                SuppliedInput = new[] { "Two descriptions mutator" }
+            };
+
+            var mutatorsWithFirstDescription = targetWithFirstDescription.Validate<TestMutator>();
+            var mutatorsWithSecondDescription = targetWithSecondDescription.Validate<TestMutator>();
+
+            mutatorsWithFirstDescription.ShouldHaveSingleItem().ShouldBe(TestMutator.MultipleDescriptions);
+            mutatorsWithSecondDescription.ShouldHaveSingleItem().ShouldBe(TestMutator.MultipleDescriptions);
         }
     }
 }

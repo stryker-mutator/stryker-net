@@ -7,7 +7,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
     {
         protected override bool CanHandle(PostfixUnaryExpressionSyntax t) => t.Parent is ExpressionStatementSyntax or ForStatementSyntax;
 
-        // even if they are 'expressions', the ++ and -- operators need to be controlled at the statement level.
+        // even if they are 'expressions', the  pre/post in/decrement operators need to be controlled at the statement level (as they are both an expression and a statement).
         protected override MutationContext StoreMutations(PostfixUnaryExpressionSyntax node,
             IEnumerable<Mutant> mutations,
             MutationContext context)

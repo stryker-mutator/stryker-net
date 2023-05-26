@@ -26,13 +26,13 @@ namespace Stryker.CLI.UnitTest
         private readonly StrykerCli _target;
         private readonly StrykerOptions _options;
         private readonly StrykerRunResult _runResults;
-        private readonly Mock<IStrykerRunner> _strykerRunnerMock = new (MockBehavior.Strict);
-        private readonly Mock<IStrykerNugetFeedClient> _nugetClientMock = new (MockBehavior.Strict);
-        private readonly Mock<ILoggingInitializer> _loggingInitializerMock = new ();
+        private readonly Mock<IStrykerRunner> _strykerRunnerMock = new(MockBehavior.Strict);
+        private readonly Mock<IStrykerNugetFeedClient> _nugetClientMock = new(MockBehavior.Strict);
+        private readonly Mock<ILoggingInitializer> _loggingInitializerMock = new();
 
         public StrykerCLITests()
         {
-            _options = new StrykerOptions() { Thresholds = new Stryker.Core.Options.Thresholds { Break = 0 } };
+            _options = new StrykerOptions() { Thresholds = new Thresholds { Break = 0 } };
             _runResults = new StrykerRunResult(_options, 0.3);
             _strykerRunnerMock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>()))
                 .Callback<IStrykerInputs, ILoggerFactory, IProjectOrchestrator>((c, l, p) => _inputs = c)
@@ -57,7 +57,7 @@ namespace Stryker.CLI.UnitTest
 
                 target.Run(new string[] { "--help" });
 
-                string expected = @"Stryker: Stryker mutator for .Net
+                var expected = @"Stryker: Stryker mutator for .Net
 
 Stryker mutator for .Net
 
@@ -103,7 +103,7 @@ Options:";
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions()
             {
-                Thresholds = new Stryker.Core.Options.Thresholds
+                Thresholds = new Thresholds
                 {
                     Break = 40
                 }
@@ -129,7 +129,7 @@ Options:";
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions()
             {
-                Thresholds = new Stryker.Core.Options.Thresholds
+                Thresholds = new Thresholds
                 {
                     Break = 0
                 }
@@ -153,7 +153,7 @@ Options:";
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions()
             {
-                Thresholds = new Stryker.Core.Options.Thresholds
+                Thresholds = new Thresholds
                 {
                     Break = 40
                 }
@@ -177,7 +177,7 @@ Options:";
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
             var options = new StrykerOptions()
             {
-                Thresholds = new Stryker.Core.Options.Thresholds
+                Thresholds = new Thresholds
                 {
                     Break = 0
                 }
@@ -242,7 +242,7 @@ Options:";
 
             _strykerRunnerMock.VerifyAll();
 
-            _inputs.ProjectUnderTestNameInput.SuppliedInput.ShouldBe("SomeProjectName.csproj");
+            _inputs.SourceProjectNameInput.SuppliedInput.ShouldBe("SomeProjectName.csproj");
         }
 
         [Theory]
@@ -440,6 +440,29 @@ Options:";
             _strykerRunnerMock.VerifyAll();
 
             _inputs.AzureFileStorageSasInput.SuppliedInput.ShouldBe("sas");
+        }
+
+        [Theory]
+        [InlineData("--break-on-initial-test-failure")]
+        public void ShouldSupplyBreakOnInitialTestFailureWhenPassed(params string[] argName)
+        {
+            _target.Run(argName);
+
+            _strykerRunnerMock.VerifyAll();
+
+            _inputs.BreakOnInitialTestFailureInput.SuppliedInput.HasValue.ShouldBeTrue();
+            _inputs.BreakOnInitialTestFailureInput.SuppliedInput.Value.ShouldBeTrue();
+        }
+
+        [Theory]
+        [InlineData("--target-framework", "net7.0")]
+        public void ShouldSupplyTargetFrameworkWhenPassed(params string[] argName)
+        {
+            _target.Run(argName);
+
+            _strykerRunnerMock.VerifyAll();
+
+            _inputs.TargetFrameworkInput.SuppliedInput.ShouldBe("net7.0");
         }
     }
 }

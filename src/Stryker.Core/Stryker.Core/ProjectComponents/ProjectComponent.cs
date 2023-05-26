@@ -72,7 +72,7 @@ namespace Stryker.Core.ProjectComponents
             .Where(m => m.ResultStatus == MutantStatus.Ignored);
 
         public IEnumerable<IReadOnlyMutant> NotRunMutants() => Mutants
-            .Where(m => m.ResultStatus == MutantStatus.NotRun);
+            .Where(m => m.ResultStatus == MutantStatus.Pending);
 
         public IEnumerable<IReadOnlyMutant> DetectedMutants() => Mutants
             .Where(m =>

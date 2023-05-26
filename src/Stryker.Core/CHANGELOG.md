@@ -1,3 +1,229 @@
+# [3.9.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.8.2...stryker@3.9.0) (2023-05-12)
+
+
+### Bug Fixes
+
+* **reporting:** More reliable auto-open browser ([#2523](https://github.com/stryker-mutator/stryker-net/issues/2523)) ([6e5f386](https://github.com/stryker-mutator/stryker-net/commit/6e5f386a5cf1822bcddd2bc08e350156b5d0123a))
+
+
+### Features
+
+* **html report:** Update mutation testing elements to 2.0.1 ([#2514](https://github.com/stryker-mutator/stryker-net/issues/2514)) ([c116bd9](https://github.com/stryker-mutator/stryker-net/commit/c116bd9bc4c3dc030dc5025873810f2341945fa0))
+* Record for each unit test which mutant they kill ([#2491](https://github.com/stryker-mutator/stryker-net/issues/2491)) ([da7cffd](https://github.com/stryker-mutator/stryker-net/commit/da7cffd244a9edd2855cffad3807948987abf18f))
+* **solution mode:** Improve solution handling ([#2400](https://github.com/stryker-mutator/stryker-net/issues/2400)) ([6b48029](https://github.com/stryker-mutator/stryker-net/commit/6b480299fb00430c75054acc226341c17ecbafc3))
+
+
+
+## [3.8.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.8.1...stryker@3.8.2) (2023-05-07)
+
+
+### Bug Fixes
+
+* **tests report:** Correctly parse test files with preprocessor symbols ([#2502](https://github.com/stryker-mutator/stryker-net/issues/2502)) ([86b4720](https://github.com/stryker-mutator/stryker-net/commit/86b4720028f17b83a2ba297bc6774a89d992332b))
+
+
+
+## [3.8.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.8.0...stryker@3.8.1) (2023-05-05)
+
+
+### Bug Fixes
+
+* **baseline:** json reports with testfiles are now correctly deserialized ([#2498](https://github.com/stryker-mutator/stryker-net/issues/2498)) ([38793e1](https://github.com/stryker-mutator/stryker-net/commit/38793e16a4f8edd1be5766433c9443de62ff447d))
+
+
+
+# [3.8.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.7.1...stryker@3.8.0) (2023-05-04)
+
+
+### Bug Fixes
+
+* **initial-build:** add quotes around buildCommand when necessary ([#2455](https://github.com/stryker-mutator/stryker-net/issues/2455)) ([7689a6e](https://github.com/stryker-mutator/stryker-net/commit/7689a6e0e622ecbfea855625706aa2e1f64be2f6))
+
+
+### Features
+
+* Add trace logging with vstest console messages ([#2490](https://github.com/stryker-mutator/stryker-net/issues/2490)) ([f072f1b](https://github.com/stryker-mutator/stryker-net/commit/f072f1b4a3bb1f4e78cbe52dcccaee47ef0a8c59))
+* **compiling:** signing key is not required even if SignAssembly is…set to true ([#2457](https://github.com/stryker-mutator/stryker-net/issues/2457)) ([f6aa688](https://github.com/stryker-mutator/stryker-net/commit/f6aa68874a2b43db2c99f7cabd9da39444521da2))
+* **reporting:** add support for realtime reporting ([#2469](https://github.com/stryker-mutator/stryker-net/issues/2469)) ([959ded0](https://github.com/stryker-mutator/stryker-net/commit/959ded0bd751d5d2b234eddfc8eca83c9a5bc75f)), closes [stryker-mutator/mutation-testing-elements#2434](https://github.com/stryker-mutator/mutation-testing-elements/issues/2434)
+* **reporting:** Report on tests in mutation report ([#1850](https://github.com/stryker-mutator/stryker-net/issues/1850)) ([98f4e97](https://github.com/stryker-mutator/stryker-net/commit/98f4e97bb90fdc5f142c18eb34e51373d1f64868))
+
+
+
+## [3.7.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.7.0...stryker@3.7.1) (2023-03-23)
+
+
+### Bug Fixes
+
+* **String mutations:** Generate empty string mutations parenthesized ([#2447](https://github.com/stryker-mutator/stryker-net/issues/2447)) ([0650cb1](https://github.com/stryker-mutator/stryker-net/commit/0650cb18a2082de58f94e5dedb5fe74a4f248bd6))
+
+
+
+# [3.7.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.6.1...stryker@3.7.0) (2023-03-20)
+
+
+### Bug Fixes
+
+* **dashboard reporter:** Print the -o hint in actual cyan instead of the literal markup ([#2406](https://github.com/stryker-mutator/stryker-net/issues/2406)) ([e8cfa7d](https://github.com/stryker-mutator/stryker-net/commit/e8cfa7d7ecb2f9b590bda658798c999ebae9377e))
+* **StringMutator:** don't mutate strings in Guid ctor ([#2428](https://github.com/stryker-mutator/stryker-net/issues/2428)) ([1baa6ca](https://github.com/stryker-mutator/stryker-net/commit/1baa6ca8054e15ccea7042ab6b1ce1d0221c5299))
+
+
+### Features
+
+* **MutantFilters:** Ignore Block mutations for blocks that already contain active mutants ([#2382](https://github.com/stryker-mutator/stryker-net/issues/2382)) ([d912c9b](https://github.com/stryker-mutator/stryker-net/commit/d912c9b6cf3d5e0703ea34440de3c667c8dc2f47))
+* **string mutations:** Add string.IsNullOrEmpty and string.IsNullOrWhiteSpace mutations ([#2429](https://github.com/stryker-mutator/stryker-net/issues/2429)) ([47b6745](https://github.com/stryker-mutator/stryker-net/commit/47b67453f6410577b928959b7cee3d87e94b0896))
+* Try loading embedded resources from on-disk module before generating ([#2433](https://github.com/stryker-mutator/stryker-net/issues/2433)) ([e919891](https://github.com/stryker-mutator/stryker-net/commit/e9198910741629020ae6f7dec6ebb8340c2205f1))
+
+
+
+## [3.6.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.6.0...stryker@3.6.1) (2023-02-17)
+
+
+### Features
+
+* **embedded resources:** Support embedded resources outside the root of the project ([#2414](https://github.com/stryker-mutator/stryker-net/issues/2414)) ([59fa56f](https://github.com/stryker-mutator/stryker-net/commit/59fa56f343aac9c837c21c5d4f122aee26c9318a))
+
+
+
+# [3.6.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.5.1...stryker@3.6.0) (2023-02-10)
+
+
+### Bug Fixes
+
+* **embedded resources generation:** Use buildalyzer to find root namespace and embedded resources ([#2404](https://github.com/stryker-mutator/stryker-net/issues/2404)) ([a4969ff](https://github.com/stryker-mutator/stryker-net/commit/a4969ff60debcb6a94a059ba2d2aa84cb54029ef))
+
+
+### Features
+
+* **html report:** Update mutation testing elements to 1.7.14 ([#2405](https://github.com/stryker-mutator/stryker-net/issues/2405)) ([98ad817](https://github.com/stryker-mutator/stryker-net/commit/98ad8178e61c1fad54c208e2712063634a0f6961))
+
+
+
+## [3.5.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.5.0...stryker@3.5.1) (2023-02-06)
+
+
+### Bug Fixes
+
+* **dashboard reporter:** fix dashboard publishing when the project name is computed ([#2397](https://github.com/stryker-mutator/stryker-net/issues/2397)) ([7395b2b](https://github.com/stryker-mutator/stryker-net/commit/7395b2bc4dfd9db962e1ea1e9d13bc7e6235c252)), closes [#1710](https://github.com/stryker-mutator/stryker-net/issues/1710)
+
+
+
+# [3.5.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.4.0...stryker@3.5.0) (2023-02-06)
+
+
+### Bug Fixes
+
+* **no test projects:** null-reference exception when no test projects are found ([#2377](https://github.com/stryker-mutator/stryker-net/issues/2377)) ([419a8a7](https://github.com/stryker-mutator/stryker-net/commit/419a8a746190d2e4262781525b59aef7791fa56f))
+* **NullCoalescingExpressionMutator:** Don't generate certain mutants when right hand side is ThrowExpression ([#2387](https://github.com/stryker-mutator/stryker-net/issues/2387)) ([#2389](https://github.com/stryker-mutator/stryker-net/issues/2389)) ([e344382](https://github.com/stryker-mutator/stryker-net/commit/e34438259c26cf6b563c7a724b3f7bba14ddf768))
+
+
+### Features
+
+* **embedded resources:** Improve extraction of embedded resources ([#2383](https://github.com/stryker-mutator/stryker-net/issues/2383)) ([43c2918](https://github.com/stryker-mutator/stryker-net/commit/43c2918362a87be6f93b634df78c6ccb80bc6fbb))
+
+
+
+# [3.4.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.3.0...stryker@3.4.0) (2022-12-23)
+
+
+### Bug Fixes
+
+* **nugetrestore:** use MsBuild option during nuget restore ([#2359](https://github.com/stryker-mutator/stryker-net/issues/2359)) ([892b69c](https://github.com/stryker-mutator/stryker-net/commit/892b69c1b0c9add9d4e35d8e65b21ac255510617))
+
+
+### Features
+
+* **pattern mutations:** Mutator for relational and logical patterns in is\switch expressions ([#2313](https://github.com/stryker-mutator/stryker-net/issues/2313)) ([70ded11](https://github.com/stryker-mutator/stryker-net/commit/70ded110c3dbf344386e012259c0d8a513ae9bbe))
+
+
+
+# [3.3.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.2.0...stryker@3.3.0) (2022-12-09)
+
+
+### Bug Fixes
+
+* **GitDiffProvider:** remove stryker-config exclusion. ([#2338](https://github.com/stryker-mutator/stryker-net/issues/2338)) ([53286d3](https://github.com/stryker-mutator/stryker-net/commit/53286d34467d335175fd8660490525546cad1c14))
+* **Solution context run:** Allow relative path for solution file  ([#2333](https://github.com/stryker-mutator/stryker-net/issues/2333)) ([01fbf8a](https://github.com/stryker-mutator/stryker-net/commit/01fbf8a0ac56aa9bfc007eaeab6e9e3d954410cd))
+
+
+### Features
+
+* **mutators:** Add new methods to LinqMutator ([#2329](https://github.com/stryker-mutator/stryker-net/issues/2329)) ([bdec359](https://github.com/stryker-mutator/stryker-net/commit/bdec359a835e139b6632fb5b2da3a27c5a116ffc))
+* **mutators:** Add null-coalescing operator mutator ([#2284](https://github.com/stryker-mutator/stryker-net/issues/2284)) ([dc7c513](https://github.com/stryker-mutator/stryker-net/commit/dc7c513681559b31e4142e7fbbc1b9a7f271ff97))
+* **solution context run:** discover solution file ([#2340](https://github.com/stryker-mutator/stryker-net/issues/2340)) ([52bc645](https://github.com/stryker-mutator/stryker-net/commit/52bc645d9f16cc4f397045dcb1bf21b87da73283))
+
+
+
+# [3.2.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.1.0...stryker@3.2.0) (2022-11-21)
+
+
+### Features
+
+* Support csharp 11 ([#2318](https://github.com/stryker-mutator/stryker-net/issues/2318)) ([7b23fa5](https://github.com/stryker-mutator/stryker-net/commit/7b23fa55cd02e88342a18c96db9a071fd041dda0))
+* Use available target framework if chosen target framework is not found ([#2322](https://github.com/stryker-mutator/stryker-net/issues/2322)) ([46435cd](https://github.com/stryker-mutator/stryker-net/commit/46435cd540cf51476aead5ecb0bb02fdc955f964))
+
+
+
+# [3.1.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.0.1...stryker@3.1.0) (2022-11-11)
+
+
+### Bug Fixes
+
+* **assignment statement mutator:** Add trivia between operands ([#2276](https://github.com/stryker-mutator/stryker-net/issues/2276)) ([9b09b2d](https://github.com/stryker-mutator/stryker-net/commit/9b09b2d8c2b080e5fdc90130daa5dddf3cc380fe))
+* **compilation:** Align source generator options to main compilation options ([#2301](https://github.com/stryker-mutator/stryker-net/issues/2301)) ([3442a8f](https://github.com/stryker-mutator/stryker-net/commit/3442a8fb8fec9d2a10ea6ae21f0f061955fc1a4d))
+* **mutator description:** multiple mutator descriptions ([#2277](https://github.com/stryker-mutator/stryker-net/issues/2277)) ([f6d605b](https://github.com/stryker-mutator/stryker-net/commit/f6d605b627bc1cbe2d95e082dda761a7adccc7e3))
+* **PrefixUnaryExpression mutator:** Handle mutations of prefixed increment/decrement ([#2285](https://github.com/stryker-mutator/stryker-net/issues/2285)) ([5de6109](https://github.com/stryker-mutator/stryker-net/commit/5de6109e6a4c2d7ac13240718a2e035b1a46a066))
+* **Project filter:** Project filter should work on Macos ([#2212](https://github.com/stryker-mutator/stryker-net/issues/2212)) ([b283f6a](https://github.com/stryker-mutator/stryker-net/commit/b283f6af64abdacd38e56abdc136964ebe7cabf6))
+* **reporting:** Correctly show whitespace in report ([#2289](https://github.com/stryker-mutator/stryker-net/issues/2289)) ([92d9e5a](https://github.com/stryker-mutator/stryker-net/commit/92d9e5afbef8b36a2aecb843ec487cbb30709490))
+* **reporting:** Spaces in the output path are supported for the auto open report option ([#2264](https://github.com/stryker-mutator/stryker-net/issues/2264)) ([dd55cb2](https://github.com/stryker-mutator/stryker-net/commit/dd55cb29eebf2ccf5e8a85276159d8ce3587e5ec))
+* rollback whole constructor if compile error mutation location cannot be found ([#2250](https://github.com/stryker-mutator/stryker-net/issues/2250)) ([a8069a7](https://github.com/stryker-mutator/stryker-net/commit/a8069a78f6e4a85cd3749a528b260925e04f8799))
+* **since:** correctly classify changed files as source or test files ([#2256](https://github.com/stryker-mutator/stryker-net/issues/2256)) ([89f04fe](https://github.com/stryker-mutator/stryker-net/commit/89f04fe8b384e2ef2cadb3ed6a8fe64d1d94b700))
+* **TestCaseFilter:** Use null instead of empty string for parameter ([#2254](https://github.com/stryker-mutator/stryker-net/issues/2254)) ([5b6f288](https://github.com/stryker-mutator/stryker-net/commit/5b6f288c9f14d1a842f439ff23e85a59c89867e8))
+
+
+### Features
+
+* **assignment mutator:** Mutate coalesce assignment operations ([#2274](https://github.com/stryker-mutator/stryker-net/issues/2274)) ([c733ffe](https://github.com/stryker-mutator/stryker-net/commit/c733ffe3e16641ab9ae75ebab8e1ce8790bc32b0))
+* **InitializerMutator:** Add object initializer mutator ([#2259](https://github.com/stryker-mutator/stryker-net/issues/2259)) ([f5bd19b](https://github.com/stryker-mutator/stryker-net/commit/f5bd19b99f4d0084379965c84ce2e0ec32c9c858))
+* **mutators:** Add Math methods mutator ([#2244](https://github.com/stryker-mutator/stryker-net/issues/2244)) ([34a87c9](https://github.com/stryker-mutator/stryker-net/commit/34a87c90e3f8c0b79a0cd71665e70893a9951618))
+* **reporting:** Specify output path for reports and logs ([#2267](https://github.com/stryker-mutator/stryker-net/issues/2267)) ([bba21d3](https://github.com/stryker-mutator/stryker-net/commit/bba21d39dd2870ee2c118c2cb15bd6cb9b7849bd))
+* **Run on complete solution:** Run stryker on all projects in a solution ([#2234](https://github.com/stryker-mutator/stryker-net/issues/2234)) ([1a0b274](https://github.com/stryker-mutator/stryker-net/commit/1a0b274616e8d29d9daedc4e606a25e9107f9fa4))
+
+
+
+## [3.0.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.0.0...stryker@3.0.1) (2022-09-16)
+
+* **html reporter:** Fix Spectre.Console link escaping by updating Spectre.Console ([#2108](https://github.com/stryker-mutator/stryker-net/issues/2108)) ([e207047](https://github.com/stryker-mutator/stryker-net/commit/e2070475911c92da619ebfbb648c9f430ab2a778))
+
+# [3.0.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@2.2.0...stryker@3.0.0) (2022-09-07)
+
+
+### Bug Fixes
+
+* **azure-fileshare-baseline:** Use full SAS token format instead of making assumptions and transformations on the token ([#2149](https://github.com/stryker-mutator/stryker-net/issues/2149)) ([9c0694e](https://github.com/stryker-mutator/stryker-net/commit/9c0694e7dda088ed1ae36d8390703691dea8e98e))
+* Stryker not properly flagging mutant as TimedOut ([#2143](https://github.com/stryker-mutator/stryker-net/issues/2143)) ([3299c18](https://github.com/stryker-mutator/stryker-net/commit/3299c182e6f3b8e5f5b3e6a62e3505edde097459))
+
+
+### Features
+
+* **initial test:** Configure stryker to fail when initial testrun fails ([#2151](https://github.com/stryker-mutator/stryker-net/issues/2151)) ([9c47a4b](https://github.com/stryker-mutator/stryker-net/commit/9c47a4b6f9f5d2c32478338ca33e6568e5ee55f3))
+
+
+### BREAKING CHANGES
+
+* **azure-fileshare-baseline:** SAS must contain `sv=` and `sig=` to be valid. SAS without sv= are no longer transformed to valid SAS.
+
+
+
+# [2.2.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@2.1.2...stryker@2.2.0) (2022-08-22)
+
+
+### Features
+
+* **reporters:** Markdown File Summary Reporter ([#2138](https://github.com/stryker-mutator/stryker-net/issues/2138)) ([0ac8347](https://github.com/stryker-mutator/stryker-net/commit/0ac8347a219f80ca7d2cbaa16971780dbeb2f685))
+* **testrunner:** Diagnose failed test discovery and provide fix hints ([#2139](https://github.com/stryker-mutator/stryker-net/issues/2139)) ([90971a2](https://github.com/stryker-mutator/stryker-net/commit/90971a290bff8eab5fcf3e4148cc440ebddf9f86))
+
+
+
 ## [2.1.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@2.1.1...stryker@2.1.2) (2022-08-05)
 
 

@@ -57,7 +57,7 @@ namespace Stryker.Core.Reporters.Progress
                 case MutantStatus.Timeout:
                     _mutantsTimeoutCount++;
                     break;
-            };
+            }
 
             _progressBar.Tick(string.Format(LoggingFormat, _numberOfMutantsRan, _mutantsToBeTested, _mutantsKilledCount, _mutantsSurvivedCount, _mutantsTimeoutCount, RemainingTime()));
         }

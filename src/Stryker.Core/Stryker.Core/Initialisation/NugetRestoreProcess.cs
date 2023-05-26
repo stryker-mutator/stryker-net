@@ -1,17 +1,17 @@
+using System;
+using System.IO;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
 using Stryker.Core.ToolHelpers;
-using System;
-using System.IO;
-using System.Linq;
 
 namespace Stryker.Core.Initialisation
 {
     public interface INugetRestoreProcess
     {
-        void RestorePackages(string solutionPath);
+        void RestorePackages(string solutionPath, string msbuildPath = null);
     }
 
     /// <summary>
@@ -28,12 +28,12 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<NugetRestoreProcess>();
         }
 
-        public void RestorePackages(string solutionPath)
+        public void RestorePackages(string solutionPath, string msbuildPath = null)
         {
             _logger.LogInformation("Restoring nuget packages using {0}", "nuget.exe");
             if (string.IsNullOrWhiteSpace(solutionPath))
             {
-                throw new InputException("Solution path is required on .net framework projects. Please provide your solution path using --solution-path ...");
+                throw new InputException("Solution path is required on .net framework projects. Please supply the solution path.");
             }
             solutionPath = Path.GetFullPath(solutionPath);
             string solutionDir = Path.GetDirectoryName(solutionPath);
@@ -45,10 +45,10 @@ namespace Stryker.Core.Initialisation
                 throw new InputException("Nuget.exe should be installed to restore .net framework nuget packages. Install nuget.exe and make sure it's included in your path.");
             }
             // Get the first nuget.exe path from the where.exe output
-            var nugetPath = nugetWhereExeResult.Output.Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).FirstOrDefault().Trim();
+            var nugetPath = nugetWhereExeResult.Output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).First().Trim();
 
             // Locate MSBuild.exe
-            var msbuildPath = new MsBuildHelper().GetMsBuildPath(_processExecutor);
+            msbuildPath ??= new MsBuildHelper().GetMsBuildPath(_processExecutor);
             var msBuildVersionOutput = _processExecutor.Start(solutionDir, msbuildPath, "-version /nologo");
             if (msBuildVersionOutput.ExitCode != ExitCodes.Success)
             {

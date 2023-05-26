@@ -23,8 +23,8 @@ pr:
     - '.github/*'
 
 variables:
-  PackageVersion: '2.1.2'
-  VersionBuildNumber: $[counter('2.1.2', 1)]
+  PackageVersion: '3.9.0'
+  VersionBuildNumber: $[counter('3.9.0', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
@@ -49,7 +49,7 @@ stages:
     displayName: Run Sonar Analysis
     dependsOn: []
     steps:
-    - task: UseDotNet@2
+    - task: UseDotNet@2.207.2
       displayName: 'Use dotnet 6'
       inputs:
         version: 6.x
@@ -62,7 +62,7 @@ stages:
         projectKey: 'stryker-net'
         projectName: 'Stryker .NET'
         projectVersion: '$(PackageVersion)'
-    - task: DotNetCoreCLI@2
+    - task: DotNetCoreCLI@2.210.0
       displayName: 'Run unit tests'
       inputs:
         command: test
@@ -114,7 +114,7 @@ stages:
       condition: succeeded()
       displayName: Run Stryker on Stryker.Core
       workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
-    - task: PublishMutationReport@0
+    - task: PublishMutationReport@1
       inputs:
         reportPattern: 'src/Stryker.Core/Stryker.Core.UnitTest/**/mutation-report.html'
 
@@ -213,13 +213,14 @@ stages:
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'linux-netcore'
-        workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
+        workingDirectory: 'integrationtest/TargetProjects'
+        strykerCommands: --solution '$(Agent.BuildDirectory)/s/integrationtest/TargetProjects/IntegrationTestApp.sln'
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:
         command: test
         projects: '**/Validation.csproj'
-        arguments: --filter Category=SingleTestProject
+        arguments: --filter Category=Solution
 
   - job: MacOsTests
     displayName: Run tests on Mac OS

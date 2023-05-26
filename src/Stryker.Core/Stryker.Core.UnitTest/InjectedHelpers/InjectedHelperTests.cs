@@ -43,8 +43,9 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
             }
 
             var syntaxes = new List<SyntaxTree>();
+            var codeInjection = new CodeInjection();
 
-            foreach (var helper in CodeInjection.MutantHelpers)
+            foreach (var helper in codeInjection.MutantHelpers)
             {
                 syntaxes.Add(CSharpSyntaxTree.ParseText(helper.Value, new CSharpParseOptions(languageVersion: version),
                     helper.Key));

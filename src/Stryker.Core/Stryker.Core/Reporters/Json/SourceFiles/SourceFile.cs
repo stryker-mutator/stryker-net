@@ -1,7 +1,7 @@
+using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.ProjectComponents;
-using System.Collections.Generic;
 
 namespace Stryker.Core.Reporters.Json.SourceFiles
 {
@@ -11,9 +11,7 @@ namespace Stryker.Core.Reporters.Json.SourceFiles
         public string Source { get; init; }
         public ISet<JsonMutant> Mutants { get; init; }
 
-        public SourceFile()
-        {
-        }
+        public SourceFile() { }
 
         public SourceFile(IReadOnlyFileLeaf file, ILogger logger = null)
         {

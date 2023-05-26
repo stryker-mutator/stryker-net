@@ -9,19 +9,11 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
     {
         /// <inheritdoc/>
         /// <remarks>We cannot mutate constants (for the time being)</remarks>
-        protected override StatementSyntax OrchestrateChildrenMutation(LocalDeclarationStatementSyntax node, MutationContext context)
-        {
-            if (node.IsConst)
-            {
+        protected override StatementSyntax OrchestrateChildrenMutation(LocalDeclarationStatementSyntax node, MutationContext context) =>
+            node.IsConst ?
                 // don't mutate const declaration statement
-                return node;
-            }
+                node : base.OrchestrateChildrenMutation(node, context);
 
-            var result = base.OrchestrateChildrenMutation(node, context);
-            // statement level mutations need to be changed to block level
-            //context.PromoteToBlockLevel();
-            return result;
-        }
         // we don't inject mutations here, we want them promoted at block level
         protected override StatementSyntax InjectMutations(LocalDeclarationStatementSyntax sourceNode,
             StatementSyntax targetNode,

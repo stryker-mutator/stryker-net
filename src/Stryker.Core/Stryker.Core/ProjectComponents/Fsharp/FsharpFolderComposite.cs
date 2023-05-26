@@ -1,8 +1,8 @@
-using static FSharp.Compiler.SyntaxTree;
+using FSharp.Compiler.Syntax;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public class FsharpFolderComposite : FolderComposite<ParsedInput>
+    public class FsharpFolderComposite : FolderComposite<ParsedInput>, IReadOnlyFolderComposite
     {
 
     }

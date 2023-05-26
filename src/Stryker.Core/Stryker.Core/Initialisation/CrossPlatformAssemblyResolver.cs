@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Text;
 using Mono.Cecil;
@@ -16,6 +17,7 @@ namespace Stryker.Core.Initialisation
     //
     // Licensed under the MIT/X11 license.
     //
+    [ExcludeFromCodeCoverage]
     public class CrossPlatformAssemblyResolver : IAssemblyResolver
     {
         private static readonly bool _onMono = Type.GetType("Mono.Runtime") != null;
