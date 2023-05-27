@@ -431,8 +431,7 @@ public class VsTestMockingHelper : TestBase
             }));
 
     protected Mock<IVsTestConsoleWrapper> BuildVsTestRunnerPool(StrykerOptions options,
-        out VsTestRunnerPool runner, IReadOnlyCollection<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> testCases = null, TestProjectsInfo testProjectsInfo = null,
-        bool succeed = true)
+        out VsTestRunnerPool runner, IReadOnlyCollection<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> testCases = null, TestProjectsInfo testProjectsInfo = null)
     {
         testCases ??= TestCases.ToList();
         var mockedVsTestConsole = new Mock<IVsTestConsoleWrapper>(MockBehavior.Strict);
@@ -453,7 +452,7 @@ public class VsTestMockingHelper : TestBase
             new Mock<IVsTestHelper>().Object,
             _fileSystem,
             _ => mockedVsTestConsole.Object,
-            hostBuilder: _ => new MockStrykerTestHostLauncher(succeed, false),
+            hostBuilder: _ => new MockStrykerTestHostLauncher(false),
             NullLogger.Instance
         );
         foreach (var path in (testProjectsInfo ?? _testProjectsInfo).GetTestAssemblies())
@@ -487,19 +486,13 @@ public class VsTestMockingHelper : TestBase
 
     private class MockStrykerTestHostLauncher : IStrykerTestHostLauncher
     {
-        public MockStrykerTestHostLauncher(bool succeed, bool isDebug)
-        {
-            IsProcessCreated = succeed;
-            IsDebug = isDebug;
-        }
+        public MockStrykerTestHostLauncher(bool isDebug) => IsDebug = isDebug;
 
         public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo) => throw new NotImplementedException();
 
         public int LaunchTestHost(TestProcessStartInfo defaultTestHostStartInfo, CancellationToken cancellationToken) => throw new NotImplementedException();
 
         public bool IsDebug { get; }
-
-        public bool IsProcessCreated { get; }
 
         public int ErrorCode { get; }
     }

@@ -98,7 +98,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void HandleVsTestCreationFailure()
         {
-            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner, succeed: false);
+            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             SetupFailingTestRun(mockVsTest);
 
             Action action = () => runner.InitialTest(SourceProjectInfo);

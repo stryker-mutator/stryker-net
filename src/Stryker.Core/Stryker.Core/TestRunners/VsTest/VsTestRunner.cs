@@ -265,19 +265,10 @@ namespace Stryker.Core.TestRunners.VsTest
                 {
                     // VsTestWrapper aborts the current test sessions on timeout, except on critical error, so we have an internal timeout (+ grace period)
                     // to detect and properly handle those events. 
-                    if (!strykerVsTestHostLauncher.IsProcessCreated)
-                    {
-                        // VsTestWrapper did not launch a test session for some reason
-                        _logger.LogError($"{RunnerId}: VsTest did not start properly.");
-                    }
-                    else
-                    {
-                        // VsTestHost appears stuck and can't be aborted
-                        _logger.LogError(
-                            $"{RunnerId}: VsTest did not report the end of test session in due time, it may have hang.");
-                        _vsTestConsole.AbortTestRun();
-                    }
-
+                    // VsTestHost appears stuck and can't be aborted
+                    _logger.LogError(
+                        $"{RunnerId}: VsTest did not report the end of test session in due time, it may have hang.");
+                    _vsTestConsole.AbortTestRun();
                     vsTestFailed = true;
                 }
             }
