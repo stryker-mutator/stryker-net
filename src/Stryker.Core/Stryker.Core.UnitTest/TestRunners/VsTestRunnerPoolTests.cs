@@ -119,7 +119,20 @@ namespace Stryker.Core.UnitTest.TestRunners
         public void DoNotTestWhenNoTestPresent()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner, testCases: new List<TestCase>());
-            SetupMockTestRun(mockVsTest, true, TestCases);
+            SetupMockTestRun(mockVsTest, true, new List<TestCase>());
+            var result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
+            // tests are successful => run should be successful
+            result.ExecutedTests.IsEmpty.ShouldBeTrue();
+        }
+
+
+        // If no tests are present in the assembly, VsTest raises no event at all
+        // previous versions of Stryker hanged when this happened
+        [Fact]
+        public void HandleWhenNoTestAreFound()
+        {
+            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner, TestCases);
+            SetupMockTestRun(mockVsTest, true, new List<TestCase>());
             var result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
             // tests are successful => run should be successful
             result.ExecutedTests.IsEmpty.ShouldBeTrue();

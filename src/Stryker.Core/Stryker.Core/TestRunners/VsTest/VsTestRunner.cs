@@ -258,37 +258,44 @@ namespace Stryker.Core.TestRunners.VsTest
                     options, eventHandler, strykerVsTestHostLauncher);
             }
 
-            if (!eventHandler.WaitEnd(timeOut + VsTestWrapperTimeOutInMs) ||
-                !session.Wait(VsTestWrapperTimeOutInMs))
-            {
-                // VsTestWrapper aborts the current test sessions on timeout, except on critical error, so we have an internal timeout (+ grace period)
-                // to detect and properly handle those events. 
-                if (!strykerVsTestHostLauncher.IsProcessCreated)
-                {
-                    // VsTestWrapper did not launch a test session for some reason
-                    _logger.LogError($"{RunnerId}: VsTest did not start properly.");
-                }
-                else
-                {
-                    // VsTestHost appears stuck and can't be aborted
-                    _logger.LogError(
-                        $"{RunnerId}: VsTest did not report the end of test session in due time, it may have hang.");
-                    _vsTestConsole.AbortTestRun();
-                }
 
-                vsTestFailed = true;
+            if (timeOut.HasValue)
+            {
+                if (!session.Wait(timeOut.Value + VsTestWrapperTimeOutInMs) || !eventHandler.WaitEnd(VsTestWrapperTimeOutInMs))
+                {
+                    // VsTestWrapper aborts the current test sessions on timeout, except on critical error, so we have an internal timeout (+ grace period)
+                    // to detect and properly handle those events. 
+                    if (!strykerVsTestHostLauncher.IsProcessCreated)
+                    {
+                        // VsTestWrapper did not launch a test session for some reason
+                        _logger.LogError($"{RunnerId}: VsTest did not start properly.");
+                    }
+                    else
+                    {
+                        // VsTestHost appears stuck and can't be aborted
+                        _logger.LogError(
+                            $"{RunnerId}: VsTest did not report the end of test session in due time, it may have hang.");
+                        _vsTestConsole.AbortTestRun();
+                    }
+
+                    vsTestFailed = true;
+                }
+            }
+            else
+            {
+                // no timeout provided ==> initial tests
+                // we wait for VsTest to end.
+                // we could add a configurable timeout, to prevent actual locking to happen during initial tests, but no idea what a good default should be
+                session.Wait();
+                // we add a grace delay for notifications to be propagated
+                eventHandler.WaitEnd(VsTestWrapperTimeOutInMs);
             }
 
 
             eventHandler.ResultsUpdated -= HandlerUpdate;
             eventHandler.VsTestFailed -= HandlerVsTestFailed;
 
-            if (!vsTestFailed)
-            {
-                return eventHandler;
-            }
-
-            return null;
+            return !vsTestFailed ? eventHandler : null;
         }
 
         private void PrepareVsTestConsole()

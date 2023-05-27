@@ -143,6 +143,11 @@ public class VsTestMockingHelper : TestBase
         Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase timeOutTest = null) =>
         Task.Run(() =>
         {
+            if (testResults.Count == 0)
+            {
+                // no test ==> no event at all
+                return;
+            }
             var timer = new Stopwatch();
             testRunEvents.HandleTestRunStatsChange(
                 new TestRunChangedEventArgs(new TestRunStatistics(0, null), null, timeOutTest == null ? null : new[] { timeOutTest }));
