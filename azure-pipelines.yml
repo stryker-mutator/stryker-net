@@ -197,6 +197,10 @@ stages:
       parameters:
         testName: 'windows-netframework'
         workingDirectory: 'integrationtest/TargetProjects/NetFramework/FullFrameworkApp.Test'
+    - script: $(Agent.BuildDirectory)/tools/dotnet-stryker
+      workingDirectory: 'integrationtest/TargetProjects/EmptyTestProject'
+      failOnStderr: false
+      continueOnError: true
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:

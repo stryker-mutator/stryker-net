@@ -254,8 +254,7 @@ namespace Stryker.Core.TestRunners.VsTest
             else
             {
                 session = _vsTestConsole.RunTestsWithCustomTestHostAsync(tests.GetGuids().Select(t => _context.VsTests[t].Case),
-                    runSettings,
-                    options, eventHandler, strykerVsTestHostLauncher);
+                    runSettings, options, eventHandler, strykerVsTestHostLauncher);
             }
 
 
@@ -267,7 +266,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     // to detect and properly handle those events. 
                     // VsTestHost appears stuck and can't be aborted
                     _logger.LogError(
-                        $"{RunnerId}: VsTest did not report the end of test session in due time, it may have hang.");
+                        $"{RunnerId}: VsTest did not report the end of test session in due time ({timeOut} ms), it may have hanged.");
                     _vsTestConsole.AbortTestRun();
                     vsTestFailed = true;
                 }
