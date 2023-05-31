@@ -73,7 +73,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             if (testCases?.Count == 0)
             {
-                    return new TestRunResult(_context.VsTests.Values, TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), "Mutants are not covered by any test!", Enumerable.Empty<string>(), TimeSpan.Zero);
+                return new TestRunResult(_context.VsTests.Values, TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), "Mutants are not covered by any test!", Enumerable.Empty<string>(), TimeSpan.Zero);
             }
             if (timeoutCalc != null && testCases != null)
             {

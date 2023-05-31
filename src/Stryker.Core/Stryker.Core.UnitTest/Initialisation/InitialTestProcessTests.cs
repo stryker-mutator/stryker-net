@@ -55,7 +55,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         public void InitialTestProcess_ShouldCalculateTestTimeout()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
-            testRunnerMock.Setup(x => x.InitialTest(It.IsAny<IProjectAndTests>())).Callback(() => Thread.Sleep(2)).Returns(new TestRunResult(true));
+            testRunnerMock.Setup(x => x.InitialTest(It.IsAny<IProjectAndTests>())).Callback(() => Thread.Sleep(10)).Returns(new TestRunResult(true));
             testRunnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(true);
             testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
             var result = _target.InitialTest( _options, null, testRunnerMock.Object);

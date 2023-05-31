@@ -57,6 +57,8 @@ public class SseServerTest : TestBase
             eventReceived.Set();
         };
 
+        Task.Yield();
+
         Task.Run(() => sseClient.StartAsync());
         Thread.Sleep(100);
 

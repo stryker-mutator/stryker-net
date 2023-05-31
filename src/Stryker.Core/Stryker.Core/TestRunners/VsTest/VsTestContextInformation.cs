@@ -252,7 +252,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap, string helperNameSpace, bool isFullFramework)
         {
             var settingsForCoverage = string.Empty;
-            var needDataCollector = forCoverage || mutantTestsMap is { };
+            var needDataCollector = forCoverage || mutantTestsMap is not null;
             var dataCollectorSettings = needDataCollector
                 ? CoverageCollector.GetVsTestSettings(
                     forCoverage,
@@ -265,11 +265,10 @@ namespace Stryker.Core.TestRunners.VsTest
                 settingsForCoverage = "<CollectDataForEachTestSeparately>true</CollectDataForEachTestSeparately>";
             }
 
-            if (_testFramework.HasFlag(TestFrameworks.xUnit))
+            if (_testFramework.HasFlag(TestFrameworks.xUnit) || _testFramework.HasFlag(TestFrameworks.MsTest))
             {
                 settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
             }
-
             var timeoutSettings = timeout is > 0
                 ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>" + Environment.NewLine
                 : string.Empty;
