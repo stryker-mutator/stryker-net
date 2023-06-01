@@ -267,6 +267,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     // VsTestHost appears stuck and can't be aborted
                     _logger.LogError(
                         $"{RunnerId}: VsTest did not report the end of test session in due time ({timeOut} ms), it may have hanged.");
+                    _logger.LogError($"{RunnerId}: ran {eventHandler.GetResults().TestResults.Count} tests.");
                     _vsTestConsole.AbortTestRun();
                     vsTestFailed = true;
                 }
