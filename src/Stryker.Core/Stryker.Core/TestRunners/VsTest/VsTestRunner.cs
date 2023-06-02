@@ -209,7 +209,6 @@ namespace Stryker.Core.TestRunners.VsTest
                 {
                     return eventHandler;
                 }
-                PrepareVsTestConsole();
                 _logger.LogWarning($"{RunnerId}: Retrying the test session.");
             }
 
@@ -222,10 +221,11 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var eventHandler = new RunEventHandler(_context.VsTests, _logger, RunnerId);
             var vsTestFailed = false;
+            var sessionFailed = false;
 
             void HandlerVsTestFailed(object sender, EventArgs e)
             {
-                vsTestFailed = true;
+                sessionFailed = true;
             }
 
             void HandlerUpdate(object sender, EventArgs e)
@@ -260,16 +260,26 @@ namespace Stryker.Core.TestRunners.VsTest
 
             if (timeOut.HasValue)
             {
-                if (!session.Wait(timeOut.Value + VsTestWrapperTimeOutInMs) || !eventHandler.WaitEnd(VsTestWrapperTimeOutInMs))
+                // we wait for the end notification for the test session
+                // ==> if it failed, results are uncertain
+                sessionFailed = !eventHandler.WaitEnd(VsTestWrapperTimeOutInMs + timeOut.Value);
+                // we wait for vsTestProcess to stop
+                // ==> if it appears hanged, we recycle it.
+                vsTestFailed = !session.Wait(VsTestWrapperTimeOutInMs);
+                if (sessionFailed)
                 {
                     // VsTestWrapper aborts the current test sessions on timeout, except on critical error, so we have an internal timeout (+ grace period)
                     // to detect and properly handle those events. 
-                    // VsTestHost appears stuck and can't be aborted
                     _logger.LogError(
                         $"{RunnerId}: VsTest did not report the end of test session in due time ({timeOut} ms), it may have hanged.");
                     _logger.LogError($"{RunnerId}: ran {eventHandler.GetResults().TestResults.Count} tests.");
+                }
+
+                if (vsTestFailed)
+                {
+                    // VsTestHost appears stuck
+                    // we try to abort
                     _vsTestConsole.AbortTestRun();
-                    vsTestFailed = true;
                 }
             }
             else
@@ -286,7 +296,12 @@ namespace Stryker.Core.TestRunners.VsTest
             eventHandler.ResultsUpdated -= HandlerUpdate;
             eventHandler.VsTestFailed -= HandlerVsTestFailed;
 
-            return !vsTestFailed ? eventHandler : null;
+            if (vsTestFailed || sessionFailed)
+            {
+                // if the session did not end properly for any level (notifications or process), we recycle the session as a precaution
+                PrepareVsTestConsole();
+            }
+            return sessionFailed ? null : eventHandler;
         }
 
         private void PrepareVsTestConsole()
