@@ -145,7 +145,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             SetupFailingTestRun(mockVsTest);
             var action = () =>  runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
             action.ShouldThrow<GeneralStrykerException>();
-            // the test will always end in a crash, VsTestRunner should retry at least a gew times
+            // the test will always end in a crash, VsTestRunner should retry at least a few times
             mockVsTest.Verify(m => m.EndSession(), Times.AtLeast(4));
         }
 
@@ -177,6 +177,16 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             var result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
             result.TimedOutTests.IsEmpty.ShouldBeFalse();
+        }
+
+        [Fact]
+        public void RetryHangedSession()
+        {
+            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
+            // the test session will hung twice
+            SetupHangedTestRun(mockVsTest, 2);
+            runner.TestMultipleMutants(SourceProjectInfo, new TimeoutValueCalculator(0, 10,9), new[] { Mutant }, null);
+            mockVsTest.Verify(m => m.EndSession(), Times.Exactly(3));
         }
 
         [Fact]
