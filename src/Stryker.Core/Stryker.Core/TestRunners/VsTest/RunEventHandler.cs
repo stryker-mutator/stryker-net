@@ -191,31 +191,19 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public void HandleRawMessage(string rawMessage) => _logger.LogTrace($"{_runnerId}: {rawMessage} [RAW]");
 
-        public bool WaitEnd(int? timeOut)
+        public bool WaitEnd(int timeOut)
         {
             lock (_lck)
             {
-                if (timeOut == null)
+                var delay = 0;
+                const int Unit = 500;
+                while (!_completed && delay < timeOut )
                 {
-                    while (!_completed)
-                    {
-                        Monitor.Wait(_lck);
-                    }
-
-                    return true;
+                    Monitor.Wait(_lck, Unit);
+                    delay += Unit;
                 }
-                else
-                {
-                    var delay = 0;
-                    const int Unit = 500;
-                    while (!_completed && delay < timeOut.Value * 3)
-                    {
-                        Monitor.Wait(_lck, Unit);
-                        delay += Unit;
-                    }
 
-                    return _completed;
-                }
+                return _completed;
             }
         }
 

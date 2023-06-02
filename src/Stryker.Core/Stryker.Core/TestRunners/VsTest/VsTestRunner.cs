@@ -204,7 +204,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             for (var attempt = 0; attempt < 5; attempt++)
             {
-                var eventHandler = RunVsTest(tests, sources, runSettings, timeOut, updateHandler);
+                var eventHandler = RunVsTest(tests, _context.GetValidSources(sources), runSettings, timeOut, updateHandler);
                 if (eventHandler != null)
                 {
                     return eventHandler;
