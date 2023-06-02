@@ -23,7 +23,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly int _id;
         private readonly ILogger _logger;
         // safety timeout for VsTestWrapper operations. We assume VsTest crashed if the timeout triggers
-        private const int VsTestWrapperTimeOutInMs = 2000;
+        private const int VsTestWrapperTimeOutInMs = 3*1000;
 
         private string RunnerId => $"Runner {_id}";
 
@@ -212,6 +212,8 @@ namespace Stryker.Core.TestRunners.VsTest
                 _logger.LogWarning($"{RunnerId}: Retrying the test session.");
             }
 
+            _logger.LogCritical($"{RunnerId}: VsTest failed, settings: {runSettings}");
+
             throw new GeneralStrykerException(
                 $"{RunnerId}: failed to run a test session despite 5 attempts. Aborting session.");
         }
@@ -268,18 +270,14 @@ namespace Stryker.Core.TestRunners.VsTest
                 vsTestFailed = !session.Wait(VsTestWrapperTimeOutInMs);
                 if (sessionFailed)
                 {
+                    // VsTestHost appears stuck
+                    // we try to abort
+                    _vsTestConsole.AbortTestRun();
                     // VsTestWrapper aborts the current test sessions on timeout, except on critical error, so we have an internal timeout (+ grace period)
                     // to detect and properly handle those events. 
                     _logger.LogError(
                         $"{RunnerId}: VsTest did not report the end of test session in due time ({timeOut} ms), it may have hanged.");
                     _logger.LogError($"{RunnerId}: ran {eventHandler.GetResults().TestResults.Count} tests.");
-                }
-
-                if (vsTestFailed)
-                {
-                    // VsTestHost appears stuck
-                    // we try to abort
-                    _vsTestConsole.AbortTestRun();
                 }
             }
             else

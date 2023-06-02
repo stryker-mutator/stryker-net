@@ -267,6 +267,34 @@ public class VsTestMockingHelper : TestBase
                         null,
                         null);
                 }));
+   protected void SetupHangedVsTest(Mock<IVsTestConsoleWrapper> mockVsTest, int repeated = 1) =>
+        mockVsTest.Setup(x =>
+            x.RunTestsWithCustomTestHostAsync(
+                It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
+                It.Is<string>(settings => !settings.Contains("<Coverage")),
+                It.Is<TestPlatformOptions>(o => o != null && o.TestCaseFilter == null),
+                It.IsAny<ITestRunEventsHandler>(),
+                It.IsAny<ITestHostLauncher>())).Returns(
+            (IEnumerable<string> _, string _, TestPlatformOptions _, ITestRunEventsHandler testRunEvents,
+                    ITestHostLauncher _) =>
+                // generate test results
+                Task.Run(() =>
+                {
+                    testRunEvents.HandleTestRunStatsChange(
+                        new TestRunChangedEventArgs(new TestRunStatistics(0, null), null, null));
+
+                    testRunEvents.HandleTestRunComplete(
+                        new TestRunCompleteEventArgs(new TestRunStatistics(0, null), false, false,
+                            null,
+                            null, TimeSpan.FromMilliseconds(10)),
+                        new TestRunChangedEventArgs(null, Array.Empty<TestResult>(),
+                            new List<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase>()),
+                        null,
+                        null);
+
+                    if (repeated-->0)
+                        Thread.Sleep(5000);
+                }));
 
     protected void SetupMockCoverageRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> coverageResults) => SetupMockCoverageRun(mockVsTest, GenerateCoverageTestResults(coverageResults));
 

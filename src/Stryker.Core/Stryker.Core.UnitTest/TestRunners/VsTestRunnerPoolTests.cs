@@ -190,6 +190,16 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         [Fact]
+        public void HangedVsTest()
+        {
+            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
+            // the test session will end properly, but VsTest will hang
+            SetupHangedVsTest(mockVsTest, 3);
+            runner.TestMultipleMutants(SourceProjectInfo, new TimeoutValueCalculator(0, 10,9), new[] { Mutant }, null);
+            mockVsTest.Verify(m => m.EndSession(), Times.Exactly(2));
+        }
+
+        [Fact]
         public void AbortOnError()
         {
             var options = new StrykerOptions();

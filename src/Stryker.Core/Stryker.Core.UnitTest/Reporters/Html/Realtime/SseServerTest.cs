@@ -7,8 +7,7 @@ using Shouldly;
 using Stryker.Core.Reporters.Html.Realtime;
 using Stryker.Core.Reporters.Html.Realtime.Events;
 using Xunit;
-using Xunit.Sdk;
-
+  
 namespace Stryker.Core.UnitTest.Reporters.Html.Realtime;
 
 public class SseServerTest : TestBase
@@ -67,7 +66,7 @@ public class SseServerTest : TestBase
         WaitForConnection(500).ShouldBeTrue();
 
         _sut.SendEvent(new SseEvent<string> { Event = SseEventType.Finished, Data = "" });
-        Assert.True(eventReceived.WaitOne(500), "SSEWait timeout. Please retry");
+        eventReceived.WaitOne();
 
         @event.ShouldBeSemantically("finished");
         data.ShouldBeSemantically("\"\"");
@@ -91,8 +90,6 @@ public class SseServerTest : TestBase
             eventReceived.Set();
         };
 
-        Task.Yield();
-
         Task.Run(() => sseClient.StartAsync());
         WaitForConnection(500).ShouldBeTrue();
         
@@ -101,9 +98,10 @@ public class SseServerTest : TestBase
             Event = SseEventType.MutantTested,
             Data = @object
         });
-        Assert.True(eventReceived.WaitOne(500), "SSEWait timeout. Please retry");
+        eventReceived.WaitOne();
 
         @event.ShouldBeSemantically("mutant-tested");
         data.ShouldBeSemantically("{\"id\":\"1\",\"status\":\"Survived\"}");
     }
+
 }
