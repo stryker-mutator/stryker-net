@@ -266,7 +266,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 // ==> if it failed, results are uncertain
                 sessionFailed = !eventHandler.Wait(VsTestWrapperTimeOutInMs + timeOut.Value);
                 // we wait for vsTestProcess to stop
-                // ==> if it appears hanged, we recycle it.
+                // ==> if it appears hung, we recycle it.
                 vsTestFailed = !session.Wait(VsTestWrapperTimeOutInMs);
                 // VsTestHost appears stuck
                 // VsTestWrapper aborts the current test sessions on timeout, except on critical error, so we have an internal timeout (+ grace period)
@@ -274,7 +274,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 if (sessionFailed)
                 {
                     _logger.LogError(
-                        $"{RunnerId}: VsTest did not report the end of test session in due time ({timeOut} ms), it may have hanged.");
+                        $"{RunnerId}: VsTest did not report the end of test session in due time ({timeOut} ms), it may be frozen.");
                     _logger.LogError($"{RunnerId}: ran {eventHandler.GetResults().TestResults.Count} tests.");
                     // workaround VsTest issue #4527
                     if (_cancelled && sources.Count() > 1)

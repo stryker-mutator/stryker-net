@@ -239,7 +239,7 @@ public class VsTestMockingHelper : TestBase
                         null,
                         null);
                 }));
-    protected void SetupHangedTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, int repeated = 1) =>
+    protected void SetupFrozenTestRun(Mock<IVsTestConsoleWrapper> mockVsTest, int repeated = 1) =>
         mockVsTest.Setup(x =>
             x.RunTestsWithCustomTestHostAsync(
                 It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),
@@ -267,7 +267,7 @@ public class VsTestMockingHelper : TestBase
                         null,
                         null);
                 }));
-   protected void SetupHangedVsTest(Mock<IVsTestConsoleWrapper> mockVsTest, int repeated = 1) =>
+   protected void SetupFrozenVsTest(Mock<IVsTestConsoleWrapper> mockVsTest, int repeated = 1) =>
         mockVsTest.Setup(x =>
             x.RunTestsWithCustomTestHostAsync(
                 It.Is<IEnumerable<string>>(t => t.Any(source => source == _testAssemblyPath)),

@@ -124,10 +124,9 @@ namespace Stryker.Core.UnitTest.TestRunners
             // tests are successful => run should be successful
             result.ExecutedTests.IsEmpty.ShouldBeTrue();
         }
-
-
+        
         // If no tests are present in the assembly, VsTest raises no event at all
-        // previous versions of Stryker hanged when this happened
+        // previous versions of Stryker froze when this happened
         [Fact]
         public void HandleWhenNoTestAreFound()
         {
@@ -180,21 +179,21 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         [Fact]
-        public void RetryHangedSession()
+        public void RetryHungSession()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             // the test session will hung twice
-            SetupHangedTestRun(mockVsTest, 2);
+            SetupFrozenTestRun(mockVsTest, 2);
             runner.TestMultipleMutants(SourceProjectInfo, new TimeoutValueCalculator(0, 10,9), new[] { Mutant }, null);
             mockVsTest.Verify(m => m.EndSession(), Times.Exactly(3));
         }
 
         [Fact]
-        public void HangedVsTest()
+        public void HungVsTest()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             // the test session will end properly, but VsTest will hang
-            SetupHangedVsTest(mockVsTest, 3);
+            SetupFrozenVsTest(mockVsTest, 3);
             runner.TestMultipleMutants(SourceProjectInfo, new TimeoutValueCalculator(0, 10,9), new[] { Mutant }, null);
             mockVsTest.Verify(m => m.EndSession(), Times.Exactly(2));
         }
