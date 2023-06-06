@@ -11,7 +11,6 @@ namespace Stryker.Core.TestRunners.VsTest
 
     public interface IStrykerTestHostLauncher : ITestHostLauncher
     {
-         int ErrorCode { get; }
     }
 
     // can't be unit tested
@@ -20,7 +19,6 @@ namespace Stryker.Core.TestRunners.VsTest
     {
         private readonly string _id;
         private readonly bool _devMode;
-        public int ErrorCode { get; private set; }
 
         private static ILogger Logger { get; }
 
@@ -71,16 +69,8 @@ namespace Stryker.Core.TestRunners.VsTest
 
             currentProcess.BeginOutputReadLine();
             currentProcess.BeginErrorReadLine();
-            currentProcess.Exited += ProcessExited;
 
             return currentProcess.Id;
-        }
-
-        private void ProcessExited(object sender, System.EventArgs e)
-        {
-            var process = (Process) sender;
-            process.WaitForExit();
-            ErrorCode = process.ExitCode;
         }
 
         private void Process_ErrorDataReceived(object sender, DataReceivedEventArgs e)

@@ -171,7 +171,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             _consoleParameters.TraceLevel.ShouldBe(TraceLevel.Verbose);
 
             // we should have the testdiscoverer log file name
-            _consoleParameters.LogFilePath.ShouldBe($"\"logs{_fileSystem.Path.DirectorySeparatorChar}TestDiscoverer_VsTest-log.txt\"");
+            _consoleParameters.LogFilePath.ShouldBe($"\"logs{_fileSystem.Path.DirectorySeparatorChar}TestDiscoverer-log.txt\"");
 
             // the log folders should exist
             _fileSystem.AllDirectories.Last().ShouldMatch(".*logs$");

@@ -147,7 +147,8 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 return determineConsoleParameters;
             }
-            var vsTestLogPath = _fileSystem.Path.Combine(LogPath, $"{runnerId}_VsTest-log.txt");
+
+            var vsTestLogPath = _fileSystem.Path.Combine(LogPath, $"{runnerId}-log.txt");
             _fileSystem.Directory.CreateDirectory(LogPath);
             determineConsoleParameters.LogFilePath = vsTestLogPath;
             return determineConsoleParameters;
