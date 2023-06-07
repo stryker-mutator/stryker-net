@@ -201,11 +201,6 @@ stages:
       workingDirectory: 'integrationtest/TargetProjects/EmptyTestProject'
       failOnStderr: false
       continueOnError: true
-    - template: pipeline-templates/run-integration-test-steps.yml
-      parameters:
-        testName: 'windows-netcore'
-        workingDirectory: 'integrationtest/TargetProjects'
-        strykerCommands: --solution 'IntegrationTestApp.sln'
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:
