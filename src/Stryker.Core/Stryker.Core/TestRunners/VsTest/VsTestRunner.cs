@@ -25,6 +25,8 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly ILogger _logger;
         // safety timeout for VsTestWrapper operations. We assume VsTest crashed if the timeout triggers
         private const int VsTestWrapperTimeOutInMs = 3*1000;
+        // maximum number of attempts for VsTest sessions, just in case we run into some of VsTest quirks
+        private const int MaxAttempts = 3;
 
         private string RunnerId => $"Runner {_id}";
 
@@ -203,7 +205,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 return new RunEventHandler(_context.VsTests, _logger, RunnerId);
             }
 
-            for (var attempt = 0; attempt < 5; attempt++)
+            for (var attempt = 0; attempt < MaxAttempts; attempt++)
             {
                 var eventHandler = RunVsTest(tests, _context.GetValidSources(sources), runSettings, timeOut, updateHandler);
                 if (eventHandler != null)
@@ -216,7 +218,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _logger.LogCritical($"{RunnerId}: VsTest failed, settings: {runSettings}");
 
             throw new GeneralStrykerException(
-                $"{RunnerId}: failed to run a test session despite 5 attempts. Aborting session.");
+                $"{RunnerId}: failed to run a test session despite ${MaxAttempts} attempts. Aborting session.");
         }
 
         private RunEventHandler RunVsTest(ITestGuids tests, IEnumerable<string> sources, string runSettings, int? timeOut,
