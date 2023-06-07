@@ -22,7 +22,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void InitializeProperly()
         {
-            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
+            BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             runner.GetTests(SourceProjectInfo).Count.ShouldBe(2);
         }
 
@@ -65,7 +65,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 Duration = duration
             };
             SetupMockTestRun(mockVsTest, new[] { testResult });
-            var result = runner.InitialTest(SourceProjectInfo);
+            runner.InitialTest(SourceProjectInfo);
             runner.Context.VsTests[TestCases[0].Id].InitialRunTime.ShouldBe(duration);
         }
 
@@ -91,7 +91,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 Duration = duration
             };
             SetupMockTestRun(mockVsTest, new[] { testResult, otherTestResult });
-            var result = runner.InitialTest(SourceProjectInfo);
+            runner.InitialTest(SourceProjectInfo);
             runner.Context.VsTests[TestCases[0].Id].InitialRunTime.ShouldBe(duration);
         }
 
@@ -179,7 +179,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         [Fact]
-        public void RetryHungSession()
+        public void ShouldRetryFrozenSession()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             // the test session will hung twice
@@ -189,7 +189,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         [Fact]
-        public void HungVsTest()
+        public void ShouldNotRetryFrozenVsTest()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             // the test session will end properly, but VsTest will hang
@@ -208,7 +208,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             mockVsTest.Setup(x => x.CancelTestRun()).Verifiable();
             SetupMockTestRun(mockVsTest, false, TestCases);
 
-            var result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, ((_, _, _, _) => false));
+            var result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, (_, _, _, _) => false);
             // verify Abort has been called
             Mock.Verify(mockVsTest);
             // and test run is failed
