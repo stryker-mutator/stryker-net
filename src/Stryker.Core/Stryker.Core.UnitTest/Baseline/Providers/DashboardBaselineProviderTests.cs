@@ -25,7 +25,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
 
             await target.Load("version");
 
-            dashboardClient.Verify(x => x.PullReport(It.Is<string>(x => x == "version")), Times.Once);
+            dashboardClient.Verify(client => client.PullReport(It.Is<string>(x => x == "version")), Times.Once);
         }
 
         [Fact]
@@ -35,13 +35,13 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
 
             var dashboardClient = new Mock<IDashboardClient>();
 
-            dashboardClient.Setup(x => x.PublishReport(It.IsAny<JsonReport>(), It.IsAny<string>()));
+            dashboardClient.Setup(x => x.PublishReport(It.IsAny<JsonReport>(), It.IsAny<string>(), false));
 
             var target = new DashboardBaselineProvider(strykerOptions, dashboardClient.Object);
 
             await target.Save(JsonReport.Build(strykerOptions, ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>()), "version");
 
-            dashboardClient.Verify(x => x.PublishReport(It.IsAny<JsonReport>(), It.Is<string>(x => x == "version")), Times.Once);
+            dashboardClient.Verify(client => client.PublishReport(It.IsAny<JsonReport>(), It.Is<string>(x => x == "version"), false), Times.Once);
         }
     }
 }
