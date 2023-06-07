@@ -203,9 +203,9 @@ stages:
       continueOnError: true
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
-        testName: 'windows-solution'
+        testName: 'windows-netcore'
         workingDirectory: 'integrationtest/TargetProjects'
-        strykerCommands: --solution 'integrationtest/TargetProjects/IntegrationTestApp.sln'
+        strykerCommands: --solution '$(Agent.BuildDirectory)\s\integrationtest\TargetProjects\IntegrationTestApp.sln'
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:
