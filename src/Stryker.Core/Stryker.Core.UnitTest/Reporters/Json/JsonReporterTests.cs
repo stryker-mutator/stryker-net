@@ -19,7 +19,7 @@ using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Json.SourceFiles;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.Reporters
+namespace Stryker.Core.UnitTest.Reporters.Json
 {
     public class JsonReporterTests : TestBase
     {
@@ -39,10 +39,7 @@ namespace ExtraProject.XUnit
     }
 }
 ";
-        public JsonReporterTests()
-        {
-            _fileSystemMock.File.WriteAllText(_testFilePath, _testFileContents);
-        }
+        public JsonReporterTests() => _fileSystemMock.File.WriteAllText(_testFilePath, _testFileContents);
 
         [Fact]
         public void JsonMutantPositionLine_ThrowsArgumentExceptionWhenSetToLessThan1()
@@ -75,7 +72,7 @@ namespace ExtraProject.XUnit
         }
 
         [Fact]
-        public void JsonReportFileComponent_ShouldHaveLanguageSetToCs()
+        public void JsonReportFileComponent_ShouldHaveLanguageSet()
         {
             var folderComponent = ReportTestHelper.CreateProjectWith();
             var fileComponent = (CsharpFileLeaf)(folderComponent as CsharpFolderComposite).GetAllFiles().First();
@@ -98,7 +95,7 @@ namespace ExtraProject.XUnit
             var folderComponent = ReportTestHelper.CreateProjectWith();
             foreach (var file in (folderComponent as CsharpFolderComposite).GetAllFiles())
             {
-                var jsonReportComponent = new SourceFile(((CsharpFileLeaf)file));
+                var jsonReportComponent = new SourceFile((CsharpFileLeaf)file);
                 foreach (var mutant in file.Mutants)
                 {
                     jsonReportComponent.Mutants.ShouldContain(m => m.Id == mutant.Id.ToString());
@@ -113,7 +110,7 @@ namespace ExtraProject.XUnit
             var folderComponent = ReportTestHelper.CreateProjectWith(duplicateMutant: true);
             foreach (var file in (folderComponent as CsharpFolderComposite).GetAllFiles())
             {
-                var jsonReportComponent = new SourceFile(((CsharpFileLeaf)file), loggerMock);
+                var jsonReportComponent = new SourceFile((CsharpFileLeaf)file, loggerMock);
                 foreach (var mutant in file.Mutants)
                 {
                     jsonReportComponent.Mutants.ShouldContain(m => m.Id == mutant.Id.ToString());
@@ -151,6 +148,16 @@ namespace ExtraProject.XUnit
             var report = JsonReport.Build(new StrykerOptions(), folderComponent, It.IsAny<TestProjectsInfo>());
 
             report.ProjectRoot.ShouldBe("/home/user/src/project/");
+        }
+
+        [Fact]
+        public void JsonReport_ShouldContainFullPath()
+        {
+            var folderComponent = ReportTestHelper.CreateProjectWith();
+
+            var report = JsonReport.Build(new StrykerOptions(), folderComponent, It.IsAny<TestProjectsInfo>());
+
+            Path.IsPathFullyQualified(report.Files.Keys.First()).ShouldBeFalse("Path should not be a relative path");
         }
 
         [Fact]

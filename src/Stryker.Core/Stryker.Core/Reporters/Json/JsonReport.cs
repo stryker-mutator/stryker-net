@@ -57,7 +57,7 @@ namespace Stryker.Core.Reporters.Json
             return files;
         }
 
-        private static IDictionary<string, SourceFile> GenerateFileReportComponents(IReadOnlyFileLeaf fileComponent) => new Dictionary<string, SourceFile> { { fileComponent.RelativePath, new SourceFile(fileComponent) } };
+        private static IDictionary<string, SourceFile> GenerateFileReportComponents(IReadOnlyFileLeaf fileComponent) => new Dictionary<string, SourceFile> { { fileComponent.FullPath, new SourceFile(fileComponent) } };
 
         private void AddTestFiles(TestProjectsInfo testProjectsInfo)
         {
