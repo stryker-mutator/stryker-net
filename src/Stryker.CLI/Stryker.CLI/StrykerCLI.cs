@@ -61,12 +61,12 @@ namespace Stryker.CLI
                 baselineCmd.Description = "Enables the baseline feature";
                 inputs.WithBaselineInput.SuppliedInput = true;
 
-                baselineCmd.Command("create", createCmd =>
+                baselineCmd.Command("recreate", createCmd =>
                 {
                     createCmd.OnExecute(() =>
                     {
                         createCmd.Description = "Creates a new baseline by doing a full stryker run";
-                        inputs.BaselineCreateEnabledInput.SuppliedInput = true;
+                        inputs.BaselineRecreateEnabledInput.SuppliedInput = true;
                         return StartApp(inputs, args, app, cmdConfigReader);
                     });
                 });

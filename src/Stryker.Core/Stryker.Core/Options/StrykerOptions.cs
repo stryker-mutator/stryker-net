@@ -111,7 +111,7 @@ namespace Stryker.Core.Options
         /// <summary>
         /// When true, a new baseline should be created.
         /// </summary>
-        public bool BaselineCreateEnabled { get; init; }
+        public bool BaselineRecreateEnabled { get; init; }
 
         /// <summary>
         /// When true, the baseline feature should be enabled.

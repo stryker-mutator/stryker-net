@@ -109,6 +109,12 @@ namespace Stryker.Core.MutantFilters
 
         private async Task<JsonReport> GetBaselineAsync()
         {
+            if (_options.BaselineRecreateEnabled)
+            {
+                _logger.LogInformation("Now running a complete test to establish a fresh baseline.");
+
+                return null;
+            }
             var branchName = _gitInfoProvider.GetCurrentBranchName();
 
             var baselineLocation = $"baseline/{branchName}";

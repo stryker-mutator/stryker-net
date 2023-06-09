@@ -9,7 +9,7 @@ namespace Stryker.Core.Options
         AdditionalTimeoutInput AdditionalTimeoutInput { get; init; }
         AzureFileStorageSasInput AzureFileStorageSasInput { get; init; }
         AzureFileStorageUrlInput AzureFileStorageUrlInput { get; init; }
-        BaselineCreateEnabledInput BaselineCreateEnabledInput { get; init; }
+        BaselineRereateEnabledInput BaselineRecreateEnabledInput { get; init; }
         BaselineProviderInput BaselineProviderInput { get; init; }
         BasePathInput BasePathInput { get; init; }
         ConcurrencyInput ConcurrencyInput { get; init; }
@@ -82,7 +82,7 @@ namespace Stryker.Core.Options
         public TestProjectsInput TestProjectsInput { get; init; } = new();
         public TestCaseFilterInput TestCaseFilterInput { get; init; } = new();
         public ReportersInput ReportersInput { get; init; } = new();
-        public BaselineCreateEnabledInput BaselineCreateEnabledInput { get; init; } = new();
+        public BaselineRereateEnabledInput BaselineRecreateEnabledInput { get; init; } = new();
         public WithBaselineInput WithBaselineInput { get; init; } = new();
         public BaselineProviderInput BaselineProviderInput { get; init; } = new();
         public AzureFileStorageUrlInput AzureFileStorageUrlInput { get; init; } = new();
@@ -112,7 +112,7 @@ namespace Stryker.Core.Options
             var basePath = BasePathInput.Validate(_fileSystem);
             var outputPath = OutputPathInput.Validate(_fileSystem);
             var reportFileNameInput = ReportFileNameInput.Validate();
-            var baselineCreateEnabled = BaselineCreateEnabledInput.Validate();
+            var baselineCreateEnabled = BaselineRecreateEnabledInput.Validate();
             var withBaseline = WithBaselineInput.Validate();
             var reporters = ReportersInput.Validate(withBaseline);
             var baselineProvider = BaselineProviderInput.Validate(reporters);
@@ -161,7 +161,7 @@ namespace Stryker.Core.Options
                 DiffIgnoreChanges = DiffIgnoreChangesInput.Validate(),
                 AzureFileStorageSas = AzureFileStorageSasInput.Validate(baselineProvider),
                 AzureFileStorageUrl = AzureFileStorageUrlInput.Validate(baselineProvider),
-                BaselineCreateEnabled = baselineCreateEnabled,
+                BaselineRecreateEnabled = baselineCreateEnabled,
                 WithBaseline = withBaseline,
                 BaselineProvider = baselineProvider,
                 FallbackVersion = FallbackVersionInput.Validate(withBaseline, projectVersion, sinceTarget),
