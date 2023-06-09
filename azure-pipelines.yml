@@ -23,8 +23,8 @@ pr:
     - '.github/*'
 
 variables:
-  PackageVersion: '3.9.0'
-  VersionBuildNumber: $[counter('3.9.0', 1)]
+  PackageVersion: '3.9.1'
+  VersionBuildNumber: $[counter('3.9.1', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
@@ -197,6 +197,7 @@ stages:
       parameters:
         testName: 'windows-netframework'
         workingDirectory: 'integrationtest/TargetProjects/NetFramework/FullFrameworkApp.Test'
+
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:
@@ -221,6 +222,10 @@ stages:
         command: test
         projects: '**/Validation.csproj'
         arguments: --filter Category=Solution
+    - script: $(Agent.BuildDirectory)/tools/dotnet-stryker
+      workingDirectory: 'integrationtest/TargetProjects/EmptyTestProject'
+      failOnStderr: false
+      continueOnError: true
 
   - job: MacOsTests
     displayName: Run tests on Mac OS

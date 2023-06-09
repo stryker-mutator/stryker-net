@@ -2,6 +2,12 @@
   "version": 1,
   "dependencies": {
     "net6.0": {
+      "coverlet.collector": {
+        "type": "Direct",
+        "requested": "[3.2.0, )",
+        "resolved": "3.2.0",
+        "contentHash": "xjY8xBigSeWIYs4I7DgUHqSNoGqnHi7Fv7/7RZD02rvZyG3hlsjnQKiVKVWKgr9kRKgmV+dEfu8KScvysiC0Wg=="
+      },
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
         "requested": "[17.6.2, )",
@@ -1016,7 +1022,7 @@
       "targetproject": {
         "type": "Project",
         "dependencies": {
-          "Library": "[3.9.0, )"
+          "Library": "[1.0.0, )"
         }
       }
     }

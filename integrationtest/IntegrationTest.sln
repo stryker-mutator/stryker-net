@@ -22,9 +22,6 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExtraProject.XUnit", "TargetProjects\ExtraProject.XUnit\ExtraProject.XUnit.csproj", "{7322B3DF-7CD6-469D-A098-5A8A628C164D}"
 EndProject
 Global
-	GlobalSection(SharedMSBuildProjectFiles) = preSolution
-		TargetProjects\SharedProject\SharedProject.projitems*{ae33ceea-7eb1-438d-abd4-3208d032c5d3}*SharedItemsImports = 13
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
@@ -68,5 +65,8 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2FEB055D-3A9A-4089-821D-F945309FCF74}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		TargetProjects\SharedProject\SharedProject.projitems*{ae33ceea-7eb1-438d-abd4-3208d032c5d3}*SharedItemsImports = 13
 	EndGlobalSection
 EndGlobal
