@@ -22,7 +22,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         [Fact]
         public void InitializeProperly()
         {
-            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
+            BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             runner.GetTests(SourceProjectInfo).Count.ShouldBe(2);
         }
 
@@ -65,7 +65,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 Duration = duration
             };
             SetupMockTestRun(mockVsTest, new[] { testResult });
-            var result = runner.InitialTest(SourceProjectInfo);
+            runner.InitialTest(SourceProjectInfo);
             runner.Context.VsTests[TestCases[0].Id].InitialRunTime.ShouldBe(duration);
         }
 
@@ -91,14 +91,14 @@ namespace Stryker.Core.UnitTest.TestRunners
                 Duration = duration
             };
             SetupMockTestRun(mockVsTest, new[] { testResult, otherTestResult });
-            var result = runner.InitialTest(SourceProjectInfo);
+            runner.InitialTest(SourceProjectInfo);
             runner.Context.VsTests[TestCases[0].Id].InitialRunTime.ShouldBe(duration);
         }
 
         [Fact]
         public void HandleVsTestCreationFailure()
         {
-            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner, succeed: false);
+            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             SetupFailingTestRun(mockVsTest);
 
             Action action = () => runner.InitialTest(SourceProjectInfo);
@@ -116,13 +116,35 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         [Fact]
+        public void DoNotTestWhenNoTestPresent()
+        {
+            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner, testCases: new List<TestCase>());
+            SetupMockTestRun(mockVsTest, true, new List<TestCase>());
+            var result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
+            // tests are successful => run should be successful
+            result.ExecutedTests.IsEmpty.ShouldBeTrue();
+        }
+        
+        // If no tests are present in the assembly, VsTest raises no event at all
+        // previous versions of Stryker froze when this happened
+        [Fact]
+        public void HandleWhenNoTestAreFound()
+        {
+            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner, TestCases);
+            SetupMockTestRun(mockVsTest, true, new List<TestCase>());
+            var result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
+            // tests are successful => run should be successful
+            result.ExecutedTests.IsEmpty.ShouldBeTrue();
+        }
+
+        [Fact]
         public void RecycleRunnerOnError()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             SetupFailingTestRun(mockVsTest);
             var action = () =>  runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
             action.ShouldThrow<GeneralStrykerException>();
-            // the test will always end in a crash, VsTestRunner should retry at least a gew times
+            // the test will always end in a crash, VsTestRunner should retry at least a few times
             mockVsTest.Verify(m => m.EndSession(), Times.AtLeast(4));
         }
 
@@ -157,6 +179,26 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         [Fact]
+        public void ShouldRetryFrozenSession()
+        {
+            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
+            // the test session will hung twice
+            SetupFrozenTestRun(mockVsTest, 2);
+            runner.TestMultipleMutants(SourceProjectInfo, new TimeoutValueCalculator(0, 10,9), new[] { Mutant }, null);
+            mockVsTest.Verify(m => m.EndSession(), Times.Exactly(3));
+        }
+
+        [Fact]
+        public void ShouldNotRetryFrozenVsTest()
+        {
+            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
+            // the test session will end properly, but VsTest will hang
+            SetupFrozenVsTest(mockVsTest, 3);
+            runner.TestMultipleMutants(SourceProjectInfo, new TimeoutValueCalculator(0, 10,9), new[] { Mutant }, null);
+            mockVsTest.Verify(m => m.EndSession(), Times.Exactly(2));
+        }
+
+        [Fact]
         public void AbortOnError()
         {
             var options = new StrykerOptions();
@@ -166,7 +208,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             mockVsTest.Setup(x => x.CancelTestRun()).Verifiable();
             SetupMockTestRun(mockVsTest, false, TestCases);
 
-            var result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, ((_, _, _, _) => false));
+            var result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, (_, _, _, _) => false);
             // verify Abort has been called
             Mock.Verify(mockVsTest);
             // and test run is failed

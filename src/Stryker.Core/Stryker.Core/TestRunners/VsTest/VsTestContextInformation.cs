@@ -147,7 +147,8 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 return determineConsoleParameters;
             }
-            var vsTestLogPath = _fileSystem.Path.Combine(LogPath, $"{runnerId}_VsTest-log.txt");
+
+            var vsTestLogPath = _fileSystem.Path.Combine(LogPath, $"{runnerId}-log.txt");
             _fileSystem.Directory.CreateDirectory(LogPath);
             determineConsoleParameters.LogFilePath = vsTestLogPath;
             return determineConsoleParameters;
@@ -163,9 +164,14 @@ namespace Stryker.Core.TestRunners.VsTest
             return result;
         }
 
+        // keeps only test assemblies which have tests.
+        public bool IsValidSourceList(IEnumerable<string> sources) => sources.Any( s=> TestsPerSource.TryGetValue(s, out var result ) && result.Count >0);
+
+        public IEnumerable<string> GetValidSources(IEnumerable<string> sources) =>
+            sources.Where(s => TestsPerSource.TryGetValue(s, out var result) && result.Count > 0);
+
         public bool AddTestSource(string source)
         {
-
             if (!_fileSystem.File.Exists(source))
             {
                 throw new GeneralStrykerException(
@@ -250,7 +256,7 @@ namespace Stryker.Core.TestRunners.VsTest
         public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap, string helperNameSpace, bool isFullFramework)
         {
             var settingsForCoverage = string.Empty;
-            var needDataCollector = forCoverage || mutantTestsMap is { };
+            var needDataCollector = forCoverage || mutantTestsMap is not null;
             var dataCollectorSettings = needDataCollector
                 ? CoverageCollector.GetVsTestSettings(
                     forCoverage,
@@ -263,11 +269,10 @@ namespace Stryker.Core.TestRunners.VsTest
                 settingsForCoverage = "<CollectDataForEachTestSeparately>true</CollectDataForEachTestSeparately>";
             }
 
-            if (_testFramework.HasFlag(TestFrameworks.xUnit))
+            if (_testFramework.HasFlag(TestFrameworks.xUnit) || _testFramework.HasFlag(TestFrameworks.MsTest))
             {
                 settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
             }
-
             var timeoutSettings = timeout is > 0
                 ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>" + Environment.NewLine
                 : string.Empty;

@@ -7,8 +7,7 @@ using Shouldly;
 using Stryker.Core.Reporters.Html.Realtime;
 using Stryker.Core.Reporters.Html.Realtime.Events;
 using Xunit;
-using Xunit.Sdk;
-
+  
 namespace Stryker.Core.UnitTest.Reporters.Html.Realtime;
 
 public class SseServerTest : TestBase
@@ -104,4 +103,5 @@ public class SseServerTest : TestBase
         @event.ShouldBeSemantically("mutant-tested");
         data.ShouldBeSemantically("{\"id\":\"1\",\"status\":\"Survived\"}");
     }
+
 }
