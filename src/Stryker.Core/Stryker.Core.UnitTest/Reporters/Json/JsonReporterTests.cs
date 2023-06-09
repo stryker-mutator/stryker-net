@@ -156,8 +156,9 @@ namespace ExtraProject.XUnit
             var folderComponent = ReportTestHelper.CreateProjectWith();
 
             var report = JsonReport.Build(new StrykerOptions(), folderComponent, It.IsAny<TestProjectsInfo>());
+            var path = report.Files.Keys.First();
 
-            Path.IsPathFullyQualified(report.Files.Keys.First()).ShouldBeFalse("Path should not be a relative path");
+            Path.IsPathFullyQualified(path).ShouldBeFalse($"{path} should not be a relative path");
         }
 
         [Fact]
