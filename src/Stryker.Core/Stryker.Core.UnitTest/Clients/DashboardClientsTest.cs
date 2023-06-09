@@ -13,7 +13,7 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Json;
-using Stryker.Core.UnitTest.Reporters;
+using Stryker.Core.UnitTest.Reporters.Json;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Clients
