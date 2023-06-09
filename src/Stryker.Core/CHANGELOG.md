@@ -1,3 +1,12 @@
+## [3.9.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.9.1...stryker@3.9.2) (2023-06-09)
+
+
+### Bug Fixes
+
+* **report:** Use fullPath for file name in json and html report ([#2567](https://github.com/stryker-mutator/stryker-net/issues/2567)) ([353bde5](https://github.com/stryker-mutator/stryker-net/commit/353bde578a0b98c36e5ee0b9830c9cd3b6408cb5))
+
+
+
 ## [3.9.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.9.0...stryker@3.9.1) (2023-06-09)
 
 
