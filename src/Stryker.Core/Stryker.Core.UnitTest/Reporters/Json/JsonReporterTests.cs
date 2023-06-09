@@ -4,6 +4,7 @@ using System.IO;
 using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+using System.Runtime.InteropServices;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -153,12 +154,12 @@ namespace ExtraProject.XUnit
         [Fact]
         public void JsonReport_ShouldContainFullPath()
         {
-            var folderComponent = ReportTestHelper.CreateProjectWith();
+            var folderComponent = ReportTestHelper.CreateProjectWith(root: RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "c://" : "");
 
             var report = JsonReport.Build(new StrykerOptions(), folderComponent, It.IsAny<TestProjectsInfo>());
             var path = report.Files.Keys.First();
 
-            Path.IsPathFullyQualified(path).ShouldBeFalse($"{path} should not be a relative path");
+            Path.IsPathFullyQualified(path).ShouldBeTrue($"{path} should not be a relative path");
         }
 
         [Fact]
