@@ -154,7 +154,7 @@ namespace ExtraProject.XUnit
         [Fact]
         public void JsonReport_ShouldContainFullPath()
         {
-            var folderComponent = ReportTestHelper.CreateProjectWith(root: RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "c://" : "");
+            var folderComponent = ReportTestHelper.CreateProjectWith(root: RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "c://" : "/");
 
             var report = JsonReport.Build(new StrykerOptions(), folderComponent, It.IsAny<TestProjectsInfo>());
             var path = report.Files.Keys.First();
