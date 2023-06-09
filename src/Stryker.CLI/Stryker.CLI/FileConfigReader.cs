@@ -25,7 +25,7 @@ namespace Stryker.CLI
                 config.Since is not null &&
                 (config.Since.Enabled.HasValue && config.Since.Enabled.Value);
 
-            inputs.WithBaselineInput.SuppliedInput =
+            inputs.WithBaselineInput.SuppliedInput ??=
                 config.Baseline is not null &&
                 (config.Baseline.Enabled.HasValue && config.Baseline.Enabled.Value);
 
