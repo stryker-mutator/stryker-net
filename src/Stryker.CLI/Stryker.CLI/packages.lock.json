@@ -1453,7 +1453,7 @@
           "Microsoft.TestPlatform.TranslationLayer": "[17.6.2, )",
           "Microsoft.Web.LibraryManager.Build": "[2.1.175, )",
           "Mono.Cecil": "[0.11.5, )",
-          "NuGet.Frameworks": "[6.6.0, )",
+          "NuGet.Frameworks": "[6.6.1, )",
           "ResXResourceReader.NetStandard": "[1.1.0, )",
           "Serilog": "[2.12.0, )",
           "Serilog.Extensions.Logging": "[7.0.0, )",
@@ -1462,8 +1462,8 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.47.0, )",
           "Spectre.Console.Analyzer": "[0.47.0, )",
-          "Stryker.DataCollector": "[3.9.2, )",
-          "Stryker.RegexMutators": "[3.9.2, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[19.2.29, )"
         }
       },
@@ -1624,7 +1624,7 @@
       },
       "NuGet.Frameworks": {
         "type": "CentralTransitive",
-        "requested": "[6.6.0, )",
+        "requested": "[6.6.1, )",
         "resolved": "6.6.1",
         "contentHash": "iRtDhL0zPqVw037fHEK9bQljTKPuOHhfIkz86/IH2P8eetr910HTTe5G8lJTuzZHh592Ze/sYhh173HIFjPSfg=="
       },
