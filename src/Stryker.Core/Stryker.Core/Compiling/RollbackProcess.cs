@@ -47,19 +47,15 @@ namespace Stryker.Core.Compiling
             foreach (var syntaxTreeMap in syntaxTreeMapping.Where(x => x.Value.Any()))
             {
                 var originalTree = syntaxTreeMap.Key;
+                Logger.LogDebug($"RollBacking mutations from {originalTree.FilePath}.");
                 if (devMode)
                 {
                     DumpBuildErrors(syntaxTreeMap);
+                    Logger.LogTrace("source {1}", originalTree);
                 }
-                else
-                {
-                    Logger.LogTrace($"RollBacking mutations from {originalTree.FilePath}.");
-                }
-
-                Logger.LogTrace("source {1}", originalTree);
                 var updatedSyntaxTree = RemoveMutations(originalTree, syntaxTreeMap.Value, devMode);
 
-                if (updatedSyntaxTree == originalTree && (lastAttempt || devMode))
+                if (updatedSyntaxTree == originalTree && lastAttempt)
                 {
                     Logger.LogCritical(
                         "Stryker.NET could not compile the project after mutation. This is probably an error for Stryker.NET and not your project. Please report this issue on github with the previous error message.");
@@ -170,21 +166,21 @@ namespace Stryker.Core.Compiling
 
         private void DumpBuildErrors(KeyValuePair<SyntaxTree, ICollection<Diagnostic>> syntaxTreeMap)
         {
-            Logger.LogInformation($"Roll backing mutations from {syntaxTreeMap.Key.FilePath}.");
+            Logger.LogDebug($"Dumping build error in file");
             var sourceLines = syntaxTreeMap.Key.ToString().Split("\n");
             foreach (var diagnostic in syntaxTreeMap.Value)
             {
                 var fileLinePositionSpan = diagnostic.Location.GetMappedLineSpan();
-                Logger.LogInformation($"Error :{diagnostic.GetMessage()}, {fileLinePositionSpan}");
+                Logger.LogDebug($"Error :{diagnostic.GetMessage()}, {fileLinePositionSpan}");
                 for (var i = Math.Max(0, fileLinePositionSpan.StartLinePosition.Line - 1);
                     i <= Math.Min(fileLinePositionSpan.EndLinePosition.Line + 1, sourceLines.Length - 1);
                     i++)
                 {
-                    Logger.LogInformation($"{i + 1}: {sourceLines[i]}");
+                    Logger.LogDebug($"{i + 1}: {sourceLines[i]}");
                 }
             }
 
-            Logger.LogInformation(Environment.NewLine);
+            Logger.LogDebug(Environment.NewLine);
         }
 
         private SyntaxTree RemoveMutations(SyntaxTree originalTree, IEnumerable<Diagnostic> diagnosticInfo, bool devMode)
@@ -195,12 +191,6 @@ namespace Stryker.Core.Compiling
 
             if (brokenMutations.Count == 0)
             {
-                if (devMode)
-                {
-                    Logger.LogCritical("Stryker.NET will stop (due to dev-mode option sets to true)");
-                    return originalTree;
-                }
-
                 // we were unable to identify any mutation that could have caused the build issue(s)
                 brokenMutations = ScanForSuspiciousMutations(diagnostics, rollbackRoot);
             }

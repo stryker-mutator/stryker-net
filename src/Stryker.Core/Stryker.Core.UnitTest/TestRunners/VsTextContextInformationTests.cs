@@ -27,6 +27,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         private readonly string _testAssemblyPath;
         private readonly TestProjectsInfo _testProjectsInfo;
         private readonly MockFileSystem _fileSystem;
+        private readonly Uri _msTestExecutorUri;
         private readonly Uri _executorUri;
         private ConsoleParameters _consoleParameters;
 
@@ -55,8 +56,9 @@ namespace Stryker.Core.UnitTest.TestRunners
 </Project>";
             _testAssemblyPath = FilePathUtils.NormalizePathSeparators(Path.Combine(filesystemRoot, "_firstTest", "bin", "Debug", "TestApp.dll"));
             _executorUri = new Uri("exec://nunit");
+            _msTestExecutorUri = new Uri("exec://mstestV2");
             var firstTest = BuildCase("T0");
-            var secondTest = BuildCase("T1");
+            var secondTest = BuildCaseMsTest("T1");
 
             var content = new CsharpFolderComposite();
             _fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -99,6 +101,8 @@ namespace Stryker.Core.UnitTest.TestRunners
         public List<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> TestCases { get; set; }
 
         private Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase BuildCase(string name) => new(name, _executorUri, _testAssemblyPath) { Id = new Guid() };
+
+        private Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase BuildCaseMsTest(string name) => new(name, _msTestExecutorUri, _testAssemblyPath) { Id = new Guid() };
 
         private VsTestContextInformation BuildVsTextContext(StrykerOptions options, out Mock<IVsTestConsoleWrapper> mockedVsTestConsole)
         {

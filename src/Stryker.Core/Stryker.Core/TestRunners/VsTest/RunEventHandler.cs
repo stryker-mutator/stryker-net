@@ -139,6 +139,7 @@ namespace Stryker.Core.TestRunners.VsTest
             ICollection<AttachmentSet> runContextAttachments,
             ICollection<string> executorUris)
         {
+            _logger.LogDebug($"{_runnerId}: Received testrun complete.");
             if (lastChunkArgs?.ActiveTests != null)
             {
                 foreach (var activeTest in lastChunkArgs.ActiveTests)

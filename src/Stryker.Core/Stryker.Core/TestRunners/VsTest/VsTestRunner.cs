@@ -24,7 +24,7 @@ namespace Stryker.Core.TestRunners.VsTest
         private int _instanceCount;
         private readonly ILogger _logger;
         // safety timeout for VsTestWrapper operations. We assume VsTest crashed if the timeout triggers
-        private const int VsTestWrapperTimeOutInMs = 3*1000;
+        private const int VsTestWrapperTimeOutInMs = 10*1000;
         // maximum number of attempts for VsTest sessions, just in case we run into some of VsTest quirks
         private const int MaxAttempts = 3;
 
@@ -70,18 +70,12 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var mutantTestsMap = new Dictionary<int, ITestGuids>();
-            var timeOutMs = timeoutCalc?.DefaultTimeout;
 
             var testCases = TestCases(mutants, mutantTestsMap);
 
             if (testCases?.Count == 0)
             {
                 return new TestRunResult(_context.VsTests.Values, TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), "Mutants are not covered by any test!", Enumerable.Empty<string>(), TimeSpan.Zero);
-            }
-            if (timeoutCalc != null && testCases != null)
-            {
-                // compute time out
-                timeOutMs = timeoutCalc.CalculateTimeoutValue((int)testCases.Sum(id => _context.VsTests[id].InitialRunTime.TotalMilliseconds));
             }
 
             var numberTestCases = testCases?.Count ?? 0;
@@ -112,6 +106,13 @@ namespace Stryker.Core.TestRunners.VsTest
                 _cancelled = true;
             }
 
+            var timeOutMs = timeoutCalc?.DefaultTimeout;
+            if (timeoutCalc != null && testCases != null)
+            {
+                // compute time out
+                timeOutMs = timeoutCalc.CalculateTimeoutValue((int)testCases.Sum(id => _context.VsTests[id].InitialRunTime.TotalMilliseconds));
+            }
+
             if (timeOutMs.HasValue)
             {
                 _logger.LogDebug($"{RunnerId}: Using {timeOutMs} ms as test run timeout");
@@ -137,8 +138,8 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
 
                 testCases = needAll ? null : mutants.SelectMany(m => m.AssessingTests.GetGuids()).ToList();
-                _logger.LogTrace($"{RunnerId}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}] " +
-                                 $"against {(testCases == null ? "all tests." : string.Join(", ", testCases))}.");
+                _logger.LogDebug($"{RunnerId}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}]");
+                _logger.LogTrace($"{RunnerId}: against {(testCases == null ? "all tests." : string.Join(", ", testCases))}.");
             }
             else
             {
@@ -188,25 +189,48 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public IRunResults RunTestSession(ITestGuids testsToRun, IProjectAndTests project, int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<IRunResults> updateHandler = null) =>
             RunTestSession(testsToRun, project.GetTestAssemblies(),
-                _context.GenerateRunSettings(timeout, false, mutantTestsMap, project.HelperNamespace, project.IsFullFramework), timeout, updateHandler).GetResults();
-
+                _context.GenerateRunSettings(timeout, false, mutantTestsMap, project.HelperNamespace, project.IsFullFramework), timeout, updateHandler).normal;
         public IRunResults RunCoverageSession(ITestGuids testsToRun, IReadOnlyCollection<string> testAssemblies, string nameSpace, bool isFullFramework) =>
             RunTestSession(testsToRun,  testAssemblies,
                 _context.GenerateRunSettings(null,
         true,
-                    null, nameSpace, isFullFramework)).GetRawResults();
+                    null, nameSpace, isFullFramework)).raw;
 
-        private RunEventHandler RunTestSession(ITestGuids tests,
+        private (IRunResults normal, IRunResults raw) RunTestSession(ITestGuids tests,
             IEnumerable<string> sources,
             string runSettings,
             int? timeOut = null,
             Action<IRunResults> updateHandler = null)
         {
 
-            if (tests.IsEveryTest && !_context.IsValidSourceList(sources))
+            var validSources = _context.GetValidSources(sources).ToList();
+            if (tests.IsEveryTest)
             {
-                _logger.LogWarning($"Test assembl{(sources.Count() <2 ? "y does" : "ies do")} not contain any test, skipping.");
-                return new RunEventHandler(_context.VsTests, _logger, RunnerId);
+                if (validSources.Count == 0)
+                {
+                    _logger.LogWarning(
+                        $"{RunnerId}: Test assembl{(sources.Count() < 2 ? "y does" : "ies do")} not contain any test, skipping.");
+                    return (new SimpleRunResults(), new SimpleRunResults());
+                }
+            }
+
+            if (validSources.Count > 1 && timeOut != null)
+            {
+                // work around VsTest issues when using multiple test assemblies
+                var normal = new SimpleRunResults();
+                var testGuids = tests.GetGuids();
+                foreach (var source in validSources)
+                {
+                    var testForSource = _context.TestsPerSource[source];
+                    var testsForAssembly = new TestGuidsList(testGuids?.Where(testForSource.Contains));
+                    normal.Merge(RunTestSession(testsForAssembly, new []{source}, runSettings, timeOut, updateHandler).normal);
+                    if (_cancelled)
+                    {
+                        break;
+                    }
+                }
+
+                return (normal, normal);
             }
 
             for (var attempt = 0; attempt < MaxAttempts; attempt++)
@@ -214,7 +238,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 var eventHandler = RunVsTest(tests, _context.GetValidSources(sources), runSettings, timeOut, updateHandler);
                 if (eventHandler != null)
                 {
-                    return eventHandler;
+                    return (eventHandler.GetResults(), eventHandler.GetRawResults());
                 }
                 _logger.LogWarning($"{RunnerId}: Retrying the test session.");
             }
@@ -222,7 +246,7 @@ namespace Stryker.Core.TestRunners.VsTest
             _logger.LogCritical($"{RunnerId}: VsTest failed, settings: {runSettings}");
 
             throw new GeneralStrykerException(
-                $"{RunnerId}: failed to run a test session despite ${MaxAttempts} attempts. Aborting session.");
+                $"{RunnerId}: failed to run a test session despite {MaxAttempts} attempts. Aborting session.");
         }
 
         private RunEventHandler RunVsTest(ITestGuids tests, IEnumerable<string> sources, string runSettings, int? timeOut,
@@ -280,7 +304,12 @@ namespace Stryker.Core.TestRunners.VsTest
                 if (sessionFailed)
                 {
                     _logger.LogError(
-                        $"{RunnerId}: VsTest did not report the end of test session in due time ({timeOut} ms), it may be frozen.");
+                        $"{RunnerId}: VsTest did not report the end of test session in due time ({timeOut} ms).");
+                    if (vsTestFailed)
+                    {
+                        _logger.LogError(
+                            $"{RunnerId}: VsTest did not stop in due time ({timeOut} ms), it may be frozen.");
+                    }
                     _logger.LogError($"{RunnerId}: ran {eventHandler.GetResults().TestResults.Count} tests.");
                     // workaround VsTest issue #4527
                     if (_cancelled && sources.Count() > 1)
@@ -291,6 +320,10 @@ namespace Stryker.Core.TestRunners.VsTest
                         vsTestFailed = false;
                     }
                 }
+                else
+                {
+                    _logger.LogDebug($"{RunnerId}: Test session finished.");
+                }
             }
             else
             {
@@ -300,6 +333,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 session.Wait();
                 // we add a grace delay for notifications to be propagated
                 eventHandler.Wait(VsTestWrapperTimeOutInMs);
+                _logger.LogDebug($"{RunnerId}: Test session finished.");
             }
             
             eventHandler.ResultsUpdated -= HandlerUpdate;
