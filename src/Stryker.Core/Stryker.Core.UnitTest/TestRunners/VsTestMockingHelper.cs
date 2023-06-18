@@ -293,7 +293,7 @@ public class VsTestMockingHelper : TestBase
                         null);
 
                     if (repeated-->0)
-                        Thread.Sleep(5000);
+                        Thread.Sleep(1000);
                 }));
 
     protected void SetupMockCoverageRun(Mock<IVsTestConsoleWrapper> mockVsTest, IReadOnlyDictionary<string, string> coverageResults) => SetupMockCoverageRun(mockVsTest, GenerateCoverageTestResults(coverageResults));
