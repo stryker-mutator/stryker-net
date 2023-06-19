@@ -9,6 +9,7 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using Stryker.Core.TestRunners.VsTest;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
@@ -192,9 +193,12 @@ namespace Stryker.Core.UnitTest.TestRunners
         public void ShouldNotRetryFrozenVsTest()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
+            var defaultTimeOut = VsTestRunner.VsTestExtraTimeOutInMs;
             // the test session will end properly, but VsTest will hang
             SetupFrozenVsTest(mockVsTest, 3);
+            VsTestRunner.VsTestExtraTimeOutInMs = 500;
             runner.TestMultipleMutants(SourceProjectInfo, new TimeoutValueCalculator(0, 10,9), new[] { Mutant }, null);
+            VsTestRunner.VsTestExtraTimeOutInMs = defaultTimeOut;
             mockVsTest.Verify(m => m.EndSession(), Times.Exactly(2));
         }
 

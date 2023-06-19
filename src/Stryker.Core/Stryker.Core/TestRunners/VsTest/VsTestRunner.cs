@@ -24,7 +24,9 @@ namespace Stryker.Core.TestRunners.VsTest
         private int _instanceCount;
         private readonly ILogger _logger;
         // safety timeout for VsTestWrapper operations. We assume VsTest crashed if the timeout triggers
-        private const int VsTestWrapperTimeOutInMs = 3*1000;
+
+        public static int VsTestExtraTimeOutInMs { get; set; } = 10 * 1000;
+
         // maximum number of attempts for VsTest sessions, just in case we run into some of VsTest quirks
         private const int MaxAttempts = 3;
 
@@ -270,10 +272,10 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 // we wait for the end notification for the test session
                 // ==> if it failed, results are uncertain
-                sessionFailed = !eventHandler.Wait(VsTestWrapperTimeOutInMs + timeOut.Value);
+                sessionFailed = !eventHandler.Wait(VsTestExtraTimeOutInMs + timeOut.Value);
                 // we wait for vsTestProcess to stop
                 // ==> if it appears hung, we recycle it.
-                vsTestFailed = !session.Wait(VsTestWrapperTimeOutInMs);
+                vsTestFailed = !session.Wait(VsTestExtraTimeOutInMs);
                 // VsTestHost appears stuck
                 // VsTestWrapper aborts the current test sessions on timeout, except on critical error, so we have an internal timeout (+ grace period)
                 // to detect and properly handle those events. 
@@ -299,7 +301,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 // we could add a configurable timeout, to prevent actual locking to happen during initial tests, but no idea what a good default should be
                 session.Wait();
                 // we add a grace delay for notifications to be propagated
-                eventHandler.Wait(VsTestWrapperTimeOutInMs);
+                eventHandler.Wait(VsTestExtraTimeOutInMs);
             }
             
             eventHandler.ResultsUpdated -= HandlerUpdate;
