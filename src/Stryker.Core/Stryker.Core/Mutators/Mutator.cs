@@ -42,7 +42,9 @@ namespace Stryker.Core.Mutators
         [MutatorDescription("Null coalescing")]
         NullCoalescing,
         [MutatorDescription("Math methods")]
-        Math
+        Math,
+        [MutatorDescription("Conditional operators")]
+        Conditional
     }
 
     public static class EnumExtension

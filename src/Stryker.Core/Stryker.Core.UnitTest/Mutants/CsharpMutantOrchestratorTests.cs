@@ -1446,6 +1446,23 @@ static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
         }
 
         [Fact]
+        public void ShouldMutateConditionalExpression()
+        {
+            string source = @"void TestMethod()
+{
+    var a = 1;
+	var x = a == 1 ? 5 : 7;
+}";
+            string expected = @"void TestMethod()
+{if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+    var a = 1;
+	var x = (StrykerNamespace.MutantControl.IsActive(3)?false:(StrykerNamespace.MutantControl.IsActive(2)?true:(StrykerNamespace.MutantControl.IsActive(1)?a != 1 :a == 1 )))? 5 : 7;
+}}";
+
+            ShouldMutateSourceInClassToExpected(source, expected);
+        }
+
+        [Fact]
         public void ShouldMutateStaticProperties()
         {
             var source = @"
