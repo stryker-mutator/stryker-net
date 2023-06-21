@@ -31,33 +31,14 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var originalNode = SyntaxFactory.ConditionalExpression(check, whenTrue, whenFalse);
 
-            var result = target.ApplyMutations(originalNode.Condition).ToList();
+            var result = target.ApplyMutations(originalNode).ToList();
 
             result.Count.ShouldBe(2, "Two mutations should have been made");
             Assert.Collection(
                 result,
-                m1 => Assert.True(m1.ReplacementNode.Kind() is SyntaxKind.TrueLiteralExpression),
-                m2 => Assert.True(m2.ReplacementNode.Kind() is SyntaxKind.FalseLiteralExpression)
+                m1 => Assert.True(m1.ReplacementNode is ParenthesizedExpressionSyntax pes && pes.Expression is ConditionalExpressionSyntax ces && ces.Condition.Kind() is SyntaxKind.TrueLiteralExpression),
+                m2 => Assert.True(m2.ReplacementNode is ParenthesizedExpressionSyntax pes && pes.Expression is ConditionalExpressionSyntax ces && ces.Condition.Kind() is SyntaxKind.FalseLiteralExpression)
             );
-        }
-
-        [Fact]
-        public void ShouldNotMutate_ParentExpression()
-        {
-            var target = new ConditionalExpressionMutator();
-            var check = SyntaxFactory.BinaryExpression(
-                SyntaxKind.EqualsExpression,
-                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(251)),
-                SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(73))
-            );
-            var whenTrue = SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1));
-            var whenFalse = SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(0));
-
-            var originalNode = SyntaxFactory.ConditionalExpression(check, whenTrue, whenFalse);
-
-            var result = target.ApplyMutations(originalNode).ToList();
-
-            result.Count.ShouldBe(0, "No mutations should have been made");
         }
 
         [Fact]
@@ -78,8 +59,10 @@ namespace Stryker.Core.UnitTest.Mutators
 
             foreach (var mutation in result)
             {
-                Assert.True(mutation.ReplacementNode is ConditionalExpressionSyntax);
-                var ces = mutation.ReplacementNode as ConditionalExpressionSyntax;
+                Assert.True(mutation.ReplacementNode is ParenthesizedExpressionSyntax);
+                var pes = mutation.ReplacementNode as ParenthesizedExpressionSyntax;
+                Assert.True(pes.Expression is ConditionalExpressionSyntax);
+                var ces = pes.Expression as ConditionalExpressionSyntax;
                 Assert.True(ces.WhenTrue.IsEquivalentTo(whenTrue));
                 Assert.True(ces.WhenFalse.IsEquivalentTo(whenFalse));
             }

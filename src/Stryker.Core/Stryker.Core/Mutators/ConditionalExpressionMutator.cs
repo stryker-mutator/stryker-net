@@ -6,24 +6,24 @@ using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators
 {
-    public class ConditionalExpressionMutator : MutatorBase<SyntaxNode>, IMutator
+    public class ConditionalExpressionMutator : MutatorBase<ConditionalExpressionSyntax>, IMutator
     {
         public override MutationLevel MutationLevel => MutationLevel.Complete;
 
-        public override IEnumerable<Mutation> ApplyMutations(SyntaxNode node)
+        public override IEnumerable<Mutation> ApplyMutations(ConditionalExpressionSyntax node)
         {
-            if (node.Parent is not ConditionalExpressionSyntax parentExpression)
-                yield break;
-
-            if (parentExpression.Condition != node)
-                yield break;
-
             yield return new Mutation()
             {
                 Type = Mutator.Conditional,
                 DisplayName = "Conditional (true) mutation",
                 OriginalNode = node,
-                ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression)
+                ReplacementNode = SyntaxFactory.ParenthesizedExpression(
+                    SyntaxFactory.ConditionalExpression(
+                        SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression),
+                        node.WhenTrue,
+                        node.WhenFalse
+                    )
+                )
             };
 
             yield return new Mutation()
@@ -31,7 +31,13 @@ namespace Stryker.Core.Mutators
                 Type = Mutator.Conditional,
                 DisplayName = "Conditional (false) mutation",
                 OriginalNode = node,
-                ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.FalseLiteralExpression)
+                ReplacementNode = SyntaxFactory.ParenthesizedExpression(
+                    SyntaxFactory.ConditionalExpression(
+                        SyntaxFactory.LiteralExpression(SyntaxKind.FalseLiteralExpression),
+                        node.WhenTrue,
+                        node.WhenFalse
+                    )
+                )
             };
         }
     }
