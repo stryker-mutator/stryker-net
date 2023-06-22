@@ -1620,7 +1620,7 @@
           "Mono.Cecil": "[0.11.5, )",
           "NuGet.Frameworks": "[6.6.1, )",
           "ResXResourceReader.NetStandard": "[1.1.0, )",
-          "Serilog": "[3.0.0, )",
+          "Serilog": "[3.0.1, )",
           "Serilog.Extensions.Logging": "[7.0.0, )",
           "Serilog.Extensions.Logging.File": "[3.0.0, )",
           "Serilog.Sinks.Console": "[4.1.0, )",
@@ -1825,9 +1825,9 @@
       },
       "Serilog": {
         "type": "CentralTransitive",
-        "requested": "[3.0.0, )",
-        "resolved": "3.0.0",
-        "contentHash": "aKLycLo/ELJu9bargBjgEJOdR2y0HP1nzVqy1KZjuuuL7f6O+fkq7LCKVvmhzBNq7Ewb9gLvBXXZxWg1x1czrw=="
+        "requested": "[3.0.1, )",
+        "resolved": "3.0.1",
+        "contentHash": "E4UmOQ++eNJax1laE+lws7E3zbhKgHsGJbO7ra0yE5smUh+5FfUPIKKBxM3MO1tK4sgpQke6/pLReDxIc/ggNw=="
       },
       "Serilog.Extensions.Logging": {
         "type": "CentralTransitive",

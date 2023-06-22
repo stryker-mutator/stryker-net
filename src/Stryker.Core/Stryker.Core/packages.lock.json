@@ -170,9 +170,9 @@
       },
       "Serilog": {
         "type": "Direct",
-        "requested": "[3.0.0, )",
-        "resolved": "3.0.0",
-        "contentHash": "aKLycLo/ELJu9bargBjgEJOdR2y0HP1nzVqy1KZjuuuL7f6O+fkq7LCKVvmhzBNq7Ewb9gLvBXXZxWg1x1czrw=="
+        "requested": "[3.0.1, )",
+        "resolved": "3.0.1",
+        "contentHash": "E4UmOQ++eNJax1laE+lws7E3zbhKgHsGJbO7ra0yE5smUh+5FfUPIKKBxM3MO1tK4sgpQke6/pLReDxIc/ggNw=="
       },
       "Serilog.Extensions.Logging": {
         "type": "Direct",
