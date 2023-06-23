@@ -202,7 +202,7 @@ The levels are:
 | Collection initializer | Standard |
 | Unary Operators | Standard |
 | Update Operators | Standard |
-| String Literals and Constants | Standard |
+| String Literals | Standard |
 | Linq Methods | Standard |
 | Checked Statements | Standard |
 | Regex | Advanced |
