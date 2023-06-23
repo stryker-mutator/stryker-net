@@ -59,9 +59,12 @@ namespace Stryker.CLI
             app.Command("baseline", baselineCmd =>
             {
                 baselineCmd.Description = "Enables the baseline feature";
+                cmdConfigReader.RegisterCommandLineOptions(baselineCmd, inputs);
 
                 baselineCmd.Command("recreate", createCmd =>
                 {
+                    cmdConfigReader.RegisterCommandLineOptions(createCmd, inputs);
+
                     createCmd.OnExecute(() =>
                     {
                         inputs.WithBaselineInput.SuppliedInput = true;
@@ -94,7 +97,10 @@ namespace Stryker.CLI
                 {
                     Console.Error.WriteLine();
                     Console.Error.WriteLine("Did you mean this?");
-                    Console.Error.WriteLine("    " + uex.NearestMatches.First());
+                    foreach (var nearMatch in uex.NearestMatches)
+                    {
+                        Console.Error.WriteLine("    " + nearMatch);
+                    }
                 }
 
                 return ExitCodes.OtherError;

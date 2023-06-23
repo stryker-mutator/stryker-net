@@ -6,6 +6,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -26,26 +27,6 @@ namespace Stryker.Core.MutantFilters
 
             _diffResult = diffProvider.ScanDiff();
             _tests = diffProvider.Tests;
-
-            if (_diffResult != null)
-            {
-                _logger.LogInformation("{0} files changed", (_diffResult.ChangedSourceFiles?.Count ?? 0) + (_diffResult.ChangedTestFiles?.Count ?? 0));
-
-                if (_diffResult.ChangedSourceFiles != null)
-                {
-                    foreach (var changedFile in _diffResult.ChangedSourceFiles)
-                    {
-                        _logger.LogInformation("Changed file {0}", changedFile);
-                    }
-                }
-                if (_diffResult.ChangedTestFiles != null)
-                {
-                    foreach (var changedFile in _diffResult.ChangedTestFiles)
-                    {
-                        _logger.LogInformation("Changed test file {0}", changedFile);
-                    }
-                }
-            }
         }
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options)
@@ -78,7 +59,32 @@ namespace Stryker.Core.MutantFilters
                 filteredMutants = ResetMutantStatusForChangedTests(mutants);
             }
 
+            LogChangedFiles(options);
+
             return filteredMutants;
+        }
+
+        private void LogChangedFiles(StrykerOptions options)
+        {
+            if (_diffResult != null && !options.BaselineRecreateEnabled)
+            {
+                _logger.LogInformation("{0} files changed", (_diffResult.ChangedSourceFiles?.Count ?? 0) + (_diffResult.ChangedTestFiles?.Count ?? 0));
+
+                if (_diffResult.ChangedSourceFiles != null)
+                {
+                    foreach (var changedFile in _diffResult.ChangedSourceFiles)
+                    {
+                        _logger.LogInformation("Changed file {0}", changedFile);
+                    }
+                }
+                if (_diffResult.ChangedTestFiles != null)
+                {
+                    foreach (var changedFile in _diffResult.ChangedTestFiles)
+                    {
+                        _logger.LogInformation("Changed test file {0}", changedFile);
+                    }
+                }
+            }
         }
 
         private IEnumerable<Mutant> SetNotRunMutantsToIgnored(IEnumerable<Mutant> mutants)
