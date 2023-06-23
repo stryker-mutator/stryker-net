@@ -1,5 +1,10 @@
 {
   "stryker-config": {
+    "baseline": {
+      "enabled": true,
+      "provider": "AzureFileStorage",
+      "azure-fileshare-url": "https://strykernetbaseline.file.core.windows.net/baselines"
+    },
     "reporters": [
       "Dots",
       "ClearText",
