@@ -13,7 +13,7 @@ namespace Stryker.Core.UnitTest.Mutators
         public void ShouldBeMutationLevelStandard()
         {
             var target = new NullCoalescingExpressionMutator();
-            target.MutationLevel.ShouldBe(MutationLevel.Basic);
+            target.MutationLevel.ShouldBe(MutationLevel.Standard);
         }
 
         [Fact]

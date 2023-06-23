@@ -18,7 +18,6 @@ namespace Stryker.Core.Mutators
                 Mutator = mutator;
                 KindsToMutate = kindsToMutate;
             }
-
         }
 
         private static readonly Dictionary<SyntaxKind, MutationData> _kindsToMutate = new Dictionary<SyntaxKind, MutationData>()
