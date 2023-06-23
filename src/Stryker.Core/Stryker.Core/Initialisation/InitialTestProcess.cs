@@ -40,8 +40,8 @@ namespace Stryker.Core.Initialisation
             _logger.LogDebug("Initial test run output: {0}.", initTestRunResult.ResultMessage);
 
             TimeoutValueCalculator = new TimeoutValueCalculator(options.AdditionalTimeout,
-                (int)stopwatch.ElapsedMilliseconds - (int)initTestRunResult.Duration.TotalMilliseconds,
-                (int)stopwatch.ElapsedMilliseconds);
+                (int)stopwatch.ElapsedMilliseconds,
+                (int)initTestRunResult.Duration.TotalMilliseconds);
 
             return new InitialTestRun(initTestRunResult, TimeoutValueCalculator);
         }

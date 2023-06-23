@@ -1,3 +1,22 @@
+## [3.9.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.9.1...stryker@3.9.2) (2023-06-09)
+
+
+### Bug Fixes
+
+* **report:** Use fullPath for file name in json and html report ([#2567](https://github.com/stryker-mutator/stryker-net/issues/2567)) ([353bde5](https://github.com/stryker-mutator/stryker-net/commit/353bde578a0b98c36e5ee0b9830c9cd3b6408cb5))
+
+
+
+## [3.9.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.9.0...stryker@3.9.1) (2023-06-09)
+
+
+### Bug Fixes
+
+* exception when source files in more than one test project ([#2542](https://github.com/stryker-mutator/stryker-net/issues/2542)) ([e280f32](https://github.com/stryker-mutator/stryker-net/commit/e280f322bf63428dfd68c2bac9bf2d4f11a385a0))
+* **testrunner:** fix scenario where vstest would hang if no tests were detected ([#2550](https://github.com/stryker-mutator/stryker-net/issues/2550)) ([e77dc26](https://github.com/stryker-mutator/stryker-net/commit/e77dc26d10525d995b98522c2c08bf37da978415))
+
+
+
 # [3.9.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.8.2...stryker@3.9.0) (2023-05-12)
 
 

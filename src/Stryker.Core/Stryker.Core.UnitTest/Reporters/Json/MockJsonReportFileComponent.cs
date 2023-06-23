@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Stryker.Core.Reporters.Json.SourceFiles;
 
-namespace Stryker.Core.UnitTest.Reporters
+namespace Stryker.Core.UnitTest.Reporters.Json
 {
     public class MockJsonReportFileComponent : SourceFile
     {

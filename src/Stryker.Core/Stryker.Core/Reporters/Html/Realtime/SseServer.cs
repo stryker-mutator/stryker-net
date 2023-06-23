@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,6 +25,8 @@ public class SseServer : ISseServer
         _writers = new List<StreamWriter>();
     }
 
+    public event EventHandler<EventArgs> ClientConnected;
+
     private static int FreeTcpPort()
     {
         var listener = new TcpListener(IPAddress.Loopback, 0);
@@ -37,7 +39,6 @@ public class SseServer : ISseServer
     public void OpenSseEndpoint()
     {
         _listener.Start();
-
         Task.Run(ListenForConnectionsAsync);
     }
 
@@ -57,6 +58,7 @@ public class SseServer : ISseServer
 
             var writer = new StreamWriter(response.OutputStream);
             _writers.Add(writer);
+            ClientConnected?.Invoke(this, EventArgs.Empty);
         }
     }
 

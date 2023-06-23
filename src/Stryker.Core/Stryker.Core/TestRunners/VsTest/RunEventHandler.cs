@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -123,7 +124,6 @@ namespace Stryker.Core.TestRunners.VsTest
                     _inProgress[activeTest.Id] = activeTest;
                 }
             }
-
             if (testRunChangedArgs.NewTestResults == null || !testRunChangedArgs.NewTestResults.Any())
             {
                 return;
@@ -191,31 +191,19 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public void HandleRawMessage(string rawMessage) => _logger.LogTrace($"{_runnerId}: {rawMessage} [RAW]");
 
-        public bool WaitEnd(int? timeOut)
+        public bool Wait(int timeOut)
         {
             lock (_lck)
             {
-                if (timeOut == null)
-                {
-                    while (!_completed)
-                    {
-                        Monitor.Wait(_lck);
-                    }
+                var watch = new Stopwatch();
+                watch.Start();
 
-                    return true;
-                }
-                else
+                while (!_completed && watch.ElapsedMilliseconds < timeOut )
                 {
-                    var delay = 0;
-                    const int Unit = 500;
-                    while (!_completed && delay < timeOut.Value * 3)
-                    {
-                        Monitor.Wait(_lck, Unit);
-                        delay += Unit;
-                    }
-
-                    return _completed;
+                    Monitor.Wait(_lck, Math.Max(0, (int)(timeOut-watch.ElapsedMilliseconds)));
                 }
+
+                return _completed;
             }
         }
 

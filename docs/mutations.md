@@ -153,7 +153,7 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `UnionBy()`          | `IntersectBy()`       |
 | `IntersectBy()`      | `UnionBy()`           |
 
-## String Literals and Constants (_string_)
+## String Literals (_string_)
 | Original | Mutated |
 | ------------- | ------------- |
 | `"foo"` | `""` |

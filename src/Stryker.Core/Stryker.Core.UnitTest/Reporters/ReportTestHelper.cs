@@ -10,7 +10,7 @@ namespace Stryker.Core.UnitTest.Reporters
 {
     public static class ReportTestHelper
     {
-        public static IProjectComponent CreateProjectWith(bool duplicateMutant = false, int mutationScore = 60)
+        public static IProjectComponent CreateProjectWith(bool duplicateMutant = false, int mutationScore = 60, string root = "/")
         {
             var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
             var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
@@ -23,14 +23,14 @@ namespace Stryker.Core.UnitTest.Reporters
                 Type = Mutator.Arithmetic
             };
 
-            var folder = new CsharpFolderComposite { FullPath = "/home/user/src/project/", RelativePath = "" };
-            int mutantCount = 0;
+            var folder = new CsharpFolderComposite { FullPath = $"{root}home/user/src/project/", RelativePath = "" };
+            var mutantCount = 0;
             for (var i = 1; i <= 2; i++)
             {
                 var addedFolder = new CsharpFolderComposite
                 {
                     RelativePath = $"{i}",
-                    FullPath = $"/home/user/src/project/{i}",
+                    FullPath = $"{root}home/user/src/project/{i}",
                 };
                 folder.Add(addedFolder);
 
@@ -40,7 +40,7 @@ namespace Stryker.Core.UnitTest.Reporters
                     addedFolder.Add(new CsharpFileLeaf()
                     {
                         RelativePath = $"{i}/SomeFile{y}.cs",
-                        FullPath = $"/home/user/src/project/{i}/SomeFile{y}.cs",
+                        FullPath = $"{root}home/user/src/project/{i}/SomeFile{y}.cs",
                         Mutants = m,
                         SourceCode = "void M(){ int i = 0 + 8; }"
                     });

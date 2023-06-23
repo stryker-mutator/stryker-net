@@ -23,10 +23,10 @@ pr:
     - '.github/*'
 
 variables:
-  PackageVersion: '3.9.0'
-  VersionBuildNumber: $[counter('3.9.0', 1)]
+  PackageVersion: '3.9.2'
+  VersionBuildNumber: $[counter('3.9.2', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
-  ProjectsToPack: src/Stryker.Core/Stryker.Core/Stryker.Core.csproj;src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
+  ProjectsToPack: src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
   AzureArtifactFeedUri: https://pkgs.dev.azure.com/stryker-mutator/Stryker/_packaging/stryker-net/nuget/v3/index.json
   MygetFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
@@ -197,6 +197,7 @@ stages:
       parameters:
         testName: 'windows-netframework'
         workingDirectory: 'integrationtest/TargetProjects/NetFramework/FullFrameworkApp.Test'
+
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:
@@ -221,6 +222,10 @@ stages:
         command: test
         projects: '**/Validation.csproj'
         arguments: --filter Category=Solution
+    - script: $(Agent.BuildDirectory)/tools/dotnet-stryker
+      workingDirectory: 'integrationtest/TargetProjects/EmptyTestProject'
+      failOnStderr: false
+      continueOnError: true
 
   - job: MacOsTests
     displayName: Run tests on Mac OS
@@ -285,45 +290,6 @@ stages:
         custom: pack
         arguments: --output $(Build.ArtifactStagingDirectory)/release
         workingDirectory: 'src/Stryker.Core/Stryker.Core'
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact: release'
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)/release'
-        ArtifactName: release
-
-- stage: PublishBranchReleaseArtifact
-  displayName: Publish Release Artifact
-  dependsOn:
-    - Analysis
-    - IntegrationTests
-  condition: and(not(failed()), and(ne(variables['Build.Reason'], 'PullRequest'), ne(variables['Build.SourceBranch'], 'refs/heads/master')))
-  jobs:
-  - job: PublishRelease
-    displayName: Publish Release Artifacts
-    steps:
-    - template: pipeline-templates/populate-cache-steps.yml
-    - task: UseDotNet@2
-      displayName: 'Use dotnet 6'
-      inputs:
-        version: 6.x
-    - task: DotNetCoreCLI@2
-      displayName: 'Restore vstest binaries'
-      inputs:
-        command: 'custom'
-        custom: 'restore'
-        arguments: '--packages ./.vstest/'
-        workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
-    - script: dotnet pack --output $(Build.ArtifactStagingDirectory)/release
-      displayName: 'Pack Stryker.CLI'
-      workingDirectory: 'src/Stryker.CLI/Stryker.CLI'
-    - script: dotnet pack --output $(Build.ArtifactStagingDirectory)/release
-      displayName: 'Pack Stryker.Core'
-      workingDirectory: 'src/Stryker.Core/Stryker.Core'
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Artifact: release'
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)/release'
-        ArtifactName: release
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Artifact: release'
       inputs:
