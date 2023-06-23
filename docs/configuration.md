@@ -104,7 +104,7 @@ The patterns support [globbing syntax](https://en.wikipedia.org/wiki/Glob_(progr
 | '\*\*/\*.\*'   | MyFolder/MyFactory.cs    | Yes               |
 | '!\*\*/MyFactory.cs'   | MyFolder/MyFactory.cs    | No        |
 
-To allow more fine grained filtering you can also specify the span of text that should be in- or excluded. A span is defined by the indices of the first character and the last character.
+To allow more fine-grained filtering you can also specify the span of text that should be in- or excluded. A span is defined by the indices of the first character and the last character.
 
 ```bash
 dotnet stryker -m "MyFolder/MyService.cs{10..100}"
@@ -236,7 +236,7 @@ Default: `html`
 Command line: `[-o:html|--open-report:dashboard]`
 Config file: `N/A`
 
-When this option is passed, generated reports should open in the browser automatically after Stryker is done. Both html and dashboard reports can be opened automatically.
+When this option is passed, generated reports should open in the browser automatically once Stryker starts testing mutants, and will update the report till Stryker is done. Both html and dashboard reports can be opened automatically.
 
 Valid values:
 - html
