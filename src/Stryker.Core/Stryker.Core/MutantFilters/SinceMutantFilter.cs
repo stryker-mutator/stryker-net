@@ -1,4 +1,6 @@
 
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.DiffProviders;
@@ -6,9 +8,6 @@ using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Stryker.Core.MutantFilters
 {
