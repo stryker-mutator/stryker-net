@@ -11,7 +11,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         public void ShouldHaveHelpText()
         {
             var target = new OpenReportInput();
-            target.HelpText.ShouldBe(@"If enabled stryker will attempt to open the Html report in your browser when the results are calculated. | default: 'Html' | allowed: Html, Dashboard");
+            target.HelpText.ShouldBe(@"When this option is passed, generated reports should open in the browser automatically once Stryker starts testing mutants, and will update the report till Stryker is done. Both html and dashboard reports can be opened automatically. | default: 'Html' | allowed: Html, Dashboard");
         }
 
         [Fact]

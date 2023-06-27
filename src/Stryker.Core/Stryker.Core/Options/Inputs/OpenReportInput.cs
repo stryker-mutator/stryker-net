@@ -15,7 +15,7 @@ namespace Stryker.Core.Options.Inputs
     {
         public override string Default => "Html";
 
-        protected override string Description => "If enabled stryker will attempt to open the Html report in your browser when the results are calculated.";
+        protected override string Description => "When this option is passed, generated reports should open in the browser automatically once Stryker starts testing mutants, and will update the report till Stryker is done. Both html and dashboard reports can be opened automatically.";
 
         protected override IEnumerable<string> AllowedOptions => Enum.GetNames(typeof(ReportType));
 
