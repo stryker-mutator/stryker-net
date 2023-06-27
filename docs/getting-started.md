@@ -22,7 +22,7 @@ Make sure NuGet targets and build tasks are installed. You can install them with
 
 ## Migrating
 
-Coming from Stryker.NET V0.x? Take a look at our [migration guide](https://stryker-mutator.io/docs/stryker-net/migration-guide).
+Coming from an older version of Stryker.NET? Take a look at our [migration guide](https://stryker-mutator.io/docs/stryker-net/migration-guide).
 
 # Install stryker
 
