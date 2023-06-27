@@ -30,7 +30,7 @@ Example:
 
 ![progress bar reporter](./images/progress-bar-net.png)
 
-# Dashboard reporter
+## Dashboard reporter
 The dashboard reporter will upload your stryker result as json to the [stryker dashboard](https://dashboard.stryker-mutator.io/). To use this reporter some settings should be configured:
 
 ```bash
