@@ -1,4 +1,3 @@
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
@@ -11,10 +10,10 @@ namespace Stryker.Core.UnitTest.Mutators
     public class ConditionalExpressionMutatorTests : TestBase
     {
         [Fact]
-        public void ShouldBeMutationLevelComplete()
+        public void ShouldBeMutationLevelStandard()
         {
             var target = new ConditionalExpressionMutator();
-            target.MutationLevel.ShouldBe(MutationLevel.Complete);
+            target.MutationLevel.ShouldBe(MutationLevel.Standard);
         }
 
         [Fact]

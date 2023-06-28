@@ -39,12 +39,6 @@ namespace Stryker.Core.Mutators
                         replacement = NegateCondition(whileStatementSyntax.Condition);
                     }
                     break;
-                case ConditionalExpressionSyntax conditionalExpressionSyntax:
-                    if (conditionalExpressionSyntax.Condition == node)
-                    {
-                        replacement = NegateCondition(conditionalExpressionSyntax.Condition);
-                    }
-                    break;
             }
 
             if (replacement != null)

@@ -8,7 +8,7 @@ namespace Stryker.Core.Mutators
 {
     public class ConditionalExpressionMutator : MutatorBase<ConditionalExpressionSyntax>, IMutator
     {
-        public override MutationLevel MutationLevel => MutationLevel.Complete;
+        public override MutationLevel MutationLevel => MutationLevel.Standard;
 
         public override IEnumerable<Mutation> ApplyMutations(ConditionalExpressionSyntax node)
         {

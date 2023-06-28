@@ -48,7 +48,6 @@ namespace TestApplication
         [Theory]
         [InlineData("if (Method()) => return true;")]
         [InlineData("while (Method()) => age++;")]
-        [InlineData("(Method()? 1:2);")]
         public void MutatesStatementWithMethodCallWithNoArguments(string method)
         {
             var target = new NegateConditionMutator();
@@ -60,20 +59,6 @@ namespace TestApplication
             var mutation = result.ShouldHaveSingleItem();
             mutation.ReplacementNode.ToString().ShouldBe("!(Method())");
             mutation.DisplayName.ShouldBe("Negate expression");
-        }
-
-        [Theory]
-        [InlineData("var y = x is object result ? result.ToString() : null;")] // can't mutate inline var declaration
-        public void ShouldNotMutateThis(string method)
-        {
-            var target = new NegateConditionMutator();
-            SyntaxTree tree = CSharpSyntaxTree.ParseText(method);
-
-
-            var expressionSyntax = tree.GetRoot().DescendantNodes().OfType<ConditionalExpressionSyntax>().Single();
-            var result = target.ApplyMutations(expressionSyntax.Condition).ToList();
-
-            result.ShouldBeEmpty();
         }
     }
 }
