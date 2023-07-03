@@ -172,7 +172,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             using var runner = BuildVsTextContext(new StrykerOptions { LogOptions = new LogOptions { LogToFile = true } }, out _);
             runner.AddTestSource(_testAssemblyPath);
             // logging should be at defined level
-            _consoleParameters.TraceLevel.ShouldBe(TraceLevel.Verbose);
+            _consoleParameters.TraceLevel.ShouldBe(TraceLevel.Info);
 
             // we should have the testdiscoverer log file name
             _consoleParameters.LogFilePath.ShouldBe($"\"logs{_fileSystem.Path.DirectorySeparatorChar}TestDiscoverer-log.txt\"");

@@ -148,6 +148,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 return determineConsoleParameters;
             }
 
+            determineConsoleParameters.TraceLevel = Options.DevMode ? TraceLevel.Verbose : TraceLevel.Info;
             var vsTestLogPath = _fileSystem.Path.Combine(LogPath, $"{runnerId}-log.txt");
             _fileSystem.Directory.CreateDirectory(LogPath);
             determineConsoleParameters.LogFilePath = vsTestLogPath;
