@@ -35,3 +35,7 @@ and VsTest will automatically stops the test session if it is still running when
 #### Known issues (As of VsTest 17.6,)
 - Cancelled test sessions may never end: VsTest may not report the end of a cancelled test session when more than one testhost process was required.
 Note that this also applies to session cancelled by the timeout logic. When this happen, the endsession event is not raised, but the task does end.
+- Crashed test sessions (StackOverflow, OutOfMemory....) may appear as timeout. Note the the (VsTest) logs will reflect the crash, but the VsTest server
+session will still wait for the end session event
+- Providing an incorrect TestSettings file will result in nothing happening, without any error report. This happens if the file is corrupted as well as with a negative timeouts
+- Some settings will be reported in the logs as not recognized or obsolete, but they are still needed by some test adapters

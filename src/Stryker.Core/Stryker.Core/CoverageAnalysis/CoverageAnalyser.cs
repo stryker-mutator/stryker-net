@@ -104,10 +104,6 @@ namespace Stryker.Core.CoverageAnalysis
             {
                 mutant.CoveringTests = everytest;
                 mutant.AssessingTests = TestGuidsList.EveryTest();
-                /*
-                _logger.LogDebug(
-                    $"Mutant {mutant.Id} will be tested against all tests.");
-                */
             }
             else if (resultTingRequirements.HasFlag(MutationTestingRequirements.Static) || mutant.IsStaticValue)
             {
@@ -116,10 +112,6 @@ namespace Stryker.Core.CoverageAnalysis
                 mutant.AssessingTests = allTestsGuidsExceptTrusted.Merge(assessingTests).Excluding(failedTest);
                 
                 mutant.IsStaticValue = true;
-                /*
-                _logger.LogDebug(
-                    $"Mutant {mutant.Id} will be tested against most tests ({mutant.AssessingTests.Count}).");
-                */
             }
             else
             {

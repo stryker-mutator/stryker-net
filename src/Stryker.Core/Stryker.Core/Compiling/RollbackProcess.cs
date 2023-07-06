@@ -53,7 +53,7 @@ namespace Stryker.Core.Compiling
                     DumpBuildErrors(syntaxTreeMap);
                     Logger.LogTrace("source {1}", originalTree);
                 }
-                var updatedSyntaxTree = RemoveMutations(originalTree, syntaxTreeMap.Value, devMode);
+                var updatedSyntaxTree = RemoveMutations(originalTree, syntaxTreeMap.Value);
 
                 if (updatedSyntaxTree == originalTree && lastAttempt)
                 {
@@ -183,7 +183,7 @@ namespace Stryker.Core.Compiling
             Logger.LogDebug(Environment.NewLine);
         }
 
-        private SyntaxTree RemoveMutations(SyntaxTree originalTree, IEnumerable<Diagnostic> diagnosticInfo, bool devMode)
+        private SyntaxTree RemoveMutations(SyntaxTree originalTree, IEnumerable<Diagnostic> diagnosticInfo)
         {
             var rollbackRoot = originalTree.GetRoot();
             // find all if statements to remove

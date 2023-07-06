@@ -194,53 +194,24 @@ namespace Stryker.Core.TestRunners.VsTest
             RunTestSession(testsToRun, project.GetTestAssemblies(),
                 _context.GenerateRunSettings(timeout, false, mutantTestsMap, project.HelperNamespace, project.IsFullFramework), timeout, updateHandler).normal;
         public IRunResults RunCoverageSession(ITestGuids testsToRun, IReadOnlyCollection<string> testAssemblies, string nameSpace, bool isFullFramework) =>
-            RunTestSession(testsToRun,  testAssemblies,
-                _context.GenerateRunSettings(null,
-        true,
-                    null, nameSpace, isFullFramework)).raw;
+            RunTestSession(testsToRun,  testAssemblies, _context.GenerateRunSettings(null,true, null, nameSpace, isFullFramework)).raw;
 
         private (IRunResults normal, IRunResults raw) RunTestSession(ITestGuids tests,
             IEnumerable<string> sources,
             string runSettings,
             int? timeOut = null,
-            Action<IRunResults> updateHandler = null,
-            RunEventHandler runEventHandler = null)
+            Action<IRunResults> updateHandler = null)
         {
 
             var validSources = _context.GetValidSources(sources).ToList();
-            if (tests.IsEveryTest)
+            if (tests.IsEveryTest && validSources.Count == 0)
             {
-                if (validSources.Count == 0)
-                {
-                    _logger.LogWarning(
-                        $"{RunnerId}: Test assembl{(sources.Count() < 2 ? "y does" : "ies do")} not contain any test, skipping.");
-                    return (new SimpleRunResults(), new SimpleRunResults());
-                }
+                _logger.LogWarning(
+                    $"{RunnerId}: Test assembl{(sources.Count() < 2 ? "y does" : "ies do")} not contain any test, skipping.");
+                return (new SimpleRunResults(), new SimpleRunResults());
             }
 
-            runEventHandler = new RunEventHandler(_context.VsTests, _logger, RunnerId);
-            if (validSources.Count > 1 && timeOut != null)
-            {
-                // work around VsTest issues when using multiple test assemblies
-                var testGuids = tests.GetGuids();
-                foreach (var source in validSources)
-                {                    var testForSource = _context.TestsPerSource[source];
-                    var testsForAssembly = new TestGuidsList(testGuids?.Where(testForSource.Contains));
-                    if (!tests.IsEveryTest && testsForAssembly.Count == 0)
-                    {
-                        continue;
-                    }
-
-                    _logger.LogTrace($"{RunnerId}: testing assembly {source}.");
-                    RunTestSession(testsForAssembly, new []{source}, runSettings, timeOut, updateHandler, runEventHandler);
-                    if (_cancelled)
-                    {
-                        break;
-                    }
-                }
-
-                return (runEventHandler.GetResults(), runEventHandler.GetRawResults());
-            }
+            var runEventHandler = new RunEventHandler(_context.VsTests, _logger, RunnerId);
 
             void HandlerUpdate(object sender, EventArgs e)
             {
@@ -253,13 +224,33 @@ namespace Stryker.Core.TestRunners.VsTest
                     ? null
                     : _context.Options.TestCaseFilter
             };
+
             runEventHandler.ResultsUpdated += HandlerUpdate;
-            var eventHandler = RunVsTest(tests, _context.GetValidSources(sources), runSettings, options, timeOut, runEventHandler);
+            // work around VsTest issues when using multiple test assemblies
+            foreach (var source in validSources)
+            {
+                var testForSource = _context.TestsPerSource[source];
+                var testsForAssembly = new TestGuidsList(tests.GetGuids()?.Where(testForSource.Contains));
+                if (!tests.IsEveryTest && testsForAssembly.Count == 0)
+                {
+                    // skip empty assemblies
+                    continue;
+                }
+
+                _logger.LogTrace($"{RunnerId}: testing assembly {source}.");
+                RunVsTest(tests, source, runSettings, options, timeOut, runEventHandler);
+
+                if (_cancelled)
+                {
+                    break;
+                }
+            }
+
             runEventHandler.ResultsUpdated -= HandlerUpdate;
-            return (eventHandler.GetResults(), eventHandler.GetRawResults());
+            return (runEventHandler.GetResults(), runEventHandler.GetRawResults());
         }
 
-        private RunEventHandler RunVsTest(ITestGuids tests, IEnumerable<string> sources, string runSettings, TestPlatformOptions options, int? timeOut, RunEventHandler eventHandler)
+        private void RunVsTest(ITestGuids tests, string source, string runSettings, TestPlatformOptions options, int? timeOut, RunEventHandler eventHandler)
         {
             for (var attempt = 0; attempt < MaxAttempts; attempt++)
             {
@@ -272,8 +263,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 Task session;
                 if (tests.IsEveryTest)
                 {
-                    session = _vsTestConsole.RunTestsWithCustomTestHostAsync(sources, runSettings, options, eventHandler,
-                        strykerVsTestHostLauncher);
+                    session = _vsTestConsole.RunTestsWithCustomTestHostAsync(new []{source}, runSettings, options, eventHandler, strykerVsTestHostLauncher);
                 }
                 else
                 {
@@ -305,7 +295,6 @@ namespace Stryker.Core.TestRunners.VsTest
                     {
                         _logger.LogDebug($"{RunnerId}: Test session finished.");
                     }
-                    
                 }
                 else
                 {
@@ -326,7 +315,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
                 if (!eventHandler.Failed)
                 {
-                    return eventHandler;
+                    return;
                 }
 
                 _logger.LogWarning($"{RunnerId}: Retrying the test session.");
