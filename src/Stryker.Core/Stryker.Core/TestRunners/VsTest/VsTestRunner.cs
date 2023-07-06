@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
@@ -254,8 +255,6 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             for (var attempt = 0; attempt < MaxAttempts; attempt++)
             {
-                var vsTestFailed = false;
-            
                 var strykerVsTestHostLauncher = _context.BuildHostLauncher(RunnerId);
 
                 eventHandler.StartSession();
@@ -270,44 +269,8 @@ namespace Stryker.Core.TestRunners.VsTest
                     session = _vsTestConsole.RunTestsWithCustomTestHostAsync(tests.GetGuids().Select(t => _context.VsTests[t].Case),
                         runSettings, options, eventHandler, strykerVsTestHostLauncher);
                 }
-            
-                if (timeOut.HasValue)
-                {
-                    // we wait for the end notification for the test session
-                    // ==> if it failed, results are uncertain
-                    var suspiciousTimeOut = !eventHandler.Wait(VsTestExtraTimeOutInMs + timeOut.Value, out var slept);
-                    // we wait for vsTestProcess to stop
-                    // ==> if it appears hung, we recycle it.
-                    if (!session.Wait(VsTestExtraTimeOutInMs))
-                    {
-                        _vsTestConsole.AbortTestRun();
-                        vsTestFailed = !session.Wait(VsTestExtraTimeOutInMs);
-                    }
-                    if (suspiciousTimeOut && slept)
-                    {
-                        // the computer went to sleep during the session
-                        // we should ignore the result and retry
-                        _logger.LogWarning(
-                            $"{RunnerId}: Rerun of the test session because computer entered power saving mode.");
-                        attempt--;
-                    }
-                    else
-                    {
-                        _logger.LogDebug($"{RunnerId}: Test session finished.");
-                    }
-                }
-                else
-                {
-                    // no timeout provided ==> initial tests
-                    // we wait for VsTest to end.
-                    // we could add a configurable timeout, to prevent actual locking to happen during initial tests, but no idea what a good default should be
-                    session.Wait();
-                    // we add a grace delay for notifications to be propagated
-                    eventHandler.Wait(VsTestExtraTimeOutInMs, out var _);
-                    _logger.LogDebug($"{RunnerId}: Test session finished.");
-                }
 
-                if (vsTestFailed)
+                if (WaitForEnd(session, eventHandler, timeOut, ref attempt))
                 {
                     // if the session did not end properly, we recycle the session as a precaution
                     PrepareVsTestConsole();
@@ -326,6 +289,50 @@ namespace Stryker.Core.TestRunners.VsTest
 
             throw new GeneralStrykerException(
                 $"{RunnerId}: failed to run a test session despite {MaxAttempts} attempts. Aborting session.");
+
+        }
+
+        private bool WaitForEnd(Task session, RunEventHandler eventHandler, int? timeOut, ref int attempt)
+        {
+            var vsTestFailed = false;
+            if (timeOut.HasValue)
+            {
+                // we wait for the end notification for the test session
+                // ==> if it failed, results are uncertain
+                var suspiciousTimeOut = !eventHandler.Wait(VsTestExtraTimeOutInMs + timeOut.Value, out var slept);
+                // we wait for vsTestProcess to stop
+                // ==> if it appears hung, we recycle it.
+                if (!session.Wait(VsTestExtraTimeOutInMs))
+                {
+                    _vsTestConsole.AbortTestRun();
+                    vsTestFailed = !session.Wait(VsTestExtraTimeOutInMs);
+                }
+
+                if (suspiciousTimeOut && slept)
+                {
+                    // the computer went to sleep during the session
+                    // we should ignore the result and retry
+                    _logger.LogWarning(
+                        $"{RunnerId}: Rerun of the test session because computer entered power saving mode.");
+                    attempt--;
+                }
+                else
+                {
+                    _logger.LogDebug($"{RunnerId}: Test session finished.");
+                }
+            }
+            else
+            {
+                // no timeout provided ==> initial tests
+                // we wait for VsTest to end.
+                // we could add a configurable timeout, to prevent actual locking to happen during initial tests, but no idea what a good default should be
+                session.Wait();
+                // we add a grace delay for notifications to be propagated
+                eventHandler.Wait(VsTestExtraTimeOutInMs, out var _);
+                _logger.LogDebug($"{RunnerId}: Test session finished.");
+            }
+
+            return vsTestFailed;
         }
 
         private void PrepareVsTestConsole()
