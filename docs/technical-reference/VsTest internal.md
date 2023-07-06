@@ -4,7 +4,7 @@
 This document captures knowledge gathered while working on Stryker regarding VsTest related issues. It exists to assist anyone trying to analyse testing problems.
 It provides architecture and design description, as well as known limitations and bugs (including github issue number when relevant).
 
-## Test platform architecture in a nutschell
+## Test platform architecture in a nutshell
 VsTest is architectured to be platform and language neutral. 
 From a coder perspective, when one instantiates a session instance (a `IVSTestConsoleWrapper` class), 
 this translates to launching a VsTest server process. Its purpose is to carry out test requests
