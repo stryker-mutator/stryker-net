@@ -11,7 +11,6 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
-using Stryker.Core.Mutants.CsharpNodeOrchestrators;
 using Stryker.Core.Options;
 
 namespace Stryker.Core.TestRunners.VsTest
@@ -20,7 +19,7 @@ namespace Stryker.Core.TestRunners.VsTest
     {
         private IVsTestConsoleWrapper _vsTestConsole;
         private bool _disposedValue; // To detect redundant calls
-        private bool _cancelled;
+        private bool _currentSessionCancelled;
         private readonly VsTestContextInformation _context;
         private readonly int _id;
         private int _instanceCount;
@@ -99,7 +98,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
                 if (remainingMutants != false
                     || handlerTestResults.Count >= expectedTests
-                    || _cancelled
+                    || _currentSessionCancelled
                     || _context.Options.OptimizationMode.HasFlag(OptimizationModes.DisableBail))
                 {
                     return;
@@ -107,7 +106,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 // all mutants status have been resolved, we can stop
                 _logger.LogDebug($"{RunnerId}: Each mutant's fate has been established, we can stop.");
                 _vsTestConsole.CancelTestRun();
-                _cancelled = true;
+                _currentSessionCancelled = true;
             }
 
             var timeOutMs = timeoutCalc?.DefaultTimeout;
@@ -165,7 +164,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var resultAsArray = testResults.TestResults.ToArray();
             var testCases = resultAsArray.Select(t => t.TestCase.Id).ToHashSet();
             var ranTestsCount = testCases.Count;
-            var timeout = !_cancelled && ranTestsCount < expectedTests;
+            var timeout = !_currentSessionCancelled && ranTestsCount < expectedTests;
             // ranTests is the list of test that have been executed. We detect the special case where all (existing and found) tests have been executed.
             // this is needed when the tests list is not stable (mutations can generate variation for theories) and also helps for performance
             // so we assume that if executed at least as much test as have been detected, it means all tests have been executed
@@ -241,7 +240,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 _logger.LogTrace($"{RunnerId}: testing assembly {source}.");
                 RunVsTest(tests, source, runSettings, options, timeOut, runEventHandler);
 
-                if (_cancelled)
+                if (_currentSessionCancelled)
                 {
                     break;
                 }
@@ -258,7 +257,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 var strykerVsTestHostLauncher = _context.BuildHostLauncher(RunnerId);
 
                 eventHandler.StartSession();
-                _cancelled = false;
+                _currentSessionCancelled = false;
                 Task session;
                 if (tests.IsEveryTest)
                 {
