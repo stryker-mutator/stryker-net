@@ -21,7 +21,7 @@ namespace ExampleProject.Math.Calc
         public int Recursive(int n)
         {
             var recursive = new RecursiveMath();
-            return recursive.Fibinacci(n);
+            return recursive.Fibonacci(n);
         }
     }
 }
