@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
@@ -18,7 +19,7 @@ namespace Stryker.Core.TestRunners.VsTest
     {
         private IVsTestConsoleWrapper _vsTestConsole;
         private bool _disposedValue; // To detect redundant calls
-        private bool _cancelled;
+        private bool _currentSessionCancelled;
         private readonly VsTestContextInformation _context;
         private readonly int _id;
         private int _instanceCount;
@@ -72,18 +73,12 @@ namespace Stryker.Core.TestRunners.VsTest
         public TestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
         {
             var mutantTestsMap = new Dictionary<int, ITestGuids>();
-            var timeOutMs = timeoutCalc?.DefaultTimeout;
 
             var testCases = TestCases(mutants, mutantTestsMap);
 
             if (testCases?.Count == 0)
             {
                 return new TestRunResult(_context.VsTests.Values, TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), "Mutants are not covered by any test!", Enumerable.Empty<string>(), TimeSpan.Zero);
-            }
-            if (timeoutCalc != null && testCases != null)
-            {
-                // compute time out
-                timeOutMs = timeoutCalc.CalculateTimeoutValue((int)testCases.Sum(id => _context.VsTests[id].InitialRunTime.TotalMilliseconds));
             }
 
             var numberTestCases = testCases?.Count ?? 0;
@@ -103,7 +98,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
                 if (remainingMutants != false
                     || handlerTestResults.Count >= expectedTests
-                    || _cancelled
+                    || _currentSessionCancelled
                     || _context.Options.OptimizationMode.HasFlag(OptimizationModes.DisableBail))
                 {
                     return;
@@ -111,7 +106,14 @@ namespace Stryker.Core.TestRunners.VsTest
                 // all mutants status have been resolved, we can stop
                 _logger.LogDebug($"{RunnerId}: Each mutant's fate has been established, we can stop.");
                 _vsTestConsole.CancelTestRun();
-                _cancelled = true;
+                _currentSessionCancelled = true;
+            }
+
+            var timeOutMs = timeoutCalc?.DefaultTimeout;
+            if (timeoutCalc != null && testCases != null)
+            {
+                // compute time out
+                timeOutMs = timeoutCalc.CalculateTimeoutValue((int)testCases.Sum(id => _context.VsTests[id].InitialRunTime.TotalMilliseconds));
             }
 
             if (timeOutMs.HasValue)
@@ -139,8 +141,8 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
 
                 testCases = needAll ? null : mutants.SelectMany(m => m.AssessingTests.GetGuids()).ToList();
-                _logger.LogTrace($"{RunnerId}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}] " +
-                                 $"against {(testCases == null ? "all tests." : string.Join(", ", testCases))}.");
+                _logger.LogDebug($"{RunnerId}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}]");
+                _logger.LogTrace($"{RunnerId}: against {(testCases == null ? "all tests." : string.Join(", ", testCases))}.");
             }
             else
             {
@@ -162,7 +164,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var resultAsArray = testResults.TestResults.ToArray();
             var testCases = resultAsArray.Select(t => t.TestCase.Id).ToHashSet();
             var ranTestsCount = testCases.Count;
-            var timeout = !_cancelled && ranTestsCount < expectedTests;
+            var timeout = !_currentSessionCancelled && ranTestsCount < expectedTests;
             // ranTests is the list of test that have been executed. We detect the special case where all (existing and found) tests have been executed.
             // this is needed when the tests list is not stable (mutations can generate variation for theories) and also helps for performance
             // so we assume that if executed at least as much test as have been detected, it means all tests have been executed
@@ -190,108 +192,132 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public IRunResults RunTestSession(ITestGuids testsToRun, IProjectAndTests project, int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<IRunResults> updateHandler = null) =>
             RunTestSession(testsToRun, project.GetTestAssemblies(),
-                _context.GenerateRunSettings(timeout, false, mutantTestsMap, project.HelperNamespace, project.IsFullFramework), timeout, updateHandler).GetResults();
-
+                _context.GenerateRunSettings(timeout, false, mutantTestsMap, project.HelperNamespace, project.IsFullFramework), timeout, updateHandler).normal;
         public IRunResults RunCoverageSession(ITestGuids testsToRun, IReadOnlyCollection<string> testAssemblies, string nameSpace, bool isFullFramework) =>
-            RunTestSession(testsToRun,  testAssemblies,
-                _context.GenerateRunSettings(null,
-        true,
-                    null, nameSpace, isFullFramework)).GetRawResults();
+            RunTestSession(testsToRun,  testAssemblies, _context.GenerateRunSettings(null,true, null, nameSpace, isFullFramework)).raw;
 
-        private RunEventHandler RunTestSession(ITestGuids tests,
+        private (IRunResults normal, IRunResults raw) RunTestSession(ITestGuids tests,
             IEnumerable<string> sources,
             string runSettings,
             int? timeOut = null,
             Action<IRunResults> updateHandler = null)
         {
 
-            if (tests.IsEveryTest && !_context.IsValidSourceList(sources))
+            var validSources = _context.GetValidSources(sources).ToList();
+            if (tests.IsEveryTest && validSources.Count == 0)
             {
-                _logger.LogWarning($"Test assembl{(sources.Count() <2 ? "y does" : "ies do")} not contain any test, skipping.");
-                return new RunEventHandler(_context.VsTests, _logger, RunnerId);
+                _logger.LogWarning(
+                    $"{RunnerId}: Test assembl{(sources.Count() < 2 ? "y does" : "ies do")} not contain any test, skipping.");
+                return (new SimpleRunResults(), new SimpleRunResults());
             }
 
-            for (var attempt = 0; attempt < MaxAttempts; attempt++)
-            {
-                var eventHandler = RunVsTest(tests, _context.GetValidSources(sources), runSettings, timeOut, updateHandler);
-                if (eventHandler != null)
-                {
-                    return eventHandler;
-                }
-                _logger.LogWarning($"{RunnerId}: Retrying the test session.");
-            }
-
-            _logger.LogCritical($"{RunnerId}: VsTest failed, settings: {runSettings}");
-
-            throw new GeneralStrykerException(
-                $"{RunnerId}: failed to run a test session despite ${MaxAttempts} attempts. Aborting session.");
-        }
-
-        private RunEventHandler RunVsTest(ITestGuids tests, IEnumerable<string> sources, string runSettings, int? timeOut,
-            Action<IRunResults> updateHandler)
-        {
-            var eventHandler = new RunEventHandler(_context.VsTests, _logger, RunnerId);
-            var vsTestFailed = false;
-            var sessionFailed = false;
-
-            void HandlerVsTestFailed(object sender, EventArgs e)
-            {
-                sessionFailed = true;
-            }
+            var runEventHandler = new RunEventHandler(_context.VsTests, _logger, RunnerId);
 
             void HandlerUpdate(object sender, EventArgs e)
             {
-                updateHandler?.Invoke(eventHandler.GetResults());
+                updateHandler?.Invoke(runEventHandler.GetResults());
             }
 
-            var strykerVsTestHostLauncher = _context.BuildHostLauncher(RunnerId);
-
-            eventHandler.VsTestFailed += HandlerVsTestFailed;
-            eventHandler.ResultsUpdated += HandlerUpdate;
-
-            _cancelled = false;
             var options = new TestPlatformOptions
             {
                 TestCaseFilter = string.IsNullOrWhiteSpace(_context.Options.TestCaseFilter)
                     ? null
                     : _context.Options.TestCaseFilter
             };
-            Task session;
-            if (tests.IsEveryTest)
+
+            runEventHandler.ResultsUpdated += HandlerUpdate;
+            // work around VsTest issues when using multiple test assemblies
+            foreach (var source in validSources)
             {
-                session = _vsTestConsole.RunTestsWithCustomTestHostAsync(sources, runSettings, options, eventHandler,
-                    strykerVsTestHostLauncher);
+                var testForSource = _context.TestsPerSource[source];
+                var testsForAssembly = new TestGuidsList(tests.GetGuids()?.Where(testForSource.Contains));
+                if (!tests.IsEveryTest && testsForAssembly.Count == 0)
+                {
+                    // skip empty assemblies
+                    continue;
+                }
+
+                _logger.LogTrace($"{RunnerId}: testing assembly {source}.");
+                RunVsTest(tests, source, runSettings, options, timeOut, runEventHandler);
+
+                if (_currentSessionCancelled)
+                {
+                    break;
+                }
             }
-            else
+
+            runEventHandler.ResultsUpdated -= HandlerUpdate;
+            return (runEventHandler.GetResults(), runEventHandler.GetRawResults());
+        }
+
+        private void RunVsTest(ITestGuids tests, string source, string runSettings, TestPlatformOptions options, int? timeOut, RunEventHandler eventHandler)
+        {
+            for (var attempt = 0; attempt < MaxAttempts; attempt++)
             {
-                session = _vsTestConsole.RunTestsWithCustomTestHostAsync(tests.GetGuids().Select(t => _context.VsTests[t].Case),
-                    runSettings, options, eventHandler, strykerVsTestHostLauncher);
+                var strykerVsTestHostLauncher = _context.BuildHostLauncher(RunnerId);
+
+                eventHandler.StartSession();
+                _currentSessionCancelled = false;
+                Task session;
+                if (tests.IsEveryTest)
+                {
+                    session = _vsTestConsole.RunTestsWithCustomTestHostAsync(new []{source}, runSettings, options, eventHandler, strykerVsTestHostLauncher);
+                }
+                else
+                {
+                    session = _vsTestConsole.RunTestsWithCustomTestHostAsync(tests.GetGuids().Select(t => _context.VsTests[t].Case),
+                        runSettings, options, eventHandler, strykerVsTestHostLauncher);
+                }
+
+                if (WaitForEnd(session, eventHandler, timeOut, ref attempt))
+                {
+                    // if the session did not end properly, we recycle the session as a precaution
+                    PrepareVsTestConsole();
+                }
+
+                if (!eventHandler.Failed)
+                {
+                    return;
+                }
+
+                _logger.LogWarning($"{RunnerId}: Retrying the test session.");
+                eventHandler.DiscardCurrentRun();
             }
             
+            _logger.LogCritical($"{RunnerId}: VsTest failed, settings: {runSettings}");
+
+            throw new GeneralStrykerException(
+                $"{RunnerId}: failed to run a test session despite {MaxAttempts} attempts. Aborting session.");
+
+        }
+
+        private bool WaitForEnd(Task session, RunEventHandler eventHandler, int? timeOut, ref int attempt)
+        {
+            var vsTestFailed = false;
             if (timeOut.HasValue)
             {
                 // we wait for the end notification for the test session
                 // ==> if it failed, results are uncertain
-                sessionFailed = !eventHandler.Wait(VsTestExtraTimeOutInMs + timeOut.Value);
+                var suspiciousTimeOut = !eventHandler.Wait(VsTestExtraTimeOutInMs + timeOut.Value, out var slept);
                 // we wait for vsTestProcess to stop
                 // ==> if it appears hung, we recycle it.
-                vsTestFailed = !session.Wait(VsTestExtraTimeOutInMs);
-                // VsTestHost appears stuck
-                // VsTestWrapper aborts the current test sessions on timeout, except on critical error, so we have an internal timeout (+ grace period)
-                // to detect and properly handle those events. 
-                if (sessionFailed)
+                if (!session.Wait(VsTestExtraTimeOutInMs))
                 {
-                    _logger.LogError(
-                        $"{RunnerId}: VsTest did not report the end of test session in due time ({timeOut} ms), it may be frozen.");
-                    _logger.LogError($"{RunnerId}: ran {eventHandler.GetResults().TestResults.Count} tests.");
-                    // workaround VsTest issue #4527
-                    if (_cancelled && sources.Count() > 1)
-                    {
-                        // we assume VsTest did not properly cancelled the test
-                        _logger.LogError($"{RunnerId}: ignoring the error as it looks like a known VsTest issue.");
-                        sessionFailed = false;
-                        vsTestFailed = false;
-                    }
+                    _vsTestConsole.AbortTestRun();
+                    vsTestFailed = !session.Wait(VsTestExtraTimeOutInMs);
+                }
+
+                if (suspiciousTimeOut && slept)
+                {
+                    // the computer went to sleep during the session
+                    // we should ignore the result and retry
+                    _logger.LogWarning(
+                        $"{RunnerId}: Rerun of the test session because computer entered power saving mode.");
+                    attempt--;
+                }
+                else
+                {
+                    _logger.LogDebug($"{RunnerId}: Test session finished.");
                 }
             }
             else
@@ -301,18 +327,11 @@ namespace Stryker.Core.TestRunners.VsTest
                 // we could add a configurable timeout, to prevent actual locking to happen during initial tests, but no idea what a good default should be
                 session.Wait();
                 // we add a grace delay for notifications to be propagated
-                eventHandler.Wait(VsTestExtraTimeOutInMs);
+                eventHandler.Wait(VsTestExtraTimeOutInMs, out var _);
+                _logger.LogDebug($"{RunnerId}: Test session finished.");
             }
-            
-            eventHandler.ResultsUpdated -= HandlerUpdate;
-            eventHandler.VsTestFailed -= HandlerVsTestFailed;
 
-            if (vsTestFailed || sessionFailed)
-            {
-                // if the session did not end properly for any level (notifications or process), we recycle the session as a precaution
-                PrepareVsTestConsole();
-            }
-            return sessionFailed ? null : eventHandler;
+            return vsTestFailed;
         }
 
         private void PrepareVsTestConsole()

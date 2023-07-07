@@ -72,17 +72,25 @@ namespace Stryker.Core.CoverageAnalysis
                 }
             }
 
+
+            var allTest = TestGuidsList.EveryTest();
             var allTestsExceptTrusted = (trustedTests.Count == 0 && failedTests.Count == 0)? TestGuidsList.EveryTest()
                 : new TestGuidsList(testIds.Except(trustedTests).ToHashSet()).Excluding(failedTests);
-            
+
+            if (!coverage.Any())
+            {
+                allTest = TestGuidsList.NoTest();
+                allTestsExceptTrusted = TestGuidsList.NoTest();
+            }
             foreach (var mutant in mutantsToScan)
             {
-                CoverageForThisMutant(mutant, mutationToResultMap, allTestsExceptTrusted, new TestGuidsList( dubiousTests), failedTests);
+                CoverageForThisMutant(mutant, mutationToResultMap, allTest, allTestsExceptTrusted, new TestGuidsList( dubiousTests), failedTests);
             }
         }
 
         private void CoverageForThisMutant(Mutant mutant,
             IReadOnlyDictionary<int, List<CoverageRunResult>> mutationToResultMap,
+            TestGuidsList everytest,
             TestGuidsList allTestsGuidsExceptTrusted,
             TestGuidsList dubiousTests,
             TestGuidsList failedTest)
@@ -94,10 +102,8 @@ namespace Stryker.Core.CoverageAnalysis
             mutant.MustBeTestedInIsolation = resultTingRequirements.HasFlag(MutationTestingRequirements.NeedEarlyActivation);
             if (resultTingRequirements.HasFlag(MutationTestingRequirements.AgainstAllTests))
             {
-                mutant.CoveringTests = TestGuidsList.EveryTest();
+                mutant.CoveringTests = everytest;
                 mutant.AssessingTests = TestGuidsList.EveryTest();
-                _logger.LogDebug(
-                    $"Mutant {mutant.Id} will be tested against all tests.");
             }
             else if (resultTingRequirements.HasFlag(MutationTestingRequirements.Static) || mutant.IsStaticValue)
             {
@@ -106,8 +112,6 @@ namespace Stryker.Core.CoverageAnalysis
                 mutant.AssessingTests = allTestsGuidsExceptTrusted.Merge(assessingTests).Excluding(failedTest);
                 
                 mutant.IsStaticValue = true;
-                _logger.LogDebug(
-                    $"Mutant {mutant.Id} will be tested against most tests ({mutant.AssessingTests.Count}).");
             }
             else
             {

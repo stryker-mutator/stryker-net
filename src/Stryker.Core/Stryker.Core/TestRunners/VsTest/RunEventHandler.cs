@@ -61,15 +61,17 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly IDictionary<Guid, VsTestDescription> _vsTests;
         private readonly IDictionary<Guid, TestRun> _runs = new Dictionary<Guid, TestRun>();
         private readonly Dictionary<Guid, TestCase> _inProgress = new();
+        private SimpleRunResults _currentResults = new();
         private readonly List<TestResult> _rawResults = new();
-        private readonly SimpleRunResults _currentResults = new();
+        private int _initialResultsCount;
         private readonly object _lck = new();
         private bool _completed;
 
-        public event EventHandler VsTestFailed;
         public event EventHandler ResultsUpdated;
 
         public bool CancelRequested { get; set; }
+
+        public bool Failed { get; private set; }
 
         public RunEventHandler(IDictionary<Guid, VsTestDescription> vsTests, ILogger logger, string runnerId)
         {
@@ -82,14 +84,19 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var testResults = results as TestResult[] ?? results.ToArray();
             _rawResults.AddRange(testResults);
+            AnalyzeRawTestResults(testResults);
+        }
+
+        private void AnalyzeRawTestResults(IEnumerable<TestResult> testResults)
+        {
             foreach (var testResult in testResults)
             {
                 var id = testResult.TestCase.Id;
                 if (!_runs.ContainsKey(id))
                 {
-                    if (_vsTests.ContainsKey(id))
+                    if (_vsTests.TryGetValue(id, out var test))
                     {
-                        _runs[id] = new TestRun(_vsTests[id]);
+                        _runs[id] = new TestRun(test);
                     }
                     else
                     {
@@ -139,6 +146,7 @@ namespace Stryker.Core.TestRunners.VsTest
             ICollection<AttachmentSet> runContextAttachments,
             ICollection<string> executorUris)
         {
+            _logger.LogDebug($"{_runnerId}: Received testrun complete.");
             if (lastChunkArgs?.ActiveTests != null)
             {
                 foreach (var activeTest in lastChunkArgs.ActiveTests)
@@ -167,7 +175,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 {
                     _logger.LogDebug(testRunCompleteArgs.Error,
                         $"{_runnerId}: VsTest may have crashed, triggering VsTest restart!");
-                    VsTestFailed?.Invoke(this, EventArgs.Empty);
+                    Failed = true;
                 }
                 else if (testRunCompleteArgs.Error.InnerException is IOException sock)
                 {
@@ -191,7 +199,26 @@ namespace Stryker.Core.TestRunners.VsTest
 
         public void HandleRawMessage(string rawMessage) => _logger.LogTrace($"{_runnerId}: {rawMessage} [RAW]");
 
-        public bool Wait(int timeOut)
+        public void StartSession()
+        {
+            _completed = false;
+            Failed = false;
+            _initialResultsCount = _rawResults.Count;
+            _inProgress.Clear();
+            _runs.Clear();
+        }
+
+        public void DiscardCurrentRun()
+        {
+            // remove all raw results from this run
+            _rawResults.RemoveRange(_initialResultsCount, _rawResults.Count - _initialResultsCount);
+             // we reanalyze results gathered so far, in an event sourced way
+             _runs.Clear();
+             _currentResults = new SimpleRunResults(new List<TestResult>(), _currentResults.TestsInTimeout);
+            AnalyzeRawTestResults(_rawResults);
+        }
+
+        public bool Wait(int timeOut, out bool slept)
         {
             lock (_lck)
             {
@@ -203,6 +230,11 @@ namespace Stryker.Core.TestRunners.VsTest
                     Monitor.Wait(_lck, Math.Max(0, (int)(timeOut-watch.ElapsedMilliseconds)));
                 }
 
+                slept = watch.ElapsedMilliseconds - timeOut > 30 * 1000;
+                if (slept)
+                {
+                    _logger.LogWarning($"{_runnerId}: the computer slept during the testing, need to retry");
+                }
                 return _completed;
             }
         }

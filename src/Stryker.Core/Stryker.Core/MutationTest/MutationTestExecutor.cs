@@ -36,8 +36,9 @@ namespace Stryker.Core.MutationTest
             {
                 var result = RunTestSession(project, mutantsToTest, timeoutMs, updateHandler, forceSingle);
 
-                Logger.LogTrace(
-                    $"Test run for {string.Join(", ", mutantsToTest.Select(x => x.DisplayName))} is {(result.FailingTests.Count == 0 ? "success" : "failed")} with output: {result.ResultMessage}");
+                Logger.LogDebug(
+                    $"Test run for {string.Join(", ", mutantsToTest.Select(x => x.DisplayName))} is {(result.FailingTests.Count == 0 ? "success" : "failed")} ");
+                Logger.LogTrace($"Test run : {result.ResultMessage}");
                 if (result.Messages is not null && result.Messages.Any())
                 {
                     Logger.LogTrace($"Messages for {string.Join(", ", mutantsToTest.Select(x => x.DisplayName))}: {Environment.NewLine}{string.Join("", result.Messages)}");
