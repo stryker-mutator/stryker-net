@@ -10,9 +10,9 @@ namespace Stryker.CLI.Logging
 {
     public static class ApplicationLogging
     {
-        private static ILoggerFactory _factory = null;
+        private static ILoggerFactory factory;
 
-        public static void ConfigureLogger(LogEventLevel logLevel, bool logToFile, string outputPath)
+        public static void ConfigureLogger(LogEventLevel logLevel, bool logToFile, bool traceToFile, string outputPath)
         {
             LoggerFactory.AddSerilog(new LoggerConfiguration().MinimumLevel.Is(logLevel).Enrich.FromLogContext().WriteTo.Console().CreateLogger());
 
@@ -20,7 +20,7 @@ namespace Stryker.CLI.Logging
             {
                 // log on the lowest level to the log file
                 var logFilesPath = Path.Combine(outputPath, "logs");
-                LoggerFactory.AddFile(logFilesPath + "/log-{Date}.txt", MSLogLevel.Trace);
+                LoggerFactory.AddFile(logFilesPath + "/log-{Date}.txt", traceToFile ? MSLogLevel.Trace : MSLogLevel.Debug);
             }
 
             // When stryker log level is debug or trace, set LibGit2Sharp loglevel
@@ -33,8 +33,8 @@ namespace Stryker.CLI.Logging
 
         public static ILoggerFactory LoggerFactory
         {
-            get => _factory ??= new LoggerFactory();
-            set => _factory = value;
+            get => factory ??= new LoggerFactory();
+            set => factory = value;
         }
 
         private static class LogLevelConverter

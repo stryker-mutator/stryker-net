@@ -255,9 +255,7 @@ public class VsTestMockingHelper : TestBase
                     testRunEvents.HandleTestRunStatsChange(
                         new TestRunChangedEventArgs(new TestRunStatistics(0, null), null, null));
 
-                    if (repeated-->0)
-                        Thread.Sleep(1000);
-                    else
+                    if (repeated--<=0)
                         testRunEvents.HandleTestRunComplete(
                             new TestRunCompleteEventArgs(new TestRunStatistics(0, null), false, false,
                             null,
@@ -266,6 +264,17 @@ public class VsTestMockingHelper : TestBase
                             new List<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase>()),
                         null,
                         null);
+                    else
+                    {
+                        testRunEvents.HandleTestRunComplete(
+                            new TestRunCompleteEventArgs(new TestRunStatistics(0, null), false, false,
+                            new TransationLayerException("fake", null),
+                            null, TimeSpan.FromMilliseconds(10)),
+                        new TestRunChangedEventArgs(null, Array.Empty<TestResult>(),
+                            new List<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase>()),
+                        null,
+                        null);
+                    }
                 }));
    protected void SetupFrozenVsTest(Mock<IVsTestConsoleWrapper> mockVsTest, int repeated = 1) =>
         mockVsTest.Setup(x =>
