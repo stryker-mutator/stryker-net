@@ -1,3 +1,4 @@
+using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
@@ -46,6 +47,12 @@ namespace Stryker.Core.Initialisation
                 var testFile = testProjectsInfo.TestFiles.SingleOrDefault(testFile => testFile.FilePath == unitTest.CodeFilePath);
                 if (testFile is not null)
                 {
+                    // hard stub - F# has a different syntax tree and would throw further down the line
+                    if (Path.GetExtension(testFile.FilePath) == ".fs")
+                    {
+                        continue;
+                    }
+
                     var lineSpan = testFile.SyntaxTree.GetText().Lines[unitTest.LineNumber - 1].Span;
                     var nodesInSpan = testFile.SyntaxTree.GetRoot().DescendantNodes(lineSpan);
                     var node = nodesInSpan.First(n => n is MethodDeclarationSyntax);
