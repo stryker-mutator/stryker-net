@@ -12,11 +12,11 @@ namespace Stryker.CLI.Logging
     {
         private static ILoggerFactory factory;
 
-        public static void ConfigureLogger(LogEventLevel logLevel, bool toFile, bool traceToFile, string outputPath)
+        public static void ConfigureLogger(LogEventLevel logLevel, bool logToFile, bool traceToFile, string outputPath)
         {
             LoggerFactory.AddSerilog(new LoggerConfiguration().MinimumLevel.Is(logLevel).Enrich.FromLogContext().WriteTo.Console().CreateLogger());
 
-            if (toFile)
+            if (logToFile)
             {
                 // log on the lowest level to the log file
                 var logFilesPath = Path.Combine(outputPath, "logs");
