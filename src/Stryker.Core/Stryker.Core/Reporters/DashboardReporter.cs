@@ -34,13 +34,13 @@ namespace Stryker.Core.Reporters
 
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
+            var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
+            _dashboardClient.PublishReport(mutationReport, _options.ProjectVersion).Wait();
+
             if (_options.ReportTypeToOpen == ReportType.Dashboard)
             {
                 _dashboardClient.PublishFinished().Wait();
             }
-
-            var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
-            _dashboardClient.PublishReport(mutationReport, _options.ProjectVersion).Wait();
         }
 
         private void OpenDashboardReport(string reportUri)
