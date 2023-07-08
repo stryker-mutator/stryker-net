@@ -41,9 +41,6 @@ namespace Stryker.Core.Reporters
 
             var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
             _dashboardClient.PublishReport(mutationReport, _options.ProjectVersion).Wait();
-
-            _console.WriteLine();
-            _console.WriteLine();
         }
 
         private void OpenDashboardReport(string reportUri)
