@@ -22,13 +22,13 @@ namespace Stryker.Core.Baseline.Providers
         private readonly ILogger<AzureFileShareBaselineProvider> _logger;
         private readonly string _outputPath;
 
-        public AzureFileShareBaselineProvider(StrykerOptions options)
+        public AzureFileShareBaselineProvider(StrykerOptions options, ShareClient shareClient = null)
         {
             _options = options;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<AzureFileShareBaselineProvider>();
 
             _outputPath = string.IsNullOrWhiteSpace(options.ProjectName) ? DefaultOutputDirectoryName : $"{DefaultOutputDirectoryName}/{options.ProjectName}";
-            _fileShareClient = new ShareClient(new Uri(_options.AzureFileStorageUrl), new AzureSasCredential(_options.AzureFileStorageSas));
+            _fileShareClient = shareClient ?? new ShareClient(new Uri(_options.AzureFileStorageUrl), new AzureSasCredential(_options.AzureFileStorageSas));
         }
 
         public async Task<JsonReport> Load(string version)
