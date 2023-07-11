@@ -70,12 +70,60 @@ namespace Stryker.Core.UnitTest.Reporters
             mockProcess.Verify(m => m.Open("https://dashboard.com"));
         }
 
+        [Fact]
+        public void ShouldNotOpenDashboardWithRealTimeDashboardOptionButItShouldUploadTheInitialReport()
+        {
+            var reporters = new[] { Reporter.RealTimeDashboard };
+            var options = new StrykerOptions
+            {
+                DashboardApiKey = "Access_Token",
+                ProjectName = "github.com/JohnDoe/project",
+                ProjectVersion = "version/human/readable",
+                Reporters = reporters
+            };
+            var mockProcess = new Mock<IWebbrowserOpener>();
+            var dashboardClientMock = new Mock<IDashboardClient>();
+
+            dashboardClientMock.Setup(x => x.PublishReport(It.IsAny<JsonReport>(), "version/human/readable", true))
+                .Returns(Task.FromResult("https://dashboard.com"));
+
+            var reporter = new DashboardReporter(options, dashboardClientMock.Object, browser: mockProcess.Object);
+            var mutationTree = ReportTestHelper.CreateProjectWith();
+
+            reporter.OnMutantsCreated(mutationTree, It.IsAny<TestProjectsInfo>());
+
+            mockProcess.VerifyNoOtherCalls();
+            dashboardClientMock.Verify(d => d.PublishReport(It.IsAny<JsonReport>(), It.IsAny<string>(), true));
+        }
+
+        [Fact]
+        public void ShouldNotDoAnythingIfNotOpeningTheDashboardAndIfNotRealTimeDashboardReporter()
+        {
+            var reporters = new[] { Reporter.Dashboard };
+            var options = new StrykerOptions
+            {
+                DashboardApiKey = "Access_Token",
+                ProjectName = "github.com/JohnDoe/project",
+                ProjectVersion = "version/human/readable",
+                Reporters = reporters
+            };
+            var mockProcess = new Mock<IWebbrowserOpener>();
+            var dashboardClientMock = new Mock<IDashboardClient>();
+            var reporter = new DashboardReporter(options, dashboardClientMock.Object, browser: mockProcess.Object);
+            var mutationTree = ReportTestHelper.CreateProjectWith();
+
+            reporter.OnMutantsCreated(mutationTree, It.IsAny<TestProjectsInfo>());
+
+            mockProcess.VerifyNoOtherCalls();
+            dashboardClientMock.VerifyNoOtherCalls();
+        }
+
         [Theory]
         [InlineData(ReportType.Html)]
         [InlineData(null)]
         public void ShouldNotOpenDashboardReportIfOptionIsProvided(ReportType? reportType)
         {
-            var reporters = new[] { Reporter.Dashboard };
+            var reporters = new[] { Reporter.Dashboard, Reporter.RealTimeDashboard };
             var options = new StrykerOptions
             {
                 ReportTypeToOpen = reportType,
@@ -107,6 +155,32 @@ namespace Stryker.Core.UnitTest.Reporters
             var options = new StrykerOptions
             {
                 ReportTypeToOpen = ReportType.Dashboard,
+                DashboardApiKey = "Access_Token",
+                ProjectName = "github.com/JohnDoe/project",
+                ProjectVersion = "version/human/readable",
+                Reporters = reporters
+            };
+            var mockProcess = new Mock<IWebbrowserOpener>();
+            var dashboardClientMock = new Mock<IDashboardClient>();
+            var reporter = new DashboardReporter(options, dashboardClientMock.Object, browser: mockProcess.Object);
+            var mutationTree = ReportTestHelper.CreateProjectWith();
+            var mutant = mutationTree.Mutants.First();
+
+            // Act
+            reporter.OnMutantTested(mutant);
+
+            // Assert
+            mockProcess.VerifyNoOtherCalls();
+            dashboardClientMock.Verify(d => d.PublishMutantBatch(It.IsAny<JsonMutant>()));
+        }
+
+        [Fact]
+        public void ShouldSendMutantBatchWithRealTimeDashboardOption()
+        {
+            // Arrange
+            var reporters = new[] { Reporter.RealTimeDashboard };
+            var options = new StrykerOptions
+            {
                 DashboardApiKey = "Access_Token",
                 ProjectName = "github.com/JohnDoe/project",
                 ProjectVersion = "version/human/readable",

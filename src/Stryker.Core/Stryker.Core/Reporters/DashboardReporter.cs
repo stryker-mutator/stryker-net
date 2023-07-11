@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using Stryker.Core.Clients;
@@ -37,7 +38,7 @@ namespace Stryker.Core.Reporters
             var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
             _dashboardClient.PublishReport(mutationReport, _options.ProjectVersion).Wait();
 
-            if (_options.ReportTypeToOpen == ReportType.Dashboard)
+            if (ShouldPublishInRealTime())
             {
                 _dashboardClient.PublishFinished().Wait();
             }
@@ -78,7 +79,7 @@ namespace Stryker.Core.Reporters
 
         public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
-            if (_options.ReportTypeToOpen != ReportType.Dashboard)
+            if (!ShouldPublishInRealTime())
             {
                 return;
             }
@@ -91,7 +92,7 @@ namespace Stryker.Core.Reporters
 
         public void OnMutantTested(IReadOnlyMutant result)
         {
-            if (_options.ReportTypeToOpen != ReportType.Dashboard)
+            if (!ShouldPublishInRealTime())
             {
                 return;
             }
@@ -103,5 +104,9 @@ namespace Stryker.Core.Reporters
         {
             // Method to implement the interface
         }
+
+        private bool ShouldPublishInRealTime() =>
+            _options.ReportTypeToOpen == ReportType.Dashboard ||
+            _options.Reporters.Contains(Reporter.RealTimeDashboard);
     }
 }
