@@ -126,7 +126,7 @@ namespace Stryker.Core.Clients
 
         private Uri GetUrl(string version, bool realTime)
         {
-            var module = _options.ModuleName != null ? $"?module={_options.ModuleName}" : "";
+            var module = !string.IsNullOrEmpty(_options.ModuleName) ? $"?module={_options.ModuleName}" : "";
             var url = new Uri($"{_options.DashboardUrl}/api/reports/{_options.ProjectName}/{version}{module}");
             if (realTime)
             {

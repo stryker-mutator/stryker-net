@@ -43,6 +43,16 @@ namespace Stryker.Core.UnitTest.Clients
             Reporters = new[] { Reporter.Dashboard },
         };
 
+        private static readonly StrykerOptions OptionsWithEmptyModule = new()
+        {
+            DashboardUrl = "http://www.example.com",
+            DashboardApiKey = "Access_Token",
+            ModuleName = "",
+            ProjectName = "github.com/JohnDoe/project",
+            ProjectVersion = "test/version",
+            Reporters = new[] { Reporter.Dashboard },
+        };
+
         private static readonly JsonMutant Mutant = new(new Mutant
         {
             Id = 1,
@@ -123,7 +133,6 @@ namespace Stryker.Core.UnitTest.Clients
 
             var sut = new DashboardClient(OptionsWithModule, new HttpClient(_handlerMock.Object), _loggerMock.Object);
 
-
             // Act
             var result = await sut.PublishReport(new MockJsonReport(null, null), "version");
 
@@ -138,6 +147,33 @@ namespace Stryker.Core.UnitTest.Clients
                     ),
                 ItExpr.IsAny<CancellationToken>()
                 );
+
+            result.ShouldBe("http://www.example.com/api/projectName/version");
+        }
+
+        [Fact]
+        public async Task DashboardClient_ShouldNotAppendModuleIfOptionIsAnEmptyString()
+        {
+            // Arrange
+            const string Href = $"{{\"Href\": \"http://www.example.com/api/projectName/version\"}}";
+            ArrangeHandlerReturnsOk(Href);
+
+            var sut = new DashboardClient(OptionsWithEmptyModule, new HttpClient(_handlerMock.Object), _loggerMock.Object);
+
+            // Act
+            var result = await sut.PublishReport(new MockJsonReport(null, null), "version");
+
+            var expectedUri = new Uri("http://www.example.com/api/reports/github.com/JohnDoe/project/version");
+
+            _handlerMock.Protected().Verify(
+                "SendAsync",
+                Times.Exactly(1),
+                ItExpr.Is<HttpRequestMessage>(req =>
+                    req.Method == HttpMethod.Put
+                    && req.RequestUri == expectedUri
+                ),
+                ItExpr.IsAny<CancellationToken>()
+            );
 
             result.ShouldBe("http://www.example.com/api/projectName/version");
         }
