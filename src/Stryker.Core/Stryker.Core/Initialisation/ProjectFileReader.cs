@@ -28,7 +28,7 @@ namespace Stryker.Core.Initialisation
         private readonly IBuildalyzerProvider _analyzerProvider;
         private IAnalyzerManager _analyzerManager;
         private readonly ILogger _logger;
-        private readonly StringWriter _buildAlyzerLog = new StringWriter();
+        private readonly StringWriter _buildalyzerLog = new StringWriter();
 
         public ProjectFileReader(
             INugetRestoreProcess nugetRestoreProcess = null,
@@ -43,7 +43,7 @@ namespace Stryker.Core.Initialisation
         {
             get
             {
-                _analyzerManager ??= _analyzerProvider.Provide(new AnalyzerManagerOptions{LogWriter = _buildAlyzerLog});
+                _analyzerManager ??= _analyzerProvider.Provide(new AnalyzerManagerOptions{LogWriter = _buildalyzerLog});
                 return _analyzerManager;
             }
         }
@@ -78,7 +78,7 @@ namespace Stryker.Core.Initialisation
             return analyzerResult;
         }
 
-        public IAnalyzerManager AnalyzeSolution(string solutionPath) => _analyzerProvider.Provide(solutionPath, new AnalyzerManagerOptions{LogWriter = _buildAlyzerLog});
+        public IAnalyzerManager AnalyzeSolution(string solutionPath) => _analyzerProvider.Provide(solutionPath, new AnalyzerManagerOptions{LogWriter = _buildalyzerLog});
 
         /// <summary>
         /// Checks if project info is already present in solution projects. If not, analyze here.
@@ -97,7 +97,7 @@ namespace Stryker.Core.Initialisation
             if (!validResults.Any())
             {
                 _logger.LogError("Project analysis failed. The MsBuild log is below.");
-                _logger.LogError(_buildAlyzerLog.ToString());
+                _logger.LogError(_buildalyzerLog.ToString());
                 throw new InputException("No valid project analysis results could be found.");
             }
 
