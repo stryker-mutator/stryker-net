@@ -1,7 +1,7 @@
 {
   "version": 1,
   "dependencies": {
-    "net6.0": {
+    ".NETStandard,Version=v2.1": {
       "FSharp.Core": {
         "type": "Direct",
         "requested": "[8.0.100-beta.23327.15, )",
