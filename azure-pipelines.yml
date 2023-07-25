@@ -205,6 +205,17 @@ stages:
         projects: '**/Validation.csproj'
         arguments: --filter Category=SingleTestProject
 
+    - template: pipeline-templates/run-integration-test-steps.yml
+      parameters:
+        testName: 'windows-fsharp'
+        workingDirectory: 'integrationtest/TargetProjects/Library.FSharp.XUnit'
+    - task: DotNetCoreCLI@2
+      displayName: 'Assert integration test results'
+      inputs:
+        command: test
+        projects: '**/Validation.csproj'
+        arguments: --filter Category=FSharp
+
   - job: LinuxTests
     displayName: Run tests on Linux
     pool:
@@ -222,18 +233,6 @@ stages:
         command: test
         projects: '**/Validation.csproj'
         arguments: --filter Category=Solution
-
-    - template: pipeline-templates/run-integration-test-steps.yml
-      parameters:
-        testName: 'ubuntu-fsharp'
-        workingDirectory: 'integrationtest/TargetProjects/Library.FSharp.XUnit'
-    - task: DotNetCoreCLI@2
-      displayName: 'Assert integration test results'
-      inputs:
-        command: test
-        projects: '**/Validation.csproj'
-        arguments: --filter Category=FSharp
-
     - script: $(Agent.BuildDirectory)/tools/dotnet-stryker
       workingDirectory: 'integrationtest/TargetProjects/EmptyTestProject'
       failOnStderr: false
