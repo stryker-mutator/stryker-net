@@ -58,7 +58,7 @@ namespace Stryker.Core.Compiling
             {
                 var injectionPath = TestProjectsInfo.GetInjectionFilePath(testProject, _input.SourceProjectInfo.AnalyzerResult);
                 var pdbInjectionpath = Path.Combine(testProject.GetAssemblyDirectoryPath(), _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName());
-                if (!_fileSystem.Directory.Exists(injectionPath.Substring(0, injectionPath.LastIndexOf('\\'))))
+                if (!_fileSystem.Directory.Exists(injectionPath.Substring(0, injectionPath.LastIndexOf(Path.DirectorySeparatorChar))))
                 {
                     _fileSystem.Directory.CreateDirectory(injectionPath);
                 }
