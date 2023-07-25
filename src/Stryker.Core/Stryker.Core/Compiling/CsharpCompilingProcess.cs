@@ -60,7 +60,7 @@ namespace Stryker.Core.Compiling
             var compilation = CSharpCompilation.Create(AssemblyName,
                 syntaxTrees: trees,
                 options: compilationOptions,
-                references: _input.SourceProjectInfo.AnalyzerResult.References.Select(r => MetadataReference.CreateFromFile(r)));
+                references: _input.SourceProjectInfo.AnalyzerResult.LoadReferences());
 
             // C# source generators must be executed before compilation
             compilation = RunSourceGenerators(analyzerResult, compilation);
