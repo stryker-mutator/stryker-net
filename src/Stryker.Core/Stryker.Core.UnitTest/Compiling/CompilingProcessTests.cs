@@ -6,14 +6,12 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Shouldly;
 using Stryker.Core.Compiling;
 using Stryker.Core.Exceptions;
-using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Mutators;
@@ -56,7 +54,53 @@ namespace ExampleProject
                             { "TargetFileName", "TargetFileName.dll"},
                         },
                         // add a reference to system so the example code can compile
-                        references: new string[] { typeof(object).Assembly.Location }
+                        references: new[] { typeof(object).Assembly.Location }
+                    ).Object
+                }
+            };
+            var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
+
+            var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
+
+            using (var ms = new MemoryStream())
+            {
+                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
+                result.Success.ShouldBe(true);
+                ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
+            }
+        }
+
+        [Fact]
+        public void CompilingProcessTests_ShouldSupportReferenceAliases()
+        {
+            var syntaxTree = CSharpSyntaxTree.ParseText(@"
+    extern alias Texte;
+using System;
+
+namespace ExampleProject
+{
+    public class Calculator
+    {
+        public int Subtract(int first, int second)
+        {
+            return first - second;
+        }
+    }
+}");
+            var input = new MutationTestInput()
+            {
+                SourceProjectInfo = new SourceProjectInfo
+                {
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        projectFilePath: "/c/project.csproj",
+                        properties: new Dictionary<string, string>()
+                        {
+                            { "TargetDir", "" },
+                            { "AssemblyName", "AssemblyName"},
+                            { "TargetFileName", "TargetFileName.dll"},
+                        },
+                        // add a reference to system so the example code can compile
+                        references: new[] { typeof(object).Assembly.Location, $"Texte={typeof(System.Text.StringBuilder).Assembly.Location}" }
                     ).Object
                 }
             };
