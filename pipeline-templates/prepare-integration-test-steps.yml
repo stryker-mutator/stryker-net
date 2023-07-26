@@ -16,7 +16,7 @@ steps:
   inputs:
     command: custom
     custom: tool
-    arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools --version $(IntegrationTestVersion) --add-source $(MygetFeedUri)
+    arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools --version $(IntegrationTestVersion) --add-source $(ForkIntegrationNugetFeedUri)
     includeNuGetOrg: false
     workingDirectory: 'pipeline-templates'
 
@@ -26,6 +26,6 @@ steps:
   inputs:
     command: custom
     custom: tool
-    arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools --version $(IntegrationTestVersion) --add-source $(AzureArtifactFeedUri)
+    arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools --version $(IntegrationTestVersion) --add-source $(MainIntegrationNugetFeedUri)
     includeNuGetOrg: false
     workingDirectory: 'pipeline-templates'

@@ -27,9 +27,8 @@ variables:
   VersionBuildNumber: $[counter('3.9.2', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
-  MygetFeed: https://www.myget.org/F/stryker-mutator-integrationtest
-  AzureArtifactFeedUri: https://pkgs.dev.azure.com/stryker-mutator/Stryker/_packaging/stryker-net/nuget/v3/index.json
-  MygetFeedUri: https://www.myget.org/F/stryker-mutator-integrationtest/api/v3/index.json
+  ForkIntegrationNugetFeedUri: https://f.feedz.io/stryker/stryker-net/nuget/index.json
+  MainIntegrationNugetFeedUri: https://pkgs.dev.azure.com/stryker-mutator/Stryker/_packaging/stryker-net/nuget/v3/index.json
   NUGET_PACKAGES: $(Pipeline.Workspace)/.nuget/packages
   LibManCacheWindows: $(USERPROFILE)/.librarymanager/cache
   LibManCacheMacLinux: $(HOME)/.librarymanager/cache
@@ -125,7 +124,7 @@ stages:
   jobs:
   - deployment: PublishIntegrationTestPackage
     displayName: Prepare integrationtest package
-    environment: 'myget'
+    environment: 'integrationtest'
     strategy:
       runOnce:
         deploy:
@@ -158,7 +157,7 @@ stages:
             inputs:
               command: custom
               custom: 'nuget'
-              arguments: 'push *dotnet-stryker*$(IntegrationTestVersion).nupkg -s $(MygetFeed) -k $(IntegrationTestFeedKey)'
+              arguments: 'push *dotnet-stryker*$(IntegrationTestVersion).nupkg -s $(ForkIntegrationNugetFeedUri) -k $(IntegrationTestFeedKey)'
               workingDirectory: '$(Build.ArtifactStagingDirectory)/integrationtest'
           - task: DotNetCoreCLI@2
             displayName: 'Publish integrationtest packages'
@@ -168,8 +167,8 @@ stages:
               packagesToPush: '$(Build.ArtifactStagingDirectory)/integrationtest/*$(IntegrationTestVersion).nupkg'
               nuGetFeedType: 'internal'
               publishVstsFeed: '506a1f46-900e-434e-805f-ff8d36fc81af/cc8fa47b-395f-417d-8b3d-72618b95ddb8'
-  - job: WaitOnMyGetProcessing
-    displayName: Wait on pre-release packages to be processed on MyGet
+  - job: WaitOnIntegrationFeedProcessing
+    displayName: Wait on pre-release packages to be processed on Integration Feed
     dependsOn: 'PublishIntegrationTestPackage'
     pool: server
     steps:
