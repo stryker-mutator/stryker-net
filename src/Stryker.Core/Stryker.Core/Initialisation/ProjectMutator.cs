@@ -42,17 +42,17 @@ namespace Stryker.Core.Initialisation
 
         private void EnrichTestProjectsWithTestInfo(InitialTestRun initialTestRun, TestProjectsInfo testProjectsInfo)
         {
-            foreach (var unitTest in initialTestRun.Result.VsTestDescriptions.Select(desc => desc.Case))
+            var unitTests =
+                initialTestRun.Result.VsTestDescriptions
+                .Select(desc => desc.Case)
+                // F# has a different syntax tree and would throw further down the line
+                .Where(unitTest => Path.GetExtension(unitTest.CodeFilePath) == ".cs");
+
+            foreach (var unitTest in unitTests)
             {
                 var testFile = testProjectsInfo.TestFiles.SingleOrDefault(testFile => testFile.FilePath == unitTest.CodeFilePath);
                 if (testFile is not null)
                 {
-                    // hard stub - F# has a different syntax tree and would throw further down the line
-                    if (Path.GetExtension(testFile.FilePath) == ".fs")
-                    {
-                        continue;
-                    }
-
                     var lineSpan = testFile.SyntaxTree.GetText().Lines[unitTest.LineNumber - 1].Span;
                     var nodesInSpan = testFile.SyntaxTree.GetRoot().DescendantNodes(lineSpan);
                     var node = nodesInSpan.First(n => n is MethodDeclarationSyntax);
