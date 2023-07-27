@@ -14,7 +14,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
 {
-    public class TestProjectsInfoTests
+    public class TestProjectsInfoTests : TestBase
     {
         [Fact]
         public void ShouldGenerateInjectionPath()
