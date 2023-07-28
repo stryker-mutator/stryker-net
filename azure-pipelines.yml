@@ -42,7 +42,7 @@ stages:
 
 - stage: Analysis
   dependsOn: UpdatePackageLockFiles
-  condition: and(succeeded()), eq(variables['System.PullRequest.IsFork'], 'False'))
+  condition: and(succeeded(), eq(variables['System.PullRequest.IsFork'], 'False'))
   jobs:
   - job:
     displayName: Run Sonar Analysis
