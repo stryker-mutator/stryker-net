@@ -118,6 +118,7 @@ stages:
 - stage: DeployIntegrationtestPackage
   displayName: Deploy Integrationtest Package
   dependsOn: UpdatePackageLockFiles
+  condition: not(failed())
   jobs:
   - deployment: PublishIntegrationTestPackage
     displayName: Prepare integrationtest package
