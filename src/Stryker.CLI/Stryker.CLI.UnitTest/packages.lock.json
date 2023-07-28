@@ -1599,7 +1599,7 @@
           "McMaster.Extensions.CommandLineUtils": "[4.0.2, )",
           "NuGet.Protocol": "[6.6.1, )",
           "YamlDotNet": "[13.1.1, )",
-          "stryker": "[3.9.2, )"
+          "stryker": "[3.10.0, )"
         }
       },
       "stryker": {
@@ -1627,8 +1627,8 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.47.0, )",
           "Spectre.Console.Analyzer": "[0.47.0, )",
-          "Stryker.DataCollector": "[3.9.2, )",
-          "Stryker.RegexMutators": "[3.9.2, )",
+          "Stryker.DataCollector": "[3.10.0, )",
+          "Stryker.RegexMutators": "[3.10.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[19.2.29, )"
         }
       },
