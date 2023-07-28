@@ -1,3 +1,4 @@
+using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
@@ -41,7 +42,13 @@ namespace Stryker.Core.Initialisation
 
         private void EnrichTestProjectsWithTestInfo(InitialTestRun initialTestRun, TestProjectsInfo testProjectsInfo)
         {
-            foreach (var unitTest in initialTestRun.Result.VsTestDescriptions.Select(desc => desc.Case))
+            var unitTests =
+                initialTestRun.Result.VsTestDescriptions
+                .Select(desc => desc.Case)
+                // F# has a different syntax tree and would throw further down the line
+                .Where(unitTest => Path.GetExtension(unitTest.CodeFilePath) == ".cs");
+
+            foreach (var unitTest in unitTests)
             {
                 var testFile = testProjectsInfo.TestFiles.SingleOrDefault(testFile => testFile.FilePath == unitTest.CodeFilePath);
                 if (testFile is not null)
