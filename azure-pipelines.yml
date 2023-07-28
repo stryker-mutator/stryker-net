@@ -42,7 +42,7 @@ stages:
 
 - stage: Analysis
   dependsOn: UpdatePackageLockFiles
-  condition: and(not(failed()), eq(variables['System.PullRequest.IsFork'], 'False'))
+  condition: and(and(not(failed()), not(canceled())), eq(variables['System.PullRequest.IsFork'], 'False'))
   jobs:
   - job:
     displayName: Run Sonar Analysis
@@ -115,10 +115,10 @@ stages:
       inputs:
         reportPattern: 'src/Stryker.Core/Stryker.Core.UnitTest/**/mutation-report.html'
 
-- stage: DeployIntegrationtestPackage
-  displayName: Deploy Integrationtest Package
+- stage: PublishIntegrationtestPackage
+  displayName: Publish Integrationtest Package
   dependsOn: UpdatePackageLockFiles
-  condition: not(failed())
+  condition: and(not(failed()), not(canceled()))
   jobs:
   - deployment: PublishIntegrationTestPackage
     displayName: Prepare integrationtest package
@@ -177,7 +177,8 @@ stages:
 - stage: IntegrationTests
   dependsOn:
     - Analysis
-    - DeployIntegrationtestPackage
+    - PublishIntegrationtestPackage
+  condition: and(not(failed()), not(canceled()))
   jobs:
   - job: WindowsTests
     displayName: Run tests on Windows
@@ -266,7 +267,7 @@ stages:
   dependsOn:
     - Analysis
     - IntegrationTests
-  condition: and(not(failed()), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: and(and(not(failed()), not(canceled())), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   jobs:
   - job: PublishRelease
     displayName: Publish Release Artifacts
