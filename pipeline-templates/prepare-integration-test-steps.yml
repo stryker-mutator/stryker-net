@@ -12,7 +12,7 @@ steps:
 
 - task: DotNetCoreCLI@2
   displayName: 'Install integrationtest dotnet tool (fork)'
-  condition: eq(variables['System.PullRequest.IsFork'], 'True')
+  condition: and(succeeded(), eq(variables['System.PullRequest.IsFork'], 'True'))
   inputs:
     command: custom
     custom: tool
@@ -22,7 +22,7 @@ steps:
 
 - task: DotNetCoreCLI@2
   displayName: 'Install integrationtest dotnet tool (source)'
-  condition: eq(variables['System.PullRequest.IsFork'], 'False')
+  condition:  and(succeeded(), eq(variables['System.PullRequest.IsFork'], 'False'))
   inputs:
     command: custom
     custom: tool
