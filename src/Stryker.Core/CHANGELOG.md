@@ -12,6 +12,7 @@
 
 * **assembly reference resolving:** Support reference aliases ([#2604](https://github.com/stryker-mutator/stryker-net/issues/2604)) ([1cec405](https://github.com/stryker-mutator/stryker-net/commit/1cec405d01821a495b2115e10181b74db88b8296))
 * **buildalyzer:** Provide msbuild log when buildalyzer fails analysis ([#2605](https://github.com/stryker-mutator/stryker-net/issues/2605)) ([2849911](https://github.com/stryker-mutator/stryker-net/commit/2849911b47e65d39b31e0b0f5cd5679a565969ff))
+* **reporting:** Update mutation-testing-elements to 2.0.3 which adds a progress bar ([#2614](https://github.com/stryker-mutator/stryker-net/issues/2614)) ([dfe7559](https://github.com/stryker-mutator/stryker-net/commit/dfe7559bda0ebb2aa3306eb90059c3b5cedf6780))
 
 
 
