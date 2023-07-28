@@ -12,7 +12,7 @@ steps:
     key:  libman | **/libman.json
     restoreKeys: libman
     path: $(LibManCacheWindows)
-  condition: and(not(failed)), eq(variables['Agent.OS'], 'Windows_NT'))
+  condition: and(not(failed()), eq(variables['Agent.OS'], 'Windows_NT'))
   continueOnError: true
 
 - task: Cache@2
@@ -21,5 +21,5 @@ steps:
     key: libman | **/libman.json
     restoreKeys: libman
     path: $(LibManCacheMacLinux)
-  condition: and(not(failed)), ne(variables['Agent.OS'], 'Windows_NT'))
+  condition: and(not(failed()), ne(variables['Agent.OS'], 'Windows_NT'))
   continueOnError: true
