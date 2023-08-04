@@ -4,6 +4,7 @@ steps:
   inputs:
     key: nuget | **/packages.lock.json
     path: $(NUGET_PACKAGES)
+  continueOnError: true
 
 - task: Cache@2
   displayName: 'Cache Library Manager libraries (Windows)'
@@ -11,7 +12,8 @@ steps:
     key:  libman | **/libman.json
     restoreKeys: libman
     path: $(LibManCacheWindows)
-  condition: eq(variables['Agent.OS'], 'Windows_NT')
+  condition: and(not(failed()), eq(variables['Agent.OS'], 'Windows_NT'))
+  continueOnError: true
 
 - task: Cache@2
   displayName: 'Cache Libary Manager libraries (macOS, Linux)'
@@ -19,4 +21,5 @@ steps:
     key: libman | **/libman.json
     restoreKeys: libman
     path: $(LibManCacheMacLinux)
-  condition: ne(variables['Agent.OS'], 'Windows_NT')
+  condition: and(not(failed()), ne(variables['Agent.OS'], 'Windows_NT'))
+  continueOnError: true

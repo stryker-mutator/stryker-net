@@ -42,7 +42,7 @@ stages:
 
 - stage: Analysis
   dependsOn: UpdatePackageLockFiles
-  condition: and(not(failed()), eq(variables['System.PullRequest.IsFork'], 'False'))
+  condition: and(and(not(failed()), not(canceled())), eq(variables['System.PullRequest.IsFork'], 'False'))
   jobs:
   - job:
     displayName: Run Sonar Analysis
@@ -73,7 +73,7 @@ stages:
         pollingTimeoutSec: '300'
   - job: RunStrykerCLI
     displayName: Run stryker on Stryker.CLI
-    condition: eq(variables['Build.Reason'], 'Schedule')
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'Schedule'))
     dependsOn: []
     timeoutInMinutes: 240
     steps:
@@ -89,12 +89,11 @@ stages:
         arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools
         includeNuGetOrg: true
     - script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporter dashboard --reporter dots --reporter html --version master --dashboard-api-key $(Stryker.Dashboard.Api.Key)
-      condition: succeeded()
       displayName: Run Stryker on Stryker.CLI
       workingDirectory: 'src\Stryker.CLI\Stryker.CLI.UnitTest'
   - job: RunStrykerCore
     displayName: Run stryker on Stryker.Core
-    condition: eq(variables['Build.Reason'], 'Schedule')
+    condition: and(succeeded(), eq(variables['Build.Reason'], 'Schedule'))
     dependsOn: []
     timeoutInMinutes: 240
     steps:
@@ -110,17 +109,16 @@ stages:
         arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools
         includeNuGetOrg: true
     - script: $(Agent.BuildDirectory)/tools/dotnet-stryker --reporter dashboard --reporter dots --reporter html --version master --dashboard-api-key $(Stryker.Dashboard.Api.Key)
-      condition: succeeded()
       displayName: Run Stryker on Stryker.Core
       workingDirectory: 'src\Stryker.Core\Stryker.Core.UnitTest'
     - task: PublishMutationReport@1
       inputs:
         reportPattern: 'src/Stryker.Core/Stryker.Core.UnitTest/**/mutation-report.html'
 
-- stage: DeployIntegrationtestPackage
-  displayName: Deploy Integrationtest Package
+- stage: PublishIntegrationtestPackage
+  displayName: Publish Integrationtest Package
   dependsOn: UpdatePackageLockFiles
-  condition: not(failed())
+  condition: and(not(failed()), not(canceled()))
   jobs:
   - deployment: PublishIntegrationTestPackage
     displayName: Prepare integrationtest package
@@ -153,7 +151,7 @@ stages:
               includesymbols: true
           - task: DotNetCoreCLI@2
             displayName: 'Publish integrationtest packages'
-            condition: eq(variables['System.PullRequest.IsFork'], 'True')
+            condition: and(succeeded(), eq(variables['System.PullRequest.IsFork'], 'True'))
             inputs:
               command: custom
               custom: 'nuget'
@@ -161,7 +159,7 @@ stages:
               workingDirectory: '$(Build.ArtifactStagingDirectory)/integrationtest'
           - task: DotNetCoreCLI@2
             displayName: 'Publish integrationtest packages'
-            condition: eq(variables['System.PullRequest.IsFork'], 'False')
+            condition:  and(succeeded(), eq(variables['System.PullRequest.IsFork'], 'False'))
             inputs:
               command: 'push'
               packagesToPush: '$(Build.ArtifactStagingDirectory)/integrationtest/*$(IntegrationTestVersion).nupkg'
@@ -179,8 +177,8 @@ stages:
 - stage: IntegrationTests
   dependsOn:
     - Analysis
-    - DeployIntegrationtestPackage
-  condition: not(failed())
+    - PublishIntegrationtestPackage
+  condition: and(not(failed()), not(canceled()))
   jobs:
   - job: WindowsTests
     displayName: Run tests on Windows
@@ -269,7 +267,7 @@ stages:
   dependsOn:
     - Analysis
     - IntegrationTests
-  condition: and(not(failed()), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
+  condition: and(and(not(failed()), not(canceled())), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
   jobs:
   - job: PublishRelease
     displayName: Publish Release Artifacts
