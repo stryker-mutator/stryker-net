@@ -20,7 +20,7 @@ namespace IntegrationTests
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
                 var directory = new DirectoryInfo("../../../../TargetProjects/NetFramework/FullFrameworkApp.Test/StrykerOutput");
-                directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
+                directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
 
                 var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
                     .OrderByDescending(f => f.LastWriteTime)
@@ -39,7 +39,7 @@ namespace IntegrationTests
         public void NetCore()
         {
             var directory = new DirectoryInfo("../../../../TargetProjects/NetCoreTestProject.XUnit/StrykerOutput");
-            directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
+            directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
 
             var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
                 .OrderByDescending(f => f.LastWriteTime)
@@ -54,11 +54,31 @@ namespace IntegrationTests
         }
 
         [Fact]
+        [Trait("Category", "FSharp")]
+        public void FSharp()
+        {
+            var directory = new DirectoryInfo("../../../../TargetProjects/Library.FSharp.XUnit/StrykerOutput");
+            directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
+
+            var latestReport = directory
+                .GetFiles(MutationReportJson, SearchOption.AllDirectories)
+                .OrderByDescending(f => f.LastWriteTime)
+                .First();
+
+            var strykerRunOutput = File.ReadAllText(latestReport.FullName);
+
+            var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
+
+            CheckReportMutantCounts(report, total: 0, ignored: 0, survived: 0, killed: 0, timeout: 0, nocoverage: 0);
+            CheckReportTestCounts(report, total: 0);
+        }
+
+        [Fact]
         [Trait("Category", "MultipleTestProjects")]
         public void NetCoreWithTwoTestProjects()
         {
             var directory = new DirectoryInfo("../../../../TargetProjects/Targetproject/StrykerOutput");
-            directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
+            directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
 
             var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
                 .OrderByDescending(f => f.LastWriteTime)
@@ -77,7 +97,7 @@ namespace IntegrationTests
         public void SolutionRun()
         {
             var directory = new DirectoryInfo("../../../../TargetProjects/StrykerOutput");
-            directory.GetFiles("*.json").ShouldNotBeNull("No reports available to assert");
+            directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
 
             var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
                 .OrderByDescending(f => f.LastWriteTime)

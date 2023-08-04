@@ -1,3 +1,21 @@
+# [3.10.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.9.2...stryker@3.10.0) (2023-07-28)
+
+
+### Bug Fixes
+
+* Improve Vstest support ([#2595](https://github.com/stryker-mutator/stryker-net/issues/2595)) ([04268c1](https://github.com/stryker-mutator/stryker-net/commit/04268c10366d82bff2a6d404bb2383481530ce8d))
+* Increase time out before assuming VsTest is frozen ([#2576](https://github.com/stryker-mutator/stryker-net/issues/2576)) ([3069cb2](https://github.com/stryker-mutator/stryker-net/commit/3069cb267731d29dbced93f61cf8417457dfa90d))
+* Small changes to configuration help text ([#2586](https://github.com/stryker-mutator/stryker-net/issues/2586)) ([c68c14e](https://github.com/stryker-mutator/stryker-net/commit/c68c14eb767705b418e189c13971cf58a5585647))
+
+
+### Features
+
+* **assembly reference resolving:** Support reference aliases ([#2604](https://github.com/stryker-mutator/stryker-net/issues/2604)) ([1cec405](https://github.com/stryker-mutator/stryker-net/commit/1cec405d01821a495b2115e10181b74db88b8296))
+* **buildalyzer:** Provide msbuild log when buildalyzer fails analysis ([#2605](https://github.com/stryker-mutator/stryker-net/issues/2605)) ([2849911](https://github.com/stryker-mutator/stryker-net/commit/2849911b47e65d39b31e0b0f5cd5679a565969ff))
+* **reporting:** Update mutation-testing-elements to 2.0.3 which adds a progress bar ([#2614](https://github.com/stryker-mutator/stryker-net/issues/2614)) ([dfe7559](https://github.com/stryker-mutator/stryker-net/commit/dfe7559bda0ebb2aa3306eb90059c3b5cedf6780))
+
+
+
 ## [3.9.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.9.1...stryker@3.9.2) (2023-06-09)
 
 

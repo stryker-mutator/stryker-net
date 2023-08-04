@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Moq;
 using Shouldly;
 using Stryker.Core.CoverageAnalysis;
@@ -146,7 +147,10 @@ namespace Stryker.Core.UnitTest.TestRunners
             var action = () =>  runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
             action.ShouldThrow<GeneralStrykerException>();
             // the test will always end in a crash, VsTestRunner should retry at least a few times
-            mockVsTest.Verify(m => m.EndSession(), Times.AtLeast(4));
+            mockVsTest.Verify(m => m.RunTestsWithCustomTestHostAsync(It.IsAny<IEnumerable<string>>(),
+                It.IsAny<string>(), It.IsAny<TestPlatformOptions>(),
+                It.IsAny<ITestRunEventsHandler>(),
+                It.IsAny<IStrykerTestHostLauncher>()), Times.AtLeast(3));
         }
 
         [Fact]
@@ -183,10 +187,16 @@ namespace Stryker.Core.UnitTest.TestRunners
         public void ShouldRetryFrozenSession()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
+            var defaultTimeOut = VsTestRunner.VsTestExtraTimeOutInMs;
+            VsTestRunner.VsTestExtraTimeOutInMs = 100;
             // the test session will hung twice
             SetupFrozenTestRun(mockVsTest, 2);
             runner.TestMultipleMutants(SourceProjectInfo, new TimeoutValueCalculator(0, 10,9), new[] { Mutant }, null);
-            mockVsTest.Verify(m => m.EndSession(), Times.Exactly(3));
+            VsTestRunner.VsTestExtraTimeOutInMs = defaultTimeOut;
+            mockVsTest.Verify(m => m.RunTestsWithCustomTestHostAsync(It.IsAny<IEnumerable<string>>(),
+                It.IsAny<string>(), It.IsAny<TestPlatformOptions>(),
+                It.IsAny<ITestRunEventsHandler>(),
+                It.IsAny<IStrykerTestHostLauncher>()), Times.Exactly(3));
         }
 
         [Fact]
@@ -195,8 +205,9 @@ namespace Stryker.Core.UnitTest.TestRunners
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             var defaultTimeOut = VsTestRunner.VsTestExtraTimeOutInMs;
             // the test session will end properly, but VsTest will hang
+            // it will be recyled
             SetupFrozenVsTest(mockVsTest, 3);
-            VsTestRunner.VsTestExtraTimeOutInMs = 500;
+            VsTestRunner.VsTestExtraTimeOutInMs = 100;
             runner.TestMultipleMutants(SourceProjectInfo, new TimeoutValueCalculator(0, 10,9), new[] { Mutant }, null);
             VsTestRunner.VsTestExtraTimeOutInMs = defaultTimeOut;
             mockVsTest.Verify(m => m.EndSession(), Times.Exactly(2));

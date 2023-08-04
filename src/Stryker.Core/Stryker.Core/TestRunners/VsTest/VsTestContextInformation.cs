@@ -148,6 +148,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 return determineConsoleParameters;
             }
 
+            determineConsoleParameters.TraceLevel = Options.DevMode ? TraceLevel.Verbose : TraceLevel.Info;
             var vsTestLogPath = _fileSystem.Path.Combine(LogPath, $"{runnerId}-log.txt");
             _fileSystem.Directory.CreateDirectory(LogPath);
             determineConsoleParameters.LogFilePath = vsTestLogPath;
@@ -165,8 +166,6 @@ namespace Stryker.Core.TestRunners.VsTest
         }
 
         // keeps only test assemblies which have tests.
-        public bool IsValidSourceList(IEnumerable<string> sources) => sources.Any( s=> TestsPerSource.TryGetValue(s, out var result ) && result.Count >0);
-
         public IEnumerable<string> GetValidSources(IEnumerable<string> sources) =>
             sources.Where(s => TestsPerSource.TryGetValue(s, out var result) && result.Count > 0);
 
@@ -236,6 +235,11 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 _testFramework |= TestFrameworks.xUnit;
             }
+
+            if (tests.Any(testCase => testCase.Framework == TestFrameworks.MsTest))
+            {
+                _testFramework &= ~TestFrameworks.MsTest;
+            }
         }
 
         private string GenerateRunSettingsForDiscovery()
@@ -263,7 +267,6 @@ namespace Stryker.Core.TestRunners.VsTest
                     mutantTestsMap?.Select(e => (e.Key, e.Value.GetGuids())),
                     helperNameSpace)
                 : string.Empty;
-
             if (_testFramework.HasFlag(TestFrameworks.NUnit))
             {
                 settingsForCoverage = "<CollectDataForEachTestSeparately>true</CollectDataForEachTestSeparately>";

@@ -52,18 +52,17 @@ namespace Stryker.Core.Compiling
 
             var mutatedAssemblyPath = TestProjectsInfo.GetInjectionFilePath(_input.TestProjectsInfo.AnalyzerResults.First(), _input.SourceProjectInfo.AnalyzerResult);
             var pdbPath = Path.Combine(mutatedAssemblyPath, _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName());
-            (var compilationSucces, var errorinfo) = TryCompilation(checker, trees, mutatedAssemblyPath, pdbPath, dependencies);
+            (var compilationSuccess, var errorinfo) = TryCompilation(checker, trees, mutatedAssemblyPath, pdbPath, dependencies);
 
             foreach (var testProject in _input.TestProjectsInfo.AnalyzerResults)
             {
                 var injectionPath = TestProjectsInfo.GetInjectionFilePath(testProject, _input.SourceProjectInfo.AnalyzerResult);
                 var pdbInjectionpath = Path.Combine(testProject.GetAssemblyDirectoryPath(), _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName());
-                if (!_fileSystem.Directory.Exists(injectionPath.Substring(0, injectionPath.LastIndexOf('\\'))))
+                if (!_fileSystem.Directory.Exists(injectionPath.Substring(0, injectionPath.LastIndexOf(Path.DirectorySeparatorChar))))
                 {
                     _fileSystem.Directory.CreateDirectory(injectionPath);
                 }
 
-                _fileSystem.File.Copy(mutatedAssemblyPath, injectionPath, true);
                 if (_fileSystem.File.Exists(pdbPath))
                 {
                     _fileSystem.File.Copy(pdbPath, pdbInjectionpath, true);
@@ -75,13 +74,13 @@ namespace Stryker.Core.Compiling
             //rollback still needs to be implemented
             RollbackProcessResult rollbackProcessResult = null;
 
-            if (compilationSucces)
+            if (compilationSuccess)
             {
-                //we return if compiled succesfully
+                //we return if compiled successfully
                 //it is however not used as this is the end of the current F# implementation
                 return new CompilingProcessResult()
                 {
-                    Success = compilationSucces,
+                    Success = compilationSuccess,
                     RollbackResult = rollbackProcessResult
                 };
             }
