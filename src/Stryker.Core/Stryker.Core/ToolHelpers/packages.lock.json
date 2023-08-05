@@ -16,9 +16,9 @@
       },
       "Microsoft.TestPlatform.Portable": {
         "type": "Direct",
-        "requested": "[17.6.3, )",
-        "resolved": "17.6.3",
-        "contentHash": "yOqap2x7yZ7dmKYZabJLldAL5WrBltrCV5ijqcWDl72vXM2F4Qnx66GB/izP1PhfY1D2jn+Eo/oeUTPTdYtuQw=="
+        "requested": "[17.7.0, )",
+        "resolved": "17.7.0",
+        "contentHash": "cqC+GfzyX+hDI+omEs4dncbuGhKTPguY27w5GKW1XP1vjg3RTA4Rx3NKqGUX7/VDMTsdL9PFvrzMv5XanE+m9g=="
       },
       "Microsoft.Build.Tasks.Git": {
         "type": "Transitive",
