@@ -50,6 +50,7 @@ namespace Stryker.Core.Initialisation
             var projectInfos = _initializationProcess.GetMutableProjectsInfo(options);
 
             _initializationProcess.BuildProjects(options, projectInfos);
+ 
 
             // create a test runner
             _runner = runner ?? new VsTestRunnerPool(options,

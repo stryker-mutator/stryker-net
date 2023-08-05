@@ -81,9 +81,23 @@ namespace Stryker.Core.Initialisation
             var dependents = FindDependentProjects(projectsUnderTestAnalyzerResult);
             if (!string.IsNullOrEmpty(options.SourceProjectName))
             {
-                var normalizedProjectUnderTestNameFilter = options.SourceProjectName.Replace("\\", "/");
-                projectsUnderTestAnalyzerResult = projectsUnderTestAnalyzerResult.Where(p =>
-                    p.ProjectFilePath.Replace('\\', '/').Contains(normalizedProjectUnderTestNameFilter)).ToList();
+                // try to solve the option as a pathname
+                var sourceProjectSourcePathName = FileSystem.Path.GetFullPath(options.SourceProjectName);
+                projectsUnderTestAnalyzerResult = projectsUnderTestAnalyzerResult.Where(p => sourceProjectSourcePathName ==
+                                   p.ProjectFilePath).ToList();
+
+                if (projectsUnderTestAnalyzerResult.Count == 0)
+                {
+                    // try simple search
+                    var normalizedProjectUnderTestNameFilter = options.SourceProjectName.Replace("\\", "/");
+                    projectsUnderTestAnalyzerResult = projectsUnderTestAnalyzerResult.Where(p =>
+                        p.ProjectFilePath.Replace('\\', '/').Contains(normalizedProjectUnderTestNameFilter)).ToList();
+
+                    if (projectsUnderTestAnalyzerResult.Count == 0)
+                    {
+                        throw new InputException($"No project pathname matches '{options.SourceProjectName}'. Please check your stryker config.");
+                    }
+                }
             }
             return BuildProjectInfos(options, dependents, projectsUnderTestAnalyzerResult, solutionTestProjects);
         }
