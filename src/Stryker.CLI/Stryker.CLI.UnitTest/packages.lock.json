@@ -38,9 +38,9 @@
       },
       "Moq": {
         "type": "Direct",
-        "requested": "[4.20.0, )",
-        "resolved": "4.20.0",
-        "contentHash": "QZg6hh/MCpVN9uq3/uwfgKCHsV5NqTASJbowai960f2yjkyDk02qG5LO301uMqVIc+ge/GRbUo3qaYI6mlqQrg==",
+        "requested": "[4.20.1, )",
+        "resolved": "4.20.1",
+        "contentHash": "ES4ngKsm7T1f3MXj7bM+m1pvxc7rXBLjghFEBjruH5j0Mx15FRI40uo6WT9OgAj3CFWJASYt+chB1MhOivVX+w==",
         "dependencies": {
           "Castle.Core": "5.1.1",
           "Devlooped.SponsorLink": "1.0.0"
@@ -1633,8 +1633,8 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.47.0, )",
           "Spectre.Console.Analyzer": "[0.47.0, )",
-          "Stryker.DataCollector": "[3.10.0, )",
-          "Stryker.RegexMutators": "[3.10.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[19.2.51, )"
         }
       },
