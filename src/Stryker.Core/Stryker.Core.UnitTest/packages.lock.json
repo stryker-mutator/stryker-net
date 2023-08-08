@@ -47,11 +47,12 @@
       },
       "Moq": {
         "type": "Direct",
-        "requested": "[4.18.4, )",
-        "resolved": "4.18.4",
-        "contentHash": "IOo+W51+7Afnb0noltJrKxPBSfsgMzTKCw+Re5AMx8l/vBbAbMDOynLik4+lBYIWDJSO0uV7Zdqt7cNb6RZZ+A==",
+        "requested": "[4.20.0, )",
+        "resolved": "4.20.0",
+        "contentHash": "QZg6hh/MCpVN9uq3/uwfgKCHsV5NqTASJbowai960f2yjkyDk02qG5LO301uMqVIc+ge/GRbUo3qaYI6mlqQrg==",
         "dependencies": {
-          "Castle.Core": "5.1.1"
+          "Castle.Core": "5.1.1",
+          "Devlooped.SponsorLink": "1.0.0"
         }
       },
       "Shouldly": {
@@ -123,6 +124,11 @@
         "dependencies": {
           "System.Diagnostics.EventLog": "6.0.0"
         }
+      },
+      "Devlooped.SponsorLink": {
+        "type": "Transitive",
+        "resolved": "1.0.0",
+        "contentHash": "YtGfB0L0OUGK/Nl7YR8jVLOb8zIYo+pM80nw86GVqqeI36D3itw/N5agupsn4sAJxQxKVJti9KvqqAR8dfrW1A=="
       },
       "DiffEngine": {
         "type": "Transitive",
@@ -1602,8 +1608,8 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.47.0, )",
           "Spectre.Console.Analyzer": "[0.47.0, )",
-          "Stryker.DataCollector": "[3.10.0, )",
-          "Stryker.RegexMutators": "[3.10.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[19.2.51, )"
         }
       },
