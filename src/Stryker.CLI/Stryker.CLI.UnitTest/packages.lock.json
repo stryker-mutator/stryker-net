@@ -38,9 +38,9 @@
       },
       "Moq": {
         "type": "Direct",
-        "requested": "[4.20.0, )",
-        "resolved": "4.20.0",
-        "contentHash": "QZg6hh/MCpVN9uq3/uwfgKCHsV5NqTASJbowai960f2yjkyDk02qG5LO301uMqVIc+ge/GRbUo3qaYI6mlqQrg==",
+        "requested": "[4.20.1, )",
+        "resolved": "4.20.1",
+        "contentHash": "ES4ngKsm7T1f3MXj7bM+m1pvxc7rXBLjghFEBjruH5j0Mx15FRI40uo6WT9OgAj3CFWJASYt+chB1MhOivVX+w==",
         "dependencies": {
           "Castle.Core": "5.1.1",
           "Devlooped.SponsorLink": "1.0.0"
