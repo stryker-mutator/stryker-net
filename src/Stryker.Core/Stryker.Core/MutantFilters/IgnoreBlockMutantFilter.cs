@@ -30,7 +30,7 @@ namespace Stryker.Core.MutantFilters
             var mutantsToIgnore = blockMutants.Where(blockMutant => mutants.Any(
                 m => m != blockMutant
                 && !_inactiveStatuses.Contains(m.ResultStatus)
-                && blockMutant.Span.Value.Contains(m.Span.Value)
+                && blockMutant.Mutation.OriginalNode.Span.Contains(m.Mutation.OriginalNode.Span)
             ));
 
             return mutants.Except(mutantsToIgnore);
