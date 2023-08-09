@@ -38,12 +38,11 @@
       },
       "Moq": {
         "type": "Direct",
-        "requested": "[4.20.1, )",
-        "resolved": "4.20.1",
-        "contentHash": "ES4ngKsm7T1f3MXj7bM+m1pvxc7rXBLjghFEBjruH5j0Mx15FRI40uo6WT9OgAj3CFWJASYt+chB1MhOivVX+w==",
+        "requested": "[4.20.2, )",
+        "resolved": "4.20.2",
+        "contentHash": "jJ/VSoq9rTLXAfqjJxaCJux1BB9CeqohVMott3WQCKYD7ojuegitumWrNHwrSRqad5Nmq95VNKLiNTmFeHnTjA==",
         "dependencies": {
-          "Castle.Core": "5.1.1",
-          "Devlooped.SponsorLink": "1.0.0"
+          "Castle.Core": "5.1.1"
         }
       },
       "Shouldly": {
@@ -105,11 +104,6 @@
         "dependencies": {
           "System.Diagnostics.EventLog": "6.0.0"
         }
-      },
-      "Devlooped.SponsorLink": {
-        "type": "Transitive",
-        "resolved": "1.0.0",
-        "contentHash": "YtGfB0L0OUGK/Nl7YR8jVLOb8zIYo+pM80nw86GVqqeI36D3itw/N5agupsn4sAJxQxKVJti9KvqqAR8dfrW1A=="
       },
       "DiffEngine": {
         "type": "Transitive",
