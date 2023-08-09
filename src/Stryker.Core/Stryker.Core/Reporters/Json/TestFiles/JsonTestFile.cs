@@ -25,10 +25,17 @@ namespace Stryker.Core.Reporters.Json.TestFiles
         {
             foreach (var test in testFile?.Tests ?? Enumerable.Empty<TestCase>())
             {
+                var span = test.Node.GetLocation().GetMappedLineSpan();
                 Tests.Add(new Test(test.Id.ToString())
                 {
                     Name = test.Name,
-                    Location = new Location(test.Node.GetLocation().GetMappedLineSpan())
+                    Location = new Location(new LocationDimensions
+                    {
+                        StartLine = span.StartLinePosition.Line,
+                        StartCharacter = span.StartLinePosition.Character,
+                        EndLine = span.EndLinePosition.Line,
+                        EndCharacter = span.EndLinePosition.Character
+                    })
                 });
             }
         }

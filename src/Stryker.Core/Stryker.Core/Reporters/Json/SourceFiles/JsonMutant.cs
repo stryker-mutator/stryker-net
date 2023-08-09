@@ -32,7 +32,15 @@ namespace Stryker.Core.Reporters.Json.SourceFiles
             Description = mutant.Mutation.Description;
 
             Replacement = mutant.Mutation.ReplacementNode.ToString();
-            Location = new Location(mutant.Mutation.OriginalNode.GetLocation().GetMappedLineSpan());
+
+            var span = mutant.Mutation.OriginalNode.GetLocation().GetMappedLineSpan();
+            Location = new Location(new LocationDimensions
+            {
+                StartLine = span.StartLinePosition.Line,
+                StartCharacter = span.StartLinePosition.Character,
+                EndLine = span.EndLinePosition.Line,
+                EndCharacter = span.EndLinePosition.Character
+            });
 
             Status = mutant.ResultStatus.ToString();
             StatusReason = mutant.ResultStatusReason;

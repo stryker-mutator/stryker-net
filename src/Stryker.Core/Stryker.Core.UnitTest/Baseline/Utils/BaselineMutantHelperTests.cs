@@ -21,19 +21,13 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
 
             var jsonMutant = new JsonMutant
             {
-                Location = new Location
+                Location = new Location(new LocationDimensions
                 {
-                    Start = new Position
-                    {
-                        Column = 17,
-                        Line = 16
-                    },
-                    End = new Position
-                    {
-                        Column = 62,
-                        Line = 16
-                    }
-                }
+                    StartLine = 15,
+                    StartCharacter = 16,
+                    EndLine = 15,
+                    EndCharacter = 61
+                })
             };
 
             var target = new BaselineMutantHelper();
@@ -57,19 +51,13 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
 
             var jsonMutant = new JsonMutant
             {
-                Location = new Location
+                Location = new Location(new LocationDimensions
                 {
-                    Start = new Position
-                    {
-                        Column = 13,
-                        Line = 23
-                    },
-                    End = new Position
-                    {
-                        Column = 38,
-                        Line = 25
-                    }
-                }
+                    StartLine = 22,
+                    StartCharacter = 12,
+                    EndLine = 24,
+                    EndCharacter = 37
+                })
             };
 
             var target = new BaselineMutantHelper();
@@ -95,19 +83,13 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
 
             var jsonMutant = new JsonMutant
             {
-                Location = new Location
+                Location = new Location(new LocationDimensions
                 {
-                    Start = new Position
-                    {
-                        Column = 30,
-                        Line = 32
-                    },
-                    End = new Position
-                    {
-                        Column = 34,
-                        Line = 32
-                    }
-                }
+                    StartLine = 31,
+                    StartCharacter = 29,
+                    EndLine = 31,
+                    EndCharacter = 33
+                })
             };
 
             var target = new BaselineMutantHelper();
@@ -117,7 +99,6 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
 
             // Assert
             result.ShouldBe("\"\\n\"");
-
         }
     }
 }
