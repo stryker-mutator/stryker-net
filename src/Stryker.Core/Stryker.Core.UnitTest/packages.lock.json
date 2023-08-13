@@ -47,9 +47,9 @@
       },
       "Moq": {
         "type": "Direct",
-        "requested": "[4.18.4, )",
-        "resolved": "4.18.4",
-        "contentHash": "IOo+W51+7Afnb0noltJrKxPBSfsgMzTKCw+Re5AMx8l/vBbAbMDOynLik4+lBYIWDJSO0uV7Zdqt7cNb6RZZ+A==",
+        "requested": "[4.20.69, )",
+        "resolved": "4.20.69",
+        "contentHash": "8P/oAUOL8ZVyXnzBBcgdhTsOD1kQbAWfOcMI7KDQO3HqQtzB/0WYLdnMa4Jefv8nu/MQYiiG0IuoJdvG0v0Nig==",
         "dependencies": {
           "Castle.Core": "5.1.1"
         }
@@ -1593,7 +1593,7 @@
           "Microsoft.TestPlatform.TranslationLayer": "[17.7.0, )",
           "Microsoft.Web.LibraryManager.Build": "[2.1.175, )",
           "Mono.Cecil": "[0.11.5, )",
-          "NuGet.Frameworks": "[6.6.1, )",
+          "NuGet.Frameworks": "[6.7.0, )",
           "ResXResourceReader.NetStandard": "[1.1.0, )",
           "Serilog": "[3.0.1, )",
           "Serilog.Extensions.Logging": "[7.0.0, )",
@@ -1764,9 +1764,9 @@
       },
       "NuGet.Frameworks": {
         "type": "CentralTransitive",
-        "requested": "[6.6.1, )",
-        "resolved": "6.6.1",
-        "contentHash": "iRtDhL0zPqVw037fHEK9bQljTKPuOHhfIkz86/IH2P8eetr910HTTe5G8lJTuzZHh592Ze/sYhh173HIFjPSfg=="
+        "requested": "[6.7.0, )",
+        "resolved": "6.7.0",
+        "contentHash": "mTKaTSINpCjMHTNdaPMD/0nfHvWGetG67KzWtDJklnAp9nNwqA+t65G0v8XA/Ve35ipmPRdklxFIl3O55iTgnQ=="
       },
       "RegexParser": {
         "type": "CentralTransitive",
