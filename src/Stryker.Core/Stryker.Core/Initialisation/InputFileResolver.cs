@@ -83,10 +83,10 @@ namespace Stryker.Core.Initialisation
             {
                 // try to solve the option as a pathname
                 var sourceProjectSourcePathName = FileSystem.Path.GetFullPath(options.SourceProjectName);
-                projectsUnderTestAnalyzerResult = projectsUnderTestAnalyzerResult.Where(p => sourceProjectSourcePathName ==
+                var filteredProjectsUnderTestAnalyzerResult = projectsUnderTestAnalyzerResult.Where(p => sourceProjectSourcePathName ==
                                    p.ProjectFilePath).ToList();
 
-                if (projectsUnderTestAnalyzerResult.Count == 0)
+                if (filteredProjectsUnderTestAnalyzerResult.Count == 0)
                 {
                     // try simple search
                     var normalizedProjectUnderTestNameFilter = options.SourceProjectName.Replace("\\", "/");
@@ -97,6 +97,10 @@ namespace Stryker.Core.Initialisation
                     {
                         throw new InputException($"No project pathname matches '{options.SourceProjectName}'. Please check your stryker config.");
                     }
+                }
+                else
+                {
+                    projectsUnderTestAnalyzerResult = filteredProjectsUnderTestAnalyzerResult;
                 }
             }
             return BuildProjectInfos(options, dependents, projectsUnderTestAnalyzerResult, solutionTestProjects);
