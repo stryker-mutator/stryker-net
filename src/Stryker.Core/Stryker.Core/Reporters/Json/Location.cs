@@ -1,34 +1,27 @@
+using Microsoft.CodeAnalysis;
+
 namespace Stryker.Core.Reporters.Json
 {
-    public struct LocationDimensions
-    {
-        public int StartLine { get; set; }
-        public int StartCharacter { get; set; }
-        public int EndLine { get; set; }
-        public int EndCharacter { get; set; }
-    }
-
     public class Location
     {
         public Position Start { get; init; }
         public Position End { get; init; }
 
-        // still needed for serialization purposes
         public Location()
         {
         }
 
-        public Location(LocationDimensions dimensions)
+        public Location(FileLinePositionSpan location)
         {
             Start = new Position
             {
-                Line = dimensions.StartLine + 1,
-                Column = dimensions.StartCharacter + 1
+                Line = location.StartLinePosition.Line + 1,
+                Column = location.StartLinePosition.Character + 1
             };
             End = new Position
             {
-                Line = dimensions.EndLine + 1,
-                Column = dimensions.EndCharacter + 1
+                Line = location.EndLinePosition.Line + 1,
+                Column = location.EndLinePosition.Character + 1
             };
         }
     }

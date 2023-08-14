@@ -64,13 +64,7 @@ namespace ExtraProject.XUnit
                 new LinePosition(2, 2),
                 new LinePosition(4, 5));
 
-            var jsonMutantLocation = new Core.Reporters.Json.Location(new LocationDimensions
-            {
-                StartLine = lineSpan.StartLinePosition.Line,
-                StartCharacter = lineSpan.StartLinePosition.Character,
-                EndLine = lineSpan.EndLinePosition.Line,
-                EndCharacter = lineSpan.EndLinePosition.Character
-            });
+            var jsonMutantLocation = new Core.Reporters.Json.Location(lineSpan);
 
             jsonMutantLocation.Start.Line.ShouldBe(3);
             jsonMutantLocation.Start.Column.ShouldBe(3);
