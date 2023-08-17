@@ -1,6 +1,7 @@
 using System.Linq;
 using Shouldly;
 using Stryker.Core.Options.Inputs;
+using Stryker.Core.ProjectComponents;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
@@ -24,7 +25,7 @@ Example: ['**/*Assets.json','**/favicon.ico'] | default: []");
         {
             var target = new DiffIgnoreChangesInput { SuppliedInput = new[] { "*" } };
 
-            var result = target.Validate();
+            var result = new SimpleFileLeaf(target.Validate()).Patterns;
 
             result.ShouldHaveSingleItem().Glob.ToString().ShouldBe("*");
         }
@@ -34,7 +35,7 @@ Example: ['**/*Assets.json','**/favicon.ico'] | default: []");
         {
             var target = new DiffIgnoreChangesInput { SuppliedInput = new[] { "*", "MyFile.cs" } };
 
-            var result = target.Validate();
+            var result = new SimpleFileLeaf(target.Validate()).Patterns;
 
             result.Count().ShouldBe(2);
 

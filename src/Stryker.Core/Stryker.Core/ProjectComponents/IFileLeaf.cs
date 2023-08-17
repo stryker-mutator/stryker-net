@@ -3,6 +3,10 @@ namespace Stryker.Core.ProjectComponents
     public interface IReadOnlyFileLeaf : IReadOnlyProjectComponent
     {
         string SourceCode { get; }
+
+        bool IsComponentExcluded();
+
+        bool IsMatch(MutantSpan span);
     }
 
     public interface IFileLeaf<T> : IFileLeaf

@@ -6,6 +6,7 @@ using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.DiffProviders
 {
@@ -71,7 +72,7 @@ namespace Stryker.Core.DiffProviders
 
         private void RemoveFilteredOutFiles(DiffResult diffResult)
         {
-            foreach (var glob in _options.DiffIgnoreChanges.Select(d => d.Glob))
+            foreach (var glob in new SimpleFileLeaf(_options.DiffIgnoreChanges).Patterns.Select(d => d.Glob))
             {
                 diffResult.ChangedSourceFiles = diffResult.ChangedSourceFiles.Where(diffResultFile => !glob.IsMatch(diffResultFile)).ToList();
                 diffResult.ChangedTestFiles = diffResult.ChangedTestFiles.Where(diffResultFile => !glob.IsMatch(diffResultFile)).ToList();

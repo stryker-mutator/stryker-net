@@ -1,6 +1,6 @@
 using Microsoft.CodeAnalysis.Text;
 using Shouldly;
-using Stryker.Core.ProjectComponents;
+using Stryker.Core.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.ProjectComponents
 {
-    public class ProjectComponentExtensionsTests : TestBase
+    public class TextSpanHelperTests : TestBase
     {
         [Theory]
         [InlineData(new int[0], new int[0])]

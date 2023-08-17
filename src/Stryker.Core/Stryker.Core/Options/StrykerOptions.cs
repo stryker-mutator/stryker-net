@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options.Inputs;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 
 namespace Stryker.Core.Options
@@ -153,7 +154,7 @@ namespace Stryker.Core.Options
         /// Context: When using the since feature, all tests are run again if files in the test project change (as these could impact the test results)
         /// When the file is present in this option the tests should not run again as the file does not impact test results.
         /// </summary>
-        public IEnumerable<FilePattern> DiffIgnoreChanges { get; init; } = Enumerable.Empty<FilePattern>();
+        public IEnumerable<ExcludableString> DiffIgnoreChanges { get; init; } = Enumerable.Empty<ExcludableString>();
 
         /// <summary>
         /// When no previous report can be found for the since feature, this commitish is used to se a baseline.
@@ -173,7 +174,7 @@ namespace Stryker.Core.Options
         /// <summary>
         /// Files that should be mutated or ignored. Uses GLOB as pattern matching. Also parts of files can be ignored by format {10..21}
         /// </summary>
-        public IEnumerable<FilePattern> Mutate { get; init; } = new[] { FilePattern.Parse("**/*") };
+        public IEnumerable<ExcludableString> Mutate { get; init; } = new[] { ExcludableString.Parse("**/*") };
 
         /// <summary>
         /// Method call mutations that should not be tested. The implementation of the method may still be mutated and tested.

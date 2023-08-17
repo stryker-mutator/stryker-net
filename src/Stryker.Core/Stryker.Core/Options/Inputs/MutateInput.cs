@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Options.Inputs
 {
@@ -14,26 +15,26 @@ namespace Stryker.Core.Options.Inputs
     Use '{<start>..<end>}' at the end of a pattern to specify spans of text in files to in- or exclude.
     Example: ['**/*Service.cs','!**/MySpecialService.cs', '**/MyOtherService.cs{1..10}{32..45}']";
 
-        public IEnumerable<FilePattern> Validate()
+        public IEnumerable<ExcludableString> Validate()
         {
             if (SuppliedInput is { } && SuppliedInput.Any())
             {
-                var filesToInclude = new List<FilePattern>();
+                var filesToInclude = new List<ExcludableString>();
 
                 foreach (var pattern in SuppliedInput)
                 {
-                    filesToInclude.Add(FilePattern.Parse(FilePathUtils.NormalizePathSeparators(pattern)));
+                    filesToInclude.Add(new ExcludableString(FilePathUtils.NormalizePathSeparators(pattern)));
                 }
 
                 if (filesToInclude.All(f => f.IsExclude))
                 {
                     // If there are only exclude patterns, we add a pattern that matches every file.
-                    filesToInclude.Add(FilePattern.Parse(_defaultInput));
+                    filesToInclude.Add(new ExcludableString(_defaultInput));
                 }
 
                 return filesToInclude;
             }
-            return Default.Select(FilePattern.Parse).ToList();
+            return Default.Select(ExcludableString.Parse).ToList();
         }
     }
 }
