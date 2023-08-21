@@ -27,7 +27,7 @@
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.7.1" />
     <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.7.1" />
     <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="17.7.1" />
-    <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="19.2.51" />
+    <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="19.2.61" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="7.0.0" />
   </ItemGroup>
   <ItemGroup>
@@ -41,6 +41,6 @@
     <PackageVersion Include="xunit" Version="2.5.0" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.0" />
     <PackageVersion Include="Xunit.SkippableFact" Version="1.4.13" />
-    <PackageVersion Include="TestableIO.System.IO.Abstractions.TestingHelpers" Version="19.2.51" />
+    <PackageVersion Include="TestableIO.System.IO.Abstractions.TestingHelpers" Version="19.2.61" />
   </ItemGroup>
 </Project>
