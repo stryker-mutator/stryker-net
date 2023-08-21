@@ -37,7 +37,7 @@ For more information read our [getting started](https://stryker-mutator.io/docs/
 
 ## Documentation
 
-For the full documentation on how to use Stryker.NET, see our [configuration docs](https://stryker-mutator.io/docs/stryker-net/Configuration).
+For the full documentation on how to use Stryker.NET, see our [configuration docs](https://stryker-mutator.io/docs/stryker-net/configuration).
 
 ## Migrating
 
@@ -49,7 +49,7 @@ For the full list of all available mutations, see the [mutations docs](https://s
 
 ## Supported Reporters
 
-For the full list of all available reporters, see the [reporter docs](https://stryker-mutator.io/docs/stryker-net/Reporters).
+For the full list of all available reporters, see the [reporter docs](https://stryker-mutator.io/docs/stryker-net/reporters).
 
 ## Contributing
 
