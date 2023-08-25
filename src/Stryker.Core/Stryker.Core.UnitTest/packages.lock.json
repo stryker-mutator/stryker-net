@@ -1534,8 +1534,8 @@
       },
       "TestableIO.System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "19.2.64",
-        "contentHash": "xfkzIqwNyjzsfkKzUcV5CNJ9AWI7Sj6HMcD/cLX7P0htQ/LvHyrbREu5RnDBDmpDMPf14R3PuRj5STIykfzmng=="
+        "resolved": "19.2.67",
+        "contentHash": "t8MqABszb8y+zaDfYHNZutE0sO0ipBeB3MyU05ZRIbK37lBK6I5+GGhFYiN+mJ31Cj0OL1nI2nd8DBHX3lpkuQ=="
       },
       "Validation": {
         "type": "Transitive",
@@ -1614,7 +1614,7 @@
           "Spectre.Console.Analyzer": "[0.47.0, )",
           "Stryker.DataCollector": "[3.10.0, )",
           "Stryker.RegexMutators": "[3.10.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[19.2.64, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[19.2.67, )"
         }
       },
       "stryker.datacollector": {
@@ -1857,11 +1857,11 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[19.2.64, )",
-        "resolved": "19.2.64",
-        "contentHash": "xYNRsyDdLRsWfbqFnb+tiwUTikb6JjSQrHOVS4Uh+NtpbYhowxtpHvm5dOf2T/gX163ZfJqAY3tyVsQmhVz7yg==",
+        "requested": "[19.2.67, )",
+        "resolved": "19.2.67",
+        "contentHash": "ucDoafNPkBGJ/kUi7TcVnrtp9eSok5ybXq6vpc35r9qfPZLP5dkDSR3hBPmkrCf6srSQ2NESMzSmIsq2kwYwpQ==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "19.2.64"
+          "TestableIO.System.IO.Abstractions": "19.2.67"
         }
       }
     }
