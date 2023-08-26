@@ -1614,7 +1614,7 @@
       "dotnet-stryker": {
         "type": "Project",
         "dependencies": {
-          "McMaster.Extensions.CommandLineUtils": "[4.0.2, )",
+          "McMaster.Extensions.CommandLineUtils": "[4.1.0, )",
           "NuGet.Protocol": "[6.7.0, )",
           "YamlDotNet": "[13.2.0, )",
           "stryker": "[3.10.0, )"
@@ -1740,9 +1740,9 @@
       },
       "McMaster.Extensions.CommandLineUtils": {
         "type": "CentralTransitive",
-        "requested": "[4.0.2, )",
-        "resolved": "4.0.2",
-        "contentHash": "/M/p9fPUfu1dtIa+/xJS3hdp4aNIVr3c0reLFP4ZKo1vZy1sXeWeyaSapoVk8dmT79OxJTpLUGDdv0ReBd8d8A==",
+        "requested": "[4.1.0, )",
+        "resolved": "4.1.0",
+        "contentHash": "NfWFfSV/y5kiau70GDm5eUl6VKF3y2/O5yz//gsV7q+3hreQ8ViB/9VYBC5LykcCYXl5181Vg+OLT/I7fHbxoQ==",
         "dependencies": {
           "System.ComponentModel.Annotations": "5.0.0"
         }
