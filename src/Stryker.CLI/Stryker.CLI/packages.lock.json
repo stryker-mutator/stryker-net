@@ -1465,10 +1465,10 @@
           "LibGit2Sharp": "[0.27.2, )",
           "Microsoft.CodeAnalysis.CSharp": "[4.7.0, )",
           "Microsoft.Extensions.Logging": "[7.0.0, )",
-          "Microsoft.TestPlatform": "[17.7.1, )",
-          "Microsoft.TestPlatform.ObjectModel": "[17.7.1, )",
-          "Microsoft.TestPlatform.Portable": "[17.7.1, )",
-          "Microsoft.TestPlatform.TranslationLayer": "[17.7.1, )",
+          "Microsoft.TestPlatform": "[17.7.2, )",
+          "Microsoft.TestPlatform.ObjectModel": "[17.7.2, )",
+          "Microsoft.TestPlatform.Portable": "[17.7.2, )",
+          "Microsoft.TestPlatform.TranslationLayer": "[17.7.2, )",
           "Microsoft.Web.LibraryManager.Build": "[2.1.175, )",
           "Mono.Cecil": "[0.11.5, )",
           "NuGet.Frameworks": "[6.7.0, )",
@@ -1488,8 +1488,8 @@
       "stryker.datacollector": {
         "type": "Project",
         "dependencies": {
-          "Microsoft.TestPlatform.ObjectModel": "[17.7.1, )",
-          "Microsoft.TestPlatform.Portable": "[17.7.1, )"
+          "Microsoft.TestPlatform.ObjectModel": "[17.7.2, )",
+          "Microsoft.TestPlatform.Portable": "[17.7.2, )"
         }
       },
       "stryker.regexmutators": {
@@ -1596,15 +1596,15 @@
       },
       "Microsoft.TestPlatform": {
         "type": "CentralTransitive",
-        "requested": "[17.7.1, )",
-        "resolved": "17.7.1",
-        "contentHash": "mqVKMGtOQ2edqwgSpISgHz63AbC7nidrimgD/j4MwkL3XM/Td+LHMVSfD78p5EzcCLRuj8F+0NADYZuXBvvviQ=="
+        "requested": "[17.7.2, )",
+        "resolved": "17.7.2",
+        "contentHash": "PYDJBWm8NF+U/K1VaXXTbkC0r5RGsuEzGhtM9SOqtl1BTf+av5gLmDOqm3oMpfuYzqANu3rLpvLeSKccRDc2vA=="
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "CentralTransitive",
-        "requested": "[17.7.1, )",
-        "resolved": "17.7.1",
-        "contentHash": "nDmV03yHIdAiG5J3ZEjMyJM2XDjmWORuKgbrGzqlAipBEjUuy5Z5S7WwSqUv9OiaUrtCn9dNYmjfMELUi08leQ==",
+        "requested": "[17.7.2, )",
+        "resolved": "17.7.2",
+        "contentHash": "aHzQWgDMVBnk39HhQVmn06w+YxzF1h2V5/M4WgrNQAn7q97GR4Si3vLRTDlmJo9nK/Nknce+H4tXx4gqOKyLeg==",
         "dependencies": {
           "NuGet.Frameworks": "6.5.0",
           "System.Reflection.Metadata": "1.6.0"
@@ -1612,15 +1612,15 @@
       },
       "Microsoft.TestPlatform.Portable": {
         "type": "CentralTransitive",
-        "requested": "[17.7.1, )",
-        "resolved": "17.7.1",
-        "contentHash": "jS9YLb+/Flm4GFA0k4rso6EDgEio3iJmyEdpvxMPA5aWVi/Yo178yJLvGM5XdGPdLOSs5Vd8ib7GzpSA+y+xlw=="
+        "requested": "[17.7.2, )",
+        "resolved": "17.7.2",
+        "contentHash": "jn5HtJxzyUod46kOVuj7CPl2thUXDUJvfQ/sZ/UCv8xu8cNvJJQvlc6eh0nYafMzLjkaBulc0piH7a9v1PV/UA=="
       },
       "Microsoft.TestPlatform.TranslationLayer": {
         "type": "CentralTransitive",
-        "requested": "[17.7.1, )",
-        "resolved": "17.7.1",
-        "contentHash": "/aTi3YNC+0prhyP4aYqXwC5hScayJMV+Ss9L9rW6Hd/JK7w+SSboG+IJApFaLsJEVNSewJA98D7JSrDuh+MZ5g==",
+        "requested": "[17.7.2, )",
+        "resolved": "17.7.2",
+        "contentHash": "wzWLmfZEWxKQRNq5axAtmVJiprKzR+kx87b8uIsRKYnkA6F8tV1yScMaKjAzbA8D+iV61q0i8fEhjqinQ23HqQ==",
         "dependencies": {
           "NETStandard.Library": "2.0.0"
         }
