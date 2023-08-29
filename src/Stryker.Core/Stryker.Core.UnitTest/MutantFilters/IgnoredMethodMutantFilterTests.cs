@@ -83,6 +83,48 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
         }
 
         [Theory]
+        [InlineData("Range", false)]
+        [InlineData("Where", false)]
+        [InlineData("ToList", true)]
+        [InlineData("", false)]
+        public void MutantFilter_ChainedMethodsCallStatement(string ignoredMethodName, bool shouldSkipMutant)
+        {
+            // Arrange
+            var source = @"
+public class IgnoredMethodMutantFilter_NestedMethodCalls
+{
+    private void TestMethod()
+    {
+        Enumerable.Range(0, 9).Where(x => x < 5).ToList();
+    }
+}";
+            var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
+            var originalNode = (StatementSyntax)baseSyntaxTree.FindNode(new TextSpan(source.IndexOf("Enumerable"), 50));
+
+            var mutant = new Mutant { Mutation = new Mutation { OriginalNode = originalNode } };
+
+            var options = new StrykerOptions
+            {
+                IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { ignoredMethodName } }.Validate()
+            };
+
+            var sut = new IgnoredMethodMutantFilter();
+
+            // Act
+            var filteredMutants = sut.FilterMutants(new[] { mutant }, null, options);
+
+            // Assert
+            if (shouldSkipMutant)
+            {
+                filteredMutants.ShouldNotContain(mutant);
+            }
+            else
+            {
+                filteredMutants.ShouldContain(mutant);
+            }
+        }
+
+        [Theory]
         [InlineData("Where", true)]
         [InlineData("Where*", true)]
         [InlineData("*Where", true)]
@@ -121,6 +163,48 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                     OriginalNode = originalNode,
                 }
             };
+
+            var options = new StrykerOptions
+            {
+                IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { ignoredMethodName } }.Validate()
+            };
+
+            var sut = new IgnoredMethodMutantFilter();
+
+            // Act
+            var filteredMutants = sut.FilterMutants(new[] { mutant }, null, options);
+
+            // Assert
+            if (shouldSkipMutant)
+            {
+                filteredMutants.ShouldNotContain(mutant);
+            }
+            else
+            {
+                filteredMutants.ShouldContain(mutant);
+            }
+        }
+
+        [Theory]
+        [InlineData("Range", false)]
+        [InlineData("Where", false)]
+        [InlineData("ToList", true)]
+        [InlineData("", false)]
+        public void MutantFilter_WorksWithConditionalInvocationStatement(string ignoredMethodName, bool shouldSkipMutant)
+        {
+            // Arrange
+            var source = @"
+public class IgnoredMethodMutantFilter_NestedMethodCalls
+{
+    private void TestMethod()
+    {
+        Enumerable.Range(0, 9)?.Where(x => x < 5)?.ToList();
+    }
+}";
+            var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
+            var originalNode = (StatementSyntax)baseSyntaxTree.FindNode(new TextSpan(source.IndexOf("Enumerable"), 52));
+
+            var mutant = new Mutant { Mutation = new Mutation { OriginalNode = originalNode } };
 
             var options = new StrykerOptions
             {
