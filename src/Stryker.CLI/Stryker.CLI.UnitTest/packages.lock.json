@@ -67,12 +67,12 @@
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[19.2.64, )",
-        "resolved": "19.2.64",
-        "contentHash": "zNgaWdLD/Xk+oLeMvEUQOi9a/g4paC940Va2PaW+0vEPHMAXaPPKWAPT+NRnD+kX8IeEJDH//gbMYCq0PL205g==",
+        "requested": "[19.2.67, )",
+        "resolved": "19.2.67",
+        "contentHash": "XRIeEYhGSHvwvElUVrT8+RdDz+Sw4rrJtGwi/33kALeMsjvVM6PrPoUk4/1Zms/z8fGRH/L/+0/1Wg55Vp0xZg==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "19.2.64",
-          "TestableIO.System.IO.Abstractions.Wrappers": "19.2.64"
+          "TestableIO.System.IO.Abstractions": "19.2.67",
+          "TestableIO.System.IO.Abstractions.Wrappers": "19.2.67"
         }
       },
       "xunit": {
@@ -1563,8 +1563,8 @@
       },
       "TestableIO.System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "19.2.64",
-        "contentHash": "xfkzIqwNyjzsfkKzUcV5CNJ9AWI7Sj6HMcD/cLX7P0htQ/LvHyrbREu5RnDBDmpDMPf14R3PuRj5STIykfzmng=="
+        "resolved": "19.2.67",
+        "contentHash": "t8MqABszb8y+zaDfYHNZutE0sO0ipBeB3MyU05ZRIbK37lBK6I5+GGhFYiN+mJ31Cj0OL1nI2nd8DBHX3lpkuQ=="
       },
       "xunit.abstractions": {
         "type": "Transitive",
@@ -1614,9 +1614,9 @@
       "dotnet-stryker": {
         "type": "Project",
         "dependencies": {
-          "McMaster.Extensions.CommandLineUtils": "[4.0.2, )",
+          "McMaster.Extensions.CommandLineUtils": "[4.1.0, )",
           "NuGet.Protocol": "[6.7.0, )",
-          "YamlDotNet": "[13.2.0, )",
+          "YamlDotNet": "[13.3.1, )",
           "stryker": "[3.10.0, )"
         }
       },
@@ -1647,7 +1647,7 @@
           "Spectre.Console.Analyzer": "[0.47.0, )",
           "Stryker.DataCollector": "[3.10.0, )",
           "Stryker.RegexMutators": "[3.10.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[19.2.64, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[19.2.67, )"
         }
       },
       "stryker.datacollector": {
@@ -1740,9 +1740,9 @@
       },
       "McMaster.Extensions.CommandLineUtils": {
         "type": "CentralTransitive",
-        "requested": "[4.0.2, )",
-        "resolved": "4.0.2",
-        "contentHash": "/M/p9fPUfu1dtIa+/xJS3hdp4aNIVr3c0reLFP4ZKo1vZy1sXeWeyaSapoVk8dmT79OxJTpLUGDdv0ReBd8d8A==",
+        "requested": "[4.1.0, )",
+        "resolved": "4.1.0",
+        "contentHash": "NfWFfSV/y5kiau70GDm5eUl6VKF3y2/O5yz//gsV7q+3hreQ8ViB/9VYBC5LykcCYXl5181Vg+OLT/I7fHbxoQ==",
         "dependencies": {
           "System.ComponentModel.Annotations": "5.0.0"
         }
@@ -1908,18 +1908,18 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[19.2.64, )",
-        "resolved": "19.2.64",
-        "contentHash": "xYNRsyDdLRsWfbqFnb+tiwUTikb6JjSQrHOVS4Uh+NtpbYhowxtpHvm5dOf2T/gX163ZfJqAY3tyVsQmhVz7yg==",
+        "requested": "[19.2.67, )",
+        "resolved": "19.2.67",
+        "contentHash": "ucDoafNPkBGJ/kUi7TcVnrtp9eSok5ybXq6vpc35r9qfPZLP5dkDSR3hBPmkrCf6srSQ2NESMzSmIsq2kwYwpQ==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "19.2.64"
+          "TestableIO.System.IO.Abstractions": "19.2.67"
         }
       },
       "YamlDotNet": {
         "type": "CentralTransitive",
-        "requested": "[13.2.0, )",
-        "resolved": "13.2.0",
-        "contentHash": "FxEsylcQt59+dhxPTD2I/lNFbnJzb/uvUiDkjUA3J0cNTzBSLep6ZxhE9ma2vJp/QrK09xi0LvP4aEUzl0ggCQ=="
+        "requested": "[13.3.1, )",
+        "resolved": "13.3.1",
+        "contentHash": "Q2dqDsb0xAlr092grgHk8/vTXI2snIiYM5ND3IXkgJDFIdPnqDYwYnlk+gwzSeRByDLhiSzTog8uT7xFwH68Zg=="
       }
     }
   }
