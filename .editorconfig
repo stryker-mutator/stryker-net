@@ -107,6 +107,8 @@ csharp_style_var_for_built_in_types = true:suggestion
 csharp_style_var_when_type_is_apparent = true:warning
 csharp_style_var_elsewhere = true:suggestion
 
+csharp_style_namespace_declarations = file_scoped:suggestion
+
 # Default naming styles
 dotnet_naming_rule.async_members_should_be_pascal_case_suffixed_with_async.severity = suggestion
 dotnet_naming_rule.async_members_should_be_pascal_case_suffixed_with_async.style = pascal_case_suffixed_with_async
