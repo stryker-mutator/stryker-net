@@ -17,18 +17,16 @@ namespace Stryker.Core.Baseline.Providers
         private const string DefaultOutputDirectoryName = "StrykerOutput";
         private const string StrykerReportName = "stryker-report.json";
 
-        private readonly StrykerOptions _options;
         private readonly ShareClient _fileShareClient;
         private readonly ILogger<AzureFileShareBaselineProvider> _logger;
         private readonly string _outputPath;
 
         public AzureFileShareBaselineProvider(StrykerOptions options, ShareClient shareClient = null)
         {
-            _options = options;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<AzureFileShareBaselineProvider>();
 
             _outputPath = string.IsNullOrWhiteSpace(options.ProjectName) ? DefaultOutputDirectoryName : $"{DefaultOutputDirectoryName}/{options.ProjectName}";
-            _fileShareClient = shareClient ?? new ShareClient(new Uri(_options.AzureFileStorageUrl), new AzureSasCredential(_options.AzureFileStorageSas));
+            _fileShareClient = shareClient ?? new ShareClient(new Uri(options.AzureFileStorageUrl), new AzureSasCredential(options.AzureFileStorageSas));
         }
 
         public async Task<JsonReport> Load(string version)
