@@ -31,10 +31,10 @@ namespace Stryker.Core.Baseline.Providers
 
         public async Task<JsonReport> Load(string version)
         {
-            var (uri, root, directoryNames, fileName) = BuildFileUriComponents(version);
+            var (uri, root, subdirectoryNames, fileName) = BuildFileUriComponents(version);
             var directoryClient = _fileShareClient.GetDirectoryClient(root);
 
-            if (TryEnumerateDirectories(directoryClient, directoryNames, createIfNotExists: false, out directoryClient))
+            if (TryEnumerateDirectories(directoryClient, subdirectoryNames, createIfNotExists: false, out directoryClient))
             {
                 var fileClient = directoryClient.GetFileClient(fileName);
                 if (await fileClient.ExistsAsync())
@@ -49,10 +49,10 @@ namespace Stryker.Core.Baseline.Providers
 
         public async Task Save(JsonReport report, string version)
         {
-            var (uri, root, directoryNames, fileName) = BuildFileUriComponents(version);
+            var (uri, root, subdirectoryNames, fileName) = BuildFileUriComponents(version);
             var directoryClient = _fileShareClient.GetDirectoryClient(root);
 
-            if (TryEnumerateDirectories(directoryClient, directoryNames, createIfNotExists: true, out directoryClient))
+            if (TryEnumerateDirectories(directoryClient, subdirectoryNames, createIfNotExists: true, out directoryClient))
             {
                 var fileClient = directoryClient.GetFileClient(fileName);
                 using var fileContentStream = new MemoryStream(Encoding.UTF8.GetBytes(report.ToJson()));
@@ -104,33 +104,30 @@ namespace Stryker.Core.Baseline.Providers
             return (uri, uriComponents[0], uriComponents[1..^1], uriComponents[^1]);
         }
 
-        private bool TryEnumerateDirectories(ShareDirectoryClient directoryClient, string[] directoryNames, bool createIfNotExists, out ShareDirectoryClient shareDirectoryClient)
+        private bool TryEnumerateDirectories(ShareDirectoryClient directoryClient, string[] subdirectories, bool createIfNotExists, out ShareDirectoryClient shareDirectoryClient)
         {
             shareDirectoryClient = directoryClient;
 
+            // root
             if (createIfNotExists)
             {
                 shareDirectoryClient.CreateIfNotExists();
             }
-
-            foreach (var dir in directoryNames)
+            if (!shareDirectoryClient.Exists())
             {
+                shareDirectoryClient = null;
+                return false;
+            }
 
+            // subdirectories
+            foreach (var subdirectory in subdirectories)
+            {
+                shareDirectoryClient = shareDirectoryClient.GetSubdirectoryClient(subdirectory);
                 if (createIfNotExists)
                 {
                     shareDirectoryClient.CreateIfNotExists();
-
-                    var subDirectoryClient = shareDirectoryClient.GetSubdirectoryClient(dir);
-                    shareDirectoryClient = subDirectoryClient;
-
-                    shareDirectoryClient.CreateIfNotExists();
                 }
-
-                else if (shareDirectoryClient.Exists() && shareDirectoryClient.GetSubdirectoryClient(dir) is var subDirectoryClient && subDirectoryClient.Exists())
-                {
-                    shareDirectoryClient = subDirectoryClient;
-                }
-                else
+                if (!shareDirectoryClient.Exists())
                 {
                     shareDirectoryClient = null;
                     return false;
