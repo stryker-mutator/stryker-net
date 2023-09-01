@@ -18,7 +18,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
     public class AzureFileShareBaselineProviderTests : TestBase
     {
         [Fact]
-        public void Load_Report_NotFound()
+        public void Load_Report_NotFound_DirectoryNotFound()
         {
             // Arrange
             var shareClient = Mock.Of<ShareClient>();
@@ -29,6 +29,36 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
                 .Setup(s => s.GetDirectoryClient("StrykerOutput"))
                 .Returns(directoryClient);
             Mock.Get(directoryClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(false, default));
+
+            // Act
+            var report = new AzureFileShareBaselineProvider(new StrykerOptions(), shareClient).Load("v1").Result;
+
+            // Assert
+            report.ShouldBeNull();
+        }
+
+        [Fact]
+        public void Load_Report_NotFound_FileNotFound()
+        {
+            // Arrange
+            var shareClient = Mock.Of<ShareClient>();
+
+            // root directory
+            var directoryClient = Mock.Of<ShareDirectoryClient>();
+            Mock.Get(shareClient)
+                .Setup(s => s.GetDirectoryClient("StrykerOutput"))
+                .Returns(directoryClient);
+            Mock.Get(directoryClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(true, default));
+
+            // version directory
+            var subDirectoryClient = Mock.Of<ShareDirectoryClient>();
+            Mock.Get(directoryClient).Setup(d => d.GetSubdirectoryClient("v1")).Returns(subDirectoryClient);
+            Mock.Get(subDirectoryClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(true, default));
+
+            // report file
+            var fileClient = Mock.Of<ShareFileClient>();
+            Mock.Get(subDirectoryClient).Setup(d => d.GetFileClient("stryker-report.json")).Returns(fileClient);
+            Mock.Get(fileClient).Setup(f => f.ExistsAsync(default)).Returns(Task.FromResult(Response.FromValue(false, default)));
 
             // Act
             var report = new AzureFileShareBaselineProvider(new StrykerOptions(), shareClient).Load("v1").Result;
