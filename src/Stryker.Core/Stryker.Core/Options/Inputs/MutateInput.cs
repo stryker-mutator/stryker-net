@@ -33,7 +33,7 @@ namespace Stryker.Core.Options.Inputs
 
                 return filesToInclude;
             }
-            return Default.Select(x => FilePattern.Parse(_defaultInput)).ToList();
+            return Default.Select(FilePattern.Parse).ToList();
         }
     }
 }

@@ -31,7 +31,7 @@ A mutator:
 2. **Should be fast**: Stryker visits every syntax elements recursively, meaning that each syntax item is visited several times. A slow mutator can seriously slow down the mutation process.
 3. **Should generate buildable mutations**.: generated mutations should result in **compilable code in the majority of situations**.
 4. **Should  generate survivors**: mutators **should avoid** generating **mutations that often raise exceptions** (e.g., changing the sign of an index, such as `array\[i\]` to `array\[-i\]`) are those will be killed by any test that execute these lines.
-5. **Should generate killable mutations**: users must be able to devise a test that can kill the mutation. The main risk here is getting_semantically equivalent_ mutations, i.e., mutations that do change the behavior of the code and simply result in an alternate, but correct, implementation.
+5. **Should generate killable mutations**: users must be able to devise a test that can kill the mutation. The main risk here is getting _semantically equivalent_ mutations, i.e., mutations that do change the behavior of the code and simply result in an alternate, but correct, implementation.
 6. **Should be general**: mutators should be able to generate mutations for all projects, i.e., should not be specific to some rarely used constructions 5or type of projects. **Note**: in the future, Stryker.Net may support extra mutators via a plug-in like mechanism; those could be framework specific.
 
 ## How to code a mutator?
