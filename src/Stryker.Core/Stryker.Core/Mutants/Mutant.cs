@@ -1,5 +1,3 @@
-using Microsoft.CodeAnalysis.Text;
-
 namespace Stryker.Core.Mutants
 {
     /// <summary>
@@ -14,7 +12,6 @@ namespace Stryker.Core.Mutants
         ITestGuids CoveringTests { get; }
         ITestGuids KillingTests { get; }
         ITestGuids AssessingTests { get; }
-        int? Line { get; }
         bool CountForStats { get; }
         bool IsStaticValue { get; }
     }
@@ -45,10 +42,6 @@ namespace Stryker.Core.Mutants
         public bool MustBeTestedInIsolation { get; set; }
 
         public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
-
-        public int? Line => Mutation?.OriginalNode?.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
-
-        public TextSpan? Span => Mutation?.OriginalNode?.Span;
 
         public void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests, bool sessionTimedOut)
         {
