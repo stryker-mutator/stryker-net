@@ -36,6 +36,9 @@ namespace Stryker.Core.MutantFilters
                 // check if the node is a block containing only ignored node
                 BlockSyntax {Statements: {Count: >0}} block => block.Statements.All(s=> IsPartOfIgnoredMethodCall(s, options, false)),
 
+                // Check if the current node is an null-conditional member access.
+                ConditionalAccessExpressionSyntax conditional => IsPartOfIgnoredMethodCall(conditional.WhenNotNull, options, false),
+
                 ExpressionStatementSyntax invocationExpressionStatementSyntax => IsPartOfIgnoredMethodCall(invocationExpressionStatementSyntax.Expression, options, false),
 
                 // Traverse the tree upwards.
