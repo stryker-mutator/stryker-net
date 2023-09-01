@@ -18,7 +18,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
     public class AzureFileShareBaselineProviderTests : TestBase
     {
         [Fact]
-        public void Load_Report_NotFound_DirectoryNotFound()
+        public void Load_Report_Directory_NotFound()
         {
             // Arrange
             var shareClient = Mock.Of<ShareClient>();
@@ -35,10 +35,16 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
 
             // Assert
             report.ShouldBeNull();
+
+            Mock.Get(shareClient).VerifyAll();
+            Mock.Get(shareClient).VerifyNoOtherCalls();
+
+            Mock.Get(directoryClient).VerifyAll();
+            Mock.Get(directoryClient).VerifyNoOtherCalls();
         }
 
         [Fact]
-        public void Load_Report_NotFound_FileNotFound()
+        public void Load_Report_File_NotFound()
         {
             // Arrange
             var shareClient = Mock.Of<ShareClient>();
@@ -65,10 +71,22 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
 
             // Assert
             report.ShouldBeNull();
+
+            Mock.Get(shareClient).VerifyAll();
+            Mock.Get(shareClient).VerifyNoOtherCalls();
+
+            Mock.Get(directoryClient).VerifyAll();
+            Mock.Get(directoryClient).VerifyNoOtherCalls();
+
+            Mock.Get(subDirectoryClient).VerifyAll();
+            Mock.Get(subDirectoryClient).VerifyNoOtherCalls();
+
+            Mock.Get(fileClient).VerifyAll();
+            Mock.Get(fileClient).VerifyNoOtherCalls();
         }
 
         [Fact]
-        public void Load_Report_Existing()
+        public void Load_Report_Returns_Report()
         {
             // Arrange
             var shareClient = Mock.Of<ShareClient>();
