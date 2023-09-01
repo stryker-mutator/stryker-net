@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -82,6 +83,24 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             }
 
             return generators;
+        }
+
+        public static IEnumerable<MetadataReference> LoadReferences(this IAnalyzerResult analyzerResult)
+        {
+            foreach (var reference in analyzerResult.References)
+            {
+                if (reference.Contains('='))
+                {
+                    // we have an alias
+                    var split =reference.Split('=');
+                    var aliases = split[0].Split(',');
+                    yield return MetadataReference.CreateFromFile(split[1]).WithAliases(aliases);
+                }
+                else
+                {
+                    yield return MetadataReference.CreateFromFile(reference);
+                }
+            }
         }
 
         private sealed class AnalyzerAssemblyLoader : IAnalyzerAssemblyLoader

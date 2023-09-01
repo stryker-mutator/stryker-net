@@ -64,7 +64,7 @@ namespace Stryker.Core.TestRunners.VsTest
             }
             if (!currentProcess.Start())
             {
-                Logger.LogError($"Runner {_id}: Failed to start process {processInfo.Arguments}.");
+                Logger.LogError($"{_id}: Failed to start process {processInfo.Arguments}.");
             }
 
             currentProcess.BeginOutputReadLine();

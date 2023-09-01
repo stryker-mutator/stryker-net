@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using Spectre.Console;
-using DotNet.Globbing.Token;
 using Stryker.Core;
 using Stryker.Core.Options;
 
@@ -29,7 +28,7 @@ namespace Stryker.CLI.Logging
             var logLevel = inputs.VerbosityInput.Validate();
             var logToFile = inputs.LogToFileInput.Validate(outputPath);
 
-            ApplicationLogging.ConfigureLogger(logLevel, logToFile, outputPath);
+            ApplicationLogging.ConfigureLogger(logLevel, logToFile, inputs.DevModeInput.Validate(), outputPath);
         }
 
         private string CreateOutputPath(IStrykerInputs inputs, IFileSystem fileSystem)

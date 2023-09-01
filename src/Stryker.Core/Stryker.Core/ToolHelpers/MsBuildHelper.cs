@@ -30,36 +30,43 @@ namespace Stryker.Core.ToolHelpers
             };
         }
 
-        public string GetMsBuildPath(IProcessExecutor _processExecutor)
+        public string GetMsBuildPath(IProcessExecutor processExecutor)
         {
             // See if any MSBuild.exe can be found in visual studio installation folder
-            foreach (string drive in Directory.GetLogicalDrives())
+            var msBuildPath = SearchMsBuildVersion(processExecutor, "latest") ?? SearchMsBuildVersion(processExecutor, "prerelease");
+            if (msBuildPath != null) return msBuildPath;
+            // Else, find in default locations
+            _logger.LogInformation("Unable to find msbuild using vswhere, using fallback locations");
+
+            return fallbackLocations.FirstOrDefault(s => _fileSystem.File.Exists(s)) ?? throw new FileNotFoundException("MsBuild.exe could not be located. If you have MsBuild.exe available but still see this error please create an issue.");
+        }
+
+        private string SearchMsBuildVersion(IProcessExecutor processExecutor, string version)
+        {
+            foreach (var drive in Directory.GetLogicalDrives())
             {
                 var visualStudioPath = Path.Combine(drive, "Program Files (x86)", "Microsoft Visual Studio");
-                if (_fileSystem.Directory.Exists(visualStudioPath))
+                if (!_fileSystem.Directory.Exists(visualStudioPath)) continue;
+                _logger.LogDebug("Using vswhere.exe to locate msbuild");
+
+                var vsWherePath = Path.Combine(visualStudioPath, "Installer", "vswhere.exe");
+                var vsWhereCommand =
+                    $"-{version} -requires Microsoft.Component.MSBuild -products * -find MSBuild\\**\\Bin\\MSBuild.exe";
+                var vsWhereResult = processExecutor.Start(visualStudioPath, vsWherePath, vsWhereCommand);
+
+                if (vsWhereResult.ExitCode == ExitCodes.Success)
                 {
-                    _logger.LogDebug("Using vswhere.exe to locate msbuild");
-
-                    var vsWherePath = Path.Combine(visualStudioPath, "Installer", "vswhere.exe");
-                    var vsWhereCommand = "-latest -requires Microsoft.Component.MSBuild -products * -find MSBuild\\**\\Bin\\MSBuild.exe";
-                    var vsWhereResult = _processExecutor.Start(visualStudioPath, vsWherePath, vsWhereCommand);
-
-                    if (vsWhereResult.ExitCode == ExitCodes.Success)
+                    var msBuildPath = vsWhereResult.Output.Trim();
+                    if (_fileSystem.File.Exists(msBuildPath))
                     {
-                        var msBuildPath = vsWhereResult.Output.Trim();
-                        if (_fileSystem.File.Exists(msBuildPath))
-                        {
-                            _logger.LogDebug($"Msbuild executable path found at {msBuildPath}");
+                        _logger.LogDebug($"Msbuild executable path found at {msBuildPath}");
 
-                            return msBuildPath;
-                        }
+                        return msBuildPath;
                     }
                 }
             }
-            // Else, find in default locations
-            _logger.LogDebug("Unable to find msbuild using vswhere, using fallback locations");
 
-            return fallbackLocations.FirstOrDefault(s => _fileSystem.File.Exists(s)) ?? throw new FileNotFoundException("MsBuild.exe could not be located. If you have MsBuild.exe available but still see this error please create an issue.");
+            return null;
         }
     }
 }

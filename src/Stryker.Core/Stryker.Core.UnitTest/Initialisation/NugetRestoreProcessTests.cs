@@ -39,6 +39,13 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ExitCode = 0,
                     Output = CProgramFilesX86MicrosoftVisualStudio
                 });
+            processExecutorMock.Setup(x => x.Start(CProgramFilesX86MicrosoftVisualStudio, It.Is<string>((p) => p.EndsWith("where.exe")),
+                    "-prerelease -requires Microsoft.Component.MSBuild -products * -find MSBuild\\**\\Bin\\MSBuild.exe", null, It.IsAny<int>()))
+                .Returns(new ProcessResult()
+                {
+                    ExitCode = 0,
+                    Output = CProgramFilesX86MicrosoftVisualStudio
+                });
 
             processExecutorMock.Setup(x => x.Start(solutionDir, It.IsAny<string>(), "-version /nologo", null, It.IsAny<int>()))
                 .Returns(new ProcessResult()
@@ -53,20 +60,18 @@ namespace Stryker.Core.UnitTest.Initialisation
                     ExitCode = 0,
                     Output = "Packages restored"
                 });
-
             processExecutorMock.Setup(x => x.Start(It.Is<string>(s => s.Contains("Microsoft Visual Studio")), It.Is<string>(s => s.Contains("vswhere.exe")), @"-latest -requires Microsoft.Component.MSBuild -products * -find MSBuild\**\Bin\MSBuild.exe", null, It.IsAny<int>()))
                 .Returns(new ProcessResult()
                 {
                     ExitCode = 0,
                     Output = "Msbuild executable path found at "
                 });
-
             var target = new NugetRestoreProcess(processExecutorMock.Object);
 
             target.RestorePackages(solutionPath);
 
             processExecutorMock.Verify( p => p.Start(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(3));
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(4));
         }
 
         [SkippableFact]
@@ -175,6 +180,14 @@ C:\Users\LEON\bin\NuGet.exe"
                     Output = CProgramFilesX86MicrosoftVisualStudio
                 });
 
+            processExecutorMock.Setup(x => x.Start(CProgramFilesX86MicrosoftVisualStudio, It.Is<string>((p) => p.EndsWith("where.exe")),
+                    "-prerelease -requires Microsoft.Component.MSBuild -products * -find MSBuild\\**\\Bin\\MSBuild.exe", null, It.IsAny<int>()))
+                .Returns(new ProcessResult()
+                {
+                    ExitCode = 0,
+                    Output = CProgramFilesX86MicrosoftVisualStudio
+                });
+
             processExecutorMock.Setup(x => x.Start(solutionDir, It.IsAny<string>(), "-version /nologo", null, It.IsAny<int>()))
                 .Returns(new ProcessResult()
                 {
@@ -200,7 +213,7 @@ C:\Users\LEON\bin\NuGet.exe"
 
             target.RestorePackages(solutionPath);
             processExecutorMock.Verify( p => p.Start(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(3));
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(4));
         }
     }
 }

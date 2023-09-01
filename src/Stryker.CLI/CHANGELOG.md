@@ -1,3 +1,13 @@
+# [3.10.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.9.2...dotnet-stryker@3.10.0) (2023-07-28)
+
+
+### Bug Fixes
+
+* Improve Vstest support ([#2595](https://github.com/stryker-mutator/stryker-net/issues/2595)) ([04268c1](https://github.com/stryker-mutator/stryker-net/commit/04268c10366d82bff2a6d404bb2383481530ce8d))
+* Small changes to configuration help text ([#2586](https://github.com/stryker-mutator/stryker-net/issues/2586)) ([c68c14e](https://github.com/stryker-mutator/stryker-net/commit/c68c14eb767705b418e189c13971cf58a5585647))
+
+
+
 ## [3.9.2](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.9.1...dotnet-stryker@3.9.2) (2023-06-09)
 
 

@@ -8,7 +8,7 @@ Stryker supports a variety of reporters. Enabled reporters will be activated dur
 
 The default reporters are [html](#html-reporter) and [progress](#progress-reporter)
 
-# Html reporter
+## Html reporter
 Our html reporter will output a html file that will visually display your project and all mutations. This is our recommended reporter for larger projects, since it displays large number of mutations in a clear way. 
 
 ```bash
@@ -19,7 +19,7 @@ Example:
 
 ![html reporter](./images/html-report-net.png)
 
-# Progress reporter
+## Progress reporter
 This reporter outputs the current status of the mutation testrun. It has a nice visual look so you can quickly see the progress. We recommend to use this reporter on large projects. It also shows an indication of the estimated time for Stryker.NET to complete.
 
 ```bash
@@ -30,7 +30,7 @@ Example:
 
 ![progress bar reporter](./images/progress-bar-net.png)
 
-# Dashboard reporter
+## Dashboard reporter
 The dashboard reporter will upload your stryker result as json to the [stryker dashboard](https://dashboard.stryker-mutator.io/). To use this reporter some settings should be configured:
 
 ```bash
@@ -43,7 +43,7 @@ The following options are relevant when using the dashboard reporter:
 - [Project version](./configuration.md#project-infoversion-string) - required (unless using SourceLink)
 - [Project module](./configuration.md#project-infomodule-string) - optional
 
-## Use SourceLink for dashboard reporter​
+### Use SourceLink for dashboard reporter​
 
 Filling all settings to use the dashboard reporter can be a bit of a hassle. However, thanks to [SourceLink](https://github.com/dotnet/sourcelink#readme), the repository URL and the full version (including the git SHA1) of a project can be included in the produced assembly.
 
@@ -59,7 +59,7 @@ Enable this by adding the following to your `.csproj` or `Directory.Build.props`
 
 For more information on SourceLink and ReproducibleBuilds see SourceLink and Dotnet.ReproducibleBuilds
 
-# Cleartext reporter
+## Cleartext reporter
 It displays all files right after the mutation testrun is done. Ideal for a quick run, as it leaves no file on your system.
 
 ```bash
@@ -70,7 +70,7 @@ Example:
 
 ![console reporter](./images/console-reporter-net.png)
 
-# Cleartext tree reporter
+## Cleartext tree reporter
 It displays all mutations right after the mutation testrun is done. Ideal for a quick run, as it leaves no file on your system. It is recommended to turn this reporter off on big projects.
 
 ```bash
@@ -81,7 +81,7 @@ Example:
 
 ![Cleartext reporter](./images/console-reporter-tree.png)
 
-# Dots reporter
+## Dots reporter
 A basic reporter to display the progress of the mutation testrun. It indicates in a very simple way how many mutants have been tested and their status. This is ideal to use on build servers, as it has little/no performance loss while still giving insight.
 
 ```bash
@@ -94,14 +94,14 @@ Example:
 
 Where `"."` means killed, `"S"` means survived and `"T"` means timed out.
 
-# Json reporter
+## Json reporter
 This reporter outputs a json file with all mutation testrun info of the last run. The json is also used for the HTML reporter, but using this reporter you could use the file for your own purposes.
 
 ```bash
 dotnet stryker --reporter "json"
 ```
 
-# Markdown summary reporter
+## Markdown summary reporter
 This reporter outputs a Markdown formatted summary file called `mutation-report.md` (by default) in the `StrykerOutput/{date-time}/reports` directory.  
 
 ```bash
@@ -110,7 +110,7 @@ dotnet stryker --reporter "markdown"
 
 Example:
 
-# Mutation Testing Summary
+## Mutation Testing Summary
 
 | File                                                        | Score   | Killed | Survived | Timeout | No Coverage | Ignored | Compile Errors | Total Detected | Total Undetected | Total Mutants |
 | ----------------------------------------------------------- | ------- | ------ | -------- | ------- | ----------- | -------- | -------------- | -------------- | ---------------- | ------------- |
@@ -118,6 +118,5 @@ Example:
 | Entities\\Entity1.cs     | N\/A    | 0      | 0        | 0       | 0           | 0        | 0              | 0              | 0                | 0             |
 | Program.cs                        | 87.50%  | 7      | 0        | 0       | 1           | 0        | 0              | 7              | 1                | 8             |
 
-## The final mutation score is 78.70%
-
-### *Coverage Thresholds: high:90 low:60 break:60*
+**The final mutation score is 78.70%**  
+*Coverage Thresholds: high: 90 low: 60 break: 60*
