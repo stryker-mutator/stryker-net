@@ -63,8 +63,8 @@
       },
       "Buildalyzer.Logger": {
         "type": "Transitive",
-        "resolved": "5.0.0",
-        "contentHash": "T+bvSIWns87XNUnE9doORmjHOuH3arOTChGHA1IQlUBmKHs/WQt/0MWYZuool3egVVn/552+6c2j0eoKxPSqbw=="
+        "resolved": "5.0.1",
+        "contentHash": "7j7SzfYH69xuNFaGHbf6kRcvPUmeTUOV99+63lM0BPn2L4ThlqU7OM0aliVvlNOp5btr4nuU6kQdet5U3G7kyg=="
       },
       "FSharp.Core": {
         "type": "Transitive",
@@ -1509,7 +1509,7 @@
         "type": "Project",
         "dependencies": {
           "Azure.Storage.Files.Shares": "[12.14.0, )",
-          "Buildalyzer": "[5.0.0, )",
+          "Buildalyzer": "[5.0.1, )",
           "DotNet.Glob": "[3.1.3, )",
           "FSharp.Compiler.Service": "[41.0.7, )",
           "Grynwald.MarkdownGenerator": "[3.0.106, )",
@@ -1561,11 +1561,11 @@
       },
       "Buildalyzer": {
         "type": "CentralTransitive",
-        "requested": "[5.0.0, )",
-        "resolved": "5.0.0",
-        "contentHash": "iyqVWGyn/hyI/21o6fN0Mp9TYDUKOvzPlIoly4PztyJYDvbX9RgKu1XDTYYlC2CHWrViSgz/FSF9uxee7dxJPg==",
+        "requested": "[5.0.1, )",
+        "resolved": "5.0.1",
+        "contentHash": "q42QUS/g1O3WKNxHPgriAA5i1NbpU30TcTB5oxACgZLo1HF6zxy66OUj2ORaAYC9bQRKXd8J56i2L0vE9lMVTA==",
         "dependencies": {
-          "Buildalyzer.Logger": "5.0.0",
+          "Buildalyzer.Logger": "5.0.1",
           "MSBuild.StructuredLogger": "2.1.507",
           "Microsoft.Build": "16.9.0",
           "Microsoft.Build.Framework": "16.9.0",
