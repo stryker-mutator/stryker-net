@@ -1,9 +1,11 @@
+using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Azure;
 using Azure.Storage.Files.Shares;
 using Azure.Storage.Files.Shares.Models;
+using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
 using Stryker.Core.Baseline.Providers;
@@ -17,18 +19,44 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
 {
     public class AzureFileShareBaselineProviderTests : TestBase
     {
+        private readonly string _uri = "https://strykernetbaseline.file.core.windows.net/baselines";
+        [Fact]
+        public void Authentication_Failure()
+        {
+            // Arrange
+            var logger = Mock.Of<ILogger<AzureFileShareBaselineProvider>>();
+
+            var options = new StrykerOptions { AzureFileStorageUrl = _uri, AzureFileStorageSas = "sv=2022-11-02&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2023-09-14T19:05:24Z&st=2023-09-14T11:05:24Z&spr=https&sig=hMf2EN3tD8T7y8Eei3aZASKdp5x%2BOkgEVIgTfxZPC38%3D" };
+
+            // Act
+            var report = new AzureFileShareBaselineProvider(options, null, logger).Load("v1").Result;
+
+            // Assert
+            report.ShouldBeNull();
+
+            Mock.Get(logger).Verify(LogLevel.Warning, "Problem authenticating with azure file share. Make sure your SAS is valid.");
+            Mock.Get(logger).Verify(LogLevel.Debug, $"No baseline was found at {options.AzureFileStorageUrl}/StrykerOutput/v1/stryker-report.json");
+        }
+
         [Fact]
         public void Load_Report_Directory_NotFound()
         {
             // Arrange
             var shareClient = Mock.Of<ShareClient>();
+            Mock.Get(shareClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(true, default));
+            Mock.Get(shareClient).SetupGet(s => s.Uri).Returns(new Uri(_uri));
 
             // root directory
             var directoryClient = Mock.Of<ShareDirectoryClient>();
             Mock.Get(shareClient)
                 .Setup(s => s.GetDirectoryClient("StrykerOutput"))
                 .Returns(directoryClient);
-            Mock.Get(directoryClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(false, default));
+            Mock.Get(directoryClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(true, default));
+
+            // version directory
+            var subdirectoryClient = Mock.Of<ShareDirectoryClient>();
+            Mock.Get(directoryClient).Setup(d => d.GetSubdirectoryClient("v1")).Returns(subdirectoryClient);
+            Mock.Get(subdirectoryClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(false, default));
 
             // Act
             var report = new AzureFileShareBaselineProvider(new StrykerOptions(), shareClient).Load("v1").Result;
@@ -48,6 +76,8 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
         {
             // Arrange
             var shareClient = Mock.Of<ShareClient>();
+            Mock.Get(shareClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(true, default));
+            Mock.Get(shareClient).SetupGet(s => s.Uri).Returns(new Uri(_uri));
 
             // root directory
             var directoryClient = Mock.Of<ShareDirectoryClient>();
@@ -90,6 +120,8 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
         {
             // Arrange
             var shareClient = Mock.Of<ShareClient>();
+            Mock.Get(shareClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(true, default));
+            Mock.Get(shareClient).SetupGet(s => s.Uri).Returns(new Uri(_uri));
 
             // root directory
             var directoryClient = Mock.Of<ShareDirectoryClient>();
@@ -136,10 +168,11 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
         public async Task Save_Report()
         {
             // Arrange
+            var shareClient = Mock.Of<ShareClient>();
+            Mock.Get(shareClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(true, default));
+            Mock.Get(shareClient).SetupGet(s => s.Uri).Returns(new Uri(_uri));
 
             // root directory
-            var shareClient = Mock.Of<ShareClient>();
-
             var directoryClient = Mock.Of<ShareDirectoryClient>();
             Mock.Get(shareClient)
                 .Setup(s => s.GetDirectoryClient("StrykerOutput"))
