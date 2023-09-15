@@ -143,7 +143,7 @@ namespace Stryker.CLI
             AddCliInput(inputs.DevModeInput, "dev-mode", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
         }
 
-        private void RegisterCliInput(CommandLineApplication app, CliInput option)
+        public void RegisterCliInput(CommandLineApplication app, CliInput option)
         {
             var argumentHint = option.OptionType switch
             {
@@ -178,7 +178,7 @@ namespace Stryker.CLI
             return cliOption;
         }
 
-        private void AddCliInput(IInput input, string argumentName, string argumentShortName,
+        public void AddCliInput(IInput input, string argumentName, string argumentShortName,
             CommandOptionType optionType = CommandOptionType.SingleValue, InputCategory category = InputCategory.Generic, string argumentHint = null)
         {
             var cliOption = new CliInput

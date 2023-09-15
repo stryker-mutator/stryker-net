@@ -7,7 +7,7 @@ using System.Linq;
 
 namespace Stryker.CLI
 {
-    [ExcludeFromCodeCoverage] // Not worth the effort to test
+    [ExcludeFromCodeCoverage(Justification = "Not worth the effort to test")]
     internal class GroupedHelpTextGenerator : DefaultHelpTextGenerator
     {
         protected override void GenerateOptions(CommandLineApplication application, TextWriter output, IReadOnlyList<CommandOption> visibleOptions, int firstColumnWidth)

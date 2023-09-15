@@ -9,6 +9,7 @@ using Stryker.CLI.Clients;
 using Stryker.CLI.Logging;
 using Stryker.Core;
 using Stryker.Core.Options;
+using Stryker.Core.Options.Inputs;
 
 namespace Stryker.CLI
 {
@@ -45,7 +46,7 @@ namespace Stryker.CLI
             {
                 Name = "Stryker",
                 FullName = "Stryker: Stryker mutator for .Net",
-                Description = "Stryker mutator for .Net",
+                Description = "The mutation test framework for .Net",
                 ExtendedHelpText = "Welcome to Stryker for .Net! Run dotnet stryker to kick off a mutation test run",
                 HelpTextGenerator = new GroupedHelpTextGenerator()
             };
@@ -60,10 +61,29 @@ namespace Stryker.CLI
             {
                 baselineCmd.Description = "Enables the baseline feature";
                 cmdConfigReader.RegisterCommandLineOptions(baselineCmd, inputs);
-
+                var targetInput = new CliInput()
+                {
+                    Input = new BaselineTargetInput(),
+                    ArgumentName = "target",
+                    ArgumentShortName = "t",
+                    Description = @"The target for the compare. For example, when runnin on branch feat-2 and wanting to compare to branch ""main"", set this value to ""main""",
+                    Category = InputCategory.Mutation
+                };
+                var targetOption = new CommandOption("-t|--target <value>", CommandOptionType.SingleValue) {
+                    LongName = "target",
+                    ShortName = "t",
+                    Description = @"The target for the compare. For example, when runnin on branch feat-2 and wanting to compare to branch ""main"", set this value to ""main""",
+                    ShowInHelpText = true
+                };
+                cmdConfigReader.RegisterCliInput(app, targetInput);
+                cmdConfigReader.AddCliInput(targetInput.Input, "--target", "-t", CommandOptionType.SingleValue, InputCategory.Mutation);
+                baselineCmd.AddOption(targetOption);
                 baselineCmd.Command("recreate", createCmd =>
                 {
                     cmdConfigReader.RegisterCommandLineOptions(createCmd, inputs);
+                    cmdConfigReader.RegisterCliInput(app, targetInput);
+                    cmdConfigReader.AddCliInput(targetInput.Input, "--target", "-t", CommandOptionType.SingleValue, InputCategory.Mutation);
+                    createCmd.AddOption(targetOption);
 
                     createCmd.OnExecute(() =>
                     {
