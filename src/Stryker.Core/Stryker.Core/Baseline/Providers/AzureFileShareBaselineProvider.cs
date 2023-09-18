@@ -76,7 +76,7 @@ namespace Stryker.Core.Baseline.Providers
             }
             else
             {
-                _logger.LogWarning("Azure File Share SAS is invalid");
+                _logger.LogWarning("Problem authenticating with azure file share. Make sure your SAS is valid.");
             }
         }
 
