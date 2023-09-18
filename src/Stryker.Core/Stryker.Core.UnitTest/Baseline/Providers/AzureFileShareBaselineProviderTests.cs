@@ -21,7 +21,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
     {
         private readonly string _uri = "https://strykernetbaseline.file.core.windows.net/baselines";
         [Fact]
-        public void Authentication_Failure()
+        public async Task Authentication_Failure_Async()
         {
             // Arrange
             var logger = Mock.Of<ILogger<AzureFileShareBaselineProvider>>();
@@ -29,7 +29,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             var options = new StrykerOptions { AzureFileStorageUrl = _uri, AzureFileStorageSas = "sv=2022-11-02&ss=bfqt&srt=sco&sp=rwdlacupiytfx&se=2023-09-14T19:05:24Z&st=2023-09-14T11:05:24Z&spr=https&sig=hMf2EN3tD8T7y8Eei3aZASKdp5x%2BOkgEVIgTfxZPC38%3D" };
 
             // Act
-            var report = new AzureFileShareBaselineProvider(options, null, logger).Load("v1").Result;
+            var report = await new AzureFileShareBaselineProvider(options, null, logger).Load("v1");
 
             // Assert
             report.ShouldBeNull();
@@ -39,7 +39,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
         }
 
         [Fact]
-        public void Load_Report_Directory_NotFound()
+        public async Task Load_Report_Directory_NotFound()
         {
             // Arrange
             var shareClient = Mock.Of<ShareClient>();
@@ -59,7 +59,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             Mock.Get(subdirectoryClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(false, default));
 
             // Act
-            var report = new AzureFileShareBaselineProvider(new StrykerOptions(), shareClient).Load("v1").Result;
+            var report = await new AzureFileShareBaselineProvider(new StrykerOptions(), shareClient).Load("v1");
 
             // Assert
             report.ShouldBeNull();
@@ -72,7 +72,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
         }
 
         [Fact]
-        public void Load_Report_File_NotFound()
+        public async Task Load_Report_File_NotFound()
         {
             // Arrange
             var shareClient = Mock.Of<ShareClient>();
@@ -97,7 +97,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             Mock.Get(fileClient).Setup(f => f.ExistsAsync(default)).Returns(Task.FromResult(Response.FromValue(false, default)));
 
             // Act
-            var report = new AzureFileShareBaselineProvider(new StrykerOptions(), shareClient).Load("v1").Result;
+            var report = await new AzureFileShareBaselineProvider(new StrykerOptions(), shareClient).Load("v1");
 
             // Assert
             report.ShouldBeNull();
@@ -116,7 +116,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
         }
 
         [Fact]
-        public void Load_Report_Returns_Report()
+        public async Task Load_Report_Returns_Report()
         {
             // Arrange
             var shareClient = Mock.Of<ShareClient>();
@@ -146,7 +146,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             Mock.Get(fileClient).Setup(f => f.Download(null, default)).Returns(Response.FromValue(file, default));
 
             // Act
-            var report = new AzureFileShareBaselineProvider(new StrykerOptions(), shareClient).Load("v1").Result;
+            var report = await new AzureFileShareBaselineProvider(new StrykerOptions(), shareClient).Load("v1");
 
             // Assert
             report.ShouldNotBeNull();
