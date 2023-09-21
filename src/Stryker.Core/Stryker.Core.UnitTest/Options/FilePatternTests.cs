@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using DotNet.Globbing;
-using Microsoft.CodeAnalysis.Text;
 using Shouldly;
 using Stryker.Core.ProjectComponents;
 using Xunit;
