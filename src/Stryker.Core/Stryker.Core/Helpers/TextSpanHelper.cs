@@ -16,7 +16,7 @@ namespace Stryker.Core.Helpers
         /// </summary>
         /// <param name="textSpans">The set of <see cref="TextSpan" />s to reduce.</param>
         /// <returns>The reduced set.</returns>
-        public static IReadOnlyCollection<TextSpan> Reduce(this IEnumerable<TextSpan> textSpans)
+        public static IReadOnlyCollection<TextSpan> Reduce(IEnumerable<TextSpan> textSpans)
         {
             var spans = new List<TextSpan>(textSpans);
             var shouldContinue = true;

@@ -51,8 +51,7 @@ namespace Stryker.Core.ProjectComponents
 
         public override IEnumerable<Range> Reduce(IEnumerable<Range> spans)
         {
-            // TODO
-            return spans;
+            return RangeHelper.Reduce(FullPath, spans);
         }
 
         public override IEnumerable<Range> RemoveOverlap(IEnumerable<Range> left, IEnumerable<Range> right)

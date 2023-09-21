@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.ProjectComponents
+namespace Stryker.Core.UnitTest.Helpers
 {
     public class TextSpanHelperTests : TestBase
     {
@@ -26,7 +26,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             var textSpans = ConvertToSpans(inputSpans);
 
             // Act
-            var result = textSpans.Reduce();
+            var result = TextSpanHelper.Reduce(textSpans);
 
             // Assert
             result.SequenceEqual(ConvertToSpans(outputSpans)).ShouldBeTrue();

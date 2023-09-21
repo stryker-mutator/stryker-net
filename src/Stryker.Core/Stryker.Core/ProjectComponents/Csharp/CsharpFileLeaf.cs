@@ -51,7 +51,7 @@ namespace Stryker.Core.ProjectComponents
 
         public override IEnumerable<TextSpan> Reduce(IEnumerable<TextSpan> spans)
         {
-            return spans.Reduce();
+            return TextSpanHelper.Reduce(spans);
         }
 
         public override IEnumerable<TextSpan> RemoveOverlap(IEnumerable<TextSpan> left, IEnumerable<TextSpan> right)
