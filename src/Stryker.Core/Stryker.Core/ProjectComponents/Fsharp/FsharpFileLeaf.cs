@@ -9,6 +9,11 @@ namespace Stryker.Core.ProjectComponents
 {
     public class FsharpFileLeaf : ExcludableProjectComponent<ParsedInput, Range>, IFileLeaf<ParsedInput>
     {
+        // only needed for tests
+        internal FsharpFileLeaf() : base() { }
+
+        public FsharpFileLeaf(IEnumerable<ExcludableString> strings) : base(strings) { }
+
         public string SourceCode { get; set; }
 
         /// <summary>

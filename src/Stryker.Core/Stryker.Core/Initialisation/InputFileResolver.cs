@@ -370,6 +370,7 @@ namespace Stryker.Core.Initialisation
 
                 Language.Fsharp => new FsharpProjectComponentsBuilder(
                     projectInfo,
+                    options,
                     _foldersToExclude,
                     _logger,
                     FileSystem),

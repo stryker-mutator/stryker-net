@@ -9,7 +9,8 @@ namespace Stryker.Core.ProjectComponents
 {
     public class CsharpFileLeaf : ExcludableProjectComponent<SyntaxTree, TextSpan>, IFileLeaf<SyntaxTree>
     {
-        public CsharpFileLeaf() : base() { }
+        // only needed for tests
+        internal CsharpFileLeaf() : base() { }
 
         public CsharpFileLeaf(IEnumerable<ExcludableString> strings) : base(strings) { }
 
