@@ -21,7 +21,7 @@ Example: ['**/*Assets.json','**/favicon.ico']";
                 var diffIgnoreStrings = new List<ExcludableString>();
                 foreach (var pattern in SuppliedInput)
                 {
-                    diffIgnoreStrings.Add(ExcludableString.Parse(FilePathUtils.NormalizePathSeparators(pattern)));
+                    diffIgnoreStrings.Add(new ExcludableString(FilePathUtils.NormalizePathSeparators(pattern)));
                 }
 
                 return diffIgnoreStrings;

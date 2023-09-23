@@ -13,7 +13,6 @@ namespace Stryker.Core
     /// </summary>
     public sealed class FilePattern : IEquatable<FilePattern>
     {
-        private static readonly Regex _textSpanGroupRegex = new Regex("(\\{(\\d+)\\.\\.(\\d+)\\})+$");
         private static readonly Regex _textSpanRegex = new Regex("\\{(\\d+)\\.\\.(\\d+)\\}");
         private static readonly TextSpan _textSpanMaxValue = new TextSpan(0, int.MaxValue);
 
@@ -47,17 +46,10 @@ namespace Stryker.Core
         /// <returns>The <see cref="FilePattern"/></returns>
         public static FilePattern Parse(string pattern)
         {
-            var exclude = false;
+            var s = new ExcludableString(pattern);
             IReadOnlyCollection<TextSpan> textSpans;
 
-            if (pattern.StartsWith('!'))
-            {
-                exclude = true;
-                pattern = pattern[1..];
-            }
-
-            var textSpanGroupMatch = _textSpanGroupRegex.Match(pattern);
-            if (!textSpanGroupMatch.Success)
+            if (string.IsNullOrEmpty(s.MutantSpans))
             {
                 // If there are no spans specified, we add one that will cover the whole file.
                 textSpans = new[] { _textSpanMaxValue };
@@ -65,18 +57,14 @@ namespace Stryker.Core
             else
             {
                 // If we have one ore more spans we parse them.
-                var textSpansMatches = _textSpanRegex.Matches(textSpanGroupMatch.Value);
+                var textSpansMatches = _textSpanRegex.Matches(s.MutantSpans);
                 textSpans = textSpansMatches
                     .Select(x => TextSpan.FromBounds(int.Parse(x.Groups[1].Value), int.Parse(x.Groups[2].Value)))
                     .Reduce()
                     .ToList();
-
-                pattern = pattern.Substring(0, pattern.Length - textSpanGroupMatch.Length);
             }
 
-            var glob = Glob.Parse(FilePathUtils.NormalizePathSeparators(pattern));
-
-            return new FilePattern(glob, exclude, textSpans);
+            return new FilePattern(s.Glob, s.IsExcluded, textSpans);
         }
 
         /// <summary>
