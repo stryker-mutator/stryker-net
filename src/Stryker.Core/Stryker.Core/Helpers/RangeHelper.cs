@@ -4,7 +4,7 @@ using FSharp.Compiler.Text;
 
 namespace Stryker.Core.Helpers
 {
-    internal static class RangeHelper
+    public static class RangeHelper
     {
         /// <summary>
         /// Reduces a set of ranges to the smallest set of ranges possible.
@@ -44,28 +44,99 @@ namespace Stryker.Core.Helpers
             return rangeList.Distinct().Where(x => !x.IsEmpty()).ToList();
         }
 
-        internal static Position Max(Position pos1, Position pos2)
+        /// <summary>
+        /// Removes all overlaps of two sets of <see cref="Range"/> and returns the resulting set.
+        /// </summary>
+        /// <param name="left">The first set.</param>
+        /// <param name="right">The second set.</param>
+        /// <returns>All ranges and part of ranges of <paramref name="left"/> that do not overlap with any ranges in <paramref name="right"/>.</returns>
+        public static IReadOnlyCollection<Range> RemoveOverlap(this IEnumerable<Range> left, IEnumerable<Range> right, string filePath)
+        {
+            var rangeList = new List<Range>(left);
+            var shouldContinue = true;
+
+            while (shouldContinue)
+            {
+                shouldContinue = false;
+
+                foreach (var current in rangeList)
+                {
+                    // Check if any span overlaps the current span.
+                    var other = right.FirstOrDefault(o => o.OverlapsWith(current));
+
+                    if (!RangeModule.equals(other, Range.Zero))
+                    {
+                        // Remove the current span add the new span(s).
+                        rangeList.Remove(current);
+                        rangeList.AddRange(RemoveOverlap(current, other));
+
+                        // We changed the list, so we have to restart the foreach.
+                        shouldContinue = true;
+                        break;
+                    }
+                }
+            }
+
+            return rangeList;
+
+            IReadOnlyCollection<Range> RemoveOverlap(Range current, Range other)
+            {
+                // The the current range is completely contained inside the other, nothing will be left.
+                if (RangeModule.rangeContainsRange(other, current))
+                    return System.Array.Empty<Range>();
+
+                // Check if there is any overlap.
+                var overlap = current.Overlap(other, filePath);
+
+                if (!overlap.HasValue)
+                {
+                    return new[] { current };
+                }
+
+                return new[] { FromBounds(filePath, current.Start, overlap.Value.Start), FromBounds(filePath, overlap.Value.End, current.End) }.Where(s => !s.IsEmpty()).ToList();
+            }
+        }
+
+        public static bool OverlapsWith(this Range range1, Range range2)
+        {
+            var overlapStart = Max(range1.Start, range2.Start);
+            var overlapEnd = Min(range1.End, range2.End);
+
+            return PositionModule.posLt(overlapStart, overlapEnd);
+        }
+
+        public static Range? Overlap(this Range range1, Range range2, string filePath)
+        {
+            var overlapStart = Max(range1.Start, range2.Start);
+            var overlapEnd = Min(range1.End, range2.End);
+
+            return PositionModule.posLt(overlapStart, overlapEnd)
+                ? FromBounds(filePath, overlapStart, overlapEnd)
+                : null;
+        }
+
+        public static Position Max(Position pos1, Position pos2)
         {
             return PositionModule.posGeq(pos1, pos2) ? pos1 : pos2;
         }
 
-        internal static Position Min(Position pos1, Position pos2)
+        public static Position Min(Position pos1, Position pos2)
         {
             return PositionModule.posLt(pos1, pos2) ? pos1 : pos2;
         }
 
-        internal static bool IsEmpty(this Range range)
+        public static bool IsEmpty(this Range range)
         {
-            return RangeModule.equals(range, Range.Zero);
+            return PositionModule.posEq(range.Start, range.End);
         }
 
-        internal static bool IntersectsWith(this Range range1, Range range2)
+        public static bool IntersectsWith(this Range range1, Range range2)
         {
             return PositionModule.posGeq(range1.End, range2.Start)
                 && PositionModule.posGeq(range2.End, range1.Start);
         }
 
-        internal static Position GetPosition(string text, int index)
+        public static Position GetPosition(string text, int index)
         {
             var line = 0;
             var col = 0;
@@ -86,7 +157,7 @@ namespace Stryker.Core.Helpers
             return PositionModule.mkPos(line, col);
         }
 
-        internal static int GetIndex(string text, Position pos)
+        public static int GetIndex(string text, Position pos)
         {
             var line = 0;
             var col = 0;

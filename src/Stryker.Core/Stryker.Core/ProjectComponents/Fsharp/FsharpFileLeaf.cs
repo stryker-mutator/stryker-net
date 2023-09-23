@@ -56,8 +56,7 @@ namespace Stryker.Core.ProjectComponents
 
         public override IEnumerable<Range> RemoveOverlap(IEnumerable<Range> left, IEnumerable<Range> right)
         {
-            // TODO
-            return left;
+            return left.RemoveOverlap(right, FullPath);
         }
 
         public override MutantSpan ToMutantSpan(Range range)

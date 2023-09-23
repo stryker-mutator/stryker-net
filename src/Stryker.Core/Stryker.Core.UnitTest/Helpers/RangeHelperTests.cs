@@ -9,7 +9,7 @@ namespace Stryker.Core.UnitTest.Helpers
     public class RangeHelperTests : TestBase
     {
         [Fact]
-        public void IsEmpty_EmptyRange()
+        public void IsEmpty_ZeroRange()
         {
             var range = Range.Zero;
 
@@ -17,12 +17,17 @@ namespace Stryker.Core.UnitTest.Helpers
         }
 
         [Fact]
+        public void IsEmpty_HollowRange()
+        {
+            var range = GetRange((42, 42), (42, 42));
+
+            range.IsEmpty().ShouldBeTrue();
+        }
+
+        [Fact]
         public void IsEmpty_NotEmptyRange()
         {
-            var range = RangeModule.mkRange(
-                "test.fs",
-                PositionModule.pos0,
-                PositionModule.mkPos(42, 42));
+            var range = GetRange((0, 0), (42, 42));
 
             range.IsEmpty().ShouldBeFalse();
         }
@@ -94,17 +99,96 @@ namespace Stryker.Core.UnitTest.Helpers
         }
 
         [Fact]
+        public void OverlapsWith_Overlapping_Left()
+        {
+            var range1 = GetRange((0, 0), (22, 22));
+            var range2 = GetRange((11, 11), (33, 33));
+
+            range1.OverlapsWith(range2).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void OverlapsWith_Overlapping_Right()
+        {
+            var range1 = GetRange((11, 11), (33, 33));
+            var range2 = GetRange((0, 0), (22, 22));
+
+            range1.OverlapsWith(range2).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void OverlapsWith_Overlapping_Between()
+        {
+            var range1 = GetRange((0, 0), (33, 33));
+            var range2 = GetRange((11, 11), (22, 22));
+
+            range1.OverlapsWith(range2).ShouldBeTrue();
+        }
+
+        [Fact]
+        public void OverlapsWith_NotOverlapping()
+        {
+            var range1 = GetRange((0, 0), (11, 11));
+            var range2 = GetRange((22, 22), (33, 33));
+
+            range1.OverlapsWith(range2).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void OverlapsWith_Empty_Left()
+        {
+            var range1 = GetRange((0, 0), (42, 42));
+            var range2 = Range.Zero;
+
+            range1.OverlapsWith(range2).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void OverlapsWith_Empty_Right()
+        {
+            var range1 = Range.Zero;
+            var range2 = GetRange((0, 0), (42, 42));
+
+            range1.OverlapsWith(range2).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void OverlapsWith_Empty_Both()
+        {
+            var range1 = Range.Zero;
+            var range2 = Range.Zero;
+
+            range1.OverlapsWith(range2).ShouldBeFalse();
+        }
+
+        [Fact]
+        public void Overlap_Overlapping()
+        {
+            var filePath = "test.fs";
+
+            var range1 = GetRange((0, 0), (22, 22));
+            var range2 = GetRange((11, 11), (33, 33));
+            var expectedOverlap = GetRange((11, 11), (22, 22));
+
+            range1.Overlap(range2, filePath).ShouldBe(expectedOverlap);
+        }
+
+        [Fact]
+        public void Overlap_NotOverlapping()
+        {
+            var filePath = "test.fs";
+
+            var range1 = GetRange((0, 0), (11, 11));
+            var range2 = GetRange((22, 22), (33, 33));
+
+            range1.Overlap(range2, filePath).ShouldBeNull();
+        }
+
+        [Fact]
         public void IntersectsWith_Intersecting_Left()
         {
-            var range1 = RangeModule.mkRange(
-                "test.fs",
-                PositionModule.pos0,
-                PositionModule.mkPos(22, 22));
-
-            var range2 = RangeModule.mkRange(
-                "test.fs",
-                PositionModule.mkPos(11, 11),
-                PositionModule.mkPos(33, 33));
+            var range1 = GetRange((0, 0), (22, 22));
+            var range2 = GetRange((11, 11), (33, 33));
 
             range1.IntersectsWith(range2).ShouldBeTrue();
         }
@@ -112,15 +196,8 @@ namespace Stryker.Core.UnitTest.Helpers
         [Fact]
         public void IntersectsWith_Intersecting_Right()
         {
-            var range1 = RangeModule.mkRange(
-                "test.fs",
-                PositionModule.mkPos(11, 11),
-                PositionModule.mkPos(33, 33));
-
-            var range2 = RangeModule.mkRange(
-                "test.fs",
-                PositionModule.mkPos(0, 0),
-                PositionModule.mkPos(22, 22));
+            var range1 = GetRange((11, 11), (33, 33));
+            var range2 = GetRange((0, 0), (22, 22));
 
             range1.IntersectsWith(range2).ShouldBeTrue();
         }
@@ -128,31 +205,17 @@ namespace Stryker.Core.UnitTest.Helpers
         [Fact]
         public void IntersectsWith_Intersecting_Between()
         {
-            var range1 = RangeModule.mkRange(
-                "test.fs",
-                PositionModule.mkPos(0, 0),
-                PositionModule.mkPos(33, 33));
-
-            var range2 = RangeModule.mkRange(
-                "test.fs",
-                PositionModule.mkPos(11, 11),
-                PositionModule.mkPos(22, 22));
+            var range1 = GetRange((0, 0), (33, 33));
+            var range2 = GetRange((11, 11), (22, 22));
 
             range1.IntersectsWith(range2).ShouldBeTrue();
         }
 
         [Fact]
-        public void IntersectsWith_NotIntersecting()
+        public void IntersectsWith_NoIntersection()
         {
-            var range1 = RangeModule.mkRange(
-                "test.fs",
-                PositionModule.mkPos(0, 0),
-                PositionModule.mkPos(11, 11));
-
-            var range2 = RangeModule.mkRange(
-                "test.fs",
-                PositionModule.mkPos(22, 22),
-                PositionModule.mkPos(33, 33));
+            var range1 = GetRange((0, 0), (11, 11));
+            var range2 = GetRange((22, 22), (33, 33));
 
             range1.IntersectsWith(range2).ShouldBeFalse();
         }
@@ -170,10 +233,7 @@ namespace Stryker.Core.UnitTest.Helpers
         {
             var filePath = "test.fs";
 
-            var range = RangeModule.mkRange(
-                filePath,
-                PositionModule.mkPos(0, 0),
-                PositionModule.mkPos(42, 42));
+            var range = GetRange((0, 0), (42, 42));
 
             var ranges = new[] { range }; 
 
@@ -187,20 +247,9 @@ namespace Stryker.Core.UnitTest.Helpers
         {
             var filePath = "test.fs";
 
-            var range1 = RangeModule.mkRange(
-                filePath,
-                PositionModule.mkPos(0, 0),
-                PositionModule.mkPos(22, 22));
-
-            var range2 = RangeModule.mkRange(
-                filePath,
-                PositionModule.mkPos(11, 11),
-                PositionModule.mkPos(33, 33));
-
-            var expectedRange = RangeModule.mkRange(
-                filePath,
-                PositionModule.mkPos(0, 0),
-                PositionModule.mkPos(33, 33));
+            var range1 = GetRange((0, 0), (22, 22));
+            var range2 = GetRange((11, 11), (33, 33));
+            var expectedRange = GetRange((0, 0), (33, 33));
 
             var result = RangeHelper.Reduce(filePath, new[] { range1, range2 });
 
@@ -212,16 +261,8 @@ namespace Stryker.Core.UnitTest.Helpers
         {
             var filePath = "test.fs";
 
-            var range1 = RangeModule.mkRange(
-                filePath,
-                PositionModule.mkPos(0, 0),
-                PositionModule.mkPos(11, 11));
-
-            var range2 = RangeModule.mkRange(
-                filePath,
-                PositionModule.mkPos(22, 22),
-                PositionModule.mkPos(33, 33));
-
+            var range1 = GetRange((0, 0), (11, 11));
+            var range2 = GetRange((22, 22), (33, 33));
             var ranges = new[] { range1, range2 };
 
             var actual = RangeHelper.Reduce(filePath, ranges);
@@ -234,31 +275,61 @@ namespace Stryker.Core.UnitTest.Helpers
         {
             var filePath = "test.fs";
 
-            var range1 = RangeModule.mkRange(
-                filePath,
-                PositionModule.mkPos(0, 0),
-                PositionModule.mkPos(22, 22));
-
-            var range2 = RangeModule.mkRange(
-                filePath,
-                PositionModule.mkPos(11, 11),
-                PositionModule.mkPos(33, 33));
-
-            var range3 = RangeModule.mkRange(
-                filePath,
-                PositionModule.mkPos(44, 44),
-                PositionModule.mkPos(55, 55));
-
-            var expectedIntersection = RangeModule.mkRange(
-                filePath,
-                PositionModule.mkPos(0, 0),
-                PositionModule.mkPos(33, 33));
-
+            var range1 = GetRange((0, 0), (22, 22));
+            var range2 = GetRange((11, 11), (33, 33));
+            var range3 = GetRange((44, 44), (55, 55));
+            var expectedIntersection = GetRange((0, 0), (33, 33));
             var expectedRanges = new[] { expectedIntersection, range3 };
 
             var result = RangeHelper.Reduce(filePath, new[] { range1, range2, range3 }); ;
 
             result.ShouldBe(expectedRanges, ignoreOrder: true);
         }
+
+        [Fact]
+        public void RemoveOverlap_Overlapping_Partially()
+        {
+            var filePath = "test.fs";
+
+            var range1 = GetRange((0, 0), (22, 22));
+            var range2 = GetRange((11, 11), (22, 22));
+            var expectedRange = GetRange((0, 0), (11, 11));
+
+            var result = RangeHelper.RemoveOverlap(new[] { range1 }, new [] { range2 }, filePath);
+
+            result.ShouldBe(new[] { expectedRange });
+        }
+
+        [Fact]
+        public void RemoveOverlap_Overlapping_Completely()
+        {
+            var filePath = "test.fs";
+
+            var range1 = GetRange((0, 0), (42, 42));
+            var range2 = GetRange((0, 0), (42, 42));
+
+            var result = RangeHelper.RemoveOverlap(new[] { range1 }, new[] { range2 }, filePath);
+
+            result.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void RemoveOverlap_NotOverlapping()
+        {
+            var filePath = "test.fs";
+
+            var range1 = GetRange((0, 0), (11, 11));
+            var range2 = GetRange((22, 22), (33, 33));
+
+            var result = RangeHelper.RemoveOverlap(new[] { range1 }, new[] { range2 }, filePath);
+
+            result.ShouldBe(new[] { range1 });
+        }
+
+        private static Range GetRange((int Line, int Column) start, (int Line, int Column) end) =>
+            RangeModule.mkRange(
+                "test.fs",
+                PositionModule.mkPos(start.Line, start.Column),
+                PositionModule.mkPos(end.Line, end.Column));
     }
 }
