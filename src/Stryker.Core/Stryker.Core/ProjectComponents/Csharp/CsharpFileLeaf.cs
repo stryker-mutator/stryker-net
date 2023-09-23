@@ -50,23 +50,15 @@ namespace Stryker.Core.ProjectComponents
         }
 
         public override IEnumerable<TextSpan> Reduce(IEnumerable<TextSpan> spans)
-        {
-            return TextSpanHelper.Reduce(spans);
-        }
+            => TextSpanHelper.Reduce(spans);
 
         public override IEnumerable<TextSpan> RemoveOverlap(IEnumerable<TextSpan> left, IEnumerable<TextSpan> right)
-        {
-            return left.RemoveOverlap(right);
-        }
+            => left.RemoveOverlap(right);
 
         public override MutantSpan ToMutantSpan(TextSpan span)
-        {
-            return new(span.Start, span.End);
-        }
+            => new(span.Start, span.End);
 
         public override TextSpan FromMutantSpan(MutantSpan span)
-        {
-            return TextSpan.FromBounds(span.Start, span.End);
-        }
+            => TextSpan.FromBounds(span.Start, span.End);
     }
 }

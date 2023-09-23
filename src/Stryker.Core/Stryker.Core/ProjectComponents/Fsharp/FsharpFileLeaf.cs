@@ -50,14 +50,10 @@ namespace Stryker.Core.ProjectComponents
         }
 
         public override IEnumerable<Range> Reduce(IEnumerable<Range> spans)
-        {
-            return RangeHelper.Reduce(FullPath, spans);
-        }
+            => RangeHelper.Reduce(FullPath, spans);
 
         public override IEnumerable<Range> RemoveOverlap(IEnumerable<Range> left, IEnumerable<Range> right)
-        {
-            return left.RemoveOverlap(right, FullPath);
-        }
+            => left.RemoveOverlap(right, FullPath);
 
         public override MutantSpan ToMutantSpan(Range range)
         {
@@ -67,8 +63,6 @@ namespace Stryker.Core.ProjectComponents
         }
 
         public override Range FromMutantSpan(MutantSpan span)
-        {
-            return RangeHelper.FromBounds(FullPath, SourceCode, span.Start, span.End);
-        }
+            => RangeHelper.FromBounds(FullPath, SourceCode, span.Start, span.End);
     }
 }
