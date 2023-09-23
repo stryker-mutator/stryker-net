@@ -15,8 +15,8 @@ namespace Stryker.Core.UnitTest
         [Fact]
         public void ExcludableString_Globs()
         {
-            var s1 = new ExcludableString(@"src/Person.cs");
-            var s2 = new ExcludableString(@"!src\Person.cs");
+            var s1 = new ExcludableString(@"Person.cs");
+            var s2 = new ExcludableString(@"!Person.cs");
 
             s1.IsExcluded.ShouldBeFalse();
             s2.IsExcluded.ShouldBeTrue();
