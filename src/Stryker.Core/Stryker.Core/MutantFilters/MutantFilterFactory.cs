@@ -35,7 +35,7 @@ namespace Stryker.Core.MutantFilters
         private static IEnumerable<IMutantFilter> DetermineEnabledMutantFilters(StrykerOptions options)
         {
             var enabledFilters = new SortedSet<IMutantFilter>(new ByMutantFilterType()) {
-                    new FilePatternMutantFilter(options),
+                    new FilePatternMutantFilter(),
                     new IgnoredMethodMutantFilter(),
                     new IgnoreMutationMutantFilter(),
                     new ExcludeFromCodeCoverageFilter(),

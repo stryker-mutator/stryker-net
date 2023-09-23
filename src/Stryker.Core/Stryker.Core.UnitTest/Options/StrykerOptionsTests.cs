@@ -5,6 +5,7 @@ using Serilog.Events;
 using Shouldly;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Options
@@ -26,7 +27,7 @@ namespace Stryker.Core.UnitTest.Options
                 DashboardUrl = "url",
                 DevMode = true,
                 Since = true,
-                DiffIgnoreChanges = new[] { new FilePattern(Glob.Parse("**"), true, null) },
+                DiffIgnoreChanges = new[] { new ExcludableString("**") },
                 ExcludedMutations = new[] { Mutator.Bitwise },
                 FallbackVersion = "main",
                 IgnoredMethods = new[] { new Regex("") },
@@ -37,7 +38,7 @@ namespace Stryker.Core.UnitTest.Options
                     LogToFile = true
                 },
                 ModuleName = "module",
-                Mutate = new[] { new FilePattern(Glob.Parse("**"), true, null) },
+                Mutate = new[] { new ExcludableString("**") },
                 MutationLevel = MutationLevel.Complete,
                 OptimizationMode = OptimizationModes.DisableBail,
                 OutputPath = "output",

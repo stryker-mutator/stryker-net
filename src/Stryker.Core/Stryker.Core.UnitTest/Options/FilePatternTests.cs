@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
 using DotNet.Globbing;
-using Microsoft.CodeAnalysis.Text;
 using Shouldly;
+using Stryker.Core.ProjectComponents;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Options
@@ -23,11 +23,11 @@ namespace Stryker.Core.UnitTest.Options
         public void IsMatch_should_match_glob_pattern(string file, string glob, bool isMatch)
         {
             // Arrange
-            var textSpan = new TextSpan(0, 1);
-            var sut = new FilePattern(Glob.Parse(glob), false, new[] { textSpan });
+            var mutantSpan = new MutantSpan(0, 1);
+            var pattern = new FilePattern(Glob.Parse(glob), false, new[] { mutantSpan });
 
             // Act
-            var result = sut.IsMatch(file, textSpan);
+            var result = new CsharpFileLeaf().IsMatch(pattern, file, mutantSpan);
 
             // Assert
             result.ShouldBe(isMatch);
@@ -45,10 +45,11 @@ namespace Stryker.Core.UnitTest.Options
         public void IsMatch_should_match_textSpans(string spanPattern, int spanStart, int spanEnd, bool isMatch)
         {
             // Arrange
-            var sut = FilePattern.Parse("*.*" + spanPattern);
+            var mutantSpan = new MutantSpan(spanStart, spanEnd);
+            var pattern = new CsharpFileLeaf().Parse(new ExcludableString("*.*" + spanPattern));
 
             // Act
-            var result = sut.IsMatch($"test.cs", TextSpan.FromBounds(spanStart, spanEnd));
+            var result = new CsharpFileLeaf().IsMatch(pattern, mutantSpan);
 
             // Assert
             result.ShouldBe(isMatch);
@@ -62,17 +63,17 @@ namespace Stryker.Core.UnitTest.Options
         public void Parse_should_parse_correctly(string spanPattern, string glob, bool isExclude, int[] spans)
         {
             // Arrange
-            var textSpans = Enumerable.Range(0, spans.Length)
+            var mutantSpans = Enumerable.Range(0, spans.Length)
                 .GroupBy(i => Math.Floor(i / 2d))
-                .Select(x => TextSpan.FromBounds(spans[x.First()], spans[x.Skip(1).First()]));
+                .Select(x => new MutantSpan(spans[x.First()], spans[x.Skip(1).First()]));
 
             // Act
-            var result = FilePattern.Parse(spanPattern);
+            var result = new CsharpFileLeaf().Parse(new ExcludableString(spanPattern));
 
             // Assert
             result.Glob.ToString().ShouldBe(FilePathUtils.NormalizePathSeparators(glob));
             result.IsExclude.ShouldBe(isExclude);
-            result.TextSpans.SequenceEqual(textSpans).ShouldBe(true);
+            result.MutantSpans.SequenceEqual(mutantSpans).ShouldBe(true);
         }
     }
 }

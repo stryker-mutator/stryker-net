@@ -5,6 +5,7 @@ using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Control;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using System;
@@ -19,12 +20,14 @@ namespace Stryker.Core.Initialisation
     internal class FsharpProjectComponentsBuilder : ProjectComponentsBuilder
     {
         private readonly SourceProjectInfo _projectInfo;
+        private readonly StrykerOptions _options;
         private readonly string[] _foldersToExclude;
         private readonly ILogger _logger;
 
-        public FsharpProjectComponentsBuilder(SourceProjectInfo projectInfo, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) : base(fileSystem)
+        public FsharpProjectComponentsBuilder(SourceProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) : base(fileSystem)
         {
             _projectInfo = projectInfo;
+            _options = options;
             _foldersToExclude = foldersToExclude;
             _logger = logger;
         }
@@ -89,7 +92,7 @@ namespace Stryker.Core.Initialisation
                 var folderComposite = GetOrBuildFolderComposite(cache, Path.GetDirectoryName(relativePath), sourceProjectDir, projectRoot, inputFiles);
                 var fileName = Path.GetFileName(sourceFile);
 
-                var file = new FsharpFileLeaf()
+                var file = new FsharpFileLeaf(_options.Mutate)
                 {
                     SourceCode = FileSystem.File.ReadAllText(sourceFile),
                     RelativePath = FileSystem.Path.Combine(folderComposite.RelativePath, fileName),
@@ -252,7 +255,7 @@ namespace Stryker.Core.Initialisation
             {
                 var fileName = Path.GetFileName(file);
 
-                var fileLeaf = new FsharpFileLeaf()
+                var fileLeaf = new FsharpFileLeaf(_options.Mutate)
                 {
                     SourceCode = FileSystem.File.ReadAllText(file),
                     RelativePath = Path.Combine(folderComposite.RelativePath, fileName),

@@ -1,11 +1,19 @@
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.Text;
+using Stryker.Core.Helpers;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public class CsharpFileLeaf : ProjectComponent<SyntaxTree>, IFileLeaf<SyntaxTree>
+    public class CsharpFileLeaf : ExcludableProjectComponent<SyntaxTree, TextSpan>, IFileLeaf<SyntaxTree>
     {
+        // only needed for tests
+        internal CsharpFileLeaf() : base() { }
+
+        public CsharpFileLeaf(IEnumerable<ExcludableString> strings) : base(strings) { }
+
         public string SourceCode { get; set; }
 
         /// <summary>
@@ -33,5 +41,24 @@ namespace Stryker.Core.ProjectComponents
         {
             DisplayFile(this);
         }
+
+        public override bool IsMatch(FilePattern pattern, MutantSpan mutantSpan)
+        {
+            var textSpan = FromMutantSpan(mutantSpan);
+
+            return pattern.MutantSpans.Any(span => FromMutantSpan(span).Contains(textSpan));
+        }
+
+        public override IEnumerable<TextSpan> Reduce(IEnumerable<TextSpan> spans)
+            => TextSpanHelper.Reduce(spans);
+
+        public override IEnumerable<TextSpan> RemoveOverlap(IEnumerable<TextSpan> left, IEnumerable<TextSpan> right)
+            => left.RemoveOverlap(right);
+
+        public override MutantSpan ToMutantSpan(TextSpan span)
+            => new(span.Start, span.End);
+
+        public override TextSpan FromMutantSpan(MutantSpan span)
+            => TextSpan.FromBounds(span.Start, span.End);
     }
 }

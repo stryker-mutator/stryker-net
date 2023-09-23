@@ -109,7 +109,13 @@ namespace Stryker.Core.Reporters
             // Convert the threshold integer values to decimal values
             stringBuilder.Append($" [[{ inputComponent.DetectedMutants().Count()}/{ inputComponent.TotalMutants().Count()} ");
 
-            if (inputComponent.IsComponentExcluded(_options.Mutate))
+            var isExcluded = inputComponent switch
+            {
+                IReadOnlyFileLeaf leaf => leaf.IsComponentExcluded(),
+                _ => false
+            };
+
+            if (isExcluded)
             {
                 stringBuilder.Append("[Gray](Excluded)[/]");
             }

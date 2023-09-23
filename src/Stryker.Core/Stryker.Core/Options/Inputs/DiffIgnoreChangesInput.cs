@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.Options.Inputs
 {
@@ -14,19 +15,19 @@ This feature is only recommended when you are sure these files will not affect r
 Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
 Example: ['**/*Assets.json','**/favicon.ico']";
 
-        public IEnumerable<FilePattern> Validate()
+        public IEnumerable<ExcludableString> Validate()
         {
             if (SuppliedInput is { })
             {
-                var diffIgnoreFilePatterns = new List<FilePattern>();
+                var diffIgnoreStrings = new List<ExcludableString>();
                 foreach (var pattern in SuppliedInput)
                 {
-                    diffIgnoreFilePatterns.Add(FilePattern.Parse(FilePathUtils.NormalizePathSeparators(pattern), spansEnabled: false));
+                    diffIgnoreStrings.Add(new ExcludableString(FilePathUtils.NormalizePathSeparators(pattern)));
                 }
 
-                return diffIgnoreFilePatterns;
+                return diffIgnoreStrings;
             }
-            return Enumerable.Empty<FilePattern>();
+            return Enumerable.Empty<ExcludableString>();
         }
     }
 }

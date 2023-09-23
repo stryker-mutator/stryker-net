@@ -78,7 +78,13 @@ namespace Stryker.Core.Reporters
 
             var mutationScore = inputComponent.GetMutationScore();
 
-            if (inputComponent.IsComponentExcluded(_options.Mutate))
+            var isExcluded = inputComponent switch
+            {
+                IReadOnlyFileLeaf leaf => leaf.IsComponentExcluded(),
+                _ => false
+            };
+
+            if (isExcluded)
             {
                 columns.Add(new Markup("[Gray]Excluded[/]"));
             }

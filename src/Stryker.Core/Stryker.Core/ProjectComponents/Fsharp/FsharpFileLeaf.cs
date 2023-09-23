@@ -1,11 +1,19 @@
 using FSharp.Compiler.Syntax;
+using FSharp.Compiler.Text;
+using Stryker.Core.Helpers;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public class FsharpFileLeaf : ProjectComponent<ParsedInput>, IFileLeaf<ParsedInput>
+    public class FsharpFileLeaf : ExcludableProjectComponent<ParsedInput, Range>, IFileLeaf<ParsedInput>
     {
+        // only needed for tests
+        internal FsharpFileLeaf() : base() { }
+
+        public FsharpFileLeaf(IEnumerable<ExcludableString> strings) : base(strings) { }
+
         public string SourceCode { get; set; }
 
         /// <summary>
@@ -33,5 +41,28 @@ namespace Stryker.Core.ProjectComponents
         {
             DisplayFile(this);
         }
+
+        public override bool IsMatch(FilePattern pattern, MutantSpan span)
+        {
+            var range = FromMutantSpan(span);
+
+            return pattern.MutantSpans.Any(span => RangeModule.rangeContainsRange(FromMutantSpan(span), range));
+        }
+
+        public override IEnumerable<Range> Reduce(IEnumerable<Range> spans)
+            => RangeHelper.Reduce(FullPath, spans);
+
+        public override IEnumerable<Range> RemoveOverlap(IEnumerable<Range> left, IEnumerable<Range> right)
+            => left.RemoveOverlap(right, FullPath);
+
+        public override MutantSpan ToMutantSpan(Range range)
+        {
+            var startIndex = RangeHelper.GetIndex(SourceCode, range.Start);
+            var endIndex = RangeHelper.GetIndex(SourceCode, range.End);
+            return new (startIndex, endIndex);
+        }
+
+        public override Range FromMutantSpan(MutantSpan span)
+            => RangeHelper.FromBounds(FullPath, SourceCode, span.Start, span.End);
     }
 }
