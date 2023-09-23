@@ -44,17 +44,9 @@ namespace Stryker.Core
         /// Format: (!)&lt;glob&gt;({&lt;spanStart&gt;..&lt;spanEnd&gt;})*
         /// </summary>
         /// <param name="pattern">The pattern to parse.</param>
-        /// <returns>The <see cref="FilePattern"/></returns>
-        public static FilePattern Parse(string pattern) => Parse(pattern, spansEnabled: true);
-
-        /// <summary>
-        /// Parses a given file pattern string.
-        /// Format: (!)&lt;glob&gt;({&lt;spanStart&gt;..&lt;spanEnd&gt;})*
-        /// </summary>
-        /// <param name="pattern">The pattern to parse.</param>
         /// <param name="spansEnabled">Enable or disable span parsing.</param>
         /// <returns>The <see cref="FilePattern"/></returns>
-        public static FilePattern Parse(string pattern, bool spansEnabled)
+        public static FilePattern Parse(string pattern)
         {
             var exclude = false;
             IReadOnlyCollection<TextSpan> textSpans;
@@ -66,7 +58,7 @@ namespace Stryker.Core
             }
 
             var textSpanGroupMatch = _textSpanGroupRegex.Match(pattern);
-            if (!spansEnabled || !textSpanGroupMatch.Success)
+            if (!textSpanGroupMatch.Success)
             {
                 // If there are no spans specified, we add one that will cover the whole file.
                 textSpans = new[] { _textSpanMaxValue };
