@@ -449,7 +449,7 @@ Line1
 Line2
 Line3";
             var index = 7;
-            var position = PositionModule.mkPos(1, 5);
+            var position = PositionModule.mkPos(1, 4);
 
             var result = RangeHelper.GetPosition(text, index);
 
@@ -490,7 +490,7 @@ Line3";
 
             var result = RangeHelper.GetIndex(text, position);
 
-            result.ShouldBe(7);
+            result.ShouldBe(8);
         }
 
         [Fact]
