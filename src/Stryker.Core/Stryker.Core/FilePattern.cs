@@ -44,7 +44,6 @@ namespace Stryker.Core
         /// Format: (!)&lt;glob&gt;({&lt;spanStart&gt;..&lt;spanEnd&gt;})*
         /// </summary>
         /// <param name="pattern">The pattern to parse.</param>
-        /// <param name="spansEnabled">Enable or disable span parsing.</param>
         /// <returns>The <see cref="FilePattern"/></returns>
         public static FilePattern Parse(string pattern)
         {
