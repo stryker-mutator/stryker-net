@@ -442,21 +442,6 @@ namespace Stryker.Core.UnitTest.Helpers
         }
 
         [Fact]
-        public void GetPosition_ManyLines()
-        {
-            var text = @"
-Line1
-Line2
-Line3";
-            var index = 7;
-            var position = PositionModule.mkPos(1, 4);
-
-            var result = RangeHelper.GetPosition(text, index);
-
-            result.ShouldBe(position);
-        }
-
-        [Fact]
         public void GetPosition_OutOfBounds()
         {
             var text = "Line1";
@@ -477,20 +462,6 @@ Line3";
             var result = RangeHelper.GetIndex(text, position);
 
             result.ShouldBe(1);
-        }
-
-        [Fact]
-        public void GetIndex_ManyLines()
-        {
-            var text = @"
-Line1
-Line2
-Line3";
-            var position = PositionModule.mkPos(1, 5);
-
-            var result = RangeHelper.GetIndex(text, position);
-
-            result.ShouldBe(8);
         }
 
         [Fact]

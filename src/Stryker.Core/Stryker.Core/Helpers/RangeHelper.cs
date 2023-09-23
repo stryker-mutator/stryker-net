@@ -135,17 +135,11 @@ namespace Stryker.Core.Helpers
 
             for (var i = 0; i < System.Math.Min(index, text.Length); i++)
             {
+                // TODO: handle x-platform
                 if (text[i] == '\n')
                 {
                     line++;
                     col = 0;
-
-                    // If the newline is preceded by a carriage return (\r), and we're not at the first character,
-                    // decrement the column count because the carriage return is part of the line ending on Windows.
-                    if (i > 0 && text[i - 1] == '\r')
-                    {
-                        col--;
-                    }
                 }
                 else
                 {
@@ -168,17 +162,11 @@ namespace Stryker.Core.Helpers
                     return i;
                 }
 
+                // TODO: handle x-platform
                 if (text[i] == '\n')
                 {
                     line++;
                     col = 0;
-
-                    // If the newline is preceded by a carriage return (\r) and we're not at the first character,
-                    // skip the carriage return because it's part of the line ending on Windows.
-                    if (i > 0 && text[i - 1] == '\r')
-                    {
-                        col--;
-                    }
                 }
                 else
                 {
