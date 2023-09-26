@@ -25,7 +25,10 @@ namespace Stryker.Core.UnitTest.Initialisation
             analyzerManagerMock
                 .Setup(m => m.GetProject(It.IsAny<string>()))
                 .Returns(projectAnalyzerMock.Object);
-
+            analyzerManagerMock
+                .Setup(m => m.SolutionFilePath)
+                .Returns((string)null);
+            
             projectAnalyzerMock
                 .Setup(m => m.Build())
                 .Returns(analyzerResultsMock.Object);
