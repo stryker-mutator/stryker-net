@@ -53,7 +53,10 @@ namespace Stryker.Core.Initialisation
             string targetFramework,
             string msBuildPath = null)
         {
-
+            // Buildalyzers need solution path 
+            if (string.IsNullOrEmpty(AnalyzerManager.SolutionFilePath) && !string.IsNullOrEmpty(solutionFilePath)) {
+                _analyzerManager = _analyzerProvider.Provide(solutionFilePath, new AnalyzerManagerOptions{LogWriter = _buildalyzerLog});
+            }
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
             var analyzerResult = GetProjectInfo(projectFilePath, targetFramework);
             LogAnalyzerResult(analyzerResult);
