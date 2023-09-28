@@ -82,7 +82,8 @@ namespace Stryker.Core.Reporters
                         _ => $"[Red][[{mutant.ResultStatus}]][/]",
                     };
 
-                    var mutantNode = fileNode.AddNode(status + $" {mutant.Mutation.DisplayName} on line {mutant.Line}");
+                    var mutantLine = mutant.Mutation.OriginalNode.GetLocation().GetLineSpan().StartLinePosition.Line + 1;
+                    var mutantNode = fileNode.AddNode(status + $" {mutant.Mutation.DisplayName} on line {mutantLine}");
                     mutantNode.AddNode(Markup.Escape($"[-] {mutant.Mutation.OriginalNode}"));
                     mutantNode.AddNode(Markup.Escape($"[+] {mutant.Mutation.ReplacementNode}"));
                 }

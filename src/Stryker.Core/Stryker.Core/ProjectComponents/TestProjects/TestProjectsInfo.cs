@@ -43,7 +43,14 @@ namespace Stryker.Core.ProjectComponents.TestProjects
                 var backupFilePath = GetBackupName(injectionPath);
                 if (_fileSystem.File.Exists(backupFilePath))
                 {
-                    _fileSystem.File.Copy(backupFilePath, injectionPath, true);
+                    try
+                    {
+                        _fileSystem.File.Copy(backupFilePath, injectionPath, true);
+                    }
+                    catch (IOException ex)
+                    {
+                        _logger.LogWarning(ex, "Failed to restore output assembly {Path}. Mutated assembly is still in place.", injectionPath);
+                    }
                 }
             }
         }
