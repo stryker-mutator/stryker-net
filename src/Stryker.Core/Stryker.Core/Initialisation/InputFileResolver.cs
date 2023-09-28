@@ -83,8 +83,9 @@ namespace Stryker.Core.Initialisation
             {
                 // try to solve the option as a pathname
                 var sourceProjectSourcePathName = FileSystem.Path.GetFullPath(options.SourceProjectName);
-                var filteredProjectsUnderTestAnalyzerResult = projectsUnderTestAnalyzerResult.Where(p => sourceProjectSourcePathName ==
-                                   p.ProjectFilePath).ToList();
+
+                var filteredProjectsUnderTestAnalyzerResult =
+                    projectsUnderTestAnalyzerResult.Where(p => string.Compare(p.ProjectFilePath, sourceProjectSourcePathName, StringComparison.OrdinalIgnoreCase) == 0).ToList();
 
                 if (filteredProjectsUnderTestAnalyzerResult.Count == 0)
                 {
