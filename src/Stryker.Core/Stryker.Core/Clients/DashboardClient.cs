@@ -66,9 +66,9 @@ namespace Stryker.Core.Clients
 
         public async Task PublishMutantBatch(JsonMutant mutant)
         {
+            _batch.Add(mutant);
             if (_batch.Count != MutantBatchSize)
             {
-                _batch.Add(mutant);
                 return;
             }
 
