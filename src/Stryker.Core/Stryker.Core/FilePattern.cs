@@ -1,6 +1,6 @@
 using DotNet.Globbing;
 using Microsoft.CodeAnalysis.Text;
-using Stryker.Core.ProjectComponents;
+using Stryker.Core.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
