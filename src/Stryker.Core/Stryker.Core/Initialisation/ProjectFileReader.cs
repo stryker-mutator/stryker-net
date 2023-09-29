@@ -16,7 +16,7 @@ namespace Stryker.Core.Initialisation
             string solutionFilePath,
             string targetFramework,
             string msBuildPath = null);
-        IAnalyzerManager AnalyzeSolution(string solutionPath);
+        IAnalyzerManager GetAnalyzerManager(string solutionPath = null);
     }
 
     /// <summary>
@@ -39,13 +39,10 @@ namespace Stryker.Core.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
         }
 
-        private IAnalyzerManager AnalyzerManager
+        public IAnalyzerManager GetAnalyzerManager(string solutionFilePath = null)
         {
-            get
-            {
-                _analyzerManager ??= _analyzerProvider.Provide(new AnalyzerManagerOptions{LogWriter = _buildalyzerLog});
-                return _analyzerManager;
-            }
+            _analyzerManager ??= _analyzerProvider.Provide(solutionFilePath, new AnalyzerManagerOptions { LogWriter = _buildalyzerLog });
+            return _analyzerManager;
         }
 
         public IAnalyzerResult AnalyzeProject(string projectFilePath,
@@ -53,9 +50,8 @@ namespace Stryker.Core.Initialisation
             string targetFramework,
             string msBuildPath = null)
         {
-
             _logger.LogDebug("Analyzing project file {0}", projectFilePath);
-            var analyzerResult = GetProjectInfo(projectFilePath, targetFramework);
+            var analyzerResult = GetProjectInfo(projectFilePath, solutionFilePath, targetFramework);
             LogAnalyzerResult(analyzerResult);
 
             if (analyzerResult.Succeeded)
@@ -67,7 +63,7 @@ namespace Stryker.Core.Initialisation
                 // buildalyzer failed to find restored packages, retry after nuget restore
                 _logger.LogDebug("Project analyzer result not successful, restoring packages");
                 _nugetRestoreProcess.RestorePackages(solutionFilePath, msBuildPath);
-                analyzerResult = GetProjectInfo(projectFilePath, targetFramework);
+                analyzerResult = GetProjectInfo(projectFilePath, solutionFilePath, targetFramework);
             }
             else
             {
@@ -78,16 +74,16 @@ namespace Stryker.Core.Initialisation
             return analyzerResult;
         }
 
-        public IAnalyzerManager AnalyzeSolution(string solutionPath) => _analyzerProvider.Provide(solutionPath, new AnalyzerManagerOptions{LogWriter = _buildalyzerLog});
-
         /// <summary>
         /// Checks if project info is already present in solution projects. If not, analyze here.
         /// </summary>
         /// <returns></returns>
-        private IAnalyzerResult GetProjectInfo(string projectFilePath,
+        private IAnalyzerResult GetProjectInfo(
+            string projectFilePath,
+            string solutionFilePath,
             string targetFramework)
         {
-            var analyzerResults = AnalyzerManager.GetProject(projectFilePath).Build();
+            var analyzerResults = GetAnalyzerManager(solutionFilePath).GetProject(projectFilePath).Build();
             return SelectAnalyzerResult(analyzerResults, targetFramework);
         }
 
