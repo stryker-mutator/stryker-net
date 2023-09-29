@@ -16,7 +16,7 @@ namespace Stryker.Core.Initialisation
             string solutionFilePath,
             string targetFramework,
             string msBuildPath = null);
-        IAnalyzerManager GetAnalyzerManager(string solutionPath = null);
+        IAnalyzerManager GetAnalyzerManager(string solutionFilePath = null);
     }
 
     /// <summary>
