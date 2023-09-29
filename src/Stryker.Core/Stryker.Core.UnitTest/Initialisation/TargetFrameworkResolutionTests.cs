@@ -33,7 +33,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             analyzerResultsMock
                 .Setup(m => m.GetEnumerator())
                 .Returns(() => _analyzerResults.GetEnumerator());
-            buildalyzerProviderMock.Setup(x => x.Provide( It.IsAny<AnalyzerManagerOptions>())).Returns(analyzerManagerMock.Object);
+            buildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<string>(), It.IsAny<AnalyzerManagerOptions>())).Returns(analyzerManagerMock.Object);
 
             _projectFileReader = new ProjectFileReader(null, buildalyzerProviderMock.Object);
         }
