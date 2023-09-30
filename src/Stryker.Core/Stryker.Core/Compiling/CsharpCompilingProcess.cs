@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -180,19 +181,23 @@ namespace Stryker.Core.Compiling
 
         private void DumpErrorDetails(IEnumerable<Diagnostic> diagnostics)
         {
-            var message = $"An unrecoverable compilation error occurred:{Environment.NewLine}";
+            var messageBuilder = new StringBuilder();
+            messageBuilder.AppendLine("An unrecoverable compilation error occurred:");
+
             var materializedDiagnostics = diagnostics.ToArray();
             if (!materializedDiagnostics.Any())
             {
-                message += "Unfortunately there is no more info available, good luck!";
+                messageBuilder.Append("Unfortunately there is no more info available, good luck!");
             }
 
             foreach (var diagnostic in materializedDiagnostics)
             {
-                message += $"{diagnostic.Id}: {diagnostic}{Environment.NewLine}";
+                messageBuilder
+                    .Append(Environment.NewLine)
+                    .Append(diagnostic.Id).Append(": ").AppendLine(diagnostic.ToString());
             }
 
-            _logger.LogTrace(message);
+            _logger.LogTrace("An unrecoverable compilation error occurred: {Diagnostics}", messageBuilder.ToString());
         }
 
         private static string ReadableNumber(int number) => number switch
