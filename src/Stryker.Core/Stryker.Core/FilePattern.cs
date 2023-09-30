@@ -46,7 +46,7 @@ namespace Stryker.Core
         /// <returns>The <see cref="FilePattern"/></returns>
         public static FilePattern Parse(string pattern)
         {
-            var s = new ExcludableString(pattern);
+            var s = new ExclusionPattern(pattern);
             IReadOnlyCollection<TextSpan> textSpans;
 
             if (string.IsNullOrEmpty(s.MutantSpans))

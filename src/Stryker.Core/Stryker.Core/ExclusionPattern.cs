@@ -4,11 +4,11 @@ using DotNet.Globbing;
 
 namespace Stryker.Core
 {
-    public readonly struct ExcludableString
+    public readonly struct ExclusionPattern
     {
         private static readonly Regex _mutantSpansRegex = new("(\\{(\\d+)\\.\\.(\\d+)\\})+$");
 
-        public ExcludableString(string s)
+        public ExclusionPattern(string s)
         {
             if (s is null)
             {
