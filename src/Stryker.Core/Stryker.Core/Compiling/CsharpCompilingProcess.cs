@@ -182,8 +182,6 @@ namespace Stryker.Core.Compiling
         private void DumpErrorDetails(IEnumerable<Diagnostic> diagnostics)
         {
             var messageBuilder = new StringBuilder();
-            messageBuilder.AppendLine("An unrecoverable compilation error occurred:");
-
             var materializedDiagnostics = diagnostics.ToArray();
             if (!materializedDiagnostics.Any())
             {
