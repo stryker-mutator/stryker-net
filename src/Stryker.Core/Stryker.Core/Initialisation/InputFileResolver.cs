@@ -79,31 +79,10 @@ namespace Stryker.Core.Initialisation
             _logger.LogInformation("Found {0} test projects", solutionTestProjects.Count);
 
             var dependents = FindDependentProjects(projectsUnderTestAnalyzerResult);
-            if (!string.IsNullOrEmpty(options.SourceProjectName))
+            if (!string.IsNullOrEmpty(options.SourceProjectName) && options.IsSolutionContext)
             {
-                // try to solve the option as a pathname
-                var sourceProjectSourcePathName = FileSystem.Path.GetFullPath(options.SourceProjectName);
-
-                var filteredProjectsUnderTestAnalyzerResult =
-                    projectsUnderTestAnalyzerResult.Where(p => string.Compare(p.ProjectFilePath, sourceProjectSourcePathName, StringComparison.OrdinalIgnoreCase) == 0).ToList();
-
-                if (filteredProjectsUnderTestAnalyzerResult.Count == 0)
-                {
-                    // try simple search
-                    var normalizedProjectUnderTestNameFilter = options.SourceProjectName.Replace("\\", "/");
-                    projectsUnderTestAnalyzerResult = projectsUnderTestAnalyzerResult.Where(p =>
-                        p.ProjectFilePath.Replace('\\', '/').Contains(normalizedProjectUnderTestNameFilter)).ToList();
-
-                    if (projectsUnderTestAnalyzerResult.Count == 0)
-                    {
-                        throw new InputException($"No project pathname matches '{options.SourceProjectName}'. Please check your stryker config.");
-                    }
-                }
-                else
-                {
-                    projectsUnderTestAnalyzerResult = filteredProjectsUnderTestAnalyzerResult;
-                }
-            }
+                _logger.LogWarning("Project filter is not supported in solution mode. Please use the --project-file option instead.");
+            }   
             return BuildProjectInfos(options, dependents, projectsUnderTestAnalyzerResult, solutionTestProjects);
         }
 
@@ -292,7 +271,7 @@ namespace Stryker.Core.Initialisation
         public string FindSourceProject(IEnumerable<IAnalyzerResult> testProjects, StrykerOptions options)
         {
             var projectReferences = FindProjectsReferencedByAllTestProjects(testProjects.ToList());
-            var sourceProjectPath = string.IsNullOrEmpty(options?.SourceProjectName) ? DetermineTargetProjectWithoutNameFilter(projectReferences) : DetermineSourceProjectWithNameFilter(options, projectReferences);
+            var sourceProjectPath = (string.IsNullOrEmpty(options?.SourceProjectName) || options.IsSolutionContext) ? DetermineTargetProjectWithoutNameFilter(projectReferences) : DetermineSourceProjectWithNameFilter(options, projectReferences);
 
             _logger.LogDebug("Using {0} as project under test", sourceProjectPath);
 
@@ -317,7 +296,7 @@ namespace Stryker.Core.Initialisation
             if (count == 0)
             {
                 stringBuilder.Append("No project reference matched the given project filter ")
-                .Append($"'{options.SourceProjectName}'");
+                .AppendLine($"'{options.SourceProjectName}'");
             }
             else
             {
