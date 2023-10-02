@@ -29,7 +29,7 @@ namespace Stryker.Core.UnitTest
             var s1 = new ExclusionPattern(@"src/Person.cs{10..100}");
             var s2 = new ExclusionPattern(@"src/Person.cs");
 
-            s1.MutantSpans.ShouldBe("{10..100}");
+            s1.MutantSpans.ShouldBe(new [] { (10, 100)});
             s2.MutantSpans.ShouldBeEmpty();
         }
     }

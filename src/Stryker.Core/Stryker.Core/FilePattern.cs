@@ -4,7 +4,6 @@ using Stryker.Core.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Stryker.Core
 {
@@ -13,7 +12,6 @@ namespace Stryker.Core
     /// </summary>
     public sealed class FilePattern : IEquatable<FilePattern>
     {
-        private static readonly Regex _textSpanRegex = new Regex("\\{(\\d+)\\.\\.(\\d+)\\}");
         private static readonly TextSpan _textSpanMaxValue = new TextSpan(0, int.MaxValue);
 
         public FilePattern(Glob glob, bool isExclude, IReadOnlyCollection<TextSpan> textSpans)
@@ -49,17 +47,15 @@ namespace Stryker.Core
             var s = new ExclusionPattern(pattern);
             IReadOnlyCollection<TextSpan> textSpans;
 
-            if (string.IsNullOrEmpty(s.MutantSpans))
+            if (!s.MutantSpans.Any())
             {
                 // If there are no spans specified, we add one that will cover the whole file.
                 textSpans = new[] { _textSpanMaxValue };
             }
             else
             {
-                // If we have one ore more spans we parse them.
-                var textSpansMatches = _textSpanRegex.Matches(s.MutantSpans);
-                textSpans = textSpansMatches
-                    .Select(x => TextSpan.FromBounds(int.Parse(x.Groups[1].Value), int.Parse(x.Groups[2].Value)))
+                textSpans = s.MutantSpans
+                    .Select(x => TextSpan.FromBounds(x.Start, x.End))
                     .Reduce()
                     .ToList();
             }
