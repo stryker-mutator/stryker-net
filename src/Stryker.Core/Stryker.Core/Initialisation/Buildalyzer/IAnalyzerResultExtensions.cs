@@ -1,17 +1,14 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
 using NuGet.Frameworks;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Options;
 
 namespace Stryker.Core.Initialisation.Buildalyzer
 {
@@ -33,26 +30,6 @@ namespace Stryker.Core.Initialisation.Buildalyzer
                 rootNamespace,
                 embeddedResources);
         }
-
-        public static CSharpCompilationOptions GetCompilationOptions(this IAnalyzerResult analyzerResult)
-        {
-            var compilationOptions = new CSharpCompilationOptions(analyzerResult.GetOutputKind())
-                .WithNullableContextOptions(analyzerResult.GetNullableContextOptions())
-                .WithAllowUnsafe(analyzerResult.GetPropertyOrDefault("AllowUnsafeBlocks", true))
-                .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
-                .WithConcurrentBuild(true)
-                .WithModuleName(analyzerResult.GetAssemblyName())
-                .WithOverflowChecks(analyzerResult.GetPropertyOrDefault("CheckForOverflowUnderflow", false));
-
-            if (analyzerResult.IsSignedAssembly() && analyzerResult.GetAssemblyOriginatorKeyFile() is var keyFile && keyFile is not null)
-            {
-                compilationOptions = compilationOptions.WithCryptoKeyFile(keyFile)
-                    .WithStrongNameProvider(new DesktopStrongNameProvider());
-            }
-            return compilationOptions;
-        }
-
-        public static CSharpParseOptions GetParseOptions(this IAnalyzerResult analyzerResult, StrykerOptions options) => new CSharpParseOptions(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: analyzerResult.PreprocessorSymbols);
 
         public static string AssemblyAttributeFileName(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("GeneratedAssemblyInfoFile",
                 (Path.GetFileNameWithoutExtension(analyzerResult.ProjectFilePath) + ".AssemblyInfo.cs")
@@ -153,7 +130,7 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             return isTestProject || hasTestProjectTypeGuid;
         }
 
-        private static OutputKind GetOutputKind(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("OutputType") switch
+        internal static OutputKind GetOutputKind(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("OutputType") switch
         {
             "Exe" => OutputKind.ConsoleApplication,
             "WinExe" => OutputKind.WindowsApplication,
@@ -163,19 +140,9 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             _ => OutputKind.DynamicallyLinkedLibrary
         };
 
-        private static NullableContextOptions GetNullableContextOptions(this IAnalyzerResult analyzerResult)
-        {
-            if (!Enum.TryParse(analyzerResult.GetPropertyOrDefault("Nullable", "enable"), true, out NullableContextOptions nullableOptions))
-            {
-                nullableOptions = NullableContextOptions.Enable;
-            }
+        internal static bool IsSignedAssembly(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("SignAssembly", false);
 
-            return nullableOptions;
-        }
-
-        private static bool IsSignedAssembly(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("SignAssembly", false);
-
-        private static string GetAssemblyOriginatorKeyFile(this IAnalyzerResult analyzerResult)
+        internal static string GetAssemblyOriginatorKeyFile(this IAnalyzerResult analyzerResult)
         {
             var assemblyKeyFileProp = analyzerResult.GetPropertyOrDefault("AssemblyOriginatorKeyFile");
             if (assemblyKeyFileProp is null)
@@ -188,9 +155,9 @@ namespace Stryker.Core.Initialisation.Buildalyzer
 
         private static string GetRootNamespace(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("RootNamespace") ?? analyzerResult.GetAssemblyName();
 
-        private static bool GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, bool defaultBoolean) => bool.Parse(GetPropertyOrDefault(analyzerResult, name, defaultBoolean.ToString()));
+        internal static bool GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, bool defaultBoolean) => bool.Parse(GetPropertyOrDefault(analyzerResult, name, defaultBoolean.ToString()));
 
-        private static string GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, string defaultValue = default)
+        internal static string GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, string defaultValue = default)
         {
             if (analyzerResult.Properties is null || !analyzerResult.Properties.TryGetValue(name, out var property))
             {
