@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -74,6 +75,7 @@ namespace Stryker.Core.Compiling
             {
                 _logger.LogError("Failed to build the mutated assembly due to unrecoverable error: {0}",
                     emitResult.Diagnostics.First(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error));
+                DumpErrorDetails(emitResult.Diagnostics);
                 throw new CompilationException("General Build Failure detected.");
             }
 
@@ -154,7 +156,6 @@ namespace Stryker.Core.Compiling
                     null,
                     null),
                 options: emitOptions);
-
             LogEmitResult(emitResult);
 
             return (rollbackProcessResult, emitResult, retryCount+1);
@@ -168,13 +169,30 @@ namespace Stryker.Core.Compiling
 
                 foreach (var err in result.Diagnostics.Where(x => x.Severity is DiagnosticSeverity.Error))
                 {
-                    _logger.LogDebug("{0}, {1}", err?.GetMessage() ?? "No message", err?.Location.SourceTree?.FilePath ?? "Unknown filepath");
+                    _logger.LogDebug("{ErrorMessage}, {ErrorLocation}", err?.GetMessage() ?? "No message", err?.Location?.ToString() ?? "Unknown filepath");
                 }
             }
             else
             {
                 _logger.LogDebug("Compilation successful");
             }
+        }
+
+        private void DumpErrorDetails(IEnumerable<Diagnostic> diagnostics)
+        {
+            var message = $"An unrecoverable compilation error occurred:{Environment.NewLine}";
+            var materializedDiagnostics = diagnostics.ToArray();
+            if (!materializedDiagnostics.Any())
+            {
+                message += "Unfortunately there is no more info available, good luck!";
+            }
+
+            foreach (var diagnostic in materializedDiagnostics)
+            {
+                message += $"{diagnostic.Id}: {diagnostic}{Environment.NewLine}";
+            }
+
+            _logger.LogTrace(message);
         }
 
         private static string ReadableNumber(int number) => number switch
