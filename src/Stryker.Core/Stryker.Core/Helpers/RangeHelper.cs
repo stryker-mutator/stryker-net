@@ -132,14 +132,16 @@ namespace Stryker.Core.Helpers
         public static Position GetPosition(string text, int index)
         {
             var line = 0;
-            var col = 0;
 
-            var reader = new StringReader(text);
-            string? latestLineContent = reader.ReadLine();
+            using var reader = new StringReader(text);
             var currentIndex = 0;
-            while (latestLineContent != null)
+            do
             {
-                var endOfLineIndex = currentIndex + latestLineContent.Length;
+                string? latestLineContent = reader.ReadLine();
+                if (latestLineContent == null) break;
+
+                var lengthOfThisLine = latestLineContent.Length;
+                var endOfLineIndex = currentIndex + lengthOfThisLine;
                 var indexIsOnThisLine = index <= endOfLineIndex && index >= currentIndex;
                 if (indexIsOnThisLine)
                 {
@@ -147,23 +149,22 @@ namespace Stryker.Core.Helpers
                     return PositionModule.mkPos(line, indexOnThisLine);
                 }
 
-                var lengthOfThisLine = latestLineContent.Length;
-                currentIndex += lengthOfThisLine;
-                latestLineContent = reader.ReadLine();
-                ++line;
-
-                if (latestLineContent == null)
+                var thisWasTheLastLine = reader.Peek() == -1;
+                if (thisWasTheLastLine)
                 {
-                    col = lengthOfThisLine;
+                    return PositionModule.mkPos(line, lengthOfThisLine);
                 }
-            }
 
-            return PositionModule.mkPos(line-1, col);
+                line++;
+                currentIndex += lengthOfThisLine;
+            } while (currentIndex < text.Length);
+
+            return PositionModule.mkPos(0, 0);
         }
 
         public static int GetIndex(string text, Position pos)
         {
-            var reader = new StringReader(text);
+            using var reader = new StringReader(text);
             string? latestLineContent = "";
             var currentIndex = 0;
             for (var line = 0; line <= pos.Line; ++line)
