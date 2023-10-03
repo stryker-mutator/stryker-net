@@ -15,7 +15,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
         public InitialBuildProcessTests()
         {
-            _cProjectsExampleCsproj = Environment.OSVersion.Platform == PlatformID.Win32NT ? @"C:\Projects\Example.csproj" : "/usr/projects";
+            _cProjectsExampleCsproj = Environment.OSVersion.Platform == PlatformID.Win32NT ? @"C:\Projects\Example.csproj" : "/usr/projects/Example.csproj";
         }
 
         [Fact]
