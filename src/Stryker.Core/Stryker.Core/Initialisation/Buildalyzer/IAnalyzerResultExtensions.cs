@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -11,12 +10,16 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
 using NuGet.Frameworks;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Logging;
 using Stryker.Core.Options;
+using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.Initialisation.Buildalyzer
 {
     public static class IAnalyzerResultExtensions
     {
+        private static ILogger logger = ApplicationLogging.LoggerFactory.CreateLogger<VsTestContextInformation>();
+
         public static string GetAssemblyFileName(this IAnalyzerResult analyzerResult) => FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["TargetFileName"]);
         public static string GetAssemblyDirectoryPath(this IAnalyzerResult analyzerResult) => FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["TargetDir"]);
         public static string GetAssemblyPath(this IAnalyzerResult analyzerResult) => FilePathUtils.NormalizePathSeparators(Path.Combine(analyzerResult.GetAssemblyDirectoryPath(), analyzerResult.GetAssemblyFileName()));
@@ -68,7 +71,20 @@ namespace Stryker.Core.Initialisation.Buildalyzer
                 try
                 {
                     var analyzerFileReference = new AnalyzerFileReference(analyzer, AnalyzerAssemblyLoader.Instance);
-                    analyzerFileReference.AnalyzerLoadFailed += (sender, e) => throw e.Exception ?? new InvalidOperationException(e.Message);
+                    analyzerFileReference.AnalyzerLoadFailed += (sender, e) =>
+                    {
+                        logger?.LogWarning($"Failed to load analyzer {analyzer}: {e.Message} (error : {Enum.GetName(e.ErrorCode.GetType(), e.ErrorCode) ?? e.ErrorCode.ToString()}, analyzer: {e.TypeName ?? ""}).");
+                        if (e.ErrorCode == AnalyzerLoadFailureEventArgs.FailureErrorCode.ReferencesNewerCompiler)
+                        {
+                            logger?.LogWarning($"The analyzer {analyzer} references a newer version ({e.ReferencedCompilerVersion}) of the compiler than the one used by Stryker.NET.");
+                        }
+     
+                        if (e.Exception != null)
+                        {
+                            logger?.LogWarning($"Failed to load analyzer {analyzer}: Exception {e.Exception}.");
+                        }
+                        throw e.Exception ?? new InvalidOperationException(e.Message);
+                    };
                     foreach (var generator in analyzerFileReference.GetGenerators(LanguageNames.CSharp))
                     {
                         generators.Add(generator);
@@ -111,7 +127,6 @@ namespace Stryker.Core.Initialisation.Buildalyzer
 
             public void AddDependencyLocation(string fullPath)
             {
-                // discard any specific folder
             }
 
             public Assembly LoadFromPath(string fullPath) => Assembly.LoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
@@ -138,13 +153,13 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             _ => Language.Undefined,
         };
 
-        private static readonly string[] knownTestPackages = { "MSTest.TestFramework", "xunit", "NUnit" };
+        private static readonly string[] KnownTestPackages = { "MSTest.TestFramework", "xunit", "NUnit" };
 
         public static bool IsTestProject(this IAnalyzerResult analyzerResult)
         {
             if (!bool.TryParse(analyzerResult.GetPropertyOrDefault("IsTestProject"), out var isTestProject))
             {
-                isTestProject = knownTestPackages.Any(n => analyzerResult.PackageReferences.ContainsKey(n));
+                isTestProject = KnownTestPackages.Any(n => analyzerResult.PackageReferences.ContainsKey(n));
             }
             var hasTestProjectTypeGuid = analyzerResult
                 .GetPropertyOrDefault("ProjectTypeGuids", "")
