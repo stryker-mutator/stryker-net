@@ -25,7 +25,7 @@ namespace Stryker.Core.Helpers
                 foreach (var current in spans)
                 {
                     // Check if any of the other spans intersects with the current one
-                    var other = spans.FirstOrDefault(s => s != current && s.IntersectsWith(current));
+                    var other = spans.Find(s => s != current && s.IntersectsWith(current));
                     if (other != default)
                     {
                         // Remove the original spans
