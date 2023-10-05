@@ -60,10 +60,9 @@ namespace Stryker.Core.Initialisation.Buildalyzer
 
         public static string GetSymbolFileName(this IAnalyzerResult analyzerResult) => Path.ChangeExtension(analyzerResult.GetAssemblyName(), ".pdb");
 
-        public static IEnumerable<ISourceGenerator> GetSourceGenerators(this IAnalyzerResult analyzerResult, ILogger logger, Func<string, AnalyzerFileReference> analyzerReferenceBuilder = null)
+        public static IEnumerable<ISourceGenerator> GetSourceGenerators(this IAnalyzerResult analyzerResult, ILogger logger)
         {
             var generators = new List<ISourceGenerator>();
-            analyzerReferenceBuilder??= (path => );
             foreach (var analyzer in analyzerResult.AnalyzerReferences)
             {
                 try
