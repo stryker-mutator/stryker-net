@@ -568,7 +568,15 @@ Command line: `--azure-fileshare-sas "se=2022-08-25T14%3A27Z&sp=rwdl&spr=https&s
 Config file: `N/A`
 
 When using the azure file storage [provider](#baselineprovider-string) you must pass credentials for the fileshare to Stryker.
-For authentication with the azure fileshare we support Shared Access Signatures. For more information on how to configure a SAS check the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
+For authentication with the azure fileshare we support Shared Access Signatures (SAS). 
+
+The SAS should be configured with the following properties:
+
+Allowed services: `File`  
+Allowed resource types: `Container`, `Object`  
+Allowed permissions: `Read`, `Write`, `Create`
+
+For more information on how to configure a SAS check the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
 
 ## Troubleshooting
 
