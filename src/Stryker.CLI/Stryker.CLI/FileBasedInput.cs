@@ -91,6 +91,9 @@ namespace Stryker.CLI
         [JsonPropertyName("break-on-initial-test-failure")]
         public bool? BreakOnInitialTestFailure { get; init; }
 
+        [JsonPropertyName("ignore-uncovered-mutants")]
+        public bool? IgnoredUncoveredMutants { get; init; }
+
         [JsonExtensionData]
         public Dictionary<string, JsonElement> ExtraData { get; init; }
     }

@@ -650,3 +650,11 @@ Command line: `--break-on-initial-test-failure`
 Config file: `break-on-initial-test-failure`
 
 Instruct Stryker to break execution when at least one test failed on initial test run.
+
+### `ignore-uncovered-mutants` <`flag`>
+
+Default: `false`  
+Command line: `--ignore-uncovered-mutants`  
+Config file: `ignore-uncovered-mutants`
+
+Instruct Stryker to ignore all NoCoverage mutants, so that the mutation score reflects the quality of existing tests.

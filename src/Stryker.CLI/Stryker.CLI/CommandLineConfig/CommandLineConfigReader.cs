@@ -140,6 +140,7 @@ namespace Stryker.CLI
             AddCliInput(inputs.OutputPathInput, "output", "O", optionType: CommandOptionType.SingleValue, category: InputCategory.Reporting);
             // Category: Misc
             AddCliInput(inputs.BreakOnInitialTestFailureInput, "break-on-initial-test-failure", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
+            AddCliInput(inputs.IgnoredUncoveredMutantsInput, "ignore-uncovered-mutants", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
             AddCliInput(inputs.DevModeInput, "dev-mode", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
         }
 

@@ -234,6 +234,8 @@ namespace Stryker.Core.Options
         /// </summary>
         public bool BreakOnInitialTestFailure { get; set; }
 
+        public bool IgnoreUncoveredMutants { get; set; }
+
         // Keep a reference on the parent instance in order to flow get/set properties (ProjectName and ProjectVersion) up to the parent
         // This is required for the dashboard reporter to work properly
         private StrykerOptions _parentOptions;
@@ -280,6 +282,7 @@ namespace Stryker.Core.Options
             Thresholds = Thresholds,
             WithBaseline = WithBaseline,
             BreakOnInitialTestFailure = BreakOnInitialTestFailure,
+            IgnoreUncoveredMutants = IgnoreUncoveredMutants,
         };
     }
 }

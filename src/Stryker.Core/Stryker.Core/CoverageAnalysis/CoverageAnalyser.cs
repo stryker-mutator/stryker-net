@@ -121,7 +121,7 @@ namespace Stryker.Core.CoverageAnalysis
             // assess status according to actual coverage
             if (mutant.CoveringTests.IsEmpty && mutant.ResultStatus == MutantStatus.Pending)
             {
-                mutant.ResultStatus = MutantStatus.NoCoverage;
+                mutant.ResultStatus = _options.IgnoreUncoveredMutants ? MutantStatus.Ignored : MutantStatus.NoCoverage;
                 mutant.ResultStatusReason = "Not covered by any test.";
                 _logger.LogDebug($"Mutant {mutant.Id} is not covered by any test.");
             }

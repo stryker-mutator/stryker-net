@@ -122,6 +122,42 @@ namespace Stryker.Core.UnitTest.MutationTest
         }
 
         [Fact]
+        public void ShouldCallExecutorForEveryCoveredMutantNoCoverageConvertedToIgnored()
+        {
+            _testScenario.CreateMutants(1, 2);
+            // we need at least one test
+            _testScenario.CreateTest(1);
+            // and we need to declare that the mutant is covered
+            _testScenario.DeclareCoverageForMutant(1);
+            var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
+
+            _folder.Add(new CsharpFileLeaf()
+            {
+                SourceCode = SourceFile,
+                Mutants = _testScenario.GetMutants()
+            });
+
+            var mutationExecutor = new MutationTestExecutor(_testScenario.GetTestRunnerMock().Object);
+
+            var options = new StrykerOptions()
+            {
+                ProjectPath = basePath,
+                Concurrency = 1,
+                OptimizationMode = OptimizationModes.CoverageBasedTest,
+                IgnoreUncoveredMutants = true
+            };
+            _input.InitialTestRun = new InitialTestRun(_testScenario.GetInitialRunResult(), new TimeoutValueCalculator(500));
+
+            var target = new MutationTestProcess(_input, options, null, mutationExecutor);
+
+            target.GetCoverage();
+            target.Test(_testScenario.GetCoveredMutants());
+
+            _testScenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
+            _testScenario.GetMutantStatus(2).ShouldBe(MutantStatus.Ignored);
+        }
+
+        [Fact]
         public void ShouldCallExecutorForEveryMutantWhenNoOptimization()
         {
             var scenario = new FullRunScenario();

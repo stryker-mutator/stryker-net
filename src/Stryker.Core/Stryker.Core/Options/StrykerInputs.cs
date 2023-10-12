@@ -48,6 +48,7 @@ namespace Stryker.Core.Options
         OpenReportInput OpenReportInput { get; init; }
         OpenReportEnabledInput OpenReportEnabledInput { get; init; }
         BreakOnInitialTestFailureInput BreakOnInitialTestFailureInput { get; init; }
+        IgnoreUncoveredMutantsInput IgnoredUncoveredMutantsInput { get; init; }
 
         StrykerOptions ValidateAll();
     }
@@ -104,6 +105,7 @@ namespace Stryker.Core.Options
         public OpenReportInput OpenReportInput { get; init; } = new();
         public OpenReportEnabledInput OpenReportEnabledInput { get; init; } = new();
         public BreakOnInitialTestFailureInput BreakOnInitialTestFailureInput { get; init; } = new();
+        public IgnoreUncoveredMutantsInput IgnoredUncoveredMutantsInput { get; init; } = new();
 
         public StrykerOptions ValidateAll()
         {
@@ -165,6 +167,7 @@ namespace Stryker.Core.Options
                 SinceTarget = sinceTarget,
                 ReportTypeToOpen = OpenReportInput.Validate(OpenReportEnabledInput.Validate()),
                 BreakOnInitialTestFailure = BreakOnInitialTestFailureInput.Validate(),
+                IgnoreUncoveredMutants = IgnoredUncoveredMutantsInput.Validate(),
             };
             return _strykerOptionsCache;
         }
