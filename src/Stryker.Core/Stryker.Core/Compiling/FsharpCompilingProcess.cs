@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using FSharp.Compiler.CodeAnalysis;
 using FSharp.Compiler.Diagnostics;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Control;
@@ -32,7 +31,7 @@ namespace Stryker.Core.Compiling
             _fileSystem = fileSystem;
         }
 
-        public (CSharpCompilation, CompilingProcessResult) Compile(IEnumerable<ParsedInput> syntaxTrees, bool devMode)
+        public CompilingProcessResult Compile(IEnumerable<ParsedInput> syntaxTrees, bool devMode)
         {
             var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
 
@@ -73,18 +72,17 @@ namespace Stryker.Core.Compiling
             }
 
             //rollback still needs to be implemented
-            CSharpCompilation Compilation = null;
             IEnumerable<int> RollbackedIds = Enumerable.Empty<int>();
 
             if (compilationSuccess)
             {
                 //we return if compiled successfully
                 //it is however not used as this is the end of the current F# implementation
-                return (Compilation, new CompilingProcessResult()
+                return new CompilingProcessResult()
                 {
                     Success = compilationSuccess,
                     RollbackedIds = RollbackedIds
-                });
+                };
             }
 
             // compiling failed
