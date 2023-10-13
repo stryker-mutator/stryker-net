@@ -89,7 +89,6 @@ namespace Stryker.Core.Compiling
             if (emitResult.Success)
             {
                 return new (
-                    Compilation,
                     RollbackedIds,
                     emitResult.Success);
             }
