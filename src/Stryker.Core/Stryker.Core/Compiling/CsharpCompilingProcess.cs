@@ -59,17 +59,17 @@ namespace Stryker.Core.Compiling
             var trees = syntaxTrees.ToList();
             var compilationOptions = analyzerResult.GetCompilationOptions();
 
-            var initialCompilation = CSharpCompilation.Create(AssemblyName,
+            var compilation = CSharpCompilation.Create(AssemblyName,
                 syntaxTrees: trees,
                 options: compilationOptions,
                 references: _input.SourceProjectInfo.AnalyzerResult.LoadReferences());
 
             // C# source generators must be executed before compilation
-            initialCompilation = RunSourceGenerators(analyzerResult, initialCompilation);
+            compilation = RunSourceGenerators(analyzerResult, compilation);
 
             // first try compiling
             var retryCount = 1;
-            (var rollbackProcessResult, var emitResult, retryCount) = TryCompilation(ilStream, symbolStream, initialCompilation, null, false, retryCount);
+            (var rollbackProcessResult, var emitResult, retryCount) = TryCompilation(ilStream, symbolStream, compilation, null, false, retryCount);
 
             // If compiling failed and the error has no location, log and throw exception.
             if (!emitResult.Success && emitResult.Diagnostics.Any(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error))
@@ -83,13 +83,13 @@ namespace Stryker.Core.Compiling
             for (var count = 1; !emitResult.Success && count < MaxAttempt; count++)
             {
                 // compilation did not succeed. let's compile a couple times more for good measure
-                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, rollbackProcessResult?.Compilation ?? initialCompilation, emitResult, retryCount == MaxAttempt - 1, retryCount);
+                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, rollbackProcessResult?.Compilation ?? compilation, emitResult, retryCount == MaxAttempt - 1, retryCount);
             }
 
             if (emitResult.Success)
             {
                 return new (
-                    emitResult.Success,
+                    true,
                     rollbackProcessResult?.RollbackedIds ?? Enumerable.Empty<int>());
             }
             // compiling failed
@@ -123,7 +123,7 @@ namespace Stryker.Core.Compiling
         private (CSharpRollbackProcessResult, EmitResult, int) TryCompilation(
             Stream ms,
             Stream symbolStream,
-            CSharpCompilation initialCompilation,
+            CSharpCompilation compilation,
             EmitResult previousEmitResult,
             bool lastAttempt,
             int retryCount)
@@ -133,8 +133,8 @@ namespace Stryker.Core.Compiling
             if (previousEmitResult != null)
             {
                 // remove broken mutations
-                rollbackProcessResult = _rollbackProcess.Start(initialCompilation, previousEmitResult.Diagnostics, lastAttempt, _options.DevMode);
-                initialCompilation = rollbackProcessResult.Compilation;
+                rollbackProcessResult = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, lastAttempt, _options.DevMode);
+                compilation = rollbackProcessResult.Compilation;
             }
 
             // reset the memoryStream
@@ -145,11 +145,11 @@ namespace Stryker.Core.Compiling
 
             var emitOptions = symbolStream == null ? null : new EmitOptions(false, DebugInformationFormat.PortablePdb,
                 _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName());
-            var emitResult = initialCompilation.Emit(
+            var emitResult = compilation.Emit(
                 ms,
                 symbolStream,
                 manifestResources: _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger),
-                win32Resources: initialCompilation.CreateDefaultWin32Resources(
+                win32Resources: compilation.CreateDefaultWin32Resources(
                     true, // Important!
                     false,
                     null,
