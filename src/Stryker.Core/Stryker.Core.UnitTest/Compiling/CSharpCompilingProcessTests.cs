@@ -65,7 +65,7 @@ namespace ExampleProject
             using (var ms = new MemoryStream())
             {
                 var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
-                result.Success.ShouldBe(true);
+                result.EmitResult.Success.ShouldBe(true);
                 ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
             }
         }
@@ -111,7 +111,7 @@ namespace ExampleProject
             using (var ms = new MemoryStream())
             {
                 var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
-                result.Success.ShouldBe(true);
+                result.EmitResult.Success.ShouldBe(true);
                 ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
             }
         }
@@ -248,7 +248,7 @@ namespace ExampleProject
             using (var ms = new MemoryStream())
             {
                 var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
-                result.Success.ShouldBe(true);
+                result.EmitResult.Success.ShouldBe(true);
 
                 var key = Assembly.Load(ms.ToArray()).GetName().GetPublicKey();
                 key.Length.ShouldBe(160, "Assembly was not signed");
@@ -297,7 +297,7 @@ namespace ExampleProject
             using (var ms = new MemoryStream())
             {
                 var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
-                result.Success.ShouldBe(true);
+                result.EmitResult.Success.ShouldBe(true);
 
                 var key = Assembly.Load(ms.ToArray()).GetName().GetPublicKey();
                 key.Length.ShouldBe(0, "Assembly was signed");
@@ -388,7 +388,7 @@ namespace ExampleProject
             using (var ms = new MemoryStream())
             {
                 var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
-                result.Success.ShouldBe(true);
+                result.EmitResult.Success.ShouldBe(true);
 
                 Assembly.Load(ms.ToArray()).GetName().Version.ToString().ShouldBe("0.0.0.0");
             }
