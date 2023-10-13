@@ -18,7 +18,7 @@ namespace Stryker.Core.Compiling
 {
     public interface ICSharpCompilingProcess
     {
-        CSharpCompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream);
+        CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream);
     }
 
     /// <summary>
@@ -53,7 +53,7 @@ namespace Stryker.Core.Compiling
         /// <param name="ilStream">The memory stream to store the compilation result onto</param>
         /// <param name="symbolStream">The memory stream to store the debug symbol</param>
         /// </summary>
-        public CSharpCompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream)
+        public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream)
         {
             var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
             var trees = syntaxTrees.ToList();

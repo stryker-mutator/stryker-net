@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.Compiling
 {
-    public record CSharpCompilingProcessResult(
+    public record CompilingProcessResult(
         bool Success,
         IEnumerable<int> RollbackedIds);
 }
