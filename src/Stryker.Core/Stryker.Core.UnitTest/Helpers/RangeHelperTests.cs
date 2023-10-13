@@ -1,8 +1,11 @@
+using System;
 using System.Linq;
 using FSharp.Compiler.Text;
 using Shouldly;
 using Stryker.Core.Helpers;
 using Xunit;
+using Range = FSharp.Compiler.Text.Range;
+
 
 namespace Stryker.Core.UnitTest.Helpers
 {
@@ -442,6 +445,45 @@ namespace Stryker.Core.UnitTest.Helpers
         }
 
         [Fact]
+        public void GetPosition_NoContent()
+        {
+            var text = "";
+            var index = 0;
+            var position = PositionModule.mkPos(0, 0);
+
+            var result = RangeHelper.GetPosition(text, index);
+
+            result.ShouldBe(position);
+        }
+
+        [Fact]
+        public void GetPosition_NoContent_OutOfBounds()
+        {
+            var text = "";
+            var index = 42;
+            var position = PositionModule.mkPos(0, 0);
+
+            var result = RangeHelper.GetPosition(text, index);
+
+            result.ShouldBe(position);
+        }
+
+        [Theory]
+        [InlineData(1, 0, 1)]
+        [InlineData(4, 0, 4)]
+        [InlineData(7, 1, 2)]
+        [InlineData(9, 1, 4)]
+        public void GetPosition_MultipleLines(int index, int expectedRow, int expectedCol)
+        {
+            var text = $"Line1{Environment.NewLine}Line2";
+            var position = PositionModule.mkPos(expectedRow, expectedCol);
+
+            var result = RangeHelper.GetPosition(text, index);
+
+            result.ShouldBe(position);
+        }
+
+        [Fact]
         public void GetPosition_OutOfBounds()
         {
             var text = "Line1";
@@ -454,25 +496,33 @@ namespace Stryker.Core.UnitTest.Helpers
         }
 
         [Fact]
-        public void GetIndex_OneLine()
-        {
-            var text = "Line1";
-            var position = PositionModule.mkPos(0, 1);
+        public void GetIndex_OneLine() => GetIndex("Line1", expectedIndex: 1, row: 0, col: 1);
 
-            var result = RangeHelper.GetIndex(text, position);
+        [Theory]
+        [InlineData(1, 0, 1)]
+        [InlineData(4, 0, 4)]
+        [InlineData(7, 1, 2)]
+        [InlineData(9, 1, 4)]
 
-            result.ShouldBe(1);
-        }
+        public void GetIndex_MultipleLines(int expectedIndex, int row, int col) => GetIndex($"Line1{Environment.NewLine}Line2", expectedIndex, row, col);
+
+        [Theory]
+        [InlineData(-1, 0, 42)]
+        [InlineData(-1, 1, 42)]
+        [InlineData(-1, 2, 0)]
+        [InlineData(-1, 2, 42)]
+        public void GetIndex_MultipleLines_OutOfBounds(int expectedIndex, int row, int col) => GetIndex($"Line1{Environment.NewLine}Line2", expectedIndex, row, col);
 
         [Fact]
-        public void GetIndex_OutOfBounds()
+        public void GetIndex_OutOfBounds() => GetIndex("Line1", expectedIndex: -1, row: 42, col: 42);
+
+        private static void GetIndex(string text, int expectedIndex, int row, int col)
         {
-            var text = "Line1";
-            var position = PositionModule.mkPos(42, 42);
+            var position = PositionModule.mkPos(row, col);
 
             var result = RangeHelper.GetIndex(text, position);
 
-            result.ShouldBe(-1);
+            result.ShouldBe(expectedIndex);
         }
 
         private static Range GetRange((int Line, int Column) start, (int Line, int Column) end) =>

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using FSharp.Compiler.Text;
 
@@ -24,7 +25,7 @@ namespace Stryker.Core.Helpers
                 foreach (var current in rangeList)
                 {
                     // Check if any of the other ranges intersects with the current one
-                    var other = rangeList.FirstOrDefault(s => !RangeModule.equals(s, current) && s.IntersectsWith(current));
+                    var other = rangeList.Find(s => !RangeModule.equals(s, current) && s.IntersectsWith(current));
                     if (!RangeModule.equals(other, Range.Zero))
                     {
                         // Remove the original ranges
@@ -131,47 +132,54 @@ namespace Stryker.Core.Helpers
         public static Position GetPosition(string text, int index)
         {
             var line = 0;
-            var col = 0;
 
-            for (var i = 0; i < System.Math.Min(index, text.Length); i++)
+            using var reader = new StringReader(text);
+            var currentIndex = 0;
+            do
             {
-                // TODO: handle x-platform
-                if (text[i] == '\n')
-                {
-                    line++;
-                    col = 0;
-                }
-                else
-                {
-                    col++;
-                }
-            }
+                string? latestLineContent = reader.ReadLine();
+                if (latestLineContent == null) break;
 
-            return PositionModule.mkPos(line, col);
+                var lengthOfThisLine = latestLineContent.Length;
+                var endOfLineIndex = currentIndex + lengthOfThisLine;
+                var indexIsOnThisLine = index <= endOfLineIndex && index >= currentIndex;
+                if (indexIsOnThisLine)
+                {
+                    var indexOnThisLine = index - currentIndex;
+                    return PositionModule.mkPos(line, indexOnThisLine);
+                }
+
+                var thisWasTheLastLine = reader.Peek() == -1;
+                if (thisWasTheLastLine)
+                {
+                    return PositionModule.mkPos(line, lengthOfThisLine);
+                }
+
+                line++;
+                currentIndex += lengthOfThisLine;
+            } while (currentIndex < text.Length);
+
+            return PositionModule.mkPos(0, 0);
         }
 
         public static int GetIndex(string text, Position pos)
         {
-            var line = 0;
-            var col = 0;
-
-            for (var i = 0; i < text.Length; i++)
+            using var reader = new StringReader(text);
+            string? latestLineContent = "";
+            var currentIndex = 0;
+            for (var line = 0; line <= pos.Line; ++line)
             {
-                if (line == pos.Line && col == pos.Column)
+                if (latestLineContent == null)
                 {
-                    return i;
+                    break;
                 }
+                currentIndex += latestLineContent.Length;
+                latestLineContent = reader.ReadLine();
+            }
 
-                // TODO: handle x-platform
-                if (text[i] == '\n')
-                {
-                    line++;
-                    col = 0;
-                }
-                else
-                {
-                    col++;
-                }
+            if (latestLineContent != null && pos.Column < latestLineContent.Length)
+            {
+                return currentIndex + pos.Column;
             }
 
             return -1;
