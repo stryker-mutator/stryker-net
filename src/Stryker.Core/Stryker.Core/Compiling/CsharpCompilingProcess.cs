@@ -69,7 +69,7 @@ namespace Stryker.Core.Compiling
 
             // first try compiling
             var retryCount = 1;
-            (var rollbackProcessResult, var emitResult, retryCount) = TryCompilation(ilStream, symbolStream, compilation, null, false, retryCount);
+            (var cSharpCompilation, var ints, var emitResult, retryCount) = TryCompilation(ilStream, symbolStream, compilation, null, false, retryCount);
 
             // If compiling failed and the error has no location, log and throw exception.
             if (!emitResult.Success && emitResult.Diagnostics.Any(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error))
@@ -83,7 +83,7 @@ namespace Stryker.Core.Compiling
             for (var count = 1; !emitResult.Success && count < MaxAttempt; count++)
             {
                 // compilation did not succeed. let's compile a couple times more for good measure
-                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, rollbackProcessResult?.Compilation ?? compilation, emitResult, retryCount == MaxAttempt - 1, retryCount);
+                (cSharpCompilation, ints, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, cSharpCompilation ?? compilation, emitResult, retryCount == MaxAttempt - 1, retryCount);
             }
 
             if (emitResult.Success)
@@ -91,7 +91,8 @@ namespace Stryker.Core.Compiling
                 return new CompilingProcessResult()
                 {
                     Success = emitResult.Success,
-                    RollbackResult = rollbackProcessResult
+                    Compilation = compilation,
+                    RollbackedIds = ints,
                 };
             }
             // compiling failed
@@ -122,7 +123,7 @@ namespace Stryker.Core.Compiling
             return outputCompilation as CSharpCompilation;
         }
 
-        private (RollbackProcessResult, EmitResult, int) TryCompilation(
+        private (CSharpCompilation, IEnumerable<int>, EmitResult, int) TryCompilation(
             Stream ms,
             Stream symbolStream,
             CSharpCompilation compilation,
@@ -130,13 +131,15 @@ namespace Stryker.Core.Compiling
             bool lastAttempt,
             int retryCount)
         {
-            RollbackProcessResult rollbackProcessResult = null;
+            CSharpCompilation cSharpCompilation = null;
+            IEnumerable<int> ints = null;
+            //RollbackProcessResult rollbackProcessResult = null;
 
             if (previousEmitResult != null)
             {
                 // remove broken mutations
-                rollbackProcessResult = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, lastAttempt, _options.DevMode);
-                compilation = rollbackProcessResult.Compilation;
+                (cSharpCompilation, ints) = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, lastAttempt, _options.DevMode);
+                compilation = cSharpCompilation;
             }
 
             // reset the memoryStream
@@ -159,7 +162,7 @@ namespace Stryker.Core.Compiling
                 options: emitOptions);
             LogEmitResult(emitResult);
 
-            return (rollbackProcessResult, emitResult, retryCount+1);
+            return (cSharpCompilation, ints, emitResult, retryCount+1);
         }
 
         private void LogEmitResult(EmitResult result)

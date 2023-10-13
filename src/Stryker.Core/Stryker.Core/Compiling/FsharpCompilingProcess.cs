@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using FSharp.Compiler.CodeAnalysis;
 using FSharp.Compiler.Diagnostics;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Control;
@@ -72,7 +73,8 @@ namespace Stryker.Core.Compiling
             }
 
             //rollback still needs to be implemented
-            RollbackProcessResult rollbackProcessResult = null;
+            CSharpCompilation cSharpCompilation = null;
+            IEnumerable<int> ints = null;
 
             if (compilationSuccess)
             {
@@ -81,7 +83,8 @@ namespace Stryker.Core.Compiling
                 return new CompilingProcessResult()
                 {
                     Success = compilationSuccess,
-                    RollbackResult = rollbackProcessResult
+                    Compilation = cSharpCompilation,
+                    RollbackedIds = ints
                 };
             }
 
