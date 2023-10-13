@@ -64,8 +64,8 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                var (_, result) = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
-                result.Success.ShouldBe(true);
+                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
+                result.CompilingProcessResult.Success.ShouldBe(true);
                 ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
             }
         }
@@ -110,8 +110,8 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                var (_, result) = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
-                result.Success.ShouldBe(true);
+                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
+                result.CompilingProcessResult.Success.ShouldBe(true);
                 ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
             }
         }
@@ -247,8 +247,8 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                var (_, result) = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
-                result.Success.ShouldBe(true);
+                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
+                result.CompilingProcessResult.Success.ShouldBe(true);
 
                 var key = Assembly.Load(ms.ToArray()).GetName().GetPublicKey();
                 key.Length.ShouldBe(160, "Assembly was not signed");
