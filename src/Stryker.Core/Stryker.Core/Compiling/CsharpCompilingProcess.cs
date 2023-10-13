@@ -88,7 +88,10 @@ namespace Stryker.Core.Compiling
 
             if (emitResult.Success)
             {
-                return new (Compilation, RollbackedIds, emitResult);
+                return new (
+                    Compilation,
+                    RollbackedIds,
+                    emitResult.Success);
             }
             // compiling failed
             _logger.LogError("Failed to restore the project to a buildable state. Please report the issue. Stryker can not proceed further");
