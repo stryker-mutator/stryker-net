@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -37,15 +39,18 @@ namespace Stryker.Core.Initialisation.Buildalyzer
 
         public static string GetSymbolFileName(this IAnalyzerResult analyzerResult) => Path.ChangeExtension(analyzerResult.GetAssemblyName(), ".pdb");
 
-        public static IEnumerable<ISourceGenerator> GetSourceGenerators(this IAnalyzerResult analyzerResult, ILogger logger = null)
+        public static IEnumerable<ISourceGenerator> GetSourceGenerators(this IAnalyzerResult analyzerResult, ILogger logger)
         {
             var generators = new List<ISourceGenerator>();
             foreach (var analyzer in analyzerResult.AnalyzerReferences)
             {
                 try
                 {
-                    var analyzerFileReference = new AnalyzerFileReference(analyzer, AnalyzerAssemblyLoader.Instance);
-                    analyzerFileReference.AnalyzerLoadFailed += (sender, e) => throw e.Exception ?? new InvalidOperationException(e.Message);
+                    var analyzerFileReference =new AnalyzerFileReference(analyzer, AnalyzerAssemblyLoader.Instance);
+                    analyzerFileReference.AnalyzerLoadFailed += (sender, e) =>
+                    {
+                        LogAnalyzerLoadError(logger, sender, e);
+                    };
                     foreach (var generator in analyzerFileReference.GetGenerators(LanguageNames.CSharp))
                     {
                         generators.Add(generator);
@@ -60,6 +65,26 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             }
 
             return generators;
+        }
+
+        [ExcludeFromCodeCoverage(Justification = "Impossible to unit test")]
+        private static void LogAnalyzerLoadError(ILogger logger, object sender, AnalyzerLoadFailureEventArgs e)
+        {
+            var source = ((AnalyzerReference)sender)?.Display ?? "unknown";
+            logger?.LogWarning(
+                $"Failed to load analyzer {source}: {e.Message} (error : {Enum.GetName(e.ErrorCode.GetType(), e.ErrorCode) ?? e.ErrorCode.ToString()}, analyzer: {e.TypeName ?? ""}).");
+            if (e.ErrorCode == AnalyzerLoadFailureEventArgs.FailureErrorCode.ReferencesNewerCompiler)
+            {
+                logger?.LogWarning(
+                    $"The analyzer {source} references a newer version ({e.ReferencedCompilerVersion}) of the compiler than the one used by Stryker.NET.");
+            }
+
+            if (e.Exception != null)
+            {
+                logger?.LogWarning($"Failed to load analyzer {source}: Exception {e.Exception}.");
+            }
+
+            throw e.Exception ?? new InvalidOperationException(e.Message);
         }
 
         public static IEnumerable<MetadataReference> LoadReferences(this IAnalyzerResult analyzerResult)
@@ -88,7 +113,6 @@ namespace Stryker.Core.Initialisation.Buildalyzer
 
             public void AddDependencyLocation(string fullPath)
             {
-                // discard any specific folder
             }
 
             public Assembly LoadFromPath(string fullPath) => Assembly.LoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
@@ -115,13 +139,13 @@ namespace Stryker.Core.Initialisation.Buildalyzer
             _ => Language.Undefined,
         };
 
-        private static readonly string[] knownTestPackages = { "MSTest.TestFramework", "xunit", "NUnit" };
+        private static readonly string[] KnownTestPackages = { "MSTest.TestFramework", "xunit", "NUnit" };
 
         public static bool IsTestProject(this IAnalyzerResult analyzerResult)
         {
             if (!bool.TryParse(analyzerResult.GetPropertyOrDefault("IsTestProject"), out var isTestProject))
             {
-                isTestProject = knownTestPackages.Any(n => analyzerResult.PackageReferences.ContainsKey(n));
+                isTestProject = Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n));
             }
             var hasTestProjectTypeGuid = analyzerResult
                 .GetPropertyOrDefault("ProjectTypeGuids", "")
