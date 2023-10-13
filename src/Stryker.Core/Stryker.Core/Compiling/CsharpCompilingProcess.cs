@@ -16,7 +16,7 @@ using Stryker.Core.Options;
 
 namespace Stryker.Core.Compiling
 {
-    public record CSharpCompilingProcessResult(CSharpCompilation Compilation, CompilingProcessResult CompilingProcessResult);
+    public record CSharpCompilingProcessResult(CSharpCompilation Compilation, bool Success, IEnumerable<int> RollbackedIds);
 
     public interface ICSharpCompilingProcess
     {
@@ -90,11 +90,7 @@ namespace Stryker.Core.Compiling
 
             if (emitResult.Success)
             {
-                return new (Compilation, new CompilingProcessResult
-                {
-                    Success = emitResult.Success,
-                    RollbackedIds = RollbackedIds,
-                });
+                return new (Compilation, emitResult.Success, RollbackedIds);
             }
             // compiling failed
             _logger.LogError("Failed to restore the project to a buildable state. Please report the issue. Stryker can not proceed further");

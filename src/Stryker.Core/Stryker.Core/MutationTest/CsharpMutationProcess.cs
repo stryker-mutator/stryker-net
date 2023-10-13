@@ -84,7 +84,7 @@ namespace Stryker.Core.MutationTest
             using var msForSymbols = _options.DevMode ? new MemoryStream() : null;
             // compile the mutated syntax trees
             var compilingProcess = new CsharpCompilingProcess(input, options: _options);
-            var (_, compileResult) = compilingProcess.Compile(projectInfo.CompilationSyntaxTrees, ms, msForSymbols);
+            var compileResult = compilingProcess.Compile(projectInfo.CompilationSyntaxTrees, ms, msForSymbols);
 
             foreach (var testProject in info.TestProjectsInfo.AnalyzerResults)
             {
