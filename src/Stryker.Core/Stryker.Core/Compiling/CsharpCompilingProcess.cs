@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -74,6 +76,7 @@ namespace Stryker.Core.Compiling
             {
                 _logger.LogError("Failed to build the mutated assembly due to unrecoverable error: {0}",
                     emitResult.Diagnostics.First(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error));
+                DumpErrorDetails(emitResult.Diagnostics);
                 throw new CompilationException("General Build Failure detected.");
             }
 
@@ -154,7 +157,6 @@ namespace Stryker.Core.Compiling
                     null,
                     null),
                 options: emitOptions);
-
             LogEmitResult(emitResult);
 
             return (rollbackProcessResult, emitResult, retryCount+1);
@@ -168,13 +170,32 @@ namespace Stryker.Core.Compiling
 
                 foreach (var err in result.Diagnostics.Where(x => x.Severity is DiagnosticSeverity.Error))
                 {
-                    _logger.LogDebug("{0}, {1}", err?.GetMessage() ?? "No message", err?.Location.SourceTree?.FilePath ?? "Unknown filepath");
+                    _logger.LogDebug("{ErrorMessage}, {ErrorLocation}", err?.GetMessage() ?? "No message", err?.Location?.ToString() ?? "Unknown filepath");
                 }
             }
             else
             {
                 _logger.LogDebug("Compilation successful");
             }
+        }
+
+        private void DumpErrorDetails(IEnumerable<Diagnostic> diagnostics)
+        {
+            var messageBuilder = new StringBuilder();
+            var materializedDiagnostics = diagnostics.ToArray();
+            if (!materializedDiagnostics.Any())
+            {
+                messageBuilder.Append("Unfortunately there is no more info available, good luck!");
+            }
+
+            foreach (var diagnostic in materializedDiagnostics)
+            {
+                messageBuilder
+                    .Append(Environment.NewLine)
+                    .Append(diagnostic.Id).Append(": ").AppendLine(diagnostic.ToString());
+            }
+
+            _logger.LogTrace("An unrecoverable compilation error occurred: {Diagnostics}", messageBuilder.ToString());
         }
 
         private static string ReadableNumber(int number) => number switch

@@ -9,7 +9,7 @@ namespace Stryker.Core.Options
         AdditionalTimeoutInput AdditionalTimeoutInput { get; init; }
         AzureFileStorageSasInput AzureFileStorageSasInput { get; init; }
         AzureFileStorageUrlInput AzureFileStorageUrlInput { get; init; }
-        BaselineRereateEnabledInput BaselineRecreateEnabledInput { get; init; }
+        BaselineRecreateEnabledInput BaselineRecreateEnabledInput { get; init; }
         BaselineProviderInput BaselineProviderInput { get; init; }
         BasePathInput BasePathInput { get; init; }
         ConcurrencyInput ConcurrencyInput { get; init; }
@@ -82,7 +82,7 @@ namespace Stryker.Core.Options
         public TestProjectsInput TestProjectsInput { get; init; } = new();
         public TestCaseFilterInput TestCaseFilterInput { get; init; } = new();
         public ReportersInput ReportersInput { get; init; } = new();
-        public BaselineRereateEnabledInput BaselineRecreateEnabledInput { get; init; } = new();
+        public BaselineRecreateEnabledInput BaselineRecreateEnabledInput { get; init; } = new();
         public WithBaselineInput WithBaselineInput { get; init; } = new();
         public BaselineProviderInput BaselineProviderInput { get; init; } = new();
         public AzureFileStorageUrlInput AzureFileStorageUrlInput { get; init; } = new();
