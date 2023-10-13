@@ -18,7 +18,7 @@ namespace Stryker.Core.Compiling
 {
     public interface ICompilingProcess
     {
-        CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream);
+        (CSharpCompilation, CompilingProcessResult) Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream);
     }
 
     /// <summary>
@@ -53,7 +53,7 @@ namespace Stryker.Core.Compiling
         /// <param name="ilStream">The memory stream to store the compilation result onto</param>
         /// <param name="symbolStream">The memory stream to store the debug symbol</param>
         /// </summary>
-        public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream)
+        public (CSharpCompilation, CompilingProcessResult) Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream)
         {
             var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
             var trees = syntaxTrees.ToList();
@@ -88,12 +88,11 @@ namespace Stryker.Core.Compiling
 
             if (emitResult.Success)
             {
-                return new CompilingProcessResult()
+                return (Compilation, new CompilingProcessResult
                 {
                     Success = emitResult.Success,
-                    Compilation = Compilation,
                     RollbackedIds = RollbackedIds,
-                };
+                });
             }
             // compiling failed
             _logger.LogError("Failed to restore the project to a buildable state. Please report the issue. Stryker can not proceed further");

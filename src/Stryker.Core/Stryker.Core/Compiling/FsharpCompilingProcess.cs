@@ -32,7 +32,7 @@ namespace Stryker.Core.Compiling
             _fileSystem = fileSystem;
         }
 
-        public CompilingProcessResult Compile(IEnumerable<ParsedInput> syntaxTrees, bool devMode)
+        public (CSharpCompilation, CompilingProcessResult) Compile(IEnumerable<ParsedInput> syntaxTrees, bool devMode)
         {
             var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
 
@@ -80,12 +80,11 @@ namespace Stryker.Core.Compiling
             {
                 //we return if compiled successfully
                 //it is however not used as this is the end of the current F# implementation
-                return new CompilingProcessResult()
+                return (Compilation, new CompilingProcessResult()
                 {
                     Success = compilationSuccess,
-                    Compilation = Compilation,
                     RollbackedIds = RollbackedIds
-                };
+                });
             }
 
             // compiling failed

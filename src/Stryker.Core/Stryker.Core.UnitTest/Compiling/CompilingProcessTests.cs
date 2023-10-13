@@ -64,7 +64,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
+                var (_, result) = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
                 result.Success.ShouldBe(true);
                 ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
             }
@@ -110,7 +110,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
+                var (_, result) = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
                 result.Success.ShouldBe(true);
                 ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
             }
@@ -247,7 +247,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
+                var (_, result) = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
                 result.Success.ShouldBe(true);
 
                 var key = Assembly.Load(ms.ToArray()).GetName().GetPublicKey();
@@ -296,7 +296,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
+                var (_, result) = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
                 result.Success.ShouldBe(true);
 
                 var key = Assembly.Load(ms.ToArray()).GetName().GetPublicKey();
@@ -387,7 +387,7 @@ namespace ExampleProject
 
             using (var ms = new MemoryStream())
             {
-                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
+                var (_, result) = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
                 result.Success.ShouldBe(true);
 
                 Assembly.Load(ms.ToArray()).GetName().Version.ToString().ShouldBe("0.0.0.0");

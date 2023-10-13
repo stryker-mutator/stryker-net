@@ -154,7 +154,7 @@ namespace ExampleProject
             var target = new CsharpCompilingProcess(input, rollbackProcess, options);
 
             using var ms = new MemoryStream();
-            var result = target.Compile(helpers, ms, null);
+            var (_, result) = target.Compile(helpers, ms, null);
             result.RollbackedIds.Count().ShouldBe(2); // should actually be 1 but thanks to issue #1745 rollback doesn't work
         }
 
