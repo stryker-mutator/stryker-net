@@ -435,6 +435,7 @@ Options:";
 
             _strykerRunnerMock.VerifyAll();
 
+            _inputs.WithBaselineInput.SuppliedInput.Value.ShouldBeTrue();
             _inputs.BaselineRecreateEnabledInput.SuppliedInput.ShouldBeTrue();
         }
 
