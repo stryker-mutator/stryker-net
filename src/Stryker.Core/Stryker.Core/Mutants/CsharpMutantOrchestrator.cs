@@ -84,6 +84,7 @@ namespace Stryker.Core.Mutants
         }
 
         public IEnumerable<IMutator> Mutators { get; }
+
         public MutantPlacer Placer { get; }
 
         /// <summary>
