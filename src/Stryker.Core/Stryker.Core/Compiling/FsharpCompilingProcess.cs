@@ -17,8 +17,6 @@ using ParsedInput = FSharp.Compiler.Syntax.ParsedInput;
 
 namespace Stryker.Core.Compiling
 {
-    public record FSharpCompilingProcessResult(bool Success, IEnumerable<int> RollbackedIds);
-
     public class FsharpCompilingProcess
     {
         private readonly MutationTestInput _input;
@@ -32,7 +30,7 @@ namespace Stryker.Core.Compiling
             _fileSystem = fileSystem;
         }
 
-        public FSharpCompilingProcessResult Compile(IEnumerable<ParsedInput> syntaxTrees, bool devMode)
+        public bool Compile(IEnumerable<ParsedInput> syntaxTrees, bool devMode)
         {
             var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
 
@@ -73,15 +71,12 @@ namespace Stryker.Core.Compiling
             }
 
             //rollback still needs to be implemented
-            IEnumerable<int> RollbackedIds = Enumerable.Empty<int>();
 
             if (compilationSuccess)
             {
                 //we return if compiled successfully
                 //it is however not used as this is the end of the current F# implementation
-                return new(
-                    compilationSuccess,
-                    RollbackedIds);
+                return compilationSuccess;
             }
 
             // compiling failed
