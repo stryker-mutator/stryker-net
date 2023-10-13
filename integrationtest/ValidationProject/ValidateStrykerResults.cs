@@ -1,6 +1,10 @@
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
 using Newtonsoft.Json;
 using Shouldly;
 using Stryker.Core.Mutants;
@@ -11,6 +15,25 @@ namespace IntegrationTests
 {
     public class ValidateStrykerResults
     {
+        private readonly ReadOnlyCollection<SyntaxKind> _blacklistedSyntaxKindsForMutating =
+            new(new[]
+            {
+                // Usings
+                SyntaxKind.UsingDirective,
+                SyntaxKind.UsingKeyword,
+                SyntaxKind.UsingStatement,
+                // Comments
+                SyntaxKind.DocumentationCommentExteriorTrivia,
+                SyntaxKind.EndOfDocumentationCommentToken,
+                SyntaxKind.MultiLineCommentTrivia,
+                SyntaxKind.MultiLineDocumentationCommentTrivia,
+                SyntaxKind.SingleLineCommentTrivia,
+                SyntaxKind.SingleLineDocumentationCommentTrivia,
+                SyntaxKind.XmlComment,
+                SyntaxKind.XmlCommentEndToken,
+                SyntaxKind.XmlCommentStartToken,
+            }
+        );
         private const string MutationReportJson = "mutation-report.json";
 
         [Fact]
@@ -107,8 +130,27 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
+            CheckMutationKindsForBlacklisted(report);
             CheckReportMutantCounts(report, total: 114, ignored: 55, survived: 4, killed: 6, timeout: 2, nocoverage: 45);
             CheckReportTestCounts(report, total: 30);
+        }
+
+        private void CheckMutationKindsForBlacklisted(JsonReport report)
+        {
+            foreach (var file in report.Files)
+            {
+                var syntaxTreeRootNode = CSharpSyntaxTree.ParseText(file.Value.Source).GetRoot();
+                var textLines = SourceText.From(file.Value.Source).Lines;
+
+                foreach (var mutation in file.Value.Mutants)
+                {
+                    var linePositionSpan = new LinePositionSpan(new LinePosition(mutation.Location.Start.Line, mutation.Location.Start.Column), new LinePosition(mutation.Location.End.Line, mutation.Location.End.Column));
+                    var textSpan = textLines.GetTextSpan(linePositionSpan);
+                    var node = syntaxTreeRootNode.FindNode(textSpan);
+                    var nodeKind = node.Kind();
+                    _blacklistedSyntaxKindsForMutating.ShouldNotContain(nodeKind);
+                }
+            }
         }
 
         private void CheckReportMutantCounts(JsonReport report, int total, int ignored, int survived, int killed, int timeout, int nocoverage)
