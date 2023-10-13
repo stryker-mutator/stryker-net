@@ -91,7 +91,7 @@ namespace Stryker.Core.MutationTest
             using var ms = new MemoryStream();
             using var msForSymbols = _options.DevMode ? new MemoryStream() : null;
             // compile the mutated syntax trees
-            var compilingProcess = new FsharpCompilingProcess(mutationTestInput, new CSharpRollbackProcess(), _fileSystem ?? new FileSystem());
+            var compilingProcess = new FsharpCompilingProcess(mutationTestInput, _fileSystem ?? new FileSystem());
             var compileResult = compilingProcess.Compile(projectInfo.CompilationSyntaxTrees, _options.DevMode);
 
             // if a rollback took place, mark the rolled back mutants as status:BuildError
