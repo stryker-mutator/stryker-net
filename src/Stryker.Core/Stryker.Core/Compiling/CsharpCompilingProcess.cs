@@ -16,8 +16,6 @@ using Stryker.Core.Options;
 
 namespace Stryker.Core.Compiling
 {
-    public record CSharpCompilingProcessResult(CSharpCompilation Compilation, IEnumerable<int> RollbackedIds, EmitResult EmitResult);
-
     public interface ICSharpCompilingProcess
     {
         CSharpCompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream);
@@ -123,19 +121,19 @@ namespace Stryker.Core.Compiling
         private (CSharpCompilation, IEnumerable<int>, EmitResult, int) TryCompilation(
             Stream ms,
             Stream symbolStream,
-            CSharpCompilation compilation,
+            CSharpCompilation initialCompilation,
             EmitResult previousEmitResult,
             bool lastAttempt,
             int retryCount)
         {
-            CSharpCompilation Compilation = null;
-            IEnumerable<int> RollbackedIds = Enumerable.Empty<int>();
+            CSharpCompilation compilation = null;
+            var rollbackedIds = Enumerable.Empty<int>();
 
             if (previousEmitResult != null)
             {
                 // remove broken mutations
-                (Compilation, RollbackedIds) = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, lastAttempt, _options.DevMode);
-                compilation = Compilation;
+                (compilation, rollbackedIds) = _rollbackProcess.Start(initialCompilation, previousEmitResult.Diagnostics, lastAttempt, _options.DevMode);
+                initialCompilation = compilation;
             }
 
             // reset the memoryStream
@@ -146,11 +144,11 @@ namespace Stryker.Core.Compiling
 
             var emitOptions = symbolStream == null ? null : new EmitOptions(false, DebugInformationFormat.PortablePdb,
                 _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName());
-            var emitResult = compilation.Emit(
+            var emitResult = initialCompilation.Emit(
                 ms,
                 symbolStream,
                 manifestResources: _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger),
-                win32Resources: compilation.CreateDefaultWin32Resources(
+                win32Resources: initialCompilation.CreateDefaultWin32Resources(
                     true, // Important!
                     false,
                     null,
@@ -158,7 +156,7 @@ namespace Stryker.Core.Compiling
                 options: emitOptions);
             LogEmitResult(emitResult);
 
-            return (Compilation, RollbackedIds, emitResult, retryCount+1);
+            return (compilation, rollbackedIds, emitResult, retryCount+1);
         }
 
         private void LogEmitResult(EmitResult result)

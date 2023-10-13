@@ -14,8 +14,6 @@ using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Compiling
 {
-    public record CSharpRollbackProcessResult(CSharpCompilation Compilation, IEnumerable<int> RollbackedIds);
-
     public interface ICSharpRollbackProcess
     {
         CSharpRollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode);
