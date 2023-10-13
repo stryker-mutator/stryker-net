@@ -34,6 +34,7 @@ namespace Stryker.Core.Mutants
                 new BinaryExpressionMutator(),
                 new BlockMutator(),
                 new BooleanMutator(),
+                new ConditionalExpressionMutator(),
                 new AssignmentExpressionMutator(),
                 new PrefixUnaryMutator(),
                 new PostfixUnaryMutator(),
