@@ -77,9 +77,9 @@ if(ActiveMutation == 1) {
             {
                 var compileResult = compiler.Emit(ms);
 
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+                var (compilation, _) = target.Start(compiler, compileResult.Diagnostics, false, false);
 
-                var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+                var rollbackedResult = compilation.Emit(ms);
 
                 rollbackedResult.Success.ShouldBeTrue();
             }
@@ -155,7 +155,7 @@ namespace ExampleProject
 
             using var ms = new MemoryStream();
             var result = target.Compile(helpers, ms, null);
-            result.RollbackResult.RollbackedIds.Count().ShouldBe(2); // should actually be 1 but thanks to issue #1745 rollback doesn't work
+            result.RollbackedIds.Count().ShouldBe(2); // should actually be 1 but thanks to issue #1745 rollback doesn't work
         }
 
         [Fact]
@@ -224,12 +224,12 @@ namespace ExampleProject
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);
 
-            var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+            var (compilation, ids) = target.Start(compiler, compileResult.Diagnostics, false, false);
 
-            var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+            var rollbackedResult = compilation.Emit(ms);
 
             rollbackedResult.Success.ShouldBeTrue();
-            fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 6, 7 });
+            ids.ShouldBe(new Collection<int> { 6, 7 });
         }
 
         [Fact]
@@ -317,13 +317,13 @@ namespace ExampleProject
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);
 
-            var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+            var (compilation, ids) = target.Start(compiler, compileResult.Diagnostics, false, false);
 
-            var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+            var rollbackedResult = compilation.Emit(ms);
 
             rollbackedResult.Success.ShouldBeTrue();
             // validate that only mutation 8 and 7 were rollbacked
-            fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7 });
+            ids.ShouldBe(new Collection<int> { 8, 7 });
         }
 
         [Fact]
@@ -381,13 +381,13 @@ namespace ExampleProject
             compileResult.Success.ShouldBeFalse();
             compileResult.Diagnostics.ShouldHaveSingleItem();
 
-            var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+            var (compilation, ids) = target.Start(compiler, compileResult.Diagnostics, false, false);
 
-            var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+            var rollbackedResult = compilation.Emit(ms);
 
             rollbackedResult.Success.ShouldBeTrue();
             // validate that only the block mutation was rollbacked
-            fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 1 });
+            ids.ShouldBe(new Collection<int> { 1 });
         }
 
         [Fact]
@@ -477,18 +477,18 @@ namespace ExampleProject
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);
 
-            var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+            var (fixedCompilation, ids) = target.Start(compiler, compileResult.Diagnostics, false, false);
 
-            var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+            var rollbackedResult = fixedCompilation.Emit(ms);
 
             rollbackedResult.Success.ShouldBeFalse();
             rollbackedResult.Diagnostics.ShouldHaveSingleItem();
 
-            fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
-            rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+            (fixedCompilation, ids) = target.Start(fixedCompilation, rollbackedResult.Diagnostics, false, false);
+            rollbackedResult = fixedCompilation.Emit(ms);
             rollbackedResult.Success.ShouldBeTrue();
             // validate that all mutations are rolled back
-            fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
+            ids.ShouldBe(new Collection<int> { 8, 7, 6 });
         }
 
         [Fact]
@@ -577,18 +577,18 @@ namespace ExampleProject
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);
 
-            var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+            var (fixedCompilation, ids) = target.Start(compiler, compileResult.Diagnostics, false, false);
 
-            var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+            var rollbackedResult = fixedCompilation.Emit(ms);
 
             rollbackedResult.Success.ShouldBeFalse();
             rollbackedResult.Diagnostics.ShouldHaveSingleItem();
 
-            fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
-            rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+            (fixedCompilation, ids) = target.Start(fixedCompilation, rollbackedResult.Diagnostics, false, false);
+            rollbackedResult = fixedCompilation.Emit(ms);
             rollbackedResult.Success.ShouldBeTrue();
             // validate that all mutations are rolled back
-            fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
+            ids.ShouldBe(new Collection<int> { 8, 7, 6 });
         }
 
         [Fact]
@@ -685,19 +685,19 @@ namespace ExampleProject
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);
 
-            var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+            var (fixedCompilation, ids) = target.Start(compiler, compileResult.Diagnostics, false, false);
 
-            var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+            var rollbackedResult = fixedCompilation.Emit(ms);
 
             rollbackedResult.Success.ShouldBeFalse();
             rollbackedResult.Diagnostics.ShouldHaveSingleItem();
 
-            fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
-            rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+            (fixedCompilation, ids) = target.Start(fixedCompilation, rollbackedResult.Diagnostics, false, false);
+            rollbackedResult = fixedCompilation.Emit(ms);
 
             rollbackedResult.Success.ShouldBeTrue();
             // validate that only mutation 8 and 7 were rolled back
-            fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
+            ids.ShouldBe(new Collection<int> { 8, 7, 6 });
         }
 
         [Fact]
@@ -749,14 +749,14 @@ namespace ExampleProject
             var target = new RollbackProcess();
 
             using var ms = new MemoryStream();
-            var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, false, false);
-            fixedCompilation.Compilation.Emit(ms).Success.ShouldBeTrue();
+            var (fixedCompilation, ids) = target.Start(compiler, compiler.Emit(ms).Diagnostics, false, false);
+            fixedCompilation.Emit(ms).Success.ShouldBeTrue();
 
             // validate that only one of the compile errors marked the mutation as rollbacked.
-            fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 1 });
+            ids.ShouldBe(new Collection<int> { 1 });
         }
 
-         [Fact]
+        [Fact]
         public void RollbackProcess_ShouldOnlyRaiseExceptionOnFinalAttempt()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"
