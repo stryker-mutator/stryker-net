@@ -14,19 +14,19 @@ This feature is only recommended when you are sure these files will not affect r
 Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
 Example: ['**/*Assets.json','**/favicon.ico']";
 
-        public IEnumerable<FilePattern> Validate()
+        public IEnumerable<ExclusionPattern> Validate()
         {
             if (SuppliedInput is { })
             {
-                var diffIgnoreFilePatterns = new List<FilePattern>();
+                var diffIgnoreStrings = new List<ExclusionPattern>();
                 foreach (var pattern in SuppliedInput)
                 {
-                    diffIgnoreFilePatterns.Add(FilePattern.Parse(FilePathUtils.NormalizePathSeparators(pattern), spansEnabled: false));
+                    diffIgnoreStrings.Add(new ExclusionPattern(FilePathUtils.NormalizePathSeparators(pattern)));
                 }
 
-                return diffIgnoreFilePatterns;
+                return diffIgnoreStrings;
             }
-            return Enumerable.Empty<FilePattern>();
+            return Enumerable.Empty<ExclusionPattern>();
         }
     }
 }
