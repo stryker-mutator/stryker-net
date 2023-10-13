@@ -1,6 +1,6 @@
 namespace Stryker.Core.Options.Inputs
 {
-    public class BaselineRereateEnabledInput : Input<bool>
+    public class BaselineRecreateEnabledInput : Input<bool>
     {
         public override bool Default => false;
 
