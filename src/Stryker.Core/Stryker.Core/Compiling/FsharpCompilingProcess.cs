@@ -24,7 +24,7 @@ namespace Stryker.Core.Compiling
         private readonly IFileSystem _fileSystem;
 
         public FsharpCompilingProcess(MutationTestInput input,
-            IRollbackProcess rollbackProcess, IFileSystem fileSystem)
+            ICSharpRollbackProcess rollbackProcess, IFileSystem fileSystem)
         {
             _input = input;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<FsharpCompilingProcess>();

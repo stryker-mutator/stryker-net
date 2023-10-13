@@ -24,7 +24,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Compiling
 {
-    public class CompilingProcessTests : TestBase
+    public class CSharpCompilingProcessTests : TestBase
     {
         [Fact]
         public void CompilingProcessTests_ShouldCompile()
@@ -58,7 +58,7 @@ namespace ExampleProject
                     ).Object
                 }
             };
-            var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
+            var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
 
             var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
@@ -104,7 +104,7 @@ namespace ExampleProject
                     ).Object
                 }
             };
-            var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
+            var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
 
             var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
@@ -148,7 +148,7 @@ namespace ExampleProject
                     ).Object
                 }
             };
-            var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
+            var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
             rollbackProcessMock.Setup(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>(), false))
                             .Returns((CSharpCompilation compilation, ImmutableArray<Diagnostic> diagnostics, bool _, bool _) =>
                             (compilation, null));
@@ -195,7 +195,7 @@ namespace ExampleProject
                     ).Object
                 }
             };
-            var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
+            var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
 
             var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
@@ -241,7 +241,7 @@ namespace ExampleProject
                     ).Object
                 }
             };
-            var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
+            var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
 
             var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
@@ -290,7 +290,7 @@ namespace ExampleProject
                 }
 
             };
-            var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
+            var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
 
             var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
@@ -339,7 +339,7 @@ namespace ExampleProject
                 }
 
             };
-            var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
+            var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
 
             var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
@@ -381,7 +381,7 @@ namespace ExampleProject
                     ).Object
                 }
             };
-            var rollbackProcessMock = new Mock<IRollbackProcess>(MockBehavior.Strict);
+            var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
 
             var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 

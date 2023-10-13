@@ -30,16 +30,16 @@ namespace Stryker.Core.Compiling
         private const int MaxAttempt = 50;
         private readonly MutationTestInput _input;
         private readonly StrykerOptions _options;
-        private readonly IRollbackProcess _rollbackProcess;
+        private readonly ICSharpRollbackProcess _rollbackProcess;
         private readonly ILogger _logger;
 
         public CsharpCompilingProcess(MutationTestInput input,
-            IRollbackProcess rollbackProcess = null,
+            ICSharpRollbackProcess rollbackProcess = null,
             StrykerOptions options = null)
         {
             _input = input;
             _options = options ?? new StrykerOptions();
-            _rollbackProcess = rollbackProcess ?? new RollbackProcess();
+            _rollbackProcess = rollbackProcess ?? new CSharpRollbackProcess();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpCompilingProcess>();
         }
 

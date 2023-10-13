@@ -14,7 +14,7 @@ using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Compiling
 {
-    public interface IRollbackProcess
+    public interface ICSharpRollbackProcess
     {
         (CSharpCompilation, IEnumerable<int>) Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode);
     }
@@ -22,14 +22,14 @@ namespace Stryker.Core.Compiling
     /// <summary>
     /// Responsible for rolling back all mutations that prevent compiling the mutated assembly
     /// </summary>
-    public class RollbackProcess : IRollbackProcess
+    public class CSharpRollbackProcess : ICSharpRollbackProcess
     {
         private List<int> RolledBackIds { get; }
         private ILogger Logger { get; }
 
-        public RollbackProcess()
+        public CSharpRollbackProcess()
         {
-            Logger = ApplicationLogging.LoggerFactory.CreateLogger<RollbackProcess>();
+            Logger = ApplicationLogging.LoggerFactory.CreateLogger<CSharpRollbackProcess>();
             RolledBackIds = new List<int>();
         }
 
