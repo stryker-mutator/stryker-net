@@ -95,7 +95,7 @@ namespace Stryker.Core.MutationTest
             var compileResult = compilingProcess.Compile(projectInfo.CompilationSyntaxTrees, _options.DevMode);
 
             // if a rollback took place, mark the rolled back mutants as status:BuildError
-            if (compileResult.RollbackedIds?.Any() ?? false)
+            if (compileResult.RollbackedIds.Any())
             {
                 foreach (var mutant in projectInfo.Mutants
                     .Where(x => compileResult.RollbackedIds.Contains(x.Id)))

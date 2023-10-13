@@ -132,7 +132,7 @@ namespace Stryker.Core.Compiling
             int retryCount)
         {
             CSharpCompilation Compilation = null;
-            IEnumerable<int> RollbackedIds = null;
+            IEnumerable<int> RollbackedIds = Enumerable.Empty<int>();
 
             if (previousEmitResult != null)
             {

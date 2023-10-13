@@ -73,8 +73,8 @@ namespace Stryker.Core.Compiling
             }
 
             //rollback still needs to be implemented
-            CSharpCompilation cSharpCompilation = null;
-            IEnumerable<int> ints = null;
+            CSharpCompilation Compilation = null;
+            IEnumerable<int> RollbackedIds = Enumerable.Empty<int>();
 
             if (compilationSuccess)
             {
@@ -83,8 +83,8 @@ namespace Stryker.Core.Compiling
                 return new CompilingProcessResult()
                 {
                     Success = compilationSuccess,
-                    Compilation = cSharpCompilation,
-                    RollbackedIds = ints
+                    Compilation = Compilation,
+                    RollbackedIds = RollbackedIds
                 };
             }
 
