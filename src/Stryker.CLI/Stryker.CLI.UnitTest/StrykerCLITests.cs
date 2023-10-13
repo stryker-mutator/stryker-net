@@ -59,9 +59,9 @@ namespace Stryker.CLI.UnitTest
 
                 var expected = @"Stryker: Stryker mutator for .Net
 
-Stryker mutator for .Net
+The mutation test framework for .Net
 
-Usage: Stryker [options]
+Usage: Stryker [command] [options]
 
 Options:";
                 sw.ToString().ShouldStartWith(expected);
@@ -414,6 +414,28 @@ Options:";
             _strykerRunnerMock.VerifyAll();
 
             _inputs.WithBaselineInput.SuppliedInput.Value.ShouldBeTrue();
+        }
+
+        [Theory]
+        [InlineData("baseline")]
+        public void ShouldSupplyWithBaselineWhenCommandPassed(params string[] argName)
+        {
+            _target.Run(argName);
+
+            _strykerRunnerMock.VerifyAll();
+
+            _inputs.WithBaselineInput.SuppliedInput.Value.ShouldBeTrue();
+        }
+
+        [Theory]
+        [InlineData("baseline", "recreate")]
+        public void ShouldSetBaselineRecreateWhenCommandPassed(params string[] argName)
+        {
+            _target.Run(argName);
+
+            _strykerRunnerMock.VerifyAll();
+
+            _inputs.BaselineRecreateEnabledInput.SuppliedInput.ShouldBeTrue();
         }
 
         [Theory]
