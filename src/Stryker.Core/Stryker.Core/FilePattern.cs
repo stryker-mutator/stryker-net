@@ -1,10 +1,9 @@
 using DotNet.Globbing;
 using Microsoft.CodeAnalysis.Text;
-using Stryker.Core.ProjectComponents;
+using Stryker.Core.Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Stryker.Core
 {
@@ -13,8 +12,6 @@ namespace Stryker.Core
     /// </summary>
     public sealed class FilePattern : IEquatable<FilePattern>
     {
-        private static readonly Regex _textSpanGroupRegex = new Regex("(\\{(\\d+)\\.\\.(\\d+)\\})+$");
-        private static readonly Regex _textSpanRegex = new Regex("\\{(\\d+)\\.\\.(\\d+)\\}");
         private static readonly TextSpan _textSpanMaxValue = new TextSpan(0, int.MaxValue);
 
         public FilePattern(Glob glob, bool isExclude, IReadOnlyCollection<TextSpan> textSpans)
@@ -45,47 +42,25 @@ namespace Stryker.Core
         /// </summary>
         /// <param name="pattern">The pattern to parse.</param>
         /// <returns>The <see cref="FilePattern"/></returns>
-        public static FilePattern Parse(string pattern) => Parse(pattern, spansEnabled: true);
-
-        /// <summary>
-        /// Parses a given file pattern string.
-        /// Format: (!)&lt;glob&gt;({&lt;spanStart&gt;..&lt;spanEnd&gt;})*
-        /// </summary>
-        /// <param name="pattern">The pattern to parse.</param>
-        /// <param name="spansEnabled">Enable or disable span parsing.</param>
-        /// <returns>The <see cref="FilePattern"/></returns>
-        public static FilePattern Parse(string pattern, bool spansEnabled)
+        public static FilePattern Parse(string pattern)
         {
-            var exclude = false;
+            var s = new ExclusionPattern(pattern);
             IReadOnlyCollection<TextSpan> textSpans;
 
-            if (pattern.StartsWith('!'))
-            {
-                exclude = true;
-                pattern = pattern[1..];
-            }
-
-            var textSpanGroupMatch = _textSpanGroupRegex.Match(pattern);
-            if (!spansEnabled || !textSpanGroupMatch.Success)
+            if (!s.MutantSpans.Any())
             {
                 // If there are no spans specified, we add one that will cover the whole file.
                 textSpans = new[] { _textSpanMaxValue };
             }
             else
             {
-                // If we have one ore more spans we parse them.
-                var textSpansMatches = _textSpanRegex.Matches(textSpanGroupMatch.Value);
-                textSpans = textSpansMatches
-                    .Select(x => TextSpan.FromBounds(int.Parse(x.Groups[1].Value), int.Parse(x.Groups[2].Value)))
+                textSpans = s.MutantSpans
+                    .Select(x => TextSpan.FromBounds(x.Start, x.End))
                     .Reduce()
                     .ToList();
-
-                pattern = pattern.Substring(0, pattern.Length - textSpanGroupMatch.Length);
             }
 
-            var glob = Glob.Parse(FilePathUtils.NormalizePathSeparators(pattern));
-
-            return new FilePattern(glob, exclude, textSpans);
+            return new FilePattern(s.Glob, s.IsExcluded, textSpans);
         }
 
         /// <summary>
