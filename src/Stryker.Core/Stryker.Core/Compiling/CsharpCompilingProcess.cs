@@ -69,7 +69,7 @@ namespace Stryker.Core.Compiling
 
             // first try compiling
             var retryCount = 1;
-            (var Compilation, var RollbackedIds, var emitResult, retryCount) = TryCompilation(ilStream, symbolStream, initialCompilation, null, false, retryCount);
+            (var compilation, var rollbackedIds, var emitResult, retryCount) = TryCompilation(ilStream, symbolStream, initialCompilation, null, false, retryCount);
 
             // If compiling failed and the error has no location, log and throw exception.
             if (!emitResult.Success && emitResult.Diagnostics.Any(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error))
@@ -83,14 +83,14 @@ namespace Stryker.Core.Compiling
             for (var count = 1; !emitResult.Success && count < MaxAttempt; count++)
             {
                 // compilation did not succeed. let's compile a couple times more for good measure
-                (Compilation, RollbackedIds, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, Compilation ?? initialCompilation, emitResult, retryCount == MaxAttempt - 1, retryCount);
+                (compilation, rollbackedIds, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, compilation ?? initialCompilation, emitResult, retryCount == MaxAttempt - 1, retryCount);
             }
 
             if (emitResult.Success)
             {
                 return new (
                     emitResult.Success,
-                    RollbackedIds);
+                    rollbackedIds);
             }
             // compiling failed
             _logger.LogError("Failed to restore the project to a buildable state. Please report the issue. Stryker can not proceed further");
