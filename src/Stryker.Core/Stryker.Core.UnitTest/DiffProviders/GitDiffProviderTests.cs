@@ -213,7 +213,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         public void ScanDiffReturnsListOfFiles_ExcludingTestFilesInDiffIgnoreFiles()
         {
             // Arrange
-            var diffIgnoreFiles = new[] { new FilePattern(Glob.Parse("/c/Users/JohnDoe/Project/Tests/Test.cs"), false, null) };
+            var diffIgnoreFiles = new[] { new ExclusionPattern("/c/Users/JohnDoe/Project/Tests/Test.cs") };
 
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions()
@@ -289,7 +289,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         public void ScanDiffReturnsListOfFiles_ExcludingTestFilesInDiffIgnoreFiles_Single_Asterisk()
         {
             // Arrange
-            var diffIgnoreFiles = new[] { new FilePattern(Glob.Parse("/c/Users/JohnDoe/Project/*/Test.cs"), false, null) };
+            var diffIgnoreFiles = new[] { new ExclusionPattern("/c/Users/JohnDoe/Project/*/Test.cs") };
 
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions()
@@ -365,7 +365,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         public void ScanDiffReturnsListOfFiles_ExcludingTestFilesInDiffIgnoreFiles_Multi_Asterisk()
         {
             // Arrange
-            var diffIgnoreFiles = new[] { new FilePattern(Glob.Parse("**/Test.cs"), false, null) };
+            var diffIgnoreFiles = new[] { new ExclusionPattern("**/Test.cs") };
 
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions()
@@ -441,7 +441,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         public void ScanDiffReturnsListOfFiles_ExcludingFilesInDiffIgnoreFiles_Multi_Asterisk()
         {
             // Arrange
-            var diffIgnoreFiles = new[] { new FilePattern(Glob.Parse("**/file.cs"), false, null) };
+            var diffIgnoreFiles = new[] { new ExclusionPattern("**/file.cs") };
 
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions()
