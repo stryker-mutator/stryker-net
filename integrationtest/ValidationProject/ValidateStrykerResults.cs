@@ -144,7 +144,7 @@ namespace IntegrationTests
 
                 foreach (var mutation in file.Value.Mutants)
                 {
-                    var linePositionSpan = new LinePositionSpan(new LinePosition(mutation.Location.Start.Line, mutation.Location.Start.Column), new LinePosition(mutation.Location.End.Line, mutation.Location.End.Column));
+                    var linePositionSpan = new LinePositionSpan(new LinePosition(mutation.Location.Start.Line - 1, mutation.Location.Start.Column), new LinePosition(mutation.Location.End.Line - 1, mutation.Location.End.Column));
                     var textSpan = textLines.GetTextSpan(linePositionSpan);
                     var node = syntaxTreeRootNode.FindNode(textSpan);
                     var nodeKind = node.Kind();
