@@ -14,7 +14,7 @@ using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Compiling
 {
-    public record CSharpRollbackProcessResult(CSharpCompilation Compilation, IEnumerable<int> RollbackIds);
+    public record CSharpRollbackProcessResult(CSharpCompilation Compilation, IEnumerable<int> RollbackedIds);
 
     public interface ICSharpRollbackProcess
     {
@@ -71,7 +71,9 @@ namespace Stryker.Core.Compiling
             }
 
             // by returning the same compiler object (with different syntax trees) the next compilation will use Roslyn's incremental compilation
-            return new(compiler, RolledBackIds);
+            return new(
+                compiler,
+                RolledBackIds);
         }
 
         // search is this node contains or is within a mutation
