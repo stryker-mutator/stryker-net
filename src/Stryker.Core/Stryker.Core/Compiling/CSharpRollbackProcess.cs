@@ -14,9 +14,11 @@ using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Compiling
 {
+    public record CSharpRollbackProcessResult(CSharpCompilation Compilation, IEnumerable<int> RollbackIds);
+
     public interface ICSharpRollbackProcess
     {
-        (CSharpCompilation, IEnumerable<int>) Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode);
+        CSharpRollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode);
     }
 
     /// <summary>
@@ -33,7 +35,7 @@ namespace Stryker.Core.Compiling
             RolledBackIds = new List<int>();
         }
 
-        public (CSharpCompilation, IEnumerable<int>) Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode)
+        public CSharpRollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode)
         {
             // match the diagnostics with their syntax trees
             var syntaxTreeMapping = compiler.SyntaxTrees.ToDictionary<SyntaxTree, SyntaxTree, ICollection<Diagnostic>>(syntaxTree => syntaxTree, _ => new Collection<Diagnostic>());
@@ -69,7 +71,7 @@ namespace Stryker.Core.Compiling
             }
 
             // by returning the same compiler object (with different syntax trees) the next compilation will use Roslyn's incremental compilation
-            return (compiler, RolledBackIds);
+            return new(compiler, RolledBackIds);
         }
 
         // search is this node contains or is within a mutation

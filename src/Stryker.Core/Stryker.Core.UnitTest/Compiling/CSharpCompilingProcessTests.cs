@@ -151,7 +151,7 @@ namespace ExampleProject
             var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
             rollbackProcessMock.Setup(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>(), false))
                             .Returns((CSharpCompilation compilation, ImmutableArray<Diagnostic> diagnostics, bool _, bool _) =>
-                            (compilation, null));
+                            new (compilation, null));
 
             var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, new StrykerOptions());
 
