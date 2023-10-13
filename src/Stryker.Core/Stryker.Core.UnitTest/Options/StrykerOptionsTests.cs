@@ -26,7 +26,7 @@ namespace Stryker.Core.UnitTest.Options
                 DashboardUrl = "url",
                 DevMode = true,
                 Since = true,
-                DiffIgnoreChanges = new[] { new FilePattern(Glob.Parse("**"), true, null) },
+                DiffIgnoreChanges = new[] { new ExclusionPattern("**") },
                 ExcludedMutations = new[] { Mutator.Bitwise },
                 FallbackVersion = "main",
                 IgnoredMethods = new[] { new Regex("") },
