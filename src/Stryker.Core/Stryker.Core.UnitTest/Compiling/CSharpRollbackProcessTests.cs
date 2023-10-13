@@ -155,7 +155,7 @@ namespace ExampleProject
 
             using var ms = new MemoryStream();
             var result = target.Compile(helpers, ms, null);
-            result.Item2.RollbackedIds.Count().ShouldBe(2); // should actually be 1 but thanks to issue #1745 rollback doesn't work
+            result.CompilingProcessResult.RollbackedIds.Count().ShouldBe(2); // should actually be 1 but thanks to issue #1745 rollback doesn't work
         }
 
         [Fact]

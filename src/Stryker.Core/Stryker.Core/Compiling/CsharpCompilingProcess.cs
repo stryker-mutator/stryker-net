@@ -16,16 +16,18 @@ using Stryker.Core.Options;
 
 namespace Stryker.Core.Compiling
 {
-    public interface ICompilingProcess
+    public record CSharpCompilingProcessResult(CSharpCompilation Compilation, CompilingProcessResult CompilingProcessResult);
+
+    public interface ICSharpCompilingProcess
     {
-        (CSharpCompilation, CompilingProcessResult) Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream);
+        CSharpCompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream);
     }
 
     /// <summary>
     /// This process is in control of compiling the assembly and rolling back mutations that cannot compile
     /// Compiles the given input onto the memory stream
     /// </summary>
-    public class CsharpCompilingProcess : ICompilingProcess
+    public class CsharpCompilingProcess : ICSharpCompilingProcess
     {
         private const int MaxAttempt = 50;
         private readonly MutationTestInput _input;
@@ -53,7 +55,7 @@ namespace Stryker.Core.Compiling
         /// <param name="ilStream">The memory stream to store the compilation result onto</param>
         /// <param name="symbolStream">The memory stream to store the debug symbol</param>
         /// </summary>
-        public (CSharpCompilation, CompilingProcessResult) Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream)
+        public CSharpCompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream)
         {
             var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
             var trees = syntaxTrees.ToList();
@@ -88,7 +90,7 @@ namespace Stryker.Core.Compiling
 
             if (emitResult.Success)
             {
-                return (Compilation, new CompilingProcessResult
+                return new (Compilation, new CompilingProcessResult
                 {
                     Success = emitResult.Success,
                     RollbackedIds = RollbackedIds,
