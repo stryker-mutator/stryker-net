@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.Text;
 using Shouldly;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.Options
+namespace Stryker.Core.UnitTest
 {
     public class FilePatternTests : TestBase
     {

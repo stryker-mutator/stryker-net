@@ -5,7 +5,7 @@
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.1.0" />
     <PackageVersion Include="NuGet.Protocol" Version="6.7.0" />
     <PackageVersion Include="ResXResourceReader.NetStandard" Version="1.1.0" />
-    <PackageVersion Include="YamlDotNet" Version="13.5.1" />
+    <PackageVersion Include="YamlDotNet" Version="13.7.0" />
     <PackageVersion Include="Grynwald.MarkdownGenerator" Version="3.0.106" />
     <PackageVersion Include="LibGit2Sharp" Version="0.27.2" />
     <PackageVersion Include="FSharp.Compiler.Service" Version="41.0.7" />
@@ -38,8 +38,8 @@
     <PackageVersion Include="RegexParser" Version="0.5.1" />
     <PackageVersion Include="Shouldly" Version="4.2.1" />
     <PackageVersion Include="Spectre.Console.Testing" Version="0.47.0" />
-    <PackageVersion Include="xunit" Version="2.5.1" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.1" />
+    <PackageVersion Include="xunit" Version="2.5.2" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="2.5.3" />
     <PackageVersion Include="Xunit.SkippableFact" Version="1.4.13" />
     <PackageVersion Include="TestableIO.System.IO.Abstractions.TestingHelpers" Version="19.2.69" />
   </ItemGroup>

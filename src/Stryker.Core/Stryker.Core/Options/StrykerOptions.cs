@@ -153,7 +153,7 @@ namespace Stryker.Core.Options
         /// Context: When using the since feature, all tests are run again if files in the test project change (as these could impact the test results)
         /// When the file is present in this option the tests should not run again as the file does not impact test results.
         /// </summary>
-        public IEnumerable<FilePattern> DiffIgnoreChanges { get; init; } = Enumerable.Empty<FilePattern>();
+        public IEnumerable<ExclusionPattern> DiffIgnoreChanges { get; init; } = Enumerable.Empty<ExclusionPattern>();
 
         /// <summary>
         /// When no previous report can be found for the since feature, this commitish is used to se a baseline.
