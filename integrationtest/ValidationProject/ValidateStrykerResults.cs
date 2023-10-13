@@ -34,6 +34,15 @@ namespace IntegrationTests
                 SyntaxKind.XmlCommentStartToken,
             }
         );
+        private readonly ReadOnlyCollection<SyntaxKind> _parentSyntaxKindsForMutating =
+            new(new[]
+            {
+                SyntaxKind.MethodDeclaration,
+                SyntaxKind.PropertyDeclaration,
+                SyntaxKind.ConstructorDeclaration,
+                SyntaxKind.FieldDeclaration,
+            }
+        );        
         private const string MutationReportJson = "mutation-report.json";
 
         [Fact]
@@ -130,12 +139,12 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckMutationKindsForBlacklisted(report);
+            CheckMutationKindsValidity(report);
             CheckReportMutantCounts(report, total: 114, ignored: 55, survived: 4, killed: 6, timeout: 2, nocoverage: 45);
             CheckReportTestCounts(report, total: 30);
         }
 
-        private void CheckMutationKindsForBlacklisted(JsonReport report)
+        private void CheckMutationKindsValidity(JsonReport report)
         {
             foreach (var file in report.Files)
             {
@@ -149,6 +158,8 @@ namespace IntegrationTests
                     var node = syntaxTreeRootNode.FindNode(textSpan);
                     var nodeKind = node.Kind();
                     _blacklistedSyntaxKindsForMutating.ShouldNotContain(nodeKind);
+
+                    node.AncestorsAndSelf().ShouldContain(pn => _parentSyntaxKindsForMutating.Contains(pn.Kind()));
                 }
             }
         }
