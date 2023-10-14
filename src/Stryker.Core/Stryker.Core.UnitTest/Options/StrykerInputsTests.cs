@@ -1,5 +1,6 @@
 using System.IO;
 using Shouldly;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
 using Xunit;
@@ -149,6 +150,16 @@ namespace Stryker.Core.UnitTest.Options
             var result = _target.ValidateAll();
 
             result.DashboardApiKey.ShouldBeNull();
+        }
+
+        [Fact]
+        public void WithBaselineAndSinceShouldBeMutuallyExclusive()
+        {
+            _target.WithBaselineInput.SuppliedInput = true;
+            _target.SinceInput.SuppliedInput = true;
+
+            var exception = Should.Throw<InputException>(() => _target.ValidateAll());
+            exception.Message.ShouldBe("The since and baseline features are mutually exclusive.");
         }
     }
 }
