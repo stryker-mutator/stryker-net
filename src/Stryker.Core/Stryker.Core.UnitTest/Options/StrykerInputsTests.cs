@@ -1,5 +1,6 @@
 using System.IO;
 using Shouldly;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
 using Xunit;
@@ -149,6 +150,22 @@ namespace Stryker.Core.UnitTest.Options
             var result = _target.ValidateAll();
 
             result.DashboardApiKey.ShouldBeNull();
+        }
+
+        [Fact]
+        public void BaseLineOptionsShouldBeSetToDefaultWhenBaselineIsDisabled()
+        {
+            _target.WithBaselineInput.SuppliedInput = false;
+            _target.BaselineProviderInput.SuppliedInput = "azurefilestorage";
+            _target.AzureFileStorageSasInput.SuppliedInput = "se=2022-08-25T14%3A27Z&sp=rwdl&spr=https&sv=2021-06-08&sr=d&sdd=1&sig=XXXXXXXXXXXXX";
+            _target.AzureFileStorageUrlInput.SuppliedInput = "azureUrl";
+
+            var result = _target.ValidateAll();
+
+            result.WithBaseline.ShouldBeFalse();
+            result.BaselineProvider.ShouldBe(BaselineProvider.Disk);
+            result.AzureFileStorageSas.ShouldBe(string.Empty);
+            result.AzureFileStorageUrl.ShouldBe(string.Empty);
         }
     }
 }
