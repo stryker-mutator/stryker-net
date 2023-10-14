@@ -1,5 +1,6 @@
 using System.IO;
 using McMaster.Extensions.CommandLineUtils;
+using Stryker.CLI.CommandLineConfig;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 

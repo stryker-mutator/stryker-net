@@ -1,14 +1,12 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.Json;
 using McMaster.Extensions.CommandLineUtils;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
 
-namespace Stryker.CLI
+namespace Stryker.CLI.CommandLineConfig
 {
     public class CommandLineConfigReader
     {
@@ -17,31 +15,23 @@ namespace Stryker.CLI
 
         public CommandLineConfigReader() => _configFileInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. Supports json and yaml formats. | default: stryker-config.json", argumentHint: "relative-path");
 
-        public void RegisterCommandLineOptions(CommandLineApplication app, IStrykerInputs inputs, string[] args)
+        public void RegisterCommandLineOptions(CommandLineApplication app, IStrykerInputs inputs)
         {
             PrepareCliOptions(inputs);
 
-            foreach (var (_, value) in _cliInputs)
-            {
-                RegisterCliInput(app, value);
-            }
-
-            RegisterInitCommand(app, inputs, args);
+            RegisterCliInputs(app);
         }
 
-        private void RegisterInitCommand(CommandLineApplication app, IStrykerInputs inputs, string[] args)
+        public void RegisterInitCommand(CommandLineApplication app, IStrykerInputs inputs, string[] args)
         {
-            app.Command("init", application =>
+            app.Command("init", initCommandApp =>
             {
-                foreach (var (_, value) in _cliInputs)
-                {
-                    RegisterCliInput(application, value);
-                }
+                RegisterCliInputs(initCommandApp);
 
                 ReadCommandLineConfig(args, app, inputs);
-                application.OnExecute(() =>
+                initCommandApp.OnExecute(() =>
                 {
-                    var configOption = application.Options.SingleOrDefault(o => o.LongName == _configFileInput.ArgumentName);
+                    var configOption = initCommandApp.Options.SingleOrDefault(o => o.LongName == _configFileInput.ArgumentName);
                     var basePath = Directory.GetCurrentDirectory();
                     var configFilePath = Path.Combine(basePath, configOption?.Value() ?? "stryker-config.json");
 
@@ -91,6 +81,14 @@ namespace Stryker.CLI
                         HandleSingleIntValue(cliInput, (IInput<int?>)intInput);
                         break;
                 }
+            }
+        }
+
+        private void RegisterCliInputs(CommandLineApplication app)
+        {
+            foreach (var (_, value) in _cliInputs)
+            {
+                RegisterCliInput(app, value);
             }
         }
 

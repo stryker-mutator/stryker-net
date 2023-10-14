@@ -1,6 +1,7 @@
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using Shouldly;
+using Stryker.CLI.CommandLineConfig;
 using Stryker.Core.Options;
 using Xunit;
 

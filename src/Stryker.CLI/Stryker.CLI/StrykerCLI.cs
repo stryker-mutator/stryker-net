@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 using Spectre.Console;
 using Stryker.CLI.Clients;
+using Stryker.CLI.CommandLineConfig;
 using Stryker.CLI.Logging;
 using Stryker.Core;
 using Stryker.Core.Options;
@@ -54,7 +55,8 @@ namespace Stryker.CLI
             var inputs = new StrykerInputs();
             var cmdConfigReader = new CommandLineConfigReader();
 
-            cmdConfigReader.RegisterCommandLineOptions(app, inputs, args);
+            cmdConfigReader.RegisterCommandLineOptions(app, inputs);
+            cmdConfigReader.RegisterInitCommand(app, inputs, args);
 
             app.OnExecute(() =>
             {
