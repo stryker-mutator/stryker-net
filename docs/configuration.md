@@ -482,7 +482,7 @@ The report name is based on the current branch name or the [project-info.version
 Set the diffing target on the command line by passing a committish with the since flag.
 Set the diffing target in the config file by setting the [since target](#sincetarget-committish) option.
 
-*\* The with-baseline and since options are mutually exclusive. This feature implicitly enables the [since](#since-flag-committish) feature.*
+*\* The baseline and since features are mutually exclusive. This feature implicitly enables the [since](#since-flag-committish) feature for now.*
 
 ### `baseline.enabled` <`flag`>
 
