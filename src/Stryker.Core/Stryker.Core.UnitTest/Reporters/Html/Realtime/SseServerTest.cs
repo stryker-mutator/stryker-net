@@ -104,4 +104,15 @@ public class SseServerTest : TestBase
         data.ShouldBeSemantically("{\"id\":\"1\",\"status\":\"Survived\"}");
     }
 
+    [Fact]
+    public void ShouldIndicateWhenAtLeastOneClientIsConnected()
+    {
+        _sut.OpenSseEndpoint();
+        var sseClient = new EventSource(new Uri($"http://localhost:{_sut.Port}/"));
+
+        Task.Run(() => sseClient.StartAsync());
+        WaitForConnection(500).ShouldBeTrue();
+
+        _sut.HasConnectedClients.ShouldBeTrue();
+    }
 }
