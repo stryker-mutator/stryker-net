@@ -1,4 +1,5 @@
 using System;
+using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Shouldly;
 using Stryker.Core.Mutants;
