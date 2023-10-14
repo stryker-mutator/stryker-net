@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
@@ -33,7 +34,7 @@ namespace Stryker.Core.Mutators
             _ => Enumerable.Empty<Mutation>()
         };
 
-        private IEnumerable<Mutation> ApplyMutations(BinaryPatternSyntax node)
+        private IEnumerable<Mutation> ApplyMutations(BinaryPatternSyntax node, SemanticModel semanticModel)
         {
             if (KindsToMutate.TryGetValue(node.Kind(), out var mutations))
             {

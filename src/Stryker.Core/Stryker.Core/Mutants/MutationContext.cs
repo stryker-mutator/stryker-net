@@ -38,8 +38,8 @@ namespace Stryker.Core.Mutants
         /// </summary>
         /// <param name="node"><see cref="SyntaxNode"/> to mutate.</param>
         /// <returns>A list of mutants.</returns>
-        public IEnumerable<Mutant> GenerateMutantsForNode(SyntaxNode node) =>
-            _mainOrchestrator.GenerateMutationsForNode(node, this);
+        public IEnumerable<Mutant> GenerateMutantsForNode(SyntaxNode node, SemanticModel semanticModel) =>
+            _mainOrchestrator.GenerateMutationsForNode(node, semanticModel, this);
 
         public INodeMutator FindHandler(SyntaxNode node) => _mainOrchestrator.GetHandler(node);
 

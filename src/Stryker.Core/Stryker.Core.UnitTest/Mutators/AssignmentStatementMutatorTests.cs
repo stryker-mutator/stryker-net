@@ -38,7 +38,7 @@ namespace Stryker.Core.UnitTest.Mutators
                 SyntaxFactory.IdentifierName("b")
             );
 
-            var result = target.ApplyMutations(originalNode).ToList();
+            var result = target.ApplyMutations(originalNode, null).ToList();
 
             if (additionalOutput.HasValue && additionalOutput.Value is var additionalExpectedOutput)
             {
@@ -72,7 +72,7 @@ namespace Stryker.Core.UnitTest.Mutators
             var originalExpression = SyntaxFactory.ParseExpression(originalExpressionString);
 
             // Act
-            var result = target.ApplyMutations(originalExpression as AssignmentExpressionSyntax);
+            var result = target.ApplyMutations(originalExpression as AssignmentExpressionSyntax, semanticModel);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();

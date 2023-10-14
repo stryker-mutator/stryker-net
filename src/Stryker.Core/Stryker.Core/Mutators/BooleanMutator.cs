@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
@@ -16,7 +17,7 @@ namespace Stryker.Core.Mutators
         };
 
 
-        public override IEnumerable<Mutation> ApplyMutations(LiteralExpressionSyntax node)
+        public override IEnumerable<Mutation> ApplyMutations(LiteralExpressionSyntax node, SemanticModel semanticModel)
         {
             if (KindsToMutate.ContainsKey(node.Kind()))
             {

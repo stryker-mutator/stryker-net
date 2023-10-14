@@ -15,7 +15,7 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 namespace Stryker.Core.Mutants
 {
     /// <inheritdoc/>
-    public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxNode>
+    public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxNode, SemanticModel>
     {
         private readonly TypeBasedStrategy<SyntaxNode, INodeMutator> _specificOrchestrator =
             new();
@@ -91,18 +91,18 @@ namespace Stryker.Core.Mutants
         /// </summary>
         /// <param name="input">The current root node</param>
         /// <returns>Mutated node</returns>
-        public override SyntaxNode Mutate(SyntaxNode input) =>
+        public override SyntaxNode Mutate(SyntaxNode input, SemanticModel semanticModel) =>
             // search for node specific handler
-            GetHandler(input).Mutate(input, new MutationContext(this));
+            GetHandler(input).Mutate(input, semanticModel, new MutationContext(this));
 
         internal INodeMutator GetHandler(SyntaxNode currentNode) => _specificOrchestrator.FindHandler(currentNode);
 
-        internal IEnumerable<Mutant> GenerateMutationsForNode(SyntaxNode current, MutationContext context)
+        internal IEnumerable<Mutant> GenerateMutationsForNode(SyntaxNode current, SemanticModel semanticModel, MutationContext context)
         {
             var mutations = new List<Mutant>();
             foreach (var mutator in Mutators)
             {
-                foreach (var mutation in mutator.Mutate(current, _options))
+                foreach (var mutation in mutator.Mutate(current, semanticModel, _options))
                 {
                     var newMutant = CreateNewMutant(mutation, mutator, context);
 

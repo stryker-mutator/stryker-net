@@ -104,7 +104,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         /// <param name="context">Mutation context which contains pending mutations.</param>
         /// <returns>A syntax node (typeof <see cref="TBase"></see>) with mutations injected, if possible./></returns>
         /// <remarks>Override this method when you need to inject some code (e.g : mutation control, or analysis markers).</remarks>
-        protected virtual TBase InjectMutations(TNode sourceNode, TBase targetNode, MutationContext context) => targetNode;
+        protected virtual TBase InjectMutations(TNode sourceNode, TBase targetNode, SemanticModel semanticModel, MutationContext context) => targetNode;
 
         /// <summary>
         /// Generates and returns the list of possible mutations for the provided node.
@@ -113,7 +113,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         /// <param name="context">Mutation context.</param>
         /// <returns>A list of <see cref="Mutant"/>s for the given node.</returns>
         /// <remarks>You should not override this, unless you want to block mutation generation for the node. Then returns and empty list.</remarks>
-        protected virtual IEnumerable<Mutant> GenerateMutationForNode(TNode node, MutationContext context) => context.GenerateMutantsForNode(node);
+        protected virtual IEnumerable<Mutant> GenerateMutationForNode(TNode node, SemanticModel semanticModel, MutationContext context) => context.GenerateMutantsForNode(node, semanticModel);
 
         /// <summary>
         /// Stores provided mutations.
@@ -135,11 +135,11 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         /// <returns>A <see cref="TBase"/> instance with the mutated children.</returns>
         /// <remarks>Override this method if you want to control how the node's children are mutated. simply return <see cref="node"/> if you want to
         /// skip mutation the children node.</remarks>
-        protected virtual TBase OrchestrateChildrenMutation(TNode node, MutationContext context) =>
+        protected virtual TBase OrchestrateChildrenMutation(TNode node, SemanticModel semanticModel, MutationContext context) =>
             node.ReplaceNodes(node.ChildNodes(),
-                computeReplacementNode: (original, _) => MutateSingleNode(original, context));
+                computeReplacementNode: (original, _) => MutateSingleNode(original, semanticModel, context));
 
-        protected virtual SyntaxNode MutateSingleNode(SyntaxNode node, MutationContext context) => context.FindHandler(node).Mutate(node, context);
+        protected virtual SyntaxNode MutateSingleNode(SyntaxNode node, SemanticModel semanticModel, MutationContext context) => context.FindHandler(node).Mutate(node, semanticModel, context);
 
         protected virtual MutationContext PrepareContext(TNode node, MutationContext context)
         {
@@ -171,14 +171,15 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         /// <param name="node">Node to be mutated</param>
         /// <param name="context">Mutation context</param>
         /// <returns>A <see cref="SyntaxNode"/> instance will all injected mutations.</returns>
-        public virtual SyntaxNode Mutate(SyntaxNode node, MutationContext context)
+        public virtual SyntaxNode Mutate(SyntaxNode node, SemanticModel semanticModel, MutationContext context)
         {
             var specificNode = node as TNode;
             context = PrepareContext(specificNode, context);
             // we generate mutations for this node (to help numbering being in 'code reading' order)
-            var mutations = GenerateMutationForNode(specificNode, context);
+            var mutations = GenerateMutationForNode(specificNode, semanticModel, context);
             SyntaxNode result = InjectMutations(specificNode,
-                OrchestrateChildrenMutation(specificNode, context),
+                OrchestrateChildrenMutation(specificNode, semanticModel, context),
+                semanticModel,
                 StoreMutations(specificNode, mutations, context));
 
             RestoreContext(context);

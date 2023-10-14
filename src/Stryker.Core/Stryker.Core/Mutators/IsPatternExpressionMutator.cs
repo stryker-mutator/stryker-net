@@ -14,7 +14,7 @@ namespace Stryker.Core.Mutators
         /// Apply mutations to all <see cref="PatternSyntax"/> inside an <see cref="IsPatternExpressionSyntax"/>.
         /// Apply mutations to the root pattern.
         /// </summary>
-        public override IEnumerable<Mutation> ApplyMutations(IsPatternExpressionSyntax node)
+        public override IEnumerable<Mutation> ApplyMutations(IsPatternExpressionSyntax node, SemanticModel semanticModel)
         {
             yield return ReverseRootPattern(node);
 
