@@ -224,6 +224,11 @@ stages:
         testName: 'linux-netcore'
         workingDirectory: 'integrationtest/TargetProjects'
         strykerCommands: --solution '$(Agent.BuildDirectory)/s/integrationtest/TargetProjects/IntegrationTestApp.sln'
+    - template: pipeline-templates/run-integration-test-steps.yml
+      parameters:
+        testName: 'linux-netcore'
+        workingDirectory: 'integrationtest/TargetProjects'
+        strykerCommands: init --config-file "InitCommand/test-config.json" -p "TestProject.csproj"
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:

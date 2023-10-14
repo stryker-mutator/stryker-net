@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Json;
+using Stryker.CLI;
 using Xunit;
 
 namespace IntegrationTests
@@ -42,7 +43,7 @@ namespace IntegrationTests
                 SyntaxKind.ConstructorDeclaration,
                 SyntaxKind.FieldDeclaration,
             }
-        );        
+        );
         private const string MutationReportJson = "mutation-report.json";
 
         [Fact]
@@ -141,6 +142,20 @@ namespace IntegrationTests
 
             CheckReportMutants(report, total: 114, ignored: 55, survived: 4, killed: 6, timeout: 2, nocoverage: 45);
             CheckReportTestCounts(report, total: 30);
+        }
+
+        [Fact]
+        [Trait("Category", "InitCommand")]
+        public void InitCommand()
+        {
+            var directory = new DirectoryInfo("../../../../TargetProjects/InitCommand");
+            var jsonFile = Directory.GetFiles("*.json", SearchOption.AllDirectories).SingleOrDefault();
+            jsonFile.ShouldNotBeNull("Json file missing");
+
+            var configOutput = File.ReadAllText(jsonFile.FullName);
+            var parsedConfigOuptut = JsonConvert.DeserializeObject<FileBasedInputOuter>(json);
+
+            parsedConfigOuptut.Input.Project.ShouldBe("TestProject.csproj");
         }
 
         private void CheckMutationKindsValidity(JsonReport report)

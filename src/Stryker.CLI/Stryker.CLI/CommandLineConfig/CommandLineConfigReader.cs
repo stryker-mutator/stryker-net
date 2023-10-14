@@ -24,6 +24,7 @@ namespace Stryker.CLI.CommandLineConfig
 
         public void RegisterInitCommand(CommandLineApplication app, IStrykerInputs inputs, string[] args)
         {
+            File.ReadAllText("");
             app.Command("init", initCommandApp =>
             {
                 RegisterCliInputs(initCommandApp);
