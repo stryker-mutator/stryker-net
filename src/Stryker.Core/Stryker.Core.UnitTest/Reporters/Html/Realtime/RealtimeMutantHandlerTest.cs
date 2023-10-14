@@ -1,5 +1,4 @@
 using System;
-using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Shouldly;
 using Stryker.Core.Mutants;
@@ -95,13 +94,15 @@ public class RealtimeMutantHandlerTest : TestBase
         };
         sut.SendMutantTestedEvent(mutant);
 
-        // Not connected yet so should not be called yet.
+        // Verify that the event is not called yet.
+
         _sseEventSenderMock.Verify(service => service.SendEvent(It.IsAny<SseEvent<JsonMutant>>()), Times.Never);
 
         // Connect a client.
         _sseEventSenderMock.Raise(server => server.ClientConnected += null, EventArgs.Empty);
 
-        // Check that the events are send.
+        // Verify that the event is sent after a client connects.
+
         _sseEventSenderMock.Verify(sse
             => sse.SendEvent(It.IsAny<SseEvent<JsonMutant>>()));
     }
