@@ -122,7 +122,8 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         /// <param name="mutations">Mutations to store</param>
         /// <param name="context">Mutation context.</param>
         /// <returns>A <see cref="MutationContext"/>instance storing existing mutations as well as the one provided</returns>
-        /// <remarks>You need to override this method if you need to ensure mutations are controlled at with 'if' at the statement or block level.</remarks>
+        /// <remarks>You need to override this method if the generated mutations cannot be injected in place (via a conditional operator) but must be controlled
+        /// at the statement or block level.</remarks>
         protected virtual MutationContext StoreMutations(TNode node,
             IEnumerable<Mutant> mutations,
             MutationContext context) => context;
@@ -133,8 +134,8 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         /// <param name="node">Node which children will be mutating</param>
         /// <param name="context">Mutation status</param>
         /// <returns>A <see cref="TBase"/> instance with the mutated children.</returns>
-        /// <remarks>Override this method if you want to control how the node's children are mutated. simply return <see cref="node"/> if you want to
-        /// skip mutation the children node.</remarks>
+        /// <remarks>Override this method if you want to control how the node's children are mutated. Simply return <see cref="node"/> if you want to
+        /// skip mutating the children node.</remarks>
         protected virtual TBase OrchestrateChildrenMutation(TNode node, MutationContext context) =>
             node.ReplaceNodes(node.ChildNodes(),
                 computeReplacementNode: (original, _) => MutateSingleNode(original, context));

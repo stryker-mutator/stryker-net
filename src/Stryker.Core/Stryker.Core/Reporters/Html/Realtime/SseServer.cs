@@ -12,6 +12,7 @@ namespace Stryker.Core.Reporters.Html.Realtime;
 public class SseServer : ISseServer
 {
     public int Port { get; set; }
+    public bool HasConnectedClients => _writers.Any();
 
     private readonly HttpListener _listener;
     private readonly List<StreamWriter> _writers;
