@@ -87,7 +87,7 @@ namespace TestApplication
 
             var expression = GenerateClassCallExpression("Math", original.ToString());
 
-            var result = target.ApplyMutations(expression).ToList();
+            var result = target.ApplyMutations(expression, null).ToList();
 
             result.ForEach(mutation =>
             {
@@ -116,7 +116,7 @@ namespace TestApplication
 
             var expression = GenerateStaticCallExpression(original.ToString());
 
-            var result = target.ApplyMutations(expression).ToList();
+            var result = target.ApplyMutations(expression, null).ToList();
 
             result.ForEach(mutation =>
             {
@@ -150,7 +150,7 @@ namespace TestApplication
         {
             var target = new MathMutator();
 
-            var result = target.ApplyMutations(GenerateClassCallExpression("Math", methodName));
+            var result = target.ApplyMutations(GenerateClassCallExpression("Math", methodName), null);
 
             result.ShouldBeEmpty();
         }
@@ -166,7 +166,7 @@ namespace TestApplication
             var original = GetMethodSwapsTestData().First()[0];
             var target = new MathMutator();
 
-            var result = target.ApplyMutations(GenerateClassCallExpression(className, original.ToString()));
+            var result = target.ApplyMutations(GenerateClassCallExpression(className, original.ToString()), null);
 
             result.ShouldBeEmpty();
         }

@@ -40,7 +40,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var target = new StatementMutator();
 
-            var result = target.ApplyMutations(statement).ToList();
+            var result = target.ApplyMutations(statement, null).ToList();
 
             var mutation = result.ShouldHaveSingleItem();
 
@@ -87,7 +87,7 @@ namespace Test
 
             var target = new StatementMutator();
 
-            var result = statements.SelectMany(target.ApplyMutations).ToList();
+            var result = statements.SelectMany(statement => target.ApplyMutations(statement, null)).ToList();
 
             result.ShouldBeEmpty();
         }

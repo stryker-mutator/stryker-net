@@ -79,12 +79,12 @@ namespace Stryker.Core.UnitTest.MutationTest
 
             // create mocks
             var options = new StrykerOptions();
-            var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode>>(MockBehavior.Strict, options);
+            var orchestratorMock = new Mock<BaseMutantOrchestrator<SyntaxNode, SemanticModel>>(MockBehavior.Strict, options);
 
             fileSystem.AddDirectory(Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0"));
 
             // setup mocks
-            orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
+            orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>(), null)).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
 

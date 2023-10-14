@@ -25,7 +25,7 @@ namespace Stryker.Core.UnitTest.Mutators
                 }));
             var target = new InitializerMutator();
 
-            var result = target.ApplyMutations(initializerExpression);
+            var result = target.ApplyMutations(initializerExpression, null);
 
             var mutation = result.ShouldHaveSingleItem();
             mutation.DisplayName.ShouldBe("Array initializer mutation");
@@ -41,7 +41,7 @@ namespace Stryker.Core.UnitTest.Mutators
                 SyntaxFactory.SeparatedList<ExpressionSyntax>());
             var target = new InitializerMutator();
 
-            var result = target.ApplyMutations(emptyInitializerExpression);
+            var result = target.ApplyMutations(emptyInitializerExpression, null);
 
             result.ShouldBeEmpty();
         }
@@ -53,7 +53,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var target = new InitializerMutator();
 
-            var result = target.ApplyMutations(arrayCreationExpression.Initializer);
+            var result = target.ApplyMutations(arrayCreationExpression.Initializer, null);
 
             result.ShouldBeEmpty();
         }
@@ -65,7 +65,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var target = new InitializerMutator();
 
-            var result = target.ApplyMutations(arrayCreationExpression.Initializer);
+            var result = target.ApplyMutations(arrayCreationExpression.Initializer, null);
 
             result.ShouldBeEmpty();
         }
@@ -77,7 +77,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var target = new InitializerMutator();
 
-            var result = target.ApplyMutations(arrayCreationExpression.Initializer);
+            var result = target.ApplyMutations(arrayCreationExpression.Initializer, null);
 
             result.ShouldBeEmpty();
         }
