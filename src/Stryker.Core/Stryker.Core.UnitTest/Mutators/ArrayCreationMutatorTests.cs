@@ -15,10 +15,12 @@ namespace Stryker.Core.UnitTest.Mutators
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
         }
 
-        [Fact]
-        public void ShouldRemoveValuesFromArrayCreation()
+        [Theory]
+        [InlineData("new int[] { 1, 3 }")]
+        [InlineData("new int[2] { 1, 3 }")]
+        public void ShouldClearInitializerOfArrayCreation(string expression)
         {
-            var expressionSyntax = SyntaxFactory.ParseExpression("new int[] { 1, 3 }") as ArrayCreationExpressionSyntax;
+            var expressionSyntax = SyntaxFactory.ParseExpression(expression) as ArrayCreationExpressionSyntax;
 
             var target = new ArrayCreationMutator();
 
@@ -31,37 +33,12 @@ namespace Stryker.Core.UnitTest.Mutators
             replacement.Initializer.Expressions.ShouldBeEmpty();
         }
 
-        [Fact]
-        public void ShouldNotRemoveValuesFromImplicitArrayCreation()
+        [Theory]
+        [InlineData("stackalloc int[] { 1, 3 }")]
+        [InlineData("stackalloc int[2] { 1, 3 }")]
+        public void ShouldClearInitializerOfStackAllocArrayCreation(string expression)
         {
-            var expressionSyntax = SyntaxFactory.ParseExpression("new [] { 1, 3 }") as ImplicitArrayCreationExpressionSyntax;
-
-            var target = new ArrayCreationMutator();
-
-            var result = target.ApplyMutations(expressionSyntax);
-
-            result.ShouldBeEmpty();
-        }
-
-        [Fact]
-        public void ShouldNotMutateEmptyInitializer()
-        {
-            var arrayCreationExpression = SyntaxFactory.ParseExpression("new int[] { }") as ArrayCreationExpressionSyntax;
-            var implicitArrayCreationExpression = SyntaxFactory.ParseExpression("new int[] { }") as ArrayCreationExpressionSyntax;
-
-            var target = new ArrayCreationMutator();
-
-            var result1 = target.ApplyMutations(arrayCreationExpression);
-            var result2 = target.ApplyMutations(implicitArrayCreationExpression);
-
-            result1.ShouldBeEmpty();
-            result2.ShouldBeEmpty();
-        }
-
-        [Fact]
-        public void ShouldMutateStackallocArrays()
-        {
-            var stackallocArrayCreationExpression = SyntaxFactory.ParseExpression("stackalloc int[] { 1 }") as StackAllocArrayCreationExpressionSyntax;
+            var stackallocArrayCreationExpression = SyntaxFactory.ParseExpression(expression) as StackAllocArrayCreationExpressionSyntax;
 
             var target = new ArrayCreationMutator();
 
@@ -72,6 +49,52 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var replacement = mutation.ReplacementNode.ShouldBeOfType<StackAllocArrayCreationExpressionSyntax>();
             replacement.Initializer.Expressions.ShouldBeEmpty();
+        }
+
+        [Fact]
+        public void ShouldMutateImplicitArrayCreationToDefault()
+        {
+            var expressionSyntax = SyntaxFactory.ParseExpression("new [] { 1, 3 }") as ImplicitArrayCreationExpressionSyntax;
+
+            var target = new ArrayCreationMutator();
+
+            var result = target.ApplyMutations(expressionSyntax);
+
+            var mutation = result.ShouldHaveSingleItem();
+            mutation.DisplayName.ShouldBe("Array initializer mutation");
+            var literalExpression = mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
+            literalExpression.Token.Kind().ShouldBe(SyntaxKind.DefaultKeyword);
+        }
+
+        [Fact]
+        public void ShouldMutateImplicitStackAllocArrayCreationToDefault()
+        {
+            var expressionSyntax = SyntaxFactory.ParseExpression("stackalloc [] { 1, 3 }") as ImplicitStackAllocArrayCreationExpressionSyntax;
+
+            var target = new ArrayCreationMutator();
+
+            var result = target.ApplyMutations(expressionSyntax);
+
+            var mutation = result.ShouldHaveSingleItem();
+            mutation.DisplayName.ShouldBe("Array initializer mutation");
+            var literalExpression = mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
+            literalExpression.Token.Kind().ShouldBe(SyntaxKind.DefaultKeyword);
+        }
+
+        [Theory]
+        [InlineData("new int[] { }")]
+        [InlineData("stackalloc int[] { }")]
+        [InlineData("new [] { }")]
+        [InlineData("stackalloc [] { }")]
+        public void ShouldNotMutateEmptyInitializer(string expression)
+        {
+            var expressionSyntax = SyntaxFactory.ParseExpression(expression);
+
+            var target = new ArrayCreationMutator();
+
+            var result = target.ApplyMutations(expressionSyntax);
+
+            result.ShouldBeEmpty();
         }
     }
 }
