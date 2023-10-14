@@ -547,7 +547,7 @@ int[] test = { 1 };
         public void ShouldNotMutateImplicitArrayCreationProperties()
         {
             string source = @"public int[] Foo() => new [] { 1 };";
-            string expected = @"public int[] Foo() => default;";
+            string expected = @"public int[] Foo() => (StrykerNamespace.MutantControl.IsActive(0)?default:new [] { 1 });";
 
             ShouldMutateSourceInClassToExpected(source, expected);
         }
