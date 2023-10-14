@@ -1,4 +1,6 @@
-﻿using Stryker.Core.Mutants;
+using System;
+using System.Collections.Generic;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Html.Realtime.Events;
 using Stryker.Core.Reporters.Json.SourceFiles;
@@ -10,9 +12,13 @@ public class RealtimeMutantHandler : IRealtimeMutantHandler
     public int Port => _server.Port;
 
     private readonly ISseServer _server;
+    private readonly Queue<JsonMutant> _delayedEventQueue = new();
 
     public RealtimeMutantHandler(StrykerOptions options, ISseServer server = null)
-        => _server = server ?? new SseServer();
+    {
+        _server = server ?? new SseServer();
+        _server.ClientConnected += ClientConnectedHandler;
+    }
 
     public void OpenSseEndpoint() => _server.OpenSseEndpoint();
 
@@ -25,6 +31,28 @@ public class RealtimeMutantHandler : IRealtimeMutantHandler
     public void SendMutantTestedEvent(IReadOnlyMutant testedMutant)
     {
         var jsonMutant = new JsonMutant(testedMutant);
+
+        if (_server.HasClientsConnected)
+            SendEvent(jsonMutant);
+        else
+            QueueJsonMutant(jsonMutant);
+    }
+
+    private void SendEvent(JsonMutant jsonMutant)
+    {
         _server.SendEvent(new SseEvent<JsonMutant> { Event = SseEventType.MutantTested, Data = jsonMutant });
+    }
+
+    private void QueueJsonMutant(JsonMutant jsonMutant)
+    {
+        _delayedEventQueue.Enqueue(jsonMutant);
+    }
+
+    private void ClientConnectedHandler(object sender, EventArgs e)
+    {
+        while (_delayedEventQueue.Count > 0)
+        {
+            SendEvent(_delayedEventQueue.Dequeue());
+        }
     }
 }
