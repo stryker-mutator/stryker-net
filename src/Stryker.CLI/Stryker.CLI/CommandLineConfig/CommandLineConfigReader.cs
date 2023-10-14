@@ -28,9 +28,9 @@ namespace Stryker.CLI.CommandLineConfig
             {
                 RegisterCliInputs(initCommandApp);
 
-                ReadCommandLineConfig(args, app, inputs);
                 initCommandApp.OnExecute(() =>
                 {
+                    ReadCommandLineConfig(args[1..], initCommandApp, inputs);
                     var configOption = initCommandApp.Options.SingleOrDefault(o => o.LongName == _configFileInput.ArgumentName);
                     var basePath = Directory.GetCurrentDirectory();
                     var configFilePath = Path.Combine(basePath, configOption?.Value() ?? "stryker-config.json");
