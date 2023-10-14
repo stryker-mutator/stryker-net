@@ -20,8 +20,8 @@ public class StrykerCLIInitCommandTests
 
     [Theory]
     [InlineData("init")]
-    [InlineData("init", "--config-file", "\"test.json\"")]
-    [InlineData("init", "-f", "\"test.json\"")]
+    [InlineData("init", "--config-file", "test.json")]
+    [InlineData("init", "-f", "test.json")]
     public void Init(params string[] argName)
     {
         _target.Run(argName);

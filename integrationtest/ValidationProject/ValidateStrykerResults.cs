@@ -149,11 +149,11 @@ namespace IntegrationTests
         public void InitCommand()
         {
             var directory = new DirectoryInfo("../../../../TargetProjects/InitCommand");
-            var jsonFile = Directory.GetFiles("*.json", SearchOption.AllDirectories).SingleOrDefault();
+            var jsonFile = directory.GetFiles("*.json", SearchOption.AllDirectories).SingleOrDefault();
             jsonFile.ShouldNotBeNull("Json file missing");
 
             var configOutput = File.ReadAllText(jsonFile.FullName);
-            var parsedConfigOuptut = JsonConvert.DeserializeObject<FileBasedInputOuter>(json);
+            var parsedConfigOuptut = JsonConvert.DeserializeObject<FileBasedInputOuter>(configOutput);
 
             parsedConfigOuptut.Input.Project.ShouldBe("TestProject.csproj");
         }
