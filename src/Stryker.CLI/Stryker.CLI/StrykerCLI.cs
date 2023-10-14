@@ -75,13 +75,13 @@ namespace Stryker.CLI
                     Description = @"The target for the compare. For example, when runnin on branch feat-2 and wanting to compare to branch ""main"", set this value to ""main""",
                     ShowInHelpText = true
                 };
-                cmdConfigReader.RegisterCliInput(app, targetInput);
+                cmdConfigReader.RegisterCliInput(baselineCmd, targetInput);
                 cmdConfigReader.AddCliInput(targetInput.Input, "--target", "-t", CommandOptionType.SingleValue, InputCategory.Mutation);
                 baselineCmd.AddOption(targetOption);
                 baselineCmd.Command("recreate", createCmd =>
                 {
                     cmdConfigReader.RegisterCommandLineOptions(createCmd, inputs);
-                    cmdConfigReader.RegisterCliInput(app, targetInput);
+                    cmdConfigReader.RegisterCliInput(createCmd, targetInput);
                     cmdConfigReader.AddCliInput(targetInput.Input, "--target", "-t", CommandOptionType.SingleValue, InputCategory.Mutation);
                     createCmd.AddOption(targetOption);
 
