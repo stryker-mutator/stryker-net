@@ -92,25 +92,8 @@ namespace Stryker.Core.MutationTest
             using var ms = new MemoryStream();
             using var msForSymbols = _options.DevMode ? new MemoryStream() : null;
             // compile the mutated syntax trees
-            var compilingProcess = new FsharpCompilingProcess(mutationTestInput, new RollbackProcess(), _fileSystem ?? new FileSystem());
+            var compilingProcess = new FsharpCompilingProcess(mutationTestInput, _fileSystem ?? new FileSystem());
             var compileResult = compilingProcess.Compile(projectInfo.CompilationSyntaxTrees, _options.DevMode);
-
-            // if a rollback took place, mark the rolled back mutants as status:BuildError
-            if (compileResult.RollbackResult?.RollbackedIds.Any() ?? false)
-            {
-                foreach (var mutant in projectInfo.Mutants
-                    .Where(x => compileResult.RollbackResult.RollbackedIds.Contains(x.Id)))
-                {
-                    // Ignore compilation errors if the mutation is skipped anyways.
-                    if (mutant.ResultStatus == MutantStatus.Ignored)
-                    {
-                        continue;
-                    }
-
-                    mutant.ResultStatus = MutantStatus.CompileError;
-                    mutant.ResultStatusReason = "Mutant caused compile errors";
-                }
-            }
         }
 
         public void FilterMutants(MutationTestInput input)
