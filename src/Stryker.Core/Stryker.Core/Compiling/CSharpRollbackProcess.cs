@@ -14,26 +14,26 @@ using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Compiling
 {
-    public interface IRollbackProcess
+    public interface ICSharpRollbackProcess
     {
-        RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode);
+        CSharpRollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode);
     }
 
     /// <summary>
     /// Responsible for rolling back all mutations that prevent compiling the mutated assembly
     /// </summary>
-    public class RollbackProcess : IRollbackProcess
+    public class CSharpRollbackProcess : ICSharpRollbackProcess
     {
-        private List<int> RolledBackIds { get; }
+        private List<int> RollBackedIds { get; }
         private ILogger Logger { get; }
 
-        public RollbackProcess()
+        public CSharpRollbackProcess()
         {
-            Logger = ApplicationLogging.LoggerFactory.CreateLogger<RollbackProcess>();
-            RolledBackIds = new List<int>();
+            Logger = ApplicationLogging.LoggerFactory.CreateLogger<CSharpRollbackProcess>();
+            RollBackedIds = new List<int>();
         }
 
-        public RollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode)
+        public CSharpRollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode)
         {
             // match the diagnostics with their syntax trees
             var syntaxTreeMapping = compiler.SyntaxTrees.ToDictionary<SyntaxTree, SyntaxTree, ICollection<Diagnostic>>(syntaxTree => syntaxTree, _ => new Collection<Diagnostic>());
@@ -69,11 +69,9 @@ namespace Stryker.Core.Compiling
             }
 
             // by returning the same compiler object (with different syntax trees) the next compilation will use Roslyn's incremental compilation
-            return new RollbackProcessResult()
-            {
-                Compilation = compiler,
-                RollbackedIds = RolledBackIds
-            };
+            return new(
+                compiler,
+                RollBackedIds);
         }
 
         // search is this node contains or is within a mutation
@@ -223,7 +221,7 @@ namespace Stryker.Core.Compiling
                                  x.Type == Mutator.Block.ToString() && !suspiciousMutations.Contains(x.Node)))
                     {
                         suspiciousMutations.Add(mutant.Node);
-                        RolledBackIds.Add(mutant.Id.Value);
+                        RollBackedIds.Add(mutant.Id.Value);
                     }
                 }
                 else
@@ -244,7 +242,7 @@ namespace Stryker.Core.Compiling
                         suspiciousMutations.Add(mutant.Node);
                         if (mutant.Id != -1)
                         {
-                            RolledBackIds.Add(mutant.Id.Value);
+                            RollBackedIds.Add(mutant.Id.Value);
                         }
                     }
                 }
@@ -269,7 +267,7 @@ namespace Stryker.Core.Compiling
                 brokenMutations.Add(mutationIf);
                 if (mutantId >= 0)
                 {
-                    RolledBackIds.Add(mutantId);
+                    RollBackedIds.Add(mutantId);
                 }
             }
 
