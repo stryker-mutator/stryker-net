@@ -14,7 +14,7 @@ namespace Stryker.Core.Options.Inputs
             {
                 if (SuppliedInput.HasValue)
                 {
-                    throw new InputException("The since and with-baseline features are mutually exclusive.");
+                    throw new InputException("The since and baseline features are mutually exclusive.");
                 }
 
                 return true;

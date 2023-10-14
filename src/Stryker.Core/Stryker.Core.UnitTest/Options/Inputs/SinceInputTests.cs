@@ -68,7 +68,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             var sinceEnabled = new SinceInput{SuppliedInput = true };
 
             var exception = Should.Throw<InputException>(() => sinceEnabled.Validate(withBaseline: true));
-            exception.Message.ShouldBe("The since and with-baseline features are mutually exclusive.");
+            exception.Message.ShouldBe("The since and baseline features are mutually exclusive.");
         }
     }
 }

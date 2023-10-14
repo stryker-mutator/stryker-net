@@ -159,7 +159,7 @@ namespace Stryker.Core.UnitTest.Options
             _target.SinceInput.SuppliedInput = true;
 
             var exception = Should.Throw<InputException>(() => _target.ValidateAll());
-            exception.Message.ShouldBe("The since and with-baseline features are mutually exclusive.");
+            exception.Message.ShouldBe("The since and baseline features are mutually exclusive.");
         }
     }
 }
