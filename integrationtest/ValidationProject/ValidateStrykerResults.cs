@@ -62,7 +62,7 @@ namespace IntegrationTests
 
                 var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-                CheckReportMutantCounts(report, total: 28, ignored: 7, survived: 2, killed: 7, timeout: 0, nocoverage: 11);
+                CheckReportMutants(report, total: 28, ignored: 7, survived: 2, killed: 7, timeout: 0, nocoverage: 11);
             }
         }
 
@@ -81,7 +81,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutantCounts(report, total: 114, ignored: 55, survived: 4, killed: 6, timeout: 2, nocoverage: 45);
+            CheckReportMutants(report, total: 114, ignored: 55, survived: 4, killed: 6, timeout: 2, nocoverage: 45);
             CheckReportTestCounts(report, total: 14);
         }
 
@@ -101,7 +101,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutantCounts(report, total: 0, ignored: 0, survived: 0, killed: 0, timeout: 0, nocoverage: 0);
+            CheckReportMutants(report, total: 0, ignored: 0, survived: 0, killed: 0, timeout: 0, nocoverage: 0);
             CheckReportTestCounts(report, total: 0);
         }
 
@@ -120,7 +120,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutantCounts(report, total: 114, ignored: 27, survived: 8, killed: 8, timeout: 2, nocoverage: 67);
+            CheckReportMutants(report, total: 114, ignored: 27, survived: 8, killed: 8, timeout: 2, nocoverage: 67);
             CheckReportTestCounts(report, total: 30);
         }
 
@@ -139,8 +139,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckMutationKindsValidity(report);
-            CheckReportMutantCounts(report, total: 114, ignored: 55, survived: 4, killed: 6, timeout: 2, nocoverage: 45);
+            CheckReportMutants(report, total: 114, ignored: 55, survived: 4, killed: 6, timeout: 2, nocoverage: 45);
             CheckReportTestCounts(report, total: 30);
         }
 
@@ -164,7 +163,7 @@ namespace IntegrationTests
             }
         }
 
-        private void CheckReportMutantCounts(JsonReport report, int total, int ignored, int survived, int killed, int timeout, int nocoverage)
+        private void CheckReportMutants(JsonReport report, int total, int ignored, int survived, int killed, int timeout, int nocoverage)
         {
             var actualTotal = report.Files.Select(f => f.Value.Mutants.Count()).Sum();
             var actualIgnored = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Ignored.ToString())).Sum();
@@ -181,6 +180,8 @@ namespace IntegrationTests
                 () => actualTimeout.ShouldBe(timeout),
                 () => actualNoCoverage.ShouldBe(nocoverage)
             );
+
+            CheckMutationKindsValidity(report);
         }
 
         private void CheckReportTestCounts(JsonReport report, int total)
