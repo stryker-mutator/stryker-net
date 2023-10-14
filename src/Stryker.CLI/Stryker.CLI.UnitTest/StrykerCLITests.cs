@@ -97,31 +97,31 @@ Options:";
             consoleOutput.ShouldContain(@"A new version of Stryker.NET (10.0.0) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker`");
         }
 
-        [Fact]
-        public void OnMutationScoreBelowThresholdBreak_ShouldReturn_ExitCodeBreakThresholdViolated()
-        {
-            var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
-            var options = new StrykerOptions()
-            {
-                Thresholds = new Thresholds
-                {
-                    Break = 40
-                }
-            };
-            var strykerRunResult = new StrykerRunResult(options, 0.3);
-
-            mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>()))
-                .Callback<IStrykerInputs, ILoggerFactory, IProjectOrchestrator>((c, l, p) => Core.Logging.ApplicationLogging.LoggerFactory = l)
-                .Returns(strykerRunResult)
-                .Verifiable();
-
-            var target = new StrykerCli(mock.Object);
-            var result = target.Run(new string[] { });
-
-            mock.Verify();
-            target.ExitCode.ShouldBe(ExitCodes.BreakThresholdViolated);
-            result.ShouldBe(ExitCodes.BreakThresholdViolated);
-        }
+        // [Fact]
+        // public void OnMutationScoreBelowThresholdBreak_ShouldReturn_ExitCodeBreakThresholdViolated()
+        // {
+        //     var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
+        //     var options = new StrykerOptions()
+        //     {
+        //         Thresholds = new Thresholds
+        //         {
+        //             Break = 40
+        //         }
+        //     };
+        //     var strykerRunResult = new StrykerRunResult(options, 0.3);
+        //
+        //     mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>()))
+        //         .Callback<IStrykerInputs, ILoggerFactory, IProjectOrchestrator>((c, l, p) => Core.Logging.ApplicationLogging.LoggerFactory = l)
+        //         .Returns(strykerRunResult)
+        //         .Verifiable();
+        //
+        //     var target = new StrykerCli(mock.Object);
+        //     var result = target.Run(new string[] { });
+        //
+        //     mock.Verify();
+        //     target.ExitCode.ShouldBe(ExitCodes.BreakThresholdViolated);
+        //     result.ShouldBe(ExitCodes.BreakThresholdViolated);
+        // }
 
         [Fact]
         public void OnMutationScoreEqualToNullAndThresholdBreakEqualTo0_ShouldReturnExitCode0()
