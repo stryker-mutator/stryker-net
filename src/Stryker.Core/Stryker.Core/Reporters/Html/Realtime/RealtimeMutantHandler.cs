@@ -32,10 +32,14 @@ public class RealtimeMutantHandler : IRealtimeMutantHandler
     {
         var jsonMutant = new JsonMutant(testedMutant);
 
-        if (_server.HasClientsConnected)
+        if (_server.HasConnectedClients)
+        {
             SendEvent(jsonMutant);
+        }
         else
+        {
             QueueJsonMutant(jsonMutant);
+        }
     }
 
     private void SendEvent(JsonMutant jsonMutant)

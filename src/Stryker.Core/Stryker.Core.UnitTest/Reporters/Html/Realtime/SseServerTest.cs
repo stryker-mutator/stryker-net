@@ -113,6 +113,6 @@ public class SseServerTest : TestBase
         Task.Run(() => sseClient.StartAsync());
         WaitForConnection(500).ShouldBeTrue();
 
-        _sut.HasClientsConnected.ShouldBeTrue();
+        _sut.HasConnectedClients.ShouldBeTrue();
     }
 }

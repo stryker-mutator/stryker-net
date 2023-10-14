@@ -6,7 +6,7 @@ namespace Stryker.Core.Reporters.Html.Realtime;
 public interface ISseServer
 {
     public int Port { get; set; }
-    bool HasClientsConnected { get; }
+    bool HasConnectedClients { get; }
 
     event EventHandler<EventArgs> ClientConnected;
 
