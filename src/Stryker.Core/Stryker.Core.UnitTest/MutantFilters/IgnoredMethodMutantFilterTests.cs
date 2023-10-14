@@ -32,7 +32,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [InlineData("var x = IgnoredMethod(true);", null, true)]
         [InlineData("while (x == IgnoredMethod(true));", "==", false)]
         [InlineData("IgnoredMethod()++;", "IgnoredMethod()++", false)]
-        [InlineData("x==1 ? IgnoredMethod(true): IgnoredMethod(false);", null, true)]
+        [InlineData("x==1 ? IgnoredMethod(true): IgnoredMethod(false);", "==", true)]
         [InlineData("SomeMethod(true).IgnoredMethod(false);", "true", true)]
         public void ShouldFilterDocumentedCases(string methodCall, string anchor, bool shouldSkipMutant)
         {
