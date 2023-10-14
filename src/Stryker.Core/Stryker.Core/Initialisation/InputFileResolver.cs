@@ -88,7 +88,7 @@ namespace Stryker.Core.Initialisation
             return BuildProjectInfos(options, dependents, projectsUnderTestAnalyzerResult, solutionTestProjects);
         }
 
-        private static Dictionary<string, HashSet<string>> FindDependentProjects(IReadOnlyCollection<IAnalyzerResult> projectsUnderTest)
+        private Dictionary<string, HashSet<string>> FindDependentProjects(IReadOnlyCollection<IAnalyzerResult> projectsUnderTest)
         {
             // need to scan traverse dependencies
             // dependents contains the list of projects depending on each (non test) projects
@@ -98,7 +98,19 @@ namespace Stryker.Core.Initialisation
             {
                 foreach (var reference in result.ProjectReferences)
                 {
-                    dependents[reference].Add(result.ProjectFilePath);
+                    var correctReference = reference;
+                    if (!dependents.ContainsKey(reference))
+                    {
+                        // find a match disregarding case
+                        correctReference = dependents.Keys.FirstOrDefault(r => string.Compare(r, reference, true, System.Globalization.CultureInfo.InvariantCulture) == 0);
+                        if (correctReference == null)
+                        {
+                            _logger.LogWarning("Project {0} depends upon unknown projects {1}. Compilation may fail.", result.ProjectFilePath, reference);
+                            continue;
+                        }
+                        _logger.LogWarning("Project {0} depends upon unknown projects {1} which should have been cased like this {2}.", result.ProjectFilePath, reference, correctReference);
+                    }
+                    dependents[correctReference].Add(result.ProjectFilePath);
                 }
             }
 
