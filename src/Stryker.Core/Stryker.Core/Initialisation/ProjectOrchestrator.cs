@@ -49,11 +49,17 @@ namespace Stryker.Core.Initialisation
             _initializationProcess ??= new InitialisationProcess(_fileResolver, _initialBuildProcess);
             var projectInfos = _initializationProcess.GetMutableProjectsInfo(options);
 
+            if (!projectInfos.Any())
+            {
+                _logger.LogWarning("No project to mutate. Stryker will exit prematurely.");
+                yield break;
+            }
+
             _initializationProcess.BuildProjects(options, projectInfos);
 
             // create a test runner
-            _runner = runner ?? new VsTestRunnerPool(options,
-                fileSystem: _fileResolver.FileSystem);
+            _runner = runner ?? new VsTestRunnerPool(options, fileSystem: _fileResolver.FileSystem);
+
             InitializeDashboardProjectInformation(options, projectInfos.First());
             var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);
 

@@ -115,6 +115,33 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
         [Fact]
+        public void ShouldFilterInSolutionMode()
+        {
+            // when a solutionPath is given and it's inside the current directory (basePath)
+            var testCsprojPathName = _fileSystem.Path.Combine(_projectPath, "testproject.csproj");
+            var csprojPathName = _fileSystem.Path.Combine(_projectPath, "sourceproject.csproj");
+            var options = new StrykerOptions
+            {
+                ProjectPath = _fileSystem.Path.GetFullPath(_projectPath),
+                // provide an invalid source project name which should normally fail
+                SourceProjectName = "sourceprojec.csproj",
+                SolutionPath = _fileSystem.Path.Combine(_projectPath, "MySolution.sln")
+            };
+
+            var csPathName = _fileSystem.Path.Combine(_projectPath, "someFile.cs");
+            var target = BuildProjectOrchestratorForSimpleProject(SourceProjectAnalyzerMock(csprojPathName, new[] { csPathName }).Object, 
+                TestProjectAnalyzerMock(testCsprojPathName, csprojPathName).Object, out var mockRunner);
+            
+            _fileSystem.Directory.SetCurrentDirectory(_fileSystem.Path.GetFullPath(testCsprojPathName));
+            
+            // act
+            var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
+
+            // assert
+            result.ShouldBeEmpty();
+        }
+
+        [Fact]
         public void ShouldProvideMinimalSupportForFSharp()
         {
             var testCsprojPathName = _fileSystem.Path.Combine(_projectPath, "testproject.csproj");

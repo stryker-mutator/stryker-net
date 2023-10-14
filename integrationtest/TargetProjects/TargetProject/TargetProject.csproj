@@ -12,7 +12,7 @@
     with property references in path (though this project does not add any code
     so no new mutations will be created).
   -->
-  <Import Project="$(BuildDirectory)library.props" />
+  <Import Project="$(BuildDirectory)Library.props" />
 
   <ItemGroup>
     <!--
@@ -20,7 +20,7 @@
       project reference path (it also ensures the import above was properly
       evaluated).
     -->
-    <ProjectReference Include="..\$(LibraryDir)\library.csproj" />
+    <ProjectReference Include="..\$(LibraryDir)\Library.csproj" />
       <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
         <_Parameter1>$(AssemblyName).Tests</_Parameter1>
       </AssemblyAttribute>
