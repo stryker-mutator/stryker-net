@@ -54,7 +54,7 @@ namespace Stryker.CLI
             var inputs = new StrykerInputs();
             var cmdConfigReader = new CommandLineConfigReader();
 
-            cmdConfigReader.RegisterCommandLineOptions(app, inputs);
+            cmdConfigReader.RegisterCommandLineOptions(app, inputs, args);
 
             app.OnExecute(() =>
             {

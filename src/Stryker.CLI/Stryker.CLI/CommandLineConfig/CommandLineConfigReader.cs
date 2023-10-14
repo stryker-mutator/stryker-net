@@ -1,5 +1,8 @@
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Text.Json;
 using McMaster.Extensions.CommandLineUtils;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
@@ -14,7 +17,7 @@ namespace Stryker.CLI
 
         public CommandLineConfigReader() => _configFileInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. Supports json and yaml formats. | default: stryker-config.json", argumentHint: "relative-path");
 
-        public void RegisterCommandLineOptions(CommandLineApplication app, IStrykerInputs inputs)
+        public void RegisterCommandLineOptions(CommandLineApplication app, IStrykerInputs inputs, string[] args)
         {
             PrepareCliOptions(inputs);
 
@@ -22,6 +25,29 @@ namespace Stryker.CLI
             {
                 RegisterCliInput(app, value);
             }
+
+            RegisterInitCommand(app, inputs, args);
+        }
+
+        private void RegisterInitCommand(CommandLineApplication app, IStrykerInputs inputs, string[] args)
+        {
+            app.Command("init", application =>
+            {
+                foreach (var (_, value) in _cliInputs)
+                {
+                    RegisterCliInput(application, value);
+                }
+
+                ReadCommandLineConfig(args, app, inputs);
+                application.OnExecute(() =>
+                {
+                    var configOption = application.Options.SingleOrDefault(o => o.LongName == _configFileInput.ArgumentName);
+                    var basePath = Directory.GetCurrentDirectory();
+                    var configFilePath = Path.Combine(basePath, configOption?.Value() ?? "stryker-config.json");
+
+                    FileConfigWriter.WriteConfigAsync(configFilePath, inputs).Wait();
+                });
+            });
         }
 
         public CommandOption GetConfigFileOption(string[] args, CommandLineApplication app)
