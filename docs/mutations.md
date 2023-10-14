@@ -74,6 +74,7 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | ---------------------------------------- | ------------------------------------ |
 |`new int[] { 1, 2 };`                     | `new int[] { };`                     |
 |`int[] numbers = { 1, 2 };`               | `int[] numbers = { };`               |
+|`new [] { 1, 2 };`                        | `default;`                           |
 |`new List<int> { 1, 2 };`                 | `new List<int> { };`                 |
 |`new Collection<int> { 1, 2 };`           | `new Collection<int> { };`           |
 |`new Dictionary<int, int> { { 1, 1 } };`  | `new Dictionary<int, int> { };`      |
