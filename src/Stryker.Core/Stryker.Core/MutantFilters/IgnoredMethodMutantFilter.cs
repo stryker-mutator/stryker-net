@@ -47,7 +47,7 @@ namespace Stryker.Core.MutantFilters
 
                 LocalDeclarationStatementSyntax localDeclaration => localDeclaration.Declaration.Variables.All(v => IsPartOfIgnoredMethodCall(v.Initializer?.Value, options, false)),
   
-                BlockSyntax {Statements.Count: >0 } block => block.Statements.All(s=> IsPartOfIgnoredMethodCall(s, options, false)),
+                BlockSyntax { Statements.Count: >0 } block => block.Statements.All(s=> IsPartOfIgnoredMethodCall(s, options, false)),
 
                 // Traverse the tree upwards.
                 { Parent: { } }  => canGoUp && IsPartOfIgnoredMethodCall(syntaxNode.Parent, options),
