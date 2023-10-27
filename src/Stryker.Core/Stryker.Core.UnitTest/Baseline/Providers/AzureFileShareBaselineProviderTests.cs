@@ -167,12 +167,15 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
         [Theory]
         [InlineData(2, 5)]
         [InlineData(20, 200)]
+        [InlineData(100, 500)]
         public async Task Save_Report(int folders, int files)
         {
             var chunkSize = 4194304;
 
             // Arrange
             var shareClient = Mock.Of<ShareClient>();
+            var logger = Mock.Of<ILogger<AzureFileShareBaselineProvider>>();
+
             Mock.Get(shareClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(true, default));
             Mock.Get(shareClient).SetupGet(s => s.Uri).Returns(new Uri(_uri));
 
@@ -196,7 +199,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             var fileLength = Encoding.UTF8.GetBytes(report.ToJson()).Length;
 
             var fullChunks = (int)Math.Floor((double)fileLength / chunkSize);
-            var lastChunkSize = fileLength - (Math.Max(fullChunks, 1) * chunkSize);
+            var lastChunkSize = fileLength - (fullChunks * chunkSize);
 
             var fileClient = Mock.Of<ShareFileClient>();
 
@@ -210,9 +213,10 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
                 // setup full chunks upload
                 for (var i = 0; i < fullChunks; i++)
                 {
+                    var offset = i * chunkSize;
                     Mock.Get(fileClient)
                         .Setup(f => f.UploadRangeAsync(
-                            It.Is<HttpRange>(r => r.Offset == i * chunkSize && r.Length == chunkSize),
+                            It.Is<HttpRange>(r => r.Offset == offset && r.Length == chunkSize),
                             It.IsAny<Stream>(), null, default))
                         .Returns(Task.FromResult(Response.FromValue(Mock.Of<ShareFileUploadInfo>(), Mock.Of<Response>())));
                 }
@@ -234,9 +238,11 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             }
 
             // Act
-            await new AzureFileShareBaselineProvider(new StrykerOptions(), shareClient).Save(report, "v1");
+            await new AzureFileShareBaselineProvider(new StrykerOptions(), shareClient, logger).Save(report, "v1");
 
             // Assert
+            Mock.Get(logger).Verify(LogLevel.Debug, $"Uploaded report chunk {fileLength}/{fileLength} to azure file share");
+
             Mock.Get(shareClient).VerifyAll();
             Mock.Get(shareClient).VerifyNoOtherCalls();
 
