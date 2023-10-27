@@ -41,7 +41,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 {{
     {methodCall}
 }}";
-            anchor??=methodCall;
+            anchor ??= methodCall;
             var options = new StrykerOptions
             {
                 IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { "IgnoredMethod" } }.Validate()
