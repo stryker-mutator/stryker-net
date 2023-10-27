@@ -8,6 +8,8 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 {
     public class AzureFileStorageSasInputTests : TestBase
     {
+        private const string ValidSasInput = "se=2022-08-27T09%3A26%3A07Z&sp=rwdl&spr=https&sv=2018-11-09&sr=s&sig=fzEyru3OpOpzkTpLfFjuI6TEhShY/dsad%3D";
+
         [Fact]
         public void ShouldHaveHelpText()
         {
@@ -16,11 +18,31 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         }
 
         [Fact]
+        public void ShouldReturnDefault_WhenBaselineIsDisabled()
+        {
+            var target = new AzureFileStorageSasInput { SuppliedInput = ValidSasInput };
+
+            var result = target.Validate(BaselineProvider.AzureFileStorage, false);
+
+            result.ShouldBe(string.Empty);
+        }
+
+        [Fact]
+        public void ShouldReturnDefault_WhenProviderIsNotAzureFileStorage()
+        {
+            var target = new AzureFileStorageSasInput { SuppliedInput = ValidSasInput };
+
+            var result = target.Validate(BaselineProvider.Dashboard, true);
+
+            result.ShouldBe(string.Empty);
+        }
+
+        [Fact]
         public void Should_Accept_Valid_SAS()
         {
-            var target = new AzureFileStorageSasInput { SuppliedInput = "se=2022-08-27T09%3A26%3A07Z&sp=rwdl&spr=https&sv=2018-11-09&sr=s&sig=fzEyru3OpOpzkTpLfFjuI6TEhShY/dsad%3D" };
+            var target = new AzureFileStorageSasInput { SuppliedInput = ValidSasInput };
 
-            var validatedSas = target.Validate(BaselineProvider.AzureFileStorage);
+            var validatedSas = target.Validate(BaselineProvider.AzureFileStorage, true);
 
             validatedSas.ShouldBe("se=2022-08-27T09%3A26%3A07Z&sp=rwdl&spr=https&sv=2018-11-09&sr=s&sig=fzEyru3OpOpzkTpLfFjuI6TEhShY/dsad%3D");
         }
@@ -32,17 +54,20 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             var target = new AzureFileStorageSasInput { SuppliedInput = input };
 
-            var exception = Should.Throw<InputException>(() => target.Validate(BaselineProvider.AzureFileStorage));
+            var exception = Should.Throw<InputException>(() => target.Validate(BaselineProvider.AzureFileStorage, true));
 
             exception.Message.ShouldBe("The azure file storage shared access signature is not in the correct format");
         }
 
-        [Fact]
-        public void Should_Throw_Exception_When_AzureSAS_null()
+        [Theory]
+        [InlineData("")]
+        [InlineData(" ")]
+        [InlineData(null)]
+        public void Should_Throw_Exception_When_AzureSAS_nullOrWhitespace(string input)
         {
-            var target = new AzureFileStorageSasInput { SuppliedInput = null };
+            var target = new AzureFileStorageSasInput { SuppliedInput = input };
 
-            var exception = Should.Throw<InputException>(() => target.Validate(BaselineProvider.AzureFileStorage));
+            var exception = Should.Throw<InputException>(() => target.Validate(BaselineProvider.AzureFileStorage, true));
 
             exception.Message.ShouldBe("The azure file storage shared access signature is required when azure file storage is used for dashboard compare.");
         }

@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Shouldly;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Exceptions;
@@ -17,22 +18,35 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         }
 
         [Fact]
-        public void ShouldHaveDefault()
+        public void ShouldSetDefault_WhenBaselineIsDisabled()
         {
-            var target = new BaselineProviderInput { SuppliedInput = null };
+            var target = new BaselineProviderInput { SuppliedInput = "azurefilestorage" };
 
-            var result = target.Validate(new Reporter[] { });
+            var result = target.Validate(new Reporter[] { }, false);
 
-            target.Default.ShouldBe("disk");
             result.ShouldBe(BaselineProvider.Disk);
         }
 
-        [Fact]
-        public void ShouldHaveDefaultForDashboard()
+        [Theory]
+        [InlineData(new Reporter[] { })]
+        [InlineData(new Reporter[] { Reporter.Baseline })]
+        public void ShouldSetDefault_WhenInputIsNullAndDashboardReporterIsNotEnabled(IEnumerable<Reporter> reporters)
         {
             var target = new BaselineProviderInput { SuppliedInput = null };
 
-            var result = target.Validate(new[] { Reporter.Dashboard });
+            var result = target.Validate(reporters, true);
+
+            result.ShouldBe(BaselineProvider.Disk);
+        }
+
+        [Theory]
+        [InlineData(new Reporter[] { Reporter.Dashboard })]
+        [InlineData(new Reporter[] { Reporter.Dashboard, Reporter.Baseline })]
+        public void ShouldSetDashboard_WhenInputIsNullAndDashboardReporterIsEnabled(IEnumerable<Reporter> reporters)
+        {
+            var target = new BaselineProviderInput { SuppliedInput = null };
+
+            var result = target.Validate(reporters, true);
 
             result.ShouldBe(BaselineProvider.Dashboard);
         }
@@ -44,7 +58,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             var target = new BaselineProviderInput { SuppliedInput = value };
 
-            var result = target.Validate(new[] { Reporter.Dashboard });
+            var result = target.Validate(new[] { Reporter.Dashboard }, true);
 
             result.ShouldBe(BaselineProvider.Disk);
         }
@@ -56,7 +70,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             var target = new BaselineProviderInput { SuppliedInput = value };
 
-            var result = target.Validate(new[] { Reporter.Dashboard });
+            var result = target.Validate(new[] { Reporter.Dashboard }, true);
 
             result.ShouldBe(BaselineProvider.Dashboard);
         }
@@ -68,7 +82,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             var target = new BaselineProviderInput { SuppliedInput = value };
 
-            var result = target.Validate(new[] { Reporter.Dashboard });
+            var result = target.Validate(new[] { Reporter.Dashboard }, true);
 
             result.ShouldBe(BaselineProvider.AzureFileStorage);
         }
@@ -78,7 +92,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             var target = new BaselineProviderInput { SuppliedInput = "invalid" };
 
-            var exception = Should.Throw<InputException>(() => target.Validate(new[] { Reporter.Dashboard }));
+            var exception = Should.Throw<InputException>(() => target.Validate(new[] { Reporter.Dashboard }, true));
 
             exception.Message.ShouldBe("Baseline storage provider 'invalid' does not exist");
         }
