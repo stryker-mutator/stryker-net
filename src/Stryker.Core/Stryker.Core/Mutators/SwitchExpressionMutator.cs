@@ -13,6 +13,6 @@ namespace Stryker.Core.Mutators
         public override IEnumerable<Mutation> ApplyMutations(SwitchExpressionSyntax node, SemanticModel semanticModel) => node
             .DescendantNodes()
             .OfType<PatternSyntax>()
-            .SelectMany(x => ApplyMutations(x, semanticModel));
+            .SelectMany(x => base.ApplyMutations(x, semanticModel));
     }
 }
