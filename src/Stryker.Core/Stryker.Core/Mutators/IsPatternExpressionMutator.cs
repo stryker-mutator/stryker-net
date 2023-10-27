@@ -21,7 +21,7 @@ namespace Stryker.Core.Mutators
             var descendantMutations = node
                 .DescendantNodes()
                 .OfType<PatternSyntax>()
-                .SelectMany(x => ApplyMutations(x));
+                .SelectMany(x => ApplyMutations(x, semanticModel));
 
             foreach (var descendantMutation in descendantMutations)
             {

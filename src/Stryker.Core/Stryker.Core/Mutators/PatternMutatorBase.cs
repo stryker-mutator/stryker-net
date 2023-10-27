@@ -27,10 +27,10 @@ namespace Stryker.Core.Mutators
         };
 
         /// <summary> Apply mutations to a <see cref="PatternSyntax"/></summary>
-        protected IEnumerable<Mutation> ApplyMutations(PatternSyntax node) => node switch
+        protected IEnumerable<Mutation> ApplyMutations(PatternSyntax node, SemanticModel semanticModel) => node switch
         {
-            BinaryPatternSyntax binaryPattern => ApplyMutations(binaryPattern),
-            RelationalPatternSyntax relationalPattern => ApplyMutations(relationalPattern),
+            BinaryPatternSyntax binaryPattern => ApplyMutations(binaryPattern, semanticModel),
+            RelationalPatternSyntax relationalPattern => ApplyMutations(relationalPattern, semanticModel),
             _ => Enumerable.Empty<Mutation>()
         };
 
@@ -54,7 +54,7 @@ namespace Stryker.Core.Mutators
             }
         }
 
-        private IEnumerable<Mutation> ApplyMutations(RelationalPatternSyntax node)
+        private IEnumerable<Mutation> ApplyMutations(RelationalPatternSyntax node, SemanticModel semanticModel)
         {
             if (KindsToMutate.TryGetValue(node.OperatorToken.Kind(), out var mutations))
             {
