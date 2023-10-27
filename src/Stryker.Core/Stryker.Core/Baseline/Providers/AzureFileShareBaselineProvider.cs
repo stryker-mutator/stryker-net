@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using Azure;
@@ -64,13 +63,14 @@ namespace Stryker.Core.Baseline.Providers
                     var fileClient = directoryClient.GetFileClient(fileName);
                     using var fileContentStream = new MemoryStream(Encoding.UTF8.GetBytes(report.ToJson()));
 
-                    if (await fileClient.CreateAsync(fileContentStream.Length) is var fileCreateResult && fileCreateResult.GetRawResponse().Status == ((int)HttpStatusCode.Created))
+                    try
                     {
+                        await fileClient.CreateAsync(fileContentStream.Length);
                         await UploadFileContent(uri, fileClient, fileContentStream);
                     }
-                    else
+                    catch (RequestFailedException ex)
                     {
-                        _logger.LogError("Failed to allocated file in azure file share at {reportUri} with statusCode {statusCode}", uri, fileCreateResult.GetRawResponse().Status);
+                        _logger.LogError("Failed to allocated file in azure file share at {reportUri} with error code {errorCode}", uri, ex.ErrorCode);
                     }
                 }
             }
@@ -132,7 +132,7 @@ namespace Stryker.Core.Baseline.Providers
                 shareDirectoryClient = _fileShareClient.GetDirectoryClient(root);
                 return true;
             }
-            catch
+            catch (RequestFailedException)
             {
                 shareDirectoryClient = null;
                 return false;
@@ -163,13 +163,14 @@ namespace Stryker.Core.Baseline.Providers
                 var httpRange = new HttpRange(offset, buffer.Length);
                 offset += buffer.Length; // Shift the offset by number of bytes already written
 
-                if (await fileClient.UploadRangeAsync(httpRange, uploadChunk) is var fileChunkUploadResult && fileChunkUploadResult.GetRawResponse().Status == ((int)HttpStatusCode.Created))
+                try
                 {
+                    await fileClient.UploadRangeAsync(httpRange, uploadChunk);
                     _logger.LogDebug("Uploaded report chunk {bytesUploaded}/{bytesTotal} to azure file share", Math.Min(offset + blockSize, fileContentStream.Length), fileContentStream.Length);
                 }
-                else
+                catch (RequestFailedException ex)
                 {
-                    _logger.LogError("Failed to upload report chunk {bytesUploaded}/{bytesTotal} to azure file share with statusCode {statusCode}", Math.Min(offset + blockSize, fileContentStream.Length), fileContentStream.Length, fileChunkUploadResult.GetRawResponse().Status);
+                    _logger.LogError("Failed to upload report chunk {bytesUploaded}/{bytesTotal} to azure file share with error code {errorCode}", Math.Min(offset + blockSize, fileContentStream.Length), fileContentStream.Length, ex.ErrorCode);
                 }
             }
         }
