@@ -113,11 +113,11 @@
       },
       "Azure.Core": {
         "type": "Transitive",
-        "resolved": "1.31.0",
-        "contentHash": "YZlzaVS4XpPPIob934+UFfxvxMWe05PG3FDfwAXZz+MY+ShDJCjMokfrfh18F7VDW5tG0iMbPVjigeL6crGCiQ==",
+        "resolved": "1.35.0",
+        "contentHash": "hENcx03Jyuqv05F4RBEPbxz29UrM3Nbhnr6Wl6NQpoU9BCIbL3XLentrxDCTrH54NLS11Exxi/o8MYgT/cnKFA==",
         "dependencies": {
           "Microsoft.Bcl.AsyncInterfaces": "1.1.1",
-          "System.Diagnostics.DiagnosticSource": "4.6.0",
+          "System.Diagnostics.DiagnosticSource": "6.0.1",
           "System.Memory.Data": "1.0.2",
           "System.Numerics.Vectors": "4.5.0",
           "System.Text.Encodings.Web": "4.7.2",
@@ -127,10 +127,10 @@
       },
       "Azure.Storage.Common": {
         "type": "Transitive",
-        "resolved": "12.15.0",
-        "contentHash": "/SAgn9hhjfHO0RPWp0ilGLr3aMPz+rrz6iRgLKTb1708pI78WLtsQ7/kGooUbCU2flSnk/egmJ0Qj9rFVks/nA==",
+        "resolved": "12.17.0",
+        "contentHash": "/h8SpUkxMuQy/MbNFeJQGmhYt3JnYfEiGeDojtNgLNzzhyDnRYgjF3ZKYgjORYQpn0Spr+4+v2MZy+0GNJBLrg==",
         "dependencies": {
-          "Azure.Core": "1.31.0",
+          "Azure.Core": "1.35.0",
           "System.IO.Hashing": "6.0.0"
         }
       },
@@ -711,8 +711,11 @@
       },
       "System.Diagnostics.DiagnosticSource": {
         "type": "Transitive",
-        "resolved": "4.6.0",
-        "contentHash": "mbBgoR0rRfl2uimsZ2avZY8g7Xnh1Mza0rJZLPcxqiMWlkGukjmRkuMJ/er+AhQuiRIh80CR/Hpeztr80seV5g=="
+        "resolved": "6.0.1",
+        "contentHash": "KiLYDu2k2J82Q9BJpWiuQqCkFjRBWVq4jDzKKWawVi9KWzyD0XG3cmfX0vqTQlL14Wi9EufJrbL0+KCLTbqWiQ==",
+        "dependencies": {
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        }
       },
       "System.Diagnostics.EventLog": {
         "type": "Transitive",
@@ -1641,7 +1644,7 @@
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "Azure.Storage.Files.Shares": "[12.14.0, )",
+          "Azure.Storage.Files.Shares": "[12.16.0, )",
           "Buildalyzer": "[5.0.1, )",
           "DotNet.Glob": "[3.1.3, )",
           "FSharp.Compiler.Service": "[42.7.100-preview.22427.1, )",
@@ -1664,8 +1667,8 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.47.0, )",
           "Spectre.Console.Analyzer": "[0.47.0, )",
-          "Stryker.DataCollector": "[1.0.0, )",
-          "Stryker.RegexMutators": "[1.0.0, )",
+          "Stryker.DataCollector": "[3.11.0, )",
+          "Stryker.RegexMutators": "[3.11.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[19.2.69, )"
         }
       },
@@ -1684,11 +1687,11 @@
       },
       "Azure.Storage.Files.Shares": {
         "type": "CentralTransitive",
-        "requested": "[12.14.0, )",
-        "resolved": "12.14.0",
-        "contentHash": "zmf5LK7wlGVzno/1zAmRYHCoPKFBF6zm5uxWQ0l4Y27RJirXVkHTCHfhCACpMYi0HgLLyVzRi+4nRaDkm4nyNw==",
+        "requested": "[12.16.0, )",
+        "resolved": "12.16.0",
+        "contentHash": "25JG//axik2YLXD/xpsSD7DGEOhVbKhIhLSrViexEiqRs0nar4CCR1fCKGGYNrCckH5/Zs3hperZJDc5AI4L3w==",
         "dependencies": {
-          "Azure.Storage.Common": "12.15.0",
+          "Azure.Storage.Common": "12.17.0",
           "System.Text.Json": "4.7.2"
         }
       },
