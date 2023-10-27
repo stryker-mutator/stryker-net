@@ -10,7 +10,7 @@ namespace Stryker.Core.Mutators
     {
         public override MutationLevel MutationLevel => MutationLevel.Basic;
 
-        public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node)
+        public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node, SemanticModel semanticModel)
         {
             if (node.Kind() == SyntaxKind.CoalesceExpression)
             {

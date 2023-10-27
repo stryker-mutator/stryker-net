@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -11,7 +12,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
     {
         /// <inheritdoc/>
         /// <remarks>Ensure we return a block after mutants are injected.</remarks>
-        protected override StatementSyntax InjectMutations(BlockSyntax sourceNode, StatementSyntax targetNode, MutationContext context)
+        protected override StatementSyntax InjectMutations(BlockSyntax sourceNode, StatementSyntax targetNode, SemanticModel semanticModel, MutationContext context)
         {
             var mutated = context.InjectBlockLevel(targetNode, sourceNode);
             // ensure we still return a block!

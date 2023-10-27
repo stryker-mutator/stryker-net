@@ -12,7 +12,7 @@ namespace Stryker.Core.Mutators
     {
         public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-        public override IEnumerable<Mutation> ApplyMutations(LiteralExpressionSyntax node)
+        public override IEnumerable<Mutation> ApplyMutations(LiteralExpressionSyntax node, SemanticModel semanticModel)
         {
             // Get objectCreationSyntax to check if it contains a regex type.
             var root = node.Parent?.Parent?.Parent;

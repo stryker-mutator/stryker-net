@@ -11,14 +11,15 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         /// Mutate the children, except the arrow expression body that may require conversion.
         /// </summary>
         protected override LocalFunctionStatementSyntax OrchestrateChildrenMutation(LocalFunctionStatementSyntax node,
+            SemanticModel semanticModel,
             MutationContext context) =>
             node.ReplaceNodes(node.ChildNodes().Where(child => child != node.ExpressionBody),
-                (original, _) => MutateSingleNode(original, context));
+                (original, _) => MutateSingleNode(original, semanticModel, context));
 
         protected override LocalFunctionStatementSyntax InjectMutations(LocalFunctionStatementSyntax sourceNode, LocalFunctionStatementSyntax targetNode,
-            MutationContext context)
+            SemanticModel semanticModel, MutationContext context)
         {
-            targetNode = base.InjectMutations(sourceNode, targetNode, context);
+            targetNode = base.InjectMutations(sourceNode, targetNode, semanticModel, context);
 
             var fullTargetBody = targetNode.Body;
             var sourceNodeParameterList = sourceNode.ParameterList;
@@ -28,7 +29,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                 // we will now mutate the expression body
                 var localContext = context.Enter(MutationControl.Block);
                 targetNode = targetNode.ReplaceNode(targetNode.ExpressionBody!,
-                    MutateSingleNode(sourceNode.ExpressionBody, localContext));
+                    MutateSingleNode(sourceNode.ExpressionBody, semanticModel, localContext));
                 if (localContext.HasStatementLevelMutant)
                 {
                     // this is an expression body method

@@ -1,4 +1,5 @@
 using FSharp.Compiler.Syntax;
+using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using Stryker.Core.Compiling;
@@ -18,7 +19,7 @@ namespace Stryker.Core.MutationTest
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly StrykerOptions _options;
-        private readonly BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>> _orchestrator;
+        private readonly BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>, object> _orchestrator;
 
         /// <summary>
         /// This constructor is for tests
@@ -29,7 +30,7 @@ namespace Stryker.Core.MutationTest
         public FsharpMutationProcess(
             IFileSystem fileSystem,
             StrykerOptions options,
-            BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>> orchestrator)
+            BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>, object> orchestrator)
         {
             _fileSystem = fileSystem;
             _options = options;
@@ -52,7 +53,7 @@ namespace Stryker.Core.MutationTest
                 _logger.LogDebug($"Mutating {file.RelativePath}");
                 // Mutate the syntax tree
                 var treeRoot = ((ParsedInput.ImplFile)file.SyntaxTree).Item.modules;
-                var mutatedSyntaxTree = _orchestrator.Mutate(treeRoot);
+                var mutatedSyntaxTree = _orchestrator.Mutate(treeRoot, null);
                 // Add the mutated syntax tree for compilation
                 var tree = (ParsedInput.ImplFile)file.SyntaxTree;
                 var item = tree.Item;

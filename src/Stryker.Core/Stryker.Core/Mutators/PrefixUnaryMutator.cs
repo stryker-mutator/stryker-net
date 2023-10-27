@@ -1,4 +1,5 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
@@ -23,7 +24,7 @@ namespace Stryker.Core.Mutators
             SyntaxKind.LogicalNotExpression
         };
 
-        public override IEnumerable<Mutation> ApplyMutations(PrefixUnaryExpressionSyntax node)
+        public override IEnumerable<Mutation> ApplyMutations(PrefixUnaryExpressionSyntax node, SemanticModel semanticModel)
         {
             var unaryKind = node.Kind();
             if (UnaryWithOpposite.TryGetValue(unaryKind, out var oppositeKind))

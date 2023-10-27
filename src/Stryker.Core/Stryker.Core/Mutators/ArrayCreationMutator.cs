@@ -1,4 +1,4 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
@@ -10,7 +10,7 @@ namespace Stryker.Core.Mutators
     {
         public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-        public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node)
+        public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node, SemanticModel semanticModel)
         {
             if (node is StackAllocArrayCreationExpressionSyntax stackAllocArray && stackAllocArray.Initializer?.Expressions != null && stackAllocArray.Initializer.Expressions.Count > 0)
             {

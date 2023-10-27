@@ -6,6 +6,6 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 {
     internal interface INodeMutator : ITypeHandler<SyntaxNode>
     {
-        SyntaxNode Mutate(SyntaxNode node, MutationContext context);
+        SyntaxNode Mutate(SyntaxNode node, SemanticModel semanticModel, MutationContext context);
     }
 }

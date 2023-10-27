@@ -26,7 +26,7 @@ namespace Stryker.Core.UnitTest.Mutators
             var originalExpression = SyntaxFactory.ParseExpression(originalExpressionString);
 
             // Act
-            var result = target.ApplyMutations(originalExpression as BinaryExpressionSyntax);
+            var result = target.ApplyMutations(originalExpression as BinaryExpressionSyntax, null);
 
             // Assert
             result.Count().ShouldBe(3);
@@ -46,7 +46,7 @@ namespace Stryker.Core.UnitTest.Mutators
             var originalExpression = SyntaxFactory.ParseExpression(originalExpressionString);
 
             // Act
-            var result = target.ApplyMutations(originalExpression as BinaryExpressionSyntax);
+            var result = target.ApplyMutations(originalExpression as BinaryExpressionSyntax, null);
 
             // Assert
             var mutant = result.ShouldHaveSingleItem();

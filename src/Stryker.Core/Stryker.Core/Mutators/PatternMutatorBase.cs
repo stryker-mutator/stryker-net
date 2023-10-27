@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
@@ -26,7 +27,7 @@ namespace Stryker.Core.Mutators
         };
 
         /// <summary> Apply mutations to a <see cref="PatternSyntax"/></summary>
-        protected IEnumerable<Mutation> ApplyMutations(PatternSyntax node) => node switch
+        protected IEnumerable<Mutation> ApplyMutations(PatternSyntax node, SemanticModel semanticModel) => node switch
         {
             BinaryPatternSyntax binaryPattern => ApplyMutations(binaryPattern),
             RelationalPatternSyntax relationalPattern => ApplyMutations(relationalPattern),

@@ -70,7 +70,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var expression = GenerateExpressions(exp.ToString());
 
-            var result = target.ApplyMutations(expression).ToList();
+            var result = target.ApplyMutations(expression, null).ToList();
 
             var mutants = result.Select(s => new Mutant() { ResultStatus = MutantStatus.Survived, Mutation = s });
 
@@ -131,7 +131,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var expression = GenerateExpressions(exp.ToString());
 
-            var result = target.ApplyMutations(expression).ToList();
+            var result = target.ApplyMutations(expression, null).ToList();
 
             var mutants = result.Select(s => new Mutant() { ResultStatus = MutantStatus.Survived, Mutation = s });
 
@@ -191,7 +191,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var expression = GenerateExpressions(exp.ToString());
 
-            var result = target.ApplyMutations(expression).ToList();
+            var result = target.ApplyMutations(expression, null).ToList();
 
             var mutants = result.Select(s => new Mutant() { ResultStatus = MutantStatus.Survived, Mutation = s });
 
