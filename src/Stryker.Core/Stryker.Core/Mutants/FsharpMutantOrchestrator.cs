@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using FSharp.Compiler.Syntax;
-using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using Stryker.Core.Logging;
@@ -12,7 +11,7 @@ using Stryker.Core.Options;
 namespace Stryker.Core.Mutants
 {
     /// <inheritdoc/>
-    public class FsharpMutantOrchestrator : BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>, SemanticModel>
+    public class FsharpMutantOrchestrator : BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>, object>
     {
         private readonly OrchestratorFinder<SynModuleDecl> _fsharpMutationsSynModuleDecl;
         private readonly OrchestratorFinder<SynExpr> _fsharpMutationsSynExpr;
@@ -41,7 +40,7 @@ namespace Stryker.Core.Mutants
         }
 
         public override FSharpList<SynModuleOrNamespace> Mutate(
-            FSharpList<SynModuleOrNamespace> input, SemanticModel semanticModel)
+            FSharpList<SynModuleOrNamespace> input, object semanticModel)
         {
             var list = new List<SynModuleOrNamespace>();
             foreach (SynModuleOrNamespace module in input)

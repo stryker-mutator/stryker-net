@@ -19,7 +19,7 @@ namespace Stryker.Core.MutationTest
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
         private readonly StrykerOptions _options;
-        private readonly BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>, SemanticModel> _orchestrator;
+        private readonly BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>, object> _orchestrator;
 
         /// <summary>
         /// This constructor is for tests
@@ -30,7 +30,7 @@ namespace Stryker.Core.MutationTest
         public FsharpMutationProcess(
             IFileSystem fileSystem,
             StrykerOptions options,
-            BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>, SemanticModel> orchestrator)
+            BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>, object> orchestrator)
         {
             _fileSystem = fileSystem;
             _options = options;

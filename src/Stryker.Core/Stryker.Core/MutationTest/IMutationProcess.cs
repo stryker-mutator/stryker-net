@@ -1,5 +1,3 @@
-using Microsoft.CodeAnalysis;
-
 namespace Stryker.Core.MutationTest
 {
     public interface IMutationProcess
