@@ -692,13 +692,16 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
 
         }
 
-        private (Mutant, string) BuildExpressionMutant(string sourceCode, string anchor ) =>
-            (new Mutant
+        private (Mutant, string) BuildExpressionMutant(string sourceCode, string anchor)
+        {
+            var mutant = new Mutant
             {
                 Mutation = new Mutation
                 {
                     OriginalNode = FindEnclosingNode<ExpressionSyntax>(CSharpSyntaxTree.ParseText(sourceCode).GetRoot(), anchor),
                 }
-            }, "Expression");
+            }
+            return (mutant, "Expression");
+        }
     }
 }
