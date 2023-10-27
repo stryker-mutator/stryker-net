@@ -273,7 +273,7 @@ namespace Stryker.Core.Compiling
                         brokenMutations.Add(mutant.Node);
                         if (mutant.Id != -1)
                         {
-                            RolledBackIds.Add(mutant.Id.Value);
+                            RollBackedIds.Add(mutant.Id.Value);
                         }
                     }
                 }
@@ -282,7 +282,7 @@ namespace Stryker.Core.Compiling
                     brokenMutations.Add(mutationIf);
                     if (mutantId >= 0)
                     {
-                    RollBackedIds.Add(mutantId);
+                        RollBackedIds.Add(mutantId);
                     }
                 }
             }

@@ -161,7 +161,7 @@ namespace ExampleProject
 
 
         [Fact]
-        public void ShouldRollbackIssue()
+        public void ShouldRollbackAllMutationsInsideAExpressionBodyMethod()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"
 using System;
@@ -180,6 +180,7 @@ namespace ExampleProject
     public class Test
     {
         private Fake AccountNumber = new Fake();
+        // this line triggers a compilation error on purpose
         protected override void Random() =>
             AccountNumber.ValueChanged += RefreshAccountNumber;
 
@@ -202,7 +203,7 @@ namespace ExampleProject
                 helpers.Add(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32));
             }
 
-            var mutant = mutator.Mutate(syntaxTree.GetRoot());
+            var mutant = mutator.Mutate(syntaxTree.GetRoot(), null);
             helpers.Add(mutant.SyntaxTree);
 
             var references = new List<string> {
@@ -233,19 +234,14 @@ namespace ExampleProject
                 }
             };
 
-            var rollbackProcess = new RollbackProcess();
+            var rollbackProcess = new CSharpRollbackProcess();
 
             var target = new CsharpCompilingProcess(input, rollbackProcess, options);
 
             using var ms = new MemoryStream();
-            try
-            {
-                target.Compile(helpers, ms, null);
-            }
-            catch(CompilationException)
-            {
-                // original code does not compile (on purpose)
-            }
+            
+            Action test = () => target.Compile(helpers, ms, null);
+            test.ShouldThrow<CompilationException>();
         }
 
         [Fact]
