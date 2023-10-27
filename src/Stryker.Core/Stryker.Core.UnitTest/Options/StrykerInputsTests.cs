@@ -1,5 +1,7 @@
 using System.IO;
 using Shouldly;
+using Stryker.Core.Exceptions;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
 using Xunit;
@@ -149,6 +151,32 @@ namespace Stryker.Core.UnitTest.Options
             var result = _target.ValidateAll();
 
             result.DashboardApiKey.ShouldBeNull();
+        }
+
+        [Fact]
+        public void WithBaselineAndSinceShouldBeMutuallyExclusive()
+        {
+            _target.WithBaselineInput.SuppliedInput = true;
+            _target.SinceInput.SuppliedInput = true;
+
+            var exception = Should.Throw<InputException>(() => _target.ValidateAll());
+            exception.Message.ShouldBe("The since and baseline features are mutually exclusive.");
+        }
+
+        [Fact]
+        public void BaseLineOptionsShouldBeSetToDefaultWhenBaselineIsDisabled()
+        {
+            _target.WithBaselineInput.SuppliedInput = false;
+            _target.BaselineProviderInput.SuppliedInput = "azurefilestorage";
+            _target.AzureFileStorageSasInput.SuppliedInput = "sasCredential";
+            _target.AzureFileStorageUrlInput.SuppliedInput = "azureUrl";
+
+            var result = _target.ValidateAll();
+
+            result.WithBaseline.ShouldBeFalse();
+            result.BaselineProvider.ShouldBe(BaselineProvider.Disk);
+            result.AzureFileStorageSas.ShouldBe(string.Empty);
+            result.AzureFileStorageUrl.ShouldBe(string.Empty);
         }
     }
 }

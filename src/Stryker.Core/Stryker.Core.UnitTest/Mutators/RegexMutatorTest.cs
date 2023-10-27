@@ -22,7 +22,7 @@ namespace Stryker.Core.UnitTest.Mutators
             var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex(@\"^abc\")") as ObjectCreationExpressionSyntax;
             var target = new RegexMutator();
 
-            var result = target.ApplyMutations(objectCreationExpression);
+            var result = target.ApplyMutations(objectCreationExpression, null);
 
             var mutation = result.ShouldHaveSingleItem();
 
@@ -37,7 +37,7 @@ namespace Stryker.Core.UnitTest.Mutators
             var objectCreationExpression = SyntaxFactory.ParseExpression("new System.Text.RegularExpressions.Regex(@\"^abc\")") as ObjectCreationExpressionSyntax;
             var target = new RegexMutator();
 
-            var result = target.ApplyMutations(objectCreationExpression);
+            var result = target.ApplyMutations(objectCreationExpression, null);
 
             var mutation = result.ShouldHaveSingleItem();
 
@@ -52,7 +52,7 @@ namespace Stryker.Core.UnitTest.Mutators
         {
             var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex()") as ObjectCreationExpressionSyntax;
             var target = new RegexMutator();
-            var result = target.ApplyMutations(objectCreationExpression);
+            var result = target.ApplyMutations(objectCreationExpression, null);
 
             result.ShouldBeEmpty();
         }
@@ -62,7 +62,7 @@ namespace Stryker.Core.UnitTest.Mutators
         {
             var objectCreationExpression = SyntaxFactory.ParseExpression("new Other(@\"^abc\")") as ObjectCreationExpressionSyntax;
             var target = new RegexMutator();
-            var result = target.ApplyMutations(objectCreationExpression);
+            var result = target.ApplyMutations(objectCreationExpression, null);
 
             result.ShouldBeEmpty();
         }
@@ -73,7 +73,7 @@ namespace Stryker.Core.UnitTest.Mutators
             var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex(@\"^abc$\")") as ObjectCreationExpressionSyntax;
             var target = new RegexMutator();
 
-            var result = target.ApplyMutations(objectCreationExpression);
+            var result = target.ApplyMutations(objectCreationExpression, null);
 
             result.Count().ShouldBe(2);
             result.ShouldAllBe(mutant => mutant.DisplayName == "Regex anchor removal mutation");
@@ -89,7 +89,7 @@ namespace Stryker.Core.UnitTest.Mutators
             var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex(options: RegexOptions.None, pattern: @\"^abc\")") as ObjectCreationExpressionSyntax;
             var target = new RegexMutator();
 
-            var result = target.ApplyMutations(objectCreationExpression);
+            var result = target.ApplyMutations(objectCreationExpression, null);
 
             var mutation = result.ShouldHaveSingleItem();
 

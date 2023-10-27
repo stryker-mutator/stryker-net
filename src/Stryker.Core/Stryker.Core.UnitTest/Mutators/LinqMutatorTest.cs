@@ -96,7 +96,7 @@ namespace TestApplication
 
             var expression = GenerateExpressions(original.ToString());
 
-            var result = target.ApplyMutations(expression).ToList();
+            var result = target.ApplyMutations(expression, null).ToList();
 
             var mutation = result.ShouldHaveSingleItem();
             var replacement = mutation.ReplacementNode.ShouldBeOfType<InvocationExpressionSyntax>();
@@ -120,7 +120,7 @@ namespace TestApplication
         {
             var target = new LinqMutator();
 
-            var result = target.ApplyMutations(GenerateExpressions(methodName));
+            var result = target.ApplyMutations(GenerateExpressions(methodName), null);
 
             result.ShouldBeEmpty();
         }
@@ -153,7 +153,7 @@ namespace TestApplication
                 .Single();
             var target = new LinqMutator();
 
-            var result = target.ApplyMutations(memberAccessExpression);
+            var result = target.ApplyMutations(memberAccessExpression, null);
 
             result.ShouldNotBeEmpty();
             result.First().OriginalNode.Parent.Parent.ShouldBeOfType<BlockSyntax>();

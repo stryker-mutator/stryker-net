@@ -47,7 +47,7 @@ namespace Stryker.Core.Mutators
             SyntaxKind.ExpressionStatement,
         };
 
-        public override IEnumerable<Mutation> ApplyMutations(StatementSyntax node)
+        public override IEnumerable<Mutation> ApplyMutations(StatementSyntax node, SemanticModel semanticModel)
         {
             if (!AllowedSyntaxes.Contains(node.Kind()))
             {

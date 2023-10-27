@@ -222,7 +222,7 @@ static TestClass()=> Value-='a';}";
                 OptimizationMode = OptimizationModes.CoverageBasedTest,
                 MutationLevel = MutationLevel.Complete
             });
-            var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot(), null);
 
             var node = actualNode.DescendantNodes().First(t => t is BlockSyntax);
 

@@ -10,7 +10,7 @@ namespace Stryker.Core.Mutators
     {
         public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-        public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node)
+        public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node, SemanticModel semanticModel)
         {
             SyntaxNode replacement = null;
             if (node is IsPatternExpressionSyntax)

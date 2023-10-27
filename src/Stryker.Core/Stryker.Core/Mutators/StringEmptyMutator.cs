@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
@@ -18,7 +19,7 @@ namespace Stryker.Core.Mutators
     {
         public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-        public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node) => node switch
+        public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node, SemanticModel semanticModel) => node switch
         {
             MemberAccessExpressionSyntax memberAccess => ApplyMutations(memberAccess),
             InvocationExpressionSyntax invocation => ApplyMutations(invocation),

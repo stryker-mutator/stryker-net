@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -14,30 +16,31 @@ using Stryker.Core.Options;
 
 namespace Stryker.Core.Compiling
 {
-    public interface ICompilingProcess
+    public interface ICSharpCompilingProcess
     {
         CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream);
+        IEnumerable<SemanticModel> GetSemanticModels(IEnumerable<SyntaxTree> syntaxTrees);
     }
 
     /// <summary>
     /// This process is in control of compiling the assembly and rolling back mutations that cannot compile
     /// Compiles the given input onto the memory stream
     /// </summary>
-    public class CsharpCompilingProcess : ICompilingProcess
+    public class CsharpCompilingProcess : ICSharpCompilingProcess
     {
         private const int MaxAttempt = 50;
         private readonly MutationTestInput _input;
         private readonly StrykerOptions _options;
-        private readonly IRollbackProcess _rollbackProcess;
+        private readonly ICSharpRollbackProcess _rollbackProcess;
         private readonly ILogger _logger;
 
         public CsharpCompilingProcess(MutationTestInput input,
-            IRollbackProcess rollbackProcess = null,
+            ICSharpRollbackProcess rollbackProcess = null,
             StrykerOptions options = null)
         {
             _input = input;
             _options = options ?? new StrykerOptions();
-            _rollbackProcess = rollbackProcess ?? new RollbackProcess();
+            _rollbackProcess = rollbackProcess ?? new CSharpRollbackProcess();
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpCompilingProcess>();
         }
 
@@ -53,17 +56,7 @@ namespace Stryker.Core.Compiling
         /// </summary>
         public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream)
         {
-            var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
-            var trees = syntaxTrees.ToList();
-            var compilationOptions = analyzerResult.GetCompilationOptions();
-
-            var compilation = CSharpCompilation.Create(AssemblyName,
-                syntaxTrees: trees,
-                options: compilationOptions,
-                references: _input.SourceProjectInfo.AnalyzerResult.LoadReferences());
-
-            // C# source generators must be executed before compilation
-            compilation = RunSourceGenerators(analyzerResult, compilation);
+            var compilation = GetCSharpCompilation(syntaxTrees);
 
             // first try compiling
             var retryCount = 1;
@@ -74,6 +67,7 @@ namespace Stryker.Core.Compiling
             {
                 _logger.LogError("Failed to build the mutated assembly due to unrecoverable error: {0}",
                     emitResult.Diagnostics.First(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error));
+                DumpErrorDetails(emitResult.Diagnostics);
                 throw new CompilationException("General Build Failure detected.");
             }
 
@@ -85,11 +79,9 @@ namespace Stryker.Core.Compiling
 
             if (emitResult.Success)
             {
-                return new CompilingProcessResult()
-                {
-                    Success = emitResult.Success,
-                    RollbackResult = rollbackProcessResult
-                };
+                return new (
+                    true,
+                    rollbackProcessResult?.RollbackedIds ?? Enumerable.Empty<int>());
             }
             // compiling failed
             _logger.LogError("Failed to restore the project to a buildable state. Please report the issue. Stryker can not proceed further");
@@ -98,6 +90,24 @@ namespace Stryker.Core.Compiling
                 _logger.LogWarning($"{emitResultDiagnostic}");
             }
             throw new CompilationException("Failed to restore build able state.");
+        }
+
+        /// <summary>
+        /// Analyzes the syntax trees and returns the semantic models
+        /// </summary>
+        /// <param name="syntaxTrees">The syntax trees to analyze</param>
+        /// <returns>Semantic models</returns>
+        public IEnumerable<SemanticModel> GetSemanticModels(IEnumerable<SyntaxTree> syntaxTrees)
+        {
+            var compilation = GetCSharpCompilation(syntaxTrees);
+
+            // extract semantic models from compilation
+            var semanticModels = new List<SemanticModel>();
+            foreach (var tree in syntaxTrees)
+            {
+                semanticModels.Add(compilation.GetSemanticModel(tree));
+            }
+            return semanticModels;
         }
 
         private CSharpCompilation RunSourceGenerators(IAnalyzerResult analyzerResult, Compilation compilation)
@@ -119,7 +129,22 @@ namespace Stryker.Core.Compiling
             return outputCompilation as CSharpCompilation;
         }
 
-        private (RollbackProcessResult, EmitResult, int) TryCompilation(
+        private CSharpCompilation GetCSharpCompilation(IEnumerable<SyntaxTree> syntaxTrees)
+        {
+            var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
+            var trees = syntaxTrees.ToList();
+            var compilationOptions = analyzerResult.GetCompilationOptions();
+
+            var compilation = CSharpCompilation.Create(AssemblyName,
+                syntaxTrees: trees,
+                options: compilationOptions,
+                references: _input.SourceProjectInfo.AnalyzerResult.LoadReferences());
+
+            // C# source generators must be executed before compilation
+            return RunSourceGenerators(analyzerResult, compilation);
+        }
+
+        private (CSharpRollbackProcessResult, EmitResult, int) TryCompilation(
             Stream ms,
             Stream symbolStream,
             CSharpCompilation compilation,
@@ -127,7 +152,7 @@ namespace Stryker.Core.Compiling
             bool lastAttempt,
             int retryCount)
         {
-            RollbackProcessResult rollbackProcessResult = null;
+            CSharpRollbackProcessResult rollbackProcessResult = null;
 
             if (previousEmitResult != null)
             {
@@ -154,7 +179,6 @@ namespace Stryker.Core.Compiling
                     null,
                     null),
                 options: emitOptions);
-
             LogEmitResult(emitResult);
 
             return (rollbackProcessResult, emitResult, retryCount+1);
@@ -168,13 +192,32 @@ namespace Stryker.Core.Compiling
 
                 foreach (var err in result.Diagnostics.Where(x => x.Severity is DiagnosticSeverity.Error))
                 {
-                    _logger.LogDebug("{0}, {1}", err?.GetMessage() ?? "No message", err?.Location.SourceTree?.FilePath ?? "Unknown filepath");
+                    _logger.LogDebug("{ErrorMessage}, {ErrorLocation}", err?.GetMessage() ?? "No message", err?.Location?.ToString() ?? "Unknown filepath");
                 }
             }
             else
             {
                 _logger.LogDebug("Compilation successful");
             }
+        }
+
+        private void DumpErrorDetails(IEnumerable<Diagnostic> diagnostics)
+        {
+            var messageBuilder = new StringBuilder();
+            var materializedDiagnostics = diagnostics.ToArray();
+            if (!materializedDiagnostics.Any())
+            {
+                messageBuilder.Append("Unfortunately there is no more info available, good luck!");
+            }
+
+            foreach (var diagnostic in materializedDiagnostics)
+            {
+                messageBuilder
+                    .Append(Environment.NewLine)
+                    .Append(diagnostic.Id).Append(": ").AppendLine(diagnostic.ToString());
+            }
+
+            _logger.LogTrace("An unrecoverable compilation error occurred: {Diagnostics}", messageBuilder.ToString());
         }
 
         private static string ReadableNumber(int number) => number switch

@@ -482,7 +482,7 @@ The report name is based on the current branch name or the [project-info.version
 Set the diffing target on the command line by passing a committish with the since flag.
 Set the diffing target in the config file by setting the [since target](#sincetarget-committish) option.
 
-*\* This feature automatically enables the [since](#since-flag-committish) feature.*
+*\* The baseline and since features are mutually exclusive. This feature implicitly enables the [since](#since-flag-committish) feature for now.*
 
 ### `baseline.enabled` <`flag`>
 
@@ -568,7 +568,15 @@ Command line: `--azure-fileshare-sas "se=2022-08-25T14%3A27Z&sp=rwdl&spr=https&s
 Config file: `N/A`
 
 When using the azure file storage [provider](#baselineprovider-string) you must pass credentials for the fileshare to Stryker.
-For authentication with the azure fileshare we support Shared Access Signatures. For more information on how to configure a SAS check the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
+For authentication with the azure fileshare we support Shared Access Signatures (SAS). 
+
+The SAS should be configured with the following properties:
+
+Allowed services: `File`  
+Allowed resource types: `Container`, `Object`  
+Allowed permissions: `Read`, `Write`, `Create`
+
+For more information on how to configure a SAS check the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
 
 ## Troubleshooting
 

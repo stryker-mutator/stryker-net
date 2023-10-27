@@ -44,7 +44,7 @@ namespace Stryker.Core.Mutators
         };
 
         /// <summary> Apply mutations to an <see cref="InvocationExpressionSyntax"/> </summary>
-        public override IEnumerable<Mutation> ApplyMutations(InvocationExpressionSyntax node) => node.Expression switch
+        public override IEnumerable<Mutation> ApplyMutations(InvocationExpressionSyntax node, SemanticModel semanticModel) => node.Expression switch
         {
             MemberAccessExpressionSyntax memberAccess => ApplyMutationsToMemberCall(node, memberAccess),
             IdentifierNameSyntax methodName => ApplyMutationsToDirectCall(node, methodName),
