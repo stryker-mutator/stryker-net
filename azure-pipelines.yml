@@ -23,8 +23,8 @@ pr:
     - '.github/*'
 
 variables:
-  PackageVersion: '3.10.0'
-  VersionBuildNumber: $[counter('3.10.0', 1)]
+  PackageVersion: '3.11.0'
+  VersionBuildNumber: $[counter('3.11.0', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   ForkIntegrationNugetFeedUri: https://f.feedz.io/stryker/stryker-net/nuget/index.json
