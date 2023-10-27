@@ -18,7 +18,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var expression = GenerateSimpleConstantPattern(false);
 
-            var mutation = target.ApplyMutations(expression).First();
+            var mutation = target.ApplyMutations(expression, null).First();
 
             mutation.OriginalNode.ShouldBeOfType<ConstantPatternSyntax>();
             mutation.ReplacementNode.ShouldBeOfType<UnaryPatternSyntax>();
@@ -32,7 +32,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var expression = GenerateSimpleConstantPattern(true);
 
-            var mutation = target.ApplyMutations(expression).First();
+            var mutation = target.ApplyMutations(expression, null).First();
 
             mutation.OriginalNode.ShouldBeOfType<UnaryPatternSyntax>();
             mutation.ReplacementNode.ShouldBeOfType<ConstantPatternSyntax>();
@@ -50,7 +50,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var expression = GenerateWithRelationalPattern(@operator);
 
-            var result = target.ApplyMutations(expression).Skip(1).ToList();
+            var result = target.ApplyMutations(expression, null).Skip(1).ToList();
 
             result.ForEach(mutation =>
             {
@@ -74,7 +74,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var expression = GenerateWithBinaryPattern(@operator);
 
-            var result = target.ApplyMutations(expression).Skip(1).ToList();
+            var result = target.ApplyMutations(expression, null).Skip(1).ToList();
 
             result.ForEach(mutation =>
             {
@@ -95,7 +95,7 @@ namespace Stryker.Core.UnitTest.Mutators
         {
             var target = new IsPatternExpressionMutator();
 
-            var result = target.ApplyMutations(expression).Skip(1).ToList();
+            var result = target.ApplyMutations(expression, null).Skip(1).ToList();
 
             result.ShouldBeEmpty();
         }

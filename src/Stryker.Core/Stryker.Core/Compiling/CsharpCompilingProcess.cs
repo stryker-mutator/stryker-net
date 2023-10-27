@@ -19,6 +19,7 @@ namespace Stryker.Core.Compiling
     public interface ICSharpCompilingProcess
     {
         CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream);
+        IEnumerable<SemanticModel> GetSemanticModels(IEnumerable<SyntaxTree> syntaxTrees);
     }
 
     /// <summary>
@@ -55,17 +56,7 @@ namespace Stryker.Core.Compiling
         /// </summary>
         public CompilingProcessResult Compile(IEnumerable<SyntaxTree> syntaxTrees, Stream ilStream, Stream symbolStream)
         {
-            var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
-            var trees = syntaxTrees.ToList();
-            var compilationOptions = analyzerResult.GetCompilationOptions();
-
-            var compilation = CSharpCompilation.Create(AssemblyName,
-                syntaxTrees: trees,
-                options: compilationOptions,
-                references: _input.SourceProjectInfo.AnalyzerResult.LoadReferences());
-
-            // C# source generators must be executed before compilation
-            compilation = RunSourceGenerators(analyzerResult, compilation);
+            var compilation = GetCSharpCompilation(syntaxTrees);
 
             // first try compiling
             var retryCount = 1;
@@ -101,6 +92,24 @@ namespace Stryker.Core.Compiling
             throw new CompilationException("Failed to restore build able state.");
         }
 
+        /// <summary>
+        /// Analyzes the syntax trees and returns the semantic models
+        /// </summary>
+        /// <param name="syntaxTrees">The syntax trees to analyze</param>
+        /// <returns>Semantic models</returns>
+        public IEnumerable<SemanticModel> GetSemanticModels(IEnumerable<SyntaxTree> syntaxTrees)
+        {
+            var compilation = GetCSharpCompilation(syntaxTrees);
+
+            // extract semantic models from compilation
+            var semanticModels = new List<SemanticModel>();
+            foreach (var tree in syntaxTrees)
+            {
+                semanticModels.Add(compilation.GetSemanticModel(tree));
+            }
+            return semanticModels;
+        }
+
         private CSharpCompilation RunSourceGenerators(IAnalyzerResult analyzerResult, Compilation compilation)
         {
             var generators = analyzerResult.GetSourceGenerators(_logger);
@@ -118,6 +127,21 @@ namespace Stryker.Core.Compiling
                 throw new CompilationException("Source Generator Failure");
             }
             return outputCompilation as CSharpCompilation;
+        }
+
+        private CSharpCompilation GetCSharpCompilation(IEnumerable<SyntaxTree> syntaxTrees)
+        {
+            var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
+            var trees = syntaxTrees.ToList();
+            var compilationOptions = analyzerResult.GetCompilationOptions();
+
+            var compilation = CSharpCompilation.Create(AssemblyName,
+                syntaxTrees: trees,
+                options: compilationOptions,
+                references: _input.SourceProjectInfo.AnalyzerResult.LoadReferences());
+
+            // C# source generators must be executed before compilation
+            return RunSourceGenerators(analyzerResult, compilation);
         }
 
         private (CSharpRollbackProcessResult, EmitResult, int) TryCompilation(

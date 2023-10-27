@@ -26,7 +26,7 @@ namespace Stryker.Core.UnitTest.Mutants
 
         protected void ShouldMutateSourceToExpected(string actual, string expected)
         {
-            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(actual).GetRoot());
+            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(actual).GetRoot(), null);
             actual = actualNode.ToFullString();
             actual = actual.Replace(_injector.HelperNamespace, "StrykerNamespace");
             actualNode = CSharpSyntaxTree.ParseText(actual).GetRoot();

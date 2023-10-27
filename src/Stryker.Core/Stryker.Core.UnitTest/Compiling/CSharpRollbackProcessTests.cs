@@ -118,7 +118,7 @@ namespace ExampleProject
                 helpers.Add(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32));
             }
 
-            var mutant = mutator.Mutate(syntaxTree.GetRoot());
+            var mutant = mutator.Mutate(syntaxTree.GetRoot(), null);
             helpers.Add(mutant.SyntaxTree);
 
             var references = new List<string> {

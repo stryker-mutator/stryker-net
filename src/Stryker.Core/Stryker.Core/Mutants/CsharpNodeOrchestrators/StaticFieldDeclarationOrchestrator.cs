@@ -12,9 +12,9 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         protected override MutationContext PrepareContext(FieldDeclarationSyntax node, MutationContext context) => base.PrepareContext(node, context).EnterStatic();
 
         protected override BaseFieldDeclarationSyntax InjectMutations(FieldDeclarationSyntax sourceNode, BaseFieldDeclarationSyntax targetNode,
-            MutationContext context)
+            SemanticModel semanticModel, MutationContext context)
         {
-            var result = base.InjectMutations(sourceNode, targetNode, context);
+            var result = base.InjectMutations(sourceNode, targetNode, semanticModel, context);
 
             result = result.ReplaceNodes(result.Declaration.Variables.Where(v => v.Initializer != null).Select(v => v.Initializer.Value),
                 (syntax, _) => context.PlaceStaticContextMarker(syntax));

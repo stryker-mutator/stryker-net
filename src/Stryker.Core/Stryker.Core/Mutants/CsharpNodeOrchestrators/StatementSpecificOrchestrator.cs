@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
@@ -15,7 +16,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 
         /// <inheritdoc/>
         /// <remarks>Inject pending mutations that are controlled with 'if' statements.</remarks>
-        protected override StatementSyntax InjectMutations(T sourceNode, StatementSyntax targetNode, MutationContext context) =>
+        protected override StatementSyntax InjectMutations(T sourceNode, StatementSyntax targetNode, SemanticModel semanticModel, MutationContext context) =>
             context.InjectStatementLevel(targetNode, sourceNode);
 
         /// <inheritdoc/>

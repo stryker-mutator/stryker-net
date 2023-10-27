@@ -18,16 +18,16 @@ namespace Stryker.Core.Mutators
         /// </summary>
         /// <param name="node">The node to mutate</param>
         /// <returns>One or more mutations</returns>
-        public abstract IEnumerable<Mutation> ApplyMutations(T node);
+        public abstract IEnumerable<Mutation> ApplyMutations(T node, SemanticModel semanticModel);
 
         public abstract MutationLevel MutationLevel { get; }
 
-        public IEnumerable<Mutation> Mutate(SyntaxNode node, StrykerOptions options)
+        public IEnumerable<Mutation> Mutate(SyntaxNode node, SemanticModel semanticModel, StrykerOptions options)
         {
             if (MutationLevel <= options.MutationLevel && node is T tNode)
             {
                 // the node was of the expected type, so invoke the mutation method
-                return ApplyMutations(tNode);
+                return ApplyMutations(tNode, semanticModel);
             }
 
             return Enumerable.Empty<Mutation>();

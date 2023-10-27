@@ -19,15 +19,15 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
             base.RestoreContext(context);
         }
 
-        protected override BasePropertyDeclarationSyntax OrchestrateChildrenMutation(PropertyDeclarationSyntax node, MutationContext context)
+        protected override BasePropertyDeclarationSyntax OrchestrateChildrenMutation(PropertyDeclarationSyntax node, SemanticModel semanticModel, MutationContext context)
         {
             if (!node.IsStatic())
             {
-                return base.OrchestrateChildrenMutation(node, context);
+                return base.OrchestrateChildrenMutation(node, semanticModel, context);
             }
 
             var children = node.ReplaceNodes(node.ChildNodes(), (original, _) =>
-                MutateSingleNode(original, original == node.Initializer ? context.EnterStatic() : context));
+                MutateSingleNode(original, semanticModel, original == node.Initializer ? context.EnterStatic() : context));
             if (children.Initializer != null)
             {
                 children = children.ReplaceNode(children.Initializer.Value,
@@ -37,9 +37,9 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         }
 
         protected override BasePropertyDeclarationSyntax InjectMutations(PropertyDeclarationSyntax sourceNode,
-            BasePropertyDeclarationSyntax targetNode, MutationContext context)
+            BasePropertyDeclarationSyntax targetNode, SemanticModel semanticModel, MutationContext context)
         {
-            var result = base.InjectMutations(sourceNode, targetNode, context);
+            var result = base.InjectMutations(sourceNode, targetNode, semanticModel, context);
             var mutated = result as PropertyDeclarationSyntax;
             // if there is no statement level mutations or this is not an expression property declaration, we can stop
             if (!context.HasStatementLevelMutant || mutated?.ExpressionBody == null)

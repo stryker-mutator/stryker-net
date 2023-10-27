@@ -10,9 +10,9 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
     /// </summary>
     internal class AccessorSyntaxOrchestrator : NodeSpecificOrchestrator<AccessorDeclarationSyntax, SyntaxNode>
     {
-        protected override SyntaxNode InjectMutations(AccessorDeclarationSyntax sourceNode, SyntaxNode targetNode, MutationContext context)
+        protected override SyntaxNode InjectMutations(AccessorDeclarationSyntax sourceNode, SyntaxNode targetNode, SemanticModel semanticModel, MutationContext context)
         {
-            var result = base.InjectMutations(sourceNode, targetNode, context) as AccessorDeclarationSyntax;
+            var result = base.InjectMutations(sourceNode, targetNode, semanticModel, context) as AccessorDeclarationSyntax;
             if (result?.Body == null && result?.ExpressionBody == null)
             {
                 return result;

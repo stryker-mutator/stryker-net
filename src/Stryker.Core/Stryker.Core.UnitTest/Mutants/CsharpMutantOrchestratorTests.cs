@@ -1183,7 +1183,7 @@ if(StrykerNamespace.MutantControl.IsActive(3)){;}else{		request.Headers.Add((Str
 {
 	var test3 = 2 + 5;
 }";
-            _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot(), null);
 
             var mutants = _target.GetLatestMutantBatch().ToList();
             mutants.Count.ShouldBe(2);
@@ -1210,7 +1210,7 @@ namespace TestApp
 		}
 	}
 }";
-            _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot(), null);
 
             var mutants = _target.GetLatestMutantBatch().ToList();
             mutants.Count.ShouldBe(7);
