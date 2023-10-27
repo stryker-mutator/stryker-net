@@ -14,7 +14,7 @@ namespace Stryker.Core.Mutators
 
         public override MutationLevel MutationLevel => MutationLevel.Basic;
 
-        public override IEnumerable<Mutation> ApplyMutations(BlockSyntax node)
+        public override IEnumerable<Mutation> ApplyMutations(BlockSyntax node, SemanticModel semanticModel)
         {
             if (node.IsEmpty() ||
                 IsInfiniteWhileLoop(node) ||

@@ -30,7 +30,7 @@ namespace Stryker.Core.UnitTest.Mutators
             var node = GetInterpolatedString(expression);
             var mutator = new InterpolatedStringMutator();
 
-            var result = mutator.ApplyMutations(node).ToList();
+            var result = mutator.ApplyMutations(node, null).ToList();
 
             var mutation = result.ShouldHaveSingleItem();
 
@@ -47,7 +47,7 @@ namespace Stryker.Core.UnitTest.Mutators
             var node = GetInterpolatedString(expression);
             var mutator = new InterpolatedStringMutator();
 
-            var result = mutator.ApplyMutations(node).ToList();
+            var result = mutator.ApplyMutations(node, null).ToList();
 
             result.ShouldBeEmpty();
         }

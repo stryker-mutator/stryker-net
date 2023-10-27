@@ -23,7 +23,7 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Compiling
 {
-    public class RollbackProcessTests : TestBase
+    public class CSharpRollbackProcessTests : TestBase
     {
         private readonly SyntaxAnnotation _ifEngineMarker = new("Injector", "IfInstrumentationEngine");
         private readonly SyntaxAnnotation _conditionalEngineMarker = new("Injector", "ConditionalInstrumentationEngine");
@@ -72,7 +72,7 @@ if(ActiveMutation == 1) {
                     MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
                 });
 
-            var target = new RollbackProcess();
+            var target = new CSharpRollbackProcess();
 
             using (var ms = new MemoryStream())
             {
@@ -119,7 +119,7 @@ namespace ExampleProject
                 helpers.Add(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32));
             }
 
-            var mutant = mutator.Mutate(syntaxTree.GetRoot());
+            var mutant = mutator.Mutate(syntaxTree.GetRoot(), null);
             helpers.Add(mutant.SyntaxTree);
 
             var references = new List<string> {
@@ -150,13 +150,13 @@ namespace ExampleProject
                 }
             };
 
-            var rollbackProcess = new RollbackProcess();
+            var rollbackProcess = new CSharpRollbackProcess();
 
             var target = new CsharpCompilingProcess(input, rollbackProcess, options);
 
             using var ms = new MemoryStream();
             var result = target.Compile(helpers, ms, null);
-            result.RollbackResult.RollbackedIds.Count().ShouldBe(2); // should actually be 1 but thanks to issue #1745 rollback doesn't work
+            result.RollbackedIds.Count().ShouldBe(2); // should actually be 1 but thanks to issue #1745 rollback doesn't work
         }
 
 
@@ -309,7 +309,7 @@ namespace ExampleProject
                     MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
                 });
 
-            var target = new RollbackProcess();
+            var target = new CSharpRollbackProcess();
 
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);
@@ -402,7 +402,7 @@ namespace ExampleProject
                     MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
                 });
 
-            var target = new RollbackProcess();
+            var target = new CSharpRollbackProcess();
 
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);
@@ -463,7 +463,7 @@ namespace ExampleProject
                     MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
                 });
 
-            var target = new RollbackProcess();
+            var target = new CSharpRollbackProcess();
 
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);
@@ -562,7 +562,7 @@ namespace ExampleProject
                     MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
                 });
 
-            var target = new RollbackProcess();
+            var target = new CSharpRollbackProcess();
 
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);
@@ -662,7 +662,7 @@ namespace ExampleProject
                     MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
                 });
 
-            var target = new RollbackProcess();
+            var target = new CSharpRollbackProcess();
 
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);
@@ -770,7 +770,7 @@ namespace ExampleProject
                     MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
                 });
 
-            var target = new RollbackProcess();
+            var target = new CSharpRollbackProcess();
 
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);
@@ -836,7 +836,7 @@ namespace ExampleProject
                     MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),
                 });
 
-            var target = new RollbackProcess();
+            var target = new CSharpRollbackProcess();
 
             using var ms = new MemoryStream();
             var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, false, false);
@@ -846,7 +846,7 @@ namespace ExampleProject
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 1 });
         }
 
-         [Fact]
+        [Fact]
         public void RollbackProcess_ShouldOnlyRaiseExceptionOnFinalAttempt()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"
@@ -871,7 +871,7 @@ namespace ExampleProject
                     MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),
                 });
 
-            var target = new RollbackProcess();
+            var target = new CSharpRollbackProcess();
 
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);

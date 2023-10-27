@@ -24,9 +24,9 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         /// <inheritdoc/>
         /// Inject mutations and convert expression body to block body if required.
         protected override BaseMethodDeclarationSyntax InjectMutations(T sourceNode, BaseMethodDeclarationSyntax targetNode,
-            MutationContext context)
+            SemanticModel semanticModel, MutationContext context)
         {
-            targetNode = base.InjectMutations(sourceNode, targetNode, context);
+            targetNode = base.InjectMutations(sourceNode, targetNode, semanticModel, context);
 
             if (targetNode.Body == null)
             {

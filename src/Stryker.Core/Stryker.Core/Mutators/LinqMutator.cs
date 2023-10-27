@@ -76,7 +76,7 @@ namespace Stryker.Core.Mutators
             };
         }
         /// <summary> Apply mutations to an <see cref="InvocationExpressionSyntax"/> </summary>
-        public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node)
+        public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node, SemanticModel semanticModel)
         {
             if (node.Parent is ConditionalAccessExpressionSyntax or MemberAccessExpressionSyntax)
             {

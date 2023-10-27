@@ -15,9 +15,9 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         /// <remarks>Injects a static marker used for coverage information; this implies converting
         /// expression arrow bodied method to regular ones.</remarks>
         protected override BaseMethodDeclarationSyntax InjectMutations(ConstructorDeclarationSyntax sourceNode,
-            BaseMethodDeclarationSyntax targetNode, MutationContext context)
+            BaseMethodDeclarationSyntax targetNode, SemanticModel semanticModel, MutationContext context)
         {
-            var mutated = base.InjectMutations(sourceNode, targetNode, context);
+            var mutated = base.InjectMutations(sourceNode, targetNode, semanticModel, context);
 
             if (!context.MustInjectCoverageLogic)
             {

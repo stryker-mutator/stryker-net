@@ -1,3 +1,4 @@
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
@@ -23,7 +24,7 @@ namespace Stryker.Core.Mutators
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<RegexMutator>();
         }
 
-        public override IEnumerable<Mutation> ApplyMutations(ObjectCreationExpressionSyntax node)
+        public override IEnumerable<Mutation> ApplyMutations(ObjectCreationExpressionSyntax node, SemanticModel semanticModel)
         {
             string name = node.Type.ToString();
             if (name == typeof(Regex).Name || name == typeof(Regex).FullName)

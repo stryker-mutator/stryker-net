@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
 
@@ -12,7 +13,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
     {
         /// <inheritdoc/>
         /// <remarks>Inject all pending mutations controlled with conditional operator(s).</remarks>
-        protected override ExpressionSyntax InjectMutations(T sourceNode, ExpressionSyntax targetNode, MutationContext context) => context.InjectExpressionLevel(targetNode, sourceNode);
+        protected override ExpressionSyntax InjectMutations(T sourceNode, ExpressionSyntax targetNode, SemanticModel semanticModel, MutationContext context) => context.InjectExpressionLevel(targetNode, sourceNode);
 
         protected override MutationContext StoreMutations(T node,
             IEnumerable<Mutant> mutations,

@@ -25,7 +25,7 @@ namespace Stryker.Core.UnitTest.Mutators
             var originalNode = SyntaxFactory.PostfixUnaryExpression(original,
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)));
 
-            var result = target.ApplyMutations(originalNode).ToList();
+            var result = target.ApplyMutations(originalNode, null).ToList();
 
             var mutation = result.ShouldHaveSingleItem();
             mutation.ReplacementNode.IsKind(expected).ShouldBeTrue();
