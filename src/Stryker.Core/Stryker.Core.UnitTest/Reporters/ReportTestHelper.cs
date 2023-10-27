@@ -10,7 +10,7 @@ namespace Stryker.Core.UnitTest.Reporters
 {
     public static class ReportTestHelper
     {
-        public static IProjectComponent CreateProjectWith(bool duplicateMutant = false, int mutationScore = 60, string root = "/")
+        public static IProjectComponent CreateProjectWith(int folders = 2, int files = 5, bool duplicateMutant = false, int mutationScore = 60, string root = "/")
         {
             var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
             var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
@@ -25,7 +25,7 @@ namespace Stryker.Core.UnitTest.Reporters
 
             var folder = new CsharpFolderComposite { FullPath = $"{root}home/user/src/project/", RelativePath = "" };
             var mutantCount = 0;
-            for (var i = 1; i <= 2; i++)
+            for (var i = 1; i <= folders; i++)
             {
                 var addedFolder = new CsharpFolderComposite
                 {
@@ -34,7 +34,7 @@ namespace Stryker.Core.UnitTest.Reporters
                 };
                 folder.Add(addedFolder);
 
-                for (var y = 0; y <= 4; y++)
+                for (var y = 0; y <= files; y++)
                 {
                     var m = new Collection<Mutant>();
                     addedFolder.Add(new CsharpFileLeaf()
