@@ -53,7 +53,7 @@ namespace Stryker.Core.Compiling
                     DumpBuildErrors(syntaxTreeMap);
                     Logger.LogTrace("source {1}", originalTree);
                 }
-                var updatedSyntaxTree = RemoveMutations(originalTree, syntaxTreeMap.Value);
+                var updatedSyntaxTree = RemoveCompileErrorMutations(originalTree, syntaxTreeMap.Value);
 
                 if (updatedSyntaxTree == originalTree && lastAttempt)
                 {
@@ -183,7 +183,7 @@ namespace Stryker.Core.Compiling
             Logger.LogDebug(Environment.NewLine);
         }
 
-        private SyntaxTree RemoveMutations(SyntaxTree originalTree, IEnumerable<Diagnostic> diagnosticInfo)
+        private SyntaxTree RemoveCompileErrorMutations(SyntaxTree originalTree, IEnumerable<Diagnostic> diagnosticInfo)
         {
             var rollbackRoot = originalTree.GetRoot();
             // find all if statements to remove
@@ -266,10 +266,26 @@ namespace Stryker.Core.Compiling
                     continue;
                 }
 
-                brokenMutations.Add(mutationIf);
-                if (mutantId >= 0)
+                if (MutantPlacer.RequiresRemovingChildMutations(mutationIf))
                 {
-                    RolledBackIds.Add(mutantId);
+                    var scan = ScanAllMutationsIfsAndIds(mutationIf);
+                    
+                    foreach (var mutant in scan.Where(mutant => !brokenMutations.Contains(mutant.Node)))
+                    {
+                        brokenMutations.Add(mutant.Node);
+                        if (mutant.Id != -1)
+                        {
+                            RolledBackIds.Add(mutant.Id.Value);
+                        }
+                    }
+                }
+                else
+                {
+                    brokenMutations.Add(mutationIf);
+                    if (mutantId >= 0)
+                    {
+                        RolledBackIds.Add(mutantId);
+                    }
                 }
             }
 
