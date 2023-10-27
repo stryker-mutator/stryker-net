@@ -698,9 +698,9 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
             {
                 Mutation = new Mutation
                 {
-                    OriginalNode = FindEnclosingNode<ExpressionSyntax>(CSharpSyntaxTree.ParseText(sourceCode).GetRoot(), anchor),
+                    OriginalNode = FindEnclosingNode<ExpressionSyntax>(CSharpSyntaxTree.ParseText(sourceCode).GetRoot(), anchor)
                 }
-            }
+            };
             return (mutant, "Expression");
         }
     }
