@@ -50,7 +50,7 @@ namespace Stryker.Core.Compiling
                 enablePartialTypeChecking: null);
 
             var mutatedAssemblyPath = TestProjectsInfo.GetInjectionFilePath(_input.TestProjectsInfo.AnalyzerResults.First(), _input.SourceProjectInfo.AnalyzerResult);
-            var pdbPath = Path.Combine(mutatedAssemblyPath, _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName());
+            var pdbPath = mutatedAssemblyPath.Replace(".dll", ".pdb");
             (var compilationSuccess, var errorinfo) = TryCompilation(checker, trees, mutatedAssemblyPath, pdbPath, dependencies);
 
             foreach (var testProject in _input.TestProjectsInfo.AnalyzerResults)

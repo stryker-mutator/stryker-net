@@ -6,16 +6,16 @@ namespace Stryker.Core.Options.Inputs
 {
     public class AzureFileStorageUrlInput : Input<string>
     {
-        protected override string Description => @"The url for the Azure File Storage is only needed when the Azure baseline provider is selected. 
-The url should look something like this: 
-https://STORAGE_NAME.file.core.windows.net/FILE_SHARE_NAME 
+        protected override string Description => @"The url for the Azure File Storage is only needed when the Azure baseline provider is selected.
+The url should look something like this:
+https://STORAGE_NAME.file.core.windows.net/FILE_SHARE_NAME
 Note, the url might be different depending on where your file storage is hosted.";
 
         public override string Default => string.Empty;
 
-        public string Validate(BaselineProvider baselineProvider)
+        public string Validate(BaselineProvider baselineProvider, bool withBaseline)
         {
-            if (baselineProvider == BaselineProvider.AzureFileStorage)
+            if (withBaseline && baselineProvider == BaselineProvider.AzureFileStorage)
             {
                 if (SuppliedInput is null)
                 {
