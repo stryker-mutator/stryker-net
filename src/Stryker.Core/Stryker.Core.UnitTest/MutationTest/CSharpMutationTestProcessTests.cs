@@ -22,7 +22,6 @@ namespace Stryker.Core.UnitTest.MutationTest
         private string CurrentDirectory { get; }
         private string FilesystemRoot { get; }
         private string SourceFile { get; }
-        private MockFileSystem FileSystemMock { get; } = new();
 
         public CSharpMutationTestProcessTests()
         {
@@ -84,7 +83,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             fileSystem.AddDirectory(Path.Combine(FilesystemRoot, "TestProject", "bin", "Debug", "netcoreapp2.0"));
 
             // setup mocks
-            orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>(), null)).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
+            orchestratorMock.Setup(x => x.Mutate(It.IsAny<SyntaxNode>(), It.IsAny<SemanticModel>())).Returns(CSharpSyntaxTree.ParseText(SourceFile).GetRoot());
             orchestratorMock.SetupAllProperties();
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
 
