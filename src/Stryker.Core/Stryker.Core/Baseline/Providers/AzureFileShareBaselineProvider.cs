@@ -166,11 +166,11 @@ namespace Stryker.Core.Baseline.Providers
                 try
                 {
                     await fileClient.UploadRangeAsync(httpRange, uploadChunk);
-                    _logger.LogDebug("Uploaded report chunk {bytesUploaded}/{bytesTotal} to azure file share", Math.Min(offset + blockSize, fileContentStream.Length), fileContentStream.Length);
+                    _logger.LogDebug("Uploaded report chunk {bytesUploaded}/{bytesTotal} to azure file share", offset, fileContentStream.Length);
                 }
                 catch (RequestFailedException ex)
                 {
-                    _logger.LogError("Failed to upload report chunk {bytesUploaded}/{bytesTotal} to azure file share with error code {errorCode}", Math.Min(offset + blockSize, fileContentStream.Length), fileContentStream.Length, ex.ErrorCode);
+                    _logger.LogError("Failed to upload report chunk {bytesUploaded}/{bytesTotal} to azure file share with error code {errorCode}", offset, fileContentStream.Length, ex.ErrorCode);
                 }
             }
         }

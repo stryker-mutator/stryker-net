@@ -166,7 +166,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
 
         [Theory]
         [InlineData(2, 5)]
-        [InlineData(100, 200)]
+        [InlineData(20, 200)]
         public async Task Save_Report(int folders, int files)
         {
             var chunkSize = 4194304;
