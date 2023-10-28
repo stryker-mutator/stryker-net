@@ -1,3 +1,12 @@
+# [3.11.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.10.0...dotnet-stryker@3.11.0) (2023-10-27)
+
+
+### Features
+
+* **baseline:** Support large reports in azure file share ([#2588](https://github.com/stryker-mutator/stryker-net/issues/2588)) ([4d6dd37](https://github.com/stryker-mutator/stryker-net/commit/4d6dd37929afc8b1dc6153ebcd25f973ad630dbe))
+
+
+
 # [3.10.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.9.2...dotnet-stryker@3.10.0) (2023-07-28)
 
 
