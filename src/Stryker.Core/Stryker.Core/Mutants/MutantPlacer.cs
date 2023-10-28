@@ -133,11 +133,11 @@ namespace Stryker.Core.Mutants
         public static bool RequiresRemovingChildMutations(SyntaxNode node)
         {
             var annotations = node.GetAnnotations(MutationMarkers).ToList();
-            if (annotations.All(a => a.Kind != Injector))
+            if (annotations.TrueForAll(a => a.Kind != Injector))
             {
                 throw new InvalidOperationException("No mutation in this node!");
             }
-            return annotations.Any(a => a.Data == expressionMethodEngine.InstrumentEngineID);
+            return annotations.Exists(a => a.Data == expressionMethodEngine.InstrumentEngineID);
         }
 
         public static MutantInfo FindAnnotations(SyntaxNode node)
