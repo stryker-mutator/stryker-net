@@ -53,7 +53,7 @@ namespace Stryker.Core.Compiling
                     DumpBuildErrors(syntaxTreeMap);
                     Logger.LogTrace("source {1}", originalTree);
                 }
-                var updatedSyntaxTree = RemoveMutations(originalTree, syntaxTreeMap.Value);
+                var updatedSyntaxTree = RemoveCompileErrorMutations(originalTree, syntaxTreeMap.Value);
 
                 if (updatedSyntaxTree == originalTree && lastAttempt)
                 {
@@ -181,11 +181,11 @@ namespace Stryker.Core.Compiling
             Logger.LogDebug(Environment.NewLine);
         }
 
-        private SyntaxTree RemoveMutations(SyntaxTree originalTree, IEnumerable<Diagnostic> diagnosticInfo)
+        private SyntaxTree RemoveCompileErrorMutations(SyntaxTree originalTree, IEnumerable<Diagnostic> diagnosticInfo)
         {
             var rollbackRoot = originalTree.GetRoot();
             // find all if statements to remove
-            var brokenMutations = IdentifyMutations(diagnosticInfo, rollbackRoot, out var diagnostics);
+            var brokenMutations = IdentifyMutationsAndFlagForRollback(diagnosticInfo, rollbackRoot, out var diagnostics);
 
             if (brokenMutations.Count == 0)
             {
@@ -251,7 +251,7 @@ namespace Stryker.Core.Compiling
             return suspiciousMutations;
         }
 
-        private Collection<SyntaxNode> IdentifyMutations(IEnumerable<Diagnostic> diagnosticInfo, SyntaxNode rollbackRoot, out Diagnostic[] diagnostics)
+        private Collection<SyntaxNode> IdentifyMutationsAndFlagForRollback(IEnumerable<Diagnostic> diagnosticInfo, SyntaxNode rollbackRoot, out Diagnostic[] diagnostics)
         {
             var brokenMutations = new Collection<SyntaxNode>();
             diagnostics = diagnosticInfo as Diagnostic[] ?? diagnosticInfo.ToArray();
@@ -264,14 +264,35 @@ namespace Stryker.Core.Compiling
                     continue;
                 }
 
-                brokenMutations.Add(mutationIf);
-                if (mutantId >= 0)
+                if (MutantPlacer.RequiresRemovingChildMutations(mutationIf))
                 {
-                    RollBackedIds.Add(mutantId);
+                    FlagChildrenMutationsForRollback(mutationIf, brokenMutations);
+                }
+                else
+                {
+                    brokenMutations.Add(mutationIf);
+                    if (mutantId >= 0)
+                    {
+                        RollBackedIds.Add(mutantId);
+                    }
                 }
             }
 
             return brokenMutations;
+        }
+
+        private void FlagChildrenMutationsForRollback(SyntaxNode mutationIf, Collection<SyntaxNode> brokenMutations)
+        {
+            var scan = ScanAllMutationsIfsAndIds(mutationIf);
+
+            foreach (var mutant in scan.Where(mutant => !brokenMutations.Contains(mutant.Node)))
+            {
+                brokenMutations.Add(mutant.Node);
+                if (mutant.Id != -1)
+                {
+                    RollBackedIds.Add(mutant.Id.Value);
+                }
+            }
         }
     }
 }

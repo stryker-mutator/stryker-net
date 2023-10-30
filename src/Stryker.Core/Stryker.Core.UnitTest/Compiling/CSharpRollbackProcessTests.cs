@@ -6,6 +6,7 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -156,6 +157,91 @@ namespace ExampleProject
             using var ms = new MemoryStream();
             var result = target.Compile(helpers, ms, null);
             result.RollbackedIds.Count().ShouldBe(2); // should actually be 1 but thanks to issue #1745 rollback doesn't work
+        }
+
+
+        [Fact]
+        public void ShouldRollbackAllMutationsInsideAExpressionBodyMethod()
+        {
+            var syntaxTree = CSharpSyntaxTree.ParseText(@"
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
+
+namespace ExampleProject
+{
+    class Fake
+    {
+        public string DisplayValue { get; set; }
+        public event Action ValueChanged;
+    }
+
+    public class Test
+    {
+        private Fake AccountNumber = new Fake();
+        // this line triggers a compilation error on purpose
+        protected override void Random() =>
+            AccountNumber.ValueChanged += RefreshAccountNumber;
+
+        private void RefreshAccountNumber()
+        {
+        }
+    }
+}");
+            var options = new StrykerOptions
+            {
+                MutationLevel = MutationLevel.Complete,
+                DevMode = true
+            };
+            var codeInjection = new CodeInjection();
+            var placer = new MutantPlacer(codeInjection);
+            var mutator = new CsharpMutantOrchestrator( placer, options: options);
+            var helpers = new List<SyntaxTree>();
+            foreach (var (name, code) in codeInjection.MutantHelpers)
+            {
+                helpers.Add(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32));
+            }
+
+            var mutant = mutator.Mutate(syntaxTree.GetRoot(), null);
+            helpers.Add(mutant.SyntaxTree);
+
+            var references = new List<string> {
+                typeof(object).Assembly.Location,
+                typeof(List<string>).Assembly.Location,
+                typeof(Enumerable).Assembly.Location,
+                typeof(PipeStream).Assembly.Location,
+            };
+            Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(Assembly.Load(a).Location));
+
+            var input = new MutationTestInput()
+            {
+                SourceProjectInfo = new SourceProjectInfo
+                {
+                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                        properties: new Dictionary<string, string>()
+                        {
+                            { "TargetDir", "" },
+                            { "AssemblyName", "AssemblyName"},
+                            { "TargetFileName", "TargetFileName.dll"},
+                            { "SignAssembly", "true" },
+                            { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
+                        },
+                        projectFilePath: "TestResources",
+                        // add a reference to system so the example code can compile
+                        references: references.ToArray()
+                    ).Object
+                }
+            };
+
+            var rollbackProcess = new CSharpRollbackProcess();
+
+            var target = new CsharpCompilingProcess(input, rollbackProcess, options);
+
+            using var ms = new MemoryStream();
+            
+            Action test = () => target.Compile(helpers, ms, null);
+            test.ShouldThrow<CompilationException>();
         }
 
         [Fact]
