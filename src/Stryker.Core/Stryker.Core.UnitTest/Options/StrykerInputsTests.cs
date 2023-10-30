@@ -166,8 +166,8 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void WithBaselineShouldNotThrow_2743() // https://github.com/stryker-mutator/stryker-net/issues/2743
         {
+            _target.ProjectVersionInput.SuppliedInput = "1";
             _target.WithBaselineInput.SuppliedInput = true;
-            _target.SinceInput.SuppliedInput = true;
 
             Should.NotThrow(() => _target.ValidateAll());
         }
