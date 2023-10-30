@@ -1,7 +1,7 @@
 using System.IO;
 using Shouldly;
-using Stryker.Core.Exceptions;
 using Stryker.Core.Baseline.Providers;
+using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
 using Xunit;
@@ -10,7 +10,7 @@ namespace Stryker.Core.UnitTest.Options
 {
     public class StrykerInputsTests : TestBase
     {
-        private StrykerInputs _target = new StrykerInputs()
+        private readonly StrykerInputs _target = new StrykerInputs()
         {
 
             AdditionalTimeoutInput = new AdditionalTimeoutInput(),
@@ -161,6 +161,15 @@ namespace Stryker.Core.UnitTest.Options
 
             var exception = Should.Throw<InputException>(() => _target.ValidateAll());
             exception.Message.ShouldBe("The since and baseline features are mutually exclusive.");
+        }
+
+        [Fact]
+        public void WithBaselineShouldNotThrow_2743() // https://github.com/stryker-mutator/stryker-net/issues/2743
+        {
+            _target.ProjectVersionInput.SuppliedInput = "1";
+            _target.WithBaselineInput.SuppliedInput = true;
+
+            Should.NotThrow(() => _target.ValidateAll());
         }
 
         [Fact]
