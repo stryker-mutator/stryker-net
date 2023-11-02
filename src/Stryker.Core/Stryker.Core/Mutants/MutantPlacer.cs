@@ -20,17 +20,18 @@ namespace Stryker.Core.Mutants
         private const string MutationTypeMarker = "MutationType";
         public static readonly string Injector = "Injector";
 
-        private static readonly StaticInstrumentationEngine staticEngine = new();
-        private static readonly StaticInitializerMarkerEngine staticInitializerEngine = new();
+        private static readonly StaticInstrumentationEngine StaticEngine = new();
+        private static readonly StaticInitializerMarkerEngine StaticInitializerEngine = new();
         private static readonly IfInstrumentationEngine IfEngine = new();
-        private static readonly ConditionalInstrumentationEngine conditionalEngine = new();
-        private static readonly ExpressionMethodToBodyEngine expressionMethodEngine = new();
-        private static readonly LocalFunctionExpressionToBodyEngine localFunctionExpressionToBodyEngine = new();
-        private static readonly AccessorExpressionToBodyEngine accessorExpressionToBodyEngine = new();
-        private static readonly PropertyExpressionToBodyEngine propertyExpressionToBodyEngine = new();
-        private static readonly AnonymousFunctionExpressionToBodyEngine anonymousFunctionExpressionToBodyEngine = new();
-        private static readonly EndingReturnEngine endingReturnEngine = new();
-        private static readonly DefaultInitializationEngine defaultInitializationEngine = new();
+        private static readonly ConditionalInstrumentationEngine ConditionalEngine = new();
+        private static readonly ExpressionMethodToBodyEngine ExpressionMethodEngine = new();
+        private static readonly LocalFunctionExpressionToBodyEngine LocalFunctionExpressionToBodyEngine = new();
+        private static readonly AccessorExpressionToBodyEngine AccessorExpressionToBodyEngine = new();
+        private static readonly PropertyExpressionToBodyEngine PropertyExpressionToBodyEngine = new();
+        private static readonly AnonymousFunctionExpressionToBodyEngine AnonymousFunctionExpressionToBodyEngine = new();
+        private static readonly LambdaExpressionToBodyEngine LambdaExpressionToBodyEngine = new();
+        private static readonly EndingReturnEngine EndingReturnEngine = new();
+        private static readonly DefaultInitializationEngine DefaultInitializationEngine = new();
         private static readonly IDictionary<string, IInstrumentCode> InstrumentEngines = new Dictionary<string, IInstrumentCode>();
 
         private readonly CodeInjection _injection;
@@ -40,17 +41,18 @@ namespace Stryker.Core.Mutants
 
         static MutantPlacer()
         {
-            RegisterEngine(staticEngine);
+            RegisterEngine(StaticEngine);
             RegisterEngine(IfEngine);
-            RegisterEngine(conditionalEngine);
-            RegisterEngine(expressionMethodEngine);
-            RegisterEngine(accessorExpressionToBodyEngine);
-            RegisterEngine(propertyExpressionToBodyEngine);
-            RegisterEngine(anonymousFunctionExpressionToBodyEngine);
-            RegisterEngine(endingReturnEngine);
-            RegisterEngine(defaultInitializationEngine);
-            RegisterEngine(staticInitializerEngine);
-            RegisterEngine(localFunctionExpressionToBodyEngine);
+            RegisterEngine(ConditionalEngine);
+            RegisterEngine(ExpressionMethodEngine);
+            RegisterEngine(AccessorExpressionToBodyEngine);
+            RegisterEngine(PropertyExpressionToBodyEngine);
+            RegisterEngine(AnonymousFunctionExpressionToBodyEngine);
+            RegisterEngine(EndingReturnEngine);
+            RegisterEngine(DefaultInitializationEngine);
+            RegisterEngine(StaticInitializerEngine);
+            RegisterEngine(LocalFunctionExpressionToBodyEngine);
+            RegisterEngine(LambdaExpressionToBodyEngine);
         }
 
         public MutantPlacer(CodeInjection injection) => _injection = injection;
@@ -62,37 +64,42 @@ namespace Stryker.Core.Mutants
         public static void RegisterEngine(IInstrumentCode engine) => InstrumentEngines.Add(engine.InstrumentEngineID, engine);
 
         public static T ConvertExpressionToBody<T>(T method) where T : BaseMethodDeclarationSyntax =>
-            expressionMethodEngine.ConvertToBody(method);
+            ExpressionMethodEngine.ConvertToBody(method);
 
         public static AccessorDeclarationSyntax ConvertExpressionToBody(AccessorDeclarationSyntax method) =>
-            accessorExpressionToBodyEngine.ConvertExpressionToBody(method);
+            AccessorExpressionToBodyEngine.ConvertExpressionToBody(method);
 
         public static LocalFunctionStatementSyntax ConvertExpressionToBody(LocalFunctionStatementSyntax method) =>
-            localFunctionExpressionToBodyEngine.ConvertToBody(method);
+            LocalFunctionExpressionToBodyEngine.ConvertToBody(method);
 
-        public static AnonymousFunctionExpressionSyntax ConvertExpressionToBody(AnonymousFunctionExpressionSyntax property) =>
-            anonymousFunctionExpressionToBodyEngine.ConvertToBody(property);
+        public static LambdaExpressionSyntax ConvertExpressionToBody(LambdaExpressionSyntax lambdaExpression) =>
+            LambdaExpressionToBodyEngine.ConvertToBody(lambdaExpression);
+
+        public static AnonymousFunctionExpressionSyntax ConvertExpressionToBody(AnonymousFunctionExpressionSyntax anonymousFunction) =>
+            AnonymousFunctionExpressionToBodyEngine.ConvertToBody(anonymousFunction);
 
         public static PropertyDeclarationSyntax ConvertPropertyExpressionToBodyAccessor(PropertyDeclarationSyntax property) =>
-            propertyExpressionToBodyEngine.ConvertExpressionToBody(property);
+            PropertyExpressionToBodyEngine.ConvertExpressionToBody(property);
 
         public static BaseMethodDeclarationSyntax AddEndingReturn(BaseMethodDeclarationSyntax method) =>
-            method.WithBody(endingReturnEngine.InjectReturn(method.Body, method.ReturnType(), method.Modifiers));
+            method.WithBody(EndingReturnEngine.InjectReturn(method.Body, method.ReturnType(), method.Modifiers));
         public static AccessorDeclarationSyntax AddEndingReturn(AccessorDeclarationSyntax method, TypeSyntax propertyType) =>
-            method.WithBody(endingReturnEngine.InjectReturn(method.Body, propertyType, method.Modifiers));
+            method.WithBody(EndingReturnEngine.InjectReturn(method.Body, propertyType, method.Modifiers));
         public static LocalFunctionStatementSyntax AddEndingReturn(LocalFunctionStatementSyntax function) =>
-            function.WithBody(endingReturnEngine.InjectReturn(function.Body, function.ReturnType, function.Modifiers));
+            function.WithBody(EndingReturnEngine.InjectReturn(function.Body, function.ReturnType, function.Modifiers));
         public static AnonymousFunctionExpressionSyntax AddEndingReturn(AnonymousFunctionExpressionSyntax function) =>
-            function.WithBlock(endingReturnEngine.InjectReturn(function.Block));
+            function.WithBlock(EndingReturnEngine.InjectReturn(function.Block));
+        public static LambdaExpressionSyntax AddEndingReturn(LambdaExpressionSyntax lambda) =>
+            lambda.WithBlock(EndingReturnEngine.InjectReturn(lambda.Block));
 
         public BlockSyntax PlaceStaticContextMarker(BlockSyntax block) =>
-            staticEngine.PlaceStaticContextMarker(block, _injection);
+            StaticEngine.PlaceStaticContextMarker(block, _injection);
 
         public ExpressionSyntax PlaceStaticContextMarker(ExpressionSyntax expression) =>
-            staticInitializerEngine.PlaceValueMarker(expression, _injection);
+            StaticInitializerEngine.PlaceValueMarker(expression, _injection);
 
         public static BlockSyntax AddDefaultInitializers(BlockSyntax block, IEnumerable<ParameterSyntax> parameters) =>
-            defaultInitializationEngine.AddDefaultInitializers(block, parameters);
+            DefaultInitializationEngine.AddDefaultInitializers(block, parameters);
 
         public StatementSyntax PlaceStatementControlledMutations(StatementSyntax original,
             IEnumerable<(Mutant mutant, StatementSyntax mutation)> mutants) =>
@@ -105,7 +112,7 @@ namespace Stryker.Core.Mutants
         public ExpressionSyntax PlaceExpressionControlledMutations(ExpressionSyntax original,
             IEnumerable<(Mutant mutant, ExpressionSyntax mutation)> mutants) =>
             mutants.Aggregate(original, (current, mutationInfo) =>
-                conditionalEngine.PlaceWithConditionalExpression(GetBinaryExpression(mutationInfo.mutant.Id), current, mutationInfo.mutation)
+                ConditionalEngine.PlaceWithConditionalExpression(GetBinaryExpression(mutationInfo.mutant.Id), current, mutationInfo.mutation)
                     // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later
                     .WithAdditionalAnnotations(new SyntaxAnnotation(MutationIdMarker, mutationInfo.mutant.Id.ToString()))
                     .WithAdditionalAnnotations(new SyntaxAnnotation(MutationTypeMarker, mutationInfo.mutant.Mutation.Type.ToString())));

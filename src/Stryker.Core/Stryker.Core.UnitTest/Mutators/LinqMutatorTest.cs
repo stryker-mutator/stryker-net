@@ -15,9 +15,9 @@ namespace Stryker.Core.UnitTest.Mutators
         /// </summary>
         /// <param name="expression"></param>
         /// <returns></returns>
-        private InvocationExpressionSyntax GenerateExpressions(string expression)
+        private ExpressionSyntax GenerateExpressions(string expression)
         {
-            SyntaxTree tree = CSharpSyntaxTree.ParseText($@"
+            var tree = CSharpSyntaxTree.ParseText($@"
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -39,7 +39,7 @@ namespace TestApplication
             var memberAccessExpression = tree.GetRoot()
                 .DescendantNodes()
                 .OfType<InvocationExpressionSyntax>()
-                .Single();
+                .Single().Expression;
 
             return memberAccessExpression;
         }
@@ -99,9 +99,8 @@ namespace TestApplication
             var result = target.ApplyMutations(expression, null).ToList();
 
             var mutation = result.ShouldHaveSingleItem();
-            var replacement = mutation.ReplacementNode.ShouldBeOfType<InvocationExpressionSyntax>();
-            var simpleMember = replacement.Expression.ShouldBeOfType<MemberAccessExpressionSyntax>();
-            simpleMember.Name.Identifier.ValueText.ShouldBe(expected.ToString());
+            var replacement = mutation.ReplacementNode.ShouldBeOfType<MemberAccessExpressionSyntax>();
+           replacement.Name.Identifier.ValueText.ShouldBe(expected.ToString());
 
             mutation.DisplayName.ShouldBe($"Linq method mutation ({ original }() to { expected }())");
         }
@@ -147,16 +146,15 @@ namespace TestApplication
         }
     }
 }");
-            var memberAccessExpression = tree.GetRoot()
+            var memberAccessExpression = tree
+                .GetRoot()
                 .DescendantNodes()
-                .OfType<ConditionalAccessExpressionSyntax>()
-                .Single();
+                .OfType<MemberAccessExpressionSyntax>().Single(x => x.Name.ToString() == "All");
             var target = new LinqMutator();
 
             var result = target.ApplyMutations(memberAccessExpression, null);
 
-            result.ShouldNotBeEmpty();
-            result.First().OriginalNode.Parent.Parent.ShouldBeOfType<BlockSyntax>();
+            result.ShouldHaveSingleItem().ReplacementNode.ShouldBeOfType<MemberAccessExpressionSyntax>().Name.ToString().ShouldBe("Any");
         }
     }
 }

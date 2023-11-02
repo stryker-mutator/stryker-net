@@ -63,12 +63,9 @@ namespace Stryker.Core.Mutators
             }
         }
 
-        private bool IsAccessToStringPredefinedType(ExpressionSyntax expression)
-        {
-            return
-                expression is PredefinedTypeSyntax typeSyntax &&
-                typeSyntax.Keyword.ValueText == "string";
-        }
+        private bool IsAccessToStringPredefinedType(ExpressionSyntax expression) =>
+            expression is PredefinedTypeSyntax typeSyntax &&
+            typeSyntax.Keyword.ValueText == "string";
 
         private Mutation ApplyIsNullMutation(InvocationExpressionSyntax node) => new()
         {

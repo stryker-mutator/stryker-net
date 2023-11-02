@@ -16,19 +16,21 @@ namespace Stryker.Core.Mutants
     internal class MutationContext
     {
         private readonly CsharpMutantOrchestrator _mainOrchestrator;
-        private readonly MutationStore _store;
+        private readonly Stack<MutationStore> _pendingMutations = new();
+        private int _subExpressionDepth;
 
         public MutationContext(CsharpMutantOrchestrator mutantOrchestrator)
         {
             _mainOrchestrator = mutantOrchestrator;
-            _store = new MutationStore(_mainOrchestrator.Placer);
+            // ensure there is a top level store
+            EnterFunction();
         }
 
         private MutationContext(MutationContext parent)
         {
             _mainOrchestrator = parent._mainOrchestrator;
             InStaticValue = parent.InStaticValue;
-            _store = parent._store;
+            _pendingMutations = parent._pendingMutations;
             FilteredMutators = parent.FilteredMutators;
             FilterComment = parent.FilterComment;
         }
@@ -37,6 +39,7 @@ namespace Stryker.Core.Mutants
         /// Call this to generate mutations using active mutators.
         /// </summary>
         /// <param name="node"><see cref="SyntaxNode"/> to mutate.</param>
+        /// <param name="semanticModel">current semantic model</param>
         /// <returns>A list of mutants.</returns>
         public IEnumerable<Mutant> GenerateMutantsForNode(SyntaxNode node, SemanticModel semanticModel) =>
             _mainOrchestrator.GenerateMutationsForNode(node, semanticModel, this);
@@ -57,16 +60,36 @@ namespace Stryker.Core.Mutants
 
         internal string FilterComment { get; set; }
 
+        private MutationStore CurrentStore => _pendingMutations.Peek();
+
         /// <summary>
         /// true if there are pending statement or block level mutations
         /// </summary>
-        public bool HasStatementLevelMutant => _store.HasStatementLevel;
+        public bool HasStatementLevelMutant => CurrentStore.HasStatementLevel;
 
         /// <summary>
         /// Call this to signal mutation occurs in static method or fields
         /// </summary>
         /// <returns>A new context</returns>
         public MutationContext EnterStatic() => new(this) { InStaticValue = true };
+
+        public MutationContext EnterFunction()
+        {
+            _pendingMutations.Push(new MutationStore(_mainOrchestrator.Placer));
+            return this;
+        }
+
+        public MutationContext LeaveFunction()
+        {
+            _pendingMutations.Pop();
+            return this;
+        }
+
+        public MutationContext EnterSubExpression()
+        {
+            _subExpressionDepth++;
+            return this;
+        }
 
         /// <summary>
         /// Call this when beginning of a syntax structure that can control mutations (expression, statement, block)
@@ -78,11 +101,20 @@ namespace Stryker.Core.Mutants
         {
             switch (control)
             {
+                case MutationControl.Expression:
+                    if (_subExpressionDepth > 0)
+                    {
+                        _subExpressionDepth++;
+                        return this;
+                    }
+
+                    CurrentStore.EnterExpression();
+                    return this;
                 case MutationControl.Statement:
-                    _store.EnterStatement();
+                    CurrentStore.EnterStatement();
                     return this;
                 case MutationControl.Block:
-                    _store.EnterBlock();
+                    CurrentStore.EnterBlock();
                     return new MutationContext(this);
             }
 
@@ -98,11 +130,21 @@ namespace Stryker.Core.Mutants
         {
             switch (control)
             {
+                case MutationControl.Expression:
+                    if (_subExpressionDepth > 0)
+                    {
+                        // we were in a part of an expression
+                        _subExpressionDepth--;
+                        break;
+                    }
+
+                    CurrentStore.LeaveExpression();
+                    break;
                 case MutationControl.Statement:
-                    _store.LeaveStatement();
+                    CurrentStore.LeaveStatement();
                     break;
                 case MutationControl.Block:
-                    _store.LeaveBlock();
+                    CurrentStore.LeaveBlock();
                     break;
             }
         }
@@ -112,21 +154,21 @@ namespace Stryker.Core.Mutants
         /// </summary>
         /// <param name="mutants"></param>
         public void AddExpressionLevel(IEnumerable<Mutant> mutants) =>
-            _store.StoreMutations(mutants, MutationControl.Expression);
+            CurrentStore.StoreMutations(mutants, MutationControl.Expression);
 
         /// <summary>
         /// Register new statement level mutations
         /// </summary>
         /// <param name="mutants"></param>
         public void AddStatementLevel(IEnumerable<Mutant> mutants) =>
-            _store.StoreMutations(mutants, MutationControl.Statement);
+            CurrentStore.StoreMutations(mutants, MutationControl.Statement);
 
         /// <summary>
         /// Register new block level mutations
         /// </summary>
         /// <param name="mutants"></param>
         public void AddBlockLevel(IEnumerable<Mutant> mutants) =>
-            _store.StoreMutations(mutants, MutationControl.Block);
+            CurrentStore.StoreMutations(mutants, MutationControl.Block);
 
         /// <summary>
         /// Injects pending expression level mutations.
@@ -134,12 +176,17 @@ namespace Stryker.Core.Mutants
         /// <param name="mutatedNode">Target node that will contain the mutations</param>
         /// <param name="sourceNode">Source node, used to generate mutations</param>
         /// <returns>A mutated node containing the mutations.</returns>
+        /// <remarks>Do not inject mutation(s) if in a subexpression</remarks>
         public ExpressionSyntax InjectExpressionLevel(ExpressionSyntax mutatedNode, ExpressionSyntax sourceNode)
-            => _store.PlaceExpressionMutations(mutatedNode, m => sourceNode.InjectMutation(m));
+            => _subExpressionDepth > 1
+                ? mutatedNode
+                : CurrentStore.PlaceExpressionMutations(mutatedNode, sourceNode.InjectMutation);
 
-        public BlockSyntax PlaceStaticContextMarker(BlockSyntax block) => _mainOrchestrator.Placer.PlaceStaticContextMarker(block);
+        public BlockSyntax PlaceStaticContextMarker(BlockSyntax block) =>
+            _mainOrchestrator.Placer.PlaceStaticContextMarker(block);
 
-        public ExpressionSyntax PlaceStaticContextMarker(ExpressionSyntax block) => _mainOrchestrator.Placer.PlaceStaticContextMarker(block);
+        public ExpressionSyntax PlaceStaticContextMarker(ExpressionSyntax block) =>
+            _mainOrchestrator.Placer.PlaceStaticContextMarker(block);
 
         /// <summary>
         /// Injects pending statement level mutations.
@@ -148,7 +195,7 @@ namespace Stryker.Core.Mutants
         /// <param name="sourceNode">Source node, used to generate mutations</param>
         /// <returns>A mutated node containing the mutations.</returns>
         public StatementSyntax InjectStatementLevel(StatementSyntax mutatedNode, StatementSyntax sourceNode)
-            => _store.PlaceStatementMutations(mutatedNode, sourceNode.InjectMutation);
+            => CurrentStore.PlaceStatementMutations(mutatedNode, sourceNode.InjectMutation);
 
         /// <summary>
         /// Injects pending block level mutations.
@@ -156,7 +203,8 @@ namespace Stryker.Core.Mutants
         /// <param name="mutatedNode">Target node that will contain the mutations</param>
         /// <param name="originalNode">Source node, used to generate mutations</param>
         /// <returns>A mutated node containing the mutations.</returns>
-        public StatementSyntax InjectBlockLevel(StatementSyntax mutatedNode, StatementSyntax originalNode) => _store.PlaceBlockMutations(mutatedNode, m => originalNode.InjectMutation(m));
+        public StatementSyntax InjectBlockLevel(StatementSyntax mutatedNode, StatementSyntax originalNode) =>
+            CurrentStore.PlaceBlockMutations(mutatedNode, m => originalNode.InjectMutation(m));
 
         /// <summary>s
         /// Injects pending block level mutations for expression body method or functions
@@ -165,18 +213,20 @@ namespace Stryker.Core.Mutants
         /// <param name="originalNode">Source node, used to generate mutations</param>
         /// <param name="needReturn">Set to true if the method has a return value. Expressions are transformed to return statement.</param>
         /// <returns>A mutated node containing the mutations.</returns>
-        public StatementSyntax InjectBlockLevelExpressionMutation(StatementSyntax mutatedNode, ExpressionSyntax originalNode, bool needReturn)
+        public StatementSyntax InjectBlockLevelExpressionMutation(StatementSyntax mutatedNode,
+            ExpressionSyntax originalNode, bool needReturn)
         {
             var wrapper = needReturn
                 ? (Func<ExpressionSyntax, StatementSyntax>)SyntaxFactory.ReturnStatement
                 : SyntaxFactory.ExpressionStatement;
 
-            if (_store.HasStatementLevel)
+            if (CurrentStore.HasStatementLevel)
             {
-                mutatedNode = _store.PlaceStatementMutations(mutatedNode, m => wrapper(originalNode.InjectMutation(m)));
+                mutatedNode =
+                    CurrentStore.PlaceStatementMutations(mutatedNode, m => wrapper(originalNode.InjectMutation(m)));
             }
 
-            return _store.PlaceBlockMutations(mutatedNode, m => wrapper(originalNode.InjectMutation(m)));
+            return CurrentStore.PlaceBlockMutations(mutatedNode, m => wrapper(originalNode.InjectMutation(m)));
         }
 
         /// <summary>

@@ -453,7 +453,7 @@ private bool Out(int test, Func<int, bool>lambda )
         [Fact]
         public void ShouldMutateInsideStringDeclarationInsideLocalFunction()
         {
-            string source = @"void TestMethod()
+            var source = @"void TestMethod()
 		{
 			string SomeLocalFunction()
 			{
@@ -461,7 +461,7 @@ private bool Out(int test, Func<int, bool>lambda )
 				return $""test{1 + test3}"";
 			};
 		}";
-            string expected = @"void TestMethod()
+            var expected = @"void TestMethod()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else		{
 			string SomeLocalFunction()
 {if(StrykerNamespace.MutantControl.IsActive(1)){}else			{
@@ -477,14 +477,14 @@ private bool Out(int test, Func<int, bool>lambda )
         [Fact]
         public void ShouldMutateConditionalExpressionProperly()
         {
-            string source = @"void TestMethod()
+            var source = @"void TestMethod()
 		{
 			string SomeLocalFunction()
 			{
 				return string.Empty?.All(x => !string.IsEmpty(x));
 			};
 		}";
-            string expected = @"void TestMethod()
+            var expected = @"void TestMethod()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else		{
 			string SomeLocalFunction()
 {if(StrykerNamespace.MutantControl.IsActive(1)){}else			{
@@ -499,9 +499,9 @@ private bool Out(int test, Func<int, bool>lambda )
         [Fact]
         public void ShouldMutateConditionalExpressionOnArrayDeclaration()
         {
-            string source =
+            var source =
                 @"public static IEnumerable<int> Foo() => new int[] { }.ToArray().Any(x => x==1)?.OrderBy(e => e).ToList();";
-            string expected =
+            var expected =
                 @"public static IEnumerable<int> Foo() => (StrykerNamespace.MutantControl.IsActive(1)?new int[] { }.ToArray().Any(x => x==1)?.OrderByDescending(e => e).ToList():(StrykerNamespace.MutantControl.IsActive(0)?new int[] { }.ToArray().All(x => x==1)?.OrderBy(e => e).ToList():new int[] { }.ToArray().Any(x => (StrykerNamespace.MutantControl.IsActive(2)?x!=1:x==1))?.OrderBy(e => e).ToList()));";
 
             ShouldMutateSourceInClassToExpected(source, expected);

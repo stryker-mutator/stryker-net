@@ -39,19 +39,21 @@ namespace Stryker.Core.UnitTest.Mutants
         {
             actual = @"using System;
 using System.Collections.Generic;
-            using System.Text;
+using System.Text;
 namespace StrykerNet.UnitTest.Mutants.TestResources
-    {
-        class TestClass
-        {" + actual + "}}";
+{
+    class TestClass
+    {" + actual + @"}
+}";
 
             expected = @"using System;
 using System.Collections.Generic;
-            using System.Text;
+using System.Text;
 namespace StrykerNet.UnitTest.Mutants.TestResources
-	{
-		class TestClass
-		{" + expected + "}}";
+{
+    class TestClass
+    {" + expected + @"}
+}";
             ShouldMutateSourceToExpected(actual, expected);
         }
     }

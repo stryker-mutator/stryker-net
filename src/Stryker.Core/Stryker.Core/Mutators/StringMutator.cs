@@ -31,11 +31,11 @@ namespace Stryker.Core.Mutators
             }
         }
 
-        private bool IsStringLiteral(LiteralExpressionSyntax node)
+        private static bool IsStringLiteral(LiteralExpressionSyntax node)
         {
             var kind = node.Kind();
             return kind == SyntaxKind.StringLiteralExpression
-                && !(node.Parent is ConstantPatternSyntax);
+                && node.Parent is not ConstantPatternSyntax;
         }
 
         private bool IsSpecialType(SyntaxNode root) => root switch
@@ -44,7 +44,7 @@ namespace Stryker.Core.Mutators
             _ => false
         };
 
-        private bool IsCtorOfType(ObjectCreationExpressionSyntax ctor, Type type)
+        private static bool IsCtorOfType(ObjectCreationExpressionSyntax ctor, Type type)
         {
             var ctorType = ctor.Type.ToString();
             return ctorType == type.Name || ctorType == type.FullName;

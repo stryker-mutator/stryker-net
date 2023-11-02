@@ -62,7 +62,6 @@ namespace Stryker.Core.Instrumentation
             }
             else
             {
-                
                 ret = block.AddStatements(
                     SyntaxFactory.ReturnStatement(SyntaxFactory.LiteralExpression(SyntaxKind.DefaultLiteralExpression).WithLeadingTrivia(SyntaxFactory.Space)));
             }

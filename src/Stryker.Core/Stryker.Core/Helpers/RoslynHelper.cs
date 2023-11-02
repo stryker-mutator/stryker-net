@@ -136,7 +136,7 @@ namespace Stryker.Core.Helpers
         /// </summary>
         /// <param name="type">Type used in the resulting default expression.</param>
         /// <returns>An expression representing `default(<paramref name="type"/>'.</returns>
-        public static ExpressionSyntax BuildDefaultExpression(this TypeSyntax type) => SyntaxFactory.DefaultExpression(type.WithoutTrailingTrivia()).WithLeadingTrivia(SyntaxFactory.Space);
+        public static ExpressionSyntax BuildDefaultExpression(this TypeSyntax type) => SyntaxFactory.DefaultExpression(type.WithoutTrivia()).WithLeadingTrivia(SyntaxFactory.Space);
 
         /// <summary>
         /// Check (recursively) if the statement returns some value.

@@ -25,12 +25,10 @@ namespace Stryker.Core.Mutants
         private readonly Stack<List<Mutant>> _blockMutants = new();
         private readonly MutantPlacer _placer;
 
-        public MutationStore(MutantPlacer placer)
-        {
-            _placer = placer;
-        }
+        public MutationStore(MutantPlacer placer) => _placer = placer;
 
         public bool HasBlockLevel => _blockMutants.Count > 0 && _blockMutants.Peek().Count > 0;
+
         public bool HasStatementLevel => (_statementMutants.Count > 0 && _statementMutants.Peek().Count > 0) || HasBlockLevel;
 
         public void StoreMutations(IEnumerable<Mutant> proposedMutations, MutationControl control)
@@ -92,26 +90,25 @@ namespace Stryker.Core.Mutants
 
         public ExpressionSyntax PlaceExpressionMutations(ExpressionSyntax expression, Func<Mutation, ExpressionSyntax> converter)
         {
+            if (_expressionMutants.Count == 0)
+            {
+                return expression;
+            }
             var result = _placer.PlaceExpressionControlledMutations(expression, _expressionMutants.Select(m => (m, converter(m.Mutation))));
             _expressionMutants.Clear();
             return result;
         }
 
+        public void EnterExpression() {}
+
+        public void LeaveExpression() {}
+
         public void EnterStatement() => _statementMutants.Push(new List<Mutant>());
 
-        public void LeaveStatement()
-        {
-            StoreMutations(_statementMutants.Pop(), MutationControl.Block);
-            StoreMutations(_expressionMutants, MutationControl.Block);
-            _expressionMutants.Clear();
-        }
+        public void LeaveStatement() => StoreMutations(_statementMutants.Pop(), MutationControl.Block);
 
         public void EnterBlock() => _blockMutants.Push(new List<Mutant>());
 
-        public void LeaveBlock()
-        {
-            _blockMutants.Pop();
-            _expressionMutants.Clear();
-        }
+        public void LeaveBlock() => _blockMutants.Pop();
     }
 }

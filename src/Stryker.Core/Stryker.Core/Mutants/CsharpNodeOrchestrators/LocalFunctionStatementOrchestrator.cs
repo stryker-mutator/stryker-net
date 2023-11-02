@@ -7,6 +7,10 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 {
     internal class LocalFunctionStatementOrchestrator : NodeSpecificOrchestrator<LocalFunctionStatementSyntax, LocalFunctionStatementSyntax>
     {
+        protected override MutationContext PrepareContext(LocalFunctionStatementSyntax node, MutationContext context) => base.PrepareContext(node, context.EnterFunction());
+
+        protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.LeaveFunction());
+
         /// <summary>
         /// Mutate the children, except the arrow expression body that may require conversion.
         /// </summary>
