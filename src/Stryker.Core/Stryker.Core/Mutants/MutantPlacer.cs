@@ -144,7 +144,7 @@ namespace Stryker.Core.Mutants
             {
                 throw new InvalidOperationException("No mutation in this node!");
             }
-            return annotations.Exists(a => a.Data == expressionMethodEngine.InstrumentEngineID);
+            return annotations.Exists(a => a.Data == ExpressionMethodEngine.InstrumentEngineID);
         }
 
         public static MutantInfo FindAnnotations(SyntaxNode node)

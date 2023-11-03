@@ -17,7 +17,6 @@ namespace Stryker.Core.Mutants
     {
         private readonly CsharpMutantOrchestrator _mainOrchestrator;
         private readonly Stack<MutationStore> _pendingMutations = new();
-        private int _subExpressionDepth;
 
         public MutationContext(CsharpMutantOrchestrator mutantOrchestrator)
         {
@@ -87,7 +86,7 @@ namespace Stryker.Core.Mutants
 
         public MutationContext EnterSubExpression()
         {
-            _subExpressionDepth++;
+            CurrentStore.SubExpressionDepth++;
             return this;
         }
 
@@ -102,9 +101,9 @@ namespace Stryker.Core.Mutants
             switch (control)
             {
                 case MutationControl.Expression:
-                    if (_subExpressionDepth > 0)
+                    if (CurrentStore.SubExpressionDepth > 0)
                     {
-                        _subExpressionDepth++;
+                        CurrentStore.SubExpressionDepth++;
                         return this;
                     }
 
@@ -131,10 +130,10 @@ namespace Stryker.Core.Mutants
             switch (control)
             {
                 case MutationControl.Expression:
-                    if (_subExpressionDepth > 0)
+                    if (CurrentStore.SubExpressionDepth > 0)
                     {
                         // we were in a part of an expression
-                        _subExpressionDepth--;
+                        CurrentStore.SubExpressionDepth--;
                         break;
                     }
 
@@ -178,7 +177,7 @@ namespace Stryker.Core.Mutants
         /// <returns>A mutated node containing the mutations.</returns>
         /// <remarks>Do not inject mutation(s) if in a subexpression</remarks>
         public ExpressionSyntax InjectExpressionLevel(ExpressionSyntax mutatedNode, ExpressionSyntax sourceNode)
-            => _subExpressionDepth > 0
+            => CurrentStore.SubExpressionDepth > 0
                 ? mutatedNode
                 : CurrentStore.PlaceExpressionMutations(mutatedNode, sourceNode.InjectMutation);
 

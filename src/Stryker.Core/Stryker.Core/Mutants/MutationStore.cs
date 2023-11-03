@@ -25,6 +25,8 @@ namespace Stryker.Core.Mutants
         private readonly Stack<List<Mutant>> _blockMutants = new();
         private readonly MutantPlacer _placer;
 
+        public int SubExpressionDepth { get; set; }
+
         public MutationStore(MutantPlacer placer) => _placer = placer;
 
         public bool HasBlockLevel => _blockMutants.Count > 0 && _blockMutants.Peek().Count > 0;
