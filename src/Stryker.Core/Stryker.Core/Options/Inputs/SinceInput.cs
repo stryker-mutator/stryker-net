@@ -12,7 +12,7 @@ namespace Stryker.Core.Options.Inputs
         {
             if (withBaseline.IsNotNullAndTrue())
             {
-                if (SuppliedInput.HasValue)
+                if (SuppliedInput.HasValue && SuppliedInput.Value)
                 {
                     throw new InputException("The since and baseline features are mutually exclusive.");
                 }
