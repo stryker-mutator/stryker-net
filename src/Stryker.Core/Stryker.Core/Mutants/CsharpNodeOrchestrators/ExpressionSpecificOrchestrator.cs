@@ -15,15 +15,10 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         {
             var mutationContext = base.PrepareContext(node, context);
             if (node is MemberAccessExpressionSyntax
-                || node is MemberBindingExpressionSyntax
-                || node is ConditionalAccessExpressionSyntax)
+                || node is MemberBindingExpressionSyntax)
             {
-                return mutationContext.EnterSubExpression();
-            }
-
-            if (node is InvocationExpressionSyntax)
-            {
-                return mutationContext.EnterSubExpression();
+                if (node.Parent is InvocationExpressionSyntax)
+                    return mutationContext.EnterSubExpression();
             }
 
             return mutationContext.Enter(MutationControl.Expression);

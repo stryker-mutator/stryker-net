@@ -488,7 +488,7 @@ private bool Out(int test, Func<int, bool>lambda )
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else		{
 			string SomeLocalFunction()
 {if(StrykerNamespace.MutantControl.IsActive(1)){}else			{
-				return (StrykerNamespace.MutantControl.IsActive(2)?string.Empty?.Any(x => !string.IsEmpty(x)):(StrykerNamespace.MutantControl.IsActive(3)?""Stryker was here!"":string.Empty)?.All(x => (StrykerNamespace.MutantControl.IsActive(4)?string.IsEmpty(x):!string.IsEmpty(x))));
+				return (StrykerNamespace.MutantControl.IsActive(3)?string.Empty?.Any(x => !string.IsEmpty(x)):(StrykerNamespace.MutantControl.IsActive(2)?""Stryker was here!"":string.Empty)?.All(x => (StrykerNamespace.MutantControl.IsActive(4)?string.IsEmpty(x):!string.IsEmpty(x))));
 
             }return default(string);};
 }}";
@@ -502,7 +502,7 @@ private bool Out(int test, Func<int, bool>lambda )
             var source =
                 @"public static IEnumerable<int> Foo() => new int[] { }.ToArray().Any(x => x==1)?.OrderBy(e => e).ToList();";
             var expected =
-                @"public static IEnumerable<int> Foo() => (StrykerNamespace.MutantControl.IsActive(1)?new int[] { }.ToArray().Any(x => x==1)?.OrderByDescending(e => e).ToList():(StrykerNamespace.MutantControl.IsActive(0)?new int[] { }.ToArray().All(x => x==1)?.OrderBy(e => e).ToList():new int[] { }.ToArray().Any(x => (StrykerNamespace.MutantControl.IsActive(2)?x!=1:x==1))?.OrderBy(e => e).ToList()));";
+                @"public static IEnumerable<int> Foo() => (StrykerNamespace.MutantControl.IsActive(2)?new int[] { }.ToArray().Any(x => x==1)?.OrderByDescending(e => e).ToList():(StrykerNamespace.MutantControl.IsActive(0)?new int[] { }.ToArray().All(x => x==1)?.OrderBy(e => e).ToList():new int[] { }.ToArray().Any(x => (StrykerNamespace.MutantControl.IsActive(1)?x!=1:x==1))?.OrderBy(e => e).ToList()));";
 
             ShouldMutateSourceInClassToExpected(source, expected);
         }
