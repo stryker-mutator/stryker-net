@@ -4,20 +4,17 @@ using System.Linq;
 using LibGit2Sharp;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 
 namespace Stryker.Core.DiffProviders
 {
     public class GitDiffProvider : IDiffProvider
     {
-        public TestSet Tests { get; }
         private readonly StrykerOptions _options;
         private readonly IGitInfoProvider _gitInfoProvider;
 
-        public GitDiffProvider(StrykerOptions options, TestSet tests, IGitInfoProvider gitInfoProvider = null)
+        public GitDiffProvider(StrykerOptions options, IGitInfoProvider gitInfoProvider = null)
         {
-            Tests = tests;
             _options = options;
             _gitInfoProvider = gitInfoProvider ?? new GitInfoProvider(options);
         }

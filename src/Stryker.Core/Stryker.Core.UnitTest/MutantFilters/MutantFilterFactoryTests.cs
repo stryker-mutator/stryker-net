@@ -1,15 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using LibGit2Sharp;
 using Moq;
 using Shouldly;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
+using Stryker.Core.MutationTest;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.Reporters.Json;
+using Stryker.Core.TestRunners;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
@@ -27,8 +31,17 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
             var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
             var baselineProvider = new Mock<IBaselineProvider>(MockBehavior.Loose);
+            var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
+            var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Loose);
+            var branch = "branch";
+            var input = new MutationTestInput
+            {
+                TestRunner = testRunnerMock.Object
+            };
+            testRunnerMock.Setup(m => m.GetTests(It.IsAny<SourceProjectInfo>())).Returns(new TestSet());
+            gitInfoProviderMock.Setup(m => m.GetCurrentBranchName()).Returns(branch);
 
-            var result = MutantFilterFactory.Create(options, null, diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
+            var result = MutantFilterFactory.Create(options, input, diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
 
             result.ShouldBeOfType<BroadcastMutantFilter>();
         }
@@ -72,9 +85,18 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
             var branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
             var baselineProvider = new Mock<IBaselineProvider>(MockBehavior.Loose);
+            var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
+            var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Loose);
+            var branch = "branch";
+            var input = new MutationTestInput
+            {
+                TestRunner = testRunnerMock.Object
+            };
+            testRunnerMock.Setup(m => m.GetTests(It.IsAny<SourceProjectInfo>())).Returns(new TestSet());
+            gitInfoProviderMock.Setup(m => m.GetCurrentBranchName()).Returns(branch);
 
             // Act
-            var result = MutantFilterFactory.Create(options, null, diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
+            var result = MutantFilterFactory.Create(options, input, diffProviderMock.Object, baselineProvider.Object, branchProviderMock.Object);
 
             // Assert
             var resultAsBroadcastFilter = result as BroadcastMutantFilter;
@@ -109,7 +131,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
         }
 
         [Fact]
-        public void MutantFilterFactory_Creates_DashboardMutantFilter_And_DiffMutantFilter_WithBaseline_Enabled() {
+        public void MutantFilterFactory_Creates_DashboardMutantFilter_And_DiffMutantFilter_WithBaseline_Enabled()
+        {
             var options = new StrykerOptions()
             {
                 WithBaseline = true,
@@ -119,8 +142,15 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
             var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
             var baselineProviderMock = new Mock<IBaselineProvider>(MockBehavior.Loose);
-
-            var result = MutantFilterFactory.Create(options, null, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);
+            var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Loose);
+            var branch = "branch";
+            var input = new MutationTestInput
+            {
+                TestRunner = testRunnerMock.Object
+            };
+            testRunnerMock.Setup(m => m.GetTests(It.IsAny<SourceProjectInfo>())).Returns(new TestSet());
+            gitInfoProviderMock.Setup(m => m.GetCurrentBranchName()).Returns(branch);
+            var result = MutantFilterFactory.Create(options, input, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);
 
             var resultAsBroadcastFilter = result as BroadcastMutantFilter;
 
@@ -145,14 +175,28 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Strict);
             var gitInfoProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Strict);
             var baselineProviderMock = new Mock<IBaselineProvider>(MockBehavior.Strict);
+            var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Loose);
+            var repositoryMock = new Mock<IRepository>(MockBehavior.Loose);
+            var commitMock = new Mock<Commit>(MockBehavior.Loose);
+
             var branch = "branch";
+            var input = new MutationTestInput
+            {
+                TestRunner = testRunnerMock.Object
+            };
+            commitMock
+                .SetupGet(x => x.Tree)
+                .Returns(new Mock<Tree>(MockBehavior.Loose).Object);
             gitInfoProviderMock.Setup(m => m.GetCurrentBranchName()).Returns(branch);
+            gitInfoProviderMock.SetupGet(m => m.Repository).Returns(repositoryMock.Object);
+            gitInfoProviderMock.SetupGet(m => m.RepositoryPath).Returns("/c/Path/To/Repo");
+            gitInfoProviderMock.Setup(m => m.DetermineCommit()).Returns(commitMock.Object);
             baselineProviderMock.Setup(m => m.Load($"baseline/{branch}")).ReturnsAsync(new JsonReport());
             diffProviderMock.Setup(m => m.ScanDiff()).Returns(new DiffResult());
-            diffProviderMock.Setup(m => m.Tests).Returns(new TestSet());
+            testRunnerMock.Setup(m => m.GetTests(It.IsAny<SourceProjectInfo>())).Returns(new TestSet());
 
             // Act
-            var result = MutantFilterFactory.Create(options, null, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);
+            var result = MutantFilterFactory.Create(options, input, diffProviderMock.Object, baselineProviderMock.Object, gitInfoProviderMock.Object);
             var broadcastFilterResult = result as BroadcastMutantFilter;
 
             // Assert
