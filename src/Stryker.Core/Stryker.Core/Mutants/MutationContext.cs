@@ -178,7 +178,7 @@ namespace Stryker.Core.Mutants
         /// <returns>A mutated node containing the mutations.</returns>
         /// <remarks>Do not inject mutation(s) if in a subexpression</remarks>
         public ExpressionSyntax InjectExpressionLevel(ExpressionSyntax mutatedNode, ExpressionSyntax sourceNode)
-            => _subExpressionDepth > 1
+            => _subExpressionDepth > 0
                 ? mutatedNode
                 : CurrentStore.PlaceExpressionMutations(mutatedNode, sourceNode.InjectMutation);
 
@@ -204,7 +204,7 @@ namespace Stryker.Core.Mutants
         /// <param name="originalNode">Source node, used to generate mutations</param>
         /// <returns>A mutated node containing the mutations.</returns>
         public StatementSyntax InjectBlockLevel(StatementSyntax mutatedNode, StatementSyntax originalNode) =>
-            CurrentStore.PlaceBlockMutations(mutatedNode, m => originalNode.InjectMutation(m));
+            CurrentStore.PlaceBlockMutations(mutatedNode, originalNode.InjectMutation);
 
         /// <summary>s
         /// Injects pending block level mutations for expression body method or functions

@@ -13,25 +13,12 @@ internal class ConditionalAccessOrchestrator: NodeSpecificOrchestrator<Condition
 
     protected override ExpressionSyntax OrchestrateChildrenMutation(ConditionalAccessExpressionSyntax node, SemanticModel semanticModel, MutationContext context)
     {
-        MutateSingleNode(node.Expression, semanticModel, context.EnterSubExpression());
-        var result = node.ReplaceNode(node.WhenNotNull,MutateSingleNode(node.WhenNotNull, semanticModel, context));
+        var pendingMutations = (ExpressionSyntax) MutateSingleNode(node.Expression, semanticModel, context);
+
+        var resultingNode = node.WithExpression(pendingMutations).
+            WithWhenNotNull((ExpressionSyntax)MutateSingleNode(node.WhenNotNull, semanticModel, context.EnterSubExpression()));
         context.Leave(MutationControl.Expression);
-        return result;
+        return resultingNode;
     }
 
-    protected override MutationContext StoreMutations(ConditionalAccessExpressionSyntax node,
-        IEnumerable<Mutant> mutations,
-        MutationContext context)
-    {
-        // if the expression contains a declaration, it must be controlled at the block level.
-        if (node.ContainsDeclarations())
-        {
-            context.AddBlockLevel(mutations);
-        }
-        else
-        {
-            context.AddExpressionLevel(mutations);
-        }
-        return context;
-    }
-    }
+ }
