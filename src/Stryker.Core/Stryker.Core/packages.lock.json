@@ -92,9 +92,9 @@
       },
       "LibGit2Sharp": {
         "type": "Direct",
-        "requested": "[0.27.2, )",
-        "resolved": "0.27.2",
-        "contentHash": "TYIfwuumwmZFjxwRFz5y2MyTA8jc19MejSyRRTCS/TflhrdQPH7H84ueyCpY0+xkNWThEd+dCnkuf7XuH3tt+A==",
+        "requested": "[0.28.0, )",
+        "resolved": "0.28.0",
+        "contentHash": "+VGXLAQovtTc41EkUXBKSuu40XcyuWUmQrslpd0CPMGkpnLTgQwoRLSSCRxLSPjYSi9SskyRUOLa9tjg/L108A==",
         "dependencies": {
           "LibGit2Sharp.NativeBinaries": "[2.0.320]"
         }
