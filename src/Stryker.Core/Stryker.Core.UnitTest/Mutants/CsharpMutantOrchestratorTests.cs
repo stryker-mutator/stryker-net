@@ -504,7 +504,7 @@ private bool Out(int test, Func<int, bool>lambda )
             var source =
                 @"public static IEnumerable<int> Foo() => new int[] { }.ToArray().Any(x => x==1)?.OrderBy(e => e).ToList();";
             var expected =
-                @"public static IEnumerable<int> Foo() => (StrykerNamespace.MutantControl.IsActive(2)?new int[] { }.ToArray().Any(x => x==1)?.OrderByDescending(e => e).ToList():(StrykerNamespace.MutantControl.IsActive(0)?new int[] { }.ToArray().All(x => x==1)?.OrderBy(e => e).ToList():new int[] { }.ToArray().Any(x => (StrykerNamespace.MutantControl.IsActive(1)?x!=1:x==1))?.OrderBy(e => e).ToList()));";
+                @"public static IEnumerable<int> Foo() => (StrykerNamespace.MutantControl.IsActive(2)?new int[] { }.ToArray().Any(x => x==1)?.OrderByDescending(e => e).ToList():(StrykerNamespace.MutantControl.IsActive(0)?new int[] { }.ToArray().All(x => x==1):new int[] { }.ToArray().Any(x => (StrykerNamespace.MutantControl.IsActive(1)?x!=1:x==1)))?.OrderBy(e => e).ToList());";
 
             ShouldMutateSourceInClassToExpected(source, expected);
         }
