@@ -101,10 +101,6 @@ namespace Stryker.Core.Mutants
             return result;
         }
 
-        public void EnterExpression() {}
-
-        public void LeaveExpression() {}
-
         public void EnterStatement() => _statementMutants.Push(new List<Mutant>());
 
         public void LeaveStatement() => StoreMutations(_statementMutants.Pop(), MutationControl.Block);

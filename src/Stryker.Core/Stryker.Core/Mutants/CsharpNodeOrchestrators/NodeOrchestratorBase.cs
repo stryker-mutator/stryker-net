@@ -65,8 +65,8 @@ internal abstract class NodeOrchestratorBase
     protected static MutationContext ParseNodeComments(SyntaxNode node, MutationContext context)
     {
         foreach (var commentTrivia in node.GetLeadingTrivia()
-                     .Where(t => CSharpExtensions.IsKind((SyntaxTrivia)t, SyntaxKind.SingleLineCommentTrivia) ||
-                                 CSharpExtensions.IsKind((SyntaxTrivia)t, SyntaxKind.MultiLineCommentTrivia)).Select(t => t.ToString()))
+                     .Where(t => t.IsKind(SyntaxKind.SingleLineCommentTrivia) ||
+                                 t.IsKind(SyntaxKind.MultiLineCommentTrivia)).Select(t => t.ToString()))
         {
             // perform a quick pattern check to see if it is a 'Stryker comment'
             if (!_pattern.Match(commentTrivia).Success)

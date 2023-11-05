@@ -106,8 +106,6 @@ namespace Stryker.Core.Mutants
                         CurrentStore.SubExpressionDepth++;
                         return this;
                     }
-
-                    CurrentStore.EnterExpression();
                     return this;
                 case MutationControl.Statement:
                     CurrentStore.EnterStatement();
@@ -136,8 +134,6 @@ namespace Stryker.Core.Mutants
                         CurrentStore.SubExpressionDepth--;
                         break;
                     }
-
-                    CurrentStore.LeaveExpression();
                     break;
                 case MutationControl.Statement:
                     CurrentStore.LeaveStatement();
