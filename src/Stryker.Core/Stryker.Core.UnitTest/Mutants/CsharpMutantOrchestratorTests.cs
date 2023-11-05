@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
@@ -495,6 +496,7 @@ private bool Out(int test, Func<int, bool>lambda )
 
             ShouldMutateSourceInClassToExpected(source, expected);
         }
+               
 
         [Fact]
         public void ShouldMutateConditionalExpressionOnArrayDeclaration()
@@ -503,6 +505,31 @@ private bool Out(int test, Func<int, bool>lambda )
                 @"public static IEnumerable<int> Foo() => new int[] { }.ToArray().Any(x => x==1)?.OrderBy(e => e).ToList();";
             var expected =
                 @"public static IEnumerable<int> Foo() => (StrykerNamespace.MutantControl.IsActive(2)?new int[] { }.ToArray().Any(x => x==1)?.OrderByDescending(e => e).ToList():(StrykerNamespace.MutantControl.IsActive(0)?new int[] { }.ToArray().All(x => x==1)?.OrderBy(e => e).ToList():new int[] { }.ToArray().Any(x => (StrykerNamespace.MutantControl.IsActive(1)?x!=1:x==1))?.OrderBy(e => e).ToList()));";
+
+            ShouldMutateSourceInClassToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldMutateChainedInvocation()
+        {
+            var source =
+                @"public string ExampleBugMethod()
+{
+    string someString = """";
+    return someString.Replace(""ab"", ""cd"")
+        .Replace(""12"", ""34"")
+        .PadLeft(12)
+        .Replace(""12"", ""34"");
+}";
+            var expected =
+                @"public string ExampleBugMethod()
+{if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+    string someString = (StrykerNamespace.MutantControl.IsActive(1)?""Stryker was here!"":"""");
+    return someString.Replace((StrykerNamespace.MutantControl.IsActive(2)?"""":""ab""), (StrykerNamespace.MutantControl.IsActive(3)?"""":""cd""))
+        .Replace((StrykerNamespace.MutantControl.IsActive(4)?"""":""12""), (StrykerNamespace.MutantControl.IsActive(5)?"""":""34""))
+        .PadLeft(12)
+        .Replace((StrykerNamespace.MutantControl.IsActive(6)?"""":""12""), (StrykerNamespace.MutantControl.IsActive(7)?"""":""34""));
+}return default(string);}";
 
             ShouldMutateSourceInClassToExpected(source, expected);
         }
