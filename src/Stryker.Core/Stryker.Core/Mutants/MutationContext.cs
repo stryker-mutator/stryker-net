@@ -84,9 +84,9 @@ namespace Stryker.Core.Mutants
             return this;
         }
 
-        public MutationContext EnterSubExpression()
+        public MutationContext EnterMemberAccess()
         {
-            CurrentStore.SubExpressionDepth++;
+            CurrentStore.MemberAccessLength++;
             return this;
         }
 
@@ -101,9 +101,9 @@ namespace Stryker.Core.Mutants
             switch (control)
             {
                 case MutationControl.Expression:
-                    if (CurrentStore.SubExpressionDepth > 0)
+                    if (CurrentStore.MemberAccessLength > 0)
                     {
-                        CurrentStore.SubExpressionDepth++;
+                        CurrentStore.MemberAccessLength++;
                         return this;
                     }
                     return this;
@@ -123,16 +123,15 @@ namespace Stryker.Core.Mutants
         /// </summary>
         /// <param name="control">type of structure (see <see cref="MutationControl"/>)</param>
         /// <remarks>A call must match a previous call to <see cref="Enter(MutationControl)"/></remarks>
-        public void Leave(MutationControl control)
+        public MutationContext Leave(MutationControl control)
         {
             switch (control)
             {
                 case MutationControl.Expression:
-                    if (CurrentStore.SubExpressionDepth > 0)
+                    if (CurrentStore.MemberAccessLength > 0)
                     {
                         // we were in a part of an expression
-                        CurrentStore.SubExpressionDepth--;
-                        break;
+                        CurrentStore.MemberAccessLength--;
                     }
                     break;
                 case MutationControl.Statement:
@@ -142,6 +141,7 @@ namespace Stryker.Core.Mutants
                     CurrentStore.LeaveBlock();
                     break;
             }
+            return this;
         }
 
         /// <summary>
@@ -173,7 +173,7 @@ namespace Stryker.Core.Mutants
         /// <returns>A mutated node containing the mutations.</returns>
         /// <remarks>Do not inject mutation(s) if in a subexpression</remarks>
         public ExpressionSyntax InjectExpressionLevel(ExpressionSyntax mutatedNode, ExpressionSyntax sourceNode)
-            => CurrentStore.SubExpressionDepth > 0
+            => CurrentStore.MemberAccessLength > 0
                 ? mutatedNode
                 : CurrentStore.PlaceExpressionMutations(mutatedNode, sourceNode.InjectMutation);
 

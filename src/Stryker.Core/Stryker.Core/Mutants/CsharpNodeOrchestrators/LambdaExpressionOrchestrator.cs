@@ -9,11 +9,7 @@ internal class LambdaExpressionOrchestrator: NodeSpecificOrchestrator<LambdaExpr
         protected override MutationContext PrepareContext(LambdaExpressionSyntax node, MutationContext context)
             => base.PrepareContext(node, context.EnterFunction().Enter(MutationControl.Block));
 
-        protected override void RestoreContext(MutationContext context)
-        {
-            context.Leave(MutationControl.Block);
-            base.RestoreContext(context.LeaveFunction());
-        }
+        protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave(MutationControl.Block).LeaveFunction());
 
         /// <inheritdoc/>
         /// Inject mutations and convert expression body to block body if required.

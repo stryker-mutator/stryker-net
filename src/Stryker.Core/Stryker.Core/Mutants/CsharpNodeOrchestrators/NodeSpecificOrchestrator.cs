@@ -11,7 +11,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
     /// get a grasp of how they work before adding a new one.
     /// </summary>
     /// <typeparam name="TNode">Roslyn type which represents the C# construct</typeparam>
-    /// <typeparam name="TBase">Roslyn type which represents a generalization of this type</typeparam>
+    /// <typeparam name="TBase">Type of the node once mutated. In practice, either <see cref="TNode"/> or a base class of it.</typeparam>
     /// <remarks>Those classes are an implementation of the 'Strategy' pattern. They must remain stateless, as the same instance is used for all syntax node of
     /// the given type. They can still embark some readonly options/parameters, as kong as they remain constant during parsing.</remarks>
     internal abstract class NodeSpecificOrchestrator<TNode, TBase> : NodeOrchestratorBase, INodeMutator where TBase : SyntaxNode where TNode : TBase
@@ -109,6 +109,14 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 
         /// <summary>
         /// Mutates a node and its children. Update the mutation context with mutations needed to be injected in a higher level node.
+        /// The workflow is:
+        /// 1) adjust the context
+        /// 2) generate mutations for the node
+        /// 3) store generated mutations in the context
+        /// 4) recursively mutate children
+        /// 5) (try to) inject mutations in this node
+        /// 6) restore the context
+        /// 7) return the mutated node (with mutated children)
         /// </summary>
         /// <param name="node">Node to be mutated</param>
         /// <param name="context">Mutation context</param>

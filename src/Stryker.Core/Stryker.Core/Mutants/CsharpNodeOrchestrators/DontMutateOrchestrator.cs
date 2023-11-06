@@ -13,14 +13,12 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 
         /// <inheritdoc />
         public override SyntaxNode Mutate(SyntaxNode node, SemanticModel semanticModel, MutationContext context) => node;
+
         /// <summary>
         /// Constructor
         /// </summary>
         /// <param name="validator">predicate that signals when this orchestrator applies. default: apply to all node of proper type.</param>
-        public DontMutateOrchestrator(Predicate<T> validator = null)
-        {
-            _validator = validator ?? (_ => true);
-        }
+        public DontMutateOrchestrator(Predicate<T> validator = null) => _validator = validator ?? (_ => true);
 
         /// <inheritdoc />
         protected override bool CanHandle(T t) => _validator(t);

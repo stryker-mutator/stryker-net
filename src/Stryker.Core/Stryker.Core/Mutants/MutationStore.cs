@@ -25,7 +25,7 @@ namespace Stryker.Core.Mutants
         private readonly Stack<List<Mutant>> _blockMutants = new();
         private readonly MutantPlacer _placer;
 
-        public int SubExpressionDepth { get; set; }
+        public int MemberAccessLength { get; set; }
 
         public MutationStore(MutantPlacer placer) => _placer = placer;
 

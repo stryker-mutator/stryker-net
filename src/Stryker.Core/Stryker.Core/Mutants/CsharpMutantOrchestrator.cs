@@ -64,7 +64,6 @@ namespace Stryker.Core.Mutants
                 new DontMutateOrchestrator<RecursivePatternSyntax>(),
                 new DontMutateOrchestrator<FieldDeclarationSyntax>(
                     (t) => t.Modifiers.Any(x => x.IsKind(SyntaxKind.ConstKeyword))),
-                new AssignmentStatementOrchestrator(),
                 new PostfixUnaryExpressionOrchestrator(),
                 new PrefixUnaryExpressionOrchestrator(),
                 new StaticFieldDeclarationOrchestrator(),
@@ -77,10 +76,11 @@ namespace Stryker.Core.Mutants
                 new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>(),
                 new AccessorSyntaxOrchestrator(),
                 new LocalDeclarationOrchestrator(),
-                new StatementSpecificOrchestrator<StatementSyntax>(),
-                new BlockOrchestrator(),
                 new ConditionalAccessOrchestrator(),
                 new InvocationExpressionOrchestrator(),
+                new AssignmentStatementOrchestrator(),
+                new BlockOrchestrator(),
+                new StatementSpecificOrchestrator<StatementSyntax>(),
                 new ExpressionSpecificOrchestrator<ExpressionSyntax>(),
                 new SyntaxNodeOrchestrator()
             });

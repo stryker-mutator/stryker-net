@@ -18,7 +18,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                 || node is MemberBindingExpressionSyntax)
             {
                 if (node.Parent is InvocationExpressionSyntax)
-                    return mutationContext.EnterSubExpression();
+                    return mutationContext.EnterMemberAccess();
             }
 
             return mutationContext.Enter(MutationControl.Expression);

@@ -21,11 +21,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 
         protected override MutationContext PrepareContext(BlockSyntax node, MutationContext context) => base.PrepareContext(node, context.Enter(MutationControl.Block));
 
-        protected override void RestoreContext(MutationContext context)
-        {
-            context.Leave(MutationControl.Block);
-            base.RestoreContext(context);
-        }
+        protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave(MutationControl.Block));
 
         protected override MutationContext StoreMutations(BlockSyntax node,
             IEnumerable<Mutant> mutations,

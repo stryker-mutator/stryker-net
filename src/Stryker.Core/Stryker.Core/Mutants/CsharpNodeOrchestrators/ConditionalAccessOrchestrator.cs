@@ -14,7 +14,7 @@ internal class ConditionalAccessOrchestrator: NodeSpecificOrchestrator<Condition
         var pendingMutations = (ExpressionSyntax) MutateSingleNode(node.Expression, semanticModel, context);
 
         var resultingNode = node.WithExpression(pendingMutations).
-            WithWhenNotNull((ExpressionSyntax)MutateSingleNode(node.WhenNotNull, semanticModel, context.EnterSubExpression()));
+            WithWhenNotNull((ExpressionSyntax)MutateSingleNode(node.WhenNotNull, semanticModel, context.EnterMemberAccess()));
         context.Leave(MutationControl.Expression);
         return resultingNode;
     }
