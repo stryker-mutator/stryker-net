@@ -69,25 +69,34 @@ namespace Stryker.Core.Mutants
                 // pattern marching
                 new DontMutateOrchestrator<RecursivePatternSyntax>(),
                 new DontMutateOrchestrator<UsingDirectiveSyntax>(),
-                // constant field
+                // constants and constant fields
                 new DontMutateOrchestrator<FieldDeclarationSyntax>(t => t.Modifiers.Any(x => x.IsKind(SyntaxKind.ConstKeyword))),
-                // ensure ++ and -- mutations are mutated at statement level
+                new DontMutateOrchestrator<LocalDeclarationStatementSyntax>(t => t.IsConst),
+                // ensure pre/post increment/decrement mutations are mutated at statement level
                 new MutateAtStatementLevelOrchestrator<PostfixUnaryExpressionSyntax>( t => t.Parent is ExpressionStatementSyntax or ForStatementSyntax),
                 new MutateAtStatementLevelOrchestrator<PrefixUnaryExpressionSyntax>( t => t.Parent is ExpressionStatementSyntax or ForStatementSyntax),
+                // prevent mutations to happen within member access expression
                 new MemberAccessExpressionOrchestrator<MemberAccessExpressionSyntax>(),
                 new MemberAccessExpressionOrchestrator<MemberBindingExpressionSyntax>(),
+                // ensure static constructs are marked properly
                 new StaticFieldDeclarationOrchestrator(),
                 new StaticConstructorOrchestrator(),
-                new PropertyDeclarationOrchestrator(),
+                // ensure array initializer mutations are controlled at statement level
                 new MutateAtStatementLevelOrchestrator<InitializerExpressionSyntax>( t => t.Kind() == SyntaxKind.ArrayInitializerExpression && t.Expressions.Count > 0),
+                // ensure properties are properly mutated (including expression to body conversion if required)
+                new PropertyDeclarationOrchestrator(),
+                // ensure method, lambda... are properly mutated (including expression to body conversion if required)
                 new LocalFunctionStatementOrchestrator(),
                 new AnonymousFunctionExpressionOrchestrator(),
                 new LambdaExpressionOrchestrator(),
                 new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>(),
                 new AccessorSyntaxOrchestrator(),
+                // ensure declaration are mutated at the block level
                 new LocalDeclarationOrchestrator(),
+
                 new ConditionalAccessOrchestrator(),
                 new InvocationExpressionOrchestrator(),
+
                 new MutateAtStatementLevelOrchestrator<AssignmentExpressionSyntax>(),
                 new BlockOrchestrator(),
                 new StatementSpecificOrchestrator<StatementSyntax>(),

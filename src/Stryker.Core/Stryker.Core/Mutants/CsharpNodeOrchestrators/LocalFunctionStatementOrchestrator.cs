@@ -7,9 +7,9 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 {
     internal class LocalFunctionStatementOrchestrator : NodeSpecificOrchestrator<LocalFunctionStatementSyntax, LocalFunctionStatementSyntax>
     {
-        protected override MutationContext PrepareContext(LocalFunctionStatementSyntax node, MutationContext context) => base.PrepareContext(node, context.EnterFunction());
+        protected override MutationContext PrepareContext(LocalFunctionStatementSyntax node, MutationContext context) => base.PrepareContext(node, context.EnterMember());
 
-        protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.LeaveFunction());
+        protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.LeaveMember());
 
         /// <summary>
         /// Mutate the children, except the arrow expression body that may require conversion.
@@ -31,20 +31,18 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
             if (fullTargetBody == null)
             {
                 // we will now mutate the expression body
-                var localContext = context.Enter(MutationControl.Block);
                 targetNode = targetNode.ReplaceNode(targetNode.ExpressionBody!,
-                    MutateSingleNode(sourceNode.ExpressionBody, semanticModel, localContext));
-                if (localContext.HasStatementLevelMutant)
+                    MutateSingleNode(sourceNode.ExpressionBody, semanticModel, context));
+                if (context.HasStatementLevelMutant)
                 {
                     // this is an expression body method
                     // we need to convert it to expression body form
                     targetNode = MutantPlacer.ConvertExpressionToBody(targetNode);
                     // we need to inject pending block (and statement) level mutations
                     targetNode = targetNode.WithBody(SyntaxFactory.Block(
-                        localContext.InjectBlockLevelExpressionMutation(targetNode.Body,
+                        context.InjectBlockLevelExpressionMutation(targetNode.Body,
                             sourceNode.ExpressionBody!.Expression, true)));
                 }
-                localContext.Leave(MutationControl.Block);
                 if (targetNode.Body == null)
                 {
                     // we did not perform any conversion

@@ -21,7 +21,7 @@ namespace Stryker.Core.Mutants
         public MutationContext(CsharpMutantOrchestrator mutantOrchestrator)
         {
             _mainOrchestrator = mutantOrchestrator;
-            EnterFunction();
+            EnterMember();
         }
 
         private MutationContext(MutationContext parent)
@@ -71,14 +71,14 @@ namespace Stryker.Core.Mutants
         /// <returns>A new context</returns>
         public MutationContext EnterStatic() => new(this) { InStaticValue = true };
 
-        public MutationContext EnterFunction()
+        public MutationContext EnterMember()
         {
             _pendingMutations.Push(new MutationStore(_mainOrchestrator.Placer));
             CurrentStore.EnterBlock();
             return this;
         }
 
-        public MutationContext LeaveFunction()
+        public MutationContext LeaveMember()
         {
             CurrentStore.LeaveBlock();
             _pendingMutations.Pop();

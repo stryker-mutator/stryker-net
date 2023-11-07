@@ -15,10 +15,10 @@ internal class InvocationExpressionOrchestrator: NodeSpecificOrchestrator<Invoca
     {
         var expressions = (ExpressionSyntax) MutateSingleNode(node.Expression, semanticModel, context.EnterMemberAccess());
         context.LeaveMemberAccess();
-        context.EnterFunction();
+        context.EnterMember();
         var argumentListSyntax = (ArgumentListSyntax)MutateSingleNode(node.ArgumentList, semanticModel, context);
         var result = node.WithExpression(expressions).WithArgumentList(argumentListSyntax);
-        context.LeaveFunction();
+        context.LeaveMember();
         return result;
     }
 
