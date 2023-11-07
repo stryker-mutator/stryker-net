@@ -14,12 +14,9 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         protected override MutationContext PrepareContext(T node, MutationContext context)
         {
             var mutationContext = base.PrepareContext(node, context);
-            if (node is MemberAccessExpressionSyntax
-                || node is MemberBindingExpressionSyntax)
-            {
-                if (node.Parent is InvocationExpressionSyntax)
-                    return mutationContext.EnterMemberAccess();
-            }
+            if ((node is MemberAccessExpressionSyntax
+                 || node is MemberBindingExpressionSyntax) && node.Parent is InvocationExpressionSyntax)
+                return mutationContext.EnterMemberAccess();
 
             return mutationContext.Enter(MutationControl.Expression);
         }

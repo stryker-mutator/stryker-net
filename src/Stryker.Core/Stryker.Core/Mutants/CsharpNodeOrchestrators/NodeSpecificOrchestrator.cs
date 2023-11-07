@@ -64,7 +64,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         /// <param name="context">Mutation context.</param>
         /// <returns>A <see cref="MutationContext"/>instance storing existing mutations as well as the one provided</returns>
         /// <remarks>You need to override this method if the generated mutations cannot be injected in place (via a conditional operator) but must be controlled
-        /// at the statement or block level.</remarks>
+        /// at the statement or block level. Default implementation does nothing.</remarks>
         protected virtual MutationContext StoreMutations(TNode node,
             IEnumerable<Mutant> mutations,
             MutationContext context) => context;
@@ -87,7 +87,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         /// <param name="node">Node to be mutated</param>
         /// <param name="semanticModel">Semantic model </param>
         /// <param name="context">Mutation context</param>
-        /// <returns>A mutated node</returns>
+        /// <returns>The mutated node</returns>
         /// <remarks><paramref name="context"/>may contains mutations that need be injected at higher level in the node hierarchy.</remarks>
         protected SyntaxNode MutateSingleNode(SyntaxNode node, SemanticModel semanticModel, MutationContext context) => context.FindHandler(node).Mutate(node, semanticModel, context);
 

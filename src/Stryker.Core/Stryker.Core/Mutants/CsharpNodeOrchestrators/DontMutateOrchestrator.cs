@@ -9,7 +9,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
     /// <typeparam name="T">SyntaxNode subtype</typeparam>
     internal class DontMutateOrchestrator<T> : NodeSpecificOrchestrator<T, T> where T : SyntaxNode
     {
-        private readonly Predicate<T> _validator;
+        private readonly Predicate<T> _predicate;
 
         /// <inheritdoc />
         public override SyntaxNode Mutate(SyntaxNode node, SemanticModel semanticModel, MutationContext context) => node;
@@ -17,10 +17,10 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
         /// <summary>
         /// Constructor
         /// </summary>
-        /// <param name="validator">predicate that signals when this orchestrator applies. default: apply to all node of proper type.</param>
-        public DontMutateOrchestrator(Predicate<T> validator = null) => _validator = validator ?? (_ => true);
+        /// <param name="predicate">predicate that signals when this orchestrator applies. default: apply to all node of proper type.</param>
+        public DontMutateOrchestrator(Predicate<T> predicate = null) => _predicate = predicate ?? (_ => true);
 
         /// <inheritdoc />
-        protected override bool CanHandle(T t) => _validator(t);
+        protected override bool CanHandle(T t) => _predicate(t);
     }
 }
