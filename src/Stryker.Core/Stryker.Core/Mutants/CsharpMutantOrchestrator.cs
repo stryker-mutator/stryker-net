@@ -56,15 +56,26 @@ namespace Stryker.Core.Mutants
             Mutants = new Collection<Mutant>();
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpMutantOrchestrator>();
 
+            // declare node specific orchestrators. Note that order is relevant, they should be declared from more specific to more generic one
             _specificOrchestrator.RegisterHandlers(new List<INodeMutator>
             {
+                // Those node types describe compile time constants and thus cannot be mutated at run time
+                // attributes
                 new DontMutateOrchestrator<AttributeListSyntax>(),
+                // parameter list
                 new DontMutateOrchestrator<ParameterListSyntax>(),
+                // enum values
                 new DontMutateOrchestrator<EnumMemberDeclarationSyntax>(),
+                // pattern marching
                 new DontMutateOrchestrator<RecursivePatternSyntax>(),
+                new DontMutateOrchestrator<UsingDirectiveSyntax>(),
+                // constant field
                 new DontMutateOrchestrator<FieldDeclarationSyntax>(t => t.Modifiers.Any(x => x.IsKind(SyntaxKind.ConstKeyword))),
+                // ensure ++ and -- mutations are mutated at statement level
                 new MutateAtStatementLevelOrchestrator<PostfixUnaryExpressionSyntax>( t => t.Parent is ExpressionStatementSyntax or ForStatementSyntax),
                 new MutateAtStatementLevelOrchestrator<PrefixUnaryExpressionSyntax>( t => t.Parent is ExpressionStatementSyntax or ForStatementSyntax),
+                new MemberAccessExpressionOrchestrator<MemberAccessExpressionSyntax>(),
+                new MemberAccessExpressionOrchestrator<MemberBindingExpressionSyntax>(),
                 new StaticFieldDeclarationOrchestrator(),
                 new StaticConstructorOrchestrator(),
                 new PropertyDeclarationOrchestrator(),

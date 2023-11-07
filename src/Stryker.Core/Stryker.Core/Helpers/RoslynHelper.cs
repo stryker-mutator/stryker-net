@@ -98,12 +98,20 @@ namespace Stryker.Core.Helpers
                                                            predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword);
 
         /// <summary>
+        /// Convert a Statement to a block. Does nothing if it is already a block.
+        /// </summary>
+        /// <param name="syntax">syntax to convert</param>
+        /// <returns>A block statement.</returns>
+        public static BlockSyntax AsBlock(this StatementSyntax syntax) => syntax is BlockSyntax block ? block : SyntaxFactory.Block(syntax);
+     
+
+        /// <summary>
         /// Build a mutated version of a <see cref="SyntaxNode"/>.
         /// </summary>
         /// <typeparam name="T">Type of the node that hosts the mutation.</typeparam>
         /// <param name="sourceNode">Node of the original tree.</param>
         /// <param name="mutation">Mutation to apply to the sourceNode.</param>
-        /// <returns>A copy of <see cref="original"/> with the mutation applied.</returns>
+        /// <returns>A copy of <see cref="sourceNode"/> with the mutation applied.</returns>
         /// <exception cref="InvalidOperationException">when mutation does not belong to this node.</exception>
         /// <remarks><paramref name="sourceNode"/> can be any node that includes the original, non mutated node described in the mutation.</remarks>
         public static T InjectMutation<T>(this T sourceNode, Mutation mutation) where T : SyntaxNode
@@ -148,7 +156,7 @@ namespace Stryker.Core.Helpers
             var hasReturn = false;
             syntax.ScanChildStatements(s =>
             {
-                if (s is not ReturnStatementSyntax { Expression: { } })
+                if (s is not ReturnStatementSyntax { Expression: not null })
                 {
                     return true;
                 }
@@ -171,7 +179,7 @@ namespace Stryker.Core.Helpers
             {
                 return false;
             }
-            // scan children with slight optimization for well known statement
+            // scan children with minor optimization for well known statement
             switch (syntax)
             {
                 case BlockSyntax block:

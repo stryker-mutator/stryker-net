@@ -79,6 +79,17 @@ namespace Stryker.Core.Mutants
             return result;
         }
 
+        public StatementSyntax PlaceStatementMutations(BlockSyntax block, Func<Mutation, StatementSyntax> mutationFunc)
+        {
+            if (_statementMutants.Count == 0)
+            {
+                return block;
+            }
+            var result = _placer.PlaceStatementControlledMutations(block, _statementMutants.Peek().Select(m => (m, mutationFunc(m.Mutation))));
+            _statementMutants.Peek().Clear();
+            return result;
+        }
+
         public StatementSyntax PlaceStatementMutations(StatementSyntax block, Func<Mutation, StatementSyntax> mutationFunc)
         {
             if (_statementMutants.Count == 0)

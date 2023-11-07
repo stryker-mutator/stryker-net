@@ -11,18 +11,6 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
     /// <typeparam name="T">Node specific type, must inherit <see cref="ExpressionSyntax"/>.</typeparam>
     internal class ExpressionSpecificOrchestrator<T> : NodeSpecificOrchestrator<T, ExpressionSyntax> where T : ExpressionSyntax
     {
-        protected override MutationContext PrepareContext(T node, MutationContext context)
-        {
-            var mutationContext = base.PrepareContext(node, context);
-            if ((node is MemberAccessExpressionSyntax
-                 || node is MemberBindingExpressionSyntax) && node.Parent is InvocationExpressionSyntax)
-                return mutationContext.EnterMemberAccess();
-
-            return mutationContext.Enter(MutationControl.Expression);
-        }
-
-        protected override void RestoreContext(MutationContext context) => context.Leave(MutationControl.Expression);
-
         /// <inheritdoc/>
         /// <remarks>Inject all pending mutations controlled with conditional operator(s).</remarks>
         protected override ExpressionSyntax InjectMutations(T sourceNode, ExpressionSyntax targetNode, SemanticModel semanticModel, MutationContext context) => context.InjectExpressionLevel(targetNode, sourceNode);
