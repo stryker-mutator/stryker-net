@@ -9,22 +9,24 @@ namespace Stryker.Core.Mutators;
 public class BooleanMutator : MutatorBase<LiteralExpressionSyntax>, IMutator
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
-
-    public static readonly Dictionary<SyntaxKind, SyntaxKind> KindsToMutate = new()
-    {
-        {SyntaxKind.TrueLiteralExpression, SyntaxKind.FalseLiteralExpression },
-        {SyntaxKind.FalseLiteralExpression, SyntaxKind.TrueLiteralExpression }
-    };
-
-
     public override IEnumerable<Mutation> ApplyMutations(LiteralExpressionSyntax node, SemanticModel semanticModel)
     {
-        if (KindsToMutate.ContainsKey(node.Kind()))
+        if (node.Kind() == SyntaxKind.TrueLiteralExpression)
         {
             yield return new Mutation()
             {
                 OriginalNode = node,
-                ReplacementNode = SyntaxFactory.LiteralExpression(KindsToMutate[node.Kind()]),
+                ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.FalseLiteralExpression),
+                DisplayName = "Boolean mutation",
+                Type = Mutator.Boolean
+            };
+        }
+        else if (node.Kind() == SyntaxKind.FalseLiteralExpression)
+        {
+            yield return new Mutation()
+            {
+                OriginalNode = node,
+                ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression),
                 DisplayName = "Boolean mutation",
                 Type = Mutator.Boolean
             };
