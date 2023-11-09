@@ -77,7 +77,7 @@ public class HtmlReporter : IReporter
         }
 
         var aqua = new Style(Color.Aqua);
-        _console.WriteLine("Hint: by passing \"--open-report or -o\" the report will open automatically and update the report in realtime.", aqua);
+        _console.WriteLine("Hint: by passing \"--open-report or -o\" the report will open automatically and update the report in real-time.", aqua);
     }
 
     public void OnMutantTested(IReadOnlyMutant result)
