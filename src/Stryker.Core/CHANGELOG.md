@@ -1,3 +1,13 @@
+## [3.11.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.11.0...stryker@3.11.1) (2023-10-31)
+
+
+### Bug Fixes
+
+* Support recursive mutant removal ([#2739](https://github.com/stryker-mutator/stryker-net/issues/2739)) ([00621ec](https://github.com/stryker-mutator/stryker-net/commit/00621ec07d42540f821db39edcfc86e8094d4f91))
+* Validation on Since enablement when Baseline is also enabled ([#2744](https://github.com/stryker-mutator/stryker-net/issues/2744)) ([dfbf510](https://github.com/stryker-mutator/stryker-net/commit/dfbf510f38ae14a300ee08f31233e1e67dc8abf2))
+
+
+
 # [3.11.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.10.0...stryker@3.11.0) (2023-10-27)
 
 

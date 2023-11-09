@@ -125,6 +125,21 @@ namespace Stryker.Core.Mutants
             throw new InvalidOperationException($"Unable to find an engine to remove injection from this node: '{nodeToRemove}'");
         }
 
+        /// <summary>
+        /// Returns true if the node contains a mutation requiring all child mutations to be removed when it has to be removed
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns></returns>
+        public static bool RequiresRemovingChildMutations(SyntaxNode node)
+        {
+            var annotations = node.GetAnnotations(MutationMarkers).ToList();
+            if (annotations.TrueForAll(a => a.Kind != Injector))
+            {
+                throw new InvalidOperationException("No mutation in this node!");
+            }
+            return annotations.Exists(a => a.Data == expressionMethodEngine.InstrumentEngineID);
+        }
+
         public static MutantInfo FindAnnotations(SyntaxNode node)
         {
             var id = -1;
