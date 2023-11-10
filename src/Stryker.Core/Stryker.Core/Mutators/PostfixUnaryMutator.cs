@@ -9,25 +9,30 @@ namespace Stryker.Core.Mutators;
 public class PostfixUnaryMutator : MutatorBase<PostfixUnaryExpressionSyntax>, IMutator
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
-
-    private static readonly Dictionary<SyntaxKind, SyntaxKind> UnaryWithOpposite = new()
-    {
-        {SyntaxKind.PostIncrementExpression, SyntaxKind.PostDecrementExpression},
-        {SyntaxKind.PostDecrementExpression, SyntaxKind.PostIncrementExpression},
-    };
-
+                
     public override IEnumerable<Mutation> ApplyMutations(PostfixUnaryExpressionSyntax node, SemanticModel semanticModel)
     {
         var unaryKind = node.Kind();
-        if (UnaryWithOpposite.TryGetValue(unaryKind, out var oppositeKind))
+        SyntaxKind newKind;
+        if (unaryKind == SyntaxKind.PostIncrementExpression)
         {
-            yield return new Mutation
-            {
-                OriginalNode = node,
-                ReplacementNode = SyntaxFactory.PostfixUnaryExpression(oppositeKind, node.Operand),
-                DisplayName = $"{unaryKind} to {oppositeKind} mutation",
-                Type = Mutator.Update
-            };
+            newKind = SyntaxKind.PostDecrementExpression;
         }
+        else if (unaryKind == SyntaxKind.PostDecrementExpression)
+        {
+            newKind = SyntaxKind.PostIncrementExpression;
+        }
+        else
+        {
+            yield break;
+        }
+
+        yield return new Mutation
+        {
+            OriginalNode = node,
+            ReplacementNode = SyntaxFactory.PostfixUnaryExpression(newKind, node.Operand),
+            DisplayName = $"{unaryKind} to {newKind} mutation",
+            Type = Mutator.Update
+        };
     }
 }
