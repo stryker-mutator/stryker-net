@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
+
 internal class LambdaExpressionOrchestrator: NodeSpecificOrchestrator<LambdaExpressionSyntax, LambdaExpressionSyntax> 
 {
         protected override MutationContext PrepareContext(LambdaExpressionSyntax node, MutationContext context)

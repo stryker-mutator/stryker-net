@@ -13,7 +13,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
     /// <typeparam name="TNode">Roslyn type which represents the C# construct</typeparam>
     /// <typeparam name="TBase">Type of the node once mutated. In practice, either <see cref="TNode"/> or a base class of it.</typeparam>
     /// <remarks>Those classes are an implementation of the 'Strategy' pattern. They must remain stateless, as the same instance is used for all syntax node of
-    /// the given type. They can still embark some readonly options/parameters, as kong as they remain constant during parsing.</remarks>
+    /// the given type. They can still embark some readonly options/parameters, as long as they remain constant during parsing.</remarks>
     internal abstract class NodeSpecificOrchestrator<TNode, TBase> : NodeOrchestratorBase, INodeMutator where TBase : SyntaxNode where TNode : TBase
     {
         /// <summary>
