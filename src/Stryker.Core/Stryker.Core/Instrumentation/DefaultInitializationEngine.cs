@@ -29,7 +29,7 @@ internal class DefaultInitializationEngine : BaseEngine<BlockSyntax>
         if (body == null)
         {
             throw new InvalidOperationException(
-                "Cant' add default initializer(s) to expression bodied or virtual method.");
+                "Can't add default initializer(s) to expression bodied or virtual method.");
         }
 
         if (!parameters.Any())

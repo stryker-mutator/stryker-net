@@ -38,8 +38,8 @@ namespace TestApplication
 }}");
             var memberAccessExpression = tree.GetRoot()
                 .DescendantNodes()
-                .OfType<InvocationExpressionSyntax>()
-                .Single().Expression;
+                .OfType<MemberAccessExpressionSyntax>()
+                .Single();
 
             return memberAccessExpression;
         }

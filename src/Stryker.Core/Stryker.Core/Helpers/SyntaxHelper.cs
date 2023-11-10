@@ -9,7 +9,7 @@ namespace Stryker.Core.Helpers;
 // extension methods for SyntaxNode(s)
 internal static class SyntaxHelper
 {
-    // is the expression some king of string ?
+    // is the expression some kind of string ?
     public static bool IsAStringExpression(this ExpressionSyntax node) =>
         node.Kind() == SyntaxKind.StringLiteralExpression ||
         node.Kind() == SyntaxKind.InterpolatedStringExpression;

@@ -21,7 +21,7 @@ internal abstract class BaseEngine<T>: IInstrumentCode where T: CSharpSyntaxNode
     protected SyntaxAnnotation Marker { get; }
 
     /// <summary>
-    /// Engine name. Used by roll back logic to forward rollback to the proper engine.
+    /// Engine name. Used by rollback logic to forward rollback to the proper engine.
     /// </summary>
     public string InstrumentEngineId => GetType().Name;
 

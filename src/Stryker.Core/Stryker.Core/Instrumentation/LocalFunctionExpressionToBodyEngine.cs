@@ -35,7 +35,6 @@ internal class LocalFunctionExpressionToBodyEngine : BaseEngine<LocalFunctionSta
         {
             statementLine = SyntaxFactory.ExpressionStatement(function!.ExpressionBody!.Expression);
         }
-        // do we need add return to the expression body?
         return function.WithBody(SyntaxFactory.Block(statementLine)).WithExpressionBody(null).WithAdditionalAnnotations(Marker);
     }
 

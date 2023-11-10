@@ -9,8 +9,8 @@ namespace Stryker.Core.Mutators;
 
 /// <summary>
 /// Mutator that will mutate:
-/// <para>the access to <c>string.Empty</c> to a string that is not empty.</para>
-/// <para>calls of <c>string.IsNullOrEmpty</c> and <c>string.IsNullOrWhiteSpace</c></para>
+/// the access to <c>string.Empty</c> to a string that is not empty.
+/// calls of <c>string.IsNullOrEmpty</c> and <c>string.IsNullOrWhiteSpace</c>
 /// </summary>
 /// <remarks>
 /// Will only apply the mutation to the lowercase <c>string</c> since that is a reserved keyword in c# and can be distinguished from any variable or member access.

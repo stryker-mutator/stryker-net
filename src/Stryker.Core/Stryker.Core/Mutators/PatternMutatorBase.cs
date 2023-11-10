@@ -41,10 +41,9 @@ public abstract class PatternMutatorBase<T> : MutatorBase<T>, IMutator where T :
 
         foreach (var mutation in mutations)
         {
-            // can't usage the update method here, because roslyn implementation is broken
+            // can't use the update method here, because roslyn implementation is broken
             var replacementNode = SyntaxFactory.BinaryPattern(mutation, node.Left, node.Right);
             replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithTriviaFrom(node.OperatorToken));
-            replacementNode.Update(node.Left, node.OperatorToken, node.Right);
             yield return new()
             {
                 OriginalNode = node,

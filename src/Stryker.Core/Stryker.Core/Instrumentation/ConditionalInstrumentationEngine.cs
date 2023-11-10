@@ -17,7 +17,7 @@ internal class ConditionalInstrumentationEngine : BaseEngine<ParenthesizedExpres
     /// <param name="original">Original code</param>
     /// <param name="mutated">Mutated code</param>
     /// <returns>A new expression containing the expected construct.</returns>
-    public  ParenthesizedExpressionSyntax PlaceWithConditionalExpression(ExpressionSyntax condition, ExpressionSyntax original, ExpressionSyntax mutated) =>
+    public ParenthesizedExpressionSyntax PlaceWithConditionalExpression(ExpressionSyntax condition, ExpressionSyntax original, ExpressionSyntax mutated) =>
         SyntaxFactory.ParenthesizedExpression(
                 SyntaxFactory.ConditionalExpression(
                     condition: condition,

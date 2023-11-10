@@ -82,13 +82,13 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
                 computeReplacementNode: (original, _) => MutateSingleNode(original, semanticModel, context));
 
         /// <summary>
-        /// Mutate the provided and its children and returns the result.
+        /// Mutate the provided node and its children and returns the result.
         /// </summary>
         /// <param name="node">Node to be mutated</param>
         /// <param name="semanticModel">Semantic model </param>
         /// <param name="context">Mutation context</param>
         /// <returns>The mutated node</returns>
-        /// <remarks><paramref name="context"/>may contains mutations that need be injected at higher level in the node hierarchy.</remarks>
+        /// <remarks><paramref name="context"/>may contain mutations that need be injected at higher level in the node hierarchy.</remarks>
         protected SyntaxNode MutateSingleNode(SyntaxNode node, SemanticModel semanticModel, MutationContext context) => context.FindHandler(node).Mutate(node, semanticModel, context);
 
         /// <summary>

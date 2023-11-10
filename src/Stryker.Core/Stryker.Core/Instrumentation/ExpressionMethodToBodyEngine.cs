@@ -40,8 +40,6 @@ internal class ExpressionMethodToBodyEngine : BaseEngine<BaseMethodDeclarationSy
                 break;
         }
 
-        // do we need add return to the expression body?
-
         return method.WithBody(SyntaxFactory.Block(statementLine)).WithExpressionBody(null).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.None)).WithAdditionalAnnotations(Marker) as T;
     }
 

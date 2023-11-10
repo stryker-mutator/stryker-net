@@ -20,7 +20,6 @@ internal class MutateAtStatementLevelOrchestrator<T>: NodeSpecificOrchestrator<T
     /// <inheritdoc />
     protected override bool CanHandle(T t) => _predicate(t);
 
-    // even if they are 'expressions', the  pre/post in/decrement operators need to be controlled at the statement level (as they are both an expression and a statement).
     protected override MutationContext StoreMutations(T node,
         IEnumerable<Mutant> mutations,
         MutationContext context)

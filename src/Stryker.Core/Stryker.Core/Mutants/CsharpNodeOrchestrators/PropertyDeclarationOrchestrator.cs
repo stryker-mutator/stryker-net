@@ -7,9 +7,9 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 {
     internal class PropertyDeclarationOrchestrator : NodeSpecificOrchestrator<PropertyDeclarationSyntax, BasePropertyDeclarationSyntax>
     {
-        protected override MutationContext PrepareContext(PropertyDeclarationSyntax node, MutationContext context) => base.PrepareContext(node, context.Enter(MutationControl.Block));
+        protected override MutationContext PrepareContext(PropertyDeclarationSyntax node, MutationContext context) => base.PrepareContext(node, context.EnterMember());
 
-        protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave(MutationControl.Block));
+        protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.LeaveMember());
 
         protected override BasePropertyDeclarationSyntax OrchestrateChildrenMutation(PropertyDeclarationSyntax node, SemanticModel semanticModel, MutationContext context)
         {

@@ -38,7 +38,7 @@ public class StringMutator : MutatorBase<LiteralExpressionSyntax>, IMutator
                && node.Parent is not ConstantPatternSyntax;
     }
 
-    private bool IsSpecialType(SyntaxNode root) => root switch
+    private static bool IsSpecialType(SyntaxNode root) => root switch
     {
         ObjectCreationExpressionSyntax ctor => IsCtorOfType(ctor, typeof(Regex)) || IsCtorOfType(ctor, typeof(Guid)),
         _ => false
