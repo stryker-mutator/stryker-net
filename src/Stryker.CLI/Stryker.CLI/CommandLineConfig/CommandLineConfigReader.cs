@@ -1,7 +1,9 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
+using Spectre.Console;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
@@ -12,8 +14,12 @@ namespace Stryker.CLI.CommandLineConfig
     {
         private readonly IDictionary<string, CliInput> _cliInputs = new Dictionary<string, CliInput>();
         private readonly CliInput _configFileInput;
+        private readonly IAnsiConsole _console;
 
-        public CommandLineConfigReader() => _configFileInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. Supports json and yaml formats. | default: stryker-config.json", argumentHint: "relative-path");
+        public CommandLineConfigReader(IAnsiConsole console = null) {
+            _configFileInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. Supports json and yaml formats. | default: stryker-config.json", argumentHint: "relative-path");
+            _console = console ?? AnsiConsole.Console;
+        }
 
         public void RegisterCommandLineOptions(CommandLineApplication app, IStrykerInputs inputs)
         {
@@ -30,12 +36,29 @@ namespace Stryker.CLI.CommandLineConfig
 
                 initCommandApp.OnExecute(() =>
                 {
+                    _console.WriteLine($"Initializing new config file.");
+                    _console.WriteLine();
+
                     ReadCommandLineConfig(args[1..], initCommandApp, inputs);
                     var configOption = initCommandApp.Options.SingleOrDefault(o => o.LongName == _configFileInput.ArgumentName);
                     var basePath = Directory.GetCurrentDirectory();
                     var configFilePath = Path.Combine(basePath, configOption?.Value() ?? "stryker-config.json");
 
+                    if (File.Exists(configFilePath))
+                    {
+                        _console.Write("Config file already exists at ");
+                        _console.WriteLine(configFilePath, new Style(Color.Cyan1));
+                        var overwrite = _console.Confirm($"Do you want to overwrite it?", false);
+                        if (!overwrite)
+                        {
+                            return;
+                        }
+                        _console.WriteLine();
+                    }
+
                     FileConfigWriter.WriteConfigAsync(configFilePath, inputs).Wait();
+                    _console.Write("Config file written to ");
+                    _console.WriteLine(configFilePath, new Style(Color.Cyan1));
                 });
             });
         }
