@@ -2,19 +2,19 @@ using System;
 using System.Collections.Generic;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
-using Stryker.Core.Reporters.Html.Realtime.Events;
+using Stryker.Core.Reporters.Html.RealTime.Events;
 using Stryker.Core.Reporters.Json.SourceFiles;
 
-namespace Stryker.Core.Reporters.Html.Realtime;
+namespace Stryker.Core.Reporters.Html.RealTime;
 
-public class RealtimeMutantHandler : IRealtimeMutantHandler
+public class RealTimeMutantHandler : IRealTimeMutantHandler
 {
     public int Port => _server.Port;
 
     private readonly ISseServer _server;
     private readonly Queue<JsonMutant> _delayedEventQueue = new();
 
-    public RealtimeMutantHandler(StrykerOptions options, ISseServer server = null)
+    public RealTimeMutantHandler(StrykerOptions options, ISseServer server = null)
     {
         _server = server ?? new SseServer();
         _server.ClientConnected += ClientConnectedHandler;
