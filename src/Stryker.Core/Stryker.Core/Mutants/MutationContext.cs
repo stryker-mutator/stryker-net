@@ -11,13 +11,23 @@ using Stryker.Core.Mutators;
 namespace Stryker.Core.Mutants
 {
     /// <summary>
-    /// Describe the (syntax tree) context during mutation
+    /// Describe the (syntax tree) context during mutation and ensure proper mutation injection.
+    /// It has several responsibilities:
+    /// 1) It is in charge of storing mutations as they are generated, inject them at the appropriate syntax level.  
+    /// 2) it also tracks mutator disabled via comments and restores them at adequate times
     /// </summary>
     internal class MutationContext
     {
+        // main orchestrator
+        // the orchestrator is used to perform actual mutation injections
         private readonly CsharpMutantOrchestrator _mainOrchestrator;
+        // pending mutation stacks. An entry is pushed in the stack when entering a member or function and popping it when leaving
         private readonly Stack<MutationStore> _pendingMutations = new();
 
+        /// <summary>
+        /// Mutation context must be created once when starting a mutation process.
+        /// </summary>
+        /// <param name="mutantOrchestrator"></param>
         public MutationContext(CsharpMutantOrchestrator mutantOrchestrator)
         {
             _mainOrchestrator = mutantOrchestrator;
@@ -42,6 +52,11 @@ namespace Stryker.Core.Mutants
         public IEnumerable<Mutant> GenerateMutantsForNode(SyntaxNode node, SemanticModel semanticModel) =>
             _mainOrchestrator.GenerateMutationsForNode(node, semanticModel, this);
 
+        /// <summary>
+        /// Find the appropriate node handler for the given node.
+        /// </summary>
+        /// <param name="node">handler for which to find an orchestrator.</param>
+        /// <returns>An handler for this node.</returns>
         public INodeMutator FindHandler(SyntaxNode node) => _mainOrchestrator.GetHandler(node);
 
         /// <summary>
@@ -50,7 +65,7 @@ namespace Stryker.Core.Mutants
         public bool InStaticValue { get; set; }
 
         /// <summary>
-        /// True if orchestrators have to inject static usage tracing
+        /// True if orchestrator have to inject static usage tracing
         /// </summary>
         public bool MustInjectCoverageLogic => _mainOrchestrator.MustInjectCoverageLogic;
 
@@ -71,6 +86,10 @@ namespace Stryker.Core.Mutants
         /// <returns>A new context</returns>
         public MutationContext EnterStatic() => new(this) { InStaticValue = true };
 
+        /// <summary>
+        /// Call this when entering a member
+        /// </summary>
+        /// <returns>The mutation context for this member.</returns>
         public MutationContext EnterMember()
         {
             _pendingMutations.Push(new MutationStore(_mainOrchestrator.Placer));
@@ -78,6 +97,10 @@ namespace Stryker.Core.Mutants
             return this;
         }
 
+        /// <summary>
+        /// Call this when leaving a member
+        /// </summary>
+        /// <returns>The new mutation context</returns>
         public MutationContext LeaveMember()
         {
             CurrentStore.LeaveBlock();
@@ -85,11 +108,21 @@ namespace Stryker.Core.Mutants
             return this;
         }
 
+
+        /// <summary>
+        /// Call this when entering a member access expression
+        /// </summary>
+        /// <returns>The new mutation context</returns>
         public MutationContext EnterMemberAccess()
         {
             CurrentStore.MemberAccessLength++;
             return this;
         }
+
+        /// <summary>
+        /// Call this when leaving a member access expression
+        /// </summary>
+        /// <returns>The new mutation context</returns>
         public MutationContext LeaveMemberAccess()
         {
             CurrentStore.MemberAccessLength--;
@@ -169,9 +202,19 @@ namespace Stryker.Core.Mutants
                 ? mutatedNode
                 : CurrentStore.PlaceExpressionMutations(mutatedNode, sourceNode.InjectMutation);
 
+        /// <summary>
+        /// Inject a static context marker in the given block
+        /// </summary>
+        /// <param name="block">Block in which inserts the marker</param>
+        /// <returns>the updated block</returns>
         public BlockSyntax PlaceStaticContextMarker(BlockSyntax block) =>
             _mainOrchestrator.Placer.PlaceStaticContextMarker(block);
 
+        /// <summary>
+        /// Inject a static context marker in the given expression
+        /// </summary>
+        /// <param name="expression">expression in which inserts the marker</param>
+        /// <returns>the updated expression</returns>
         public ExpressionSyntax PlaceStaticContextMarker(ExpressionSyntax expression) =>
             _mainOrchestrator.Placer.PlaceStaticContextMarker(expression);
 

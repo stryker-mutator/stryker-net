@@ -11,7 +11,7 @@ using Stryker.Core.Instrumentation;
 namespace Stryker.Core.Mutants;
 
 /// <summary>
-/// Implements multiple (reversible) patterns for injecting code in the mutated assembly?
+/// Implements multiple (reversible) patterns for injecting code in the mutated assembly
 /// Each pattern is implemented in a dedicated class.
 /// </summary>
 public class MutantPlacer

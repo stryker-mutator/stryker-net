@@ -15,7 +15,7 @@ internal class AccessorExpressionToBodyEngine : BaseEngine<AccessorDeclarationSy
     /// </summary>
     /// <param name="accessor">Accessor to be converted</param>
     /// <returns>Accessor in body form</returns>
-    /// <remarks>No conversion happens it is already in body form or if it is virtual.</remarks>
+    /// <remarks>No conversion happens if is already in body form or if it is virtual.</remarks>
     public AccessorDeclarationSyntax ConvertExpressionToBody(AccessorDeclarationSyntax accessor)
     {
         if (accessor.Body != null || accessor.ExpressionBody == null)
