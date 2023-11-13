@@ -8,9 +8,9 @@ internal class MemberAccessExpressionOrchestrator<T> : NodeSpecificOrchestrator<
 {
     protected override bool CanHandle(T t) => t.Parent is MemberAccessExpressionSyntax;
 
-    protected override MutationContext PrepareContext(T node, MutationContext context) => context.EnterMemberAccess();
+    protected override MutationContext PrepareContext(T node, MutationContext context) => context.Enter(MutationControl.MemberAccess);
 
-    protected override void RestoreContext(MutationContext context) => context.LeaveMemberAccess();
+    protected override void RestoreContext(MutationContext context) => context.Leave(MutationControl.MemberAccess);
 
     // never injects mutations  
     protected override T InjectMutations(T sourceNode, T targetNode, SemanticModel semanticModel,

@@ -42,8 +42,8 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
             return result;
         }
 
-        protected override MutationContext PrepareContext(AccessorDeclarationSyntax node, MutationContext context) => base.PrepareContext(node, context.EnterMember());
+        protected override MutationContext PrepareContext(AccessorDeclarationSyntax node, MutationContext context) => base.PrepareContext(node, context.Enter(MutationControl.Member));
 
-        protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.LeaveMember());
+        protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave(MutationControl.Member));
     }
 }

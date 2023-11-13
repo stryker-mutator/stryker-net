@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.Extensions.DependencyModel.Resolution;
 using Stryker.Core.Helpers;
 using Stryker.Core.Mutants.CsharpNodeOrchestrators;
 using Stryker.Core.Mutators;
@@ -31,7 +32,7 @@ namespace Stryker.Core.Mutants
         public MutationContext(CsharpMutantOrchestrator mutantOrchestrator)
         {
             _mainOrchestrator = mutantOrchestrator;
-            EnterMember();
+            Enter(MutationControl.Member);
         }
 
         private MutationContext(MutationContext parent)
@@ -87,49 +88,6 @@ namespace Stryker.Core.Mutants
         public MutationContext EnterStatic() => new(this) { InStaticValue = true };
 
         /// <summary>
-        /// Call this when entering a member
-        /// </summary>
-        /// <returns>The mutation context for this member.</returns>
-        public MutationContext EnterMember()
-        {
-            _pendingMutations.Push(new MutationStore(_mainOrchestrator.Placer));
-            CurrentStore.EnterBlock();
-            return this;
-        }
-
-        /// <summary>
-        /// Call this when leaving a member
-        /// </summary>
-        /// <returns>The new mutation context</returns>
-        public MutationContext LeaveMember()
-        {
-            CurrentStore.LeaveBlock();
-            _pendingMutations.Pop();
-            return this;
-        }
-
-
-        /// <summary>
-        /// Call this when entering a member access expression
-        /// </summary>
-        /// <returns>The new mutation context</returns>
-        public MutationContext EnterMemberAccess()
-        {
-            CurrentStore.MemberAccessLength++;
-            return this;
-        }
-
-        /// <summary>
-        /// Call this when leaving a member access expression
-        /// </summary>
-        /// <returns>The new mutation context</returns>
-        public MutationContext LeaveMemberAccess()
-        {
-            CurrentStore.MemberAccessLength--;
-            return this;
-        }
-
-        /// <summary>
         /// Call this when beginning of a syntax structure that can control mutations (expression, statement, block)
         /// </summary>
         /// <param name="control">type of structure (see <see cref="MutationControl"/>)</param>
@@ -139,12 +97,19 @@ namespace Stryker.Core.Mutants
         {
             switch (control)
             {
+                case MutationControl.MemberAccess:
+                    CurrentStore.MemberAccessLength++;
+                    return this;
                 case MutationControl.Statement:
                     CurrentStore.EnterStatement();
                     return this;
                 case MutationControl.Block:
                     CurrentStore.EnterBlock();
                     return new MutationContext(this);
+                case MutationControl.Member:
+                    _pendingMutations.Push(new MutationStore(_mainOrchestrator.Placer));
+                    CurrentStore.EnterBlock();
+                    break;
             }
 
             return this;
@@ -159,11 +124,18 @@ namespace Stryker.Core.Mutants
         {
             switch (control)
             {
+                case MutationControl.MemberAccess:
+                    CurrentStore.MemberAccessLength--;
+                    break;
                 case MutationControl.Statement:
                     CurrentStore.LeaveStatement();
                     break;
                 case MutationControl.Block:
                     CurrentStore.LeaveBlock();
+                    break;
+                case MutationControl.Member:
+                    CurrentStore.LeaveBlock();
+                    _pendingMutations.Pop();
                     break;
             }
             return this;

@@ -8,9 +8,9 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 internal class LambdaExpressionOrchestrator: NodeSpecificOrchestrator<LambdaExpressionSyntax, LambdaExpressionSyntax> 
 {
         protected override MutationContext PrepareContext(LambdaExpressionSyntax node, MutationContext context)
-            => base.PrepareContext(node, context.EnterMember());
+            => base.PrepareContext(node, context.Enter(MutationControl.Member));
 
-        protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.LeaveMember());
+        protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave(MutationControl.Member));
 
         /// <inheritdoc/>
         /// Inject mutations and convert expression body to block body if required.

@@ -13,12 +13,12 @@ internal class InvocationExpressionOrchestrator: NodeSpecificOrchestrator<Invoca
 
     protected override ExpressionSyntax OrchestrateChildrenMutation(InvocationExpressionSyntax node, SemanticModel semanticModel, MutationContext context)
     {
-        var expressions = (ExpressionSyntax) MutateSingleNode(node.Expression, semanticModel, context.EnterMemberAccess());
-        context.LeaveMemberAccess();
-        context.EnterMember();
+        var expressions = (ExpressionSyntax) MutateSingleNode(node.Expression, semanticModel, context.Enter(MutationControl.MemberAccess));
+        context.Leave(MutationControl.MemberAccess);
+        context.Enter(MutationControl.Member);
         var argumentListSyntax = (ArgumentListSyntax)MutateSingleNode(node.ArgumentList, semanticModel, context);
         var result = node.WithExpression(expressions).WithArgumentList(argumentListSyntax);
-        context.LeaveMember();
+        context.Leave(MutationControl.Member);
         return result;
     }
 

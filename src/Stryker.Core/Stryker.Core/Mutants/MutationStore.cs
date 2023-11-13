@@ -9,9 +9,11 @@ namespace Stryker.Core.Mutants
 {
     public enum MutationControl
     {
+        MemberAccess,
         Expression,
         Statement,
-        Block
+        Block,
+        Member
     }
 
     /// <summary>
