@@ -47,7 +47,6 @@ internal class LocalFunctionStatementOrchestrator : NodeSpecificOrchestrator<Loc
                 // we did not perform any conversion
                 return targetNode;
             }
-
         }
             
         // the function is in the body form
