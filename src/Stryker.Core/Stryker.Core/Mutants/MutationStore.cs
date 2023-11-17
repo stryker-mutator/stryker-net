@@ -37,7 +37,7 @@ internal class MutationStore
     /// <summary>
     /// true if there are block level mutations pending for injection
     /// </summary>
-    private bool HasBlockLevel => _blockMutants.Count > 0 && _blockMutants.Peek().Count > 0;
+    public bool HasBlockLevel => _blockMutants.Count > 0 && _blockMutants.Peek().Count > 0;
 
     /// <summary>
     /// true if there are statement or block level mutations pending of injection
