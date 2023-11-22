@@ -8,7 +8,7 @@ using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Mutators;
 
-public class StringMutator : MutatorBase<LiteralExpressionSyntax>, IMutator
+public class StringMutator : MutatorBase<LiteralExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 

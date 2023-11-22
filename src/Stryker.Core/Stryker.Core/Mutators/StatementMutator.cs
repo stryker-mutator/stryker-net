@@ -7,7 +7,7 @@ using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators;
 
-public class StatementMutator : MutatorBase<StatementSyntax>, IMutator
+public class StatementMutator : MutatorBase<StatementSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 

@@ -15,7 +15,7 @@ namespace Stryker.Core.Mutators;
 /// <remarks>
 /// Will only apply the mutation to the lowercase <c>string</c> since that is a reserved keyword in c# and can be distinguished from any variable or member access.
 /// </remarks>
-public class StringEmptyMutator : MutatorBase<ExpressionSyntax>, IMutator
+public class StringEmptyMutator : MutatorBase<ExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 

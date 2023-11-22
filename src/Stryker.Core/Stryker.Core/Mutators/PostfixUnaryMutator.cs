@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators;
 
-public class PostfixUnaryMutator : MutatorBase<PostfixUnaryExpressionSyntax>, IMutator
+public class PostfixUnaryMutator : MutatorBase<PostfixUnaryExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
                 

@@ -8,7 +8,7 @@ using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators;
 
-class BlockMutator : MutatorBase<BlockSyntax>, IMutator
+class BlockMutator : MutatorBase<BlockSyntax>
 {
     private const string MutationName = "Block removal mutation";
 

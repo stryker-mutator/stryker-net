@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators;
 
-public class BooleanMutator : MutatorBase<LiteralExpressionSyntax>, IMutator
+public class BooleanMutator : MutatorBase<LiteralExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
     public override IEnumerable<Mutation> ApplyMutations(LiteralExpressionSyntax node, SemanticModel semanticModel)

@@ -8,7 +8,7 @@ using System.Collections.Generic;
 namespace Stryker.Core.Mutators;
 
 /// <summary> Mutator Implementation for LINQ Mutations </summary>
-public class LinqMutator : MutatorBase<ExpressionSyntax>, IMutator
+public class LinqMutator : MutatorBase<ExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 

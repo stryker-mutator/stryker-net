@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators;
 
-public class InterpolatedStringMutator : MutatorBase<InterpolatedStringExpressionSyntax>, IMutator
+public class InterpolatedStringMutator : MutatorBase<InterpolatedStringExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 

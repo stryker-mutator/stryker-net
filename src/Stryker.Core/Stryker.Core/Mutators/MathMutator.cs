@@ -9,7 +9,7 @@ using Stryker.Core.Mutants;
 namespace Stryker.Core.Mutators;
 
 /// <summary> Mutator Implementation for Math Mutations </summary>
-public class MathMutator : MutatorBase<InvocationExpressionSyntax>, IMutator
+public class MathMutator : MutatorBase<InvocationExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Advanced;
 

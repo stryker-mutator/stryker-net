@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators;
 
-public class NegateConditionMutator : MutatorBase<ExpressionSyntax>, IMutator
+public class NegateConditionMutator : MutatorBase<ExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 

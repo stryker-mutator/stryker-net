@@ -88,7 +88,6 @@ namespace Stryker.Core.Mutants
                 // ensure method, lambda... are properly mutated (including expression to body conversion if required)
                 new LocalFunctionStatementOrchestrator(),
                 new AnonymousFunctionExpressionOrchestrator(),
-                new LambdaExpressionOrchestrator(),
                 new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>(),
                 new AccessorSyntaxOrchestrator(),
                 // ensure declaration are mutated at the block level
@@ -105,7 +104,7 @@ namespace Stryker.Core.Mutants
             });
         }
 
-        public IEnumerable<IMutator> Mutators { get; }
+        private IEnumerable<IMutator> Mutators { get; }
 
         public MutantPlacer Placer { get; }
 

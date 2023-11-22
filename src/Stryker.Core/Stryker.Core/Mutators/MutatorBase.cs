@@ -11,7 +11,7 @@ namespace Stryker.Core.Mutators;
 /// Implementing this class is not obligatory for mutators.
 /// </summary>
 /// <typeparam name="T">The type of SyntaxNode to cast to</typeparam>
-public abstract class MutatorBase<T> where T : SyntaxNode
+public abstract class MutatorBase<T>:IMutator where T : SyntaxNode
 {
     /// <summary>
     /// Apply the given mutations to a single SyntaxNode

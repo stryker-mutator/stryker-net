@@ -8,7 +8,7 @@ using Stryker.Core.Mutants;
 namespace Stryker.Core.Mutators;
 
 /// <summary> Base Mutator implementation for expressions with patterns </summary>
-public abstract class PatternMutatorBase<T> : MutatorBase<T>, IMutator where T : ExpressionSyntax
+public abstract class PatternMutatorBase<T> : MutatorBase<T> where T : ExpressionSyntax
 {
     public override MutationLevel MutationLevel => MutationLevel.Basic;
 
