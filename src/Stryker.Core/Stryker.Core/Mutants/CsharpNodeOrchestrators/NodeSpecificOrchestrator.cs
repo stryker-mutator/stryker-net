@@ -42,6 +42,7 @@ internal abstract class NodeSpecificOrchestrator<TNode, TBase> : NodeOrchestrato
     /// </summary>
     /// <param name="sourceNode">Original, unmodified syntax node</param>
     /// <param name="targetNode">Variant of <paramref name="sourceNode"/> including mutated children.</param>
+    /// <param name="semanticModel"></param>
     /// <param name="context">Mutation context which contains pending mutations.</param>
     /// <returns>A syntax node (typeof <see cref="TBase"></see>) with mutations injected, if possible./></returns>
     /// <remarks>Override this method when you need to inject some code (e.g : mutation control, or analysis markers).</remarks>
@@ -51,6 +52,7 @@ internal abstract class NodeSpecificOrchestrator<TNode, TBase> : NodeOrchestrato
     /// Generates and returns the list of possible mutations for the provided node.
     /// </summary>
     /// <param name="node">Node to generate mutations from.</param>
+    /// <param name="semanticModel"></param>
     /// <param name="context">Mutation context.</param>
     /// <returns>A list of <see cref="Mutant"/>s for the given node.</returns>
     /// <remarks>You should not override this, unless you want to block mutation generation for the node. Then returns and empty list.</remarks>
@@ -65,14 +67,13 @@ internal abstract class NodeSpecificOrchestrator<TNode, TBase> : NodeOrchestrato
     /// <returns>A <see cref="MutationContext"/>instance storing existing mutations as well as the one provided</returns>
     /// <remarks>You need to override this method if the generated mutations cannot be injected in place (via a conditional operator) but must be controlled
     /// at the statement or block level. Default implementation does nothing.</remarks>
-    protected virtual MutationContext StoreMutations(TNode node,
-        IEnumerable<Mutant> mutations,
-        MutationContext context) => context;
+    protected virtual MutationContext StoreMutations(TNode node, IEnumerable<Mutant> mutations, MutationContext context) => context;
 
     /// <summary>
     /// Mutate children, grandchildren (recursively). 
     /// </summary>
     /// <param name="node">Node which children will be mutating</param>
+    /// <param name="semanticModel"></param>
     /// <param name="context">Mutation status</param>
     /// <returns>A <see cref="TBase"/> instance with the mutated children.</returns>
     /// <remarks>Override this method if you want to control how the node's children are mutated. Simply return <see cref="node"/> if you want to
@@ -89,7 +90,7 @@ internal abstract class NodeSpecificOrchestrator<TNode, TBase> : NodeOrchestrato
     /// <param name="context">Mutation context</param>
     /// <returns>The mutated node</returns>
     /// <remarks><paramref name="context"/>may contain mutations that need be injected at higher level in the node hierarchy.</remarks>
-    protected SyntaxNode MutateSingleNode(SyntaxNode node, SemanticModel semanticModel, MutationContext context) => context.FindHandler(node).Mutate(node, semanticModel, context);
+    protected static SyntaxNode MutateSingleNode(SyntaxNode node, SemanticModel semanticModel, MutationContext context) => context.FindHandler(node).Mutate(node, semanticModel, context);
 
     /// <summary>
     /// Setup the mutation context before triggering mutation.
@@ -119,6 +120,7 @@ internal abstract class NodeSpecificOrchestrator<TNode, TBase> : NodeOrchestrato
     /// 7) return the mutated node (with mutated children)
     /// </summary>
     /// <param name="node">Node to be mutated</param>
+    /// <param name="semanticModel"></param>
     /// <param name="context">Mutation context</param>
     /// <returns>A <see cref="SyntaxNode"/> instance will all injected mutations.</returns>
     public virtual SyntaxNode Mutate(SyntaxNode node, SemanticModel semanticModel, MutationContext context)
