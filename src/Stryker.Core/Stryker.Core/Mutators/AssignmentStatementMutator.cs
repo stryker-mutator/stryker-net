@@ -7,7 +7,7 @@ using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators
 {
-    public class AssignmentExpressionMutator : MutatorBase<AssignmentExpressionSyntax>, IMutator
+    public class AssignmentExpressionMutator : MutatorBase<AssignmentExpressionSyntax>
     {
         private static readonly Dictionary<SyntaxKind, IEnumerable<SyntaxKind>> KindsToMutate = new()
         {

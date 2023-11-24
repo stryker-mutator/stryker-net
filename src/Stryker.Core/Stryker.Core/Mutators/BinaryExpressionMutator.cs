@@ -7,7 +7,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Stryker.Core.Mutators
 {
-    public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>, IMutator
+    public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>
     {
         private readonly struct MutationData
         {

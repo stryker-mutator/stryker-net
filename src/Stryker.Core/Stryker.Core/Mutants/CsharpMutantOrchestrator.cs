@@ -56,34 +56,55 @@ namespace Stryker.Core.Mutants
             Mutants = new Collection<Mutant>();
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpMutantOrchestrator>();
 
+            // declare node specific orchestrators. Note that order is relevant, they should be declared from more specific to more generic one
             _specificOrchestrator.RegisterHandlers(new List<INodeMutator>
             {
+                // Those node types describe compile time constants and thus cannot be mutated at run time
+                // attributes
                 new DontMutateOrchestrator<AttributeListSyntax>(),
+                // parameter list
                 new DontMutateOrchestrator<ParameterListSyntax>(),
+                // enum values
                 new DontMutateOrchestrator<EnumMemberDeclarationSyntax>(),
+                // pattern marching
                 new DontMutateOrchestrator<RecursivePatternSyntax>(),
-                new DontMutateOrchestrator<FieldDeclarationSyntax>(
-                    (t) => t.Modifiers.Any(x => x.IsKind(SyntaxKind.ConstKeyword))),
-                new AssignmentStatementOrchestrator(),
-                new PostfixUnaryExpressionOrchestrator(),
-                new PrefixUnaryExpressionOrchestrator(),
+                new DontMutateOrchestrator<UsingDirectiveSyntax>(),
+                // constants and constant fields
+                new DontMutateOrchestrator<FieldDeclarationSyntax>(t => t.Modifiers.Any(x => x.IsKind(SyntaxKind.ConstKeyword))),
+                new DontMutateOrchestrator<LocalDeclarationStatementSyntax>(t => t.IsConst),
+                // ensure pre/post increment/decrement mutations are mutated at statement level
+                new MutateAtStatementLevelOrchestrator<PostfixUnaryExpressionSyntax>( t => t.Parent is ExpressionStatementSyntax or ForStatementSyntax),
+                new MutateAtStatementLevelOrchestrator<PrefixUnaryExpressionSyntax>( t => t.Parent is ExpressionStatementSyntax or ForStatementSyntax),
+                // prevent mutations to happen within member access expression
+                new MemberAccessExpressionOrchestrator<MemberAccessExpressionSyntax>(),
+                new MemberAccessExpressionOrchestrator<MemberBindingExpressionSyntax>(),
+                // ensure static constructs are marked properly
                 new StaticFieldDeclarationOrchestrator(),
                 new StaticConstructorOrchestrator(),
+                // ensure array initializer mutations are controlled at statement level
+                new MutateAtStatementLevelOrchestrator<InitializerExpressionSyntax>( t => t.Kind() == SyntaxKind.ArrayInitializerExpression && t.Expressions.Count > 0),
+                // ensure properties are properly mutated (including expression to body conversion if required)
                 new PropertyDeclarationOrchestrator(),
-                new ArrayInitializerOrchestrator(),
+                // ensure method, lambda... are properly mutated (including expression to body conversion if required)
                 new LocalFunctionStatementOrchestrator(),
                 new AnonymousFunctionExpressionOrchestrator(),
                 new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>(),
                 new AccessorSyntaxOrchestrator(),
+                // ensure declaration are mutated at the block level
                 new LocalDeclarationOrchestrator(),
-                new StatementSpecificOrchestrator<StatementSyntax>(),
+
+                new ConditionalAccessOrchestrator(),
+                new InvocationExpressionOrchestrator(),
+
+                new MutateAtStatementLevelOrchestrator<AssignmentExpressionSyntax>(),
                 new BlockOrchestrator(),
+                new StatementSpecificOrchestrator<StatementSyntax>(),
                 new ExpressionSpecificOrchestrator<ExpressionSyntax>(),
                 new SyntaxNodeOrchestrator()
             });
         }
 
-        public IEnumerable<IMutator> Mutators { get; }
+        private IEnumerable<IMutator> Mutators { get; }
 
         public MutantPlacer Placer { get; }
 

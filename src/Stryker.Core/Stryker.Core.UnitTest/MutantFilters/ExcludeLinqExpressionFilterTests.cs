@@ -208,9 +208,9 @@ namespace Stryker.Core.UnitTest.MutantFilters
         }
 
 
-        private InvocationExpressionSyntax GenerateExpressions(string expression)
+        private ExpressionSyntax GenerateExpressions(string expression)
         {
-            SyntaxTree tree = CSharpSyntaxTree.ParseText($@"
+            var tree = CSharpSyntaxTree.ParseText($@"
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -231,7 +231,7 @@ namespace TestApplication
 }}");
             var memberAccessExpression = tree.GetRoot()
                 .DescendantNodes()
-                .OfType<InvocationExpressionSyntax>()
+                .OfType<MemberAccessExpressionSyntax>()
                 .Single();
 
             return memberAccessExpression;
