@@ -233,10 +233,9 @@ namespace Stryker.Core.Compiling
                         errorLocation.Path, errorLocation.StartLinePosition.Line,
                         errorLocation.StartLinePosition.Character, diagnostic.GetMessage(), brokenMutation);
 
-                    Logger.LogWarning(
-                        "Safe Mode! Stryker will try to continue by rolling back all mutations in method.");
+                    Logger.LogInformation(
+                        $"Safe Mode! Stryker will flag mutations in {DisplayName(initNode)} as compile error.");
                     // backup, remove all mutations in the node
-
                     foreach (var mutant in scan.Where(mutant => !suspiciousMutations.Contains(mutant.Node)))
                     {
                         suspiciousMutations.Add(mutant.Node);
@@ -250,6 +249,15 @@ namespace Stryker.Core.Compiling
 
             return suspiciousMutations;
         }
+
+        private string DisplayName(SyntaxNode initNode) =>
+            initNode switch
+            {
+                MethodDeclarationSyntax method => $"{method.Identifier}",
+                ConstructorDeclarationSyntax constructor => $"{constructor.Identifier}",
+                AccessorDeclarationSyntax accessor => $"{accessor.Keyword} {accessor.Keyword}",
+                not null => initNode.Parent == null ?  "whole file" : "the current node",
+            };
 
         private Collection<SyntaxNode> IdentifyMutationsAndFlagForRollback(IEnumerable<Diagnostic> diagnosticInfo, SyntaxNode rollbackRoot, out Diagnostic[] diagnostics)
         {
