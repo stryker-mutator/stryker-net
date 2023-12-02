@@ -30,6 +30,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
         }
 
         public static TestProjectsInfo operator +(TestProjectsInfo a, TestProjectsInfo b)
+
         {
             a.TestProjects = a.TestProjects.Union(b.TestProjects);
             return a;
