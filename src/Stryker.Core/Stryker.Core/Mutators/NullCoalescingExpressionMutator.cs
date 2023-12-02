@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 
 namespace Stryker.Core.Mutators
 {
-    public class NullCoalescingExpressionMutator : MutatorBase<BinaryExpressionSyntax>, IMutator
+    public class NullCoalescingExpressionMutator : MutatorBase<BinaryExpressionSyntax>
     {
         public override MutationLevel MutationLevel => MutationLevel.Basic;
 

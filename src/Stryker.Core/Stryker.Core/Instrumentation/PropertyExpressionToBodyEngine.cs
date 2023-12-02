@@ -14,7 +14,7 @@ namespace Stryker.Core.Instrumentation
         /// <summary>
         /// Convert a property from arrow form to the body form.
         /// </summary>
-        /// <param name="accessor">Accessor to be converted</param>
+        /// <param name="propertyDeclaration">Property to be converted</param>
         /// <returns>a property with a getter in body form</returns>
         /// <remarks>No conversion happens it is already in body form or if it is virtual.</remarks>
         public PropertyDeclarationSyntax ConvertExpressionToBody(PropertyDeclarationSyntax propertyDeclaration)
@@ -43,19 +43,19 @@ namespace Stryker.Core.Instrumentation
             }
 
             var getter = node.GetAccessor();
-            if (getter == null)
+            if (getter != null)
             {
-                throw new InvalidOperationException($"Expected a get accessor {node}.");
-            }
-            var ReturnStatement = getter?.Body?.Statements.FirstOrDefault() as ReturnStatementSyntax;
-            if (ReturnStatement == null)
-            {
-                throw new InvalidOperationException($"Expected a return statement here {getter.Body}.");
+                if (getter.Body?.Statements.FirstOrDefault() is not ReturnStatementSyntax returnStatement)
+                {
+                    throw new InvalidOperationException($"Expected a return statement here {getter.Body}.");
+                }
+
+                return node.WithAccessorList(null)
+                    .WithExpressionBody(SyntaxFactory.ArrowExpressionClause(returnStatement.Expression!))
+                    .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
             }
 
-            return node.WithAccessorList(null)
-                .WithExpressionBody(SyntaxFactory.ArrowExpressionClause(ReturnStatement.Expression))
-                .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+            throw new InvalidOperationException($"Expected a get accessor {node}.");
         }
     }
 }

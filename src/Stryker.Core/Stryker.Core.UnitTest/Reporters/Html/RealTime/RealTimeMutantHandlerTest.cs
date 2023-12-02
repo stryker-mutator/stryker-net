@@ -3,23 +3,21 @@ using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Shouldly;
 using Stryker.Core.Mutants;
-using Stryker.Core.Reporters.Html.Realtime;
-using Stryker.Core.Reporters.Html.Realtime.Events;
+using Stryker.Core.Reporters.Html.RealTime;
+using Stryker.Core.Reporters.Html.RealTime.Events;
 using Stryker.Core.Reporters.Json.SourceFiles;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.Reporters.Html.Realtime;
+namespace Stryker.Core.UnitTest.Reporters.Html.RealTime;
 
-public class RealtimeMutantHandlerTest : TestBase
+public class RealTimeMutantHandlerTest : TestBase
 {
-    private readonly Mock<ISseServer> _sseEventSenderMock;
-
-    public RealtimeMutantHandlerTest() => _sseEventSenderMock = new Mock<ISseServer>();
+    private readonly Mock<ISseServer> _sseEventSenderMock = new();
 
     [Fact]
     public void ShouldOpenSseEndpoint()
     {
-        var sut = new RealtimeMutantHandler(null, _sseEventSenderMock.Object);
+        var sut = new RealTimeMutantHandler(null, _sseEventSenderMock.Object);
 
         sut.OpenSseEndpoint();
 
@@ -41,7 +39,7 @@ public class RealtimeMutantHandlerTest : TestBase
             },
             ResultStatus = MutantStatus.Killed,
         };
-        var sut = new RealtimeMutantHandler(null, _sseEventSenderMock.Object);
+        var sut = new RealTimeMutantHandler(null, _sseEventSenderMock.Object);
 
         sut.SendMutantTestedEvent(mutant);
 
@@ -55,7 +53,7 @@ public class RealtimeMutantHandlerTest : TestBase
     public void ShouldCloseSseEndpoint()
     {
         _sseEventSenderMock.Setup(sse => sse.HasConnectedClients).Returns(true);
-        var sut = new RealtimeMutantHandler(null, _sseEventSenderMock.Object);
+        var sut = new RealTimeMutantHandler(null, _sseEventSenderMock.Object);
 
         sut.CloseSseEndpoint();
 
@@ -70,7 +68,7 @@ public class RealtimeMutantHandlerTest : TestBase
     public void ShouldSetPort()
     {
         _sseEventSenderMock.Setup(sse => sse.HasConnectedClients).Returns(true);
-        var sut = new RealtimeMutantHandler(null, _sseEventSenderMock.Object);
+        var sut = new RealTimeMutantHandler(null, _sseEventSenderMock.Object);
         _sseEventSenderMock.Setup(s => s.Port).Returns(8080);
 
         sut.Port.ShouldBeEquivalentTo(8080);
@@ -80,7 +78,7 @@ public class RealtimeMutantHandlerTest : TestBase
     public void ShouldQueueEventsUntilAtleastOneClientIsConnected()
     {
         _sseEventSenderMock.Setup(sse => sse.HasConnectedClients).Returns(false);
-        var sut = new RealtimeMutantHandler(null, _sseEventSenderMock.Object);
+        var sut = new RealTimeMutantHandler(null, _sseEventSenderMock.Object);
 
         var mutant = new Mutant
         {

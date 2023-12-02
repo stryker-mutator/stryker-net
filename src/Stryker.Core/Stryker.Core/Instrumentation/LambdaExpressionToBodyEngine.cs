@@ -8,7 +8,7 @@ namespace Stryker.Core.Instrumentation;
 /// <summary>
 /// Helper that converts a method (including operators) from expression body to statement body form (or arrow to curly braces).
 /// </summary>
-internal class AnonymousFunctionExpressionToBodyEngine : BaseEngine<AnonymousFunctionExpressionSyntax>
+internal class LambdaExpressionToBodyEngine : BaseEngine<LambdaExpressionSyntax>
 {
     /// <summary>
     /// Converts the given method (or operator) from expression to body form.
@@ -29,7 +29,7 @@ internal class AnonymousFunctionExpressionToBodyEngine : BaseEngine<AnonymousFun
         return method.WithBody(SyntaxFactory.Block(statementLine)).WithAdditionalAnnotations(Marker) as T;
     }
 
-    protected override SyntaxNode Revert(AnonymousFunctionExpressionSyntax node)
+    protected override CSharpSyntaxNode Revert(LambdaExpressionSyntax node)
     {
         // get expression
         var expression = node.Block?.Statements[0] switch

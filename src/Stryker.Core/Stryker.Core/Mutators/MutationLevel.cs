@@ -1,10 +1,9 @@
-﻿namespace Stryker.Core.Mutators
+namespace Stryker.Core.Mutators;
+
+public enum MutationLevel
 {
-    public enum MutationLevel
-    {
-        Basic = 0,
-        Standard = 25,
-        Advanced = 50,
-        Complete = 100
-    }
+    Basic = 0,
+    Standard = 25,
+    Advanced = 50,
+    Complete = 100
 }
