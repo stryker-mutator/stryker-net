@@ -72,19 +72,17 @@ namespace Stryker.Core.Initialisation.Buildalyzer
         {
             var source = ((AnalyzerReference)sender)?.Display ?? "unknown";
             logger?.LogWarning(
-                $"Failed to load analyzer {source}: {e.Message} (error : {Enum.GetName(e.ErrorCode.GetType(), e.ErrorCode) ?? e.ErrorCode.ToString()}, analyzer: {e.TypeName ?? ""}).");
+                $"Failed to load analyzer '{source}': {e.Message} (error : {Enum.GetName(e.ErrorCode.GetType(), e.ErrorCode) ?? e.ErrorCode.ToString()}, analyzer: {e.TypeName ?? "All"}).");
             if (e.ErrorCode == AnalyzerLoadFailureEventArgs.FailureErrorCode.ReferencesNewerCompiler)
             {
                 logger?.LogWarning(
-                    $"The analyzer {source} references a newer version ({e.ReferencedCompilerVersion}) of the compiler than the one used by Stryker.NET.");
+                    $"The analyzer '{source}' references a newer version ({e.ReferencedCompilerVersion}) of the compiler than the one used by Stryker.NET.");
             }
 
             if (e.Exception != null)
             {
-                logger?.LogWarning($"Failed to load analyzer {source}: Exception {e.Exception}.");
+                logger?.LogWarning($"Failed to load analyzer '{source}': Exception {e.Exception}.");
             }
-
-            throw e.Exception ?? new InvalidOperationException(e.Message);
         }
 
         public static IEnumerable<MetadataReference> LoadReferences(this IAnalyzerResult analyzerResult)
