@@ -173,9 +173,9 @@
       },
       "ResXResourceReader.NetStandard": {
         "type": "Direct",
-        "requested": "[1.1.0, )",
-        "resolved": "1.1.0",
-        "contentHash": "srjCLsiCBORsZUqfe/jkDRQDp47twhqna1bR14pNE2095dly7ejzmu1lN9pkvdHumzZwT5dtfbtzOnIXnFx3Ew=="
+        "requested": "[1.2.0, )",
+        "resolved": "1.2.0",
+        "contentHash": "WeSQmhW1ElwZRcr+v5arrsDCMEhZPxtpS1I6ZR78eVVDaPXjI8fAgoS8WA5nS6r5xALtYaPU0Ygs0VjsInccaQ=="
       },
       "Serilog": {
         "type": "Direct",
