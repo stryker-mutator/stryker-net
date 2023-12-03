@@ -1659,7 +1659,7 @@
           "Microsoft.Web.LibraryManager.Build": "[2.1.175, )",
           "Mono.Cecil": "[0.11.5, )",
           "NuGet.Frameworks": "[6.8.0, )",
-          "ResXResourceReader.NetStandard": "[1.1.0, )",
+          "ResXResourceReader.NetStandard": "[1.2.0, )",
           "Serilog": "[3.1.1, )",
           "Serilog.Extensions.Logging": "[8.0.0, )",
           "Serilog.Extensions.Logging.File": "[3.0.0, )",
@@ -1667,8 +1667,8 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.48.0, )",
           "Spectre.Console.Analyzer": "[0.48.0, )",
-          "Stryker.DataCollector": "[3.12.0, )",
-          "Stryker.RegexMutators": "[3.12.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[19.2.87, )"
         }
       },
@@ -1850,9 +1850,9 @@
       },
       "ResXResourceReader.NetStandard": {
         "type": "CentralTransitive",
-        "requested": "[1.1.0, )",
-        "resolved": "1.1.0",
-        "contentHash": "srjCLsiCBORsZUqfe/jkDRQDp47twhqna1bR14pNE2095dly7ejzmu1lN9pkvdHumzZwT5dtfbtzOnIXnFx3Ew=="
+        "requested": "[1.2.0, )",
+        "resolved": "1.2.0",
+        "contentHash": "WeSQmhW1ElwZRcr+v5arrsDCMEhZPxtpS1I6ZR78eVVDaPXjI8fAgoS8WA5nS6r5xALtYaPU0Ygs0VjsInccaQ=="
       },
       "Serilog": {
         "type": "CentralTransitive",
