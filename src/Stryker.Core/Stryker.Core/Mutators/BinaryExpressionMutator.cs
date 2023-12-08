@@ -3,10 +3,11 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
 using Stryker.Core.Helpers;
+using Microsoft.CodeAnalysis;
 
 namespace Stryker.Core.Mutators
 {
-    public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>, IMutator
+    public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>
     {
         private readonly struct MutationData
         {
@@ -44,7 +45,7 @@ namespace Stryker.Core.Mutators
 
         public override MutationLevel MutationLevel => MutationLevel.Basic;
 
-        public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node)
+        public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node, SemanticModel semanticModel)
         {
             // skip string additions
             if (node.Kind() == SyntaxKind.AddExpression && (node.Left.IsAStringExpression() || node.Right.IsAStringExpression()))

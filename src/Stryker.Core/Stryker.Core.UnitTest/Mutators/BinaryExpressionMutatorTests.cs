@@ -41,7 +41,7 @@ namespace Stryker.Core.UnitTest.Mutators
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(8)));
 
-            var result = target.ApplyMutations(originalNode).ToList();
+            var result = target.ApplyMutations(originalNode, null).ToList();
 
             if (expectedOutput.Count() == 1)
             {
@@ -72,7 +72,7 @@ namespace Stryker.Core.UnitTest.Mutators
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(4)),
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(2)));
 
-            var result = target.ApplyMutations(originalNode).ToList();
+            var result = target.ApplyMutations(originalNode, null).ToList();
 
             result.Count.ShouldBe(2, "There should be two mutations");
             var logicalMutation = result.SingleOrDefault(x => x.Type == Mutator.Logical);
@@ -104,7 +104,7 @@ namespace Stryker.Core.UnitTest.Mutators
                 SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(1)),
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(8)));
 
-            var result = target.ApplyMutations(originalNode).ToList();
+            var result = target.ApplyMutations(originalNode, null).ToList();
 
             result.ShouldBeEmpty();
         }
@@ -117,7 +117,7 @@ namespace Stryker.Core.UnitTest.Mutators
                 SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(1)),
                 SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(8)));
 
-            var result = target.ApplyMutations(originalNode).ToList();
+            var result = target.ApplyMutations(originalNode, null).ToList();
 
             result.ShouldBeEmpty();
         }
