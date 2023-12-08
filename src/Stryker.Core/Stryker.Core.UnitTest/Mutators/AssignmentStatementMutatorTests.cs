@@ -38,7 +38,7 @@ namespace Stryker.Core.UnitTest.Mutators
                 SyntaxFactory.IdentifierName("b")
             );
 
-            var result = target.ApplyMutations(originalNode).ToList();
+            var result = target.ApplyMutations(originalNode, null).ToList();
 
             if (additionalOutput.HasValue && additionalOutput.Value is var additionalExpectedOutput)
             {
@@ -72,7 +72,7 @@ namespace Stryker.Core.UnitTest.Mutators
             var originalExpression = SyntaxFactory.ParseExpression(originalExpressionString);
 
             // Act
-            var result = target.ApplyMutations(originalExpression as AssignmentExpressionSyntax);
+            var result = target.ApplyMutations(originalExpression as AssignmentExpressionSyntax, null);
 
             // Assert
             var mutation = result.ShouldHaveSingleItem();
@@ -90,7 +90,7 @@ namespace Stryker.Core.UnitTest.Mutators
                 SyntaxFactory.IdentifierName("a"),
                 SyntaxFactory.IdentifierName("b")
             );
-            var result = target.ApplyMutations(originalNode).ToList();
+            var result = target.ApplyMutations(originalNode, null).ToList();
 
             result.ShouldBeEmpty();
         }
@@ -105,7 +105,7 @@ namespace Stryker.Core.UnitTest.Mutators
                 SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression),
                 SyntaxFactory.IdentifierName("b")
             );
-            var result = target.ApplyMutations(originalNode).ToList();
+            var result = target.ApplyMutations(originalNode, null).ToList();
 
             result.ShouldBeEmpty();
         }
@@ -120,7 +120,7 @@ namespace Stryker.Core.UnitTest.Mutators
                 SyntaxFactory.IdentifierName("b"),
                 SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression)
             );
-            var result = target.ApplyMutations(originalNode).ToList();
+            var result = target.ApplyMutations(originalNode, null).ToList();
 
             result.ShouldBeEmpty();
         }
@@ -135,7 +135,7 @@ namespace Stryker.Core.UnitTest.Mutators
                 SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression),
                 SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression)
             );
-            var result = target.ApplyMutations(originalNode).ToList();
+            var result = target.ApplyMutations(originalNode, null).ToList();
 
             result.ShouldBeEmpty();
         }

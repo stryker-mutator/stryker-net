@@ -6,11 +6,11 @@ using Microsoft.CodeAnalysis;
 
 namespace Stryker.Core.Mutators
 {
-    public class NullCoalescingExpressionMutator : MutatorBase<BinaryExpressionSyntax>, IMutator
+    public class NullCoalescingExpressionMutator : MutatorBase<BinaryExpressionSyntax>
     {
         public override MutationLevel MutationLevel => MutationLevel.Basic;
 
-        public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node)
+        public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node, SemanticModel semanticModel)
         {
             if (node.Kind() == SyntaxKind.CoalesceExpression)
             {

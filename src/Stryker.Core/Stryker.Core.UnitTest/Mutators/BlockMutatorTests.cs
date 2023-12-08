@@ -238,7 +238,7 @@ class Program
                 .OfType<BlockSyntax>();
 
             var target = new BlockMutator();
-            return statements.SelectMany(target.ApplyMutations);
+            return statements.SelectMany(statement => target.ApplyMutations(statement, null));
         }
 
         private static void AssertDefaultReturn(Mutation mutation)

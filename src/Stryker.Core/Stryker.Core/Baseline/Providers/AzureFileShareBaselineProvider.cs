@@ -1,110 +1,121 @@
+using System;
+using System.IO;
+using System.Text;
+using System.Threading.Tasks;
+using Azure;
+using Azure.Storage.Files.Shares;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
-using System.Text;
-using System.Threading.Tasks;
-using System.Web;
 
 namespace Stryker.Core.Baseline.Providers
 {
     public class AzureFileShareBaselineProvider : IBaselineProvider
     {
         private const string DefaultOutputDirectoryName = "StrykerOutput";
+        private const string StrykerReportName = "stryker-report.json";
 
-        private readonly StrykerOptions _options;
-        private readonly HttpClient _httpClient;
+        private readonly ShareClient _fileShareClient;
         private readonly ILogger<AzureFileShareBaselineProvider> _logger;
         private readonly string _outputPath;
 
-        public AzureFileShareBaselineProvider(StrykerOptions options, HttpClient httpClient = null)
+        public AzureFileShareBaselineProvider(StrykerOptions options, ShareClient shareClient = null, ILogger<AzureFileShareBaselineProvider> logger = null)
         {
-            _options = options;
-            _httpClient = httpClient ?? new HttpClient();
-            _logger = ApplicationLogging.LoggerFactory.CreateLogger<AzureFileShareBaselineProvider>();
+            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<AzureFileShareBaselineProvider>();
 
             _outputPath = string.IsNullOrWhiteSpace(options.ProjectName) ? DefaultOutputDirectoryName : $"{DefaultOutputDirectoryName}/{options.ProjectName}";
+            _fileShareClient = shareClient ?? new ShareClient(new Uri(options.AzureFileStorageUrl), new AzureSasCredential(options.AzureFileStorageSas));
         }
 
         public async Task<JsonReport> Load(string version)
         {
-            var fileUrl = $"{_options.AzureFileStorageUrl}/{_outputPath}/{version}/stryker-report.json";
+            var (uri, root, subdirectoryNames, fileName) = BuildFileUriComponents(version);
 
-            var url = GenerateUri(fileUrl, _options.AzureFileStorageSas).ToString();
-
-            using var requestMessage = new HttpRequestMessage(HttpMethod.Get, url);
-
-            requestMessage.Headers.Add("x-ms-date", "now");
-
-            using var response = await _httpClient.SendAsync(requestMessage);
-
-            if (response.StatusCode == HttpStatusCode.OK)
+            if (TryGetAuthenticatedClient(root, out var directoryClient))
             {
-                var stream = await response.Content.ReadAsStreamAsync();
-
-                return await stream.DeserializeJsonReportAsync();
+                if (TryEnumerateDirectories(directoryClient, subdirectoryNames, createIfNotExists: false, out directoryClient))
+                {
+                    var fileClient = directoryClient.GetFileClient(fileName);
+                    if (await fileClient.ExistsAsync())
+                    {
+                        return await fileClient.Download().Value.Content.DeserializeJsonReportAsync();
+                    }
+                }
+            }
+            else
+            {
+                _logger.LogWarning("Problem authenticating with azure file share. Make sure your SAS is valid.");
             }
 
-            _logger.LogDebug("No baseline was found at {0}", fileUrl);
+            _logger.LogDebug("No baseline was found at {reportUri}", uri);
             return null;
         }
 
         public async Task Save(JsonReport report, string version)
         {
-            var existingReport = await Load(version);
+            var (uri, root, subdirectoryNames, fileName) = BuildFileUriComponents(version);
 
-            var reportJson = report.ToJson();
-
-            int byteSize = Encoding.UTF8.GetByteCount(report.ToJson());
-
-            var fileUrl = $"{_options.AzureFileStorageUrl}/{_outputPath}/{version}/stryker-report.json";
-
-            var url = GenerateUri(fileUrl, _options.AzureFileStorageSas, new Dictionary<string, string> { { "comp", "range" } }).Uri;
-
-            if (existingReport == null)
+            if (TryGetAuthenticatedClient(root, out var directoryClient))
             {
-                var successfullyCreatedDirectories = await CreateDirectoriesAsync(fileUrl);
-
-                if (!successfullyCreatedDirectories)
+                if (TryEnumerateDirectories(directoryClient, subdirectoryNames, createIfNotExists: true, out directoryClient))
                 {
-                    return;
+                    var fileClient = directoryClient.GetFileClient(fileName);
+                    using var fileContentStream = new MemoryStream(Encoding.UTF8.GetBytes(report.ToJson()));
+
+                    try
+                    {
+                        await fileClient.CreateAsync(fileContentStream.Length);
+                        await UploadFileContent(uri, fileClient, fileContentStream);
+                    }
+                    catch (RequestFailedException ex)
+                    {
+                        _logger.LogError("Failed to allocated file in azure file share at {reportUri} with error code {errorCode}", uri, ex.ErrorCode);
+                    }
                 }
             }
-
-            // If the file already exists, this replaces the existing file. Does not add content to the file
-            var successfullyAllocated = await AllocateFileLocationAsync(byteSize, fileUrl);
-
-            if (!successfullyAllocated)
+            else
             {
-                return;
+                _logger.LogWarning("Problem authenticating with azure file share. Make sure your SAS is valid.");
             }
-
-            // This adds the content to the file
-            await UploadFileAsync(reportJson, byteSize, url);
-
-            _logger.LogDebug("Baseline report has been saved to {0}", fileUrl);
         }
 
-        private async Task<bool> CreateDirectoriesAsync(string fileUrl)
+
+        private (string uri, string root, string[] subdirectoryNames, string fileName) BuildFileUriComponents(string version)
         {
-            _logger.LogDebug("Creating directories for file {0}", fileUrl);
+            var relativeUri = $"{_outputPath}/{version}/{StrykerReportName}";
+            var uri = $"{_fileShareClient.Uri}/{relativeUri}";
+            var uriComponents = relativeUri.Split('/', StringSplitOptions.RemoveEmptyEntries);
 
-            var uriParts = fileUrl.Split(_outputPath);
-            var currentDirectory = new StringBuilder(uriParts[0]);
+            return (uri, uriComponents[0], uriComponents[1..^1], uriComponents[^1]);
+        }
 
-            var storagePathSegments = _outputPath.Split('/').Concat(uriParts[1].Split('/')).Where(s => !string.IsNullOrEmpty(s) && !s.Contains(".json"));
+        private bool TryEnumerateDirectories(ShareDirectoryClient directoryClient, string[] subdirectories, bool createIfNotExists, out ShareDirectoryClient shareDirectoryClient)
+        {
+            shareDirectoryClient = directoryClient;
 
-            foreach (var segment in storagePathSegments)
+            // root
+            if (createIfNotExists)
             {
-                currentDirectory.Append($"{segment}/");
+                shareDirectoryClient.CreateIfNotExists();
+            }
+            if (!shareDirectoryClient.Exists())
+            {
+                shareDirectoryClient = null;
+                return false;
+            }
 
-                if (!await CreateDirectoryAsync(currentDirectory.ToString()))
+            // subdirectories
+            foreach (var subdirectory in subdirectories)
+            {
+                shareDirectoryClient = shareDirectoryClient.GetSubdirectoryClient(subdirectory);
+                if (createIfNotExists)
                 {
+                    shareDirectoryClient.CreateIfNotExists();
+                }
+                if (!shareDirectoryClient.Exists())
+                {
+                    shareDirectoryClient = null;
                     return false;
                 }
             }
@@ -112,97 +123,56 @@ namespace Stryker.Core.Baseline.Providers
             return true;
         }
 
-        private async Task<bool> CreateDirectoryAsync(string fileUrl)
+        private bool TryGetAuthenticatedClient(string root, out ShareDirectoryClient shareDirectoryClient)
         {
-            _logger.LogDebug("Creating directory {0}", fileUrl);
-
-            var url = GenerateUri(fileUrl, _options.AzureFileStorageSas, new Dictionary<string, string> { { "restype", "directory" } }).ToString();
-
-            using var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
-
-            using var response = await _httpClient.SendAsync(requestMessage);
-            if (response.StatusCode == HttpStatusCode.Created)
+            try
             {
-                _logger.LogDebug("Successfully created directory {0}", fileUrl);
+                _fileShareClient.Exists();
+
+                shareDirectoryClient = _fileShareClient.GetDirectoryClient(root);
                 return true;
             }
-            else if (response.StatusCode == HttpStatusCode.Conflict)
+            catch (RequestFailedException)
             {
-                _logger.LogDebug("Directory {0} already exists", fileUrl);
-                return true;
-            }
-
-            _logger.LogError("Creating directory failed with status {0} and message {1}", response.StatusCode.ToString(), ToSafeResponseMessage(await response.Content.ReadAsStringAsync()));
-
-            return false;
-        }
-
-        private async Task<bool> AllocateFileLocationAsync(int byteSize, string fileUrl)
-        {
-            _logger.LogDebug("Allocating storage for file {0}", fileUrl);
-            var url = GenerateUri(fileUrl, _options.AzureFileStorageSas).ToString();
-            
-            using var requestMessage = new HttpRequestMessage(HttpMethod.Put, url);
-
-            requestMessage.Headers.Add("x-ms-type", "file");
-            requestMessage.Headers.Add("x-ms-content-length", byteSize.ToString());
-
-
-            using var response = await _httpClient.SendAsync(requestMessage);
-
-            if (response.StatusCode == HttpStatusCode.Created)
-            {
-                _logger.LogDebug("Successfully allocated storage");
-                return true;
-            }
-            else
-            {
-                _logger.LogError("Azure File Storage allocation failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), ToSafeResponseMessage(await response.Content.ReadAsStringAsync()));
+                shareDirectoryClient = null;
                 return false;
             }
+
         }
 
-        private async Task UploadFileAsync(string report, int byteSize, Uri uploadUri)
+        private async Task UploadFileContent(string uri, ShareFileClient fileClient, MemoryStream fileContentStream)
         {
-            _logger.LogDebug("Uploading file to azure file storage");
+            _logger.LogDebug("Allocated azure file share file at {reportUri}", uri);
 
-            using var requestMessage = new HttpRequestMessage(HttpMethod.Put, uploadUri)
+            var blockSize = 1 * 4194304; // 4MB max block size
+            long offset = 0;
+            var reader = new BinaryReader(fileContentStream);
+
+            while (true)
             {
-                Content = new StringContent(report, Encoding.UTF8, "application/json")
-            };
-
-            requestMessage.Headers.Add("x-ms-range", $"bytes=0-{byteSize - 1}");
-            requestMessage.Headers.Add("x-ms-write", "update");
-
-            using var response = await _httpClient.SendAsync(requestMessage);
-
-            if (response.StatusCode != HttpStatusCode.Created)
-            {
-                _logger.LogError("Azure File Storage upload failed with statuscode {0} and message: {1}", response.StatusCode.ToString(), ToSafeResponseMessage(await response.Content.ReadAsStringAsync()));
-            }
-            else
-            {
-                _logger.LogDebug("Uploaded report to azure file share");
-            }
-        }
-
-        private string ToSafeResponseMessage(string responseMessage) =>
-            responseMessage.Replace(_options.AzureFileStorageUrl, "xxxxxxxxxx").Replace(_options.AzureFileStorageSas, "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-
-        private static UriBuilder GenerateUri(string fileUrl, string sasToken, Dictionary<string, string> queryParameters = default)
-        {
-            var uriBuilder = new UriBuilder(fileUrl);
-            var query = HttpUtility.ParseQueryString(sasToken);
-            if (queryParameters != default)
-            {
-                foreach (var para in queryParameters)
+                var buffer = reader.ReadBytes(blockSize);
+                if (buffer.Length == 0)
                 {
-                    query.Add(para.Key, para.Value);
+                    break;
+                }
+
+                using var uploadChunk = new MemoryStream();
+                uploadChunk.Write(buffer, 0, buffer.Length);
+                uploadChunk.Position = 0;
+
+                var httpRange = new HttpRange(offset, buffer.Length);
+                offset += buffer.Length; // Shift the offset by number of bytes already written
+
+                try
+                {
+                    await fileClient.UploadRangeAsync(httpRange, uploadChunk);
+                    _logger.LogDebug("Uploaded report chunk {bytesUploaded}/{bytesTotal} to azure file share", offset, fileContentStream.Length);
+                }
+                catch (RequestFailedException ex)
+                {
+                    _logger.LogError("Failed to upload report chunk {bytesUploaded}/{bytesTotal} to azure file share with error code {errorCode}", offset, fileContentStream.Length, ex.ErrorCode);
                 }
             }
-
-            uriBuilder.Query = query.ToString();
-            return uriBuilder;
         }
     }
 }

@@ -13,6 +13,7 @@ namespace Stryker.Core.Mutants
             !_options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest);
 
         public ICollection<Mutant> Mutants { get; set; }
+
         public int MutantCount { get; set; }
 
         protected BaseMutantOrchestrator(StrykerOptions options) => _options = options;
@@ -32,12 +33,12 @@ namespace Stryker.Core.Mutants
     /// Mutates abstract syntax trees using mutators and places all mutations inside the abstract syntax tree.
     /// Orchestrator: to arrange or manipulate, especially by means of clever or thorough planning or maneuvering.
     /// </summary>
-    public abstract class BaseMutantOrchestrator<T> : BaseMutantOrchestrator
+    /// <typeparam name="T">The type of syntax node to mutate</typeparam>
+    public abstract class BaseMutantOrchestrator<T, TY> : BaseMutantOrchestrator
     {
         protected BaseMutantOrchestrator(StrykerOptions input) : base(input)
-        {
-        }
+        {}
 
-        public abstract T Mutate(T input);
+        public abstract T Mutate(T input, TY semanticModel);
     }
 }

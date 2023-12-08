@@ -1,33 +1,38 @@
-﻿using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
 
-namespace Stryker.Core.Mutators
+namespace Stryker.Core.Mutators;
+
+public class PostfixUnaryMutator : MutatorBase<PostfixUnaryExpressionSyntax>
 {
-    public class PostfixUnaryMutator : MutatorBase<PostfixUnaryExpressionSyntax>, IMutator
+    public override MutationLevel MutationLevel => MutationLevel.Standard;
+                
+    public override IEnumerable<Mutation> ApplyMutations(PostfixUnaryExpressionSyntax node, SemanticModel semanticModel)
     {
-        public override MutationLevel MutationLevel => MutationLevel.Standard;
-
-        private static readonly Dictionary<SyntaxKind, SyntaxKind> UnaryWithOpposite = new Dictionary<SyntaxKind, SyntaxKind>
+        var unaryKind = node.Kind();
+        SyntaxKind newKind;
+        if (unaryKind == SyntaxKind.PostIncrementExpression)
         {
-            {SyntaxKind.PostIncrementExpression, SyntaxKind.PostDecrementExpression},
-            {SyntaxKind.PostDecrementExpression, SyntaxKind.PostIncrementExpression},
-        };
-
-        public override IEnumerable<Mutation> ApplyMutations(PostfixUnaryExpressionSyntax node)
-        {
-            var unaryKind = node.Kind();
-            if (UnaryWithOpposite.TryGetValue(unaryKind, out var oppositeKind))
-            {
-                yield return new Mutation
-                {
-                    OriginalNode = node,
-                    ReplacementNode = SyntaxFactory.PostfixUnaryExpression(oppositeKind, node.Operand),
-                    DisplayName = $"{unaryKind} to {oppositeKind} mutation",
-                    Type = Mutator.Update
-                };
-            }
+            newKind = SyntaxKind.PostDecrementExpression;
         }
+        else if (unaryKind == SyntaxKind.PostDecrementExpression)
+        {
+            newKind = SyntaxKind.PostIncrementExpression;
+        }
+        else
+        {
+            yield break;
+        }
+
+        yield return new Mutation
+        {
+            OriginalNode = node,
+            ReplacementNode = SyntaxFactory.PostfixUnaryExpression(newKind, node.Operand),
+            DisplayName = $"{unaryKind} to {newKind} mutation",
+            Type = Mutator.Update
+        };
     }
 }

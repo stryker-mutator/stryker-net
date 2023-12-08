@@ -70,7 +70,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var expression = GenerateExpressions(exp.ToString());
 
-            var result = target.ApplyMutations(expression).ToList();
+            var result = target.ApplyMutations(expression, null).ToList();
 
             var mutants = result.Select(s => new Mutant() { ResultStatus = MutantStatus.Survived, Mutation = s });
 
@@ -131,7 +131,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var expression = GenerateExpressions(exp.ToString());
 
-            var result = target.ApplyMutations(expression).ToList();
+            var result = target.ApplyMutations(expression, null).ToList();
 
             var mutants = result.Select(s => new Mutant() { ResultStatus = MutantStatus.Survived, Mutation = s });
 
@@ -191,7 +191,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var expression = GenerateExpressions(exp.ToString());
 
-            var result = target.ApplyMutations(expression).ToList();
+            var result = target.ApplyMutations(expression, null).ToList();
 
             var mutants = result.Select(s => new Mutant() { ResultStatus = MutantStatus.Survived, Mutation = s });
 
@@ -208,9 +208,9 @@ namespace Stryker.Core.UnitTest.MutantFilters
         }
 
 
-        private InvocationExpressionSyntax GenerateExpressions(string expression)
+        private ExpressionSyntax GenerateExpressions(string expression)
         {
-            SyntaxTree tree = CSharpSyntaxTree.ParseText($@"
+            var tree = CSharpSyntaxTree.ParseText($@"
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -231,7 +231,7 @@ namespace TestApplication
 }}");
             var memberAccessExpression = tree.GetRoot()
                 .DescendantNodes()
-                .OfType<InvocationExpressionSyntax>()
+                .OfType<MemberAccessExpressionSyntax>()
                 .Single();
 
             return memberAccessExpression;
