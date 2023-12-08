@@ -57,10 +57,13 @@ namespace Stryker.CLI.CommandLineConfig
                     }
 
                     var config = FileConfigGenerator.GenerateConfigAsync(inputs);
+                    fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(configFilePath));
                     fileSystem.File.WriteAllText(configFilePath, config);
 
                     _console.Write("Config file written to ");
                     _console.WriteLine(configFilePath, new Style(Color.Cyan1));
+                    _console.Write("The file is populated with default values, remove the options you don't need and edit the options you want to use. For more information on configuring stryker see: ");
+                    _console.WriteLine("https://stryker-mutator.io/docs/stryker-net/configuration", new Style(Color.Cyan1));
                 });
             });
         }
