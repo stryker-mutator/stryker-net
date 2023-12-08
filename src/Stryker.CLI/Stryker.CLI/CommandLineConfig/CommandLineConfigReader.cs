@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
@@ -28,7 +29,7 @@ namespace Stryker.CLI.CommandLineConfig
             RegisterCliInputs(app);
         }
 
-        public void RegisterInitCommand(CommandLineApplication app, IStrykerInputs inputs, string[] args)
+        public void RegisterInitCommand(CommandLineApplication app, IFileSystem fileSystem, IStrykerInputs inputs, string[] args)
         {
             app.Command("init", initCommandApp =>
             {
@@ -41,10 +42,10 @@ namespace Stryker.CLI.CommandLineConfig
 
                     ReadCommandLineConfig(args[1..], initCommandApp, inputs);
                     var configOption = initCommandApp.Options.SingleOrDefault(o => o.LongName == _configFileInput.ArgumentName);
-                    var basePath = Directory.GetCurrentDirectory();
+                    var basePath = fileSystem.Directory.GetCurrentDirectory();
                     var configFilePath = Path.Combine(basePath, configOption?.Value() ?? "stryker-config.json");
 
-                    if (File.Exists(configFilePath))
+                    if (fileSystem.File.Exists(configFilePath))
                     {
                         _console.Write("Config file already exists at ");
                         _console.WriteLine(configFilePath, new Style(Color.Cyan1));
@@ -56,7 +57,9 @@ namespace Stryker.CLI.CommandLineConfig
                         _console.WriteLine();
                     }
 
-                    FileConfigWriter.WriteConfigAsync(configFilePath, inputs).Wait();
+                    var config = FileConfigGenerator.GenerateConfigAsync(inputs);
+                    fileSystem.File.WriteAllText(configFilePath, config);
+
                     _console.Write("Config file written to ");
                     _console.WriteLine(configFilePath, new Style(Color.Cyan1));
                 });

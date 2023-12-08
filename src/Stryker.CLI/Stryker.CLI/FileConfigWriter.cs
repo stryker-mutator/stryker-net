@@ -1,17 +1,15 @@
-using System.IO;
 using System.Linq;
 using System.Text.Json;
 using Stryker.Core.Options;
-using Task = System.Threading.Tasks.Task;
 
 namespace Stryker.CLI;
 
-public static class FileConfigWriter
+public static class FileConfigGenerator
 {
-    public static async Task WriteConfigAsync(string configFilePath, IStrykerInputs inputs)
+    public static string GenerateConfigAsync(IStrykerInputs inputs)
     {
-        await using var streamWriter = new StreamWriter(configFilePath);
-        await SerializeConfigAsync(CreateConfig(inputs), streamWriter.BaseStream);
+        var config = CreateConfig(inputs);
+        return SerializeConfig(config);
     }
 
     private static FileBasedInputOuter CreateConfig(IStrykerInputs inputs)
@@ -69,9 +67,9 @@ public static class FileConfigWriter
         };
     }
 
-    private static async Task SerializeConfigAsync(FileBasedInputOuter config, Stream stream)
+    private static string SerializeConfig(FileBasedInputOuter config)
     {
         var serializerOptions = new JsonSerializerOptions { WriteIndented = true };
-        await JsonSerializer.SerializeAsync(stream, config, serializerOptions);
+        return JsonSerializer.Serialize(config, serializerOptions);
     }
 }
