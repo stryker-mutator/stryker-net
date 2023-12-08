@@ -22,8 +22,8 @@ public class AnalyzerResultExtensionsTests
         var diagOptions = IAnalyzerResultExtensions.GetDiagnosticOptions(analyzerResult);
 
         // Assert
-        diagOptions.Contains(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0001", ReportDiagnostic.Suppress));
-        diagOptions.Contains(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0002", ReportDiagnostic.Suppress));
+        diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0001", ReportDiagnostic.Suppress));
+        diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0002", ReportDiagnostic.Suppress));
     }
 
     [Fact]
@@ -39,8 +39,8 @@ public class AnalyzerResultExtensionsTests
         var diagOptions = IAnalyzerResultExtensions.GetDiagnosticOptions(analyzerResult);
 
         // Assert
-        diagOptions.Contains(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0001", ReportDiagnostic.Error));
-        diagOptions.Contains(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0002", ReportDiagnostic.Error));
+        diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0001", ReportDiagnostic.Error));
+        diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0002", ReportDiagnostic.Error));
     }
 
     [Fact]
