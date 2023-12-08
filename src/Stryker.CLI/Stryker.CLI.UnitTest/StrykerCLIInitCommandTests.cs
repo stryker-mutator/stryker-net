@@ -5,7 +5,6 @@ using System.Linq;
 using System.Text.Json;
 using Moq;
 using Shouldly;
-using Spectre.Console;
 using Spectre.Console.Testing;
 using Stryker.CLI.Clients;
 using Stryker.CLI.Logging;
