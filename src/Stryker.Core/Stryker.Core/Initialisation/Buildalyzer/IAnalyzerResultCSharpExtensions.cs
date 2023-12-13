@@ -16,7 +16,9 @@ namespace Stryker.Core.Initialisation.Buildalyzer
                 .WithAssemblyIdentityComparer(DesktopAssemblyIdentityComparer.Default)
                 .WithConcurrentBuild(true)
                 .WithModuleName(analyzerResult.GetAssemblyName())
-                .WithOverflowChecks(analyzerResult.GetPropertyOrDefault("CheckForOverflowUnderflow", false));
+                .WithOverflowChecks(analyzerResult.GetPropertyOrDefault("CheckForOverflowUnderflow", false))
+                .WithSpecificDiagnosticOptions(analyzerResult.GetDiagnosticOptions())
+                .WithWarningLevel(analyzerResult.GetWarningLevel());
 
             if (analyzerResult.IsSignedAssembly() && analyzerResult.GetAssemblyOriginatorKeyFile() is var keyFile && keyFile is not null)
             {
