@@ -27,9 +27,9 @@ internal class PendingMutations
         Parent = parent;
     }
 
-    public virtual PendingMutations StoreMutations(IList<Mutant> store) => this;
+    public virtual void StoreMutations(IList<Mutant> store) { }
 
-    public virtual PendingMutations StoreStatementLevelMutations(IList<Mutant> store)
+    public virtual void StoreStatementLevelMutations(IList<Mutant> store)
     {
         var pendingMutations = this;
         while(pendingMutations is not PendingMutationsForStatement and not null)
@@ -39,13 +39,13 @@ internal class PendingMutations
         // if we reach the root, we log and error and drop the mutations
         if (pendingMutations is null)
         {
-            return StoreBlockLevelMutations(store);
+            StoreBlockLevelMutations(store);
+            return;
         }
         pendingMutations.Store.AddRange(store);
-        return this;
     }
 
-    public PendingMutations StoreBlockLevelMutations(IList<Mutant> store)
+    public void StoreBlockLevelMutations(IList<Mutant> store)
     {
         var pendingMutations = this;
         while (pendingMutations is not PendingMutationsForBlock and not null)
@@ -61,10 +61,10 @@ internal class PendingMutations
                 mutant.ResultStatus = MutantStatus.CompileError;
                 mutant.ResultStatusReason = "Could not be injected in code.";
             }
-            return this;
+            return;
         }
         pendingMutations.Store.AddRange(store);
-        return this;
+        return;
     }
 
     public PendingMutations Enter(MutationControl control)
@@ -78,6 +78,8 @@ internal class PendingMutations
         {
             case MutationControl.MemberAccess:
                 return new PendingMutationsForMemberAccess(this);
+            case MutationControl.Expression:
+                return new PendingMutationsForExpression(this);
             case MutationControl.Statement:
                 return new PendingMutationsForStatement(this);
             case MutationControl.Block:
@@ -91,21 +93,53 @@ internal class PendingMutations
 
     public PendingMutations Leave()
     {
-        if (_depth <= 0) return Parent?.StoreMutations(Store) ?? Parent;
+        if (_depth <= 0)
+        {
+            Parent?.StoreMutations(Store);
+            return Parent;
+        }
+
         _depth--;
         return this;
     }
 
-    public virtual PendingMutations Inject(MutantPlacer placer, SyntaxNode node) => this;
+    public virtual SyntaxNode Inject(MutantPlacer placer, SyntaxNode originalNode, SyntaxNode mutatedNode) => mutatedNode;
 }
+
+internal class PendingMutationsForExpression : PendingMutations
+{
+    public PendingMutationsForExpression(PendingMutations parent) : base(MutationControl.Expression, parent)
+    {
+    }
+
+    public override void StoreMutations(IList<Mutant> store)
+    {
+        Store.AddRange(store);
+    }
+
+    public override SyntaxNode Inject(MutantPlacer placer, SyntaxNode originalNode, SyntaxNode mutatedNode)
+    {
+        // we can only inject at expression level
+        if (originalNode is not ExpressionSyntax originalExpression || Store.Count == 0)
+        {
+            return mutatedNode;
+        }
+
+        var result = placer.PlaceExpressionControlledMutations(originalExpression, Store.Select(m => (m, (ExpressionSyntax)originalNode.InjectMutation(m.Mutation))));
+        Store.Clear();
+        return result;
+    }
+    }
 
 internal class PendingMutationsForMemberAccess: PendingMutations
 {
     public PendingMutationsForMemberAccess(PendingMutations parent) : base(MutationControl.MemberAccess, parent)
     {}
 
-    // mutations are never handled a this level
-    public override PendingMutations StoreMutations(IList<Mutant> store) => Parent?.StoreMutations(store);
+    public override SyntaxNode Inject(MutantPlacer placer, SyntaxNode originalNode, SyntaxNode mutatedNode) => mutatedNode;
+
+    // mutations are never handled at this level
+    public override void StoreMutations(IList<Mutant> store) => Parent?.StoreMutations(store);
 }
 
 internal class PendingMutationsForMember: PendingMutations
@@ -113,20 +147,18 @@ internal class PendingMutationsForMember: PendingMutations
     public PendingMutationsForMember(PendingMutations parent) : base(MutationControl.MemberAccess, parent)
     {}
 
-    // mutations are never handled a this level
-    public override PendingMutations StoreMutations(IList<Mutant> store) => Parent?.StoreMutations(store);
+    // mutations are never handled at this level
+    public override void StoreMutations(IList<Mutant> store) => Parent?.StoreMutations(store);
 }
 
 internal class PendingMutationsForStatement : PendingMutations
 {
     public PendingMutationsForStatement(PendingMutations parent) : base(MutationControl.Statement, parent)
-    {
-    }
+    {}
 
-    public override PendingMutations StoreMutations(IList<Mutant> store)
+    public override void StoreMutations(IList<Mutant> store)
     {
         Store.AddRange(store);
-        return this;
     }
 }
 
@@ -136,10 +168,9 @@ internal class PendingMutationsForBlock : PendingMutations
     {
     }
 
-    public override PendingMutations StoreMutations(IList<Mutant> store)
+    public override void StoreMutations(IList<Mutant> store)
     {
         Store.AddRange(store);
-        return this;
     }
 }
 
@@ -158,7 +189,6 @@ internal class MutationContext
     // pending mutation stacks. An entry is pushed in the stack when entering a member or function and popping it when leaving
     private readonly Stack<MutationStore> _pendingMutationsStore = new();
     private PendingMutations _pendingMutations;
-    private int _memberAccessLength;
 
     /// <summary>
     /// Mutation context must be created once when starting a mutation process.
@@ -216,7 +246,7 @@ internal class MutationContext
     /// Find the appropriate node handler for the given node.
     /// </summary>
     /// <param name="node">handler for which to find an orchestrator.</param>
-    /// <returns>An handler for this node.</returns>
+    /// <returns>A handler for this node.</returns>
     public INodeMutator FindHandler(SyntaxNode node) => _mainOrchestrator.GetHandler(node);
 
     /// <summary>
@@ -237,7 +267,6 @@ internal class MutationContext
         switch (control)
         {
             case MutationControl.MemberAccess:
-                _memberAccessLength++;
                 return this;
             case MutationControl.Statement:
                 CurrentStore.EnterStatement();
@@ -261,15 +290,18 @@ internal class MutationContext
     /// <remarks>A call must match a previous call to <see cref="Enter(MutationControl)"/></remarks>
     public MutationContext Leave(MutationControl control)
     {
-        _pendingMutations = _pendingMutations.Leave();
+        var next = _pendingMutations.Leave();
+        if (next == null)
+        {
+
+        }
+        _pendingMutations = next;
         switch (control)
         {
             case MutationControl.MemberAccess:
-                _memberAccessLength--;
                 break;
             case MutationControl.Statement:
                 CurrentStore.LeaveStatement();
-                _memberAccessLength = 0;
                 break;
             case MutationControl.Block:
                 CurrentStore.LeaveBlock();
@@ -288,6 +320,10 @@ internal class MutationContext
     /// <param name="mutants"></param>
     public void AddExpressionLevel(IEnumerable<Mutant> mutants)
     {
+        if (!mutants.Any())
+        {
+            return;
+        }
         CurrentStore.StoreMutations(mutants, MutationControl.Expression);
         _pendingMutations.StoreMutations(mutants.ToList());
     }
@@ -320,9 +356,13 @@ internal class MutationContext
     /// <returns>A mutated node containing the mutations.</returns>
     /// <remarks>Do not inject mutation(s) if in a subexpression</remarks>
     public ExpressionSyntax InjectExpressionLevel(ExpressionSyntax mutatedNode, ExpressionSyntax sourceNode)
-        => _memberAccessLength > 0
+    {
+        return (ExpressionSyntax) _pendingMutations.Inject(_mainOrchestrator.Placer, sourceNode, mutatedNode);
+        /*
+        return _memberAccessLength > 0
             ? mutatedNode
-            : CurrentStore.PlaceExpressionMutations(mutatedNode, sourceNode.InjectMutation);
+            : CurrentStore.PlaceExpressionMutations(mutatedNode, sourceNode.InjectMutation);*/
+    }
 
     /// <summary>
     /// Inject a static context marker in the given block

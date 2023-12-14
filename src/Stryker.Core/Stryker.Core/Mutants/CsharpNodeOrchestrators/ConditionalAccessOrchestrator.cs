@@ -3,12 +3,10 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
-internal class ConditionalAccessOrchestrator: NodeSpecificOrchestrator<ConditionalAccessExpressionSyntax, ExpressionSyntax>
+internal class ConditionalAccessOrchestrator: ExpressionSpecificOrchestrator<ConditionalAccessExpressionSyntax>
 {
     /// <inheritdoc/>
     /// <remarks>Inject all pending mutations controlled with conditional operator(s).</remarks>
-    protected override ExpressionSyntax InjectMutations(ConditionalAccessExpressionSyntax sourceNode, ExpressionSyntax targetNode, SemanticModel semanticModel, MutationContext context) => context.InjectExpressionLevel(targetNode, sourceNode);
-
     protected override ExpressionSyntax OrchestrateChildrenMutation(ConditionalAccessExpressionSyntax node, SemanticModel semanticModel, MutationContext context)
     {
         var pendingMutations = (ExpressionSyntax)MutateSingleNode(node.Expression, semanticModel, context);

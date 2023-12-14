@@ -5,21 +5,15 @@ using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
-internal class InvocationExpressionOrchestrator: NodeSpecificOrchestrator<InvocationExpressionSyntax, ExpressionSyntax>
+internal class InvocationExpressionOrchestrator: ExpressionSpecificOrchestrator<InvocationExpressionSyntax>
 {
-    /// <inheritdoc/>
-    /// <remarks>Inject all pending mutations controlled with conditional operator(s).</remarks>
-    protected override ExpressionSyntax InjectMutations(InvocationExpressionSyntax sourceNode, ExpressionSyntax targetNode, SemanticModel semanticModel, MutationContext context) => context.InjectExpressionLevel(targetNode, sourceNode);
-
     protected override ExpressionSyntax OrchestrateChildrenMutation(InvocationExpressionSyntax node, SemanticModel semanticModel, MutationContext context)
     {
         var subContext = context.Enter(MutationControl.MemberAccess);
         var expressions = (ExpressionSyntax)MutateSingleNode(node.Expression, semanticModel, subContext);
         subContext.Leave(MutationControl.MemberAccess);
-        subContext = context.Enter(MutationControl.Member);
         var argumentListSyntax = (ArgumentListSyntax)MutateSingleNode(node.ArgumentList, semanticModel, subContext);
         var result = node.WithExpression(expressions).WithArgumentList(argumentListSyntax);
-        subContext.Leave(MutationControl.Member);
         return result;
     }
 

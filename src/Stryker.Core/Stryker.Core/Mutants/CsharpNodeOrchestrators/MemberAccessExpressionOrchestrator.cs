@@ -6,7 +6,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 internal class MemberAccessExpressionOrchestrator<T> : NodeSpecificOrchestrator<T, T> where T : ExpressionSyntax
 {
-    protected override bool CanHandle(T t) => t.Parent is MemberAccessExpressionSyntax;
+   // protected override bool CanHandle(T t) => t.Parent is MemberAccessExpressionSyntax || t.Parent is InvocationExpressionSyntax;
 
     protected override MutationContext PrepareContext(T node, MutationContext context) => context.Enter(MutationControl.MemberAccess);
 
