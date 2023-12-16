@@ -8,7 +8,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 /// <summary>
 /// Orchestrate mutations for syntax block
 /// </summary>
-internal class BlockOrchestrator : StatementSpecificOrchestrator<BlockSyntax>
+internal class BlockOrchestrator : NodeSpecificOrchestrator<BlockSyntax, StatementSyntax>
 {
     /// <inheritdoc/>
     /// <remarks>Ensure we return a block after mutants are injected.</remarks>

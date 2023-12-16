@@ -56,7 +56,7 @@ internal class MutationStore
     /// <param name="proposedMutations">mutation list</param>
     /// <param name="control">expected control level</param>
     /// <remarks>does not store mutation  if the current context does not permit injection, e.g. it is not possible to store mutation if not inside executable code.
-    /// rejected mutations are the logged. If this happen, this is probably an error from a mutator and/or the orchestration part of the logic.</remarks>
+    /// rejected mutations are the logged. If this happens, this is probably an error from a mutator and/or the orchestration part of the logic.</remarks>
     public void StoreMutations(IEnumerable<Mutant> proposedMutations, MutationControl control)
     {
         var mutations = proposedMutations.Where(m => m.ResultStatus == MutantStatus.Pending).ToList();

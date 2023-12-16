@@ -93,7 +93,6 @@ namespace Stryker.Core.Mutants
                 // ensure declaration are mutated at the block level
                 new LocalDeclarationOrchestrator(),
 
-                new ConditionalAccessOrchestrator(),
                 new InvocationExpressionOrchestrator(),
 
                 new MutateAtStatementLevelOrchestrator<AssignmentExpressionSyntax>(),

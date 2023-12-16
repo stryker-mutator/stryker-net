@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
-internal class AnonymousFunctionExpressionOrchestrator : NodeSpecificOrchestrator<AnonymousFunctionExpressionSyntax, AnonymousFunctionExpressionSyntax>
+internal class AnonymousFunctionExpressionOrchestrator : ExpressionSpecificOrchestrator<AnonymousFunctionExpressionSyntax>
 {
     /// <summary>
     /// Mutate the children, except the arrow expression body that may require conversion.
@@ -17,10 +17,11 @@ internal class AnonymousFunctionExpressionOrchestrator : NodeSpecificOrchestrato
         node.ReplaceNodes(node.ChildNodes().Where(child => child != node.ExpressionBody),
             (original, _) => MutateSingleNode(original, semanticModel, context));
 
-    protected override AnonymousFunctionExpressionSyntax InjectMutations(AnonymousFunctionExpressionSyntax sourceNode,
-        AnonymousFunctionExpressionSyntax targetNode, SemanticModel semanticModel, MutationContext context)
+    protected override ExpressionSyntax InjectMutations(AnonymousFunctionExpressionSyntax sourceNode,
+        ExpressionSyntax target, SemanticModel semanticModel, MutationContext context)
     {
-        targetNode = base.InjectMutations(sourceNode, targetNode, semanticModel, context);
+
+        var targetNode = (AnonymousFunctionExpressionSyntax)base.InjectMutations(sourceNode, target, semanticModel, context);
             
         if (targetNode.Block == null)
         {
@@ -38,7 +39,7 @@ internal class AnonymousFunctionExpressionOrchestrator : NodeSpecificOrchestrato
                     localContext.InjectBlockLevelExpressionMutation(targetNode.Block,
                         sourceNode.ExpressionBody, true)));
             }
-            localContext.Leave(MutationControl.Block);
+            context.Leave(MutationControl.Block);
             if (targetNode.Block == null)
             {
                 // we did not perform any conversion
