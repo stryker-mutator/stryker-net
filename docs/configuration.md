@@ -35,6 +35,28 @@ Example `stryker-config.yaml` file:
     project: 'ExampleProject.csproj'
 ```
 
+### Init
+
+To get started quickly with configuring stryker, use the command `dotnet stryker init`. 
+
+```
+dotnet stryker init
+```
+
+This will output a new json configuration file where the command is being run.
+
+To create a config file with a custom name, provide a config file name:
+
+```
+dotnet stryker init --config-file "custom.json"
+```
+
+To override the default values, provide a value using the regular cli options:
+
+```
+dotnet stryker init --mutation-level "advanced"
+```
+
 ### `config-file` &lt;`path`&gt;
 
 Default: `stryker-config.json`  
