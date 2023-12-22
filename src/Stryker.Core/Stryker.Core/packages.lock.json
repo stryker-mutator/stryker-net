@@ -14,11 +14,11 @@
       },
       "Buildalyzer": {
         "type": "Direct",
-        "requested": "[6.0.2, )",
-        "resolved": "6.0.2",
-        "contentHash": "h1E76GeASGjRktvj6BRuWA3RBIEFfhOiJVLIcRUWVdna7qDyE8bRnGm/U5113MljL51d8tUm///ACI4TwMIz0w==",
+        "requested": "[6.0.3, )",
+        "resolved": "6.0.3",
+        "contentHash": "cnm+fo6k8iQyUVWNo6g065MUQcItp4YPyStNsk9pHQtucn5paB1fwuKOmzMGYG02stkGD4pf17+dV1fLWShoXA==",
         "dependencies": {
-          "Buildalyzer.Logger": "6.0.2",
+          "Buildalyzer.Logger": "6.0.3",
           "MSBuild.StructuredLogger": "2.1.815",
           "Microsoft.Build": "17.0.1",
           "Microsoft.Build.Tasks.Core": "17.0.1",
@@ -270,8 +270,8 @@
       },
       "Buildalyzer.Logger": {
         "type": "Transitive",
-        "resolved": "6.0.2",
-        "contentHash": "VsJjxLzFx2eYDO/NuSBINzj1ttv4gFOJVMWJrZcQ8rYdxQKMFgcDY6TZz+tZRGoOYE7oNeSFCHPq7s6TQPNWHA=="
+        "resolved": "6.0.3",
+        "contentHash": "epzimz7ilenomBEIr1lqgL91n5qNXVapVQBKOQczIMDspwoZZuuMm4KPDj0khXPJoiBzeLdLRJSoPZwYPJZjHA=="
       },
       "FSharp.Core": {
         "type": "Transitive",
