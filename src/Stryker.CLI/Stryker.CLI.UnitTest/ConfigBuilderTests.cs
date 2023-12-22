@@ -65,7 +65,7 @@ namespace Stryker.CLI.UnitTest
             VerifyConfigFileDeserialized(Times.Once());
         }
 
-        private void VerifyConfigFileDeserialized(Times time) => _inputs.VerifyGet(x => x.BaselineProviderInput, time);
+        private void VerifyConfigFileDeserialized(Times time) => _inputs.VerifyGet(x => x.CoverageAnalysisInput, time);
 
         private static CommandLineApplication GetCommandLineApplication()
         {
