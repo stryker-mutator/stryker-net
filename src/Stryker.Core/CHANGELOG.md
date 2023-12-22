@@ -1,3 +1,17 @@
+# [3.13.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.12.0...stryker@3.13.0) (2023-12-22)
+
+
+### Bug Fixes
+
+* **ignore-methods:** Adjust IgnoredMethod filter to more consistent results ([#2689](https://github.com/stryker-mutator/stryker-net/issues/2689)) ([ceea82d](https://github.com/stryker-mutator/stryker-net/commit/ceea82d2e95f929455dee5595ca99300b4e0d544))
+
+
+### Features
+
+* Support compiler diagnostic options from msbuild ([#2777](https://github.com/stryker-mutator/stryker-net/issues/2777)) ([059f329](https://github.com/stryker-mutator/stryker-net/commit/059f32981c5a525289f65eacde92bac093a9546c)), closes [#2783](https://github.com/stryker-mutator/stryker-net/issues/2783)
+
+
+
 # [3.12.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.11.1...stryker@3.12.0) (2023-11-22)
 
 

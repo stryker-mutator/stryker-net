@@ -1,3 +1,17 @@
+# [3.13.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.12.0...dotnet-stryker@3.13.0) (2023-12-22)
+
+
+### Bug Fixes
+
+* **file config:** Since and Baseline are implicitly enabled when the config object exists in the config file ([#2805](https://github.com/stryker-mutator/stryker-net/issues/2805)) ([2809a67](https://github.com/stryker-mutator/stryker-net/commit/2809a67727f815f862e9931a60b153007a491008))
+
+
+### Features
+
+* **init:** Add stryker init command ([#2727](https://github.com/stryker-mutator/stryker-net/issues/2727)) ([ebe350e](https://github.com/stryker-mutator/stryker-net/commit/ebe350e7755948c4adb484d1ce610ffa26580f30))
+
+
+
 # [3.12.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.11.1...dotnet-stryker@3.12.0) (2023-11-22)
 
 
