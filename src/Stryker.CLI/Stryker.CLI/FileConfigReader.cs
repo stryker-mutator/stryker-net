@@ -21,13 +21,16 @@ namespace Stryker.CLI
             // As json values are first in line we can just overwrite all supplied inputs
             inputs.ConcurrencyInput.SuppliedInput = config.Concurrency;
 
-            inputs.SinceInput.SuppliedInput =
-                config.Since is not null &&
-                (config.Since.Enabled.HasValue && config.Since.Enabled.Value);
-
-            inputs.WithBaselineInput.SuppliedInput =
-                config.Baseline is not null &&
-                (config.Baseline.Enabled.HasValue && config.Baseline.Enabled.Value);
+            // Since is implicitly enabled when the object exists in the file config
+            if (config.Since is not null)
+            {
+                inputs.SinceInput.SuppliedInput = config.Since.Enabled ?? true;
+            }
+            // Baseline is implicitly enabled when the object exists in the file config
+            if (config.Baseline is not null)
+            {
+                inputs.WithBaselineInput.SuppliedInput = config.Baseline.Enabled ?? true;
+            }
 
             inputs.BaselineProviderInput.SuppliedInput = config.Baseline?.Provider;
             inputs.DiffIgnoreChangesInput.SuppliedInput = config.Since?.IgnoreChangesIn;
