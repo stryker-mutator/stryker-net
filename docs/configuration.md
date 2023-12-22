@@ -37,7 +37,7 @@ Example `stryker-config.yaml` file:
 
 ### Init
 
-To get started quickly with configuring stryker, use the command `dotnet stryker init`. 
+To get started quickly with configuring stryker, use the command:
 
 ```
 dotnet stryker init
