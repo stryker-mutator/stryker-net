@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using System.Threading;
 
 namespace Stryker.Core.Mutators
 {
@@ -17,9 +18,12 @@ namespace Stryker.Core.Mutators
                 var replacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.CoalesceExpression, node.Right, node.Left); // Flip left and right
                 replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithTriviaFrom(node.OperatorToken).WithLeadingTrivia(node.Left.GetTrailingTrivia()));
 
+                var symbol = semanticModel.GetSymbolInfo(node.Right).Symbol;
+                var rightSideNullable = symbol.ContainingType.NullableAnnotation == NullableAnnotation.None;
+
                 // Do not create "left to right", or "remove right" mutants when the right
                 // hand side is a throw expression, as they result in invalid code.
-                if (!node.Right.IsKind(SyntaxKind.ThrowExpression))
+                if (!node.Right.IsKind(SyntaxKind.ThrowExpression) && rightSideNullable)
                 {
                     yield return new Mutation
                     {
