@@ -61,7 +61,7 @@ namespace Stryker.CLI.UnitTest
 
 Stryker mutator for .Net
 
-Usage: Stryker [options]
+Usage: Stryker [command] [options]
 
 Options:";
                 sw.ToString().ShouldStartWith(expected);

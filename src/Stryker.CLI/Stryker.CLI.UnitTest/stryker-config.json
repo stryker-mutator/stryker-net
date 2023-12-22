@@ -2,10 +2,6 @@
   "stryker-config": {
     "project-info": {
       "module": "cli"
-    },
-    "baseline": {
-      "enabled": false,
-      "fallback-version": "master"
     }
   }
 }

@@ -194,6 +194,11 @@ stages:
       parameters:
         testName: 'windows-netframework'
         workingDirectory: 'integrationtest/TargetProjects/NetFramework/FullFrameworkApp.Test'
+    - template: pipeline-templates/run-integration-test-steps.yml
+      parameters:
+        testName: 'windows-initcommand'
+        workingDirectory: 'integrationtest/TargetProjects'
+        strykerCommands: init --config-file "InitCommand/test-config.json" -p "TestProject.csproj"
 
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
@@ -245,6 +250,11 @@ stages:
       parameters:
         testName: 'macos-netcore'
         workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
+    - template: pipeline-templates/run-integration-test-steps.yml
+      parameters:
+        testName: 'macos-init-command'
+        workingDirectory: 'integrationtest/TargetProjects'
+        strykerCommands: init --config-file "InitCommand/test-config.json" -p "TestProject.csproj"
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:
