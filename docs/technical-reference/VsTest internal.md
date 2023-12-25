@@ -39,3 +39,12 @@ Note that this also applies to session cancelled by the timeout logic. When this
 session will still wait for the end session event
 - Providing an incorrect TestSettings file will result in nothing happening, without any error report. This happens if the file is corrupted as well as with a negative timeouts
 - Some settings will be reported in the logs as not recognized or obsolete, but they are still needed by some test adapters
+- The error message `process failed to connect to vstest.console` might indicate that the OS is providing a different version of OpenSSL
+  than what VsTest expects. F. ex. Arch provides OpenSSL3, whereas VsTest expects OpenSSL1. A more
+  detailed stack trace might reveal the error `No usable version of libssl was found`. In this case
+  you can try the following workaround: 
+  - Install `openssl-1.1` (on Arch: `yay -S openssl1.1`). This does not change the default openssl (currently 3.2). It does not require any linking of files!
+  - Add the following environment variable before running stryker:
+    `CLR_OPENSSL_VERSION_OVERRIDE=1.1`.
+  - Example usage: `alias stryker='export CLR_OPENSSL_VERSION_OVERRIDE=1.1 && dotnet stryker'`
+  - For details see the following Github issue: https://github.com/stryker-mutator/stryker-net/issues/2799
