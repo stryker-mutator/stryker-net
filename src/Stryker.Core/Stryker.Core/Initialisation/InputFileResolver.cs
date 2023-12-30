@@ -152,7 +152,7 @@ namespace Stryker.Core.Initialisation
                     var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
                     _logger.LogDebug("Analyzing {projectFilePath}", projectLogName);
                     var buildResult = project.Build();
-                    var projectAnalyzerResult = buildResult.Results.FirstOrDefault();
+                    var projectAnalyzerResult = buildResult.Results.FirstOrDefault(a => a.TargetFramework is not null);
                     if (projectAnalyzerResult is not null)
                     {
                         projectsAnalyzerResults.Add(projectAnalyzerResult);
@@ -386,7 +386,7 @@ namespace Stryker.Core.Initialisation
                     _foldersToExclude,
                     _logger,
                     FileSystem),
-                _ => throw new NotSupportedException()
+                _ => throw new NotSupportedException($"Language not supported: {language}")
             };
     }
 }
