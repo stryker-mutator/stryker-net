@@ -18,8 +18,8 @@ namespace Stryker.Core.Mutators
                 var replacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.CoalesceExpression, node.Right, node.Left); // Flip left and right
                 replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithTriviaFrom(node.OperatorToken).WithLeadingTrivia(node.Left.GetTrailingTrivia()));
 
-                var symbol = semanticModel.GetSymbolInfo(node.Right).Symbol;
-                var rightSideNullable = symbol.ContainingType.NullableAnnotation == NullableAnnotation.None;
+                var nullableType = IsNullableType(node.Right, semanticModel);
+
 
                 // Do not create "left to right", or "remove right" mutants when the right
                 // hand side is a throw expression, as they result in invalid code.
@@ -50,6 +50,16 @@ namespace Stryker.Core.Mutators
                     Type = Mutator.NullCoalescing,
                 };
             }
+        }
+
+        private bool IsNullableType(ExpressionSyntax expression, SemanticModel semanticModel)
+        {
+            var typeInfo = semanticModel.GetTypeInfo(expression);
+            if (typeInfo.Type is INamedTypeSymbol namedType && namedType.IsReferenceType)
+            {
+                return namedType.IsReferenceType && namedType.NullableAnnotation == NullableAnnotation.Annotated;
+            }
+            return false;
         }
     }
 }
