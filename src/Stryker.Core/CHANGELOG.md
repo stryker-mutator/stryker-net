@@ -1,3 +1,12 @@
+## [3.13.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.13.0...stryker@3.13.1) (2024-01-05)
+
+
+### Bug Fixes
+
+* Make sure to select valid IAnalyzerResult from Buildalyzer ([#2811](https://github.com/stryker-mutator/stryker-net/issues/2811)) ([70adc60](https://github.com/stryker-mutator/stryker-net/commit/70adc60caad193ed6942ee970ea5373003ade4e4)), closes [#1900](https://github.com/stryker-mutator/stryker-net/issues/1900)
+
+
+
 # [3.13.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.12.0...stryker@3.13.0) (2023-12-22)
 
 
