@@ -20,13 +20,13 @@
       },
       "xunit": {
         "type": "Direct",
-        "requested": "[2.6.4, )",
-        "resolved": "2.6.4",
-        "contentHash": "N7kgaWrx32hTy4140XsAlTYKgs/NQgMwnjPLSvAp/Qk+WAiniRBiY+Y6XGB+T7lx2UZSEDeDeK5x06HTz6LejA==",
+        "requested": "[2.6.5, )",
+        "resolved": "2.6.5",
+        "contentHash": "iPSL63kw21BdSsdA79bvbVNvyn17DWI4D6VbgNxYtvzgViKrmbRLr8sWPxSlc4AvnofEuFfAi/rrLSzSRomwCg==",
         "dependencies": {
-          "xunit.analyzers": "1.8.0",
-          "xunit.assert": "2.6.4",
-          "xunit.core": "[2.6.4]"
+          "xunit.analyzers": "1.9.0",
+          "xunit.assert": "2.6.5",
+          "xunit.core": "[2.6.5]"
         }
       },
       "xunit.runner.visualstudio": {
@@ -981,30 +981,30 @@
       },
       "xunit.analyzers": {
         "type": "Transitive",
-        "resolved": "1.8.0",
-        "contentHash": "ORSFwaO6HCB9/7UbXc6+kg6Ax2gu/CIdGlAVCsDbhkliB9Z3U8EvIfZuZehFVwfXolqa5cCTvskGgLmU9uJFMw=="
+        "resolved": "1.9.0",
+        "contentHash": "02ucFDty6Y9BBT5c35YueFfbM3uEzeFdRvlNtAPhZVUkGUlhl3jsV2XesgTj986/PZXIjpVoc2D8ee6p1ha/Fw=="
       },
       "xunit.assert": {
         "type": "Transitive",
-        "resolved": "2.6.4",
-        "contentHash": "kM/TuJl7903/9RvqdMaFwpaDZyxb+2S4g7SXSyYmNBm97H+t425xh6xSZjnxijiTAEkgo4t7sgKlKKnWmaj/HQ==",
+        "resolved": "2.6.5",
+        "contentHash": "gb5uv7vjBFz7nhEa6aXK5sVJwsG/88xf8DN5wqK0ejCDsDybqICyNJIj+eoD43xbmdPZryNDPpeWDCfiKI/bnA==",
         "dependencies": {
           "NETStandard.Library": "1.6.1"
         }
       },
       "xunit.core": {
         "type": "Transitive",
-        "resolved": "2.6.4",
-        "contentHash": "pQ0fAusP+PbaaLIhO55zCPrncFRxrjzPV3OlKxDdS4K9azyXd1mShS0J1rG3DK2/zBwmDnZ9wyZlZy9gX9dHEg==",
+        "resolved": "2.6.5",
+        "contentHash": "hpdMnSNlx4ejaxpaIAFaqHt4q9ZCnzZLnURrSa5CzYXxHhIQbV8/0yXLjRdublhreonGXVMmsQ1KHlS9WbfpCw==",
         "dependencies": {
-          "xunit.extensibility.core": "[2.6.4]",
-          "xunit.extensibility.execution": "[2.6.4]"
+          "xunit.extensibility.core": "[2.6.5]",
+          "xunit.extensibility.execution": "[2.6.5]"
         }
       },
       "xunit.extensibility.core": {
         "type": "Transitive",
-        "resolved": "2.6.4",
-        "contentHash": "bThauxbB80/pxakJQ5z94MXhsnmHOdhMKXyTPJtzQ+tXrTLua7v+e84JorguQtgNFclmMQ02wh/eshobNmG3aQ==",
+        "resolved": "2.6.5",
+        "contentHash": "dSGRkVxzH27XaL83+Z9kNPllqgsmsiPayXw+0weCGsrZQxfSCBNNkSb9nYUpkVoEBCUviXOmo1tfApqhgqTjog==",
         "dependencies": {
           "NETStandard.Library": "1.6.1",
           "xunit.abstractions": "2.0.3"
@@ -1012,11 +1012,11 @@
       },
       "xunit.extensibility.execution": {
         "type": "Transitive",
-        "resolved": "2.6.4",
-        "contentHash": "fqyq9RBYdsQDNzrhTGlTP3iL3XTboGvD62IxK2cXQcWEgl++6zsHoEr6NDKs1Jn9hiUGT3F6x8IUcc635uuloA==",
+        "resolved": "2.6.5",
+        "contentHash": "jUMr88e0lSqDq8Vut0XVqx7plFg91QsKW/rX6gaVnJL6Z19LmNSDmyqd7cg6HQGfboAmyoFZyydA4Kcgouu1BA==",
         "dependencies": {
           "NETStandard.Library": "1.6.1",
-          "xunit.extensibility.core": "[2.6.4]"
+          "xunit.extensibility.core": "[2.6.5]"
         }
       },
       "extraproject": {
