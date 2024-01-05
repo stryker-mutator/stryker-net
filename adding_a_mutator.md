@@ -11,15 +11,10 @@ These are the important information to bear in mind when designing a new mutator
 	1. This greatly simplifies the design and implementation of mutators
 	2. On the other hand, one must not design a mutator based on text transformation logic.
 > The syntax tree is an object representation of the source files where each syntax element (for example a statement) is described through object instances which classes match the syntax type.
-> 
-2. Stryker.Net **not does use the semantic model** of the syntax tree.
-	1. This improves performance during mutation.
-	2. On the other hand, one must not design a mutator relying on type information (e.g. Linq / Threading dedicated mutators).
-> The semantic model is an improved version of the syntax tree which adds the type information to the syntax elements.
- 3. Stryker.Net visits every syntax element; for example, a method invocation is first visited as a whole (e.g., `client.ChangeName(firstName, lastName)`), then  each element:object (`client`), method name (`ChangeName`) then each parameter(`firstname'` and `lastname`). _Note that if parameters are expressions, those are visited in a similar (and recursive) fashion._ 
-4. Each file is mutated separately.
+2. Stryker.Net visits every syntax element; for example, a method invocation is first visited as a whole (e.g., `client.ChangeName(firstName, lastName)`), then  each element:object (`client`), method name (`ChangeName`) then each parameter(`firstname'` and `lastname`). _Note that if parameters are expressions, those are visited in a similar (and recursive) fashion._ 
+3. Each file is mutated separately.
 	1. One cannot design a mutator exploiting multiple files at once.
-5. Stryker.Net takes care of roll backing in case of compilation errors
+4. Stryker.Net takes care of roll backing in case of compilation errors
 	1. Hence, mutators do not need to ensure mutation properly compiles
 	2. On the other hand, mutator should avoid triggering ambiguous errors, as those lead to rolling back many mutations.
 
