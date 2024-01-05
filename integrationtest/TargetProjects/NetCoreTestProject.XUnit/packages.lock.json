@@ -1013,7 +1013,7 @@
       "targetproject": {
         "type": "Project",
         "dependencies": {
-          "Library": "[1.0.0, )"
+          "Library": "[3.13.0, )"
         }
       }
     }
