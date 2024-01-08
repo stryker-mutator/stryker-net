@@ -40,7 +40,7 @@ dotnet stryker --reporter "dashboard"
 The following options are relevant when using the dashboard reporter:
 - [Api key](./configuration.md#dashboard-api-key-string) - required
 - [Project name](./configuration.md#project-infoname-string) - required (unless using SourceLink)
-- [Project version](./configuration.md#project-infoversion-string) - required (unless using SourceLink)
+- [Project version](./configuration.md#project-infoversion-committish) - required (unless using SourceLink)
 - [Project module](./configuration.md#project-infomodule-string) - optional
 
 ### Use SourceLink for dashboard reporter​
