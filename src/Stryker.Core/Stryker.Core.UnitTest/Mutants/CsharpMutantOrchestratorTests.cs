@@ -508,6 +508,20 @@ private bool Out(int test, Func<int, bool>lambda )
         }
 
         [Fact]
+        public void ShouldMutateSuppressNullableWarningExpressionOnArrayDeclaration()
+        {
+            var source =
+                @"public static void Foo(){
+var employeePerson = group.First().Entitlement!.Employee.Person;}";
+            var expected =
+                @"public static void Foo(){if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+var employeePerson = (StrykerNamespace.MutantControl.IsActive(1)?group.FirstOrDefault().Entitlement!.Employee.Person:group.First().Entitlement!.Employee.Person);}}";
+
+            ShouldMutateSourceInClassToExpected(source, expected);
+        }
+
+
+        [Fact]
         public void ShouldMutateChainedInvocation()
         {
             var source =
