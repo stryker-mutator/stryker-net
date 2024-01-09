@@ -1,6 +1,7 @@
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using Shouldly;
+using Stryker.CLI.CommandLineConfig;
 using Stryker.Core.Options;
 using Xunit;
 
@@ -13,7 +14,7 @@ namespace Stryker.CLI.UnitTest
             Name = "Stryker",
             FullName = "Stryker: Stryker mutator for .Net",
             Description = "Stryker mutator for .Net",
-            ExtendedHelpText = "Welcome to Stryker for .Net! Run dotnet stryker to kick off a mutation test run"
+            ExtendedHelpText = "Welcome to Stryker for .Net! Run dotnet stryker to kick off a mutation test run or run dotnet stryker init to start configuring your project."
         };
         private readonly IStrykerInputs _inputs = new StrykerInputs();
         private readonly CommandLineConfigReader _target = new();

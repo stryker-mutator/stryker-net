@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using TargetProject;
 
 namespace NetCoreTestProject.NUnit
@@ -15,8 +16,8 @@ namespace NetCoreTestProject.NUnit
         [TestCase(32, "Yes")]
         public void TestAgeExplicit(int age, string expired)
         {
-            var sut = new Student{Age = age};
-            Assert.AreEqual(expired, sut.IsExpired());
+            var sut = new Student { Age = age };
+            ClassicAssert.AreEqual(expired, sut.IsExpired());
         }
 
         // indirect
@@ -31,9 +32,9 @@ namespace NetCoreTestProject.NUnit
         private static IEnumerable<Student> ObjectSource()
         {
             Console.WriteLine("ObjectSource:32");
-            yield return new Student {Age = 32};
+            yield return new Student { Age = 32 };
             Console.WriteLine("ObjectSource:42");
-            yield return new Student {Age = 42};
+            yield return new Student { Age = 42 };
         }
 
         [Test]
@@ -41,17 +42,17 @@ namespace NetCoreTestProject.NUnit
         public void TestAgeIndirectTuple((int, string) test)
         {
             var (AgeAsync, ExpiredAsync) = test;
-            var sut = new Student{Age = AgeAsync};
-            Assert.AreEqual(ExpiredAsync, sut.IsExpired());
+            var sut = new Student { Age = AgeAsync };
+            ClassicAssert.AreEqual(ExpiredAsync, sut.IsExpired());
         }
 
         [Test]
         [TestCaseSource(nameof(ObjectSource))]
         // all test cases refer to the same test
-        public void TestAgeIndirectObject(Student sut)  
+        public void TestAgeIndirectObject(Student sut)
         {
             Console.WriteLine($"ObjectSource test:{sut.Age}");
-            Assert.AreEqual(sut.Age>29 ?"Yes" : "No", sut.IsExpired());
+            ClassicAssert.AreEqual(sut.Age > 29 ? "Yes" : "No", sut.IsExpired());
         }
 
         private static IEnumerable<int> RandomSource()
@@ -69,8 +70,8 @@ namespace NetCoreTestProject.NUnit
         [Ignore("Run explicitly")]
         public void TestRandom(int x)
         {
-            var sut = new Student{Age = 32};
-            Assert.AreEqual("Yes", sut.IsExpired());
+            var sut = new Student { Age = 32 };
+            ClassicAssert.AreEqual("Yes", sut.IsExpired());
         }
     }
 }

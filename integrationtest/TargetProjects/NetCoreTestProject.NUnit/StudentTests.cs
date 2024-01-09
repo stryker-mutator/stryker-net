@@ -1,4 +1,5 @@
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using TargetProject;
 
 namespace NetCoreTestProject.NUnit
@@ -13,10 +14,12 @@ namespace NetCoreTestProject.NUnit
         [Test]
         public void Test1()
         {
-            var target = new Student();
-            target.Age = 29;
+            var target = new Student
+            {
+                Age = 29
+            };
             var result = target.IsExpired();
-            Assert.AreEqual("No", result);
+            ClassicAssert.AreEqual("No", result);
         }
     }
 }
