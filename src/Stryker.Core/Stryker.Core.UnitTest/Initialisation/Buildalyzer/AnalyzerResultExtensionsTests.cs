@@ -59,4 +59,22 @@ public class AnalyzerResultExtensionsTests
         diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0001", ReportDiagnostic.Warn));
         diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0002", ReportDiagnostic.Warn));
     }
+
+    [Fact]
+    public void GetDiagnosticOptions_DealWithConflicts()
+    {
+        // Arrange
+        var analyzerResult = Mock.Of<IAnalyzerResult>();
+        Mock.Get(analyzerResult)
+            .SetupGet(g => g.Properties)
+            .Returns(new Dictionary<string, string> { { "WarningsNotAsErrors", "EXTEXP0001;EXTEXP0002" },{ "WarningsAsErrors", "EXTEXP0002" },
+                { "NoWarn", "EXTEXP0001" }});
+
+        // Act
+        var diagOptions = IAnalyzerResultExtensions.GetDiagnosticOptions(analyzerResult);
+
+        // Assert
+        diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0001", ReportDiagnostic.Suppress));
+        diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0002", ReportDiagnostic.Warn));
+    }
 }
