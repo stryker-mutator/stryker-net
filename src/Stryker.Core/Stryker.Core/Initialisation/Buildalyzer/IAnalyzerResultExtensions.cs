@@ -183,7 +183,16 @@ public static class IAnalyzerResultExtensions
         var warningsNotAsErrorsString = analyzerResult.GetPropertyOrDefault("WarningsNotAsErrors");
         var warningsNotAsErrors = warningsNotAsErrorsString is not null ? warningsNotAsErrorsString.Split(";").Where(x => !string.IsNullOrWhiteSpace(x)).ToDictionary(x => x, x => ReportDiagnostic.Warn) : new Dictionary<string, ReportDiagnostic>();
 
-        var diagnosticOptions = noWarn.Concat(warningsAsErrors).Concat(warningsNotAsErrors);
+        // merge settings,
+        var diagnosticOptions = new Dictionary<string, ReportDiagnostic>(warningsAsErrors);
+        foreach (var item in warningsNotAsErrors)
+        {
+            diagnosticOptions[item.Key] = item.Value;
+        }
+        foreach (var item in noWarn)
+        {
+            diagnosticOptions[item.Key] = item.Value;
+        }
         return diagnosticOptions.ToImmutableDictionary();
     }
 
