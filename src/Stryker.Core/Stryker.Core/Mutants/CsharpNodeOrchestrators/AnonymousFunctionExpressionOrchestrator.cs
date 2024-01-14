@@ -26,20 +26,20 @@ internal class AnonymousFunctionExpressionOrchestrator : ExpressionSpecificOrche
         if (targetNode.Block == null)
         {
             // we will now mutate the expression body
-            var localContext = context.Enter(MutationControl.Block);
-            targetNode = targetNode.ReplaceNode(targetNode.ExpressionBody,
+            var localContext = context.Enter(MutationControl.Member);
+            targetNode = targetNode.ReplaceNode(targetNode.ExpressionBody!,
                 MutateSingleNode(sourceNode.ExpressionBody, semanticModel, localContext));
-            if (localContext.HasStatementLevelMutant)
+            if (localContext.HasLeftOverMutations)
             {
                 // this is an expression body method
                 // we need to convert it to expression body form
                 targetNode = MutantPlacer.ConvertExpressionToBody(targetNode);
                 // we need to inject pending block (and statement) level mutations
-                targetNode = targetNode.WithBody(SyntaxFactory.Block(
+                targetNode = targetNode.WithBody(
                     localContext.InjectBlockLevelExpressionMutation(targetNode.Block,
-                        sourceNode.ExpressionBody, true)));
+                        sourceNode.ExpressionBody, true));
             }
-            context.Leave(MutationControl.Block);
+            context.Leave();
             if (targetNode.Block == null)
             {
                 // we did not perform any conversion

@@ -102,7 +102,7 @@ namespace Stryker.Core.Helpers
         /// </summary>
         /// <param name="syntax">syntax to convert</param>
         /// <returns>A block statement.</returns>
-        public static BlockSyntax AsBlock(this StatementSyntax syntax) => syntax is BlockSyntax block ? block : SyntaxFactory.Block(syntax);
+        public static BlockSyntax AsBlock(this StatementSyntax syntax) => syntax as BlockSyntax ?? SyntaxFactory.Block(syntax);
      
 
         /// <summary>

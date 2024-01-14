@@ -12,7 +12,7 @@ internal class StatementSpecificOrchestrator<T> : NodeSpecificOrchestrator<T, St
 {
     protected override MutationContext PrepareContext(T node, MutationContext context) => base.PrepareContext(node, context).Enter(MutationControl.Statement);
 
-    protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave(MutationControl.Statement));
+    protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave());
 
     /// <inheritdoc/>
     /// <remarks>Inject pending mutations that are controlled with 'if' statements.</remarks>

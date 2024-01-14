@@ -9,7 +9,7 @@ internal class LocalFunctionStatementOrchestrator : NodeSpecificOrchestrator<Loc
 {
     protected override MutationContext PrepareContext(LocalFunctionStatementSyntax node, MutationContext context) => base.PrepareContext(node, context.Enter(MutationControl.Member));
 
-    protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave(MutationControl.Member));
+    protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave());
 
     /// <summary>
     /// Mutate the children, except the arrow expression body that may require conversion.
@@ -32,15 +32,15 @@ internal class LocalFunctionStatementOrchestrator : NodeSpecificOrchestrator<Loc
             // we will now mutate the expression body
             targetNode = targetNode.ReplaceNode(targetNode.ExpressionBody!,
                 MutateSingleNode(sourceNode.ExpressionBody, semanticModel, context));
-            if (context.HasStatementLevelMutant)
+            if (context.HasLeftOverMutations)
             {
                 // this is an expression body method
                 // we need to convert it to expression body form
                 targetNode = MutantPlacer.ConvertExpressionToBody(targetNode);
                 // we need to inject pending block (and statement) level mutations
-                targetNode = targetNode.WithBody(SyntaxFactory.Block(
+                targetNode = targetNode.WithBody(
                     context.InjectBlockLevelExpressionMutation(targetNode.Body,
-                        sourceNode.ExpressionBody!.Expression, true)));
+                        sourceNode.ExpressionBody!.Expression, true));
             }
             if (targetNode.Body == null)
             {

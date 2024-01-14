@@ -15,7 +15,7 @@ internal class BaseMethodDeclarationOrchestrator<T> : NodeSpecificOrchestrator<T
     protected override MutationContext PrepareContext(T node, MutationContext context)
         => base.PrepareContext(node, context.Enter(MutationControl.Member));
 
-    protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave(MutationControl.Member));
+    protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave());
 
     /// <inheritdoc/>
     /// Inject mutations and convert expression body to block body if required.
@@ -28,12 +28,12 @@ internal class BaseMethodDeclarationOrchestrator<T> : NodeSpecificOrchestrator<T
         {
             if (targetNode.ExpressionBody == null)
             {
-                // only a definition (eg interface)
+                // only a definition (e.g. interface)
                 return targetNode;
             }
 
             // this is an expression body method
-            if (!context.HasStatementLevelMutant)
+            if (!context.HasLeftOverMutations)
             {
                 // there is no statement or block level mutant, so the method control flow is not changed by mutations
                 // there is no need to change the method in any may
@@ -44,8 +44,7 @@ internal class BaseMethodDeclarationOrchestrator<T> : NodeSpecificOrchestrator<T
             targetNode = MutantPlacer.ConvertExpressionToBody(targetNode);
 
             // we need to inject pending block (and statement) level mutations
-            targetNode = targetNode.WithBody(
-                SyntaxFactory.Block(context.InjectBlockLevelExpressionMutation(targetNode.Body, sourceNode.ExpressionBody?.Expression, sourceNode.NeedsReturn())));
+            targetNode = targetNode.WithBody(context.InjectBlockLevelExpressionMutation(targetNode.Body, sourceNode.ExpressionBody?.Expression, sourceNode.NeedsReturn()));
         }
         else
         {

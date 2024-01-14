@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
@@ -515,7 +516,7 @@ private bool Out(int test, Func<int, bool>lambda )
 var employeePerson = group.First().Entitlement!.Employee.Person;}";
             var expected =
                 @"public static void Foo(){if(StrykerNamespace.MutantControl.IsActive(0)){}else{
-var employeePerson = (StrykerNamespace.MutantControl.IsActive(1)?group.FirstOrDefault().Entitlement!.Employee.Person:group.First().Entitlement!.Employee.Person);}}";
+var employeePerson = (StrykerNamespace.MutantControl.IsActive(1)?group.FirstOrDefault():group.First()).Entitlement!.Employee.Person;}}";
 
             ShouldMutateSourceInClassToExpected(source, expected);
         }

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Mono.Cecil.Cil;
 using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
@@ -29,13 +30,11 @@ internal class InvocationExpressionOrchestrator: NodeSpecificOrchestrator<Invoca
     protected override MutationContext PrepareContext(InvocationExpressionSyntax node, MutationContext context)
     {
         // invocation mutations cannot be mutated within an invocation chain
-        context = context.Enter((node?.Parent is InvocationExpressionSyntax or MemberAccessExpressionSyntax || node?.Parent is ConditionalAccessExpressionSyntax cond && cond.WhenNotNull == node) ? MutationControl.MemberAccess : MutationControl.Expression);
+        context = context.Enter(node?.Parent is InvocationExpressionSyntax or MemberAccessExpressionSyntax
+            || (node?.Parent is ConditionalAccessExpressionSyntax cond && cond.WhenNotNull == node)
+            || node?.Parent.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.SuppressNullableWarningExpression)==true ? MutationControl.MemberAccess : MutationControl.Expression);
         return base.PrepareContext(node, context);
     }
 
-    protected override void RestoreContext(MutationContext context)
-    {
-        base.RestoreContext(context);
-        context.Leave(MutationControl.Expression);
-    }
+    protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave());
 }

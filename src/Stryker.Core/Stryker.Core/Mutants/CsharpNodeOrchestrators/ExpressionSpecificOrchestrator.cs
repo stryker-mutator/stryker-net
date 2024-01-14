@@ -33,5 +33,5 @@ internal class ExpressionSpecificOrchestrator<T> : NodeSpecificOrchestrator<T, E
 
     protected override MutationContext PrepareContext(T node, MutationContext context) => base.PrepareContext(node, context.Enter(MutationControl.Expression));
 
-    protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave(MutationControl.Expression));
+    protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave());
 }

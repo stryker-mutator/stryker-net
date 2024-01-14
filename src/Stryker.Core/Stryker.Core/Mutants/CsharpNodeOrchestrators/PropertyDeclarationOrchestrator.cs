@@ -9,7 +9,7 @@ internal class PropertyDeclarationOrchestrator : NodeSpecificOrchestrator<Proper
 {
     protected override MutationContext PrepareContext(PropertyDeclarationSyntax node, MutationContext context) => base.PrepareContext(node, context.Enter(MutationControl.Member));
 
-    protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave(MutationControl.Member));
+    protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave());
 
     protected override BasePropertyDeclarationSyntax OrchestrateChildrenMutation(PropertyDeclarationSyntax node, SemanticModel semanticModel, MutationContext context)
     {
@@ -34,7 +34,7 @@ internal class PropertyDeclarationOrchestrator : NodeSpecificOrchestrator<Proper
         var result = base.InjectMutations(sourceNode, targetNode, semanticModel, context);
         var mutated = result as PropertyDeclarationSyntax;
         // if there is no statement level mutations or this is not an expression property declaration, we can stop
-        if (!context.HasStatementLevelMutant || mutated?.ExpressionBody == null)
+        if (!context.HasLeftOverMutations || mutated?.ExpressionBody == null)
         {
             return result;
         }
@@ -44,8 +44,7 @@ internal class PropertyDeclarationOrchestrator : NodeSpecificOrchestrator<Proper
         var getter = mutated.GetAccessor();
 
         // and inject pending mutations in the getter's body.
-        result = mutated.ReplaceNode(getter.Body!, SyntaxFactory.Block(context.InjectBlockLevelExpressionMutation(getter.Body, sourceNode.ExpressionBody!.Expression, true)))
-            .WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.None));
+        result = mutated.ReplaceNode(getter.Body!, context.InjectBlockLevelExpressionMutation(getter.Body, sourceNode.ExpressionBody!.Expression, true));
         return result;
     }
 }

@@ -18,7 +18,7 @@ internal class AccessorSyntaxOrchestrator : NodeSpecificOrchestrator<AccessorDec
             return result;
         }
         // no mutations to inject
-        if (!context.HasStatementLevelMutant)
+        if (!context.HasLeftOverMutations)
         {
             if (result.Body != null && sourceNode.NeedsReturn())
             {
@@ -44,5 +44,5 @@ internal class AccessorSyntaxOrchestrator : NodeSpecificOrchestrator<AccessorDec
 
     protected override MutationContext PrepareContext(AccessorDeclarationSyntax node, MutationContext context) => base.PrepareContext(node, context.Enter(MutationControl.Member));
 
-    protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave(MutationControl.Member));
+    protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave());
 }

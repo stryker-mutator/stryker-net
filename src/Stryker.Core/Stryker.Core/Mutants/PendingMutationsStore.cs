@@ -22,7 +22,7 @@ internal class PendingMutationsStore
     {
         foreach (var item in (IEnumerable<PendingMutations>)_pendingMutations)
         {
-            if (item.Control == MutationControl.Statement)
+            if (item.Control == MutationControl.Member)
             {
                 return item.Store.Count > 0;
             }
@@ -58,15 +58,13 @@ internal class PendingMutationsStore
         }
     }
 
-    private PendingMutations FindControl(MutationControl control) => _pendingMutations.FirstOrDefault(item => item.Control == control);
+    private PendingMutations FindControl(MutationControl control) => control == MutationControl.Block ? FindEnclosingBlock() : _pendingMutations.FirstOrDefault(item => item.Control == control);
+
+    private PendingMutations FindEnclosingBlock() => _pendingMutations.FirstOrDefault(item => item.Control is MutationControl.Block or MutationControl.Member);
 
     public bool StoreMutationsAtDesiredLevel(IEnumerable<Mutant> store, MutationControl level)
     {
-        var controller = FindControl(level);
-        if ( controller == null && level == MutationControl.Statement)
-        {
-            controller = FindControl(MutationControl.Block);
-        }
+        var controller = FindControl(level) ?? FindEnclosingBlock();
 
         if (controller != null)
         {
@@ -83,24 +81,34 @@ internal class PendingMutationsStore
     }
 
     public ExpressionSyntax Inject(ExpressionSyntax mutatedNode, ExpressionSyntax sourceNode) =>
-        (ExpressionSyntax)FindControl(MutationControl.Expression)?.Inject(_mutantPlacer, sourceNode, mutatedNode);
+        (ExpressionSyntax)_pendingMutations.Peek().Inject(_mutantPlacer, sourceNode, mutatedNode);
 
     public StatementSyntax Inject(StatementSyntax mutatedNode, StatementSyntax sourceNode) =>
-        (StatementSyntax)FindControl(MutationControl.Statement).Inject(_mutantPlacer, sourceNode, mutatedNode);
+        (StatementSyntax)_pendingMutations.Peek().Inject(_mutantPlacer, sourceNode, mutatedNode);
 
     public BlockSyntax Inject(BlockSyntax mutatedNode, BlockSyntax sourceNode)
     {
         var control = (StatementSyntax)FindControl(MutationControl.Block)?.Inject(_mutantPlacer, sourceNode, mutatedNode);
-        return control is BlockSyntax syntax ? syntax : SyntaxFactory.Block(control);
+        return control as BlockSyntax ?? SyntaxFactory.Block(control);
     }
 
     public void Leave()
     {
-        if (_pendingMutations.Peek().Leave())
+        if (!_pendingMutations.Peek().Leave()) return;
+        // we need to store pending mutations at the higher level
+        var old = _pendingMutations.Pop();
+        if (_pendingMutations.Count > 0)
         {
-            // we need to store pending mutations at the higher level
-            var old = _pendingMutations.Pop();
             _pendingMutations.Peek().Transfer(old);
+        }
+        else
+        {
+            Logger.LogError("Some mutations failed to be inserted, they are dropped.");
+            foreach (var mutant in old.Store)
+            {
+                mutant.ResultStatus = MutantStatus.CompileError;
+                mutant.ResultStatusReason = "Could not be injected in code.";
+            }
         }
     }
 
@@ -110,14 +118,16 @@ internal class PendingMutationsStore
             ? (Func<ExpressionSyntax, StatementSyntax>)SyntaxFactory.ReturnStatement
             : SyntaxFactory.ExpressionStatement;
 
-        if (HasStatementLevelMutations())
+        var blockStore = _pendingMutations.Peek();
+        if (blockStore.Store.Count == 0)
         {
-            return CurrentStore.PlaceBlockMutations(
-                CurrentStore.PlaceStatementMutations(mutatedNode, m => wrapper(originalNode.InjectMutation(m))),
-                m => wrapper(originalNode.InjectMutation(m)));
+            return mutatedNode;
         }
 
-        return CurrentStore.PlaceBlockMutations(mutatedNode, m => wrapper(originalNode.InjectMutation(m)));
+        var result = _mutantPlacer.PlaceStatementControlledMutations(mutatedNode,
+            blockStore.Store.Select(m => (m, wrapper(originalNode.InjectMutation(m.Mutation)))));
+        blockStore.Store.Clear();
+        return result as BlockSyntax ?? SyntaxFactory.Block(result);
     }
 
     private class PendingMutations
@@ -219,7 +229,7 @@ internal class PendingMutationsStore
 
         public override SyntaxNode Inject(MutantPlacer placer, SyntaxNode originalNode, SyntaxNode mutatedNode)
         {
-            if (Store.Count == 0 || mutatedNode is not StatementSyntax node)
+            if (Store.Count == 0 || mutatedNode is not BlockSyntax node)
             {
                 return mutatedNode;
             }
