@@ -27,12 +27,29 @@ internal class InvocationExpressionOrchestrator: NodeSpecificOrchestrator<Invoca
         return context;
     }
 
+    // sadly, we need to parse recursively to find out if there is a member binding expression which cannot be preceded by a ternary operator
+    private bool HasAMemberBindingExpression(MemberAccessExpressionSyntax node) =>
+        node.Expression switch
+        {
+            MemberBindingExpressionSyntax => true,
+            MemberAccessExpressionSyntax memberAccess => HasAMemberBindingExpression(memberAccess),
+            InvocationExpressionSyntax invocation => HasAMemberBindingExpression(invocation),
+            _ => false
+        };
+
+    private bool HasAMemberBindingExpression(InvocationExpressionSyntax node) =>
+        node.Expression switch
+        {
+            MemberBindingExpressionSyntax => true,
+            MemberAccessExpressionSyntax memberAccess => HasAMemberBindingExpression(memberAccess),
+            InvocationExpressionSyntax invocation => HasAMemberBindingExpression(invocation),
+            _ => false
+        };
+
     protected override MutationContext PrepareContext(InvocationExpressionSyntax node, MutationContext context)
     {
         // invocation mutations cannot be mutated within an invocation chain
-        context = context.Enter(node?.Parent is InvocationExpressionSyntax or MemberAccessExpressionSyntax
-            || (node?.Parent is ConditionalAccessExpressionSyntax cond && cond.WhenNotNull == node)
-            || node?.Parent.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.SuppressNullableWarningExpression)==true ? MutationControl.MemberAccess : MutationControl.Expression);
+        context = context.Enter(HasAMemberBindingExpression(node) ? MutationControl.MemberAccess : MutationControl.Expression);
         return base.PrepareContext(node, context);
     }
 

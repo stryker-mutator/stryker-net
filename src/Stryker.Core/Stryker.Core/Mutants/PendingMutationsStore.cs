@@ -58,20 +58,18 @@ internal class PendingMutationsStore
         }
     }
 
-    private PendingMutations FindControl(MutationControl control) => control == MutationControl.Block ? FindEnclosingBlock() : _pendingMutations.FirstOrDefault(item => item.Control == control);
-
-    private PendingMutations FindEnclosingBlock() => _pendingMutations.FirstOrDefault(item => item.Control is MutationControl.Block or MutationControl.Member);
+    private PendingMutations FindControl(MutationControl control) => _pendingMutations.FirstOrDefault(item => item.Control >= control);
 
     public bool StoreMutationsAtDesiredLevel(IEnumerable<Mutant> store, MutationControl level)
     {
-        var controller = FindControl(level) ?? FindEnclosingBlock();
+        var controller = FindControl(level);
 
         if (controller != null)
         {
             controller.StoreMutations(store);
             return true;
         }
-        Logger.LogError($"There is not statement to control {store.Count()} mutations. They are dropped.");
+        Logger.LogError($"There is no structure to control {store.Count()} mutations. They are dropped.");
         foreach (var mutant in store)
         {
             mutant.ResultStatus = MutantStatus.CompileError;
