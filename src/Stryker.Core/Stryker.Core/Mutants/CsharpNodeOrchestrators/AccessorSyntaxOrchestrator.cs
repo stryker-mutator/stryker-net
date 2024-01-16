@@ -33,7 +33,7 @@ internal class AccessorSyntaxOrchestrator : NodeSpecificOrchestrator<AccessorDec
             result = MutantPlacer.ConvertExpressionToBody(result);
         }
 
-        var newBody = context.InjectBlockLevelExpressionMutation(result.Body, sourceNode.ExpressionBody!.Expression, sourceNode.NeedsReturn());
+        var newBody = context.InjectMutations(result.Body, sourceNode.ExpressionBody!.Expression, sourceNode.NeedsReturn());
         result = result.WithBody(newBody.AsBlock());
         if (sourceNode.NeedsReturn())
         {

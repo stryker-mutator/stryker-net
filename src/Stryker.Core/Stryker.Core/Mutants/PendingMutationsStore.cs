@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
@@ -18,43 +17,33 @@ internal class PendingMutationsStore
 
     public PendingMutationsStore(MutantPlacer mutantPlacer) => _mutantPlacer = mutantPlacer;
 
-    public bool HasStatementLevelMutations()
-    {
-        foreach (var item in (IEnumerable<PendingMutations>)_pendingMutations)
-        {
-            if (item.Control == MutationControl.Member)
-            {
-                return item.Store.Count > 0;
-            }
-        }
-
-        return false;
-    }
+    public bool HasPendingMutations() => _pendingMutations.Count > 0 && _pendingMutations.Peek().Store.Count>0;
 
     public void Enter(MutationControl control)
     {
-        if (_pendingMutations.Count > 0 && _pendingMutations.Peek().CanBeAggregatedWith(control))
+        if (_pendingMutations.Count > 0 && _pendingMutations.Peek().Aggregate(control))
         {
-            _pendingMutations.Peek().Aggregate();
             return;
         }
-        switch (control)
+        _pendingMutations.Push(new PendingMutations(control));
+    }
+    public void Leave()
+    {
+        if (!_pendingMutations.Peek().Leave()) return;
+        // we need to store pending mutations at the higher level
+        var old = _pendingMutations.Pop();
+        if (_pendingMutations.Count > 0)
         {
-            case MutationControl.MemberAccess:
-                _pendingMutations.Push(new PendingMutationsForMemberAccess());
-                break;
-            case MutationControl.Expression:
-                _pendingMutations.Push(new PendingMutationsForExpression());
-                break;
-            case MutationControl.Statement:
-                _pendingMutations.Push(new PendingMutationsForStatement());
-                break;
-            case MutationControl.Block:
-                _pendingMutations.Push(new PendingMutationsForBlock());
-                break;
-            case MutationControl.Member:
-                _pendingMutations.Push(new PendingMutationsForMember());
-                break;
+            _pendingMutations.Peek().StoreMutations(old.Store);
+        }
+        else
+        {
+            Logger.LogError("Some mutations failed to be inserted, they are dropped.");
+            foreach (var mutant in old.Store)
+            {
+                mutant.ResultStatus = MutantStatus.CompileError;
+                mutant.ResultStatusReason = "Could not be injected in code.";
+            }
         }
     }
 
@@ -78,39 +67,50 @@ internal class PendingMutationsStore
         return false;
     }
 
-    public ExpressionSyntax Inject(ExpressionSyntax mutatedNode, ExpressionSyntax sourceNode) =>
-        (ExpressionSyntax)_pendingMutations.Peek().Inject(_mutantPlacer, sourceNode, mutatedNode);
+    public bool StoreMutations(IEnumerable<Mutant> store)
+    {
+        if (_pendingMutations.Count == 0)
+        {
+            return false;
+        }
+        _pendingMutations.Peek().StoreMutations(store);
+        return true;
+    }
 
-    public StatementSyntax Inject(StatementSyntax mutatedNode, StatementSyntax sourceNode) =>
-        (StatementSyntax)_pendingMutations.Peek().Inject(_mutantPlacer, sourceNode, mutatedNode);
+    public ExpressionSyntax Inject(ExpressionSyntax mutatedNode, ExpressionSyntax sourceNode)
+    {
+        if (_pendingMutations.Peek().Control == MutationControl.MemberAccess)
+        {
+            // never inject at member access level, there is no known control structure
+            return mutatedNode;
+        }
+        var store = _pendingMutations.Peek().Store;
+        var result = _mutantPlacer.PlaceExpressionControlledMutations(mutatedNode,
+             store.Select(m => (m, sourceNode.InjectMutation(m.Mutation))));
+        store.Clear();
+        return result;
+    }
+
+    public StatementSyntax Inject(StatementSyntax mutatedNode, StatementSyntax sourceNode)
+    {
+        var store = _pendingMutations.Peek().Store;
+        var result = _mutantPlacer.PlaceStatementControlledMutations(mutatedNode,
+            store.Select(m => (m, sourceNode.InjectMutation(m.Mutation))));
+        store.Clear();
+        return result;
+    }
 
     public BlockSyntax Inject(BlockSyntax mutatedNode, BlockSyntax sourceNode)
     {
-        var control = (StatementSyntax)FindControl(MutationControl.Block)?.Inject(_mutantPlacer, sourceNode, mutatedNode);
-        return control as BlockSyntax ?? SyntaxFactory.Block(control);
+        var store = _pendingMutations.Peek().Store;
+        var result = _mutantPlacer.PlaceStatementControlledMutations(mutatedNode,
+            store.Select(m => (m, ((StatementSyntax)sourceNode).InjectMutation(m.Mutation))));
+        store.Clear();
+
+        return result as BlockSyntax ?? SyntaxFactory.Block(result);
     }
 
-    public void Leave()
-    {
-        if (!_pendingMutations.Peek().Leave()) return;
-        // we need to store pending mutations at the higher level
-        var old = _pendingMutations.Pop();
-        if (_pendingMutations.Count > 0)
-        {
-            _pendingMutations.Peek().Transfer(old);
-        }
-        else
-        {
-            Logger.LogError("Some mutations failed to be inserted, they are dropped.");
-            foreach (var mutant in old.Store)
-            {
-                mutant.ResultStatus = MutantStatus.CompileError;
-                mutant.ResultStatusReason = "Could not be injected in code.";
-            }
-        }
-    }
-
-    public BlockSyntax InjectExpressionsAsBlock(ExpressionSyntax originalNode, BlockSyntax mutatedNode, bool needReturn)
+    public BlockSyntax Inject(BlockSyntax mutatedNode, ExpressionSyntax originalNode, bool needReturn)
     {
         var wrapper = needReturn
             ? (Func<ExpressionSyntax, StatementSyntax>)SyntaxFactory.ReturnStatement
@@ -134,11 +134,14 @@ internal class PendingMutationsStore
         private int _depth;
         public readonly List<Mutant> Store = new();
 
-        protected PendingMutations(MutationControl control) => Control = control;
+        public PendingMutations(MutationControl control) => Control = control;
 
-        public bool CanBeAggregatedWith(MutationControl control) => Store.Count == 0 && Control == control;
-
-        public void Aggregate() => _depth++;
+        public bool Aggregate(MutationControl control)
+        {
+            if (Store.Count != 0 || Control != control) return false;
+            _depth++;
+            return true;
+        }
 
         public void StoreMutations(IEnumerable<Mutant> store) =>
             Store.AddRange(store.Where(m => m.ResultStatus == MutantStatus.Pending));
@@ -153,89 +156,6 @@ internal class PendingMutationsStore
 
             _depth--;
             return false;
-        }
-
-        public virtual SyntaxNode Inject(MutantPlacer placer, SyntaxNode originalNode, SyntaxNode mutatedNode) =>
-            mutatedNode;
-
-        public void Transfer(PendingMutations old) => Store.AddRange(old.Store);
-    }
-
-    private class PendingMutationsForExpression : PendingMutations
-    {
-        public PendingMutationsForExpression() : base(MutationControl.Expression)
-        {
-        }
-
-        public override SyntaxNode Inject(MutantPlacer placer, SyntaxNode originalNode, SyntaxNode mutatedNode)
-        {
-            // we can only inject at expression level
-            if (originalNode is not ExpressionSyntax originalExpression || Store.Count == 0)
-            {
-                return mutatedNode;
-            }
-
-            var result = placer.PlaceExpressionControlledMutations((ExpressionSyntax)mutatedNode,
-                Store.Select(m => (m, originalExpression.InjectMutation(m.Mutation))));
-            Store.Clear();
-            return result;
-        }
-    }
-
-    private class PendingMutationsForMemberAccess : PendingMutations
-    {
-        public PendingMutationsForMemberAccess() : base(MutationControl.MemberAccess)
-        {
-        }
-
-        public override SyntaxNode Inject(MutantPlacer placer, SyntaxNode originalNode, SyntaxNode mutatedNode) =>
-            mutatedNode;
-    }
-
-    private class PendingMutationsForMember : PendingMutations
-    {
-        public PendingMutationsForMember() : base(MutationControl.Member)
-        {
-        }
-    }
-
-    private class PendingMutationsForStatement : PendingMutations
-    {
-        public PendingMutationsForStatement() : base(MutationControl.Statement)
-        {
-        }
-
-        public override SyntaxNode Inject(MutantPlacer placer, SyntaxNode originalNode, SyntaxNode mutatedNode)
-        {
-            if (Store.Count == 0 || mutatedNode is not StatementSyntax node)
-            {
-                return mutatedNode;
-            }
-
-            var result = placer.PlaceStatementControlledMutations(node,
-                Store.Select(m => (m, ((StatementSyntax)originalNode).InjectMutation(m.Mutation))));
-            Store.Clear();
-            return result;
-        }
-    }
-
-    private class PendingMutationsForBlock : PendingMutations
-    {
-        public PendingMutationsForBlock() : base(MutationControl.Block)
-        {
-        }
-
-        public override SyntaxNode Inject(MutantPlacer placer, SyntaxNode originalNode, SyntaxNode mutatedNode)
-        {
-            if (Store.Count == 0 || mutatedNode is not BlockSyntax node)
-            {
-                return mutatedNode;
-            }
-
-            var result = placer.PlaceStatementControlledMutations(node,
-                Store.Select(m => (m, ((StatementSyntax)originalNode).InjectMutation(m.Mutation))));
-            Store.Clear();
-            return result;
         }
     }
 }

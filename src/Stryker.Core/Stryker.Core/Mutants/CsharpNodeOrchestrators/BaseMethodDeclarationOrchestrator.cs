@@ -44,7 +44,7 @@ internal class BaseMethodDeclarationOrchestrator<T> : NodeSpecificOrchestrator<T
             targetNode = MutantPlacer.ConvertExpressionToBody(targetNode);
 
             // we need to inject pending block (and statement) level mutations
-            targetNode = targetNode.WithBody(context.InjectBlockLevelExpressionMutation(targetNode.Body, sourceNode.ExpressionBody?.Expression, sourceNode.NeedsReturn()));
+            targetNode = targetNode.WithBody(context.InjectMutations(targetNode.Body, sourceNode.ExpressionBody?.Expression, sourceNode.NeedsReturn()));
         }
         else
         {

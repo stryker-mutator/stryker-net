@@ -44,7 +44,7 @@ internal class PropertyDeclarationOrchestrator : NodeSpecificOrchestrator<Proper
         var getter = mutated.GetAccessor();
 
         // and inject pending mutations in the getter's body.
-        result = mutated.ReplaceNode(getter.Body!, context.InjectBlockLevelExpressionMutation(getter.Body, sourceNode.ExpressionBody!.Expression, true));
+        result = mutated.ReplaceNode(getter.Body!, context.InjectMutations(getter.Body, sourceNode.ExpressionBody!.Expression, true));
         return result;
     }
 }

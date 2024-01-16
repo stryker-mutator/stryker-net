@@ -17,7 +17,7 @@ internal class StatementSpecificOrchestrator<T> : NodeSpecificOrchestrator<T, St
     /// <inheritdoc/>
     /// <remarks>Inject pending mutations that are controlled with 'if' statements.</remarks>
     protected override StatementSyntax InjectMutations(T sourceNode, StatementSyntax targetNode, SemanticModel semanticModel, MutationContext context) =>
-        context.InjectStatementLevel(targetNode, sourceNode);
+        context.InjectMutations(targetNode, sourceNode);
 
     /// <inheritdoc/>
     /// <remarks>Mutations are stored ath statement level.</remarks>
@@ -25,7 +25,7 @@ internal class StatementSpecificOrchestrator<T> : NodeSpecificOrchestrator<T, St
         IEnumerable<Mutant> mutations,
         MutationContext context)
     {
-        context.AddStatementLevel(mutations);
+        context.AddMutations(mutations);
         return context;
     }
 }

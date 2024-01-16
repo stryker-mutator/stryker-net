@@ -18,7 +18,7 @@ internal class MemberAccessExpressionOrchestrator<T> : NodeSpecificOrchestrator<
 
     protected override MutationContext StoreMutations(T node, IEnumerable<Mutant> mutations, MutationContext context)
     {
-        context.AddExpressionLevel(mutations);
+        context.AddMutations(mutations);
         return context;
     }
 }

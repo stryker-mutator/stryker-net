@@ -39,7 +39,7 @@ internal class LocalFunctionStatementOrchestrator : NodeSpecificOrchestrator<Loc
                 targetNode = MutantPlacer.ConvertExpressionToBody(targetNode);
                 // we need to inject pending block (and statement) level mutations
                 targetNode = targetNode.WithBody(
-                    context.InjectBlockLevelExpressionMutation(targetNode.Body,
+                    context.InjectMutations(targetNode.Body,
                         sourceNode.ExpressionBody!.Expression, true));
             }
             if (targetNode.Body == null)

@@ -36,7 +36,7 @@ internal class AnonymousFunctionExpressionOrchestrator : ExpressionSpecificOrche
                 targetNode = MutantPlacer.ConvertExpressionToBody(targetNode);
                 // we need to inject pending block (and statement) level mutations
                 targetNode = targetNode.WithBody(
-                    localContext.InjectBlockLevelExpressionMutation(targetNode.Block,
+                    localContext.InjectMutations(targetNode.Block,
                         sourceNode.ExpressionBody, true));
             }
             context.Leave();

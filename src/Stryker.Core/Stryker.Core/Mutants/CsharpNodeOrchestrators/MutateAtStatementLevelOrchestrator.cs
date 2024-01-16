@@ -24,7 +24,7 @@ internal class MutateAtStatementLevelOrchestrator<T>: NodeSpecificOrchestrator<T
         IEnumerable<Mutant> mutations,
         MutationContext context)
     {
-        context.AddStatementLevel(mutations);
+        context.AddMutations(mutations);
         return context;
     }
 }

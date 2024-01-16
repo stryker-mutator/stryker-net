@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Mono.Cecil.Cil;
 using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
@@ -9,7 +8,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 internal class InvocationExpressionOrchestrator: NodeSpecificOrchestrator<InvocationExpressionSyntax, ExpressionSyntax>
 {
 
-    protected override ExpressionSyntax InjectMutations(InvocationExpressionSyntax sourceNode, ExpressionSyntax targetNode, SemanticModel semanticModel, MutationContext context) => context.InjectExpressionLevel(targetNode, sourceNode);
+    protected override ExpressionSyntax InjectMutations(InvocationExpressionSyntax sourceNode, ExpressionSyntax targetNode, SemanticModel semanticModel, MutationContext context) => context.InjectMutations(targetNode, sourceNode);
 
     protected override MutationContext StoreMutations(InvocationExpressionSyntax node,
         IEnumerable<Mutant> mutations,
@@ -22,7 +21,7 @@ internal class InvocationExpressionOrchestrator: NodeSpecificOrchestrator<Invoca
         }
         else
         {
-            context.AddExpressionLevel(mutations);
+            context.AddMutations(mutations);
         }
         return context;
     }

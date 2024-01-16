@@ -93,7 +93,7 @@ internal abstract class NodeSpecificOrchestrator<TNode, TBase> : NodeOrchestrato
     protected static SyntaxNode MutateSingleNode(SyntaxNode node, SemanticModel semanticModel, MutationContext context) => context.FindHandler(node).Mutate(node, semanticModel, context);
 
     /// <summary>
-    /// Setup the mutation context before triggering mutation.
+    /// Set up the mutation context before triggering mutation.
     /// </summary>
     /// <param name="node">Node of interest</param>
     /// <param name="context">context to be updated</param>
