@@ -114,7 +114,7 @@ internal class MutationContext
     /// Register new block level mutations
     /// </summary>
     /// <param name="mutants"></param>
-    public void AddBlockLevel(IEnumerable<Mutant> mutants) => _mutation.StoreMutationsAtDesiredLevel(mutants, MutationControl.Block);
+    public void AddBlockLevelMutations(IEnumerable<Mutant> mutants) => _mutation.StoreMutationsAtDesiredLevel(mutants, MutationControl.Block);
 
     /// <summary>
     /// Inject a static context marker in the given block

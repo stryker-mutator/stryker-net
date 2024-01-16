@@ -18,51 +18,51 @@ internal class AnonymousFunctionExpressionOrchestrator : ExpressionSpecificOrche
             (original, _) => MutateSingleNode(original, semanticModel, context));
 
     protected override ExpressionSyntax InjectMutations(AnonymousFunctionExpressionSyntax sourceNode,
-        ExpressionSyntax target, SemanticModel semanticModel, MutationContext context)
+        ExpressionSyntax targetNode, SemanticModel semanticModel, MutationContext context)
     {
 
-        var targetNode = (AnonymousFunctionExpressionSyntax)base.InjectMutations(sourceNode, target, semanticModel, context);
+        var target = (AnonymousFunctionExpressionSyntax)base.InjectMutations(sourceNode, targetNode, semanticModel, context);
             
-        if (targetNode.Block == null)
+        if (target.Block == null)
         {
             // we will now mutate the expression body
             var localContext = context.Enter(MutationControl.Member);
-            targetNode = targetNode.ReplaceNode(targetNode.ExpressionBody!,
+            target = target.ReplaceNode(target.ExpressionBody!,
                 MutateSingleNode(sourceNode.ExpressionBody, semanticModel, localContext));
             if (localContext.HasLeftOverMutations)
             {
                 // this is an expression body method
                 // we need to convert it to expression body form
-                targetNode = MutantPlacer.ConvertExpressionToBody(targetNode);
+                target = MutantPlacer.ConvertExpressionToBody(target);
                 // we need to inject pending block (and statement) level mutations
-                targetNode = targetNode.WithBody(
-                    localContext.InjectMutations(targetNode.Block,
+                target = target.WithBody(
+                    localContext.InjectMutations(target.Block,
                         sourceNode.ExpressionBody, true));
             }
             context.Leave();
-            if (targetNode.Block == null)
+            if (target.Block == null)
             {
                 // we did not perform any conversion
-                return targetNode;
+                return target;
             }
         }
         else
         {
             // we add an ending return, just in case
-            targetNode = MutantPlacer.AddEndingReturn(targetNode);
+            target = MutantPlacer.AddEndingReturn(target);
         }
 
-        switch (targetNode)
+        switch (target)
         {
             case SimpleLambdaExpressionSyntax lambdaExpression when lambdaExpression.Parameter.Modifiers.Any(m => m.IsKind(SyntaxKind.OutKeyword)):
-                targetNode = targetNode.WithBody(MutantPlacer.AddDefaultInitializers(targetNode.Block, new List<ParameterSyntax> { lambdaExpression.Parameter }));
+                target = target.WithBody(MutantPlacer.AddDefaultInitializers(target.Block, new List<ParameterSyntax> { lambdaExpression.Parameter }));
                 break;
             // inject initialization to default for all out parameters
             case ParenthesizedLambdaExpressionSyntax parenthesizedLambda:
-                targetNode = targetNode.WithBody(MutantPlacer.AddDefaultInitializers(targetNode.Block, parenthesizedLambda.ParameterList.Parameters.Where(p =>
+                target = target.WithBody(MutantPlacer.AddDefaultInitializers(target.Block, parenthesizedLambda.ParameterList.Parameters.Where(p =>
                     p.Modifiers.Any(m => m.IsKind(SyntaxKind.OutKeyword)))));
                 break;
         }
-        return targetNode;
+        return target;
     }
 }

@@ -17,7 +17,7 @@ internal class InvocationExpressionOrchestrator: NodeSpecificOrchestrator<Invoca
         // if the expression contains a declaration, it must be controlled at the block level.
         if (node.ContainsDeclarations())
         {
-            context.AddBlockLevel(mutations);
+            context.AddBlockLevelMutations(mutations);
         }
         else
         {

@@ -22,7 +22,7 @@ internal class ExpressionSpecificOrchestrator<T> : NodeSpecificOrchestrator<T, E
         // if the expression contains a declaration, it must be controlled at the block level.
         if (node.ContainsDeclarations())
         {
-            context.AddBlockLevel(mutations);
+            context.AddBlockLevelMutations(mutations);
         }
         else
         {
