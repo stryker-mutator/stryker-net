@@ -37,17 +37,17 @@ namespace Stryker.Core.Mutants
             {
                 // Those node types describe compile time constants and thus cannot be mutated at run time
                 // attributes
-                new DontMutateOrchestrator<AttributeListSyntax>(),
+                new DoNotMutateOrchestrator<AttributeListSyntax>(),
                 // parameter list
-                new DontMutateOrchestrator<ParameterListSyntax>(),
+                new DoNotMutateOrchestrator<ParameterListSyntax>(),
                 // enum values
-                new DontMutateOrchestrator<EnumMemberDeclarationSyntax>(),
+                new DoNotMutateOrchestrator<EnumMemberDeclarationSyntax>(),
                 // pattern marching
-                new DontMutateOrchestrator<RecursivePatternSyntax>(),
-                new DontMutateOrchestrator<UsingDirectiveSyntax>(),
+                new DoNotMutateOrchestrator<RecursivePatternSyntax>(),
+                new DoNotMutateOrchestrator<UsingDirectiveSyntax>(),
                 // constants and constant fields
-                new DontMutateOrchestrator<FieldDeclarationSyntax>(t => t.Modifiers.Any(x => x.IsKind(SyntaxKind.ConstKeyword))),
-                new DontMutateOrchestrator<LocalDeclarationStatementSyntax>(t => t.IsConst),
+                new DoNotMutateOrchestrator<FieldDeclarationSyntax>(t => t.Modifiers.Any(x => x.IsKind(SyntaxKind.ConstKeyword))),
+                new DoNotMutateOrchestrator<LocalDeclarationStatementSyntax>(t => t.IsConst),
                 // ensure pre/post increment/decrement mutations are mutated at statement level
                 new MutateAtStatementLevelOrchestrator<PostfixUnaryExpressionSyntax>( t => t.Parent is ExpressionStatementSyntax or ForStatementSyntax),
                 new MutateAtStatementLevelOrchestrator<PrefixUnaryExpressionSyntax>( t => t.Parent is ExpressionStatementSyntax or ForStatementSyntax),

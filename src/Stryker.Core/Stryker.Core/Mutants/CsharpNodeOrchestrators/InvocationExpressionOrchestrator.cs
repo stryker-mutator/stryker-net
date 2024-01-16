@@ -12,45 +12,13 @@ internal class InvocationExpressionOrchestrator: NodeSpecificOrchestrator<Invoca
 
     protected override MutationContext StoreMutations(InvocationExpressionSyntax node,
         IEnumerable<Mutant> mutations,
-        MutationContext context)
-    {
+        MutationContext context) =>
         // if the expression contains a declaration, it must be controlled at the block level.
-        if (node.ContainsDeclarations())
-        {
-            context.AddBlockLevelMutations(mutations);
-        }
-        else
-        {
-            context.AddMutations(mutations);
-        }
-        return context;
-    }
+        node.ContainsDeclarations() ? context.AddBlockLevelMutations(mutations) : context.AddMutations(mutations);
 
-    // sadly, we need to parse recursively to find out if there is a member binding expression which cannot be preceded by a ternary operator
-    private bool HasAMemberBindingExpression(MemberAccessExpressionSyntax node) =>
-        node.Expression switch
-        {
-            MemberBindingExpressionSyntax => true,
-            MemberAccessExpressionSyntax memberAccess => HasAMemberBindingExpression(memberAccess),
-            InvocationExpressionSyntax invocation => HasAMemberBindingExpression(invocation),
-            _ => false
-        };
-
-    private bool HasAMemberBindingExpression(InvocationExpressionSyntax node) =>
-        node.Expression switch
-        {
-            MemberBindingExpressionSyntax => true,
-            MemberAccessExpressionSyntax memberAccess => HasAMemberBindingExpression(memberAccess),
-            InvocationExpressionSyntax invocation => HasAMemberBindingExpression(invocation),
-            _ => false
-        };
-
-    protected override MutationContext PrepareContext(InvocationExpressionSyntax node, MutationContext context)
-    {
-        // invocation mutations cannot be mutated within an invocation chain
-        context = context.Enter(HasAMemberBindingExpression(node) ? MutationControl.MemberAccess : MutationControl.Expression);
-        return base.PrepareContext(node, context);
-    }
+    protected override MutationContext PrepareContext(InvocationExpressionSyntax node, MutationContext context) =>
+        // invocation with a member binding expression must be controlled at a higher expression level
+        base.PrepareContext(node, context.Enter(node.HasAMemberBindingExpression() ? MutationControl.MemberAccess : MutationControl.Expression));
 
     protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave());
 }

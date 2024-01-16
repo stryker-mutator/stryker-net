@@ -67,7 +67,7 @@ internal abstract class NodeSpecificOrchestrator<TNode, TBase> : NodeOrchestrato
     /// <returns>A <see cref="MutationContext"/>instance storing existing mutations as well as the one provided</returns>
     /// <remarks>You need to override this method if the generated mutations cannot be injected in place (via a conditional operator) but must be controlled
     /// at the statement or block level. Default implementation does nothing.</remarks>
-    protected virtual MutationContext StoreMutations(TNode node, IEnumerable<Mutant> mutations, MutationContext context) => context;
+    protected virtual MutationContext StoreMutations(TNode node, IEnumerable<Mutant> mutations, MutationContext context) => context.AddMutations(mutations);
 
     /// <summary>
     /// Mutate children, grandchildren (recursively). 

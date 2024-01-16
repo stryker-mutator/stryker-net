@@ -108,13 +108,21 @@ internal class MutationContext
     /// Register mutations
     /// </summary>
     /// <param name="mutants"></param>
-    public void AddMutations(IEnumerable<Mutant> mutants) => _mutation.StoreMutations(mutants);
+    public MutationContext AddMutations(IEnumerable<Mutant> mutants)
+    {
+        _mutation.StoreMutations(mutants);
+        return this;
+    }
 
     /// <summary>
     /// Register new block level mutations
     /// </summary>
     /// <param name="mutants"></param>
-    public void AddBlockLevelMutations(IEnumerable<Mutant> mutants) => _mutation.StoreMutationsAtDesiredLevel(mutants, MutationControl.Block);
+    public MutationContext AddBlockLevelMutations(IEnumerable<Mutant> mutants)
+    {
+        _mutation.StoreMutationsAtDesiredLevel(mutants, MutationControl.Block);
+        return this;
+    }
 
     /// <summary>
     /// Inject a static context marker in the given block

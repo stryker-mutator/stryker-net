@@ -20,7 +20,7 @@ internal class AnonymousFunctionExpressionOrchestrator : ExpressionSpecificOrche
     protected override ExpressionSyntax InjectMutations(AnonymousFunctionExpressionSyntax sourceNode,
         ExpressionSyntax targetNode, SemanticModel semanticModel, MutationContext context)
     {
-
+        // inject any pending mutations
         var target = (AnonymousFunctionExpressionSyntax)base.InjectMutations(sourceNode, targetNode, semanticModel, context);
             
         if (target.Block == null)

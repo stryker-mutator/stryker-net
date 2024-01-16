@@ -12,18 +12,9 @@ internal class BlockOrchestrator : NodeSpecificOrchestrator<BlockSyntax, BlockSy
     /// <inheritdoc/>
     /// <remarks>Ensure we return a block after mutants are injected.</remarks>
     protected override BlockSyntax InjectMutations(BlockSyntax sourceNode, BlockSyntax targetNode, SemanticModel semanticModel, MutationContext context) =>
-        // ensure we still return a block!
         context.InjectMutations(targetNode, sourceNode);
 
     protected override MutationContext PrepareContext(BlockSyntax node, MutationContext context) => base.PrepareContext(node, context.Enter(MutationControl.Block));
 
     protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave());
-
-    protected override MutationContext StoreMutations(BlockSyntax node,
-        IEnumerable<Mutant> mutations,
-        MutationContext context)
-    {
-        context.AddMutations(mutations);
-        return context;
-    }
 }

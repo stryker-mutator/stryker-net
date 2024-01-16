@@ -19,13 +19,4 @@ internal class StatementSpecificOrchestrator<T> : NodeSpecificOrchestrator<T, St
     protected override StatementSyntax InjectMutations(T sourceNode, StatementSyntax targetNode, SemanticModel semanticModel, MutationContext context) =>
         context.InjectMutations(targetNode, sourceNode);
 
-    /// <inheritdoc/>
-    /// <remarks>Mutations are stored ath statement level.</remarks>
-    protected override MutationContext StoreMutations(T node,
-        IEnumerable<Mutant> mutations,
-        MutationContext context)
-    {
-        context.AddMutations(mutations);
-        return context;
-    }
 }
