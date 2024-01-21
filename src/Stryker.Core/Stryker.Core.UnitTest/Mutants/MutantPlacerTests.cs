@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -122,7 +123,9 @@ namespace Stryker.Core.UnitTest.Mutants
             var source = $"class Test {{{original}}}";
             var expectedCode = $"class Test {{{injected}}}";
 
-            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BaseMethodDeclarationSyntax>(source, expectedCode, MutantPlacer.ConvertExpressionToBody);
+            var placer = new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>();
+
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BaseMethodDeclarationSyntax>(source, expectedCode, placer.ConvertToBlockBody);
         }
 
         [Theory]
@@ -147,8 +150,9 @@ namespace Stryker.Core.UnitTest.Mutants
         {
             var source = $"class Test {{ private void Any(){{ Register({original});}}}}";
             var expectedCode = $"class Test {{ private void Any(){{ Register({injected});}}}}";
+            var placer = new AnonymousFunctionExpressionOrchestrator();
 
-            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<AnonymousFunctionExpressionSyntax>(source, expectedCode, MutantPlacer.ConvertExpressionToBody);
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<AnonymousFunctionExpressionSyntax>(source, expectedCode, placer.ConvertToBlockBody);
         }
 
         [Theory]
@@ -157,8 +161,9 @@ namespace Stryker.Core.UnitTest.Mutants
         {
             var source = $"class Test {{{original}}}";
             var expectedCode = $"class Test {{{injected}}}";
+            var placer = new AccessorSyntaxOrchestrator();
 
-            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<AccessorDeclarationSyntax>(source, expectedCode, MutantPlacer.ConvertExpressionToBody);
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<AccessorDeclarationSyntax>(source, expectedCode, placer.ConvertToBlockBody);
         }
 
         [Fact]
@@ -166,8 +171,9 @@ namespace Stryker.Core.UnitTest.Mutants
         {
             var source = "class Test {public int X => 1;}";
             var expected = "class Test {public int X {get{return 1;}}}";
+            var placer = new PropertyDeclarationOrchestrator();
 
-            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<PropertyDeclarationSyntax>(source, expected, MutantPlacer.ConvertPropertyExpressionToBodyAccessor);
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<PropertyDeclarationSyntax>(source, expected, placer.ConvertToBlockBody);
         }
 
     

@@ -4,7 +4,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Helpers;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Instrumentation;
 
@@ -24,11 +23,6 @@ public class MutantPlacer
     private static readonly StaticInitializerMarkerEngine StaticInitializerEngine = new();
     private static readonly IfInstrumentationEngine IfEngine = new();
     private static readonly ConditionalInstrumentationEngine ConditionalEngine = new();
-    private static readonly ExpressionMethodToBodyEngine ExpressionMethodEngine = new();
-    private static readonly AccessorExpressionToBodyEngine AccessorExpressionToBodyEngine = new();
-    private static readonly PropertyExpressionToBodyEngine PropertyExpressionToBodyEngine = new();
-    private static readonly AnonymousFunctionExpressionToBodyEngine AnonymousFunctionExpressionToBodyEngine = new();
-    private static readonly LambdaExpressionToBodyEngine LambdaExpressionToBodyEngine = new();
     private static readonly EndingReturnEngine EndingReturnEngine = new();
     private static readonly DefaultInitializationEngine DefaultInitializationEngine = new();
 
@@ -45,14 +39,9 @@ public class MutantPlacer
         RegisterEngine(StaticEngine);
         RegisterEngine(IfEngine);
         RegisterEngine(ConditionalEngine);
-        RegisterEngine(ExpressionMethodEngine, true);
-        RegisterEngine(AccessorExpressionToBodyEngine);
-        RegisterEngine(PropertyExpressionToBodyEngine);
-        RegisterEngine(AnonymousFunctionExpressionToBodyEngine);
         RegisterEngine(EndingReturnEngine);
         RegisterEngine(DefaultInitializationEngine);
         RegisterEngine(StaticInitializerEngine);
-        RegisterEngine(LambdaExpressionToBodyEngine);
     }
 
     public MutantPlacer(CodeInjection injection) => _injection = injection;
@@ -61,6 +50,7 @@ public class MutantPlacer
     ///  register an instrumentation engine
     /// </summary>
     /// <param name="engine"></param>
+    /// <param name="requireRecursive"></param>
     public static void RegisterEngine(IInstrumentCode engine, bool requireRecursive = false)
     {
         InstrumentEngines[engine.InstrumentEngineId] = engine;
@@ -69,18 +59,6 @@ public class MutantPlacer
             RequireRecursiveRemoval.Add(engine.InstrumentEngineId);
         }
     }
-
-    public static T ConvertExpressionToBody<T>(T method) where T : BaseMethodDeclarationSyntax =>
-        ExpressionMethodEngine.ConvertToBody(method);
-
-    public static AccessorDeclarationSyntax ConvertExpressionToBody(AccessorDeclarationSyntax method) =>
-        AccessorExpressionToBodyEngine.ConvertExpressionToBody(method);
-
-    public static AnonymousFunctionExpressionSyntax ConvertExpressionToBody(AnonymousFunctionExpressionSyntax anonymousFunction) =>
-        AnonymousFunctionExpressionToBodyEngine.ConvertToBody(anonymousFunction);
-
-    public static PropertyDeclarationSyntax ConvertPropertyExpressionToBodyAccessor(PropertyDeclarationSyntax property) =>
-        PropertyExpressionToBodyEngine.ConvertExpressionToBody(property);
 
     public static BlockSyntax AddEndingReturn(BlockSyntax block, TypeSyntax propertyType) =>
         EndingReturnEngine.InjectReturn(block, propertyType);
