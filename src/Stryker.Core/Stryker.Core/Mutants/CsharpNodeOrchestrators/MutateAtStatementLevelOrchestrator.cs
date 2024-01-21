@@ -20,4 +20,5 @@ internal class MutateAtStatementLevelOrchestrator<T>: NodeSpecificOrchestrator<T
     /// <inheritdoc />
     protected override bool CanHandle(T t) => _predicate(t);
 
+    protected override MutationContext StoreMutations(T node, IEnumerable<Mutant> mutations, MutationContext context) => context.AddMutations(mutations, MutationControl.Statement);
 }

@@ -14,7 +14,6 @@ internal class LocalFunctionExpressionToBodyEngine : BaseEngine<LocalFunctionSta
     /// <summary>
     /// Converts the given local function from expression to body form.
     /// </summary>
-    /// <typeparam name="T">Specific node type</typeparam>
     /// <param name="function">local function to be converted.</param>
     /// <returns>the converted function</returns>
     /// <remarks>returns the original node if no conversion is needed/possible</remarks>

@@ -7,6 +7,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
+using Stryker.Core.Mutants.CsharpNodeOrchestrators;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Xunit;
@@ -126,12 +127,14 @@ namespace Stryker.Core.UnitTest.Mutants
 
         [Theory]
         [InlineData("void TestClass(){ void LocalFunction() => Value-='a';}", "void TestClass(){ void LocalFunction() {Value-='a';};}}")]
+        [InlineData("void TestClass(){ int LocalFunction() => 4;}", "void TestClass(){ int LocalFunction() {return 4;};}")]
         public void ShouldConvertExpressionBodyBackLocalFunctionAndForth(string original, string injected)
         {
             var source = $"class Test {{{original}}}";
             var expectedCode = $"class Test {{{injected}}}";
+            var placer = new LocalFunctionStatementOrchestrator();
 
-            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<LocalFunctionStatementSyntax>(source, expectedCode, MutantPlacer.ConvertExpressionToBody);
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<LocalFunctionStatementSyntax>(source, expectedCode, placer.ConvertToBlockBody);
         }
 
         [Theory]
@@ -167,15 +170,7 @@ namespace Stryker.Core.UnitTest.Mutants
             CheckMutantPlacerProperlyPlaceAndRemoveHelpers<PropertyDeclarationSyntax>(source, expected, MutantPlacer.ConvertPropertyExpressionToBodyAccessor);
         }
 
-        [Fact]
-        public void ShouldInjectReturnAndRestore()
-        {
-            var source = "class Test {bool Method() {x++;}}";
-            var expected = "class Test {bool Method() {x++;return default(bool);}}";
-
-            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BaseMethodDeclarationSyntax, BlockSyntax>(source, expected, MutantPlacer.AddEndingReturn);
-        }
-
+    
         [Fact]
         public void ShouldInjectInitializersAndRestore()
         {
@@ -188,14 +183,6 @@ namespace Stryker.Core.UnitTest.Mutants
                     )}));
         }
 
-        [Fact]
-        public void ShouldInjectReturnToLocalFunctionAndRestore()
-        {
-            var source = "class Test {void Method(){ bool Method() {x++;};}}";
-            var expected = "class Test {void Method(){ bool Method() {x++;return default(bool);};}}";
-
-            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<LocalFunctionStatementSyntax, BlockSyntax>(source, expected, MutantPlacer.AddEndingReturn);
-        }
 
         [Fact]
         public void ShouldStaticMarkerInStaticFieldInitializers()

@@ -17,9 +17,9 @@ namespace Stryker.Core.Helpers
         public static TypeSyntax ReturnType(this BaseMethodDeclarationSyntax baseMethod) =>
             baseMethod switch
             {
-                ConstructorDeclarationSyntax _ => null,
+                ConstructorDeclarationSyntax _ => VoidTypeSyntax(),
                 ConversionOperatorDeclarationSyntax conversion => conversion.Type,
-                DestructorDeclarationSyntax _ => null,
+                DestructorDeclarationSyntax _ => VoidTypeSyntax(),
                 MethodDeclarationSyntax method => method.ReturnType,
                 OperatorDeclarationSyntax operatorSyntax => operatorSyntax.ReturnType,
                 _ => null
@@ -42,8 +42,22 @@ namespace Stryker.Core.Helpers
                 };
             }
 
-            return null;
+            return VoidTypeSyntax();
         }
+
+        /// <summary>
+        /// Returns 'void' type
+        /// </summary>
+        /// <returns>Returns 'void' type</returns>
+        public static TypeSyntax VoidTypeSyntax() => SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.VoidKeyword));
+
+
+        /// <summary>
+        /// Check if any modifier is the async keyword
+        /// </summary>
+        /// <param name="modifiers">modifier list</param>
+        /// <returns>true if any modifiers is 'async' </returns>
+        public static bool ContainsAsyncKeyword(this SyntaxTokenList modifiers) => modifiers.Any(x => x.IsKind(SyntaxKind.AsyncKeyword));
 
         /// <summary>
         /// True if the block does not contain any statement.
@@ -68,19 +82,24 @@ namespace Stryker.Core.Helpers
             };
 
         /// <summary>
-        /// Checks if a local function returns a value.
+        /// Checks if a syntax node returns a value.
         /// </summary>
-        /// <param name="localFunction">local function to evaluate</param>
-        /// <returns>true is the method as non-void return value</returns>
-        public static bool NeedsReturn(this LocalFunctionStatementSyntax localFunction) =>
-            !localFunction.ReturnType.IsVoid();
-
-        /// <summary>
-        /// Checks if an accessor is a getter and needs to end with a return
-        /// </summary>
-        /// <param name="baseMethod"></param>
-        /// <returns>true if this is a getter</returns>
-        public static bool NeedsReturn(this AccessorDeclarationSyntax baseMethod) => baseMethod.IsGetter();
+        /// <param name="node">syntax node to check</param>
+        /// <returns>true is this a method, a function having non-void return value, or a getter.</returns>
+        public static bool NeedsReturn(this SyntaxNode node) =>             node switch
+            {
+                BaseMethodDeclarationSyntax baseMethod => baseMethod switch
+                {
+                    MethodDeclarationSyntax method => !(method.ReturnType is PredefinedTypeSyntax predefinedType &&
+                                                        predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword)),
+                    OperatorDeclarationSyntax => true,
+                    ConversionOperatorDeclarationSyntax => true,
+                    _ => false
+                },
+                AccessorDeclarationSyntax accessor => accessor.IsGetter(),
+                LocalFunctionStatementSyntax localFunction => !localFunction.ReturnType.IsVoid(),
+                _ => false
+            };
 
         /// <summary>
         /// Checks if a member is static
@@ -96,14 +115,6 @@ namespace Stryker.Core.Helpers
         /// <returns>type == typeof(void)</returns>
         public static bool IsVoid(this TypeSyntax type) => type is PredefinedTypeSyntax predefinedType &&
                                                            predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword);
-
-        /// <summary>
-        /// Convert a Statement to a block. Does nothing if it is already a block.
-        /// </summary>
-        /// <param name="syntax">syntax to convert</param>
-        /// <returns>A block statement.</returns>
-        public static BlockSyntax AsBlock(this StatementSyntax syntax) => syntax as BlockSyntax ?? SyntaxFactory.Block(syntax);
-     
 
         /// <summary>
         /// Build a mutated version of a <see cref="SyntaxNode"/>.

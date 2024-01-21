@@ -12,61 +12,24 @@ namespace Stryker.Core.Instrumentation;
 /// </summary>
 internal class EndingReturnEngine: BaseEngine<BlockSyntax>
 {
-    public BlockSyntax InjectReturn(BlockSyntax block, TypeSyntax type, SyntaxTokenList modifiers)
+    public BlockSyntax InjectReturn(BlockSyntax block, TypeSyntax type)
     {
-        var returnType = type;
-        BlockSyntax ret;
         // if we had no body or the last statement is a return, no need to add one, or this is an iterator method
         if (block == null
-            || returnType == null
             || block.Statements.Count == 0
-            || block!.Statements.Last().Kind() == SyntaxKind.ReturnStatement
-            || returnType.IsVoid()
-            || block.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.YieldReturnStatement) || x.IsKind(SyntaxKind.YieldBreakStatement), false))
+            || block.Statements.Last().Kind() == SyntaxKind.ReturnStatement
+            || type.IsVoid()
+            || block.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.YieldReturnStatement) || x.IsKind(SyntaxKind.YieldBreakStatement), false)
+            || !block.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.ReturnStatement), false))
         {
-            ret = null;
-        }
-        else
-        {
-            var genericReturn = returnType.DescendantNodesAndSelf().OfType<GenericNameSyntax>().FirstOrDefault();
-            if (modifiers.Any(x => x.IsKind(SyntaxKind.AsyncKeyword)))
-            {
-                returnType = genericReturn?.TypeArgumentList.Arguments.First();
-            }
-
-            if (returnType != null)
-            {
-                ret = block.AddStatements(
-                    SyntaxFactory.ReturnStatement(returnType.BuildDefaultExpression()));
-            }
-            else
-            {
-                ret = null;
-            }
+            return block;
         }
 
-        return ret == null ? block : ret.WithAdditionalAnnotations(Marker);
-    }
+        block = block.AddStatements(SyntaxFactory.ReturnStatement( type == null ?
+            SyntaxFactory.LiteralExpression(SyntaxKind.DefaultLiteralExpression).WithLeadingTrivia(SyntaxFactory.Space)
+            : type.BuildDefaultExpression())).WithAdditionalAnnotations(Marker);
 
-    public BlockSyntax InjectReturn(BlockSyntax block)
-    {
-        BlockSyntax ret;
-        // if we had no body or the the last statement was a return, no need to add one, or this is an iterator method
-        if (block == null
-            || block.Statements.Count == 0
-            || block!.Statements.Last().Kind() == SyntaxKind.ReturnStatement
-            || !block.ContainsValueReturn()
-            || block.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.YieldReturnStatement) || x.IsKind(SyntaxKind.YieldBreakStatement), false))
-        {
-            ret = null;
-        }
-        else
-        {
-            ret = block.AddStatements(
-                SyntaxFactory.ReturnStatement(SyntaxFactory.LiteralExpression(SyntaxKind.DefaultLiteralExpression).WithLeadingTrivia(SyntaxFactory.Space)));
-        }
-
-        return ret == null ? block : ret.WithAdditionalAnnotations(Marker);
+        return block;
     }
 
     protected override SyntaxNode Revert(BlockSyntax node)
@@ -83,4 +46,5 @@ internal class EndingReturnEngine: BaseEngine<BlockSyntax>
 
         return node.WithStatements(node.Statements.Remove(node.Statements.Last())).WithoutAnnotations(Marker);
     }
+
 }

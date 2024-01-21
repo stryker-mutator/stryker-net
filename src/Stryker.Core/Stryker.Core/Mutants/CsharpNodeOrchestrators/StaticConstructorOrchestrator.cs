@@ -14,8 +14,8 @@ internal class StaticConstructorOrchestrator : BaseMethodDeclarationOrchestrator
     /// <inheritdoc/>
     /// <remarks>Injects a static marker used for coverage information; this implies converting
     /// expression arrow bodied method to regular ones.</remarks>
-    protected override BaseMethodDeclarationSyntax InjectMutations(ConstructorDeclarationSyntax sourceNode,
-        BaseMethodDeclarationSyntax targetNode, SemanticModel semanticModel, MutationContext context)
+    protected override ConstructorDeclarationSyntax InjectMutations(ConstructorDeclarationSyntax sourceNode,
+        ConstructorDeclarationSyntax targetNode, SemanticModel semanticModel, MutationContext context)
     {
         var mutated = base.InjectMutations(sourceNode, targetNode, semanticModel, context);
 
@@ -27,7 +27,7 @@ internal class StaticConstructorOrchestrator : BaseMethodDeclarationOrchestrator
         if (mutated.ExpressionBody != null)
         {
             // we need a body to place the marker
-            mutated = MutantPlacer.ConvertExpressionToBody(mutated);
+            mutated = ConvertToBlockBody(mutated);
         }
 
         return mutated.ReplaceNode(mutated.Body!, context.PlaceStaticContextMarker(mutated.Body));

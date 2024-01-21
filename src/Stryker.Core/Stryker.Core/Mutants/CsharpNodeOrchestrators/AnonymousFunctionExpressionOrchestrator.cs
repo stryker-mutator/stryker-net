@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
@@ -6,40 +7,25 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
-internal class AnonymousFunctionExpressionOrchestrator : ExpressionSpecificOrchestrator<AnonymousFunctionExpressionSyntax>
+internal class AnonymousFunctionExpressionOrchestrator : BaseFunctionOrchestrator<AnonymousFunctionExpressionSyntax>
 {
-    /// <summary>
-    /// Mutate the children, except the arrow expression body that may require conversion.
-    /// </summary>
-    protected override AnonymousFunctionExpressionSyntax OrchestrateChildrenMutation(AnonymousFunctionExpressionSyntax node,
-        SemanticModel semanticModel,
-        MutationContext context) =>
-        node.ReplaceNodes(node.ChildNodes().Where(child => child != node.ExpressionBody),
-            (original, _) => MutateSingleNode(original, semanticModel, context));
-
-    protected override ExpressionSyntax InjectMutations(AnonymousFunctionExpressionSyntax sourceNode,
-        ExpressionSyntax targetNode, SemanticModel semanticModel, MutationContext context)
+/*
+    protected override AnonymousFunctionExpressionSyntax InjectMutations(AnonymousFunctionExpressionSyntax sourceNode,
+        AnonymousFunctionExpressionSyntax targetNode, SemanticModel semanticModel, MutationContext context)
     {
-        // inject any pending mutations
-        var target = (AnonymousFunctionExpressionSyntax)base.InjectMutations(sourceNode, targetNode, semanticModel, context);
-            
+        var target = targetNode;
         if (target.Block == null)
         {
-            // we will now mutate the expression body
-            var localContext = context.Enter(MutationControl.Member);
-            target = target.ReplaceNode(target.ExpressionBody!,
-                MutateSingleNode(sourceNode.ExpressionBody, semanticModel, localContext));
-            if (localContext.HasLeftOverMutations)
+            if (context.HasLeftOverMutations)
             {
                 // this is an expression body method
                 // we need to convert it to expression body form
                 target = MutantPlacer.ConvertExpressionToBody(target);
                 // we need to inject pending block (and statement) level mutations
                 target = target.WithBody(
-                    localContext.InjectMutations(target.Block,
+                    context.InjectMutations(target.Block,
                         sourceNode.ExpressionBody, true));
             }
-            context.Leave();
             if (target.Block == null)
             {
                 // we did not perform any conversion
@@ -65,4 +51,17 @@ internal class AnonymousFunctionExpressionOrchestrator : ExpressionSpecificOrche
         }
         return target;
     }
+*/
+protected override (BlockSyntax block, ExpressionSyntax expression) GetBodies(AnonymousFunctionExpressionSyntax node) => (node.Block, node.ExpressionBody);
+
+protected override ParameterListSyntax Parameters(AnonymousFunctionExpressionSyntax node) => node switch {ParenthesizedLambdaExpressionSyntax parenthesizedLambda => parenthesizedLambda.ParameterList,
+    SimpleLambdaExpressionSyntax simpleLambda => SyntaxFactory.ParameterList(SyntaxFactory.SingletonSeparatedList(simpleLambda.Parameter)),
+    _ => throw new ArgumentOutOfRangeException(nameof(node), node, null)
+};
+
+protected override TypeSyntax ReturnType(AnonymousFunctionExpressionSyntax node) => null;
+
+protected override AnonymousFunctionExpressionSyntax SwitchToThisBodies(AnonymousFunctionExpressionSyntax node, BlockSyntax blockBody,
+    ExpressionSyntax expressionBody) =>
+    node.WithBody(blockBody).WithExpressionBody(expressionBody);
 }

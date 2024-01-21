@@ -16,7 +16,7 @@ internal abstract class BaseEngine<T>: IInstrumentCode where T: CSharpSyntaxNode
     protected BaseEngine() => Marker = new SyntaxAnnotation(MutantPlacer.Injector, InstrumentEngineId);
 
     /// <summary>
-    /// Annotation to be added to the the instrumented node
+    /// Annotation to be added to the instrumented node
     /// </summary>
     protected SyntaxAnnotation Marker { get; }
 

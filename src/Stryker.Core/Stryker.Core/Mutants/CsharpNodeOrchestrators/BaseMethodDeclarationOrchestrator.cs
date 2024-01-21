@@ -10,20 +10,13 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 /// Handles Methods/properties' accessors/constructors and finalizers.
 /// </summary>
 /// <typeparam name="T">Type of the syntax node, must be derived from <see cref="BaseMethodDeclarationSyntax"/>.</typeparam>
-internal class BaseMethodDeclarationOrchestrator<T> : NodeSpecificOrchestrator<T, BaseMethodDeclarationSyntax> where T : BaseMethodDeclarationSyntax
+internal class BaseMethodDeclarationOrchestrator<T> : BaseFunctionOrchestrator<T> where T : BaseMethodDeclarationSyntax
 {
-    protected override MutationContext PrepareContext(T node, MutationContext context)
-        => base.PrepareContext(node, context.Enter(MutationControl.Member));
-
-    protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave());
-
+        /*
     /// <inheritdoc/>
-    /// Inject mutations and convert expression body to block body if required.
     protected override BaseMethodDeclarationSyntax InjectMutations(T sourceNode, BaseMethodDeclarationSyntax targetNode,
         SemanticModel semanticModel, MutationContext context)
     {
-        targetNode = base.InjectMutations(sourceNode, targetNode, semanticModel, context);
-
         if (targetNode.Body == null)
         {
             if (targetNode.ExpressionBody == null)
@@ -56,5 +49,30 @@ internal class BaseMethodDeclarationOrchestrator<T> : NodeSpecificOrchestrator<T
         targetNode = targetNode.WithBody(MutantPlacer.AddDefaultInitializers(targetNode.Body, sourceNode.ParameterList.Parameters.Where(p =>
             p.Modifiers.Any(m => m.IsKind(SyntaxKind.OutKeyword)))));
         return targetNode;
+    }
+    */
+    protected override (BlockSyntax block, ExpressionSyntax expression) GetBodies(T node) => (node.Body, node.ExpressionBody?.Expression);
+
+    protected override ParameterListSyntax Parameters(T node) => node.ParameterList;
+
+    protected override TypeSyntax ReturnType(T node)
+    {
+        var returnType = node.ReturnType();
+        if (node.Modifiers.ContainsAsyncKeyword())
+        {
+            var genericReturn = node.ReturnType().DescendantNodesAndSelf().OfType<GenericNameSyntax>().FirstOrDefault();
+            returnType = genericReturn?.TypeArgumentList.Arguments.First();
+        }
+        return returnType ?? RoslynHelper.VoidTypeSyntax();
+    }
+
+    protected override T SwitchToThisBodies(T node, BlockSyntax blockBody, ExpressionSyntax expressionBody)
+    {
+        if (expressionBody == null)
+        {
+            return (T) node.WithBody(blockBody).WithExpressionBody(null).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.None));
+        }
+
+        return (T) node.WithBody(null).WithExpressionBody(SyntaxFactory.ArrowExpressionClause(expressionBody)).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
     }
 }

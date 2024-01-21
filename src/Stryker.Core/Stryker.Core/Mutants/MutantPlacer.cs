@@ -25,7 +25,6 @@ public class MutantPlacer
     private static readonly IfInstrumentationEngine IfEngine = new();
     private static readonly ConditionalInstrumentationEngine ConditionalEngine = new();
     private static readonly ExpressionMethodToBodyEngine ExpressionMethodEngine = new();
-    private static readonly LocalFunctionExpressionToBodyEngine LocalFunctionExpressionToBodyEngine = new();
     private static readonly AccessorExpressionToBodyEngine AccessorExpressionToBodyEngine = new();
     private static readonly PropertyExpressionToBodyEngine PropertyExpressionToBodyEngine = new();
     private static readonly AnonymousFunctionExpressionToBodyEngine AnonymousFunctionExpressionToBodyEngine = new();
@@ -34,6 +33,7 @@ public class MutantPlacer
     private static readonly DefaultInitializationEngine DefaultInitializationEngine = new();
 
     private static readonly IDictionary<string, IInstrumentCode> InstrumentEngines = new Dictionary<string, IInstrumentCode>();
+    private static readonly HashSet<string> RequireRecursiveRemoval = new();
 
     private readonly CodeInjection _injection;
     private ExpressionSyntax _binaryExpression;
@@ -45,14 +45,13 @@ public class MutantPlacer
         RegisterEngine(StaticEngine);
         RegisterEngine(IfEngine);
         RegisterEngine(ConditionalEngine);
-        RegisterEngine(ExpressionMethodEngine);
+        RegisterEngine(ExpressionMethodEngine, true);
         RegisterEngine(AccessorExpressionToBodyEngine);
         RegisterEngine(PropertyExpressionToBodyEngine);
         RegisterEngine(AnonymousFunctionExpressionToBodyEngine);
         RegisterEngine(EndingReturnEngine);
         RegisterEngine(DefaultInitializationEngine);
         RegisterEngine(StaticInitializerEngine);
-        RegisterEngine(LocalFunctionExpressionToBodyEngine);
         RegisterEngine(LambdaExpressionToBodyEngine);
     }
 
@@ -62,7 +61,14 @@ public class MutantPlacer
     ///  register an instrumentation engine
     /// </summary>
     /// <param name="engine"></param>
-    public static void RegisterEngine(IInstrumentCode engine) => InstrumentEngines.Add(engine.InstrumentEngineId, engine);
+    public static void RegisterEngine(IInstrumentCode engine, bool requireRecursive = false)
+    {
+        InstrumentEngines[engine.InstrumentEngineId] = engine;
+        if (requireRecursive)
+        {
+            RequireRecursiveRemoval.Add(engine.InstrumentEngineId);
+        }
+    }
 
     public static T ConvertExpressionToBody<T>(T method) where T : BaseMethodDeclarationSyntax =>
         ExpressionMethodEngine.ConvertToBody(method);
@@ -70,28 +76,14 @@ public class MutantPlacer
     public static AccessorDeclarationSyntax ConvertExpressionToBody(AccessorDeclarationSyntax method) =>
         AccessorExpressionToBodyEngine.ConvertExpressionToBody(method);
 
-    public static LocalFunctionStatementSyntax ConvertExpressionToBody(LocalFunctionStatementSyntax method) =>
-        LocalFunctionExpressionToBodyEngine.ConvertToBody(method);
-
-    public static LambdaExpressionSyntax ConvertExpressionToBody(LambdaExpressionSyntax lambdaExpression) =>
-        LambdaExpressionToBodyEngine.ConvertToBody(lambdaExpression);
-
     public static AnonymousFunctionExpressionSyntax ConvertExpressionToBody(AnonymousFunctionExpressionSyntax anonymousFunction) =>
         AnonymousFunctionExpressionToBodyEngine.ConvertToBody(anonymousFunction);
 
     public static PropertyDeclarationSyntax ConvertPropertyExpressionToBodyAccessor(PropertyDeclarationSyntax property) =>
         PropertyExpressionToBodyEngine.ConvertExpressionToBody(property);
 
-    public static BaseMethodDeclarationSyntax AddEndingReturn(BaseMethodDeclarationSyntax method) =>
-        method.WithBody(EndingReturnEngine.InjectReturn(method.Body, method.ReturnType(), method.Modifiers));
-    public static AccessorDeclarationSyntax AddEndingReturn(AccessorDeclarationSyntax method, TypeSyntax propertyType) =>
-        method.WithBody(EndingReturnEngine.InjectReturn(method.Body, propertyType, method.Modifiers));
-    public static LocalFunctionStatementSyntax AddEndingReturn(LocalFunctionStatementSyntax function) =>
-        function.WithBody(EndingReturnEngine.InjectReturn(function.Body, function.ReturnType, function.Modifiers));
-    public static AnonymousFunctionExpressionSyntax AddEndingReturn(AnonymousFunctionExpressionSyntax function) =>
-        function.WithBlock(EndingReturnEngine.InjectReturn(function.Block));
-    public static LambdaExpressionSyntax AddEndingReturn(LambdaExpressionSyntax lambda) =>
-        lambda.WithBlock(EndingReturnEngine.InjectReturn(lambda.Block));
+    public static BlockSyntax AddEndingReturn(BlockSyntax block, TypeSyntax propertyType) =>
+        EndingReturnEngine.InjectReturn(block, propertyType);
 
     public BlockSyntax PlaceStaticContextMarker(BlockSyntax block) =>
         StaticEngine.PlaceStaticContextMarker(block, _injection);
@@ -145,11 +137,11 @@ public class MutantPlacer
         {
             throw new InvalidOperationException("No mutation in this node!");
         }
-        return annotations.Exists(a => a.Data == ExpressionMethodEngine.InstrumentEngineId);
+        return annotations.Exists(a => RequireRecursiveRemoval.Contains(a.Data));
     }
 
     /// <summary>
-    /// Gets mutant related annotations from a syntaxnode
+    /// Gets mutant related annotations from a syntax node
     /// </summary>
     /// <param name="node"></param>
     /// <returns></returns>
