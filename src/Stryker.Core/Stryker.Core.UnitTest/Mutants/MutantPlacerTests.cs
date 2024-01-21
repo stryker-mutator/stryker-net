@@ -171,7 +171,7 @@ namespace Stryker.Core.UnitTest.Mutants
         {
             var source = "class Test {public int X => 1;}";
             var expected = "class Test {public int X {get{return 1;}}}";
-            var placer = new PropertyDeclarationOrchestrator();
+            var placer = new ExpressionBodiedPropertyOrchestrator();
 
             CheckMutantPlacerProperlyPlaceAndRemoveHelpers<PropertyDeclarationSyntax>(source, expected, placer.ConvertToBlockBody);
         }

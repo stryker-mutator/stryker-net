@@ -53,6 +53,10 @@ public class MutantPlacer
     /// <param name="requireRecursive"></param>
     public static void RegisterEngine(IInstrumentCode engine, bool requireRecursive = false)
     {
+        if (InstrumentEngines.TryGetValue(engine.InstrumentEngineId, out var existing) && existing!.GetType() != engine.GetType())
+        {
+            throw new InvalidOperationException($"Cannot register {engine.GetType().Name} as name {engine.InstrumentEngineId} is already registered to {existing.GetType().Name}.");
+        }
         InstrumentEngines[engine.InstrumentEngineId] = engine;
         if (requireRecursive)
         {

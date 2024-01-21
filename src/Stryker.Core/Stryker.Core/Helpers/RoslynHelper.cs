@@ -10,7 +10,25 @@ namespace Stryker.Core.Helpers
     internal static class RoslynHelper
     {
         /// <summary>
-        /// Gets the return type of a method (incl. constructor, destructor...)
+        /// Check if an expression is a string.
+        /// </summary>
+        /// <param name="node">Expression to check</param>
+        /// <returns>true if it is a string</returns>
+        public static bool IsAStringExpression(this ExpressionSyntax node) =>
+            node.Kind() == SyntaxKind.StringLiteralExpression ||
+            node.Kind() == SyntaxKind.InterpolatedStringExpression;
+
+        /// <summary>
+        /// Check if an expression contains a declaration
+        /// </summary>
+        /// <param name="node">expression to check</param>
+        /// <returns>true if it contains a declaration</returns>
+        public static bool ContainsDeclarations(this ExpressionSyntax node) =>
+            node.ContainsNodeThatVerifies(x =>
+                x.IsKind(SyntaxKind.DeclarationExpression) || x.IsKind(SyntaxKind.DeclarationPattern));
+
+        /// <summary>
+        /// Gets the return the type of the method (incl. constructor, destructor...)
         /// </summary>
         /// <param name="baseMethod">method to analyze</param>
         /// <returns>method returns type. Null if this not relevant</returns>
@@ -65,41 +83,6 @@ namespace Stryker.Core.Helpers
         /// <param name="blockSyntax">block to test</param>
         /// <returns>true when the block contains no statement.</returns>
         public static bool IsEmpty(this BlockSyntax blockSyntax) => blockSyntax.Statements.Count == 0;
-
-        /// <summary>
-        /// Checks if a method ends with return.
-        /// </summary>
-        /// <param name="baseMethod">method to analyze.</param>
-        /// <returns>true if <paramref name="baseMethod"/>is non-void method, an operator or a conversion operator.</returns>
-        public static bool NeedsReturn(this BaseMethodDeclarationSyntax baseMethod) =>
-            baseMethod switch
-            {
-                MethodDeclarationSyntax method => !(method.ReturnType is PredefinedTypeSyntax predefinedType &&
-                                                    predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword)),
-                OperatorDeclarationSyntax => true,
-                ConversionOperatorDeclarationSyntax => true,
-                _ => false
-            };
-
-        /// <summary>
-        /// Checks if a syntax node returns a value.
-        /// </summary>
-        /// <param name="node">syntax node to check</param>
-        /// <returns>true is this a method, a function having non-void return value, or a getter.</returns>
-        public static bool NeedsReturn(this SyntaxNode node) =>             node switch
-            {
-                BaseMethodDeclarationSyntax baseMethod => baseMethod switch
-                {
-                    MethodDeclarationSyntax method => !(method.ReturnType is PredefinedTypeSyntax predefinedType &&
-                                                        predefinedType.Keyword.IsKind(SyntaxKind.VoidKeyword)),
-                    OperatorDeclarationSyntax => true,
-                    ConversionOperatorDeclarationSyntax => true,
-                    _ => false
-                },
-                AccessorDeclarationSyntax accessor => accessor.IsGetter(),
-                LocalFunctionStatementSyntax localFunction => !localFunction.ReturnType.IsVoid(),
-                _ => false
-            };
 
         /// <summary>
         /// Checks if a member is static
@@ -158,20 +141,13 @@ namespace Stryker.Core.Helpers
         public static ExpressionSyntax BuildDefaultExpression(this TypeSyntax type) => SyntaxFactory.DefaultExpression(type.WithoutTrivia()).WithLeadingTrivia(SyntaxFactory.Space);
 
         /// <summary>
-        /// Check (recursively) if the statement returns some value.
-        /// </summary>
-        /// <param name="syntax">statement to analyze.</param>
-        /// <returns>true is the statement returns a value in at least one path.</returns>
-        public static bool ContainsValueReturn(this StatementSyntax syntax) => syntax.ScanChildStatements(s => s is ReturnStatementSyntax { Expression: not null });
-
-        /// <summary>
         /// Check if a statements (or one of its child statements, if any) verifies some given predicate.
         /// </summary>
         /// <param name="syntax">initial statements</param>
         /// <param name="predicate">predicate to verify</param>
         /// <returns>true if any of the child statements verify the predicate</returns>
         /// <remarks>scanning stops as soon as one child matches the predicate</remarks>
-        public static bool ScanChildStatements(this StatementSyntax syntax, Func<StatementSyntax, bool> predicate)
+        public static bool ScanChildStatements(this StatementSyntax syntax, Func<StatementSyntax, bool> predicate, bool skipBlocks = false)
         {
             if (predicate(syntax))
             {
@@ -181,26 +157,46 @@ namespace Stryker.Core.Helpers
             switch (syntax)
             {
                 case BlockSyntax block:
-                    return block.Statements.Any(s => ScanChildStatements(s, predicate));
+                    return !skipBlocks && block.Statements.Any(s => s.ScanChildStatements(predicate, false));
                 case LocalFunctionStatementSyntax:
                     return false;
                 case ForStatementSyntax forStatement:
-                    return forStatement.Statement.ScanChildStatements(predicate);
+                    return forStatement.Statement.ScanChildStatements(predicate, skipBlocks);
                 case WhileStatementSyntax whileStatement:
-                    return whileStatement.Statement.ScanChildStatements(predicate);
+                    return whileStatement.Statement.ScanChildStatements(predicate, skipBlocks);
                 case DoStatementSyntax doStatement:
-                    return doStatement.Statement.ScanChildStatements(predicate);
+                    return doStatement.Statement.ScanChildStatements(predicate, skipBlocks);
                 case SwitchStatementSyntax switchStatement:
-                    return switchStatement.Sections.SelectMany(s => s.Statements).Any(statement => ScanChildStatements(statement, predicate));
+                    return switchStatement.Sections.SelectMany(s => s.Statements).Any(statement => statement.ScanChildStatements(predicate, skipBlocks));
                 case IfStatementSyntax ifStatement:
-                    if (ifStatement.Statement.ScanChildStatements(predicate))
+                    if (ifStatement.Statement.ScanChildStatements(predicate, skipBlocks))
                         return true;
-                    return ifStatement.Else?.Statement.ScanChildStatements(predicate) == true;
+                    return ifStatement.Else?.Statement.ScanChildStatements(predicate, skipBlocks) == true;
                 default:
                     return syntax.ChildNodes().Where(n => n is StatementSyntax).Cast<StatementSyntax>()
-                        .Any(s => ScanChildStatements(s, predicate));
+                        .Any(s => s.ScanChildStatements(predicate, skipBlocks));
             }
         }
+
+        /// <summary>
+        /// Scans recursively the node to find if a child node matches the predicated. Does not recurse into local functions or anonymous functions
+        /// </summary>
+        /// <param name="node">starting node</param>
+        /// <param name="predicate">predicate to match</param>
+        /// <param name="skipBlock">set to true to avoid scan into block statements</param>
+        /// <returns></returns>
+        public static bool ContainsNodeThatVerifies(this SyntaxNode node, Func<SyntaxNode, bool> predicate, bool skipBlock = true) =>
+            // scan 
+            node.DescendantNodes((child) =>
+            {
+                if (skipBlock && child is BlockSyntax)
+                {
+                    return false;
+                }
+
+                return (child.Parent is not AnonymousFunctionExpressionSyntax function || function.ExpressionBody != child)
+                       && (child.Parent is not LocalFunctionStatementSyntax localFunction || localFunction.ExpressionBody != child);
+            } ).Any(predicate);
 
         public static bool HasAMemberBindingExpression(this ExpressionSyntax expression) =>
             expression switch

@@ -1494,8 +1494,7 @@ static string Value
 static TestClass(){}";
 
             var expected = @"static string Value
-{
-	get {if(StrykerNamespace.MutantControl.IsActive(0)){}else{ return (StrykerNamespace.MutantControl.IsActive(1)?"""":""TestDescription"");
+{get {if(StrykerNamespace.MutantControl.IsActive(0)){}else{ return (StrykerNamespace.MutantControl.IsActive(1)?"""":""TestDescription"");
         }
 return default(string);
         }
@@ -1506,7 +1505,7 @@ static TestClass() { using (new StrykerNamespace.MutantContext()) { } }}";
             ShouldMutateSourceInClassToExpected(source, expected);
         }
 
-        [Fact]
+       [Fact]
         public void ShouldMarkStaticMutationStaticInPropertiesInitializer()
         {
             var source = @"class Test {
@@ -1517,6 +1516,18 @@ static string Value {get;} = StrykerNamespace.MutantContext.TrackValue(()=>(Stry
             ShouldMutateSourceInClassToExpected(source, expected);
             _target.Mutants.Count.ShouldBe(1);
             _target.Mutants.First().IsStaticValue.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void ShouldMutateStaticPropertiesInArrowFormEvenWithComplexConstruction()
+        {
+            var source = @"class Test {
+static string Value => Out(out var x)? ""empty"": """";}";
+
+            var expected = @"class Test {
+static string Value {get {if(StrykerNamespace.MutantControl.IsActive(0)){return!(Out(out var x))? ""empty"": """";}else{return Out(out var x)? (StrykerNamespace.MutantControl.IsActive(1)?"""":""empty""): (StrykerNamespace.MutantControl.IsActive(2)?""Stryker was here!"":"""");}}}}";
+
+            ShouldMutateSourceInClassToExpected(source, expected);
         }
 
         [Fact]

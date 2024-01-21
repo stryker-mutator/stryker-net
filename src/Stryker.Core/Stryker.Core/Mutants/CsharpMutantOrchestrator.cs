@@ -61,7 +61,7 @@ namespace Stryker.Core.Mutants
                 // ensure array initializer mutations are controlled at statement level
                 new MutateAtStatementLevelOrchestrator<InitializerExpressionSyntax>( t => t.Kind() == SyntaxKind.ArrayInitializerExpression && t.Expressions.Count > 0),
                 // ensure properties are properly mutated (including expression to body conversion if required)
-                new PropertyDeclarationOrchestrator(),
+                new ExpressionBodiedPropertyOrchestrator(),
                 // ensure method, lambda... are properly mutated (including expression to body conversion if required)
                 new LocalFunctionStatementOrchestrator(),
                 new AnonymousFunctionExpressionOrchestrator(),

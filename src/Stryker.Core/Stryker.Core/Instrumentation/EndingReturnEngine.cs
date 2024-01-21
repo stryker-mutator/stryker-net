@@ -19,8 +19,8 @@ internal class EndingReturnEngine: BaseEngine<BlockSyntax>
             || block.Statements.Count == 0
             || block.Statements.Last().Kind() == SyntaxKind.ReturnStatement
             || type.IsVoid()
-            || block.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.YieldReturnStatement) || x.IsKind(SyntaxKind.YieldBreakStatement), false)
-            || !block.ContainsNodeThatVerifies(x => x.IsKind(SyntaxKind.ReturnStatement), false))
+            || block.ScanChildStatements(x => x.IsKind(SyntaxKind.YieldReturnStatement) || x.IsKind(SyntaxKind.YieldBreakStatement))
+            || !block.ScanChildStatements(x => x.IsKind(SyntaxKind.ReturnStatement)))
         {
             return block;
         }

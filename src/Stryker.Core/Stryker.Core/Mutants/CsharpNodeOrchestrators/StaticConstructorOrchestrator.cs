@@ -27,7 +27,7 @@ internal class StaticConstructorOrchestrator : BaseMethodDeclarationOrchestrator
         if (mutated.ExpressionBody != null)
         {
             // we need a body to place the marker
-            mutated = ConvertToBlockBody(mutated);
+            mutated = ConvertToBlockBody(mutated, RoslynHelper.VoidTypeSyntax());
         }
 
         return mutated.ReplaceNode(mutated.Body!, context.PlaceStaticContextMarker(mutated.Body));

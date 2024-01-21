@@ -1,4 +1,3 @@
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
@@ -10,7 +9,6 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 /// </summary>
 internal class AccessorSyntaxOrchestrator : BaseFunctionOrchestrator<AccessorDeclarationSyntax>
 {
-
     protected override (BlockSyntax block, ExpressionSyntax expression) GetBodies(AccessorDeclarationSyntax node) => (node.Body, node.ExpressionBody?.Expression);
 
     protected override ParameterListSyntax Parameters(AccessorDeclarationSyntax node) => SyntaxFactory.ParameterList();

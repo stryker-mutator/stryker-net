@@ -5,10 +5,9 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
 using Stryker.Core.Instrumentation;
-using Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 
-namespace Stryker.Core.Mutants;
+namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 /// <summary>
 /// This class implements a roslyn type independent orchestrator for method, functions, getters....
@@ -16,7 +15,7 @@ namespace Stryker.Core.Mutants;
 /// </summary>
 /// <typeparam name="T">SyntaxNode type</typeparam>
 /// <remarks>This class is helpful because there is no (useful) shared parent class for those syntax construct</remarks>
-internal abstract class BaseFunctionOrchestrator<T>:NodeSpecificOrchestrator<T,T>, IInstrumentCode where T : SyntaxNode
+internal abstract class BaseFunctionOrchestrator<T> : NodeSpecificOrchestrator<T, T>, IInstrumentCode where T : SyntaxNode
 {
     protected BaseFunctionOrchestrator()
     {
@@ -59,7 +58,7 @@ internal abstract class BaseFunctionOrchestrator<T>:NodeSpecificOrchestrator<T,T
     /// <returns>an instance of <typeparamref name="T"/> with <paramref name="blockBody"/> body</returns>
     protected abstract T SwitchToThisBodies(T node, BlockSyntax blockBody, ExpressionSyntax expressionBody);
 
-    private BlockSyntax GenerateBlockBody(ExpressionSyntax expressionBody, TypeSyntax returnType)
+    private static BlockSyntax GenerateBlockBody(ExpressionSyntax expressionBody, TypeSyntax returnType)
     {
         StatementSyntax statementLine = returnType.IsVoid()
             ? SyntaxFactory.ExpressionStatement(expressionBody)
@@ -68,12 +67,13 @@ internal abstract class BaseFunctionOrchestrator<T>:NodeSpecificOrchestrator<T,T
         var result = SyntaxFactory.Block(statementLine);
         return result;
     }
+
     public T ConvertToBlockBody(T node) => ConvertToBlockBody(node, ReturnType(node));
 
-    private T ConvertToBlockBody(T node, TypeSyntax returnType)
+    protected T ConvertToBlockBody(T node, TypeSyntax returnType)
     {
         var (block, expression) = GetBodies(node);
-        if (block!=null)
+        if (block != null)
         {
             return node;
         }
@@ -85,7 +85,7 @@ internal abstract class BaseFunctionOrchestrator<T>:NodeSpecificOrchestrator<T,T
     {
         if (node is not T typedNode)
         {
-            return node;
+            throw new InvalidOperationException($"Expected a {typeof(T).ToString()}, found:\n{node.ToFullString()}.");
         }
         var (block, _) = GetBodies(typedNode);
         var expression = block?.Statements[0] switch
@@ -102,21 +102,36 @@ internal abstract class BaseFunctionOrchestrator<T>:NodeSpecificOrchestrator<T,T
     protected override T InjectMutations(T sourceNode, T targetNode, SemanticModel semanticModel, MutationContext context)
     {
         var (blockBody, expressionBody) = GetBodies(targetNode);
-        var returnType = ReturnType(sourceNode);
-        var parameters = Parameters(sourceNode);
         if (expressionBody == null && blockBody == null)
         {
             // no implementation provided
             return targetNode;
         }
+        var wasInExpressionForm = GetBodies(sourceNode).expression != null;
+        var returnType = ReturnType(sourceNode);
+        var parameters = Parameters(sourceNode);
+        var outParameters = parameters.Parameters.Where(p => p.Modifiers.Any(m => m.IsKind(SyntaxKind.OutKeyword)));
 
-        var outParameters = parameters.Parameters.Where(p => p.Modifiers.Any( m=> m.IsKind(SyntaxKind.OutKeyword)));
         // no mutations to inject
         if (!context.HasLeftOverMutations)
         {
-            if (blockBody == null) return targetNode;
+            if (blockBody == null)
+            {
+                // we can't do any other injection
+                return targetNode;
+            }
+
+            var originalBody = blockBody;
+            // inject default initializers (if any)
             blockBody = MutantPlacer.AddDefaultInitializers(blockBody, outParameters);
-            return SwitchToThisBodies(targetNode, MutantPlacer.AddEndingReturn(blockBody, returnType), null);
+            if (!wasInExpressionForm)
+            {
+                // add ending return (to mitigate compilation error due to control flow change)
+                // not needed for an expression form method as no control flow may be present
+                blockBody = MutantPlacer.AddEndingReturn(blockBody, returnType);
+            }
+            // do we need to change the body
+            return originalBody == blockBody ? targetNode : SwitchToThisBodies(targetNode, MutantPlacer.AddEndingReturn(blockBody, returnType), null);
         }
 
         targetNode = ConvertToBlockBody(targetNode, returnType);
