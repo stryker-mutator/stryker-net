@@ -99,31 +99,31 @@ internal abstract class BaseFunctionOrchestrator<T>:NodeSpecificOrchestrator<T,T
     }
 
     /// <inheritdoc/>
-    protected override T InjectMutations(T originalNode, T mutatedNode, SemanticModel semanticModel, MutationContext context)
+    protected override T InjectMutations(T sourceNode, T targetNode, SemanticModel semanticModel, MutationContext context)
     {
-        var (blockBody, expressionBody) = GetBodies(mutatedNode);
-        var returnType = ReturnType(originalNode);
-        var parameters = Parameters(originalNode);
+        var (blockBody, expressionBody) = GetBodies(targetNode);
+        var returnType = ReturnType(sourceNode);
+        var parameters = Parameters(sourceNode);
         if (expressionBody == null && blockBody == null)
         {
             // no implementation provided
-            return mutatedNode;
+            return targetNode;
         }
 
         var outParameters = parameters.Parameters.Where(p => p.Modifiers.Any( m=> m.IsKind(SyntaxKind.OutKeyword)));
         // no mutations to inject
         if (!context.HasLeftOverMutations)
         {
-            if (blockBody == null) return mutatedNode;
+            if (blockBody == null) return targetNode;
             blockBody = MutantPlacer.AddDefaultInitializers(blockBody, outParameters);
-            return SwitchToThisBodies(mutatedNode, MutantPlacer.AddEndingReturn(blockBody, returnType), null);
+            return SwitchToThisBodies(targetNode, MutantPlacer.AddEndingReturn(blockBody, returnType), null);
         }
 
-        mutatedNode = ConvertToBlockBody(mutatedNode, returnType);
+        targetNode = ConvertToBlockBody(targetNode, returnType);
 
-        var newBody = MutantPlacer.AddDefaultInitializers(context.InjectMutations(GetBodies(mutatedNode).block, GetBodies(originalNode).expression, !returnType.IsVoid()), outParameters);
-        mutatedNode = SwitchToThisBodies(mutatedNode, newBody, null);
-        return mutatedNode;
+        var newBody = MutantPlacer.AddDefaultInitializers(context.InjectMutations(GetBodies(targetNode).block, GetBodies(sourceNode).expression, !returnType.IsVoid()), outParameters);
+        targetNode = SwitchToThisBodies(targetNode, newBody, null);
+        return targetNode;
     }
 
 }
