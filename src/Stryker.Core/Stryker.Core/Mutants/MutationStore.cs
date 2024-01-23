@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
+using RegexParser.Nodes;
 using Stryker.Core.Helpers;
 using Stryker.Core.Logging;
 
@@ -87,7 +88,7 @@ internal class MutationStore
         {
             _pendingMutations.Peek().StoreMutations(old.Store);
         }
-        else
+        else if (old.Store.Count>0)
         {
             Logger.LogError("Some mutations failed to be inserted, they are dropped.");
             foreach (var mutant in old.Store)
@@ -110,6 +111,11 @@ internal class MutationStore
     /// as compile error and logged.</remarks>
     public bool StoreMutationsAtDesiredLevel(IEnumerable<Mutant> store, MutationControl level)
     {
+        if (!store.Any())
+        {
+            return true;
+        }
+
         var controller = FindControl(level);
 
         if (controller != null)
