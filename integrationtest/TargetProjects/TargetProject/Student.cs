@@ -8,6 +8,7 @@ namespace TargetProject
 
         public string IsExpired()
         {
+            StudentName = "";
             return Age > 30 ? "Yes" : "No";
         }
 

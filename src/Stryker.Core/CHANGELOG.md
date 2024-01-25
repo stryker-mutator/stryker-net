@@ -1,3 +1,14 @@
+## [3.13.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.13.1...stryker@3.13.2) (2024-01-25)
+
+
+### Bug Fixes
+
+* **null-forgiving operator:** Mutation leak with SuppressNullableWarningSyntax constructs (!.) ([#2826](https://github.com/stryker-mutator/stryker-net/issues/2826)) ([469e3f6](https://github.com/stryker-mutator/stryker-net/commit/469e3f6fdb5f7cabefd32b50e34e9a03930b32dc))
+* **real time reporting:** Whitespace in report data no longer removed ([#2821](https://github.com/stryker-mutator/stryker-net/issues/2821)) ([2cb16a9](https://github.com/stryker-mutator/stryker-net/commit/2cb16a9e89a6f14e0021ed01b96bbf07d3f25081))
+* Stryker fails if project has conflicting settings regarding warnings ([#2828](https://github.com/stryker-mutator/stryker-net/issues/2828)) ([c2583e0](https://github.com/stryker-mutator/stryker-net/commit/c2583e04e9e298f934c301d4a729f96d134c7bc2))
+
+
+
 ## [3.13.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.13.0...stryker@3.13.1) (2024-01-05)
 
 
