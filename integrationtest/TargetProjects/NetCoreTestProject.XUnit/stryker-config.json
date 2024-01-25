@@ -7,7 +7,9 @@
       "Json"
     ],
     "project": "TargetProject.csproj",
-
+    "ignore-mutations": [
+      "string"
+    ],
     "mutate": [
       "!Person.cs"
     ]
