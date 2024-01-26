@@ -1224,7 +1224,7 @@ if(StrykerNamespace.MutantControl.IsActive(3)){;}else{		request.Headers.Add((Str
 {
 	var test3 = 2 + 5;
 }";
-            _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot(), null);
+            _target.Mutate(CSharpSyntaxTree.ParseText(source), null);
 
             var mutants = _target.GetLatestMutantBatch().ToList();
             mutants.Count.ShouldBe(2);
@@ -1251,7 +1251,7 @@ namespace TestApp
 		}
 	}
 }";
-            _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot(), null);
+            _target.Mutate(CSharpSyntaxTree.ParseText(source), null);
 
             var mutants = _target.GetLatestMutantBatch().ToList();
             mutants.Count.ShouldBe(7);
@@ -1400,6 +1400,21 @@ if(StrykerNamespace.MutantControl.IsActive(4)){;}else{		yield break;
 	;
 }}";
             ShouldMutateSourceInClassToExpected(source, expected);
+        }
+
+        [Theory]
+        [InlineData("{return 0;}")]
+        [InlineData("{return 1; throw Exception();}")]
+        [InlineData("{return 1;yield return 0;}")]
+        [InlineData("{return 1;yield break;}")]
+        [InlineData("{;}")]
+        public void ShouldNotAddReturnOnSomeBlocks(string code)
+        {
+            string source = @$"
+int TestMethod()
+// Stryker disable all
+{code}";
+            ShouldMutateSourceInClassToExpected(source, source);
         }
 
         [Fact]

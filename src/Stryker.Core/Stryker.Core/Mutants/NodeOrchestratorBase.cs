@@ -11,9 +11,9 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 internal abstract class NodeOrchestratorBase
 {
-    protected static readonly Regex _pattern = new("^\\s*\\/\\/\\s*Stryker", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(20));
-    protected static readonly Regex _parser = new("^\\s*\\/\\/\\s*Stryker\\s*(disable|restore)\\s*(once|)\\s*([^:]*)\\s*:?(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(20));
-    protected static readonly ILogger _logger = ApplicationLogging.LoggerFactory.CreateLogger<NodeOrchestratorBase>();
+    private static readonly Regex _pattern = new("^\\s*\\/\\/\\s*Stryker", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(20));
+    private static readonly Regex _parser = new("^\\s*\\/\\/\\s*Stryker\\s*(disable|restore)\\s*(once|)\\s*([^:]*)\\s*:?(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(20));
+    private static readonly ILogger _logger = ApplicationLogging.LoggerFactory.CreateLogger<NodeOrchestratorBase>();
 
     public static MutationContext ParseStrykerComment(MutationContext context, Match match, SyntaxNode node)
     {

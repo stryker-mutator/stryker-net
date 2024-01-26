@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -17,7 +16,8 @@ internal class EndingReturnEngine: BaseEngine<BlockSyntax>
         // if we had no body or the last statement is a return, no need to add one, or this is an iterator method
         if (block == null
             || block.Statements.Count == 0
-            || block.Statements.Last().Kind() == SyntaxKind.ReturnStatement
+            || block.Statements.Last().IsKind(SyntaxKind.ReturnStatement)
+            || block.Statements.Last().IsKind(SyntaxKind.ThrowStatement)
             || type.IsVoid()
             || block.ScanChildStatements(x => x.IsKind(SyntaxKind.YieldReturnStatement) || x.IsKind(SyntaxKind.YieldBreakStatement))
             || !block.ScanChildStatements(x => x.IsKind(SyntaxKind.ReturnStatement)))

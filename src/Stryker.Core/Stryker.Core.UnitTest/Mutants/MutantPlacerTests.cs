@@ -184,8 +184,8 @@ namespace Stryker.Core.UnitTest.Mutants
             var expected = "class Test {bool Method(out int x) {{x = default(int);}x=0;}}";
 
             CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BlockSyntax>(source, expected,
-                (n) => MutantPlacer.AddDefaultInitializers(n,
-                    new[]{SyntaxFactory.Parameter(SyntaxFactory.Identifier("x")).WithType(SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword))
+                (n) => MutantPlacer.InjectOutParametersInitialization(n,
+                    new[]{SyntaxFactory.Parameter(SyntaxFactory.Identifier("x")).WithModifiers(SyntaxFactory.TokenList(new[] {SyntaxFactory.Token(SyntaxKind.OutKeyword)})).WithType(SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword))
                     )}));
         }
 
@@ -215,7 +215,7 @@ static TestClass()=> Value-='a';}";
                 OptimizationMode = OptimizationModes.CoverageBasedTest,
                 MutationLevel = MutationLevel.Complete
             });
-            var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot(), null);
+            var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source), null).GetRoot();
 
             var node = actualNode.DescendantNodes().First(t => t is BlockSyntax);
 
@@ -233,10 +233,10 @@ static TestClass()=> Value-='a';}";
             restored = MutantPlacer.RemoveMutant(node);
             actualNode = actualNode.ReplaceNode(node, restored);
 
-            var expectedNode = CSharpSyntaxTree.ParseText(source.Replace("StrykerNamespace", codeInjection.HelperNamespace)).GetRoot();
+            var expectedNode = CSharpSyntaxTree.ParseText(source.Replace("StrykerNamespace", codeInjection.HelperNamespace));
             expectedNode.ShouldNotContainErrors();
-            actualNode.ShouldBeSemantically(expectedNode);
-            actualNode.ShouldNotContainErrors();
+            actualNode.SyntaxTree.ShouldBeSemantically(expectedNode);
+            actualNode.SyntaxTree.ShouldNotContainErrors();
         }
     }
 }

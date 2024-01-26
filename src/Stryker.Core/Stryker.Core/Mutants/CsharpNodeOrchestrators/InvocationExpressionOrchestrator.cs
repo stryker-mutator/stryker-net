@@ -14,7 +14,7 @@ internal class InvocationExpressionOrchestrator: NodeSpecificOrchestrator<Invoca
         IEnumerable<Mutant> mutations,
         MutationContext context) =>
         // if the expression contains a declaration, it must be controlled at the block level.
-        node.ContainsDeclarations() ? context.AddBlockLevelMutations(mutations) : context.AddMutations(mutations);
+         context.AddMutations(mutations, node.ContainsDeclarations() ? MutationControl.Block : MutationControl.Expression);
 
     protected override MutationContext PrepareContext(InvocationExpressionSyntax node, MutationContext context) =>
         // invocation with a member binding expression must be controlled at a higher expression level
