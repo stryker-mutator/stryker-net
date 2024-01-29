@@ -1,3 +1,12 @@
+## [3.13.2](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.13.1...dotnet-stryker@3.13.2) (2024-01-25)
+
+
+### Reverts
+
+* Revert "Publish" ([73a8177](https://github.com/stryker-mutator/stryker-net/commit/73a8177949157650100523dfe0368e75aabd56cf))
+
+
+
 ## [3.13.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.13.0...dotnet-stryker@3.13.1) (2024-01-05)
 
 
