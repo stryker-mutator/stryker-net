@@ -11,6 +11,8 @@ internal class StaticConstructorOrchestrator : BaseMethodDeclarationOrchestrator
 {
     protected override bool CanHandle(ConstructorDeclarationSyntax t) => t.IsStatic();
 
+    protected override MutationContext PrepareContext(ConstructorDeclarationSyntax node, MutationContext context) => base.PrepareContext(node, context).EnterStatic();
+
     /// <inheritdoc/>
     /// <remarks>Injects a static marker used for coverage information; this implies converting
     /// expression arrow bodied method to regular ones.</remarks>

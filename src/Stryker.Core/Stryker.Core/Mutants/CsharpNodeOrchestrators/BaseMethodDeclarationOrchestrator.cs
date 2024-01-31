@@ -13,7 +13,7 @@ internal class BaseMethodDeclarationOrchestrator<T> : BaseFunctionOrchestrator<T
 {
     protected override (BlockSyntax block, ExpressionSyntax expression) GetBodies(T node) => (node.Body, node.ExpressionBody?.Expression);
 
-    protected override ParameterListSyntax Parameters(T node) => node.ParameterList;
+    protected override ParameterListSyntax ParameterList(T node) => node.ParameterList;
 
     protected override TypeSyntax ReturnType(T node)
     {

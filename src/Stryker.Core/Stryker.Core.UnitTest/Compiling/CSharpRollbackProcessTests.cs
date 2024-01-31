@@ -204,6 +204,7 @@ namespace ExampleProject
             }
 
             var mutant = mutator.Mutate(syntaxTree, null);
+
             helpers.Add(mutant);
 
             var references = new List<string> {

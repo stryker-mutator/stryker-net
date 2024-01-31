@@ -74,7 +74,7 @@ internal class MutationContext
     /// </summary>
     /// <param name="node">handler for which to find an orchestrator.</param>
     /// <returns>A handler for this node.</returns>
-    public INodeMutator FindHandler(SyntaxNode node) => _mainOrchestrator.GetHandler(node);
+    public INodeOrchestrator FindHandler(SyntaxNode node) => _mainOrchestrator.GetHandler(node);
 
     /// <summary>
     /// Call this to signal mutation occurs in static method or fields

@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -15,7 +14,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 /// </summary>
 /// <typeparam name="T">SyntaxNode type</typeparam>
 /// <remarks>This class is helpful because there is no (useful) shared parent class for those syntax construct</remarks>
-internal abstract class BaseFunctionOrchestrator<T> : NodeSpecificOrchestrator<T, T>, IInstrumentCode where T : SyntaxNode
+internal abstract class BaseFunctionOrchestrator<T> :MemberDefinitionOrchestrator<T>, IInstrumentCode where T : SyntaxNode
 {
     protected BaseFunctionOrchestrator() => Marker = MutantPlacer.RegisterEngine(this, true);
 
@@ -24,12 +23,11 @@ internal abstract class BaseFunctionOrchestrator<T> : NodeSpecificOrchestrator<T
     /// <inheritdoc/>
     public string InstrumentEngineId => GetType().Name;
 
-    /// <inheritdoc/>
-    protected override MutationContext PrepareContext(T node, MutationContext context) => base.PrepareContext(node, context.Enter(MutationControl.Member));
-
-    /// <inheritdoc/>
-    protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave());
-
+    /// <summary>
+    /// Get the function body (block or expression)
+    /// </summary>
+    /// <param name="node"></param>
+    /// <returns>a tuple with the block body as first item and the expression body as the second. At least one of them is expected to be null.</returns>
     protected abstract (BlockSyntax block, ExpressionSyntax expression) GetBodies(T node);
 
     /// <summary>
@@ -37,7 +35,7 @@ internal abstract class BaseFunctionOrchestrator<T> : NodeSpecificOrchestrator<T
     /// </summary>
     /// <param name="node">instance of <see cref="T"/></param>
     /// <returns>a parameter list</returns>
-    protected abstract ParameterListSyntax Parameters(T node);
+    protected abstract ParameterListSyntax ParameterList(T node);
 
     /// <summary>
     /// Get the return type
@@ -51,6 +49,7 @@ internal abstract class BaseFunctionOrchestrator<T> : NodeSpecificOrchestrator<T
     /// </summary>
     /// <param name="node">instance of <see cref="T"/></param>
     /// <param name="blockBody">desired body</param>
+    /// <param name="expressionBody">desired expression body</param>
     /// <returns>an instance of <typeparamref name="T"/> with <paramref name="blockBody"/> body</returns>
     protected abstract T SwitchToThisBodies(T node, BlockSyntax blockBody, ExpressionSyntax expressionBody);
 
@@ -76,6 +75,7 @@ internal abstract class BaseFunctionOrchestrator<T> : NodeSpecificOrchestrator<T
         var blockBody = GenerateBlockBody(expression, returnType);
         return SwitchToThisBodies(node, blockBody, null).WithAdditionalAnnotations(Marker);
     }
+
     /// <inheritdoc/>
     public SyntaxNode RemoveInstrumentation(SyntaxNode node)
     {
@@ -105,7 +105,7 @@ internal abstract class BaseFunctionOrchestrator<T> : NodeSpecificOrchestrator<T
         }
         var wasInExpressionForm = GetBodies(sourceNode).expression != null;
         var returnType = ReturnType(sourceNode);
-        var parameters = Parameters(sourceNode).Parameters;
+        var parameters = ParameterList(sourceNode).Parameters;
 
         // no mutations to inject
         if (!context.HasLeftOverMutations)

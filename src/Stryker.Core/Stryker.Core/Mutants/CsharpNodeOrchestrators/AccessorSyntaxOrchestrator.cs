@@ -11,7 +11,7 @@ internal class AccessorSyntaxOrchestrator : BaseFunctionOrchestrator<AccessorDec
 {
     protected override (BlockSyntax block, ExpressionSyntax expression) GetBodies(AccessorDeclarationSyntax node) => (node.Body, node.ExpressionBody?.Expression);
 
-    protected override ParameterListSyntax Parameters(AccessorDeclarationSyntax node) => SyntaxFactory.ParameterList();
+    protected override ParameterListSyntax ParameterList(AccessorDeclarationSyntax node) => SyntaxFactory.ParameterList();
 
     protected override TypeSyntax ReturnType(AccessorDeclarationSyntax node) => node.ReturnType();
 

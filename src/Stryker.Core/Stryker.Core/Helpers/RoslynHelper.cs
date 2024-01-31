@@ -23,7 +23,7 @@ namespace Stryker.Core.Helpers
         /// </summary>
         /// <param name="node">expression to check</param>
         /// <returns>true if it contains a declaration</returns>
-        public static bool ContainsDeclarations(this ExpressionSyntax node) =>
+        public static bool ContainsDeclarations(this SyntaxNode node) =>
             node.ContainsNodeThatVerifies(x =>
                 x.IsKind(SyntaxKind.DeclarationExpression) || x.IsKind(SyntaxKind.DeclarationPattern));
 

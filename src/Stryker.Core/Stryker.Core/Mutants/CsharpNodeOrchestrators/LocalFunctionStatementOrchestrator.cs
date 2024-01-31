@@ -9,7 +9,7 @@ internal class LocalFunctionStatementOrchestrator : BaseFunctionOrchestrator<Loc
 {
     protected override (BlockSyntax block, ExpressionSyntax expression) GetBodies(LocalFunctionStatementSyntax node) => (node.Body, node.ExpressionBody?.Expression);
 
-    protected override ParameterListSyntax Parameters(LocalFunctionStatementSyntax node) => node.ParameterList;
+    protected override ParameterListSyntax ParameterList(LocalFunctionStatementSyntax node) => node.ParameterList;
 
     protected override TypeSyntax ReturnType(LocalFunctionStatementSyntax node)
     {

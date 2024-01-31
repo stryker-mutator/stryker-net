@@ -16,7 +16,7 @@ namespace Stryker.Core.Mutants;
 /// <inheritdoc/>
 public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, SemanticModel>
 {
-    private readonly TypeBasedStrategy<SyntaxNode, INodeMutator> _specificOrchestrator =
+    private readonly TypeBasedStrategy<SyntaxNode, INodeOrchestrator> _specificOrchestrator =
         new();
 
     private ILogger Logger { get; }
@@ -32,7 +32,11 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         Logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpMutantOrchestrator>();
 
         // declare node specific orchestrators. Note that order is relevant, they should be declared from more specific to more generic one
-        _specificOrchestrator.RegisterHandlers(new List<INodeMutator>
+        _specificOrchestrator.RegisterHandlers(BuildOrchestratorList());
+    }
+
+    private static List<INodeOrchestrator> BuildOrchestratorList() =>
+        new()
         {
             // Those node types describe compile time constants and thus cannot be mutated at run time
             // attributes
@@ -69,14 +73,13 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
             // ensure declaration are mutated at the block level
             new LocalDeclarationOrchestrator(),
             new InvocationExpressionOrchestrator(),
-
+            new MemberDefinitionOrchestrator<MemberDeclarationSyntax>(),
             new MutateAtStatementLevelOrchestrator<AssignmentExpressionSyntax>(),
             new BlockOrchestrator(),
             new StatementSpecificOrchestrator<StatementSyntax>(),
             new ExpressionSpecificOrchestrator<ExpressionSyntax>(),
             new SyntaxNodeOrchestrator()
-        });
-    }
+        };
 
     private static List<IMutator> DefaultMutatorList() =>
         new()
@@ -119,7 +122,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         // search for node specific handler
         input.WithRootAndOptions(GetHandler(input.GetRoot()).Mutate(input.GetRoot(), semanticModel, new MutationContext(this)), input.Options);
 
-    internal INodeMutator GetHandler(SyntaxNode currentNode) => _specificOrchestrator.FindHandler(currentNode);
+    internal INodeOrchestrator GetHandler(SyntaxNode currentNode) => _specificOrchestrator.FindHandler(currentNode);
 
     internal IEnumerable<Mutant> GenerateMutationsForNode(SyntaxNode current, SemanticModel semanticModel, MutationContext context)
     {

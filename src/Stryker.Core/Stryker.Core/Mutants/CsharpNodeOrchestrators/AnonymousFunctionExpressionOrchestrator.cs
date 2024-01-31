@@ -8,7 +8,7 @@ internal class AnonymousFunctionExpressionOrchestrator : BaseFunctionOrchestrato
 {
     protected override (BlockSyntax block, ExpressionSyntax expression) GetBodies(AnonymousFunctionExpressionSyntax node) => (node.Block, node.ExpressionBody);
 
-    protected override ParameterListSyntax Parameters(AnonymousFunctionExpressionSyntax node) => node switch {ParenthesizedLambdaExpressionSyntax parenthesizedLambda => parenthesizedLambda.ParameterList,
+    protected override ParameterListSyntax ParameterList(AnonymousFunctionExpressionSyntax node) => node switch {ParenthesizedLambdaExpressionSyntax parenthesizedLambda => parenthesizedLambda.ParameterList,
         SimpleLambdaExpressionSyntax simpleLambda => SyntaxFactory.ParameterList(SyntaxFactory.SingletonSeparatedList(simpleLambda.Parameter)),
         _ => throw new ArgumentOutOfRangeException(nameof(node), node, null)
     };
