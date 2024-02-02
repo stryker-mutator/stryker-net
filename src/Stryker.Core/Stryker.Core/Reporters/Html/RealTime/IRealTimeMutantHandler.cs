@@ -1,8 +1,8 @@
 ﻿using Stryker.Core.Mutants;
 
-namespace Stryker.Core.Reporters.Html.Realtime;
+namespace Stryker.Core.Reporters.Html.RealTime;
 
-public interface IRealtimeMutantHandler
+public interface IRealTimeMutantHandler
 {
     public int Port { get; }
 

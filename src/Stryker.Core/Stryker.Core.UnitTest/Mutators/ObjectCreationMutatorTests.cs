@@ -29,7 +29,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var target = new ObjectCreationMutator();
 
-            var result = target.ApplyMutations(objectCreationExpression);
+            var result = target.ApplyMutations(objectCreationExpression, null);
 
             var mutation = result.ShouldHaveSingleItem();
             mutation.Type.ShouldBe(Mutator.Initializer);
@@ -45,7 +45,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var target = new ObjectCreationMutator();
 
-            var result = target.ApplyMutations(objectCreationExpression);
+            var result = target.ApplyMutations(objectCreationExpression, null);
 
             var mutation = result.ShouldHaveSingleItem();
             mutation.DisplayName.ShouldBe("Object initializer mutation");
@@ -64,7 +64,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var target = new ObjectCreationMutator();
 
-            var result = target.ApplyMutations(objectCreationExpression);
+            var result = target.ApplyMutations(objectCreationExpression, null);
 
             result.ShouldBeEmpty();
         }

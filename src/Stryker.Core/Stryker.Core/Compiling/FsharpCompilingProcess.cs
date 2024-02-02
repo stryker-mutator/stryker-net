@@ -23,15 +23,14 @@ namespace Stryker.Core.Compiling
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
 
-        public FsharpCompilingProcess(MutationTestInput input,
-            IRollbackProcess rollbackProcess, IFileSystem fileSystem)
+        public FsharpCompilingProcess(MutationTestInput input, IFileSystem fileSystem)
         {
             _input = input;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<FsharpCompilingProcess>();
             _fileSystem = fileSystem;
         }
 
-        public CompilingProcessResult Compile(IEnumerable<ParsedInput> syntaxTrees, bool devMode)
+        public bool Compile(IEnumerable<ParsedInput> syntaxTrees, bool devMode)
         {
             var analyzerResult = _input.SourceProjectInfo.AnalyzerResult;
 
@@ -51,7 +50,7 @@ namespace Stryker.Core.Compiling
                 enablePartialTypeChecking: null);
 
             var mutatedAssemblyPath = TestProjectsInfo.GetInjectionFilePath(_input.TestProjectsInfo.AnalyzerResults.First(), _input.SourceProjectInfo.AnalyzerResult);
-            var pdbPath = Path.Combine(mutatedAssemblyPath, _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName());
+            var pdbPath = mutatedAssemblyPath.Replace(".dll", ".pdb");
             (var compilationSuccess, var errorinfo) = TryCompilation(checker, trees, mutatedAssemblyPath, pdbPath, dependencies);
 
             foreach (var testProject in _input.TestProjectsInfo.AnalyzerResults)
@@ -72,17 +71,12 @@ namespace Stryker.Core.Compiling
             }
 
             //rollback still needs to be implemented
-            RollbackProcessResult rollbackProcessResult = null;
 
             if (compilationSuccess)
             {
                 //we return if compiled successfully
                 //it is however not used as this is the end of the current F# implementation
-                return new CompilingProcessResult()
-                {
-                    Success = compilationSuccess,
-                    RollbackResult = rollbackProcessResult
-                };
+                return compilationSuccess;
             }
 
             // compiling failed

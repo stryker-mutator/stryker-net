@@ -1,4 +1,5 @@
 using System;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using McMaster.Extensions.CommandLineUtils;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 using Spectre.Console;
 using Stryker.CLI.Clients;
+using Stryker.CLI.CommandLineConfig;
 using Stryker.CLI.Logging;
 using Stryker.Core;
 using Stryker.Core.Options;
@@ -20,6 +22,7 @@ namespace Stryker.CLI
         private readonly ILoggingInitializer _loggingInitializer;
         private readonly IStrykerNugetFeedClient _nugetClient;
         private readonly IAnsiConsole _console;
+        private readonly IFileSystem _fileSystem;
 
         public int ExitCode { get; private set; } = ExitCodes.Success;
 
@@ -27,13 +30,15 @@ namespace Stryker.CLI
             IConfigBuilder configReader = null,
             ILoggingInitializer loggingInitializer = null,
             IStrykerNugetFeedClient nugetClient = null,
-            IAnsiConsole console = null)
+            IAnsiConsole console = null,
+            IFileSystem fileSystem = null)
         {
             _stryker = stryker ?? new StrykerRunner();
             _configReader = configReader ?? new ConfigBuilder();
             _loggingInitializer = loggingInitializer ?? new LoggingInitializer();
             _nugetClient = nugetClient ?? new StrykerNugetFeedClient();
             _console = console ?? AnsiConsole.Console;
+            _fileSystem = fileSystem ?? new FileSystem();
         }
 
         /// <summary>
@@ -53,9 +58,10 @@ namespace Stryker.CLI
             app.HelpOption();
 
             var inputs = new StrykerInputs();
-            var cmdConfigReader = new CommandLineConfigReader();
+            var cmdConfigReader = new CommandLineConfigReader(_console);
 
             cmdConfigReader.RegisterCommandLineOptions(app, inputs);
+            cmdConfigReader.RegisterInitCommand(app, _fileSystem, inputs, args);
 
             app.Command("baseline", baselineCmd =>
             {

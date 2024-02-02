@@ -22,7 +22,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var target = new ArrayCreationMutator();
 
-            var result = target.ApplyMutations(expressionSyntax);
+            var result = target.ApplyMutations(expressionSyntax, null);
 
             var mutation = result.ShouldHaveSingleItem();
             mutation.DisplayName.ShouldBe("Array initializer mutation");
@@ -38,7 +38,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var target = new ArrayCreationMutator();
 
-            var result = target.ApplyMutations(expressionSyntax);
+            var result = target.ApplyMutations(expressionSyntax, null);
 
             result.ShouldBeEmpty();
         }
@@ -51,8 +51,8 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var target = new ArrayCreationMutator();
 
-            var result1 = target.ApplyMutations(arrayCreationExpression);
-            var result2 = target.ApplyMutations(implicitArrayCreationExpression);
+            var result1 = target.ApplyMutations(arrayCreationExpression, null);
+            var result2 = target.ApplyMutations(implicitArrayCreationExpression, null);
 
             result1.ShouldBeEmpty();
             result2.ShouldBeEmpty();
@@ -65,7 +65,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var target = new ArrayCreationMutator();
 
-            var result = target.ApplyMutations(stackallocArrayCreationExpression);
+            var result = target.ApplyMutations(stackallocArrayCreationExpression, null);
 
             var mutation = result.ShouldHaveSingleItem();
             mutation.DisplayName.ShouldBe("Array initializer mutation");

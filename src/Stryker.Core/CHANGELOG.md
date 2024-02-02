@@ -1,3 +1,78 @@
+## [3.13.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.13.1...stryker@3.13.2) (2024-01-25)
+
+
+### Bug Fixes
+
+* **null-forgiving operator:** Mutation leak with SuppressNullableWarningSyntax constructs (!.) ([#2826](https://github.com/stryker-mutator/stryker-net/issues/2826)) ([469e3f6](https://github.com/stryker-mutator/stryker-net/commit/469e3f6fdb5f7cabefd32b50e34e9a03930b32dc))
+* **real time reporting:** Whitespace in report data no longer removed ([#2821](https://github.com/stryker-mutator/stryker-net/issues/2821)) ([2cb16a9](https://github.com/stryker-mutator/stryker-net/commit/2cb16a9e89a6f14e0021ed01b96bbf07d3f25081))
+* Stryker fails if project has conflicting settings regarding warnings ([#2828](https://github.com/stryker-mutator/stryker-net/issues/2828)) ([c2583e0](https://github.com/stryker-mutator/stryker-net/commit/c2583e04e9e298f934c301d4a729f96d134c7bc2))
+
+
+### Reverts
+
+* Revert "Publish" ([73a8177](https://github.com/stryker-mutator/stryker-net/commit/73a8177949157650100523dfe0368e75aabd56cf))
+
+
+
+## [3.13.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.13.0...stryker@3.13.1) (2024-01-05)
+
+
+### Bug Fixes
+
+* Make sure to select valid IAnalyzerResult from Buildalyzer ([#2811](https://github.com/stryker-mutator/stryker-net/issues/2811)) ([70adc60](https://github.com/stryker-mutator/stryker-net/commit/70adc60caad193ed6942ee970ea5373003ade4e4)), closes [#1900](https://github.com/stryker-mutator/stryker-net/issues/1900)
+
+
+
+# [3.13.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.12.0...stryker@3.13.0) (2023-12-22)
+
+
+### Bug Fixes
+
+* **ignore-methods:** Adjust IgnoredMethod filter to more consistent results ([#2689](https://github.com/stryker-mutator/stryker-net/issues/2689)) ([ceea82d](https://github.com/stryker-mutator/stryker-net/commit/ceea82d2e95f929455dee5595ca99300b4e0d544))
+
+
+### Features
+
+* Support compiler diagnostic options from msbuild ([#2777](https://github.com/stryker-mutator/stryker-net/issues/2777)) ([059f329](https://github.com/stryker-mutator/stryker-net/commit/059f32981c5a525289f65eacde92bac093a9546c)), closes [#2783](https://github.com/stryker-mutator/stryker-net/issues/2783)
+
+
+
+# [3.12.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.11.1...stryker@3.12.0) (2023-11-22)
+
+
+
+## [3.11.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.11.0...stryker@3.11.1) (2023-10-31)
+
+
+### Bug Fixes
+
+* Support recursive mutant removal ([#2739](https://github.com/stryker-mutator/stryker-net/issues/2739)) ([00621ec](https://github.com/stryker-mutator/stryker-net/commit/00621ec07d42540f821db39edcfc86e8094d4f91))
+* Validation on Since enablement when Baseline is also enabled ([#2744](https://github.com/stryker-mutator/stryker-net/issues/2744)) ([dfbf510](https://github.com/stryker-mutator/stryker-net/commit/dfbf510f38ae14a300ee08f31233e1e67dc8abf2))
+
+
+
+# [3.11.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.10.0...stryker@3.11.0) (2023-10-27)
+
+
+### Bug Fixes
+
+* Don't fail the test run if restoring test assemblies fails ([#2664](https://github.com/stryker-mutator/stryker-net/issues/2664)) ([0ba3f77](https://github.com/stryker-mutator/stryker-net/commit/0ba3f77d82ecc3e091112d6f2ebd98d28a336bd3))
+* **ignore-methods null conditional:** Enable filtering null-conditional method invocations by name ([#2657](https://github.com/stryker-mutator/stryker-net/issues/2657)) ([16e2d16](https://github.com/stryker-mutator/stryker-net/commit/16e2d169c490174173dd52365defdaf334bb511e))
+* **input validation:** Only validate baseline configuration when baseline is enabled ([#2729](https://github.com/stryker-mutator/stryker-net/issues/2729)) ([6a37ac3](https://github.com/stryker-mutator/stryker-net/commit/6a37ac3b392aeb8a293b45dc13281f2108bc7549))
+* Remove usings from MutantControl ([#2694](https://github.com/stryker-mutator/stryker-net/issues/2694)) ([03f9913](https://github.com/stryker-mutator/stryker-net/commit/03f991307924b67d14791b7ee42d1f0f1c2c8717))
+* Support case insensitive reference resolution ([#2719](https://github.com/stryker-mutator/stryker-net/issues/2719)) ([00f9a12](https://github.com/stryker-mutator/stryker-net/commit/00f9a126f8b15d1a504cbcd875a94e0789d00f01))
+* Use solution file when it's available ([#2690](https://github.com/stryker-mutator/stryker-net/issues/2690)) ([4696956](https://github.com/stryker-mutator/stryker-net/commit/4696956393e22b924e9ba03361fdf51ee6dc30e5))
+
+
+### Features
+
+* **baseline:** Support large reports in azure file share ([#2588](https://github.com/stryker-mutator/stryker-net/issues/2588)) ([4d6dd37](https://github.com/stryker-mutator/stryker-net/commit/4d6dd37929afc8b1dc6153ebcd25f973ad630dbe))
+* **baseline:** Validate mutual exclusivity of explicit --since and --with-baseline options ([#2723](https://github.com/stryker-mutator/stryker-net/issues/2723)) ([47b3739](https://github.com/stryker-mutator/stryker-net/commit/47b373995213bdb1c56e04099939b033a9987b05))
+* **real-time reporting:** Queue mutants before client connects ([#2722](https://github.com/stryker-mutator/stryker-net/issues/2722)) ([e2ce014](https://github.com/stryker-mutator/stryker-net/commit/e2ce0149f1b175537d1c4ea366dd95cc69b396b5))
+* Retry build with msbuild when dotnet build fails ([#2698](https://github.com/stryker-mutator/stryker-net/issues/2698)) ([b32cef2](https://github.com/stryker-mutator/stryker-net/commit/b32cef2b61589c9735d8d03ba5c1e0acdaa66da7))
+
+
+
 # [3.10.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.9.2...stryker@3.10.0) (2023-07-28)
 
 

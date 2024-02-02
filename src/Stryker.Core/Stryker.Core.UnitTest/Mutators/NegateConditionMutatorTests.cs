@@ -55,7 +55,7 @@ namespace TestApplication
 
             var node = GenerateExpressions(method);
 
-            var result = target.ApplyMutations(node).ToList();
+            var result = target.ApplyMutations(node, null).ToList();
 
             var mutation = result.ShouldHaveSingleItem();
             mutation.ReplacementNode.ToString().ShouldBe("!(Method())");
@@ -71,7 +71,7 @@ namespace TestApplication
 
 
             var expressionSyntax = tree.GetRoot().DescendantNodes().OfType<ConditionalExpressionSyntax>().Single();
-            var result = target.ApplyMutations(expressionSyntax.Condition).ToList();
+            var result = target.ApplyMutations(expressionSyntax.Condition, null).ToList();
 
             result.ShouldBeEmpty();
         }

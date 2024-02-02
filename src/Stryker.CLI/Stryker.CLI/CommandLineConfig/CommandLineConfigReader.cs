@@ -1,27 +1,71 @@
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Abstractions;
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
+using Spectre.Console;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
 
-namespace Stryker.CLI
+namespace Stryker.CLI.CommandLineConfig
 {
     public class CommandLineConfigReader
     {
         private readonly IDictionary<string, CliInput> _cliInputs = new Dictionary<string, CliInput>();
         private readonly CliInput _configFileInput;
+        private readonly IAnsiConsole _console;
 
-        public CommandLineConfigReader() => _configFileInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. Supports json and yaml formats. | default: stryker-config.json", argumentHint: "relative-path");
+        public CommandLineConfigReader(IAnsiConsole console = null) {
+            _configFileInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. Supports json and yaml formats. | default: stryker-config.json", argumentHint: "relative-path");
+            _console = console ?? AnsiConsole.Console;
+        }
 
         public void RegisterCommandLineOptions(CommandLineApplication app, IStrykerInputs inputs)
         {
             PrepareCliOptions(inputs);
 
-            foreach (var (_, value) in _cliInputs)
+            RegisterCliInputs(app);
+        }
+
+        public void RegisterInitCommand(CommandLineApplication app, IFileSystem fileSystem, IStrykerInputs inputs, string[] args)
+        {
+            app.Command("init", initCommandApp =>
             {
-                RegisterCliInput(app, value);
-            }
+                RegisterCliInputs(initCommandApp);
+
+                initCommandApp.OnExecute(() =>
+                {
+                    _console.WriteLine($"Initializing new config file.");
+                    _console.WriteLine();
+
+                    ReadCommandLineConfig(args[1..], initCommandApp, inputs);
+                    var configOption = initCommandApp.Options.SingleOrDefault(o => o.LongName == _configFileInput.ArgumentName);
+                    var basePath = fileSystem.Directory.GetCurrentDirectory();
+                    var configFilePath = Path.Combine(basePath, configOption?.Value() ?? "stryker-config.json");
+
+                    if (fileSystem.File.Exists(configFilePath))
+                    {
+                        _console.Write("Config file already exists at ");
+                        _console.WriteLine(configFilePath, new Style(Color.Cyan1));
+                        var overwrite = _console.Confirm($"Do you want to overwrite it?", false);
+                        if (!overwrite)
+                        {
+                            return;
+                        }
+                        _console.WriteLine();
+                    }
+
+                    var config = FileConfigGenerator.GenerateConfigAsync(inputs);
+                    fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(configFilePath));
+                    fileSystem.File.WriteAllText(configFilePath, config);
+
+                    _console.Write("Config file written to ");
+                    _console.WriteLine(configFilePath, new Style(Color.Cyan1));
+                    _console.Write("The file is populated with default values, remove the options you don't need and edit the options you want to use. For more information on configuring stryker see: ");
+                    _console.WriteLine("https://stryker-mutator.io/docs/stryker-net/configuration", new Style(Color.Cyan1));
+                });
+            });
         }
 
         public CommandOption GetConfigFileOption(string[] args, CommandLineApplication app)
@@ -65,6 +109,14 @@ namespace Stryker.CLI
                         HandleSingleIntValue(cliInput, (IInput<int?>)intInput);
                         break;
                 }
+            }
+        }
+
+        private void RegisterCliInputs(CommandLineApplication app)
+        {
+            foreach (var (_, value) in _cliInputs)
+            {
+                RegisterCliInput(app, value);
             }
         }
 

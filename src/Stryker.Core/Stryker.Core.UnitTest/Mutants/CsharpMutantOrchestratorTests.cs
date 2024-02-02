@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
@@ -453,7 +454,7 @@ private bool Out(int test, Func<int, bool>lambda )
         [Fact]
         public void ShouldMutateInsideStringDeclarationInsideLocalFunction()
         {
-            string source = @"void TestMethod()
+            var source = @"void TestMethod()
 		{
 			string SomeLocalFunction()
 			{
@@ -461,7 +462,7 @@ private bool Out(int test, Func<int, bool>lambda )
 				return $""test{1 + test3}"";
 			};
 		}";
-            string expected = @"void TestMethod()
+            var expected = @"void TestMethod()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else		{
 			string SomeLocalFunction()
 {if(StrykerNamespace.MutantControl.IsActive(1)){}else			{
@@ -477,32 +478,70 @@ private bool Out(int test, Func<int, bool>lambda )
         [Fact]
         public void ShouldMutateConditionalExpressionProperly()
         {
-            string source = @"void TestMethod()
+            var source = @"void TestMethod()
 		{
 			string SomeLocalFunction()
 			{
 				return string.Empty?.All(x => !string.IsEmpty(x));
 			};
 		}";
-            string expected = @"void TestMethod()
+            var expected = @"void TestMethod()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else		{
 			string SomeLocalFunction()
 {if(StrykerNamespace.MutantControl.IsActive(1)){}else			{
-				return (StrykerNamespace.MutantControl.IsActive(2)?string.Empty?.Any(x => !string.IsEmpty(x)):(StrykerNamespace.MutantControl.IsActive(3)?""Stryker was here!"":string.Empty)?.All(x => (StrykerNamespace.MutantControl.IsActive(4)?string.IsEmpty(x):!string.IsEmpty(x))));
-
-            }return default(string);};
+				return (StrykerNamespace.MutantControl.IsActive(3)?string.Empty?.Any(x => !string.IsEmpty(x)):(StrykerNamespace.MutantControl.IsActive(2)?""Stryker was here!"":string.Empty)?.All(x => (StrykerNamespace.MutantControl.IsActive(4)?string.IsEmpty(x):!string.IsEmpty(x))));            }return default(string);};
 }}";
+
+            ShouldMutateSourceInClassToExpected(source, expected);
+        }
+               
+
+        [Fact]
+        public void ShouldMutateConditionalExpressionOnArrayDeclaration()
+        {
+            var source =
+                @"public static IEnumerable<int> Foo() => new int[] { }.ToArray().Any(x => x==1)?.OrderBy(e => e).ToList();";
+            var expected =
+                @"public static IEnumerable<int> Foo() => (StrykerNamespace.MutantControl.IsActive(2)?new int[] { }.ToArray().Any(x => x==1)?.OrderByDescending(e => e).ToList():(StrykerNamespace.MutantControl.IsActive(0)?new int[] { }.ToArray().All(x => x==1):new int[] { }.ToArray().Any(x => (StrykerNamespace.MutantControl.IsActive(1)?x!=1:x==1)))?.OrderBy(e => e).ToList());";
 
             ShouldMutateSourceInClassToExpected(source, expected);
         }
 
         [Fact]
-        public void ShouldMutateConditionalExpressionOnArrayDeclaration()
+        public void ShouldMutateSuppressNullableWarningExpressionOnArrayDeclaration()
         {
-            string source =
-                @"public static IEnumerable<int> Foo() => new int[] { }.ToArray().Any(x => x==1)?.OrderBy(e => e).ToList();";
-            string expected =
-                @"public static IEnumerable<int> Foo() => (StrykerNamespace.MutantControl.IsActive(1)?new int[] { }.ToArray().Any(x => x==1)?.OrderByDescending(e => e).ToList():(StrykerNamespace.MutantControl.IsActive(0)?new int[] { }.ToArray().All(x => x==1)?.OrderBy(e => e).ToList():new int[] { }.ToArray().Any(x => (StrykerNamespace.MutantControl.IsActive(2)?x!=1:x==1))?.OrderBy(e => e).ToList()));";
+            var source =
+                @"public static void Foo(){
+var employeePerson = group.First().Entitlement!.Employee.Person;}";
+            var expected =
+                @"public static void Foo(){if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+var employeePerson = (StrykerNamespace.MutantControl.IsActive(1)?group.FirstOrDefault().Entitlement!.Employee.Person:group.First().Entitlement!.Employee.Person);}}";
+
+            ShouldMutateSourceInClassToExpected(source, expected);
+        }
+
+
+        [Fact]
+        public void ShouldMutateChainedInvocation()
+        {
+            var source =
+                @"public string ExampleBugMethod()
+{
+    string someString = """";
+    return someString.Replace(""ab"", ""cd"")
+        .Replace(""12"", ""34"")
+        .PadLeft(12)
+        .Replace(""12"", ""34"");
+}";
+            var expected =
+                @"public string ExampleBugMethod()
+{if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+    string someString = (StrykerNamespace.MutantControl.IsActive(1)?""Stryker was here!"":"""");
+    return someString.Replace((StrykerNamespace.MutantControl.IsActive(2)?"""":""ab""), (StrykerNamespace.MutantControl.IsActive(3)?"""":""cd""))
+        .Replace((StrykerNamespace.MutantControl.IsActive(4)?"""":""12""), (StrykerNamespace.MutantControl.IsActive(5)?"""":""34""))
+        .PadLeft(12)
+        .Replace((StrykerNamespace.MutantControl.IsActive(6)?"""":""12""), (StrykerNamespace.MutantControl.IsActive(7)?"""":""34""));
+}return default(string);}";
 
             ShouldMutateSourceInClassToExpected(source, expected);
         }
@@ -1183,7 +1222,7 @@ if(StrykerNamespace.MutantControl.IsActive(3)){;}else{		request.Headers.Add((Str
 {
 	var test3 = 2 + 5;
 }";
-            _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot(), null);
 
             var mutants = _target.GetLatestMutantBatch().ToList();
             mutants.Count.ShouldBe(2);
@@ -1210,7 +1249,7 @@ namespace TestApp
 		}
 	}
 }";
-            _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            _target.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot(), null);
 
             var mutants = _target.GetLatestMutantBatch().ToList();
             mutants.Count.ShouldBe(7);

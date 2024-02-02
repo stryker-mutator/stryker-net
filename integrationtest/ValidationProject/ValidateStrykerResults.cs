@@ -1,16 +1,49 @@
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Text;
 using Newtonsoft.Json;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Json;
+using Stryker.CLI;
 using Xunit;
 
 namespace IntegrationTests
 {
     public class ValidateStrykerResults
     {
+        private readonly ReadOnlyCollection<SyntaxKind> _blacklistedSyntaxKindsForMutating =
+            new(new[]
+            {
+                // Usings
+                SyntaxKind.UsingDirective,
+                SyntaxKind.UsingKeyword,
+                SyntaxKind.UsingStatement,
+                // Comments
+                SyntaxKind.DocumentationCommentExteriorTrivia,
+                SyntaxKind.EndOfDocumentationCommentToken,
+                SyntaxKind.MultiLineCommentTrivia,
+                SyntaxKind.MultiLineDocumentationCommentTrivia,
+                SyntaxKind.SingleLineCommentTrivia,
+                SyntaxKind.SingleLineDocumentationCommentTrivia,
+                SyntaxKind.XmlComment,
+                SyntaxKind.XmlCommentEndToken,
+                SyntaxKind.XmlCommentStartToken,
+            }
+        );
+        private readonly ReadOnlyCollection<SyntaxKind> _parentSyntaxKindsForMutating =
+            new(new[]
+            {
+                SyntaxKind.MethodDeclaration,
+                SyntaxKind.PropertyDeclaration,
+                SyntaxKind.ConstructorDeclaration,
+                SyntaxKind.FieldDeclaration,
+            }
+        );
         private const string MutationReportJson = "mutation-report.json";
 
         [Fact]
@@ -30,7 +63,7 @@ namespace IntegrationTests
 
                 var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-                CheckReportMutantCounts(report, total: 28, ignored: 7, survived: 2, killed: 7, timeout: 0, nocoverage: 11);
+                CheckReportMutants(report, total: 28, ignored: 7, survived: 2, killed: 7, timeout: 0, nocoverage: 11);
             }
         }
 
@@ -49,7 +82,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutantCounts(report, total: 114, ignored: 55, survived: 4, killed: 6, timeout: 2, nocoverage: 45);
+            CheckReportMutants(report, total: 114, ignored: 55, survived: 4, killed: 6, timeout: 2, nocoverage: 45);
             CheckReportTestCounts(report, total: 14);
         }
 
@@ -69,7 +102,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutantCounts(report, total: 0, ignored: 0, survived: 0, killed: 0, timeout: 0, nocoverage: 0);
+            CheckReportMutants(report, total: 0, ignored: 0, survived: 0, killed: 0, timeout: 0, nocoverage: 0);
             CheckReportTestCounts(report, total: 0);
         }
 
@@ -88,7 +121,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutantCounts(report, total: 114, ignored: 27, survived: 8, killed: 8, timeout: 2, nocoverage: 67);
+            CheckReportMutants(report, total: 114, ignored: 27, survived: 8, killed: 8, timeout: 2, nocoverage: 67);
             CheckReportTestCounts(report, total: 30);
         }
 
@@ -107,11 +140,31 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutantCounts(report, total: 114, ignored: 55, survived: 4, killed: 6, timeout: 2, nocoverage: 45);
+            CheckReportMutants(report, total: 114, ignored: 55, survived: 4, killed: 6, timeout: 2, nocoverage: 45);
             CheckReportTestCounts(report, total: 30);
         }
 
-        private void CheckReportMutantCounts(JsonReport report, int total, int ignored, int survived, int killed, int timeout, int nocoverage)
+        private void CheckMutationKindsValidity(JsonReport report)
+        {
+            foreach (var file in report.Files)
+            {
+                var syntaxTreeRootNode = CSharpSyntaxTree.ParseText(file.Value.Source).GetRoot();
+                var textLines = SourceText.From(file.Value.Source).Lines;
+
+                foreach (var mutation in file.Value.Mutants)
+                {
+                    var linePositionSpan = new LinePositionSpan(new LinePosition(mutation.Location.Start.Line - 1, mutation.Location.Start.Column), new LinePosition(mutation.Location.End.Line - 1, mutation.Location.End.Column));
+                    var textSpan = textLines.GetTextSpan(linePositionSpan);
+                    var node = syntaxTreeRootNode.FindNode(textSpan);
+                    var nodeKind = node.Kind();
+                    _blacklistedSyntaxKindsForMutating.ShouldNotContain(nodeKind);
+
+                    node.AncestorsAndSelf().ShouldContain(pn => _parentSyntaxKindsForMutating.Contains(pn.Kind()));
+                }
+            }
+        }
+
+        private void CheckReportMutants(JsonReport report, int total, int ignored, int survived, int killed, int timeout, int nocoverage)
         {
             var actualTotal = report.Files.Select(f => f.Value.Mutants.Count()).Sum();
             var actualIgnored = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Ignored.ToString())).Sum();
@@ -128,6 +181,8 @@ namespace IntegrationTests
                 () => actualTimeout.ShouldBe(timeout),
                 () => actualNoCoverage.ShouldBe(nocoverage)
             );
+
+            CheckMutationKindsValidity(report);
         }
 
         private void CheckReportTestCounts(JsonReport report, int total)

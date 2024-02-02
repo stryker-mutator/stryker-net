@@ -115,7 +115,7 @@ namespace Stryker.Core.Options
             var baselineCreateEnabled = BaselineRecreateEnabledInput.Validate();
             var withBaseline = WithBaselineInput.Validate();
             var reporters = ReportersInput.Validate(withBaseline);
-            var baselineProvider = BaselineProviderInput.Validate(reporters);
+            var baselineProvider = BaselineProviderInput.Validate(reporters, withBaseline);
             var sinceEnabled = SinceInput.Validate(WithBaselineInput.SuppliedInput);
             var sinceTarget = SinceTargetInput.Validate(sinceEnabled);
             var projectVersion = ProjectVersionInput.Validate(reporters, withBaseline);

@@ -20,7 +20,7 @@ namespace Stryker.Core.MutationTest
         private readonly ILogger _logger;
         private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
-        private readonly BaseMutantOrchestrator<SyntaxNode> _orchestrator;
+        private readonly BaseMutantOrchestrator<SyntaxNode, SemanticModel> _orchestrator;
         private readonly IMutantFilter _mutantFilter;
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Stryker.Core.MutationTest
             IFileSystem fileSystem = null,
             StrykerOptions options = null,
             IMutantFilter mutantFilter = null,
-            BaseMutantOrchestrator<SyntaxNode> orchestrator = null)
+            BaseMutantOrchestrator<SyntaxNode, SemanticModel> orchestrator = null)
         {
             _options = options;
             _orchestrator = orchestrator;
@@ -55,12 +55,15 @@ namespace Stryker.Core.MutationTest
         {
             var projectInfo = input.SourceProjectInfo.ProjectContents;
             var orchestrator = _orchestrator ?? new CsharpMutantOrchestrator(new MutantPlacer(input.SourceProjectInfo.CodeInjector), options: _options);
+            var compilingProcess = new CsharpCompilingProcess(input, options: _options);
+            var semanticModels = compilingProcess.GetSemanticModels(projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().Select(x => x.SyntaxTree));
+
             // Mutate source files
             foreach (var file in projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
             {
                 _logger.LogDebug($"Mutating {file.FullPath}");
                 // Mutate the syntax tree
-                var mutatedSyntaxTree = orchestrator.Mutate(file.SyntaxTree.GetRoot());
+                var mutatedSyntaxTree = orchestrator.Mutate(file.SyntaxTree.GetRoot(), semanticModels.First(x => x.SyntaxTree == file.SyntaxTree));
                 // Add the mutated syntax tree for compilation
                 file.MutatedSyntaxTree = mutatedSyntaxTree.SyntaxTree;
                 if (_options.DevMode)
@@ -73,17 +76,16 @@ namespace Stryker.Core.MutationTest
 
             _logger.LogDebug("{0} mutants created", projectInfo.Mutants.Count());
 
-            CompileMutations(input);
+            CompileMutations(input, compilingProcess);
         }
 
-        private void CompileMutations(MutationTestInput input)
+        private void CompileMutations(MutationTestInput input, CsharpCompilingProcess compilingProcess)
         {
             var info = input.SourceProjectInfo;
             var projectInfo =  (ProjectComponent<SyntaxTree>) info.ProjectContents;
             using var ms = new MemoryStream();
             using var msForSymbols = _options.DevMode ? new MemoryStream() : null;
             // compile the mutated syntax trees
-            var compilingProcess = new CsharpCompilingProcess(input, options: _options);
             var compileResult = compilingProcess.Compile(projectInfo.CompilationSyntaxTrees, ms, msForSymbols);
 
             foreach (var testProject in info.TestProjectsInfo.AnalyzerResults)
@@ -111,10 +113,10 @@ namespace Stryker.Core.MutationTest
             }
 
             // if a rollback took place, mark the rolled back mutants as status:BuildError
-            if (compileResult.RollbackResult?.RollbackedIds.Any() ?? false)
+            if (compileResult.RollbackedIds.Any())
             {
                 foreach (var mutant in projectInfo.Mutants
-                    .Where(x => compileResult.RollbackResult.RollbackedIds.Contains(x.Id)))
+                    .Where(x => compileResult.RollbackedIds.Contains(x.Id)))
                 {
                     // Ignore compilation errors if the mutation is skipped anyways.
                     if (mutant.ResultStatus == MutantStatus.Ignored)

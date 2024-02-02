@@ -4,11 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.EventSource;
 using Shouldly;
-using Stryker.Core.Reporters.Html.Realtime;
-using Stryker.Core.Reporters.Html.Realtime.Events;
+using Stryker.Core.Reporters.Html.RealTime;
+using Stryker.Core.Reporters.Html.RealTime.Events;
 using Xunit;
-  
-namespace Stryker.Core.UnitTest.Reporters.Html.Realtime;
+
+namespace Stryker.Core.UnitTest.Reporters.Html.RealTime;
 
 public class SseServerTest : TestBase
 {
@@ -104,4 +104,15 @@ public class SseServerTest : TestBase
         data.ShouldBeSemantically("{\"id\":\"1\",\"status\":\"Survived\"}");
     }
 
+    [Fact]
+    public void ShouldIndicateWhenAtLeastOneClientIsConnected()
+    {
+        _sut.OpenSseEndpoint();
+        var sseClient = new EventSource(new Uri($"http://localhost:{_sut.Port}/"));
+
+        Task.Run(() => sseClient.StartAsync());
+        WaitForConnection(500).ShouldBeTrue();
+
+        _sut.HasConnectedClients.ShouldBeTrue();
+    }
 }
