@@ -68,6 +68,53 @@ namespace Stryker.CLI.CommandLineConfig
             });
         }
 
+        public void RegisterBaselineCommand(CommandLineApplication app, IStrykerInputs inputs, string[] args, StrykerCli strykerCli)
+        {
+            app.Command("baseline", baselineCmd =>
+            {
+                //RegisterCliInputs(baselineCmd);
+                baselineCmd.Description = "Enables the baseline feature";
+                RegisterCommandLineOptions(baselineCmd, inputs);
+                //var targetInput = new CliInput()
+                //{
+                //    Input = new BaselineTargetInput(),
+                //    ArgumentName = "target",
+                //    ArgumentShortName = "t",
+                //    Description = @"The target for the compare. For example, when runnin on branch feat-2 and wanting to compare to branch ""main"", set this value to ""main""",
+                //    Category = InputCategory.Mutation
+                //};
+                //var targetOption = new CommandOption("-t|--target <value>", CommandOptionType.SingleValue)
+                //{
+                //    LongName = "target",
+                //    ShortName = "t",
+                //    Description = @"The target for the compare. For example, when runnin on branch feat-2 and wanting to compare to branch ""main"", set this value to ""main""",
+                //    ShowInHelpText = true
+                //};
+                //RegisterCliInput(baselineCmd, targetInput);
+                //AddCliInput(targetInput.Input, "--target", "-t", CommandOptionType.SingleValue, InputCategory.Mutation);
+                //baselineCmd.AddOption(targetOption);
+                baselineCmd.Command("recreate", createCmd =>
+                {
+                    //RegisterCliInputs(createCmd);
+                    //RegisterCommandLineOptions(createCmd, inputs);
+                    //RegisterCliInput(createCmd, targetInput);
+
+                    createCmd.OnExecute(() =>
+                    {
+                        inputs.WithBaselineInput.SuppliedInput = true;
+                        createCmd.Description = "Creates a new baseline by doing a full stryker run";
+                        inputs.BaselineRecreateEnabledInput.SuppliedInput = true;
+                        return strykerCli.StartApp(inputs, args, app, this);
+                    });
+                });
+                baselineCmd.OnExecute(() =>
+                {
+                    inputs.WithBaselineInput.SuppliedInput = true;
+                    return;
+                });
+            });
+        }
+
         public CommandOption GetConfigFileOption(string[] args, CommandLineApplication app)
         {
             var commands = app.Parse(args);
@@ -183,6 +230,7 @@ namespace Stryker.CLI.CommandLineConfig
             AddCliInput(inputs.MutationLevelInput, "mutation-level", "l", category: InputCategory.Mutation);
             AddCliInput(inputs.SinceInput, "since", "", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "committish", category: InputCategory.Mutation);
             AddCliInput(inputs.WithBaselineInput, "with-baseline", "", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "committish", category: InputCategory.Mutation);
+            AddCliInput(inputs.BaselineTargetInput, "target", "", argumentHint: "committish", category: InputCategory.Mutation);
             // Category: Reporting
             AddCliInput(inputs.OpenReportInput, "open-report", "o", CommandOptionType.SingleOrNoValue, argumentHint: "report-type", category: InputCategory.Reporting);
             AddCliInput(inputs.ReportersInput, "reporter", "r", optionType: CommandOptionType.MultipleValue, category: InputCategory.Reporting);

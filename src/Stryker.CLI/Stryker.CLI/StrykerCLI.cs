@@ -11,7 +11,6 @@ using Stryker.CLI.CommandLineConfig;
 using Stryker.CLI.Logging;
 using Stryker.Core;
 using Stryker.Core.Options;
-using Stryker.Core.Options.Inputs;
 
 namespace Stryker.CLI
 {
@@ -62,49 +61,7 @@ namespace Stryker.CLI
 
             cmdConfigReader.RegisterCommandLineOptions(app, inputs);
             cmdConfigReader.RegisterInitCommand(app, _fileSystem, inputs, args);
-
-            app.Command("baseline", baselineCmd =>
-            {
-                baselineCmd.Description = "Enables the baseline feature";
-                cmdConfigReader.RegisterCommandLineOptions(baselineCmd, inputs);
-                var targetInput = new CliInput()
-                {
-                    Input = new BaselineTargetInput(),
-                    ArgumentName = "target",
-                    ArgumentShortName = "t",
-                    Description = @"The target for the compare. For example, when runnin on branch feat-2 and wanting to compare to branch ""main"", set this value to ""main""",
-                    Category = InputCategory.Mutation
-                };
-                var targetOption = new CommandOption("-t|--target <value>", CommandOptionType.SingleValue) {
-                    LongName = "target",
-                    ShortName = "t",
-                    Description = @"The target for the compare. For example, when runnin on branch feat-2 and wanting to compare to branch ""main"", set this value to ""main""",
-                    ShowInHelpText = true
-                };
-                cmdConfigReader.RegisterCliInput(baselineCmd, targetInput);
-                cmdConfigReader.AddCliInput(targetInput.Input, "--target", "-t", CommandOptionType.SingleValue, InputCategory.Mutation);
-                baselineCmd.AddOption(targetOption);
-                baselineCmd.Command("recreate", createCmd =>
-                {
-                    cmdConfigReader.RegisterCommandLineOptions(createCmd, inputs);
-                    cmdConfigReader.RegisterCliInput(createCmd, targetInput);
-                    cmdConfigReader.AddCliInput(targetInput.Input, "--target", "-t", CommandOptionType.SingleValue, InputCategory.Mutation);
-                    createCmd.AddOption(targetOption);
-
-                    createCmd.OnExecute(() =>
-                    {
-                        inputs.WithBaselineInput.SuppliedInput = true;
-                        createCmd.Description = "Creates a new baseline by doing a full stryker run";
-                        inputs.BaselineRecreateEnabledInput.SuppliedInput = true;
-                        return StartApp(inputs, args, app, cmdConfigReader);
-                    });
-                });
-                baselineCmd.OnExecute(() =>
-                {
-                    inputs.WithBaselineInput.SuppliedInput = true;
-                    return StartApp(inputs, args, app, cmdConfigReader);
-                });
-            });
+            cmdConfigReader.RegisterBaselineCommand(app, inputs, args, this);
 
             app.OnExecute(() =>
             {
@@ -133,7 +90,7 @@ namespace Stryker.CLI
             }
         }
 
-        private int StartApp(StrykerInputs inputs, string[] args, CommandLineApplication app, CommandLineConfigReader cmdConfigReader)
+        internal int StartApp(IStrykerInputs inputs, string[] args, CommandLineApplication app, CommandLineConfigReader cmdConfigReader)
         {
             // app started
             PrintStrykerASCIIName();

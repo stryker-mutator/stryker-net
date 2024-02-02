@@ -49,6 +49,7 @@ namespace Stryker.Core.Options
         OpenReportInput OpenReportInput { get; init; }
         OpenReportEnabledInput OpenReportEnabledInput { get; init; }
         BreakOnInitialTestFailureInput BreakOnInitialTestFailureInput { get; init; }
+        BaselineTargetInput BaselineTargetInput { get; init; }
 
         StrykerOptions ValidateAll();
     }
@@ -92,6 +93,7 @@ namespace Stryker.Core.Options
         public ProjectNameInput ProjectNameInput { get; init; } = new();
         public SinceInput SinceInput { get; init; } = new();
         public SinceTargetInput SinceTargetInput { get; init; } = new();
+        public BaselineTargetInput BaselineTargetInput { get; init; } = new();
         public DiffIgnoreChangesInput DiffIgnoreChangesInput { get; init; } = new();
         public FallbackVersionInput FallbackVersionInput { get; init; } = new();
         public ProjectVersionInput ProjectVersionInput { get; init; } = new();
