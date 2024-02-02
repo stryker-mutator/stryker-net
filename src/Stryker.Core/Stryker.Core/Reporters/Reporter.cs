@@ -10,6 +10,7 @@ namespace Stryker.Core.Reporters
         Json,
         Html,
         Dashboard,
+        RealTimeDashboard,
         Markdown,
         Baseline
     }

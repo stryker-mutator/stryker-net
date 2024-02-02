@@ -13,7 +13,7 @@ namespace Stryker.Core.Options.Inputs
 
         public string Validate(IEnumerable<Reporter> reporters, bool withBaseline)
         {
-            if (reporters.Contains(Reporter.Dashboard) || withBaseline)
+            if (reporters.Contains(Reporter.Dashboard) || reporters.Contains(Reporter.RealTimeDashboard) || withBaseline)
             {
                 if (withBaseline && string.IsNullOrWhiteSpace(SuppliedInput))
                 {
