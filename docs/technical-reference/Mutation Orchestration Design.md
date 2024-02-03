@@ -1,4 +1,4 @@
-#Stryker’s crash course on C# syntax parsing and mutation
+# Stryker’s crash course on C# syntax parsing and mutation
 
 
 ## Audience
@@ -8,27 +8,27 @@ This document aims to assist developers who need or want to understand how Stryk
  This document focuses on the source mutation step. I.e. how Stryker.Net generates a mutated version of a source file. It does not cover what happens before (project analysis, tests discovery, coverage capture…) nor what happens afterward (mutated project build, mutation tests, reporting…).
 It describes the patterns and main classes, without detailing specifics that can be understood when reading the code itself or using code documentation.
 
-#Roslyn
+# Roslyn
 Stryker’s parsing and mutation logic relies extensively on Roslyn classes, so you need to be familiar with it if you want to understand or contribute to this part of Stryker.
 Note that we made the creation of mutation engines (aka mutators) as easy as we could. In fact, this is arguably the easiest part of the overall mutation logic.
 
-##Syntax tree
+## Syntax tree
 Roslyn precompiles any valid source file to an object tree where each node is a syntax construct. Each node captures the associated source code, including whitespaces and comments. The structure captures the code hierarchy. So you will find a syntax root node (the whole file), containing a namespace node which contains a class definition node which contains various members. The class will likely contain a method definition, with a name, parameters and a body, made of statements. Statements will contain a keyword and expressions and these will contain sub expressions, potentially recursively as an expression can contain a lambda etc…
 As such, this syntax tree may be deep (tens, even hundreds levels).
 Each node is described via the appropriate Roslyn class, such as `InvocationExpressionSyntax` for a function call, or `ForStatementSyntax` for a _for_ loop. [Sharplab] allows you to discover the syntax tree of any provided C# source file. I strongly advise you to try and use it, if you are not familiar with it. Quick warning: Sharply displays the **SyntaxKind** of the syntax constructs, which is often different from the actual classes used to represent it; as a reminder, **SyntaxKind** allows to identify variants of some constructs, such as between `x++` and `x—`.
 
-###Syntax Node classes
+### Syntax Node classes
 There are hundreds of specific syntax nodes classes, as each C# constructs get its own class. So one can have specific access to each part of a for statement: initializers, condition, increments and statement (or block statement). This greatly simplifies reading, modifying or creating any syntax construct. 
 The class hierarchy is pretty shallow, with the vast majority of syntax nodes inheriting either from `StatementSyntax` or `ExpressionSyntax` with some subclasses. Those classes are great, but the bad news is that there is only a class inheritance tree and no interface implementation.
 
 SyntaxNode can bear ‘annotations’. These are stored as pairs of strings (name and value) but these are not reflected (nor persisted) in the source code.
 
-###A word of warning
+### A word of warning
 This means one must extensively tries syntax constructs to ensure all use cases are covered.
 The nominal example for this is that there are at least 5 different classes that represent some callable code: `LocalFunctionStatement`, `AnonymousFunctionExpression` (which is derived in two sub classes), `PropertyDeclarationSyntax`, `AccessorDeclarationSyntax` and `BaseMethodDeclarationSyntax` (which is derived in several sub classes).  Most of them accept one or more parameters, may return a value and have either a classical body or an arrow expression body. But if you need/want to handle functions in general, you will have to duplicate your code for all this classes.
 As far as I know, Roslyn does not offer a way to factorize this. Which points to another problem: Roslyn documentation is severely lacking, as most of the doc is automatically generated from the signatures without any further comments or explanation.
 
-##Modifying the syntax tree
+## Modifying the syntax tree
 Roslyn syntax objects are immutable: you cannot alter any syntax node. **Modifying a syntax node means getting a new copy of this node including the modification**. While this is a good design philosophy for many scenarios, this is less than ideal for mutation, but I will discuss this later.
 Syntax nodes can be modified via set of `WithXXX` methods which allows to change one of the node’s properties at a time. These calls can be chained via a builder pattern: `node.WithXXX(...).WithY(...)...'`.
 Building syntax node can be done via the `SyntaxFactory` (static) class. But that modifying a node should be preferred to creating a new one, as this is the surest way to keep as much information as possible. 
@@ -47,7 +47,7 @@ Stryker strives to find a good balance between performance, concision and ease o
 5. Prevent accidental ‘mutation loss’ (more about this later)
 To this list, I would add: throw everything in the air when facing the unexpected. That is, Stryker mutation code will fail early and throw when dealing with non supported situations. We are aware this means blocking some users, but a clear failing situation shorten the analysis time and reduce the impact. A defensive/tolerant approach would result in Stryker failing to generate mutants for unknown syntax structure. And this problem could remain undetected for years as this would be lost in the mass of generated mutants.
 
-#Stryker mutation design
+# Stryker mutation design
 Taking into account these principles, we designed the following classes/class hierarchy:
 1. Mutators: In charge of generating mutated version of syntax node. Each of them implement a specific mutation strategy. They must implement [`IMutator`] and must be stateless (they only store their configuration/options)
 2. SyntaxNode Orchestrators: in charge of orchestrating the mutation of some specific syntax node kind. They must implement [`INodeMutator`], and must be stateless. They do most of the grunt work
@@ -122,7 +122,7 @@ Used by main logic:
 - `InStaticValue`: property,  `true` when inside a static constructor or initializer. This is used to identify static mutants.
 - `MustInjectCoverageLogic`: property, `true` when Stryker needs to inject runtime static markers for proper static mutations detection (it depends on Stryker configuration)
 - `FindHandler(...)`:  returns an `NodeOrchestrator` instance able to handle the provided `SyntaxNode` type.
-###Mutations management
+### Mutations management
 Orchestrator will use this method to control at which syntax level mutations will be inserted and to inject mutations for compatible syntax node.
 
 Methods useful for orchestrators:
@@ -132,7 +132,7 @@ Methods useful for orchestrators:
 Used by main logic:
 - `GenerateMutantsForNode(...)`: returns the list of `Mutants` for the provided node using the configured list of mutators.
 - `FilterMutator(...)`: adjusts the list of active mutators ‘in flight’. This method is used when parsing Stryker Comments.
-###Implementation details : `MutationStore`
+### Implementation details : `MutationStore`
 An important part of mutation context is the `MutationStore` class, which is in charge of storing generated mutations until they are injected.
 It uses an internal stacks of stores, where each entry matches a syntax level (member, block, statement, expression, memberAccess). Note that the stack may go deep thanks to local functions and lambdas/anonymous functions.
 An entry is pushed on the stack when an orchestrator calls `MutationContext.Enter(...) ` which is popped when `MutationContext.Leave()`is called (the algorithm compresses empty levels to keep the stack as small as possible.
@@ -140,11 +140,11 @@ The store automatically promotes any pending mutations to the next higher level 
 
 It also implements injection method that generates mutated version of syntax nodes (expression, statement or block) enclosed in the appropriate mutation switching construct: ternary operator(s) for expressions and if statement(s) for statements and blocks.
 
-##MutantPlacer class
+## MutantPlacer class
 `MutantPlacer` main responsibility is to ensure any code modification may be rolled back. As a reminder, Stryker assumes the mutation phase will result in compilation errors. When these are detected during compilation, Stryker will try to locate the code transformation that is the cause of this compilation error and undo it. Alas, this is more complex than simply ‘putting back the original code’. Using such a coarse approach would result in rolling back viable mutations due to the removal of any inner modifications.
 Instead, Stryker relies on code injection engines that provides a method to revert the change(s) made.
 
-###Injection engines
+### Injection engines
 
 The `MutantPlacer` class implements the infrastructure for this logic, via a strategy pattern (again). Any class that modifies the source code must implement `IInstrumentCode` which exposes two members:
 1. `string IntstrumentEngineId {get…}` which provides the (unique) engine identifier
@@ -154,10 +154,10 @@ It must also be registered with the `MutantPlacer class` (via `MutantPlacer.Regi
 Note that there is no signature for the injection part, only the removal. Reason is twofold:
 1. Engines are task specific and there is no identified situation where Stryker would benefit from a ‘generic’ injection mechanism
 2. This allows method signature to better match the use case(s).
-###Injection methods
+### Injection methods
 The orchestration logic use a shared `MutantPlacer` during the mutation process of one project. This instance stores the unique namespace name that is used by the mutation switching logic for this project. So injection methods related to mutation switching are instance methods, the others are often static.
 MutantPlacer aggregates a few injection engines that are useful across the mutation logic. Those can be used via `MutantPlacer`’s methods.
-####Compilation helpers
+#### Compilation helpers
 Those engines inject code that are used to reduce the number of compilation errors. Indeed, some mutants alter the control flow which can lead to using non initialized variables, or failing to return a value. So Stryker injects statements to limit the risk of such an event.
 - `AddEndingReturn(...)`: returns a copy of the provided `BlockSyntax` with a `return default` statement added at the end. This method does not add a `return` if:
 	- this is an iteration method (`yield` statement)
@@ -168,16 +168,16 @@ Those engines inject code that are used to reduce the number of compilation erro
 - `PlaceStaticContextMarker(...)`:  injects the logic used by Stryker to track _static context_ (i.e. code that is run during some static initialization). It relies on a `using` expression. This method supports blocks and expressions.
 This method must be used to mark any static construct, disregarding mutation.
 - `InjectOutParametersInitialization(...)`: adds statements to initialize to default value any out parameters.
-####Switching logic injectors
+#### Switching logic injectors
 Those engines inject mutations and the switching logic (`if` or `?: `) to control them.
 -  `PlaceStatementControlledMutations(…)`: build an `if` statement with the provided mutation as the `true` condition and the provided statement/bloc has the `false` condition. The `if` statement will be chained if there are more than one mutation.
 - `PlaceExpressionControlledMutations`:  build a ternary operator (`?:`) expression with the provided mutation as the `true` condition and the provided expression has the `false` condition . The conditional expression will be chained if there are more than one mutation.
-####Rollback helpers
+#### Rollback helpers
 Those engines are used during to remove mutations (and helpers) that cause compilation errors.
 - `RemoveMutant(...)`: returns a syntax node with the mutation removed.
 - `RequiresRemovingChildMutations(...)`: returns true if the syntax node contains an injection that can be removed without removing any child mutation/injection first.
 - `FindAnnotations(...)`: returns information regarding injection in the provided syntax node, such as used engine and mutant id (if relevant)
-##Node orchestrators
+## Node orchestrators
 You can browse this list for figuring out how each syntax structure is mutated, which is useful when trying to understand why Stryker does not give the result you expected or fails.  Remember that Stryker tries out orchestrators in declaration order until one `CanHandle` returns true; so make sure that the most specific orchestrators are declared first.
 Also, you may want to check `DoNotMutateOrchestrator`  when trying to understand why some syntax constructs are not mutated: this may be deliberately.
 You can start by looking at `CSharpMutantOrchestrator.BuildOrchestratorList()` to see which orchestrators are used and their relative declaration order.
@@ -191,21 +191,21 @@ Note that there is an `FsharpMutantOrchestrator` class for a future support of F
 - `SyntaxNode Mutate(...)`: mutates an entire syntax tree
 - `GetHandler(...)`: returns the appropriate orchestrator for a given syntax node
 - `GenerateMutationsForNode(...)`: returns all mutants (as mutant instances) for a given node, according to configuration and context/Stryker comments).
-####NodeSpecificOrchestrator
+#### NodeSpecificOrchestrator
 `NodeSpecificOrchestrator<TNode, TBase>` is the base class of all orchestrators. It implements the workflow described earlier and defined several virtual methods that inheriting orchestrators can override to customize the workflow. It has been described earlier in this document.
-####ExpressionSpecificOrchestrator
+#### ExpressionSpecificOrchestrator
 `ExpressionSpecificOrchestrator<t>`handles syntax node that are part of an expression. Note that some syntax constructs inheriting from `ExpressionSyntax` are not considered as expressions from Stryker point of view. 
 This class provides the following implementation
 - `PrepareContext(...)`: declares a `MutationControl.Expression` context and override `RestoreContext()`
 - `StoreMutations(...)`: stores mutation in the current context or next higher block context if the mutation contains a variable declaration.
 - `InjectMutations(...)`: inject mutations controlled by conditional operator.
-####StatementSpecificOrchestrator
+#### StatementSpecificOrchestrator
 `StatementSpecificOrchestrator` handles `StatementSyntaxNode` (and inheriting SyntaxNode).
 This class provides the following implementation
 - `PrepareContext(...)`: declares a `{MutationControl.Expression}` context .
 - `RestoreContext()` : leaves the current context.
 - `InjectMutations(...)`:  injects mutations controlled by if statements.
-####MutateAtStatementLevelOrchestrator
+#### MutateAtStatementLevelOrchestrator
 `MutateAtStatementLevelOrchestrator` class deals for (expression level) syntax constructs which mutations should be controlled at statement level, because they must be controlled via an `if` statement.
 The constructor accepts a _predicate_ which is used for finer identification of SyntaxNodes.
 This class implements:
@@ -216,12 +216,12 @@ This class is used for:
 - `InitializerExpressionSyntax`: for non empty array declarations.
 - `AssignmentExpressionSyntax`( x=value) cannot be part of a ternary operation.
 
-####MemberDefinitionOrchestrator
+#### MemberDefinitionOrchestrator
 `MemberDefinitionOrchestrator<T>` is a generic (base) class to help implement orchestrator for SyntaxNode that define class members. It implements:
 - `PrepareContext(...)`: creates a `MutantControl.Member` context.
 - `RestoreContext()`: leaves the current context
 
-####BaseFunctionOrchestrator
+#### BaseFunctionOrchestrator
 `BaseFunctionOrchestrator<T>` is an abstract base class helping orchestrate methods, functions (locals and anonymous) as well as accessors. This class will convert  from expression body to block body form if any mutation requires it. This class also implements `IInstrumentCode` and provides the adequate roll back logic for the compilation phase. It inherits from `MemberDefinitionOrchestrator<T>`.
 Child classes must implement abstract methods that abstract some common operations:
 - `ParameterList(T)`: must return the `ParameterListSyntax` instance listing all the provided method’s parameters. Returns an empty list if there are none.
@@ -235,7 +235,7 @@ Finally, this class implements an injection engine:
 -  `RemoveInstrumentation(...)`: reverts the conversion. Note that this method requires that the body contains only a `return` or expression statement.
 ### Specialized orchestrators
 These orchestrators are specific for certain syntax node types.
-####MemberAccessOrchestrator
+#### MemberAccessOrchestrator
 `MemberAccessOrchestrator<T>`is used for ‘MemberAccess’ kind of expression, which is defined a lower level than expression. This is because while those syntax constructs inherit from `ExpressionSyntax`, they cannot be replaced by other kind of expressions, which means that Stryker cannot use a conditional operator (`?:`) to mutate them in place; it must happen at a higher hierarchical level in the expression.
 It is declared for `MemberAccessExpressionSyntax`, `MemberBindingExpressionSyntax` and `SimpleNameSyntax`.
 
@@ -244,7 +244,7 @@ This class implements:
 - `PrepareContext(...)`: signals that this is a `MutantControl.MemberAccess` syntax level.
 - `RestoreContext()`: leaves the current context.
 
-####DoNotMutateOrchestrator
+#### DoNotMutateOrchestrator
 `DoNotMutateOrchestrator<T>` is a generic class that can used to ensure a type of `SyntaxNode` will not be mutated (including the node’s children). Its constructor accepts an optional predicate to confirm if a node should be mutated or not.
 This class is used for several constructs:
 - `AttributeListSyntax`: Attributes must be defined at compile time.
@@ -258,28 +258,28 @@ This class implements:
 - `CanHandle(...)`: forwards the call to the predicate (if one was provided at construction), returns true otherwise.
 - `Mutate(...` : returns the unmodified syntax node.
 
-####InvocationExpressionOrchestrator
+#### InvocationExpressionOrchestrator
 `InvocationExpressionOrchestrator` is used for methods and functions invocations (`xxxx(...)`).
 This class implements:
 - `PrepareContext(...)`: enters an `Expression` context, except if the `Expression` is in the form of `.name` (or `.name.otherName...'`). Then it enters a memberAccess expression.
 - `RestoreContext()`: leaves the current context.
 - `StoreMutations(...)`: Injects mutations at the current level, except if there are declarations in the argument list. Then inject mutations at the next higher block level.
 
-####StaticFieldDeclarationOrchestrator
+#### StaticFieldDeclarationOrchestrator
 `StaicFieldDeclarationOrchestrator` is used for static fields order to inject static marking logic used for coverage capture. It inherits from `MemberDefinitionOrchestrator`.
 This class implements:
 - `CanHandle(...)`: returns true for static fields with at least one initializer.
 - `PrepareContext(...)`:  creates a static context.
 - `InjectMutations(...)`: Actually injects mutations (call base implementation) then injects a static marker.
 
-####StaticConstructorOrchestrator
+#### StaticConstructorOrchestrator
 `StaticConstructorOrchestrator ` is used for class constructors order to inject static marking logic used for coverage capture. It inherits from `BasMethodOrchestrator`.
 This class implements:
 - `CanHandle(...)`: returns true for class constructor.
 - `PrepareContext(...)`:  creates a static context.
 - `InjectMutations(...)`: Actually injects mutations (call base implementation) then injects a static marker.
 
-####ExpressionBodiedPropertyOrchestrator
+#### ExpressionBodiedPropertyOrchestrator
 `ExpressionBodiedPropertyOrchestrator`  deals with properties expressed as simple expressions, such as 
 int MyProperty => 4; 
 or with static properties with an initializer, such as
@@ -287,27 +287,28 @@ static int MyProperty { get {...) set{...} = MyInitializer(4);
 It inherits from `BaseFunctionOrchestrator`.
 This class implements:
 - `OrchestrateChildrenMutation(...)`: ensure the node `Initializer` is mutated with a static context (if needed).
-####LocalFunctionOrchestrator
+#### LocalFunctionOrchestrator
 This class handles `LocalFunctionStatementSyntax`. It inherits from `BaseFunctionOrchestration` and implements all required abstract function.
-####AnonymousFunctionExpressionOrchestrator
+#### AnonymousFunctionExpressionOrchestrator
 This class handles `AnonymousFunctionExpressionSyntax `. It inherits from `BaseFunctionOrchestration` and implements all required abstract function.
-####BaseMethodDeclarationOrchestrator
+#### BaseMethodDeclarationOrchestrator
 This class handles `BaseMethodDeclarationSyntax `. It inherits from `BaseFunctionOrchestration` and implements all required abstract function.
-####AccessorSyntaxOrchestrator
+#### AccessorSyntaxOrchestrator
 This class handles `AccessorDeclarationSyntax `. It inherits from `BaseFunctionOrchestration` and implements all required abstract function.
-####LocalDeclarationOrchestrator
+#### LocalDeclarationOrchestrator
 This class handles `LocalDeclarationStatement` (i.e. local variables declaration). It implements:
 - `InjectMutations(...)`: it does not inject mutations, as they should be controlled at the scope level: using an `if` statement here would change the scope of the variable.
-####InvocationExpressionSyntax
+#### InvocationExpressionSyntax
 This class handles method/function invocation.  It implements the following methods:
 - `InjectMutation(...)`: it injects mutations normally in the current expression.
 - `PrepareContext(...)`: declares an expression context, unless the invoked name is in the `MemberBindingExpression` form, I.e. starts with a dot `.` as those cannot be used in a condition expression. Then it declares a member access context.
 - `RestoreContext()`: restores the context.
-####BlockOrchestrator
+#### BlockOrchestrator
 This class handles `BlockStatementSyntax` nodes. It implements:
 - `PrepareContext(...)`: declares a **new** block context. Having a new block is used for scoped mutant filtering via Stryker comments
 - `RestoreContext()`: restore the context
 - `InjectMutations(...)`: injects mutations at the block level. That is the block is mutated and mutation switching is done via one or more `if` statements.
-####SyntaxNodeOrchestrator
+#### SyntaxNodeOrchestrator
 This class handles any `SyntaxNode`. As such it provides the default behavior, that is no mutation. It implements:
 - `GenerateMutationForNode(...)` : it does not try to generate mutations for this node and returns an empty list.
+
