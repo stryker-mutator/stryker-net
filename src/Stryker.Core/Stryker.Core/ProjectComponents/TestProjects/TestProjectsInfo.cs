@@ -16,7 +16,9 @@ namespace Stryker.Core.ProjectComponents.TestProjects
         private readonly ILogger<TestProjectsInfo> _logger;
 
         public IEnumerable<TestProject> TestProjects { get; set; }
-        public IEnumerable<TestFile> TestFiles => TestProjects.SelectMany(testProject => testProject.TestFiles);
+
+        public IEnumerable<TestFile> TestFiles => TestProjects.SelectMany(testProject => testProject.TestFiles).Distinct();
+
         public IEnumerable<IAnalyzerResult> AnalyzerResults => TestProjects.Select(testProject => testProject.AnalyzerResult);
 
         public IReadOnlyList<string> GetTestAssemblies() =>
