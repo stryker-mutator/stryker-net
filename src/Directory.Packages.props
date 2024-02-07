@@ -6,7 +6,7 @@
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.1.0" />
     <PackageVersion Include="NuGet.Protocol" Version="6.8.0" />
     <PackageVersion Include="ResXResourceReader.NetStandard" Version="1.2.0" />
-    <PackageVersion Include="YamlDotNet" Version="15.1.0" />
+    <PackageVersion Include="YamlDotNet" Version="15.1.1" />
     <PackageVersion Include="Grynwald.MarkdownGenerator" Version="3.0.106" />
     <PackageVersion Include="LibGit2Sharp" Version="0.29.0" />
     <PackageVersion Include="FSharp.Compiler.Service" Version="42.7.100-preview.22427.1" />
@@ -24,15 +24,15 @@
     <PackageVersion Include="Spectre.Console.Analyzer" Version="0.48.0" />
     <PackageVersion Include="System.Net.Http.Json" Version="8.0.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
-    <PackageVersion Include="Microsoft.TestPlatform" Version="17.8.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.8.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.8.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="17.8.0" />
+    <PackageVersion Include="Microsoft.TestPlatform" Version="17.9.0" />
+    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.9.0" />
+    <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.9.0" />
+    <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="17.9.0" />
     <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="20.0.15" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.8.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.0" />
     <PackageVersion Include="coverlet.msbuild" Version="6.0.0" />
     <PackageVersion Include="Moq" Version="4.20.70" />
