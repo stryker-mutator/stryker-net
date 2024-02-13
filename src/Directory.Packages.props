@@ -4,7 +4,7 @@
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.1.1" />
     <PackageVersion Include="LaunchDarkly.EventSource" Version="5.1.0" />
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.1.0" />
-    <PackageVersion Include="NuGet.Protocol" Version="6.8.0" />
+    <PackageVersion Include="NuGet.Protocol" Version="6.9.1" />
     <PackageVersion Include="ResXResourceReader.NetStandard" Version="1.2.0" />
     <PackageVersion Include="YamlDotNet" Version="15.1.1" />
     <PackageVersion Include="Grynwald.MarkdownGenerator" Version="3.0.106" />
@@ -14,7 +14,7 @@
     <PackageVersion Include="Buildalyzer" Version="6.0.4" />
     <PackageVersion Include="Microsoft.Web.LibraryManager.Build" Version="2.1.175" />
     <PackageVersion Include="Mono.Cecil" Version="0.11.5" />
-    <PackageVersion Include="NuGet.Frameworks" Version="6.8.0" />
+    <PackageVersion Include="NuGet.Frameworks" Version="6.9.1" />
     <PackageVersion Include="Serilog" Version="3.1.1" />
     <PackageVersion Include="Serilog.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
