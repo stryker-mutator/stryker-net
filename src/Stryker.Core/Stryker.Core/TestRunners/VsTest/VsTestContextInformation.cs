@@ -190,7 +190,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var wrapper = BuildVsTestWrapper("TestDiscoverer");
             var messages = new List<string>();
             var handler = new DiscoveryEventHandler(messages);
-            wrapper.DiscoverTestsAsync(new List<string> { newSource }, GenerateRunSettingsForDiscovery(), handler);
+            wrapper.DiscoverTests(new List<string> { newSource }, GenerateRunSettingsForDiscovery(), handler);
 
             handler.WaitEnd();
             if (handler.Aborted)

@@ -147,7 +147,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             var action = () =>  runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
             action.ShouldThrow<GeneralStrykerException>();
             // the test will always end in a crash, VsTestRunner should retry at least a few times
-            mockVsTest.Verify(m => m.RunTestsWithCustomTestHostAsync(It.IsAny<IEnumerable<string>>(),
+            mockVsTest.Verify(m => m.RunTestsWithCustomTestHost(It.IsAny<IEnumerable<string>>(),
                 It.IsAny<string>(), It.IsAny<TestPlatformOptions>(),
                 It.IsAny<ITestRunEventsHandler>(),
                 It.IsAny<IStrykerTestHostLauncher>()), Times.AtLeast(3));
@@ -189,11 +189,11 @@ namespace Stryker.Core.UnitTest.TestRunners
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             var defaultTimeOut = VsTestRunner.VsTestExtraTimeOutInMs;
             VsTestRunner.VsTestExtraTimeOutInMs = 100;
-            // the test session will hung twice
+            // the test session will freeze twice
             SetupFrozenTestRun(mockVsTest, 2);
             runner.TestMultipleMutants(SourceProjectInfo, new TimeoutValueCalculator(0, 10,9), new[] { Mutant }, null);
             VsTestRunner.VsTestExtraTimeOutInMs = defaultTimeOut;
-            mockVsTest.Verify(m => m.RunTestsWithCustomTestHostAsync(It.IsAny<IEnumerable<string>>(),
+            mockVsTest.Verify(m => m.RunTestsWithCustomTestHost(It.IsAny<IEnumerable<string>>(),
                 It.IsAny<string>(), It.IsAny<TestPlatformOptions>(),
                 It.IsAny<ITestRunEventsHandler>(),
                 It.IsAny<IStrykerTestHostLauncher>()), Times.Exactly(3));
@@ -205,7 +205,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             var defaultTimeOut = VsTestRunner.VsTestExtraTimeOutInMs;
             // the test session will end properly, but VsTest will hang
-            // it will be recyled
+            // it will be recycled
             SetupFrozenVsTest(mockVsTest, 3);
             VsTestRunner.VsTestExtraTimeOutInMs = 100;
             runner.TestMultipleMutants(SourceProjectInfo, new TimeoutValueCalculator(0, 10,9), new[] { Mutant }, null);
