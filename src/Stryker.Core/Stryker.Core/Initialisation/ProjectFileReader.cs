@@ -125,7 +125,7 @@ namespace Stryker.Core.Initialisation
             _logger.LogTrace("TargetFramework: {0}", analyzerResult.TargetFramework);
             _logger.LogTrace("Succeeded: {0}", analyzerResult.Succeeded);
 
-            var properties = analyzerResult?.Properties ?? new Dictionary<string, string>();
+            var properties = analyzerResult.Properties ?? new Dictionary<string, string>();
             foreach (var property in ImportantProperties)
             {
                 _logger.LogTrace("Property {0}={1}", property, properties.GetValueOrDefault(property)??"'undefined'");
