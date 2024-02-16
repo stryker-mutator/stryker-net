@@ -1,5 +1,4 @@
-name: ci
-run-name: ci on ${{ github.ref_name }}
+name: integration test macos m1
 
 on: [pull_request]
 
@@ -19,13 +18,13 @@ jobs:
         run: dotnet restore --packages .vstest
         working-directory: ${{ github.workspace }}/src/Stryker.Core/Stryker.Core/ToolHelpers/
       - name: Pack integration test pacage
-        run: dotnet pack ${{ github.workspace }}/src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj --output ${{ github.workspace }}/publish
+        run: dotnet pack ${{ github.workspace }}/src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj --version-suffix "github-${{ github.run_number }}" --output ${{ github.workspace }}/publish
       - name: Publish integration test package
         run: dotnet nuget push ${{ github.workspace }}/publish/*.nupkg -s $NUGET_FEED -k "$FEEDZ_NUGET_API_KEY"
         env:
           FEEDZ_NUGET_API_KEY: ${{ secrets.FEEDZ_NUGET_API_KEY }}
       - name: Install integration test package from feed
-        run: dotnet tool install dotnet-stryker --tool-path ${{ github.workspace }}/.nuget/tools --version $(IntegrationTestVersion) --add-source $NUGET_FEED
+        run: dotnet tool install dotnet-stryker --tool-path ${{ github.workspace }}/.nuget/tools --version  --add-source $NUGET_FEED
       - name: Run integration test
         run: ${{ github.workspace }}/.nuget/tools/dotnet-stryker --dev-mode
         working-directory: ${{ github.workspace }}/integrationtest/TargetProjects/NetCoreTestProject.XUnit
