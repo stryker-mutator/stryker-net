@@ -13,13 +13,13 @@ namespace Stryker.Core.Options.Inputs
 
         public override string Default => null;
 
-        public string Validate(bool? withBaseline, BaselineProvider baselineProvider, IEnumerable<Reporter> reporters)
+        public string Validate(bool? baselineEnabled, BaselineProvider baselineProvider, IEnumerable<Reporter> reporters)
         {
             /* the dashboard api key is required if
              * 1: The dashboard reporter is enabled
              * 2: The dasboard storage location is chosen for the with-baseline feature AND the with-baseline feature is enabled
              */
-            var dashboardEnabled = (withBaseline.IsNotNullAndTrue() && baselineProvider == BaselineProvider.Dashboard) || reporters.Any(x => x is Reporter.Dashboard or Reporter.RealTimeDashboard);
+            var dashboardEnabled = (baselineEnabled.IsNotNullAndTrue() && baselineProvider == BaselineProvider.Dashboard) || reporters.Any(x => x is Reporter.Dashboard or Reporter.RealTimeDashboard);
             if (!dashboardEnabled)
             {
                 return Default;

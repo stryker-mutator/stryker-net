@@ -14,9 +14,9 @@ namespace Stryker.Core.Options.Inputs
 
         protected override IEnumerable<string> AllowedOptions => EnumToStrings(typeof(BaselineProvider));
 
-        public BaselineProvider Validate(IEnumerable<Reporter> reporters, bool withBaseline)
+        public BaselineProvider Validate(IEnumerable<Reporter> reporters, bool baselineEnabled)
         {
-            if (withBaseline)
+            if (baselineEnabled)
             {
                 if (SuppliedInput is not null)
                 {

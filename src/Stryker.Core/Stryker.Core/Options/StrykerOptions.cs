@@ -116,7 +116,7 @@ namespace Stryker.Core.Options
         /// <summary>
         /// When true, the baseline feature should be enabled.
         /// </summary>
-        public bool WithBaseline { get; init; }
+        public bool BaselineEnabled { get; init; }
 
         /// <summary>
         /// When the baseline feature is enabled, this selects the source of the baseline.
@@ -283,7 +283,7 @@ namespace Stryker.Core.Options
             TestProjects = testProjects,
             TestCaseFilter = TestCaseFilter,
             Thresholds = Thresholds,
-            WithBaseline = WithBaseline,
+            BaselineEnabled = BaselineEnabled,
             BreakOnInitialTestFailure = BreakOnInitialTestFailure,
         };
     }

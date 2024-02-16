@@ -22,7 +22,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             var suppliedInput = "test";
             var input = new ProjectVersionInput { SuppliedInput = suppliedInput };
 
-            var result = input.Validate(reporters: new[] { Reporter.Dashboard }, withBaseline: false);
+            var result = input.Validate(reporters: new[] { Reporter.Dashboard }, baselineEnabled: false);
             result.ShouldBe(suppliedInput);
         }
 
@@ -32,7 +32,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             var suppliedInput = "test";
             var input = new ProjectVersionInput { SuppliedInput = suppliedInput };
 
-            var result = input.Validate(reporters: Enumerable.Empty<Reporter>(), withBaseline: true);
+            var result = input.Validate(reporters: Enumerable.Empty<Reporter>(), baselineEnabled: true);
             result.ShouldBe(suppliedInput);
         }
 
@@ -42,7 +42,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             var suppliedInput = "test";
             var input = new ProjectVersionInput { SuppliedInput = suppliedInput };
 
-            var result = input.Validate(reporters: Enumerable.Empty<Reporter>(), withBaseline: false);
+            var result = input.Validate(reporters: Enumerable.Empty<Reporter>(), baselineEnabled: false);
             result.ShouldBe(string.Empty);
         }
 
@@ -51,7 +51,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             var input = new ProjectVersionInput();
 
-            var result = input.Validate(reporters: new[] { Reporter.Dashboard }, withBaseline: false);
+            var result = input.Validate(reporters: new[] { Reporter.Dashboard }, baselineEnabled: false);
             result.ShouldBe(string.Empty);
         }
 
@@ -61,7 +61,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             var input = new ProjectVersionInput();
 
             var exception = Should.Throw<InputException>(() => {
-                input.Validate(reporters: Enumerable.Empty<Reporter>(), withBaseline: true);
+                input.Validate(reporters: Enumerable.Empty<Reporter>(), baselineEnabled: true);
             });
 
             exception.Message.ShouldBe("Project version cannot be empty when baseline is enabled");

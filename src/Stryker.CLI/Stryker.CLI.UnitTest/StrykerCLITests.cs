@@ -413,7 +413,7 @@ Options:";
 
             _strykerRunnerMock.VerifyAll();
 
-            _inputs.WithBaselineInput.SuppliedInput.Value.ShouldBeTrue();
+            _inputs.BaselineEnabledInput.SuppliedInput.Value.ShouldBeTrue();
         }
 
         [Theory]
@@ -424,7 +424,7 @@ Options:";
 
             _strykerRunnerMock.VerifyAll();
 
-            _inputs.WithBaselineInput.SuppliedInput.Value.ShouldBeTrue();
+            _inputs.BaselineEnabledInput.SuppliedInput.Value.ShouldBeTrue();
         }
 
         [Theory]
@@ -435,7 +435,7 @@ Options:";
 
             _strykerRunnerMock.VerifyAll();
 
-            _inputs.WithBaselineInput.SuppliedInput.Value.ShouldBeTrue();
+            _inputs.BaselineEnabledInput.SuppliedInput.Value.ShouldBeTrue();
             _inputs.BaselineRecreateEnabledInput.SuppliedInput.ShouldBeTrue();
         }
 

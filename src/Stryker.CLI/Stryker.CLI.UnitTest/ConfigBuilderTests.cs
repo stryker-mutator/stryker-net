@@ -98,7 +98,7 @@ namespace Stryker.CLI.UnitTest
             inputs.Setup(x => x.MutateInput).Returns(new MutateInput());
             inputs.Setup(x => x.MutationLevelInput).Returns(new MutationLevelInput());
             inputs.Setup(x => x.SinceInput).Returns(new SinceInput());
-            inputs.Setup(x => x.WithBaselineInput).Returns(new WithBaselineInput());
+            inputs.Setup(x => x.BaselineEnabledInput).Returns(new BaselineEnabledInput());
             inputs.Setup(x => x.OpenReportInput).Returns(new OpenReportInput());
             inputs.Setup(x => x.ReportersInput).Returns(new ReportersInput());
             inputs.Setup(x => x.ProjectVersionInput).Returns(new ProjectVersionInput());

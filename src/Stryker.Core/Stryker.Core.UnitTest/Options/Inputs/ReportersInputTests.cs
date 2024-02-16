@@ -80,7 +80,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             var target = new ReportersInput { SuppliedInput = null };
 
-            var validatedReporters = target.Validate(withBaseline: true);
+            var validatedReporters = target.Validate(baselineEnabled: true);
 
             validatedReporters.ShouldContain(Reporter.Baseline);
         }

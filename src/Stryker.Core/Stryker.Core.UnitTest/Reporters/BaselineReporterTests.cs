@@ -24,7 +24,7 @@ namespace Stryker.Core.UnitTest.Reporters
             {
                 ProjectVersion = "new-feature",
                 SinceTarget = "master",
-                WithBaseline = true
+                BaselineEnabled = true
             };
 
             gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns("new-feature");

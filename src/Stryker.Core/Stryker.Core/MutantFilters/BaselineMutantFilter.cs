@@ -37,7 +37,7 @@ namespace Stryker.Core.MutantFilters
 
             _options = options;
 
-            if (options.WithBaseline)
+            if (options.BaselineEnabled)
             {
                 _baseline = GetBaselineAsync().Result;
             }
@@ -46,7 +46,7 @@ namespace Stryker.Core.MutantFilters
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options)
         {
-            if (options.WithBaseline)
+            if (options.BaselineEnabled)
             {
                 if (_baseline == null)
                 {
