@@ -14,7 +14,7 @@ This guide instructs how to update major versions of Stryker.NET.
 
 The .NET runtime requirement for Stryker.NET has been changed. Dotnet 8 runtime is now required.
 
-Please [download and install the dotnet 8 runtime]([https://dotnet.microsoft.com/download/dotnet/5.0](https://dotnet.microsoft.com/en-us/download/dotnet/8.0)) and update your pipeline have the dotnet 8 runtime available.
+Please [download and install the dotnet 8 runtime](https://dotnet.microsoft.com/en-us/download/dotnet/8.0) and update your pipeline have the dotnet 8 runtime available.
 
 _Note it is not neccesary to target dotnet 8 in your projects. Dotnet 8 is a runtime requirement for stryker, we will still compile your project to your existing target frameworks._
 
