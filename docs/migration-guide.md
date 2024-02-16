@@ -8,6 +8,8 @@ custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs
 
 This guide instructs how to update major versions of Stryker.NET.
 
+## V3.x --> V4.x
+
 ### ⏭ Updated runtime
 
 The .NET runtime requirement for Stryker.NET has been changed. Dotnet 8 runtime is now required.
