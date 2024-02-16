@@ -37,22 +37,39 @@ And then running this locally installed tool:
 Dashboard compare is very useful when running stryker in pipelines because it cuts down on the total runtime by only testing mutations that have changed compared to for example master
 The following minimal steps are needed to use dashboard compare
 
-1. Enable --with-baseline and choose the comparison target
-1. Choose a storage provider (Dashboard for public projects or Azure File Share for private projects)
+1. Enable [with-baseline](https://stryker-mutator.io/docs/stryker-net/configuration#with-baseline-committish)
+1. Choose a target branch or commit, as the source of the baseline (usually current branch in your pull request)
+1. Choose a [storage provider](https://stryker-mutator.io/docs/stryker-net/configuration#baselineprovider-string) (Dashboard for public projects or Azure File Share for private projects)
 1. Set up authentication for the chosen storage provider 
-1. Set --version to the name of the source branch (usually current branch)
 1. Set any other options needed for your chosen storage provider (see: [storage provider docs](https://stryker-mutator.io/docs/stryker-net/configuration#baselineprovider-string))
 
-Example for azure devops with dashboard storage provider:
+_Example for azure devops with dashboard storage provider:_
 ```
-dotnet stryker --with-baseline:$(System.PullRequest.TargetBranch) --dashboard-api-key $(Stryker.Dashboard.Api.Key) --version $(System.PullRequest.SourceBranch)
+dotnet stryker with-baseline $(System.PullRequest.TargetBranch) --dashboard-api-key $(Stryker.Dashboard.Api.Key) --version $(System.PullRequest.SourceBranch)
 ```
 
 ```json
 {
   "stryker-config": {
     "baseline": {
-      "provider": "Dashboard"
+      "provider": "Dashboard",
+      "fallback-version": "main"
+    }
+  }
+}
+```
+
+_Example for azure devops with azure fileshare storage provider:_
+```
+dotnet stryker with-baseline $(System.PullRequest.TargetBranch) --azure-fileshare-sas $(Stryker.Azure.Fileshare.SAS)
+```
+
+```json
+{
+  "stryker-config": {
+    "baseline": {
+      "provider": "AzureFileStorage",
+      "fallback-version": "main"
     }
   }
 }
