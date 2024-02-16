@@ -19,7 +19,7 @@ jobs:
       - name: Restore vstest
         run: dotnet restore --packages .vstest
         working-directory: ${{ github.workspace }}/src/Stryker.Core/Stryker.Core/ToolHelpers/
-      - name: Pack integration test pacage
+      - name: Pack integration test package
         run: dotnet pack ${{ github.workspace }}/src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj -p:PackageVersion=$VERSION --output ${{ github.workspace }}/publish
       - name: Publish integration test package
         run: dotnet nuget push ${{ github.workspace }}/publish/*.nupkg -s $NUGET_FEED -k "$FEEDZ_NUGET_API_KEY"
