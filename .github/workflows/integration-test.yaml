@@ -15,7 +15,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 6.x
+          dotnet-version: 8.x
       - name: Restore vstest
         run: dotnet restore --packages .vstest
         working-directory: ${{ github.workspace }}/src/Stryker.Core/Stryker.Core/ToolHelpers/
