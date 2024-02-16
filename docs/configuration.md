@@ -491,10 +491,10 @@ Use [globbing syntax](https://en.wikipedia.org/wiki/Glob_(programming)) for wild
 
 ## Baseline
 
-### `with-baseline` &lt;`flag`&gt; [`:committish`]
+### `baseline` &lt;`command`&gt;
 
 Default: `false`
-Command line: `dotnet baseline:feat-2`
+Command line: `dotnet stryker baseline`
 Config file: `"baseline": { }`
 
 Enabling `with-baseline` saves the mutation report to a storage location such as the filesystem. The mutation report is loaded at the start of the next mutation run. Any changed source code or unit test results in a reset of the mutants affected by the change. For unchanged mutants the previous result is reused. This feature expands on the [since](#since-flag-committish) feature by providing you with a full report after a partial mutation testrun.
@@ -506,18 +506,10 @@ The report name is based on the current branch name or the [project-info.version
 ### `target` <`string`>
 
 Default: `false`
-Command line: `dotnet baseline --target feat-2`
+Command line: `dotnet stryker baseline --target feat-2`
 Config file: `"baseline": { "target": "feat-2" }`
 
 Set the target on the command line by passing a committish with the baseline target option.
-
-### `baseline.enabled` &lt;`flag`&gt;
-
-Default: `null`
-Command line: `N/A`
-Config file: `"baseline": { "enabled": false }`
-
-Enable or disable [with-baseline](#with-baseline-flag-committish). If the enabled property is not set but the `baseline` object exists in the config file it is assumed to be enabled. Use this option to (temporarily) disable `with-baseline` without having to delete the other baseline configuration.
 
 ### `baseline.fallback-version` &lt;`string`&gt;
 
@@ -591,7 +583,7 @@ Providing a subfolder is optional but allowed. In the case of a custom subfolder
 ### `azure-fileshare-sas` &lt;`string`&gt;
 
 Default: `null`  
-Command line: `--azure-fileshare-sas "se=2022-08-25T14%3A27Z&sp=rwdl&spr=https&sv=2021-06-08&sr=d&sdd=1&sig=XXXXXXXXXXXXX"`  
+Command line: `dotnet stryker baseline --azure-fileshare-sas "se=2022-08-25T14%3A27Z&sp=rwdl&spr=https&sv=2021-06-08&sr=d&sdd=1&sig=XXXXXXXXXXXXX"`  
 Config file: `N/A`
 
 When using the azure file storage [provider](#baselineprovider-string) you must pass credentials for the fileshare to Stryker.
@@ -605,10 +597,10 @@ Allowed permissions: `Read`, `Write`, `Create`
 
 For more information on how to configure a SAS check the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
 
-### `baseline recreate`  <`flag`>
+### `baseline recreate`
 
 Default: `false`
-Command line: `dotnet baseline recreate`
+Command line: `dotnet stryker baseline recreate`
 Config file: `N/A`
 
 Sometimes your baseline can get corrupted or out of touch with reality. In that case the baseline can be recreated using this command. This will test all mutations in your project and save the result as the new baseline.
@@ -632,7 +624,7 @@ All available loglevels are
 
 ### `log-to-file` &lt;`flag`&gt;
 
-Default: `false`  
+Default: `false`
 Command line: `[-L|--log-to-file]`  
 Config file: `N/A`
 
