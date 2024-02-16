@@ -8,7 +8,7 @@ namespace Stryker.Core.Mutators
 {
     public class NullCoalescingExpressionMutator : MutatorBase<BinaryExpressionSyntax>
     {
-        public override MutationLevel MutationLevel => MutationLevel.Standard;
+        public override MutationLevel MutationLevel => MutationLevel.Basic;
 
         public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node, SemanticModel semanticModel)
         {
