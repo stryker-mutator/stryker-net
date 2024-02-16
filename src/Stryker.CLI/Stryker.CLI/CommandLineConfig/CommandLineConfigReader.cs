@@ -72,32 +72,18 @@ namespace Stryker.CLI.CommandLineConfig
         {
             app.Command("baseline", baselineCmd =>
             {
-                //RegisterCliInputs(baselineCmd);
-                baselineCmd.Description = "Enables the baseline feature";
-                RegisterCommandLineOptions(baselineCmd, inputs);
-                //var targetInput = new CliInput()
-                //{
-                //    Input = new BaselineTargetInput(),
-                //    ArgumentName = "target",
-                //    ArgumentShortName = "t",
-                //    Description = @"The target for the compare. For example, when runnin on branch feat-2 and wanting to compare to branch ""main"", set this value to ""main""",
-                //    Category = InputCategory.Mutation
-                //};
-                //var targetOption = new CommandOption("-t|--target <value>", CommandOptionType.SingleValue)
-                //{
-                //    LongName = "target",
-                //    ShortName = "t",
-                //    Description = @"The target for the compare. For example, when runnin on branch feat-2 and wanting to compare to branch ""main"", set this value to ""main""",
-                //    ShowInHelpText = true
-                //};
-                //RegisterCliInput(baselineCmd, targetInput);
-                //AddCliInput(targetInput.Input, "--target", "-t", CommandOptionType.SingleValue, InputCategory.Mutation);
-                //baselineCmd.AddOption(targetOption);
+                RegisterCliInputs(baselineCmd);
+
+                baselineCmd.OnExecute(() =>
+                {
+                    inputs.WithBaselineInput.SuppliedInput = true;
+                    baselineCmd.Description = "Starts a stryker run based on the results of a previous run.";
+                    return strykerCli.StartApp(inputs, args, app, this);
+                });
+
                 baselineCmd.Command("recreate", createCmd =>
                 {
-                    //RegisterCliInputs(createCmd);
-                    //RegisterCommandLineOptions(createCmd, inputs);
-                    //RegisterCliInput(createCmd, targetInput);
+                    RegisterCliInputs(createCmd);
 
                     createCmd.OnExecute(() =>
                     {
@@ -106,11 +92,6 @@ namespace Stryker.CLI.CommandLineConfig
                         inputs.BaselineRecreateEnabledInput.SuppliedInput = true;
                         return strykerCli.StartApp(inputs, args, app, this);
                     });
-                });
-                baselineCmd.OnExecute(() =>
-                {
-                    inputs.WithBaselineInput.SuppliedInput = true;
-                    return;
                 });
             });
         }
