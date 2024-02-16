@@ -34,6 +34,8 @@ namespace Stryker.CLI.CommandLineConfig
             {
                 RegisterCliInputs(initCommandApp);
 
+                initCommandApp.HelpOption();
+
                 initCommandApp.OnExecute(() =>
                 {
                     _console.WriteLine($"Initializing new config file.");
@@ -72,10 +74,20 @@ namespace Stryker.CLI.CommandLineConfig
         {
             app.Command("baseline", baselineCmd =>
             {
+                baselineCmd.AddName("with-baseline");
                 RegisterCliInputs(baselineCmd);
+
+                var committish = baselineCmd.Argument("committish", "The committish to compare with the current HEAD. This can be a branch, tag or commit id.");
+                committish.IsRequired(true);
+
+                baselineCmd.HelpOption();
 
                 baselineCmd.OnExecute(() =>
                 {
+                    if (committish.HasValue)
+                    {
+                        inputs.BaselineTargetInput.SuppliedInput = committish.Value;
+                    }
                     inputs.BaselineEnabledInput.SuppliedInput = true;
                     baselineCmd.Description = "Starts a stryker run based on the results of a previous run.";
                     return strykerCli.StartApp(inputs, args, app, this);
@@ -85,8 +97,14 @@ namespace Stryker.CLI.CommandLineConfig
                 {
                     RegisterCliInputs(createCmd);
 
+                    createCmd.HelpOption();
+
                     createCmd.OnExecute(() =>
                     {
+                        if (committish.HasValue)
+                        {
+                            inputs.BaselineTargetInput.SuppliedInput = committish.Value;
+                        }
                         inputs.BaselineEnabledInput.SuppliedInput = true;
                         createCmd.Description = "Creates a new baseline by doing a full stryker run";
                         // Enable recreate
@@ -212,7 +230,6 @@ namespace Stryker.CLI.CommandLineConfig
             AddCliInput(inputs.MutationLevelInput, "mutation-level", "l", category: InputCategory.Mutation);
             AddCliInput(inputs.SinceInput, "since", "", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "committish", category: InputCategory.Mutation);
             AddCliInput(inputs.BaselineEnabledInput, "with-baseline", "", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "committish", category: InputCategory.Mutation);
-            AddCliInput(inputs.BaselineTargetInput, "target", "", argumentHint: "committish", category: InputCategory.Mutation);
             // Category: Reporting
             AddCliInput(inputs.OpenReportInput, "open-report", "o", CommandOptionType.SingleOrNoValue, argumentHint: "report-type", category: InputCategory.Reporting);
             AddCliInput(inputs.ReportersInput, "reporter", "r", optionType: CommandOptionType.MultipleValue, category: InputCategory.Reporting);
