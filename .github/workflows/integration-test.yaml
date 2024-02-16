@@ -16,7 +16,7 @@ jobs:
         with:
           dotnet-version: 6.x
       - name: Restore vstest
-        run: dotnet restore --packages ${{ github.workspace }}/src/Stryker.Core/Stryker.Core/ToolHelpers/.vstest
+        run: dotnet restore --packages ${{ github.workspace }}/src/Stryker.Core/Stryker.Core/ToolHelpers/.vstest/
       - name: Pack integration test pacage
         run: dotnet pack ${{ github.workspace }}/src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj --output ${{ github.workspace }}/publish
       - name: Publish integration test package
