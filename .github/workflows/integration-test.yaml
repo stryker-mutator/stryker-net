@@ -1,5 +1,5 @@
 name: integration test macos m1
-run-name: e2e ${{ github.head_ref on m1 macos }}
+run-name: e2e ${{ github.head_ref }} on m1 macos
 
 on: [pull_request]
 
