@@ -67,6 +67,12 @@ namespace Stryker.Core.Initialisation
 
             // Build project with MSBuild.exe
             var result = _processExecutor.Start(solutionDir, msbuildPath, $"\"{solutionPath}\"");
+            if (result.ExitCode != ExitCodes.Success)
+            {
+                _logger.LogWarning("MsBuild failed to build the solution, trying to restore packages and build again.");
+                _processExecutor.Start(solutionDir, msbuildPath, $"\"{solutionPath}\" -t:restore");
+                result = _processExecutor.Start(solutionDir, msbuildPath, $"\"{solutionPath}\"");
+            }
             return result;
         }
 
