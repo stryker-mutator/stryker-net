@@ -251,6 +251,7 @@ namespace Stryker.Core.TestRunners.VsTest
             return $@"<RunSettings>
  <RunConfiguration>
   <MaxCpuCount>{Math.Max(1, Options.Concurrency)}</MaxCpuCount>
+  <InIsolation>true</InIsolation>
   <DesignMode>true</DesignMode>
 {testCaseFilter}
  </RunConfiguration>
@@ -293,6 +294,7 @@ namespace Stryker.Core.TestRunners.VsTest
 " : string.Empty)}  <MaxCpuCount>1</MaxCpuCount>
 {timeoutSettings}{settingsForCoverage}
 <DesignMode>false</DesignMode>
+<InIsolation>true</InIsolation>
 {testCaseFilter}</RunConfiguration>{dataCollectorSettings}
 </RunSettings>";
 
