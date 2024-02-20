@@ -139,14 +139,10 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
 
                 // ensure we returns only entry per test
-                if (resultCache.ContainsKey(coverageRunResult.TestId))
+                if (!resultCache.TryAdd(coverageRunResult.TestId, coverageRunResult))
                 {
                     resultCache[coverageRunResult.TestId].Merge(coverageRunResult);
-                    continue;
                 }
-
-                resultCache[coverageRunResult.TestId] = coverageRunResult;
-
             }
 
             return resultCache.Values;
@@ -169,6 +165,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             var testDescription = Context.VsTests[testCaseId];
             // is this a suspect test ?
+            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (key == null)
             {
                 if (seenTestCases.Contains(testCaseId))
