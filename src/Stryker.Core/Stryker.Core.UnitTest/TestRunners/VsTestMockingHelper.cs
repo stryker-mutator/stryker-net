@@ -369,7 +369,7 @@ public class VsTestMockingHelper : TestBase
                     var result = BuildCoverageTestResult(key, coveredList);
                     results.Add(result);
                 }
-                 MockTestRun(testRunEvents, results);
+                MockTestRun(testRunEvents, results);
             });
 
     protected TestResult BuildCoverageTestResult(string key, string[] coveredList)
@@ -505,14 +505,12 @@ public class VsTestMockingHelper : TestBase
         mockedVsTestConsole.Setup(x => x.InitializeExtensions(It.IsAny<IEnumerable<string>>()));
         mockedVsTestConsole.Setup(x => x.AbortTestRun());
         mockedVsTestConsole.Setup(x => x.EndSession());
-        ITestDiscoveryEventsHandler discoveryHandler = null;
         
         mockedVsTestConsole.Setup(x =>
             x.DiscoverTests(It.Is<IEnumerable<string>>(d => d.Any(e => e == _testAssemblyPath)),
                 It.IsAny<string>(),
-                It.IsAny<ITestDiscoveryEventsHandler>()))/*.Callback(
-            (IEnumerable<string> _, string _, ITestDiscoveryEventsHandler handler) =>
-                 discoveryHandler = handler)*/.Callback((IEnumerable<string> _, string _, ITestDiscoveryEventsHandler handler) => DiscoverTests(handler, testCases, false));
+                It.IsAny<ITestDiscoveryEventsHandler>()))
+            .Callback((IEnumerable<string> _, string _, ITestDiscoveryEventsHandler handler) => DiscoverTests(handler, testCases, false));
         var context = new VsTestContextInformation(
             options,
             new Mock<IVsTestHelper>().Object,

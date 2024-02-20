@@ -20,7 +20,7 @@ namespace Stryker.Core.Initialisation
     public class NugetRestoreProcess : INugetRestoreProcess
     {
         private IProcessExecutor ProcessExecutor { get; set; }
-        private ILogger _logger;
+        private readonly ILogger _logger;
 
         public NugetRestoreProcess(IProcessExecutor processExecutor = null)
         {
@@ -68,7 +68,7 @@ namespace Stryker.Core.Initialisation
 
             try
             {
-                var nugetRestoreResult = ProcessExecutor.Start(nugetPath, nugetPath, nugetRestoreCommand, timeoutMs: 120000);
+                var nugetRestoreResult = ProcessExecutor.Start(Path.GetDirectoryName(nugetPath), nugetPath, nugetRestoreCommand, timeoutMs: 120000);
                 if (nugetRestoreResult.ExitCode != ExitCodes.Success)
                 {
                     _logger.LogCritical($"Failed to restore nuget packages. Nuget error: {nugetRestoreResult.Error}");
