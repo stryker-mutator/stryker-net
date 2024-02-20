@@ -10,9 +10,9 @@
       },
       "coverlet.msbuild": {
         "type": "Direct",
-        "requested": "[6.0.0, )",
-        "resolved": "6.0.0",
-        "contentHash": "cUKI50VSVBqDQDFIdBnjN0Jk5JYhjtD0geP2BZZv71/ZrKORJXcLRswFsojI+cHdV+rFUL2XDJEpuhK3x1YqLA=="
+        "requested": "[6.0.1, )",
+        "resolved": "6.0.1",
+        "contentHash": "3XB8lTS4olP+ofINp2Zjf7N6d/F5ZCeTTa6uHauKEZhPWvD2eJuhW7GHclKBeTC1dL/G7hdfekTQrsLgE3oGFQ=="
       },
       "DotNet.ReproducibleBuilds": {
         "type": "Direct",
@@ -1638,8 +1638,8 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.48.0, )",
           "Spectre.Console.Analyzer": "[0.48.0, )",
-          "Stryker.DataCollector": "[4.0.0, )",
-          "Stryker.RegexMutators": "[4.0.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[20.0.15, )"
         }
       },
