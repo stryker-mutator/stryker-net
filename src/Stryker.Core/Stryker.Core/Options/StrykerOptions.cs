@@ -96,7 +96,7 @@ namespace Stryker.Core.Options
         /// <summary>
         /// When not empty, use these test projects to test the project under test.
         /// </summary>
-        public IEnumerable<string> TestProjects { get; init; } = Enumerable.Empty<string>();
+        public IEnumerable<string> TestProjects { get; set; } = Enumerable.Empty<string>();
 
         /// <summary>
         /// Filters out tests in the project using the given expression.

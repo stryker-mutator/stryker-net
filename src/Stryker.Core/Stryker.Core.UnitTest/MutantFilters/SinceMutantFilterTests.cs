@@ -1,15 +1,14 @@
-using Moq;
+using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.IO;
+using System.Linq;
 using Shouldly;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters
@@ -19,11 +18,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [Fact]
         public static void ShouldHaveName()
         {
-            // Arrange
-            var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);
-
             // Act
-            var target = new SinceMutantFilter(diffProviderMock.Object) as IMutantFilter;
+            var target = new SinceMutantFilter(new DiffResult(), new TestSet()) as IMutantFilter;
 
             // Assert
             target.DisplayName.ShouldBe("since filter");
@@ -37,17 +33,16 @@ namespace Stryker.Core.UnitTest.MutantFilters
             {
                 Since = false
             };
-            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
 
-            string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
+            string myFile = Path.Combine("C:/test/", "myfile.cs");
 
-            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
+            var diffResult = new DiffResult
             {
                 ChangedSourceFiles = new Collection<string>(),
                 ChangedTestFiles = new Collection<string>()
-            });
+            };
 
-            var target = new SinceMutantFilter(diffProvider.Object);
+            var target = new SinceMutantFilter(diffResult, new TestSet());
             var file = new CsharpFileLeaf { FullPath = myFile };
 
             var mutant = new Mutant();
@@ -67,18 +62,18 @@ namespace Stryker.Core.UnitTest.MutantFilters
             {
                 Since = false
             };
-            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
 
-            string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
-            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
+            string myFile = Path.Combine("C:/test/", "myfile.cs");
+
+            var diffResult = new DiffResult
             {
                 ChangedSourceFiles = new Collection<string>()
                 {
                     myFile
                 }
-            });
+            };
 
-            var target = new SinceMutantFilter(diffProvider.Object);
+            var target = new SinceMutantFilter(diffResult, new TestSet());
             var file = new CsharpFileLeaf { FullPath = myFile };
 
             var mutant = new Mutant();
@@ -97,15 +92,13 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var testProjectPath = "C:/MyTests";
             var options = new StrykerOptions();
 
-            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
-
             // If a file inside the test project is changed, a test has been changed
-            var myTestPath = Path.Combine(testProjectPath, "myTest.cs"); ;
+            var myTestPath = Path.Combine(testProjectPath, "myTest.cs");
+            ;
             var tests = new TestSet();
             var test = new TestDescription(Guid.NewGuid(), "name", myTestPath);
-            tests.RegisterTests(new[] {test});
-            diffProvider.SetupGet(x => x.Tests).Returns(tests);
-            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
+            tests.RegisterTests(new[] { test });
+            var diffResult = new DiffResult
             {
                 ChangedSourceFiles = new Collection<string>
                 {
@@ -115,16 +108,15 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 {
                     myTestPath
                 }
-            });
-            var target = new SinceMutantFilter(diffProvider.Object);
+            };
+            var target = new SinceMutantFilter(diffResult, tests);
 
             // check the diff result for a file not inside the test project
             var file = new CsharpFileLeaf { FullPath = Path.Combine("C:/NotMyTests", "myfile.cs") };
             var mutant = new Mutant
             {
-                CoveringTests = new TestGuidsList(new[] {test})
+                CoveringTests = new TestGuidsList(new[] { test })
             };
-
 
             // Act
             var filterResult = target.FilterMutants(new List<Mutant> { mutant }, file, options);
@@ -137,17 +129,15 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public void FilterMutantsWithNoChangedFilesReturnsEmptyList()
         {
             // Arrange
-            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
-
             var options = new StrykerOptions();
 
-            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
+            var diffResult = new DiffResult
             {
                 ChangedSourceFiles = new List<string>()
-            });
+            };
 
-            diffProvider.SetupGet(x => x.Tests).Returns(new TestSet());
-            var target = new SinceMutantFilter(diffProvider.Object);
+            var tests = new TestSet();
+            var target = new SinceMutantFilter(diffResult, tests);
 
             var mutants = new List<Mutant>
             {
@@ -181,18 +171,14 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public void FilterMutantsWithNoChangedFilesAndNoCoverage()
         {
             // Arrange
-            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Strict);
-
             var options = new StrykerOptions();
 
-            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
+            var diffResult = new DiffResult
             {
                 ChangedSourceFiles = new List<string>()
-            });
+            };
 
-            diffProvider.SetupGet(x => x.Tests).Returns(new TestSet());
-
-            var target = new SinceMutantFilter(diffProvider.Object);
+            var target = new SinceMutantFilter(diffResult, new TestSet());
 
             var mutants = new List<Mutant>
             {
@@ -229,32 +215,30 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public void FilterMutants_FiltersNoMutants_IfTestsChanged()
         {
             // Arrange
-            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
-
             var options = new StrykerOptions()
             {
                 WithBaseline = false,
                 ProjectVersion = "version"
             };
 
-            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
+            var diffResults = new DiffResult
             {
                 ChangedSourceFiles = new List<string>(),
                 ChangedTestFiles = new List<string> { "C:/testfile1.cs" }
-            });
+            };
 
             var tests = new TestSet();
             var test1 = new TestDescription(Guid.NewGuid(), "name1", "C:/testfile1.cs");
             var test2 = new TestDescription(Guid.NewGuid(), "name2", "C:/testfile2.cs");
-            tests.RegisterTests(new[] {test1, test2});
-            diffProvider.SetupGet(x => x.Tests).Returns(tests);
-            var target = new SinceMutantFilter(diffProvider.Object);
-            var testFile1 = new TestGuidsList(new [] {test1});
-            var testFile2 = new TestGuidsList(new [] {test2});
+            tests.RegisterTests(new[] { test1, test2 });
 
-            var expectedToStay1 = new Mutant {CoveringTests = testFile1};
-            var expectedToStay2 = new Mutant {CoveringTests = testFile1};
-            var newMutant = new Mutant {CoveringTests = testFile2};
+            var target = new SinceMutantFilter(diffResults, tests);
+            var testFile1 = new TestGuidsList(new[] { test1 });
+            var testFile2 = new TestGuidsList(new[] { test2 });
+
+            var expectedToStay1 = new Mutant { CoveringTests = testFile1 };
+            var expectedToStay2 = new Mutant { CoveringTests = testFile1 };
+            var newMutant = new Mutant { CoveringTests = testFile2 };
             var mutants = new List<Mutant>
             {
                 expectedToStay1,
@@ -266,29 +250,26 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var results = target.FilterMutants(mutants, new CsharpFileLeaf(), options);
 
             // Assert
-            results.ShouldBe(new []{expectedToStay1, expectedToStay2});
+            results.ShouldBe(new[] { expectedToStay1, expectedToStay2 });
         }
 
         [Fact]
         public void Should_IgnoreMutants_WithoutCoveringTestsInfo_When_Tests_Have_Changed()
         {
             // Arrange
-            var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
-
             var options = new StrykerOptions()
             {
                 WithBaseline = false,
                 ProjectVersion = "version"
             };
 
-            diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
+            var diffResults = new DiffResult
             {
                 ChangedSourceFiles = new List<string>(),
                 ChangedTestFiles = new List<string> { "C:/testfile.cs" }
-            });
+            };
 
-            diffProvider.SetupGet(x => x.Tests).Returns(new TestSet());
-            var target = new SinceMutantFilter(diffProvider.Object);
+            var target = new SinceMutantFilter(diffResults, new TestSet());
 
             var mutants = new List<Mutant>
             {
@@ -312,12 +293,9 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 ProjectVersion = "version"
             };
 
-            var diffProviderMock = new Mock<IDiffProvider>();
+            var diffResult = new DiffResult { ChangedTestFiles = new List<string> { "config.json" } };
 
-            var diffResult = new DiffResult() { ChangedTestFiles = new List<string> { "config.json" } };
-            diffProviderMock.Setup(x => x.ScanDiff()).Returns(diffResult);
-
-            var target = new SinceMutantFilter(diffProviderMock.Object);
+            var target = new SinceMutantFilter(diffResult, new TestSet());
 
             var mutants = new List<Mutant> { new Mutant(), new Mutant(), new Mutant() };
 

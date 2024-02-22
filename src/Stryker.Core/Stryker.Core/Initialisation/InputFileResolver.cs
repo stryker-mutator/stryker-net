@@ -77,6 +77,10 @@ namespace Stryker.Core.Initialisation
             var projectsUnderTestAnalyzerResult = solutionAnalyzerResults.Where(p => !p.IsTestProject()).ToList();
             _logger.LogInformation("Found {0} source projects", projectsUnderTestAnalyzerResult.Count);
             _logger.LogInformation("Found {0} test projects", solutionTestProjects.Count);
+            if (options.IsSolutionContext)
+            {
+                options.TestProjects = solutionTestProjects.Select(analyzerResult => new FileInfo(analyzerResult.ProjectFilePath).DirectoryName).ToArray();
+            }
 
             var dependents = FindDependentProjects(projectsUnderTestAnalyzerResult);
             if (!string.IsNullOrEmpty(options.SourceProjectName))
