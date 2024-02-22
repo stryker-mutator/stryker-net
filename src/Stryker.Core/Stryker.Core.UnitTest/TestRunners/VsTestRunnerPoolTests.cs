@@ -10,6 +10,7 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
 using Xunit;
 
@@ -575,7 +576,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         // this verifies that tests missing any coverage information are
-        // flagged as to be tested used against every mutants
+        // flagged as to be tested used against every mutant
         [Fact]
         public void MarkSuspiciousTests()
         {
@@ -609,6 +610,35 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             var testResult = BuildCoverageTestResult("T0", new[] { "0;", "" });
             var other = BuildCoverageTestResult("T1", new[] { "", "" });
+            SetupMockCoverageRun(mockVsTest, new[] { testResult, other });
+
+
+            var analyzer = new CoverageAnalyser(options);
+            analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
+
+            OtherMutant.CoveringTests.Count.ShouldBe(0);
+            Mutant.CoveringTests.Count.ShouldBe(1);
+        }
+
+        // this verifies extra test results (without any coverage info) are properly handled
+        // are properly handled
+        [Fact]
+        public void HandleExtraTestResult()
+        {
+            var options = new StrykerOptions
+            {
+                OptimizationMode = OptimizationModes.CoverageBasedTest
+            };
+
+            var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
+
+            var testResult = BuildCoverageTestResult("T0", new[] { "0;", "" });
+            var other =  new TestResult(FindOrBuildCase("T0"))
+            {
+                DisplayName = "T0",
+                Outcome = TestOutcome.Passed,
+                ComputerName = "."
+            };
             SetupMockCoverageRun(mockVsTest, new[] { testResult, other });
 
 

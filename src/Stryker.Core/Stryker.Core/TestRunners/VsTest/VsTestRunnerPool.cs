@@ -154,6 +154,12 @@ namespace Stryker.Core.TestRunners.VsTest
             var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == CoverageCollector.PropertyName);
             var testCaseId = testResult.TestCase.Id;
             var unexpected = false;
+            var log = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == CoverageCollector.Coveragelog).Value?.ToString();
+            if (!string.IsNullOrEmpty(log))
+            {
+                _logger.LogError($"VsTestRunner: Coverage collector error: {log}.");
+            }
+
             if (!Context.VsTests.ContainsKey(testCaseId))
             {
                 _logger.LogWarning(
@@ -165,7 +171,6 @@ namespace Stryker.Core.TestRunners.VsTest
 
             var testDescription = Context.VsTests[testCaseId];
             // is this a suspect test ?
-            // ReSharper disable once ConditionIsAlwaysTrueOrFalse
             if (key == null)
             {
                 if (seenTestCases.Contains(testCaseId))
