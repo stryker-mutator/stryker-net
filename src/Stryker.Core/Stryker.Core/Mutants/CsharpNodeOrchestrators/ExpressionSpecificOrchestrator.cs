@@ -13,21 +13,15 @@ internal class ExpressionSpecificOrchestrator<T> : NodeSpecificOrchestrator<T, E
 {
     /// <inheritdoc/>
     /// <remarks>Inject all pending mutations controlled with conditional operator(s).</remarks>
-    protected override ExpressionSyntax InjectMutations(T sourceNode, ExpressionSyntax targetNode, SemanticModel semanticModel, MutationContext context) => context.InjectExpressionLevel(targetNode, sourceNode);
+    protected override ExpressionSyntax InjectMutations(T sourceNode, ExpressionSyntax targetNode, SemanticModel semanticModel, MutationContext context) => context.InjectMutations(targetNode, sourceNode);
 
     protected override MutationContext StoreMutations(T node,
         IEnumerable<Mutant> mutations,
-        MutationContext context)
-    {
+        MutationContext context) =>
         // if the expression contains a declaration, it must be controlled at the block level.
-        if (node.ContainsDeclarations())
-        {
-            context.AddBlockLevel(mutations);
-        }
-        else
-        {
-            context.AddExpressionLevel(mutations);
-        }
-        return context;
-    }
+         context.AddMutations(mutations, node.ContainsDeclarations() ? MutationControl.Block : MutationControl.Expression);
+
+    protected override MutationContext PrepareContext(T node, MutationContext context) => base.PrepareContext(node, context.Enter(MutationControl.Expression));
+
+    protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave());
 }

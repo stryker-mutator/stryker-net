@@ -6,7 +6,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 /// <summary>
 /// This purpose of each implementation of this class is to support one specific C# code construct during the mutation process.
-/// Indeed some constructs need to be handled specifically to ensure successful mutations.
+/// Indeed, some constructs need to be handled specifically to ensure successful mutations.
 /// Others are used to inject the need mutation control logic. It is strongly suggested to review each of those classes to
 /// get a grasp of how they work before adding a new one.
 /// </summary>
@@ -14,8 +14,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 /// <typeparam name="TBase">Type of the node once mutated. In practice, either <see cref="TNode"/> or a base class of it.</typeparam>
 /// <remarks>Those classes are an implementation of the 'Strategy' pattern. They must remain stateless, as the same instance is used for all syntax node of
 /// the given type. They can still embark some readonly options/parameters, as long as they remain constant during parsing.</remarks>
-internal abstract class NodeSpecificOrchestrator<TNode, TBase> : NodeOrchestratorBase, INodeMutator where TBase : SyntaxNode where TNode : TBase
-{
+internal class NodeSpecificOrchestrator<TNode, TBase> : INodeOrchestrator where TBase : SyntaxNode where TNode : TBase{
     /// <summary>
     /// Get the Roslyn type handled by this class
     /// </summary>
@@ -67,7 +66,7 @@ internal abstract class NodeSpecificOrchestrator<TNode, TBase> : NodeOrchestrato
     /// <returns>A <see cref="MutationContext"/>instance storing existing mutations as well as the one provided</returns>
     /// <remarks>You need to override this method if the generated mutations cannot be injected in place (via a conditional operator) but must be controlled
     /// at the statement or block level. Default implementation does nothing.</remarks>
-    protected virtual MutationContext StoreMutations(TNode node, IEnumerable<Mutant> mutations, MutationContext context) => context;
+    protected virtual MutationContext StoreMutations(TNode node, IEnumerable<Mutant> mutations, MutationContext context) => context.AddMutations(mutations);
 
     /// <summary>
     /// Mutate children, grandchildren (recursively). 
@@ -80,26 +79,16 @@ internal abstract class NodeSpecificOrchestrator<TNode, TBase> : NodeOrchestrato
     /// skip mutating the children node.</remarks>
     protected virtual TBase OrchestrateChildrenMutation(TNode node, SemanticModel semanticModel, MutationContext context) =>
         node.ReplaceNodes(node.ChildNodes(),
-            computeReplacementNode: (original, _) => MutateSingleNode(original, semanticModel, context));
+            computeReplacementNode: (original, _) => context.FindHandler(original).Mutate(original, semanticModel, context));
 
     /// <summary>
-    /// Mutate the provided node and its children and returns the result.
-    /// </summary>
-    /// <param name="node">Node to be mutated</param>
-    /// <param name="semanticModel">Semantic model </param>
-    /// <param name="context">Mutation context</param>
-    /// <returns>The mutated node</returns>
-    /// <remarks><paramref name="context"/>may contain mutations that need be injected at higher level in the node hierarchy.</remarks>
-    protected static SyntaxNode MutateSingleNode(SyntaxNode node, SemanticModel semanticModel, MutationContext context) => context.FindHandler(node).Mutate(node, semanticModel, context);
-
-    /// <summary>
-    /// Setup the mutation context before triggering mutation.
+    /// Set up the mutation context before triggering mutation.
     /// </summary>
     /// <param name="node">Node of interest</param>
     /// <param name="context">context to be updated</param>
     /// <returns>a context capturing changes, if any</returns>
     /// <remarks>base implementation parse stryker comments.</remarks>
-    protected virtual MutationContext PrepareContext(TNode node, MutationContext context) => ParseNodeComments(node, context);
+    protected virtual MutationContext PrepareContext(TNode node, MutationContext context) => CommentParser.ParseNodeComments(node, context);
 
     /// <summary>
     /// Restore the mutation context after mutation have been performed
@@ -127,6 +116,7 @@ internal abstract class NodeSpecificOrchestrator<TNode, TBase> : NodeOrchestrato
     {
         var specificNode = node as TNode;
         context = PrepareContext(specificNode, context);
+
         // we generate mutations for this node (to help numbering being in 'code reading' order)
         var mutations = GenerateMutationForNode(specificNode, semanticModel, context);
         SyntaxNode result = InjectMutations(specificNode,

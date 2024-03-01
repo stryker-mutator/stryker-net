@@ -7,34 +7,18 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 internal class InvocationExpressionOrchestrator: NodeSpecificOrchestrator<InvocationExpressionSyntax, ExpressionSyntax>
 {
-    /// <inheritdoc/>
-    /// <remarks>Inject all pending mutations controlled with conditional operator(s).</remarks>
-    protected override ExpressionSyntax InjectMutations(InvocationExpressionSyntax sourceNode, ExpressionSyntax targetNode, SemanticModel semanticModel, MutationContext context) => context.InjectExpressionLevel(targetNode, sourceNode);
 
-    protected override ExpressionSyntax OrchestrateChildrenMutation(InvocationExpressionSyntax node, SemanticModel semanticModel, MutationContext context)
-    {
-        var expressions = (ExpressionSyntax)MutateSingleNode(node.Expression, semanticModel, context.Enter(MutationControl.MemberAccess));
-        context.Leave(MutationControl.MemberAccess);
-        context.Enter(MutationControl.Member);
-        var argumentListSyntax = (ArgumentListSyntax)MutateSingleNode(node.ArgumentList, semanticModel, context);
-        var result = node.WithExpression(expressions).WithArgumentList(argumentListSyntax);
-        context.Leave(MutationControl.Member);
-        return result;
-    }
+    protected override ExpressionSyntax InjectMutations(InvocationExpressionSyntax sourceNode, ExpressionSyntax targetNode, SemanticModel semanticModel, MutationContext context) => context.InjectMutations(targetNode, sourceNode);
 
     protected override MutationContext StoreMutations(InvocationExpressionSyntax node,
         IEnumerable<Mutant> mutations,
-        MutationContext context)
-    {
+        MutationContext context) =>
         // if the expression contains a declaration, it must be controlled at the block level.
-        if (node.ContainsDeclarations())
-        {
-            context.AddBlockLevel(mutations);
-        }
-        else
-        {
-            context.AddExpressionLevel(mutations);
-        }
-        return context;
-    }
+         context.AddMutations(mutations, node.ArgumentList.ContainsDeclarations() ? MutationControl.Block : MutationControl.Expression);
+
+    protected override MutationContext PrepareContext(InvocationExpressionSyntax node, MutationContext context) =>
+        // invocation with a member binding expression must be controlled at a higher expression level
+        base.PrepareContext(node, context.Enter(node.HasAMemberBindingExpression() ? MutationControl.MemberAccess : MutationControl.Expression));
+
+    protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave());
 }

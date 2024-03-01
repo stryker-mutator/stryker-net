@@ -7,7 +7,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 /// Generic class for node types (and their children) that must not be mutated
 /// </summary>
 /// <typeparam name="T">SyntaxNode subtype</typeparam>
-internal class DontMutateOrchestrator<T> : NodeSpecificOrchestrator<T, T> where T : SyntaxNode
+internal class DoNotMutateOrchestrator<T> : NodeSpecificOrchestrator<T, T> where T : SyntaxNode
 {
     private readonly Predicate<T> _predicate;
 
@@ -18,7 +18,7 @@ internal class DontMutateOrchestrator<T> : NodeSpecificOrchestrator<T, T> where 
     /// Constructor
     /// </summary>
     /// <param name="predicate">predicate that signals when this orchestrator applies. default: apply to all node of proper type.</param>
-    public DontMutateOrchestrator(Predicate<T> predicate = null) => _predicate = predicate ?? (_ => true);
+    public DoNotMutateOrchestrator(Predicate<T> predicate = null) => _predicate = predicate ?? (_ => true);
 
     /// <inheritdoc />
     protected override bool CanHandle(T t) => _predicate(t);
