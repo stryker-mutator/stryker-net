@@ -432,6 +432,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             sourceProjectAnalyzerResultMock.Setup(x => x.Succeeded).Returns(true);
 
             IEnumerable<IAnalyzerResult> analyzerResults = new[] { sourceProjectAnalyzerResultMock.Object };
+            sourceProjectAnalyzerResultsMock.Setup(x => x.OverallSuccess).Returns(true);
             sourceProjectAnalyzerResultsMock.Setup(x => x.Results).Returns(analyzerResults);
             sourceProjectAnalyzerResultsMock.Setup(x => x.GetEnumerator()).Returns(() => analyzerResults.GetEnumerator());
 
@@ -439,6 +440,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             sourceProjectAnalyzerMock.Setup(x => x.Build()).Returns(sourceProjectAnalyzerResultsMock.Object);
 
             sourceProjectFileMock.Setup(x => x.Path).Returns(_projectPath);
+            sourceProjectFileMock.Setup(x => x.Name).Returns(csprojPathName);
             return sourceProjectAnalyzerMock;
         }
 

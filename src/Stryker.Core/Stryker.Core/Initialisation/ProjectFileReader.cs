@@ -17,6 +17,7 @@ namespace Stryker.Core.Initialisation
             string targetFramework,
             string msBuildPath = null);
         IAnalyzerManager GetAnalyzerManager(string solutionFilePath = null);
+        IAnalyzerResult SelectAnalyzerResult(IEnumerable<IAnalyzerResult> analyzerResults, string targetFramework);
     }
 
     /// <summary>
@@ -87,10 +88,10 @@ namespace Stryker.Core.Initialisation
             return SelectAnalyzerResult(analyzerResults, targetFramework);
         }
 
-        private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
+        public IAnalyzerResult SelectAnalyzerResult(IEnumerable<IAnalyzerResult> analyzerResults, string targetFramework)
         {
-            var validResults = analyzerResults.Where(a => a.TargetFramework is not null);
-            if (!validResults.Any())
+            var validResults = analyzerResults.Where(a => a.TargetFramework is not null).ToList();
+            if (validResults.Count == 0)
             {
                 _logger.LogError("Project analysis failed. The MsBuild log is below.");
                 _logger.LogError(_buildalyzerLog.ToString());
@@ -127,15 +128,15 @@ namespace Stryker.Core.Initialisation
             _logger.LogTrace("Project: {0}", analyzerResult.ProjectFilePath);
             _logger.LogTrace("TargetFramework: {0}", analyzerResult.TargetFramework);
 
-            foreach (var property in analyzerResult?.Properties ?? new Dictionary<string, string>())
+            foreach (var property in analyzerResult.Properties ?? new Dictionary<string, string>())
             {
                 _logger.LogTrace("Property {0}={1}", property.Key, property.Value);
             }
-            foreach (var sourceFile in analyzerResult?.SourceFiles ?? Enumerable.Empty<string>())
+            foreach (var sourceFile in analyzerResult.SourceFiles ?? Enumerable.Empty<string>())
             {
                 _logger.LogTrace("SourceFile {0}", sourceFile);
             }
-            foreach (var reference in analyzerResult?.References ?? Enumerable.Empty<string>())
+            foreach (var reference in analyzerResult.References ?? Enumerable.Empty<string>())
             {
                 _logger.LogTrace("References: {0}", reference);
             }
