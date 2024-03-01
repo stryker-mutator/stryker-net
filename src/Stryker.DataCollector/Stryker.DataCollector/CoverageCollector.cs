@@ -17,6 +17,8 @@ namespace Stryker.DataCollector
         private IDataCollectionSink _dataSink;
         private bool _coverageOn;
         private int _activeMutation = -1;
+        private bool _reportFailure;
+
         private Action<string> _logger;
         private readonly IDictionary<string, int> _mutantTestedBy = new Dictionary<string, int>();
 
@@ -34,6 +36,7 @@ namespace Stryker.DataCollector
 
         public const string PropertyName = "Stryker.Coverage";
         public const string OutOfTestsPropertyName = "Stryker.Coverage.OutOfTests";
+        public const string Coveragelog = "CoverageLog";
 
         public string MutantList => string.Join(",", _mutantTestedBy.Values.Distinct());
 
@@ -168,12 +171,12 @@ namespace Stryker.DataCollector
 
         private int GetActiveMutantForThisTest(string testId)
         {
-            if (_mutantTestedBy.ContainsKey(testId))
+            if (_mutantTestedBy.TryGetValue(testId, out var test))
             {
-                return _mutantTestedBy[testId];
+                return test;
             }
 
-            return _mutantTestedBy.ContainsKey(AnyId) ? _mutantTestedBy[AnyId] : -1;
+            return _mutantTestedBy.TryGetValue(AnyId, out var value) ? value : -1;
         }
 
         private void ParseTestMapping(XmlNodeList testMapping)
@@ -240,6 +243,11 @@ namespace Stryker.DataCollector
             {
                 // no test covered any mutations, so the controller was never properly initialized
                 _dataSink.SendData(dataCollectionContext, PropertyName, ";");
+                if (!_reportFailure)
+                {
+                    _dataSink.SendData(dataCollectionContext, Coveragelog, $"Did not find type {_controlClassName}. This indicates Stryker failed to copy the mutated assembly for test.");
+                    _reportFailure = true;
+                }
                 return;
             }
 

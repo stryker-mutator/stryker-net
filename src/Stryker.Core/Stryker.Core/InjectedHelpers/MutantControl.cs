@@ -1,6 +1,6 @@
 namespace Stryker
 {
-    internal static class MutantControl
+    public static class MutantControl
     {
         private static System.Collections.Generic.List<int> _coveredMutants;
         private static System.Collections.Generic.List<int> _coveredStaticdMutants;

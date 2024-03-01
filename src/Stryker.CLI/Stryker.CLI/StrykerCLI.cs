@@ -154,12 +154,12 @@ namespace Stryker.CLI
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Bug", "S3168:\"async\" methods should not return \"void\"", Justification = "This method is fire and forget. Task.Run also doesn't work in unit tests")]
         private async void PrintStrykerVersionInformationAsync()
         {
+            var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCli>();
             var assembly = Assembly.GetExecutingAssembly();
             var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 
             if (!SemanticVersion.TryParse(version, out var currentVersion))
             {
-                var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCli>();
                 if (string.IsNullOrEmpty(version))
                 {
                     logger.LogWarning("{Attribute} is missing in {Assembly} at {AssemblyLocation}", nameof(AssemblyInformationalVersionAttribute), assembly, assembly.Location);
@@ -172,6 +172,7 @@ namespace Stryker.CLI
             }
 
             _console.MarkupLine($"Version: [Green]{currentVersion}[/]");
+            logger.LogDebug("Stryker starting, version: {Version}", currentVersion);
             _console.WriteLine();
 
             var latestVersion = await _nugetClient.GetLatestVersionAsync();
