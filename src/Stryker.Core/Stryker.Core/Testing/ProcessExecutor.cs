@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.Linq;
 using System.Text;
 
@@ -27,15 +26,10 @@ namespace Stryker.Core.Testing
     }
 
     [ExcludeFromCodeCoverage]
-    public class ProcessExecutor : IProcessExecutor
+    public class ProcessExecutor(bool redirectOutput = true) : IProcessExecutor
     {
         // when redirected, the output from the process will be kept in memory and not displayed to the console directly
-        private bool RedirectOutput { get; }
-
-        public ProcessExecutor(bool redirectOutput = true)
-        {
-            RedirectOutput = redirectOutput;
-        }
+        private bool RedirectOutput { get; } = redirectOutput;
 
         public ProcessResult Start(
             string path,
@@ -47,7 +41,7 @@ namespace Stryker.Core.Testing
             var info = new ProcessStartInfo(application, arguments)
             {
                 UseShellExecute = false,
-                WorkingDirectory = Path.GetDirectoryName(FilePathUtils.NormalizePathSeparators(path)),
+                WorkingDirectory = FilePathUtils.NormalizePathSeparators(path),
                 RedirectStandardOutput = RedirectOutput,
                 RedirectStandardError = RedirectOutput
             };

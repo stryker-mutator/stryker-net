@@ -28,32 +28,7 @@ namespace Stryker.Core.Mutants
         public CsharpMutantOrchestrator(MutantPlacer placer, IEnumerable<IMutator> mutators = null, StrykerOptions options = null) : base(options)
         {
             Placer = placer;
-            Mutators = mutators ?? new List<IMutator>
-            {
-                // the default list of mutators
-                new BinaryExpressionMutator(),
-                new BlockMutator(),
-                new BooleanMutator(),
-                new DefaultParameterMutator(this, _options),
-                new AssignmentExpressionMutator(),
-                new PrefixUnaryMutator(),
-                new PostfixUnaryMutator(),
-                new CheckedMutator(),
-                new LinqMutator(),
-                new StringMutator(),
-                new StringEmptyMutator(),
-                new InterpolatedStringMutator(),
-                new NegateConditionMutator(),
-                new InitializerMutator(),
-                new ObjectCreationMutator(),
-                new ArrayCreationMutator(),
-                new StatementMutator(),
-                new RegexMutator(),
-                new NullCoalescingExpressionMutator(),
-                new MathMutator(),
-                new SwitchExpressionMutator(),
-                new IsPatternExpressionMutator()
-            };
+            Mutators = mutators ?? DefaultMutatorList();
             Mutants = new Collection<Mutant>();
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpMutantOrchestrator>();
 
@@ -79,6 +54,7 @@ namespace Stryker.Core.Mutants
                 // prevent mutations to happen within member access expression
                 new MemberAccessExpressionOrchestrator<MemberAccessExpressionSyntax>(),
                 new MemberAccessExpressionOrchestrator<MemberBindingExpressionSyntax>(),
+                new MemberAccessExpressionOrchestrator<SimpleNameSyntax>(),
                 // ensure static constructs are marked properly
                 new StaticFieldDeclarationOrchestrator(),
                 new StaticConstructorOrchestrator(),
@@ -93,7 +69,6 @@ namespace Stryker.Core.Mutants
                 new AccessorSyntaxOrchestrator(),
                 // ensure declaration are mutated at the block level
                 new LocalDeclarationOrchestrator(),
-
                 new ConditionalAccessOrchestrator(),
                 new InvocationExpressionOrchestrator(),
 
@@ -106,6 +81,32 @@ namespace Stryker.Core.Mutants
         }
 
         public IEnumerable<IMutator> Mutators { get; }
+        private static List<IMutator> DefaultMutatorList() =>
+            new()
+            {
+                // the default list of mutators
+                new BinaryExpressionMutator(),
+                new BlockMutator(),
+                new BooleanMutator(),
+                new AssignmentExpressionMutator(),
+                new PrefixUnaryMutator(),
+                new PostfixUnaryMutator(),
+                new CheckedMutator(),
+                new LinqMutator(),
+                new StringMutator(),
+                new StringEmptyMutator(),
+                new InterpolatedStringMutator(),
+                new NegateConditionMutator(),
+                new InitializerMutator(),
+                new ObjectCreationMutator(),
+                new ArrayCreationMutator(),
+                new StatementMutator(),
+                new RegexMutator(),
+                new NullCoalescingExpressionMutator(),
+                new MathMutator(),
+                new SwitchExpressionMutator(),
+                new IsPatternExpressionMutator()
+            };
 
         public MutantPlacer Placer { get; }
 
@@ -167,7 +168,7 @@ namespace Stryker.Core.Mutants
         /// <summary>
         /// Returns true if the new mutant is a duplicate of a mutant already listed in Mutants.
         /// </summary>
-        public bool IsMutantDuplicate(Mutant newMutant, Mutation mutation)
+        private bool IsMutantDuplicate(Mutant newMutant, Mutation mutation)
         {
             foreach (var mutant in Mutants)
             {

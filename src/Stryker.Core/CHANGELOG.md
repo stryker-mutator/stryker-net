@@ -1,3 +1,38 @@
+# [4.0.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.13.2...stryker@4.0.0) (2024-02-16)
+
+
+### Features
+
+* **reporters:** add support for real-time reporting in `DashboardReporter` ([#2563](https://github.com/stryker-mutator/stryker-net/issues/2563)) ([1ab3f29](https://github.com/stryker-mutator/stryker-net/commit/1ab3f293fabea735954edf15febcd4ea353ac1c5))
+* **target framework:** Update dotnet target framework from 6 to 8 ([#2851](https://github.com/stryker-mutator/stryker-net/issues/2851)) ([9a978e6](https://github.com/stryker-mutator/stryker-net/commit/9a978e6dcfcd19b3cdce77322da13027d58e0651))
+
+
+
+## [3.13.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.13.1...stryker@3.13.2) (2024-01-25)
+
+
+### Bug Fixes
+
+* **null-forgiving operator:** Mutation leak with SuppressNullableWarningSyntax constructs (!.) ([#2826](https://github.com/stryker-mutator/stryker-net/issues/2826)) ([469e3f6](https://github.com/stryker-mutator/stryker-net/commit/469e3f6fdb5f7cabefd32b50e34e9a03930b32dc))
+* **real time reporting:** Whitespace in report data no longer removed ([#2821](https://github.com/stryker-mutator/stryker-net/issues/2821)) ([2cb16a9](https://github.com/stryker-mutator/stryker-net/commit/2cb16a9e89a6f14e0021ed01b96bbf07d3f25081))
+* Stryker fails if project has conflicting settings regarding warnings ([#2828](https://github.com/stryker-mutator/stryker-net/issues/2828)) ([c2583e0](https://github.com/stryker-mutator/stryker-net/commit/c2583e04e9e298f934c301d4a729f96d134c7bc2))
+
+
+### Reverts
+
+* Revert "Publish" ([73a8177](https://github.com/stryker-mutator/stryker-net/commit/73a8177949157650100523dfe0368e75aabd56cf))
+
+
+
+## [3.13.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.13.0...stryker@3.13.1) (2024-01-05)
+
+
+### Bug Fixes
+
+* Make sure to select valid IAnalyzerResult from Buildalyzer ([#2811](https://github.com/stryker-mutator/stryker-net/issues/2811)) ([70adc60](https://github.com/stryker-mutator/stryker-net/commit/70adc60caad193ed6942ee970ea5373003ade4e4)), closes [#1900](https://github.com/stryker-mutator/stryker-net/issues/1900)
+
+
+
 # [3.13.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.12.0...stryker@3.13.0) (2023-12-22)
 
 

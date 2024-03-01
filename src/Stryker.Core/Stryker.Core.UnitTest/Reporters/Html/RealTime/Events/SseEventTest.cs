@@ -1,4 +1,4 @@
-﻿using Stryker.Core.Reporters.Html.RealTime.Events;
+using Stryker.Core.Reporters.Html.RealTime.Events;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters.Html.RealTime.Events;
@@ -28,5 +28,18 @@ public class SseEventTest : TestBase
         };
 
         @event.Serialize().ShouldBeSemantically("event:mutant-tested\ndata:{\"id\":\"1\",\"status\":\"Survived\"}");
+    }
+
+    [Fact]
+    public void ShouldSerializeMutantWhitespaceCorrectly()
+    {
+        var @object = new { Id = "1", Status = "Survived", Replacement = "Stryker was here!" };
+        var @event = new SseEvent<object>
+        {
+            Event = SseEventType.MutantTested,
+            Data = @object
+        };
+
+        @event.Serialize().ShouldBeSemantically("event:mutant-tested\ndata:{\"id\":\"1\",\"status\":\"Survived\",\"replacement\":\"Stryker was here!\"}");
     }
 }

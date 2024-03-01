@@ -125,7 +125,12 @@ public static class IAnalyzerResultExtensions
         throw new InputException(message);
     }
 
-    internal static bool TargetsFullFramework(this IAnalyzerResult analyzerResult) => GetNuGetFramework(analyzerResult).IsDesktop();
+    internal static bool TargetsFullFramework(this IAnalyzerResult analyzerResult)
+    {
+        var nuGetFramework = GetNuGetFramework(analyzerResult);
+
+        return nuGetFramework.IsDesktop() && (nuGetFramework.Version.Major<4 || nuGetFramework.Version is { Major: 4, Minor: < 8 });
+    }
 
     public static Language GetLanguage(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("Language") switch
     {
@@ -183,7 +188,16 @@ public static class IAnalyzerResultExtensions
         var warningsNotAsErrorsString = analyzerResult.GetPropertyOrDefault("WarningsNotAsErrors");
         var warningsNotAsErrors = warningsNotAsErrorsString is not null ? warningsNotAsErrorsString.Split(";").Where(x => !string.IsNullOrWhiteSpace(x)).ToDictionary(x => x, x => ReportDiagnostic.Warn) : new Dictionary<string, ReportDiagnostic>();
 
-        var diagnosticOptions = noWarn.Concat(warningsAsErrors).Concat(warningsNotAsErrors);
+        // merge settings,
+        var diagnosticOptions = new Dictionary<string, ReportDiagnostic>(warningsAsErrors);
+        foreach (var item in warningsNotAsErrors)
+        {
+            diagnosticOptions[item.Key] = item.Value;
+        }
+        foreach (var item in noWarn)
+        {
+            diagnosticOptions[item.Key] = item.Value;
+        }
         return diagnosticOptions.ToImmutableDictionary();
     }
 

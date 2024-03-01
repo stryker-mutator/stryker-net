@@ -1,14 +1,17 @@
 using System.Collections.Generic;
+using System.Linq;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
 using Stryker.Core.Clients;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using Stryker.Core.Options.Inputs;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.WebBrowserOpener;
+using Stryker.Core.Reporters.Json.SourceFiles;
 
 namespace Stryker.Core.Reporters
 {
@@ -33,26 +36,36 @@ namespace Stryker.Core.Reporters
         public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
             var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
+            _dashboardClient.PublishReport(mutationReport, _options.ProjectVersion).Wait();
 
-            var reportUri = _dashboardClient.PublishReport(mutationReport, _options.ProjectVersion).Result;
+            if (ShouldPublishInRealTime())
+            {
+                _dashboardClient.PublishFinished().Wait();
+            }
+        }
 
+        private void OpenDashboardReport(string reportUri)
+        {
             if (reportUri != null)
             {
-                if (_options.ReportTypeToOpen == Options.Inputs.ReportType.Dashboard)
+                if (_options.ReportTypeToOpen == ReportType.Dashboard)
                 {
                     _browser.Open(reportUri);
                 }
                 else
                 {
                     var aqua = new Style(Color.Aqua);
-                    _console.WriteLine("Hint: by passing \"--open-report:dashboard or -o:dashboard\" the report will open automatically once Stryker is done.", aqua);
+                    _console.WriteLine(
+                        "Hint: by passing \"--open-report:dashboard or -o:dashboard\" the report will open automatically once Stryker is done.",
+                        aqua);
                 }
 
                 var green = new Style(Color.Green);
                 _console.WriteLine();
                 _console.WriteLine("Your report has been uploaded at:", green);
                 // We must print the report path as the link text because on some terminals links might be supported but not actually clickable: https://github.com/spectreconsole/spectre.console/issues/764
-                _console.WriteLine(reportUri, _console.Profile.Capabilities.Links ? green.Combine(new Style(link: reportUri)) : green);
+                _console.WriteLine(reportUri,
+                    _console.Profile.Capabilities.Links ? green.Combine(new Style(link: reportUri)) : green);
                 _console.WriteLine("You can open it in your browser of choice.", green);
             }
             else
@@ -66,17 +79,34 @@ namespace Stryker.Core.Reporters
 
         public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
         {
-            // Method to implement the interface
+            if (!ShouldPublishInRealTime())
+            {
+                return;
+            }
+
+            var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
+            var reportUri = _dashboardClient.PublishReport(mutationReport, _options.ProjectVersion, true).Result;
+
+            OpenDashboardReport(reportUri);
         }
 
         public void OnMutantTested(IReadOnlyMutant result)
         {
-            // Method to implement the interface
+            if (!ShouldPublishInRealTime())
+            {
+                return;
+            }
+
+            _dashboardClient.PublishMutantBatch(new JsonMutant(result)).Wait();
         }
 
         public void OnStartMutantTestRun(IEnumerable<IReadOnlyMutant> mutantsToBeTested)
         {
             // Method to implement the interface
         }
+
+        private bool ShouldPublishInRealTime() =>
+            _options.ReportTypeToOpen == ReportType.Dashboard ||
+            _options.Reporters.Contains(Reporter.RealTimeDashboard);
     }
 }

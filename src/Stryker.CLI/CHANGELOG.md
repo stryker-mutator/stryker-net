@@ -1,3 +1,26 @@
+# [4.0.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.13.2...dotnet-stryker@4.0.0) (2024-02-16)
+
+
+### Features
+
+* **reporters:** add support for real-time reporting in `DashboardReporter` ([#2563](https://github.com/stryker-mutator/stryker-net/issues/2563)) ([1ab3f29](https://github.com/stryker-mutator/stryker-net/commit/1ab3f293fabea735954edf15febcd4ea353ac1c5))
+* **target framework:** Update dotnet target framework from 6 to 8 ([#2851](https://github.com/stryker-mutator/stryker-net/issues/2851)) ([9a978e6](https://github.com/stryker-mutator/stryker-net/commit/9a978e6dcfcd19b3cdce77322da13027d58e0651))
+
+
+
+## [3.13.2](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.13.1...dotnet-stryker@3.13.2) (2024-01-25)
+
+
+### Reverts
+
+* Revert "Publish" ([73a8177](https://github.com/stryker-mutator/stryker-net/commit/73a8177949157650100523dfe0368e75aabd56cf))
+
+
+
+## [3.13.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.13.0...dotnet-stryker@3.13.1) (2024-01-05)
+
+
+
 # [3.13.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.12.0...dotnet-stryker@3.13.0) (2023-12-22)
 
 
