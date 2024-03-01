@@ -80,7 +80,6 @@ namespace Stryker.Core.UnitTest.TestRunners
             var collector = new CoverageCollector();
 
             var testCase = new TestCase("theTest", new Uri("xunit://"), "source.cs");
-            var nonCoveringTestCase = new TestCase("theOtherTest", new Uri("xunit://"), "source.cs");
             var mutantMap = new List<(int, IEnumerable<Guid>)> {(5, new List<Guid>{testCase.Id})};
 
             var start = new TestSessionStartArgs

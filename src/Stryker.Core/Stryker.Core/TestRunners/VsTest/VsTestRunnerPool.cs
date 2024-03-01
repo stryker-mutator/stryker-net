@@ -139,14 +139,10 @@ namespace Stryker.Core.TestRunners.VsTest
                 }
 
                 // ensure we returns only entry per test
-                if (resultCache.ContainsKey(coverageRunResult.TestId))
+                if (!resultCache.TryAdd(coverageRunResult.TestId, coverageRunResult))
                 {
                     resultCache[coverageRunResult.TestId].Merge(coverageRunResult);
-                    continue;
                 }
-
-                resultCache[coverageRunResult.TestId] = coverageRunResult;
-
             }
 
             return resultCache.Values;
@@ -158,6 +154,12 @@ namespace Stryker.Core.TestRunners.VsTest
             var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == CoverageCollector.PropertyName);
             var testCaseId = testResult.TestCase.Id;
             var unexpected = false;
+            var log = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == CoverageCollector.Coveragelog).Value?.ToString();
+            if (!string.IsNullOrEmpty(log))
+            {
+                _logger.LogError($"VsTestRunner: Coverage collector error: {log}.");
+            }
+
             if (!Context.VsTests.ContainsKey(testCaseId))
             {
                 _logger.LogWarning(

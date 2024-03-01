@@ -190,7 +190,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var wrapper = BuildVsTestWrapper("TestDiscoverer");
             var messages = new List<string>();
             var handler = new DiscoveryEventHandler(messages);
-            wrapper.DiscoverTestsAsync(new List<string> { newSource }, GenerateRunSettingsForDiscovery(), handler);
+            wrapper.DiscoverTests(new List<string> { newSource }, GenerateRunSettingsForDiscovery(), handler);
 
             handler.WaitEnd();
             if (handler.Aborted)
@@ -251,6 +251,8 @@ namespace Stryker.Core.TestRunners.VsTest
             return $@"<RunSettings>
  <RunConfiguration>
   <MaxCpuCount>{Math.Max(1, Options.Concurrency)}</MaxCpuCount>
+  <InIsolation>true</InIsolation>
+<DisableAppDomain>true</DisableAppDomain>
   <DesignMode>true</DesignMode>
 {testCaseFilter}
  </RunConfiguration>
@@ -289,10 +291,11 @@ namespace Stryker.Core.TestRunners.VsTest
                 $@"<RunSettings>
 <RunConfiguration>
   <CollectSourceInformation>false</CollectSourceInformation>
-{(isFullFramework ? @"<DisableAppDomain>true</DisableAppDomain>
-" : string.Empty)}  <MaxCpuCount>1</MaxCpuCount>
+<MaxCpuCount>1</MaxCpuCount>
 {timeoutSettings}{settingsForCoverage}
 <DesignMode>false</DesignMode>
+<InIsolation>true</InIsolation>
+<DisableAppDomain>true</DisableAppDomain>
 {testCaseFilter}</RunConfiguration>{dataCollectorSettings}
 </RunSettings>";
 
