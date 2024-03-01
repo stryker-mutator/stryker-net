@@ -42,7 +42,9 @@ public enum Mutator
     [MutatorDescription("Null coalescing")]
     NullCoalescing,
     [MutatorDescription("Math methods")]
-    Math
+    Math,
+    [MutatorDescription("Default parameter")]
+    DefaultParameter
 }
 
 public static class EnumExtension

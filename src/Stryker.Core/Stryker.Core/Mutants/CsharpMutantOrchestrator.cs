@@ -14,8 +14,8 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Stryker.Core.Mutants
 {
-    /// <inheritdoc/>
-    public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxNode, SemanticModel>
+    /// <inheritdoc cref="BaseMutantOrchestrator{T,TY}" />
+    public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxNode, SemanticModel>, ICsharpMutantOrchestrator
     {
         private readonly TypeBasedStrategy<SyntaxNode, INodeMutator> _specificOrchestrator =
             new();
@@ -34,6 +34,7 @@ namespace Stryker.Core.Mutants
                 new BinaryExpressionMutator(),
                 new BlockMutator(),
                 new BooleanMutator(),
+                new DefaultParameterMutator(this, _options),
                 new AssignmentExpressionMutator(),
                 new PrefixUnaryMutator(),
                 new PostfixUnaryMutator(),
@@ -104,7 +105,7 @@ namespace Stryker.Core.Mutants
             });
         }
 
-        private IEnumerable<IMutator> Mutators { get; }
+        public IEnumerable<IMutator> Mutators { get; }
 
         public MutantPlacer Placer { get; }
 
@@ -166,7 +167,7 @@ namespace Stryker.Core.Mutants
         /// <summary>
         /// Returns true if the new mutant is a duplicate of a mutant already listed in Mutants.
         /// </summary>
-        private bool IsMutantDuplicate(Mutant newMutant, Mutation mutation)
+        public bool IsMutantDuplicate(Mutant newMutant, Mutation mutation)
         {
             foreach (var mutant in Mutants)
             {
