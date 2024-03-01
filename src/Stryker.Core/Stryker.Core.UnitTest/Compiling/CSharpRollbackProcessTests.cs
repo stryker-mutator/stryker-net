@@ -119,8 +119,8 @@ namespace ExampleProject
                 helpers.Add(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32));
             }
 
-            var mutant = mutator.Mutate(syntaxTree.GetRoot(), null);
-            helpers.Add(mutant.SyntaxTree);
+            var mutant = mutator.Mutate(syntaxTree, null);
+            helpers.Add(mutant);
 
             var references = new List<string> {
                 typeof(object).Assembly.Location,
@@ -203,8 +203,9 @@ namespace ExampleProject
                 helpers.Add(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32));
             }
 
-            var mutant = mutator.Mutate(syntaxTree.GetRoot(), null);
-            helpers.Add(mutant.SyntaxTree);
+            var mutant = mutator.Mutate(syntaxTree, null);
+
+            helpers.Add(mutant);
 
             var references = new List<string> {
                 typeof(object).Assembly.Location,

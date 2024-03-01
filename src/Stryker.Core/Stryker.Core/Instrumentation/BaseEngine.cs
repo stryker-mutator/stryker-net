@@ -13,10 +13,10 @@ namespace Stryker.Core.Instrumentation;
 /// <remarks>Multiple helpers can work on the same type of constructs.</remarks>
 internal abstract class BaseEngine<T>: IInstrumentCode where T: CSharpSyntaxNode
 {
-    protected BaseEngine() => Marker = new SyntaxAnnotation(MutantPlacer.Injector, InstrumentEngineId);
+    protected BaseEngine() => Marker = MutantPlacer.RegisterEngine(this);
 
     /// <summary>
-    /// Annotation to be added to the the instrumented node
+    /// Annotation to be added to the instrumented node
     /// </summary>
     protected SyntaxAnnotation Marker { get; }
 

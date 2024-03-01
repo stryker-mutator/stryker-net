@@ -4,7 +4,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Helpers;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Instrumentation;
 
@@ -20,88 +19,83 @@ public class MutantPlacer
     private const string MutationTypeMarker = "MutationType";
     public static readonly string Injector = "Injector";
 
+    private static readonly IDictionary<string, IInstrumentCode> InstrumentEngines = new Dictionary<string, IInstrumentCode>();
+    private static readonly HashSet<string> RequireRecursiveRemoval = new();
+
     private static readonly StaticInstrumentationEngine StaticEngine = new();
     private static readonly StaticInitializerMarkerEngine StaticInitializerEngine = new();
     private static readonly IfInstrumentationEngine IfEngine = new();
     private static readonly ConditionalInstrumentationEngine ConditionalEngine = new();
-    private static readonly ExpressionMethodToBodyEngine ExpressionMethodEngine = new();
-    private static readonly LocalFunctionExpressionToBodyEngine LocalFunctionExpressionToBodyEngine = new();
-    private static readonly AccessorExpressionToBodyEngine AccessorExpressionToBodyEngine = new();
-    private static readonly PropertyExpressionToBodyEngine PropertyExpressionToBodyEngine = new();
-    private static readonly AnonymousFunctionExpressionToBodyEngine AnonymousFunctionExpressionToBodyEngine = new();
-    private static readonly LambdaExpressionToBodyEngine LambdaExpressionToBodyEngine = new();
     private static readonly EndingReturnEngine EndingReturnEngine = new();
     private static readonly DefaultInitializationEngine DefaultInitializationEngine = new();
-
-    private static readonly IDictionary<string, IInstrumentCode> InstrumentEngines = new Dictionary<string, IInstrumentCode>();
 
     private readonly CodeInjection _injection;
     private ExpressionSyntax _binaryExpression;
     private SyntaxNode _placeHolderNode;
     public static IEnumerable<string> MutationMarkers => new[] { MutationIdMarker, MutationTypeMarker, Injector };
 
-    static MutantPlacer()
-    {
-        RegisterEngine(StaticEngine);
-        RegisterEngine(IfEngine);
-        RegisterEngine(ConditionalEngine);
-        RegisterEngine(ExpressionMethodEngine);
-        RegisterEngine(AccessorExpressionToBodyEngine);
-        RegisterEngine(PropertyExpressionToBodyEngine);
-        RegisterEngine(AnonymousFunctionExpressionToBodyEngine);
-        RegisterEngine(EndingReturnEngine);
-        RegisterEngine(DefaultInitializationEngine);
-        RegisterEngine(StaticInitializerEngine);
-        RegisterEngine(LocalFunctionExpressionToBodyEngine);
-        RegisterEngine(LambdaExpressionToBodyEngine);
-    }
-
     public MutantPlacer(CodeInjection injection) => _injection = injection;
 
     /// <summary>
-    ///  register an instrumentation engine
+    /// Register an instrumentation engine
     /// </summary>
-    /// <param name="engine"></param>
-    public static void RegisterEngine(IInstrumentCode engine) => InstrumentEngines.Add(engine.InstrumentEngineId, engine);
+    /// <param name="engine">engine to register</param>
+    /// <param name="requireRecursive">true if inner injections should be removed first.</param>
+    public static SyntaxAnnotation RegisterEngine(IInstrumentCode engine, bool requireRecursive = false)
+    {
+        if (InstrumentEngines.TryGetValue(engine.InstrumentEngineId, out var existing) && existing!.GetType() != engine.GetType())
+        {
+            throw new InvalidOperationException($"Cannot register {engine.GetType().Name} as name {engine.InstrumentEngineId} is already registered to {existing.GetType().Name}.");
+        }
+        InstrumentEngines[engine.InstrumentEngineId] = engine;
+        if (requireRecursive)
+        {
+            RequireRecursiveRemoval.Add(engine.InstrumentEngineId);
+        }
+        return new SyntaxAnnotation(Injector, engine.InstrumentEngineId);
+    }
 
-    public static T ConvertExpressionToBody<T>(T method) where T : BaseMethodDeclarationSyntax =>
-        ExpressionMethodEngine.ConvertToBody(method);
+    /// <summary>
+    /// Add a return at the end of the syntax block, assuming it appears to be useful and returns the new block.
+    /// </summary>
+    /// <param name="block">block to complete with an ending return</param>
+    /// <param name="propertyType">type to return. if null, ends the statement block with a non-typed 'return default'.</param>
+    /// <returns><paramref name="block"/> with an extra return or not</returns>
+    /// <remarks>The engine verifies if a return may be useful and does not inject it otherwise. For example, it does nothing if the block is empty, return type is void or if the block already ends with a return or a throw statement.</remarks>
+    public static BlockSyntax AddEndingReturn(BlockSyntax block, TypeSyntax propertyType) =>
+        EndingReturnEngine.InjectReturn(block, propertyType);
 
-    public static AccessorDeclarationSyntax ConvertExpressionToBody(AccessorDeclarationSyntax method) =>
-        AccessorExpressionToBodyEngine.ConvertExpressionToBody(method);
-
-    public static LocalFunctionStatementSyntax ConvertExpressionToBody(LocalFunctionStatementSyntax method) =>
-        LocalFunctionExpressionToBodyEngine.ConvertToBody(method);
-
-    public static LambdaExpressionSyntax ConvertExpressionToBody(LambdaExpressionSyntax lambdaExpression) =>
-        LambdaExpressionToBodyEngine.ConvertToBody(lambdaExpression);
-
-    public static AnonymousFunctionExpressionSyntax ConvertExpressionToBody(AnonymousFunctionExpressionSyntax anonymousFunction) =>
-        AnonymousFunctionExpressionToBodyEngine.ConvertToBody(anonymousFunction);
-
-    public static PropertyDeclarationSyntax ConvertPropertyExpressionToBodyAccessor(PropertyDeclarationSyntax property) =>
-        PropertyExpressionToBodyEngine.ConvertExpressionToBody(property);
-
-    public static BaseMethodDeclarationSyntax AddEndingReturn(BaseMethodDeclarationSyntax method) =>
-        method.WithBody(EndingReturnEngine.InjectReturn(method.Body, method.ReturnType(), method.Modifiers));
-    public static AccessorDeclarationSyntax AddEndingReturn(AccessorDeclarationSyntax method, TypeSyntax propertyType) =>
-        method.WithBody(EndingReturnEngine.InjectReturn(method.Body, propertyType, method.Modifiers));
-    public static LocalFunctionStatementSyntax AddEndingReturn(LocalFunctionStatementSyntax function) =>
-        function.WithBody(EndingReturnEngine.InjectReturn(function.Body, function.ReturnType, function.Modifiers));
-    public static AnonymousFunctionExpressionSyntax AddEndingReturn(AnonymousFunctionExpressionSyntax function) =>
-        function.WithBlock(EndingReturnEngine.InjectReturn(function.Block));
-    public static LambdaExpressionSyntax AddEndingReturn(LambdaExpressionSyntax lambda) =>
-        lambda.WithBlock(EndingReturnEngine.InjectReturn(lambda.Block));
-
+    /// <summary>
+    /// Adds a static marker so that Stryker can identify mutations used in static context
+    /// </summary>
+    /// <param name="block">block to augment with the marker</param>
+    /// <returns><paramref name="block"/> with the marker added via a using statement.</returns>
     public BlockSyntax PlaceStaticContextMarker(BlockSyntax block) =>
         StaticEngine.PlaceStaticContextMarker(block, _injection);
 
+    /// <summary>
+    /// Add a static marker so that Stryker can identify mutations used in static context
+    /// </summary>
+    /// <param name="expression">expression to augment with the marker</param>
+    /// <returns><paramref name="expression"/> with the marker added via a using expression.</returns>
     public ExpressionSyntax PlaceStaticContextMarker(ExpressionSyntax expression) =>
         StaticInitializerEngine.PlaceValueMarker(expression, _injection);
 
-    public static BlockSyntax AddDefaultInitializers(BlockSyntax block, IEnumerable<ParameterSyntax> parameters) =>
-        DefaultInitializationEngine.AddDefaultInitializers(block, parameters);
+    /// <summary>
+    /// Add initialization for all out parameters
+    /// </summary>
+    /// <param name="block">block to augment with an initialization block</param>
+    /// <returns><paramref name="block"/> with assignment statements in a block.</returns>
+    /// <remarks>return <paramref name="block"/> if there is no 'out' parameter.</remarks>
+    public static BlockSyntax InjectOutParametersInitialization(BlockSyntax block, IEnumerable<ParameterSyntax> parameters) =>
+        DefaultInitializationEngine.InjectOutParametersInitialization(block, parameters);
 
+    /// <summary>
+    /// Add one or more mutations controlled via one or more if statements
+    /// </summary>
+    /// <param name="original">original statement (will be used to generate mutations)</param>
+    /// <param name="mutants">list of mutations to inject</param>
+    /// <returns>an if statement (or a chain of if statements) containing the mutant(s) and the original node.</returns>
     public StatementSyntax PlaceStatementControlledMutations(StatementSyntax original,
         IEnumerable<(Mutant mutant, StatementSyntax mutation)> mutants) =>
         mutants.Aggregate(original, (syntaxNode, mutationInfo) =>
@@ -110,6 +104,12 @@ public class MutantPlacer
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationIdMarker, mutationInfo.mutant.Id.ToString()))
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationTypeMarker, mutationInfo.mutant.Mutation.Type.ToString())));
 
+    /// <summary>
+    /// Add one or more mutations controlled via one or more ternary operators
+    /// </summary>
+    /// <param name="original">original expression (will be used to generate mutations)</param>
+    /// <param name="mutants">list of mutations to inject</param>
+    /// <returns>a ternary expression (or a chain of ternary expression) containing the mutant(s) and the original node.</returns>
     public ExpressionSyntax PlaceExpressionControlledMutations(ExpressionSyntax original,
         IEnumerable<(Mutant mutant, ExpressionSyntax mutation)> mutants) =>
         mutants.Aggregate(original, (current, mutationInfo) =>
@@ -118,6 +118,13 @@ public class MutantPlacer
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationIdMarker, mutationInfo.mutant.Id.ToString()))
                 .WithAdditionalAnnotations(new SyntaxAnnotation(MutationTypeMarker, mutationInfo.mutant.Mutation.Type.ToString())));
 
+    /// <summary>
+    /// Removes the mutant (or injected code) from the syntax node
+    /// </summary>
+    /// <param name="nodeToRemove"></param>
+    /// <returns>the node without any injection</returns>
+    /// <remarks>only remove injection for <paramref name="nodeToRemove"/> and keep any child one.</remarks>
+    /// <exception cref="InvalidOperationException">if there is no trace of a code injection</exception>
     public static SyntaxNode RemoveMutant(SyntaxNode nodeToRemove)
     {
         var annotatedNode = nodeToRemove.GetAnnotatedNodes(Injector).FirstOrDefault();
@@ -145,11 +152,11 @@ public class MutantPlacer
         {
             throw new InvalidOperationException("No mutation in this node!");
         }
-        return annotations.Exists(a => a.Data == ExpressionMethodEngine.InstrumentEngineId);
+        return annotations.Exists(a => RequireRecursiveRemoval.Contains(a.Data));
     }
 
     /// <summary>
-    /// Gets mutant related annotations from a syntaxnode
+    /// Gets mutant related annotations from a syntax node
     /// </summary>
     /// <param name="node"></param>
     /// <returns></returns>
@@ -195,10 +202,7 @@ public class MutantPlacer
         if (_binaryExpression == null)
         {
             _binaryExpression = SyntaxFactory.ParseExpression(_injection.SelectorExpression);
-            _placeHolderNode = _binaryExpression.DescendantNodes().First(n => n is IdentifierNameSyntax
-            {
-                Identifier.Text: "ID"
-            });
+            _placeHolderNode = _binaryExpression.DescendantNodes().First(n => n is IdentifierNameSyntax { Identifier.Text: "ID" });
         }
 
         return _binaryExpression.ReplaceNode(_placeHolderNode,
