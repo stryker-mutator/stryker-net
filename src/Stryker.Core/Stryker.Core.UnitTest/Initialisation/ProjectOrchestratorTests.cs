@@ -70,7 +70,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         public void ShouldPassWhenProjectNameIsGiven()
         {
             // arrange
-            // when a solutionPath is given and it's inside the current directory (basePath)
+            // when a solutionPath is given, and it's inside the current directory (basePath)
             var csprojPathName = _fileSystem.Path.Combine(_projectPath, "sourceproject.csproj");
             var testCsprojPathName = _fileSystem.Path.Combine(_projectPath, "test", "testproject.csproj");
             var options = new StrykerOptions
@@ -82,6 +82,31 @@ namespace Stryker.Core.UnitTest.Initialisation
             var csPathName = _fileSystem.Path.Combine(_projectPath, "someFile.cs");
             var target = BuildProjectOrchestratorForSimpleProject(SourceProjectAnalyzerMock(csprojPathName, new[] { csPathName }).Object, 
                 TestProjectAnalyzerMock(testCsprojPathName, csprojPathName).Object, out var mockRunner);
+
+            // act
+            var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
+
+            // assert
+            result.ShouldHaveSingleItem();
+        }
+
+        [Fact]
+        public void ShouldRestoreWhenAnalysisFails()
+        {
+            // arrange
+            // when a solutionPath is given, and it's inside the current directory (basePath)
+            var csprojPathName = _fileSystem.Path.Combine(_projectPath, "sourceproject.csproj");
+            var testCsprojPathName = _fileSystem.Path.Combine(_projectPath, "test", "testproject.csproj");
+            var options = new StrykerOptions
+            {
+                ProjectPath = _fileSystem.Path.GetFullPath(testCsprojPathName),
+                SourceProjectName = csprojPathName,
+                SolutionPath = _fileSystem.Path.Combine(_projectPath, "MySolution.sln")
+            };
+
+            var csPathName = _fileSystem.Path.Combine(_projectPath, "someFile.cs");
+            var target = BuildProjectOrchestratorForSimpleProject(SourceProjectAnalyzerMock(csprojPathName, new[] { csPathName }).Object, 
+                TestProjectAnalyzerMock(testCsprojPathName, csprojPathName,  "net4.5", false).Object, out var mockRunner);
 
             // act
             var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
@@ -330,7 +355,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new ProjectOrchestrator(_projectMutatorMock.Object,
                 initialBuildProcessMock.Object,
-                new InputFileResolver(_fileSystem, new ProjectFileReader(null, _buildalyzerProviderMock.Object)));
+                new InputFileResolver(_fileSystem, new ProjectFileReader(new Mock<INugetRestoreProcess>().Object, _buildalyzerProviderMock.Object)));
 
             var buildalyzerAnalyzerManagerMock = new Mock<IAnalyzerManager>(MockBehavior.Strict);
             buildalyzerAnalyzerManagerMock.Setup(x => x.Projects)
@@ -361,7 +386,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         /// </summary>
         /// <param name="csprojPathName">project pathname</param>
         /// <param name="sourceFiles">project source files</param>
-        /// <param name="projectReferences">project cross references</param>
+        /// <param name="projectReferences">project references</param>
         private Mock<IProjectAnalyzer> SourceProjectAnalyzerMock(string csprojPathName, string[] sourceFiles, IEnumerable<string> projectReferences = null)
         {
             var properties = new Dictionary<string, string>
@@ -376,13 +401,15 @@ namespace Stryker.Core.UnitTest.Initialisation
         /// </summary>
         /// <param name="testCsprojPathName">test project pathname</param>
         /// <param name="csprojPathName">production code project pathname</param>
+        /// <param name="framework"></param>
+        /// <param name="success"></param>
         /// <returns>a mock project analyzer</returns>
         /// <remarks>the test project references the production code project and contains no source file</remarks>
-        private Mock<IProjectAnalyzer> TestProjectAnalyzerMock(string testCsprojPathName, string csprojPathName)
+        private Mock<IProjectAnalyzer> TestProjectAnalyzerMock(string testCsprojPathName, string csprojPathName, string framework = "net6.0", bool success = true)
         {
             var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
 
-            return BuildProjectAnalyzerMock(testCsprojPathName, Array.Empty<string>(), properties, new List<string> { csprojPathName });
+            return BuildProjectAnalyzerMock(testCsprojPathName, Array.Empty<string>(), properties, new List<string> { csprojPathName }, framework, success);
         }
 
         /// <summary>
@@ -391,13 +418,17 @@ namespace Stryker.Core.UnitTest.Initialisation
         /// <param name="csprojPathName">project file name</param>
         /// <param name="sourceFiles">source files to return</param>
         /// <param name="properties">project properties</param>
-        /// <param name="projectReferences">project cross references</param>
+        /// <param name="projectReferences">project references</param>
+        /// <param name="success">analysis success</param>
         /// <returns>a mock project analyzer</returns>
         /// <remarks>
         /// 1. project and source files will be created (empty) in the file system
         /// 2. the project analyzer mock returns a single project result</remarks>
-
-        private Mock<IProjectAnalyzer> BuildProjectAnalyzerMock(string csprojPathName, string[] sourceFiles, Dictionary<string, string> properties, IEnumerable<string> projectReferences)
+        private Mock<IProjectAnalyzer> BuildProjectAnalyzerMock(string csprojPathName,
+            string[] sourceFiles, Dictionary<string, string> properties,
+            IEnumerable<string> projectReferences,
+            string framework = "net6.0",    
+            bool success = true)
         {
             var sourceProjectAnalyzerMock = new Mock<IProjectAnalyzer>(MockBehavior.Strict);
             var sourceProjectAnalyzerResultsMock = new Mock<IAnalyzerResults>(MockBehavior.Strict);
@@ -428,8 +459,8 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             sourceProjectAnalyzerResultMock.Setup(x => x.Properties).Returns(properties);
             sourceProjectAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns(csprojPathName);
-            sourceProjectAnalyzerResultMock.Setup(x => x.TargetFramework).Returns("net6.0");
-            sourceProjectAnalyzerResultMock.Setup(x => x.Succeeded).Returns(true);
+            sourceProjectAnalyzerResultMock.Setup(x => x.TargetFramework).Returns(framework);
+            sourceProjectAnalyzerResultMock.Setup(x => x.Succeeded).Returns(success);
 
             IEnumerable<IAnalyzerResult> analyzerResults = new[] { sourceProjectAnalyzerResultMock.Object };
             sourceProjectAnalyzerResultsMock.Setup(x => x.OverallSuccess).Returns(true);
