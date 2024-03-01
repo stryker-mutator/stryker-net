@@ -6,6 +6,8 @@ custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs
 
 When running stryker in your pipeline there are some things to take into consideration
 
+## Installing stryker in a pipeline
+
 Due to the way dotnet core global tools are installed on the system a regular `dotnet tool install -g` is often not effective in pipelines.
 
 Instead use the `--tool-path` to install stryker in a local folder or use the project level install of dotnet core 3.0+
@@ -33,7 +35,16 @@ And then running this locally installed tool:
       script: $(Agent.BuildDirectory)/tools/dotnet-stryker
 ```
 
+## Require a minimum mutation score in your pipeline
+
+Configure a break threshold to make sure your pipeline fails when the mutation score is below a certain level.
+
+```
+dotnet stryker --break-at 80
+```
+
 ## Configuring baseline in pull requests
+
 Dashboard compare is very useful when running stryker in pipelines because it cuts down on the total runtime by only testing mutations that have changed compared to for example master
 The following minimal steps are needed to use dashboard compare
 
@@ -59,9 +70,11 @@ dotnet stryker --with-baseline:$(System.PullRequest.TargetBranch) --dashboard-ap
 ```
 
 ## Azure DevOps Extensions
+
 There are multiple Azure DevOps extensions to enrich the Stryker experience. 
 
 ### Mutation Report Publisher
+
 With this extension you add the mutation report to your build summary so you can view the mutation test result on azure devops.
 
 In YAML pipelines add the following after the test step:
