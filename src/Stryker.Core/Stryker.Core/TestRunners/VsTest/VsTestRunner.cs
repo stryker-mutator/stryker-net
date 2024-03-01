@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
@@ -258,16 +257,16 @@ namespace Stryker.Core.TestRunners.VsTest
 
                 eventHandler.StartSession();
                 _currentSessionCancelled = false;
-                Task session;
+                Task session = Task.Run(()=>{
                 if (tests.IsEveryTest)
                 {
-                    session = _vsTestConsole.RunTestsWithCustomTestHostAsync(new []{source}, runSettings, options, eventHandler, strykerVsTestHostLauncher);
+                    _vsTestConsole.RunTestsWithCustomTestHost(new []{source}, runSettings, options, eventHandler, strykerVsTestHostLauncher);
                 }
                 else
                 {
-                    session = _vsTestConsole.RunTestsWithCustomTestHostAsync(tests.GetGuids().Select(t => _context.VsTests[t].Case),
+                    _vsTestConsole.RunTestsWithCustomTestHost(tests.GetGuids().Select(t => _context.VsTests[t].Case),
                         runSettings, options, eventHandler, strykerVsTestHostLauncher);
-                }
+                } });
 
                 if (WaitForEnd(session, eventHandler, timeOut, ref attempt))
                 {
