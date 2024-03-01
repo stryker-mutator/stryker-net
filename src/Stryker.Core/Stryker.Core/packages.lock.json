@@ -1,7 +1,7 @@
 {
   "version": 2,
   "dependencies": {
-    "net6.0": {
+    "net8.0": {
       "Azure.Storage.Files.Shares": {
         "type": "Direct",
         "requested": "[12.17.1, )",
@@ -416,10 +416,7 @@
       "Microsoft.Extensions.Primitives": {
         "type": "Transitive",
         "resolved": "8.0.0",
-        "contentHash": "bXJEZrW9ny8vjMF1JV253WeLhpEVzFo1lyaZu1vQ4ZxWUlVvknZ/+ftFgVheLubb4eZPSwwxBeqS1JkCOjxd8g==",
-        "dependencies": {
-          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
-        }
+        "contentHash": "bXJEZrW9ny8vjMF1JV253WeLhpEVzFo1lyaZu1vQ4ZxWUlVvknZ/+ftFgVheLubb4eZPSwwxBeqS1JkCOjxd8g=="
       },
       "Microsoft.NET.StringTools": {
         "type": "Transitive",
@@ -728,10 +725,7 @@
       "System.Collections.Immutable": {
         "type": "Transitive",
         "resolved": "7.0.0",
-        "contentHash": "dQPcs0U1IKnBdRDBkrCTi1FoajSTBzLcVTpjO4MBCMC7f4pDOIPzgBoX8JjG7X6uZRJ8EBxsi8+DR1JuwjnzOQ==",
-        "dependencies": {
-          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
-        }
+        "contentHash": "dQPcs0U1IKnBdRDBkrCTi1FoajSTBzLcVTpjO4MBCMC7f4pDOIPzgBoX8JjG7X6uZRJ8EBxsi8+DR1JuwjnzOQ=="
       },
       "System.Configuration.ConfigurationManager": {
         "type": "Transitive",

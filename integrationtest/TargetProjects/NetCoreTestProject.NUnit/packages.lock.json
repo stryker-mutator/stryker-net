@@ -14,9 +14,9 @@
       },
       "NUnit": {
         "type": "Direct",
-        "requested": "[4.0.1, )",
-        "resolved": "4.0.1",
-        "contentHash": "jNTHZ01hJsDNPDSBycoHpavFZUBf9vRVQLCyuo78LRrrFj6Ol/CeqK+NIeTk5d8Eycjk59KseWb7X5Ge6z7CgQ=="
+        "requested": "[4.1.0, )",
+        "resolved": "4.1.0",
+        "contentHash": "MT/DpAhjtiytzhTgTqIhBuWx4y26PKfDepYUHUM+5uv4TsryHC2jwFo5e6NhWkApCm/G6kZ80dRjdJFuAxq3rg=="
       },
       "NUnit3TestAdapter": {
         "type": "Direct",
@@ -62,7 +62,7 @@
       "targetproject": {
         "type": "Project",
         "dependencies": {
-          "Library": "[3.13.2, )"
+          "Library": "[4.0.0, )"
         }
       }
     }

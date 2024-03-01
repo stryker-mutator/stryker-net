@@ -1,0 +1,34 @@
+name: integration test macos m1
+run-name: e2e ${{ github.head_ref }} on m1 macos
+
+on: [pull_request]
+
+env:
+  NUGET_FEED: https://f.feedz.io/stryker/stryker-net/nuget/index.json
+  RestoreLockedMode: true
+  VERSION: "0.0.0-github-${{ github.run_number }}"
+
+jobs:
+  integration-test:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.x
+      - name: Restore vstest
+        run: dotnet restore --packages .vstest
+        working-directory: ${{ github.workspace }}/src/Stryker.Core/Stryker.Core/ToolHelpers/
+      - name: Pack integration test package
+        run: dotnet pack ${{ github.workspace }}/src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj -p:PackageVersion=$VERSION --output ${{ github.workspace }}/publish
+      - name: Publish integration test package
+        run: dotnet nuget push ${{ github.workspace }}/publish/*.nupkg -s $NUGET_FEED -k "$FEEDZ_NUGET_API_KEY"
+        env:
+          FEEDZ_NUGET_API_KEY: ${{ secrets.FEEDZ_NUGET_API_KEY }}
+      - name: Install integration test package from feed
+        run: dotnet tool install dotnet-stryker --tool-path ${{ github.workspace }}/.nuget/tools --version $VERSION --add-source $NUGET_FEED
+      - name: Run integration test
+        run: ${{ github.workspace }}/.nuget/tools/dotnet-stryker --dev-mode
+        working-directory: ${{ github.workspace }}/integrationtest/TargetProjects/NetCoreTestProject.XUnit
+      - name: Validate integration test result
+        run: dotnet test ${{ github.workspace }}/integrationtest/ValidationProject --filter Category=SingleTestProject
