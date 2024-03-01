@@ -14,8 +14,8 @@ using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 namespace Stryker.Core.Mutants
 {
-    /// <inheritdoc/>
-    public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxNode, SemanticModel>
+    /// <inheritdoc cref="BaseMutantOrchestrator{T,TY}" />
+    public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxNode, SemanticModel>, ICsharpMutantOrchestrator
     {
         private readonly TypeBasedStrategy<SyntaxNode, INodeMutator> _specificOrchestrator =
             new();
@@ -80,13 +80,16 @@ namespace Stryker.Core.Mutants
             });
         }
 
-        private static List<IMutator> DefaultMutatorList() =>
+        public IEnumerable<IMutator> Mutators { get; }
+
+        private List<IMutator> DefaultMutatorList() =>
             new()
             {
                 // the default list of mutators
                 new BinaryExpressionMutator(),
                 new BlockMutator(),
                 new BooleanMutator(),
+                new DefaultParameterMutator(this, _options),
                 new AssignmentExpressionMutator(),
                 new PrefixUnaryMutator(),
                 new PostfixUnaryMutator(),
@@ -106,8 +109,6 @@ namespace Stryker.Core.Mutants
                 new SwitchExpressionMutator(),
                 new IsPatternExpressionMutator()
             };
-
-        private IEnumerable<IMutator> Mutators { get; }
 
         public MutantPlacer Placer { get; }
 
