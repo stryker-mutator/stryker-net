@@ -120,7 +120,6 @@ namespace Stryker.Core.Options
             var baselineProvider = BaselineProviderInput.Validate(reporters, baselineEnabled);
             var sinceEnabled = SinceInput.Validate(BaselineEnabledInput.SuppliedInput);
             var sinceTarget = SinceTargetInput.Validate(sinceEnabled);
-            var projectVersion = ProjectVersionInput.Validate(reporters, baselineEnabled);
 
             _strykerOptionsCache ??= new StrykerOptions()
             {
