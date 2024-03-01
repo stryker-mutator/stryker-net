@@ -2,7 +2,7 @@
 
 
 ## Audience
-This document’s purpose is to help developers who need or want to understand how Stryker.Net parses and mutates C# source code. The current design (as in V3.x) is the result of several years of experience and refinement and may be intimidating at first.
+This document’s purpose is to help developers who need or want to understand how Stryker.Net parses and mutates C# source code. The current design (as in V4.x) is the result of several years of experience and refinement and may be intimidating at first.
 
 ## Scope: what’s in what’s out
 This document focuses on the source mutation step. That is how Stryker.Net generates a mutated version of a source file. It does not cover what happens before (project analysis, tests discovery, coverage capture…) nor what happens afterward (mutated project build, mutation tests, reporting…).
@@ -16,7 +16,7 @@ Note that we made the creation of mutation engines (aka mutators) as easy as we 
 Stryker relies heavily on Roslyn for C# parsing. As such, a good understanding of it is important before digging further.
 Roslyn precompiles any valid source file to an objects tree where each node is apart of  syntax construct. Each node stores and describes the associated source code, including trivia (whitespaces and comments). The tree structure captures the code hierarchy. So you have a syntax root node (the whole file), containing a namespace node  (namespace directive) which usually contains a class definition node which contains various members. The class likely contains at least one method definition, with a name, parameters and a body, made of statements. Statements contain a keyword and expressions and these contain sub expressions, potentially recursively as an expression can contain a lambda etc…
 As such, this syntax tree is often deep (tens, even hundreds of levels).
-Each node is described via the appropriate Roslyn class, such as `InvocationExpressionSyntax` for a function call, or `ForStatementSyntax` for a _for_ loop. [Sharplab] allows you to discover the syntax tree of any provided C# source file. I strongly advise you to try and use it. Quick warning: Sharplab displays the **SyntaxKind** of the syntax constructs, which may be slightly different from the actual class used to represent it; as a reminder, **SyntaxKind**  refines the type definition and enables to identify variants of some constructs, such as between `x++` and `x—-`.
+Each node is described via the appropriate Roslyn class, such as `InvocationExpressionSyntax` for a function call, or `ForStatementSyntax` for a _for_ loop. [Sharplab](https://sharplab.io/) allows you to discover the syntax tree of any provided C# source file. I strongly advise you to try and use it. Quick warning: Sharplab displays the **SyntaxKind** of the syntax constructs, which may be slightly different from the actual class used to represent it; as a reminder, **SyntaxKind**  refines the type definition and enables to identify variants of some constructs, such as between `x++` and `x—-`.
 
 ### Syntax Node classes
 There are hundreds of specific syntax nodes classes, as most C# constructs get their own class. So one can have specific access to each part of a for statement: initializers, condition, increments and statement (or block statement). This greatly simplifies reading, modifying or creating any syntax construct. 
@@ -55,7 +55,7 @@ To this list, I would add: throw everything in the air when facing the unexpecte
 # Stryker mutation design
 Taking into account previously listed principles, we designed the following classes/class hierarchy:
 1. **Mutators**: **Generates mutated version** of syntax node. Each of them implements a specific mutation strategy. They must implement [`IMutator`] and must be stateless (they can only store their configuration/options).
-2. **SyntaxNode Orchestrators**: **Orchestrates the steps required for** the mutation of a specific syntax node kind. They must implement [`INodeMutator`], and must be stateless. They do most of the grunt work
+2. **SyntaxNode Orchestrators**: **Orchestrates the steps required for** the mutation of a specific syntax node kind. They must implement [`INodeMutator`], and must be stateless. They are responsible for walking through the syntax tree, and determining where mutation can be placed.```
 3. [`MutationContext`]: **Keeps track of the current state of the mutation process**. It stores mutations (via [`MutationStore`]) until they are injected in the mutated syntax tree; it also tracks which mutators have been disabled via [Stryker comments] as well as other details.
 4. [`CSharpNodeOrchestrator`]: **Main entry point**. While it was doing all the work in earlier version of Stryker, it is now responsible for building the needed orchestrators, mutators, the mutant placer and keeping track of created mutations.
 5. [`MutantPlacer`]: **Serves** as a single entry point to **several helper functions**, including the ones for injecting mutations. Also in charge of providing the needed information for rollback logic.
@@ -90,7 +90,7 @@ As a reminder, they must be stateless, and this is a strong requirement. These c
 We will describe the base class here, all orchestrators will be described at the end of this document as an attempt to keep it readable.
 
 ### NodeSpecificOrchestrator<T, TU>
-This is the base class used by all other orchestrators. It inherits from `NoOrchestratorBase` which deals with Stryker comments and is not described in this document for brevity.
+This is the base class used by all other orchestrators. It inherits from `NodeOrchestratorBase` which deals with Stryker comments and is not described in this document for brevity.
 It implements a standardized node mutation workflow. This workflow’s steps are implemented via virtual methods so that specific orchestrators can provide the adequate implementation
 
 - `Mutate(...)`: this is the main method; it specifies the steps order:

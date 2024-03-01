@@ -38,8 +38,8 @@ internal class ExpressionBodiedPropertyOrchestrator : BaseFunctionOrchestrator<P
 
         var children = node.ReplaceNodes(node.ChildNodes(), (original, _) =>
         {
-            var context1 = original == node.Initializer ? context.EnterStatic() : context;
-            return context1.FindHandler(original).Mutate(original, semanticModel, context1);
+            var determinedContext = original == node.Initializer ? context.EnterStatic() : context;
+            return determinedContext.FindHandler(original).Mutate(original, semanticModel, determinedContext);
         });
         return children.WithInitializer(children.Initializer.WithValue(context.PlaceStaticContextMarker(children.Initializer.Value)));
     }

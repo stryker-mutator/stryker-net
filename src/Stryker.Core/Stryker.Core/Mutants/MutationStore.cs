@@ -88,7 +88,7 @@ internal class MutationStore
         {
             _pendingMutations.Peek().StoreMutations(old.Store);
         }
-        else if (old.Store.Count>0)
+        else if (old.Store.Count > 0)
         {
             Logger.LogError("Some mutations failed to be inserted, they are dropped.");
             foreach (var mutant in old.Store)
@@ -234,7 +234,9 @@ internal class MutationStore
 
         public bool Aggregate(MutationControl control)
         {
-            if (Store.Count != 0 || Control != control) return false;
+            if (Store.Count != 0 || Control != control) {
+                return false;
+            }
             _depth++;
             return true;
         }
