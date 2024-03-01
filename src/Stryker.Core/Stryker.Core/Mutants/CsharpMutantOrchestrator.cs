@@ -81,13 +81,15 @@ namespace Stryker.Core.Mutants
         }
 
         public IEnumerable<IMutator> Mutators { get; }
-        private static List<IMutator> DefaultMutatorList() =>
+
+        private List<IMutator> DefaultMutatorList() =>
             new()
             {
                 // the default list of mutators
                 new BinaryExpressionMutator(),
                 new BlockMutator(),
                 new BooleanMutator(),
+                new DefaultParameterMutator(this, _options),
                 new AssignmentExpressionMutator(),
                 new PrefixUnaryMutator(),
                 new PostfixUnaryMutator(),

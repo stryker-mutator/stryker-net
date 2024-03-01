@@ -20,11 +20,6 @@ public interface ICsharpMutantOrchestrator
     SyntaxNode Mutate(SyntaxNode input, SemanticModel semanticModel);
 
     /// <summary>
-    /// Returns true if the new mutant is a duplicate of a mutant already listed in Mutants.
-    /// </summary>
-    bool IsMutantDuplicate(Mutant newMutant, Mutation mutation);
-
-    /// <summary>
     /// Gets the stored mutants and resets the mutant list to an empty collection
     /// </summary>
     IReadOnlyCollection<Mutant> GetLatestMutantBatch();
