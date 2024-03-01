@@ -84,10 +84,7 @@ namespace Stryker.CLI.CommandLineConfig
 
                 baselineCmd.OnExecute(() =>
                 {
-                    if (committish.HasValue)
-                    {
-                        inputs.BaselineTargetInput.SuppliedInput = committish.Value;
-                    }
+                    inputs.BaselineTargetInput.SuppliedInput = committish.Value;
                     inputs.BaselineEnabledInput.SuppliedInput = true;
                     baselineCmd.Description = "Starts a stryker run based on the results of a previous run.";
                     return strykerCli.StartApp(inputs, args, app, this);

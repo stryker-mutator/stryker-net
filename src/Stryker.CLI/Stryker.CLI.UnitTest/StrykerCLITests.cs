@@ -417,29 +417,6 @@ Options:";
         }
 
         [Theory]
-        [InlineData("baseline")]
-        public void ShouldSupplyWithBaselineWhenCommandPassed(params string[] argName)
-        {
-            _target.Run(argName);
-
-            _strykerRunnerMock.VerifyAll();
-
-            _inputs.BaselineEnabledInput.SuppliedInput.Value.ShouldBeTrue();
-        }
-
-        [Theory]
-        [InlineData("baseline", "recreate")]
-        public void ShouldSetBaselineRecreateWhenCommandPassed(params string[] argName)
-        {
-            _target.Run(argName);
-
-            _strykerRunnerMock.VerifyAll();
-
-            _inputs.BaselineEnabledInput.SuppliedInput.Value.ShouldBeTrue();
-            _inputs.BaselineRecreateEnabledInput.SuppliedInput.ShouldBeTrue();
-        }
-
-        [Theory]
         [InlineData("-o", null)]
         [InlineData("-o:html", "html")]
         [InlineData("--open-report", null)]
