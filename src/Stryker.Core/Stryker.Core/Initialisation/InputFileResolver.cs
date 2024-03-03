@@ -111,6 +111,8 @@ namespace Stryker.Core.Initialisation
 
             // we must select projects according to framework settings if any
             var findMutableAnalyzerResults = FindMutableAnalyzerResults(testProjectsAnalyzerResults, mutableProjectsAnalyzerResults);
+            var normalizedProjectUnderTestNameFilter = !string.IsNullOrEmpty(options.SourceProjectName) ? options.SourceProjectName.Replace("\\", "/") : null;
+
             var analyzerResults = findMutableAnalyzerResults.Keys.GroupBy(p => p.ProjectFilePath).ToList();
             var projectInfos = new List<SourceProjectInfo>();
             foreach (var group in analyzerResults)
@@ -120,7 +122,10 @@ namespace Stryker.Core.Initialisation
                 {
                     continue;
                 }
-
+                if (normalizedProjectUnderTestNameFilter != null && !analyzerResult.ProjectFilePath.Replace('\\', '/').Contains(normalizedProjectUnderTestNameFilter))
+                {
+                    continue;
+                }
                 projectInfos.Add(BuildSourceProjectInfo(options, analyzerResult, findMutableAnalyzerResults[analyzerResult]));
             }
 
@@ -138,12 +143,14 @@ namespace Stryker.Core.Initialisation
                 var realMutableProjects = mutableProjectsAnalyzerResults.SelectMany(p=>p.Value).Where(p => p.BuildsAnAssembly());
                 foreach(var mutableProject in realMutableProjects)
                 {
-                    if (!testProject.References.Contains(mutableProject.GetAssemblyPath()))
+                    if (testProject.References.All( r => !r.Equals(mutableProject.GetAssemblyPath(), StringComparison.OrdinalIgnoreCase)))
                     {
                         continue;
                     }
                     if (!mutableToTestMap.ContainsKey(mutableProject))
-                        mutableToTestMap[mutableProject] = new List<IAnalyzerResult>();
+                    {
+                        mutableToTestMap[mutableProject] = new();
+                    }
                     mutableToTestMap[mutableProject].Add(testProject);
                 }
             }
