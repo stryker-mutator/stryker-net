@@ -89,7 +89,7 @@ They provide an implementation for the major syntax structures (expressions, sta
 As a reminder, they must be stateless, and this is a strong requirement. These classes must not store anything while walking the syntax tree. They should not assume this walking happens in any specific order. They are likely to be used recursively, depending on the currently traversed code.
 We will describe the base class here, all orchestrators will be described at the end of this document as an attempt to keep it readable.
 
-### NodeSpecificOrchestrator<T, TU>
+### `NodeSpecificOrchestrator<T, TU>`
 This is the base class used by all other orchestrators. It inherits from `NodeOrchestratorBase` which deals with Stryker comments and is not described in this document for brevity.
 It implements a standardized node mutation workflow. This workflow’s steps are implemented via virtual methods so that specific orchestrators can provide the adequate implementation
 
