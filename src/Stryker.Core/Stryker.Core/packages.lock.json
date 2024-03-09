@@ -237,11 +237,11 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "Direct",
-        "requested": "[20.0.15, )",
-        "resolved": "20.0.15",
-        "contentHash": "ylbWPBEeX8oS2Uj8pCOyFPfBRJ1JHc56YyHEa1IaaYpW4QDH5zw3H/CRm2R6V0PWCG+Fx+tpb09vkD6Y97UB2Q==",
+        "requested": "[20.0.28, )",
+        "resolved": "20.0.28",
+        "contentHash": "Yl/AMykv9DuFQJfWGJAoFOUuXuAK97Y7vn4Sgv0uKk8sWSmXaYePoVpmyn2HjKe2jbvb7sOS2qL/czzPPYgmDg==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "20.0.15"
+          "TestableIO.System.IO.Abstractions": "20.0.28"
         }
       },
       "Azure.Core": {
@@ -1594,8 +1594,8 @@
       },
       "TestableIO.System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "20.0.15",
-        "contentHash": "ohYr5VOrTGO+8ZVvaWZGg5vn7wQIYmAT35pjrxZ/NNbC4yamMw2JYDFv73rhpOjE/7PkuwV2Mk9GMR6hY527Gw=="
+        "resolved": "20.0.28",
+        "contentHash": "Gnhbvo9W8ZMXbCOMXDi7Bz4Mk5Hc0L1nFN48q3vWjxd4/Vr7/HWSUuMcUSjJk8Wfp2J4HTOosrSspzVliJPCNQ=="
       },
       "stryker.datacollector": {
         "type": "Project",
