@@ -28,7 +28,7 @@
     <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.9.0" />
     <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.9.0" />
     <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="17.9.0" />
-    <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="20.0.15" />
+    <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="20.0.28" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup>
