@@ -90,13 +90,23 @@ namespace Stryker.Core.Initialisation
                     _logger.LogDebug("Analyzing {projectFilePath}", projectLogName);
                     var buildResult = project.Build();
 
-                    if (buildResult.OverallSuccess)
+                    var buildResultOverallSuccess = buildResult.OverallSuccess;
+                    if (!buildResultOverallSuccess)
+                    {
+                        // if all expected frameworks are built, we consider the build a success
+                        if (project.ProjectFile.TargetFrameworks.All(tf => buildResult.Any( br => IsValid(br) && br.TargetFramework == tf )))
+                        {
+                            buildResultOverallSuccess = true;
+                        }
+                    }
+                    if (buildResultOverallSuccess)
                     {
                         _logger.LogDebug("Analysis of project {projectFilePath} succeeded.", projectLogName);
                     }
                     else
                     {
-                        _logger.LogWarning("Analysis of project {projectFilePath} failed.", projectLogName);
+                        var failedFrameworks = project.ProjectFile.TargetFrameworks.Where(tf => !buildResult.Any( br => IsValid(br) && br.TargetFramework == tf )).ToList();
+                        _logger.LogWarning("Analysis of project {projectFilePath} failed for frameworks {frameworkList}.", projectLogName, string.Join(',', failedFrameworks));
                     }
                     if (buildResult.First().IsTestProject())
                         testProjectsAnalyzerResults[project.ProjectFile.Name] = buildResult;
@@ -131,6 +141,9 @@ namespace Stryker.Core.Initialisation
 
             return projectInfos;
         }
+
+        // checks if an analyzer result is valid
+        private static bool IsValid(IAnalyzerResult br) => br.Succeeded || (br.SourceFiles.Length > 0 && br.References.Length > 0 && br.TargetFramework !=null);
 
         private static Dictionary<IAnalyzerResult, List<IAnalyzerResult>> FindMutableAnalyzerResults(ConcurrentDictionary<string, IAnalyzerResults> testProjectsAnalyzerResults,
             ConcurrentDictionary<string, IAnalyzerResults> mutableProjectsAnalyzerResults)

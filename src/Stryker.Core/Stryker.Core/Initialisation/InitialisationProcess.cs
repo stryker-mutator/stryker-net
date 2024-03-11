@@ -63,7 +63,6 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-
         /// <inheritdoc/>
         public void BuildProjects(StrykerOptions options, IEnumerable<SourceProjectInfo> projects)
         {
@@ -182,8 +181,8 @@ namespace Stryker.Core.Initialisation
                         $"Project '{testProject.ProjectFilePath}' did not report any test.";
                     if (testProject.PackageReferences?.ContainsKey(package) == true)
                     {
-                        message+=$" This may be because the test adapter package, {package}, failed to deploy. " +
-                                 "Check if any dependency is missing or there is a version conflict.";
+                        message+=$" This may be because the test adapter package, {package}, failed to deploy or run. " +
+                                 "Check if any dependency is missing or there is a version conflict, check the testdiscovery logs or explore with VsTest.console.";
                     }
                     else
                     {
