@@ -89,6 +89,50 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
         }
 
         [Fact]
+        public void MergeTestProjectsInfoWithASharedSourceFile()
+        {
+            // Arrange
+            var fileSystem = new MockFileSystem();
+            var rootPath = Path.Combine("c", "TestProject");
+            var fileAPath = Path.Combine(rootPath, "ExampleTestFile.cs");
+            fileSystem.AddDirectory(rootPath);
+            var fileA = File.ReadAllText(Path.Combine(".", "TestResources", "ExampleTestFileA.cs"));
+            fileSystem.AddFile(fileAPath, new MockFileData(fileA));
+            var testProjectAnalyzerResultAMock = TestHelper.SetupProjectAnalyzerResult(
+                references: Array.Empty<string>(),
+                sourceFiles: new string[] { fileAPath }
+            );
+            var testProjectAnalyzerResultBMock = TestHelper.SetupProjectAnalyzerResult(
+                references: Array.Empty<string>(),
+                sourceFiles: new string[] { fileAPath }
+            );
+
+            var testProjectA = new TestProject(fileSystem, testProjectAnalyzerResultAMock.Object);
+            var testProjectB = new TestProject(fileSystem, testProjectAnalyzerResultBMock.Object);
+            testProjectA.TestFiles.First().AddTest(Guid.NewGuid(), "test1", SyntaxFactory.Block());
+            testProjectA.TestFiles.First().AddTest(Guid.NewGuid(), "test2", SyntaxFactory.Block());
+
+            var testProjectsInfoA = new TestProjectsInfo(fileSystem)
+            {
+                TestProjects = new List<TestProject> { testProjectA }
+            };
+            var testProjectsInfoB = new TestProjectsInfo(fileSystem)
+            {
+                TestProjects = new List<TestProject> { testProjectB }
+            };
+            var testProjectsInfoC = new TestProjectsInfo(fileSystem)
+            {
+                TestProjects = new List<TestProject> { testProjectB }
+            };
+
+            // Act
+            var testProjectsInfoABC = testProjectsInfoA + testProjectsInfoB + testProjectsInfoC;
+
+            // Assert
+            testProjectsInfoABC.TestFiles.Count().ShouldBe(1);
+        }
+
+        [Fact]
         public void RestoreOriginalAssembly_RestoresIfBackupExists()
         {
             // Arrange
