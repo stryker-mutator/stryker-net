@@ -60,7 +60,8 @@ namespace Stryker.Core.Initialisation
                     testProjectFileNames = new List<string> { FindTestProject(options.ProjectPath) };
                 }
 
-                var testProjects = testProjectFileNames.Select(testProjectFile => _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework)).ToList();
+                var testProjects = testProjectFileNames.Select(testProjectFile =>
+                    _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework)).ToList();
 
                 var analyzerResult = _projectFileReader.AnalyzeProject(FindSourceProject(testProjects, options),
                     options.SolutionPath, options.TargetFramework);
@@ -147,12 +148,13 @@ namespace Stryker.Core.Initialisation
             _logger.LogDebug("Analyzing {count} projects.", manager.Projects.Count);
             try
             {
-                Parallel.ForEach(manager.Projects.Values, project =>
+                Parallel.ForEach(manager.Projects.Values, new ParallelOptions{MaxDegreeOfParallelism = options.DevMode ? 1 : Math.Max(options.Concurrency,1)}, project =>
                 {
                     var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
                     _logger.LogDebug("Analyzing {projectFilePath}", projectLogName);
                     var buildResult = project.Build();
-                    var projectAnalyzerResult = buildResult.Results.FirstOrDefault(a => a.TargetFramework is not null);
+
+                    var projectAnalyzerResult = _projectFileReader.GetAnalyzerResult(buildResult, options.TargetFramework);
                     if (projectAnalyzerResult is not null)
                     {
                         projectsAnalyzerResults.Add(projectAnalyzerResult);

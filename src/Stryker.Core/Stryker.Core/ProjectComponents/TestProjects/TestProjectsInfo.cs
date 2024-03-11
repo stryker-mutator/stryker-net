@@ -8,43 +8,43 @@ using Microsoft.Extensions.Logging;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 
-namespace Stryker.Core.ProjectComponents.TestProjects
+namespace Stryker.Core.ProjectComponents.TestProjects;
+
+public class TestProjectsInfo
 {
-    public class TestProjectsInfo
+    private readonly IFileSystem _fileSystem;
+    private readonly ILogger<TestProjectsInfo> _logger;
+
+    public IEnumerable<TestProject> TestProjects { get; set; }
+
+    public IEnumerable<TestFile> TestFiles => TestProjects.SelectMany(testProject => testProject.TestFiles).Distinct();
+
+    public IEnumerable<IAnalyzerResult> AnalyzerResults => TestProjects.Select(testProject => testProject.AnalyzerResult);
+
+    public IReadOnlyList<string> GetTestAssemblies() =>
+        AnalyzerResults.Select(a => a.GetAssemblyPath()).ToList();
+
+    public TestProjectsInfo(IFileSystem fileSystem, ILogger<TestProjectsInfo> logger = null)
     {
-        private readonly IFileSystem _fileSystem;
-        private readonly ILogger<TestProjectsInfo> _logger;
+        _fileSystem = fileSystem ?? new FileSystem();
+        _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<TestProjectsInfo>();
+        TestProjects = Array.Empty<TestProject>();
+    }
 
-        public IEnumerable<TestProject> TestProjects { get; set; }
-
-        public IEnumerable<TestFile> TestFiles => TestProjects.SelectMany(testProject => testProject.TestFiles).Distinct();
-
-        public IEnumerable<IAnalyzerResult> AnalyzerResults => TestProjects.Select(testProject => testProject.AnalyzerResult);
-
-        public IReadOnlyList<string> GetTestAssemblies() =>
-            AnalyzerResults.Select(a => a.GetAssemblyPath()).ToList();
-
-        public TestProjectsInfo(IFileSystem fileSystem, ILogger<TestProjectsInfo> logger = null)
+    public static TestProjectsInfo operator +(TestProjectsInfo a, TestProjectsInfo b) =>
+        new(a._fileSystem, a._logger)
         {
-            _fileSystem = fileSystem ?? new FileSystem();
-            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<TestProjectsInfo>();
-            TestProjects = Array.Empty<TestProject>();
-        }
+            TestProjects = a.TestProjects.Union(b.TestProjects)
+        };
 
-        public static TestProjectsInfo operator +(TestProjectsInfo a, TestProjectsInfo b)
+    public void RestoreOriginalAssembly(IAnalyzerResult sourceProject)
+    {
+        foreach (var testProject in AnalyzerResults)
         {
-            a.TestProjects = a.TestProjects.Union(b.TestProjects);
-            return a;
-        }
-
-        public void RestoreOriginalAssembly(IAnalyzerResult sourceProject)
-        {
-            foreach (var testProject in AnalyzerResults)
-            {
-                var injectionPath = GetInjectionFilePath(testProject, sourceProject);
-                var backupFilePath = GetBackupName(injectionPath);
+            var injectionPath = GetInjectionFilePath(testProject, sourceProject);
+            var backupFilePath = GetBackupName(injectionPath);
                 if (!_fileSystem.File.Exists(backupFilePath))
-                {
+            {
                     continue;
                 }
                 try
@@ -58,33 +58,32 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             }
         }
 
-        public void BackupOriginalAssembly(IAnalyzerResult sourceProject)
+    public void BackupOriginalAssembly(IAnalyzerResult sourceProject)
+    {
+        foreach (var testProject in AnalyzerResults)
         {
-            foreach (var testProject in AnalyzerResults)
+            var injectionPath = GetInjectionFilePath(testProject, sourceProject);
+            var backupFilePath = GetBackupName(injectionPath);
+            if (!_fileSystem.Directory.Exists(sourceProject.GetAssemblyDirectoryPath()))
             {
-                var injectionPath = GetInjectionFilePath(testProject, sourceProject);
-                var backupFilePath = GetBackupName(injectionPath);
-                if (!_fileSystem.Directory.Exists(sourceProject.GetAssemblyDirectoryPath()))
+                _fileSystem.Directory.CreateDirectory(sourceProject.GetAssemblyDirectoryPath());
+            }
+            if (_fileSystem.File.Exists(injectionPath))
+            {
+                // Only create backup if there isn't already a backup
+                if (!_fileSystem.File.Exists(backupFilePath))
                 {
-                    _fileSystem.Directory.CreateDirectory(sourceProject.GetAssemblyDirectoryPath());
-                }
-                if (_fileSystem.File.Exists(injectionPath))
-                {
-                    // Only create backup if there isn't already a backup
-                    if (!_fileSystem.File.Exists(backupFilePath))
-                    {
-                        _fileSystem.File.Move(injectionPath, backupFilePath, false);
-                    }
-                }
-                else
-                {
-                    _logger.LogWarning("Could not locate source assembly {injectionPath}", injectionPath);
+                    _fileSystem.File.Move(injectionPath, backupFilePath, false);
                 }
             }
+            else
+            {
+                _logger.LogWarning("Could not locate source assembly {injectionPath}", injectionPath);
+            }
         }
-
-        public static string GetInjectionFilePath(IAnalyzerResult testProject, IAnalyzerResult sourceProject) => Path.Combine(testProject.GetAssemblyDirectoryPath(), sourceProject.GetAssemblyFileName());
-
-        private static string GetBackupName(string injectionPath) => injectionPath + ".stryker-unchanged";
     }
+
+    public static string GetInjectionFilePath(IAnalyzerResult testProject, IAnalyzerResult sourceProject) => Path.Combine(testProject.GetAssemblyDirectoryPath(), sourceProject.GetAssemblyFileName());
+
+    private static string GetBackupName(string injectionPath) => injectionPath + ".stryker-unchanged";
 }

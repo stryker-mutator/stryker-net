@@ -549,7 +549,7 @@ baseline used: feat-2
 new baseline saved to: feat-2
 ```
 
-*\* The [since-target](#since-target-committish) explicit or default value is used as the fallback version unless the fallback version is explicitly set.*
+*\* The [since-target](#sincetarget-committish) explicit or default value is used as the fallback version unless the fallback version is explicitly set.*
 
 ### `baseline.provider` &lt;`string`&gt;
 

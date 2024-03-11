@@ -13,7 +13,7 @@ namespace Stryker.Core.Instrumentation;
 /// <remarks>No check is made on the visibility of the variable.</remarks>
 /// <exception cref="InvalidOperationException">If the method has no body (virtual or expression form).</exception>
 /// </summary>
-/// <remarks>Parameters/variables are added on a one by one basis but they are all removed simultaneously.</remarks>
+/// <remarks>Parameters/variables are added on a one by one basis, but they are all removed simultaneously.</remarks>
 internal class DefaultInitializationEngine : BaseEngine<BlockSyntax>
 {
     private static readonly SyntaxAnnotation BlockMarker = new("InitializationBlock");
@@ -24,14 +24,14 @@ internal class DefaultInitializationEngine : BaseEngine<BlockSyntax>
     /// <param name="body">method/accessor body where to inject the assignment</param>
     /// <param name="parameters">parameters to initialize</param>
     /// <returns>the method with a block containing initializations to default for the given variables/parameters</returns>
-    public BlockSyntax AddDefaultInitializers(BlockSyntax body, IEnumerable<ParameterSyntax> parameters)
+    public BlockSyntax InjectOutParametersInitialization(BlockSyntax body, IEnumerable<ParameterSyntax> parameters)
     {
         if (body == null)
         {
             throw new InvalidOperationException(
                 "Can't add default initializer(s) to expression bodied or virtual method.");
         }
-
+        parameters = parameters.Where(p => p.Modifiers.Any(m => m.IsKind(SyntaxKind.OutKeyword))).ToList();
         if (!parameters.Any())
         {
             return body;
@@ -42,7 +42,7 @@ internal class DefaultInitializationEngine : BaseEngine<BlockSyntax>
         if (body.Statements.Count > 0 && body.Statements[0].HasAnnotation(BlockMarker))
         {
             // we add a new initializer, we need to get the existing ones
-            initializers = (body.Statements[0] as BlockSyntax).Statements;
+            initializers = ((BlockSyntax)body.Statements[0]).Statements;
             // we can skip the initializer helper block
             originalStatements = body.Statements.Skip(1);
         }
@@ -59,7 +59,7 @@ internal class DefaultInitializationEngine : BaseEngine<BlockSyntax>
                 p.Type.BuildDefaultExpression())))))
             .WithAdditionalAnnotations(BlockMarker);
 
-        return body.WithStatements(new SyntaxList<StatementSyntax>(originalStatements.Prepend(initializersBlock))).WithAdditionalAnnotations(Marker);
+        return body.WithStatements(new(originalStatements.Prepend(initializersBlock))).WithAdditionalAnnotations(Marker);
     }
 
     /// <summary>

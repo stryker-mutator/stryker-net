@@ -20,7 +20,7 @@ namespace Stryker.Core.MutationTest
         private readonly ILogger _logger;
         private readonly StrykerOptions _options;
         private readonly IFileSystem _fileSystem;
-        private readonly BaseMutantOrchestrator<SyntaxNode, SemanticModel> _orchestrator;
+        private readonly BaseMutantOrchestrator<SyntaxTree, SemanticModel> _orchestrator;
         private readonly IMutantFilter _mutantFilter;
 
         /// <summary>
@@ -34,7 +34,7 @@ namespace Stryker.Core.MutationTest
             IFileSystem fileSystem = null,
             StrykerOptions options = null,
             IMutantFilter mutantFilter = null,
-            BaseMutantOrchestrator<SyntaxNode, SemanticModel> orchestrator = null)
+            BaseMutantOrchestrator<SyntaxTree, SemanticModel> orchestrator = null)
         {
             _options = options;
             _orchestrator = orchestrator;
@@ -63,12 +63,12 @@ namespace Stryker.Core.MutationTest
             {
                 _logger.LogDebug($"Mutating {file.FullPath}");
                 // Mutate the syntax tree
-                var mutatedSyntaxTree = orchestrator.Mutate(file.SyntaxTree.GetRoot(), semanticModels.First(x => x.SyntaxTree == file.SyntaxTree));
+                var mutatedSyntaxTree = orchestrator.Mutate(file.SyntaxTree, semanticModels.First(x => x.SyntaxTree == file.SyntaxTree));
                 // Add the mutated syntax tree for compilation
-                file.MutatedSyntaxTree = mutatedSyntaxTree.SyntaxTree;
+                file.MutatedSyntaxTree = mutatedSyntaxTree;
                 if (_options.DevMode)
                 {
-                    _logger.LogTrace($"Mutated {file.FullPath}:{Environment.NewLine}{mutatedSyntaxTree.ToFullString()}");
+                    _logger.LogTrace($"Mutated {file.FullPath}:{Environment.NewLine}{mutatedSyntaxTree.GetText()}");
                 }
                 // Filter the mutants
                 file.Mutants = orchestrator.GetLatestMutantBatch();

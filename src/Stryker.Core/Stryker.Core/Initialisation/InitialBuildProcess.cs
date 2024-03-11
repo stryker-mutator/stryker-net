@@ -47,7 +47,7 @@ namespace Stryker.Core.Initialisation
 
                 _logger.LogDebug("Initial build using path: {buildPath}", buildPath);
                 // Build with dotnet build
-                result = _processExecutor.Start(projectPath, "dotnet", $"build \"{buildPath}\"");
+                result = _processExecutor.Start(Path.GetDirectoryName(projectPath), "dotnet", $"build \"{buildPath}\"");
                 if (result.ExitCode!=ExitCodes.Success && !string.IsNullOrEmpty(solutionPath))
                 {
                     _logger.LogWarning("Dotnet build failed, trying with MsBuild.");
@@ -67,6 +67,12 @@ namespace Stryker.Core.Initialisation
 
             // Build project with MSBuild.exe
             var result = _processExecutor.Start(solutionDir, msbuildPath, $"\"{solutionPath}\"");
+            if (result.ExitCode != ExitCodes.Success)
+            {
+                _logger.LogWarning("MsBuild failed to build the solution, trying to restore packages and build again.");
+                _processExecutor.Start(solutionDir, msbuildPath, $"\"{solutionPath}\" -t:restore -p:RestorePackagesConfig=true");
+                result = _processExecutor.Start(solutionDir, msbuildPath, $"\"{solutionPath}\"");
+            }
             return result;
         }
 
