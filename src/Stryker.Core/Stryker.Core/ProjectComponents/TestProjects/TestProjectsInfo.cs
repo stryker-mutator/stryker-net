@@ -16,7 +16,9 @@ public class TestProjectsInfo
     private readonly ILogger<TestProjectsInfo> _logger;
 
     public IEnumerable<TestProject> TestProjects { get; set; }
-    public IEnumerable<TestFile> TestFiles => TestProjects.SelectMany(testProject => testProject.TestFiles);
+
+    public IEnumerable<TestFile> TestFiles => TestProjects.SelectMany(testProject => testProject.TestFiles).Distinct();
+
     public IEnumerable<IAnalyzerResult> AnalyzerResults => TestProjects.Select(testProject => testProject.AnalyzerResult);
 
     public IReadOnlyList<string> GetTestAssemblies() =>
@@ -41,8 +43,10 @@ public class TestProjectsInfo
         {
             var injectionPath = GetInjectionFilePath(testProject, sourceProject);
             var backupFilePath = GetBackupName(injectionPath);
-            if (_fileSystem.File.Exists(backupFilePath))
+                if (!_fileSystem.File.Exists(backupFilePath))
             {
+                    continue;
+                }
                 try
                 {
                     _fileSystem.File.Copy(backupFilePath, injectionPath, true);
@@ -53,7 +57,6 @@ public class TestProjectsInfo
                 }
             }
         }
-    }
 
     public void BackupOriginalAssembly(IAnalyzerResult sourceProject)
     {
