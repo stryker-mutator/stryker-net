@@ -172,6 +172,84 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
         }
 
         [Fact]
+        public void RestoreOriginalAssembly_IgnoreIfBackupIsAbsent()
+        {
+            // Arrange
+            var fileSystem = Mock.Of<IFileSystem>(MockBehavior.Strict);
+            var file = Mock.Of<IFile>(MockBehavior.Strict);
+            Mock.Get(fileSystem).Setup(f => f.File).Returns(file);
+
+            var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", "/app/bin/Debug/" },
+                        { "TargetFileName", "AppToTest.dll" }
+                    }).Object;
+
+            var testProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", "/test/bin/Debug/" },
+                        { "TargetFileName", "TestName.dll" }
+                    }).Object;
+
+            var testProject = new TestProject(fileSystem, testProjectAnalyzerResult);
+            var testProjectsInfo = new TestProjectsInfo(fileSystem)
+            {
+                TestProjects = new List<TestProject> { testProject }
+            };
+
+            var injectionPath = TestProjectsInfo.GetInjectionFilePath(testProjectAnalyzerResult, sourceProjectAnalyzerResult);
+            var backupPath = injectionPath + ".stryker-unchanged";
+
+            Mock.Get(file).Setup(f => f.Exists(backupPath)).Returns(false);
+
+            // Act
+            testProjectsInfo.RestoreOriginalAssembly(sourceProjectAnalyzerResult);
+
+            // Assert
+            Mock.Get(file).VerifyAll();
+        }
+
+        
+        [Fact]
+        public void RestoreOriginalAssembly_IgnoreIfBackupCopyFails()
+        {
+            // Arrange
+            var fileSystem = Mock.Of<IFileSystem>(MockBehavior.Strict);
+            var file = Mock.Of<IFile>(MockBehavior.Strict);
+            Mock.Get(fileSystem).Setup(f => f.File).Returns(file);
+
+            var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                properties: new Dictionary<string, string>() {
+                    { "TargetDir", "/app/bin/Debug/" },
+                    { "TargetFileName", "AppToTest.dll" }
+                }).Object;
+
+            var testProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                properties: new Dictionary<string, string>() {
+                    { "TargetDir", "/test/bin/Debug/" },
+                    { "TargetFileName", "TestName.dll" }
+                }).Object;
+
+            var testProject = new TestProject(fileSystem, testProjectAnalyzerResult);
+            var testProjectsInfo = new TestProjectsInfo(fileSystem)
+            {
+                TestProjects = new List<TestProject> { testProject }
+            };
+
+            var injectionPath = TestProjectsInfo.GetInjectionFilePath(testProjectAnalyzerResult, sourceProjectAnalyzerResult);
+            var backupPath = injectionPath + ".stryker-unchanged";
+
+            Mock.Get(file).Setup(f => f.Exists(backupPath)).Returns(true);
+            Mock.Get(file).Setup(f => f.Copy(backupPath, injectionPath, true)).Throws(new IOException("copy failed"));
+
+            // Act
+            testProjectsInfo.RestoreOriginalAssembly(sourceProjectAnalyzerResult);
+
+            // Assert
+            Mock.Get(file).VerifyAll();
+        }
+
+        [Fact]
         public void BackupOriginalAssembly_CreatesBackup()
         {
             // Arrange
