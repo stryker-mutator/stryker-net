@@ -89,6 +89,50 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
         }
 
         [Fact]
+        public void MergeTestProjectsInfoWithASharedSourceFile()
+        {
+            // Arrange
+            var fileSystem = new MockFileSystem();
+            var rootPath = Path.Combine("c", "TestProject");
+            var fileAPath = Path.Combine(rootPath, "ExampleTestFile.cs");
+            fileSystem.AddDirectory(rootPath);
+            var fileA = File.ReadAllText(Path.Combine(".", "TestResources", "ExampleTestFileA.cs"));
+            fileSystem.AddFile(fileAPath, new MockFileData(fileA));
+            var testProjectAnalyzerResultAMock = TestHelper.SetupProjectAnalyzerResult(
+                references: Array.Empty<string>(),
+                sourceFiles: new string[] { fileAPath }
+            );
+            var testProjectAnalyzerResultBMock = TestHelper.SetupProjectAnalyzerResult(
+                references: Array.Empty<string>(),
+                sourceFiles: new string[] { fileAPath }
+            );
+
+            var testProjectA = new TestProject(fileSystem, testProjectAnalyzerResultAMock.Object);
+            var testProjectB = new TestProject(fileSystem, testProjectAnalyzerResultBMock.Object);
+            testProjectA.TestFiles.First().AddTest(Guid.NewGuid(), "test1", SyntaxFactory.Block());
+            testProjectA.TestFiles.First().AddTest(Guid.NewGuid(), "test2", SyntaxFactory.Block());
+
+            var testProjectsInfoA = new TestProjectsInfo(fileSystem)
+            {
+                TestProjects = new List<TestProject> { testProjectA }
+            };
+            var testProjectsInfoB = new TestProjectsInfo(fileSystem)
+            {
+                TestProjects = new List<TestProject> { testProjectB }
+            };
+            var testProjectsInfoC = new TestProjectsInfo(fileSystem)
+            {
+                TestProjects = new List<TestProject> { testProjectB }
+            };
+
+            // Act
+            var testProjectsInfoABC = testProjectsInfoA + testProjectsInfoB + testProjectsInfoC;
+
+            // Assert
+            testProjectsInfoABC.TestFiles.Count().ShouldBe(1);
+        }
+
+        [Fact]
         public void RestoreOriginalAssembly_RestoresIfBackupExists()
         {
             // Arrange
@@ -119,6 +163,84 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
 
             Mock.Get(file).Setup(f => f.Exists(backupPath)).Returns(true);
             Mock.Get(file).Setup(f => f.Copy(backupPath, injectionPath, true));
+
+            // Act
+            testProjectsInfo.RestoreOriginalAssembly(sourceProjectAnalyzerResult);
+
+            // Assert
+            Mock.Get(file).VerifyAll();
+        }
+
+        [Fact]
+        public void RestoreOriginalAssembly_IgnoreIfBackupIsAbsent()
+        {
+            // Arrange
+            var fileSystem = Mock.Of<IFileSystem>(MockBehavior.Strict);
+            var file = Mock.Of<IFile>(MockBehavior.Strict);
+            Mock.Get(fileSystem).Setup(f => f.File).Returns(file);
+
+            var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", "/app/bin/Debug/" },
+                        { "TargetFileName", "AppToTest.dll" }
+                    }).Object;
+
+            var testProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>() {
+                        { "TargetDir", "/test/bin/Debug/" },
+                        { "TargetFileName", "TestName.dll" }
+                    }).Object;
+
+            var testProject = new TestProject(fileSystem, testProjectAnalyzerResult);
+            var testProjectsInfo = new TestProjectsInfo(fileSystem)
+            {
+                TestProjects = new List<TestProject> { testProject }
+            };
+
+            var injectionPath = TestProjectsInfo.GetInjectionFilePath(testProjectAnalyzerResult, sourceProjectAnalyzerResult);
+            var backupPath = injectionPath + ".stryker-unchanged";
+
+            Mock.Get(file).Setup(f => f.Exists(backupPath)).Returns(false);
+
+            // Act
+            testProjectsInfo.RestoreOriginalAssembly(sourceProjectAnalyzerResult);
+
+            // Assert
+            Mock.Get(file).VerifyAll();
+        }
+
+        
+        [Fact]
+        public void RestoreOriginalAssembly_IgnoreIfBackupCopyFails()
+        {
+            // Arrange
+            var fileSystem = Mock.Of<IFileSystem>(MockBehavior.Strict);
+            var file = Mock.Of<IFile>(MockBehavior.Strict);
+            Mock.Get(fileSystem).Setup(f => f.File).Returns(file);
+
+            var sourceProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                properties: new Dictionary<string, string>() {
+                    { "TargetDir", "/app/bin/Debug/" },
+                    { "TargetFileName", "AppToTest.dll" }
+                }).Object;
+
+            var testProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                properties: new Dictionary<string, string>() {
+                    { "TargetDir", "/test/bin/Debug/" },
+                    { "TargetFileName", "TestName.dll" }
+                }).Object;
+
+            var testProject = new TestProject(fileSystem, testProjectAnalyzerResult);
+            var testProjectsInfo = new TestProjectsInfo(fileSystem)
+            {
+                TestProjects = new List<TestProject> { testProject }
+            };
+
+            var injectionPath = TestProjectsInfo.GetInjectionFilePath(testProjectAnalyzerResult, sourceProjectAnalyzerResult);
+            var backupPath = injectionPath + ".stryker-unchanged";
+
+            Mock.Get(file).Setup(f => f.Exists(backupPath)).Returns(true);
+            Mock.Get(file).Setup(f => f.Copy(backupPath, injectionPath, true)).Throws(new IOException("copy failed"));
 
             // Act
             testProjectsInfo.RestoreOriginalAssembly(sourceProjectAnalyzerResult);

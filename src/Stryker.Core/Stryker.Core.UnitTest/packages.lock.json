@@ -4,15 +4,15 @@
     "net8.0": {
       "coverlet.collector": {
         "type": "Direct",
-        "requested": "[6.0.1, )",
-        "resolved": "6.0.1",
-        "contentHash": "q/8r0muHlF7TbhMUTBAk43KteZYG2ECV96pbzkToQwgjp3BvbS766svUcO6va+cohWOkigeBWmHs0Vu5vQnESA=="
+        "requested": "[6.0.2, )",
+        "resolved": "6.0.2",
+        "contentHash": "bJShQ6uWRTQ100ZeyiMqcFlhP7WJ+bCuabUs885dJiBEzMsJMSFr7BOyeCw4rgvQokteGi5rKQTlkhfQPUXg2A=="
       },
       "coverlet.msbuild": {
         "type": "Direct",
-        "requested": "[6.0.1, )",
-        "resolved": "6.0.1",
-        "contentHash": "3XB8lTS4olP+ofINp2Zjf7N6d/F5ZCeTTa6uHauKEZhPWvD2eJuhW7GHclKBeTC1dL/G7hdfekTQrsLgE3oGFQ=="
+        "requested": "[6.0.2, )",
+        "resolved": "6.0.2",
+        "contentHash": "8b4jBNH7mcQy1otyQErjjIUuGD74XxKZ1wvDufbY7jhWwckl7wIa+icjwdPYeI0aYMS4Tp63LIZvyMFjWwOMDw=="
       },
       "DotNet.ReproducibleBuilds": {
         "type": "Direct",
@@ -76,12 +76,12 @@
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[20.0.15, )",
-        "resolved": "20.0.15",
-        "contentHash": "Usbm1pW5TljGIt++b5e2BsxZhG19u0b4Y8cZTuPq4JfbGjv1G6GqPpTD7ygqKloFZOaB3jQjhLIYUjTLlC/+2Q==",
+        "requested": "[20.0.28, )",
+        "resolved": "20.0.28",
+        "contentHash": "i1QAp8MqGbI3Df5OHVXisCBHhqNYg2au+fssLM+FlTBZC127fAeVY6rp68pvCDzAo7rPYqe8cC/aMko0depntg==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "20.0.15",
-          "TestableIO.System.IO.Abstractions.Wrappers": "20.0.15"
+          "TestableIO.System.IO.Abstractions": "20.0.28",
+          "TestableIO.System.IO.Abstractions.Wrappers": "20.0.28"
         }
       },
       "xunit": {
@@ -1531,8 +1531,8 @@
       },
       "TestableIO.System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "20.0.15",
-        "contentHash": "ohYr5VOrTGO+8ZVvaWZGg5vn7wQIYmAT35pjrxZ/NNbC4yamMw2JYDFv73rhpOjE/7PkuwV2Mk9GMR6hY527Gw=="
+        "resolved": "20.0.28",
+        "contentHash": "Gnhbvo9W8ZMXbCOMXDi7Bz4Mk5Hc0L1nFN48q3vWjxd4/Vr7/HWSUuMcUSjJk8Wfp2J4HTOosrSspzVliJPCNQ=="
       },
       "Validation": {
         "type": "Transitive",
@@ -1597,7 +1597,7 @@
           "Microsoft.Web.LibraryManager.Build": "[2.1.175, )",
           "Mono.Cecil": "[0.11.5, )",
           "NuGet.Frameworks": "[6.9.1, )",
-          "ResXResourceReader.NetStandard": "[1.2.0, )",
+          "ResXResourceReader.NetStandard": "[1.3.0, )",
           "Serilog": "[3.1.1, )",
           "Serilog.Extensions.Logging": "[8.0.0, )",
           "Serilog.Extensions.Logging.File": "[3.0.0, )",
@@ -1607,7 +1607,7 @@
           "Spectre.Console.Analyzer": "[0.48.0, )",
           "Stryker.DataCollector": "[4.0.0, )",
           "Stryker.RegexMutators": "[4.0.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[20.0.15, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[20.0.28, )"
         }
       },
       "stryker.datacollector": {
@@ -1781,9 +1781,9 @@
       },
       "ResXResourceReader.NetStandard": {
         "type": "CentralTransitive",
-        "requested": "[1.2.0, )",
-        "resolved": "1.2.0",
-        "contentHash": "WeSQmhW1ElwZRcr+v5arrsDCMEhZPxtpS1I6ZR78eVVDaPXjI8fAgoS8WA5nS6r5xALtYaPU0Ygs0VjsInccaQ=="
+        "requested": "[1.3.0, )",
+        "resolved": "1.3.0",
+        "contentHash": "voW0VHwFGIvbJ4Pp/wfHKFGn9kxZD97H/mnD6LziBJCi4FJZtetYQpQQnpYp0IkL2+PQ6VOzkMvhK1+s7+NJnA=="
       },
       "Serilog": {
         "type": "CentralTransitive",
@@ -1852,11 +1852,11 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[20.0.15, )",
-        "resolved": "20.0.15",
-        "contentHash": "ylbWPBEeX8oS2Uj8pCOyFPfBRJ1JHc56YyHEa1IaaYpW4QDH5zw3H/CRm2R6V0PWCG+Fx+tpb09vkD6Y97UB2Q==",
+        "requested": "[20.0.28, )",
+        "resolved": "20.0.28",
+        "contentHash": "Yl/AMykv9DuFQJfWGJAoFOUuXuAK97Y7vn4Sgv0uKk8sWSmXaYePoVpmyn2HjKe2jbvb7sOS2qL/czzPPYgmDg==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "20.0.15"
+          "TestableIO.System.IO.Abstractions": "20.0.28"
         }
       }
     }

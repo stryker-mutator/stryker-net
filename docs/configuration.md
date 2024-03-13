@@ -156,6 +156,7 @@ Valid language versions:
 - Csharp9
 - Csharp10
 - Csharp11
+- Csharp12
 - Preview (next language version)
 
 *\* Csharp version 1 is not allowed because stryker injects helper code that uses csharp 2 language features.*
