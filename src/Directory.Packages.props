@@ -33,7 +33,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
-    <PackageVersion Include="coverlet.collector" Version="6.0.1" />
+    <PackageVersion Include="coverlet.collector" Version="6.0.2" />
     <PackageVersion Include="coverlet.msbuild" Version="6.0.2" />
     <PackageVersion Include="Moq" Version="4.20.70" />
     <PackageVersion Include="RegexParser" Version="0.5.1" />
