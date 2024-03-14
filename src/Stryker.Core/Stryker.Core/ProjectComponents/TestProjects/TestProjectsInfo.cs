@@ -46,17 +46,17 @@ public class TestProjectsInfo
                 if (!_fileSystem.File.Exists(backupFilePath))
             {
                     continue;
-                }
-                try
-                {
-                    _fileSystem.File.Copy(backupFilePath, injectionPath, true);
-                }
-                catch (IOException ex)
-                {
-                    _logger.LogWarning(ex, "Failed to restore output assembly {Path}. Mutated assembly is still in place.", injectionPath);
-                }
+            }
+            try
+            {
+                _fileSystem.File.Copy(backupFilePath, injectionPath, true);
+            }
+            catch (IOException ex)
+            {
+                _logger.LogWarning(ex, "Failed to restore output assembly {Path}. Mutated assembly is still in place.", injectionPath);
             }
         }
+    }
 
     public void BackupOriginalAssembly(IAnalyzerResult sourceProject)
     {
