@@ -88,6 +88,7 @@ public class InputFileResolver : IInputFileResolver
             {
                 var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
                 _logger.LogDebug("Analyzing {projectFilePath}", projectLogName);
+                project.SetGlobalProperty("Configuration", "Release");
                 var buildResult = project.Build();
 
                 var buildResultOverallSuccess = buildResult.OverallSuccess;

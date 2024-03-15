@@ -56,17 +56,15 @@ public class ProjectFileReader : IProjectFileReader
         _logger.LogDebug("Analyzing project file {0}", projectFilePath);
         var analyzerResult = GetAnalyzerResult(GetAnalyzerManager(solutionFilePath).GetProject(projectFilePath).Build(), targetFramework);
 
-        if (analyzerResult.Succeeded)
+        if (analyzerResult.Succeeded || !analyzerResult.TargetsFullFramework())
         {
             return analyzerResult;
         }
-        if (analyzerResult.TargetsFullFramework())
-        {
-            // buildalyzer failed to find restored packages, retry after nuget restore
-            _logger.LogDebug("Project analyzer result not successful, restoring packages");
-            _nugetRestoreProcess.RestorePackages(solutionFilePath, msBuildPath);
-            analyzerResult = GetAnalyzerResult(GetAnalyzerManager(solutionFilePath).GetProject(projectFilePath).Build(), targetFramework);
-        }
+
+        // buildalyzer failed to find restored packages, retry after nuget restore
+        _logger.LogDebug("Project analyzer result not successful, restoring packages");
+        _nugetRestoreProcess.RestorePackages(solutionFilePath, msBuildPath);
+        analyzerResult = GetAnalyzerResult(GetAnalyzerManager(solutionFilePath).GetProject(projectFilePath).Build(), targetFramework);
 
         return analyzerResult;
     }
