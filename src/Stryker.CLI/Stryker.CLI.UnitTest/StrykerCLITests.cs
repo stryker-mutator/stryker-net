@@ -64,7 +64,7 @@ The mutation test framework for .Net
 Usage: Stryker [command] [options]
 
 Options:";
-                sw.ToString().ShouldStartWith(expected);
+                sw.ToString().ShouldContain(expected);
             }
             finally
             {

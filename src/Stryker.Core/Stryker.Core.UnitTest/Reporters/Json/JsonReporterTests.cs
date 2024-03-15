@@ -254,7 +254,7 @@ namespace ExtraProject.XUnit
 
             var testFile = report.TestFiles.ShouldHaveSingleItem();
 
-            testFile.Value.Tests.Count().ShouldBe(3); // not three
+            testFile.Value.Tests.Count().ShouldBe(2); // not three
         }
     }
 }

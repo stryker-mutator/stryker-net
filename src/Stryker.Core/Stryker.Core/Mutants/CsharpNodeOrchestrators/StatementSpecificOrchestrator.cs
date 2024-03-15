@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
@@ -12,20 +11,11 @@ internal class StatementSpecificOrchestrator<T> : NodeSpecificOrchestrator<T, St
 {
     protected override MutationContext PrepareContext(T node, MutationContext context) => base.PrepareContext(node, context).Enter(MutationControl.Statement);
 
-    protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave(MutationControl.Statement));
+    protected override void RestoreContext(MutationContext context) => base.RestoreContext(context.Leave());
 
     /// <inheritdoc/>
     /// <remarks>Inject pending mutations that are controlled with 'if' statements.</remarks>
     protected override StatementSyntax InjectMutations(T sourceNode, StatementSyntax targetNode, SemanticModel semanticModel, MutationContext context) =>
-        context.InjectStatementLevel(targetNode, sourceNode);
+        context.InjectMutations(targetNode, sourceNode);
 
-    /// <inheritdoc/>
-    /// <remarks>Mutations are stored ath statement level.</remarks>
-    protected override MutationContext StoreMutations(T node,
-        IEnumerable<Mutant> mutations,
-        MutationContext context)
-    {
-        context.AddStatementLevel(mutations);
-        return context;
-    }
 }

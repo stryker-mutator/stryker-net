@@ -1,10 +1,7 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Helpers;
 using Stryker.Core.Mutants.CsharpNodeOrchestrators;
 using Stryker.Core.Mutators;
 
@@ -16,13 +13,14 @@ namespace Stryker.Core.Mutants;
 /// 1) It is in charge of storing mutations as they are generated, inject them at the appropriate syntax level.  
 /// 2) it also tracks mutator disabled via comments and restores them at adequate times
 /// </summary>
+///
 internal class MutationContext
 {
     // main orchestrator
     // the orchestrator is used to perform actual mutation injections
     private readonly CsharpMutantOrchestrator _mainOrchestrator;
     // pending mutation stacks. An entry is pushed in the stack when entering a member or function and popping it when leaving
-    private readonly Stack<MutationStore> _pendingMutations = new();
+    private readonly MutationStore _mutation;
 
     /// <summary>
     /// Mutation context must be created once when starting a mutation process.
@@ -31,14 +29,14 @@ internal class MutationContext
     public MutationContext(CsharpMutantOrchestrator mutantOrchestrator)
     {
         _mainOrchestrator = mutantOrchestrator;
-        Enter(MutationControl.Member);
+        _mutation = new MutationStore(mutantOrchestrator.Placer);
     }
 
     private MutationContext(MutationContext parent)
     {
         _mainOrchestrator = parent._mainOrchestrator;
         InStaticValue = parent.InStaticValue;
-        _pendingMutations = parent._pendingMutations;
+        _mutation = parent._mutation;
         FilteredMutators = parent.FilteredMutators;
         FilterComment = parent.FilterComment;
     }
@@ -46,7 +44,7 @@ internal class MutationContext
     /// <summary>
     ///  True when inside a static initializer, fields or accessor.
     /// </summary>
-    public bool InStaticValue { get; set; }
+    public bool InStaticValue { get; private init; }
 
     /// <summary>
     /// True if orchestrator have to inject static usage tracing
@@ -57,12 +55,10 @@ internal class MutationContext
 
     internal string FilterComment { get; set; }
 
-    private MutationStore CurrentStore => _pendingMutations.Peek();
-
     /// <summary>
     /// true if there are pending statement or block level mutations
     /// </summary>
-    public bool HasStatementLevelMutant => CurrentStore.HasStatementLevel;
+    public bool HasLeftOverMutations => _mutation.HasPendingMutations();
 
     /// <summary>
     /// Call this to generate mutations using active mutators.
@@ -77,8 +73,8 @@ internal class MutationContext
     /// Find the appropriate node handler for the given node.
     /// </summary>
     /// <param name="node">handler for which to find an orchestrator.</param>
-    /// <returns>An handler for this node.</returns>
-    public INodeMutator FindHandler(SyntaxNode node) => _mainOrchestrator.GetHandler(node);
+    /// <returns>A handler for this node.</returns>
+    public INodeOrchestrator FindHandler(SyntaxNode node) => _mainOrchestrator.GetHandler(node);
 
     /// <summary>
     /// Call this to signal mutation occurs in static method or fields
@@ -91,87 +87,43 @@ internal class MutationContext
     /// </summary>
     /// <param name="control">type of structure (see <see cref="MutationControl"/>)</param>
     /// <returns>The context to use moving forward.</returns>
-    /// <remarks>You must use a <see cref="Leave(MutationControl)"/>when leaving the context.</remarks>
+    /// <remarks>You must use <see cref="Leave()"/>when leaving the context.</remarks>
     public MutationContext Enter(MutationControl control)
     {
-        switch (control)
-        {
-            case MutationControl.MemberAccess:
-                CurrentStore.MemberAccessLength++;
-                return this;
-            case MutationControl.Statement:
-                CurrentStore.EnterStatement();
-                return this;
-            case MutationControl.Block:
-                CurrentStore.EnterBlock();
-                return new MutationContext(this);
-            case MutationControl.Member:
-                _pendingMutations.Push(new MutationStore(_mainOrchestrator.Placer));
-                CurrentStore.EnterBlock();
-                break;
-        }
-
-        return this;
+        _mutation.Enter(control);
+        return control is MutationControl.Block or MutationControl.Member ? new MutationContext(this): this;
     }
 
     /// <summary>
     /// Call this when leaving a control syntax structure
     /// </summary>
-    /// <param name="control">type of structure (see <see cref="MutationControl"/>)</param>
     /// <remarks>A call must match a previous call to <see cref="Enter(MutationControl)"/></remarks>
-    public MutationContext Leave(MutationControl control)
+    public MutationContext Leave()
     {
-        switch (control)
-        {
-            case MutationControl.MemberAccess:
-                CurrentStore.MemberAccessLength--;
-                break;
-            case MutationControl.Statement:
-                CurrentStore.LeaveStatement();
-                break;
-            case MutationControl.Block:
-                CurrentStore.LeaveBlock();
-                break;
-            case MutationControl.Member:
-                CurrentStore.LeaveBlock();
-                _pendingMutations.Pop();
-                break;
-        }
+        _mutation.Leave();
         return this;
     }
 
     /// <summary>
-    /// Register new statement level mutations
+    /// Register mutations
     /// </summary>
     /// <param name="mutants"></param>
-    public void AddExpressionLevel(IEnumerable<Mutant> mutants) =>
-        CurrentStore.StoreMutations(mutants, MutationControl.Expression);
-
-    /// <summary>
-    /// Register new statement level mutations
-    /// </summary>
-    /// <param name="mutants"></param>
-    public void AddStatementLevel(IEnumerable<Mutant> mutants) =>
-        CurrentStore.StoreMutations(mutants, MutationControl.Statement);
+    public MutationContext AddMutations(IEnumerable<Mutant> mutants)
+    {
+        _mutation.StoreMutations(mutants);
+        return this;
+    }
 
     /// <summary>
     /// Register new block level mutations
     /// </summary>
     /// <param name="mutants"></param>
-    public void AddBlockLevel(IEnumerable<Mutant> mutants) =>
-        CurrentStore.StoreMutations(mutants, MutationControl.Block);
-
-    /// <summary>
-    /// Injects pending expression level mutations.
-    /// </summary>
-    /// <param name="mutatedNode">Target node that will contain the mutations</param>
-    /// <param name="sourceNode">Source node, used to generate mutations</param>
-    /// <returns>A mutated node containing the mutations.</returns>
-    /// <remarks>Do not inject mutation(s) if in a subexpression</remarks>
-    public ExpressionSyntax InjectExpressionLevel(ExpressionSyntax mutatedNode, ExpressionSyntax sourceNode)
-        => CurrentStore.MemberAccessLength > 0
-            ? mutatedNode
-            : CurrentStore.PlaceExpressionMutations(mutatedNode, sourceNode.InjectMutation);
+    /// <param name="control"></param>
+    public MutationContext AddMutations(IEnumerable<Mutant> mutants, MutationControl control)
+    {
+        _mutation.StoreMutationsAtDesiredLevel(mutants, control);
+        return this;
+    }
 
     /// <summary>
     /// Inject a static context marker in the given block
@@ -190,22 +142,31 @@ internal class MutationContext
         _mainOrchestrator.Placer.PlaceStaticContextMarker(expression);
 
     /// <summary>
+    /// Injects pending expression level mutations.
+    /// </summary>
+    /// <param name="mutatedNode">Target node that will contain the mutations</param>
+    /// <param name="sourceNode">Source node, used to generate mutations</param>
+    /// <returns>A mutated node containing the mutations.</returns>
+    /// <remarks>Do not inject mutation(s) if in a subexpression</remarks>
+    public ExpressionSyntax InjectMutations(ExpressionSyntax mutatedNode, ExpressionSyntax sourceNode) => _mutation.Inject(mutatedNode, sourceNode);
+
+    /// <summary>
     /// Injects pending statement level mutations.
     /// </summary>
     /// <param name="mutatedNode">Target node that will contain the mutations</param>
     /// <param name="sourceNode">Source node, used to generate mutations</param>
     /// <returns>A mutated node containing the mutations.</returns>
-    public StatementSyntax InjectStatementLevel(StatementSyntax mutatedNode, StatementSyntax sourceNode)
-        => CurrentStore.PlaceStatementMutations(mutatedNode, sourceNode.InjectMutation);
+    public StatementSyntax InjectMutations(StatementSyntax mutatedNode, StatementSyntax sourceNode)
+        => _mutation.Inject(mutatedNode, sourceNode);
 
     /// <summary>
     /// Injects pending block level mutations.
     /// </summary>
     /// <param name="mutatedNode">Target node that will contain the mutations</param>
-    /// <param name="originalNode">Source node, used to generate mutations</param>
+    /// <param name="sourceNode">Source node, used to generate mutations</param>
     /// <returns>A mutated node containing the mutations.</returns>
-    public StatementSyntax InjectBlockLevel(StatementSyntax mutatedNode, StatementSyntax originalNode) =>
-        CurrentStore.PlaceBlockMutations(mutatedNode, originalNode.InjectMutation);
+    public BlockSyntax InjectMutations(BlockSyntax mutatedNode, BlockSyntax sourceNode) =>
+        _mutation.Inject(mutatedNode, sourceNode);
 
     /// <summary>s
     /// Injects pending block level mutations for expression body method or functions
@@ -214,22 +175,9 @@ internal class MutationContext
     /// <param name="originalNode">Source node, used to generate mutations</param>
     /// <param name="needReturn">Set to true if the method has a return value. Expressions are transformed to return statement.</param>
     /// <returns>A mutated node containing the mutations.</returns>
-    public StatementSyntax InjectBlockLevelExpressionMutation(BlockSyntax mutatedNode,
-        ExpressionSyntax originalNode, bool needReturn)
-    {
-        var wrapper = needReturn
-            ? (Func<ExpressionSyntax, StatementSyntax>)SyntaxFactory.ReturnStatement
-            : SyntaxFactory.ExpressionStatement;
-
-        if (CurrentStore.HasStatementLevel)
-        {
-            return CurrentStore.PlaceBlockMutations(
-                CurrentStore.PlaceStatementMutations(mutatedNode, m => wrapper(originalNode.InjectMutation(m))),
-                m => wrapper(originalNode.InjectMutation(m)));
-        }
-
-        return CurrentStore.PlaceBlockMutations(mutatedNode, m => wrapper(originalNode.InjectMutation(m)));
-    }
+    public BlockSyntax InjectMutations(BlockSyntax mutatedNode,
+        ExpressionSyntax originalNode, bool needReturn) =>
+        _mutation.Inject(mutatedNode, originalNode, needReturn);
 
     /// <summary>
     /// Enable/Disable a list of mutators.

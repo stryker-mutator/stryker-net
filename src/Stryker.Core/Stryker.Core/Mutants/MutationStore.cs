@@ -1,172 +1,258 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
+using RegexParser.Nodes;
+using Stryker.Core.Helpers;
 using Stryker.Core.Logging;
 
 namespace Stryker.Core.Mutants;
 
+
+/// <summary>
+/// This enum is used to track the syntax 'level' of mutations that are injected in the code.
+/// </summary>
 public enum MutationControl
 {
+    /// <summary>
+    /// Syntax that is part of a member access expression (such as class.Property.Property.Invoke()
+    /// </summary>
     MemberAccess,
+    /// <summary>
+    /// Syntax that is part of an expression (80-90% of syntax is expression)
+    /// </summary>
     Expression,
+    /// <summary>
+    /// Statements
+    /// </summary>
     Statement,
+    /// <summary>
+    /// Block of Statement
+    /// </summary>
     Block,
+    /// <summary>
+    /// Class member or equivalent, there is no higher (supported) syntax structure
+    /// </summary>
     Member
 }
 
 /// <summary>
-/// Keeps track of mutations while parsing.
-/// It stores mutations according on which kind of syntaxnode mutation switching should occur (intra expression, statement or block).
-/// They also exposes mutation injection API but actual implementation is delegated to a mutant placer instance
+/// This class stores mutations generated during syntax tree traversal and injects them (with the appropriate control structure)
+/// when requested
 /// </summary>
 internal class MutationStore
 {
-    public static readonly ILogger Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationStore>();
-    private readonly List<Mutant> _expressionMutants = new();
-    private readonly Stack<List<Mutant>> _statementMutants = new();
-    private readonly Stack<List<Mutant>> _blockMutants = new();
-    private readonly MutantPlacer _placer;
-
-    /// <summary>
-    /// The length of the member access chain that is currently being parsed.
-    /// </summary>
-    public int MemberAccessLength { get; set; }
-
-    /// <summary>
-    /// true if there are block level mutations pending for injection
-    /// </summary>
-    private bool HasBlockLevel => _blockMutants.Count > 0 && _blockMutants.Peek().Count > 0;
-
-    /// <summary>
-    /// true if there are statement or block level mutations pending of injection
-    /// </summary>
-    public bool HasStatementLevel => (_statementMutants.Count > 0 && _statementMutants.Peek().Count > 0) || HasBlockLevel;
+    protected static readonly ILogger Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationStore>();
+    private readonly MutantPlacer _mutantPlacer;
+    private readonly Stack<PendingMutations> _pendingMutations = new();
 
     /// <summary>
     /// Constructor
     /// </summary>
-    /// <param name="placer">MutationPlacer instance</param>
-    public MutationStore(MutantPlacer placer) => _placer = placer;
+    /// <param name="mutantPlacer">Mutant placer that will be used for mutation injection</param>
+    public MutationStore(MutantPlacer mutantPlacer) => _mutantPlacer = mutantPlacer;
 
     /// <summary>
-    /// Stores the given mutations according to the expected control level
+    /// Checks if there are pending mutations for the current syntax level
     /// </summary>
-    /// <param name="proposedMutations">mutation list</param>
-    /// <param name="control">expected control level</param>
-    /// <remarks>does not store mutation  if the current context does not permit injection, e.g. it is not possible to store mutation if not inside executable code.
-    /// rejected mutations are the logged. If this happen, this is probably an error from a mutator and/or the orchestration part of the logic.</remarks>
-    public void StoreMutations(IEnumerable<Mutant> proposedMutations, MutationControl control)
+    /// <returns></returns>
+    public bool HasPendingMutations() => _pendingMutations.Count > 0 && _pendingMutations.Peek().Store.Count>0;
+
+    /// <summary>
+    /// Enter a syntax level
+    /// </summary>
+    /// <param name="control">syntax level (should match current node level) <see cref="MutationControl"/></param>
+    public void Enter(MutationControl control)
     {
-        var mutations = proposedMutations.Where(m => m.ResultStatus == MutantStatus.Pending).ToList();
-        if (!mutations.Any())
+        // we use a simple logic to keep the stack small: if the current level is the same as the previous one, we just increment the depth
+        if (_pendingMutations.Count > 0 && _pendingMutations.Peek().Aggregate(control))
         {
             return;
         }
-        switch (control)
+        _pendingMutations.Push(new PendingMutations(control));
+    }
+
+    /// <summary>
+    /// Leave current syntax construct
+    /// </summary>
+    /// <remarks>Any non injected mutations will be forwarded to the enclosing syntax construct.
+    /// If there is none (leaving a member), mutations are flagged as compile errors (and logged).</remarks>
+    public void Leave()
+    {
+        if (!_pendingMutations.Peek().Leave()) return;
+        // we need to store pending mutations at the higher level
+        var old = _pendingMutations.Pop();
+        if (_pendingMutations.Count > 0)
         {
-            case MutationControl.Expression:
-                _expressionMutants.AddRange(mutations);
-                break;
-            case MutationControl.Statement:
-                if (_statementMutants.Count == 0)
-                {
-                    // try again at block level
-                    StoreMutations(mutations, MutationControl.Block);
-                    return;
-                }
-                _statementMutants.Peek().AddRange(mutations);
-                break;
-            case MutationControl.Block:
-                if (_blockMutants.Count == 0)
-                {
-                    // we have mutations that are going to be lost
-                    Logger.LogDebug($"{mutations.Count} were generated but could not be injected as they cannot be controlled dynamically.");
-                    foreach (var mutant in mutations)
-                    {
-                        Logger.LogDebug($"{mutant.Id}: {mutant.DisplayName}");
-                        mutant.ResultStatus = MutantStatus.Ignored;
-                        mutant.ResultStatusReason = "Unable to inject back mutations in source code.";
-                    }
-                    return;
-                }
-                _blockMutants.Peek().AddRange(mutations);
-                break;
+            _pendingMutations.Peek().StoreMutations(old.Store);
+        }
+        else if (old.Store.Count > 0)
+        {
+            Logger.LogError("Some mutations failed to be inserted, they are dropped.");
+            foreach (var mutant in old.Store)
+            {
+                mutant.ResultStatus = MutantStatus.CompileError;
+                mutant.ResultStatusReason = "Could not be injected in code.";
+            }
         }
     }
 
-    /// <summary>
-    /// Injects all pending block mutations, using the provided function for injection, and using 'if' mutation switching logic
-    /// </summary>
-    /// <param name="block">block where mutation will be inserted.</param>
-    /// <param name="mutationFunc">function doing the actual injection logic</param>
-    /// <returns>a block with the injected mutations</returns>
-    /// <remarks>all pending block mutations are dropped after this call (clear the cache)</remarks>
-    public StatementSyntax PlaceBlockMutations(StatementSyntax block, Func<Mutation, StatementSyntax> mutationFunc)
-    {
-        var result = _placer.PlaceStatementControlledMutations(block, _blockMutants.Peek().Select(m => (m, mutationFunc(m.Mutation))));
-        _blockMutants.Peek().Clear();
-        return result;
-    }
-
+    private PendingMutations FindControl(MutationControl control) => _pendingMutations.FirstOrDefault(item => item.Control >= control);
 
     /// <summary>
-    /// Injects all pending statement mutations, using the provided function for injection, and using 'if' mutation switching logic at statement level
+    /// Stores mutations at the given syntax level to be injected at a later time
     /// </summary>
-    /// <param name="statement">statement where mutation will be inserted.</param>
-    /// <param name="mutationFunc">function doing the actual injection logic</param>
-    /// <returns>an if statement with the injected mutations</returns>
-    /// <remarks>all pending statement mutations are dropped after this call (clear the cache)</remarks>
-    public StatementSyntax PlaceStatementMutations(StatementSyntax statement, Func<Mutation, StatementSyntax> mutationFunc)
+    /// <param name="store">mutants to store</param>
+    /// <param name="level">requested control level</param>
+    /// <returns>true if insertion is successful</returns>
+    /// <remarks>Mutants may be stored in a higher level construct if the desired level is nonexistent. If insertion fails, mutants are flagged
+    /// as compile error and logged.</remarks>
+    public bool StoreMutationsAtDesiredLevel(IEnumerable<Mutant> store, MutationControl level)
     {
-        if (_statementMutants.Count == 0)
+        if (!store.Any())
         {
-            return statement;
+            return true;
         }
-        var result = _placer.PlaceStatementControlledMutations(statement, _statementMutants.Peek().Select(m => (m, mutationFunc(m.Mutation))));
-        _statementMutants.Peek().Clear();
-        return result;
-    }
 
-    /// <summary>
-    /// Injects all pending expression mutations, using the provided function for injection, and using ternary operator mutation switching logic at the expression level
-    /// </summary>
-    /// <param name="expression">expression where mutation will be inserted.</param>
-    /// <param name="mutationFunc">function doing the actual injection logic</param>
-    /// <returns>an expression with the injected mutations</returns>
-    /// <remarks>all pending expression mutations are dropped after this call (clear the cache)</remarks>
-    public ExpressionSyntax PlaceExpressionMutations(ExpressionSyntax expression, Func<Mutation, ExpressionSyntax> mutationFunc)
-    {
-        if (_expressionMutants.Count == 0)
+        var controller = FindControl(level);
+
+        if (controller != null)
         {
-            return expression;
+            controller.StoreMutations(store);
+            return true;
         }
-        var result = _placer.PlaceExpressionControlledMutations(expression, _expressionMutants.Select(m => (m, mutationFunc(m.Mutation))));
-        _expressionMutants.Clear();
+        Logger.LogError($"There is no structure to control {store.Count()} mutations. They are dropped.");
+        foreach (var mutant in store)
+        {
+            mutant.ResultStatus = MutantStatus.CompileError;
+            mutant.ResultStatusReason = "Could not be injected in code.";
+        }
+        return false;
+    }
+
+    /// <summary>
+    /// Store mutations at current syntax level to be injected at a later time
+    /// </summary>
+    /// <param name="store"></param>
+    /// <returns></returns>
+    public bool StoreMutations(IEnumerable<Mutant> store)
+    {
+        if (_pendingMutations.Count == 0)
+        {
+            return false;
+        }
+        _pendingMutations.Peek().StoreMutations(store);
+        return true;
+    }
+
+    /// <summary>
+    /// Inject (current level) mutations inside the provided expression (controlled with ternary operator)
+    /// </summary>
+    /// <param name="mutatedNode">mutated expression</param>
+    /// <param name="sourceNode">original node</param>
+    /// <returns>a syntax expression with the mutations included </returns>
+    public ExpressionSyntax Inject(ExpressionSyntax mutatedNode, ExpressionSyntax sourceNode)
+    {
+        if (_pendingMutations.Peek().Control == MutationControl.MemberAccess)
+        {
+            // never inject at member access level, there is no known control structure
+            return mutatedNode;
+        }
+        var store = _pendingMutations.Peek().Store;
+        var result = _mutantPlacer.PlaceExpressionControlledMutations(mutatedNode,
+             store.Select(m => (m, sourceNode.InjectMutation(m.Mutation))));
+        store.Clear();
         return result;
     }
 
     /// <summary>
-    /// Must be called when entering a statement. This ensures mutations do not leak from a statement to some inner block/Statement
+    /// Inject (current level) mutations in the provided statement (controlled with if statement)
     /// </summary>
-    public void EnterStatement() => _statementMutants.Push(new List<Mutant>());
+    /// <param name="mutatedNode">mutated statement</param>
+    /// <param name="sourceNode">original node</param>
+    /// <returns>a statement with the mutations included. It should be an 'if' statement when at least one mutation was provided </returns>
+    public StatementSyntax Inject(StatementSyntax mutatedNode, StatementSyntax sourceNode)
+    {
+        var store = _pendingMutations.Peek().Store;
+        var result = _mutantPlacer.PlaceStatementControlledMutations(mutatedNode,
+            store.Select(m => (m, sourceNode.InjectMutation(m.Mutation))));
+        store.Clear();
+        return result;
+    }
 
     /// <summary>
-    /// must be called when leaving a statement.
-    /// Any non yet injected mutation will be promoted to block level
+    /// Inject (current level) mutations in the provided block (controlled with if statement)
     /// </summary>
-    public void LeaveStatement() => StoreMutations(_statementMutants.Pop(), MutationControl.Block);
+    /// <param name="mutatedNode">mutated block</param>
+    /// <param name="sourceNode">original node</param>
+    /// <returns>a block with the mutations included.</returns>
+    public BlockSyntax Inject(BlockSyntax mutatedNode, BlockSyntax sourceNode)
+    {
+        var store = _pendingMutations.Peek().Store;
+        var result = _mutantPlacer.PlaceStatementControlledMutations(mutatedNode,
+            store.Select(m => (m, ((StatementSyntax)sourceNode).InjectMutation(m.Mutation))));
+        store.Clear();
+
+        return result as BlockSyntax ?? SyntaxFactory.Block(result);
+    }
 
     /// <summary>
-    /// Must be called when entering a block. This ensures mutations do not leak from a block to some inner one
+    /// Inject mutations within the provided expression body and return them as a block syntax.
     /// </summary>
-    public void EnterBlock() => _blockMutants.Push(new List<Mutant>());
+    /// <param name="mutatedNode">target node</param>
+    /// <param name="originalNode">original expression body</param>
+    /// <param name="needReturn">true if the expression body has a return value</param>
+    /// <returns>a block syntax with the mutated expression body converted to statement(s).</returns>
+    /// <remarks>This method should be used when mutating expression body methods or functions</remarks>
+    public BlockSyntax Inject(BlockSyntax mutatedNode, ExpressionSyntax originalNode, bool needReturn)
+    {
+        var wrapper = needReturn
+            ? (Func<ExpressionSyntax, StatementSyntax>)SyntaxFactory.ReturnStatement
+            : SyntaxFactory.ExpressionStatement;
 
-    /// <summary>
-    /// must be called when leaving a statement.
-    /// Any non yet injected mutation will be promoted to block level
-    /// </summary>
-    /// <remarks>any pending block mutations are simply dropped. There is no known case where promotion is needed</remarks>
-    public void LeaveBlock() => _blockMutants.Pop();
+        var blockStore = _pendingMutations.Peek();
+        if (blockStore.Store.Count == 0)
+        {
+            return mutatedNode;
+        }
+
+        var result = _mutantPlacer.PlaceStatementControlledMutations(mutatedNode,
+            blockStore.Store.Select(m => (m, wrapper(originalNode.InjectMutation(m.Mutation)))));
+        blockStore.Store.Clear();
+        return result as BlockSyntax ?? SyntaxFactory.Block(result);
+    }
+
+    private sealed class PendingMutations
+    {
+        public readonly MutationControl Control;
+        private int _depth;
+        public readonly List<Mutant> Store = new();
+
+        public PendingMutations(MutationControl control) => Control = control;
+
+        public bool Aggregate(MutationControl control)
+        {
+            if (Store.Count != 0 || Control != control) {
+                return false;
+            }
+            _depth++;
+            return true;
+        }
+
+        public void StoreMutations(IEnumerable<Mutant> store) =>
+            Store.AddRange(store.Where(m => m.ResultStatus == MutantStatus.Pending));
+
+        public bool Leave()
+        {
+            if (_depth <= 0)
+            {
+                return true;
+            }
+
+            _depth--;
+            return false;
+        }
+    }
 }

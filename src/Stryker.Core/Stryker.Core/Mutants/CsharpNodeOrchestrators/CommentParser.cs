@@ -9,13 +9,13 @@ using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
-internal abstract class NodeOrchestratorBase
+internal static class CommentParser
 {
-    protected static readonly Regex _pattern = new("^\\s*\\/\\/\\s*Stryker", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(20));
-    protected static readonly Regex _parser = new("^\\s*\\/\\/\\s*Stryker\\s*(disable|restore)\\s*(once|)\\s*([^:]*)\\s*:?(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(20));
-    protected static readonly ILogger _logger = ApplicationLogging.LoggerFactory.CreateLogger<NodeOrchestratorBase>();
+    private static readonly Regex Pattern = new("^\\s*\\/\\/\\s*Stryker", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(20));
+    private static readonly Regex Parser = new("^\\s*\\/\\/\\s*Stryker\\s*(disable|restore)\\s*(once|)\\s*([^:]*)\\s*:?(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(20));
+    private static readonly ILogger Logger = ApplicationLogging.LoggerFactory.CreateLogger("CommentParser");
 
-    public static MutationContext ParseStrykerComment(MutationContext context, Match match, SyntaxNode node)
+    private static MutationContext ParseStrykerComment(MutationContext context, Match match, SyntaxNode node)
     {
         const int ModeGroup = 1;
         const int OnceGroup = 2;
@@ -34,7 +34,7 @@ internal abstract class NodeOrchestratorBase
             "disable" => true,
             _ => false,
         };
-
+            
         Mutator[] filteredMutators;
         if (match.Groups[MutatorsGroup].Value.ToLower().Trim() == "all")
         {
@@ -52,7 +52,7 @@ internal abstract class NodeOrchestratorBase
                 }
                 else
                 {
-                    _logger.LogError(
+                    Logger.LogError(
                         $"{labels[i]} not recognized as a mutator at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}. Legal values are {string.Join(',', Enum.GetValues<Mutator>())}.");
                 }
             }
@@ -61,19 +61,19 @@ internal abstract class NodeOrchestratorBase
         return context.FilterMutators(disable, filteredMutators, match.Groups[OnceGroup].Value.ToLower() == "once", comment);
     }
 
-    protected static MutationContext ParseNodeComments(SyntaxNode node, MutationContext context)
+    public static MutationContext ParseNodeComments(SyntaxNode node, MutationContext context)
     {
         foreach (var commentTrivia in node.GetLeadingTrivia()
                      .Where(t => t.IsKind(SyntaxKind.SingleLineCommentTrivia) ||
                                  t.IsKind(SyntaxKind.MultiLineCommentTrivia)).Select(t => t.ToString()))
         {
             // perform a quick pattern check to see if it is a 'Stryker comment'
-            if (!_pattern.Match(commentTrivia).Success)
+            if (!Pattern.Match(commentTrivia).Success)
             {
                 continue;
             }
 
-            var match = _parser.Match(commentTrivia);
+            var match = Parser.Match(commentTrivia);
             if (match.Success)
             {
                 // this is a Stryker comments, now we parse it
@@ -81,7 +81,7 @@ internal abstract class NodeOrchestratorBase
                 break;
             }
 
-            _logger.LogWarning(
+            Logger.LogWarning(
                 $"Invalid Stryker comments at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}.");
         }
 

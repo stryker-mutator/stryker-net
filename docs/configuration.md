@@ -156,6 +156,7 @@ Valid language versions:
 - Csharp9
 - Csharp10
 - Csharp11
+- Csharp12
 - Preview (next language version)
 
 *\* Csharp version 1 is not allowed because stryker injects helper code that uses csharp 2 language features.*
@@ -539,7 +540,7 @@ baseline used: feat-2
 new baseline saved to: feat-2
 ```
 
-*\* The [since-target](#since-target-committish) explicit or default value is used as the fallback version unless the fallback version is explicitly set.*
+*\* The [since-target](#sincetarget-committish) explicit or default value is used as the fallback version unless the fallback version is explicitly set.*
 
 ### `baseline.provider` &lt;`string`&gt;
 
