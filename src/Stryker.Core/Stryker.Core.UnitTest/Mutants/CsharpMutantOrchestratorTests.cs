@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
@@ -1135,6 +1136,24 @@ x +2;
 			{
 			}
 		}}";
+
+            ShouldMutateSourceInClassToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldMutateNullConditionalOperators()
+        {
+            string source = @"public int MyNullConditional => list?.Select(x => x.Age);";
+            string expected = @"public int MyNullConditional => (StrykerNamespace.MutantControl.IsActive(0)?list.Select(x => x.Age):list?.Select(x => x.Age));";
+
+            ShouldMutateSourceInClassToExpected(source, expected);
+        }
+
+        [Fact]
+        public void ShouldMutateNullConditionalOperators2()
+        {
+            string source = @"public int MyNullConditional => people[0]?.Age;";
+            string expected = @"public int MyNullConditional => (StrykerNamespace.MutantControl.IsActive(0)?people[0].Age:people[0]?.Age);";
 
             ShouldMutateSourceInClassToExpected(source, expected);
         }

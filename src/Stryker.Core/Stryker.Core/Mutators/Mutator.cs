@@ -9,6 +9,8 @@ namespace Stryker.Core.Mutators;
 
 public enum Mutator
 {
+    [MutatorDescription("Access")]
+    Access,
     [MutatorDescription("Statements")]
     Statement,
     [MutatorDescription("Arithmetic operators")]
