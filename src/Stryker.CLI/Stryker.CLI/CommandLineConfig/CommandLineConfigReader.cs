@@ -77,14 +77,14 @@ namespace Stryker.CLI.CommandLineConfig
                 baselineCmd.AddName("with-baseline");
                 RegisterCliInputs(baselineCmd);
 
-                var committish = baselineCmd.Argument("committish", "The committish to compare with the current HEAD. This can be a branch, tag or commit id.");
-                committish.IsRequired(true);
+                var committishArg = baselineCmd.Argument("committish", "The committish to compare with the current HEAD. This can be a branch, tag or commit id.");
+                committishArg.IsRequired(true);
 
                 baselineCmd.HelpOption();
 
                 baselineCmd.OnExecute(() =>
                 {
-                    inputs.BaselineTargetInput.SuppliedInput = committish.Value;
+                    inputs.BaselineTargetInput.SuppliedInput = committishArg.Value;
                     inputs.BaselineEnabledInput.SuppliedInput = true;
                     baselineCmd.Description = "Starts a stryker run based on the results of a previous run.";
                     return strykerCli.StartApp(inputs, args, app, this);
@@ -98,10 +98,7 @@ namespace Stryker.CLI.CommandLineConfig
 
                     createCmd.OnExecute(() =>
                     {
-                        if (committish.HasValue)
-                        {
-                            inputs.BaselineTargetInput.SuppliedInput = committish.Value;
-                        }
+                        inputs.BaselineTargetInput.SuppliedInput = committishArg.Value;
                         inputs.BaselineEnabledInput.SuppliedInput = true;
                         createCmd.Description = "Creates a new baseline by doing a full stryker run";
                         // Enable recreate

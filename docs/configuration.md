@@ -594,7 +594,7 @@ For more information on how to configure a SAS check the [Azure documentation](h
 ### `baseline recreate`
 
 Default: `false`
-Command line: `baseline recreate main`
+Command line: `with-baseline main recreate`
 Config file: `N/A`
 
 Sometimes your baseline can get corrupted or out of touch with reality. In that case the baseline can be recreated using this command. This will test all mutations in your project and save the result as the new baseline.
