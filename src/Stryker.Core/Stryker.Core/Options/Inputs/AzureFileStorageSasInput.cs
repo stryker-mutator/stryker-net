@@ -11,9 +11,9 @@ namespace Stryker.Core.Options.Inputs
 
         public override string Default => string.Empty;
 
-        public string Validate(BaselineProvider baselineProvider, bool withBaseline)
+        public string Validate(BaselineProvider baselineProvider, bool baselineEnabled)
         {
-            if (withBaseline && baselineProvider == BaselineProvider.AzureFileStorage)
+            if (baselineEnabled && baselineProvider == BaselineProvider.AzureFileStorage)
             {
                 if (string.IsNullOrWhiteSpace(SuppliedInput))
                 {

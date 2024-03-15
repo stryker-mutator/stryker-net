@@ -1,6 +1,4 @@
-#if !DEBUG
 using System;
-#endif
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -129,7 +127,6 @@ namespace Stryker.Core
 
                 reporters.OnAllMutantsTested(rootComponent, combinedTestProjectsInfo);
 
-
                 return new StrykerRunResult(options, rootComponent.GetMutationScore());
             }
 #if !DEBUG
@@ -139,7 +136,6 @@ namespace Stryker.Core
                 _logger.LogError(ex, "An error occurred during the mutation test run ");
                 throw;
             }
-
 #endif
             finally
             {

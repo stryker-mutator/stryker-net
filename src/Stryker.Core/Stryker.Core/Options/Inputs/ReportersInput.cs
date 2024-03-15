@@ -13,7 +13,7 @@ namespace Stryker.Core.Options.Inputs
         protected override string Description => "Reporters inform about various stages in the mutation testrun.";
         protected override IEnumerable<string> AllowedOptions => EnumToStrings(typeof(Reporter));
 
-        public IEnumerable<Reporter> Validate(bool withBaseline)
+        public IEnumerable<Reporter> Validate(bool baselineEnabled)
         {
             HashSet<Reporter> reporters;
             if (SuppliedInput is not null)
@@ -27,7 +27,7 @@ namespace Stryker.Core.Options.Inputs
                 reporters = new HashSet<Reporter> { Reporter.Progress, Reporter.Html };
             }
 
-            if(withBaseline)
+            if(baselineEnabled)
             {
                 reporters.Add(Reporter.Baseline);
             }

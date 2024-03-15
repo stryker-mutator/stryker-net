@@ -13,9 +13,9 @@ Note, the url might be different depending on where your file storage is hosted.
 
         public override string Default => string.Empty;
 
-        public string Validate(BaselineProvider baselineProvider, bool withBaseline)
+        public string Validate(BaselineProvider baselineProvider, bool baselineEnabled)
         {
-            if (withBaseline && baselineProvider == BaselineProvider.AzureFileStorage)
+            if (baselineEnabled && baselineProvider == BaselineProvider.AzureFileStorage)
             {
                 if (SuppliedInput is null)
                 {

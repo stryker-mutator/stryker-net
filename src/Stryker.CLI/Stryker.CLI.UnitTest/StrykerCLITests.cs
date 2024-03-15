@@ -59,7 +59,7 @@ namespace Stryker.CLI.UnitTest
 
                 var expected = @"Stryker: Stryker mutator for .Net
 
-Stryker mutator for .Net
+The mutation test framework for .Net
 
 Usage: Stryker [command] [options]
 
@@ -413,7 +413,7 @@ Options:";
 
             _strykerRunnerMock.VerifyAll();
 
-            _inputs.WithBaselineInput.SuppliedInput.Value.ShouldBeTrue();
+            _inputs.BaselineEnabledInput.SuppliedInput.Value.ShouldBeTrue();
         }
 
         [Theory]

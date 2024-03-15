@@ -112,7 +112,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
         public void MutantFilterFactory_Creates_DashboardMutantFilter_And_DiffMutantFilter_WithBaseline_Enabled() {
             var options = new StrykerOptions()
             {
-                WithBaseline = true,
+                BaselineEnabled = true,
                 ProjectVersion = "foo"
             };
 
@@ -136,7 +136,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var options = new StrykerOptions()
             {
                 // These options are added here to make sure this test covers all branches in the source method.
-                WithBaseline = true,
+                BaselineEnabled = true,
                 ExcludedLinqExpressions = new List<LinqExpression>
                 {
                     LinqExpression.Distinct

@@ -46,7 +46,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var options = new StrykerOptions()
             {
-                WithBaseline = true,
+                BaselineEnabled = true,
                 DashboardApiKey = "Acces_Token",
                 ProjectName = "github.com/JohnDoe/project",
                 ProjectVersion = "version/human/readable",
@@ -83,7 +83,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var options = new StrykerOptions()
             {
-                WithBaseline = true,
+                BaselineEnabled = true,
                 DashboardApiKey = "Acces_Token",
                 ProjectName = "github.com/JohnDoe/project",
                 ProjectVersion = "version/human/readable",
@@ -121,7 +121,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var options = new StrykerOptions()
             {
-                WithBaseline = true,
+                BaselineEnabled = true,
                 DashboardApiKey = "Access_Token",
                 ProjectName = "github.com/JohnDoe/project",
                 ProjectVersion = "version/human/readable",
@@ -155,7 +155,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var options = new StrykerOptions()
             {
-                WithBaseline = true,
+                BaselineEnabled = true,
                 ProjectVersion = "version",
             };
 
@@ -187,7 +187,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var options = new StrykerOptions()
             {
-                WithBaseline = true,
+                BaselineEnabled = true,
                 ProjectVersion = "version",
             };
             var file = new CsharpFileLeaf
@@ -239,7 +239,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var options = new StrykerOptions()
             {
-                WithBaseline = true,
+                BaselineEnabled = true,
                 ProjectVersion = "version",
             };
             var file = new CsharpFileLeaf
@@ -302,7 +302,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var options = new StrykerOptions()
             {
-                WithBaseline = true,
+                BaselineEnabled = true,
                 ProjectVersion = "version",
             };
             var file = new CsharpFileLeaf
@@ -375,7 +375,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var options = new StrykerOptions
             {
-                WithBaseline = true,
+                BaselineEnabled = true,
                 ProjectVersion = "version"
             };
 

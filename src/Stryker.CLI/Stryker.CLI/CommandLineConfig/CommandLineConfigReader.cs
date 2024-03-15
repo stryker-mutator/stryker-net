@@ -34,6 +34,8 @@ namespace Stryker.CLI.CommandLineConfig
             {
                 RegisterCliInputs(initCommandApp);
 
+                initCommandApp.HelpOption();
+
                 initCommandApp.OnExecute(() =>
                 {
                     _console.WriteLine($"Initializing new config file.");
@@ -64,6 +66,45 @@ namespace Stryker.CLI.CommandLineConfig
                     _console.WriteLine(configFilePath, new Style(Color.Cyan1));
                     _console.Write("The file is populated with default values, remove the options you don't need and edit the options you want to use. For more information on configuring stryker see: ");
                     _console.WriteLine("https://stryker-mutator.io/docs/stryker-net/configuration", new Style(Color.Cyan1));
+                });
+            });
+        }
+
+        public void RegisterBaselineCommand(CommandLineApplication app, IStrykerInputs inputs, string[] args, StrykerCli strykerCli)
+        {
+            app.Command("baseline", baselineCmd =>
+            {
+                baselineCmd.AddName("with-baseline");
+                RegisterCliInputs(baselineCmd);
+
+                var committishArg = baselineCmd.Argument("committish", "The committish to compare with the current HEAD. This can be a branch, tag or commit id.");
+                committishArg.IsRequired(true);
+
+                baselineCmd.HelpOption();
+
+                baselineCmd.OnExecute(() =>
+                {
+                    inputs.BaselineTargetInput.SuppliedInput = committishArg.Value;
+                    inputs.BaselineEnabledInput.SuppliedInput = true;
+                    baselineCmd.Description = "Starts a stryker run based on the results of a previous run.";
+                    return strykerCli.StartApp(inputs, args, app, this);
+                });
+
+                baselineCmd.Command("recreate", createCmd =>
+                {
+                    RegisterCliInputs(createCmd);
+
+                    createCmd.HelpOption();
+
+                    createCmd.OnExecute(() =>
+                    {
+                        inputs.BaselineTargetInput.SuppliedInput = committishArg.Value;
+                        inputs.BaselineEnabledInput.SuppliedInput = true;
+                        createCmd.Description = "Creates a new baseline by doing a full stryker run";
+                        // Enable recreate
+                        inputs.BaselineRecreateEnabledInput.SuppliedInput = true;
+                        return strykerCli.StartApp(inputs, args, app, this);
+                    });
                 });
             });
         }
@@ -146,8 +187,8 @@ namespace Stryker.CLI.CommandLineConfig
                     inputs.SinceTargetInput.SuppliedInput = cliInput.Value();
                     break;
 
-                case WithBaselineInput withBaselineInput:
-                    withBaselineInput.SuppliedInput = true;
+                case BaselineEnabledInput baselineEnabledInput:
+                    baselineEnabledInput.SuppliedInput = true;
                     inputs.SinceTargetInput.SuppliedInput = cliInput.Value();
                     break;
 
@@ -182,7 +223,7 @@ namespace Stryker.CLI.CommandLineConfig
             AddCliInput(inputs.MutateInput, "mutate", "m", optionType: CommandOptionType.MultipleValue, argumentHint: "glob-pattern", category: InputCategory.Mutation);
             AddCliInput(inputs.MutationLevelInput, "mutation-level", "l", category: InputCategory.Mutation);
             AddCliInput(inputs.SinceInput, "since", "", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "committish", category: InputCategory.Mutation);
-            AddCliInput(inputs.WithBaselineInput, "with-baseline", "", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "committish", category: InputCategory.Mutation);
+            AddCliInput(inputs.BaselineEnabledInput, "with-baseline", "", optionType: CommandOptionType.SingleOrNoValue, argumentHint: "committish", category: InputCategory.Mutation);
             // Category: Reporting
             AddCliInput(inputs.OpenReportInput, "open-report", "o", CommandOptionType.SingleOrNoValue, argumentHint: "report-type", category: InputCategory.Reporting);
             AddCliInput(inputs.ReportersInput, "reporter", "r", optionType: CommandOptionType.MultipleValue, category: InputCategory.Reporting);
@@ -195,7 +236,7 @@ namespace Stryker.CLI.CommandLineConfig
             AddCliInput(inputs.DevModeInput, "dev-mode", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
         }
 
-        private void RegisterCliInput(CommandLineApplication app, CliInput option)
+        public void RegisterCliInput(CommandLineApplication app, CliInput option)
         {
             var argumentHint = option.OptionType switch
             {
@@ -230,7 +271,7 @@ namespace Stryker.CLI.CommandLineConfig
             return cliOption;
         }
 
-        private void AddCliInput(IInput input, string argumentName, string argumentShortName,
+        public void AddCliInput(IInput input, string argumentName, string argumentShortName,
             CommandOptionType optionType = CommandOptionType.SingleValue, InputCategory category = InputCategory.Generic, string argumentHint = null)
         {
             var cliOption = new CliInput

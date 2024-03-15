@@ -33,14 +33,10 @@ namespace Stryker.CLI
 
             if (config.Baseline is not null)
             {
-                // Baseline is implicitly enabled when the object exists in the file config
-                inputs.WithBaselineInput.SuppliedInput = config.Baseline.Enabled ?? true;
-
                 inputs.BaselineProviderInput.SuppliedInput = config.Baseline.Provider;
                 inputs.FallbackVersionInput.SuppliedInput = config.Baseline.FallbackVersion;
                 inputs.AzureFileStorageUrlInput.SuppliedInput = config.Baseline.AzureFileShareUrl;
             }
-
 
             inputs.CoverageAnalysisInput.SuppliedInput = config.CoverageAnalysis;
             inputs.DisableBailInput.SuppliedInput = config.DisableBail;

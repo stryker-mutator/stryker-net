@@ -11,9 +11,9 @@ Example: If the current branch is based on the main branch, set 'main' as the fa
 
         public override string Default => new SinceTargetInput().Default;
 
-        public string Validate(bool withBaseline, string projectVersion, string sinceTarget)
+        public string Validate(bool baselineEnabled, string sinceTarget)
         {
-            if (withBaseline)
+            if (baselineEnabled)
             {
                 if(SuppliedInput is null)
                 {
