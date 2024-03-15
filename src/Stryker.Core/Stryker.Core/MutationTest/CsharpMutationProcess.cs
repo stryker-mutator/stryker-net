@@ -59,6 +59,9 @@ namespace Stryker.Core.MutationTest
             var semanticModels = compilingProcess.GetSemanticModels(projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().Select(x => x.SyntaxTree));
 
             // Mutate source files
+
+            var stopwatch = new System.Diagnostics.Stopwatch();
+            stopwatch.Start();
             foreach (var file in projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
             {
                 _logger.LogDebug($"Mutating {file.FullPath}");
@@ -73,6 +76,9 @@ namespace Stryker.Core.MutationTest
                 // Filter the mutants
                 file.Mutants = orchestrator.GetLatestMutantBatch();
             }
+
+            stopwatch.Stop();
+            _logger.LogInformation("Mutating project {0} took {1}", projectInfo.RelativePath, stopwatch.Elapsed);
 
             _logger.LogDebug("{0} mutants created", projectInfo.Mutants.Count());
 
