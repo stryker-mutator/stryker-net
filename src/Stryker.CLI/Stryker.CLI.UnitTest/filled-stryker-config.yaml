@@ -39,7 +39,6 @@ stryker-config:
     version: master
     module: cli
   baseline:
-    enabled: false
     fallback-version: master
     azure-fileshare-url: ''
     provider: ''
