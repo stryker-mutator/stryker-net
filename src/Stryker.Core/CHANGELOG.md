@@ -1,3 +1,15 @@
+## [4.0.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.0...stryker@4.0.1) (2024-03-15)
+
+
+### Bug Fixes
+
+* Ensure MutationControl compiles with 'nullable' enabled ([#2869](https://github.com/stryker-mutator/stryker-net/issues/2869)) ([0fbd340](https://github.com/stryker-mutator/stryker-net/commit/0fbd34057b5e7a66b5a0542020a630d7422f6664))
+* Improve build, restore and test ([#2845](https://github.com/stryker-mutator/stryker-net/issues/2845)) ([a14b64b](https://github.com/stryker-mutator/stryker-net/commit/a14b64bbea21cb44c8bc9868c826a5344500e058))
+* Refactor C# mutation orchestration to a simpler design ([#2831](https://github.com/stryker-mutator/stryker-net/issues/2831)) ([02c8258](https://github.com/stryker-mutator/stryker-net/commit/02c8258703d9328886733a077a6232f6c72be2a1))
+* Support test projects with shared source file ([#2875](https://github.com/stryker-mutator/stryker-net/issues/2875)) ([e681367](https://github.com/stryker-mutator/stryker-net/commit/e6813671eb7e23d9dcd9ed62daaf19681099b999))
+
+
+
 # [4.0.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@3.13.2...stryker@4.0.0) (2024-02-16)
 
 
