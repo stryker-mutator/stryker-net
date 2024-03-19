@@ -1,5 +1,7 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -9,6 +11,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
@@ -60,7 +63,7 @@ namespace Stryker.Core.Compiling
 
             // first try compiling
             var retryCount = 1;
-            (var rollbackProcessResult, var emitResult, retryCount) = TryCompilation(ilStream, symbolStream, compilation, null, false, retryCount);
+            (var rollbackProcessResult, var emitResult, retryCount) = TryCompilation(ilStream, symbolStream, ref compilation, null, false, retryCount);
 
             // If compiling failed and the error has no location, log and throw exception.
             if (!emitResult.Success && emitResult.Diagnostics.Any(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error))
@@ -73,8 +76,8 @@ namespace Stryker.Core.Compiling
 
             for (var count = 1; !emitResult.Success && count < MaxAttempt; count++)
             {
-                // compilation did not succeed. let's compile a couple times more for good measure
-                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, rollbackProcessResult?.Compilation ?? compilation, emitResult, retryCount == MaxAttempt - 1, retryCount);
+                // compilation did not succeed. let's compile a couple of times more for good measure
+                (rollbackProcessResult, emitResult, retryCount) = TryCompilation(ilStream, symbolStream, ref compilation, emitResult, retryCount == MaxAttempt - 1, retryCount);
             }
 
             if (emitResult.Success)
@@ -118,15 +121,16 @@ namespace Stryker.Core.Compiling
                 .RunGeneratorsAndUpdateCompilation(compilation, out var outputCompilation, out var diagnostics);
 
             var errors = diagnostics.Where(diagnostic => diagnostic.Severity == DiagnosticSeverity.Error && diagnostic.Location == Location.None).ToList();
-            if (errors.Count > 0)
+            if (errors.Count == 0)
             {
-                foreach (var diagnostic in errors)
-                {
-                    _logger.LogError("Failed to generate source code for mutated assembly: {0}", diagnostic);
-                }
-                throw new CompilationException("Source Generator Failure");
+                return outputCompilation as CSharpCompilation;
             }
-            return outputCompilation as CSharpCompilation;
+
+            foreach (var diagnostic in errors)
+            {
+                _logger.LogError("Failed to generate source code for mutated assembly: {0}", diagnostic);
+            }
+            throw new CompilationException("Source Generator Failure");
         }
 
         private CSharpCompilation GetCSharpCompilation(IEnumerable<SyntaxTree> syntaxTrees)
@@ -147,41 +151,82 @@ namespace Stryker.Core.Compiling
         private (CSharpRollbackProcessResult, EmitResult, int) TryCompilation(
             Stream ms,
             Stream symbolStream,
-            CSharpCompilation compilation,
+            ref CSharpCompilation compilation,
             EmitResult previousEmitResult,
             bool lastAttempt,
             int retryCount)
         {
             CSharpRollbackProcessResult rollbackProcessResult = null;
 
-            if (previousEmitResult != null)
-            {
-                // remove broken mutations
-                rollbackProcessResult = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, lastAttempt, _options.DevMode);
-                compilation = rollbackProcessResult.Compilation;
-            }
-
-            // reset the memoryStream
-            ms.SetLength(0);
-            symbolStream?.SetLength(0);
-
             _logger.LogDebug("Trying compilation for the {retryCount} time.", ReadableNumber(retryCount));
 
             var emitOptions = symbolStream == null ? null : new EmitOptions(false, DebugInformationFormat.PortablePdb,
                 _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName());
-            var emitResult = compilation.Emit(
-                ms,
-                symbolStream,
-                manifestResources: _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger),
-                win32Resources: compilation.CreateDefaultWin32Resources(
-                    true, // Important!
-                    false,
-                    null,
-                    null),
-                options: emitOptions);
+            EmitResult emitResult = null;
+            var resourceDescriptions = _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger);
+            while(emitResult == null)
+            {
+                if (previousEmitResult != null)
+                {
+                    // remove broken mutations
+                    rollbackProcessResult = _rollbackProcess.Start(compilation, previousEmitResult.Diagnostics, lastAttempt, _options.DevMode);
+                    compilation = rollbackProcessResult.Compilation;
+                }
+
+                // reset the memoryStreams
+                ms.SetLength(0);
+                symbolStream?.SetLength(0);
+                try
+                {
+                    emitResult = compilation.Emit(
+                        ms,
+                        symbolStream,
+                        manifestResources: resourceDescriptions,
+                        win32Resources: compilation.CreateDefaultWin32Resources(
+                            true, // Important!
+                            false,
+                            null,
+                            null),
+                        options: emitOptions);
+                }
+                catch (NullReferenceException)
+                {
+                    _logger.LogError("Roslyn C# compiler raised an NullReferenceException. This is a known Roslyn's issue that may be triggered by invalid usage of conditional access expression.");
+                    _logger.LogError("Stryker will attempt to skip problematic files.");
+                    compilation = ScanForCauseOfException(compilation);
+                    EmbeddedResourcesGenerator.ResetCache();
+                }
+            }
+
             LogEmitResult(emitResult);
 
             return (rollbackProcessResult, emitResult, retryCount+1);
+        }
+
+        private CSharpCompilation ScanForCauseOfException(CSharpCompilation compilation)
+        {
+            var syntaxTrees = compilation.SyntaxTrees;
+            // we add each file incrementally until it fails
+            foreach(var st in syntaxTrees)
+            {
+                var local = compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(st);
+                try
+                {
+                    using var ms = new MemoryStream();
+                    local.Emit(
+                        ms,
+                        manifestResources: _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger),
+                        options: null);
+                }
+                catch(Exception e)
+                {
+                    _logger.LogError("Failed to compile {0} due to {1}", st.FilePath, e.Message);
+                    _logger.LogTrace("source code:\n {0}", st.GetText());
+                    syntaxTrees = syntaxTrees.Where(x => x != st).Append(_rollbackProcess.CleanUpFile(st)).ToImmutableArray();
+                }
+            }
+            _logger.LogError("Please report an issue and provide the source code of the file that caused the exception for analysis.");
+            return compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(syntaxTrees);
         }
 
         private void LogEmitResult(EmitResult result)

@@ -17,6 +17,7 @@ namespace Stryker.Core.Compiling
     public interface ICSharpRollbackProcess
     {
         CSharpRollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode);
+        SyntaxTree CleanUpFile(SyntaxTree file);
     }
 
     /// <summary>
@@ -39,7 +40,12 @@ namespace Stryker.Core.Compiling
             var syntaxTreeMapping = compiler.SyntaxTrees.ToDictionary<SyntaxTree, SyntaxTree, ICollection<Diagnostic>>(syntaxTree => syntaxTree, _ => new Collection<Diagnostic>());
 
             foreach (var diagnostic in diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error))
-            {
+            {   
+                if (diagnostic.Location.SourceTree == null)
+                {
+                    Logger.LogWarning("General compilation error: {0}", diagnostic.GetMessage());
+                    continue;
+                }
                 syntaxTreeMapping[diagnostic.Location.SourceTree].Add(diagnostic);
             }
 
@@ -248,6 +254,32 @@ namespace Stryker.Core.Compiling
             }
 
             return suspiciousMutations;
+        }
+
+        // removes all mutation from a file
+        public SyntaxTree CleanUpFile(SyntaxTree file)
+        {
+            var rollbackRoot = file.GetRoot();
+            var scan = ScanAllMutationsIfsAndIds(rollbackRoot);
+            var suspiciousMutations = new Collection<SyntaxNode>();
+            foreach (var mutant in scan.Where(mutant => !suspiciousMutations.Contains(mutant.Node)))
+            {
+                suspiciousMutations.Add(mutant.Node);
+                if (mutant.Id != -1)
+                {
+                    RollBackedIds.Add(mutant.Id.Value);
+                }
+            }
+            // mark the broken mutation nodes to track
+            var trackedTree = rollbackRoot.TrackNodes(suspiciousMutations);
+            foreach (var brokenMutation in suspiciousMutations)
+            {
+                // find the mutated node in the new tree
+                var nodeToRemove = trackedTree.GetCurrentNode(brokenMutation);
+                // remove the mutated node using its MutantPlacer remove method and update the tree
+                trackedTree = trackedTree.ReplaceNode(nodeToRemove, MutantPlacer.RemoveMutant(nodeToRemove));
+            }
+            return file.WithRootAndOptions(trackedTree, file.Options);
         }
 
         private string DisplayName(SyntaxNode initNode) =>
