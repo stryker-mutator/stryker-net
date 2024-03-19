@@ -27,17 +27,13 @@ internal class InvocationExpressionOrchestrator: MemberAccessExpressionOrchestra
                 subContext.Leave();
                 return result;
             }
-            if (original == node.ArgumentList)
+            else
             {
                 //The argument list can be freely mutated,
                 var subContext = context.Enter(MutationControl.Member);
                 var result = subContext.Mutate(original, semanticModel);
                 subContext.Leave();
                 return result;
-            }
-            else
-            {
-                return context.Mutate(original, semanticModel);
             }
         });
         return mutated;

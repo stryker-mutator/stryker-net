@@ -148,7 +148,7 @@ namespace Stryker.Core.Compiling
                     return currentNode;
                 }
             }
-            // return the all file if not found
+            // return the whole file if not found
             return node.SyntaxTree.GetRoot();
         }
 

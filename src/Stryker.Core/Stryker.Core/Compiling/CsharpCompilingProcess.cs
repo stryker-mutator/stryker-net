@@ -189,9 +189,11 @@ namespace Stryker.Core.Compiling
                             null),
                         options: emitOptions);
                 }
-                catch (NullReferenceException)
+#pragma warning disable S1696 // this catches an exception raised by the C# compiler 
+                catch (NullReferenceException e)
                 {
                     _logger.LogError("Roslyn C# compiler raised an NullReferenceException. This is a known Roslyn's issue that may be triggered by invalid usage of conditional access expression.");
+                    _logger.LogInformation(e, "Exception");
                     _logger.LogError("Stryker will attempt to skip problematic files.");
                     compilation = ScanForCauseOfException(compilation);
                     EmbeddedResourcesGenerator.ResetCache();
@@ -220,7 +222,7 @@ namespace Stryker.Core.Compiling
                 }
                 catch(Exception e)
                 {
-                    _logger.LogError("Failed to compile {0} due to {1}", st.FilePath, e.Message);
+                    _logger.LogError(e, "Failed to compile {0}", st.FilePath);
                     _logger.LogTrace("source code:\n {0}", st.GetText());
                     syntaxTrees = syntaxTrees.Where(x => x != st).Append(_rollbackProcess.CleanUpFile(st)).ToImmutableArray();
                 }
