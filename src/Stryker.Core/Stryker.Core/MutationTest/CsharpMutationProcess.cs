@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
@@ -48,7 +49,7 @@ namespace Stryker.Core.MutationTest
         /// This constructor is used by the <see cref="MutationTestProcess"/> initialization logic.
         /// </summary>
         /// <param name="options"></param>
-        public CsharpMutationProcess(StrykerOptions options) : this( null, options)
+        public CsharpMutationProcess(StrykerOptions options) : this(null, options)
         { }
 
         public void Mutate(MutationTestInput input)
@@ -62,7 +63,7 @@ namespace Stryker.Core.MutationTest
 
             var stopwatch = new System.Diagnostics.Stopwatch();
             stopwatch.Start();
-            foreach (var file in projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
+            Parallel.ForEach(projectInfo.GetAllFiles().Cast<CsharpFileLeaf>(), file =>
             {
                 _logger.LogDebug($"Mutating {file.FullPath}");
                 // Mutate the syntax tree
@@ -75,7 +76,7 @@ namespace Stryker.Core.MutationTest
                 }
                 // Filter the mutants
                 file.Mutants = orchestrator.GetLatestMutantBatch();
-            }
+            });
 
             stopwatch.Stop();
             _logger.LogInformation("Mutating project {0} took {1}", projectInfo.RelativePath, stopwatch.Elapsed);
