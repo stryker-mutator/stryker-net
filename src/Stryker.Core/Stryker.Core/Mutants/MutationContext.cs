@@ -61,6 +61,11 @@ internal class MutationContext
     public bool HasLeftOverMutations => _mutation.HasPendingMutations();
 
     /// <summary>
+    /// Returns the current mutation control level
+    /// </summary>
+    public MutationControl CurrentControl => _mutation.CurrentControl;
+
+    /// <summary>
     /// Call this to generate mutations using active mutators.
     /// </summary>
     /// <param name="node"><see cref="SyntaxNode"/> to mutate.</param>
@@ -73,8 +78,9 @@ internal class MutationContext
     /// Find the appropriate node handler for the given node.
     /// </summary>
     /// <param name="node">handler for which to find an orchestrator.</param>
+    /// <param name="model"></param>
     /// <returns>A handler for this node.</returns>
-    public INodeOrchestrator FindHandler(SyntaxNode node) => _mainOrchestrator.GetHandler(node);
+    public SyntaxNode Mutate(SyntaxNode node, SemanticModel model) => _mainOrchestrator.GetHandler(node).Mutate(node, model, this);
 
     /// <summary>
     /// Call this to signal mutation occurs in static method or fields

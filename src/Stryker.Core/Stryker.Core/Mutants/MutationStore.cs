@@ -61,6 +61,11 @@ internal class MutationStore
     public bool HasPendingMutations() => _pendingMutations.Count > 0 && _pendingMutations.Peek().Store.Count>0;
 
     /// <summary>
+    /// Returns the current mutation control
+    /// </summary>
+    public MutationControl CurrentControl => _pendingMutations.Count > 0 ? _pendingMutations.Peek().Control : MutationControl.Member;
+
+    /// <summary>
     /// Enter a syntax level
     /// </summary>
     /// <param name="control">syntax level (should match current node level) <see cref="MutationControl"/></param>

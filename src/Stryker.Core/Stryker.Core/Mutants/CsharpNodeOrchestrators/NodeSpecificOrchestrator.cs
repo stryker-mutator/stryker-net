@@ -79,7 +79,7 @@ internal class NodeSpecificOrchestrator<TNode, TBase> : INodeOrchestrator where 
     /// skip mutating the children node.</remarks>
     protected virtual TBase OrchestrateChildrenMutation(TNode node, SemanticModel semanticModel, MutationContext context) =>
         node.ReplaceNodes(node.ChildNodes(),
-            computeReplacementNode: (original, _) => context.FindHandler(original).Mutate(original, semanticModel, context));
+            computeReplacementNode: (original, _) => context.Mutate(original, semanticModel));
 
     /// <summary>
     /// Set up the mutation context before triggering mutation.
