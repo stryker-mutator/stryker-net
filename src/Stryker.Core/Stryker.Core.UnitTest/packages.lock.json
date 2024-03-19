@@ -76,12 +76,12 @@
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[20.0.28, )",
-        "resolved": "20.0.28",
-        "contentHash": "i1QAp8MqGbI3Df5OHVXisCBHhqNYg2au+fssLM+FlTBZC127fAeVY6rp68pvCDzAo7rPYqe8cC/aMko0depntg==",
+        "requested": "[21.0.2, )",
+        "resolved": "21.0.2",
+        "contentHash": "4s6EC7rGSlNPqC9/FOmYavFTjetO7zDBnc0H8Hyb8ABJll2UgeC7UvdNLwx28/hhUE8AvUJmwamjAII6LJWIQA==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "20.0.28",
-          "TestableIO.System.IO.Abstractions.Wrappers": "20.0.28"
+          "TestableIO.System.IO.Abstractions": "21.0.2",
+          "TestableIO.System.IO.Abstractions.Wrappers": "21.0.2"
         }
       },
       "xunit": {
@@ -176,8 +176,8 @@
       },
       "LibGit2Sharp.NativeBinaries": {
         "type": "Transitive",
-        "resolved": "2.0.321",
-        "contentHash": "6445xs5v3j84n68kKiZzJjpTvCtfwt3Z46MaToEMCN4NBWYICsMd1AstVGcTp1v/Gv+hdio0tD1NLmo3dgR64Q=="
+        "resolved": "2.0.322",
+        "contentHash": "EWQaEevzc8uS1ZGS6T83jqUPBY//2WUSCHwbZHBoHOjlfSehqr30nm/VAhJPzjam/69sv7nlLKVcho9t2XuR/Q=="
       },
       "Microsoft.Bcl.AsyncInterfaces": {
         "type": "Transitive",
@@ -1531,8 +1531,8 @@
       },
       "TestableIO.System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "20.0.28",
-        "contentHash": "Gnhbvo9W8ZMXbCOMXDi7Bz4Mk5Hc0L1nFN48q3vWjxd4/Vr7/HWSUuMcUSjJk8Wfp2J4HTOosrSspzVliJPCNQ=="
+        "resolved": "21.0.2",
+        "contentHash": "ViPtOy4lAlmWq9GDEwiE5C9XSgDGHUWMRvVvruI38pbikUXkgu7xnCVW7PYdQOjS+iWWcQHt+U7oyPedfnWSHg=="
       },
       "Validation": {
         "type": "Transitive",
@@ -1587,7 +1587,7 @@
           "DotNet.Glob": "[3.1.3, )",
           "FSharp.Compiler.Service": "[42.7.100-preview.22427.1, )",
           "Grynwald.MarkdownGenerator": "[3.0.106, )",
-          "LibGit2Sharp": "[0.29.0, )",
+          "LibGit2Sharp": "[0.30.0, )",
           "Microsoft.CodeAnalysis.CSharp": "[4.9.2, )",
           "Microsoft.Extensions.Logging": "[8.0.0, )",
           "Microsoft.TestPlatform": "[17.9.0, )",
@@ -1605,9 +1605,9 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.48.0, )",
           "Spectre.Console.Analyzer": "[0.48.0, )",
-          "Stryker.DataCollector": "[4.0.0, )",
-          "Stryker.RegexMutators": "[4.0.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[20.0.28, )"
+          "Stryker.DataCollector": "[4.0.1, )",
+          "Stryker.RegexMutators": "[4.0.1, )",
+          "TestableIO.System.IO.Abstractions.Wrappers": "[21.0.2, )"
         }
       },
       "stryker.datacollector": {
@@ -1695,11 +1695,11 @@
       },
       "LibGit2Sharp": {
         "type": "CentralTransitive",
-        "requested": "[0.29.0, )",
-        "resolved": "0.29.0",
-        "contentHash": "dVDXYqhNV62/aTi7fJaa1PkpIE0uUqlrZzLbM5yUrI6o8siCZIFlZv79sf2VYaFyluiduLpADD92on4AcVHvAA==",
+        "requested": "[0.30.0, )",
+        "resolved": "0.30.0",
+        "contentHash": "1cBg/7nz6q+yzvComhqQaTS4nbXloLp/x29ZgY/Rr82ohpkuaWT8ZYzsPLFvs1zmCh/4xQbVt5sQxazGblgRig==",
         "dependencies": {
-          "LibGit2Sharp.NativeBinaries": "[2.0.321]"
+          "LibGit2Sharp.NativeBinaries": "[2.0.322]"
         }
       },
       "Microsoft.CodeAnalysis.CSharp": {
@@ -1852,11 +1852,11 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[20.0.28, )",
-        "resolved": "20.0.28",
-        "contentHash": "Yl/AMykv9DuFQJfWGJAoFOUuXuAK97Y7vn4Sgv0uKk8sWSmXaYePoVpmyn2HjKe2jbvb7sOS2qL/czzPPYgmDg==",
+        "requested": "[21.0.2, )",
+        "resolved": "21.0.2",
+        "contentHash": "ii6Xgru3ozRaLezwE/lKAPTdE3ES+S3P3ul+QrMxIP10GN+LF0JAi4aWqb8lxzEAwBMSAeK/QipEpVt4KYlTOg==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "20.0.28"
+          "TestableIO.System.IO.Abstractions": "21.0.2"
         }
       }
     }

@@ -44,7 +44,7 @@ For the full documentation on how to use Stryker.NET, see our [configuration doc
 
 ## Migrating
 
-Coming from Stryker.NET pre V2? Take a look at our [migration guide](https://stryker-mutator.io/docs/stryker-net/migration-guide).
+Coming from a previous version of Stryker.NET? Take a look at our [migration guide](https://stryker-mutator.io/docs/stryker-net/migration-guide).
 
 ## Supported Mutations
 
