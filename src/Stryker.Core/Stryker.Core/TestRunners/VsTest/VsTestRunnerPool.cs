@@ -154,10 +154,10 @@ namespace Stryker.Core.TestRunners.VsTest
             var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == CoverageCollector.PropertyName);
             var testCaseId = testResult.TestCase.Id;
             var unexpected = false;
-            var log = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == CoverageCollector.Coveragelog).Value?.ToString();
+            var log = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == CoverageCollector.CoverageLog).Value?.ToString();
             if (!string.IsNullOrEmpty(log))
             {
-                _logger.LogError($"VsTestRunner: Coverage collector error: {log}.");
+                _logger.LogDebug("VsTestRunner: Coverage collector log: {0}.", log);
             }
 
             if (!Context.VsTests.ContainsKey(testCaseId))

@@ -58,6 +58,8 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
             new MemberAccessExpressionOrchestrator<MemberAccessExpressionSyntax>(),
             new MemberAccessExpressionOrchestrator<MemberBindingExpressionSyntax>(),
             new MemberAccessExpressionOrchestrator<SimpleNameSyntax>(),
+            new MemberAccessExpressionOrchestrator<PostfixUnaryExpressionSyntax>(t => t.IsKind(SyntaxKind.SuppressNullableWarningExpression)),
+            new ConditionalExpressionOrchestrator(),
             // ensure static constructs are marked properly
             new StaticFieldDeclarationOrchestrator(),
             new StaticConstructorOrchestrator(),
