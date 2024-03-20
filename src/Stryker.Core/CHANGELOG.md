@@ -1,3 +1,12 @@
+## [4.0.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.1...stryker@4.0.2) (2024-03-20)
+
+
+### Bug Fixes
+
+* Conditional access mutations could lead to unrecoverable NullReferenceException in compilation ([#2888](https://github.com/stryker-mutator/stryker-net/issues/2888)) ([eb8167a](https://github.com/stryker-mutator/stryker-net/commit/eb8167aff9d990e0a185588a4905cdd4882c5612))
+
+
+
 ## [4.0.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.0...stryker@4.0.1) (2024-03-15)
 
 
