@@ -36,7 +36,7 @@ namespace Stryker.DataCollector
 
         public const string PropertyName = "Stryker.Coverage";
         public const string OutOfTestsPropertyName = "Stryker.Coverage.OutOfTests";
-        public const string Coveragelog = "CoverageLog";
+        public const string CoverageLog = "CoverageLog";
 
         public string MutantList => string.Join(",", _mutantTestedBy.Values.Distinct());
 
@@ -245,7 +245,7 @@ namespace Stryker.DataCollector
                 _dataSink.SendData(dataCollectionContext, PropertyName, ";");
                 if (!_reportFailure)
                 {
-                    _dataSink.SendData(dataCollectionContext, Coveragelog, $"Did not find type {_controlClassName}. This indicates Stryker failed to copy the mutated assembly for test.");
+                    _dataSink.SendData(dataCollectionContext, CoverageLog, $"Did not find type {_controlClassName}. Mutated assembly may not be covered by any test.");
                     _reportFailure = true;
                 }
                 return;
