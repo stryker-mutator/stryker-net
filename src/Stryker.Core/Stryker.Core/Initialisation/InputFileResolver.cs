@@ -59,12 +59,11 @@ public class InputFileResolver : IInputFileResolver
             {
                 testProjectFileNames = [FindTestProject(options.ProjectPath)];
             }
-
             var testProjects = testProjectFileNames.Select(testProjectFile =>
-                _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework)).ToList();
+                _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework, options.Configuration)).ToList();
 
             var analyzerResult = _projectFileReader.AnalyzeProject(FindSourceProject(testProjects, options),
-                options.SolutionPath, options.TargetFramework);
+                options.SolutionPath, options.TargetFramework, options.Configuration);
             return [BuildSourceProjectInfo(options, analyzerResult, testProjects)];
         }
 
@@ -81,6 +80,10 @@ public class InputFileResolver : IInputFileResolver
         // build all projects
         var testProjectsAnalyzerResults = new ConcurrentDictionary<string, IAnalyzerResults>();
         var mutableProjectsAnalyzerResults = new ConcurrentDictionary<string, IAnalyzerResults>();
+        if (!string.IsNullOrEmpty(options.Configuration))
+        {
+            manager.SetGlobalProperty("Configuration", options.Configuration);
+        }
         _logger.LogDebug("Analyzing {count} projects.", manager.Projects.Count);
         try
         {
@@ -88,7 +91,6 @@ public class InputFileResolver : IInputFileResolver
             {
                 var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
                 _logger.LogDebug("Analyzing {projectFilePath}", projectLogName);
-                project.SetGlobalProperty("Configuration", "Release");
                 var buildResult = project.Build();
 
                 var buildResultOverallSuccess = buildResult.OverallSuccess;
@@ -290,12 +292,10 @@ public class InputFileResolver : IInputFileResolver
         stringBuilder.Append(BuildReferenceChoice(projectReferences));
 
         throw new InputException(stringBuilder.ToString());
-
     }
 
     private string DetermineTargetProjectWithoutNameFilter(IReadOnlyCollection<string> projectReferences)
     {
-
         var count = projectReferences.Count;
         if (count == 1)
         {

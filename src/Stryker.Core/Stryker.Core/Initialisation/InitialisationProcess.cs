@@ -20,7 +20,7 @@ public interface IInitialisationProcess
     /// Gets all projects to mutate based on the given options
     /// </summary>
     /// <param name="options">stryker options</param>
-    /// <returns>an enumeration of <see cref="ProjectInfo"/>, one for each found project (if any).</returns>
+    /// <returns>an enumeration of <see cref="SourceProjectInfo"/>, one for each found project (if any).</returns>
     IReadOnlyCollection<SourceProjectInfo> GetMutableProjectsInfo(StrykerOptions options);
 
     void BuildProjects(StrykerOptions options, IEnumerable<SourceProjectInfo> projects);
@@ -73,7 +73,7 @@ public class InitialisationProcess : IInitialisationProcess
             _initialBuildProcess.InitialBuild(
                 framework,
                 _inputFileResolver.FileSystem.Path.GetDirectoryName(options.SolutionPath),
-                options.SolutionPath,
+                options.SolutionPath, options.Configuration,
                 options.MsBuildPath);
         }
         else
@@ -88,9 +88,10 @@ public class InitialisationProcess : IInitialisationProcess
                     testProjects.Count);
 
                 _initialBuildProcess.InitialBuild(
-                    testProjects[i].TargetsFullFramework(),
+                    false, //testProjects[i].TargetsFullFramework(),
                     testProjects[i].ProjectFilePath,
                     options.SolutionPath,
+                    options.Configuration,
                     options.MsBuildPath);
             }
         }

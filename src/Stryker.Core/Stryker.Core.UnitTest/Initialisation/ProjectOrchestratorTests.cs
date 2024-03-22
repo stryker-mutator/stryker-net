@@ -376,6 +376,7 @@ public class ProjectOrchestratorTests : TestBase
         var buildalyzerAnalyzerManagerMock = new Mock<IAnalyzerManager>(MockBehavior.Strict);
         buildalyzerAnalyzerManagerMock.Setup(x => x.Projects)
             .Returns(analyzerResults);
+        buildalyzerAnalyzerManagerMock.Setup(x => x.SetGlobalProperty(It.IsAny<string>(), It.IsAny<string>()));
 
         foreach (var analyzerResult in analyzerResults)
         {

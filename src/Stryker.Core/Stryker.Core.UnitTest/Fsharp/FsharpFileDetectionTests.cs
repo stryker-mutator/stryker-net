@@ -59,13 +59,13 @@ namespace Stryker.Core.UnitTest.Fsharp
                     { Path.Combine(_filesystemRoot, "ExampleProject", "node_modules", "Some package"), new MockFileData("bla") }, // node_modules should be excluded
                 });
             var projectFileReaderMock = new Mock<IProjectFileReader>(MockBehavior.Strict);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, "fsharp", null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_testProjectPath, null, "fsharp", null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>() { _sourceProjectPath },
                     targetFramework: "netcoreapp2.1",
                     projectFilePath: _testProjectPath,
                     references: new string[] { "" }).Object);
-            projectFileReaderMock.Setup(x => x.AnalyzeProject(_sourceProjectPath, null, "fsharp", null))
+            projectFileReaderMock.Setup(x => x.AnalyzeProject(_sourceProjectPath, null, "fsharp", null, null))
                 .Returns(TestHelper.SetupProjectAnalyzerResult(
                     projectReferences: new List<string>() { _sourceProjectPath },
                     targetFramework: "netcoreapp2.1",

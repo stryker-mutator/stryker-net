@@ -15,7 +15,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
         public InitialBuildProcessTests()
         {
-            _cProjectsExampleCsproj = Environment.OSVersion.Platform == PlatformID.Win32NT ? @"C:\Projects\Example.csproj" : "/usr/projects/Example.csproj";
+            _cProjectsExampleCsproj = Environment.OSVersion.Platform == PlatformID.Win32NT ? @"C:\Projects \Example.csproj" : "/usr/projects/Example.csproj";
         }
 
         [Fact]
@@ -28,7 +28,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var target = new InitialBuildProcess(processMock.Object);
 
             Should.Throw<InputException>(() => target.InitialBuild(false, _cProjectsExampleCsproj, null))
-                .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"dotnet build \"" + @"Example.csproj" + "\"\"");
+                .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"dotnet build Example.csproj\"");
         }
 
         [SkippableFact]
@@ -42,7 +42,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(processMock.Object);
 
-            Should.Throw<InputException>(() => target.InitialBuild(true, null, _cProjectsExampleCsproj, @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
+            Should.Throw<InputException>(() => target.InitialBuild(true, null, _cProjectsExampleCsproj, null, @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
                 .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"\"" +
                                   @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" + "\" \"" + _cProjectsExampleCsproj + "\"\"");
         }
@@ -58,7 +58,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(processMock.Object);
 
-            Should.Throw<InputException>(() => target.InitialBuild(false, null, _cProjectsExampleCsproj, @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
+            Should.Throw<InputException>(() => target.InitialBuild(false, null, _cProjectsExampleCsproj, null, @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
                 .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"\"" +
                                   @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" + "\" \"" + _cProjectsExampleCsproj + "\"\"");
 
@@ -92,7 +92,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(processMock.Object);
 
-            target.InitialBuild(true, "/", "./ExampleProject.sln");
+            target.InitialBuild(true, "./ExampleProject.sln", "./ExampleProject.sln");
 
             processMock.Verify(x => x.Start(It.IsAny<string>(),
                 It.Is<string>(applicationParam => applicationParam.Contains("msbuild.exe", StringComparison.InvariantCultureIgnoreCase)),
@@ -111,7 +111,7 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var target = new InitialBuildProcess(processMock.Object);
 
-            target.InitialBuild(true, "/", "./ExampleProject.sln", "C:/User/Test/Msbuild.exe");
+            target.InitialBuild(true, "/", "./ExampleProject.sln", null, "C:/User/Test/Msbuild.exe");
 
             processMock.Verify(x => x.Start(It.IsAny<string>(),
                 It.Is<string>(applicationParam => applicationParam.Contains("C:/User/Test/Msbuild.exe", StringComparison.InvariantCultureIgnoreCase)),

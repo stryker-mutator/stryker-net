@@ -49,7 +49,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkXMock.Object,
             };
 
-            Func<IAnalyzerResult> analyzeProject = () => _projectFileReader.AnalyzeProject(null, null, null);
+            Func<IAnalyzerResult> analyzeProject = () => _projectFileReader.AnalyzeProject(null, null, null, null);
             analyzeProject.ShouldThrow<InputException>();
         }
 
@@ -70,7 +70,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            var result = _projectFileReader.AnalyzeProject(null, null, null);
+            var result = _projectFileReader.AnalyzeProject(null, null, null, null); 
             result.TargetFramework.ShouldBe("X");
         }
 
@@ -91,7 +91,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            var result = _projectFileReader.AnalyzeProject(null, null, "Y");
+            var result = _projectFileReader.AnalyzeProject(null, null, "Y", null);
             result.TargetFramework.ShouldBe("Y");
         }
 
@@ -112,7 +112,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 analyzerResultFrameworkYMock.Object
             };
 
-            var result = _projectFileReader.AnalyzeProject(null, null, "Z");
+            var result = _projectFileReader.AnalyzeProject(null, null, "Z", null);
             result.TargetFramework.ShouldBe("X");
         }
     }

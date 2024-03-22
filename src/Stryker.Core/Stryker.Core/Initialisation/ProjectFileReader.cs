@@ -16,10 +16,10 @@ public interface IProjectFileReader
     IAnalyzerResult AnalyzeProject(string projectFilePath,
         string solutionFilePath,
         string targetFramework,
+        string configuration,
         string msBuildPath = null);
     IAnalyzerManager GetAnalyzerManager(string solutionFilePath = null);
     IAnalyzerResult SelectAnalyzerResult(IEnumerable<IAnalyzerResult> analyzerResults, string targetFramework);
-    IAnalyzerResult GetAnalyzerResult(IAnalyzerResults results, string targetFramework);
 }
 
 /// <summary>
@@ -31,7 +31,7 @@ public class ProjectFileReader : IProjectFileReader
     private readonly IBuildalyzerProvider _analyzerProvider;
     private IAnalyzerManager _analyzerManager;
     private readonly ILogger _logger;
-    private readonly StringWriter _buildalyzerLog = new StringWriter();
+    private readonly StringWriter _buildalyzerLog = new();
 
     public ProjectFileReader(
         INugetRestoreProcess nugetRestoreProcess = null,
@@ -51,10 +51,19 @@ public class ProjectFileReader : IProjectFileReader
     public IAnalyzerResult AnalyzeProject(string projectFilePath,
         string solutionFilePath,
         string targetFramework,
+        string configuration,
         string msBuildPath = null)
     {
         _logger.LogDebug("Analyzing project file {0}", projectFilePath);
-        var analyzerResult = GetAnalyzerResult(GetAnalyzerManager(solutionFilePath).GetProject(projectFilePath).Build(), targetFramework);
+
+        // build all projects
+        var manager = GetAnalyzerManager(solutionFilePath);
+        if (!string.IsNullOrEmpty(configuration))
+        {
+            manager.SetGlobalProperty("Configuration", configuration);
+        }
+
+        var analyzerResult = GetAnalyzerResult(manager.GetProject(projectFilePath).Build(), targetFramework);
 
         if (analyzerResult.Succeeded || !analyzerResult.TargetsFullFramework())
         {
@@ -64,12 +73,12 @@ public class ProjectFileReader : IProjectFileReader
         // buildalyzer failed to find restored packages, retry after nuget restore
         _logger.LogDebug("Project analyzer result not successful, restoring packages");
         _nugetRestoreProcess.RestorePackages(solutionFilePath, msBuildPath);
-        analyzerResult = GetAnalyzerResult(GetAnalyzerManager(solutionFilePath).GetProject(projectFilePath).Build(), targetFramework);
+        analyzerResult = GetAnalyzerResult(manager.GetProject(projectFilePath).Build(), targetFramework);
 
         return analyzerResult;
     }
 
-    public IAnalyzerResult GetAnalyzerResult(IAnalyzerResults results, string targetFramework)
+    private IAnalyzerResult GetAnalyzerResult(IAnalyzerResults results, string targetFramework)
     {
         var result = SelectAnalyzerResult(results, targetFramework);
         if (!result.Succeeded)
@@ -112,7 +121,8 @@ public class ProjectFileReader : IProjectFileReader
         return firstAnalyzerResult;
     }
 
-    private static readonly HashSet<string> ImportantProperties = new() {"Configuration", "Platform", "AssemblyName", "Configurations"};
+    private static readonly HashSet<string> ImportantProperties =
+        ["Configuration", "Platform", "AssemblyName", "Configurations"];
 
     private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
     {
