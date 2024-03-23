@@ -8,6 +8,7 @@ using System.Text;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
@@ -113,6 +114,9 @@ namespace Stryker.Core.Compiling
             return semanticModels;
         }
 
+
+        private static readonly string[] IgnoredErrors = ["RZ3600"];
+
         private CSharpCompilation RunSourceGenerators(IAnalyzerResult analyzerResult, Compilation compilation)
         {
             var generators = analyzerResult.GetSourceGenerators(_logger);
@@ -125,12 +129,24 @@ namespace Stryker.Core.Compiling
             {
                 return outputCompilation as CSharpCompilation;
             }
-
+            var fail = false;
             foreach (var diagnostic in errors)
             {
-                _logger.LogError("Failed to generate source code for mutated assembly: {0}", diagnostic);
+                if (IgnoredErrors.Contains(diagnostic.Id))
+                {
+                    _logger.LogWarning("Stryker encountered a known error from a coe generator but it will keep on. Compilation may still fail later on: {0}", diagnostic);
+                }
+                else
+                {
+                    _logger.LogError("Failed to generate source code for mutated assembly: {0}", diagnostic);
+                    fail = true;
+                }
             }
-            throw new CompilationException("Source Generator Failure");
+            if (fail)
+            {
+                throw new CompilationException("Source Generator Failure");
+            }
+            return outputCompilation as CSharpCompilation;
         }
 
         private CSharpCompilation GetCSharpCompilation(IEnumerable<SyntaxTree> syntaxTrees)
