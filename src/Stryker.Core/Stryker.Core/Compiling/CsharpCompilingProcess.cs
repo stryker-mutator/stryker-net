@@ -89,10 +89,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
         }
         // compiling failed
         _logger.LogError("Failed to restore the project to a buildable state. Please report the issue. Stryker can not proceed further");
-        foreach (var emitResultDiagnostic in emitResult.Diagnostics)
-        {
-            _logger.LogWarning($"{emitResultDiagnostic}");
-        }
+        DumpErrorDetails(emitResult.Diagnostics);
         throw new CompilationException("Failed to restore build able state.");
     }
 
@@ -116,6 +113,8 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
 
     private static readonly string[] IgnoredErrors = ["RZ3600"];
 
+    // Can't test or mock code generators, so we exclude them from coverage
+    [ExcludeFromCodeCoverage]
     private CSharpCompilation RunSourceGenerators(IAnalyzerResult analyzerResult, Compilation compilation)
     {
         var generators = analyzerResult.GetSourceGenerators(_logger);
@@ -265,10 +264,6 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
     {
         var messageBuilder = new StringBuilder();
         var materializedDiagnostics = diagnostics.ToArray();
-        if (!materializedDiagnostics.Any())
-        {
-            messageBuilder.Append("Unfortunately there is no more info available, good luck!");
-        }
 
         foreach (var diagnostic in materializedDiagnostics)
         {
@@ -277,7 +272,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
                 .Append(diagnostic.Id).Append(": ").AppendLine(diagnostic.ToString());
         }
 
-        _logger.LogTrace("An unrecoverable compilation error occurred: {Diagnostics}", messageBuilder.ToString());
+        _logger.LogTrace("Compilation errors: {Diagnostics}", messageBuilder.ToString());
     }
 
     private static string ReadableNumber(int number) => number switch
