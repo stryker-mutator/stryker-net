@@ -296,13 +296,13 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
 
         public SimpleAnalyserConfigOptionsProvider(IAnalyzerResult result) => GlobalOptions = new SimpleAnalyzerConfigOptions(result);
 
-        public override AnalyzerConfigOptions GetOptions(SyntaxTree _) => _nullProvider;
+        public override AnalyzerConfigOptions GetOptions(SyntaxTree tree) => _nullProvider;
 
-        public override AnalyzerConfigOptions GetOptions(AdditionalText _) => _nullProvider;
+        public override AnalyzerConfigOptions GetOptions(AdditionalText textFile) => _nullProvider;
 
         public override AnalyzerConfigOptions GlobalOptions { get; }
 
-        private class SimpleAnalyzerConfigOptions : AnalyzerConfigOptions
+        private sealed class SimpleAnalyzerConfigOptions : AnalyzerConfigOptions
         {
             private const string Prefix = "build_property.";
             private readonly IReadOnlyDictionary<string, string> _options;
@@ -323,7 +323,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
             public override IEnumerable<string> Keys => _options.Keys.Select(key => Prefix + key);
         }
 
-        private class NullAnalyzerConfigOptions : AnalyzerConfigOptions
+        private sealed class NullAnalyzerConfigOptions : AnalyzerConfigOptions
         {
             public override bool TryGetValue(string key, out string value)
             {
