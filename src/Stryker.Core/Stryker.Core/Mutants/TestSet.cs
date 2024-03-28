@@ -20,6 +20,6 @@ namespace Stryker.Core.Mutants
 
         public void RegisterTest(TestDescription test) => _tests[test.Id] = test;
 
-        public IEnumerable<TestDescription> Extract(IEnumerable<Guid> ids) => ids.Select(i => _tests[i]);
+        public IEnumerable<TestDescription> Extract(IEnumerable<Guid> ids) => ids?.Select(i => _tests[i]) ?? Enumerable.Empty<TestDescription>();
     }
 }
