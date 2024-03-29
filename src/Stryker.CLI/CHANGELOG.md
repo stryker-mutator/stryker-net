@@ -1,3 +1,12 @@
+## [4.0.3](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.0.2...dotnet-stryker@4.0.3) (2024-03-29)
+
+
+### Reverts
+
+* Revert publish and "chore(performance): Parallel testinit" (#2896) ([b45f64f](https://github.com/stryker-mutator/stryker-net/commit/b45f64ff741b3b7332990ff7f0ab606f917aa693)), closes [#2896](https://github.com/stryker-mutator/stryker-net/issues/2896) [#2894](https://github.com/stryker-mutator/stryker-net/issues/2894)
+
+
+
 ## [4.0.2](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.0.1...dotnet-stryker@4.0.2) (2024-03-20)
 
 

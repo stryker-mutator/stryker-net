@@ -1,3 +1,17 @@
+## [4.0.3](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.2...stryker@4.0.3) (2024-03-29)
+
+
+### Bug Fixes
+
+* Forward build options to code analyzers and generators ([#2891](https://github.com/stryker-mutator/stryker-net/issues/2891)) ([d93b08c](https://github.com/stryker-mutator/stryker-net/commit/d93b08cecdbd941d9b8bf52aaa0679203672992f))
+
+
+### Reverts
+
+* Revert publish and "chore(performance): Parallel testinit" (#2896) ([b45f64f](https://github.com/stryker-mutator/stryker-net/commit/b45f64ff741b3b7332990ff7f0ab606f917aa693)), closes [#2896](https://github.com/stryker-mutator/stryker-net/issues/2896) [#2894](https://github.com/stryker-mutator/stryker-net/issues/2894)
+
+
+
 ## [4.0.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.1...stryker@4.0.2) (2024-03-20)
 
 
