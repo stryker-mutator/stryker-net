@@ -1,3 +1,12 @@
+## [4.0.3](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.2...stryker@4.0.3) (2024-03-29)
+
+
+### Bug Fixes
+
+* Forward build options to code analyzers and generators ([#2891](https://github.com/stryker-mutator/stryker-net/issues/2891)) ([d93b08c](https://github.com/stryker-mutator/stryker-net/commit/d93b08cecdbd941d9b8bf52aaa0679203672992f))
+
+
+
 ## [4.0.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.1...stryker@4.0.2) (2024-03-20)
 
 
