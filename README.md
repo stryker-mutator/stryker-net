@@ -4,8 +4,7 @@
 [![Azure DevOps tests](https://img.shields.io/azure-devops/tests/stryker-mutator/506a1f46-900e-434e-805f-ff8d36fc81af/4/master.svg?compact_message&style=flat-square)](https://dev.azure.com/stryker-mutator/Stryker/_build/latest?definitionId=4)
 [![Mutation testing badge](https://img.shields.io/endpoint?style=flat&url=https%3A%2F%2Fbadge-api.stryker-mutator.io%2Fgithub.com%2Fstryker-mutator%2Fstryker-net%2Fmaster)](https://dashboard.stryker-mutator.io/reports/github.com/stryker-mutator/stryker-net/master)
 [![Slack](https://img.shields.io/badge/chat-on%20slack-blueviolet?style=flat-square)](https://join.slack.com/t/stryker-mutator/shared_invite/enQtOTUyMTYyNTg1NDQ0LTU4ODNmZDlmN2I3MmEyMTVhYjZlYmJkOThlNTY3NTM1M2QxYmM5YTM3ODQxYmJjY2YyYzllM2RkMmM1NjNjZjM)
-
-# ![S](https://raw.githubusercontent.com/stryker-mutator/stryker-mutator.github.io/develop/static/images/stryker-80x80.png)tryker.NET
+# <img src="https://raw.githubusercontent.com/stryker-mutator/stryker-mutator.github.io/develop/static/images/logo_192.png" width="120" height="120">tryker.NET
 
 *Professor X: For someone who hates mutants... you certainly keep some strange company.*
 *William Stryker: Oh, they serve their purpose... as long as they can be controlled.*
@@ -45,7 +44,7 @@ For the full documentation on how to use Stryker.NET, see our [configuration doc
 
 ## Migrating
 
-Coming from Stryker.NET pre V2? Take a look at our [migration guide](https://stryker-mutator.io/docs/stryker-net/migration-guide).
+Coming from a previous version of Stryker.NET? Take a look at our [migration guide](https://stryker-mutator.io/docs/stryker-net/migration-guide).
 
 ## Supported Mutations
 

@@ -1,3 +1,16 @@
+## [4.0.2](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.0.1...dotnet-stryker@4.0.2) (2024-03-20)
+
+
+
+## [4.0.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.0.0...dotnet-stryker@4.0.1) (2024-03-15)
+
+
+### Bug Fixes
+
+* Improve build, restore and test ([#2845](https://github.com/stryker-mutator/stryker-net/issues/2845)) ([a14b64b](https://github.com/stryker-mutator/stryker-net/commit/a14b64bbea21cb44c8bc9868c826a5344500e058))
+
+
+
 # [4.0.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@3.13.2...dotnet-stryker@4.0.0) (2024-02-16)
 
 

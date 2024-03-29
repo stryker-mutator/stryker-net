@@ -61,6 +61,11 @@ internal class MutationStore
     public bool HasPendingMutations() => _pendingMutations.Count > 0 && _pendingMutations.Peek().Store.Count>0;
 
     /// <summary>
+    /// Returns the current mutation control
+    /// </summary>
+    public MutationControl CurrentControl => _pendingMutations.Count > 0 ? _pendingMutations.Peek().Control : MutationControl.Member;
+
+    /// <summary>
     /// Enter a syntax level
     /// </summary>
     /// <param name="control">syntax level (should match current node level) <see cref="MutationControl"/></param>
@@ -90,7 +95,7 @@ internal class MutationStore
         }
         else if (old.Store.Count > 0)
         {
-            Logger.LogError("Some mutations failed to be inserted, they are dropped.");
+            Logger.LogDebug("{0} mutation(s) could not be injected, they are dropped.", old.Store.Count);
             foreach (var mutant in old.Store)
             {
                 mutant.ResultStatus = MutantStatus.CompileError;
@@ -123,7 +128,7 @@ internal class MutationStore
             controller.StoreMutations(store);
             return true;
         }
-        Logger.LogError($"There is no structure to control {store.Count()} mutations. They are dropped.");
+        Logger.LogDebug("There is no structure to control {0} mutations. They are dropped.", store.Count());
         foreach (var mutant in store)
         {
             mutant.ResultStatus = MutantStatus.CompileError;
