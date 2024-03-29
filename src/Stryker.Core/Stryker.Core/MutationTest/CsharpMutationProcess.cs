@@ -2,7 +2,6 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Compiling;
@@ -61,9 +60,7 @@ namespace Stryker.Core.MutationTest
 
             // Mutate source files
 
-            var stopwatch = new System.Diagnostics.Stopwatch();
-            stopwatch.Start();
-            Parallel.ForEach(projectInfo.GetAllFiles().Cast<CsharpFileLeaf>(), file =>
+            foreach(var file in projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
             {
                 _logger.LogDebug($"Mutating {file.FullPath}");
                 // Mutate the syntax tree
@@ -76,10 +73,7 @@ namespace Stryker.Core.MutationTest
                 }
                 // Filter the mutants
                 file.Mutants = orchestrator.GetLatestMutantBatch();
-            });
-
-            stopwatch.Stop();
-            _logger.LogInformation("Mutating project {0} took {1}", projectInfo.RelativePath, stopwatch.Elapsed);
+            };
 
             _logger.LogDebug("{0} mutants created", projectInfo.Mutants.Count());
 

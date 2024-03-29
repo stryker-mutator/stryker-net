@@ -239,7 +239,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 leakedMutants = string.IsNullOrEmpty(propertyPairValue)
                     ? Enumerable.Empty<int>()
                     : propertyPairValue.Split(',').Select(int.Parse);
-                _logger.LogWarning(
+                _logger.LogDebug(
                     $"VsTestRunner: Some mutations were executed outside any test (mutation ids: {propertyPairValue}).");
             }
             else
