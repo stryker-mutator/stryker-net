@@ -102,14 +102,21 @@ namespace Stryker.Core.Initialisation
         public IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(StrykerOptions options, IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner)
         {
             var result = new List<MutationTestInput>();
-            Parallel.ForEach(projects, projectInfo => result.Add(new MutationTestInput
+            try
+            {
+                Parallel.ForEach(projects, projectInfo => result.Add(new MutationTestInput
                 {
                     SourceProjectInfo = projectInfo,
                     TestProjectsInfo = projectInfo.TestProjectsInfo,
                     TestRunner = runner,
                     InitialTestRun = InitialTest(options, projectInfo, runner, projects.Count == 1)
                 })
-            );
+                );
+            }
+            catch (AggregateException ex)
+            {
+                throw ex.InnerException;
+            }
             return result;
         }
 
