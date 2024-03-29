@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
@@ -101,17 +102,21 @@ namespace Stryker.Core.Initialisation
         public IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(StrykerOptions options, IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner)
         {
             var result = new List<MutationTestInput>();
-            foreach (var info in projects)
+            try
             {
-                result.Add(new MutationTestInput
+                Parallel.ForEach(projects, projectInfo => result.Add(new MutationTestInput
                 {
-                    SourceProjectInfo = info,
-                    TestProjectsInfo = info.TestProjectsInfo,
+                    SourceProjectInfo = projectInfo,
+                    TestProjectsInfo = projectInfo.TestProjectsInfo,
                     TestRunner = runner,
-                    InitialTestRun = InitialTest(options, info, runner, projects.Count==1)
-                });
+                    InitialTestRun = InitialTest(options, projectInfo, runner, projects.Count == 1)
+                })
+                );
             }
-
+            catch (AggregateException ex)
+            {
+                throw ex.InnerException;
+            }
             return result;
         }
 
