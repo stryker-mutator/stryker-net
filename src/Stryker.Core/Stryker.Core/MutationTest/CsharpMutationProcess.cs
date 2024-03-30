@@ -48,7 +48,7 @@ namespace Stryker.Core.MutationTest
         /// This constructor is used by the <see cref="MutationTestProcess"/> initialization logic.
         /// </summary>
         /// <param name="options"></param>
-        public CsharpMutationProcess(StrykerOptions options) : this( null, options)
+        public CsharpMutationProcess(StrykerOptions options) : this(null, options)
         { }
 
         public void Mutate(MutationTestInput input)
@@ -59,7 +59,7 @@ namespace Stryker.Core.MutationTest
             var semanticModels = compilingProcess.GetSemanticModels(projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().Select(x => x.SyntaxTree));
 
             // Mutate source files
-            foreach (var file in projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
+            foreach(var file in projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
             {
                 _logger.LogDebug($"Mutating {file.FullPath}");
                 // Mutate the syntax tree
