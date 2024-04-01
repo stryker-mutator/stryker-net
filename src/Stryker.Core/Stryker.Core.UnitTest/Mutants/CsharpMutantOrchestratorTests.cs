@@ -1231,6 +1231,27 @@ if(StrykerNamespace.MutantControl.IsActive(3)){;}else{		request.Headers.Add((Str
     }
 
     [Fact]
+    public void ShouldMutateDeleage()
+    {
+        var source = @"private void LocalFun()
+{
+	var test = delegate(string name)
+{
+Console.WriteLine($""Hello {name}"");
+};
+}";
+        string expected = @"private void LocalFun()
+{if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+	var test = delegate(string name)
+{if(StrykerNamespace.MutantControl.IsActive(1)){}else{
+if(StrykerNamespace.MutantControl.IsActive(2)){;}else{Console.WriteLine((StrykerNamespace.MutantControl.IsActive(3)?$"""":$""Hello {name}""));
+}}};
+}}";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [Fact]
     public void MutationsShouldHaveLinespan()
     {
         string source = @"void TestMethod()
