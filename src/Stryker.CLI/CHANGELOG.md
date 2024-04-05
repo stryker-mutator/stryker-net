@@ -1,3 +1,7 @@
+## [4.0.4](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.0.3...dotnet-stryker@4.0.4) (2024-04-05)
+
+
+
 ## [4.0.3](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.0.2...dotnet-stryker@4.0.3) (2024-03-29)
 
 
