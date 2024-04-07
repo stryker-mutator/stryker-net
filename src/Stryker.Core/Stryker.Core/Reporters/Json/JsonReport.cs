@@ -15,6 +15,7 @@ namespace Stryker.Core.Reporters.Json
         public string ProjectRoot { get; init; }
         public IDictionary<string, SourceFile> Files { get; init; } = new Dictionary<string, SourceFile>();
         public IDictionary<string, JsonTestFile> TestFiles { get; set; } = null;
+        public double MutationScore { get; set; }
 
         public JsonReport() { }
 
@@ -27,6 +28,7 @@ namespace Stryker.Core.Reporters.Json
 
             Merge(Files, GenerateReportComponents(mutationReport));
             AddTestFiles(testProjectsInfo);
+            MutationScore = mutationReport.GetMutationScore() * 100;
         }
 
         public static JsonReport Build(StrykerOptions options, IReadOnlyProjectComponent mutationReport, TestProjectsInfo testProjectsInfo) => new(options, mutationReport, testProjectsInfo);
