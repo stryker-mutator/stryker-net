@@ -167,6 +167,24 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `string.IsNullOrWhiteSpace(x)` | `(x != "")` |
 | `string.IsNullOrWhiteSpace(x)` | `(x.Trim() != "")` |
 
+## String Methods (_string_)
+| Original               | Mutated              |
+|------------------------|----------------------|
+| `Trim()`               | `""`                 |
+| `Substring()`          | `""`                 |
+| `ElementAt()`          | `""`                 |
+| `ElementAtOrDefault()` | `""`                 |
+| `EndsWith()`           | `StartsWith()`       |
+| `StartsWith()`         | `EndsWith()`         |
+| `TrimStart()`          | `TrimEnd()`          |
+| `TrimEnd()`            | `TrimStart()`        |
+| `ToUpper()`            | `ToLower()`          |
+| `ToLower()`            | `ToUpper()`          |
+| `ToUpperInvariant()`   | `ToLowerInvariant()` |
+| `ToLowerInvariant()`   | `ToUpperInvariant()` |
+| `PadLeft()`            | `PadRight()`         |
+| `PadRight()`           | `PadLeft()`          |
+
 ## Bitwise Operators (_bitwise_)
 | Original            | Mutated             |
 |---------------------|---------------------|
