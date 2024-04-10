@@ -1,3 +1,12 @@
+## [4.0.4](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.3...stryker@4.0.4) (2024-04-05)
+
+
+### Bug Fixes
+
+* Use ConcurrentBag instead of List to prevent InvalidOperationException during mutation ([#2901](https://github.com/stryker-mutator/stryker-net/issues/2901)) ([181a927](https://github.com/stryker-mutator/stryker-net/commit/181a927a54d4b500d9f3048d5b4690bcf974dbff))
+
+
+
 ## [4.0.3](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.2...stryker@4.0.3) (2024-03-29)
 
 
