@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -64,7 +65,7 @@ namespace Stryker.Core.Initialisation
             InitializeDashboardProjectInformation(options, projectInfos.First());
             var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);
 
-            var mutationTestProcesses = new List<IMutationTestProcess>();
+            var mutationTestProcesses = new ConcurrentBag<IMutationTestProcess>();
             Parallel.ForEach(inputs, mutationTestInput =>
             {
                 mutationTestProcesses.Add(_projectMutator.MutateProject(options, mutationTestInput, reporters));
