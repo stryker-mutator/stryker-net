@@ -34,8 +34,11 @@ public class StringMethodMutator : MutatorBase<ExpressionSyntax>
         var identifier = member.Name.Identifier.ValueText;
         switch (identifier)
         {
-            case "Trim" or "Substring" or  "ElementAt" or "ElementAtOrDefault":
+            case "Trim" or "Substring":
                 yield return ApplyReplaceWithEmptyStringMutation(node, identifier);
+                break;
+            case "ElementAt" or "ElementAtOrDefault":
+                yield return ApplyReplaceWithCharMutation(node, identifier);
                 break;
             default:
                 var replacement = GetReplacement(identifier);
@@ -69,17 +72,6 @@ public class StringMethodMutator : MutatorBase<ExpressionSyntax>
         return typeInfo.Type?.SpecialType == SpecialType.System_String;
     }
 
-    private Mutation ApplyReplaceWithEmptyStringMutation(SyntaxNode node, string identifier) =>
-        new()
-        {
-            OriginalNode = node,
-            ReplacementNode = SyntaxFactory.LiteralExpression(
-                SyntaxKind.StringLiteralExpression,
-                SyntaxFactory.Literal(string.Empty)
-            ),
-            DisplayName = $"String Method Mutation (Replace {identifier}() with Empty String)",
-            Type = Mutator.String
-        };
     private Mutation ApplyReplaceMutation(InvocationExpressionSyntax node, MemberAccessExpressionSyntax member,
         string identifier, string replacement) =>
         new()
@@ -93,4 +85,27 @@ public class StringMethodMutator : MutatorBase<ExpressionSyntax>
             Type = Mutator.String
         };
 
+    private Mutation ApplyReplaceWithEmptyStringMutation(SyntaxNode node, string identifier) =>
+        new()
+        {
+            OriginalNode = node,
+            ReplacementNode = SyntaxFactory.LiteralExpression(
+                SyntaxKind.StringLiteralExpression,
+                SyntaxFactory.Literal(string.Empty)
+            ),
+            DisplayName = $"String Method Mutation (Replace {identifier}() with Empty String)",
+            Type = Mutator.String
+        };
+
+    private Mutation ApplyReplaceWithCharMutation(SyntaxNode node, string identifier) =>
+        new()
+        {
+            OriginalNode = node,
+            ReplacementNode = SyntaxFactory.LiteralExpression(
+                SyntaxKind.StringLiteralExpression,
+                SyntaxFactory.Literal(char.MinValue)
+            ),
+            DisplayName = $"String Method Mutation (Replace {identifier}() with '\\0' char)",
+            Type = Mutator.String
+        };
 }

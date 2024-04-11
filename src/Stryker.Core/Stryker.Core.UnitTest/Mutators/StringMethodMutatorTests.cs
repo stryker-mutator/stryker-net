@@ -75,6 +75,42 @@ public class StringMethodMutatorTests : TestBase
         memberAccessExpression.Name.Identifier.ValueText.ShouldBe(mutatedMethod);
     }
 
+    [Theory]
+    [InlineData("Trim")]
+    [InlineData("Substring")]
+    public void ShouldMutateReplaceWithEmptyString(string methodName)
+    {
+        var expression = $"testString.{methodName}()";
+        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(expression);
+        var target = new StringMethodMutator();
+        var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
+
+        var mutation = result.ShouldHaveSingleItem();
+        mutation.Type.ShouldBe(Mutator.String);
+        mutation.DisplayName.ShouldBe($"String Method Mutation (Replace {methodName}() with Empty String)");
+
+        var syntax = mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
+        syntax.Token.ValueText.ShouldBe(string.Empty);
+    }
+
+    [Theory]
+    [InlineData("ElementAt")]
+    [InlineData("ElementAtOrDefault")]
+    public void ShouldMutateReplaceWithChar(string methodName)
+    {
+        var expression = $"testString.{methodName}()";
+        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(expression);
+        var target = new StringMethodMutator();
+        var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
+
+        var mutation = result.ShouldHaveSingleItem();
+        mutation.Type.ShouldBe(Mutator.String);
+        mutation.DisplayName.ShouldBe($"String Method Mutation (Replace {methodName}() with '\\0' char)");
+
+        var syntax = mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
+        syntax.Token.ValueText.ShouldBe(char.MinValue.ToString());
+    }
+
     [Fact]
     public void ShouldNotMutateWhenNotAString()
     {
