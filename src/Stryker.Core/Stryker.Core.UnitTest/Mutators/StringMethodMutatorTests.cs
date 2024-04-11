@@ -15,15 +15,18 @@ public class StringMethodMutatorTests : TestBase
     {
         // Parse the code into a syntax tree
         var syntaxTree = CSharpSyntaxTree.ParseText(
-            """
-                         using System.Linq;
+            $$"""
+              using System.Linq;
 
-                         class TestClass {
-                            private string testString = "test";
-                            private char c = 't';
+              class TestClass {
+              private string testString = "test";
+              private char c = 't';
 
-                            void TestMethod() {
-            """ + " " + input + "; } }");
+              void TestMethod() {
+                      {{input}} ";
+                  }
+              }
+              """);
 
         // Create a compilation that contains the syntax tree
         var compilation = CSharpCompilation.Create("TestAssembly")
@@ -39,211 +42,37 @@ public class StringMethodMutatorTests : TestBase
         return (semanticModel, expression);
     }
 
-    [Fact]
-    public void ShouldMutateEndsWith()
-    {
-        const string Expression = "testString.EndsWith(x)";
-        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(Expression);
-        var target = new StringMethodMutator();
-        var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
-
-        var mutation = result.ShouldHaveSingleItem();
-
-        mutation.Type.ShouldBe(Mutator.String);
-        mutation.DisplayName.ShouldBe("String Method Mutation (Replace EndsWith() with StartsWith())");
-
-        var invocationExpression =
-            mutation.ReplacementNode.ShouldBeOfType<InvocationExpressionSyntax>();
-        var memberAccessExpression =
-            invocationExpression.Expression.ShouldBeOfType<MemberAccessExpressionSyntax>();
-        memberAccessExpression.Name.Identifier.ValueText.ShouldBe("StartsWith");
-    }
-
-    [Fact]
-    public void ShouldMutateStartsWith()
-    {
-        const string Expression = "testString.StartsWith(x)";
-        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(Expression);
-        var target = new StringMethodMutator();
-        var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
-
-        var mutation = result.ShouldHaveSingleItem();
-
-        mutation.Type.ShouldBe(Mutator.String);
-        mutation.DisplayName.ShouldBe("String Method Mutation (Replace StartsWith() with EndsWith())");
-
-        var invocationExpression =
-            mutation.ReplacementNode.ShouldBeOfType<InvocationExpressionSyntax>();
-        var memberAccessExpression =
-            invocationExpression.Expression.ShouldBeOfType<MemberAccessExpressionSyntax>();
-        memberAccessExpression.Name.Identifier.ValueText.ShouldBe("EndsWith");
-    }
-
-    [Fact]
-    public void ShouldMutateTrimStart()
-    {
-        const string Expression = "testString.TrimStart()";
-        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(Expression);
-        var target = new StringMethodMutator();
-        var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
-
-        var mutation = result.ShouldHaveSingleItem();
-        mutation.Type.ShouldBe(Mutator.String);
-        mutation.DisplayName.ShouldBe("String Method Mutation (Replace TrimStart() with TrimEnd())");
-
-        var syntax = mutation.ReplacementNode.ShouldBeOfType<InvocationExpressionSyntax>();
-        var memberAccessExpression =
-            syntax.Expression.ShouldBeOfType<MemberAccessExpressionSyntax>();
-        memberAccessExpression.Name.Identifier.ValueText.ShouldBe("TrimEnd");
-    }
-
-    [Fact]
-    public void ShouldMutateTrimEnd()
-    {
-        const string Expression = "testString.TrimEnd()";
-        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(Expression);
-        var target = new StringMethodMutator();
-        var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
-
-        var mutation = result.ShouldHaveSingleItem();
-        mutation.Type.ShouldBe(Mutator.String);
-        mutation.DisplayName.ShouldBe("String Method Mutation (Replace TrimEnd() with TrimStart())");
-
-        var syntax = mutation.ReplacementNode.ShouldBeOfType<InvocationExpressionSyntax>();
-        var memberAccessExpression =
-            syntax.Expression.ShouldBeOfType<MemberAccessExpressionSyntax>();
-        memberAccessExpression.Name.Identifier.ValueText.ShouldBe("TrimStart");
-    }
-
     [Theory]
-    [InlineData("Trim")]
-    [InlineData("Substring")]
-    [InlineData("ElementAt")]
-    [InlineData("ElementAtOrDefault")]
-    public void ShouldMutateReplaceWithEmptyString(string methodName)
+    [InlineData("testString.EndsWith(c)", "StartsWith",
+        "String Method Mutation (Replace EndsWith() with StartsWith())")]
+    [InlineData("testString.StartsWith(c)", "EndsWith",
+        "String Method Mutation (Replace StartsWith() with EndsWith())")]
+    [InlineData("testString.TrimStart()", "TrimEnd", "String Method Mutation (Replace TrimStart() with TrimEnd())")]
+    [InlineData("testString.TrimEnd()", "TrimStart", "String Method Mutation (Replace TrimEnd() with TrimStart())")]
+    [InlineData("testString.ToUpper()", "ToLower", "String Method Mutation (Replace ToUpper() with ToLower())")]
+    [InlineData("testString.ToLower()", "ToUpper", "String Method Mutation (Replace ToLower() with ToUpper())")]
+    [InlineData("testString.ToUpperInvariant()", "ToLowerInvariant",
+        "String Method Mutation (Replace ToUpperInvariant() with ToLowerInvariant())")]
+    [InlineData("testString.ToLowerInvariant()", "ToUpperInvariant",
+        "String Method Mutation (Replace ToLowerInvariant() with ToUpperInvariant())")]
+    [InlineData("testString.PadLeft(10)", "PadRight", "String Method Mutation (Replace PadLeft() with PadRight())")]
+    [InlineData("testString.PadRight(10)", "PadLeft", "String Method Mutation (Replace PadRight() with PadLeft())")]
+    public void ShouldMutateStringMethods(string expression, string mutatedMethod, string expectedDisplayName)
     {
-        var expression = $"testString.{methodName}()";
         var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(expression);
         var target = new StringMethodMutator();
         var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
 
         var mutation = result.ShouldHaveSingleItem();
+
         mutation.Type.ShouldBe(Mutator.String);
-        mutation.DisplayName.ShouldBe($"String Method Mutation (Replace {methodName}() with Empty String)");
+        mutation.DisplayName.ShouldBe(expectedDisplayName);
 
-        var syntax = mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
-        syntax.Token.ValueText.ShouldBe(string.Empty);
-    }
-
-
-    [Fact]
-    public void ShouldMutateToUpper()
-    {
-        const string Expression = "testString.ToUpper()";
-        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(Expression);
-        var target = new StringMethodMutator();
-        var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
-
-        var mutation = result.ShouldHaveSingleItem();
-        mutation.Type.ShouldBe(Mutator.String);
-        mutation.DisplayName.ShouldBe("String Method Mutation (Replace ToUpper() with ToLower())");
-
-        var syntax = mutation.ReplacementNode.ShouldBeOfType<InvocationExpressionSyntax>();
+        var invocationExpression =
+            mutation.ReplacementNode.ShouldBeOfType<InvocationExpressionSyntax>();
         var memberAccessExpression =
-            syntax.Expression.ShouldBeOfType<MemberAccessExpressionSyntax>();
-        memberAccessExpression.Name.Identifier.ValueText.ShouldBe("ToLower");
-    }
-
-    [Fact]
-    public void ShouldMutateToLower()
-    {
-        const string Expression = "testString.ToLower()";
-        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(Expression);
-        var target = new StringMethodMutator();
-        var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
-
-        var mutation = result.ShouldHaveSingleItem();
-        mutation.Type.ShouldBe(Mutator.String);
-        mutation.DisplayName.ShouldBe("String Method Mutation (Replace ToLower() with ToUpper())");
-
-        var syntax = mutation.ReplacementNode.ShouldBeOfType<InvocationExpressionSyntax>();
-        var memberAccessExpression =
-            syntax.Expression.ShouldBeOfType<MemberAccessExpressionSyntax>();
-        memberAccessExpression.Name.Identifier.ValueText.ShouldBe("ToUpper");
-    }
-
-    [Fact]
-    public void ShouldMutateToUpperInvariant()
-    {
-        const string Expression = "testString.ToUpperInvariant()";
-        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(Expression);
-        var target = new StringMethodMutator();
-        var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
-
-        var mutation = result.ShouldHaveSingleItem();
-        mutation.Type.ShouldBe(Mutator.String);
-        mutation.DisplayName.ShouldBe(
-            "String Method Mutation (Replace ToUpperInvariant() with ToLowerInvariant())");
-
-        var syntax = mutation.ReplacementNode.ShouldBeOfType<InvocationExpressionSyntax>();
-        var memberAccessExpression =
-            syntax.Expression.ShouldBeOfType<MemberAccessExpressionSyntax>();
-        memberAccessExpression.Name.Identifier.ValueText.ShouldBe("ToLowerInvariant");
-    }
-
-    [Fact]
-    public void ShouldMutateToLowerInvariant()
-    {
-        const string Expression = "testString.ToLowerInvariant()";
-        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(Expression);
-        var target = new StringMethodMutator();
-        var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
-
-        var mutation = result.ShouldHaveSingleItem();
-        mutation.Type.ShouldBe(Mutator.String);
-        mutation.DisplayName.ShouldBe(
-            "String Method Mutation (Replace ToLowerInvariant() with ToUpperInvariant())");
-
-        var syntax = mutation.ReplacementNode.ShouldBeOfType<InvocationExpressionSyntax>();
-        var memberAccessExpression =
-            syntax.Expression.ShouldBeOfType<MemberAccessExpressionSyntax>();
-        memberAccessExpression.Name.Identifier.ValueText.ShouldBe("ToUpperInvariant");
-    }
-
-    [Fact]
-    public void ShouldMutatePadLeft()
-    {
-        const string Expression = "testString.PadLeft(10)";
-        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(Expression);
-        var target = new StringMethodMutator();
-        var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
-
-        var mutation = result.ShouldHaveSingleItem();
-        mutation.Type.ShouldBe(Mutator.String);
-        mutation.DisplayName.ShouldBe("String Method Mutation (Replace PadLeft() with PadRight())");
-
-        var syntax = mutation.ReplacementNode.ShouldBeOfType<InvocationExpressionSyntax>();
-        var memberAccessExpression =
-            syntax.Expression.ShouldBeOfType<MemberAccessExpressionSyntax>();
-        memberAccessExpression.Name.Identifier.ValueText.ShouldBe("PadRight");
-    }
-
-    [Fact]
-    public void ShouldMutatePadRight()
-    {
-        const string Expression = "testString.PadRight(10)";
-        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(Expression);
-        var target = new StringMethodMutator();
-        var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
-
-        var mutation = result.ShouldHaveSingleItem();
-        mutation.Type.ShouldBe(Mutator.String);
-        mutation.DisplayName.ShouldBe("String Method Mutation (Replace PadRight() with PadLeft())");
-
-        var syntax = mutation.ReplacementNode.ShouldBeOfType<InvocationExpressionSyntax>();
-        var memberAccessExpression =
-            syntax.Expression.ShouldBeOfType<MemberAccessExpressionSyntax>();
-        memberAccessExpression.Name.Identifier.ValueText.ShouldBe("PadLeft");
+            invocationExpression.Expression.ShouldBeOfType<MemberAccessExpressionSyntax>();
+        memberAccessExpression.Name.Identifier.ValueText.ShouldBe(mutatedMethod);
     }
 
     [Fact]

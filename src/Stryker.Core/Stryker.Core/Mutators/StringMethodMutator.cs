@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using RegexParser.Nodes.QuantifierNodes;
 using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators;
@@ -31,28 +32,36 @@ public class StringMethodMutator : MutatorBase<ExpressionSyntax>
             yield break;
 
         var identifier = member.Name.Identifier.ValueText;
-        var mutation = identifier switch
+        switch (identifier)
         {
-            "Trim" or "Substring" or "ElementAt" or "ElementAtOrDefault" => ApplyReplaceWithEmptyStringMutation(node,
-                identifier),
-            "EndsWith" => ApplyEndsWithMutation(node, member),
-            "StartsWith" => ApplyStartsWithMutation(node, member),
-            "TrimStart" => ApplyTrimStartMutation(node, member),
-            "TrimEnd" => ApplyTrimEndMutation(node, member),
-            "ToUpper" => ApplyToUpperMutation(node, member),
-            "ToLower" => ApplyToLowerMutation(node, member),
-            "ToUpperInvariant" => ApplyToUpperInvariantMutation(node, member),
-            "ToLowerInvariant" => ApplyToLowerInvariantMutation(node, member),
-            "PadLeft" => ApplyPadLeftMutation(node, member),
-            "PadRight" => ApplyPadRightMutation(node, member),
+            case "Trim" or "Substring" or  "ElementAt" or "ElementAtOrDefault":
+                yield return ApplyReplaceWithEmptyStringMutation(node, identifier);
+                break;
+            default:
+                var replacement = GetReplacement(identifier);
+                if (replacement == null)
+                    yield break;
+
+                yield return ApplyReplaceMutation(node, member, identifier, replacement);
+                break;
+        }
+    }
+
+    private static string GetReplacement(string identifier) =>
+        identifier switch
+        {
+            "EndsWith" => "StartsWith",
+            "StartsWith" => "EndsWith",
+            "TrimStart" => "TrimEnd",
+            "TrimEnd" => "TrimStart",
+            "ToUpper" => "ToLower",
+            "ToLower" => "ToUpper",
+            "ToUpperInvariant" => "ToLowerInvariant",
+            "ToLowerInvariant" => "ToUpperInvariant",
+            "PadLeft" => "PadRight",
+            "PadRight" => "PadLeft",
             _ => null
         };
-
-        if (mutation == null)
-            yield break;
-
-        yield return mutation;
-    }
 
     private static bool IsOperationOnAString(ExpressionSyntax expression, SemanticModel model)
     {
@@ -71,120 +80,17 @@ public class StringMethodMutator : MutatorBase<ExpressionSyntax>
             DisplayName = $"String Method Mutation (Replace {identifier}() with Empty String)",
             Type = Mutator.String
         };
-
-    private Mutation ApplyEndsWithMutation(InvocationExpressionSyntax node, MemberAccessExpressionSyntax member) =>
+    private Mutation ApplyReplaceMutation(InvocationExpressionSyntax node, MemberAccessExpressionSyntax member,
+        string identifier, string replacement) =>
         new()
         {
             OriginalNode = node,
             ReplacementNode = node.ReplaceNode(
                 member.Name,
-                SyntaxFactory.IdentifierName("StartsWith")
+                SyntaxFactory.IdentifierName(replacement)
             ),
-            DisplayName = "String Method Mutation (Replace EndsWith() with StartsWith())",
+            DisplayName = $"String Method Mutation (Replace {identifier}() with {replacement}())",
             Type = Mutator.String
         };
 
-    private Mutation ApplyStartsWithMutation(InvocationExpressionSyntax node, MemberAccessExpressionSyntax member) =>
-        new()
-        {
-            OriginalNode = node,
-            ReplacementNode = node.ReplaceNode(
-                member.Name,
-                SyntaxFactory.IdentifierName("EndsWith")
-            ),
-            DisplayName = "String Method Mutation (Replace StartsWith() with EndsWith())",
-            Type = Mutator.String
-        };
-
-    private Mutation ApplyTrimStartMutation(InvocationExpressionSyntax node, MemberAccessExpressionSyntax member) =>
-        new()
-        {
-            OriginalNode = node,
-            ReplacementNode = node.ReplaceNode(
-                member.Name,
-                SyntaxFactory.IdentifierName("TrimEnd")
-            ),
-            DisplayName = "String Method Mutation (Replace TrimStart() with TrimEnd())",
-            Type = Mutator.String
-        };
-
-    private Mutation ApplyTrimEndMutation(InvocationExpressionSyntax node, MemberAccessExpressionSyntax member) => new()
-    {
-        OriginalNode = node,
-        ReplacementNode = node.ReplaceNode(
-            member.Name,
-            SyntaxFactory.IdentifierName("TrimStart")
-        ),
-        DisplayName = "String Method Mutation (Replace TrimEnd() with TrimStart())",
-        Type = Mutator.String
-    };
-
-    private Mutation ApplyToUpperMutation(InvocationExpressionSyntax node, MemberAccessExpressionSyntax member) => new()
-    {
-        OriginalNode = node,
-        ReplacementNode = node.ReplaceNode(
-            member.Name,
-            SyntaxFactory.IdentifierName("ToLower")
-        ),
-        DisplayName = "String Method Mutation (Replace ToUpper() with ToLower())",
-        Type = Mutator.String
-    };
-
-    private Mutation ApplyToLowerMutation(InvocationExpressionSyntax node, MemberAccessExpressionSyntax member) => new()
-    {
-        OriginalNode = node,
-        ReplacementNode = node.ReplaceNode(
-            member.Name,
-            SyntaxFactory.IdentifierName("ToUpper")
-        ),
-        DisplayName = "String Method Mutation (Replace ToLower() with ToUpper())",
-        Type = Mutator.String
-    };
-
-    private Mutation
-        ApplyToUpperInvariantMutation(InvocationExpressionSyntax node, MemberAccessExpressionSyntax member) => new()
-    {
-        OriginalNode = node,
-        ReplacementNode = node.ReplaceNode(
-            member.Name,
-            SyntaxFactory.IdentifierName("ToLowerInvariant")
-        ),
-        DisplayName = "String Method Mutation (Replace ToUpperInvariant() with ToLowerInvariant())",
-        Type = Mutator.String
-    };
-
-    private Mutation
-        ApplyToLowerInvariantMutation(InvocationExpressionSyntax node, MemberAccessExpressionSyntax member) => new()
-    {
-        OriginalNode = node,
-        ReplacementNode = node.ReplaceNode(
-            member.Name,
-            SyntaxFactory.IdentifierName("ToUpperInvariant")
-        ),
-        DisplayName = "String Method Mutation (Replace ToLowerInvariant() with ToUpperInvariant())",
-        Type = Mutator.String
-    };
-
-    private Mutation ApplyPadLeftMutation(InvocationExpressionSyntax node, MemberAccessExpressionSyntax member) => new()
-    {
-        OriginalNode = node,
-        ReplacementNode = node.ReplaceNode(
-            member.Name,
-            SyntaxFactory.IdentifierName("PadRight")
-        ),
-        DisplayName = "String Method Mutation (Replace PadLeft() with PadRight())",
-        Type = Mutator.String
-    };
-
-    private Mutation ApplyPadRightMutation(InvocationExpressionSyntax node, MemberAccessExpressionSyntax member) =>
-        new()
-        {
-            OriginalNode = node,
-            ReplacementNode = node.ReplaceNode(
-                member.Name,
-                SyntaxFactory.IdentifierName("PadLeft")
-            ),
-            DisplayName = "String Method Mutation (Replace PadRight() with PadLeft())",
-            Type = Mutator.String
-        };
 }
