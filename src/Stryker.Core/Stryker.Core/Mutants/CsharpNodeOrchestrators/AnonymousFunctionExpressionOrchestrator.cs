@@ -10,6 +10,7 @@ internal class AnonymousFunctionExpressionOrchestrator : BaseFunctionOrchestrato
 
     protected override ParameterListSyntax ParameterList(AnonymousFunctionExpressionSyntax node) => node switch {ParenthesizedLambdaExpressionSyntax parenthesizedLambda => parenthesizedLambda.ParameterList,
         SimpleLambdaExpressionSyntax simpleLambda => SyntaxFactory.ParameterList(SyntaxFactory.SingletonSeparatedList(simpleLambda.Parameter)),
+        AnonymousMethodExpressionSyntax anonymousMethod => anonymousMethod.ParameterList,
         _ => throw new ArgumentOutOfRangeException(nameof(node), node, null)
     };
 
