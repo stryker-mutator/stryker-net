@@ -67,14 +67,13 @@ public class InitialisationProcess : IInitialisationProcess
     {
         if (options.IsSolutionContext)
         {
-            var framework = projects.Any(p => p.IsFullFramework);
+            var framework = projects.All(p => p.IsFullFramework);
             // Build the complete solution
             _logger.LogInformation("Building solution {0}", Path.GetRelativePath(options.WorkingDirectory ,options.SolutionPath));
             _initialBuildProcess.InitialBuild(
                 framework,
                 _inputFileResolver.FileSystem.Path.GetDirectoryName(options.SolutionPath),
-                options.SolutionPath, options.Configuration,
-                options.MsBuildPath);
+                options.SolutionPath, options.Configuration, options.MsBuildPath);
         }
         else
         {
@@ -88,7 +87,7 @@ public class InitialisationProcess : IInitialisationProcess
                     testProjects.Count);
 
                 _initialBuildProcess.InitialBuild(
-                    false, //testProjects[i].TargetsFullFramework(),
+                    testProjects[i].TargetsFullFramework(),
                     testProjects[i].ProjectFilePath,
                     options.SolutionPath,
                     options.Configuration,

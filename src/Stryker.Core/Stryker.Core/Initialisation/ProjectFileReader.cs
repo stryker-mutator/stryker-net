@@ -18,6 +18,7 @@ public interface IProjectFileReader
         string targetFramework,
         string configuration,
         string msBuildPath = null);
+
     IAnalyzerManager GetAnalyzerManager(string solutionFilePath = null);
     IAnalyzerResult SelectAnalyzerResult(IEnumerable<IAnalyzerResult> analyzerResults, string targetFramework);
 }
@@ -54,16 +55,15 @@ public class ProjectFileReader : IProjectFileReader
         string configuration,
         string msBuildPath = null)
     {
-        _logger.LogDebug("Analyzing project file {0}", projectFilePath);
-
         // build all projects
         var manager = GetAnalyzerManager(solutionFilePath);
+        _logger.LogDebug("Analyzing project file {0}", projectFilePath);
+
         if (!string.IsNullOrEmpty(configuration))
         {
             manager.SetGlobalProperty("Configuration", configuration);
         }
-
-        var analyzerResult = GetAnalyzerResult(manager.GetProject(projectFilePath).Build(), targetFramework);
+        var analyzerResult = GetAnalyzerResult(manager.GetProject(projectFilePath).Build([targetFramework]), targetFramework);
 
         if (analyzerResult.Succeeded || !analyzerResult.TargetsFullFramework())
         {
@@ -72,8 +72,8 @@ public class ProjectFileReader : IProjectFileReader
 
         // buildalyzer failed to find restored packages, retry after nuget restore
         _logger.LogDebug("Project analyzer result not successful, restoring packages");
-        _nugetRestoreProcess.RestorePackages(solutionFilePath, msBuildPath);
-        analyzerResult = GetAnalyzerResult(manager.GetProject(projectFilePath).Build(), targetFramework);
+        _nugetRestoreProcess.RestorePackages(manager.SolutionFilePath, msBuildPath);
+        analyzerResult = GetAnalyzerResult(manager.GetProject(projectFilePath).Build([targetFramework]), targetFramework);
 
         return analyzerResult;
     }
@@ -126,6 +126,11 @@ public class ProjectFileReader : IProjectFileReader
 
     private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
     {
+        // do not log if trace is not enabled
+        if (!_logger.IsEnabled(LogLevel.Trace))
+        {
+            return;
+        }
         // dump all properties as it can help diagnosing build issues for user project.
         _logger.LogTrace("**** Buildalyzer result ****");
 

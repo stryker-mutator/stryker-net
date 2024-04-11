@@ -24,6 +24,8 @@ public static class IAnalyzerResultExtensions
 
     public static string GetAssemblyPath(this IAnalyzerResult analyzerResult) => FilePathUtils.NormalizePathSeparators(Path.Combine(analyzerResult.GetAssemblyDirectoryPath(), analyzerResult.GetAssemblyFileName()));
 
+    public static string GetReferenceAssemblyPath(this IAnalyzerResult analyzerResult) => FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["TargetRefPath"]);
+
     public static string GetAssemblyName(this IAnalyzerResult analyzerResult) => FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["AssemblyName"]);
 
     public static IEnumerable<ResourceDescription> GetResources(this IAnalyzerResult analyzerResult, ILogger logger)
@@ -133,6 +135,8 @@ public static class IAnalyzerResultExtensions
 
     internal static bool TargetsFullFramework(this IAnalyzerResult analyzerResult)
     {
+        //TODO : remote forced return, for test only
+        return false;
         var nuGetFramework = GetNuGetFramework(analyzerResult);
 
         return nuGetFramework.IsDesktop() && (nuGetFramework.Version.Major<4 || nuGetFramework.Version is { Major: 4, Minor: < 8 });

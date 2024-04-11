@@ -48,35 +48,84 @@ public class InputFileResolver : IInputFileResolver
 
     public IReadOnlyCollection<SourceProjectInfo> ResolveSourceProjectInfos(StrykerOptions options)
     {
-        if (!options.IsSolutionContext)
+        if (options.IsSolutionContext)
         {
-            List<string> testProjectFileNames;
-            if (options.TestProjects != null && options.TestProjects.Any())
-            {
-                testProjectFileNames = options.TestProjects.Select(FindTestProject).ToList();
-            }
-            else
-            {
-                testProjectFileNames = [FindTestProject(options.ProjectPath)];
-            }
-            var testProjects = testProjectFileNames.Select(testProjectFile =>
-                _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework, options.Configuration)).ToList();
+            return AnalyzeSolution(options);
+        }
+        List<string> testProjectFileNames;
+        if (options.TestProjects != null && options.TestProjects.Any())
+        {
+            testProjectFileNames = options.TestProjects.Select(FindTestProject).ToList();
+        }
+        else
+        {
+            testProjectFileNames = [FindTestProject(options.ProjectPath)];
+        }
+        var manager = _projectFileReader.GetAnalyzerManager(options.SolutionPath);
+        foreach(var project in testProjectFileNames)
+        {
+            manager.GetProject(project);
+        }
+        return AnalyzeAndIdentifyProjects(options, manager, ScanMode.SingleLevelScan);
+        /*
+        var testProjects = testProjectFileNames.Select(testProjectFile =>
+            _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework, options.Configuration)).ToList();
 
-            var analyzerResult = _projectFileReader.AnalyzeProject(FindSourceProject(testProjects, options),
-                options.SolutionPath, options.TargetFramework, options.Configuration);
-            return [BuildSourceProjectInfo(options, analyzerResult, testProjects)];
+        var analyzerResult = _projectFileReader.AnalyzeProject(FindSourceProject(testProjects, options),
+            options.SolutionPath, options.TargetFramework, options.Configuration);
+        return [BuildSourceProjectInfo(options, analyzerResult, testProjects)];*/
+    }
+
+    private class DynamicEnumerableQueue<T>
+    {
+        private readonly Queue<T> _queue;
+        private readonly HashSet<T> _cache;
+
+        public DynamicEnumerableQueue(IEnumerable<T> init)
+        {
+            _cache = [..init];
+            _queue = new Queue<T>(_cache);
         }
 
-        // Analyze source project
-        // Analyze all projects in the solution with buildalyzer
-        return AnalyzeSolution(options);
+        public bool Empty => _queue.Count == 0;
+
+        public void Add(T entry)
+        {
+            if (!_cache.Add(entry))
+            {
+                return;
+            }
+            _queue.Enqueue(entry);
+        }
+
+        public IEnumerable<T> Consume()
+        {
+            while(_queue.Count > 0)
+            {
+                yield return _queue.Dequeue();
+            }
+        }
+    }
+
+    private enum ScanMode
+    {
+        NoScan = 0,
+        SingleLevelScan = 1,
+        FullScan = 2
     }
 
     private List<SourceProjectInfo> AnalyzeSolution(StrykerOptions options)
     {
+        var mode = ScanMode.NoScan;
         _logger.LogInformation("Identifying projects to mutate in {0}. This can take a while.", options.SolutionPath);
         var manager = _projectFileReader.GetAnalyzerManager(options.SolutionPath);
 
+        return AnalyzeAndIdentifyProjects(options, manager, mode);
+    }
+
+    private List<SourceProjectInfo> AnalyzeAndIdentifyProjects(StrykerOptions options, IAnalyzerManager manager, ScanMode mode)
+    {
+        var list = new DynamicEnumerableQueue<IProjectAnalyzer>(manager.Projects.Values);
         // build all projects
         var testProjectsAnalyzerResults = new ConcurrentDictionary<string, IAnalyzerResults>();
         var mutableProjectsAnalyzerResults = new ConcurrentDictionary<string, IAnalyzerResults>();
@@ -87,55 +136,91 @@ public class InputFileResolver : IInputFileResolver
         _logger.LogDebug("Analyzing {count} projects.", manager.Projects.Count);
         try
         {
-            Parallel.ForEach(manager.Projects.Values, new ParallelOptions{MaxDegreeOfParallelism = options.DevMode ? 1 : Math.Max(options.Concurrency,1)}, project =>
-            {
-                var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
-                _logger.LogDebug("Analyzing {projectFilePath}", projectLogName);
-                var buildResult = project.Build();
+            var normalizedProjectUnderTestNameFilter = !string.IsNullOrEmpty(options.SourceProjectName) ? options.SourceProjectName.Replace("\\", "/") : null;
 
-                var buildResultOverallSuccess = buildResult.OverallSuccess;
-                if (!buildResultOverallSuccess)
-                {
-                    // if all expected frameworks are built, we consider the build a success
-                    if (project.ProjectFile.TargetFrameworks.All(tf => buildResult.Any( br => IsValid(br) && br.TargetFramework == tf )))
+            while(!list.Empty)
+            {
+                Parallel.ForEach(list.Consume(),
+                    new ParallelOptions
+                        { MaxDegreeOfParallelism = options.DevMode ? 1 : Math.Max(options.Concurrency, 1) }, project =>
                     {
-                        buildResultOverallSuccess = true;
-                    }
-                }
-                if (buildResultOverallSuccess)
-                {
-                    _logger.LogDebug("Analysis of project {projectFilePath} succeeded.", projectLogName);
-                }
-                else
-                {
-                    var failedFrameworks = project.ProjectFile.TargetFrameworks.Where(tf => !buildResult.Any( br => IsValid(br) && br.TargetFramework == tf )).ToList();
-                    _logger.LogWarning("Analysis of project {projectFilePath} failed for frameworks {frameworkList}.", projectLogName, string.Join(',', failedFrameworks));
-                }
-                if (buildResult.First().IsTestProject())
-                    testProjectsAnalyzerResults[project.ProjectFile.Name] = buildResult;
-                else
-                    mutableProjectsAnalyzerResults[project.ProjectFile.Name] = buildResult;
-            });
+                        var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
+                        _logger.LogDebug("Analyzing {projectFilePath}", projectLogName);
+                        var buildResult = project.Build([options.TargetFramework]);
+
+                        var buildResultOverallSuccess = buildResult.OverallSuccess;
+                        if (!buildResultOverallSuccess)
+                        {
+                            // if all expected frameworks are built, we consider the build a success
+                            if (project.ProjectFile.TargetFrameworks.All(tf =>
+                                    buildResult.Any(br => IsValid(br) && br.TargetFramework == tf)))
+                            {
+                                buildResultOverallSuccess = true;
+                            }
+                        }
+
+                        if (buildResultOverallSuccess)
+                        {
+                            _logger.LogDebug("Analysis of project {projectFilePath} succeeded.", projectLogName);
+                        }
+                        else
+                        {
+                            var failedFrameworks = project.ProjectFile.TargetFrameworks.Where(tf =>
+                                !buildResult.Any(br => IsValid(br) && br.TargetFramework == tf)).ToList();
+                            _logger.LogWarning(
+                                "Analysis of project {projectFilePath} failed for frameworks {frameworkList}.",
+                                projectLogName, string.Join(',', failedFrameworks));
+                        }
+
+                        var isTestProject = buildResult.First().IsTestProject();
+                        var isProjectMatch = !isTestProject && (normalizedProjectUnderTestNameFilter == null ||
+                                                                project.ProjectFile.Path.Replace('\\', '/')
+                                                                    .Contains(normalizedProjectUnderTestNameFilter));
+                        if (mode != ScanMode.NoScan)
+                        {
+                            // Stryker will recursively scan projects
+                            // add any project reference to ease progressive discovery (when not using solution file)
+                            foreach (var projectReference in buildResult.SelectMany(p => p.ProjectReferences))
+                            {
+                                // in single level mode we only want to scan the project under test
+                                if (mode == ScanMode.SingleLevelScan && (!isTestProject || (normalizedProjectUnderTestNameFilter != null &&
+                                        !projectReference.Replace('\\', '/')
+                                        .Contains(normalizedProjectUnderTestNameFilter))))
+                                {
+                                    continue;
+                                }
+
+                                if (FileSystem.File.Exists(projectReference))
+                                {
+                                    list.Add(manager.GetProject(projectReference));
+                                }
+                            }
+                        }
+
+                        // tests projects are always added
+                        if (isTestProject)
+                            testProjectsAnalyzerResults[project.ProjectFile.Name] = buildResult;
+                        // we only consider any matching normal project
+                        else if (isProjectMatch)
+                            mutableProjectsAnalyzerResults[project.ProjectFile.Name] = buildResult;
+                    });
+            }
         }
         catch (AggregateException ex)
         {
             throw ex.GetBaseException();
         }
 
-        // we must select projects according to framework settings if any
+        // we match test projects to mutable projects
         var findMutableAnalyzerResults = FindMutableAnalyzerResults(testProjectsAnalyzerResults, mutableProjectsAnalyzerResults);
-        var normalizedProjectUnderTestNameFilter = !string.IsNullOrEmpty(options.SourceProjectName) ? options.SourceProjectName.Replace("\\", "/") : null;
 
         var analyzerResults = findMutableAnalyzerResults.Keys.GroupBy(p => p.ProjectFilePath).ToList();
         var projectInfos = new List<SourceProjectInfo>();
         foreach (var group in analyzerResults)
         {
-            var analyzerResult = _projectFileReader.SelectAnalyzerResult(group.Select(p => p).ToList(), options.TargetFramework);
+            // we must select projects according to framework settings if any
+            var analyzerResult = _projectFileReader.SelectAnalyzerResult(group, options.TargetFramework);
             if (analyzerResult == null)
-            {
-                continue;
-            }
-            if (normalizedProjectUnderTestNameFilter != null && !analyzerResult.ProjectFilePath.Replace('\\', '/').Contains(normalizedProjectUnderTestNameFilter))
             {
                 continue;
             }
@@ -159,7 +244,9 @@ public class InputFileResolver : IInputFileResolver
             var realMutableProjects = mutableProjectsAnalyzerResults.SelectMany(p=>p.Value).Where(p => p.BuildsAnAssembly());
             foreach(var mutableProject in realMutableProjects)
             {
-                if (testProject.References.All( r => !r.Equals(mutableProject.GetAssemblyPath(), StringComparison.OrdinalIgnoreCase)))
+                if (testProject.References.All( r =>
+                !r.Equals(mutableProject.GetAssemblyPath(), StringComparison.OrdinalIgnoreCase) &&
+                !r.Equals(mutableProject.GetReferenceAssemblyPath(), StringComparison.OrdinalIgnoreCase)))
                 {
                     continue;
                 }
@@ -229,26 +316,26 @@ public class InputFileResolver : IInputFileResolver
 
         _logger.LogTrace("Scanned the directory {0} for {1} files: found {2}", path, "*.csproj", projectFiles);
 
-        if (projectFiles.Length > 1)
+        switch (projectFiles.Length)
         {
-            var sb = new StringBuilder();
-            sb.AppendLine("Expected exactly one .csproj file, found more than one:");
-            foreach (var file in projectFiles)
+            case > 1:
             {
-                sb.AppendLine(file);
+                var sb = new StringBuilder();
+                sb.AppendLine("Expected exactly one .csproj file, found more than one:");
+                foreach (var file in projectFiles)
+                {
+                    sb.AppendLine(file);
+                }
+                sb.AppendLine().AppendLine("Please specify a test project name filter that results in one project.");
+                throw new InputException(sb.ToString());
             }
-            sb.AppendLine();
-            sb.AppendLine("Please specify a test project name filter that results in one project.");
-            throw new InputException(sb.ToString());
-        }
+            case 0:
+                throw new InputException($"No .csproj or .fsproj file found, please check your project or solution directory at {path}");
+            default:
+                _logger.LogTrace("Found project file {file} in path {path}", projectFiles.Single(), path);
 
-        if (!projectFiles.Any())
-        {
-            throw new InputException($"No .csproj or .fsproj file found, please check your project or solution directory at {path}");
+                return projectFiles.Single();
         }
-        _logger.LogTrace("Found project file {file} in path {path}", projectFiles.Single(), path);
-
-        return projectFiles.Single();
     }
 
     public string FindSourceProject(IEnumerable<IAnalyzerResult> testProjects, StrykerOptions options)

@@ -377,10 +377,11 @@ public class ProjectOrchestratorTests : TestBase
         buildalyzerAnalyzerManagerMock.Setup(x => x.Projects)
             .Returns(analyzerResults);
         buildalyzerAnalyzerManagerMock.Setup(x => x.SetGlobalProperty(It.IsAny<string>(), It.IsAny<string>()));
+        buildalyzerAnalyzerManagerMock.Setup(x => x.SolutionFilePath).Returns((string)null);
 
         foreach (var analyzerResult in analyzerResults)
         {
-            var filename = analyzerResult.Value.Build().Results.First().ProjectFilePath;
+            var filename = analyzerResult.Value.Build([string.Empty]).Results.First().ProjectFilePath;
             buildalyzerAnalyzerManagerMock.Setup(x => x.GetProject(filename)).Returns(analyzerResult.Value);
         }
 
@@ -427,7 +428,7 @@ public class ProjectOrchestratorTests : TestBase
         var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
 
         var projectReferences =  _projectCache[csProj].ProjectReferences.Append(csProj).ToList();
-        return BuildProjectAnalyzerMock(testCsprojPathName, Array.Empty<string>(), properties, projectReferences, framework, success);
+        return BuildProjectAnalyzerMock(testCsprojPathName, [], properties, projectReferences, framework, success);
     }
 
     /// <summary>
@@ -493,7 +494,7 @@ public class ProjectOrchestratorTests : TestBase
         sourceProjectAnalyzerResultsMock.Setup(x => x.GetEnumerator()).Returns(() => analyzerResults.GetEnumerator());
 
         sourceProjectAnalyzerMock.Setup(x => x.ProjectFile).Returns(sourceProjectFileMock.Object);
-        sourceProjectAnalyzerMock.Setup(x => x.Build()).Returns(sourceProjectAnalyzerResultsMock.Object);
+        sourceProjectAnalyzerMock.Setup(x => x.Build(It.IsAny<string[]>())).Returns(sourceProjectAnalyzerResultsMock.Object);
 
         sourceProjectFileMock.Setup(x => x.Path).Returns(_projectPath);
         sourceProjectFileMock.Setup(x => x.Name).Returns(csprojPathName);
