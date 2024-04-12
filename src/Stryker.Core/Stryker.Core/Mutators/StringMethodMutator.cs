@@ -28,7 +28,7 @@ public class StringMethodMutator : MutatorBase<ExpressionSyntax>
         if (node is not { Expression: MemberAccessExpressionSyntax member })
             yield break;
 
-        if (!IsOperationOnAString(member.Expression, model))
+        if (!IsOperationOnAString(member, model))
             yield break;
 
         var identifier = member.Name.Identifier.ValueText;
@@ -45,7 +45,7 @@ public class StringMethodMutator : MutatorBase<ExpressionSyntax>
                 if (replacement == null)
                     yield break;
 
-                yield return ApplyReplaceMutation(node, member, identifier, replacement);
+                yield return ApplyReplaceMutation(member, identifier, replacement);
                 break;
         }
     }
@@ -72,16 +72,12 @@ public class StringMethodMutator : MutatorBase<ExpressionSyntax>
         return typeInfo.Type?.SpecialType == SpecialType.System_String;
     }
 
-    private Mutation ApplyReplaceMutation(InvocationExpressionSyntax node, MemberAccessExpressionSyntax member,
-        string identifier, string replacement) =>
+    private Mutation ApplyReplaceMutation(MemberAccessExpressionSyntax node, string original, string replacement) =>
         new()
         {
             OriginalNode = node,
-            ReplacementNode = node.ReplaceNode(
-                member.Name,
-                SyntaxFactory.IdentifierName(replacement)
-            ),
-            DisplayName = $"String Method Mutation (Replace {identifier}() with {replacement}())",
+            ReplacementNode = node.WithName(SyntaxFactory.IdentifierName(replacement)),
+            DisplayName = $"String Method Mutation (Replace {original}() with {replacement}())",
             Type = Mutator.String
         };
 

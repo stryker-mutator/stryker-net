@@ -68,11 +68,8 @@ public class StringMethodMutatorTests : TestBase
         mutation.Type.ShouldBe(Mutator.String);
         mutation.DisplayName.ShouldBe(expectedDisplayName);
 
-        var invocationExpression =
-            mutation.ReplacementNode.ShouldBeOfType<InvocationExpressionSyntax>();
-        var memberAccessExpression =
-            invocationExpression.Expression.ShouldBeOfType<MemberAccessExpressionSyntax>();
-        memberAccessExpression.Name.Identifier.ValueText.ShouldBe(mutatedMethod);
+        var access = mutation.ReplacementNode.ShouldBeOfType<MemberAccessExpressionSyntax>();
+        access.Name.Identifier.Text.ShouldBe(mutatedMethod);
     }
 
     [Theory]
