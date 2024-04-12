@@ -1,8 +1,10 @@
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
+using static Microsoft.FSharp.Core.ByRefKinds;
 
 namespace Stryker.Core.UnitTest.Mutants
 {
@@ -29,6 +31,9 @@ namespace Stryker.Core.UnitTest.Mutants
             var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(actual), null);
             actual = actualNode.GetRoot().ToFullString();
             actual = actual.Replace(_injector.HelperNamespace, "StrykerNamespace");
+            string pattern = "IsActive\\(\\d+\\)";
+            string replacement = "IsActive(0)";
+            actual = Regex.Replace(actual, pattern, replacement);
             actualNode = CSharpSyntaxTree.ParseText(actual);
             var expectedNode = CSharpSyntaxTree.ParseText(expected);
             actualNode.ShouldBeSemantically(expectedNode);

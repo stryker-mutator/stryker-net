@@ -72,7 +72,7 @@ if(ActiveMutation == 1) {
                     MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
                 });
 
-            var target = new CSharpRollbackProcess();
+            var target = new CSharpRollbackProcess(new MutantPlacer(new CodeInjection()));
 
             using (var ms = new MemoryStream())
             {
@@ -150,9 +150,7 @@ namespace ExampleProject
                 }
             };
 
-            var rollbackProcess = new CSharpRollbackProcess();
-
-            var target = new CsharpCompilingProcess(input, rollbackProcess, options);
+            var target = new CsharpCompilingProcess(input, placer, options: options);
 
             using var ms = new MemoryStream();
             var result = target.Compile(helpers, ms, null);
@@ -235,9 +233,7 @@ namespace ExampleProject
                 }
             };
 
-            var rollbackProcess = new CSharpRollbackProcess();
-
-            var target = new CsharpCompilingProcess(input, rollbackProcess, options);
+            var target = new CsharpCompilingProcess(input, placer,options: options);
 
             using var ms = new MemoryStream();
             
@@ -306,7 +302,7 @@ namespace ExampleProject
                     MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
                 });
 
-            var target = new CSharpRollbackProcess();
+            var target = new CSharpRollbackProcess(new MutantPlacer(new CodeInjection()));
 
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);
@@ -399,7 +395,7 @@ namespace ExampleProject
                     MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
                 });
 
-            var target = new CSharpRollbackProcess();
+            var target = new CSharpRollbackProcess(new MutantPlacer(new CodeInjection()));
 
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);
@@ -460,7 +456,7 @@ namespace ExampleProject
                     MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
                 });
 
-            var target = new CSharpRollbackProcess();
+            var target = new CSharpRollbackProcess(new MutantPlacer(new CodeInjection()));
 
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);
@@ -559,7 +555,7 @@ namespace ExampleProject
                     MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
                 });
 
-            var target = new CSharpRollbackProcess();
+            var target = new CSharpRollbackProcess(new MutantPlacer(new CodeInjection()));
 
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);
@@ -659,7 +655,7 @@ namespace ExampleProject
                     MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
                 });
 
-            var target = new CSharpRollbackProcess();
+            var target = new CSharpRollbackProcess(new MutantPlacer(new CodeInjection()));
 
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);
@@ -767,7 +763,7 @@ namespace ExampleProject
                     MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
                 });
 
-            var target = new CSharpRollbackProcess();
+            var target = new CSharpRollbackProcess(new MutantPlacer(new CodeInjection()));
 
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);
@@ -833,7 +829,7 @@ namespace ExampleProject
                     MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),
                 });
 
-            var target = new CSharpRollbackProcess();
+            var target = new CSharpRollbackProcess(new MutantPlacer(new CodeInjection()));
 
             using var ms = new MemoryStream();
             var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, false, false);
@@ -868,7 +864,7 @@ namespace ExampleProject
                     MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),
                 });
 
-            var target = new CSharpRollbackProcess();
+            var target = new CSharpRollbackProcess(new MutantPlacer(new CodeInjection()));
 
             using var ms = new MemoryStream();
             var compileResult = compiler.Emit(ms);
