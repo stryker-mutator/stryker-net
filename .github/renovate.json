@@ -33,5 +33,16 @@
       "azure.*pipelines?.*\\.ya?ml$",
       "pipeline-templates/.*\\.ya?ml$"
     ]
-  }
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^libman\\.json$"],
+      "matchStrings": [
+        "\"library\": \"mutation-testing-elements\",\n\\s*\"version\": \"(?<currentValue>.*?)\""
+      ],
+      "depName": "mutation-testing-elements",
+      "datasourceTemplate": "npm"
+    }
+  ]
 }
