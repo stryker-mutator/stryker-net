@@ -6,6 +6,8 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 internal class AnonymousFunctionExpressionOrchestrator : BaseFunctionOrchestrator<AnonymousFunctionExpressionSyntax>
 {
+    public AnonymousFunctionExpressionOrchestrator(MutantPlacer placer) : base(placer) { }
+
     protected override (BlockSyntax block, ExpressionSyntax expression) GetBodies(AnonymousFunctionExpressionSyntax node) => (node.Block, node.ExpressionBody);
 
     protected override ParameterListSyntax ParameterList(AnonymousFunctionExpressionSyntax node) => node switch {ParenthesizedLambdaExpressionSyntax parenthesizedLambda => parenthesizedLambda.ParameterList,

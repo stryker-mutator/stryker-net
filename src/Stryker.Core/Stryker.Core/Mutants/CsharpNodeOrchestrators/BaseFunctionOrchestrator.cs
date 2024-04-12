@@ -16,8 +16,12 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 /// <remarks>This class is helpful because there is no (useful) shared parent class for those syntax construct</remarks>
 internal abstract class BaseFunctionOrchestrator<T> :MemberDefinitionOrchestrator<T>, IInstrumentCode where T : SyntaxNode
 {
-    protected BaseFunctionOrchestrator() => Marker = MutantPlacer.RegisterEngine(this, true);
-
+    private readonly MutantPlacer _placer;
+    protected BaseFunctionOrchestrator(MutantPlacer placer)
+    {
+        _placer = placer;
+        Marker = _placer.RegisterEngine(this, true);
+    }
     private SyntaxAnnotation Marker { get; }
 
     /// <inheritdoc/>
@@ -118,20 +122,20 @@ internal abstract class BaseFunctionOrchestrator<T> :MemberDefinitionOrchestrato
 
             var originalBody = blockBody;
             // inject default initializers (if any)
-            blockBody = MutantPlacer.InjectOutParametersInitialization(blockBody, parameters);
+            blockBody = _placer.InjectOutParametersInitialization(blockBody, parameters);
             if (!wasInExpressionForm)
             {
                 // add ending return (to mitigate compilation error due to control flow change)
                 // not needed for an expression form method as no control flow may be present
-                blockBody = MutantPlacer.AddEndingReturn(blockBody, returnType);
+                blockBody = _placer.AddEndingReturn(blockBody, returnType);
             }
             // do we need to change the body
-            return originalBody == blockBody ? targetNode : SwitchToThisBodies(targetNode, MutantPlacer.AddEndingReturn(blockBody, returnType), null);
+            return originalBody == blockBody ? targetNode : SwitchToThisBodies(targetNode, _placer.AddEndingReturn(blockBody, returnType), null);
         }
 
         targetNode = ConvertToBlockBody(targetNode, returnType);
 
-        var newBody = MutantPlacer.InjectOutParametersInitialization(context.InjectMutations(GetBodies(targetNode).block, GetBodies(sourceNode).expression, !returnType.IsVoid()), parameters);
+        var newBody = _placer.InjectOutParametersInitialization(context.InjectMutations(GetBodies(targetNode).block, GetBodies(sourceNode).expression, !returnType.IsVoid()), parameters);
         targetNode = SwitchToThisBodies(targetNode, newBody, null);
         return targetNode;
     }

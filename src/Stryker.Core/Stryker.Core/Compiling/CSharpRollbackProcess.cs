@@ -27,11 +27,13 @@ namespace Stryker.Core.Compiling
     {
         private List<int> RollBackedIds { get; }
         private ILogger Logger { get; }
+        private MutantPlacer MutantPlacer { get; }
 
-        public CSharpRollbackProcess()
+        public CSharpRollbackProcess(MutantPlacer mutantPlacer)
         {
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<CSharpRollbackProcess>();
             RollBackedIds = new List<int>();
+            MutantPlacer = mutantPlacer;
         }
 
         public CSharpRollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode)

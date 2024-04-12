@@ -11,6 +11,8 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 /// <typeparam name="T">Type of the syntax node, must be derived from <see cref="BaseMethodDeclarationSyntax"/>.</typeparam>
 internal class BaseMethodDeclarationOrchestrator<T> : BaseFunctionOrchestrator<T> where T : BaseMethodDeclarationSyntax
 {
+    public BaseMethodDeclarationOrchestrator(MutantPlacer placer) : base(placer) { }
+
     protected override (BlockSyntax block, ExpressionSyntax expression) GetBodies(T node) => (node.Body, node.ExpressionBody?.Expression);
 
     protected override ParameterListSyntax ParameterList(T node) => node.ParameterList;

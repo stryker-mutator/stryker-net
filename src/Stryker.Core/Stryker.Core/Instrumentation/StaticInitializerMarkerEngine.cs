@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.InjectedHelpers;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Instrumentation
 {
@@ -12,6 +13,8 @@ namespace Stryker.Core.Instrumentation
     internal class StaticInitializerMarkerEngine: BaseEngine<ExpressionSyntax>
     {
         private const string MutantContextValueTrackName = "TrackValue";
+
+        public StaticInitializerMarkerEngine(MutantPlacer placer) : base(placer) { }
 
         public ExpressionSyntax PlaceValueMarker(ExpressionSyntax node, CodeInjection codeInjection)
         {

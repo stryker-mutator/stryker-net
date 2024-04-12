@@ -7,6 +7,8 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 internal class LocalFunctionStatementOrchestrator : BaseFunctionOrchestrator<LocalFunctionStatementSyntax>
 {
+    public LocalFunctionStatementOrchestrator(MutantPlacer placer) : base(placer) { }
+
     protected override (BlockSyntax block, ExpressionSyntax expression) GetBodies(LocalFunctionStatementSyntax node) => (node.Body, node.ExpressionBody?.Expression);
 
     protected override ParameterListSyntax ParameterList(LocalFunctionStatementSyntax node) => node.ParameterList;

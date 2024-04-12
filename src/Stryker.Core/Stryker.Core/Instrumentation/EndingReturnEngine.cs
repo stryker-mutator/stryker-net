@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Instrumentation;
 
@@ -11,6 +12,8 @@ namespace Stryker.Core.Instrumentation;
 /// </summary>
 internal class EndingReturnEngine: BaseEngine<BlockSyntax>
 {
+    public EndingReturnEngine(MutantPlacer placer) : base(placer) { }
+
     public BlockSyntax InjectReturn(BlockSyntax block, TypeSyntax type)
     {
         // if we had no body or the last statement is a return, no need to add one, or this is an iterator method

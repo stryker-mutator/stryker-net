@@ -2,6 +2,7 @@ using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Instrumentation;
 
@@ -10,6 +11,8 @@ namespace Stryker.Core.Instrumentation;
 /// </summary>
 internal class ConditionalInstrumentationEngine : BaseEngine<ParenthesizedExpressionSyntax>
 {
+    public ConditionalInstrumentationEngine(MutantPlacer placer) : base(placer) { }
+
     /// <summary>
     /// Injects a conditional operator with the original code or the mutated one, depending on condition's result.
     /// </summary>

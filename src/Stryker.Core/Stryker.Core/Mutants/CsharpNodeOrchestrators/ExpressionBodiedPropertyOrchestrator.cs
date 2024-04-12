@@ -7,6 +7,8 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 internal class ExpressionBodiedPropertyOrchestrator : BaseFunctionOrchestrator<PropertyDeclarationSyntax>
 {
+    public ExpressionBodiedPropertyOrchestrator(MutantPlacer placer) : base(placer) { }
+
     protected override bool CanHandle(PropertyDeclarationSyntax t) => t.ExpressionBody!= null || (t.Initializer!=null && t.IsStatic());
 
     protected override (BlockSyntax block, ExpressionSyntax expression) GetBodies(PropertyDeclarationSyntax node) => (node.GetAccessor()?.Body, node.ExpressionBody?.Expression);

@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -16,10 +17,11 @@ namespace Stryker.Core.Mutants;
 /// <inheritdoc/>
 public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, SemanticModel>
 {
-    private readonly TypeBasedStrategy<SyntaxNode, INodeOrchestrator> _specificOrchestrator =
-        new();
-
     private ILogger Logger { get; }
+    private IEnumerable<IMutator> Mutators { get; }
+    private readonly TypeBasedStrategy<SyntaxNode, INodeOrchestrator> _specificOrchestrator = new();
+
+    public MutantPlacer Placer { get; }
 
     /// <summary>
     /// <param name="mutators">The mutators that should be active during the mutation process</param>
@@ -35,7 +37,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         _specificOrchestrator.RegisterHandlers(BuildOrchestratorList());
     }
 
-    private static List<INodeOrchestrator> BuildOrchestratorList() =>
+    private List<INodeOrchestrator> BuildOrchestratorList() =>
         new()
         {
             // Those node types describe compile time constants and thus cannot be mutated at run time
@@ -62,16 +64,16 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
             new ConditionalExpressionOrchestrator(),
             // ensure static constructs are marked properly
             new StaticFieldDeclarationOrchestrator(),
-            new StaticConstructorOrchestrator(),
+            new StaticConstructorOrchestrator(Placer),
             // ensure array initializer mutations are controlled at statement level
             new MutateAtStatementLevelOrchestrator<InitializerExpressionSyntax>( t => t.Kind() == SyntaxKind.ArrayInitializerExpression && t.Expressions.Count > 0),
             // ensure properties are properly mutated (including expression to body conversion if required)
-            new ExpressionBodiedPropertyOrchestrator(),
+            new ExpressionBodiedPropertyOrchestrator(Placer),
             // ensure method, lambda... are properly mutated (including expression to body conversion if required)
-            new LocalFunctionStatementOrchestrator(),
-            new AnonymousFunctionExpressionOrchestrator(),
-            new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>(),
-            new AccessorSyntaxOrchestrator(),
+            new LocalFunctionStatementOrchestrator(Placer),
+            new AnonymousFunctionExpressionOrchestrator(Placer),
+            new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>(Placer),
+            new AccessorSyntaxOrchestrator(Placer),
             // ensure declaration are mutated at the block level
             new LocalDeclarationOrchestrator(),
             new InvocationExpressionOrchestrator(),
@@ -110,9 +112,6 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
             new IsPatternExpressionMutator()
         };
 
-    private IEnumerable<IMutator> Mutators { get; }
-
-    public MutantPlacer Placer { get; }
 
     /// <summary>
     /// Recursively mutates a syntax tree
@@ -142,7 +141,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
                 }
 
                 Mutants.Add(newMutant);
-                MutantCount++;
+                Interlocked.Increment(ref MutantCount);
                 mutations.Add(newMutant);
             }
         }

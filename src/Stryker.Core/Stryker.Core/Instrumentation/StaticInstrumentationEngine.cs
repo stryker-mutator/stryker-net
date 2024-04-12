@@ -2,6 +2,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.InjectedHelpers;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Instrumentation
 {
@@ -10,6 +11,8 @@ namespace Stryker.Core.Instrumentation
     /// </summary>
     internal class StaticInstrumentationEngine : BaseEngine<BlockSyntax>
     {
+        public StaticInstrumentationEngine(MutantPlacer placer) : base(placer) { }
+
         /// <summary>
         /// injects a 'using' block with static marker class used by coverage logic.
         /// </summary>

@@ -15,33 +15,42 @@ namespace Stryker.Core.Mutants;
 /// </summary>
 public class MutantPlacer
 {
-    private const string MutationIdMarker = "MutationId";
-    private const string MutationTypeMarker = "MutationType";
+    private static readonly string MutationIdMarker = "MutationId";
+    private static readonly string MutationTypeMarker = "MutationType";
     public static readonly string Injector = "Injector";
+    public static IEnumerable<string> MutationMarkers => new[] { MutationIdMarker, MutationTypeMarker, Injector };
 
-    private static readonly IDictionary<string, IInstrumentCode> InstrumentEngines = new Dictionary<string, IInstrumentCode>();
-    private static readonly HashSet<string> RequireRecursiveRemoval = new();
+    private readonly IDictionary<string, IInstrumentCode> InstrumentEngines = new Dictionary<string, IInstrumentCode>();
+    private readonly HashSet<string> RequireRecursiveRemoval = new();
 
-    private static readonly StaticInstrumentationEngine StaticEngine = new();
-    private static readonly StaticInitializerMarkerEngine StaticInitializerEngine = new();
-    private static readonly IfInstrumentationEngine IfEngine = new();
-    private static readonly ConditionalInstrumentationEngine ConditionalEngine = new();
-    private static readonly EndingReturnEngine EndingReturnEngine = new();
-    private static readonly DefaultInitializationEngine DefaultInitializationEngine = new();
+    private readonly StaticInstrumentationEngine StaticEngine;
+    private readonly StaticInitializerMarkerEngine StaticInitializerEngine;
+    private readonly IfInstrumentationEngine IfEngine;
+    private readonly ConditionalInstrumentationEngine ConditionalEngine;
+    private readonly EndingReturnEngine EndingReturnEngine;
+    private readonly DefaultInitializationEngine DefaultInitializationEngine;
 
     private readonly CodeInjection _injection;
     private ExpressionSyntax _binaryExpression;
     private SyntaxNode _placeHolderNode;
-    public static IEnumerable<string> MutationMarkers => new[] { MutationIdMarker, MutationTypeMarker, Injector };
 
-    public MutantPlacer(CodeInjection injection) => _injection = injection;
+    public MutantPlacer(CodeInjection injection)
+    {
+        _injection = injection;
+        StaticEngine = new(this);
+        StaticInitializerEngine = new(this);
+        IfEngine = new(this);
+        ConditionalEngine = new(this);
+        EndingReturnEngine = new(this);
+        DefaultInitializationEngine = new(this);
+    }
 
     /// <summary>
     /// Register an instrumentation engine
     /// </summary>
     /// <param name="engine">engine to register</param>
     /// <param name="requireRecursive">true if inner injections should be removed first.</param>
-    public static SyntaxAnnotation RegisterEngine(IInstrumentCode engine, bool requireRecursive = false)
+    public SyntaxAnnotation RegisterEngine(IInstrumentCode engine, bool requireRecursive = false)
     {
         if (InstrumentEngines.TryGetValue(engine.InstrumentEngineId, out var existing) && existing!.GetType() != engine.GetType())
         {
@@ -62,7 +71,7 @@ public class MutantPlacer
     /// <param name="propertyType">type to return. if null, ends the statement block with a non-typed 'return default'.</param>
     /// <returns><paramref name="block"/> with an extra return or not</returns>
     /// <remarks>The engine verifies if a return may be useful and does not inject it otherwise. For example, it does nothing if the block is empty, return type is void or if the block already ends with a return or a throw statement.</remarks>
-    public static BlockSyntax AddEndingReturn(BlockSyntax block, TypeSyntax propertyType) =>
+    public BlockSyntax AddEndingReturn(BlockSyntax block, TypeSyntax propertyType) =>
         EndingReturnEngine.InjectReturn(block, propertyType);
 
     /// <summary>
@@ -87,7 +96,7 @@ public class MutantPlacer
     /// <param name="block">block to augment with an initialization block</param>
     /// <returns><paramref name="block"/> with assignment statements in a block.</returns>
     /// <remarks>return <paramref name="block"/> if there is no 'out' parameter.</remarks>
-    public static BlockSyntax InjectOutParametersInitialization(BlockSyntax block, IEnumerable<ParameterSyntax> parameters) =>
+    public BlockSyntax InjectOutParametersInitialization(BlockSyntax block, IEnumerable<ParameterSyntax> parameters) =>
         DefaultInitializationEngine.InjectOutParametersInitialization(block, parameters);
 
     /// <summary>
@@ -125,7 +134,7 @@ public class MutantPlacer
     /// <returns>the node without any injection</returns>
     /// <remarks>only remove injection for <paramref name="nodeToRemove"/> and keep any child one.</remarks>
     /// <exception cref="InvalidOperationException">if there is no trace of a code injection</exception>
-    public static SyntaxNode RemoveMutant(SyntaxNode nodeToRemove)
+    public SyntaxNode RemoveMutant(SyntaxNode nodeToRemove)
     {
         var annotatedNode = nodeToRemove.GetAnnotatedNodes(Injector).FirstOrDefault();
         if (annotatedNode != null)
@@ -145,7 +154,7 @@ public class MutantPlacer
     /// </summary>
     /// <param name="node"></param>
     /// <returns></returns>
-    public static bool RequiresRemovingChildMutations(SyntaxNode node)
+    public bool RequiresRemovingChildMutations(SyntaxNode node)
     {
         var annotations = node.GetAnnotations(MutationMarkers).ToList();
         if (annotations.TrueForAll(a => a.Kind != Injector))

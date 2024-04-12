@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Instrumentation;
 
@@ -17,6 +18,8 @@ namespace Stryker.Core.Instrumentation;
 internal class DefaultInitializationEngine : BaseEngine<BlockSyntax>
 {
     private static readonly SyntaxAnnotation BlockMarker = new("InitializationBlock");
+
+    public DefaultInitializationEngine(MutantPlacer placer) : base(placer) { }
 
     /// <summary>
     /// Add an assignment to default value for the given parameter/variable

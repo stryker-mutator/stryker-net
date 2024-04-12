@@ -54,8 +54,9 @@ namespace Stryker.Core.MutationTest
         public void Mutate(MutationTestInput input)
         {
             var projectInfo = input.SourceProjectInfo.ProjectContents;
-            var orchestrator = _orchestrator ?? new CsharpMutantOrchestrator(new MutantPlacer(input.SourceProjectInfo.CodeInjector), options: _options);
-            var compilingProcess = new CsharpCompilingProcess(input, options: _options);
+            var placer = new MutantPlacer(input.SourceProjectInfo.CodeInjector);
+            var orchestrator = _orchestrator ?? new CsharpMutantOrchestrator(placer, options: _options);
+            var compilingProcess = new CsharpCompilingProcess(input, placer, options: _options);
             var semanticModels = compilingProcess.GetSemanticModels(projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().Select(x => x.SyntaxTree));
 
             // Mutate source files

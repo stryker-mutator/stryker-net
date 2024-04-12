@@ -15,6 +15,7 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Logging;
+using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 
@@ -39,12 +40,13 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
     private readonly ILogger _logger;
 
     public CsharpCompilingProcess(MutationTestInput input,
+        MutantPlacer placer,
         ICSharpRollbackProcess rollbackProcess = null,
         StrykerOptions options = null)
     {
         _input = input;
         _options = options ?? new StrykerOptions();
-        _rollbackProcess = rollbackProcess ?? new CSharpRollbackProcess();
+        _rollbackProcess = rollbackProcess ?? new CSharpRollbackProcess(placer);
         _logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpCompilingProcess>();
     }
 

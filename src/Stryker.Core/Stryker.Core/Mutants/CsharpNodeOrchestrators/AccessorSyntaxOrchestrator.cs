@@ -9,6 +9,8 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 /// </summary>
 internal class AccessorSyntaxOrchestrator : BaseFunctionOrchestrator<AccessorDeclarationSyntax>
 {
+    public AccessorSyntaxOrchestrator(MutantPlacer placer) : base(placer) { }
+
     protected override (BlockSyntax block, ExpressionSyntax expression) GetBodies(AccessorDeclarationSyntax node) => (node.Body, node.ExpressionBody?.Expression);
 
     protected override ParameterListSyntax ParameterList(AccessorDeclarationSyntax node) => SyntaxFactory.ParameterList();

@@ -9,6 +9,8 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 /// </summary>
 internal class StaticConstructorOrchestrator : BaseMethodDeclarationOrchestrator<ConstructorDeclarationSyntax>
 {
+    public StaticConstructorOrchestrator(MutantPlacer placer) : base(placer) { }
+
     protected override bool CanHandle(ConstructorDeclarationSyntax t) => t.IsStatic();
 
     protected override MutationContext PrepareContext(ConstructorDeclarationSyntax node, MutationContext context) => base.PrepareContext(node, context).EnterStatic();
