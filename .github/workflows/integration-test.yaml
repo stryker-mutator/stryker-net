@@ -5,6 +5,7 @@ on: [pull_request]
 
 env:
   NUGET_FEED: https://f.feedz.io/stryker/stryker-net/nuget/index.json
+  FEEDZ_NUGET_API_KEY: T-9O45ZZZ5lwQ6ptrGpDuoX8tdZLliNkScn9k
   RestoreLockedMode: true
   VERSION: "0.0.0-github-${{ github.run_number }}"
 
