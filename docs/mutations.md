@@ -172,8 +172,8 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 |------------------------|----------------------|
 | `Trim()`               | `""`                 |
 | `Substring()`          | `""`                 |
-| `ElementAt()`          | `""`                 |
-| `ElementAtOrDefault()` | `""`                 |
+| `ElementAt()`          | `'\0'`               |
+| `ElementAtOrDefault()` | `'\0'`               |
 | `EndsWith()`           | `StartsWith()`       |
 | `StartsWith()`         | `EndsWith()`         |
 | `TrimStart()`          | `TrimEnd()`          |
