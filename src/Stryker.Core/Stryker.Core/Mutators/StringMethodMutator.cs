@@ -28,7 +28,7 @@ public class StringMethodMutator : MutatorBase<ExpressionSyntax>
         if (node is not { Expression: MemberAccessExpressionSyntax member })
             yield break;
 
-        if (!IsOperationOnAString(member, model))
+        if (!IsOperationOnAString(member.Expression, model))
             yield break;
 
         var identifier = member.Name.Identifier.ValueText;
