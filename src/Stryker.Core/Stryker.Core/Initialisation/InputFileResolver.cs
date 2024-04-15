@@ -116,11 +116,10 @@ public class InputFileResolver : IInputFileResolver
 
     private List<SourceProjectInfo> AnalyzeSolution(StrykerOptions options)
     {
-        var mode = ScanMode.NoScan;
         _logger.LogInformation("Identifying projects to mutate in {0}. This can take a while.", options.SolutionPath);
         var manager = _projectFileReader.GetAnalyzerManager(options.SolutionPath);
 
-        return AnalyzeAndIdentifyProjects(options, manager, mode);
+        return AnalyzeAndIdentifyProjects(options, manager, ScanMode.NoScan);
     }
 
     private List<SourceProjectInfo> AnalyzeAndIdentifyProjects(StrykerOptions options, IAnalyzerManager manager, ScanMode mode)
@@ -182,7 +181,7 @@ public class InputFileResolver : IInputFileResolver
                             // add any project reference to ease progressive discovery (when not using solution file)
                             foreach (var projectReference in buildResult.SelectMany(p => p.ProjectReferences))
                             {
-                                // in single level mode we only want to scan the project under test
+                                // in single level mode we only want to find the referenced test project
                                 if (mode == ScanMode.SingleLevelScan && (!isTestProject || (normalizedProjectUnderTestNameFilter != null &&
                                         !projectReference.Replace('\\', '/')
                                         .Contains(normalizedProjectUnderTestNameFilter))))
@@ -226,7 +225,11 @@ public class InputFileResolver : IInputFileResolver
             }
             projectInfos.Add(BuildSourceProjectInfo(options, analyzerResult, findMutableAnalyzerResults[analyzerResult]));
         }
-
+        if (projectInfos.Count == 0)
+        {
+            _logger.LogError("Project analysis failed.");
+            throw new InputException("No valid project analysis results could be found.");
+        }
         return projectInfos;
     }
 
