@@ -222,18 +222,15 @@
       },
       "Spectre.Console": {
         "type": "Direct",
-        "requested": "[0.48.0, )",
-        "resolved": "0.48.0",
-        "contentHash": "4Mc1UT7Azgtyb8FyNwK5FZmoZbKuT5PmY7ZwaKUytjD5kGFMNBACpOZTwYtkuY377YkYtZYBeDDTJUwTW86QXw==",
-        "dependencies": {
-          "System.Memory": "4.5.5"
-        }
+        "requested": "[0.49.0, )",
+        "resolved": "0.49.0",
+        "contentHash": "1s+hhYq5fcrqCvZhrNOPehAmCZJM6cjro85g1Qirvmm1tys+/sfFJgePCGcxr+S/nONZ/lCDTflPda3C+WlBdg=="
       },
       "Spectre.Console.Analyzer": {
         "type": "Direct",
-        "requested": "[0.48.0, )",
-        "resolved": "0.48.0",
-        "contentHash": "AwFgBqWxHv/pr9OuvB5Ki7daXfZMqMlireArEt9WwO2HZ4cS1XvYhDVu0itseInjZzEA/fJsPN1eqoV3vFNCwA=="
+        "requested": "[0.49.0, )",
+        "resolved": "0.49.0",
+        "contentHash": "LGD32B5ZXloUkalw7bb1udiIvirDsr1Nk/Lt7lKGuiVdR54ZCNnCvCQX3Wc1Mn+z/dJtSCC1/9u37SlqlgJdbw=="
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "Direct",
