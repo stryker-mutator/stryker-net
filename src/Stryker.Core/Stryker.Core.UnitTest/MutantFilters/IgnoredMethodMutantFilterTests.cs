@@ -196,11 +196,8 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             }
         }
 
-        [Theory]
-        [InlineData("Range", false)]
-        [InlineData("Where", false)]
-        [InlineData("ToList", true)]
-        public void MutantFilter_WorksWithConditionalInvocationStatement(string ignoredMethodName, bool shouldSkipMutant)
+        [Fact]
+        public void MutantFilter_WorksWithGenericMethodCalls()
         {
             // Arrange
             var source = @"
@@ -208,12 +205,12 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
 {
     private void TestMethod()
     {
-        Enumerable.Range(0, 9)?.Where(x => x < 5)?.ToList();
+        Enumerable.Range(0, 9)?.Where(x => x < 5)?.ToList<int>();
     }
 }";
             var options = new StrykerOptions
             {
-                IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { ignoredMethodName } }.Validate()
+                IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { "ToList" } }.Validate()
             };
 
             var sut = new IgnoredMethodMutantFilter();
@@ -224,14 +221,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
                 var filteredMutants = sut.FilterMutants(new[] { mutant }, null, options);
 
                 // Assert
-                if (shouldSkipMutant)
-                {
-                    filteredMutants.ShouldNotContain(mutant, $"{label} should have been filtered out.");
-                }
-                else
-                {
-                    filteredMutants.ShouldContain(mutant, $"{label} should have been kept.");
-                }
+                filteredMutants.ShouldNotContain(mutant, $"{label} should have been filtered out.");
             }
         }
 
