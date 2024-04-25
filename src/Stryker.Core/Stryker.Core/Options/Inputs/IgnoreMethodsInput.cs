@@ -15,7 +15,7 @@ namespace Stryker.Core.Options.Inputs
         private static IEnumerable<Regex> ParseRegex(IEnumerable<string> methodPatterns) =>
             methodPatterns
                 .Where(x => !string.IsNullOrEmpty(x))
-                .Select(methodPattern => new Regex("^(?:[^.]*\\.)*" + Regex.Escape(methodPattern).Replace("\\*", "[^.]*") + "$", RegexOptions.IgnoreCase))
+                .Select(methodPattern => new Regex("^(?:[^.]*\\.)*" + Regex.Escape(methodPattern).Replace("\\*", "[^.]*") + "(<[^>]*>)?$", RegexOptions.IgnoreCase))
                 .ToList();
     }
 }

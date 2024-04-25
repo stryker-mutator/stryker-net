@@ -16,6 +16,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 /// <remarks>This class is helpful because there is no (useful) shared parent class for those syntax construct</remarks>
 internal abstract class BaseFunctionOrchestrator<T> :MemberDefinitionOrchestrator<T>, IInstrumentCode where T : SyntaxNode
 {
+
     protected BaseFunctionOrchestrator() => Marker = MutantPlacer.RegisterEngine(this, true);
 
     private SyntaxAnnotation Marker { get; }
@@ -81,7 +82,7 @@ internal abstract class BaseFunctionOrchestrator<T> :MemberDefinitionOrchestrato
     {
         if (node is not T typedNode)
         {
-            throw new InvalidOperationException($"Expected a {typeof(T).ToString()}, found:\n{node.ToFullString()}.");
+            throw new InvalidOperationException($"Expected a {typeof(T)}, found:\n{node.ToFullString()}.");
         }
         var (block, _) = GetBodies(typedNode);
         var expression = block?.Statements[0] switch
@@ -98,6 +99,7 @@ internal abstract class BaseFunctionOrchestrator<T> :MemberDefinitionOrchestrato
     protected override T InjectMutations(T sourceNode, T targetNode, SemanticModel semanticModel, MutationContext context)
     {
         var (blockBody, expressionBody) = GetBodies(targetNode);
+
         if (expressionBody == null && blockBody == null)
         {
             // no implementation provided

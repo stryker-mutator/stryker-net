@@ -5,6 +5,7 @@ on: [pull_request]
 
 env:
   NUGET_FEED: https://f.feedz.io/stryker/stryker-net/nuget/index.json
+  FEEDZ_NUGET_API_KEY: T-9O45ZZZ5lwQ6ptrGpDuoX8tdZLliNkScn9k
   RestoreLockedMode: true
   VERSION: "0.0.0-github-${{ github.run_number }}"
 
@@ -23,8 +24,6 @@ jobs:
         run: dotnet pack ${{ github.workspace }}/src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj -p:PackageVersion=$VERSION --output ${{ github.workspace }}/publish
       - name: Publish integration test package
         run: dotnet nuget push ${{ github.workspace }}/publish/*.nupkg -s $NUGET_FEED -k "$FEEDZ_NUGET_API_KEY"
-        env:
-          FEEDZ_NUGET_API_KEY: ${{ secrets.FEEDZ_NUGET_API_KEY }}
       - name: Install integration test package from feed
         run: dotnet tool install dotnet-stryker --tool-path ${{ github.workspace }}/.nuget/tools --version $VERSION --add-source $NUGET_FEED
       - name: Run integration test

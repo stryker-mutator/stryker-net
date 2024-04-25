@@ -235,6 +235,35 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             }
         }
 
+        [Fact]
+        public void MutantFilter_WorksWithGenericMethodCalls()
+        {
+            // Arrange
+            var source = @"
+public class IgnoredMethodMutantFilter_NestedMethodCalls
+{
+    private void TestMethod()
+    {
+        Enumerable.Range(0, 9)?.Where(x => x < 5)?.ToList<int>();
+    }
+}";
+            var options = new StrykerOptions
+            {
+                IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { "ToList" } }.Validate()
+            };
+
+            var sut = new IgnoredMethodMutantFilter();
+
+            foreach( var (mutant, label) in BuildMutantsToFilter(source, "ToList"))
+            {
+                // Act
+                var filteredMutants = sut.FilterMutants(new[] { mutant }, null, options);
+
+                // Assert
+                filteredMutants.ShouldNotContain(mutant, $"{label} should have been filtered out.");
+            }
+        }
+
         [Theory]
         [InlineData("Dispose")]
         [InlineData("Dispose*")]
