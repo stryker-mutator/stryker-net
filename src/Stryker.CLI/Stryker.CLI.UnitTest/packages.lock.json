@@ -57,12 +57,12 @@
       },
       "Spectre.Console.Testing": {
         "type": "Direct",
-        "requested": "[0.49.0, )",
-        "resolved": "0.49.0",
-        "contentHash": "1/K+SB56wSmq8hUFS1eiqSYuqA56vVF+IREGaSmPyrDO76SecoFkWnXD3wSNTGdX0j7g3puBIq7dwDpuwTMFog==",
+        "requested": "[0.49.1, )",
+        "resolved": "0.49.1",
+        "contentHash": "i31qLh8VAxCVbTYnUT20d5KcizWz3ka81x4Ay4mrO2dgJT0YbpX2AD1CD8jBorpuDxTv0e7pNNSemFEfLgrMmg==",
         "dependencies": {
-          "Spectre.Console": "0.49.0",
-          "Spectre.Console.Cli": "0.49.0"
+          "Spectre.Console": "0.49.1",
+          "Spectre.Console.Cli": "0.49.1"
         }
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
@@ -609,10 +609,10 @@
       },
       "Spectre.Console.Cli": {
         "type": "Transitive",
-        "resolved": "0.49.0",
-        "contentHash": "841g7PhuJFwoCatKKVoIRDaylmcaTxEzTzq7+rGHyVCBUqL7iOH0c5AsGnjgBMzhRDnUUWkP47Ho9WWfqMVqAA==",
+        "resolved": "0.49.1",
+        "contentHash": "wBZzyEbKqfPFFUPhV5E7/k4Kwy4UDO42IVzvzk0C4Pkjjw+NSd0EOBkIutYET4vJY4X81pD9ooQO9gfBGXj4+g==",
         "dependencies": {
-          "Spectre.Console": "0.49.0"
+          "Spectre.Console": "0.49.1"
         }
       },
       "System.Buffers": {
@@ -1636,10 +1636,10 @@
           "Serilog.Extensions.Logging.File": "[3.0.0, )",
           "Serilog.Sinks.Console": "[5.0.1, )",
           "ShellProgressBar": "[5.2.0, )",
-          "Spectre.Console": "[0.49.0, )",
-          "Spectre.Console.Analyzer": "[0.49.0, )",
-          "Stryker.DataCollector": "[4.0.4, )",
-          "Stryker.RegexMutators": "[4.0.4, )",
+          "Spectre.Console": "[0.49.1, )",
+          "Spectre.Console.Analyzer": "[0.49.1, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[21.0.2, )"
         }
       },
@@ -1888,15 +1888,15 @@
       },
       "Spectre.Console": {
         "type": "CentralTransitive",
-        "requested": "[0.49.0, )",
-        "resolved": "0.49.0",
-        "contentHash": "1s+hhYq5fcrqCvZhrNOPehAmCZJM6cjro85g1Qirvmm1tys+/sfFJgePCGcxr+S/nONZ/lCDTflPda3C+WlBdg=="
+        "requested": "[0.49.1, )",
+        "resolved": "0.49.1",
+        "contentHash": "USV+pdu49OJ3nCjxNuw1K9Zw/c1HCBbwbjXZp0EOn6wM99tFdAtN34KEBZUMyRuJuXlUMDqhd8Yq9obW2MslYA=="
       },
       "Spectre.Console.Analyzer": {
         "type": "CentralTransitive",
-        "requested": "[0.49.0, )",
-        "resolved": "0.49.0",
-        "contentHash": "LGD32B5ZXloUkalw7bb1udiIvirDsr1Nk/Lt7lKGuiVdR54ZCNnCvCQX3Wc1Mn+z/dJtSCC1/9u37SlqlgJdbw=="
+        "requested": "[0.49.1, )",
+        "resolved": "0.49.1",
+        "contentHash": "mn0jHMpL1vGKav7LywRvVJ5CW7Xlk/73odVrTsptRNY5+Q0fgPw5hZHQKlPDoVS452RZgUQVvvAo1RARkuy6jg=="
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
