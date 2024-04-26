@@ -16,8 +16,13 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 /// <remarks>This class is helpful because there is no (useful) shared parent class for those syntax construct</remarks>
 internal abstract class BaseFunctionOrchestrator<T> :MemberDefinitionOrchestrator<T>, IInstrumentCode where T : SyntaxNode
 {
+    private readonly SeparatedSyntaxList<ParameterSyntax> _emptyParameterList;
 
-    protected BaseFunctionOrchestrator() => Marker = MutantPlacer.RegisterEngine(this, true);
+    protected BaseFunctionOrchestrator()
+    {
+        Marker = MutantPlacer.RegisterEngine(this, true);
+        _emptyParameterList = SyntaxFactory.SeparatedList<ParameterSyntax>();
+    }
 
     private SyntaxAnnotation Marker { get; }
 
@@ -107,7 +112,7 @@ internal abstract class BaseFunctionOrchestrator<T> :MemberDefinitionOrchestrato
         }
         var wasInExpressionForm = GetBodies(sourceNode).expression != null;
         var returnType = ReturnType(sourceNode);
-        var parameters = ParameterList(sourceNode).Parameters;
+        var parameters = ParameterList(sourceNode)?.Parameters??_emptyParameterList;
 
         // no mutations to inject
         if (!context.HasLeftOverMutations)
