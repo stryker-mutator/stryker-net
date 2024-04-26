@@ -1,7 +1,7 @@
 {
   "version": 1,
   "dependencies": {
-    "net6.0": {
+    "net8.0": {
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
         "requested": "[17.9.0, )",
@@ -62,7 +62,7 @@
       "targetproject": {
         "type": "Project",
         "dependencies": {
-          "Library": "[4.0.4, )"
+          "Library": "[1.0.0, )"
         }
       }
     }
