@@ -113,6 +113,30 @@ public class Csharp11
         // Error CS9035: Required member `Person.FirstName` must be set:
         //person = new Person();
     }
+
+    // nameof attributes
+    [ParameterString(nameof(msg))]
+    public static void Method(string msg)
+    {
+        [ParameterString(nameof(T))]
+        void LocalFunction<T>(T param)
+        { }
+
+        var lambdaExpression = ([ParameterString(nameof(aNumber))] int aNumber) => aNumber.ToString();
+    }
+
+    // verbatim interpolated strings
+    public static void VerbatimInterpolatedStrings()
+    {
+        string name = "John";
+        string message = $@"Hello, {name}";
+        Console.WriteLine(message);
+    }
+
+    private class ParameterStringAttribute : Attribute
+    {
+        public ParameterStringAttribute(string name) { }
+    }
 }
 
 // file type

@@ -1231,7 +1231,7 @@ if(StrykerNamespace.MutantControl.IsActive(3)){;}else{		request.Headers.Add((Str
     }
 
     [Fact]
-    public void ShouldMutateDeleage()
+    public void ShouldMutateDelegate()
     {
         var source = @"private void LocalFun()
 {
