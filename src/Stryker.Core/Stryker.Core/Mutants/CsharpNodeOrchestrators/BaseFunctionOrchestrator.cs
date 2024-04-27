@@ -112,7 +112,7 @@ internal abstract class BaseFunctionOrchestrator<T> :MemberDefinitionOrchestrato
         }
         var wasInExpressionForm = GetBodies(sourceNode).expression != null;
         var returnType = ReturnType(sourceNode);
-        var parameters = ParameterList(sourceNode)?.Parameters??_emptyParameterList;
+        var parameters = ParameterList(sourceNode)?.Parameters ?? _emptyParameterList;
 
         // no mutations to inject
         if (!context.HasLeftOverMutations)
