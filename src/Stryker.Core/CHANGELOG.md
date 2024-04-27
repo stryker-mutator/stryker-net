@@ -1,3 +1,14 @@
+## [4.0.5](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.4...stryker@4.0.5) (2024-04-26)
+
+
+### Bug Fixes
+
+* Concurrency issue with MutantPlacer ([#2914](https://github.com/stryker-mutator/stryker-net/issues/2914)) ([fae558c](https://github.com/stryker-mutator/stryker-net/commit/fae558c2f5155b61c032c589b9d8bc8a44645b9a)), closes [#2916](https://github.com/stryker-mutator/stryker-net/issues/2916)
+* support generic method calls for ignoremethodfilter ([#2918](https://github.com/stryker-mutator/stryker-net/issues/2918)) ([26f299a](https://github.com/stryker-mutator/stryker-net/commit/26f299a67dc283eade86a7e05179148c206a432d))
+* Support mutating anonymous methods (a.k.a delegate) properly ([#2898](https://github.com/stryker-mutator/stryker-net/issues/2898)) ([ead50c3](https://github.com/stryker-mutator/stryker-net/commit/ead50c335b6296dc5a8a188af8b5b78ed45b99e9))
+
+
+
 ## [4.0.4](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.3...stryker@4.0.4) (2024-04-05)
 
 
