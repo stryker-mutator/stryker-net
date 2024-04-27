@@ -54,20 +54,20 @@
       },
       "xunit": {
         "type": "Direct",
-        "requested": "[2.7.1, )",
-        "resolved": "2.7.1",
-        "contentHash": "9o050yCLzPvHxbrAkaHnI1j+YfPvRw+/ncvKbTfzIhO4JvQA0rPgoICJxXHMkscfgXmLFwZ8107ehnMUVzE23A==",
+        "requested": "[2.8.0, )",
+        "resolved": "2.8.0",
+        "contentHash": "US3a3twJziAif1kFPGdk9fALwILHxV0n1roX5j67bN/d3o4DGNLHnV3tr5ZX+uinVrzfkf0avH3zGX8JPBC0qA==",
         "dependencies": {
-          "xunit.analyzers": "1.12.0",
-          "xunit.assert": "2.7.1",
-          "xunit.core": "[2.7.1]"
+          "xunit.analyzers": "1.13.0",
+          "xunit.assert": "2.8.0",
+          "xunit.core": "[2.8.0]"
         }
       },
       "xunit.runner.visualstudio": {
         "type": "Direct",
-        "requested": "[2.5.8, )",
-        "resolved": "2.5.8",
-        "contentHash": "ZJTm71neOfZcUnqdyY0A0Qgcg1162DoOq6+VpCCsOaD9rwCK5alcjOEHeu17sEekzq4qNv3kyelx6lUMsAt/eA=="
+        "requested": "[2.8.0, )",
+        "resolved": "2.8.0",
+        "contentHash": "mqQbS2zr8dfgSWxkNOC6UTzO8JoqpTmM5+FFn2XR/2nVmx2JvEY0YbM5pt2FmXVg9YVe+jKUPHd6KrroyCl67w=="
       },
       "DiffEngine": {
         "type": "Transitive",
@@ -173,37 +173,37 @@
       },
       "xunit.analyzers": {
         "type": "Transitive",
-        "resolved": "1.12.0",
-        "contentHash": "w23LH3aXade2WXKvXi0oA/uV15fpgUMjsPq1x91iQckzgWApgAiijNHmfFQtqNPm41wfrdbRl7nSJRd0yux/dw=="
+        "resolved": "1.13.0",
+        "contentHash": "Pai9YnDV71/Ox14nBHB6/f62iyPyLbmUG/YYMiA4dfdFZvr0gIYE9yGxSr0i5Tr3INK75wgL2MCUNEKpeiZ2Fw=="
       },
       "xunit.assert": {
         "type": "Transitive",
-        "resolved": "2.7.1",
-        "contentHash": "JqvXS4yX+PtJn5BuqoKkYav7I0g4nXcxRbGTomDwVQjFccOdyfYKpuPOHX/DqrPCcL+MIHrGVdP3bveUXlvdnA=="
+        "resolved": "2.8.0",
+        "contentHash": "lwf7Dy5/5HbDkaPx1YrGXCByytCEEcIn+KPI74jh2BD/RU/7RhO8c+S3k0Ph+Mr7+cLf338fl+o6UcgPCLa6PA=="
       },
       "xunit.core": {
         "type": "Transitive",
-        "resolved": "2.7.1",
-        "contentHash": "hcODgS+RXdjmXq0zQzmRbERQgY+bAGGx1bdH3370t/8CTGmIEU2qAc1dQAjIRpARsacR0cj6LLJDUF5BNQNKTQ==",
+        "resolved": "2.8.0",
+        "contentHash": "McSTFGTETCxLpmJKE9TWi9FtFthrRbpRrjz2V2g8sK2wRt1+JHs15vwi+B+nfftFkV9aFWIXZfzZM95TIGZNIA==",
         "dependencies": {
-          "xunit.extensibility.core": "[2.7.1]",
-          "xunit.extensibility.execution": "[2.7.1]"
+          "xunit.extensibility.core": "[2.8.0]",
+          "xunit.extensibility.execution": "[2.8.0]"
         }
       },
       "xunit.extensibility.core": {
         "type": "Transitive",
-        "resolved": "2.7.1",
-        "contentHash": "yLX4XlBFkvNYCzf+DEzlNk45KsSlu9W93IJHBmtUP96qZ9XyRYDFlwMj6BCcOhDKVNrZxSM8bqu4F/Qud4ehxA==",
+        "resolved": "2.8.0",
+        "contentHash": "eBJv9xQeY0p5z+C/L1tFjUFYqtl5pQqIEYCGTMl+MbRzA7sOlgYKwJE//vEePBp+mgBh7NjD0Qhz0liZBYM27w==",
         "dependencies": {
           "xunit.abstractions": "2.0.3"
         }
       },
       "xunit.extensibility.execution": {
         "type": "Transitive",
-        "resolved": "2.7.1",
-        "contentHash": "ei3dKF8agj4UKkJ6KkaZ5/Gcif3if6hBsyzegIQJonZDSKZFvb0AyKtyOhDfggBaXVL5iXZExITdRkfjC95yhw==",
+        "resolved": "2.8.0",
+        "contentHash": "TyyrZesHB9ODZMS9c73OqiBz4x0vL944JCkSPBWW5w6PF2LlUfdfXRjjOhoIOuY6lTmEgl07rS4/Jot9mCYnpg==",
         "dependencies": {
-          "xunit.extensibility.core": "[2.7.1]"
+          "xunit.extensibility.core": "[2.8.0]"
         }
       },
       "stryker.regexmutators": {
