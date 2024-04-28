@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Stryker.Core.Mutants;
 
 namespace Stryker.Core.ProjectComponents
