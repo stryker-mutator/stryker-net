@@ -13,7 +13,9 @@ namespace Stryker.Core.Mutators
         public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node, SemanticModel semanticModel)
         {
             if (node.Kind() != SyntaxKind.CoalesceExpression)
+            {
                 yield break;
+            }
 
             // Flip left and right
             var replacementNode = SyntaxFactory
