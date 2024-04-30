@@ -45,7 +45,7 @@ namespace Stryker.Core.UnitTest.Fsharp
     </ItemGroup>
 </Project>";
         }
-
+        /*
         public void Stryker_FsharpShouldRetrieveSourcefiles()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -77,5 +77,6 @@ namespace Stryker.Core.UnitTest.Fsharp
 
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
+        */
     }
 }

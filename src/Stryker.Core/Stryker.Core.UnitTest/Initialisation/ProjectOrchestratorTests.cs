@@ -366,6 +366,6 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         var initialBuildProcessMock = new Mock<IInitialBuildProcess>();
         return new ProjectOrchestrator(_projectMutatorMock.Object,
             initialBuildProcessMock.Object,
-            new InputFileResolver(FileSystem, new ProjectFileReader(new Mock<INugetRestoreProcess>().Object, _buildalyzerProviderMock.Object)));
+            new InputFileResolver(FileSystem, _buildalyzerProviderMock.Object));
     }
 }

@@ -13,12 +13,6 @@ namespace Stryker.Core.Initialisation;
 
 public interface IProjectFileReader
 {
-    IAnalyzerResult AnalyzeProject(string projectFilePath,
-        string solutionFilePath,
-        string targetFramework,
-        string configuration,
-        string msBuildPath = null);
-
     IAnalyzerManager GetAnalyzerManager(string solutionFilePath = null);
     IAnalyzerResult SelectAnalyzerResult(IEnumerable<IAnalyzerResult> analyzerResults, string targetFramework);
 }
@@ -28,17 +22,13 @@ public interface IProjectFileReader
 /// </summary>
 public class ProjectFileReader : IProjectFileReader
 {
-    private readonly INugetRestoreProcess _nugetRestoreProcess;
     private readonly IBuildalyzerProvider _analyzerProvider;
     private IAnalyzerManager _analyzerManager;
     private readonly ILogger _logger;
     private readonly StringWriter _buildalyzerLog = new();
 
-    public ProjectFileReader(
-        INugetRestoreProcess nugetRestoreProcess = null,
-        IBuildalyzerProvider analyzerProvider = null)
+    public ProjectFileReader(IBuildalyzerProvider analyzerProvider = null)
     {
-        _nugetRestoreProcess = nugetRestoreProcess ?? new NugetRestoreProcess();
         _analyzerProvider = analyzerProvider ?? new BuildalyzerProvider();
         _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectFileReader>();
     }
@@ -47,46 +37,6 @@ public class ProjectFileReader : IProjectFileReader
     {
         _analyzerManager ??= _analyzerProvider.Provide(solutionFilePath, new AnalyzerManagerOptions { LogWriter = _buildalyzerLog });
         return _analyzerManager;
-    }
-
-    public IAnalyzerResult AnalyzeProject(string projectFilePath,
-        string solutionFilePath,
-        string targetFramework,
-        string configuration,
-        string msBuildPath = null)
-    {
-        // build all projects
-        var manager = GetAnalyzerManager(solutionFilePath);
-        _logger.LogDebug("Analyzing project file {0}", projectFilePath);
-
-        if (!string.IsNullOrEmpty(configuration))
-        {
-            manager.SetGlobalProperty("Configuration", configuration);
-        }
-        var analyzerResult = GetAnalyzerResult(manager.GetProject(projectFilePath).Build([targetFramework]), targetFramework);
-
-        if (analyzerResult.Succeeded || !analyzerResult.TargetsFullFramework())
-        {
-            return analyzerResult;
-        }
-
-        // buildalyzer failed to find restored packages, retry after nuget restore
-        _logger.LogDebug("Project analyzer result not successful, restoring packages");
-        _nugetRestoreProcess.RestorePackages(manager.SolutionFilePath, msBuildPath);
-        analyzerResult = GetAnalyzerResult(manager.GetProject(projectFilePath).Build([targetFramework]), targetFramework);
-
-        return analyzerResult;
-    }
-
-    private IAnalyzerResult GetAnalyzerResult(IAnalyzerResults results, string targetFramework)
-    {
-        var result = SelectAnalyzerResult(results, targetFramework);
-        if (!result.Succeeded)
-        {
-            _logger.LogDebug("Project analyzer result not successful");
-        }
-        LogAnalyzerResult(result);
-        return result;
     }
 
     public IAnalyzerResult SelectAnalyzerResult(IEnumerable<IAnalyzerResult> analyzerResults, string targetFramework)
@@ -121,7 +71,7 @@ public class ProjectFileReader : IProjectFileReader
         return firstAnalyzerResult;
     }
 
-    private static readonly HashSet<string> ImportantProperties =
+    private static readonly HashSet<string> importantProperties =
         ["Configuration", "Platform", "AssemblyName", "Configurations"];
 
     private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
@@ -139,7 +89,7 @@ public class ProjectFileReader : IProjectFileReader
         _logger.LogTrace("Succeeded: {0}", analyzerResult.Succeeded);
 
         var properties = analyzerResult.Properties ?? new Dictionary<string, string>();
-        foreach (var property in ImportantProperties)
+        foreach (var property in importantProperties)
         {
             _logger.LogTrace("Property {0}={1}", property, properties.GetValueOrDefault(property)??"'undefined'");
         }
@@ -154,7 +104,7 @@ public class ProjectFileReader : IProjectFileReader
 
         foreach (var property in properties)
         {
-            if (ImportantProperties.Contains(property.Key)) continue; // already logged 
+            if (importantProperties.Contains(property.Key)) continue; // already logged 
             _logger.LogTrace("Property {0}={1}", property.Key, property.Value.Replace(Environment.NewLine, "\\n"));
         }
 

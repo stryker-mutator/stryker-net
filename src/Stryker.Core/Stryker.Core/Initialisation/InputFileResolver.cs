@@ -15,6 +15,7 @@ using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Core.Testing;
 
 namespace Stryker.Core.Initialisation;
 
@@ -32,17 +33,18 @@ public interface IInputFileResolver
 public class InputFileResolver : IInputFileResolver
 {
     private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules", "StrykerOutput" };
-    private readonly IProjectFileReader _projectFileReader;
     private readonly ILogger _logger;
+    private readonly IBuildalyzerProvider _analyzerProvider;
+    private readonly StringWriter _buildalyzerLog = new();
 
-    public InputFileResolver(IFileSystem fileSystem, IProjectFileReader projectFileReader, ILogger<InputFileResolver> logger = null)
+    public InputFileResolver(IFileSystem fileSystem, IBuildalyzerProvider analyzerProvider = null, ILogger<InputFileResolver> logger = null)
     {
         FileSystem = fileSystem;
-        _projectFileReader = projectFileReader ?? new ProjectFileReader();
+        _analyzerProvider = analyzerProvider ?? new BuildalyzerProvider();
         _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<InputFileResolver>();
     }
 
-    public InputFileResolver() : this(new FileSystem(), new ProjectFileReader()) { }
+    public InputFileResolver() : this(new FileSystem()) { }
 
     public IFileSystem FileSystem { get; }
 
@@ -61,50 +63,12 @@ public class InputFileResolver : IInputFileResolver
         {
             testProjectFileNames = [FindTestProject(options.ProjectPath)];
         }
-        var manager = _projectFileReader.GetAnalyzerManager(options.SolutionPath);
+        var manager = _analyzerProvider.Provide(options.SolutionPath, new AnalyzerManagerOptions { LogWriter = _buildalyzerLog });
         foreach(var project in testProjectFileNames)
         {
             manager.GetProject(project);
         }
         return AnalyzeAndIdentifyProjects(options, manager, ScanMode.SingleLevelScan);
-        /*
-        var testProjects = testProjectFileNames.Select(testProjectFile =>
-            _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework, options.Configuration)).ToList();
-
-        var analyzerResult = _projectFileReader.AnalyzeProject(FindSourceProject(testProjects, options),
-            options.SolutionPath, options.TargetFramework, options.Configuration);
-        return [BuildSourceProjectInfo(options, analyzerResult, testProjects)];*/
-    }
-
-    private class DynamicEnumerableQueue<T>
-    {
-        private readonly Queue<T> _queue;
-        private readonly HashSet<T> _cache;
-
-        public DynamicEnumerableQueue(IEnumerable<T> init)
-        {
-            _cache = [..init];
-            _queue = new Queue<T>(_cache);
-        }
-
-        public bool Empty => _queue.Count == 0;
-
-        public void Add(T entry)
-        {
-            if (!_cache.Add(entry))
-            {
-                return;
-            }
-            _queue.Enqueue(entry);
-        }
-
-        public IEnumerable<T> Consume()
-        {
-            while(_queue.Count > 0)
-            {
-                yield return _queue.Dequeue();
-            }
-        }
     }
 
     private enum ScanMode
@@ -117,7 +81,7 @@ public class InputFileResolver : IInputFileResolver
     private List<SourceProjectInfo> AnalyzeSolution(StrykerOptions options)
     {
         _logger.LogInformation("Identifying projects to mutate in {0}. This can take a while.", options.SolutionPath);
-        var manager = _projectFileReader.GetAnalyzerManager(options.SolutionPath);
+        var manager = _analyzerProvider.Provide(options.SolutionPath, new AnalyzerManagerOptions { LogWriter = _buildalyzerLog });
 
         return AnalyzeAndIdentifyProjects(options, manager, ScanMode.NoScan);
     }
@@ -133,10 +97,10 @@ public class InputFileResolver : IInputFileResolver
             manager.SetGlobalProperty("Configuration", options.Configuration);
         }
         _logger.LogDebug("Analyzing {count} projects.", manager.Projects.Count);
+        var failedProjects = new ConcurrentBag<IProjectAnalyzer>();
         try
         {
             var normalizedProjectUnderTestNameFilter = !string.IsNullOrEmpty(options.SourceProjectName) ? options.SourceProjectName.Replace("\\", "/") : null;
-
             while(!list.Empty)
             {
                 Parallel.ForEach(list.Consume(),
@@ -169,6 +133,7 @@ public class InputFileResolver : IInputFileResolver
                             _logger.LogWarning(
                                 "Analysis of project {projectFilePath} failed for frameworks {frameworkList}.",
                                 projectLogName, string.Join(',', failedFrameworks));
+                            failedProjects.Add(project);
                         }
 
                         var isTestProject = buildResult.First().IsTestProject();
@@ -209,7 +174,10 @@ public class InputFileResolver : IInputFileResolver
         {
             throw ex.GetBaseException();
         }
-
+        if (options.DevMode)
+        {
+            ReportFailedProject(failedProjects);
+        }
         // we match test projects to mutable projects
         var findMutableAnalyzerResults = FindMutableAnalyzerResults(testProjectsAnalyzerResults, mutableProjectsAnalyzerResults);
 
@@ -218,7 +186,7 @@ public class InputFileResolver : IInputFileResolver
         foreach (var group in analyzerResults)
         {
             // we must select projects according to framework settings if any
-            var analyzerResult = _projectFileReader.SelectAnalyzerResult(group, options.TargetFramework);
+            var analyzerResult = SelectAnalyzerResult(group, options.TargetFramework);
             if (analyzerResult == null)
             {
                 continue;
@@ -231,6 +199,43 @@ public class InputFileResolver : IInputFileResolver
             throw new InputException("No valid project analysis results could be found.");
         }
         return projectInfos;
+    }
+
+    private void ReportFailedProject(ConcurrentBag<IProjectAnalyzer> failedProjects)
+    {
+        throw new NotImplementedException();
+    }
+
+    public IAnalyzerResult SelectAnalyzerResult(IEnumerable<IAnalyzerResult> analyzerResults, string targetFramework)
+    {
+        var validResults = analyzerResults.Where(a => a.TargetFramework is not null).ToList();
+        if (validResults.Count == 0)
+        {
+            _logger.LogError("Project analysis failed. The MsBuild log is below.");
+            //_logger.LogError(_buildalyzerLog.ToString());
+            throw new InputException("No valid project analysis results could be found.");
+        }
+
+        if (targetFramework is null)
+        {
+            return validResults.First();
+        }
+
+        var resultForRequestedFramework = validResults.FirstOrDefault(a => a.TargetFramework == targetFramework);
+        if (resultForRequestedFramework is not null)
+        {
+            return resultForRequestedFramework;
+        }
+
+        var firstAnalyzerResult = validResults.First();
+        var availableFrameworks = validResults.Select(a => a.TargetFramework).Distinct();
+        var firstFramework = firstAnalyzerResult.TargetFramework;
+        _logger.LogWarning(
+            $"Could not find a project analysis for the chosen target framework {targetFramework}. \n" +
+            $"The available target frameworks are: {string.Join(',', availableFrameworks)}. \n" +
+            $"The first available framework will be selected, which is {firstFramework}.");
+
+        return firstAnalyzerResult;
     }
 
     // checks if an analyzer result is valid
@@ -445,4 +450,35 @@ public class InputFileResolver : IInputFileResolver
             FileSystem),
         _ => throw new NotSupportedException($"Language not supported: {language}")
     };
+
+    private class DynamicEnumerableQueue<T>
+    {
+        private readonly Queue<T> _queue;
+        private readonly HashSet<T> _cache;
+
+        public DynamicEnumerableQueue(IEnumerable<T> init)
+        {
+            _cache = [..init];
+            _queue = new Queue<T>(_cache);
+        }
+
+        public bool Empty => _queue.Count == 0;
+
+        public void Add(T entry)
+        {
+            if (!_cache.Add(entry))
+            {
+                return;
+            }
+            _queue.Enqueue(entry);
+        }
+
+        public IEnumerable<T> Consume()
+        {
+            while(_queue.Count > 0)
+            {
+                yield return _queue.Dequeue();
+            }
+        }
+    }
 }
