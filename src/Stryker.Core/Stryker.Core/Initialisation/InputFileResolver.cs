@@ -112,14 +112,11 @@ public class InputFileResolver : IInputFileResolver
                         var buildResult = project.Build([options.TargetFramework]);
 
                         var buildResultOverallSuccess = buildResult.OverallSuccess;
-                        if (!buildResultOverallSuccess)
+                        if (!buildResultOverallSuccess && Array.TrueForAll(project.ProjectFile.TargetFrameworks,tf =>
+                                buildResult.Any(br => IsValid(br) && br.TargetFramework == tf)))
                         {
                             // if all expected frameworks are built, we consider the build a success
-                            if (project.ProjectFile.TargetFrameworks.All(tf =>
-                                    buildResult.Any(br => IsValid(br) && br.TargetFramework == tf)))
-                            {
-                                buildResultOverallSuccess = true;
-                            }
+                            buildResultOverallSuccess = true;
                         }
 
                         if (buildResultOverallSuccess)
@@ -218,22 +215,25 @@ public class InputFileResolver : IInputFileResolver
 
         if (targetFramework is null)
         {
-            return validResults.First();
+            // any framework will do
+            return validResults[0];
         }
 
-        var resultForRequestedFramework = validResults.FirstOrDefault(a => a.TargetFramework == targetFramework);
+        var resultForRequestedFramework = validResults.Find(a => a.TargetFramework == targetFramework);
         if (resultForRequestedFramework is not null)
         {
             return resultForRequestedFramework;
         }
 
-        var firstAnalyzerResult = validResults.First();
+        var firstAnalyzerResult = validResults[0];
         var availableFrameworks = validResults.Select(a => a.TargetFramework).Distinct();
         var firstFramework = firstAnalyzerResult.TargetFramework;
         _logger.LogWarning(
-            $"Could not find a project analysis for the chosen target framework {targetFramework}. \n" +
-            $"The available target frameworks are: {string.Join(',', availableFrameworks)}. \n" +
-            $"The first available framework will be selected, which is {firstFramework}.");
+            """
+             Could not find a project analysis for the chosen target framework {0}.
+             The available target frameworks are: {1}.
+                  first available framework will be selected, which is {2}.
+             """, targetFramework, string.Join(',', availableFrameworks), firstFramework);
 
         return firstAnalyzerResult;
     }
@@ -252,9 +252,9 @@ public class InputFileResolver : IInputFileResolver
             var realMutableProjects = mutableProjectsAnalyzerResults.SelectMany(p=>p.Value).Where(p => p.BuildsAnAssembly());
             foreach(var mutableProject in realMutableProjects)
             {
-                if (testProject.References.All( r =>
-                !r.Equals(mutableProject.GetAssemblyPath(), StringComparison.OrdinalIgnoreCase) &&
-                !r.Equals(mutableProject.GetReferenceAssemblyPath(), StringComparison.OrdinalIgnoreCase)))
+                if (Array.TrueForAll( testProject.References,  r =>
+                    !r.Equals(mutableProject.GetAssemblyPath(), StringComparison.OrdinalIgnoreCase) &&
+                    !r.Equals(mutableProject.GetReferenceAssemblyPath(), StringComparison.OrdinalIgnoreCase)))
                 {
                     continue;
                 }
@@ -451,7 +451,7 @@ public class InputFileResolver : IInputFileResolver
         _ => throw new NotSupportedException($"Language not supported: {language}")
     };
 
-    private class DynamicEnumerableQueue<T>
+    private sealed class DynamicEnumerableQueue<T>
     {
         private readonly Queue<T> _queue;
         private readonly HashSet<T> _cache;
