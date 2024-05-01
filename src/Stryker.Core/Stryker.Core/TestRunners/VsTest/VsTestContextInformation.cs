@@ -27,7 +27,6 @@ public sealed class VsTestContextInformation : IDisposable
     private readonly bool _ownVsTestHelper;
     private readonly IVsTestHelper _vsTestHelper;
     private readonly Func<ConsoleParameters, IVsTestConsoleWrapper> _wrapperBuilder;
-    private Dictionary<string, (string framework, string platform)> _runSettings = new();
     private bool _disposed;
     private TestFrameworks _testFramework;
 
@@ -185,7 +184,6 @@ public sealed class VsTestContextInformation : IDisposable
 
         if (!TestsPerSource.ContainsKey(source))
         {
-            _runSettings[source] = (frameworkVersion, platform);
             DiscoverTestsInSources(source, frameworkVersion, platform);
         }
 

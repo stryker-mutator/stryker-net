@@ -58,8 +58,7 @@ public sealed class VsTestRunner : IDisposable
                 var vsTestDescription = new VsTestDescription(result.TestCase);
                 _context.VsTests[result.TestCase.Id] = vsTestDescription;
                 _context.Tests.RegisterTest(vsTestDescription.Description);
-                _logger.LogWarning($"{RunnerId}: Initial test run encounter an unexpected test case ({vsTestDescription.Description.Name}), mutation tests may be inaccurate. Disable coverage analysis if you have doubts.",
-                    RunnerId, result.TestCase.DisplayName);
+                _logger.LogWarning($"{RunnerId}: Initial test run encounter an unexpected test case ({vsTestDescription.Description.Name}), mutation tests may be inaccurate. Disable coverage analysis if you have doubts.");
             }
 
             _context.VsTests[result.TestCase.Id].RegisterInitialTestResult(result);

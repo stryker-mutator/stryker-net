@@ -96,7 +96,6 @@ public class InputFileResolver : IInputFileResolver
             manager.SetGlobalProperty("Configuration", options.Configuration);
         }
         _logger.LogDebug("Analyzing {count} projects.", manager.Projects.Count);
-        var failedProjects = new ConcurrentBag<IProjectAnalyzer>();
         try
         {
             var normalizedProjectUnderTestNameFilter = !string.IsNullOrEmpty(options.SourceProjectName) ? options.SourceProjectName.Replace("\\", "/") : null;
@@ -106,14 +105,15 @@ public class InputFileResolver : IInputFileResolver
                     new ParallelOptions
                         { MaxDegreeOfParallelism = options.DevMode ? 1 : Math.Max(options.Concurrency, 1) }, project =>
                     {
-                        var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
-                        _logger.LogDebug("Analyzing {projectFilePath}", projectLogName);
-                        var buildResult = project.Build([options.TargetFramework]);
                         if (options.DevMode)
                         {
                             // clear the logs for the next project
                             _buildalyzerLog.GetStringBuilder().Clear();
                         }
+                        var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
+                        _logger.LogDebug("Analyzing {projectFilePath}", projectLogName);
+                        var buildResult = project.Build([options.TargetFramework]);
+
                         var buildResultOverallSuccess = buildResult.OverallSuccess;
                         if (!buildResultOverallSuccess && Array.TrueForAll(project.ProjectFile.TargetFrameworks,tf =>
                                 buildResult.Any(br => IsValid(br) && br.TargetFramework == tf)))
@@ -140,8 +140,8 @@ public class InputFileResolver : IInputFileResolver
 
                             if (options.DevMode)
                             {
-                                _logger.LogError("Project analysis failed. The MsBuild log is below.");
-                                _logger.LogError(_buildalyzerLog.ToString());
+                                _logger.LogWarning("Project analysis failed. The MsBuild log is below.");
+                                _logger.LogInformation(_buildalyzerLog.ToString());
                             }
                         }
 
@@ -217,34 +217,36 @@ public class InputFileResolver : IInputFileResolver
         {
             return;
         }
+        var log = new StringBuilder();
         // dump all properties as it can help diagnosing build issues for user project.
-        _logger.LogTrace("**** Buildalyzer result ****");
+        log.AppendLine("**** Buildalyzer result ****");
 
-        _logger.LogTrace("Project: {0}", analyzerResult.ProjectFilePath);
-        _logger.LogTrace("TargetFramework: {0}", analyzerResult.TargetFramework);
-        _logger.LogTrace("Succeeded: {0}", analyzerResult.Succeeded);
+        log.AppendLine($"Project: {analyzerResult.ProjectFilePath}");
+        log.AppendLine($"TargetFramework: {analyzerResult.TargetFramework}" );
+        log.AppendLine("Succeeded: {analyzerResult.Succeeded}");
 
         var properties = analyzerResult.Properties ?? new Dictionary<string, string>();
         foreach (var property in importantProperties)
         {
-            _logger.LogTrace("Property {0}={1}", property, properties.GetValueOrDefault(property)??"'undefined'");
+            log.AppendLine($"Property {property}={properties.GetValueOrDefault(property)??"\"'undefined'\""}");
         }
         foreach (var sourceFile in analyzerResult.SourceFiles ?? Enumerable.Empty<string>())
         {
-            _logger.LogTrace("SourceFile {0}", sourceFile);
+            log.AppendLine($"SourceFile {sourceFile}");
         }
         foreach (var reference in analyzerResult.References ?? Enumerable.Empty<string>())
         {
-            _logger.LogTrace("References: {0} (in {1})", Path.GetFileName(reference), Path.GetDirectoryName(reference));
+            log.AppendLine($"References: {Path.GetFileName(reference)} (in {Path.GetDirectoryName(reference)})");
         }
 
         foreach (var property in properties)
         {
             if (importantProperties.Contains(property.Key)) continue; // already logged 
-            _logger.LogTrace("Property {0}={1}", property.Key, property.Value.Replace(Environment.NewLine, "\\n"));
+            log.AppendLine($"Property {property.Key}={property.Value.Replace(Environment.NewLine, "\\n")}");
         }
 
-        _logger.LogTrace("**** Buildalyzer result ****");
+        log.AppendLine("**** Buildalyzer result ****");
+        _logger.LogTrace(log.ToString());
     }
 
     public IAnalyzerResult SelectAnalyzerResult(IEnumerable<IAnalyzerResult> analyzerResults, string targetFramework)
@@ -252,8 +254,6 @@ public class InputFileResolver : IInputFileResolver
         var validResults = analyzerResults.Where(a => a.TargetFramework is not null).ToList();
         if (validResults.Count == 0)
         {
-            _logger.LogError("Project analysis failed. The MsBuild log is below.");
-            //_logger.LogError(_buildalyzerLog.ToString());
             throw new InputException("No valid project analysis results could be found.");
         }
 
