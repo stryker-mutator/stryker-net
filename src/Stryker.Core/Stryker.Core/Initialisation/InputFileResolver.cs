@@ -74,14 +74,13 @@ public class InputFileResolver : IInputFileResolver
     private enum ScanMode
     {
         NoScan = 0,
-        SingleLevelScan = 1,
-        FullScan = 2
+        SingleLevelScan = 1
     }
 
     private List<SourceProjectInfo> AnalyzeSolution(StrykerOptions options)
     {
         _logger.LogInformation("Identifying projects to mutate in {0}. This can take a while.", options.SolutionPath);
-        var manager = _analyzerProvider.Provide(options.SolutionPath, new AnalyzerManagerOptions { LogWriter = _buildalyzerLog });
+        var manager = _analyzerProvider.Provide(options.SolutionPath, options.DevMode ? new AnalyzerManagerOptions { LogWriter = _buildalyzerLog }: null);
 
         return AnalyzeAndIdentifyProjects(options, manager, ScanMode.NoScan);
     }
@@ -110,7 +109,11 @@ public class InputFileResolver : IInputFileResolver
                         var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
                         _logger.LogDebug("Analyzing {projectFilePath}", projectLogName);
                         var buildResult = project.Build([options.TargetFramework]);
-
+                        if (options.DevMode)
+                        {
+                            // clear the logs for the next project
+                            _buildalyzerLog.GetStringBuilder().Clear();
+                        }
                         var buildResultOverallSuccess = buildResult.OverallSuccess;
                         if (!buildResultOverallSuccess && Array.TrueForAll(project.ProjectFile.TargetFrameworks,tf =>
                                 buildResult.Any(br => IsValid(br) && br.TargetFramework == tf)))
@@ -122,6 +125,10 @@ public class InputFileResolver : IInputFileResolver
                         if (buildResultOverallSuccess)
                         {
                             _logger.LogDebug("Analysis of project {projectFilePath} succeeded.", projectLogName);
+                            if (options.DevMode)
+                            {
+                                LogAnalyzerResult(buildResult.First());
+                            }
                         }
                         else
                         {
@@ -130,7 +137,12 @@ public class InputFileResolver : IInputFileResolver
                             _logger.LogWarning(
                                 "Analysis of project {projectFilePath} failed for frameworks {frameworkList}.",
                                 projectLogName, string.Join(',', failedFrameworks));
-                            failedProjects.Add(project);
+
+                            if (options.DevMode)
+                            {
+                                _logger.LogError("Project analysis failed. The MsBuild log is below.");
+                                _logger.LogError(_buildalyzerLog.ToString());
+                            }
                         }
 
                         var isTestProject = buildResult.First().IsTestProject();
@@ -171,10 +183,7 @@ public class InputFileResolver : IInputFileResolver
         {
             throw ex.GetBaseException();
         }
-        if (options.DevMode)
-        {
-            ReportFailedProject(failedProjects);
-        }
+
         // we match test projects to mutable projects
         var findMutableAnalyzerResults = FindMutableAnalyzerResults(testProjectsAnalyzerResults, mutableProjectsAnalyzerResults);
 
@@ -198,9 +207,44 @@ public class InputFileResolver : IInputFileResolver
         return projectInfos;
     }
 
-    private void ReportFailedProject(ConcurrentBag<IProjectAnalyzer> failedProjects)
+    private static readonly HashSet<string> importantProperties =
+        ["Configuration", "Platform", "AssemblyName", "Configurations"];
+
+    private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
     {
-        throw new NotImplementedException();
+        // do not log if trace is not enabled
+        if (!_logger.IsEnabled(LogLevel.Trace))
+        {
+            return;
+        }
+        // dump all properties as it can help diagnosing build issues for user project.
+        _logger.LogTrace("**** Buildalyzer result ****");
+
+        _logger.LogTrace("Project: {0}", analyzerResult.ProjectFilePath);
+        _logger.LogTrace("TargetFramework: {0}", analyzerResult.TargetFramework);
+        _logger.LogTrace("Succeeded: {0}", analyzerResult.Succeeded);
+
+        var properties = analyzerResult.Properties ?? new Dictionary<string, string>();
+        foreach (var property in importantProperties)
+        {
+            _logger.LogTrace("Property {0}={1}", property, properties.GetValueOrDefault(property)??"'undefined'");
+        }
+        foreach (var sourceFile in analyzerResult.SourceFiles ?? Enumerable.Empty<string>())
+        {
+            _logger.LogTrace("SourceFile {0}", sourceFile);
+        }
+        foreach (var reference in analyzerResult.References ?? Enumerable.Empty<string>())
+        {
+            _logger.LogTrace("References: {0} (in {1})", Path.GetFileName(reference), Path.GetDirectoryName(reference));
+        }
+
+        foreach (var property in properties)
+        {
+            if (importantProperties.Contains(property.Key)) continue; // already logged 
+            _logger.LogTrace("Property {0}={1}", property.Key, property.Value.Replace(Environment.NewLine, "\\n"));
+        }
+
+        _logger.LogTrace("**** Buildalyzer result ****");
     }
 
     public IAnalyzerResult SelectAnalyzerResult(IEnumerable<IAnalyzerResult> analyzerResults, string targetFramework)
@@ -307,6 +351,12 @@ public class InputFileResolver : IInputFileResolver
 
     private string FindProjectFile(string path)
     {
+
+        if (string.IsNullOrEmpty(path))
+        {
+            throw new ArgumentNullException(path, "Project path cannot be null or empty.");
+        }
+
         if (FileSystem.File.Exists(path) && (FileSystem.Path.HasExtension(".csproj") || FileSystem.Path.HasExtension(".fsproj")))
         {
             return path;
@@ -389,7 +439,7 @@ public class InputFileResolver : IInputFileResolver
         throw new InputException(stringBuilder.ToString());
     }
 
-    private string DetermineTargetProjectWithoutNameFilter(IReadOnlyCollection<string> projectReferences)
+    private static string DetermineTargetProjectWithoutNameFilter(IReadOnlyCollection<string> projectReferences)
     {
         var count = projectReferences.Count;
         if (count == 1)
