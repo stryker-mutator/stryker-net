@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
@@ -31,13 +32,13 @@ public class BuildAnalyzerTestsBase : TestBase
     /// <param name="csprojPathName">project pathname</param>
     /// <param name="sourceFiles">project source files</param>
     /// <param name="projectReferences">project references</param>
-    protected Mock<IProjectAnalyzer> SourceProjectAnalyzerMock(string csprojPathName, string[] sourceFiles, IEnumerable<string> projectReferences = null)
+    protected Mock<IProjectAnalyzer> SourceProjectAnalyzerMock(string csprojPathName, string[] sourceFiles, IEnumerable<string> projectReferences = null, string framework = "net6.0", Func<bool> success = null)
     {
         var properties = new Dictionary<string, string>
             { { "IsTestProject", "False" }, { "ProjectTypeGuids", "not testproject" }, { "Language", "C#" } };
         projectReferences??= new List<string>();
 
-        return BuildProjectAnalyzerMock(csprojPathName, sourceFiles, properties, projectReferences);
+        return BuildProjectAnalyzerMock(csprojPathName, sourceFiles, properties, projectReferences, framework, success);
     }
 
     /// <summary>
@@ -54,7 +55,7 @@ public class BuildAnalyzerTestsBase : TestBase
         var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
 
         var projectReferences =  _projectCache[csProj].ProjectReferences.Append(csProj).ToList();
-        return BuildProjectAnalyzerMock(testCsprojPathName, [], properties, projectReferences, framework, success);
+        return BuildProjectAnalyzerMock(testCsprojPathName, [], properties, projectReferences, framework, () => success);
     }
 
     /// <summary>
@@ -74,12 +75,12 @@ public class BuildAnalyzerTestsBase : TestBase
         string[] sourceFiles, Dictionary<string, string> properties,
         IEnumerable<string> projectReferences = null,
         string framework = "net6.0",    
-        bool success = true)
+        Func<bool> success = null)
     {
         var sourceProjectAnalyzerMock = new Mock<IProjectAnalyzer>(MockBehavior.Strict);
         var sourceProjectAnalyzerResultMock = new Mock<IAnalyzerResult>(MockBehavior.Strict);
         var sourceProjectFileMock = new Mock<IProjectFile>(MockBehavior.Strict);
-
+        success??= () => true;
         projectReferences ??= [];
 
         // create dummy project and source files
@@ -127,7 +128,7 @@ public class BuildAnalyzerTestsBase : TestBase
     {
         IEnumerable<IAnalyzerResult> analyzerResults = [ sourceProjectAnalyzerResult];
         var sourceProjectAnalyzerResultsMock = new Mock<IAnalyzerResults>(MockBehavior.Strict);
-        sourceProjectAnalyzerResultsMock.Setup(x => x.OverallSuccess).Returns(analyzerResults.All(r=> r.Succeeded));
+        sourceProjectAnalyzerResultsMock.Setup(x => x.OverallSuccess).Returns(() => analyzerResults.All(r=> r.Succeeded));
         sourceProjectAnalyzerResultsMock.Setup(x => x.Results).Returns(analyzerResults);
         sourceProjectAnalyzerResultsMock.Setup(x => x.GetEnumerator()).Returns(() => analyzerResults.GetEnumerator());
         return sourceProjectAnalyzerResultsMock.Object;

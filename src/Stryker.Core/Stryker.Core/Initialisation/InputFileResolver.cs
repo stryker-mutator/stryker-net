@@ -16,6 +16,7 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Testing;
+using static FSharp.Compiler.Symbols.FSharpImplementationFileDeclaration;
 
 namespace Stryker.Core.Initialisation;
 
@@ -35,12 +36,17 @@ public class InputFileResolver : IInputFileResolver
     private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules", "StrykerOutput" };
     private readonly ILogger _logger;
     private readonly IBuildalyzerProvider _analyzerProvider;
+    private readonly INugetRestoreProcess _nugetRestoreProcess;
+
     private readonly StringWriter _buildalyzerLog = new();
 
-    public InputFileResolver(IFileSystem fileSystem, IBuildalyzerProvider analyzerProvider = null, ILogger<InputFileResolver> logger = null)
+    public InputFileResolver(IFileSystem fileSystem, IBuildalyzerProvider analyzerProvider = null, INugetRestoreProcess nugetRestoreProcess = null
+        , ILogger<InputFileResolver> logger = null)
     {
         FileSystem = fileSystem;
         _analyzerProvider = analyzerProvider ?? new BuildalyzerProvider();
+        _nugetRestoreProcess = nugetRestoreProcess ?? new NugetRestoreProcess();
+
         _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<InputFileResolver>();
     }
 
@@ -114,7 +120,16 @@ public class InputFileResolver : IInputFileResolver
                         _logger.LogDebug("Analyzing {projectFilePath}", projectLogName);
                         var buildResult = project.Build([options.TargetFramework]);
 
+                        // if this is a full framework project, we can retry after a nuget restore
+                        if (!buildResult.OverallSuccess && buildResult.TargetsFullFramework())
+                        {
+                            _logger.LogWarning("Project {projectFilePath} targets full framework. Stryker will retry after a nuget restore.", projectLogName);
+                            _nugetRestoreProcess.RestorePackages (project.ProjectFile.Path);
+                            buildResult = project.Build([options.TargetFramework]);
+                        }
+
                         var buildResultOverallSuccess = buildResult.OverallSuccess;
+
                         if (!buildResultOverallSuccess && Array.TrueForAll(project.ProjectFile.TargetFrameworks,tf =>
                                 buildResult.Any(br => IsValid(br) && br.TargetFramework == tf)))
                         {

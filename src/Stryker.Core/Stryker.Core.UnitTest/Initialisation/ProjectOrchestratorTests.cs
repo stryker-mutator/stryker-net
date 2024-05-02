@@ -99,9 +99,29 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         };
 
         var csPathName = FileSystem.Path.Combine(ProjectPath, "someFile.cs");
-        var sourceProjectAnalyzerMock = SourceProjectAnalyzerMock(csprojPathName, new[] { csPathName }).Object;
-        var target = BuildProjectOrchestratorForSimpleProject(sourceProjectAnalyzerMock, 
-            TestProjectAnalyzerMock(testCsprojPathName, csprojPathName, "net4.5", false).Object, out var mockRunner);
+        var buildSuccess = false;
+        var sourceProjectAnalyzerMock = SourceProjectAnalyzerMock(csprojPathName, new[] { csPathName }, framework:"net4.5", success: () => buildSuccess).Object;
+
+        var testProjectAnalyzerMock = TestProjectAnalyzerMock(testCsprojPathName, csprojPathName, "net4.5" ).Object;
+        // The analyzer finds two projects
+        BuildBuildAnalyzerMock(new Dictionary<string, IProjectAnalyzer>
+        {
+            { "MyProject", sourceProjectAnalyzerMock },
+            { "MyProject.UnitTests", testProjectAnalyzerMock }
+        });
+
+        var mockRunner = new Mock<ITestRunner>();
+        mockRunner.Setup(r => r.DiscoverTests(It.IsAny<string>())).Returns(true);
+        mockRunner.Setup(r => r.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
+        mockRunner.Setup(r => r.InitialTest(It.IsAny<IProjectAndTests>())).Returns(new TestRunResult(true));
+
+        var initialBuildProcessMock = new Mock<IInitialBuildProcess>();
+        var nugetRestoreMock = new Mock<INugetRestoreProcess>();
+        nugetRestoreMock.Setup( x => x.RestorePackages(csprojPathName, It.IsAny<string>())).
+            Callback(() => buildSuccess = true);
+        var target = new ProjectOrchestrator(_projectMutatorMock.Object,
+            initialBuildProcessMock.Object,
+            new InputFileResolver(FileSystem, _buildalyzerProviderMock.Object, nugetRestoreMock.Object));
 
         // act
         var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();

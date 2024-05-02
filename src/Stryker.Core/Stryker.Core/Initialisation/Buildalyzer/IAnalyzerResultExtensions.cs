@@ -139,6 +139,7 @@ public static class IAnalyzerResultExtensions
 
         return nuGetFramework.IsDesktop() && (nuGetFramework.Version.Major<4 || nuGetFramework.Version is { Major: 4, Minor: < 8 });
     }
+    internal static bool TargetsFullFramework(this IAnalyzerResults analyzerResults) => analyzerResults.Any(x => x.TargetsFullFramework());
 
     public static Language GetLanguage(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("Language") switch
     {
