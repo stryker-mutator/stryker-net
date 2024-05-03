@@ -59,7 +59,7 @@ namespace Stryker.Core.ToolHelpers
                     var msBuildPath = vsWhereResult.Output.Trim();
                     if (_fileSystem.File.Exists(msBuildPath))
                     {
-                        _logger.LogDebug($"Msbuild executable path found at {msBuildPath}");
+                        _logger.LogDebug("Msbuild executable path found at {MsBuildPath}",msBuildPath);
 
                         return msBuildPath;
                     }
