@@ -1252,6 +1252,27 @@ if(StrykerNamespace.MutantControl.IsActive(2)){;}else{Console.WriteLine((Stryker
     }
 
     [Fact]
+    public void ShouldMutateParameterLessDelegate()
+    {
+        var source = @"private void LocalFun()
+{
+	var test = delegate
+{
+Console.WriteLine(""Hello"");
+};
+}";
+        string expected = @"private void LocalFun()
+{if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+	var test = delegate
+{if(StrykerNamespace.MutantControl.IsActive(1)){}else{
+if(StrykerNamespace.MutantControl.IsActive(2)){;}else{Console.WriteLine((StrykerNamespace.MutantControl.IsActive(3)?"""":""Hello""));
+}}};
+}}";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [Fact]
     public void MutationsShouldHaveLinespan()
     {
         string source = @"void TestMethod()
