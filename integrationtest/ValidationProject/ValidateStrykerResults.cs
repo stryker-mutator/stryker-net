@@ -9,7 +9,6 @@ using Newtonsoft.Json;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Json;
-using Stryker.CLI;
 using Xunit;
 
 namespace IntegrationTests
@@ -42,6 +41,8 @@ namespace IntegrationTests
                 SyntaxKind.PropertyDeclaration,
                 SyntaxKind.ConstructorDeclaration,
                 SyntaxKind.FieldDeclaration,
+                SyntaxKind.OperatorDeclaration,
+                SyntaxKind.IndexerDeclaration,
             }
         );
         private const string MutationReportJson = "mutation-report.json";
@@ -82,8 +83,8 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutants(report, total: 114, ignored: 55, survived: 4, killed: 6, timeout: 2, nocoverage: 45);
-            CheckReportTestCounts(report, total: 14);
+            CheckReportMutants(report, total: 508, ignored: 205, survived: 3, killed: 5, timeout: 2, nocoverage: 276);
+            CheckReportTestCounts(report, total: 13);
         }
 
         [Fact]
@@ -121,8 +122,8 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutants(report, total: 114, ignored: 27, survived: 8, killed: 8, timeout: 2, nocoverage: 67);
-            CheckReportTestCounts(report, total: 30);
+            CheckReportMutants(report, total: 508, ignored: 95, survived: 7, killed: 7, timeout: 2, nocoverage: 380);
+            CheckReportTestCounts(report, total: 29);
         }
 
         [Fact]
@@ -140,7 +141,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutants(report, total: 114, ignored: 55, survived: 4, killed: 6, timeout: 2, nocoverage: 45);
+            CheckReportMutants(report, total: 508, ignored: 205, survived: 4, killed: 6, timeout: 2, nocoverage: 274);
             CheckReportTestCounts(report, total: 30);
         }
 

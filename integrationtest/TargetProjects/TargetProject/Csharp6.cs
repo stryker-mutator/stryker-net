@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
-using System.Xml.Linq;
+// static imports
+using static System.Math;
 
 namespace TargetProject;
 
@@ -59,5 +60,14 @@ public class Csharp6
     }
 
     // static imports
+    public static void StaticImports()
+    {
+        Floor(5.5);  // output: 5
+    }
 
+    // null-conditional operators
+    public static string GetFirstCharacter(string input)
+    {
+        return input?[0].ToString() ?? string.Empty;
+    }
 }

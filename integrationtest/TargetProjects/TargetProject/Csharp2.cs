@@ -11,12 +11,11 @@ public class Csharp2
         Func<int, int, int> sum = delegate (int a, int b) { return a + b; };
         Console.WriteLine(sum(3, 4));  // output: 7
 
-        // TODO: this currently breaks stryker, see issue #2925
-        //Action greet = delegate { Console.WriteLine("Hello!"); };
-        //greet();
+        Action greet = delegate { Console.WriteLine("Hello!"); };
+        greet();
 
-        //Action<int, double> introduce = delegate { Console.WriteLine("This is world!"); };
-        //introduce(42, 2.7);
+        Action<int, double> introduce = delegate { Console.WriteLine("This is world!"); };
+        introduce(42, 2.7);
 
         Func<int, int, int> constant = delegate (int _, int _) { return 42; };
         Console.WriteLine(constant(3, 4));  // output: 42

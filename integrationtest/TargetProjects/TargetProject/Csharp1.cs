@@ -10,5 +10,4 @@ public  class Csharp1
         Print print = (message) => Console.WriteLine("printing: " + message);
         print("Hello, World!");
     }
-
 }
