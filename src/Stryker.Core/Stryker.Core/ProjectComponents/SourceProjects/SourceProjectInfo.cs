@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Buildalyzer;
 using Stryker.Core.Initialisation;
@@ -9,7 +10,9 @@ namespace Stryker.Core.ProjectComponents.SourceProjects;
 
 public class SourceProjectInfo : IProjectAndTests
 {
-    private readonly List<string> _warnings = new();
+    private readonly List<string> _warnings = [];
+
+    public Action OnProjectBuilt {get;set;}
 
     public IAnalyzerResult AnalyzerResult { get; set; }
 

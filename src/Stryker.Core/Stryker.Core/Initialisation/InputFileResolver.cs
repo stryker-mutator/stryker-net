@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Buildalyzer;
+using Buildalyzer.Environment;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation.Buildalyzer;
@@ -121,11 +122,14 @@ public class InputFileResolver : IInputFileResolver
                         var buildResult = project.Build([options.TargetFramework]);
 
                         // if this is a full framework project, we can retry after a nuget restore
-                        if (!buildResult.OverallSuccess && buildResult.TargetsFullFramework())
+                        if ((!buildResult.OverallSuccess && buildResult.TargetsFullFramework()) || buildResult.Any(r => !r.References.Any()))
                         {
-                            _logger.LogWarning("Project {projectFilePath} targets full framework. Stryker will retry after a nuget restore.", projectLogName);
-                            _nugetRestoreProcess.RestorePackages (project.ProjectFile.Path);
-                            buildResult = project.Build([options.TargetFramework]);
+                            _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
+                            var test = new EnvironmentOptions
+                            {
+                                Restore = true
+                            };
+                            buildResult = project.Build([options.TargetFramework], test);
                         }
 
                         var buildResultOverallSuccess = buildResult.OverallSuccess;
@@ -249,6 +253,7 @@ public class InputFileResolver : IInputFileResolver
         {
             log.AppendLine($"SourceFile {sourceFile}");
         }
+
         foreach (var reference in analyzerResult.References ?? Enumerable.Empty<string>())
         {
             log.AppendLine($"References: {Path.GetFileName(reference)} (in {Path.GetDirectoryName(reference)})");
@@ -347,6 +352,8 @@ public class InputFileResolver : IInputFileResolver
 
         var builder = GetProjectComponentBuilder(language, options, targetProjectInfo);
         var inputFiles = builder.Build();
+        builder.InjectHelpers(inputFiles);
+        targetProjectInfo.OnProjectBuilt = builder.PostBuildAction();
         targetProjectInfo.ProjectContents = inputFiles;
 
         _logger.LogInformation("Found project {0} to mutate.", analyzerResult.ProjectFilePath);
@@ -366,7 +373,6 @@ public class InputFileResolver : IInputFileResolver
 
     private string FindProjectFile(string path)
     {
-
         if (string.IsNullOrEmpty(path))
         {
             throw new ArgumentNullException(path, "Project path cannot be null or empty.");
@@ -380,7 +386,7 @@ public class InputFileResolver : IInputFileResolver
         string[] projectFiles;
         try
         {
-            projectFiles = FileSystem.Directory.GetFiles(path, "*.*").Where(file => file.EndsWith("csproj", StringComparison.OrdinalIgnoreCase) || file.EndsWith("fsproj", StringComparison.OrdinalIgnoreCase)).ToArray();
+            projectFiles = FileSystem.Directory.GetFiles(path, "*.*?sproj").Where(file => file.EndsWith("csproj", StringComparison.OrdinalIgnoreCase) || file.EndsWith("fsproj", StringComparison.OrdinalIgnoreCase)).ToArray();
         }
         catch (DirectoryNotFoundException)
         {

@@ -1,8 +1,6 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Reflection;
 using Buildalyzer;
 using Moq;
 using Shouldly;
@@ -12,7 +10,6 @@ using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
-using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
 using Xunit;
 

@@ -14,6 +14,7 @@ namespace Stryker.Core.Initialisation
     public abstract class ProjectComponentsBuilder
     {
         protected readonly IFileSystem FileSystem;
+
         public abstract IProjectComponent Build();
 
         protected ProjectComponentsBuilder(IFileSystem fileSystem) => FileSystem = fileSystem;
@@ -43,7 +44,7 @@ namespace Stryker.Core.Initialisation
             return folders;
         }
 
-        private IEnumerable<string> FindSharedProjects(XDocument document)
+        private static IEnumerable<string> FindSharedProjects(XDocument document)
         {
             var importStatements = document.Elements().Descendants()
                 .Where(projectElement => string.Equals(projectElement.Name.LocalName, "Import", StringComparison.OrdinalIgnoreCase));
@@ -74,5 +75,8 @@ namespace Stryker.Core.Initialisation
                     throw new InputException(message);
                 });
         }
+
+        public abstract void InjectHelpers(IProjectComponent inputFiles);
+        public abstract Action PostBuildAction();
     }
 }

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Reflection;
 using Buildalyzer;
 using Buildalyzer.Construction;
+using Buildalyzer.Environment;
 using Moq;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Testing;
@@ -108,6 +109,7 @@ public class BuildAnalyzerTestsBase : TestBase
         properties.Add("TargetFileName", projectBin);
 
         sourceProjectAnalyzerResultMock.Setup(x => x.Properties).Returns(properties);
+        sourceProjectAnalyzerResultMock.Setup(x => x.GetProperty(It.IsAny<string>())).Returns((string p) => properties.GetValueOrDefault(p, null));
         sourceProjectAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns(csprojPathName);
         sourceProjectAnalyzerResultMock.Setup(x => x.TargetFramework).Returns(framework);
         sourceProjectAnalyzerResultMock.Setup(x => x.Succeeded).Returns(success);
@@ -115,6 +117,7 @@ public class BuildAnalyzerTestsBase : TestBase
 
         var sourceProjectAnalyzerResultsMock = BuildAnalyzerResultsMock(sourceProjectAnalyzerResultMock.Object);
         sourceProjectAnalyzerMock.Setup(x => x.Build(It.IsAny<string[]>())).Returns(sourceProjectAnalyzerResultsMock);
+        sourceProjectAnalyzerMock.Setup(x => x.Build(It.IsAny<string[]>(), It.IsAny<EnvironmentOptions>())).Returns(sourceProjectAnalyzerResultsMock);
 
         sourceProjectAnalyzerMock.Setup(x => x.ProjectFile).Returns(sourceProjectFileMock.Object);
 

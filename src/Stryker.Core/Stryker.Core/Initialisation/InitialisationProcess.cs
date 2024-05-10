@@ -78,7 +78,7 @@ public class InitialisationProcess : IInitialisationProcess
         else
         {
             // build every test projects
-            var testProjects = projects.SelectMany(p => p.TestProjectsInfo.AnalyzerResults).ToList();
+            var testProjects = projects.SelectMany(p => p.TestProjectsInfo.AnalyzerResults).Distinct().ToList();
             for (var i = 0; i < testProjects.Count; i++)
             {
                 _logger.LogInformation(
@@ -94,6 +94,10 @@ public class InitialisationProcess : IInitialisationProcess
                     options.MsBuildPath);
             }
         }
+        foreach (var project in projects)
+        {
+          project.OnProjectBuilt?.Invoke();
+        }   
     }
 
     public IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(StrykerOptions options, IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner)

@@ -1,6 +1,13 @@
 {
   "version": 1,
   "dependencies": {
-    "net6.0": {}
+    ".NETCoreApp,Version=v5.0": {
+      "MimeTypes": {
+        "type": "Direct",
+        "requested": "[2.5.2, )",
+        "resolved": "2.5.2",
+        "contentHash": "vm4xrNt+i6OVRQ8vhfCcmDIUg3qvjyCTkSTNVTDFohsG6CXEpMaVFkidECL6yRYpHDnz4TqXhDoEQAcnHCu/tw=="
+      }
+    }
   }
 }

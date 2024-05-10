@@ -65,8 +65,7 @@ namespace Stryker.Core.ProjectComponents
 
         public IEnumerable<IReadOnlyMutant> UndetectedMutants() => Mutants
             .Where(m =>
-                m.ResultStatus == MutantStatus.Survived ||
-                m.ResultStatus == MutantStatus.NoCoverage);
+                m.ResultStatus is MutantStatus.Survived or MutantStatus.NoCoverage);
 
         public IEnumerable<IReadOnlyMutant> IgnoredMutants() => Mutants
             .Where(m => m.ResultStatus == MutantStatus.Ignored);
@@ -76,33 +75,24 @@ namespace Stryker.Core.ProjectComponents
 
         public IEnumerable<IReadOnlyMutant> DetectedMutants() => Mutants
             .Where(m =>
-                m.ResultStatus == MutantStatus.Killed ||
-                m.ResultStatus == MutantStatus.Timeout);
+                m.ResultStatus is MutantStatus.Killed or MutantStatus.Timeout);
 
         /// <summary>
         /// Returns the mutation score for this folder / file
         /// </summary>
         /// <returns>double between 0 and 1 or NaN when no score could be calculated</returns>
-        public double GetMutationScore()
-        {
-            double valid = ValidMutants().Count();
-            double detected = DetectedMutants().Count();
-
-            return detected / valid;
-        }
+        public double GetMutationScore() => DetectedMutants().Count() / (double)ValidMutants().Count();
 
         public Health CheckHealth(Thresholds threshold)
         {
             var mutationScore = GetMutationScore();
             if (double.IsNaN(mutationScore))
             {
-                // The mutation score is outside of the bounds we can work with so we don't have a health
+                // The mutation score is outside the bounds we can work with, so we don't have any health status
                 return Health.None;
             }
 
-            var mutationScorePercentage = mutationScore * 100;
-
-            return mutationScorePercentage switch
+            return (mutationScore*100) switch
             {
                 var score when score >= threshold.High => Health.Good,
                 var score when score < threshold.High && score >= threshold.Low => Health.Warning,
@@ -122,4 +112,5 @@ namespace Stryker.Core.ProjectComponents
         /// </summary>
         public abstract IEnumerable<T> MutatedSyntaxTrees { get; }
     }
+
 }
