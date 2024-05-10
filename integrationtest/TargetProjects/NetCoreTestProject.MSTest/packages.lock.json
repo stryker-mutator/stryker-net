@@ -1,7 +1,7 @@
 {
   "version": 1,
   "dependencies": {
-    "net8.0": {
+    "net6.0": {
       "coverlet.collector": {
         "type": "Direct",
         "requested": "[6.0.0, )",
@@ -68,14 +68,8 @@
         "resolved": "1.6.0",
         "contentHash": "COC1aiAJjCoA5GBF+QKL2uLqEBew4JsCkQmoHKbN3TlOZKa2fKLz5CpiRQKDz0RsAOEGsVKqOD5bomsXq/4STQ=="
       },
-      "library": {
-        "type": "Project"
-      },
       "targetproject": {
-        "type": "Project",
-        "dependencies": {
-          "Library": "[1.0.0, )"
-        }
+        "type": "Project"
       }
     }
   }
