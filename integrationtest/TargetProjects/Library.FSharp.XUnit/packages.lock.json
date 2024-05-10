@@ -108,7 +108,10 @@
         }
       },
       "library.fsharp": {
-        "type": "Project"
+        "type": "Project",
+        "dependencies": {
+          "FSharp.Core": "[8.0.200, )"
+        }
       }
     }
   }
