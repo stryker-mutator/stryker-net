@@ -148,13 +148,15 @@ public static class IAnalyzerResultExtensions
         _ => Language.Undefined,
     };
 
-    private static readonly string[] KnownTestPackages = { "MSTest.TestFramework", "xunit", "NUnit" };
+    private static readonly string[] knownTestPackages = ["MSTest.TestFramework", "xunit", "NUnit"];
+
+    public static bool IsTestProject(this IAnalyzerResults analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
 
     public static bool IsTestProject(this IAnalyzerResult analyzerResult)
     {
         if (!bool.TryParse(analyzerResult.GetPropertyOrDefault("IsTestProject"), out var isTestProject))
         {
-            isTestProject = Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n));
+            isTestProject = Array.Exists(knownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n));
         }
         var hasTestProjectTypeGuid = analyzerResult
             .GetPropertyOrDefault("ProjectTypeGuids", "")

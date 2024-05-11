@@ -17,7 +17,6 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Testing;
-using static FSharp.Compiler.Symbols.FSharpImplementationFileDeclaration;
 
 namespace Stryker.Core.Initialisation;
 
@@ -99,7 +98,7 @@ public class InputFileResolver : IInputFileResolver
         _logger.LogDebug("Analyzing {count} projects.", manager.Projects.Count);
 
         // we match test projects to mutable projects
-        var findMutableAnalyzerResults = FindMutableAnalyzerResults(MutableProjectsAnalyzerResults(options, manager, mode));
+        var findMutableAnalyzerResults = FindMutableAnalyzerResults(AnalyzeAllNeededProjects(options, manager, mode));
 
         var analyzerResults = findMutableAnalyzerResults.Keys.GroupBy(p => p.ProjectFilePath).ToList();
         var projectInfos = new List<SourceProjectInfo>();
@@ -121,7 +120,7 @@ public class InputFileResolver : IInputFileResolver
         return projectInfos;
     }
 
-    private ConcurrentBag<(IAnalyzerResults result, bool isTest)> MutableProjectsAnalyzerResults(StrykerOptions options, IAnalyzerManager manager, ScanMode mode)
+    private ConcurrentBag<(IAnalyzerResults result, bool isTest)> AnalyzeAllNeededProjects(StrykerOptions options, IAnalyzerManager manager, ScanMode mode)
     {
         var mutableProjectsAnalyzerResults = new ConcurrentBag<(IAnalyzerResults result, bool isTest)>();
         try
@@ -134,86 +133,19 @@ public class InputFileResolver : IInputFileResolver
                     new ParallelOptions
                         { MaxDegreeOfParallelism = options.DevMode ? 1 : Math.Max(options.Concurrency, 1) }, project =>
                     {
-                        if (options.DevMode)
+                        var buildResult = AnalyzeSingleProject(project, options);
+                        var isTestProject = buildResult.IsTestProject();
+                        var referencesToAdd = ScanReferences(mode, buildResult, normalizedProjectUnderTestNameFilter);
+
+                        var addProject = isTestProject || normalizedProjectUnderTestNameFilter == null ||
+                                         project.ProjectFile.Path.Replace('\\', '/')
+                                             .Contains(normalizedProjectUnderTestNameFilter);
+                        if (addProject)
+                            mutableProjectsAnalyzerResults.Add((buildResult, buildResult.IsTestProject()));
+                        foreach (var reference in referencesToAdd)
                         {
-                            // clear the logs for the next project
-                            _buildalyzerLog.GetStringBuilder().Clear();
+                            list.Add(manager.GetProject(reference));
                         }
-                        var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
-                        _logger.LogDebug("Analyzing {projectFilePath}", projectLogName);
-                        var buildResult = project.Build([options.TargetFramework]);
-
-                        // if this is a full framework project, we can retry after a nuget restore
-                        if ((!buildResult.OverallSuccess && buildResult.TargetsFullFramework()) || buildResult.Any(r => !r.References.Any()))
-                        {
-                            _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
-                            var test = new EnvironmentOptions
-                            {
-                                Restore = true
-                            };
-                            buildResult = project.Build([options.TargetFramework], test);
-                        }
-
-                        var buildResultOverallSuccess = buildResult.OverallSuccess;
-
-                        if (!buildResultOverallSuccess && Array.TrueForAll(project.ProjectFile.TargetFrameworks,tf =>
-                                buildResult.Any(br => IsValid(br) && br.TargetFramework == tf)))
-                        {
-                            // if all expected frameworks are built, we consider the build a success
-                            buildResultOverallSuccess = true;
-                        }
-
-                        if (buildResultOverallSuccess)
-                        {
-                            _logger.LogDebug("Analysis of project {projectFilePath} succeeded.", projectLogName);
-                            if (options.DevMode)
-                            {
-                                LogAnalyzerResult(buildResult.First());
-                            }
-                        }
-                        else
-                        {
-                            var failedFrameworks = project.ProjectFile.TargetFrameworks.Where(tf =>
-                                !buildResult.Any(br => IsValid(br) && br.TargetFramework == tf)).ToList();
-                            _logger.LogWarning(
-                                "Analysis of project {projectFilePath} failed for frameworks {frameworkList}.",
-                                projectLogName, string.Join(',', failedFrameworks));
-
-                            if (options.DevMode)
-                            {
-                                _logger.LogWarning("Project analysis failed. The MsBuild log is below.");
-                                _logger.LogInformation(_buildalyzerLog.ToString());
-                            }
-                        }
-
-                        var isTestProject = buildResult.First().IsTestProject();
-                        var isProjectMatch = isTestProject || (normalizedProjectUnderTestNameFilter == null ||
-                                                               project.ProjectFile.Path.Replace('\\', '/')
-                                                                   .Contains(normalizedProjectUnderTestNameFilter));
-                        if (mode != ScanMode.NoScan)
-                        {
-                            // Stryker will recursively scan projects
-                            // add any project reference to ease progressive discovery (when not using solution file)
-                            foreach (var projectReference in buildResult.SelectMany(p => p.ProjectReferences))
-                            {
-                                // in single level mode we only want to find the referenced test project
-                                if (mode == ScanMode.SingleLevelScan && (!isTestProject || (normalizedProjectUnderTestNameFilter != null &&
-                                        !projectReference.Replace('\\', '/')
-                                            .Contains(normalizedProjectUnderTestNameFilter))))
-                                {
-                                    continue;
-                                }
-
-                                if (FileSystem.File.Exists(projectReference))
-                                {
-                                    list.Add(manager.GetProject(projectReference));
-                                }
-                            }
-                        }
-
-                        // we only consider any matching normal project
-                        if (isProjectMatch)
-                            mutableProjectsAnalyzerResults.Add((buildResult, isTestProject));
                     });
             }
         }
@@ -223,6 +155,94 @@ public class InputFileResolver : IInputFileResolver
         }
 
         return mutableProjectsAnalyzerResults;
+    }
+
+    private List<string> ScanReferences(ScanMode mode, IAnalyzerResults buildResult, string normalizedProjectUnderTestNameFilter)
+    {
+        var referencesToAdd = new List<string>();
+        var isTestProject = buildResult.IsTestProject();
+
+        if (mode == ScanMode.NoScan)
+        {
+            return referencesToAdd;
+        }
+
+        // Stryker will recursively scan projects
+        // add any project reference to ease progressive discovery (when not using solution file)
+        foreach (var projectReference in buildResult.SelectMany(p => p.ProjectReferences))
+        {
+            // in single level mode we only want to find the referenced test project
+            if (mode == ScanMode.SingleLevelScan && (!isTestProject || (normalizedProjectUnderTestNameFilter != null &&
+                                                                        !projectReference.Replace('\\', '/')
+                                                                            .Contains(normalizedProjectUnderTestNameFilter))))
+            {
+                continue;
+            }
+
+            if (FileSystem.File.Exists(projectReference))
+            {
+                referencesToAdd.Add(projectReference);
+            }
+        }
+
+        return referencesToAdd;
+    }
+
+    private IAnalyzerResults AnalyzeSingleProject(IProjectAnalyzer project, StrykerOptions options)
+    {
+        if (options.DevMode)
+        {
+            // clear the logs for the next project
+            _buildalyzerLog.GetStringBuilder().Clear();
+        }
+        var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
+        _logger.LogDebug("Analyzing {projectFilePath}", projectLogName);
+        var buildResult = project.Build([options.TargetFramework]);
+
+        // if this is a full framework project, we can retry after a nuget restore
+        if ((!buildResult.OverallSuccess && buildResult.TargetsFullFramework()) || buildResult.Any(r => !r.References.Any()))
+        {
+            _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
+            var test = new EnvironmentOptions
+            {
+                Restore = true
+            };
+            buildResult = project.Build([options.TargetFramework], test);
+        }
+
+        var buildResultOverallSuccess = buildResult.OverallSuccess;
+
+        if (!buildResultOverallSuccess && Array.TrueForAll(project.ProjectFile.TargetFrameworks,tf =>
+                buildResult.Any(br => IsValid(br) && br.TargetFramework == tf)))
+        {
+            // if all expected frameworks are built, we consider the build a success
+            buildResultOverallSuccess = true;
+        }
+
+        if (buildResultOverallSuccess)
+        {
+            _logger.LogDebug("Analysis of project {projectFilePath} succeeded.", projectLogName);
+            if (options.DevMode)
+            {
+                LogAnalyzerResult(buildResult.First());
+            }
+        }
+        else
+        {
+            var failedFrameworks = project.ProjectFile.TargetFrameworks.Where(tf =>
+                !buildResult.Any(br => IsValid(br) && br.TargetFramework == tf)).ToList();
+            _logger.LogWarning(
+                "Analysis of project {projectFilePath} failed for frameworks {frameworkList}.",
+                projectLogName, string.Join(',', failedFrameworks));
+
+            if (options.DevMode)
+            {
+                _logger.LogWarning("Project analysis failed. The MsBuild log is below.");
+                _logger.LogInformation(_buildalyzerLog.ToString());
+            }
+        }
+
+        return buildResult;
     }
 
     private static readonly HashSet<string> importantProperties =
