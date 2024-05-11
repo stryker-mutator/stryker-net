@@ -63,7 +63,7 @@ namespace Stryker.Core.Initialisation
                     throw new DirectoryNotFoundException($"Can't find {folder}");
                 }
 
-                inputFiles.Add(FindInputFiles(folder, sourceProjectDir, analyzerResult, _options, cSharpParseOptions));
+                inputFiles.Add(FindInputFiles(folder, sourceProjectDir, analyzerResult, cSharpParseOptions));
             }
 
             return inputFiles;
@@ -84,8 +84,6 @@ namespace Stryker.Core.Initialisation
 
             // Save cache in a singleton, so we can use it in other parts of the project
             FolderCompositeCache<CsharpFolderComposite>.Instance.Cache = cache;
-
-            //InjectMutantHelpers(projectUnderTestFolderComposite, analyzerResult.GetParseOptions(options));
 
             foreach (var sourceFile in analyzerResult.SourceFiles)
             {
@@ -170,7 +168,7 @@ namespace Stryker.Core.Initialisation
         /// Deprecated method, should not be maintained
         /// </summary>
         private CsharpFolderComposite FindInputFiles(string path, string sourceProjectDir,
-            IAnalyzerResult analyzerResult, StrykerOptions options, CSharpParseOptions cSharpParseOptions)
+            IAnalyzerResult analyzerResult, CSharpParseOptions cSharpParseOptions)
         {
             var rootFolderComposite = new CsharpFolderComposite
             {

@@ -113,12 +113,9 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         mockRunner.Setup(r => r.InitialTest(It.IsAny<IProjectAndTests>())).Returns(new TestRunResult(true));
 
         var initialBuildProcessMock = new Mock<IInitialBuildProcess>();
-        var nugetRestoreMock = new Mock<INugetRestoreProcess>();
-        nugetRestoreMock.Setup( x => x.RestorePackages(csprojPathName, It.IsAny<string>())).
-            Callback(() => buildSuccess = true);
         var target = new ProjectOrchestrator(_projectMutatorMock.Object,
             initialBuildProcessMock.Object,
-            new InputFileResolver(FileSystem, _buildalyzerProviderMock.Object, nugetRestoreMock.Object));
+            new InputFileResolver(FileSystem, _buildalyzerProviderMock.Object));
 
         // act
         var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();

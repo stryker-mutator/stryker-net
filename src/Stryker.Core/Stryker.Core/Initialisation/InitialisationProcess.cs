@@ -94,6 +94,8 @@ public class InitialisationProcess : IInitialisationProcess
                     options.MsBuildPath);
             }
         }
+
+        // perform post build update (to capture some content files in C# project for example)
         foreach (var project in projects)
         {
           project.OnProjectBuilt?.Invoke();
