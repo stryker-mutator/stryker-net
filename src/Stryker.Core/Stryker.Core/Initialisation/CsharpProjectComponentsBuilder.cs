@@ -41,13 +41,13 @@ namespace Stryker.Core.Initialisation
             }
             else
             {
-                _logger.LogWarning("Buildalyzer could not find sourcefiles. This should not happen. Will fallback to filesystem scan. Please report an issue at github.");
+                _logger.LogWarning("Buildalyzer could not find sourcefiles. This should not happen. We fallback to filesystem scan. Please report an issue at github.");
                 inputFiles = FindProjectFilesScanningProjectFolders(_projectInfo.AnalyzerResult);
             }
             return inputFiles;
         }
 
-        // Deprecated method, should not be maintained
+        // This is a backup strategy
         private CsharpFolderComposite FindProjectFilesScanningProjectFolders(IAnalyzerResult analyzerResult)
         {
             var inputFiles = new CsharpFolderComposite();
@@ -56,13 +56,7 @@ namespace Stryker.Core.Initialisation
             foreach (var dir in ExtractProjectFolders(analyzerResult))
             {
                 var folder = FileSystem.Path.Combine(Path.GetDirectoryName(sourceProjectDir), dir);
-
                 _logger.LogDebug($"Scanning {folder}");
-                if (!FileSystem.Directory.Exists(folder))
-                {
-                    throw new DirectoryNotFoundException($"Can't find {folder}");
-                }
-
                 inputFiles.Add(FindInputFiles(folder, sourceProjectDir, analyzerResult, cSharpParseOptions));
             }
 
@@ -127,13 +121,14 @@ namespace Stryker.Core.Initialisation
             // look for extra source files coming from Nuget packages
             var folder= analyzerResult.GetProperty("ContentPreprocessorOutputDirectory");
             var sourceProjectDir= Path.GetDirectoryName(analyzerResult.ProjectFilePath);
-            if (!string.IsNullOrEmpty(folder))
+            if (string.IsNullOrEmpty(folder))
             {
-                folder = Path.Combine(sourceProjectDir, folder);
-                if (FileSystem.Directory.Exists(folder))
-                {
-                    projectUnderTestFolderComposite.Add(FindInputFiles(folder, sourceProjectDir, analyzerResult.GetParseOptions(_options), false));
-                }
+                return;
+            }
+            folder = Path.Combine(sourceProjectDir, folder);
+            if (FileSystem.Directory.Exists(folder))
+            {
+                projectUnderTestFolderComposite.Add(FindInputFiles(folder, sourceProjectDir, analyzerResult.GetParseOptions(_options), false));
             }
         }
 
@@ -252,39 +247,45 @@ namespace Stryker.Core.Initialisation
 
             var folder = targetFolder;
             CsharpFolderComposite subDir = null;
+            // build the cache recursively (in reverse order)
             while (!string.IsNullOrEmpty(folder))
             {
-                if (!cache.ContainsKey(folder))
+                if (cache.TryGetValue(folder, out var subCache))
                 {
-                    // we have not scanned this folder yet
-                    var fullPath = FileSystem.Path.Combine(sourceProjectDir, folder);
-                    var newComposite = new CsharpFolderComposite
-                    {
-                        FullPath = fullPath,
-                        RelativePath = Path.GetRelativePath(sourceProjectDir, fullPath),
-                    };
-                    if (subDir != null)
-                    {
-                        newComposite.Add(subDir);
-                    }
+                    // no need to travel further
+                    subCache.Add(subDir);
+                    break;
+                }
 
-                    cache.Add(folder, newComposite);
-                    subDir = newComposite;
-                    folder = Path.GetDirectoryName(folder);
-                    if (string.IsNullOrEmpty(folder))
-                    {
-                        // we are at root
-                        (inputFiles as IReadOnlyFolderComposite).Add(subDir);
-                    }
+                // we have not scanned this folder yet
+                var fullPath = FileSystem.Path.Combine(sourceProjectDir, folder);
+                var newComposite = new CsharpFolderComposite
+                {
+                    FullPath = fullPath,
+                    RelativePath = Path.GetRelativePath(sourceProjectDir, fullPath),
+                };
+                if (subDir == null)
+                {
+                    // this is the folder we are building
+                    composite = newComposite;
                 }
                 else
                 {
-                    cache[folder].Add(subDir);
-                    break;
+                    // going up
+                    newComposite.Add(subDir);
+                }
+
+                cache.Add(folder, newComposite);
+                subDir = newComposite;
+                folder = FileSystem.Path.GetDirectoryName(folder);
+                if (string.IsNullOrEmpty(folder))
+                {
+                    // we are at root
+                    (inputFiles as IReadOnlyFolderComposite).Add(subDir);
                 }
             }
 
-            return cache[targetFolder];
+            return composite;
         }
     }
 }

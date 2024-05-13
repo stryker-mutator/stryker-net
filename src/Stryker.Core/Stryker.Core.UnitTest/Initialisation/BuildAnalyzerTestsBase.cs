@@ -33,13 +33,22 @@ public class BuildAnalyzerTestsBase : TestBase
     /// <param name="csprojPathName">project pathname</param>
     /// <param name="sourceFiles">project source files</param>
     /// <param name="projectReferences">project references</param>
-    protected Mock<IProjectAnalyzer> SourceProjectAnalyzerMock(string csprojPathName, string[] sourceFiles, IEnumerable<string> projectReferences = null, string framework = "net6.0", Func<bool> success = null)
+    /// <param name="framework">framework version</param>
+    /// <param name="success">Predicate to control when analysis is successful. Default is always success.</param>
+    protected Mock<IProjectAnalyzer> SourceProjectAnalyzerMock(string csprojPathName, string[] sourceFiles,
+        IEnumerable<string> projectReferences = null, string framework = "net6.0", Func<bool> success = null)
     {
-        var properties = new Dictionary<string, string>
-            { { "IsTestProject", "False" }, { "ProjectTypeGuids", "not testproject" }, { "Language", "C#" } };
+        var properties = GetSourceProjectDefaultProperties();
         projectReferences??= new List<string>();
 
         return BuildProjectAnalyzerMock(csprojPathName, sourceFiles, properties, projectReferences, framework, success);
+    }
+
+    public static Dictionary<string, string> GetSourceProjectDefaultProperties()
+    {
+        var properties = new Dictionary<string, string>
+            { { "IsTestProject", "False" }, { "ProjectTypeGuids", "not testproject" }, { "Language", "C#" } };
+        return properties;
     }
 
     /// <summary>

@@ -208,6 +208,11 @@ public class InputFileResolver : IInputFileResolver
                 Restore = true
             };
             buildResult = project.Build([options.TargetFramework], test);
+            if (options.DevMode)
+            {
+                // clear the logs for the next project
+                _buildalyzerLog.GetStringBuilder().Clear();
+            }
         }
 
         var buildResultOverallSuccess = buildResult.OverallSuccess;

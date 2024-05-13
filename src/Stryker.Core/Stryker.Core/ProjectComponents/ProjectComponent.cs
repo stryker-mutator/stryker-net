@@ -44,13 +44,17 @@ namespace Stryker.Core.ProjectComponents
         /// Relative path to project file
         /// </summary>
         public string RelativePath { get; set; }
+
         public IReadOnlyFolderComposite Parent { get; set; }
+
         public Display DisplayFile { get; set; }
+
         public Display DisplayFolder { get; set; }
 
         public virtual IEnumerable<Mutant> Mutants { get; set; }
 
         public abstract IEnumerable<IFileLeaf> GetAllFiles();
+
         public abstract void Display();
 
         public IEnumerable<IReadOnlyMutant> TotalMutants() => ValidMutants()

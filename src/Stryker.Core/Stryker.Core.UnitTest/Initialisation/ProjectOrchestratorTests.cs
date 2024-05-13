@@ -2,6 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Buildalyzer;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Moq;
 using Shouldly;
 using Stryker.Core.Exceptions;
@@ -9,11 +11,13 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
+using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation;
+
 
 public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
 {
@@ -25,7 +29,12 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
     {
         _mutationTestProcessMock.Setup(x => x.Mutate());
         _projectMutatorMock.Setup(x => x.MutateProject(It.IsAny<StrykerOptions>(),  It.IsAny<MutationTestInput>(), It.IsAny<IReporter>()))
-            .Returns(new Mock<IMutationTestProcess>().Object);
+            .Returns(   (StrykerOptions options, MutationTestInput input, IReporter reporter) =>
+            {
+                var mock= new Mock<IMutationTestProcess>();
+                mock.Setup( m => m.Input).Returns(input);
+                return mock.Object;
+            });
 
     }
 
@@ -54,6 +63,40 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
 
         // assert
         result.ShouldHaveSingleItem();
+    }
+
+    [Fact]
+    public void ShouldDiscoverContentFiles()
+    {
+        // arrange
+        // when a solutionPath is given, and it's inside the current directory (basePath)
+        var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.csproj");
+        var csprojPathName = FileSystem.Path.Combine(ProjectPath, "sourceproject.csproj");
+        var options = new StrykerOptions
+        {
+            ProjectPath = FileSystem.Path.GetFullPath(testCsprojPathName),
+            SolutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln")
+        };
+        var contentFolder = FileSystem.Path.Combine(ProjectPath, "Contents");
+        FileSystem.AddDirectory(contentFolder);
+        var contentFile = FileSystem.Path.Combine(contentFolder, "SomeStuff.cs");
+        FileSystem.AddFile(contentFile, "using System");
+        var csPathName = FileSystem.Path.Combine(ProjectPath, "someFile.cs");
+
+        var properties = GetSourceProjectDefaultProperties();
+        properties["ContentPreprocessorOutputDirectory"] = contentFolder;
+        var sourceProjectAnalyzerMock = BuildProjectAnalyzerMock(csprojPathName, new[] { csPathName }, properties).Object;
+        var target = BuildProjectOrchestratorForSimpleProject(sourceProjectAnalyzerMock, 
+            TestProjectAnalyzerMock(testCsprojPathName, csprojPathName).Object, out var mockRunner);
+
+        FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
+            
+        // act
+        var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
+
+        // assert we see the content file
+        var scan = ((ProjectComponent<SyntaxTree>)result.First().Input.SourceProjectInfo.ProjectContents).CompilationSyntaxTrees;
+        scan.Count(f => f?.FilePath == contentFile).ShouldBe(1);
     }
 
     [Fact]
@@ -179,8 +222,8 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
     [Fact]
     public void ShouldProvideMinimalSupportForFSharp()
     {
-        var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.csproj");
-        var csprojPathName = FileSystem.Path.Combine(ProjectPath, "sourceproject.csproj");
+        var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.fsproj");
+        var csprojPathName = FileSystem.Path.Combine(ProjectPath, "sourceproject.fsproj");
         var options = new StrykerOptions
         {
             ProjectPath = FileSystem.Path.GetFullPath(testCsprojPathName),

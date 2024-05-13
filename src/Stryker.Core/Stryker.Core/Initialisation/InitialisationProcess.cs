@@ -198,12 +198,13 @@ public class InitialisationProcess : IInitialisationProcess
                 _logger.LogWarning(message);
             }
 
-            if (!causeFound)
+            if (causeFound)
             {
-                var message = $"No test detected for project '{testProject.ProjectFilePath}'. No cause identified.";
-                projectInfo.LogError(message);
-                _logger.LogWarning(message);
+                continue;
             }
+            var messageForNoReason = $"No test detected for project '{testProject.ProjectFilePath}'. No cause identified.";
+            projectInfo.LogError(messageForNoReason);
+            _logger.LogWarning(messageForNoReason);
         }
     }
 }

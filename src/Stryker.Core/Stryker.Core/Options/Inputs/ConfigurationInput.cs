@@ -5,7 +5,7 @@ namespace Stryker.Core.Options.Inputs;
 public class ConfigurationInput : Input<string>
 {
     public override string Default => null;
-    protected override string Description => "Configuration to use for compilation";
+    protected override string Description => "Configuration to use when building the project(s).";
 
     public string Validate()
     {
