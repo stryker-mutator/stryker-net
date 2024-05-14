@@ -36,14 +36,20 @@ public class InputFileResolver : IInputFileResolver
     private readonly string[] _foldersToExclude = { "obj", "bin", "node_modules", "StrykerOutput" };
     private readonly ILogger _logger;
     private readonly IBuildalyzerProvider _analyzerProvider;
+    private static readonly HashSet<string> importantProperties =
+        ["Configuration", "Platform", "AssemblyName", "Configurations"];
+
+    private readonly INugetRestoreProcess _nugetRestoreProcess;
+
 
     private readonly StringWriter _buildalyzerLog = new();
 
-    public InputFileResolver(IFileSystem fileSystem, IBuildalyzerProvider analyzerProvider = null, ILogger<InputFileResolver> logger = null)
+    public InputFileResolver(IFileSystem fileSystem,
+        IBuildalyzerProvider analyzerProvider = null, INugetRestoreProcess nugetRestoreProcess = null, ILogger<InputFileResolver> logger = null)
     {
         FileSystem = fileSystem;
         _analyzerProvider = analyzerProvider ?? new BuildalyzerProvider();
-
+        _nugetRestoreProcess = nugetRestoreProcess ?? new NugetRestoreProcess();
         _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<InputFileResolver>();
     }
 
@@ -203,6 +209,7 @@ public class InputFileResolver : IInputFileResolver
         if ((!buildResult.OverallSuccess && buildResult.TargetsFullFramework()) || buildResult.Any(r => !r.References.Any()))
         {
             _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
+            _nugetRestoreProcess.RestorePackages (project.ProjectFile.Path);
             var test = new EnvironmentOptions
             {
                 Restore = true
@@ -249,9 +256,6 @@ public class InputFileResolver : IInputFileResolver
 
         return buildResult;
     }
-
-    private static readonly HashSet<string> importantProperties =
-        ["Configuration", "Platform", "AssemblyName", "Configurations"];
 
     private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
     {

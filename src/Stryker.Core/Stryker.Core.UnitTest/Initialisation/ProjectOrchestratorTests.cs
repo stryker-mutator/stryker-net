@@ -154,11 +154,14 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         mockRunner.Setup(r => r.DiscoverTests(It.IsAny<string>())).Returns(true);
         mockRunner.Setup(r => r.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
         mockRunner.Setup(r => r.InitialTest(It.IsAny<IProjectAndTests>())).Returns(new TestRunResult(true));
+        var nugetRestoreMock = new Mock<INugetRestoreProcess>();
+        nugetRestoreMock.Setup( x => x.RestorePackages(csprojPathName, It.IsAny<string>())).
+            Callback(() => buildSuccess = true);
 
         var initialBuildProcessMock = new Mock<IInitialBuildProcess>();
         var target = new ProjectOrchestrator(_projectMutatorMock.Object,
             initialBuildProcessMock.Object,
-            new InputFileResolver(FileSystem, _buildalyzerProviderMock.Object));
+            new InputFileResolver(FileSystem,BuildalyzerProviderMock.Object,  nugetRestoreMock.Object));
 
         // act
         var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
@@ -423,6 +426,6 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         var initialBuildProcessMock = new Mock<IInitialBuildProcess>();
         return new ProjectOrchestrator(_projectMutatorMock.Object,
             initialBuildProcessMock.Object,
-            new InputFileResolver(FileSystem, _buildalyzerProviderMock.Object));
+            new InputFileResolver(FileSystem, BuildalyzerProviderMock.Object));
     }
 }

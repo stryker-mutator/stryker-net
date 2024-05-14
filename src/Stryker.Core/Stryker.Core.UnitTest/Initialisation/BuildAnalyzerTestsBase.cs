@@ -17,7 +17,7 @@ public class BuildAnalyzerTestsBase : TestBase
     protected readonly MockFileSystem FileSystem = new();
     protected string ProjectPath;
     private readonly Dictionary<string, IAnalyzerResult> _projectCache = new();
-    protected readonly Mock<IBuildalyzerProvider> _buildalyzerProviderMock = new(MockBehavior.Strict);
+    protected readonly Mock<IBuildalyzerProvider> BuildalyzerProviderMock = new(MockBehavior.Strict);
 
     public BuildAnalyzerTestsBase()
     {
@@ -110,7 +110,7 @@ public class BuildAnalyzerTestsBase : TestBase
         sourceProjectAnalyzerResultMock.Setup(x => x.ProjectReferences).Returns(projectReferences);
         sourceProjectAnalyzerResultMock.Setup(x => x.References).Returns(projectReferences.
             Where (_projectCache.ContainsKey).
-            Select( iar => _projectCache[iar].GetAssemblyPath()).ToArray());
+            Select( iar => _projectCache[iar].GetAssemblyPath()).Append("System").ToArray());
         sourceProjectAnalyzerResultMock.Setup(x => x.SourceFiles).Returns(sourceFiles);
         sourceProjectAnalyzerResultMock.Setup(x => x.PreprocessorSymbols).Returns(["NET"]);
         properties.Add("TargetRefPath", projectBin);
@@ -160,9 +160,9 @@ public class BuildAnalyzerTestsBase : TestBase
             buildalyzerAnalyzerManagerMock.Setup(x => x.GetProject(filename)).Returns(analyzerResult.Value);
         }
 
-        _buildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<string>(), It.IsAny<AnalyzerManagerOptions>()))
+        BuildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<string>(), It.IsAny<AnalyzerManagerOptions>()))
             .Returns(buildalyzerAnalyzerManagerMock.Object);
-        _buildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<AnalyzerManagerOptions>()))
+        BuildalyzerProviderMock.Setup(x => x.Provide(It.IsAny<AnalyzerManagerOptions>()))
             .Returns(buildalyzerAnalyzerManagerMock.Object);
         return buildalyzerAnalyzerManagerMock;
     }

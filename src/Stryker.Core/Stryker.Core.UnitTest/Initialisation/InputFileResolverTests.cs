@@ -8,6 +8,7 @@ using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Moq;
 using NuGet.Frameworks;
 using Shouldly;
 using Stryker.Core.Exceptions;
@@ -32,6 +33,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         private readonly string _defaultTestProjectFileContents;
         private readonly string _defaultSourceProjectFileContents;
         private readonly StrykerOptions _options;
+        private readonly Mock<INugetRestoreProcess> _nugetMock;
 
         public InputFileResolverTests()
         {
@@ -67,6 +69,10 @@ namespace Stryker.Core.UnitTest.Initialisation
     </PropertyGroup>
 
 </Project>";
+
+            _nugetMock = new Mock<INugetRestoreProcess>();
+            _nugetMock.Setup( x => x.RestorePackages(It.IsAny<string>(), It.IsAny<string>()));
+
         }
 
         [Theory]
@@ -135,7 +141,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             };
             BuildBuildAnalyzerMock(analyzerResults);
 
-            var target = new InputFileResolver(fileSystem, _buildalyzerProviderMock.Object);
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
 
             var result = target.ResolveSourceProjectInfos(_options).First();
 
@@ -170,7 +176,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             BuildBuildAnalyzerMock(analyzerResults);
 
 
-            var target = new InputFileResolver(fileSystem, _buildalyzerProviderMock.Object);
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
 
             var result = target.ResolveSourceProjectInfos(_options).First();
 
@@ -200,7 +206,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             };
             BuildBuildAnalyzerMock(analyzerResults);
 
-            var target = new InputFileResolver(fileSystem, _buildalyzerProviderMock.Object);
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
 
             var result = target.ResolveSourceProjectInfos(_options).First();
 
@@ -250,7 +256,7 @@ using System.Reflection;
             };
             BuildBuildAnalyzerMock(analyzerResults);
 
-            var target = new InputFileResolver(fileSystem, _buildalyzerProviderMock.Object);
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
 
             var result = target.ResolveSourceProjectInfos(_options).First();
 
@@ -307,7 +313,7 @@ using System.Reflection;
             };
             BuildBuildAnalyzerMock(analyzerResults);
 
-            var target = new InputFileResolver(fileSystem, _buildalyzerProviderMock.Object);
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
 
             var result = target.ResolveSourceProjectInfos(_options).First();
 
@@ -336,7 +342,7 @@ using System.Reflection;
             };
             BuildBuildAnalyzerMock(analyzerResults);
 
-            var target = new InputFileResolver(fileSystem, _buildalyzerProviderMock.Object);
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
 
             var result = target.ResolveSourceProjectInfos(_options).First();
 
@@ -393,7 +399,7 @@ using System.Reflection;
             };
             BuildBuildAnalyzerMock(analyzerResults);
 
-            var target = new InputFileResolver(fileSystem, _buildalyzerProviderMock.Object);
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
 
             var result = target.ResolveSourceProjectInfos(_options).First();
 
@@ -439,7 +445,7 @@ using System.Reflection;
             };
             BuildBuildAnalyzerMock(analyzerResults);
 
-            var target = new InputFileResolver(fileSystem, _buildalyzerProviderMock.Object);
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
 
             var result = target.ResolveSourceProjectInfos(_options).First();
 
@@ -510,7 +516,7 @@ using System.Reflection;
             };
             BuildBuildAnalyzerMock(analyzerResults);
 
-            var target = new InputFileResolver(fileSystem, _buildalyzerProviderMock.Object);
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
 
             var result = target.ResolveSourceProjectInfos(_options).First();
 
@@ -558,7 +564,7 @@ using System.Reflection;
             };
             BuildBuildAnalyzerMock(analyzerResults);
 
-            var target = new InputFileResolver(fileSystem, _buildalyzerProviderMock.Object);
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
 
             Assert.Throws<FileNotFoundException>(() => target.ResolveSourceProjectInfos(_options));
         }
@@ -610,7 +616,7 @@ using System.Reflection;
             };
             BuildBuildAnalyzerMock(analyzerResults);
 
-            var target = new InputFileResolver(fileSystem, _buildalyzerProviderMock.Object);
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
 
             var result = target.ResolveSourceProjectInfos(_options).First();
 
@@ -663,7 +669,7 @@ using System.Reflection;
             };
             BuildBuildAnalyzerMock(analyzerResults);
 
-            var target = new InputFileResolver(fileSystem, _buildalyzerProviderMock.Object);
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
 
             var exception = Assert.Throws<InputException>(() => target.ResolveSourceProjectInfos(_options));
             exception.Message.ShouldBe($"Missing MSBuild property (SharedDir) in project reference (..{FilePathUtils.NormalizePathSeparators("/$(SharedDir)/Example.projitems")}). Please check your project file ({_sourceProjectPath}) and try again.");
@@ -694,7 +700,7 @@ using System.Reflection;
             };
             BuildBuildAnalyzerMock(analyzerResults);
 
-            var target = new InputFileResolver(fileSystem, _buildalyzerProviderMock.Object);
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
 
             var result = target.ResolveSourceProjectInfos(_options).First();
 
@@ -716,7 +722,7 @@ using System.Reflection;
 
             BuildBuildAnalyzerMock(new Dictionary<string, IProjectAnalyzer>());
 
-            var target = new InputFileResolver(fileSystem, _buildalyzerProviderMock.Object);
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
             Assert.Throws<InputException>(() => target.FindTestProject(Path.Combine(_sourcePath)));
         }
 
@@ -858,7 +864,7 @@ Please specify a test project name filter that results in one project.
             };
             BuildBuildAnalyzerMock(analyzerResults);
 
-            var target = new InputFileResolver(fileSystem, _buildalyzerProviderMock.Object);
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
 
             // Act
             var result = target.ResolveSourceProjectInfos(options).First();
@@ -913,7 +919,7 @@ Please specify a test project name filter that results in one project.
             };
             BuildBuildAnalyzerMock(analyzerResults);
 
-            var target = new InputFileResolver(fileSystem, _buildalyzerProviderMock.Object);
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
 
             // Act
             var result = target.ResolveSourceProjectInfos(_options).First();
@@ -958,7 +964,7 @@ Please specify a test project name filter that results in one project.
             BuildBuildAnalyzerMock(analyzerResults);
 
 
-            var target = new InputFileResolver(fileSystem, _buildalyzerProviderMock.Object);
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
             // Act
             var result = target.ResolveSourceProjectInfos(options).First();
 
