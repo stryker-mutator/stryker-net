@@ -224,7 +224,7 @@ public class InputFileResolver : IInputFileResolver
 
         // if all expected frameworks are built, we consider the build a success
         var buildResultOverallSuccess = buildResult.OverallSuccess || Array.TrueForAll(project.ProjectFile.TargetFrameworks,tf =>
-            buildResult.Any(br => IsValid(br) && br.TargetFramework == tf))
+            buildResult.Any(br => IsValid(br) && br.TargetFramework == tf));
 
  
         if (buildResultOverallSuccess)
@@ -233,7 +233,6 @@ public class InputFileResolver : IInputFileResolver
             LogAnalyzerResult(buildResult, options);
             return buildResult;
         }
-
         var failedFrameworks = project.ProjectFile.TargetFrameworks.Where(tf =>
             !buildResult.Any(br => IsValid(br) && br.TargetFramework == tf)).ToList();
         _logger.LogWarning(
