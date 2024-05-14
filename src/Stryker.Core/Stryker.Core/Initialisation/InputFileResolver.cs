@@ -209,7 +209,7 @@ public class InputFileResolver : IInputFileResolver
         if ((!buildResult.OverallSuccess && buildResult.TargetsFullFramework()) || buildResult.Any(r => !r.References.Any()))
         {
             _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
-            _nugetRestoreProcess.RestorePackages (project.ProjectFile.Path);
+            _nugetRestoreProcess.RestorePackages(options.SolutionPath);
             var test = new EnvironmentOptions
             {
                 Restore = true
@@ -222,45 +222,37 @@ public class InputFileResolver : IInputFileResolver
             }
         }
 
-        var buildResultOverallSuccess = buildResult.OverallSuccess;
+        // if all expected frameworks are built, we consider the build a success
+        var buildResultOverallSuccess = buildResult.OverallSuccess || Array.TrueForAll(project.ProjectFile.TargetFrameworks,tf =>
+            buildResult.Any(br => IsValid(br) && br.TargetFramework == tf))
 
-        if (!buildResultOverallSuccess && Array.TrueForAll(project.ProjectFile.TargetFrameworks,tf =>
-                buildResult.Any(br => IsValid(br) && br.TargetFramework == tf)))
-        {
-            // if all expected frameworks are built, we consider the build a success
-            buildResultOverallSuccess = true;
-        }
-
+ 
         if (buildResultOverallSuccess)
         {
             _logger.LogDebug("Analysis of project {projectFilePath} succeeded.", projectLogName);
-            if (options.DevMode)
-            {
-                LogAnalyzerResult(buildResult.First());
-            }
+            LogAnalyzerResult(buildResult, options);
+            return buildResult;
         }
-        else
-        {
-            var failedFrameworks = project.ProjectFile.TargetFrameworks.Where(tf =>
-                !buildResult.Any(br => IsValid(br) && br.TargetFramework == tf)).ToList();
-            _logger.LogWarning(
-                "Analysis of project {projectFilePath} failed for frameworks {frameworkList}.",
-                projectLogName, string.Join(',', failedFrameworks));
 
-            if (options.DevMode)
-            {
-                _logger.LogWarning("Project analysis failed. The MsBuild log is below.");
-                _logger.LogInformation(_buildalyzerLog.ToString());
-            }
+        var failedFrameworks = project.ProjectFile.TargetFrameworks.Where(tf =>
+            !buildResult.Any(br => IsValid(br) && br.TargetFramework == tf)).ToList();
+        _logger.LogWarning(
+            "Analysis of project {projectFilePath} failed for frameworks {frameworkList}.",
+            projectLogName, string.Join(',', failedFrameworks));
+
+        if (options.DevMode)
+        {
+            _logger.LogWarning("Project analysis failed. The MsBuild log is below.");
+            _logger.LogInformation(_buildalyzerLog.ToString());
         }
 
         return buildResult;
     }
 
-    private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
+    private void LogAnalyzerResult(IAnalyzerResults analyzerResults, StrykerOptions options)
     {
         // do not log if trace is not enabled
-        if (!_logger.IsEnabled(LogLevel.Trace))
+        if (!_logger.IsEnabled(LogLevel.Trace) || !options.DevMode)
         {
             return;
         }
@@ -268,32 +260,35 @@ public class InputFileResolver : IInputFileResolver
         // dump all properties as it can help diagnosing build issues for user project.
         log.AppendLine("**** Buildalyzer result ****");
 
-        log.AppendLine($"Project: {analyzerResult.ProjectFilePath}");
-        log.AppendLine($"TargetFramework: {analyzerResult.TargetFramework}" );
-        log.AppendLine("Succeeded: {analyzerResult.Succeeded}");
-
-        var properties = analyzerResult.Properties ?? new Dictionary<string, string>();
-        foreach (var property in importantProperties)
+        log.AppendLine($"Project: {analyzerResults.First().ProjectFilePath}");
+        foreach(var analyzerResult in analyzerResults)
         {
-            log.AppendLine($"Property {property}={properties.GetValueOrDefault(property)??"\"'undefined'\""}");
-        }
-        foreach (var sourceFile in analyzerResult.SourceFiles ?? Enumerable.Empty<string>())
-        {
-            log.AppendLine($"SourceFile {sourceFile}");
-        }
+            log.AppendLine($"TargetFramework: {analyzerResult.TargetFramework}" );
+            log.AppendLine("Succeeded: {analyzerResult.Succeeded}");
 
-        foreach (var reference in analyzerResult.References ?? Enumerable.Empty<string>())
-        {
-            log.AppendLine($"References: {Path.GetFileName(reference)} (in {Path.GetDirectoryName(reference)})");
-        }
+            var properties = analyzerResult.Properties ?? new Dictionary<string, string>();
+            foreach (var property in importantProperties)
+            {
+                log.AppendLine($"Property {property}={properties.GetValueOrDefault(property)??"\"'undefined'\""}");
+            }
+            foreach (var sourceFile in analyzerResult.SourceFiles ?? Enumerable.Empty<string>())
+            {
+                log.AppendLine($"SourceFile {sourceFile}");
+            }
 
-        foreach (var property in properties)
-        {
-            if (importantProperties.Contains(property.Key)) continue; // already logged 
-            log.AppendLine($"Property {property.Key}={property.Value.Replace(Environment.NewLine, "\\n")}");
-        }
+            foreach (var reference in analyzerResult.References ?? Enumerable.Empty<string>())
+            {
+                log.AppendLine($"References: {Path.GetFileName(reference)} (in {Path.GetDirectoryName(reference)})");
+            }
 
-        log.AppendLine("**** Buildalyzer result ****");
+            foreach (var property in properties)
+            {
+                if (importantProperties.Contains(property.Key)) continue; // already logged 
+                log.AppendLine($"Property {property.Key}={property.Value.Replace(Environment.NewLine, "\\n")}");
+            }
+            log.AppendLine();
+        }
+        log.AppendLine("**** End Buildalyzer result ****");
         _logger.LogTrace(log.ToString());
     }
 

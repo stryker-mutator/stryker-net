@@ -1,5 +1,4 @@
 using System;
-using Library;
 
 namespace ExampleClassLibrary
 {
@@ -12,7 +11,6 @@ namespace ExampleClassLibrary
         
         private int Fibonacci(int a, int b, int counter, int len)
         {
-            MimeTypes.GetMimeType("fdsf.txt");
             if (counter <= len)
             {
                 Console.Write("{0} ", a);
