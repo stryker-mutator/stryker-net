@@ -135,9 +135,13 @@ public static class IAnalyzerResultExtensions
 
     internal static bool TargetsFullFramework(this IAnalyzerResult analyzerResult)
     {
+        if (analyzerResult.TargetFramework is null)
+        {
+            return false;
+        }
         var nuGetFramework = GetNuGetFramework(analyzerResult);
 
-        return nuGetFramework.IsDesktop() && (nuGetFramework.Version.Major<4 || nuGetFramework.Version is { Major: 4, Minor: < 8 });
+        return nuGetFramework.IsDesktop();
     }
     internal static bool TargetsFullFramework(this IAnalyzerResults analyzerResults) => analyzerResults.Any(x => x.TargetsFullFramework());
 

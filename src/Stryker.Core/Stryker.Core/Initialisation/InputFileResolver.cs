@@ -206,26 +206,28 @@ public class InputFileResolver : IInputFileResolver
         var buildResult = project.Build([options.TargetFramework]);
 
         // if this is a full framework project, we can retry after a nuget restore
-        if ((!buildResult.OverallSuccess && buildResult.TargetsFullFramework()) || buildResult.Any(r => !r.References.Any()))
+        if ((!buildResult.OverallSuccess) || buildResult.Any(r => r.References.Length==0 && r.TargetFramework is not null))
         {
-            _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
-            _nugetRestoreProcess.RestorePackages(options.SolutionPath);
-            var test = new EnvironmentOptions
-            {
-                Restore = true
-            };
-            buildResult = project.Build([options.TargetFramework], test);
             if (options.DevMode)
             {
                 // clear the logs for the next project
                 _buildalyzerLog.GetStringBuilder().Clear();
             }
+            if (buildResult.Any(r => !r.Succeeded && r.TargetsFullFramework()))
+            {
+                _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
+                _nugetRestoreProcess.RestorePackages(options.SolutionPath);
+            }
+            var buildOptions = new EnvironmentOptions
+            {
+                Restore = true
+            };
+            buildResult = project.Build([options.TargetFramework], buildOptions);
         }
 
         // if all expected frameworks are built, we consider the build a success
         var buildResultOverallSuccess = buildResult.OverallSuccess || Array.TrueForAll(project.ProjectFile.TargetFrameworks,tf =>
             buildResult.Any(br => IsValid(br) && br.TargetFramework == tf));
-
  
         if (buildResultOverallSuccess)
         {
@@ -301,8 +303,8 @@ public class InputFileResolver : IInputFileResolver
 
         if (targetFramework is null)
         {
-            // any framework will do
-            return validResults[0];
+             // we try to avoid desktop versions
+             return validResults.Find(a => a.Succeeded && !a.TargetsFullFramework()) ?? validResults[0];
         }
 
         var resultForRequestedFramework = validResults.Find(a => a.TargetFramework == targetFramework);
