@@ -14,6 +14,7 @@ namespace Stryker.Core.UnitTest.Initialisation;
 
 public class BuildAnalyzerTestsBase : TestBase
 {
+    protected internal const string DefaultFramework = "net6.0";
     protected readonly MockFileSystem FileSystem = new();
     protected string ProjectPath;
     private readonly Dictionary<string, IAnalyzerResult> _projectCache = new();
@@ -36,7 +37,7 @@ public class BuildAnalyzerTestsBase : TestBase
     /// <param name="framework">framework version</param>
     /// <param name="success">Predicate to control when analysis is successful. Default is always success.</param>
     protected Mock<IProjectAnalyzer> SourceProjectAnalyzerMock(string csprojPathName, string[] sourceFiles,
-        IEnumerable<string> projectReferences = null, string framework = "net6.0", Func<bool> success = null)
+        IEnumerable<string> projectReferences = null, string framework = DefaultFramework, Func<bool> success = null)
     {
         var properties = GetSourceProjectDefaultProperties();
         projectReferences??= new List<string>();
@@ -60,7 +61,7 @@ public class BuildAnalyzerTestsBase : TestBase
     /// <param name="success"></param>
     /// <returns>a mock project analyzer</returns>
     /// <remarks>the test project references the production code project and contains no source file</remarks>
-    protected Mock<IProjectAnalyzer> TestProjectAnalyzerMock(string testCsprojPathName, string csProj, string framework = "net6.0", bool success = true)
+    protected Mock<IProjectAnalyzer> TestProjectAnalyzerMock(string testCsprojPathName, string csProj, string framework = DefaultFramework, bool success = true)
     {
         var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
 
@@ -84,7 +85,7 @@ public class BuildAnalyzerTestsBase : TestBase
     internal Mock<IProjectAnalyzer> BuildProjectAnalyzerMock(string csprojPathName,
         string[] sourceFiles, Dictionary<string, string> properties,
         IEnumerable<string> projectReferences = null,
-        string framework = "net6.0",    
+        string framework = DefaultFramework,    
         Func<bool> success = null)
     {
         var sourceProjectAnalyzerMock = new Mock<IProjectAnalyzer>(MockBehavior.Strict);

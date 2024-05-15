@@ -112,10 +112,7 @@ public class InputFileResolver : IInputFileResolver
         {
             // we must select projects according to framework settings if any
             var analyzerResult = SelectAnalyzerResult(group, options.TargetFramework);
-            if (analyzerResult == null)
-            {
-                continue;
-            }
+
             projectInfos.Add(BuildSourceProjectInfo(options, analyzerResult, findMutableAnalyzerResults[analyzerResult]));
         }
         if (projectInfos.Count == 0)

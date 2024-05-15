@@ -713,6 +713,19 @@ using System.Reflection;
         }
 
         [Fact]
+        public void ShouldThrowExceptionOnNullPath()
+        {
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+                {
+                });
+
+            BuildBuildAnalyzerMock(new Dictionary<string, IProjectAnalyzer>());
+
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
+            Assert.Throws<ArgumentNullException>(() => target.FindTestProject(null));
+        }
+
+        [Fact]
         public void ShouldThrowExceptionOnNoProjectFile()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -831,8 +844,10 @@ Please specify a test project name filter that results in one project.
             actual.ShouldBe(Path.Combine(_sourcePath, "SubFolder", "TestProject.csproj"));
         }
 
-        [Fact]
-        public void ShouldSelectCorrectSourceProject_WhenTestProjectsAreGiven()
+        [Theory]
+        [InlineData("net6.0")]
+        [InlineData("net3.5")]
+        public void ShouldSelectAvailableFramework_WhenDesiredNotFound(string targetFramework)
         {
             // Arrange
             var basePath = Path.Combine(_sourcePath, "ExampleProject");
@@ -851,11 +866,12 @@ Please specify a test project name filter that results in one project.
             {
                 ProjectPath = basePath,
                 SourceProjectName = sourceProjectNameFilter,
-                TestProjects = new List<string> { testProjectPath }
+                TestProjects = new List<string> { testProjectPath },
+                TargetFramework = targetFramework
             };
 
             var sourceProjectManagerMock = SourceProjectAnalyzerMock(sourceProjectPath,  fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
-            var testProjectManagerMock = TestProjectAnalyzerMock(testProjectPath, sourceProjectPath, "netcoreapp2.1");
+            var testProjectManagerMock = TestProjectAnalyzerMock(testProjectPath, sourceProjectPath);
 
             var analyzerResults = new Dictionary<string, IProjectAnalyzer>
             {
@@ -870,7 +886,7 @@ Please specify a test project name filter that results in one project.
             var result = target.ResolveSourceProjectInfos(options).First();
 
             // Assert
-            result.AnalyzerResult.ProjectFilePath.ShouldBe(sourceProjectPath);
+            result.AnalyzerResult.TargetFramework.ShouldBe(DefaultFramework);
         }
 
         [Fact]
