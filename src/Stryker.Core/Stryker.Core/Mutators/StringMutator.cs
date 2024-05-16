@@ -2,6 +2,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Mutators;
+using Stryker.Shared.Options;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -12,7 +15,7 @@ public class StringMutator : MutatorBase<LiteralExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-    public override IEnumerable<Mutation> ApplyMutations(LiteralExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<IMutation> ApplyMutations(LiteralExpressionSyntax node, SemanticModel semanticModel)
     {
         // Get objectCreationSyntax to check if it contains a regex type.
         var root = node.Parent?.Parent?.Parent;

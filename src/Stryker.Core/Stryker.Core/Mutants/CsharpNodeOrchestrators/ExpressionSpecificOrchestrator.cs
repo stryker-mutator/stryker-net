@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
+using Stryker.Shared.Mutants;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
@@ -16,7 +17,7 @@ internal class ExpressionSpecificOrchestrator<T> : NodeSpecificOrchestrator<T, E
     protected override ExpressionSyntax InjectMutations(T sourceNode, ExpressionSyntax targetNode, SemanticModel semanticModel, MutationContext context) => context.InjectMutations(targetNode, sourceNode);
 
     protected override MutationContext StoreMutations(T node,
-        IEnumerable<Mutant> mutations,
+        IEnumerable<IMutant> mutations,
         MutationContext context) =>
         // if the expression contains a declaration, it must be controlled at the block level.
          context.AddMutations(mutations, node.ContainsDeclarations() ? MutationControl.Block : MutationControl.Expression);

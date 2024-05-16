@@ -2,33 +2,32 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Stryker
+namespace Stryker;
+
+internal sealed class MutantContext: IDisposable
 {
-    internal sealed class MutantContext: IDisposable
+    [ThreadStatic] private static int depth;
+
+    public MutantContext()
     {
-        [ThreadStatic] private static int depth;
+        depth++;
+    }
 
-        public MutantContext()
-        {
-            depth++;
-        }
+    public void Dispose()
+    {
+        depth--;
+    }
 
-        public void Dispose()
-        {
-            depth--;
-        }
+    public static bool InStatic()
+    {
+        return depth > 0;
+    }
 
-        public static bool InStatic()
+    public static T TrackValue<T>(Func<T> builder)
+    {
+        using (MutantContext context = new MutantContext())
         {
-            return depth > 0;
-        }
-
-        public static T TrackValue<T>(Func<T> builder)
-        {
-            using (MutantContext context = new MutantContext())
-            {
-                return builder();
-            }
+            return builder();
         }
     }
 }

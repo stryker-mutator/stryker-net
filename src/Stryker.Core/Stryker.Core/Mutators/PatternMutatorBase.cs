@@ -4,6 +4,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Mutators;
+using Stryker.Shared.Options;
 
 namespace Stryker.Core.Mutators;
 
@@ -25,14 +28,14 @@ public abstract class PatternMutatorBase<T> : MutatorBase<T> where T : Expressio
     };
 
     /// <summary> Apply mutations to a <see cref="PatternSyntax"/></summary>
-    protected IEnumerable<Mutation> ApplyMutations(PatternSyntax node, SemanticModel semanticModel) => node switch
+    protected IEnumerable<IMutation> ApplyMutations(PatternSyntax node, SemanticModel semanticModel) => node switch
     {
         BinaryPatternSyntax binaryPattern => ApplyMutations(binaryPattern),
         RelationalPatternSyntax relationalPattern => ApplyMutations(relationalPattern),
-        _ => Enumerable.Empty<Mutation>()
+        _ => Enumerable.Empty<IMutation>()
     };
 
-    private IEnumerable<Mutation> ApplyMutations(BinaryPatternSyntax node)
+    private IEnumerable<IMutation> ApplyMutations(BinaryPatternSyntax node)
     {
         if (!KindsToMutate.TryGetValue(node.Kind(), out var mutations))
         {
@@ -44,7 +47,7 @@ public abstract class PatternMutatorBase<T> : MutatorBase<T> where T : Expressio
             // can't use the update method here, because roslyn implementation is broken
             var replacementNode = SyntaxFactory.BinaryPattern(mutation, node.Left, node.Right);
             replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithTriviaFrom(node.OperatorToken));
-            yield return new()
+            yield return new Mutation()
             {
                 OriginalNode = node,
                 ReplacementNode = replacementNode,
@@ -54,7 +57,7 @@ public abstract class PatternMutatorBase<T> : MutatorBase<T> where T : Expressio
         }
     }
 
-    private IEnumerable<Mutation> ApplyMutations(RelationalPatternSyntax node)
+    private IEnumerable<IMutation> ApplyMutations(RelationalPatternSyntax node)
     {
         if (!KindsToMutate.TryGetValue(node.OperatorToken.Kind(), out var mutations))
         {
@@ -63,7 +66,7 @@ public abstract class PatternMutatorBase<T> : MutatorBase<T> where T : Expressio
 
         foreach (var mutation in mutations)
         {
-            yield return new()
+            yield return new Mutation()
             {
                 OriginalNode = node,
                 ReplacementNode = node.WithOperatorToken(SyntaxFactory.Token(mutation).WithTriviaFrom(node.OperatorToken)),

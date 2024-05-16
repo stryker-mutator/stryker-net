@@ -1,32 +1,33 @@
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Shared;
+using Stryker.Shared.Options;
 
-namespace Stryker.Core.Options.Inputs
+namespace Stryker.Core.Options.Inputs;
+
+public class DiffIgnoreChangesInput : Input<IEnumerable<string>>
 {
-    public class DiffIgnoreChangesInput : Input<IEnumerable<string>>
-    {
-        public override IEnumerable<string> Default => Enumerable.Empty<string>();
+    public override IEnumerable<string> Default => Enumerable.Empty<string>();
 
-        protected override string Description => @"Allows to specify an array of C# files which should be ignored if present in the diff.
+    protected override string Description => @"Allows to specify an array of C# files which should be ignored if present in the diff.
 Any non-excluded files will trigger all mutants to be tested because we cannot determine what mutants are affected by these files. 
 This feature is only recommended when you are sure these files will not affect results, or when you are prepared to sacrifice accuracy for performance.
 
 Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
 Example: ['**/*Assets.json','**/favicon.ico']";
 
-        public IEnumerable<ExclusionPattern> Validate()
+    public IEnumerable<IExclusionPattern> Validate()
+    {
+        if (SuppliedInput is { })
         {
-            if (SuppliedInput is { })
+            var diffIgnoreStrings = new List<IExclusionPattern>();
+            foreach (var pattern in SuppliedInput)
             {
-                var diffIgnoreStrings = new List<ExclusionPattern>();
-                foreach (var pattern in SuppliedInput)
-                {
-                    diffIgnoreStrings.Add(new ExclusionPattern(FilePathUtils.NormalizePathSeparators(pattern)));
-                }
-
-                return diffIgnoreStrings;
+                diffIgnoreStrings.Add(new ExclusionPattern(FilePathUtils.NormalizePathSeparators(pattern)));
             }
-            return Enumerable.Empty<ExclusionPattern>();
+
+            return diffIgnoreStrings;
         }
+        return Enumerable.Empty<IExclusionPattern>();
     }
 }

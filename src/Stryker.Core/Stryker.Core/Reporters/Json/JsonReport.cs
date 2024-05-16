@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json.SourceFiles;
 using Stryker.Core.Reporters.Json.TestFiles;
+using Stryker.Shared.Options;
 
 namespace Stryker.Core.Reporters.Json
 {
@@ -18,7 +18,7 @@ namespace Stryker.Core.Reporters.Json
 
         public JsonReport() { }
 
-        private JsonReport(StrykerOptions options, IReadOnlyProjectComponent mutationReport, TestProjectsInfo testProjectsInfo)
+        private JsonReport(IStrykerOptions options, IReadOnlyProjectComponent mutationReport, TestProjectsInfo testProjectsInfo)
         {
             Thresholds.Add("high", options.Thresholds.High);
             Thresholds.Add("low", options.Thresholds.Low);
@@ -29,7 +29,7 @@ namespace Stryker.Core.Reporters.Json
             AddTestFiles(testProjectsInfo);
         }
 
-        public static JsonReport Build(StrykerOptions options, IReadOnlyProjectComponent mutationReport, TestProjectsInfo testProjectsInfo) => new(options, mutationReport, testProjectsInfo);
+        public static JsonReport Build(IStrykerOptions options, IReadOnlyProjectComponent mutationReport, TestProjectsInfo testProjectsInfo) => new(options, mutationReport, testProjectsInfo);
 
         private IDictionary<string, SourceFile> GenerateReportComponents(IReadOnlyProjectComponent component)
         {

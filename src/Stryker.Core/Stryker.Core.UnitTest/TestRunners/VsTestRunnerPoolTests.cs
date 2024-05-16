@@ -5,12 +5,12 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Moq;
 using Shouldly;
+using Stryker.Abstractions.Tests;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
-using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
 using Xunit;
 
@@ -661,7 +661,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
 
-            var buildCase = BuildCase("unexpected", Core.TestRunners.TestFrameworks.NUnit);
+            var buildCase = BuildCase("unexpected", TestFrameworks.NUnit);
             SetupMockCoverageRun(mockVsTest, new[] { new TestResult(buildCase) { Outcome = TestOutcome.Passed } });
 
             var analyzer = new CoverageAnalyser(options);

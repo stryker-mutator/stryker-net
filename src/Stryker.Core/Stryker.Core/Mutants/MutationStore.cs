@@ -4,9 +4,9 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
-using RegexParser.Nodes;
 using Stryker.Core.Helpers;
-using Stryker.Core.Logging;
+using Stryker.Shared.Logging;
+using Stryker.Shared.Mutants;
 
 namespace Stryker.Core.Mutants;
 
@@ -114,7 +114,7 @@ internal class MutationStore
     /// <returns>true if insertion is successful</returns>
     /// <remarks>Mutants may be stored in a higher level construct if the desired level is nonexistent. If insertion fails, mutants are flagged
     /// as compile error and logged.</remarks>
-    public bool StoreMutationsAtDesiredLevel(IEnumerable<Mutant> store, MutationControl level)
+    public bool StoreMutationsAtDesiredLevel(IEnumerable<IMutant> store, MutationControl level)
     {
         if (!store.Any())
         {
@@ -142,7 +142,7 @@ internal class MutationStore
     /// </summary>
     /// <param name="store"></param>
     /// <returns></returns>
-    public bool StoreMutations(IEnumerable<Mutant> store)
+    public bool StoreMutations(IEnumerable<IMutant> store)
     {
         if (_pendingMutations.Count == 0)
         {
@@ -171,6 +171,7 @@ internal class MutationStore
         store.Clear();
         return result;
     }
+
 
     /// <summary>
     /// Inject (current level) mutations in the provided statement (controlled with if statement)
@@ -233,7 +234,7 @@ internal class MutationStore
     {
         public readonly MutationControl Control;
         private int _depth;
-        public readonly List<Mutant> Store = new();
+        public readonly List<IMutant> Store = new();
 
         public PendingMutations(MutationControl control) => Control = control;
 
@@ -246,7 +247,7 @@ internal class MutationStore
             return true;
         }
 
-        public void StoreMutations(IEnumerable<Mutant> store) =>
+        public void StoreMutations(IEnumerable<IMutant> store) =>
             Store.AddRange(store.Where(m => m.ResultStatus == MutantStatus.Pending));
 
         public bool Leave()

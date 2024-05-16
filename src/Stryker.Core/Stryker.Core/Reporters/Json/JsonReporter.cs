@@ -2,20 +2,20 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using Spectre.Console;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Options;
 
 namespace Stryker.Core.Reporters.Json
 {
     public partial class JsonReporter : IReporter
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IFileSystem _fileSystem;
         private readonly IAnsiConsole _console;
 
-        public JsonReporter(StrykerOptions options, IFileSystem fileSystem = null, IAnsiConsole console = null)
+        public JsonReporter(IStrykerOptions options, IFileSystem fileSystem = null, IAnsiConsole console = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();

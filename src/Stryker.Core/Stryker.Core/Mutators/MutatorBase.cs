@@ -1,6 +1,7 @@
 using Microsoft.CodeAnalysis;
-using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Options;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -11,18 +12,18 @@ namespace Stryker.Core.Mutators;
 /// Implementing this class is not obligatory for mutators.
 /// </summary>
 /// <typeparam name="T">The type of SyntaxNode to cast to</typeparam>
-public abstract class MutatorBase<T>:IMutator where T : SyntaxNode
+public abstract class MutatorBase<T> : IMutator where T : SyntaxNode
 {
     /// <summary>
     /// Apply the given mutations to a single SyntaxNode
     /// </summary>
     /// <param name="node">The node to mutate</param>
     /// <returns>One or more mutations</returns>
-    public abstract IEnumerable<Mutation> ApplyMutations(T node, SemanticModel semanticModel);
+    public abstract IEnumerable<IMutation> ApplyMutations(T node, SemanticModel semanticModel);
 
     public abstract MutationLevel MutationLevel { get; }
 
-    public IEnumerable<Mutation> Mutate(SyntaxNode node, SemanticModel semanticModel, StrykerOptions options)
+    public IEnumerable<IMutation> Mutate(SyntaxNode node, SemanticModel semanticModel, IStrykerOptions options)
     {
         if (MutationLevel <= options.MutationLevel && node is T tNode)
         {
@@ -30,6 +31,6 @@ public abstract class MutatorBase<T>:IMutator where T : SyntaxNode
             return ApplyMutations(tNode, semanticModel);
         }
 
-        return Enumerable.Empty<Mutation>();
+        return Enumerable.Empty<IMutation>();
     }
 }

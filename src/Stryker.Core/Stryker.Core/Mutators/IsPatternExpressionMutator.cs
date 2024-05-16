@@ -4,6 +4,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Mutators;
 
 namespace Stryker.Core.Mutators;
 
@@ -14,7 +16,7 @@ public class IsPatternExpressionMutator : PatternMutatorBase<IsPatternExpression
     /// Apply mutations to all <see cref="PatternSyntax"/> inside an <see cref="IsPatternExpressionSyntax"/>.
     /// Apply mutations to the root pattern.
     /// </summary>
-    public override IEnumerable<Mutation> ApplyMutations(IsPatternExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<IMutation> ApplyMutations(IsPatternExpressionSyntax node, SemanticModel semanticModel)
     {
         yield return ReverseRootPattern(node);
 
@@ -29,7 +31,7 @@ public class IsPatternExpressionMutator : PatternMutatorBase<IsPatternExpression
         }
     }
 
-    private static Mutation ReverseRootPattern(IsPatternExpressionSyntax node) => node.Pattern switch
+    private static IMutation ReverseRootPattern(IsPatternExpressionSyntax node) => node.Pattern switch
     {
         UnaryPatternSyntax notPattern => new Mutation
         {
