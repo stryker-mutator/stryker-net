@@ -64,10 +64,10 @@ public class BuildAnalyzerTestsBase : TestBase
     protected Mock<IProjectAnalyzer> TestProjectAnalyzerMock(string testCsprojPathName, string csProj, string framework = DefaultFramework, bool success = true)
     {
         var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
-
-        var projectReferences =  _projectCache[csProj].ProjectReferences.Append(csProj).ToList();
+        var projectReferences =  string.IsNullOrEmpty(csProj) ? [] : _projectCache[csProj].ProjectReferences.Append(csProj).ToList();
         return BuildProjectAnalyzerMock(testCsprojPathName, [], properties, projectReferences, framework, () => success);
     }
+
 
     /// <summary>
     /// build a project analyzer mock

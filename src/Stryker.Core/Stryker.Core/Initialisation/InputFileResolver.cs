@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Collections.Immutable;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
@@ -59,10 +58,15 @@ public class InputFileResolver : IInputFileResolver
 
     public IReadOnlyCollection<SourceProjectInfo> ResolveSourceProjectInfos(StrykerOptions options)
     {
+        var manager = _analyzerProvider.Provide(options.SolutionPath, options.DevMode ? new AnalyzerManagerOptions { LogWriter = _buildalyzerLog }: null);
         if (options.IsSolutionContext)
         {
-            return AnalyzeSolution(options);
+            var projectList = manager.Projects.Values.Select(p => p.ProjectFile.Path).ToList();
+            _logger.LogInformation("Identifying projects to mutate in {solution}. This can take a while.", options.SolutionPath);
+
+            return AnalyzeAndIdentifyProjects(projectList , options, manager, ScanMode.NoScan);
         }
+
         List<string> testProjectFileNames;
         if (options.TestProjects != null && options.TestProjects.Any())
         {
@@ -72,12 +76,32 @@ public class InputFileResolver : IInputFileResolver
         {
             testProjectFileNames = [FindTestProject(options.ProjectPath)];
         }
-        var manager = _analyzerProvider.Provide(options.SolutionPath, new AnalyzerManagerOptions { LogWriter = _buildalyzerLog });
-        foreach(var project in testProjectFileNames)
+
+        var result = AnalyzeAndIdentifyProjects(testProjectFileNames, options, manager, ScanMode.SingleLevelScan);
+        if (result.Count <= 1)
         {
-            manager.GetProject(project);
+            return result;
         }
-        return AnalyzeAndIdentifyProjects(options, manager, ScanMode.SingleLevelScan);
+        // Too many references found
+        // look for one project that references all provided test projects
+        result = result.Where(p => testProjectFileNames.TrueForAll(n => p.TestProjectsInfo.TestProjects.Any(t => t.ProjectFilePath == n))).ToList();
+        if (result.Count <= 1)
+        {
+            return result;
+        }
+        // still ambiguous
+        var stringBuilder = new StringBuilder().AppendLine(
+                "Test project contains more than one project reference. Please set the project option (https://stryker-mutator.io/docs/stryker-net/configuration#project-file-name) to specify which project to mutate.")
+            .Append(BuildReferenceChoice(result.Select(p => p.AnalyzerResult.ProjectFilePath)));
+        throw new InputException(stringBuilder.ToString());
+
+    }
+    
+    public string FindTestProject(string path)
+    {
+        var projectFile = FindProjectFile(path);
+        _logger.LogDebug("Using {0} as test project", projectFile);
+        return projectFile;
     }
 
     private enum ScanMode
@@ -86,15 +110,8 @@ public class InputFileResolver : IInputFileResolver
         SingleLevelScan = 1
     }
 
-    private List<SourceProjectInfo> AnalyzeSolution(StrykerOptions options)
-    {
-        _logger.LogInformation("Identifying projects to mutate in {0}. This can take a while.", options.SolutionPath);
-        var manager = _analyzerProvider.Provide(options.SolutionPath, options.DevMode ? new AnalyzerManagerOptions { LogWriter = _buildalyzerLog }: null);
-
-        return AnalyzeAndIdentifyProjects(options, manager, ScanMode.NoScan);
-    }
-
-    private List<SourceProjectInfo> AnalyzeAndIdentifyProjects(StrykerOptions options, IAnalyzerManager manager, ScanMode mode)
+    private List<SourceProjectInfo> AnalyzeAndIdentifyProjects(List<string> projectList, StrykerOptions options,
+        IAnalyzerManager manager, ScanMode mode)
     {
         // build all projects
         if (!string.IsNullOrEmpty(options.Configuration))
@@ -104,7 +121,13 @@ public class InputFileResolver : IInputFileResolver
         _logger.LogDebug("Analyzing {count} projects.", manager.Projects.Count);
 
         // we match test projects to mutable projects
-        var findMutableAnalyzerResults = FindMutableAnalyzerResults(AnalyzeAllNeededProjects(options, manager, mode));
+        var findMutableAnalyzerResults = FindMutableAnalyzerResults(AnalyzeAllNeededProjects(projectList, options, manager, mode));
+
+        if (findMutableAnalyzerResults.Count == 0)
+        {
+            // no mutable project found
+            throw new InputException("No project references found. Please add a project reference to your test project and retry.");
+        }
 
         var analyzerResults = findMutableAnalyzerResults.Keys.GroupBy(p => p.ProjectFilePath).ToList();
         var projectInfos = new List<SourceProjectInfo>();
@@ -115,6 +138,7 @@ public class InputFileResolver : IInputFileResolver
 
             projectInfos.Add(BuildSourceProjectInfo(options, analyzerResult, findMutableAnalyzerResults[analyzerResult]));
         }
+
         if (projectInfos.Count == 0)
         {
             _logger.LogError("Project analysis failed.");
@@ -123,31 +147,32 @@ public class InputFileResolver : IInputFileResolver
         return projectInfos;
     }
 
-    private ConcurrentBag<(IAnalyzerResults result, bool isTest)> AnalyzeAllNeededProjects(StrykerOptions options, IAnalyzerManager manager, ScanMode mode)
+    private ConcurrentBag<(IAnalyzerResults result, bool isTest)> AnalyzeAllNeededProjects(List<string> projectList, StrykerOptions options, IAnalyzerManager manager, ScanMode mode)
     {
         var mutableProjectsAnalyzerResults = new ConcurrentBag<(IAnalyzerResults result, bool isTest)>();
         try
         {
-            var list = new DynamicEnumerableQueue<IProjectAnalyzer>(manager.Projects.Values);
+            var list = new DynamicEnumerableQueue<string>(projectList);
             var normalizedProjectUnderTestNameFilter = !string.IsNullOrEmpty(options.SourceProjectName) ? options.SourceProjectName.Replace("\\", "/") : null;
             while(!list.Empty)
             {
                 Parallel.ForEach(list.Consume(),
                     new ParallelOptions
-                        { MaxDegreeOfParallelism = options.DevMode ? 1 : Math.Max(options.Concurrency, 1) }, project =>
+                        { MaxDegreeOfParallelism = options.DevMode ? 1 : Math.Max(options.Concurrency, 1) }, projectFile =>
                     {
+                        var project = manager.GetProject(projectFile);
                         var buildResult = AnalyzeSingleProject(project, options);
                         var isTestProject = buildResult.IsTestProject();
                         var referencesToAdd = ScanReferences(mode, buildResult, normalizedProjectUnderTestNameFilter);
 
                         var addProject = isTestProject || normalizedProjectUnderTestNameFilter == null ||
                                          project.ProjectFile.Path.Replace('\\', '/')
-                                             .Contains(normalizedProjectUnderTestNameFilter);
+                                             .Contains(normalizedProjectUnderTestNameFilter, StringComparison.InvariantCultureIgnoreCase);
                         if (addProject)
-                            mutableProjectsAnalyzerResults.Add((buildResult, buildResult.IsTestProject()));
+                            mutableProjectsAnalyzerResults.Add((buildResult, isTestProject));
                         foreach (var reference in referencesToAdd)
                         {
-                            list.Add(manager.GetProject(reference));
+                            list.Add(reference);
                         }
                     });
             }
@@ -177,7 +202,7 @@ public class InputFileResolver : IInputFileResolver
             // in single level mode we only want to find the referenced test project
             if (mode == ScanMode.SingleLevelScan && (!isTestProject || (normalizedProjectUnderTestNameFilter != null &&
                                                                         !projectReference.Replace('\\', '/')
-                                                                            .Contains(normalizedProjectUnderTestNameFilter))))
+                                                                            .Contains(normalizedProjectUnderTestNameFilter, StringComparison.InvariantCultureIgnoreCase))))
             {
                 continue;
             }
@@ -385,13 +410,6 @@ public class InputFileResolver : IInputFileResolver
         return targetProjectInfo;
     }
 
-    public string FindTestProject(string path)
-    {
-        var projectFile = FindProjectFile(path);
-        _logger.LogDebug("Using {0} as test project", projectFile);
-        return projectFile;
-    }
-
     private string FindProjectFile(string path)
     {
         if (string.IsNullOrEmpty(path))
@@ -433,82 +451,10 @@ public class InputFileResolver : IInputFileResolver
                 throw new InputException($"No .csproj or .fsproj file found, please check your project or solution directory at {path}");
             default:
                 _logger.LogTrace("Found project file {file} in path {path}", projectFiles.Single(), path);
-
                 return projectFiles.Single();
         }
     }
 
-    public string FindSourceProject(IEnumerable<IAnalyzerResult> testProjects, StrykerOptions options)
-    {
-        var projectReferences = FindProjectsReferencedByAllTestProjects(testProjects.ToList());
-        var sourceProjectPath = string.IsNullOrEmpty(options?.SourceProjectName) ? DetermineTargetProjectWithoutNameFilter(projectReferences) : DetermineSourceProjectWithNameFilter(options, projectReferences);
-
-        _logger.LogDebug("Using {0} as project under test", sourceProjectPath);
-
-        return sourceProjectPath;
-    }
-
-    internal string DetermineSourceProjectWithNameFilter(StrykerOptions options, IReadOnlyCollection<string> projectReferences)
-    {
-        var stringBuilder = new StringBuilder();
-
-        var normalizedProjectUnderTestNameFilter = options.SourceProjectName.Replace("\\", "/");
-        var projectReferencesMatchingNameFilter = projectReferences
-            .Where(x => x.Replace("\\", "/")
-                .Contains(normalizedProjectUnderTestNameFilter, StringComparison.OrdinalIgnoreCase)).ToImmutableList();
-
-        var count = projectReferencesMatchingNameFilter.Count;
-        if (count == 1)
-        {
-            return projectReferencesMatchingNameFilter.Single();
-        }
-
-        if (count == 0)
-        {
-            stringBuilder.Append("No project reference matched the given project filter ")
-                .Append($"'{options.SourceProjectName}'");
-        }
-        else
-        {
-            stringBuilder.Append("More than one project reference matched the given project filter ")
-                .Append($"'{options.SourceProjectName}'")
-                .AppendLine(", please specify the full name of the project reference.");
-
-        }
-
-        stringBuilder.Append(BuildReferenceChoice(projectReferences));
-
-        throw new InputException(stringBuilder.ToString());
-    }
-
-    private static string DetermineTargetProjectWithoutNameFilter(IReadOnlyCollection<string> projectReferences)
-    {
-        var count = projectReferences.Count;
-        if (count == 1)
-        {
-            return projectReferences.Single();
-        }
-
-        var stringBuilder = new StringBuilder();
-        if (count > 1) // Too many references found
-        {
-            stringBuilder.AppendLine("Test project contains more than one project reference. Please set the project option (https://stryker-mutator.io/docs/stryker-net/configuration#project-file-name) to specify which project to mutate.")
-                .Append(BuildReferenceChoice(projectReferences));
-        }
-        else  // No references found
-        {
-            stringBuilder.AppendLine("No project references found. Please add a project reference to your test project and retry.");
-
-        }
-        throw new InputException(stringBuilder.ToString());
-    }
-
-    private static IReadOnlyCollection<string> FindProjectsReferencedByAllTestProjects(IReadOnlyCollection<IAnalyzerResult> testProjects)
-    {
-        var allProjectReferences = testProjects.SelectMany(t => t.ProjectReferences);
-        var projectReferences = allProjectReferences.GroupBy(x => x).Where(g => g.Count() == testProjects.Count).Select(g => g.Key).ToImmutableList();
-        return projectReferences;
-    }
 
     private static StringBuilder BuildReferenceChoice(IEnumerable<string> projectReferences)
     {

@@ -28,6 +28,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         private readonly string _filesystemRoot;
         private readonly string _sourceFile;
         private readonly string _testProjectPath;
+        private readonly string _testPath;
         private readonly string _sourcePath;
         private readonly string _sourceProjectPath;
         private readonly string _defaultTestProjectFileContents;
@@ -40,13 +41,14 @@ namespace Stryker.Core.UnitTest.Initialisation
             _currentDirectory = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             _filesystemRoot = Path.GetPathRoot(_currentDirectory);
             _sourcePath = Path.Combine(_filesystemRoot, "ExampleProject");
+            _sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
+            _testPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "TestProject"));
+            _testProjectPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_testPath, "TestProject.csproj"));
+            _sourceProjectPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_sourcePath, "ExampleProject.csproj"));
             _options = new StrykerOptions()
             {
-                ProjectPath = _sourcePath
+                ProjectPath = _testPath
             };
-            _sourceFile = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
-            _testProjectPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_filesystemRoot, "TestProject", "TestProject.csproj"));
-            _sourceProjectPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_sourcePath, "ExampleProject.csproj"));
             _defaultTestProjectFileContents = @"<Project Sdk=""Microsoft.NET.Sdk"">
     <PropertyGroup>
         <TargetFramework>netcoreapp2.0</TargetFramework>
@@ -770,7 +772,7 @@ Please specify a test project name filter that results in one project.
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
             {
                 { Path.Combine(_sourcePath, "ExampleProject.csproj"), new MockFileData(_defaultTestProjectFileContents)},
-                { Path.Combine(_filesystemRoot, @"ExampleProject\ExampleProject2", "ExampleProject2.csproj"), new MockFileData(_defaultTestProjectFileContents)},
+                { Path.Combine(_filesystemRoot, "ExampleProject","ExampleProject2", "ExampleProject2.csproj"), new MockFileData(_defaultTestProjectFileContents)},
                 { Path.Combine(_sourcePath, "Recursive.cs"), new MockFileData("content")}
             });
 
@@ -991,36 +993,129 @@ Please specify a test project name filter that results in one project.
         [Fact]
         public void ShouldFindSourceProjectWhenSingleProjectReferenceAndNoFilter()
         {
-            var testProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(projectReferences: new List<string> { @"..\ExampleProject\ExampleProject.csproj" }).Object;
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { _sourceProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+                { Path.Combine(_sourcePath, "source.cs"), new MockFileData(_sourceFile)},
+                { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+            });
 
-            var result = new InputFileResolver().FindSourceProject(new []{testProjectAnalyzerResult}, null);
-            result.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
+            var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectPath,  fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+            var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectPath, _sourceProjectPath, "netcoreapp2.1");
+
+            var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+            {
+                { "MyProject", sourceProjectManagerMock.Object },
+                { "MyProject.UnitTests", testProjectManagerMock.Object }
+            };
+            BuildBuildAnalyzerMock(analyzerResults);
+
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
+
+            var result = target.ResolveSourceProjectInfos(_options).First();
+
+            result.AnalyzerResult.ProjectFilePath.ShouldBe(_sourceProjectPath);
         }
 
         [Fact]
         public void ShouldThrowOnNoProjectReference()
         {
-            var testProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: Enumerable.Empty<string>()).Object;
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+            });
 
-            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testProjectAnalyzerResult}, null));
+            var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectPath, null, "netcoreapp2.1");
 
-            ex.Message.ShouldContain("no project");
+            var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+            {
+                { "MyProject.UnitTests", testProjectManagerMock.Object }
+            };
+            BuildBuildAnalyzerMock(analyzerResults);
+
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
+
+            var action = () => target.ResolveSourceProjectInfos(_options);
+
+            action.ShouldThrow<InputException>().Message.ShouldContain("no project");
         }
 
         [Fact]
         public void ShouldThrowOnMultipleProjectsWithoutFilter()
         {
-            var testProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: new List<string> {
-                    @"..\ExampleProject\ExampleProject.csproj",
-                    @"..\AnotherProject\AnotherProject.csproj"
-                }).Object;
+            // Arrange
+            var project2 = Path.Combine(_filesystemRoot, "Project2", "Project2.csproj");
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+                {
+                    { _sourceProjectPath, new MockFileData(_defaultSourceProjectFileContents)},
+                    { _testProjectPath, new MockFileData(_defaultTestProjectFileContents) },
+                    { project2, new MockFileData(_defaultSourceProjectFileContents) },
+                });
 
-            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testProjectAnalyzerResult}, null));
+            var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectPath, []);
+            var sourceProject2ManagerMock = SourceProjectAnalyzerMock(project2, []);
+            var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
+            var testProjectManagerMock = BuildProjectAnalyzerMock(_testProjectPath, [], properties, [_sourceProjectPath, project2], "netcore2.1");
 
+            var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+            {
+                { "MyProject", sourceProjectManagerMock.Object },
+                { "MyProject2", sourceProject2ManagerMock.Object },
+                { "MyProject.UnitTests2", testProjectManagerMock.Object }
+            };
+            BuildBuildAnalyzerMock(analyzerResults);
+
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
+            // Act
+            var result = () => target.ResolveSourceProjectInfos(_options);
+
+            // Assert
+            var ex = result.ShouldThrow<InputException>();
             ex.Message.ShouldContain("Test project contains more than one project reference. Please set the project option");
             ex.Message.ShouldContain("Choose one of the following references:");
+        }
+
+        [Fact]
+        public void ShouldNotThrowIfMultipleProjectButOneIsAlwaysReferenced()
+        {
+            // Arrange
+            var project2 = Path.Combine(_filesystemRoot, "Project2", "Project2.csproj");
+            var test2Path = Path.Combine(_testPath, "AltTest", "Test.csproj");
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+                {
+                    { _sourceProjectPath, new MockFileData(_defaultSourceProjectFileContents)},
+                    { _testProjectPath, new MockFileData(_defaultTestProjectFileContents) },
+                    { test2Path, new MockFileData(_defaultTestProjectFileContents) },
+                    { project2, new MockFileData(_defaultSourceProjectFileContents) },
+                });
+
+            var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectPath, []);
+            var sourceProject2ManagerMock = SourceProjectAnalyzerMock(project2, []);
+            var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
+            var testProjectManagerMock = BuildProjectAnalyzerMock(_testProjectPath, [], properties, [_sourceProjectPath, project2], "netcore2.1");
+            var properties2 = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
+            var testProjectManagerMock2 = BuildProjectAnalyzerMock(test2Path, [], properties2, [_sourceProjectPath], "netcore2.1");
+
+            var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+            {
+                { "MyProject", sourceProjectManagerMock.Object },
+                { "MyProject2", sourceProject2ManagerMock.Object },
+                { "MyProject.UnitTests", testProjectManagerMock.Object },
+                { "MyProject.UnitTests2", testProjectManagerMock2.Object }
+            };
+            BuildBuildAnalyzerMock(analyzerResults);
+
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
+            var options = new StrykerOptions
+            {
+                TestProjects = [_testProjectPath, test2Path],
+                WorkingDirectory = _testPath
+            };
+            // Act
+            var result = target.ResolveSourceProjectInfos(options).First();
+
+            // Assert
+            result.AnalyzerResult.ProjectFilePath.ShouldBe(_sourceProjectPath);
         }
 
         [Theory]
@@ -1031,17 +1126,34 @@ Please specify a test project name filter that results in one project.
         [InlineData("Example")]
         public void ShouldMatchFromMultipleProjectByName(string shouldMatch)
         {
-            var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: new List<string> {
-                    @"..\ExampleProject\ExampleProject.csproj",
-                    @"..\AnotherProject\AnotherProject.csproj"
-                }).Object;
+            // Arrange
+            var project2 = Path.Combine(_filesystemRoot, "Project2", "Project2.csproj");
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { _sourceProjectPath, new MockFileData(_defaultSourceProjectFileContents)},
+                { _testProjectPath, new MockFileData(_defaultTestProjectFileContents) },
+                { project2, new MockFileData(_defaultSourceProjectFileContents) },
+            });
 
+            var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectPath, []);
+            var sourceProject2ManagerMock = SourceProjectAnalyzerMock(project2, []);
+            var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
+            var testProjectManagerMock = BuildProjectAnalyzerMock(_testProjectPath, [], properties, [_sourceProjectPath, project2], "netcore2.1");
 
-            var options = new StrykerOptions { SourceProjectName = shouldMatch };
-            var result = new InputFileResolver().FindSourceProject(new [] {testPojectAnalyzerResult}, options);
+            var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+            {
+                { "MyProject", sourceProjectManagerMock.Object },
+                { "MyProject2", sourceProject2ManagerMock.Object },
+                { "MyProject.UnitTests2", testProjectManagerMock.Object }
+            };
+            BuildBuildAnalyzerMock(analyzerResults);
 
-            result.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
+
+            var options = new StrykerOptions { SourceProjectName = shouldMatch, ProjectPath = _testPath };
+            var result = target.ResolveSourceProjectInfos(options).First();
+
+            result.AnalyzerResult.ProjectFilePath.ShouldBe(_sourceProjectPath);
         }
 
         [Theory]
@@ -1051,32 +1163,61 @@ Please specify a test project name filter that results in one project.
         [InlineData(".csproj")]
         public void ShouldThrowWhenTheNameMatchesMore(string shouldMatchMoreThanOne)
         {
-            var testProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: new List<string> {
-                    @"..\ExampleProject\ExampleProject.csproj",
-                    @"..\AnotherProject\AnotherProject.csproj"
-                }).Object;
+            // Arrange
+            var project2 = Path.Combine(_filesystemRoot, "Project2", "2ndProject.csproj");
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { _sourceProjectPath, new MockFileData(_defaultSourceProjectFileContents)},
+                { _testProjectPath, new MockFileData(_defaultTestProjectFileContents) },
+                { project2, new MockFileData(_defaultSourceProjectFileContents) },
+            });
 
-            var options = new StrykerOptions { SourceProjectName = shouldMatchMoreThanOne };
-            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testProjectAnalyzerResult}, options));
+            var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectPath, []);
+            var sourceProject2ManagerMock = SourceProjectAnalyzerMock(project2, []);
+            var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
+            var testProjectManagerMock = BuildProjectAnalyzerMock(_testProjectPath, [], properties, [_sourceProjectPath, project2], "netcore2.1");
 
-            ex.Message.ShouldContain("more than one");
+            var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+            {
+                { "MyProject", sourceProjectManagerMock.Object },
+                { "MyProject2", sourceProject2ManagerMock.Object },
+                { "MyProject.UnitTests2", testProjectManagerMock.Object }
+            };
+            BuildBuildAnalyzerMock(analyzerResults);
+
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
+
+            var options = new StrykerOptions { SourceProjectName = shouldMatchMoreThanOne, ProjectPath = _testPath };
+            var result = () => target.ResolveSourceProjectInfos(options);
+            result.ShouldThrow<InputException>().Message.ShouldContain("more than one project");
         }
 
         [Fact]
         public void ShouldThrowWhenTheNameMatchesNone()
         {
-            var testProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                projectReferences: new List<string> {
-                    @"..\ExampleProject\ExampleProject.csproj",
-                    @"..\AnotherProject\AnotherProject.csproj"
-                }).Object;
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { _sourceProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+                { Path.Combine(_sourcePath, "source.cs"), new MockFileData(_sourceFile)},
+                { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+            });
 
+            var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectPath,  fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+            var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectPath, _sourceProjectPath, "netcoreapp2.1");
 
-            var options = new StrykerOptions { SourceProjectName = "WrongProject.csproj" };
-            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testProjectAnalyzerResult}, options));
+            var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+            {
+                { "MyProject", sourceProjectManagerMock.Object },
+                { "MyProject.UnitTests", testProjectManagerMock.Object }
+            };
+            BuildBuildAnalyzerMock(analyzerResults);
 
-            ex.Message.ShouldContain("no project");
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
+
+            var options = new StrykerOptions { SourceProjectName = "wrong.csprj", ProjectPath = _testPath };
+            var result = () => target.ResolveSourceProjectInfos(options);
+            result.ShouldThrow<InputException>().Message.ShouldContain("No project references found.");
+
         }
 
         [Theory]
@@ -1084,15 +1225,29 @@ Please specify a test project name filter that results in one project.
         [InlineData("ExampleProject\\ExampleProject.csproj")]
         public void ShouldMatchOnBothForwardAndBackwardsSlash(string shouldMatch)
         {
-            var projectReferences = new List<string> {
-                @"..\ExampleProject\ExampleProject.csproj",
-                @"..\AnotherProject\AnotherProject.csproj"
+            var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
+            {
+                { _sourceProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+                { Path.Combine(_sourcePath, "source.cs"), new MockFileData(_sourceFile)},
+                { _testProjectPath, new MockFileData(_defaultTestProjectFileContents)},
+            });
+
+            var sourceProjectManagerMock = SourceProjectAnalyzerMock(_sourceProjectPath,  fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+            var testProjectManagerMock = TestProjectAnalyzerMock(_testProjectPath, _sourceProjectPath, "netcoreapp2.1");
+
+            var analyzerResults = new Dictionary<string, IProjectAnalyzer>
+            {
+                { "MyProject", sourceProjectManagerMock.Object },
+                { "MyProject.UnitTests", testProjectManagerMock.Object }
             };
+            BuildBuildAnalyzerMock(analyzerResults);
 
-            var options = new StrykerOptions { SourceProjectName = shouldMatch };
-            var match = new InputFileResolver().DetermineSourceProjectWithNameFilter(options, projectReferences);
+            var target = new InputFileResolver(fileSystem, BuildalyzerProviderMock.Object, _nugetMock.Object);
 
-            match.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
+            var options = new StrykerOptions { SourceProjectName = shouldMatch, ProjectPath = _testPath };
+            var result = target.ResolveSourceProjectInfos(_options).First();
+
+            result.AnalyzerResult.ProjectFilePath.ShouldBe(_sourceProjectPath);
         }
     }
 }
