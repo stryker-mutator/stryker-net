@@ -2,6 +2,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.Mutators;
+using Stryker.Shared.Mutators;
+using Stryker.Shared.Options;
 using System.Linq;
 using Xunit;
 

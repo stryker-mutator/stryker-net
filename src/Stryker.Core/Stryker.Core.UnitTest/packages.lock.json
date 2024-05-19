@@ -1618,7 +1618,7 @@
           "Stryker.DataCollector": "[1.0.0, )",
           "Stryker.RegexMutators": "[1.0.0, )",
           "Stryker.Shared": "[1.0.0, )",
-          "Stryker.TestRunners.VSTest": "[1.0.0, )",
+          "Stryker.TestRunner.VSTest": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[21.0.2, )"
         }
       },
@@ -1647,7 +1647,7 @@
           "Serilog.Sinks.Console": "[5.0.1, )"
         }
       },
-      "stryker.testrunners.vstest": {
+      "stryker.testrunner.vstest": {
         "type": "Project",
         "dependencies": {
           "Microsoft.Extensions.Logging": "[8.0.0, )",

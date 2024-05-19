@@ -5,7 +5,7 @@ using Stryker.Shared.Logging;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Stryker.TestRunners.VSTest;
+namespace Stryker.TestRunner.VSTest;
 
 public interface IStrykerTestHostLauncher : ITestHostLauncher
 {

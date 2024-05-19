@@ -5,13 +5,15 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Moq;
 using Shouldly;
-using Stryker.Abstractions.Tests;
 using Stryker.Core.CoverageAnalysis;
-using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
-using Stryker.Core.TestRunners.VsTest;
+using Stryker.Shared.Exceptions;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Options;
+using Stryker.Shared.Tests;
+using Stryker.TestRunner.VSTest;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners

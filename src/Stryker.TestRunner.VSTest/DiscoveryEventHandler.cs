@@ -2,7 +2,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 
-namespace Stryker.TestRunners.VSTest;
+namespace Stryker.TestRunner.VSTest;
 
 public class DiscoveryEventHandler : ITestDiscoveryEventsHandler
 {

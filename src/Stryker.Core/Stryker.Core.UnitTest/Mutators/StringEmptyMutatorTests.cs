@@ -4,7 +4,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
-using Stryker.Core.Options;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Mutators;
+using Stryker.Shared.Options;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
@@ -94,7 +96,7 @@ namespace Stryker.Core.UnitTest.Mutators
             mutated.ShouldBeEmpty();
         }
 
-        private void ValidateMutationIsNullCheck(Mutation mutation, InvocationExpressionSyntax original)
+        private void ValidateMutationIsNullCheck(IMutation mutation, InvocationExpressionSyntax original)
         {
             mutation.OriginalNode.ShouldBe(original);
             mutation.DisplayName.ShouldBe("String mutation");
@@ -111,7 +113,7 @@ namespace Stryker.Core.UnitTest.Mutators
             nullLiteral.Kind().ShouldBe(SyntaxKind.NullLiteralExpression);
         }
 
-        private void ValidateMutationIsEmptyCheck(Mutation mutation, InvocationExpressionSyntax original)
+        private void ValidateMutationIsEmptyCheck(IMutation mutation, InvocationExpressionSyntax original)
         {
             mutation.OriginalNode.ShouldBe(original);
             mutation.DisplayName.ShouldBe("String mutation");
@@ -129,7 +131,7 @@ namespace Stryker.Core.UnitTest.Mutators
             emptyLiteral.Token.ToString().ShouldBe(@"""""");
         }
 
-        private void ValidateMutationIsWhiteSpaceCheck(Mutation mutation, InvocationExpressionSyntax original)
+        private void ValidateMutationIsWhiteSpaceCheck(IMutation mutation, InvocationExpressionSyntax original)
         {
             mutation.OriginalNode.ShouldBe(original);
             mutation.DisplayName.ShouldBe("String mutation");

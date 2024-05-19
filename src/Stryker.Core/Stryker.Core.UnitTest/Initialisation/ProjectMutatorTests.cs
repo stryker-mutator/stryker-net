@@ -3,17 +3,16 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
-using Buildalyzer;
 using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
-using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
+using Stryker.Core.Testing;
+using Stryker.Shared.Mutants;
+using Stryker.TestRunner.VSTest;
 using Xunit;
 using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
@@ -77,8 +76,13 @@ namespace ExtraProject.XUnit
                 CodeFilePath = _testFilePath,
                 LineNumber = 7,
             };
+
+            var vsTestCase1 = new VsTestCase(testCase1);
+            var vsTestCase2 = new VsTestCase(testCase2);
+
+
             var successfulTest = testCase2.Id;
-            var tests = new List<VsTestDescription> { new VsTestDescription(testCase1), new VsTestDescription(testCase2) };
+            var tests = new List<VsTestDescription> { new (vsTestCase1), new (vsTestCase2) };
             var initialTestRunResult = new TestRunResult(
                 vsTestDescriptions: tests,
                 executedTests: new TestGuidsList(failedTest, successfulTest),

@@ -16,7 +16,6 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Moq;
-using Stryker.Abstractions.Tests;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
@@ -24,10 +23,13 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
+using Stryker.Core.Testing;
 using Stryker.Core.ToolHelpers;
 using Stryker.DataCollector;
+using Stryker.Shared;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Tests;
+using Stryker.TestRunner.VSTest;
 
 namespace Stryker.Core.UnitTest.TestRunners;
 

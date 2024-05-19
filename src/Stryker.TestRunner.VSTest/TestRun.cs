@@ -14,7 +14,7 @@
 // --------------------------------------------------------------------------------------------------------------------
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
-namespace Stryker.TestRunners.VSTest;
+namespace Stryker.TestRunner.VSTest;
 
 internal class TestRun
 {

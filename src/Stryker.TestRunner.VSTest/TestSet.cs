@@ -1,8 +1,8 @@
 using Stryker.Shared.Tests;
 
-namespace Stryker.Core.Mutants;
+namespace Stryker.TestRunner.VSTest;
 
-public class TestSet : ITestSet
+internal class TestSet : ITestSet
 {
     private readonly IDictionary<Guid, ITestDescription> _tests = new Dictionary<Guid, ITestDescription>();
     public int Count => _tests.Count;

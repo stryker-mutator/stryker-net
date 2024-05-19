@@ -6,20 +6,20 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Compiling;
-using Stryker.Core.Exceptions;
+using Stryker.Shared.Exceptions;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
-using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Xunit;
+using Stryker.Shared.Mutators;
+using Stryker.Shared.Options;
 
 namespace Stryker.Core.UnitTest.Compiling
 {

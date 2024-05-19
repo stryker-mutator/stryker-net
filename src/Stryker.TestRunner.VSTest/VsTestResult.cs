@@ -1,7 +1,7 @@
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Shared.Tests;
 
-namespace Stryker.TestRunners.VSTest;
+namespace Stryker.TestRunner.VSTest;
 internal class VsTestResult : ITestResult
 {
     public VsTestResult(TestResult testResult)

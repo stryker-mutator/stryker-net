@@ -37,7 +37,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipeline-templates", "pipel
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Shared", "Stryker.Testing.Abstractions\Stryker.Shared.csproj", "{1AF7775A-A2D9-458A-82E4-13677296F393}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.TestRunners.VSTest", "Stryker.TestRunner.VSTest\Stryker.TestRunners.VSTest.csproj", "{7C3778C1-A5CD-42FB-B6B6-4330717CBFDF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.TestRunner.VSTest", "Stryker.TestRunner.VSTest\Stryker.TestRunner.VSTest.csproj", "{7C3778C1-A5CD-42FB-B6B6-4330717CBFDF}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

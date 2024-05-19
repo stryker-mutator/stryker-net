@@ -1,8 +1,8 @@
 using Stryker.Shared.Tests;
 
-namespace Stryker.TestRunners.VSTest;
+namespace Stryker.TestRunner.VSTest;
 
-public class TestRunResult : ITestRunResult
+internal class TestRunResult : ITestRunResult
 {
     public TestRunResult(bool success, string message = null)
     {

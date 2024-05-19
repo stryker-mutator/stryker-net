@@ -2,8 +2,8 @@ using System;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
-using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
+using Stryker.Shared.Exceptions;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs

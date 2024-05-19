@@ -5,6 +5,7 @@ using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Shared.Mutants;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;

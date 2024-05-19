@@ -13,9 +13,8 @@ using Stryker.CLI.Clients;
 using Stryker.CLI.Logging;
 using Stryker.Core;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Mutators;
 using Stryker.Core.Options;
-using Stryker.Core.Reporters;
+using Stryker.Shared.Options;
 using Xunit;
 
 namespace Stryker.CLI.UnitTest
@@ -111,7 +110,7 @@ Options:";
             var strykerRunResult = new StrykerRunResult(options, 0.3);
 
             mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>()))
-                .Callback<IStrykerInputs, ILoggerFactory, IProjectOrchestrator>((c, l, p) => Core.Logging.ApplicationLogging.LoggerFactory = l)
+                .Callback<IStrykerInputs, ILoggerFactory, IProjectOrchestrator>((c, l, p) => Shared.Logging.ApplicationLogging.LoggerFactory = l)
                 .Returns(strykerRunResult)
                 .Verifiable();
 

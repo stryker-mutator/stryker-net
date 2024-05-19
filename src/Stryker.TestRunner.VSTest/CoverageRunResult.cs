@@ -1,6 +1,6 @@
 using Stryker.Shared.Coverage;
 
-namespace Stryker.TestRunners.VSTest;
+namespace Stryker.TestRunner.VSTest;
 
 public class CoverageRunResult : ICoverageRunResult
 {

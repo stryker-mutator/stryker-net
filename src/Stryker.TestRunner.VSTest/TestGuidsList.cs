@@ -1,8 +1,8 @@
 using Stryker.Shared.Tests;
 
-namespace Stryker.TestRunners.VSTest;
+namespace Stryker.TestRunner.VSTest;
 
-public class TestGuidsList : ITestGuids
+internal class TestGuidsList : ITestGuids
 {
     private readonly HashSet<Guid> _testGuids;
 

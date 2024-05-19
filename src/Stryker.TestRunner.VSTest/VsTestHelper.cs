@@ -8,7 +8,7 @@ using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Stryker.Shared;
 using Stryker.Shared.Logging;
 
-namespace Stryker.TestRunners.VSTest;
+namespace Stryker.TestRunner.VSTest;
 public interface IVsTestHelper
 {
     string GetCurrentPlatformVsTestToolPath();

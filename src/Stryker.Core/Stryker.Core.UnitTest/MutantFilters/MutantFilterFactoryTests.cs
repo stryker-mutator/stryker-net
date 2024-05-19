@@ -10,6 +10,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Json;
+using Stryker.Shared.Options;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.MutantFilters

@@ -10,6 +10,8 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.MutantFilters;
 using Shouldly;
+using Stryker.Shared.Mutators;
+using Stryker.Shared.Mutants;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {

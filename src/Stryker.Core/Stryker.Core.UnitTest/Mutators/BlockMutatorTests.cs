@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
+using Stryker.Shared.Mutants;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
@@ -229,7 +230,7 @@ class Program
                 .ShouldBeEmpty();
         }
 
-        private static IEnumerable<Mutation> GetMutations(string source)
+        private static IEnumerable<IMutation> GetMutations(string source)
         {
             var statements = CSharpSyntaxTree
                 .ParseText(source)

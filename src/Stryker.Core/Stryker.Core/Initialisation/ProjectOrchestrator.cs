@@ -13,7 +13,7 @@ using Stryker.Shared.Exceptions;
 using Stryker.Shared.Logging;
 using Stryker.Shared.Options;
 using Stryker.Shared.Tests;
-using Stryker.TestRunners.VSTest;
+using Stryker.TestRunner.VSTest;
 
 namespace Stryker.Core.Initialisation;
 

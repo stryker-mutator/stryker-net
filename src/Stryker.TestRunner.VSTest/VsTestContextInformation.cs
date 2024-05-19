@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Serilog.Events;
-using Stryker.Core.Mutants;
 using Stryker.DataCollector;
 using Stryker.Shared.Exceptions;
 using Stryker.Shared.Logging;
@@ -12,7 +11,7 @@ using Stryker.Shared.Options;
 using Stryker.Shared.Tests;
 
 
-namespace Stryker.TestRunners.VSTest
+namespace Stryker.TestRunner.VSTest
 {
     /// <summary>
     ///     Handles VsTest setup and configuration.

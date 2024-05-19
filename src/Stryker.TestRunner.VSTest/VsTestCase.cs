@@ -1,8 +1,8 @@
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Shared.Tests;
 
-namespace Stryker.TestRunners.VSTest;
-internal class VsTestCase : ITestCase
+namespace Stryker.TestRunner.VSTest;
+public class VsTestCase : ITestCase
 {
     public VsTestCase(TestCase testCase)
     {
@@ -10,6 +10,7 @@ internal class VsTestCase : ITestCase
         Name = testCase.DisplayName;
         FullyQualifiedName = testCase.FullyQualifiedName;
         Uri = testCase.ExecutorUri;
+        CodeFilePath = testCase.CodeFilePath ?? "";
         LineNumber = testCase.LineNumber;
     }
 

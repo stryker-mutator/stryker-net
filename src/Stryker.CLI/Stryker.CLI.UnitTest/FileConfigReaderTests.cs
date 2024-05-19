@@ -5,7 +5,7 @@ using Shouldly;
 using Stryker.Core;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
-using Stryker.Core.Reporters;
+using Stryker.Shared.Options;
 using Xunit;
 
 namespace Stryker.CLI.UnitTest

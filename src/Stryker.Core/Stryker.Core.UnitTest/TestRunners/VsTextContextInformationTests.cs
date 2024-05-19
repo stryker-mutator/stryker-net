@@ -16,8 +16,9 @@ using Shouldly;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.TestRunners.VsTest;
 using Stryker.Core.ToolHelpers;
+using Stryker.Shared;
+using Stryker.TestRunner.VSTest;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.TestRunners
