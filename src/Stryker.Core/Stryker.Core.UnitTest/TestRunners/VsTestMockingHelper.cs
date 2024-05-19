@@ -24,10 +24,10 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Testing;
-using Stryker.Core.ToolHelpers;
 using Stryker.DataCollector;
 using Stryker.Shared;
 using Stryker.Shared.Mutants;
+using Stryker.Shared.Options;
 using Stryker.Shared.Tests;
 using Stryker.TestRunner.VSTest;
 
@@ -499,7 +499,7 @@ public class VsTestMockingHelper : TestBase
 
             });
 
-    protected Mock<IVsTestConsoleWrapper> BuildVsTestRunnerPool(StrykerOptions options,
+    protected Mock<IVsTestConsoleWrapper> BuildVsTestRunnerPool(IStrykerOptions options,
         out VsTestRunnerPool runner, IReadOnlyCollection<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> testCases = null, TestProjectsInfo testProjectsInfo = null)
     {
         testCases ??= TestCases.ToList();
@@ -529,6 +529,7 @@ public class VsTestMockingHelper : TestBase
         runner = new VsTestRunnerPool(context,
             NullLogger.Instance,
             (information, _) => new VsTestRunner(information, 0, NullLogger.Instance));
+
         return mockedVsTestConsole;
     }
 

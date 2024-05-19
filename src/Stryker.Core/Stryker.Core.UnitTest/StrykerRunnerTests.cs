@@ -67,7 +67,7 @@ public class StrykerRunnerTests : TestBase
 
         mutationTestProcessMock.SetupGet(x => x.Input).Returns(mutationTestInput);
         mutationTestProcessMock.Setup(x => x.GetCoverage());
-        mutationTestProcessMock.Setup(x => x.Test(It.IsAny<IEnumerable<Mutant>>()))
+        mutationTestProcessMock.Setup(x => x.Test(It.IsAny<IEnumerable<IMutant>>()))
             .Returns(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<double>()));
         mutationTestProcessMock.Setup(x => x.Restore());
 
@@ -83,7 +83,7 @@ public class StrykerRunnerTests : TestBase
 
         projectOrchestratorMock.Verify(x => x.MutateProjects(It.Is<StrykerOptions>(x => x.ProjectPath == "C:/test"), It.IsAny<IReporter>(), It.IsAny<ITestRunner>()), Times.Once);
         mutationTestProcessMock.Verify(x => x.GetCoverage(), Times.Once);
-        mutationTestProcessMock.Verify(x => x.Test(It.IsAny<IEnumerable<Mutant>>()), Times.Once);
+        mutationTestProcessMock.Verify(x => x.Test(It.IsAny<IEnumerable<IMutant>>()), Times.Once);
         reporterMock.Verify(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()), Times.Once);
         reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IEnumerable<IReadOnlyMutant>>()), Times.Once);
         reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()), Times.Once);
