@@ -180,9 +180,11 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
             };
 
             var csPathName = FileSystem.Path.Combine(ProjectPath, "someFile.cs");
-            var buildSuccess = false;
-            var sourceProjectAnalyzerMock = SourceProjectAnalyzerMock(csprojPathName, new[] { csPathName },
-                framework: "net4.5", success: () => buildSuccess).Object;
+            string[] sourceFiles = [csPathName];
+            var success = false;
+            IEnumerable<string> projectReferences = [];
+            var properties = GetSourceProjectDefaultProperties();
+            var sourceProjectAnalyzerMock = BuildProjectAnalyzerMock(csprojPathName, sourceFiles, properties, null, "net4.5", () => success, projectReferences).Object;
 
             var testProjectAnalyzerMock = TestProjectAnalyzerMock(testCsprojPathName, csprojPathName, "net4.5").Object;
             // The analyzer finds two projects
@@ -197,8 +199,12 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
             mockRunner.Setup(r => r.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
             mockRunner.Setup(r => r.InitialTest(It.IsAny<IProjectAndTests>())).Returns(new TestRunResult(true));
             var nugetRestoreMock = new Mock<INugetRestoreProcess>();
-            nugetRestoreMock.Setup(x => x.RestorePackages(csprojPathName, It.IsAny<string>()))
-                .Callback(() => buildSuccess = true);
+            nugetRestoreMock.Setup(x => x.RestorePackages(options.SolutionPath, It.IsAny<string>()))
+                .Callback(() =>
+                {
+                    success = true;
+                    projectReferences = ["System"];
+                });
 
             var initialBuildProcessMock = new Mock<IInitialBuildProcess>();
             var target = new ProjectOrchestrator(_projectMutatorMock.Object,

@@ -67,6 +67,7 @@ public class InputFileResolver : IInputFileResolver
             return AnalyzeAndIdentifyProjects(projectList , options, manager, ScanMode.NoScan);
         }
 
+        // we analyze the test project(s) and identify the project to be mutated
         List<string> testProjectFileNames;
         if (options.TestProjects != null && options.TestProjects.Any())
         {
@@ -77,7 +78,8 @@ public class InputFileResolver : IInputFileResolver
             testProjectFileNames = [FindTestProject(options.ProjectPath)];
         }
 
-        var result = AnalyzeAndIdentifyProjects(testProjectFileNames, options, manager, ScanMode.SingleLevelScan);
+        _logger.LogInformation("Analyzing {count} test project(s).", testProjectFileNames.Count);
+        var result = AnalyzeAndIdentifyProjects(testProjectFileNames, options, manager, ScanMode.ScanTestProjectReferences);
         if (result.Count <= 1)
         {
             return result;
@@ -85,7 +87,7 @@ public class InputFileResolver : IInputFileResolver
         // Too many references found
         // look for one project that references all provided test projects
         result = result.Where(p => testProjectFileNames.TrueForAll(n => p.TestProjectsInfo.TestProjects.Any(t => t.ProjectFilePath == n))).ToList();
-        if (result.Count <= 1)
+        if (result.Count == 1)
         {
             return result;
         }
@@ -94,7 +96,6 @@ public class InputFileResolver : IInputFileResolver
                 "Test project contains more than one project reference. Please set the project option (https://stryker-mutator.io/docs/stryker-net/configuration#project-file-name) to specify which project to mutate.")
             .Append(BuildReferenceChoice(result.Select(p => p.AnalyzerResult.ProjectFilePath)));
         throw new InputException(stringBuilder.ToString());
-
     }
     
     public string FindTestProject(string path)
@@ -106,8 +107,8 @@ public class InputFileResolver : IInputFileResolver
 
     private enum ScanMode
     {
-        NoScan = 0,
-        SingleLevelScan = 1
+        NoScan = 0, // no project added during analysis
+        ScanTestProjectReferences = 1 // add test project references during scan
     }
 
     private List<SourceProjectInfo> AnalyzeAndIdentifyProjects(List<string> projectList, StrykerOptions options,
@@ -162,8 +163,13 @@ public class InputFileResolver : IInputFileResolver
                     {
                         var project = manager.GetProject(projectFile);
                         var buildResult = AnalyzeSingleProject(project, options);
+                        if (buildResult.Count == 0)
+                        {
+                            // analysis failed
+                            return;
+                        }
                         var isTestProject = buildResult.IsTestProject();
-                        var referencesToAdd = ScanReferences(mode, buildResult, normalizedProjectUnderTestNameFilter);
+                        var referencesToAdd = ScanReferences(mode, buildResult);
 
                         var addProject = isTestProject || normalizedProjectUnderTestNameFilter == null ||
                                          project.ProjectFile.Path.Replace('\\', '/')
@@ -185,7 +191,13 @@ public class InputFileResolver : IInputFileResolver
         return mutableProjectsAnalyzerResults;
     }
 
-    private List<string> ScanReferences(ScanMode mode, IAnalyzerResults buildResult, string normalizedProjectUnderTestNameFilter)
+    /// <summary>
+    /// Scan the references of a project and add them for analysis according to scan option
+    /// </summary>
+    /// <param name="mode">scan mode</param>
+    /// <param name="buildResult">analyzer results to parse</param>
+    /// <returns>A list of project to analyse</returns>
+    private List<string> ScanReferences(ScanMode mode, IAnalyzerResults buildResult)
     {
         var referencesToAdd = new List<string>();
         var isTestProject = buildResult.IsTestProject();
@@ -199,18 +211,13 @@ public class InputFileResolver : IInputFileResolver
         // add any project reference to ease progressive discovery (when not using solution file)
         foreach (var projectReference in buildResult.SelectMany(p => p.ProjectReferences))
         {
-            // in single level mode we only want to find the referenced test project
-            if (mode == ScanMode.SingleLevelScan && (!isTestProject || (normalizedProjectUnderTestNameFilter != null &&
-                                                                        !projectReference.Replace('\\', '/')
-                                                                            .Contains(normalizedProjectUnderTestNameFilter, StringComparison.InvariantCultureIgnoreCase))))
+            // in single level mode we only want to find the projects referenced by test project
+            if (( mode == ScanMode.ScanTestProjectReferences && !isTestProject) || !FileSystem.File.Exists(projectReference))
             {
                 continue;
             }
 
-            if (FileSystem.File.Exists(projectReference))
-            {
-                referencesToAdd.Add(projectReference);
-            }
+            referencesToAdd.Add(projectReference);
         }
 
         return referencesToAdd;
@@ -227,15 +234,19 @@ public class InputFileResolver : IInputFileResolver
         _logger.LogDebug("Analyzing {projectFilePath}", projectLogName);
         var buildResult = project.Build([options.TargetFramework]);
 
-        // if this is a full framework project, we can retry after a nuget restore
-        if ((!buildResult.OverallSuccess) || buildResult.Any(r => r.References.Length==0 && r.TargetFramework is not null))
+        var buildResultOverallSuccess = buildResult.OverallSuccess || Array.
+            TrueForAll(project.ProjectFile.TargetFrameworks,tf =>
+            buildResult.Any(br => IsValid(br) && br.TargetFramework == tf));
+
+        if (!buildResultOverallSuccess)
         {
             if (options.DevMode)
             {
-                // clear the logs for the next project
+                // clear the logs to remove the noise
                 _buildalyzerLog.GetStringBuilder().Clear();
             }
-            if (buildResult.Any(r => !r.Succeeded && r.TargetsFullFramework()))
+            // if this is a full framework project, we can retry after a nuget restore
+            if (buildResult.Any(r => !IsValid(r) && r.TargetsFullFramework()))
             {
                 _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
                 _nugetRestoreProcess.RestorePackages(options.SolutionPath);
@@ -244,12 +255,13 @@ public class InputFileResolver : IInputFileResolver
             {
                 Restore = true
             };
+            // retry the analysis
             buildResult = project.Build([options.TargetFramework], buildOptions);
-        }
 
-        // if all expected frameworks are built, we consider the build a success
-        var buildResultOverallSuccess = buildResult.OverallSuccess || Array.TrueForAll(project.ProjectFile.TargetFrameworks,tf =>
-            buildResult.Any(br => IsValid(br) && br.TargetFramework == tf));
+            // check the new status
+            buildResultOverallSuccess = Array.TrueForAll(project.ProjectFile.TargetFrameworks,tf =>
+                buildResult.Any(br => IsValid(br) && br.TargetFramework == tf));
+        }
  
         if (buildResultOverallSuccess)
         {
@@ -269,7 +281,8 @@ public class InputFileResolver : IInputFileResolver
             _logger.LogInformation(_buildalyzerLog.ToString());
         }
 
-        return buildResult;
+        // if there is no valid result, drop it altogether
+        return buildResult.All(br => !IsValid(br)) ? new AnalyzerResults() : buildResult;
     }
 
     private void LogAnalyzerResult(IAnalyzerResults analyzerResults, StrykerOptions options)
@@ -353,12 +366,13 @@ public class InputFileResolver : IInputFileResolver
 
     private static Dictionary<IAnalyzerResult, List<IAnalyzerResult>> FindMutableAnalyzerResults(ConcurrentBag<(IAnalyzerResults result, bool isTest)> mutableProjectsAnalyzerResults)
     {
-        // first pass: identify all projects tested by each test project
         var mutableToTestMap = new Dictionary<IAnalyzerResult, List<IAnalyzerResult>>();
         var analyzerTestProjects = mutableProjectsAnalyzerResults.Where(p => p.isTest).SelectMany(p=>p.result).Where(p => p.BuildsAnAssembly());
         var mutableProjects = mutableProjectsAnalyzerResults.Where(p => !p.isTest).SelectMany(p=>p.result).Where(p => p.BuildsAnAssembly()).ToArray();
+        // for each test project
         foreach (var testProject in analyzerTestProjects)
         {
+            // we identify which project are referenced by it
             foreach(var mutableProject in mutableProjects)
             {
                 if (Array.TrueForAll( testProject.References,  r =>
@@ -379,6 +393,13 @@ public class InputFileResolver : IInputFileResolver
         return mutableToTestMap;
     }
 
+    /// <summary>
+    /// Builds a <see cref="SourceProjectInfo"/> instance describing a project its associated test project(s)
+    /// </summary>
+    /// <param name="options">Stryker options</param>
+    /// <param name="analyzerResult">project buildalyzer result</param>
+    /// <param name="analyzerResults">test project(s) buildalyzer result(s)</param>
+    /// <returns></returns>
     private SourceProjectInfo BuildSourceProjectInfo(StrykerOptions options,
         IAnalyzerResult analyzerResult,
         IEnumerable<IAnalyzerResult> analyzerResults)
@@ -396,7 +417,24 @@ public class InputFileResolver : IInputFileResolver
                     "Mutation testing of F# projects is not ready yet. No mutants will be generated."));
         }
 
-        var builder = GetProjectComponentBuilder(language, options, targetProjectInfo);
+        var builder = (ProjectComponentsBuilder)(language switch
+        {
+            Language.Csharp => new CsharpProjectComponentsBuilder(
+                targetProjectInfo,
+                options,
+                _foldersToExclude,
+                _logger,
+                FileSystem),
+
+            Language.Fsharp => new FsharpProjectComponentsBuilder(
+                targetProjectInfo,
+                options,
+                _foldersToExclude,
+                _logger,
+                FileSystem),
+            _ => throw new NotSupportedException($"Language not supported: {language}")
+        });
+
         var inputFiles = builder.Build();
         builder.InjectHelpers(inputFiles);
         targetProjectInfo.OnProjectBuilt = builder.PostBuildAction();
@@ -468,26 +506,6 @@ public class InputFileResolver : IInputFileResolver
         return builder;
     }
 
-    private ProjectComponentsBuilder GetProjectComponentBuilder(
-        Language language,
-        StrykerOptions options,
-        SourceProjectInfo projectInfo) => language switch
-    {
-        Language.Csharp => new CsharpProjectComponentsBuilder(
-            projectInfo,
-            options,
-            _foldersToExclude,
-            _logger,
-            FileSystem),
-
-        Language.Fsharp => new FsharpProjectComponentsBuilder(
-            projectInfo,
-            options,
-            _foldersToExclude,
-            _logger,
-            FileSystem),
-        _ => throw new NotSupportedException($"Language not supported: {language}")
-    };
 
     private sealed class DynamicEnumerableQueue<T>
     {

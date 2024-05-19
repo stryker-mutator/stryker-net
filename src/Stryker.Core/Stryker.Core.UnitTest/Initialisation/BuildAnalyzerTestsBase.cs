@@ -68,7 +68,6 @@ public class BuildAnalyzerTestsBase : TestBase
         return BuildProjectAnalyzerMock(testCsprojPathName, [], properties, projectReferences, framework, () => success);
     }
 
-
     /// <summary>
     /// build a project analyzer mock
     /// </summary>
@@ -78,6 +77,7 @@ public class BuildAnalyzerTestsBase : TestBase
     /// <param name="projectReferences">project references</param>
     /// <param name="framework"></param>
     /// <param name="success">analysis success</param>
+    /// <param name="rawReferences">assembly references</param>
     /// <returns>a mock project analyzer</returns>
     /// <remarks>
     /// 1. project and source files will be created (empty) in the file system
@@ -85,22 +85,22 @@ public class BuildAnalyzerTestsBase : TestBase
     internal Mock<IProjectAnalyzer> BuildProjectAnalyzerMock(string csprojPathName,
         string[] sourceFiles, Dictionary<string, string> properties,
         IEnumerable<string> projectReferences = null,
-        string framework = DefaultFramework,    
-        Func<bool> success = null)
+        string framework = DefaultFramework,
+        Func<bool> success = null,
+        IEnumerable<string> rawReferences = null)
     {
         var sourceProjectAnalyzerMock = new Mock<IProjectAnalyzer>(MockBehavior.Strict);
         var sourceProjectAnalyzerResultMock = new Mock<IAnalyzerResult>(MockBehavior.Strict);
         var sourceProjectFileMock = new Mock<IProjectFile>(MockBehavior.Strict);
         success??= () => true;
-        projectReferences ??= [];
-
+        projectReferences??= [];
         // create dummy project and source files
         FileSystem.AddFile(csprojPathName, new MockFileData(""));
         foreach (var file in sourceFiles)
         {
             FileSystem.AddFile(file, new MockFileData(""));
         }
-
+        rawReferences ??= ["System"];
         // create bin folder
         var projectUnderTestBin = FileSystem.Path.Combine(ProjectPath, "bin");
         FileSystem.AddDirectory(projectUnderTestBin);
@@ -111,7 +111,7 @@ public class BuildAnalyzerTestsBase : TestBase
         sourceProjectAnalyzerResultMock.Setup(x => x.ProjectReferences).Returns(projectReferences);
         sourceProjectAnalyzerResultMock.Setup(x => x.References).Returns(projectReferences.
             Where (_projectCache.ContainsKey).
-            Select( iar => _projectCache[iar].GetAssemblyPath()).Append("System").ToArray());
+            Select( iar => _projectCache[iar].GetAssemblyPath()).Union(rawReferences).ToArray());
         sourceProjectAnalyzerResultMock.Setup(x => x.SourceFiles).Returns(sourceFiles);
         sourceProjectAnalyzerResultMock.Setup(x => x.PreprocessorSymbols).Returns(["NET"]);
         properties.Add("TargetRefPath", projectBin);
@@ -143,6 +143,7 @@ public class BuildAnalyzerTestsBase : TestBase
         var sourceProjectAnalyzerResultsMock = new Mock<IAnalyzerResults>(MockBehavior.Strict);
         sourceProjectAnalyzerResultsMock.Setup(x => x.OverallSuccess).Returns(() => analyzerResults.All(r=> r.Succeeded));
         sourceProjectAnalyzerResultsMock.Setup(x => x.Results).Returns(analyzerResults);
+        sourceProjectAnalyzerResultsMock.Setup(x => x.Count).Returns(analyzerResults.Count());
         sourceProjectAnalyzerResultsMock.Setup(x => x.GetEnumerator()).Returns(() => analyzerResults.GetEnumerator());
         return sourceProjectAnalyzerResultsMock.Object;
     }

@@ -37,11 +37,11 @@ public class InitialisationProcess : IInitialisationProcess
     private readonly ILogger _logger;
 
     public InitialisationProcess(
-        IInputFileResolver inputFileResolver = null,
+        IInputFileResolver inputFileResolver,
         IInitialBuildProcess initialBuildProcess = null,
         IInitialTestProcess initialTestProcess = null)
     {
-        _inputFileResolver = inputFileResolver ?? new InputFileResolver();
+        _inputFileResolver = inputFileResolver;
         _initialBuildProcess = initialBuildProcess ?? new InitialBuildProcess();
         _initialTestProcess = initialTestProcess ?? new InitialTestProcess();
         _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialisationProcess>();
