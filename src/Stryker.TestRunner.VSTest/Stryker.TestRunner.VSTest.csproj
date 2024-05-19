@@ -8,6 +8,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj" />
+    <ProjectReference Include="..\Stryker.Shared\Stryker.Shared.csproj" />
     <ProjectReference Include="..\Stryker.Testing.Abstractions\Stryker.Shared.csproj" />
   </ItemGroup>
 
