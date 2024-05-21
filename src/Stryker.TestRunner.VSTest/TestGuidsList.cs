@@ -4,19 +4,19 @@ namespace Stryker.TestRunner.VSTest;
 
 internal class TestGuidsList : ITestGuids
 {
-    private readonly HashSet<Guid> _testGuids;
+    private readonly HashSet<Guid>? _testGuids;
 
     private static readonly TestGuidsList EveryTests = new();
     private static readonly TestGuidsList NoTestAtAll = new(Array.Empty<Guid>());
 
     private TestGuidsList() => _testGuids = null;
 
-    public TestGuidsList(IEnumerable<ITestDescription> testDescriptions) : this(testDescriptions.Select(t => (Guid)t.Id))
+    public TestGuidsList(IEnumerable<ITestDescription> testDescriptions) : this(testDescriptions.Select(t => t.Id))
     { }
 
     public TestGuidsList(HashSet<Guid> set) => _testGuids = set;
 
-    public TestGuidsList(IEnumerable<Guid> guids) => _testGuids = guids != null ? new HashSet<Guid>(guids) : [];
+    public TestGuidsList(IEnumerable<Guid>? guids) => _testGuids = guids is not null ? new HashSet<Guid>(guids) : null;
 
     public TestGuidsList(params Guid[] guids) : this((IEnumerable<Guid>)guids)
     { }
