@@ -157,7 +157,9 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | Original | Mutated |
 | ------------- | ------------- |
 | `"foo"` | `""` |
+| `"foo"u8` | `""u8` |
 | `""` | `"Stryker was here!"` |
+| `""u8` | `"Stryker was here!"u8` |
 | `$"foo {bar}"` | `$""` |
 | `@"foo"` | `@""` |
 | `string.Empty` | `"Stryker was here!"` |
