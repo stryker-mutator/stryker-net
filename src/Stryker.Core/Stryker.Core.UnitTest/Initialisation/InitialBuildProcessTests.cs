@@ -141,10 +141,11 @@ public class InitialBuildProcessTests : TestBase
 
         var target = new InitialBuildProcess(processMock.Object);
 
-        target.InitialBuild(true, "/", "./ExampleProject.sln", null, "C:/User/Test/Msbuild.exe");
-
+        var customMsBuildPath = "C:/User/Test/Msbuild.exe";
+        target.InitialBuild(true, "/", "./ExampleProject.sln", null, customMsBuildPath);
+        var executable =Environment.OSVersion.Platform == PlatformID.Win32NT ? customMsBuildPath : "dotnet";
         processMock.Verify(x => x.Start(It.IsAny<string>(),
-                It.Is<string>(applicationParam => applicationParam.Contains("C:/User/Test/Msbuild.exe", StringComparison.InvariantCultureIgnoreCase)),
+                It.Is<string>(applicationParam => applicationParam == executable),
                 It.Is<string>(argumentsParam => argumentsParam.Contains("ExampleProject.sln")),
                 It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
                 It.IsAny<int>()),

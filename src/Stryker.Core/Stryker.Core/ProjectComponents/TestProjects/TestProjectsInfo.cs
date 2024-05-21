@@ -23,7 +23,7 @@ public class TestProjectsInfo
     public IReadOnlyList<string> GetTestAssemblies() =>
         AnalyzerResults.Select(a => a.GetAssemblyPath()).ToList();
 
-        public TestProjectsInfo(IFileSystem fileSystem, ILogger<TestProjectsInfo> logger = null)
+    public TestProjectsInfo(IFileSystem fileSystem, ILogger<TestProjectsInfo> logger = null)
     {
         _fileSystem = fileSystem ?? new FileSystem();
         _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<TestProjectsInfo>();
