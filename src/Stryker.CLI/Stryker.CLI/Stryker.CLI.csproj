@@ -9,7 +9,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <VersionPrefix>4.0.4</VersionPrefix>
+    <VersionPrefix>4.0.5</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <PackageId>dotnet-stryker</PackageId>
     <Authors>Richard Werkman, Rouke Broersma</Authors>

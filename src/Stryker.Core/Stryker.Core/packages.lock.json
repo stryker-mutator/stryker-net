@@ -4,11 +4,11 @@
     "net8.0": {
       "Azure.Storage.Files.Shares": {
         "type": "Direct",
-        "requested": "[12.17.1, )",
-        "resolved": "12.17.1",
-        "contentHash": "DL1L3e4uwxYsBVtxncAJYve+q6/iA/k/TjBCmT2nVCdff4d58PGNkmWUKAnESpVj5OZdV6n3bHAJdx1P8eCwuQ==",
+        "requested": "[12.18.0, )",
+        "resolved": "12.18.0",
+        "contentHash": "xJpu8LlJGlWpgI/v31rrJJdYZdKj63XQMylgGC0IvxY6iC80dP2I4BcS+qyzMSJxY1/q5DZ8VWGzK/+5MlUjEQ==",
         "dependencies": {
-          "Azure.Storage.Common": "12.18.1",
+          "Azure.Storage.Common": "12.19.0",
           "System.Text.Json": "4.7.2"
         }
       },
@@ -222,18 +222,15 @@
       },
       "Spectre.Console": {
         "type": "Direct",
-        "requested": "[0.48.0, )",
-        "resolved": "0.48.0",
-        "contentHash": "4Mc1UT7Azgtyb8FyNwK5FZmoZbKuT5PmY7ZwaKUytjD5kGFMNBACpOZTwYtkuY377YkYtZYBeDDTJUwTW86QXw==",
-        "dependencies": {
-          "System.Memory": "4.5.5"
-        }
+        "requested": "[0.49.1, )",
+        "resolved": "0.49.1",
+        "contentHash": "USV+pdu49OJ3nCjxNuw1K9Zw/c1HCBbwbjXZp0EOn6wM99tFdAtN34KEBZUMyRuJuXlUMDqhd8Yq9obW2MslYA=="
       },
       "Spectre.Console.Analyzer": {
         "type": "Direct",
-        "requested": "[0.48.0, )",
-        "resolved": "0.48.0",
-        "contentHash": "AwFgBqWxHv/pr9OuvB5Ki7daXfZMqMlireArEt9WwO2HZ4cS1XvYhDVu0itseInjZzEA/fJsPN1eqoV3vFNCwA=="
+        "requested": "[0.49.1, )",
+        "resolved": "0.49.1",
+        "contentHash": "mn0jHMpL1vGKav7LywRvVJ5CW7Xlk/73odVrTsptRNY5+Q0fgPw5hZHQKlPDoVS452RZgUQVvvAo1RARkuy6jg=="
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "Direct",
@@ -246,10 +243,11 @@
       },
       "Azure.Core": {
         "type": "Transitive",
-        "resolved": "1.36.0",
-        "contentHash": "vwqFZdHS4dzPlI7FFRkPx9ctA+aGGeRev3gnzG8lntWvKMmBhAmulABi1O9CEvS3/jzYt7yA+0pqVdxkpAd7dQ==",
+        "resolved": "1.39.0",
+        "contentHash": "9vaV4ZICtVQp+2wjOKrIAjEjMzBkUohaBbKGqqcTW993MRfHA0N4L1BszQjWynS7lRvlYQLxaFK4wh9ewNm4HQ==",
         "dependencies": {
           "Microsoft.Bcl.AsyncInterfaces": "1.1.1",
+          "System.ClientModel": "1.0.0",
           "System.Diagnostics.DiagnosticSource": "6.0.1",
           "System.Memory.Data": "1.0.2",
           "System.Numerics.Vectors": "4.5.0",
@@ -260,10 +258,10 @@
       },
       "Azure.Storage.Common": {
         "type": "Transitive",
-        "resolved": "12.18.1",
-        "contentHash": "ohCslqP9yDKIn+DVjBEOBuieB1QwsUCz+BwHYNaJ3lcIsTSiI4Evnq81HcKe8CqM8qvdModbipVQKpnxpbdWqA==",
+        "resolved": "12.19.0",
+        "contentHash": "aKW5fK4ZSQb9VjENSDbsQoKCDSG6d6mgsBA+groGoHyG2F38QCXThuwcmC7R1XLQOSIh28viE7CJw1BpNdl11A==",
         "dependencies": {
-          "Azure.Core": "1.36.0",
+          "Azure.Core": "1.39.0",
           "System.IO.Hashing": "6.0.0"
         }
       },
@@ -689,6 +687,15 @@
         "type": "Transitive",
         "resolved": "4.5.1",
         "contentHash": "Rw7ijyl1qqRS0YQD/WycNst8hUUMgrMH4FCn1nNm27M4VxchZ1js3fVjQaANHO5f3sN4isvP4a+Met9Y4YomAg=="
+      },
+      "System.ClientModel": {
+        "type": "Transitive",
+        "resolved": "1.0.0",
+        "contentHash": "I3CVkvxeqFYjIVEP59DnjbeoGNfo/+SZrCLpRz2v/g0gpCHaEMPtWSY0s9k/7jR1rAsLNg2z2u1JRB76tPjnIw==",
+        "dependencies": {
+          "System.Memory.Data": "1.0.2",
+          "System.Text.Json": "4.7.2"
+        }
       },
       "System.CodeDom": {
         "type": "Transitive",
