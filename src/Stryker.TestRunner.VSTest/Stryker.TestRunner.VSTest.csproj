@@ -7,18 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj" />
-    <ProjectReference Include="..\Stryker.Shared\Stryker.Shared.csproj" />
-    <ProjectReference Include="..\Stryker.Testing.Abstractions\Stryker.Shared.csproj" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.TestPlatform" />
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
     <PackageReference Include="Microsoft.TestPlatform.Portable" />
     <PackageReference Include="Microsoft.TestPlatform.TranslationLayer" />
     <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj" />
+    <ProjectReference Include="..\Stryker.Shared\Stryker.Shared.csproj" />
   </ItemGroup>
 
 </Project>
