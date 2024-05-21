@@ -92,7 +92,7 @@ public sealed class VsTestRunner : IDisposable
                 : new WrappedGuidsEnumeration(handlerTestResults.Select(t => t.TestCase.Id));
             var failedTest = new WrappedGuidsEnumeration(handlerTestResults.Where(tr => tr.Outcome == TestOutcome.Failed)
                 .Select(t => t.TestCase.Id));
-            var timedOutTest = new WrappedGuidsEnumeration(handler.TestsInTimeout?.Select(t => t.Id));
+            var timedOutTest = new WrappedGuidsEnumeration(handler.TestsInTimeout.Select(t => t.Id));
             var remainingMutants = update?.Invoke(mutants, failedTest, tests, timedOutTest);
 
             if (remainingMutants != false
@@ -265,8 +265,11 @@ public sealed class VsTestRunner : IDisposable
                 }
                 else
                 {
-                    _vsTestConsole.RunTestsWithCustomTestHost(tests.GetGuids().Select(t => _context.VsTests[t].Case.ToString()),
-                        runSettings, options, eventHandler, strykerVsTestHostLauncher);
+                    _vsTestConsole.RunTestsWithCustomTestHost(tests.GetGuids().Select(t =>
+                    {
+                        var testCase = _context.VsTests[t].Case;
+                        return new TestCase(testCase.FullyQualifiedName, testCase.Uri, testCase.Source);
+                    }), runSettings, options, eventHandler, strykerVsTestHostLauncher);
                 }
             });
 

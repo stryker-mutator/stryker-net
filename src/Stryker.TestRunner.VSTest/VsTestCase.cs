@@ -10,8 +10,9 @@ public class VsTestCase : ITestCase
         Name = testCase.DisplayName;
         FullyQualifiedName = testCase.FullyQualifiedName;
         Uri = testCase.ExecutorUri;
-        CodeFilePath = testCase.CodeFilePath ?? "";
+        CodeFilePath = testCase.CodeFilePath ?? string.Empty;
         LineNumber = testCase.LineNumber;
+        Source = testCase.Source;
     }
 
     public Guid Id { get; }
@@ -26,5 +27,5 @@ public class VsTestCase : ITestCase
 
     public int LineNumber { get; }
 
-    public string ToString(string? format, IFormatProvider? formatProvider) => throw new NotImplementedException();
+    public string Source { get; }
 }
