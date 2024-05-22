@@ -23,9 +23,9 @@ namespace Stryker.Core.UnitTest.Mutators
         [InlineData("foo", """
                            ""u8
                            """)]
-        public void ShouldMutateUtf8(string original, string expected)
+        public void ShouldMutateUtf8StringLiteral(string original, string expected)
         {
-            var syntaxTree = CSharpSyntaxTree.ParseText($"""var = "{original}"u8;""");
+            var syntaxTree = CSharpSyntaxTree.ParseText($"""var test = "{original}"u8;""");
       
             var literalExpression = syntaxTree.GetRoot().DescendantNodes().OfType<LiteralExpressionSyntax>().First();
             var mutator = new StringMutator();
