@@ -45,7 +45,7 @@ public class TestIdentifiers : ITestIdentifiers
         return new TestIdentifiers(result);
     }
 
-    public bool Contains(Identifier testId) => IsEveryTest || _identifiers?.Contains(testId) is false;
+    public bool Contains(Identifier testId) => IsEveryTest || _identifiers?.Contains(testId) is true;
 
     public bool IsIncludedIn(ITestIdentifiers other) => other.IsEveryTest || _identifiers?.IsSubsetOf(other.GetIdentifiers()) is true;
 
