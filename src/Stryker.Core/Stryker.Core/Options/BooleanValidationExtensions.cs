@@ -1,5 +1,3 @@
-using System.Linq;
-
 namespace Stryker.Core.Options
 {
     public static class BooleanValidationExtensions

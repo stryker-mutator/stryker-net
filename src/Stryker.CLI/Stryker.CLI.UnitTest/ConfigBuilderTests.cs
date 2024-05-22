@@ -3,7 +3,7 @@ using McMaster.Extensions.CommandLineUtils;
 using Moq;
 using Shouldly;
 using Stryker.CLI.CommandLineConfig;
-using Stryker.Core.Exceptions;
+using Stryker.Shared.Exceptions;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
 using Xunit;

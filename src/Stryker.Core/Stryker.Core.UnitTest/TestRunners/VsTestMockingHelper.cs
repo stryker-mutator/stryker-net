@@ -23,10 +23,13 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
-using Stryker.Core.ToolHelpers;
+using Stryker.Core.Testing;
 using Stryker.DataCollector;
+using Stryker.Shared;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Options;
+using Stryker.Shared.Tests;
+using Stryker.TestRunner.VSTest;
 
 namespace Stryker.Core.UnitTest.TestRunners;
 
@@ -496,7 +499,7 @@ public class VsTestMockingHelper : TestBase
 
             });
 
-    protected Mock<IVsTestConsoleWrapper> BuildVsTestRunnerPool(StrykerOptions options,
+    protected Mock<IVsTestConsoleWrapper> BuildVsTestRunnerPool(IStrykerOptions options,
         out VsTestRunnerPool runner, IReadOnlyCollection<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> testCases = null, TestProjectsInfo testProjectsInfo = null)
     {
         testCases ??= TestCases.ToList();
@@ -526,14 +529,15 @@ public class VsTestMockingHelper : TestBase
         runner = new VsTestRunnerPool(context,
             NullLogger.Instance,
             (information, _) => new VsTestRunner(information, 0, NullLogger.Instance));
+
         return mockedVsTestConsole;
     }
 
     protected MutationTestProcess BuildMutationTestProcess(VsTestRunnerPool runner, StrykerOptions options, IReadOnlyList<Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase> tests = null, SourceProjectInfo sourceProject = null)
     {
-        var testRunResult = new TestRunResult(new List<VsTestDescription>(), new TestGuidsList((tests ?? TestCases).Select(t => t.Id)),
-            TestGuidsList.NoTest(),
-            TestGuidsList.NoTest(),
+        var testRunResult = new TestRunResult(new List<VsTestDescription>(), new TestIdentifiers((tests ?? TestCases).Select(t => t.Id)),
+            TestIdentifiers.NoTest(),
+            TestIdentifiers.NoTest(),
             string.Empty,
             Enumerable.Empty<string>(),
             TimeSpan.Zero);

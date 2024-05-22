@@ -1,4 +1,4 @@
-﻿using Stryker.Core.Mutants;
+using Stryker.Shared.Mutants;
 
 namespace Stryker.Core.Reporters.Html.RealTime;
 

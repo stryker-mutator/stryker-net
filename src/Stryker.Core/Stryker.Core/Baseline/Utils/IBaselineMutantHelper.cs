@@ -1,13 +1,12 @@
 using System.Collections.Generic;
-using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Json.SourceFiles;
+using Stryker.Shared.Mutants;
 
-namespace Stryker.Core.Baseline.Utils
+namespace Stryker.Core.Baseline.Utils;
+
+public interface IBaselineMutantHelper
 {
-    public interface IBaselineMutantHelper
-    {
-        IEnumerable<Mutant> GetMutantMatchingSourceCode(IEnumerable<Mutant> mutants, JsonMutant baselineMutant, string baselineMutantSourceCode);
+    IEnumerable<IMutant> GetMutantMatchingSourceCode(IEnumerable<IMutant> mutants, JsonMutant baselineMutant, string baselineMutantSourceCode);
 
-        string GetMutantSourceCode(string source, JsonMutant baselineMutant);
-    }
+    string GetMutantSourceCode(string source, JsonMutant baselineMutant);
 }

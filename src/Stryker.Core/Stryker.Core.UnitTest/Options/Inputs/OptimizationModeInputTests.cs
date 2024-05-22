@@ -1,7 +1,7 @@
 using Shouldly;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
+using Stryker.Shared.Exceptions;
+using Stryker.Shared.Options;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs

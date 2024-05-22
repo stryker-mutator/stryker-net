@@ -4,6 +4,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Mutators;
+using Stryker.Shared.Options;
 
 namespace Stryker.Core.Mutators;
 
@@ -47,7 +50,7 @@ public class StatementMutator : MutatorBase<StatementSyntax>
         SyntaxKind.ExpressionStatement,
     };
 
-    public override IEnumerable<Mutation> ApplyMutations(StatementSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<IMutation> ApplyMutations(StatementSyntax node, SemanticModel semanticModel)
     {
         if (!AllowedSyntaxes.Contains(node.Kind()))
         {

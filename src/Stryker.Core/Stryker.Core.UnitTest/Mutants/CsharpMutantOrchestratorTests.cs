@@ -2,8 +2,9 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
 using Stryker.Core.Options;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Options;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants;

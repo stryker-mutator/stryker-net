@@ -35,6 +35,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipeline-templates", "pipel
 		..\pipeline-templates\update-package-lock-files-stage.yml = ..\pipeline-templates\update-package-lock-files-stage.yml
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.TestRunner.VSTest", "Stryker.TestRunner.VSTest\Stryker.TestRunner.VSTest.csproj", "{7C3778C1-A5CD-42FB-B6B6-4330717CBFDF}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Shared", "Stryker.Shared\Stryker.Shared.csproj", "{3B666DDB-8995-4A9C-9361-E3B5F78D5F32}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -69,6 +73,14 @@ Global
 		{7C8C7670-4636-4C56-9E3E-22B987337EF2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7C8C7670-4636-4C56-9E3E-22B987337EF2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7C8C7670-4636-4C56-9E3E-22B987337EF2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7C3778C1-A5CD-42FB-B6B6-4330717CBFDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7C3778C1-A5CD-42FB-B6B6-4330717CBFDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7C3778C1-A5CD-42FB-B6B6-4330717CBFDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7C3778C1-A5CD-42FB-B6B6-4330717CBFDF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3B666DDB-8995-4A9C-9361-E3B5F78D5F32}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3B666DDB-8995-4A9C-9361-E3B5F78D5F32}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3B666DDB-8995-4A9C-9361-E3B5F78D5F32}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3B666DDB-8995-4A9C-9361-E3B5F78D5F32}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

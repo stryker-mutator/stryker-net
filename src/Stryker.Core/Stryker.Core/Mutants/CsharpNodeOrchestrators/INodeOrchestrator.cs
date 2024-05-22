@@ -1,9 +1,10 @@
 using Microsoft.CodeAnalysis;
 using Stryker.Core.Helpers;
 
-namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
-
-internal interface INodeOrchestrator : ITypeHandler<SyntaxNode>
+namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
 {
-    SyntaxNode Mutate(SyntaxNode node, SemanticModel semanticModel, MutationContext context);
+    internal interface INodeOrchestrator : ITypeHandler<SyntaxNode>
+    {
+        SyntaxNode Mutate(SyntaxNode node, SemanticModel semanticModel, MutationContext context);
+    }
 }

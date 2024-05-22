@@ -2,9 +2,12 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.RegexMutators;
+using Stryker.Shared.Logging;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Mutators;
+using Stryker.Shared.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -24,7 +27,7 @@ public class RegexMutator : MutatorBase<ObjectCreationExpressionSyntax>
         Logger = ApplicationLogging.LoggerFactory.CreateLogger<RegexMutator>();
     }
 
-    public override IEnumerable<Mutation> ApplyMutations(ObjectCreationExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<IMutation> ApplyMutations(ObjectCreationExpressionSyntax node, SemanticModel semanticModel)
     {
         var name = node.Type.ToString();
         if (name == nameof(Regex) || name == typeof(Regex).FullName)

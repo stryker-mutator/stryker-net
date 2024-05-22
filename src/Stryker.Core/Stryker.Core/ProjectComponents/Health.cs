@@ -1,4 +1,4 @@
-﻿namespace Stryker.Core.ProjectComponents
+namespace Stryker.Core.ProjectComponents
 {
     public enum Health
     {

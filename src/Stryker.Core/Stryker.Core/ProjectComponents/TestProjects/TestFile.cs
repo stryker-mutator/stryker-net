@@ -27,7 +27,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             });
         }
 
-        public bool Equals(TestFile other) => other!=null && other.FilePath.Equals(FilePath) && other.Source.Equals(Source);
+        public bool Equals(TestFile other) => other != null && other.FilePath.Equals(FilePath) && other.Source.Equals(Source);
 
         public override bool Equals(object obj) => obj is TestFile file && Equals(file);
 

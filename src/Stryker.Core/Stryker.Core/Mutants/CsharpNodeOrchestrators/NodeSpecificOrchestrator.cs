@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using Stryker.Shared.Mutants;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
@@ -55,7 +56,7 @@ internal class NodeSpecificOrchestrator<TNode, TBase> : INodeOrchestrator where 
     /// <param name="context">Mutation context.</param>
     /// <returns>A list of <see cref="Mutant"/>s for the given node.</returns>
     /// <remarks>You should not override this, unless you want to block mutation generation for the node. Then returns and empty list.</remarks>
-    protected virtual IEnumerable<Mutant> GenerateMutationForNode(TNode node, SemanticModel semanticModel, MutationContext context) => context.GenerateMutantsForNode(node, semanticModel);
+    protected virtual IEnumerable<IMutant> GenerateMutationForNode(TNode node, SemanticModel semanticModel, MutationContext context) => context.GenerateMutantsForNode(node, semanticModel);
 
     /// <summary>
     /// Stores provided mutations.
@@ -66,7 +67,7 @@ internal class NodeSpecificOrchestrator<TNode, TBase> : INodeOrchestrator where 
     /// <returns>A <see cref="MutationContext"/>instance storing existing mutations as well as the one provided</returns>
     /// <remarks>You need to override this method if the generated mutations cannot be injected in place (via a conditional operator) but must be controlled
     /// at the statement or block level. Default implementation does nothing.</remarks>
-    protected virtual MutationContext StoreMutations(TNode node, IEnumerable<Mutant> mutations, MutationContext context) => context.AddMutations(mutations);
+    protected virtual MutationContext StoreMutations(TNode node, IEnumerable<IMutant> mutations, MutationContext context) => context.AddMutations(mutations);
 
     /// <summary>
     /// Mutate children, grandchildren (recursively). 

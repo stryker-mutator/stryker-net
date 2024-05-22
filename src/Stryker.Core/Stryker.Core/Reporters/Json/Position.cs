@@ -2,6 +2,7 @@ using System;
 
 namespace Stryker.Core.Reporters.Json
 {
+
     public class Position
     {
         private int _line;

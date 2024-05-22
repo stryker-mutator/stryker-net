@@ -13,7 +13,7 @@ namespace Stryker.CLI
     public class FileBasedInputOuter
     {
         [JsonPropertyName("stryker-config")]
-        [YamlMember(Alias ="stryker-config")]
+        [YamlMember(Alias = "stryker-config")]
         public FileBasedInput Input { get; init; }
     }
 

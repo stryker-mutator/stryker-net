@@ -2,6 +2,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Mutators;
+using Stryker.Shared.Options;
 using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators;
@@ -10,7 +13,7 @@ public class InitializerMutator : MutatorBase<InitializerExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-    public override IEnumerable<Mutation> ApplyMutations(InitializerExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<IMutation> ApplyMutations(InitializerExpressionSyntax node, SemanticModel semanticModel)
     {
         if (node.Parent is ArrayCreationExpressionSyntax || node.Parent is ImplicitArrayCreationExpressionSyntax || node.Parent is StackAllocArrayCreationExpressionSyntax || !node.Expressions.Any())
         {

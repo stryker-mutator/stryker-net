@@ -11,16 +11,16 @@ using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Shouldly;
 using Stryker.Core.Compiling;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Mutants;
+using Stryker.Shared.Exceptions;
 using Stryker.Core.MutationTest;
-using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.TestRunners;
 using Xunit;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Tests;
+using Stryker.Shared.Options;
 
 namespace Stryker.Core.UnitTest.Compiling
 {
@@ -457,7 +457,7 @@ namespace ExampleProject
             projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.Pending).ShouldBe(3);
         }
 
-        private static IEnumerable<Mutant> MutateAndCompileSource(string sourceFile)
+        private static IEnumerable<IMutant> MutateAndCompileSource(string sourceFile)
         {
             var filesystemRoot = Path.GetPathRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
 

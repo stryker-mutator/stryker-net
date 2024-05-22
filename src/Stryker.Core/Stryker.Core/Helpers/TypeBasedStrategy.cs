@@ -37,7 +37,7 @@ namespace Stryker.Core.Helpers
                 {
                     continue;
                 }
-                var match =  handlers.FirstOrDefault( th => th.CanHandle(item));
+                var match = handlers.FirstOrDefault(th => th.CanHandle(item));
                 if (match != null)
                 {
                     return match;

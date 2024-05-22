@@ -4,6 +4,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Mutators;
+using Stryker.Shared.Options;
 
 namespace Stryker.Core.Mutators;
 
@@ -19,14 +22,14 @@ public class StringEmptyMutator : MutatorBase<ExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-    public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node, SemanticModel semanticModel) => node switch
+    public override IEnumerable<IMutation> ApplyMutations(ExpressionSyntax node, SemanticModel semanticModel) => node switch
     {
         MemberAccessExpressionSyntax memberAccess => ApplyMutations(memberAccess),
         InvocationExpressionSyntax invocation => ApplyMutations(invocation),
-        _ => Enumerable.Empty<Mutation>()
+        _ => Enumerable.Empty<IMutation>()
     };
 
-    private IEnumerable<Mutation> ApplyMutations(MemberAccessExpressionSyntax node)
+    private IEnumerable<IMutation> ApplyMutations(MemberAccessExpressionSyntax node)
     {
         if (IsAccessToStringPredefinedType(node.Expression) &&
             node.Name.Identifier.ValueText == nameof(string.Empty))
@@ -43,7 +46,7 @@ public class StringEmptyMutator : MutatorBase<ExpressionSyntax>
         }
     }
 
-    private IEnumerable<Mutation> ApplyMutations(InvocationExpressionSyntax node)
+    private IEnumerable<IMutation> ApplyMutations(InvocationExpressionSyntax node)
     {
         if (node.Expression is MemberAccessExpressionSyntax memberAccessExpression &&
             IsAccessToStringPredefinedType(memberAccessExpression.Expression))
@@ -67,7 +70,7 @@ public class StringEmptyMutator : MutatorBase<ExpressionSyntax>
         expression is PredefinedTypeSyntax typeSyntax &&
         typeSyntax.Keyword.ValueText == "string";
 
-    private Mutation ApplyIsNullMutation(InvocationExpressionSyntax node) => new()
+    private IMutation ApplyIsNullMutation(InvocationExpressionSyntax node) => new Mutation()
     {
         OriginalNode = node,
         ReplacementNode =
@@ -80,7 +83,7 @@ public class StringEmptyMutator : MutatorBase<ExpressionSyntax>
         Type = Mutator.String
     };
 
-    private Mutation ApplyIsEmptyMutation(InvocationExpressionSyntax node) => new()
+    private IMutation ApplyIsEmptyMutation(InvocationExpressionSyntax node) => new Mutation()
     {
         OriginalNode = node,
         ReplacementNode = SyntaxFactory.ParenthesizedExpression(
@@ -92,7 +95,7 @@ public class StringEmptyMutator : MutatorBase<ExpressionSyntax>
         Type = Mutator.String
     };
 
-    private Mutation ApplyIsWhiteSpaceMutation(InvocationExpressionSyntax node) => new()
+    private IMutation ApplyIsWhiteSpaceMutation(InvocationExpressionSyntax node) => new Mutation()
     {
         OriginalNode = node,
         ReplacementNode =

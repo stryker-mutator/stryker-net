@@ -5,6 +5,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Mutators;
+using Stryker.Shared.Options;
 
 namespace Stryker.Core.Mutators;
 
@@ -44,14 +47,14 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
     };
 
     /// <summary> Apply mutations to an <see cref="InvocationExpressionSyntax"/> </summary>
-    public override IEnumerable<Mutation> ApplyMutations(InvocationExpressionSyntax node, SemanticModel semanticModel) => node.Expression switch
+    public override IEnumerable<IMutation> ApplyMutations(InvocationExpressionSyntax node, SemanticModel semanticModel) => node.Expression switch
     {
         MemberAccessExpressionSyntax memberAccess => ApplyMutationsToMemberCall(node, memberAccess),
         IdentifierNameSyntax methodName => ApplyMutationsToDirectCall(node, methodName),
         _ => Enumerable.Empty<Mutation>()
     };
 
-    private static IEnumerable<Mutation> ApplyMutationsToMemberCall(InvocationExpressionSyntax node, MemberAccessExpressionSyntax memberAccessExpressionSyntax)
+    private static IEnumerable<IMutation> ApplyMutationsToMemberCall(InvocationExpressionSyntax node, MemberAccessExpressionSyntax memberAccessExpressionSyntax)
     {
         if (memberAccessExpressionSyntax.Expression is not IdentifierNameSyntax memberName ||
             !memberName.Identifier.ValueText.StartsWith("Math"))
@@ -65,7 +68,7 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
         }
     }
 
-    private static IEnumerable<Mutation> ApplyMutationsToDirectCall(InvocationExpressionSyntax node, IdentifierNameSyntax methodName)
+    private static IEnumerable<IMutation> ApplyMutationsToDirectCall(InvocationExpressionSyntax node, IdentifierNameSyntax methodName)
     {
         foreach (var mutation in ApplyMutationsToMethod(node, methodName))
         {
@@ -73,7 +76,7 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
         }
     }
 
-    private static IEnumerable<Mutation> ApplyMutationsToMethod(InvocationExpressionSyntax original, SimpleNameSyntax method)
+    private static IEnumerable<IMutation> ApplyMutationsToMethod(InvocationExpressionSyntax original, SimpleNameSyntax method)
     {
         if (Enum.TryParse(method.Identifier.ValueText, out MathExpression expression) &&
             KindsToMutate.TryGetValue(expression, out var replacementExpressions))

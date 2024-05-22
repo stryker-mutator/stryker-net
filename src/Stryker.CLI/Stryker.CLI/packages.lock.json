@@ -1488,8 +1488,10 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.49.1, )",
           "Spectre.Console.Analyzer": "[0.49.1, )",
-          "Stryker.DataCollector": "[4.0.5, )",
-          "Stryker.RegexMutators": "[4.0.5, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
+          "Stryker.Shared": "[1.0.0, )",
+          "Stryker.TestRunner.VSTest": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[21.0.2, )"
         }
       },
@@ -1504,6 +1506,31 @@
         "type": "Project",
         "dependencies": {
           "RegexParser": "[0.5.1, )"
+        }
+      },
+      "stryker.shared": {
+        "type": "Project",
+        "dependencies": {
+          "DotNet.Glob": "[3.1.3, )",
+          "Microsoft.CodeAnalysis.CSharp": "[4.9.2, )",
+          "Microsoft.Extensions.Logging": "[8.0.0, )",
+          "Serilog": "[3.1.1, )",
+          "Serilog.Extensions.Logging": "[8.0.0, )",
+          "Serilog.Extensions.Logging.File": "[3.0.0, )",
+          "Serilog.Sinks.Console": "[5.0.1, )"
+        }
+      },
+      "stryker.testrunner.vstest": {
+        "type": "Project",
+        "dependencies": {
+          "Microsoft.Extensions.Logging": "[8.0.0, )",
+          "Microsoft.TestPlatform": "[17.9.0, )",
+          "Microsoft.TestPlatform.ObjectModel": "[17.9.0, )",
+          "Microsoft.TestPlatform.Portable": "[17.9.0, )",
+          "Microsoft.TestPlatform.TranslationLayer": "[17.9.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.Shared": "[1.0.0, )",
+          "TestableIO.System.IO.Abstractions.Wrappers": "[21.0.2, )"
         }
       },
       "Azure.Storage.Files.Shares": {

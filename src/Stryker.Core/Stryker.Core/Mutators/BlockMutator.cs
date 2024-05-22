@@ -5,16 +5,19 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
 using Stryker.Core.Mutants;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Mutators;
+using Stryker.Shared.Options;
 
 namespace Stryker.Core.Mutators;
 
-class BlockMutator : MutatorBase<BlockSyntax>
+public class BlockMutator : MutatorBase<BlockSyntax>
 {
     private const string MutationName = "Block removal mutation";
 
     public override MutationLevel MutationLevel => MutationLevel.Basic;
 
-    public override IEnumerable<Mutation> ApplyMutations(BlockSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<IMutation> ApplyMutations(BlockSyntax node, SemanticModel semanticModel)
     {
         if (node.IsEmpty() ||
             IsInfiniteWhileLoop(node) ||

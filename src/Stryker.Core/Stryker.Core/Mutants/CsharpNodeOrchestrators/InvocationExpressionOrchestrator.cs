@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
+using Stryker.Shared.Mutants;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
@@ -9,7 +10,7 @@ internal class InvocationExpressionOrchestrator: MemberAccessExpressionOrchestra
 {
 
     protected override MutationContext StoreMutations(InvocationExpressionSyntax node,
-        IEnumerable<Mutant> mutations,
+        IEnumerable<IMutant> mutations,
         MutationContext context) =>
         // if the invocation contains a declaration, it must be controlled at the block level.
          context.AddMutations(mutations, node.ArgumentList.ContainsDeclarations() ? MutationControl.Block : MutationControl.Expression);

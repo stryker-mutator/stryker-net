@@ -18,5 +18,4 @@ namespace Stryker.Core.Mutants.FsharpOrchestrators
                 castinput.trivia);
         }
     }
-
 }

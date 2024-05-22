@@ -5,6 +5,7 @@ using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
+using Stryker.Shared.Options;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;

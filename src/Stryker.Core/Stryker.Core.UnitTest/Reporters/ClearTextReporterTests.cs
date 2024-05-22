@@ -11,6 +11,8 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Mutators;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters
