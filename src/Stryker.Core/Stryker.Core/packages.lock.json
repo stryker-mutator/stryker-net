@@ -160,9 +160,9 @@
       },
       "NuGet.Frameworks": {
         "type": "Direct",
-        "requested": "[6.9.1, )",
-        "resolved": "6.9.1",
-        "contentHash": "DaKh3lenPUvzGccPkbI97BIvA27z+/UsL3ankfoZlX/4vBVDK5N1sheFTQ+GuJf+IgSzsJz/A21SPUpQLHwUtA=="
+        "requested": "[6.10.0, )",
+        "resolved": "6.10.0",
+        "contentHash": "bKaC87Q8rxK7ozFN9Eyo0YVUmd4r2s8pbNxHI7sHRqL16OAP0yEdCU5wpDkG9cKLHpZCahgoQUfAVC0UadVU+A=="
       },
       "ResXResourceReader.NetStandard": {
         "type": "Direct",
