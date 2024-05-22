@@ -1,30 +1,32 @@
 using System.Diagnostics;
 
-namespace Stryker.Core.Reporters.Progress;
-
-public interface IStopWatchProvider
+namespace Stryker.Core.Reporters.Progress
 {
-    void Start();
-    void Stop();
-    long GetElapsedMillisecond();
-}
 
-public class StopWatchProvider : IStopWatchProvider
-{
-    private Stopwatch _watch;
-
-    public void Start()
+    public interface IStopWatchProvider
     {
-        _watch = Stopwatch.StartNew();
+        void Start();
+        void Stop();
+        long GetElapsedMillisecond();
     }
 
-    public void Stop()
+    public class StopWatchProvider : IStopWatchProvider
     {
-        _watch?.Stop();
-    }
+        private Stopwatch _watch;
 
-    public long GetElapsedMillisecond()
-    {
-        return _watch.ElapsedMilliseconds;
+        public void Start()
+        {
+            _watch = Stopwatch.StartNew();
+        }
+
+        public void Stop()
+        {
+            _watch?.Stop();
+        }
+
+        public long GetElapsedMillisecond()
+        {
+            return _watch.ElapsedMilliseconds;
+        }
     }
 }

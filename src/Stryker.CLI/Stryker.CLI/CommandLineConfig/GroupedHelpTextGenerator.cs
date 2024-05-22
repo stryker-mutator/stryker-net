@@ -6,39 +6,40 @@ using System.IO;
 using System.Linq;
 using Stryker.CLI.CommandLineConfig;
 
-namespace Stryker.CLI;
-
-[ExcludeFromCodeCoverage] // Not worth the effort to test
-internal class GroupedHelpTextGenerator : DefaultHelpTextGenerator
+namespace Stryker.CLI
 {
-    protected override void GenerateOptions(CommandLineApplication application, TextWriter output, IReadOnlyList<CommandOption> visibleOptions, int firstColumnWidth)
+    [ExcludeFromCodeCoverage] // Not worth the effort to test
+    internal class GroupedHelpTextGenerator : DefaultHelpTextGenerator
     {
-        if (visibleOptions.Any())
+        protected override void GenerateOptions(CommandLineApplication application, TextWriter output, IReadOnlyList<CommandOption> visibleOptions, int firstColumnWidth)
         {
-            output.WriteLine();
-            output.WriteLine("Options:");
-            var outputFormat = $"  {{0, -{firstColumnWidth}}}{{1}}";
-
-            var visibleCategorizedOptions = application.Options.OfType<StrykerInputOption>().Intersect(visibleOptions);
-
-            foreach (var group in visibleCategorizedOptions.Cast<StrykerInputOption>().GroupBy(c => c.Category).OrderBy(g => g.Key))
+            if (visibleOptions.Any())
             {
-                if (group.Key != InputCategory.Generic)
+                output.WriteLine();
+                output.WriteLine("Options:");
+                var outputFormat = $"  {{0, -{firstColumnWidth}}}{{1}}";
+
+                var visibleCategorizedOptions = application.Options.OfType<StrykerInputOption>().Intersect(visibleOptions);
+
+                foreach (var group in visibleCategorizedOptions.Cast<StrykerInputOption>().GroupBy(c => c.Category).OrderBy(g => g.Key))
                 {
-                    output.WriteLine();
-                    output.WriteLine($"{group.Key} options:");
-                }
+                    if (group.Key != InputCategory.Generic)
+                    {
+                        output.WriteLine();
+                        output.WriteLine($"{group.Key} options:");
+                    }
 
-                foreach (var opt in group)
-                {
-                    var description = opt.Description;
+                    foreach (var opt in group)
+                    {
+                        var description = opt.Description;
 
-                    var wrappedDescription = IndentWriter?.Write(description);
-                    var message = string.Format(outputFormat, Format(opt), wrappedDescription);
+                        var wrappedDescription = IndentWriter?.Write(description);
+                        var message = string.Format(outputFormat, Format(opt), wrappedDescription);
 
-                    output.Write(message);
-                    output.WriteLine();
-                    output.WriteLine();
+                        output.Write(message);
+                        output.WriteLine();
+                        output.WriteLine();
+                    }
                 }
             }
         }

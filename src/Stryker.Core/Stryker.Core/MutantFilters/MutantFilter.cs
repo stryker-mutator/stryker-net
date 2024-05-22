@@ -1,23 +1,24 @@
-namespace Stryker.Core.MutantFilters;
-
-// Filters are executed in the order they appear in in this enum. If you change this order you change the order or filter execution
-public enum MutantFilter
+namespace Stryker.Core.MutantFilters
 {
-    Broadcast,
+    // Filters are executed in the order they appear in in this enum. If you change this order you change the order or filter execution
+    public enum MutantFilter
+    {
+        Broadcast,
 
-    ExcludeFromCodeCoverage,
+        ExcludeFromCodeCoverage,
 
-    IgnoreMutation,
+        IgnoreMutation,
 
-    IgnoreLinqMutation,
+        IgnoreLinqMutation,
 
-    IgnoreMethod,
+        IgnoreMethod,
 
-    FilePattern,
+        FilePattern,
 
-    Since,
+        Since,
 
-    Baseline,
+        Baseline,
 
-    IgnoreBlockRemoval,
+        IgnoreBlockRemoval,
+    }
 }

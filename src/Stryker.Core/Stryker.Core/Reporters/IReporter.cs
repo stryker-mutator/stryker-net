@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Shared.Mutants;

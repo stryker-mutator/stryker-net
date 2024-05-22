@@ -1,27 +1,28 @@
 using Microsoft.CodeAnalysis;
 
-namespace Stryker.Core.Reporters.Json;
-
-public class Location
+namespace Stryker.Core.Reporters.Json
 {
-    public Position Start { get; init; }
-    public Position End { get; init; }
-
-    public Location()
+    public class Location
     {
-    }
+        public Position Start { get; init; }
+        public Position End { get; init; }
 
-    public Location(FileLinePositionSpan location)
-    {
-        Start = new Position
+        public Location()
         {
-            Line = location.StartLinePosition.Line + 1,
-            Column = location.StartLinePosition.Character + 1
-        };
-        End = new Position
+        }
+
+        public Location(FileLinePositionSpan location)
         {
-            Line = location.EndLinePosition.Line + 1,
-            Column = location.EndLinePosition.Character + 1
-        };
+            Start = new Position
+            {
+                Line = location.StartLinePosition.Line + 1,
+                Column = location.StartLinePosition.Character + 1
+            };
+            End = new Position
+            {
+                Line = location.EndLinePosition.Line + 1,
+                Column = location.EndLinePosition.Character + 1
+            };
+        }
     }
 }

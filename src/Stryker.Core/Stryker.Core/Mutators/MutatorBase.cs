@@ -1,5 +1,4 @@
 using Microsoft.CodeAnalysis;
-using Stryker.Core.Options;
 using Stryker.Shared.Mutants;
 using Stryker.Shared.Options;
 using System.Collections.Generic;

@@ -1,9 +1,10 @@
-namespace Stryker.Core.ProjectComponents;
-
-public enum Health
+namespace Stryker.Core.ProjectComponents
 {
-    None,
-    Good,
-    Warning,
-    Danger
+    public enum Health
+    {
+        None,
+        Good,
+        Warning,
+        Danger
+    }
 }

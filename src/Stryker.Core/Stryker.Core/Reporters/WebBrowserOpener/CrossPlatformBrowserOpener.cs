@@ -5,56 +5,58 @@ using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Stryker.Shared.Logging;
 
-namespace Stryker.Core.Reporters.WebBrowserOpener;
-
-[ExcludeFromCodeCoverage]
-public class CrossPlatformBrowserOpener : IWebbrowserOpener
+namespace Stryker.Core.Reporters.WebBrowserOpener
 {
-    private static bool IsWsl => RuntimeInformation.OSDescription.Contains("linux", StringComparison.InvariantCultureIgnoreCase) &&
-        RuntimeInformation.OSDescription.Contains("microsoft", StringComparison.InvariantCultureIgnoreCase);
 
-    public Process Open(string path)
+    [ExcludeFromCodeCoverage]
+    public class CrossPlatformBrowserOpener : IWebbrowserOpener
     {
-        ProcessStartInfo processInfo;
-        if (IsWsl)
+        private static bool IsWsl => RuntimeInformation.OSDescription.Contains("linux", StringComparison.InvariantCultureIgnoreCase) &&
+            RuntimeInformation.OSDescription.Contains("microsoft", StringComparison.InvariantCultureIgnoreCase);
+
+        public Process Open(string path)
         {
-            var wslPathProcessInfo = new ProcessStartInfo
+            ProcessStartInfo processInfo;
+            if (IsWsl)
             {
-                FileName = "wslpath",
-                Arguments = $"-wa {path}",
-                RedirectStandardOutput = true,
-                UseShellExecute = false,
-
-            };
-
-            var wslPathProcess = new Process { StartInfo = wslPathProcessInfo };
-            if (wslPathProcess.Start())
-            {
-                var windowsPath = wslPathProcess.StandardOutput.ReadToEnd();
-                var powershellCommand = $"Start-Process {windowsPath}";
-
-                processInfo = new ProcessStartInfo
+                var wslPathProcessInfo = new ProcessStartInfo
                 {
-                    FileName = "powershell.exe",
-                    Arguments = $"-NoProfile -Command {powershellCommand}",
-                    UseShellExecute = true
+                    FileName = "wslpath",
+                    Arguments = $"-wa {path}",
+                    RedirectStandardOutput = true,
+                    UseShellExecute = false,
+
                 };
+
+                var wslPathProcess = new Process { StartInfo = wslPathProcessInfo };
+                if (wslPathProcess.Start())
+                {
+                    var windowsPath = wslPathProcess.StandardOutput.ReadToEnd();
+                    var powershellCommand = $"Start-Process {windowsPath}";
+
+                    processInfo = new ProcessStartInfo
+                    {
+                        FileName = "powershell.exe",
+                        Arguments = $"-NoProfile -Command {powershellCommand}",
+                        UseShellExecute = true
+                    };
+                }
+                else
+                {
+                    ApplicationLogging.LoggerFactory.CreateLogger<CrossPlatformBrowserOpener>().LogError("Failed to auto-open browser. Please report your runtime and OS info.");
+                    return null;
+                }
             }
             else
             {
-                ApplicationLogging.LoggerFactory.CreateLogger<CrossPlatformBrowserOpener>().LogError("Failed to auto-open browser. Please report your runtime and OS info.");
-                return null;
+                processInfo = new ProcessStartInfo
+                {
+                    FileName = path,
+                    UseShellExecute = true
+                };
             }
-        }
-        else
-        {
-            processInfo = new ProcessStartInfo
-            {
-                FileName = path,
-                UseShellExecute = true
-            };
-        }
 
-        return Process.Start(processInfo);
+            return Process.Start(processInfo);
+        }
     }
 }

@@ -1,24 +1,25 @@
 using System;
 using System.Collections.Generic;
 
-namespace Stryker.Core.Mutants.FsharpOrchestrators;
-
-public class OrchestratorFinder<T>
+namespace Stryker.Core.Mutants.FsharpOrchestrators
 {
-    private readonly IDictionary<Type, IFsharpTypeHandler<T>> _handlerMapping = new Dictionary<Type, IFsharpTypeHandler<T>>();
-
-    public void Add(Type type, IFsharpTypeHandler<T> handler)
+    public class OrchestratorFinder<T>
     {
-        _handlerMapping.Add(type, handler);
-    }
+        private readonly IDictionary<Type, IFsharpTypeHandler<T>> _handlerMapping = new Dictionary<Type, IFsharpTypeHandler<T>>();
 
-    public IFsharpTypeHandler<T> FindHandler(Type type)
-    {
-        IFsharpTypeHandler<T> returnable;
-        if (_handlerMapping.TryGetValue(type, out returnable))
+        public void Add(Type type, IFsharpTypeHandler<T> handler)
         {
-            return returnable;
+            _handlerMapping.Add(type, handler);
         }
-        return new DefaultOrchestrator<T>();
+
+        public IFsharpTypeHandler<T> FindHandler(Type type)
+        {
+            IFsharpTypeHandler<T> returnable;
+            if (_handlerMapping.TryGetValue(type, out returnable))
+            {
+                return returnable;
+            }
+            return new DefaultOrchestrator<T>();
+        }
     }
 }

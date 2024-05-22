@@ -1,9 +1,10 @@
-namespace Stryker.Core.Mutants.FsharpOrchestrators;
-
-public class DefaultOrchestrator<T> : IFsharpTypeHandler<T>
+namespace Stryker.Core.Mutants.FsharpOrchestrators
 {
-    public virtual T Mutate(T input, FsharpMutantOrchestrator iterator)
+    public class DefaultOrchestrator<T> : IFsharpTypeHandler<T>
     {
-        return input;
+        public virtual T Mutate(T input, FsharpMutantOrchestrator iterator)
+        {
+            return input;
+        }
     }
 }

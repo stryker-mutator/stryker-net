@@ -1,13 +1,14 @@
-namespace Stryker.Core.Options;
-
-public static class BooleanValidationExtensions
+namespace Stryker.Core.Options
 {
-    /// <summary>
-    /// Check if a nullable boolean is true or not null
-    /// </summary>
-    /// <param name="input">the boolean</param>
-    public static bool IsNotNullAndTrue(this bool? input)
+    public static class BooleanValidationExtensions
     {
-        return input ?? false;
+        /// <summary>
+        /// Check if a nullable boolean is true or not null
+        /// </summary>
+        /// <param name="input">the boolean</param>
+        public static bool IsNotNullAndTrue(this bool? input)
+        {
+            return input ?? false;
+        }
     }
 }
