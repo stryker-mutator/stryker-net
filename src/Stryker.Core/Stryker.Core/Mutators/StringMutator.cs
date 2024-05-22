@@ -17,39 +17,41 @@ public class StringMutator : MutatorBase<LiteralExpressionSyntax>
         // Get objectCreationSyntax to check if it contains a regex type.
         var root = node.Parent?.Parent?.Parent;
 
-        if (!IsSpecialType(root))
+        if (IsSpecialType(root))
         {
-            SyntaxNode syntaxNode;
-            string currentValue;
-            string replacementValue;
+            yield break;
+        }
 
-            if (IsStringLiteral(node))
-            {
-                currentValue = (string)node.Token.Value;
-                replacementValue = currentValue == "" ? "Stryker was here!" : "";
-                syntaxNode = SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression,
-                    SyntaxFactory.Literal(replacementValue));
-            }
-            else if(IsUtf8StringLiteral(node))
-            {
-                currentValue = (string)node.Token.Value;
-                replacementValue = currentValue == "" ? "Stryker was here!" : "";
-                syntaxNode = CreateUtf88String(node.GetLeadingTrivia(), replacementValue, node.GetTrailingTrivia());
-            }
-            else
-            {
-                yield break;
-            }
+        SyntaxNode syntaxNode;
+        string currentValue;
+        string replacementValue;
+
+        if (IsStringLiteral(node))
+        {
+            currentValue = (string)node.Token.Value;
+            replacementValue = currentValue == "" ? "Stryker was here!" : "";
+            syntaxNode = SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression,
+                SyntaxFactory.Literal(replacementValue));
+        }
+        else if(IsUtf8StringLiteral(node))
+        {
+            currentValue = (string)node.Token.Value;
+            replacementValue = currentValue == "" ? "Stryker was here!" : "";
+            syntaxNode = CreateUtf88String(node.GetLeadingTrivia(), replacementValue, node.GetTrailingTrivia());
+        }
+        else
+        {
+            yield break;
+        }
             
 
-            yield return new Mutation
-            {
-                OriginalNode = node,
-                ReplacementNode = syntaxNode,
-                DisplayName = "String mutation",
-                Type = Mutator.String
-            };
-        }
+        yield return new Mutation
+        {
+            OriginalNode = node,
+            ReplacementNode = syntaxNode,
+            DisplayName = "String mutation",
+            Type = Mutator.String
+        };
     }
 
     private static bool IsUtf8StringLiteral(LiteralExpressionSyntax node)
