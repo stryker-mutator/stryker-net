@@ -43,7 +43,6 @@ public class StringMutator : MutatorBase<LiteralExpressionSyntax>
         {
             yield break;
         }
-            
 
         yield return new Mutation
         {
@@ -94,5 +93,4 @@ public class StringMutator : MutatorBase<LiteralExpressionSyntax>
 
         return SyntaxFactory.LiteralExpression(SyntaxKind.Utf8StringLiteralExpression, literal);
     }
-
 }
