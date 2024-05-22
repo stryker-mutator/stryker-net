@@ -7,10 +7,9 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Newtonsoft.Json;
 using Shouldly;
-using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Json;
-using Stryker.CLI;
 using Xunit;
+using Stryker.Shared.Mutants;
 
 namespace IntegrationTests
 {
