@@ -33,7 +33,7 @@ public class StringMutator : MutatorBase<LiteralExpressionSyntax>
             syntaxNode = SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression,
                 SyntaxFactory.Literal(replacementValue));
         }
-        else if(IsUtf8StringLiteral(node))
+        else if (IsUtf8StringLiteral(node))
         {
             currentValue = (string)node.Token.Value;
             replacementValue = currentValue == "" ? "Stryker was here!" : "";
