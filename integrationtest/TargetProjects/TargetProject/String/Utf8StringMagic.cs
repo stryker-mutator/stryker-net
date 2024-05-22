@@ -7,7 +7,6 @@ namespace ExampleProject.String
     {
         public ReadOnlySpan<byte> HelloWorld()
         {
-            var a = "";
             return "Hello"u8 + " "u8 + "World!"u8;
         }
 
