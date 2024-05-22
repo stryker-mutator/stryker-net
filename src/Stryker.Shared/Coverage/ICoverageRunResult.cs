@@ -1,7 +1,9 @@
+using Stryker.Shared.Tests;
+
 namespace Stryker.Shared.Coverage;
 public interface ICoverageRunResult
 {
-    Guid TestId { get; }
+    Identifier TestId { get; }
     IReadOnlyCollection<int> MutationsCovered { get; }
     MutationTestingRequirements this[int mutation] { get; }
     CoverageConfidence Confidence { get; }

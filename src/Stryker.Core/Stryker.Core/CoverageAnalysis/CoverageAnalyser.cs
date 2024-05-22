@@ -23,23 +23,23 @@ public class CoverageAnalyser : ICoverageAnalyser
         _logger = ApplicationLogging.LoggerFactory.CreateLogger<CoverageAnalyser>();
     }
 
-    public void DetermineTestCoverage(IProjectAndTests project, ITestRunner runner, IEnumerable<IMutant> mutants, ITestGuids resultFailingTests)
+    public void DetermineTestCoverage(IProjectAndTests project, ITestRunner runner, IEnumerable<IMutant> mutants, ITestIdentifiers resultFailingTests)
     {
         if (!_options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
             !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
         {
             foreach (var mutant in mutants)
             {
-                mutant.CoveringTests = TestGuidsList.EveryTest();
-                mutant.AssessingTests = TestGuidsList.EveryTest();
+                mutant.CoveringTests = TestIdentifiers.EveryTest();
+                mutant.AssessingTests = TestIdentifiers.EveryTest();
             }
             return;
         }
 
-        ParseCoverage(runner.CaptureCoverage(project), mutants, new TestGuidsList(resultFailingTests.GetGuids()));
+        ParseCoverage(runner.CaptureCoverage(project), mutants, new TestIdentifiers(resultFailingTests.GetIdentifiers()));
     }
 
-    private void ParseCoverage(IEnumerable<ICoverageRunResult> coverage, IEnumerable<IMutant> mutantsToScan, TestGuidsList failedTests)
+    private void ParseCoverage(IEnumerable<ICoverageRunResult> coverage, IEnumerable<IMutant> mutantsToScan, TestIdentifiers failedTests)
     {
         var dubiousTests = new HashSet<Guid>();
         var trustedTests = new HashSet<Guid>();
@@ -75,27 +75,27 @@ public class CoverageAnalyser : ICoverageAnalyser
         }
 
 
-        var allTest = TestGuidsList.EveryTest();
-        var allTestsExceptTrusted = (trustedTests.Count == 0 && failedTests.Count == 0)? TestGuidsList.EveryTest()
-            : new TestGuidsList(testIds.Except(trustedTests).ToHashSet()).Excluding(failedTests);
+        var allTest = TestIdentifiers.EveryTest();
+        var allTestsExceptTrusted = (trustedTests.Count == 0 && failedTests.Count == 0)? TestIdentifiers.EveryTest()
+            : new TestIdentifiers(testIds.Except(trustedTests).ToHashSet()).Excluding(failedTests) as TestIdentifiers;
 
         if (!coverage.Any())
         {
-            allTest = TestGuidsList.NoTest();
-            allTestsExceptTrusted = TestGuidsList.NoTest();
+            allTest = TestIdentifiers.NoTest();
+            allTestsExceptTrusted = TestIdentifiers.NoTest();
         }
         foreach (var mutant in mutantsToScan)
         {
-            CoverageForThisMutant(mutant, mutationToResultMap, allTest, allTestsExceptTrusted, new TestGuidsList( dubiousTests), failedTests);
+            CoverageForThisMutant(mutant, mutationToResultMap, allTest, allTestsExceptTrusted, new TestIdentifiers( dubiousTests), failedTests);
         }
     }
 
     private void CoverageForThisMutant(IMutant mutant,
         IReadOnlyDictionary<int, List<ICoverageRunResult>> mutationToResultMap,
-        TestGuidsList everytest,
-        TestGuidsList allTestsGuidsExceptTrusted,
-        TestGuidsList dubiousTests,
-        TestGuidsList failedTest)
+        TestIdentifiers everytest,
+        TestIdentifiers allTestsGuidsExceptTrusted,
+        TestIdentifiers dubiousTests,
+        TestIdentifiers failedTest)
     {
         var mutantId = mutant.Id;
         var (resultTingRequirements, testGuids) = ParseResultForThisMutant(mutationToResultMap, mutantId);
@@ -105,20 +105,20 @@ public class CoverageAnalyser : ICoverageAnalyser
         if (resultTingRequirements.HasFlag(MutationTestingRequirements.AgainstAllTests))
         {
             mutant.CoveringTests = everytest;
-            mutant.AssessingTests = TestGuidsList.EveryTest();
+            mutant.AssessingTests = TestIdentifiers.EveryTest();
         }
         else if (resultTingRequirements.HasFlag(MutationTestingRequirements.Static) || mutant.IsStaticValue)
         {
             // static mutations will be tested against every tests, except the one that are trusted not to cover it
             mutant.CoveringTests = allTestsGuidsExceptTrusted.Merge(testGuids);
-            mutant.AssessingTests = allTestsGuidsExceptTrusted.Merge(assessingTests).Excluding(failedTest);
+            mutant.AssessingTests = (allTestsGuidsExceptTrusted.Merge(assessingTests) as TestIdentifiers).Excluding(failedTest);
             
             mutant.IsStaticValue = true;
         }
         else
         {
             mutant.CoveringTests = testGuids.Merge(dubiousTests);
-            mutant.AssessingTests = testGuids.Merge(dubiousTests).Excluding(failedTest);
+            mutant.AssessingTests = (testGuids.Merge(dubiousTests) as TestIdentifiers).Excluding(failedTest);
         }
         // assess status according to actual coverage
         if (mutant.CoveringTests.IsEmpty && mutant.ResultStatus == MutantStatus.Pending)
@@ -141,12 +141,12 @@ public class CoverageAnalyser : ICoverageAnalyser
         }
     }
 
-    private static (MutationTestingRequirements, TestGuidsList) ParseResultForThisMutant(IReadOnlyDictionary<int, List<ICoverageRunResult>> mutationToResultMap, int mutantId)
+    private static (MutationTestingRequirements, TestIdentifiers) ParseResultForThisMutant(IReadOnlyDictionary<int, List<ICoverageRunResult>> mutationToResultMap, int mutantId)
     {
         var resultingRequirements = MutationTestingRequirements.None;
         if (!mutationToResultMap.ContainsKey(mutantId))
         {
-            return (resultingRequirements, TestGuidsList.NoTest()); 
+            return (resultingRequirements, TestIdentifiers.NoTest()); 
         }
         var testGuids = new List<Guid>();
         foreach (var coverageRunResult in mutationToResultMap[mutantId])
@@ -176,6 +176,6 @@ public class CoverageAnalyser : ICoverageAnalyser
             }
         }
 
-        return (resultingRequirements, new TestGuidsList(testGuids));
+        return (resultingRequirements, new TestIdentifiers(testGuids));
     }
 }

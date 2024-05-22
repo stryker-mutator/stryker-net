@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
@@ -124,17 +125,17 @@ public class MutationTestProcess : IMutationTestProcess
         });
     }
 
-    private bool TestUpdateHandler(IEnumerable<IMutant> testedMutants, ITestGuids failedTests, ITestGuids ranTests,
-        ITestGuids timedOutTest, ISet<IMutant> reportedMutants)
+    private bool TestUpdateHandler(IEnumerable<IMutant> testedMutants, ITestIdentifiers failedTests, ITestIdentifiers ranTests,
+        ITestIdentifiers timedOutTest, ISet<IMutant> reportedMutants)
     {
-        var testsFailingInitially = Input.InitialTestRun.Result.FailingTests.GetGuids().ToHashSet();
+        var testsFailingInitially = Input.InitialTestRun.Result.FailingTests.GetIdentifiers().ToHashSet();
         var continueTestRun = _options.OptimizationMode.HasFlag(OptimizationModes.DisableBail);
-        if (testsFailingInitially.Count > 0 && failedTests.GetGuids().Any(id => testsFailingInitially.Contains(id)))
+        if (testsFailingInitially.Count > 0 && failedTests.GetIdentifiers().Any(testsFailingInitially.Contains))
         {
             // some of the failing tests where failing without any mutation
             // we discard those tests
-            failedTests = new TestGuidsList(
-                failedTests.GetGuids().Where(t => !testsFailingInitially.Contains(t)));
+            failedTests = new TestIdentifiers(
+                failedTests.GetIdentifiers().Where(t => !testsFailingInitially.Contains(t)));
         }
         foreach (var mutant in testedMutants)
         {

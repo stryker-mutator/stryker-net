@@ -16,9 +16,9 @@ internal class TestRunResult : ITestRunResult
 
     public TestRunResult(
         IEnumerable<VsTestDescription> vsTestDescriptions,
-        ITestGuids executedTests,
-        ITestGuids failedTests,
-        ITestGuids timedOutTest,
+        ITestIdentifiers executedTests,
+        ITestIdentifiers failedTests,
+        ITestIdentifiers timedOutTest,
         string message,
         IEnumerable<string> messages,
         TimeSpan timeSpan)
@@ -34,16 +34,16 @@ internal class TestRunResult : ITestRunResult
 
     public static TestRunResult TimedOut(
         IEnumerable<VsTestDescription> vsTestDescriptions,
-        ITestGuids ranTests,
-        ITestGuids failedTest,
-        ITestGuids timedOutTests,
+        ITestIdentifiers ranTests,
+        ITestIdentifiers failedTest,
+        ITestIdentifiers timedOutTests,
         string message,
         IEnumerable<string> messages,
         TimeSpan duration) => new(vsTestDescriptions, ranTests, failedTest, timedOutTests, message, messages, duration) { SessionTimedOut = true };
 
-    public ITestGuids FailingTests { get; }
-    public ITestGuids ExecutedTests { get; }
-    public ITestGuids TimedOutTests { get; }
+    public ITestIdentifiers FailingTests { get; }
+    public ITestIdentifiers ExecutedTests { get; }
+    public ITestIdentifiers TimedOutTests { get; }
     public bool SessionTimedOut { get; private init; }
     public string ResultMessage { get; }
     public IEnumerable<string> Messages { get; }

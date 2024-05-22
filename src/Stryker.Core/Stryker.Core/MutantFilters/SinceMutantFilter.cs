@@ -120,7 +120,7 @@ public class SinceMutantFilter : IMutantFilter
 
         foreach (var mutant in mutants)
         {
-            var coveringTests = _tests.Extract(mutant.CoveringTests.GetGuids());
+            var coveringTests = _tests.Extract(mutant.CoveringTests.GetIdentifiers());
 
             if (coveringTests != null
                 && coveringTests.Any(coveringTest => _diffResult.ChangedTestFiles.Any(changedTestFile => coveringTest.TestFilePath == changedTestFile)))

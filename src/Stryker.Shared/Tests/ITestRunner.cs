@@ -7,9 +7,9 @@ namespace Stryker.Shared.Tests;
 public interface ITestRunner : IDisposable
 {
     public delegate bool TestUpdateHandler(IReadOnlyList<IMutant> testedMutants,
-       ITestGuids failedTests,
-       ITestGuids ranTests,
-       ITestGuids timedOutTests);
+       ITestIdentifiers failedTests,
+       ITestIdentifiers ranTests,
+       ITestIdentifiers timedOutTests);
 
     bool DiscoverTests(string assembly);
 

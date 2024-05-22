@@ -18,5 +18,5 @@ internal class TestSet : ITestSet
 
     public void RegisterTest(ITestDescription test) => _tests[test.Id] = test;
 
-    public IEnumerable<ITestDescription> Extract(IEnumerable<Guid> ids) => ids.Select(i => _tests[i]);
+    public IEnumerable<ITestDescription> Extract(IEnumerable<Identifier> ids) => ids.Select(i => _tests[i]);
 }

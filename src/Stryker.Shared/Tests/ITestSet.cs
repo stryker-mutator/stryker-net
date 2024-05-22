@@ -6,5 +6,5 @@ public interface ITestSet
     ITestDescription this[Guid id] { get; }
     void RegisterTests(IEnumerable<ITestDescription> tests);
     void RegisterTest(ITestDescription test);
-    IEnumerable<ITestDescription> Extract(IEnumerable<Guid> ids);
+    IEnumerable<ITestDescription> Extract(IEnumerable<Identifier> ids);
 }

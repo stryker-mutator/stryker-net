@@ -257,14 +257,14 @@ namespace Stryker.TestRunner.VSTest
 </RunSettings>";
         }
 
-        public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap, string helperNameSpace, bool isFullFramework)
+        public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestIdentifiers> mutantTestsMap, string helperNameSpace, bool isFullFramework)
         {
             var settingsForCoverage = string.Empty;
             var needDataCollector = forCoverage || mutantTestsMap is not null;
             var dataCollectorSettings = needDataCollector
                 ? CoverageCollector.GetVsTestSettings(
                     forCoverage,
-                    mutantTestsMap?.Select(e => (e.Key, e.Value.GetGuids())),
+                    mutantTestsMap?.Select(e => (e.Key, e.Value.GetIdentifiers().Select<Identifier, Guid>(t => t))),
                     helperNameSpace)
                 : string.Empty;
             if (_testFramework.HasFlag(TestFrameworks.NUnit))

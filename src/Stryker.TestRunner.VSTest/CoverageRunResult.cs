@@ -1,4 +1,5 @@
 using Stryker.Shared.Coverage;
+using Stryker.Shared.Tests;
 
 namespace Stryker.TestRunner.VSTest;
 
@@ -6,7 +7,7 @@ public class CoverageRunResult : ICoverageRunResult
 {
     private readonly Dictionary<int, MutationTestingRequirements> _mutationFlags = [];
 
-    public Guid TestId { get; }
+    public Identifier TestId { get; }
 
     public IReadOnlyCollection<int> MutationsCovered => _mutationFlags.Keys;
 
@@ -17,7 +18,7 @@ public class CoverageRunResult : ICoverageRunResult
     public CoverageRunResult(Guid testId, CoverageConfidence confidence, IEnumerable<int> coveredMutations,
         IEnumerable<int> detectedStaticMutations, IEnumerable<int> leakedMutations)
     {
-        TestId = testId;
+        TestId = Identifier.Create(testId);
         foreach (var coveredMutation in coveredMutations)
         {
             _mutationFlags[coveredMutation] = MutationTestingRequirements.None;

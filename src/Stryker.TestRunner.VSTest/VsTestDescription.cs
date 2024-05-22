@@ -42,7 +42,7 @@ public sealed class VsTestDescription : IFrameworkTestDescription
         }
     }
 
-    public Guid Id => Case.Id;
+    public Identifier Id => Case.Id;
 
     public ITestCase Case { get; }
 

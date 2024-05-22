@@ -6,7 +6,7 @@ public class VsTestCase : ITestCase
 {
     public VsTestCase(TestCase testCase)
     {
-        Id = testCase.Id;
+        Id = Identifier.Create(testCase.Id);
         Name = testCase.DisplayName;
         FullyQualifiedName = testCase.FullyQualifiedName;
         Uri = testCase.ExecutorUri;
@@ -15,7 +15,7 @@ public class VsTestCase : ITestCase
         Source = testCase.Source;
     }
 
-    public Guid Id { get; }
+    public Identifier Id { get; }
 
     public string Name { get; }
 

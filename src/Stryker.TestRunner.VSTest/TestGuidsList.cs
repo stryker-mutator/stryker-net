@@ -2,60 +2,52 @@ using Stryker.Shared.Tests;
 
 namespace Stryker.TestRunner.VSTest;
 
-internal class TestGuidsList : ITestGuids
+internal class TestGuidsList : ITestIdentifiers
 {
-    private readonly HashSet<Guid>? _testGuids;
+    private readonly HashSet<Identifier>? _identifiers;
 
-    private static readonly TestGuidsList EveryTests = new();
-    private static readonly TestGuidsList NoTestAtAll = new(Array.Empty<Guid>());
+    private static readonly TestGuidsList everyTests = new();
+    private static readonly TestGuidsList noTestAtAll = new(Array.Empty<Identifier>());
 
-    private TestGuidsList() => _testGuids = null;
+    private TestGuidsList() => _identifiers = null;
 
-    public TestGuidsList(IEnumerable<ITestDescription> testDescriptions) : this(testDescriptions.Select(t => t.Id))
+    public TestGuidsList(IEnumerable<ITestDescription> testDescriptions) : this(testDescriptions.Select<ITestDescription, Guid>(t => t.Id))
     { }
 
-    public TestGuidsList(HashSet<Guid> set) => _testGuids = set;
+    public TestGuidsList(IEnumerable<Identifier> identifiers) => _identifiers = new HashSet<Identifier>(identifiers);
+    
+    public TestGuidsList(HashSet<Identifier> identifiers) => _identifiers = identifiers;
 
-    public TestGuidsList(IEnumerable<Guid>? guids) => _testGuids = guids is not null ? new HashSet<Guid>(guids) : null;
+    public TestGuidsList(HashSet<Guid> set) => _identifiers = set.Select(Identifier.Create).ToHashSet();
+
+    public TestGuidsList(IEnumerable<Guid>? guids) => _identifiers = guids is not null ? new HashSet<Identifier>(guids.Select(Identifier.Create)) : null;
 
     public TestGuidsList(params Guid[] guids) : this((IEnumerable<Guid>)guids)
     { }
 
-    public bool IsEmpty => _testGuids is { Count: 0 };
+    public bool IsEmpty => _identifiers is { Count: 0 };
 
-    public bool IsEveryTest => _testGuids == null;
+    public bool IsEveryTest => _identifiers is null;
 
-    public int Count => _testGuids?.Count ?? 0;
+    public int Count => _identifiers?.Count ?? 0;
 
-    public ITestGuids Merge(ITestGuids other)
+    public ITestIdentifiers Merge(ITestIdentifiers other)
     {
         if (IsEveryTest)
         {
             return this;
         }
 
-        var result = new HashSet<Guid>(_testGuids);
-        result.UnionWith(other.GetGuids());
+        var result = new HashSet<Identifier>(_identifiers ?? []);
+        result.UnionWith(other.GetIdentifiers());
         return new TestGuidsList(result);
     }
 
-    public TestGuidsList Merge(TestGuidsList other)
-    {
-        if (IsEveryTest)
-        {
-            return this;
-        }
+    public bool Contains(Identifier testId) => IsEveryTest || _identifiers?.Contains(testId) is false;
 
-        var result = new HashSet<Guid>(_testGuids);
-        result.UnionWith(other.GetGuids());
-        return new TestGuidsList(result);
-    }
+    public bool IsIncludedIn(ITestIdentifiers other) => other.IsEveryTest || _identifiers?.IsSubsetOf(other.GetIdentifiers()) is true;
 
-    public bool Contains(Guid testId) => IsEveryTest || _testGuids.Contains(testId);
-
-    public bool IsIncludedIn(ITestGuids other) => other.IsEveryTest || _testGuids?.IsSubsetOf(other.GetGuids()) == true;
-
-    public ITestGuids Excluding(ITestGuids testsToSkip)
+    public ITestIdentifiers Excluding(ITestIdentifiers testsToSkip)
     {
         if (IsEmpty || testsToSkip.IsEmpty)
         {
@@ -67,16 +59,16 @@ internal class TestGuidsList : ITestGuids
             throw new InvalidOperationException("Can't exclude from EveryTest");
         }
 
-        return testsToSkip.IsEveryTest ? NoTest() : new TestGuidsList(_testGuids.Except(((TestGuidsList)testsToSkip)._testGuids));
+        return testsToSkip.IsEveryTest ? NoTest() : new TestGuidsList(_identifiers.Except(testsToSkip.GetIdentifiers()));
     }
 
-    public static TestGuidsList EveryTest() => EveryTests;
+    public static TestGuidsList EveryTest() => everyTests;
 
-    public static TestGuidsList NoTest() => NoTestAtAll;
+    public static TestGuidsList NoTest() => noTestAtAll;
 
-    public IEnumerable<Guid> GetGuids() => _testGuids;
+    public IEnumerable<Identifier> GetIdentifiers() => _identifiers ?? [];
 
-    public bool ContainsAny(ITestGuids other)
+    public bool ContainsAny(ITestIdentifiers other)
     {
         if (other.IsEmpty || IsEmpty)
         {
@@ -86,8 +78,9 @@ internal class TestGuidsList : ITestGuids
         {
             return true;
         }
-        return _testGuids.Overlaps(other.GetGuids());
+
+        return GetIdentifiers().Intersect(other.GetIdentifiers()).Any();
     }
 
-    public ITestGuids Intersect(ITestGuids other) => IsEveryTest ? new TestGuidsList(other.GetGuids()) : new TestGuidsList(_testGuids.Intersect(other.GetGuids()));
+    public ITestIdentifiers Intersect(ITestIdentifiers other) => IsEveryTest ? new TestGuidsList(other.GetIdentifiers()) : new TestGuidsList(GetIdentifiers().Intersect(other.GetIdentifiers()));
 }

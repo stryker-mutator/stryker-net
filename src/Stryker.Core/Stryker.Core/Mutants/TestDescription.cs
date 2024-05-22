@@ -7,12 +7,12 @@ public sealed class TestDescription : ITestDescription
 {
     public TestDescription(Guid id, string name, string testFilePath)
     {
-        Id = id;
+        Id = Identifier.Create(id);
         Name = name;
         TestFilePath = testFilePath;
     }
 
-    public Guid Id { get; }
+    public Identifier Id { get; }
 
     public string Name { get; }
 

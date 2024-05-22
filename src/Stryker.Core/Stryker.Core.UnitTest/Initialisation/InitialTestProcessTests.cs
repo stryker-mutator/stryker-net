@@ -43,9 +43,9 @@ public class InitialTestProcessTests : TestBase
         {
             testList.Add(Guid.NewGuid());
         }
-        var ranTests = new TestGuidsList(testList);
-        var failedTests = new TestGuidsList(test1);
-        testRunnerMock.Setup(x => x.InitialTest(It.IsAny<IProjectAndTests>())).Returns(new TestRunResult(Enumerable.Empty<VsTestDescription>(), ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero) );
+        var ranTests = new TestIdentifiers(testList);
+        var failedTests = new TestIdentifiers(test1);
+        testRunnerMock.Setup(x => x.InitialTest(It.IsAny<IProjectAndTests>())).Returns(new TestRunResult(Enumerable.Empty<VsTestDescription>(), ranTests, failedTests, TestIdentifiers.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero) );
         testRunnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(true);
         testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
 

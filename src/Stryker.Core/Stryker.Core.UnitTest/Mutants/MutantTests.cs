@@ -2,6 +2,7 @@ using System;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Shared.Mutants;
+using Stryker.Shared.Tests;
 using Xunit;
 
 namespace Stryker.Core.UnitTest;
@@ -48,17 +49,17 @@ public class MutantTests : TestBase
         var succeedingTest = Guid.NewGuid();
         var mutant = new Mutant
         {
-            AssessingTests = new TestGuidsList(new[] { failingTest })
+            AssessingTests = new TestIdentifiers(new[] { failingTest })
         };
 
-        mutant.AnalyzeTestRun(new TestGuidsList(new[] { failingTest }),
-            new TestGuidsList(new[] { succeedingTest }),
-            TestGuidsList.NoTest(),
+        mutant.AnalyzeTestRun(new TestIdentifiers(new[] { failingTest }),
+            new TestIdentifiers(new[] { succeedingTest }),
+            TestIdentifiers.NoTest(),
             false);
 
         mutant.ResultStatus.ShouldBe(MutantStatus.Killed);
-        var killingTest = mutant.KillingTests.GetGuids().ShouldHaveSingleItem();
-        killingTest.ShouldBe(failingTest);
+        var killingTest = mutant.KillingTests.GetIdentifiers().ShouldHaveSingleItem();
+        killingTest.ShouldBe(Identifier.Create(failingTest));
     }
 
     [Fact]
@@ -68,16 +69,16 @@ public class MutantTests : TestBase
         var succeedingTest = Guid.NewGuid();
         var mutant = new Mutant
         {
-            AssessingTests = new TestGuidsList(new[] { succeedingTest })
+            AssessingTests = new TestIdentifiers(new[] { succeedingTest })
         };
 
-        mutant.AnalyzeTestRun(new TestGuidsList(new[] { failingTest }),
-            new TestGuidsList(new[] { succeedingTest }),
-            TestGuidsList.NoTest(),
+        mutant.AnalyzeTestRun(new TestIdentifiers(new[] { failingTest }),
+            new TestIdentifiers(new[] { succeedingTest }),
+            TestIdentifiers.NoTest(),
             false);
 
         mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
-        mutant.KillingTests.GetGuids().ShouldBeEmpty();
+        mutant.KillingTests.GetIdentifiers().ShouldBeEmpty();
     }
 
     [Fact]
@@ -86,16 +87,16 @@ public class MutantTests : TestBase
         var succeedingTest = Guid.NewGuid();
         var mutant = new Mutant
         {
-            AssessingTests = new TestGuidsList(new[] { succeedingTest })
+            AssessingTests = new TestIdentifiers(new[] { succeedingTest })
         };
 
-        mutant.AnalyzeTestRun(TestGuidsList.NoTest(),
-            new TestGuidsList(new[] { succeedingTest }),
-            TestGuidsList.NoTest(),
+        mutant.AnalyzeTestRun(TestIdentifiers.NoTest(),
+            new TestIdentifiers(new[] { succeedingTest }),
+            TestIdentifiers.NoTest(),
             false);
 
         mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
-        mutant.KillingTests.GetGuids().ShouldBeEmpty();
+        mutant.KillingTests.GetIdentifiers().ShouldBeEmpty();
     }
 
     [Fact]
@@ -103,12 +104,12 @@ public class MutantTests : TestBase
     {
         var mutant = new Mutant
         {
-            AssessingTests = TestGuidsList.EveryTest()
+            AssessingTests = TestIdentifiers.EveryTest()
         };
 
-        mutant.AnalyzeTestRun(TestGuidsList.NoTest(),
-            TestGuidsList.EveryTest(),
-            TestGuidsList.EveryTest(),
+        mutant.AnalyzeTestRun(TestIdentifiers.NoTest(),
+            TestIdentifiers.EveryTest(),
+            TestIdentifiers.EveryTest(),
             false);
 
         mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);
@@ -119,12 +120,12 @@ public class MutantTests : TestBase
     {
         var mutant = new Mutant
         {
-            AssessingTests = TestGuidsList.EveryTest()
+            AssessingTests = TestIdentifiers.EveryTest()
         };
 
-        mutant.AnalyzeTestRun(TestGuidsList.NoTest(),
-            TestGuidsList.NoTest(),
-            TestGuidsList.NoTest(),
+        mutant.AnalyzeTestRun(TestIdentifiers.NoTest(),
+            TestIdentifiers.NoTest(),
+            TestIdentifiers.NoTest(),
             true);
 
         mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);

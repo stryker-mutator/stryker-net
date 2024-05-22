@@ -12,11 +12,11 @@ public interface IMutant : IReadOnlyMutant
 
     new string ResultStatusReason { get; set; }
 
-    new ITestGuids CoveringTests { get; set; }
+    new ITestIdentifiers CoveringTests { get; set; }
 
-    new ITestGuids KillingTests { get; set; }
+    new ITestIdentifiers KillingTests { get; set; }
 
-    new ITestGuids AssessingTests { get; set; }
+    new ITestIdentifiers AssessingTests { get; set; }
 
     new bool IsStaticValue { get; set; }
 
@@ -24,5 +24,5 @@ public interface IMutant : IReadOnlyMutant
 
     string DisplayName { get; }
 
-    void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests, bool sessionTimedOut);
+    void AnalyzeTestRun(ITestIdentifiers failedTests, ITestIdentifiers resultRanTests, ITestIdentifiers timedOutTests, bool sessionTimedOut);
 }

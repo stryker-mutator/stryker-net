@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Shared.Mutants;
+using Stryker.Core.Mutants;
 using Stryker.Shared.Tests;
 
 namespace Stryker.Core.Testing;
@@ -11,18 +11,18 @@ public class TestRunResult : ITestRunResult
     public TestRunResult(bool success, string message = null)
     {
         VsTestDescriptions = new List<IFrameworkTestDescription>();
-        FailingTests = !success ? TestGuidsList.EveryTest() : TestGuidsList.NoTest();
-        ExecutedTests = TestGuidsList.EveryTest();
-        TimedOutTests = TestGuidsList.NoTest();
+        FailingTests = !success ? TestIdentifiers.EveryTest() : TestIdentifiers.NoTest();
+        ExecutedTests = TestIdentifiers.EveryTest();
+        TimedOutTests = TestIdentifiers.NoTest();
         ResultMessage = message;
         Duration = TimeSpan.Zero;
     }
 
     public TestRunResult(
         IEnumerable<IFrameworkTestDescription> vsTestDescriptions,
-        ITestGuids executedTests,
-        ITestGuids failedTests,
-        ITestGuids timedOutTest,
+        ITestIdentifiers executedTests,
+        ITestIdentifiers failedTests,
+        ITestIdentifiers timedOutTest,
         string message,
         IEnumerable<string> messages,
         TimeSpan timeSpan)
@@ -38,16 +38,16 @@ public class TestRunResult : ITestRunResult
 
     public static TestRunResult TimedOut(
         IEnumerable<IFrameworkTestDescription> vsTestDescriptions,
-        ITestGuids ranTests,
-        ITestGuids failedTest,
-        ITestGuids timedOutTests,
+        ITestIdentifiers ranTests,
+        ITestIdentifiers failedTest,
+        ITestIdentifiers timedOutTests,
         string message,
         IEnumerable<string> messages,
         TimeSpan duration) => new(vsTestDescriptions, ranTests, failedTest, timedOutTests, message, messages, duration) { SessionTimedOut = true };
 
-    public ITestGuids FailingTests { get; }
-    public ITestGuids ExecutedTests { get; }
-    public ITestGuids TimedOutTests { get; }
+    public ITestIdentifiers FailingTests { get; }
+    public ITestIdentifiers ExecutedTests { get; }
+    public ITestIdentifiers TimedOutTests { get; }
     public bool SessionTimedOut { get; private init; }
     public string ResultMessage { get; }
     public IEnumerable<string> Messages { get; }

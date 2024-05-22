@@ -1,7 +1,7 @@
 namespace Stryker.Shared.Tests;
 public interface ITestCase
 {
-    Guid Id { get; }
+    Identifier Id { get; }
 
     string Name { get; }
 

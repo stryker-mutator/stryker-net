@@ -22,8 +22,8 @@ internal class FullRunScenario
     private readonly Dictionary<int, Mutant> _mutants = new();
     private readonly Dictionary<int, TestDescription> _tests = new();
 
-    private readonly Dictionary<int, TestGuidsList> _coverageResult = new();
-    private readonly Dictionary<int, TestGuidsList> _failedTestsPerRun = new();
+    private readonly Dictionary<int, TestIdentifiers> _coverageResult = new();
+    private readonly Dictionary<int, TestIdentifiers> _failedTestsPerRun = new();
     private readonly Dictionary<Guid, List<int>> _testCoverage = new();
     private const int InitialRunId = -1;
     private OptimizationModes _mode = OptimizationModes.CoverageBasedTest | OptimizationModes.SkipUncoveredMutants;
@@ -124,39 +124,39 @@ internal class FullRunScenario
     /// </summary>
     /// <param name="ids"></param>
     /// <returns></returns>
-    public TestGuidsList GetGuidList(params int[] ids)
+    public TestIdentifiers GetGuidList(params int[] ids)
     {
         var selectedIds = ids.Length > 0 ? ids.Select(i => _tests[i]) : _tests.Values;
-        return new TestGuidsList(selectedIds.Select(t => t.Id));
+        return new TestIdentifiers(selectedIds.Select(t => t.Id));
     }
 
-    private TestGuidsList GetFailedTests(int runId)
+    private TestIdentifiers GetFailedTests(int runId)
     {
         if (_failedTestsPerRun.TryGetValue(runId, out var list))
         {
             return list;
         }
-        return TestGuidsList.NoTest();
+        return TestIdentifiers.NoTest();
     }
 
-    private TestGuidsList GetCoveringTests(int id)
+    private TestIdentifiers GetCoveringTests(int id)
     {
 
         // if this is the initial test run, we must return the complete list of tests.
         if (id == InitialRunId)
         {
-            return new TestGuidsList(_tests.Values.Select(t => t.Id));
+            return new TestIdentifiers(_tests.Values.Select(t => t.Id));
         }
 
         if (!_mode.HasFlag(OptimizationModes.CoverageBasedTest))
         {
-            return TestGuidsList.EveryTest();
+            return TestIdentifiers.EveryTest();
         }
 
-        return _coverageResult.TryGetValue(id, out var list) ? list : TestGuidsList.NoTest();
+        return _coverageResult.TryGetValue(id, out var list) ? list : TestIdentifiers.NoTest();
     }
 
-    private TestRunResult GetRunResult(int id) => new(Enumerable.Empty<VsTestDescription>(), GetCoveringTests(id), GetFailedTests(id), TestGuidsList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero);
+    private TestRunResult GetRunResult(int id) => new(Enumerable.Empty<VsTestDescription>(), GetCoveringTests(id), GetFailedTests(id), TestIdentifiers.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero);
 
     public TestRunResult GetInitialRunResult() => GetRunResult(InitialRunId);
 
@@ -166,8 +166,8 @@ internal class FullRunScenario
         var successResult = new TestRunResult(
             Enumerable.Empty<VsTestDescription>(),
             GetGuidList(),
-            TestGuidsList.NoTest(),
-            TestGuidsList.NoTest(),
+            TestIdentifiers.NoTest(),
+            TestIdentifiers.NoTest(),
             string.Empty,
             Enumerable.Empty<string>(),
             TimeSpan.Zero);
@@ -194,7 +194,7 @@ internal class FullRunScenario
             {
                 foreach (var m in list)
                 {
-                    update(list, GetFailedTests(m.Id), GetCoveringTests(m.Id), TestGuidsList.NoTest());
+                    update(list, GetFailedTests(m.Id), GetCoveringTests(m.Id), TestIdentifiers.NoTest());
                 }
             }))
             .Returns(successResult);

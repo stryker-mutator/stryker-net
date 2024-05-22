@@ -53,7 +53,7 @@ public static class ReportTestHelper
                         Id = duplicateMutant ? 2 : ++mutantCount,
                         ResultStatus = 100 / 6 * z < mutationScore ? MutantStatus.Killed : MutantStatus.Survived,
                         Mutation = mutation,
-                        CoveringTests = TestGuidsList.EveryTest()
+                        CoveringTests = TestIdentifiers.EveryTest()
                     });
                 }
             }

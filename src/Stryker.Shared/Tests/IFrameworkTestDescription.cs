@@ -8,7 +8,7 @@ public interface IFrameworkTestDescription
 
     TimeSpan InitialRunTime { get; }
 
-    Guid Id { get; }
+    Identifier Id { get; }
 
     int NbSubCases { get; }
 

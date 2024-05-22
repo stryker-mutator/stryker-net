@@ -39,7 +39,7 @@ public class JsonMutant
 
         Static = mutant.IsStaticValue;
 
-        CoveredBy = mutant.CoveringTests.GetGuids()?.Select(g => g.ToString());
-        KilledBy = mutant.KillingTests.GetGuids()?.Select(g => g.ToString());
+        CoveredBy = mutant.CoveringTests.GetIdentifiers()?.Select(g => g.ToString());
+        KilledBy = mutant.KillingTests.GetIdentifiers()?.Select(g => g.ToString());
     }
 }

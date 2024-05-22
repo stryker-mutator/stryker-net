@@ -115,18 +115,18 @@ public class InitialisationProcessTests : TestBase
         inputFileResolverMock.SetupGet( x => x.FileSystem).Returns(fileSystemMock);
         initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
         var failedTest = Guid.NewGuid();
-        var ranTests = new TestGuidsList(failedTest, Guid.NewGuid());
+        var ranTests = new TestIdentifiers(failedTest, Guid.NewGuid());
         var testSet = new TestSet();
-        foreach (var ranTest in ranTests.GetGuids())
+        foreach (var ranTest in ranTests.GetIdentifiers())
         {
             testSet.RegisterTest(new TestDescription(ranTest, "test", "test.cpp"));
         }
         testRunnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(true);
         testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(testSet);
-        var failedTests = new TestGuidsList(failedTest);
+        var failedTests = new TestIdentifiers(failedTest);
         initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(),It.IsAny<ITestRunner>())).Returns(
             new InitialTestRun(
-            new TestRunResult(Array.Empty<VsTestDescription>() ,ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, Enumerable.Empty<string>(),TimeSpan.Zero), new TimeoutValueCalculator(0) )); // failing test
+            new TestRunResult(Array.Empty<VsTestDescription>() ,ranTests, failedTests, TestIdentifiers.NoTest(), string.Empty, Enumerable.Empty<string>(),TimeSpan.Zero), new TimeoutValueCalculator(0) )); // failing test
 
         var target = new InitialisationProcess(inputFileResolverMock.Object,
             initialBuildProcessMock.Object,
@@ -167,17 +167,17 @@ public class InitialisationProcessTests : TestBase
         inputFileResolverMock.SetupGet( x => x.FileSystem).Returns(new FileSystem());
         initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), null));
         var failedTest = Guid.NewGuid();
-        var ranTests = new TestGuidsList(failedTest, Guid.NewGuid(), Guid.NewGuid());
+        var ranTests = new TestIdentifiers(failedTest, Guid.NewGuid(), Guid.NewGuid());
         var testSet = new TestSet();
-        foreach (var ranTest in ranTests.GetGuids())
+        foreach (var ranTest in ranTests.GetIdentifiers())
         {
             testSet.RegisterTest(new TestDescription(ranTest, "test", "test.cpp"));
         }
         testRunnerMock.Setup(x => x.DiscoverTests( It.IsAny<string>())).Returns(true);
         testRunnerMock.Setup(x => x.GetTests( It.IsAny<IProjectAndTests>())).Returns(testSet);
-        var failedTests = new TestGuidsList(failedTest);
+        var failedTests = new TestIdentifiers(failedTest);
         initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(),It.IsAny<ITestRunner>())).Returns( new InitialTestRun(
-            new TestRunResult(Array.Empty<VsTestDescription>() ,ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), new TimeoutValueCalculator(0) )); // failing test
+            new TestRunResult(Array.Empty<VsTestDescription>() ,ranTests, failedTests, TestIdentifiers.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), new TimeoutValueCalculator(0) )); // failing test
 
         var target = new InitialisationProcess(inputFileResolverMock.Object,
             initialBuildProcessMock.Object,
@@ -280,7 +280,7 @@ public class InitialisationProcessTests : TestBase
         testRunnerMock.Setup(x => x.DiscoverTests( It.IsAny<string>())).Returns(false);
         testRunnerMock.Setup(x => x.GetTests( It.IsAny<IProjectAndTests>())).Returns(new TestSet());
         initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(),  It.IsAny<IProjectAndTests>(),It.IsAny<ITestRunner>()))
-            .Returns(new InitialTestRun(new TestRunResult(Array.Empty<VsTestDescription>(),  TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), null)); // failing test
+            .Returns(new InitialTestRun(new TestRunResult(Array.Empty<VsTestDescription>(), TestIdentifiers.NoTest(), TestIdentifiers.NoTest(), TestIdentifiers.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), null)); // failing test
 
         var target = new InitialisationProcess(inputFileResolverMock.Object,
             initialBuildProcessMock.Object,

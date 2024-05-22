@@ -14,11 +14,11 @@ public class Mutant : IMutant
 
     public MutantStatus ResultStatus { get; set; }
 
-    public ITestGuids CoveringTests { get; set; } = TestGuidsList.NoTest();
+    public ITestIdentifiers CoveringTests { get; set; } = TestIdentifiers.NoTest();
 
-    public ITestGuids KillingTests { get; set; } = TestGuidsList.NoTest();
+    public ITestIdentifiers KillingTests { get; set; } = TestIdentifiers.NoTest();
 
-    public ITestGuids AssessingTests { get; set; } = TestGuidsList.EveryTest();
+    public ITestIdentifiers AssessingTests { get; set; } = TestIdentifiers.EveryTest();
 
     public string ResultStatusReason { get; set; }
 
@@ -30,7 +30,7 @@ public class Mutant : IMutant
 
     public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
 
-    public void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests, bool sessionTimedOut)
+    public void AnalyzeTestRun(ITestIdentifiers failedTests, ITestIdentifiers resultRanTests, ITestIdentifiers timedOutTests, bool sessionTimedOut)
     {
         if (AssessingTests.ContainsAny(failedTests))
         {
