@@ -6,6 +6,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Instrumentation;
+using Stryker.Shared.Mutants;
 
 namespace Stryker.Core.Mutants;
 
@@ -109,7 +110,7 @@ public class MutantPlacer
     /// <param name="mutants">list of mutations to inject</param>
     /// <returns>an if statement (or a chain of if statements) containing the mutant(s) and the original node.</returns>
     public StatementSyntax PlaceStatementControlledMutations(StatementSyntax original,
-        IEnumerable<(Mutant mutant, StatementSyntax mutation)> mutants) =>
+        IEnumerable<(IMutant mutant, StatementSyntax mutation)> mutants) =>
         mutants.Aggregate(original, (syntaxNode, mutationInfo) =>
             IfEngine.InjectIf(GetBinaryExpression(mutationInfo.mutant.Id), syntaxNode, mutationInfo.mutation)
                 // Mark this node as a MutationIf node. Store the MutantId in the annotation to retrace the mutant later
@@ -123,7 +124,7 @@ public class MutantPlacer
     /// <param name="mutants">list of mutations to inject</param>
     /// <returns>a ternary expression (or a chain of ternary expression) containing the mutant(s) and the original node.</returns>
     public ExpressionSyntax PlaceExpressionControlledMutations(ExpressionSyntax original,
-        IEnumerable<(Mutant mutant, ExpressionSyntax mutation)> mutants) =>
+        IEnumerable<(IMutant mutant, ExpressionSyntax mutation)> mutants) =>
         mutants.Aggregate(original, (current, mutationInfo) =>
             ConditionalEngine.PlaceWithConditionalExpression(GetBinaryExpression(mutationInfo.mutant.Id), current, mutationInfo.mutation)
                 // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later

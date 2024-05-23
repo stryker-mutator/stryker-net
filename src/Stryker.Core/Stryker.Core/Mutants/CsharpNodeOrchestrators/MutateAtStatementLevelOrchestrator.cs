@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using Stryker.Shared.Mutants;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
@@ -20,5 +21,5 @@ internal class MutateAtStatementLevelOrchestrator<T>: NodeSpecificOrchestrator<T
     /// <inheritdoc />
     protected override bool CanHandle(T t) => _predicate(t);
 
-    protected override MutationContext StoreMutations(T node, IEnumerable<Mutant> mutations, MutationContext context) => context.AddMutations(mutations, MutationControl.Statement);
+    protected override MutationContext StoreMutations(T node, IEnumerable<IMutant> mutations, MutationContext context) => context.AddMutations(mutations, MutationControl.Statement);
 }

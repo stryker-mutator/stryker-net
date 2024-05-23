@@ -36,7 +36,7 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
             var hack = new NamedPipeClientStream("test");
             foreach (var assembly in assemblies)
             {
-                if (needed.Any(x => assembly.FullName.Contains(x)))
+                if (needed.Any(assembly.FullName.Contains))
                 {
                     references.Add(MetadataReference.CreateFromFile(assembly.Location));
                 }

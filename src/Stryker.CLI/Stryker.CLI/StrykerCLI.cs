@@ -87,7 +87,7 @@ namespace Stryker.CLI
                 {
                     Console.Error.WriteLine();
                     Console.Error.WriteLine("Did you mean this?");
-                    foreach(var match in uex.NearestMatches)
+                    foreach (var match in uex.NearestMatches)
                     {
                         Console.Error.WriteLine("    " + match);
                     }

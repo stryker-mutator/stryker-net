@@ -138,7 +138,8 @@ namespace Stryker.Core.Helpers
             do
             {
                 string? latestLineContent = reader.ReadLine();
-                if (latestLineContent == null) break;
+                if (latestLineContent == null)
+                    break;
 
                 var lengthOfThisLine = latestLineContent.Length;
                 var endOfLineIndex = currentIndex + lengthOfThisLine;

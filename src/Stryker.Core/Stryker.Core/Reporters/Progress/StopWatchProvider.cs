@@ -1,7 +1,8 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 
 namespace Stryker.Core.Reporters.Progress
 {
+
     public interface IStopWatchProvider
     {
         void Start();

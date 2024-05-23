@@ -6,7 +6,7 @@ using System.Linq;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.Logging;
+using Stryker.Shared.Logging;
 
 namespace Stryker.Core.ProjectComponents.TestProjects;
 

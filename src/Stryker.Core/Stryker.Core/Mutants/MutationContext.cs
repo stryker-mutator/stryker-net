@@ -2,8 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Mutants.CsharpNodeOrchestrators;
-using Stryker.Core.Mutators;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Mutators;
 
 namespace Stryker.Core.Mutants;
 
@@ -71,7 +71,7 @@ internal class MutationContext
     /// <param name="node"><see cref="SyntaxNode"/> to mutate.</param>
     /// <param name="semanticModel">current semantic model</param>
     /// <returns>A list of mutants.</returns>
-    public IEnumerable<Mutant> GenerateMutantsForNode(SyntaxNode node, SemanticModel semanticModel) =>
+    public IEnumerable<IMutant> GenerateMutantsForNode(SyntaxNode node, SemanticModel semanticModel) =>
         _mainOrchestrator.GenerateMutationsForNode(node, semanticModel, this);
 
     /// <summary>
@@ -114,7 +114,7 @@ internal class MutationContext
     /// Register mutations
     /// </summary>
     /// <param name="mutants"></param>
-    public MutationContext AddMutations(IEnumerable<Mutant> mutants)
+    public MutationContext AddMutations(IEnumerable<IMutant> mutants)
     {
         _mutation.StoreMutations(mutants);
         return this;
@@ -125,7 +125,7 @@ internal class MutationContext
     /// </summary>
     /// <param name="mutants"></param>
     /// <param name="control"></param>
-    public MutationContext AddMutations(IEnumerable<Mutant> mutants, MutationControl control)
+    public MutationContext AddMutations(IEnumerable<IMutant> mutants, MutationControl control)
     {
         _mutation.StoreMutationsAtDesiredLevel(mutants, control);
         return this;

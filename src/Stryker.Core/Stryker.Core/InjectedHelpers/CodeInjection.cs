@@ -12,7 +12,7 @@ namespace Stryker.Core.InjectedHelpers
     {
         // files to be injected into the mutated assembly
         private static readonly string[] Files = {"Stryker.Core.InjectedHelpers.MutantControl.cs",
-            "Stryker.Core.InjectedHelpers.Coverage.MutantContext.cs"};
+        "Stryker.Core.InjectedHelpers.Coverage.MutantContext.cs"};
         private const string PatternForCheck = "\\/\\/ *check with: *([^\\r\\n]+)";
         private const string MutantContextClassName = "MutantContext";
         private const string StrykerNamespace = "Stryker";
@@ -75,14 +75,14 @@ namespace Stryker.Core.InjectedHelpers
                     .WithLeadingTrivia(SyntaxFactory.Space),
                 SyntaxFactory.ArgumentList(),
                 null);
-        
+
 
         /// <summary>
         /// Get a SyntaxNode describing accessing a member of the mutant context class.
         /// </summary>
         /// <param name="member">Desired member</param>
         /// <returns>Returns Stryker.MutantContext.<paramref name="member"/> with proper namespace </returns>
-        public  MemberAccessExpressionSyntax GetContextClassAccessExpression(string member) =>
+        public MemberAccessExpressionSyntax GetContextClassAccessExpression(string member) =>
             SyntaxFactory.MemberAccessExpression(
                 SyntaxKind.SimpleMemberAccessExpression,
                 SyntaxFactory.MemberAccessExpression(
@@ -99,7 +99,8 @@ namespace Stryker.Core.InjectedHelpers
         /// <param name="member">expected member name</param>
         /// <returns>Returns true if the expression is Stryker.MutantContext.<paramref name="member"/> with proper namespace </returns>
         public static bool IsContextAccessExpression(ExpressionSyntax memberAccess, string member) =>
-            memberAccess is MemberAccessExpressionSyntax {
+            memberAccess is MemberAccessExpressionSyntax
+            {
                 Expression: MemberAccessExpressionSyntax
                 {
                     Name: IdentifierNameSyntax { Identifier.ValueText: MutantContextClassName }

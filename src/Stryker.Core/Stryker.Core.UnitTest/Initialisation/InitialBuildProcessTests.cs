@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Moq;
 using Shouldly;
-using Stryker.Core.Exceptions;
+using Stryker.Shared.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Testing;
 using Xunit;

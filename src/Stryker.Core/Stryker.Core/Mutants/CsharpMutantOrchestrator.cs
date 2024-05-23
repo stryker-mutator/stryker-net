@@ -7,10 +7,11 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Helpers;
-using Stryker.Core.Logging;
 using Stryker.Core.Mutants.CsharpNodeOrchestrators;
 using Stryker.Core.Mutators;
-using Stryker.Core.Options;
+using Stryker.Shared.Logging;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Options;
 
 namespace Stryker.Core.Mutants;
 
@@ -29,11 +30,11 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
     /// <summary>
     /// <param name="mutators">The mutators that should be active during the mutation process</param>
     /// </summary>
-    public CsharpMutantOrchestrator(MutantPlacer placer, IEnumerable<IMutator> mutators = null, StrykerOptions options = null) : base(options)
+    public CsharpMutantOrchestrator(MutantPlacer placer, IEnumerable<IMutator> mutators = null, IStrykerOptions options = null) : base(options)
     {
         Placer = placer;
         Mutators = mutators ?? DefaultMutatorList();
-        Mutants = new Collection<Mutant>();
+        Mutants = new Collection<IMutant>();
         Logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpMutantOrchestrator>();
         
     }
@@ -129,9 +130,9 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
 
     internal INodeOrchestrator GetHandler(SyntaxNode currentNode) => specificOrchestrator.FindHandler(currentNode);
 
-    internal IEnumerable<Mutant> GenerateMutationsForNode(SyntaxNode current, SemanticModel semanticModel, MutationContext context)
+    internal IEnumerable<IMutant> GenerateMutationsForNode(SyntaxNode current, SemanticModel semanticModel, MutationContext context)
     {
-        var mutations = new List<Mutant>();
+        var mutations = new List<IMutant>();
         foreach (var mutator in Mutators)
         {
             foreach (var mutation in mutator.Mutate(current, semanticModel, Options))
@@ -157,7 +158,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
     /// Creates a new mutant for the given mutation, mutator and context. Returns null if the mutant
     /// is a duplicate.
     /// </summary>
-    private Mutant CreateNewMutant(Mutation mutation, IMutator mutator, MutationContext context)
+    private IMutant CreateNewMutant(IMutation mutation, IMutator mutator, MutationContext context)
     {
         var id = MutantCount;
         Logger.LogDebug("Mutant {0} created {1} -> {2} using {3}", id, mutation.OriginalNode,
@@ -176,7 +177,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
     /// <summary>
     /// Returns true if the new mutant is a duplicate of a mutant already listed in Mutants.
     /// </summary>
-    private bool IsMutantDuplicate(IReadOnlyMutant newMutant, Mutation mutation)
+    private bool IsMutantDuplicate(IReadOnlyMutant newMutant, IMutation mutation)
     {
         foreach (var mutant in Mutants)
         {

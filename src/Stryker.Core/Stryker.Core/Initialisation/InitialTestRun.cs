@@ -1,16 +1,15 @@
-using Stryker.Core.TestRunners;
+using Stryker.Shared.Tests;
 
-namespace Stryker.Core.Initialisation
+namespace Stryker.Core.Initialisation;
+
+public class InitialTestRun
 {
-    public class InitialTestRun
+    public InitialTestRun(ITestRunResult result, ITimeoutValueCalculator timeoutValueCalculator)
     {
-        public InitialTestRun(TestRunResult result, ITimeoutValueCalculator timeoutValueCalculator)
-        {
-            Result = result;
-            TimeoutValueCalculator = timeoutValueCalculator;
-        }
-
-        public TestRunResult Result { get; }
-        public ITimeoutValueCalculator TimeoutValueCalculator { get;}
+        Result = result;
+        TimeoutValueCalculator = timeoutValueCalculator;
     }
+
+    public ITestRunResult Result { get; }
+    public ITimeoutValueCalculator TimeoutValueCalculator { get;}
 }

@@ -2,6 +2,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Mutators;
+using Stryker.Shared.Options;
 using System;
 using System.Collections.Generic;
 
@@ -76,7 +79,7 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
         };
     }
     /// <summary> Apply mutations to an <see cref="InvocationExpressionSyntax"/> </summary>
-    public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<IMutation> ApplyMutations(ExpressionSyntax node, SemanticModel semanticModel)
     {
 
         string memberName;
@@ -130,46 +133,3 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
         return null;
     }
  }
-
-
-
-/// <summary> Enumeration for the different kinds of linq expressions </summary>
-public enum LinqExpression
-{
-    None,
-    Distinct,
-    Reverse,
-    Average,
-    AsEnumerable,
-    OrderBy,
-    OrderByDescending,
-    FirstOrDefault,
-    First,
-    SingleOrDefault,
-    Single,
-    Last,
-    All,
-    Any,
-    Skip,
-    Take,
-    SkipWhile,
-    TakeWhile,
-    Min,
-    Max,
-    Sum,
-    Count,
-    ThenBy,
-    ThenByDescending,
-    Union,
-    Intersect,
-    Concat,
-    Except,
-    IntersectBy,
-    MaxBy,
-    MinBy,
-    Order,
-    OrderDescending,
-    SkipLast,
-    TakeLast,
-    UnionBy
-}

@@ -1,5 +1,3 @@
-using Stryker.Core.Exceptions;
-
 namespace Stryker.Core.Options.Inputs
 {
     public class FallbackVersionInput : Input<string>
@@ -15,7 +13,7 @@ Example: If the current branch is based on the main branch, set 'main' as the fa
         {
             if (withBaseline)
             {
-                if(SuppliedInput is null)
+                if (SuppliedInput is null)
                 {
                     return sinceTarget;
                 }

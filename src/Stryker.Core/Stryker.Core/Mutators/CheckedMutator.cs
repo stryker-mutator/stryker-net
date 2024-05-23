@@ -2,6 +2,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Mutators;
+using Stryker.Shared.Options;
 using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators;
@@ -10,7 +13,7 @@ public class CheckedMutator : MutatorBase<CheckedExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-    public override IEnumerable<Mutation> ApplyMutations(CheckedExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<IMutation> ApplyMutations(CheckedExpressionSyntax node, SemanticModel semanticModel)
     {
         if (node.Kind() == SyntaxKind.CheckedExpression)
         {

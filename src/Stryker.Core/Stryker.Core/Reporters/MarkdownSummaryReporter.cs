@@ -5,10 +5,10 @@ using System.IO.Abstractions;
 using System.Linq;
 using Grynwald.MarkdownGenerator;
 using Spectre.Console;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Options;
 
 namespace Stryker.Core.Reporters
 {
@@ -17,11 +17,11 @@ namespace Stryker.Core.Reporters
     /// </summary>
     public class MarkdownSummaryReporter : IReporter
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IAnsiConsole _console;
         private readonly IFileSystem _fileSystem;
 
-        public MarkdownSummaryReporter(StrykerOptions strykerOptions, IFileSystem fileSystem = null, IAnsiConsole console = null)
+        public MarkdownSummaryReporter(IStrykerOptions strykerOptions, IFileSystem fileSystem = null, IAnsiConsole console = null)
         {
             _options = strykerOptions;
             _console = console ?? AnsiConsole.Console;

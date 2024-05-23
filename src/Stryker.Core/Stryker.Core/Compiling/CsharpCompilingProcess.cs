@@ -11,12 +11,13 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Options;
+using Stryker.Shared.Exceptions;
+using Stryker.Shared.Logging;
+using Stryker.Shared.Options;
 
 namespace Stryker.Core.Compiling;
 
@@ -34,13 +35,13 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
 {
     private const int MaxAttempt = 50;
     private readonly MutationTestInput _input;
-    private readonly StrykerOptions _options;
+    private readonly IStrykerOptions _options;
     private readonly ICSharpRollbackProcess _rollbackProcess;
     private readonly ILogger _logger;
 
     public CsharpCompilingProcess(MutationTestInput input,
         ICSharpRollbackProcess rollbackProcess = null,
-        StrykerOptions options = null)
+        IStrykerOptions options = null)
     {
         _input = input;
         _options = options ?? new StrykerOptions();

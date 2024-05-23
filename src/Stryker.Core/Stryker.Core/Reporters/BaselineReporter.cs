@@ -1,20 +1,20 @@
 using System.Collections.Generic;
 using Stryker.Core.Baseline.Providers;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
+using Stryker.Shared.Mutants;
+using Stryker.Shared.Options;
 
 namespace Stryker.Core.Reporters
 {
     public class BaselineReporter : IReporter
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IBaselineProvider _baselineProvider;
         private readonly IGitInfoProvider _gitInfoProvider;
 
-        public BaselineReporter(StrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
+        public BaselineReporter(IStrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null)
         {
             _options = options;
             _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);

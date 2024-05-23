@@ -2,6 +2,7 @@ using Moq;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Progress;
+using Stryker.Shared.Mutants;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters.Progress
