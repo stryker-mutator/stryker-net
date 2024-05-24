@@ -100,6 +100,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new LinqMutator(),
         new StringMutator(),
         new StringEmptyMutator(),
+        new StringMethodMutator(),
         new InterpolatedStringMutator(),
         new NegateConditionMutator(),
         new InitializerMutator(),
@@ -110,8 +111,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new NullCoalescingExpressionMutator(),
         new MathMutator(),
         new SwitchExpressionMutator(),
-        new IsPatternExpressionMutator(),
-        new StringMethodMutator()
+        new IsPatternExpressionMutator()
     ];
 
     private IEnumerable<IMutator> Mutators { get; }

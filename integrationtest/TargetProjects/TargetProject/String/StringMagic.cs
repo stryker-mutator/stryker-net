@@ -1,4 +1,6 @@
-﻿namespace ExampleProject.String
+using System.Linq;
+
+namespace ExampleProject.String
 {
     public class StringMagic
     {
@@ -28,6 +30,11 @@
                 return true;
             }
             return false;
+        }
+
+        public char Chain()
+        {
+            return "test".ToUpper().Trim().PadLeft(2).Substring(2).ElementAt(2);
         }
     }
 }
