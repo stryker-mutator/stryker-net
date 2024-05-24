@@ -42,7 +42,7 @@ namespace Stryker.Core.MutationTest
         /// This constructor is used by the <see cref="MutationTestProcess"/> initialization logic.
         /// </summary>
         /// <param name="options"></param>
-        public FsharpMutationProcess(StrykerOptions options): this(null, options, null){}
+        public FsharpMutationProcess(StrykerOptions options) : this(null, options, null) { }
 
         public void Mutate(MutationTestInput input)
         {
@@ -50,7 +50,7 @@ namespace Stryker.Core.MutationTest
             // Mutate source files
             foreach (var file in projectInfo.GetAllFiles().Cast<FsharpFileLeaf>())
             {
-                _logger.LogDebug($"Mutating {file.RelativePath}");
+                _logger.LogDebug("Mutating {RelativePath}", file.RelativePath);
                 // Mutate the syntax tree
                 var treeRoot = ((ParsedInput.ImplFile)file.SyntaxTree).Item.modules;
                 var mutatedSyntaxTree = _orchestrator.Mutate(treeRoot, null);
@@ -59,7 +59,9 @@ namespace Stryker.Core.MutationTest
                 var item = tree.Item;
                 //we hard code the lastCompiled flag to make the compile pass
                 //this needs to be fixed in the FSharp.Compiler.SourceCodeServices package, or made dynamic as it now assumes the bottom of Program.fs is the entry point
-                var lastCompile = item.fileName.Equals("Program.fs") ? new Tuple<bool, bool>(true, true) : item.isLastCompiland;
+                var lastCompile = item.fileName.Equals("Program.fs")
+                    ? new Tuple<bool, bool>(true, true)
+                    : item.isLastCompiland;
 
                 var inputFile = ParsedImplFileInput.NewParsedImplFileInput(
                     item.fileName,
@@ -74,14 +76,16 @@ namespace Stryker.Core.MutationTest
 
                 if (_options.DevMode)
                 {
-                    _logger.LogTrace($"Mutated {file.RelativePath}:{Environment.NewLine}{mutatedSyntaxTree}");
+                    _logger.LogTrace("Mutated {RelativePath}:{NewLine}{SyntaxTree}", file.RelativePath,
+                        Environment.NewLine, mutatedSyntaxTree);
                 }
+
                 // Filter the mutants
                 var allMutants = _orchestrator.GetLatestMutantBatch();
                 file.Mutants = allMutants;
             }
 
-            _logger.LogDebug("{0} mutants created", projectInfo.Mutants.Count());
+            _logger.LogDebug("{MutantsCount} mutants created", projectInfo.Mutants.Count());
 
             CompileMutations(input);
         }

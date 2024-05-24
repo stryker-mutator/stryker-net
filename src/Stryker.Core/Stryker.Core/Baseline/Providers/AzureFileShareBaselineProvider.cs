@@ -70,7 +70,9 @@ namespace Stryker.Core.Baseline.Providers
                     }
                     catch (RequestFailedException ex)
                     {
-                        _logger.LogError("Failed to allocated file in azure file share at {reportUri} with error code {errorCode}", uri, ex.ErrorCode);
+                        _logger.LogError(
+                            "Failed to allocated file in azure file share at {reportUri} with error code {errorCode}",
+                            uri, ex.ErrorCode);
                     }
                 }
             }

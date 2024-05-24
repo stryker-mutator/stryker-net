@@ -34,7 +34,7 @@ internal static class CommentParser
             "disable" => true,
             _ => false,
         };
-            
+
         Mutator[] filteredMutators;
         if (match.Groups[MutatorsGroup].Value.ToLower().Trim() == "all")
         {
@@ -53,7 +53,11 @@ internal static class CommentParser
                 else
                 {
                     Logger.LogError(
-                        $"{labels[i]} not recognized as a mutator at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}. Legal values are {string.Join(',', Enum.GetValues<Mutator>())}.");
+                        "{Label} not recognized as a mutator at {Location}, {FilePath}. Legal values are {LegalValues}.",
+                        labels[i],
+                        node.GetLocation().GetMappedLineSpan().StartLinePosition,
+                        node.SyntaxTree.FilePath,
+                        string.Join(',', Enum.GetValues<Mutator>()));
                 }
             }
         }
@@ -82,7 +86,9 @@ internal static class CommentParser
             }
 
             Logger.LogWarning(
-                $"Invalid Stryker comments at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}.");
+                "Invalid Stryker comments at {Position}, {FilePath}.",
+                node.GetLocation().GetMappedLineSpan().StartLinePosition,
+                node.SyntaxTree.FilePath);
         }
 
         return context;
