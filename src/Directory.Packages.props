@@ -4,7 +4,7 @@
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.1.1" />
     <PackageVersion Include="LaunchDarkly.EventSource" Version="5.1.0" />
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.1.1" />
-    <PackageVersion Include="NuGet.Protocol" Version="6.9.1" />
+    <PackageVersion Include="NuGet.Protocol" Version="6.10.0" />
     <PackageVersion Include="ResXResourceReader.NetStandard" Version="1.3.0" />
     <PackageVersion Include="YamlDotNet" Version="15.1.4" />
     <PackageVersion Include="Grynwald.MarkdownGenerator" Version="3.0.106" />
@@ -14,7 +14,7 @@
     <PackageVersion Include="Buildalyzer" Version="6.0.4" />
     <PackageVersion Include="Microsoft.Web.LibraryManager.Build" Version="2.1.175" />
     <PackageVersion Include="Mono.Cecil" Version="0.11.5" />
-    <PackageVersion Include="NuGet.Frameworks" Version="6.9.1" />
+    <PackageVersion Include="NuGet.Frameworks" Version="6.10.0" />
     <PackageVersion Include="Serilog" Version="3.1.1" />
     <PackageVersion Include="Serilog.Extensions.Logging" Version="8.0.0" />
     <PackageVersion Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
@@ -24,15 +24,15 @@
     <PackageVersion Include="Spectre.Console.Analyzer" Version="0.49.1" />
     <PackageVersion Include="System.Net.Http.Json" Version="8.0.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.9.2" />
-    <PackageVersion Include="Microsoft.TestPlatform" Version="17.9.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.9.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.9.0" />
-    <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="17.9.0" />
+    <PackageVersion Include="Microsoft.TestPlatform" Version="17.10.0" />
+    <PackageVersion Include="Microsoft.TestPlatform.ObjectModel" Version="17.10.0" />
+    <PackageVersion Include="Microsoft.TestPlatform.Portable" Version="17.10.0" />
+    <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="17.10.0" />
     <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="21.0.2" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.0" />
   </ItemGroup>
   <ItemGroup>
-    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
     <PackageVersion Include="coverlet.collector" Version="6.0.2" />
     <PackageVersion Include="coverlet.msbuild" Version="6.0.2" />
     <PackageVersion Include="Moq" Version="4.20.70" />
