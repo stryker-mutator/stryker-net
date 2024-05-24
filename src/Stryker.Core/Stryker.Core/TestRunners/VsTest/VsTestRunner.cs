@@ -97,7 +97,7 @@ public sealed class VsTestRunner : IDisposable
 
         if (timeOutMs.HasValue)
         {
-            _logger.LogDebug($"{RunnerId}: Using {timeOutMs} ms as test run timeout");
+            _logger.LogDebug("{RunnerId}: Using {timeOutMs} ms as test run timeout", RunnerId, timeOutMs);
         }
 
         var testResults = RunTestSession(new TestGuidsList(testCases), project, timeOutMs, mutantTestsMap, HandleUpdate);
@@ -246,7 +246,7 @@ public sealed class VsTestRunner : IDisposable
             var runSettings = _context.GenerateRunSettings(timeOut, forCoverage, mutantTestsMap,
                 projectAndTests.HelperNamespace, source.TargetFramework, source.TargetPlatform());
 
-            _logger.LogTrace($"{RunnerId}: testing assembly {source}.");
+            _logger.LogTrace("{RunnerId}: testing assembly {source}.", RunnerId, source);
             RunVsTest(tests, source.GetAssemblyPath(), runSettings, options, timeOut, runEventHandler);
 
             if (_currentSessionCancelled)
@@ -299,7 +299,7 @@ public sealed class VsTestRunner : IDisposable
                 return;
             }
 
-            _logger.LogWarning($"{RunnerId}: Retrying the test session.");
+            _logger.LogWarning("{RunnerId}: Retrying the test session.", RunnerId);
             eventHandler.DiscardCurrentRun();
         }
 
@@ -330,12 +330,12 @@ public sealed class VsTestRunner : IDisposable
                 // the computer went to sleep during the session
                 // we should ignore the result and retry
                 _logger.LogWarning(
-                    $"{RunnerId}: Rerun of the test session because computer entered power saving mode.");
+                    "{RunnerId}: Rerun of the test session because computer entered power saving mode.", RunnerId);
                 attempt--;
             }
             else
             {
-                _logger.LogDebug($"{RunnerId}: Test session finished.");
+                _logger.LogDebug("{RunnerId}: Test session finished.", RunnerId);
             }
         }
         else
@@ -346,7 +346,7 @@ public sealed class VsTestRunner : IDisposable
             session.Wait();
             // we add a grace delay for notifications to be propagated
             eventHandler.Wait(VsTestExtraTimeOutInMs, out var _);
-            _logger.LogDebug($"{RunnerId}: Test session finished.");
+            _logger.LogDebug("{RunnerId}: Test session finished.", RunnerId);
         }
 
         return vsTestFailed;
@@ -361,10 +361,10 @@ public sealed class VsTestRunner : IDisposable
             {
                 _vsTestConsole.EndSession();
             }
-                catch
-                {
-                    /*Ignore exception. vsTestConsole has been disposed outside of our control*/
-                }
+            catch
+            {
+                /*Ignore exception. vsTestConsole has been disposed outside our control*/
+            }
         }
 
         _vsTestConsole = _context.BuildVsTestWrapper($"{RunnerId}-{_instanceCount}");
