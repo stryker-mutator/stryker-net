@@ -73,7 +73,6 @@ public sealed class VsTestRunner : IDisposable
     }
 
     public TestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
-            IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
     {
         var mutantTestsMap = new Dictionary<int, ITestGuids>();
 
@@ -130,11 +129,6 @@ public sealed class VsTestRunner : IDisposable
             _vsTestConsole.CancelTestRun();
             _currentSessionCancelled = true;
         }
-                timeOutMs = timeoutCalc.CalculateTimeoutValue((int)testCases.Sum(id =>
-                    _context.VsTests[id].InitialRunTime.TotalMilliseconds));
-                _logger.LogDebug("{RunnerId}: Using {TimeOut} ms as test run timeout", RunnerId, timeOutMs);
-            var testResults = RunTestSession(new TestGuidsList(testCases), project, timeOutMs, mutantTestsMap,
-                HandleUpdate);
     }
 
     private ICollection<Guid> TestCases(IReadOnlyList<Mutant> mutants, Dictionary<int, ITestGuids> mutantTestsMap)
@@ -210,16 +204,11 @@ public sealed class VsTestRunner : IDisposable
                     messages, duration);
     }
 
-        public IRunResults RunTestSession(ITestGuids testsToRun, IProjectAndTests project, int? timeout = null,
-            Dictionary<int, ITestGuids> mutantTestsMap = null, Action<IRunResults> updateHandler = null) =>
-    public IRunResults RunCoverageSession(ITestGuids testsToRun, IProjectAndTests project) =>
-                _context.GenerateRunSettings(timeout, false, mutantTestsMap, project.HelperNamespace,
-                    project.IsFullFramework), timeout, updateHandler).normal;
+    public IRunResults RunTestSession(ITestGuids testsToRun, IProjectAndTests project, int? timeout = null, Dictionary<int, ITestGuids> mutantTestsMap= null, Action<IRunResults> updateHandler = null) =>
+        RunTestSession(testsToRun, project, false, timeout, updateHandler, mutantTestsMap).normal;
 
-        public IRunResults RunCoverageSession(ITestGuids testsToRun, IReadOnlyCollection<string> testAssemblies,
-            string nameSpace, bool isFullFramework) =>
-            RunTestSession(testsToRun, testAssemblies,
-                _context.GenerateRunSettings(null, true, null, nameSpace, isFullFramework)).raw;
+    public IRunResults RunCoverageSession(ITestGuids testsToRun, IProjectAndTests project) =>
+        RunTestSession(testsToRun,  project, true).raw;
 
     private (IRunResults normal, IRunResults raw) RunTestSession(ITestGuids tests, IProjectAndTests projectAndTests,
         bool forCoverage, int? timeOut = null, Action<IRunResults> updateHandler = null,
@@ -284,7 +273,7 @@ public sealed class VsTestRunner : IDisposable
 
             eventHandler.StartSession();
             _currentSessionCancelled = false;
-            var session = Task.Run(()=>{
+            var session = Task.Run(()=>
                 {
                     if (tests.IsEveryTest)
                     {

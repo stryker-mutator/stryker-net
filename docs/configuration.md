@@ -165,7 +165,7 @@ Valid language versions:
 
 ### `configuration` &lt;`string`&gt;
 Default: default for SDK, usually `Debug`
-Command line: `configuration Release`  
+Command line: `--configuration Release`  
 Config file: `"configuration": "Release"
 
 Allows you to specify the build configuration to use when building the project. This can be useful when you want to test the release build of your project.
@@ -173,7 +173,7 @@ Allows you to specify the build configuration to use when building the project. 
 ### `target-framework` &lt;`string`&gt;
 
 Default: as defined by the configuration, randomly chosen if multiple frameworks are targeted
-Command line: `target-framework`  
+Command line: `--target-framework`  
 Config file: `"target-framework": "netcoreapp3.1"`
 
 If the project targets multiple frameworks, this way you can specify the particular framework to build against. If you specify a non-existent target, Stryker will build the project against a random one (or the only one if so).
@@ -644,7 +644,7 @@ Command line: `--dev-mode`
 Config file: `N/A`
 
 You should activate `dev mode` when diagnosing an issue with Stryker. This will enable additional logging, specific checks, disable some optimizations...
-As a result, Stryekr will be slower, but the log file should help diagnose the hardest issues.
+As a result, Stryker will be slower, but the log file should help diagnose the hardest issues.
 
 ## Misc
 

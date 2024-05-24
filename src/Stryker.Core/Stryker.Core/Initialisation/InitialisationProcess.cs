@@ -67,7 +67,7 @@ public class InitialisationProcess : IInitialisationProcess
     {
         if (options.IsSolutionContext)
         {
-            var framework = projects.All(p => p.IsFullFramework);
+            var framework = projects.Any(p => p.IsFullFramework);
             // Build the complete solution
                 _logger.LogInformation("Building solution {0}",
                     Path.GetRelativePath(options.WorkingDirectory, options.SolutionPath));
@@ -145,7 +145,7 @@ public class InitialisationProcess : IInitialisationProcess
 
             if (throwIfFails && (double)failingTestsCount / result.Result.ExecutedTests.Count >= .5)
             {
-                throw new InputException("Initial testrun has more than 50% failing tests.", result.Result.ResultMessage);
+                throw new InputException("Initial testrun has more than 50% failing tests.",
                         result.Result.ResultMessage);
             }
 
@@ -168,8 +168,8 @@ public class InitialisationProcess : IInitialisationProcess
     {
         ["xunit.core"] = ("xunit.runner.visualstudio","xunit.runner.visualstudio"),
         ["nunit.framework"] = ("NUnit3.TestAdapter", "NUnit3TestAdapter"),
-        ["Microsoft.VisualStudio.TestPlatform.TestFramework"] = ("Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter","MSTest.TestAdapter")
-                "Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter", "MSTest.TestAdapter")
+        ["Microsoft.VisualStudio.TestPlatform.TestFramework"] = 
+                ("Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter", "MSTest.TestAdapter")
     };
 
     private void DiscoverTests(SourceProjectInfo projectInfo, ITestRunner testRunner)
