@@ -25,7 +25,7 @@ namespace Stryker.Core.Initialisation
 
         public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string msbuildPath = null)
         {
-            _logger.LogDebug("Started initial build using {0}", fullFramework ? "msbuild.exe" : "dotnet build");
+            _logger.LogDebug("Started initial build using {BuildExecutable}", fullFramework ? "msbuild.exe" : "dotnet build");
 
             ProcessResult result;
             string buildCommand;
@@ -80,11 +80,11 @@ namespace Stryker.Core.Initialisation
         {
             if (result.ExitCode != ExitCodes.Success)
             {
-                _logger.LogError("Initial build failed: {0}", result.Output);
+                _logger.LogError("Initial build failed: {Result}", result.Output);
                 // Initial build failed
                 throw new InputException(result.Output, FormatBuildResultErrorString(buildCommand, buildPath));
             }
-            _logger.LogTrace("Initial build output {0}", result.Output);
+            _logger.LogTrace("Initial build output {Result}", result.Output);
             _logger.LogDebug("Initial build successful");
         }
 

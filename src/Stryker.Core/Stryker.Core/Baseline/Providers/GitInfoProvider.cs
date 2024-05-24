@@ -38,13 +38,13 @@ namespace Stryker.Core.Baseline.Providers
             string branchName = null;
             if (Repository?.Branches?.FirstOrDefault(b => b.IsCurrentRepositoryHead) is var identifiedBranch && identifiedBranch is { })
             {
-                _logger.LogDebug("{0} identified as current branch", identifiedBranch.FriendlyName);
+                _logger.LogDebug("{BranchName} identified as current branch", identifiedBranch.FriendlyName);
                 branchName = identifiedBranch.FriendlyName;
             }
 
             if (string.IsNullOrWhiteSpace(branchName))
             {
-                _logger.LogDebug("Could not locate the current branch name, using project version instead: {0}", _options.ProjectVersion);
+                _logger.LogDebug("Could not locate the current branch name, using project version instead: {ProjectVersion}", _options.ProjectVersion);
                 branchName = _options.ProjectVersion;
             }
 
