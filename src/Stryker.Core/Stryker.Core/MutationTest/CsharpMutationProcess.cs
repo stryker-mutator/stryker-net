@@ -61,20 +61,21 @@ namespace Stryker.Core.MutationTest
             // Mutate source files
             foreach(var file in projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
             {
-                _logger.LogDebug($"Mutating {file.FullPath}");
+                _logger.LogDebug("Mutating {FilePath}",file.FullPath);
                 // Mutate the syntax tree
                 var mutatedSyntaxTree = orchestrator.Mutate(file.SyntaxTree, semanticModels.First(x => x.SyntaxTree == file.SyntaxTree));
                 // Add the mutated syntax tree for compilation
                 file.MutatedSyntaxTree = mutatedSyntaxTree;
                 if (_options.DevMode)
                 {
-                    _logger.LogTrace($"Mutated {file.FullPath}:{Environment.NewLine}{mutatedSyntaxTree.GetText()}");
+                    _logger.LogTrace("Mutated {FullPath}:{NewLine}{MutatedSyntaxTree}",
+                        file.FullPath,Environment.NewLine,mutatedSyntaxTree.GetText());
                 }
                 // Filter the mutants
                 file.Mutants = orchestrator.GetLatestMutantBatch();
             }
 
-            _logger.LogDebug("{0} mutants created", projectInfo.Mutants.Count());
+            _logger.LogDebug("{MutantsCount} mutants created", projectInfo.Mutants.Count());
 
             CompileMutations(input, compilingProcess);
         }
@@ -109,7 +110,7 @@ namespace Stryker.Core.MutationTest
                     msForSymbols.CopyTo(symbolDestination);
                 }
 
-                _logger.LogDebug("Injected the mutated assembly file into {0}", injectionPath);
+                _logger.LogDebug("Injected the mutated assembly file into {InjectionPath}", injectionPath);
             }
 
             // if a rollback took place, mark the rolled back mutants as status:BuildError

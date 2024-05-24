@@ -28,7 +28,8 @@ namespace Stryker.Core.MutantFilters
         public MutantFilter Type => MutantFilter.Baseline;
         public string DisplayName => "baseline filter";
 
-        public BaselineMutantFilter(StrykerOptions options, IBaselineProvider baselineProvider = null, IGitInfoProvider gitInfoProvider = null, IBaselineMutantHelper baselineMutantHelper = null)
+        public BaselineMutantFilter(StrykerOptions options, IBaselineProvider baselineProvider = null,
+            IGitInfoProvider gitInfoProvider = null, IBaselineMutantHelper baselineMutantHelper = null)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<BaselineMutantFilter>();
             _baselineProvider = baselineProvider ?? BaselineProviderFactory.Create(options);
@@ -42,15 +43,18 @@ namespace Stryker.Core.MutantFilters
                 _baseline = GetBaselineAsync().Result;
             }
         }
-        
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options)
+
+        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file,
+            StrykerOptions options)
         {
             if (options.WithBaseline)
             {
                 if (_baseline == null)
                 {
-                    _logger.LogDebug("Returning all mutants on {0} because there is no baseline available", file.RelativePath);
+                    _logger.LogDebug(
+                        "Returning all mutants on {RelativeFilePath} because there is no baseline available",
+                        file.RelativePath);
                 }
                 else
                 {
@@ -63,7 +67,7 @@ namespace Stryker.Core.MutantFilters
 
         private void UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file)
         {
-            if(!_baseline.Files.ContainsKey(FilePathUtils.NormalizePathSeparators(file.RelativePath)))
+            if (!_baseline.Files.ContainsKey(FilePathUtils.NormalizePathSeparators(file.RelativePath)))
             {
                 return;
             }
@@ -74,22 +78,27 @@ namespace Stryker.Core.MutantFilters
             {
                 foreach (var baselineMutant in baselineFile.Mutants)
                 {
-                    var baselineMutantSourceCode = _baselineMutantHelper.GetMutantSourceCode(baselineFile.Source, baselineMutant);
+                    var baselineMutantSourceCode =
+                        _baselineMutantHelper.GetMutantSourceCode(baselineFile.Source, baselineMutant);
 
                     if (string.IsNullOrEmpty(baselineMutantSourceCode))
                     {
-                        _logger.LogWarning("Unable to find mutant span in original baseline source code. This indicates a bug in stryker. Please report this on github.");
+                        _logger.LogWarning(
+                            "Unable to find mutant span in original baseline source code. This indicates a bug in stryker. Please report this on github.");
                         continue;
                     }
 
-                    IEnumerable<Mutant> matchingMutants = _baselineMutantHelper.GetMutantMatchingSourceCode(mutants, baselineMutant, baselineMutantSourceCode);
+                    IEnumerable<Mutant> matchingMutants =
+                        _baselineMutantHelper.GetMutantMatchingSourceCode(mutants, baselineMutant,
+                            baselineMutantSourceCode);
 
                     SetMutantStatusToBaselineMutantStatus(baselineMutant, matchingMutants);
                 }
             }
         }
 
-        private void SetMutantStatusToBaselineMutantStatus(JsonMutant baselineMutant, IEnumerable<Mutant> matchingMutants)
+        private void SetMutantStatusToBaselineMutantStatus(JsonMutant baselineMutant,
+            IEnumerable<Mutant> matchingMutants)
         {
             if (matchingMutants.Count() == 1)
             {
@@ -117,12 +126,14 @@ namespace Stryker.Core.MutantFilters
 
             if (report == null)
             {
-                _logger.LogInformation("We could not locate a baseline for branch {0}, now trying fallback version {1}", branchName, _options.FallbackVersion);
+                _logger.LogInformation(
+                    "We could not locate a baseline for branch {BranchName}, now trying fallback version {FallbackVersion}",
+                    branchName, _options.FallbackVersion);
 
                 return await GetFallbackBaselineAsync();
             }
 
-            _logger.LogInformation("Found baseline report for current branch {0}", branchName);
+            _logger.LogInformation("Found baseline report for current branch {BranchName}", branchName);
 
             return report;
         }
@@ -133,16 +144,19 @@ namespace Stryker.Core.MutantFilters
 
             if (report == null)
             {
-                if(baseline)
+                if (baseline)
                 {
-                    _logger.LogDebug("We could not locate a baseline report for the fallback version. Now trying regular fallback version.");
+                    _logger.LogDebug(
+                        "We could not locate a baseline report for the fallback version. Now trying regular fallback version.");
                     return await GetFallbackBaselineAsync(false);
                 }
-                _logger.LogInformation("We could not locate a baseline report for the current branch, version or fallback version. Now running a complete test to establish a fresh baseline.");
+
+                _logger.LogInformation(
+                    "We could not locate a baseline report for the current branch, version or fallback version. Now running a complete test to establish a fresh baseline.");
                 return null;
             }
 
-            _logger.LogInformation("Found fallback report using version {0}", _options.FallbackVersion);
+            _logger.LogInformation("Found fallback report using version {FallbackVersion}", _options.FallbackVersion);
 
             return report;
         }

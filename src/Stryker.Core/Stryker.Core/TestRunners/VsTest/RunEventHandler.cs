@@ -25,7 +25,8 @@ namespace Stryker.Core.TestRunners.VsTest
         public IReadOnlyList<TestCase> TestsInTimeout => _testsInTimeOut.AsReadOnly();
 
         public SimpleRunResults()
-        {}
+        {
+        }
 
         public SimpleRunResults(IEnumerable<TestResult> results, IEnumerable<TestCase> testsInTimeout)
         {
@@ -131,6 +132,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     _inProgress[activeTest.Id] = activeTest;
                 }
             }
+
             if (testRunChangedArgs.NewTestResults == null || !testRunChangedArgs.NewTestResults.Any())
             {
                 return;
@@ -146,7 +148,7 @@ namespace Stryker.Core.TestRunners.VsTest
             ICollection<AttachmentSet> runContextAttachments,
             ICollection<string> executorUris)
         {
-            _logger.LogDebug($"{_runnerId}: Received testrun complete.");
+            _logger.LogDebug("{RunnerId}: Received testrun complete.", _runnerId);
             if (lastChunkArgs?.ActiveTests != null)
             {
                 foreach (var activeTest in lastChunkArgs.ActiveTests)
@@ -174,16 +176,16 @@ namespace Stryker.Core.TestRunners.VsTest
                 if (testRunCompleteArgs.Error.GetType() == typeof(TransationLayerException))
                 {
                     _logger.LogDebug(testRunCompleteArgs.Error,
-                        $"{_runnerId}: VsTest may have crashed, triggering VsTest restart!");
+                        "{RunnerId}: VsTest may have crashed, triggering VsTest restart!",_runnerId);
                     Failed = true;
                 }
                 else if (testRunCompleteArgs.Error.InnerException is IOException sock)
                 {
-                    _logger.LogWarning(sock, $"{_runnerId}: Test session ended unexpectedly.");
+                    _logger.LogWarning(sock, "{RunnerId}: Test session ended unexpectedly.", _runnerId);
                 }
                 else if (!CancelRequested)
                 {
-                    _logger.LogDebug(testRunCompleteArgs.Error, $"{_runnerId}: VsTest error:");
+                    _logger.LogDebug(testRunCompleteArgs.Error, "{RunnerId}: VsTest error:", _runnerId);
                 }
             }
 
@@ -197,7 +199,8 @@ namespace Stryker.Core.TestRunners.VsTest
         public int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo) =>
             throw new NotSupportedException();
 
-        public void HandleRawMessage(string rawMessage) => _logger.LogTrace($"{_runnerId}: {rawMessage} [RAW]");
+        public void HandleRawMessage(string rawMessage) =>
+            _logger.LogTrace("{RunnerId}: {RawMessage} [RAW]", _runnerId, rawMessage);
 
         public void StartSession()
         {
@@ -212,9 +215,9 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             // remove all raw results from this run
             _rawResults.RemoveRange(_initialResultsCount, _rawResults.Count - _initialResultsCount);
-             // we reanalyze results gathered so far, in an event sourced way
-             _runs.Clear();
-             _currentResults = new SimpleRunResults(new List<TestResult>(), _currentResults.TestsInTimeout);
+            // we reanalyze results gathered so far, in an event sourced way
+            _runs.Clear();
+            _currentResults = new SimpleRunResults(new List<TestResult>(), _currentResults.TestsInTimeout);
             AnalyzeRawTestResults(_rawResults);
         }
 
@@ -225,16 +228,17 @@ namespace Stryker.Core.TestRunners.VsTest
                 var watch = new Stopwatch();
                 watch.Start();
 
-                while (!_completed && watch.ElapsedMilliseconds < timeOut )
+                while (!_completed && watch.ElapsedMilliseconds < timeOut)
                 {
-                    Monitor.Wait(_lck, Math.Max(0, (int)(timeOut-watch.ElapsedMilliseconds)));
+                    Monitor.Wait(_lck, Math.Max(0, (int)(timeOut - watch.ElapsedMilliseconds)));
                 }
 
                 slept = watch.ElapsedMilliseconds - timeOut > 30 * 1000;
                 if (slept)
                 {
-                    _logger.LogWarning($"{_runnerId}: the computer slept during the testing, need to retry");
+                    _logger.LogWarning("{RunnerId}: the computer slept during the testing, need to retry", _runnerId);
                 }
+
                 return _completed;
             }
         }
@@ -248,7 +252,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 TestMessageLevel.Error => LogLevel.Error,
                 _ => throw new ArgumentOutOfRangeException(nameof(level), level, null)
             };
-            _logger.LogTrace($"{_runnerId}: [{levelFinal}] {message}");
+            _logger.LogTrace("{RunnerId}: [{LevelFinal}] {Message}", _runnerId, levelFinal, message);
         }
     }
 }

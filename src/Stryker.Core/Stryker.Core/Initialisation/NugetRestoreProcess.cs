@@ -30,11 +30,13 @@ namespace Stryker.Core.Initialisation
 
         public void RestorePackages(string solutionPath, string msbuildPath = null)
         {
-            _logger.LogInformation("Restoring nuget packages using {0}", "nuget.exe");
+            _logger.LogInformation("Restoring nuget packages using nuget.exe");
             if (string.IsNullOrWhiteSpace(solutionPath))
             {
-                throw new InputException("Solution path is required on .net framework projects. Please supply the solution path.");
+                throw new InputException(
+                    "Solution path is required on .net framework projects. Please supply the solution path.");
             }
+
             solutionPath = Path.GetFullPath(solutionPath);
             var solutionDir = Path.GetDirectoryName(solutionPath);
 
@@ -46,12 +48,13 @@ namespace Stryker.Core.Initialisation
             if (msBuildVersionOutput.ExitCode != ExitCodes.Success)
             {
                 msBuildVersion = string.Empty;
-                _logger.LogDebug("Auto detected msbuild at: {0}, but failed to get version.", msbuildPath);
+                _logger.LogDebug("Auto detected msbuild at: {MsBuildPath}, but failed to get version.", msbuildPath);
             }
             else
             {
                 msBuildVersion = msBuildVersionOutput.Output.Trim();
-                _logger.LogDebug("Auto detected msbuild version {0} at: {1}", msBuildVersion, msbuildPath);
+                _logger.LogDebug("Auto detected msbuild version {MsBuildVersion} at: {MsBuildPath}", msBuildVersion,
+                    msbuildPath);
             }
 
             // Validate nuget.exe is installed and included in path
@@ -59,13 +62,17 @@ namespace Stryker.Core.Initialisation
             if (!nugetWhereExeResult.Output.ToLowerInvariant().Contains("nuget.exe"))
             {
                 // try to extend the search
-                nugetWhereExeResult = ProcessExecutor.Start(solutionDir, "where.exe", $"/R {Path.GetPathRoot(msbuildPath)} nuget.exe");
+                nugetWhereExeResult = ProcessExecutor.Start(solutionDir, "where.exe",
+                    $"/R {Path.GetPathRoot(msbuildPath)} nuget.exe");
 
                 if (!nugetWhereExeResult.Output.ToLowerInvariant().Contains("nuget.exe"))
-                    throw new InputException("Nuget.exe should be installed to restore .net framework nuget packages. Install nuget.exe and make sure it's included in your path.");
+                    throw new InputException(
+                        "Nuget.exe should be installed to restore .net framework nuget packages. Install nuget.exe and make sure it's included in your path.");
             }
+
             // Get the first nuget.exe path from the where.exe output
-            var nugetPath = nugetWhereExeResult.Output.Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).First().Trim();
+            var nugetPath = nugetWhereExeResult.Output
+                .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).First().Trim();
 
 
             // Restore packages using nuget.exe
@@ -74,21 +81,29 @@ namespace Stryker.Core.Initialisation
             {
                 nugetRestoreCommand += $" -MsBuildVersion \"{msBuildVersion}\"";
             }
-            _logger.LogDebug("Restoring packages using command: {0} {1}", nugetPath, nugetRestoreCommand);
+
+            _logger.LogDebug("Restoring packages using command: {NugetPath} {NugetRestoreCommand}", nugetPath,
+                nugetRestoreCommand);
 
             try
             {
-                var nugetRestoreResult = ProcessExecutor.Start(Path.GetDirectoryName(nugetPath), nugetPath, nugetRestoreCommand, timeoutMs: 120000);
+                var nugetRestoreResult = ProcessExecutor.Start(Path.GetDirectoryName(nugetPath), nugetPath,
+                    nugetRestoreCommand, timeoutMs: 120000);
                 if (nugetRestoreResult.ExitCode != ExitCodes.Success)
                 {
-                    _logger.LogCritical($"Failed to restore nuget packages. Nuget error: {nugetRestoreResult.Error}");
-                    throw new InputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.", nugetRestoreResult.Output);
+                    _logger.LogCritical("Failed to restore nuget packages. Nuget error: {Error}",
+                        nugetRestoreResult.Error);
+                    throw new InputException(
+                        "Nuget.exe failed to restore packages for your solution. Please review your nuget setup.",
+                        nugetRestoreResult.Output);
                 }
-                _logger.LogDebug("Restored packages using nuget.exe, output: {0}", nugetRestoreResult.Output);
+
+                _logger.LogDebug("Restored packages using nuget.exe, output: {Error}", nugetRestoreResult.Output);
             }
             catch (OperationCanceledException)
             {
-                throw new InputException("Nuget.exe failed to restore packages for your solution. Please review your nuget setup.");
+                throw new InputException(
+                    "Nuget.exe failed to restore packages for your solution. Please review your nuget setup.");
             }
         }
     }

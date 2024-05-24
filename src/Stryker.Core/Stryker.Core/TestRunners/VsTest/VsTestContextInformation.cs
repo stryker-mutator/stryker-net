@@ -113,9 +113,10 @@ namespace Stryker.Core.TestRunners.VsTest
                 _logger.LogError("Stryker failed to connect to vstest.console with error: {error}", e.Message);
                 throw new GeneralStrykerException("Stryker failed to connect to vstest.console", e);
             }
+
             return vsTestConsole;
         }
-        
+
         /// <summary>
         ///     Builds a new process launcher used for a test session.
         /// </summary>
@@ -162,6 +163,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 result.RegisterTests(TestsPerSource[source].Select(id => Tests[id]));
             }
+
             return result;
         }
 
@@ -184,7 +186,7 @@ namespace Stryker.Core.TestRunners.VsTest
 
             return TestsPerSource[source].Count > 0;
         }
-        
+
         private void DiscoverTestsInSources(string newSource)
         {
             var wrapper = BuildVsTestWrapper("TestDiscoverer");
@@ -211,7 +213,8 @@ namespace Stryker.Core.TestRunners.VsTest
 
                 VsTests[testCase.Id].AddSubCase();
                 _logger.LogTrace(
-                    $"Test Case : name= {testCase.DisplayName} (id= {testCase.Id}, FQN= {testCase.FullyQualifiedName}).");
+                    "Test Case : name= {DisplayName} (id= {Id}, FQN= {FullyQualifiedName}).",
+                    testCase.DisplayName, testCase.Id, testCase.FullyQualifiedName);
             }
 
             DetectTestFrameworks(VsTests.Values);
@@ -259,7 +262,8 @@ namespace Stryker.Core.TestRunners.VsTest
 </RunSettings>";
         }
 
-        public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap, string helperNameSpace, bool isFullFramework)
+        public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap,
+            string helperNameSpace, bool isFullFramework)
         {
             var settingsForCoverage = string.Empty;
             var needDataCollector = forCoverage || mutantTestsMap is not null;
@@ -278,6 +282,7 @@ namespace Stryker.Core.TestRunners.VsTest
             {
                 settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
             }
+
             var timeoutSettings = timeout is > 0
                 ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>" + Environment.NewLine
                 : string.Empty;
