@@ -16,7 +16,9 @@ namespace Stryker.Core.Compiling
 {
     public interface ICSharpRollbackProcess
     {
-        CSharpRollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode);
+        CSharpRollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics,
+            bool lastAttempt, bool devMode);
+
         SyntaxTree CleanUpFile(SyntaxTree file);
     }
 
@@ -34,18 +36,22 @@ namespace Stryker.Core.Compiling
             RollBackedIds = new List<int>();
         }
 
-        public CSharpRollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics, bool lastAttempt, bool devMode)
+        public CSharpRollbackProcessResult Start(CSharpCompilation compiler, ImmutableArray<Diagnostic> diagnostics,
+            bool lastAttempt, bool devMode)
         {
             // match the diagnostics with their syntax trees
-            var syntaxTreeMapping = compiler.SyntaxTrees.ToDictionary<SyntaxTree, SyntaxTree, ICollection<Diagnostic>>(syntaxTree => syntaxTree, _ => new Collection<Diagnostic>());
+            var syntaxTreeMapping =
+                compiler.SyntaxTrees.ToDictionary<SyntaxTree, SyntaxTree, ICollection<Diagnostic>>(
+                    syntaxTree => syntaxTree, _ => new Collection<Diagnostic>());
 
             foreach (var diagnostic in diagnostics.Where(x => x.Severity == DiagnosticSeverity.Error))
-            {   
+            {
                 if (diagnostic.Location.SourceTree == null)
                 {
-                    Logger.LogWarning("General compilation error: {0}", diagnostic.GetMessage());
+                    Logger.LogWarning("General compilation error: {Message}", diagnostic.GetMessage());
                     continue;
                 }
+
                 syntaxTreeMapping[diagnostic.Location.SourceTree].Add(diagnostic);
             }
 
@@ -53,12 +59,13 @@ namespace Stryker.Core.Compiling
             foreach (var syntaxTreeMap in syntaxTreeMapping.Where(x => x.Value.Any()))
             {
                 var originalTree = syntaxTreeMap.Key;
-                Logger.LogDebug($"RollBacking mutations from {originalTree.FilePath}.");
+                Logger.LogDebug("RollBacking mutations from {FilePath}.", originalTree.FilePath);
                 if (devMode)
                 {
                     DumpBuildErrors(syntaxTreeMap);
-                    Logger.LogTrace("source {1}", originalTree);
+                    Logger.LogTrace("source {OriginalTree}", originalTree);
                 }
+
                 var updatedSyntaxTree = RemoveCompileErrorMutations(originalTree, syntaxTreeMap.Value);
 
                 if (updatedSyntaxTree == originalTree || lastAttempt)
@@ -68,7 +75,7 @@ namespace Stryker.Core.Compiling
                     throw new CompilationException("Internal error due to compile error.");
                 }
 
-                Logger.LogTrace("RolledBack to {0}", updatedSyntaxTree.ToString());
+                Logger.LogTrace("RolledBack to {UpdatedSyntaxTree}", updatedSyntaxTree.ToString());
 
                 // update the compiler object with the new syntax tree
                 compiler = compiler.ReplaceSyntaxTree(originalTree, updatedSyntaxTree);
@@ -88,6 +95,7 @@ namespace Stryker.Core.Compiling
             {
                 return (startNode, info.Id.Value);
             }
+
             for (var node = startNode; node != null; node = node.Parent)
             {
                 info = ExtractMutationInfo(node);
@@ -134,7 +142,8 @@ namespace Stryker.Core.Compiling
                 return new MutantInfo();
             }
 
-            Logger.LogDebug("Found mutant {id} of type '{type}' controlled by '{engine}'.", info.Id, info.Type, info.Engine);
+            Logger.LogDebug("Found mutant {id} of type '{type}' controlled by '{engine}'.", info.Id, info.Type,
+                info.Engine);
 
             return info;
         }
@@ -143,11 +152,15 @@ namespace Stryker.Core.Compiling
         {
             for (var currentNode = node; currentNode != null; currentNode = currentNode.Parent)
             {
-                if (currentNode.IsKind(SyntaxKind.MethodDeclaration) || currentNode.IsKind(SyntaxKind.GetAccessorDeclaration) || currentNode.IsKind(SyntaxKind.SetAccessorDeclaration) || currentNode.IsKind(SyntaxKind.ConstructorDeclaration))
+                if (currentNode.IsKind(SyntaxKind.MethodDeclaration) ||
+                    currentNode.IsKind(SyntaxKind.GetAccessorDeclaration) ||
+                    currentNode.IsKind(SyntaxKind.SetAccessorDeclaration) ||
+                    currentNode.IsKind(SyntaxKind.ConstructorDeclaration))
                 {
                     return currentNode;
                 }
             }
+
             // return the whole file if not found
             return node.SyntaxTree.GetRoot();
         }
@@ -165,22 +178,24 @@ namespace Stryker.Core.Compiling
             {
                 scan.Add(info);
             }
+
             return scan;
         }
 
         private void DumpBuildErrors(KeyValuePair<SyntaxTree, ICollection<Diagnostic>> syntaxTreeMap)
         {
-            Logger.LogDebug($"Dumping build error in file");
+            Logger.LogDebug("Dumping build error in file");
             var sourceLines = syntaxTreeMap.Key.ToString().Split("\n");
             foreach (var diagnostic in syntaxTreeMap.Value)
             {
                 var fileLinePositionSpan = diagnostic.Location.GetMappedLineSpan();
-                Logger.LogDebug($"Error :{diagnostic.GetMessage()}, {fileLinePositionSpan}");
+                Logger.LogDebug("Error :{Message}, {fileLinePositionSpan}",
+                    diagnostic.GetMessage(), fileLinePositionSpan);
                 for (var i = Math.Max(0, fileLinePositionSpan.StartLinePosition.Line - 1);
-                    i <= Math.Min(fileLinePositionSpan.EndLinePosition.Line + 1, sourceLines.Length - 1);
-                    i++)
+                     i <= Math.Min(fileLinePositionSpan.EndLinePosition.Line + 1, sourceLines.Length - 1);
+                     i++)
                 {
-                    Logger.LogDebug($"{i + 1}: {sourceLines[i]}");
+                    Logger.LogDebug("{index}: {sourceLine}", i + 1, sourceLines[i]);
                 }
             }
 
@@ -191,7 +206,8 @@ namespace Stryker.Core.Compiling
         {
             var rollbackRoot = originalTree.GetRoot();
             // find all if statements to remove
-            var brokenMutations = IdentifyMutationsAndFlagForRollback(diagnosticInfo, rollbackRoot, out var diagnostics);
+            var brokenMutations =
+                IdentifyMutationsAndFlagForRollback(diagnosticInfo, rollbackRoot, out var diagnostics);
 
             if (brokenMutations.Count == 0)
             {
@@ -208,6 +224,7 @@ namespace Stryker.Core.Compiling
                 // remove the mutated node using its MutantPlacer remove method and update the tree
                 trackedTree = trackedTree.ReplaceNode(nodeToRemove, MutantPlacer.RemoveMutant(nodeToRemove));
             }
+
             return trackedTree.SyntaxTree;
         }
 
@@ -235,19 +252,20 @@ namespace Stryker.Core.Compiling
                     // we have to remove every mutation
                     var errorLocation = diagnostic.Location.GetMappedLineSpan();
                     Logger.LogWarning(
-                        "Stryker.NET encountered a compile error in {0} (at {1}:{2}) with message: {3} (Source code: {4})",
+                        "Stryker.NET encountered a compile error in {Path} (at {Line}:{StartCharacter}) with message: {Message} (Source code: {BrokenMutation})",
                         errorLocation.Path, errorLocation.StartLinePosition.Line,
                         errorLocation.StartLinePosition.Character, diagnostic.GetMessage(), brokenMutation);
 
                     Logger.LogInformation(
-                        $"Safe Mode! Stryker will flag mutations in {DisplayName(initNode)} as compile error.");
+                        "Safe Mode! Stryker will flag mutations in {DisplayName} as compile error.",
+                        DisplayName(initNode));
                     // backup, remove all mutations in the node
                     foreach (var mutant in scan.Where(mutant => !suspiciousMutations.Contains(mutant.Node)))
                     {
                         suspiciousMutations.Add(mutant.Node);
                         if (mutant.Id != -1)
                         {
-                            RollBackedIds.Add(mutant.Id.Value);
+                            RollBackedIds.Add(mutant.Id!.Value);
                         }
                     }
                 }
@@ -267,9 +285,10 @@ namespace Stryker.Core.Compiling
                 suspiciousMutations.Add(mutant.Node);
                 if (mutant.Id != -1)
                 {
-                    RollBackedIds.Add(mutant.Id.Value);
+                    RollBackedIds.Add(mutant.Id!.Value);
                 }
             }
+
             // mark the broken mutation nodes to track
             var trackedTree = rollbackRoot.TrackNodes(suspiciousMutations);
             foreach (var brokenMutation in suspiciousMutations)
@@ -279,6 +298,7 @@ namespace Stryker.Core.Compiling
                 // remove the mutated node using its MutantPlacer remove method and update the tree
                 trackedTree = trackedTree.ReplaceNode(nodeToRemove, MutantPlacer.RemoveMutant(nodeToRemove));
             }
+
             return file.WithRootAndOptions(trackedTree, file.Options);
         }
 
@@ -288,10 +308,11 @@ namespace Stryker.Core.Compiling
                 MethodDeclarationSyntax method => $"{method.Identifier}",
                 ConstructorDeclarationSyntax constructor => $"{constructor.Identifier}",
                 AccessorDeclarationSyntax accessor => $"{accessor.Keyword} {accessor.Keyword}",
-                not null => initNode.Parent == null ?  "whole file" : "the current node",
+                not null => initNode.Parent == null ? "whole file" : "the current node",
             };
 
-        private Collection<SyntaxNode> IdentifyMutationsAndFlagForRollback(IEnumerable<Diagnostic> diagnosticInfo, SyntaxNode rollbackRoot, out Diagnostic[] diagnostics)
+        private Collection<SyntaxNode> IdentifyMutationsAndFlagForRollback(IEnumerable<Diagnostic> diagnosticInfo,
+            SyntaxNode rollbackRoot, out Diagnostic[] diagnostics)
         {
             var brokenMutations = new Collection<SyntaxNode>();
             diagnostics = diagnosticInfo as Diagnostic[] ?? diagnosticInfo.ToArray();
@@ -330,7 +351,7 @@ namespace Stryker.Core.Compiling
                 brokenMutations.Add(mutant.Node);
                 if (mutant.Id != -1)
                 {
-                    RollBackedIds.Add(mutant.Id.Value);
+                    RollBackedIds.Add(mutant.Id!.Value);
                 }
             }
         }

@@ -69,7 +69,8 @@ public class InitialisationProcess : IInitialisationProcess
         {
             var framework = projects.All(p => p.IsFullFramework);
             // Build the complete solution
-            _logger.LogInformation("Building solution {0}", Path.GetRelativePath(options.WorkingDirectory ,options.SolutionPath));
+                _logger.LogInformation("Building solution {0}",
+                    Path.GetRelativePath(options.WorkingDirectory, options.SolutionPath));
             _initialBuildProcess.InitialBuild(
                 framework,
                 _inputFileResolver.FileSystem.Path.GetDirectoryName(options.SolutionPath),
@@ -102,7 +103,8 @@ public class InitialisationProcess : IInitialisationProcess
         }   
     }
 
-    public IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(StrykerOptions options, IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner)
+        public IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(StrykerOptions options,
+            IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner)
     {
         var result = new List<MutationTestInput>();
         foreach (var info in projects)
@@ -112,7 +114,7 @@ public class InitialisationProcess : IInitialisationProcess
                 SourceProjectInfo = info,
                 TestProjectsInfo = info.TestProjectsInfo,
                 TestRunner = runner,
-                InitialTestRun = InitialTest(options, info, runner, projects.Count==1)
+                    InitialTestRun = InitialTest(options, info, runner, projects.Count == 1)
             });
         }
 
@@ -125,7 +127,8 @@ public class InitialisationProcess : IInitialisationProcess
         DiscoverTests(projectInfo, testRunner);
 
         // initial test
-        _logger.LogInformation("Number of tests found: {0} for project {1}. Initial test run started.",
+            _logger.LogInformation(
+                "Number of tests found: {TestCount} for project {ProjectFilePath}. Initial test run started.",
             testRunner.GetTests(projectInfo).Count,
             projectInfo.AnalyzerResult.ProjectFilePath);
 
@@ -143,16 +146,22 @@ public class InitialisationProcess : IInitialisationProcess
             if (throwIfFails && (double)failingTestsCount / result.Result.ExecutedTests.Count >= .5)
             {
                 throw new InputException("Initial testrun has more than 50% failing tests.", result.Result.ResultMessage);
+                        result.Result.ResultMessage);
             }
-                
-            _logger.LogWarning($"{(failingTestsCount == 1 ? "A test is": $"{failingTestsCount} tests are")} failing. Stryker will continue but outcome will be impacted.");
+
+                _logger.LogWarning(
+                    "{failingTestsCount} tests are failing. Stryker will continue but outcome will be impacted.",
+                    failingTestsCount);
         }
 
         if (!result.Result.ExecutedTests.IsEmpty || !throwIfFails)
         {
             return result;
         }
-        throw new InputException("No test has been detected. Make sure your test project contains test and is compatible with VsTest."+string.Join(Environment.NewLine, projectInfo.Warnings));
+
+            throw new InputException(
+                "No test has been detected. Make sure your test project contains test and is compatible with VsTest." +
+                string.Join(Environment.NewLine, projectInfo.Warnings));
     }
 
     private static readonly Dictionary<string, (string assembly, string package)> TestFrameworks = new()
@@ -160,6 +169,7 @@ public class InitialisationProcess : IInitialisationProcess
         ["xunit.core"] = ("xunit.runner.visualstudio","xunit.runner.visualstudio"),
         ["nunit.framework"] = ("NUnit3.TestAdapter", "NUnit3TestAdapter"),
         ["Microsoft.VisualStudio.TestPlatform.TestFramework"] = ("Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter","MSTest.TestAdapter")
+                "Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter", "MSTest.TestAdapter")
     };
 
     private void DiscoverTests(SourceProjectInfo projectInfo, ITestRunner testRunner)
@@ -175,7 +185,6 @@ public class InitialisationProcess : IInitialisationProcess
             foreach (var (framework, (adapter, package)) in
                      TestFrameworks.Where(t => testProject.References.Any(r => r.Contains(t.Key))))
             {
-
                 if (testProject.References.Any(r => r.Contains(adapter)))
                 {
                     continue;
@@ -191,9 +200,11 @@ public class InitialisationProcess : IInitialisationProcess
                 }
                 else
                 {
-                    message+=$" This may be because it is missing an appropriate VsTest adapter for '{framework}'. " +
+                        message +=
+                            $" This may be because it is missing an appropriate VsTest adapter for '{framework}'. " +
                              $"Adding '{adapter}' to this project references may resolve the issue.";
                 }
+
                 projectInfo.LogError(message);
                 _logger.LogWarning(message);
             }

@@ -28,7 +28,7 @@ public class InitialBuildProcess : IInitialBuildProcess
     public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string configuration=null,
         string msbuildPath = null)
     {
-        _logger.LogDebug("Started initial build using {toolName}", fullFramework ? "msbuild.exe" : "dotnet build");
+            _logger.LogDebug("Started initial build using {BuildExecutable}", fullFramework ? "msbuild.exe" : "dotnet build");
 
         ProcessResult result;
         string buildCommand;
@@ -106,11 +106,11 @@ public class InitialBuildProcess : IInitialBuildProcess
     {
         if (result.ExitCode != ExitCodes.Success)
         {
-            _logger.LogError("Initial build failed: {0}", result.Output);
+                _logger.LogError("Initial build failed: {Result}", result.Output);
             // Initial build failed
             throw new InputException(result.Output, FormatBuildResultErrorString(buildCommand, options));
         }
-        _logger.LogTrace("Initial build output {0}", result.Output);
+            _logger.LogTrace("Initial build output {Result}", result.Output);
         _logger.LogDebug("Initial build successful");
     }
 

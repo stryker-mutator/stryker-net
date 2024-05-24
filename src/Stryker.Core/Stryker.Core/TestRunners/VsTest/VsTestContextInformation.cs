@@ -118,9 +118,10 @@ public sealed class VsTestContextInformation : IDisposable
             _logger.LogError("Stryker failed to connect to vstest.console with error: {error}", e.Message);
             throw new GeneralStrykerException("Stryker failed to connect to vstest.console", e);
         }
+
         return vsTestConsole;
     }
-        
+
     /// <summary>
     ///     Builds a new process launcher used for a test session.
     /// </summary>
@@ -167,6 +168,7 @@ public sealed class VsTestContextInformation : IDisposable
         {
             result.RegisterTests(TestsPerSource[source].Select(id => Tests[id]));
         }
+
         return result;
     }
 
@@ -189,7 +191,7 @@ public sealed class VsTestContextInformation : IDisposable
 
         return TestsPerSource[source].Count > 0;
     }
-        
+
     private void DiscoverTestsInSources(string newSource, string frameworkVersion = null, string platform = null)
     {
         var wrapper = BuildVsTestWrapper("TestDiscoverer");
@@ -216,7 +218,8 @@ public sealed class VsTestContextInformation : IDisposable
 
             VsTests[testCase.Id].AddSubCase();
             _logger.LogTrace(
-                $"Test Case : name= {testCase.DisplayName} (id= {testCase.Id}, FQN= {testCase.FullyQualifiedName}).");
+                    "Test Case : name= {DisplayName} (id= {Id}, FQN= {FullyQualifiedName}).",
+                    testCase.DisplayName, testCase.Id, testCase.FullyQualifiedName);
         }
 
         DetectTestFrameworks(VsTests.Values);
@@ -292,6 +295,7 @@ public sealed class VsTestContextInformation : IDisposable
         {
             settingsForCoverage += "<DisableParallelization>true</DisableParallelization>";
         }
+
         var timeoutSettings = timeout is > 0
             ? $"<TestSessionTimeout>{timeout}</TestSessionTimeout>" + Environment.NewLine
             : string.Empty;

@@ -30,7 +30,7 @@ namespace Stryker.Core.Initialisation
             _foldersToExclude = foldersToExclude;
             _logger = logger;
         }
-        
+
         public override IProjectComponent Build()
         {
             FsharpFolderComposite inputFiles;
@@ -88,7 +88,7 @@ namespace Stryker.Core.Initialisation
 
                 if (!FileSystem.File.Exists(sourceFile))
                 {
-                    _logger.LogWarning($"F# project builder: skipping non existing file {sourceFile}.");
+                    _logger.LogWarning("F# project builder: skipping non existing file {SourceFile}.",sourceFile);
                     continue;
                 }
 
@@ -198,7 +198,7 @@ namespace Stryker.Core.Initialisation
             {
                 var folder = FileSystem.Path.Combine(Path.GetDirectoryName(sourceProjectDir), dir);
 
-                _logger.LogDebug($"Scanning {folder}");
+                _logger.LogDebug("Scanning {Folder}", folder);
                 if (!FileSystem.Directory.Exists(folder))
                 {
                     throw new DirectoryNotFoundException($"Can't find {folder}");

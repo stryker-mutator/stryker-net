@@ -231,7 +231,7 @@ public class InputFileResolver : IInputFileResolver
             _buildalyzerLog.GetStringBuilder().Clear();
         }
         var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
-        _logger.LogDebug("Analyzing {projectFilePath}", projectLogName);
+                    _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
         var buildResult = project.Build([options.TargetFramework]);
 
         var buildResultOverallSuccess = buildResult.OverallSuccess || Array.
@@ -470,7 +470,7 @@ public class InputFileResolver : IInputFileResolver
             throw new InputException($"No .csproj or .fsproj file found, please check your project directory at {path}");
         }
 
-        _logger.LogTrace("Scanned the directory {0} for {1} files: found {2}", path, "*.csproj", projectFiles);
+            _logger.LogTrace("Scanned the directory {Path} for *.csproj files: found {ProjectFilesCount}", path, projectFiles);
 
         switch (projectFiles.Length)
         {
