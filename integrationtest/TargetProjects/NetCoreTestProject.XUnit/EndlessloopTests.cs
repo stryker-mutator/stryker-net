@@ -1,3 +1,4 @@
+using TargetProject.StrykerFeatures;
 using Xunit;
 
 namespace ExampleProject.XUnit

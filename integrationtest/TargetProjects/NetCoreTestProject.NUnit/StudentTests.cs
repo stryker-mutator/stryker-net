@@ -1,6 +1,6 @@
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
-using TargetProject;
+using TargetProject.StrykerFeatures;
 
 namespace NetCoreTestProject.NUnit
 {

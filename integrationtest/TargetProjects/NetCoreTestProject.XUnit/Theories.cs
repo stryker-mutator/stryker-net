@@ -48,10 +48,10 @@ namespace ExampleProject.XUnit
         {
             var student = new StrykerComments { Age = 22 };
             Console.WriteLine("ObjectSource:22");
-            yield return new object[] {student.IsExpired(), "No"};
+            yield return new object[] { student.IsExpired(), "No" };
             student = new StrykerComments { Age = 42 };
             Console.WriteLine("ObjectSource:42");
-            yield return new object[] {student.IsExpired(), "Yes"};
+            yield return new object[] { student.IsExpired(), "Yes" };
         }
 
         [Theory]
@@ -59,7 +59,7 @@ namespace ExampleProject.XUnit
         public void TestAgeIndirectTuple(int age, string expired)
         {
             var sut = new StrykerComments{Age = age};
-            _testOutputHelper.WriteLine($"Tuplesource test:{sut.Age}");
+            _testOutputHelper.WriteLine($"Tuplesource test:{ sut.Age }");
             Assert.Equal(expired, sut.IsExpired());
         }
 
@@ -67,7 +67,7 @@ namespace ExampleProject.XUnit
         [MemberData(nameof(TheSource))]
         public void TestAgeIndirectFullSource(string actual, string expected)
         {
-            _testOutputHelper.WriteLine($"TheSource test:{expected}");
+            _testOutputHelper.WriteLine($"TheSource test:{ expected }");
             Assert.Equal(expected, actual);
         }
 
@@ -76,7 +76,7 @@ namespace ExampleProject.XUnit
         // all test cases refer to the same test
         public void TestAgeIndirectObject(StrykerComments sut)
         {
-            _testOutputHelper.WriteLine($"ObjectSource test:{sut.Age}");
+            _testOutputHelper.WriteLine($"ObjectSource test:{ sut.Age }");
             Assert.Equal("Yes", sut.IsExpired());
         }
 
