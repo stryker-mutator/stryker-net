@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 
-namespace TargetProject;
+namespace TargetProject.Constructs;
 
 public class Csharp11
 {
@@ -35,7 +35,7 @@ public class Csharp11
     {
         var str = new RepeatSequence();
 
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
             Console.WriteLine(str++);
     }
 
@@ -80,7 +80,7 @@ public class Csharp11
     // raw string literals
     public static void StringLiterals()
     {
-        string longMessage = """
+        var longMessage = """
     This is a long message.
     It has several lines.
         Some are indented
@@ -128,8 +128,8 @@ public class Csharp11
     // verbatim interpolated strings
     public static void VerbatimInterpolatedStrings()
     {
-        string name = "John";
-        string message = $@"Hello, {name}";
+        var name = "John";
+        var message = $@"Hello, {name}";
         Console.WriteLine(message);
     }
 

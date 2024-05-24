@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TargetProject;
+namespace TargetProject.Constructs;
 
 public class Csharp3
 {
@@ -33,6 +33,21 @@ public class Csharp3
             select new { prod.Color, prod.Price };
     }
 
+    // linq
+    public void FirstExample()
+    {
+        var dynamicList = new List<dynamic>
+        {
+            new { Name = "John", Age = 42 },
+            new { Name = "Jane", Age = 21 }
+        };
+        var allHaveLongNames = dynamicList.Where(s => s.Age > 18)
+                          .Select(s => s)
+                          .Where(st => st.StandardID > 0)
+                          .Select(s => s.StudentName)
+                          .All(x => x.Length > 5);
+    }
+
     // query expressions
     public static void QueryExpressions()
     {
@@ -40,10 +55,10 @@ public class Csharp3
 
         var numQuery =
             from num in numbers
-            where (num % 2) == 0
+            where num % 2 == 0
             select num;
 
-        foreach (int num in numQuery)
+        foreach (var num in numQuery)
         {
             Console.Write("{0,1} ", num);
         }
@@ -94,7 +109,7 @@ public class Csharp3
     public dynamic ExampleMethod(dynamic d)
     {
         dynamic local = "Local variable";
-        int two = 2;
+        var two = 2;
 
         if (d is int)
         {

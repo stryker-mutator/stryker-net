@@ -7,7 +7,7 @@ namespace ExampleProject.XUnit
         [Fact]
         public void Loop()
         {
-            var target = new EndlessLoop();
+            var target = new Timeout();
             target.SomeLoop();
         }
     }

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 
-namespace TargetProject;
+namespace TargetProject.Constructs;
 
 public class Csharp5
 {
@@ -39,7 +39,7 @@ public class Csharp5
 
     static async Task Main(string[] args)
     {
-        Coffee cup = PourCoffee();
+        var cup = PourCoffee();
         Console.WriteLine("coffee is ready");
 
         var eggsTask = FryEggsAsync(2);
@@ -49,7 +49,7 @@ public class Csharp5
         var breakfastTasks = new List<Task> { eggsTask, baconTask, toastTask };
         while (breakfastTasks.Count > 0)
         {
-            Task finishedTask = await Task.WhenAny(breakfastTasks);
+            var finishedTask = await Task.WhenAny(breakfastTasks);
             if (finishedTask == eggsTask)
             {
                 Console.WriteLine("eggs are ready");
@@ -66,7 +66,7 @@ public class Csharp5
             breakfastTasks.Remove(finishedTask);
         }
 
-        Juice oj = PourOJ();
+        var oj = PourOJ();
         Console.WriteLine("oj is ready");
         Console.WriteLine("Breakfast is ready!");
     }
@@ -94,7 +94,7 @@ public class Csharp5
 
     private static async Task<Toast> ToastBreadAsync(int slices)
     {
-        for (int slice = 0; slice < slices; slice++)
+        for (var slice = 0; slice < slices; slice++)
         {
             Console.WriteLine("Putting a slice of bread in the toaster");
         }
@@ -110,7 +110,7 @@ public class Csharp5
         Console.WriteLine($"putting {slices} slices of bacon in the pan");
         Console.WriteLine("cooking first side of bacon...");
         await Task.Delay(3000);
-        for (int slice = 0; slice < slices; slice++)
+        for (var slice = 0; slice < slices; slice++)
         {
             Console.WriteLine("flipping a slice of bacon");
         }

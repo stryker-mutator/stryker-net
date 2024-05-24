@@ -14,7 +14,7 @@ namespace NetCoreTestProject.NUnit
         [Test]
         public void Test1()
         {
-            var target = new Student
+            var target = new StrykerComments
             {
                 Age = 29
             };

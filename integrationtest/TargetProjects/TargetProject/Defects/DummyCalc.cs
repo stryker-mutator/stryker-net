@@ -1,6 +1,6 @@
-﻿using ExampleClassLibrary;
+using ExampleClassLibrary;
 
-namespace ExampleProject.Math.Calc
+namespace TargetProject.Defects
 {
     public class DummyCalc
     {

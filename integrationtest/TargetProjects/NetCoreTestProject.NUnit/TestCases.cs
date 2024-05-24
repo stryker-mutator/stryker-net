@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using NUnit.Framework;
 using NUnit.Framework.Legacy;
-using TargetProject;
+using TargetProject.StrykerFeatures;
 
 namespace NetCoreTestProject.NUnit
 {
@@ -16,7 +16,7 @@ namespace NetCoreTestProject.NUnit
         [TestCase(32, "Yes")]
         public void TestAgeExplicit(int age, string expired)
         {
-            var sut = new Student { Age = age };
+            var sut = new StrykerComments { Age = age };
             ClassicAssert.AreEqual(expired, sut.IsExpired());
         }
 
@@ -29,12 +29,12 @@ namespace NetCoreTestProject.NUnit
             yield return (31, "Yes");
         }
 
-        private static IEnumerable<Student> ObjectSource()
+        private static IEnumerable<StrykerComments> ObjectSource()
         {
             Console.WriteLine("ObjectSource:32");
-            yield return new Student { Age = 32 };
+            yield return new StrykerComments { Age = 32 };
             Console.WriteLine("ObjectSource:42");
-            yield return new Student { Age = 42 };
+            yield return new StrykerComments { Age = 42 };
         }
 
         [Test]
@@ -42,14 +42,14 @@ namespace NetCoreTestProject.NUnit
         public void TestAgeIndirectTuple((int, string) test)
         {
             var (AgeAsync, ExpiredAsync) = test;
-            var sut = new Student { Age = AgeAsync };
+            var sut = new StrykerComments { Age = AgeAsync };
             ClassicAssert.AreEqual(ExpiredAsync, sut.IsExpired());
         }
 
         [Test]
         [TestCaseSource(nameof(ObjectSource))]
         // all test cases refer to the same test
-        public void TestAgeIndirectObject(Student sut)
+        public void TestAgeIndirectObject(StrykerComments sut)
         {
             Console.WriteLine($"ObjectSource test:{sut.Age}");
             ClassicAssert.AreEqual(sut.Age > 29 ? "Yes" : "No", sut.IsExpired());
@@ -70,7 +70,7 @@ namespace NetCoreTestProject.NUnit
         [Ignore("Run explicitly")]
         public void TestRandom(int x)
         {
-            var sut = new Student { Age = 32 };
+            var sut = new StrykerComments { Age = 32 };
             ClassicAssert.AreEqual("Yes", sut.IsExpired());
         }
     }

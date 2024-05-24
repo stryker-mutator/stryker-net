@@ -5,9 +5,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TargetProject;
+namespace TargetProject.Constructs;
 
-public  class Csharp10
+public class Csharp10
 {
     // record structs
     public record Person(string FirstName, string LastName);
@@ -62,20 +62,20 @@ public  class Csharp10
     public static void AssignmentInADeconstruction(Point point)
     {
         double x = 0;
-        (x, double y, double z) = point;
+        (x, var y, var z) = point;
     }
 
     // line pragmas
     public static void LinePragmas()
     {
 #line 200 "Special"
-            int i;
-            int j;
+        int i;
+        int j;
 #line default
-            char c;
-            float f;
+        char c;
+        float f;
 #line hidden // numbering not affected
-            string s;
-            double d;
+        string s;
+        double d;
     }
 }

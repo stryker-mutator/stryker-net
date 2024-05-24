@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace TargetProject;
+namespace TargetProject.Constructs;
 
 public class Csharp12
 {
@@ -31,7 +31,8 @@ public class Csharp12
     delegate void DRef(ref int p);
     delegate void DRR(ref readonly int p);
 
-    public static void RefParameters() {
+    public static void RefParameters()
+    {
         DIn dIn = (ref int p) => { }; // error: cannot match `ref` to `in`
         DRef dRef = (in int p) => { }; // warning: mismatch between `in` and `ref`
         DRR dRR = (ref int p) => { }; // error: cannot match `ref` to `ref readonly`
@@ -49,7 +50,7 @@ public class Csharp12
 
         var sum = (params int[] values) =>
         {
-            int sum = 0;
+            var sum = 0;
             foreach (var value in values)
                 sum += value;
 
@@ -84,7 +85,7 @@ public class Csharp12
     public static void InlineArray()
     {
         var buffer = new Buffer();
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
             buffer[i] = i;
         }

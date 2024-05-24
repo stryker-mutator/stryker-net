@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace ExampleProject
+namespace TargetProject.Defects
 {
     public class Myclass
     {

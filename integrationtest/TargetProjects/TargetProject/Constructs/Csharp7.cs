@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
-namespace ExampleProject
+namespace TargetProject.Constructs
 {
     public class CSharp7
     {

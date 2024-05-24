@@ -2,16 +2,16 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Metrics;
 
-namespace ExampleProject
+namespace TargetProject.Constructs
 {
     public class Csharp8
     {
         // switch expressions
         public static string RockPaperScissors(string first, string second) => (first, second) switch
-            {
-                ("rock", "paper") => 1 > 2 ? "rock is covered by paper. Paper wins." : "",
-                (_, _) => "tie"
-            };
+        {
+            ("rock", "paper") => 1 > 2 ? "rock is covered by paper. Paper wins." : "",
+            (_, _) => "tie"
+        };
 
         public void SwitchExpression()
         {
@@ -36,30 +36,30 @@ namespace ExampleProject
         public static void Range()
         {
             int[] numbers = [0, 10, 20, 30, 40, 50];
-            int start = 1;
-            int amountToTake = 3;
-            int[] subset = numbers[start..(start + amountToTake)];
+            var start = 1;
+            var amountToTake = 3;
+            var subset = numbers[start..(start + amountToTake)];
             Display(subset);  // output: 10 20 30
 
-            int margin = 1;
-            int[] inner = numbers[margin..^margin];
+            var margin = 1;
+            var inner = numbers[margin..^margin];
             Display(inner);  // output: 10 20 30 40
 
-            string line = "one two three";
-            int amountToTakeFromEnd = 5;
-            Range endIndices = ^amountToTakeFromEnd..^0;
-            string end = line[endIndices];
+            var line = "one two three";
+            var amountToTakeFromEnd = 5;
+            var endIndices = ^amountToTakeFromEnd..^0;
+            var end = line[endIndices];
             Display(end);  // output: three
 
-            int amountToDrop = numbers.Length / 2;
+            var amountToDrop = numbers.Length / 2;
 
-            int[] rightHalf = numbers[amountToDrop..];
+            var rightHalf = numbers[amountToDrop..];
             Display(rightHalf);  // output: 30 40 50
 
-            int[] leftHalf = numbers[..^amountToDrop];
+            var leftHalf = numbers[..^amountToDrop];
             Display(leftHalf);  // output: 0 10 20
 
-            int[] all = numbers[..];
+            var all = numbers[..];
             Display(all);  // output: 0 10 20 30 40 50
 
             void Display<T>(IEnumerable<T> xs) => Console.WriteLine(string.Join(" ", xs));

@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using TargetProject;
+using TargetProject.StrykerFeatures;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -22,7 +22,7 @@ namespace ExampleProject.XUnit
         [InlineData(32, "Yes")]
         public void TestAgeExplicit(int age, string expired)
         {
-            var sut = new Student{Age = age};
+            var sut = new StrykerComments{Age = age};
             _testOutputHelper.WriteLine($"Tuplesource test:{sut.Age}");
             Assert.Equal(expired, sut.IsExpired());
         }
@@ -39,17 +39,17 @@ namespace ExampleProject.XUnit
         public static IEnumerable<object[]> ObjectSource()
         {
             Console.WriteLine("ObjectSource:32");
-            yield return new object[] {new Student {Age = 32}};
+            yield return new object[] {new StrykerComments {Age = 32}};
             Console.WriteLine("ObjectSource:42");
-            yield return new object[] {new Student {Age = 42}};
+            yield return new object[] {new StrykerComments {Age = 42}};
         }
 
         public static IEnumerable<object[]> TheSource()
         {
-            var student = new Student { Age = 22 };
+            var student = new StrykerComments { Age = 22 };
             Console.WriteLine("ObjectSource:22");
             yield return new object[] {student.IsExpired(), "No"};
-            student = new Student { Age = 42 };
+            student = new StrykerComments { Age = 42 };
             Console.WriteLine("ObjectSource:42");
             yield return new object[] {student.IsExpired(), "Yes"};
         }
@@ -58,7 +58,7 @@ namespace ExampleProject.XUnit
         [MemberData(nameof(TupleSource))]
         public void TestAgeIndirectTuple(int age, string expired)
         {
-            var sut = new Student{Age = age};
+            var sut = new StrykerComments{Age = age};
             _testOutputHelper.WriteLine($"Tuplesource test:{sut.Age}");
             Assert.Equal(expired, sut.IsExpired());
         }
@@ -74,7 +74,7 @@ namespace ExampleProject.XUnit
         [Theory]
         [MemberData(nameof(ObjectSource))]
         // all test cases refer to the same test
-        public void TestAgeIndirectObject(Student sut)
+        public void TestAgeIndirectObject(StrykerComments sut)
         {
             _testOutputHelper.WriteLine($"ObjectSource test:{sut.Age}");
             Assert.Equal("Yes", sut.IsExpired());

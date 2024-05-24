@@ -1,23 +1,27 @@
 using System.Collections;
 using System.Collections.Generic;
 
-namespace TargetProject;
+namespace TargetProject.Constructs;
 
 public class Csharp2
 {
     // delegate operator
     public static void DelegateOperator()
     {
-        Func<int, int, int> sum = delegate (int a, int b) { return a + b; };
+        Func<int, int, int> sum = delegate (int a, int b)
+        { return a + b; };
         Console.WriteLine(sum(3, 4));  // output: 7
 
-        Action greet = delegate { Console.WriteLine("Hello!"); };
+        Action greet = delegate
+        { Console.WriteLine("Hello!"); };
         greet();
 
-        Action<int, double> introduce = delegate { Console.WriteLine("This is world!"); };
+        Action<int, double> introduce = delegate
+        { Console.WriteLine("This is world!"); };
         introduce(42, 2.7);
 
-        Func<int, int, int> constant = delegate (int _, int _) { return 42; };
+        Func<int, int, int> constant = delegate (int _, int _)
+        { return 42; };
         Console.WriteLine(constant(3, 4));  // output: 42
 
         Func<int, int, int> sum2 = static delegate (int a, int b) { return a + b; };
@@ -27,7 +31,7 @@ public class Csharp2
     // itarators
     static void Iter()
     {
-        Zoo theZoo = new Zoo();
+        var theZoo = new Zoo();
 
         theZoo.AddMammal("Whale");
         theZoo.AddMammal("Rhinoceros");
@@ -76,7 +80,7 @@ public class Csharp2
 
         public IEnumerator GetEnumerator()
         {
-            foreach (Animal theAnimal in animals)
+            foreach (var theAnimal in animals)
             {
                 yield return theAnimal.Name;
             }
@@ -96,7 +100,7 @@ public class Csharp2
         // Private methods.
         private IEnumerable AnimalsForType(Animal.TypeEnum type)
         {
-            foreach (Animal theAnimal in animals)
+            foreach (var theAnimal in animals)
             {
                 if (theAnimal.Type == type)
                 {

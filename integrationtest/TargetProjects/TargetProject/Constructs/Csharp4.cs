@@ -1,4 +1,4 @@
-namespace TargetProject;
+namespace TargetProject.Constructs;
 
 public class Csharp4
 {

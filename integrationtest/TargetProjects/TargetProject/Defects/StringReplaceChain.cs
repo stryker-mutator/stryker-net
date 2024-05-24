@@ -1,10 +1,10 @@
-﻿namespace Test
+namespace TargetProject.Defects
 {
     public class StringReplaceChain
     {
         public string ExampleBugMethod()
         {
-            string someString = "";
+            var someString = "";
             return someString.Replace("ab", "cd")
                 .Replace("12", "34")
                 .PadLeft(12)

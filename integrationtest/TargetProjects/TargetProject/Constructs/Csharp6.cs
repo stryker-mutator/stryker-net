@@ -1,10 +1,11 @@
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Threading.Tasks;
+
 // static imports
 using static System.Math;
 
-namespace TargetProject;
+namespace TargetProject.Constructs;
 
 public class Csharp6
 {
@@ -16,7 +17,7 @@ public class Csharp6
         Console.WriteLine(nameof(List<int>.Count));  // output: Count
         Console.WriteLine(nameof(List<int>.Add));  // output: Add
 
-        List<int> numbers = new List<int>() { 1, 2, 3 };
+        var numbers = new List<int>() { 1, 2, 3 };
         Console.WriteLine(nameof(numbers));  // output: numbers
         Console.WriteLine(nameof(numbers.Count));  // output: Count
         Console.WriteLine(nameof(numbers.Add));  // output: Add

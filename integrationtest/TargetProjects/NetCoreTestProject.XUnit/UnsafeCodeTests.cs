@@ -1,3 +1,4 @@
+using TargetProject.Defects;
 using Xunit;
 
 namespace ExampleProject.XUnit
