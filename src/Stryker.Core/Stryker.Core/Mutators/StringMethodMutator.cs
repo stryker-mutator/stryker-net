@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using RegexParser.Nodes.QuantifierNodes;
+using Stryker.Core.Helpers;
 using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators;
@@ -68,6 +69,30 @@ public class StringMethodMutator : MutatorBase<ExpressionSyntax>
 
     private static bool IsOperationOnAString(ExpressionSyntax expression, SemanticModel model)
     {
+        if (model == null)
+        {
+            switch (expression)
+            {
+                case LiteralExpressionSyntax literal:
+                {
+                    return literal.IsKind(SyntaxKind.StringLiteralExpression);
+                }
+                case InvocationExpressionSyntax:
+                    return true;
+                case IdentifierNameSyntax:
+                {
+                    var canBeValidSemanticModel = expression.Ancestors().Last() is CompilationUnitSyntax;
+                    if (!canBeValidSemanticModel)
+                        return false;
+
+                    var compilation = CSharpCompilation.Create(null)
+                        .AddSyntaxTrees(expression.SyntaxTree);
+                    model = compilation.GetSemanticModel(expression.SyntaxTree);
+                    break;
+                }
+            }
+        }
+
         var typeInfo = model.GetTypeInfo(expression);
         return typeInfo.Type?.SpecialType == SpecialType.System_String;
     }
