@@ -549,14 +549,20 @@ var employeePerson = (StrykerNamespace.MutantControl.IsActive(1)?group.FirstOrDe
         .Replace(""12"", ""34"");
 }";
         var expected =
-            @"public string ExampleBugMethod()
-{if(StrykerNamespace.MutantControl.IsActive(0)){}else{
-    string someString = (StrykerNamespace.MutantControl.IsActive(1)?""Stryker was here!"":"""");
-    return someString.Replace((StrykerNamespace.MutantControl.IsActive(2)?"""":""ab""), (StrykerNamespace.MutantControl.IsActive(3)?"""":""cd""))
-        .Replace((StrykerNamespace.MutantControl.IsActive(4)?"""":""12""), (StrykerNamespace.MutantControl.IsActive(5)?"""":""34""))
-        .PadLeft(12)
-        .Replace((StrykerNamespace.MutantControl.IsActive(6)?"""":""12""), (StrykerNamespace.MutantControl.IsActive(7)?"""":""34""));
-}return default(string);}";
+            """
+            public string ExampleBugMethod()
+            {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+                string someString = (StrykerNamespace.MutantControl.IsActive(1)?"Stryker was here!":"");
+                return (StrykerNamespace.MutantControl.IsActive(2) ? someString.Replace("ab", "cd").Replace("12", "34").PadRight(12).Replace("12", "34") :
+                someString.Replace(
+                    (StrykerNamespace.MutantControl.IsActive(3)?"":"ab"), (StrykerNamespace.MutantControl.IsActive(4)?"":"cd")
+                ).Replace(
+                    (StrykerNamespace.MutantControl.IsActive(5)?"":"12"), (StrykerNamespace.MutantControl.IsActive(6)?"":"34")
+                ).PadLeft(12).Replace(
+                    (StrykerNamespace.MutantControl.IsActive(7)?"":"12"), (StrykerNamespace.MutantControl.IsActive(8)?"":"34")
+                ));
+            }return default(string);}}
+            """;
 
         ShouldMutateSourceInClassToExpected(source, expected);
     }
