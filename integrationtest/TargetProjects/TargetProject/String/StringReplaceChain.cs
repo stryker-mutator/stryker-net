@@ -1,6 +1,4 @@
-﻿using System.Linq;
-
-namespace Test
+﻿namespace Test
 {
     public class StringReplaceChain
     {
@@ -12,7 +10,5 @@ namespace Test
                 .PadLeft(12)
                 .Replace("12", "34");
         }
-
-        public char ExampleChain() => "test ".ToUpper().Trim().PadLeft(2).Substring(2).ElementAt(2);
     }
 }
