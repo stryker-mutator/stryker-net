@@ -1703,4 +1703,102 @@ else        {
         }return default(bool);}}}}";
         ShouldMutateSourceInClassToExpected(source, expected);
     }
+
+
+    [Fact]
+    public void ShouldNotMutateMethodsWithStringNameMethodsOnCustomClass()
+    {
+        var source = """
+                     class Test {
+                         void Substring() {}
+                         string Trim() {
+                             return "test";
+                         }
+                     }
+                     static string Value() {
+                         var testClass = new Test();
+                         testClass.Substring();
+                         return testText.Trim();
+                     }
+                     """;
+
+        // 0 = block removal
+        // 1 = string mutation (not method mutation)
+        // 2 = block removal
+        // 3 = statement mutator
+        var expected = """
+                       class Test {
+                           void Substring() {}
+                           string Trim() {
+                               if (StrykerNamespace.MutantControl.IsActive(0)) {}
+                               else {
+                                   return (StrykerNamespace.MutantControl.IsActive(1) ? "" : "test");
+                               }
+                               return default(string);
+                           }
+                       }
+                       static string Value() {
+                           if(StrykerNamespace.MutantControl.IsActive(2)) {}
+                           else {
+                               var testClass = new Test();
+                               if (StrykerNamespace.MutantControl.IsActive(3)) {;}
+                               else { testClass.Substring(); }
+                               return testText.Trim();
+                           }
+                           return default(string);
+                       }
+                       """;
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [Fact]
+    public void ShouldMutateTrimMethodOnStringIdentifier()
+    {
+        var source = "static string Value(string text) => text.Trim();";
+
+        var expected = """
+                       static string Value(string text) =>
+                       (StrykerNamespace.MutantControl.IsActive(0) ? "" : text.Trim());
+                       """;
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [Fact]
+    public void ShouldMutateSubStringMethod()
+    {
+        var source = """static string Value => "test ".Substring(2);""";
+
+        var expected =
+            """
+            static string Value => (
+                StrykerNamespace.MutantControl.IsActive(0)
+                    ? ""
+                    : (StrykerNamespace.MutantControl.IsActive(1) ? "" : "test ")
+                .Substring(2)
+            );
+            """;
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [Fact]
+    public void ShouldMutateChainedStringMethods()
+    {
+        var source = """static char Value => "test ".ToUpper().Trim().PadLeft(2).Substring(2).ElementAt(2);""";
+
+        var expected =
+            """
+            static char Value =>
+            (StrykerNamespace.MutantControl.IsActive(0)?'\0':
+            (StrykerNamespace.MutantControl.IsActive(1)?"".ElementAt(2):
+            (StrykerNamespace.MutantControl.IsActive(2)?"test ".ToUpper().Trim().PadRight(2).Substring(2).ElementAt(2):
+            (StrykerNamespace.MutantControl.IsActive(3)?"".PadLeft(2).Substring(2).ElementAt(2):
+            (StrykerNamespace.MutantControl.IsActive(4)?"test ".ToLower().Trim().PadLeft(2).Substring(2).ElementAt(2):
+            (StrykerNamespace.MutantControl.IsActive(5)?"":"test ").ToUpper().Trim().PadLeft(2).Substring(2).ElementAt(2))))));
+            """;
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
 }
