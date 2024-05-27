@@ -3,8 +3,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using RegexParser.Nodes.QuantifierNodes;
-using Stryker.Core.Helpers;
 using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators;
@@ -103,7 +101,7 @@ public class StringMethodMutator : MutatorBase<ExpressionSyntax>
             OriginalNode = node,
             ReplacementNode = node.WithName(SyntaxFactory.IdentifierName(replacement)),
             DisplayName = $"String Method Mutation (Replace {original}() with {replacement}())",
-            Type = Mutator.String
+            Type = Mutator.StringMethod
         };
 
     private Mutation ApplyReplaceWithEmptyStringMutation(SyntaxNode node, string identifier) =>
@@ -115,7 +113,7 @@ public class StringMethodMutator : MutatorBase<ExpressionSyntax>
                 SyntaxFactory.Literal(string.Empty)
             ),
             DisplayName = $"String Method Mutation (Replace {identifier}() with Empty String)",
-            Type = Mutator.String
+            Type = Mutator.StringMethod
         };
 
     private Mutation ApplyReplaceWithCharMutation(SyntaxNode node, string identifier) =>
@@ -127,6 +125,6 @@ public class StringMethodMutator : MutatorBase<ExpressionSyntax>
                 SyntaxFactory.Literal(char.MinValue)
             ),
             DisplayName = $"String Method Mutation (Replace {identifier}() with '\\0' char)",
-            Type = Mutator.String
+            Type = Mutator.StringMethod
         };
 }

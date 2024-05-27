@@ -167,7 +167,7 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `string.IsNullOrWhiteSpace(x)` | `(x != "")` |
 | `string.IsNullOrWhiteSpace(x)` | `(x.Trim() != "")` |
 
-## String Methods (_string_)
+## String Methods (_stringmethod_)
 | Original               | Mutated              |
 |------------------------|----------------------|
 | `Trim()`               | `""`                 |
