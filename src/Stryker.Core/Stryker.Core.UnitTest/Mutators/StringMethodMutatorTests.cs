@@ -65,7 +65,7 @@ public class StringMethodMutatorTests : TestBase
 
         var mutation = result.ShouldHaveSingleItem();
 
-        mutation.Type.ShouldBe(Mutator.String);
+        mutation.Type.ShouldBe(Mutator.StringMethod);
         mutation.DisplayName.ShouldBe(expectedDisplayName);
 
         var access = mutation.ReplacementNode.ShouldBeOfType<MemberAccessExpressionSyntax>();
@@ -83,7 +83,7 @@ public class StringMethodMutatorTests : TestBase
         var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
 
         var mutation = result.ShouldHaveSingleItem();
-        mutation.Type.ShouldBe(Mutator.String);
+        mutation.Type.ShouldBe(Mutator.StringMethod);
         mutation.DisplayName.ShouldBe($"String Method Mutation (Replace {methodName}() with Empty String)");
 
         var syntax = mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
@@ -101,7 +101,7 @@ public class StringMethodMutatorTests : TestBase
         var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
 
         var mutation = result.ShouldHaveSingleItem();
-        mutation.Type.ShouldBe(Mutator.String);
+        mutation.Type.ShouldBe(Mutator.StringMethod);
         mutation.DisplayName.ShouldBe($"String Method Mutation (Replace {methodName}() with '\\0' char)");
 
         var syntax = mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>();
