@@ -40,16 +40,20 @@
     <PackageReference Include="Azure.Storage.Files.Shares" />
     <PackageReference Include="Grynwald.MarkdownGenerator" />
     <PackageReference Include="LibGit2Sharp" />
-    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" />
     <PackageReference Include="FSharp.Compiler.Service" />
     <PackageReference Include="DotNet.Glob" />
     <PackageReference Include="Buildalyzer" />
+    <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.TestPlatform" />
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
     <PackageReference Include="Microsoft.TestPlatform.Portable" />
     <PackageReference Include="Microsoft.TestPlatform.TranslationLayer" />
-    <PackageReference Include="Microsoft.Web.LibraryManager.Build" />
     <PackageReference Include="Mono.Cecil" />
     <PackageReference Include="NuGet.Frameworks" />
     <PackageReference Include="ResXResourceReader.NetStandard" />
