@@ -164,6 +164,15 @@
           "NETStandard.Library": "2.0.0"
         }
       },
+      "Microsoft.Web.LibraryManager.Build": {
+        "type": "Direct",
+        "requested": "[2.1.175, )",
+        "resolved": "2.1.175",
+        "contentHash": "OhJ8cfzvX/rxCuEezniBQCaCqKuQtU2tNr3m3Qryu+V30lZcUrjtsg39DGZWLw6EzbJA+TUdZPfuLeEDuz3cXA==",
+        "dependencies": {
+          "System.Runtime.Loader": "4.3.0"
+        }
+      },
       "Mono.Cecil": {
         "type": "Direct",
         "requested": "[0.11.5, )",
