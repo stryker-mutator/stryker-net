@@ -67,7 +67,7 @@ stages:
         command: test
         projects: 'src/Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj'
         arguments: '--collect "Code coverage"'
-    - task: SonarCloudAnalyze@1
+    - task: SonarCloudAnalyze@2
     - task: SonarCloudPublish@1
       inputs:
         pollingTimeoutSec: '300'
