@@ -62,12 +62,11 @@ namespace ExampleProject
 
             var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
-            using (var ms = new MemoryStream())
-            {
-                var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, null);
-                result.Success.ShouldBe(true);
-                ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
-            }
+            using var ms = new MemoryStream();
+            using var symbol = new MemoryStream();
+            var result = target.Compile(new Collection<SyntaxTree>() { syntaxTree }, ms, symbol);
+            result.Success.ShouldBe(true);
+            ms.Length.ShouldBeGreaterThan(100, "No value was written to the MemoryStream by the compiler");
         }
 
         [Fact]

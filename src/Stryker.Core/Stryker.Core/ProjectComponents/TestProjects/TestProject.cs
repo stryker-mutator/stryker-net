@@ -15,6 +15,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
     {
         public IAnalyzerResult AnalyzerResult { get; }
 
+        public string ProjectFilePath => AnalyzerResult.ProjectFilePath;
         public IEnumerable<TestFile> TestFiles { get; }
 
         public TestProject(IFileSystem fileSystem, IAnalyzerResult testProjectAnalyzerResult)
