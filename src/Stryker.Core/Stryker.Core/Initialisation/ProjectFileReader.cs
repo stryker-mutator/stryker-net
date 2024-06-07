@@ -17,6 +17,7 @@ namespace Stryker.Core.Initialisation
             string solutionFilePath,
             string targetFramework,
             string msBuildPath = null);
+
         IAnalyzerManager GetAnalyzerManager(string solutionFilePath = null);
 
         IAnalyzerResult GetAnalyzerResult(IAnalyzerResults results, string targetFramework);
@@ -44,7 +45,8 @@ namespace Stryker.Core.Initialisation
 
         public IAnalyzerManager GetAnalyzerManager(string solutionFilePath = null)
         {
-            _analyzerManager ??= _analyzerProvider.Provide(solutionFilePath, new AnalyzerManagerOptions { LogWriter = _buildalyzerLog });
+            _analyzerManager ??= _analyzerProvider.Provide(solutionFilePath,
+                new AnalyzerManagerOptions { LogWriter = _buildalyzerLog });
             return _analyzerManager;
         }
 
@@ -53,19 +55,24 @@ namespace Stryker.Core.Initialisation
             string targetFramework,
             string msBuildPath = null)
         {
-            _logger.LogDebug("Analyzing project file {0}", projectFilePath);
-            var analyzerResult = GetAnalyzerResult(GetAnalyzerManager(solutionFilePath).GetProject(projectFilePath).Build(), targetFramework);
+            _logger.LogDebug("Analyzing project file {ProjectFilePath}", projectFilePath);
+            var analyzerResult =
+                GetAnalyzerResult(GetAnalyzerManager(solutionFilePath).GetProject(projectFilePath).Build(),
+                    targetFramework);
 
             if (analyzerResult.Succeeded)
             {
                 return analyzerResult;
             }
+
             if (analyzerResult.TargetsFullFramework())
             {
                 // buildalyzer failed to find restored packages, retry after nuget restore
                 _logger.LogDebug("Project analyzer result not successful, restoring packages");
                 _nugetRestoreProcess.RestorePackages(solutionFilePath, msBuildPath);
-                analyzerResult = GetAnalyzerResult(GetAnalyzerManager(solutionFilePath).GetProject(projectFilePath).Build(), targetFramework);
+                analyzerResult =
+                    GetAnalyzerResult(GetAnalyzerManager(solutionFilePath).GetProject(projectFilePath).Build(),
+                        targetFramework);
             }
 
             return analyzerResult;
@@ -78,14 +85,16 @@ namespace Stryker.Core.Initialisation
             {
                 _logger.LogDebug("Project analyzer result not successful");
             }
+
             LogAnalyzerResult(result);
             return result;
         }
 
         private IAnalyzerResult SelectAnalyzerResult(IAnalyzerResults analyzerResults, string targetFramework)
         {
-            var validResults = analyzerResults.Where(a => a.TargetFramework is not null);
-            if (!validResults.Any())
+            var validResults = analyzerResults.Where(a => a.TargetFramework is not null)
+                .ToList();
+            if (validResults.Count == 0)
             {
                 _logger.LogError("Project analysis failed. The MsBuild log is below.");
                 _logger.LogError(_buildalyzerLog.ToString());
@@ -107,42 +116,48 @@ namespace Stryker.Core.Initialisation
             var availableFrameworks = validResults.Select(a => a.TargetFramework).Distinct();
             var firstFramework = firstAnalyzerResult.TargetFramework;
             _logger.LogWarning(
-                $"Could not find a project analysis for the chosen target framework {targetFramework}. \n" +
-                $"The available target frameworks are: {string.Join(',', availableFrameworks)}. \n" +
-                $"The first available framework will be selected, which is {firstFramework}.");
+                "Could not find a project analysis for the chosen target framework {TargetFramework}. \n" +
+                "The available target frameworks are: {AvailableFrameworks}. \n" +
+                "The first available framework will be selected, which is {FirstFramework}.",
+                targetFramework,
+                string.Join(',', availableFrameworks), firstFramework);
 
             return firstAnalyzerResult;
         }
 
-        private static readonly HashSet<string> ImportantProperties = new() {"Configuration", "Platform", "AssemblyName", "Configurations"};
+        private static readonly HashSet<string> ImportantProperties =
+            new() { "Configuration", "Platform", "AssemblyName", "Configurations" };
 
         private void LogAnalyzerResult(IAnalyzerResult analyzerResult)
         {
             // dump all properties as it can help diagnosing build issues for user project.
             _logger.LogTrace("**** Buildalyzer result ****");
 
-            _logger.LogTrace("Project: {0}", analyzerResult.ProjectFilePath);
-            _logger.LogTrace("TargetFramework: {0}", analyzerResult.TargetFramework);
-            _logger.LogTrace("Succeeded: {0}", analyzerResult.Succeeded);
+            _logger.LogTrace("Project: {ProjectFilePath}", analyzerResult.ProjectFilePath);
+            _logger.LogTrace("TargetFramework: {TargetFramework}", analyzerResult.TargetFramework);
+            _logger.LogTrace("Succeeded: {Result}", analyzerResult.Succeeded);
 
             var properties = analyzerResult.Properties ?? new Dictionary<string, string>();
             foreach (var property in ImportantProperties)
             {
-                _logger.LogTrace("Property {0}={1}", property, properties.GetValueOrDefault(property)??"'undefined'");
+                _logger.LogTrace("Property {Property}={Value}", property, properties.GetValueOrDefault(property) ?? "'undefined'");
             }
+
             foreach (var sourceFile in analyzerResult?.SourceFiles ?? Enumerable.Empty<string>())
             {
-                _logger.LogTrace("SourceFile {0}", sourceFile);
+                _logger.LogTrace("SourceFile {SourceFile}", sourceFile);
             }
+
             foreach (var reference in analyzerResult?.References ?? Enumerable.Empty<string>())
             {
-                _logger.LogTrace("References: {0} (in {1})", Path.GetFileName(reference), Path.GetDirectoryName(reference));
+                _logger.LogTrace("References: {FileName} (in {Directory})", Path.GetFileName(reference),
+                    Path.GetDirectoryName(reference));
             }
 
             foreach (var property in properties)
             {
-                if (ImportantProperties.Contains(property.Key)) continue; // already logged 
-                _logger.LogTrace("Property {0}={1}", property.Key, property.Value.Replace(Environment.NewLine, "\\n"));
+                if (ImportantProperties.Contains(property.Key)) continue; // already logged
+                _logger.LogTrace("Property {Property}={Value}", property.Key, property.Value.Replace(Environment.NewLine, "\\n"));
             }
 
             _logger.LogTrace("**** Buildalyzer result ****");

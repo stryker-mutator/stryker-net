@@ -24,13 +24,15 @@ public class RegexMutator : MutatorBase<ObjectCreationExpressionSyntax>
         Logger = ApplicationLogging.LoggerFactory.CreateLogger<RegexMutator>();
     }
 
-    public override IEnumerable<Mutation> ApplyMutations(ObjectCreationExpressionSyntax node, SemanticModel semanticModel)
+    public override IEnumerable<Mutation> ApplyMutations(ObjectCreationExpressionSyntax node,
+        SemanticModel semanticModel)
     {
         var name = node.Type.ToString();
         if (name == nameof(Regex) || name == typeof(Regex).FullName)
         {
             var arguments = node.ArgumentList.Arguments;
-            var namedArgument = arguments.FirstOrDefault(argument => argument.NameColon?.Name.Identifier.ValueText == PatternArgumentName);
+            var namedArgument = arguments.FirstOrDefault(argument =>
+                argument.NameColon?.Name.Identifier.ValueText == PatternArgumentName);
             var patternArgument = namedArgument ?? node.ArgumentList.Arguments.FirstOrDefault();
             var patternExpression = patternArgument?.Expression;
 
@@ -47,14 +49,17 @@ public class RegexMutator : MutatorBase<ObjectCreationExpressionSyntax>
                     }
                     catch (ArgumentException exception)
                     {
-                        Logger.LogDebug($"RegexMutator created mutation {currentValue} -> {regexMutation.ReplacementPattern} which is an invalid regular expression:\n{exception.Message}");
+                        Logger.LogDebug(
+                            "RegexMutator created mutation {CurrentValue} -> {ReplacementPattern} which is an invalid regular expression:\n{Message}",
+                            currentValue, regexMutation.ReplacementPattern, exception.Message);
                         continue;
                     }
 
                     yield return new Mutation()
                     {
                         OriginalNode = patternExpression,
-                        ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(regexMutation.ReplacementPattern)),
+                        ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression,
+                            SyntaxFactory.Literal(regexMutation.ReplacementPattern)),
                         DisplayName = regexMutation.DisplayName,
                         Type = Mutator.Regex,
                         Description = regexMutation.Description

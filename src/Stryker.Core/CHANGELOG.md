@@ -1,3 +1,14 @@
+## [4.0.6](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.5...stryker@4.0.6) (2024-05-25)
+
+
+### Bug Fixes
+
+* **delegate handling:** NullReferenceException when mutating parameterless delegates ([#2926](https://github.com/stryker-mutator/stryker-net/issues/2926)) ([5223ec5](https://github.com/stryker-mutator/stryker-net/commit/5223ec598866be306852103a2a500ab24617979b))
+* Logging of unexpected test case could result in a crash ([#2929](https://github.com/stryker-mutator/stryker-net/issues/2929)) ([#2931](https://github.com/stryker-mutator/stryker-net/issues/2931)) ([1db4b6c](https://github.com/stryker-mutator/stryker-net/commit/1db4b6c948ea06f4867f2d0c9b1fbba3098c8d8b))
+* **mutator:** issue where non-nullable fields were swapped by NullCoalescingExpressionMutator  ([#2915](https://github.com/stryker-mutator/stryker-net/issues/2915)) ([2af2947](https://github.com/stryker-mutator/stryker-net/commit/2af29476768cd2fcdefe41936cd11a0b3f0d192a))
+
+
+
 ## [4.0.5](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.4...stryker@4.0.5) (2024-04-26)
 
 
