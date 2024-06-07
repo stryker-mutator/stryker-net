@@ -8,6 +8,7 @@
     "test-projects": [
       "../NetCoreTestProject.XUnit/NetCoreTestProject.XUnit.csproj",
       "../NetCoreTestProject.NUnit/NetCoreTestProject.NUnit.csproj"
-    ]
+    ],
+    "mutation-level": "Complete"
   }
 }

@@ -12,6 +12,7 @@
     ],
     "mutate": [
       "!Person.cs"
-    ]
+    ],
+    "mutation-level": "Complete"
   }
 }
