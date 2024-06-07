@@ -138,7 +138,9 @@ Default: `latest`
 Command line: `N/A`  
 Config file: `"language-version": 'CSharp7_3'`
 
-Stryker compiles with the latest stable csharp version by default. This should generally be fine as csharp language features are forward compatible. You should not have to change the option from latest unless you're using preview versions of dotnet/csharp. If you do have compilation errors regarding language features you can explicitly set the language version.
+Stryker compiles using the project language settings (latest by default); but note that since Stryker embeds the Roslyn compiler, `preview` and `latest` are relative to this compiler 
+and may be different from your set up. If you do have compilation errors regarding language features you can explicitly set the language version.
+Note that there is always a delay between C# SDK beta releases and Roslyn and Stryker supporting them, some new features may not be supported immediately.
 
 Valid language versions:
 - Default (Latest)
@@ -161,10 +163,17 @@ Valid language versions:
 
 *\* Csharp version 1 is not allowed because stryker injects helper code that uses csharp 2 language features.*
 
+### `configuration` &lt;`string`&gt;
+Default: default for SDK, usually `Debug`
+Command line: `--configuration Release`  
+Config file: `"configuration": "Release"
+
+Allows you to specify the build configuration to use when building the project. This can be useful when you want to test the release build of your project.
+
 ### `target-framework` &lt;`string`&gt;
 
-Default: randomly selected
-Command line: `target-framework`  
+Default: as defined by the configuration, randomly chosen if multiple frameworks are targeted
+Command line: `--target-framework`  
 Config file: `"target-framework": "netcoreapp3.1"`
 
 If the project targets multiple frameworks, this way you can specify the particular framework to build against. If you specify a non-existent target, Stryker will build the project against a random one (or the only one if so).
@@ -635,8 +644,8 @@ Default: `false`
 Command line: `--dev-mode`  
 Config file: `N/A`
 
-Stryker will not gracefully recover from compilation errors, but instead crash immediately. Used during development to quickly diagnose errors.  
-Also enables more debug logs not generally useful to normal users.
+You should activate `dev mode` when diagnosing an issue with Stryker. This will enable additional logging, specific checks, disable some optimizations...
+As a result, Stryker will be slower, but the log file should help diagnose the hardest issues.
 
 ## Misc
 

@@ -54,7 +54,7 @@ namespace Stryker.Core.Initialisation
             if (!projectInfos.Any())
             {
                 _logger.LogWarning("No project to mutate. Stryker will exit prematurely.");
-                return Enumerable.Empty<IMutationTestProcess>();
+                return [];
             }
 
             _initializationProcess.BuildProjects(options, projectInfos);
