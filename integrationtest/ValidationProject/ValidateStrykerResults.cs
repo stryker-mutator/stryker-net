@@ -80,8 +80,8 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutants(report, total: 117, ignored: 56, survived: 4, killed: 7, timeout: 2, nocoverage: 46);
-            CheckReportTestCounts(report, total: 14);
+            CheckReportMutants(report, total: 120, ignored: 58, survived: 4, killed: 8, timeout: 2, nocoverage: 46);
+            CheckReportTestCounts(report, total: 16);
         }
 
         [Fact]
@@ -119,8 +119,8 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutants(report, total: 117, ignored: 28, survived: 8, killed: 9, timeout: 2, nocoverage: 68);
-            CheckReportTestCounts(report, total: 30);
+            CheckReportMutants(report, total: 120, ignored: 29, survived: 8, killed: 11, timeout: 2, nocoverage: 68);
+            CheckReportTestCounts(report, total: 32);
         }
 
         [Fact]
@@ -138,8 +138,8 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutants(report, total: 117, ignored: 56, survived: 4, killed: 7, timeout: 2, nocoverage: 46);
-            CheckReportTestCounts(report, total: 30);
+            CheckReportMutants(report, total: 120, ignored: 58, survived: 4, killed: 8, timeout: 2, nocoverage: 46);
+            CheckReportTestCounts(report, total: 32);
         }
 
         private void CheckMutationKindsValidity(JsonReport report)

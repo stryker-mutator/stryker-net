@@ -43,6 +43,8 @@ public enum Mutator
     NullCoalescing,
     [MutatorDescription("Math methods")]
     Math,
+    [MutatorDescription("String Method")]
+    StringMethod,
     [MutatorDescription("Conditional operators")]
     Conditional
 }
