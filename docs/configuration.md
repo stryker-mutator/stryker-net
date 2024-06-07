@@ -239,6 +239,7 @@ The levels are:
 | Checked Statements | Standard |
 | Regex | Advanced |
 | Math Methods | Advanced |
+| String Methods | Advanced |
 
 ### `reporter` &lt;`string[]`&gt;
 
