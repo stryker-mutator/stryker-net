@@ -1,3 +1,5 @@
+using System.Linq;
+
 namespace TargetProject.Constructs;
 
 public class Csharp1
@@ -44,4 +46,7 @@ world!";
         Print print = (message) => Console.WriteLine("printing: " + message);
         print("Hello, World!");
     }
+
+    // string methods
+    public char ExampleChain() => "test".ToUpper().Trim().PadLeft(2).Substring(2).ElementAt(0);
 }

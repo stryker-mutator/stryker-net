@@ -1,3 +1,5 @@
+// https://github.com/stryker-mutator/stryker-net/issues/305
+
 namespace TargetProject.Defects
 {
     public class UnsafeCode

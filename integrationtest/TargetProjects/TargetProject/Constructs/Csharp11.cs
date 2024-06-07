@@ -143,6 +143,31 @@ public class Csharp11
     {
         public ParameterStringAttribute(string name) { }
     }
+
+    // list patterns
+    public void ListPatterns()
+    {
+        decimal balance = 0m;
+        string[][] transactions = new[]
+        {
+            new[] { "1", "DEPOSIT", "100.00" },
+            new[] { "2", "WITHDRAWAL", "20.00" },
+            new[] { "3", "INTEREST", "0.50" },
+            new[] { "4", "FEE", "1.00" },
+        };
+        foreach (string[] transaction in transactions)
+        {
+            balance += transaction switch
+            {
+            [_, "DEPOSIT", _, var amount] => decimal.Parse(amount),
+            [_, "WITHDRAWAL", .., var amount] => -decimal.Parse(amount),
+            [_, "INTEREST", var amount] => decimal.Parse(amount),
+            [_, "FEE", var fee] => -decimal.Parse(fee),
+                _ => throw new InvalidOperationException($"Record {string.Join(", ", transaction)} is not in the expected format!"),
+            };
+            Console.WriteLine($"Record: {string.Join(", ", transaction)}, New balance: {balance:C}");
+        }
+    }
 }
 
 // file type
