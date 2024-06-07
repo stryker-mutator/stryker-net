@@ -91,7 +91,12 @@ public class Csharp11
     }
 
     // UTF-8 string literals
-    byte[] AuthStringLiteral = "AUTH "u8.ToArray();
+
+    public static void Utf8StringLiterals()
+    {
+        byte[] AuthStringLiteral = "AUTH "u8.ToArray();
+        var helloWorld = "Hello"u8 + " "u8 + "World"u8;
+    }
 
     // required members
     public class Person
