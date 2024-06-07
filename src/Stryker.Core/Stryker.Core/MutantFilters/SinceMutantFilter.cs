@@ -121,7 +121,9 @@ namespace Stryker.Core.MutantFilters
             foreach (var mutant in mutants)
             {
                 if (mutant.CoveringTests.IsEmpty || mutant.CoveringTests.Count == 0)
+                {
                     continue;
+                }
                 var coveringTests = _tests.Extract(mutant.CoveringTests.GetGuids());
 
                 if (coveringTests != null
