@@ -156,7 +156,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
 int SomeMethod()  => (true && SomeOtherMethod(out var x)) ? x : 5;
 }";
         string expected = @"void TestMethod(){if(StrykerNamespace.MutantControl.IsActive(0)){}else{
-int SomeMethod()  {if(StrykerNamespace.MutantControl.IsActive(2)){return(false?x :5);}else{if(StrykerNamespace.MutantControl.IsActive(1)){return(true?x :5);}else{if(StrykerNamespace.MutantControl.IsActive(3)){return(true || SomeOtherMethod(out var x)) ? x : 5;}else{((StrykerNamespace.MutantControl.IsActive(4)?false:true )&& SomeOtherMethod(out var x)) ? x : 5;}}}};
+int SomeMethod()  {if(StrykerNamespace.MutantControl.IsActive(2)){return(false?x :5);}else{if(StrykerNamespace.MutantControl.IsActive(1)){return(true?x :5);}else{if(StrykerNamespace.MutantControl.IsActive(3)){return(true || SomeOtherMethod(out var x)) ? x : 5;}else{return((StrykerNamespace.MutantControl.IsActive(4)?false:true )&& SomeOtherMethod(out var x)) ? x : 5;}}}};
 }}";
 
         ShouldMutateSourceInClassToExpected(source, expected);
@@ -1534,7 +1534,7 @@ string Value {get => Out(out var x)? ""empty"": """";}
 static TestClass(){}}";
 
         var expected = @"class Test {
-string Value {get {if(StrykerNamespace.MutantControl.IsActive(1)){return(false?""empty"":"""");}else{if(StrykerNamespace.MutantControl.IsActive(0)){return(true?""empty"":"""");}else{return Out(out var x)? (StrykerNamespace.MutantControl.IsActive(2)?"""":""empty""): (StrykerNamespace.MutantControl.IsActive(3)?""Stryker was here!"":"""");}}return default(string);}}
+string Value {get {if(StrykerNamespace.MutantControl.IsActive(1)){return(false?""empty"":"""");}else{if(StrykerNamespace.MutantControl.IsActive(0)){return(true?""empty"":"""");}else{return Out(out var x)? (StrykerNamespace.MutantControl.IsActive(2)?"""":""empty""): (StrykerNamespace.MutantControl.IsActive(3)?""Stryker was here!"":"""");}}}}
 static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
 
         ShouldMutateSourceInClassToExpected(source, expected);
@@ -1600,7 +1600,7 @@ static string Value {get;} = StrykerNamespace.MutantContext.TrackValue(()=>(Stry
 static string Value => Out(out var x)? ""empty"": """";}";
 
         var expected = @"class Test {
-static string Value {get {if(StrykerNamespace.MutantControl.IsActive(0)){return!(Out(out var x))? ""empty"": """";}else{return Out(out var x)? (StrykerNamespace.MutantControl.IsActive(1)?"""":""empty""): (StrykerNamespace.MutantControl.IsActive(2)?""Stryker was here!"":"""");}}}}";
+static string Value {get{if(StrykerNamespace.MutantControl.IsActive(1)){return(false?""empty"":"""");}else{if(StrykerNamespace.MutantControl.IsActive(0)){return(true?""empty"":"""");}else{return Out(out var x)? (StrykerNamespace.MutantControl.IsActive(2)?"""":""empty""): (StrykerNamespace.MutantControl.IsActive(3)?""Stryker was here!"":"""");}}}}}";
 
         ShouldMutateSourceInClassToExpected(source, expected);
     }
