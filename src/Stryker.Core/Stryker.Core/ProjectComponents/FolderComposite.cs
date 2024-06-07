@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.CodeAnalysis;
 using Stryker.Core.Mutants;
 
 namespace Stryker.Core.ProjectComponents
@@ -15,8 +14,8 @@ namespace Stryker.Core.ProjectComponents
 
     public class FolderComposite<T> : ProjectComponent<T>, IReadOnlyFolderComposite
     {
-        private readonly IList<IProjectComponent> _children = new List<IProjectComponent>();
-        private readonly IList<T> _compilationSyntaxTrees = new List<T>();
+        private readonly List<IProjectComponent> _children = [];
+        public readonly List<T> _compilationSyntaxTrees = [];
 
         public IEnumerable<IProjectComponent> Children => _children;
 

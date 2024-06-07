@@ -19,6 +19,12 @@ public static class IAnalyzerResultExtensions
     public static string GetAssemblyFileName(this IAnalyzerResult analyzerResult) =>
         FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["TargetFileName"]);
 
+    public static bool BuildsAnAssembly(this IAnalyzerResult analyzerResult) => analyzerResult.Properties.ContainsKey("TargetFileName");
+
+
+
+    public static string GetReferenceAssemblyPath(this IAnalyzerResult analyzerResult) => analyzerResult.Properties.TryGetValue("TargetRefPath", out var property) ? FilePathUtils.NormalizePathSeparators(property) : GetAssemblyPath(analyzerResult);
+
     public static string GetAssemblyDirectoryPath(this IAnalyzerResult analyzerResult) =>
         FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["TargetDir"]);
 
@@ -47,6 +53,8 @@ public static class IAnalyzerResultExtensions
 
     public static string GetSymbolFileName(this IAnalyzerResult analyzerResult) =>
         Path.ChangeExtension(analyzerResult.GetAssemblyName(), ".pdb");
+
+    public static string TargetPlatform(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("TargetPlatform", "AnyCPU");
 
     public static IEnumerable<ISourceGenerator> GetSourceGenerators(this IAnalyzerResult analyzerResult, ILogger logger)
     {
@@ -144,11 +152,15 @@ public static class IAnalyzerResultExtensions
 
     internal static bool TargetsFullFramework(this IAnalyzerResult analyzerResult)
     {
+        if (analyzerResult.TargetFramework is null)
+        {
+            return false;
+        }
         var nuGetFramework = GetNuGetFramework(analyzerResult);
 
-        return nuGetFramework.IsDesktop() &&
-               (nuGetFramework.Version.Major < 4 || nuGetFramework.Version is { Major: 4, Minor: < 8 });
+        return nuGetFramework.IsDesktop();
     }
+    internal static bool TargetsFullFramework(this IAnalyzerResults analyzerResults) => analyzerResults.Any(x => x.TargetsFullFramework());
 
     public static Language GetLanguage(this IAnalyzerResult analyzerResult) =>
         analyzerResult.GetPropertyOrDefault("Language") switch
@@ -158,13 +170,15 @@ public static class IAnalyzerResultExtensions
             _ => Language.Undefined,
         };
 
-    private static readonly string[] KnownTestPackages = { "MSTest.TestFramework", "xunit", "NUnit" };
+    private static readonly string[] knownTestPackages = ["MSTest.TestFramework", "xunit", "NUnit"];
+
+    public static bool IsTestProject(this IAnalyzerResults analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
 
     public static bool IsTestProject(this IAnalyzerResult analyzerResult)
     {
         if (!bool.TryParse(analyzerResult.GetPropertyOrDefault("IsTestProject"), out var isTestProject))
         {
-            isTestProject = Array.Exists(KnownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n));
+            isTestProject = Array.Exists(knownTestPackages, n => analyzerResult.PackageReferences.ContainsKey(n));
         }
 
         var hasTestProjectTypeGuid = analyzerResult
