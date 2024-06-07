@@ -6,11 +6,11 @@ using Xunit.Abstractions;
 
 namespace ExampleProject.XUnit
 {
-    public class Theories
+    public class Constructs
     {
         private readonly ITestOutputHelper _testOutputHelper;
 
-        public Theories(ITestOutputHelper testOutputHelper)
+        public Constructs(ITestOutputHelper testOutputHelper)
         {
             _testOutputHelper = testOutputHelper;
         }
@@ -18,13 +18,13 @@ namespace ExampleProject.XUnit
         // explore the various ways to have test cases
         // explicit
         [Theory]
-        [InlineData(29, "No")]
-        [InlineData(32, "Yes")]
-        public void TestAgeExplicit(int age, string expired)
+        [InlineData(29, false)]
+        [InlineData(30, true)]
+        public void TestAgeExplicit(int age, bool expired)
         {
-            var sut = new StrykerComments{Age = age};
+            var sut = new KilledMutants { Age = age};
             _testOutputHelper.WriteLine($"Tuplesource test:{sut.Age}");
-            Assert.Equal(expired, sut.IsExpired());
+            Assert.Equal(expired, sut.IsExpiredBool());
         }
 
         // indirect
@@ -39,17 +39,17 @@ namespace ExampleProject.XUnit
         public static IEnumerable<object[]> ObjectSource()
         {
             Console.WriteLine("ObjectSource:32");
-            yield return new object[] {new StrykerComments {Age = 32}};
+            yield return new object[] {new KilledMutants { Age = 32}};
             Console.WriteLine("ObjectSource:42");
-            yield return new object[] {new StrykerComments {Age = 42}};
+            yield return new object[] {new KilledMutants { Age = 42}};
         }
 
         public static IEnumerable<object[]> TheSource()
         {
-            var student = new StrykerComments { Age = 22 };
+            var student = new KilledMutants { Age = 22 };
             Console.WriteLine("ObjectSource:22");
             yield return new object[] { student.IsExpired(), "No" };
-            student = new StrykerComments { Age = 42 };
+            student = new KilledMutants { Age = 42 };
             Console.WriteLine("ObjectSource:42");
             yield return new object[] { student.IsExpired(), "Yes" };
         }
@@ -58,7 +58,7 @@ namespace ExampleProject.XUnit
         [MemberData(nameof(TupleSource))]
         public void TestAgeIndirectTuple(int age, string expired)
         {
-            var sut = new StrykerComments{Age = age};
+            var sut = new KilledMutants { Age = age};
             _testOutputHelper.WriteLine($"Tuplesource test:{ sut.Age }");
             Assert.Equal(expired, sut.IsExpired());
         }
@@ -74,7 +74,7 @@ namespace ExampleProject.XUnit
         [Theory]
         [MemberData(nameof(ObjectSource))]
         // all test cases refer to the same test
-        public void TestAgeIndirectObject(StrykerComments sut)
+        public void TestAgeIndirectObject(KilledMutants sut)
         {
             _testOutputHelper.WriteLine($"ObjectSource test:{ sut.Age }");
             Assert.Equal("Yes", sut.IsExpired());

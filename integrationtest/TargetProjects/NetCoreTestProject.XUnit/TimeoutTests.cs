@@ -3,10 +3,10 @@ using Xunit;
 
 namespace ExampleProject.XUnit
 {
-    public class EndlessLoopTests
+    public class TimeoutTests
     {
         [Fact]
-        public void Loop()
+        public void ThisShouldTimeout()
         {
             var target = new Timeout();
             target.SomeLoop();
