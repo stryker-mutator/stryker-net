@@ -96,6 +96,7 @@ public class Csharp11
     {
         byte[] AuthStringLiteral = "AUTH "u8.ToArray();
         var helloWorld = "Hello"u8 + " "u8 + "World"u8;
+        var empty = ""u8;
     }
 
     // required members
