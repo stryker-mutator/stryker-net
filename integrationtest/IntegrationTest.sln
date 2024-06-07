@@ -25,13 +25,7 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Library.FSharp", "TargetPro
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "Library.FSharp.XUnit", "TargetProjects\Library.FSharp.XUnit\Library.FSharp.XUnit.fsproj", "{72C7E9EA-F831-45F9-9188-334B841A4D44}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{351EC093-BDFE-4760-855A-65B7916E6AFC}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmptyTestProject", "TargetProjects\EmptyTestProject\EmptyTestProject.csproj", "{B6989297-4C2C-4BBF-A217-172D191A8910}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.CLI", "..\src\Stryker.CLI\Stryker.CLI\Stryker.CLI.csproj", "{275A1596-FA06-4115-8564-58AABA33B002}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreTestProject.MSTest", "TargetProjects\NetCoreTestProject.MSTest\NetCoreTestProject.MSTest.csproj", "{70D4E1F4-1B49-448E-B0C9-E70D2F35D0E4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreTestProject.MSTest", "TargetProjects\NetCoreTestProject.MSTest\NetCoreTestProject.MSTest.csproj", "{18EBC386-68D1-4272-A616-042B274A615A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -79,18 +73,10 @@ Global
 		{72C7E9EA-F831-45F9-9188-334B841A4D44}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72C7E9EA-F831-45F9-9188-334B841A4D44}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72C7E9EA-F831-45F9-9188-334B841A4D44}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B6989297-4C2C-4BBF-A217-172D191A8910}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B6989297-4C2C-4BBF-A217-172D191A8910}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B6989297-4C2C-4BBF-A217-172D191A8910}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B6989297-4C2C-4BBF-A217-172D191A8910}.Release|Any CPU.Build.0 = Release|Any CPU
-		{275A1596-FA06-4115-8564-58AABA33B002}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{275A1596-FA06-4115-8564-58AABA33B002}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{275A1596-FA06-4115-8564-58AABA33B002}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{275A1596-FA06-4115-8564-58AABA33B002}.Release|Any CPU.Build.0 = Release|Any CPU
-		{70D4E1F4-1B49-448E-B0C9-E70D2F35D0E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{70D4E1F4-1B49-448E-B0C9-E70D2F35D0E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{70D4E1F4-1B49-448E-B0C9-E70D2F35D0E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{70D4E1F4-1B49-448E-B0C9-E70D2F35D0E4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18EBC386-68D1-4272-A616-042B274A615A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18EBC386-68D1-4272-A616-042B274A615A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18EBC386-68D1-4272-A616-042B274A615A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18EBC386-68D1-4272-A616-042B274A615A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

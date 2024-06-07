@@ -16,7 +16,7 @@ namespace NetCoreTestProject.NUnit
         [TestCase(32, "Yes")]
         public void TestAgeExplicit(int age, string expired)
         {
-            var sut = new StrykerComments { Age = age };
+            var sut = new KilledMutants { Age = age };
             ClassicAssert.AreEqual(expired, sut.IsExpired());
         }
 
@@ -29,12 +29,12 @@ namespace NetCoreTestProject.NUnit
             yield return (31, "Yes");
         }
 
-        private static IEnumerable<StrykerComments> ObjectSource()
+        private static IEnumerable<KilledMutants> ObjectSource()
         {
             Console.WriteLine("ObjectSource:32");
-            yield return new StrykerComments { Age = 32 };
+            yield return new KilledMutants { Age = 32 };
             Console.WriteLine("ObjectSource:42");
-            yield return new StrykerComments { Age = 42 };
+            yield return new KilledMutants { Age = 42 };
         }
 
         [Test]
@@ -70,7 +70,7 @@ namespace NetCoreTestProject.NUnit
         [Ignore("Run explicitly")]
         public void TestRandom(int x)
         {
-            var sut = new StrykerComments { Age = 32 };
+            var sut = new KilledMutants { Age = 32 };
             ClassicAssert.AreEqual("Yes", sut.IsExpired());
         }
     }
