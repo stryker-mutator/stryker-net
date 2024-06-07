@@ -2,14 +2,12 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Newtonsoft.Json;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Json;
-using Stryker.CLI;
 using Xunit;
 
 namespace IntegrationTests
@@ -63,7 +61,7 @@ namespace IntegrationTests
 
                 var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-                CheckReportMutantCounts(report, total: 29, ignored: 7, survived: 3, killed: 7, timeout: 0, nocoverage: 11);
+                CheckReportMutants(report, total: 29, ignored: 7, survived: 3, killed: 7, timeout: 0, nocoverage: 11);
             }
         }
 
@@ -82,7 +80,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutantCounts(report, total: 117, ignored: 56, survived: 4, killed: 7, timeout: 2, nocoverage: 46);
+            CheckReportMutants(report, total: 117, ignored: 56, survived: 4, killed: 7, timeout: 2, nocoverage: 46);
             CheckReportTestCounts(report, total: 14);
         }
 
@@ -121,7 +119,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutantCounts(report, total: 117, ignored: 28, survived: 8, killed: 9, timeout: 2, nocoverage: 68);
+            CheckReportMutants(report, total: 117, ignored: 28, survived: 8, killed: 9, timeout: 2, nocoverage: 68);
             CheckReportTestCounts(report, total: 30);
         }
 
@@ -140,7 +138,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutantCounts(report, total: 117, ignored: 56, survived: 4, killed: 7, timeout: 2, nocoverage: 46);
+            CheckReportMutants(report, total: 117, ignored: 56, survived: 4, killed: 7, timeout: 2, nocoverage: 46);
             CheckReportTestCounts(report, total: 30);
         }
 
