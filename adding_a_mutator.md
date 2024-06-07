@@ -11,15 +11,10 @@ These are the important information to bear in mind when designing a new mutator
 	1. This greatly simplifies the design and implementation of mutators
 	2. On the other hand, one must not design a mutator based on text transformation logic.
 > The syntax tree is an object representation of the source files where each syntax element (for example a statement) is described through object instances which classes match the syntax type.
-> 
-2. Stryker.Net **not does use the semantic model** of the syntax tree.
-	1. This improves performance during mutation.
-	2. On the other hand, one must not design a mutator relying on type information (e.g. Linq / Threading dedicated mutators).
-> The semantic model is an improved version of the syntax tree which adds the type information to the syntax elements.
- 3. Stryker.Net visits every syntax element; for example, a method invocation is first visited as a whole (e.g., `client.ChangeName(firstName, lastName)`), then  each element:object (`client`), method name (`ChangeName`) then each parameter(`firstname'` and `lastname`). _Note that if parameters are expressions, those are visited in a similar (and recursive) fashion._ 
-4. Each file is mutated separately.
+2. Stryker.Net visits every syntax element; for example, a method invocation is first visited as a whole (e.g., `client.ChangeName(firstName, lastName)`), then  each element:object (`client`), method name (`ChangeName`) then each parameter(`firstname'` and `lastname`). _Note that if parameters are expressions, those are visited in a similar (and recursive) fashion._ 
+3. Each file is mutated separately.
 	1. One cannot design a mutator exploiting multiple files at once.
-5. Stryker.Net takes care of roll backing in case of compilation errors
+4. Stryker.Net takes care of roll backing in case of compilation errors
 	1. Hence, mutators do not need to ensure mutation properly compiles
 	2. On the other hand, mutator should avoid triggering ambiguous errors, as those lead to rolling back many mutations.
 
@@ -31,7 +26,7 @@ A mutator:
 2. **Should be fast**: Stryker visits every syntax elements recursively, meaning that each syntax item is visited several times. A slow mutator can seriously slow down the mutation process.
 3. **Should generate buildable mutations**.: generated mutations should result in **compilable code in the majority of situations**.
 4. **Should  generate survivors**: mutators **should avoid** generating **mutations that often raise exceptions** (e.g., changing the sign of an index, such as `array\[i\]` to `array\[-i\]`) are those will be killed by any test that execute these lines.
-5. **Should generate killable mutations**: users must be able to devise a test that can kill the mutation. The main risk here is getting_semantically equivalent_ mutations, i.e., mutations that do change the behavior of the code and simply result in an alternate, but correct, implementation.
+5. **Should generate killable mutations**: users must be able to devise a test that can kill the mutation. The main risk here is getting _semantically equivalent_ mutations, i.e., mutations that do change the behavior of the code and simply result in an alternate, but correct, implementation.
 6. **Should be general**: mutators should be able to generate mutations for all projects, i.e., should not be specific to some rarely used constructions 5or type of projects. **Note**: in the future, Stryker.Net may support extra mutators via a plug-in like mechanism; those could be framework specific.
 
 ## How to code a mutator?
@@ -73,8 +68,8 @@ You need to:
 - It is ok to mutate new constructs (such as arrow expression) and leave the old constructs as is. The reverse is not true.
 - Your mutator must return an empty list (or `yield break`) if it cannot generate any mutation.
 - Mutator must not throw.
-- Make sure to update the [mutations documentation](docs/mutations.md).
+- Make sure to update the [mutations documentation](./docs/mutations.md).
 
-[Back to main contributing document](CONTRIBUTING.md).
+[Back to main contributing document](./CONTRIBUTING.md).
 
 [1]:	https://docs.microsoft.com/en-us/dotnet/csharp/roslyn-sdk/get-started/syntax-analysis "Get started with syntax analysis"

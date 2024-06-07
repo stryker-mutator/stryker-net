@@ -8,7 +8,7 @@ using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Xunit;
 
-namespace Stryker.Core.UnitTest.ProjectCOmponents.SourceProjects
+namespace Stryker.Core.UnitTest.ProjectComponents.SourceProjects
 {
     public class SourceProjectInfoTests : TestBase
     {

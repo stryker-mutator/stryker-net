@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base"
+    "config:recommended"
   ],
   "configMigration": true,
   "gitAuthor": "Renovatebot <renovatebot@stryker-mutator.io>",
@@ -12,11 +12,18 @@
   ],
   "packageRules": [
     {
-      "matchUpdateTypes": ["minor", "patch", "pin", "digest"],
+      "matchUpdateTypes": [
+        "minor",
+        "patch",
+        "pin",
+        "digest"
+      ],
       "automerge": true
     },
     {
-      "matchDatasources": ["azure-pipelines-tasks"],
+      "matchDatasources": [
+        "azure-pipelines-tasks"
+      ],
       "extractVersion": "^(?<version>\\d+)"
     }
   ],
@@ -24,7 +31,7 @@
     "enabled": true,
     "fileMatch": [
       "azure.*pipelines?.*\\.ya?ml$",
-      "pipeline-templates\/.*\\.ya?ml$"
+      "pipeline-templates/.*\\.ya?ml$"
     ]
   }
 }

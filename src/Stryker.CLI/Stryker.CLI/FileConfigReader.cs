@@ -21,18 +21,27 @@ namespace Stryker.CLI
             // As json values are first in line we can just overwrite all supplied inputs
             inputs.ConcurrencyInput.SuppliedInput = config.Concurrency;
 
-            inputs.SinceInput.SuppliedInput =
-                config.Since is not null &&
-                (config.Since.Enabled.HasValue && config.Since.Enabled.Value);
 
-            inputs.WithBaselineInput.SuppliedInput =
-                config.Baseline is not null &&
-                (config.Baseline.Enabled.HasValue && config.Baseline.Enabled.Value);
+            if (config.Since is not null)
+            {
+                // Since is implicitly enabled when the object exists in the file config
+                inputs.SinceInput.SuppliedInput = config.Since.Enabled ?? true;
 
-            inputs.BaselineProviderInput.SuppliedInput = config.Baseline?.Provider;
-            inputs.DiffIgnoreChangesInput.SuppliedInput = config.Since?.IgnoreChangesIn;
-            inputs.FallbackVersionInput.SuppliedInput = config.Baseline?.FallbackVersion;
-            inputs.AzureFileStorageUrlInput.SuppliedInput = config.Baseline?.AzureFileShareUrl;
+                inputs.SinceTargetInput.SuppliedInput = config.Since.Target;
+                inputs.DiffIgnoreChangesInput.SuppliedInput = config.Since.IgnoreChangesIn;
+            }
+
+            if (config.Baseline is not null)
+            {
+                // Baseline is implicitly enabled when the object exists in the file config
+                inputs.WithBaselineInput.SuppliedInput = config.Baseline.Enabled ?? true;
+
+                inputs.BaselineProviderInput.SuppliedInput = config.Baseline.Provider;
+                inputs.FallbackVersionInput.SuppliedInput = config.Baseline.FallbackVersion;
+                inputs.AzureFileStorageUrlInput.SuppliedInput = config.Baseline.AzureFileShareUrl;
+            }
+
+
             inputs.CoverageAnalysisInput.SuppliedInput = config.CoverageAnalysis;
             inputs.DisableBailInput.SuppliedInput = config.DisableBail;
             inputs.DisableMixMutantsInput.SuppliedInput = config.DisableMixMutants;
@@ -44,7 +53,6 @@ namespace Stryker.CLI
             inputs.ProjectVersionInput.SuppliedInput = config.ProjectInfo?.Version;
             inputs.ReportersInput.SuppliedInput = config.Reporters;
 
-            inputs.SinceTargetInput.SuppliedInput = config.Since?.Target;
             inputs.SolutionInput.SuppliedInput = config.Solution;
             inputs.TargetFrameworkInput.SuppliedInput = config.TargetFramework;
 

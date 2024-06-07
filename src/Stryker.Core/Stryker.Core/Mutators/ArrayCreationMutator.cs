@@ -1,19 +1,20 @@
-﻿using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
 
-namespace Stryker.Core.Mutators
-{
-    public class ArrayCreationMutator : MutatorBase<ExpressionSyntax>, IMutator
-    {
-        public override MutationLevel MutationLevel => MutationLevel.Standard;
+namespace Stryker.Core.Mutators;
 
-        public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node)
+public class ArrayCreationMutator : MutatorBase<ExpressionSyntax>
+{
+    public override MutationLevel MutationLevel => MutationLevel.Standard;
+
+    public override IEnumerable<Mutation> ApplyMutations(ExpressionSyntax node, SemanticModel semanticModel)
+    {
+        switch (node)
         {
-            if (node is StackAllocArrayCreationExpressionSyntax stackAllocArray && stackAllocArray.Initializer?.Expressions != null && stackAllocArray.Initializer.Expressions.Count > 0)
-            {
+            case StackAllocArrayCreationExpressionSyntax { Initializer.Expressions.Count: > 0 } stackAllocArray:
                 yield return new Mutation
                 {
                     OriginalNode = stackAllocArray,
@@ -21,9 +22,8 @@ namespace Stryker.Core.Mutators
                     DisplayName = "Array initializer mutation",
                     Type = Mutator.Initializer
                 };
-            }
-            if (node is ArrayCreationExpressionSyntax arrayCreationNode && arrayCreationNode.Initializer?.Expressions != null && arrayCreationNode.Initializer.Expressions.Count > 0)
-            {
+                break;
+            case ArrayCreationExpressionSyntax { Initializer.Expressions.Count: > 0 } arrayCreationNode:
                 yield return new Mutation
                 {
                     OriginalNode = arrayCreationNode,
@@ -31,7 +31,7 @@ namespace Stryker.Core.Mutators
                     DisplayName = "Array initializer mutation",
                     Type = Mutator.Initializer
                 };
-            }
+                break;
         }
     }
 }

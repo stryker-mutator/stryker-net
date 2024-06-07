@@ -54,11 +54,25 @@ namespace TestApplication
 
             var node = GenerateExpressions(method);
 
-            var result = target.ApplyMutations(node).ToList();
+            var result = target.ApplyMutations(node, null).ToList();
 
             var mutation = result.ShouldHaveSingleItem();
             mutation.ReplacementNode.ToString().ShouldBe("!(Method())");
             mutation.DisplayName.ShouldBe("Negate expression");
+        }
+
+        [Theory]
+        [InlineData("var y = x is object result ? result.ToString() : null;")] // can't mutate inline var declaration
+        public void ShouldNotMutateThis(string method)
+        {
+            var target = new NegateConditionMutator();
+            SyntaxTree tree = CSharpSyntaxTree.ParseText(method);
+
+
+            var expressionSyntax = tree.GetRoot().DescendantNodes().OfType<ConditionalExpressionSyntax>().Single();
+            var result = target.ApplyMutations(expressionSyntax.Condition, null).ToList();
+
+            result.ShouldBeEmpty();
         }
     }
 }

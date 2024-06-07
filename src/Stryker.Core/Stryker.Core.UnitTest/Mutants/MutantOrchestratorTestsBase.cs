@@ -26,11 +26,11 @@ namespace Stryker.Core.UnitTest.Mutants
 
         protected void ShouldMutateSourceToExpected(string actual, string expected)
         {
-            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(actual).GetRoot());
-            actual = actualNode.ToFullString();
+            var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(actual), null);
+            actual = actualNode.GetRoot().ToFullString();
             actual = actual.Replace(_injector.HelperNamespace, "StrykerNamespace");
-            actualNode = CSharpSyntaxTree.ParseText(actual).GetRoot();
-            var expectedNode = CSharpSyntaxTree.ParseText(expected).GetRoot();
+            actualNode = CSharpSyntaxTree.ParseText(actual);
+            var expectedNode = CSharpSyntaxTree.ParseText(expected);
             actualNode.ShouldBeSemantically(expectedNode);
             actualNode.ShouldNotContainErrors();
         }
@@ -39,19 +39,21 @@ namespace Stryker.Core.UnitTest.Mutants
         {
             actual = @"using System;
 using System.Collections.Generic;
-            using System.Text;
+using System.Text;
 namespace StrykerNet.UnitTest.Mutants.TestResources
-    {
-        class TestClass
-        {" + actual + "}}";
+{
+    class TestClass
+    {" + actual + @"}
+}";
 
             expected = @"using System;
 using System.Collections.Generic;
-            using System.Text;
+using System.Text;
 namespace StrykerNet.UnitTest.Mutants.TestResources
-	{
-		class TestClass
-		{" + expected + "}}";
+{
+    class TestClass
+    {" + expected + @"}
+}";
             ShouldMutateSourceToExpected(actual, expected);
         }
     }

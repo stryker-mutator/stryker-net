@@ -1,31 +1,31 @@
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Mutants;
 using System.Collections.Generic;
 
-namespace Stryker.Core.Mutators
-{
-    public class InitializerMutator : MutatorBase<InitializerExpressionSyntax>, IMutator
-    {
-        public override MutationLevel MutationLevel => MutationLevel.Standard;
+namespace Stryker.Core.Mutators;
 
-        public override IEnumerable<Mutation> ApplyMutations(InitializerExpressionSyntax node)
+public class InitializerMutator : MutatorBase<InitializerExpressionSyntax>
+{
+    public override MutationLevel MutationLevel => MutationLevel.Standard;
+
+    public override IEnumerable<Mutation> ApplyMutations(InitializerExpressionSyntax node, SemanticModel semanticModel)
+    {
+        if (node.Parent is ArrayCreationExpressionSyntax || node.Parent is ImplicitArrayCreationExpressionSyntax || node.Parent is StackAllocArrayCreationExpressionSyntax || !node.Expressions.Any())
         {
-            if (node.Parent is ArrayCreationExpressionSyntax || node.Parent is ImplicitArrayCreationExpressionSyntax || node.Parent is StackAllocArrayCreationExpressionSyntax || !node.Expressions.Any())
-            {
-                yield break;
-            }
+            yield break;
+        }
           
-            if (node.Kind() == SyntaxKind.ArrayInitializerExpression)
+        if (node.Kind() == SyntaxKind.ArrayInitializerExpression)
+        {
+            yield return new Mutation()
             {
-                yield return new Mutation()
-                {
-                    OriginalNode = node,
-                    ReplacementNode = SyntaxFactory.InitializerExpression(SyntaxKind.ArrayInitializerExpression),
-                    DisplayName = "Array initializer mutation",
-                    Type = Mutator.Initializer
-                };
-            }
+                OriginalNode = node,
+                ReplacementNode = SyntaxFactory.InitializerExpression(SyntaxKind.ArrayInitializerExpression),
+                DisplayName = "Array initializer mutation",
+                Type = Mutator.Initializer
+            };
         }
     }
 }

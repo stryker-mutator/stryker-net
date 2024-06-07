@@ -1,3 +1,4 @@
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
@@ -25,7 +26,7 @@ namespace Stryker.Core.UnitTest.Mutators
                 MutationLevel = mutationLevel;
             }
 
-            public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node)
+            public override IEnumerable<Mutation> ApplyMutations(BinaryExpressionSyntax node, SemanticModel semanticModel)
             {
                 // when this exception is thrown the test knows the method has been called by the BaseMutator
                 throw new NotImplementedException();
@@ -42,7 +43,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var target = new ExampleMutator(MutationLevel.Basic);
 
-            Should.Throw<NotImplementedException>(() => target.Mutate(originalNode, new StrykerOptions()));
+            Should.Throw<NotImplementedException>(() => target.Mutate(originalNode, null, new StrykerOptions()));
         }
 
         [Fact]
@@ -53,7 +54,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var target = new ExampleMutator(MutationLevel.Basic);
 
-            var result = target.Mutate(originalNode, new StrykerOptions());
+            var result = target.Mutate(originalNode, null, new StrykerOptions());
 
             result.ShouldBeEmpty();
         }
@@ -68,7 +69,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var target = new ExampleMutator(MutationLevel.Basic);
 
-            var result = target.Mutate(originalNode, new StrykerOptions());
+            var result = target.Mutate(originalNode, null, new StrykerOptions());
 
             result.ShouldBeEmpty();
         }
@@ -88,7 +89,7 @@ namespace Stryker.Core.UnitTest.Mutators
             {
                 MutationLevel = MutationLevel.Standard
             };
-            var result = target.Mutate(originalNode, options);
+            var result = target.Mutate(originalNode, null, options);
 
             // ApplyMutations should not have been called
             result.ShouldBeEmpty();
@@ -106,7 +107,7 @@ namespace Stryker.Core.UnitTest.Mutators
             };
             var target = new ExampleMutator(MutationLevel.Complete);
 
-            Should.Throw<NotImplementedException>(() => target.Mutate(originalNode, options));
+            Should.Throw<NotImplementedException>(() => target.Mutate(originalNode, null, options));
         }
     }
 }

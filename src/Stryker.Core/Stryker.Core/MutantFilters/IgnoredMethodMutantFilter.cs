@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.CodeAnalysis.Operations;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -28,15 +29,25 @@ namespace Stryker.Core.MutantFilters
             syntaxNode switch
             {
                 // Check if the current node is an invocation. This will also ignore invokable properties like `Func<bool> MyProp { get;}`
-                InvocationExpressionSyntax invocation => MatchesAnIgnoredMethod(_triviaRemover.Visit(invocation.Expression).ToString(), options),
+                // follow the invocation chain to see if it ends with a filtered one
+                InvocationExpressionSyntax invocation => MatchesAnIgnoredMethod(_triviaRemover.Visit(invocation.Expression).ToString(), options)
+                    || (invocation.Parent is MemberAccessExpressionSyntax && invocation.Parent.Parent is InvocationExpressionSyntax &&
+                    IsPartOfIgnoredMethodCall(invocation.Parent.Parent, options, false)),
 
                 // Check if the current node is an object creation syntax (constructor invocation).
                 ObjectCreationExpressionSyntax creation => MatchesAnIgnoredMethod(_triviaRemover.Visit(creation.Type) + ".ctor", options),
 
-                // check if the node is a block containing only ignored node
-                BlockSyntax {Statements: {Count: >0}} block => block.Statements.All(s=> IsPartOfIgnoredMethodCall(s, options, false)),
+                ConditionalAccessExpressionSyntax conditional => IsPartOfIgnoredMethodCall(conditional.WhenNotNull, options, false),
 
-                ExpressionStatementSyntax invocationExpressionStatementSyntax => IsPartOfIgnoredMethodCall(invocationExpressionStatementSyntax.Expression, options, false),
+                ConditionalExpressionSyntax conditionalExpression => IsPartOfIgnoredMethodCall(conditionalExpression.WhenTrue, options, false) && IsPartOfIgnoredMethodCall(conditionalExpression.WhenFalse, options, false),
+
+                ExpressionStatementSyntax expressionStatement => IsPartOfIgnoredMethodCall(expressionStatement.Expression, options, false),
+
+                AssignmentExpressionSyntax assignmentExpression =>  IsPartOfIgnoredMethodCall(assignmentExpression.Right, options, false),
+
+                LocalDeclarationStatementSyntax localDeclaration => localDeclaration.Declaration.Variables.All(v => IsPartOfIgnoredMethodCall(v.Initializer?.Value, options, false)),
+  
+                BlockSyntax { Statements.Count: >0 } block => block.Statements.All(s=> IsPartOfIgnoredMethodCall(s, options, false)),
 
                 // Traverse the tree upwards.
                 { Parent: { } }  => canGoUp && IsPartOfIgnoredMethodCall(syntaxNode.Parent, options),

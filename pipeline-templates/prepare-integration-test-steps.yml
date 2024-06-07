@@ -1,8 +1,8 @@
 steps:
 - task: UseDotNet@2
-  displayName: 'Use dotnet 6'
+  displayName: 'Use dotnet'
   inputs:
-    version: 6.x
+    version: 8.x
 
 - task: DotNetCoreCLI@2
   displayName: 'Run unit tests'
@@ -12,20 +12,20 @@ steps:
 
 - task: DotNetCoreCLI@2
   displayName: 'Install integrationtest dotnet tool (fork)'
-  condition: eq(variables['System.PullRequest.IsFork'], 'True')
+  condition: and(succeeded(), eq(variables['System.PullRequest.IsFork'], 'True'))
   inputs:
     command: custom
     custom: tool
-    arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools --version $(IntegrationTestVersion) --add-source $(MygetFeedUri)
+    arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools --version $(IntegrationTestVersion) --add-source $(ForkIntegrationNugetFeedUri)
     includeNuGetOrg: false
     workingDirectory: 'pipeline-templates'
 
 - task: DotNetCoreCLI@2
   displayName: 'Install integrationtest dotnet tool (source)'
-  condition: eq(variables['System.PullRequest.IsFork'], 'False')
+  condition:  and(succeeded(), eq(variables['System.PullRequest.IsFork'], 'False'))
   inputs:
     command: custom
     custom: tool
-    arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools --version $(IntegrationTestVersion) --add-source $(AzureArtifactFeedUri)
+    arguments: install dotnet-stryker --tool-path $(Agent.BuildDirectory)/tools --version $(IntegrationTestVersion) --add-source $(MainIntegrationNugetFeedUri)
     includeNuGetOrg: false
     workingDirectory: 'pipeline-templates'

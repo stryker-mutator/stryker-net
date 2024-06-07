@@ -1,3 +1,5 @@
+using Stryker.Core.Exceptions;
+
 namespace Stryker.Core.Options.Inputs
 {
     public class SinceInput : Input<bool?>
@@ -10,6 +12,11 @@ namespace Stryker.Core.Options.Inputs
         {
             if (withBaseline.IsNotNullAndTrue())
             {
+                if (SuppliedInput.HasValue && SuppliedInput.Value)
+                {
+                    throw new InputException("The since and baseline features are mutually exclusive.");
+                }
+
                 return true;
             }
 

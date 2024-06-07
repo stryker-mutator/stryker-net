@@ -5,6 +5,7 @@ using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Control;
 using Stryker.Core.Exceptions;
+using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using System;
@@ -19,16 +20,18 @@ namespace Stryker.Core.Initialisation
     internal class FsharpProjectComponentsBuilder : ProjectComponentsBuilder
     {
         private readonly SourceProjectInfo _projectInfo;
+        private readonly StrykerOptions _options;
         private readonly string[] _foldersToExclude;
         private readonly ILogger _logger;
 
-        public FsharpProjectComponentsBuilder(SourceProjectInfo projectInfo, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) : base(fileSystem)
+        public FsharpProjectComponentsBuilder(SourceProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) : base(fileSystem)
         {
             _projectInfo = projectInfo;
+            _options = options;
             _foldersToExclude = foldersToExclude;
             _logger = logger;
         }
-        
+
         public override IProjectComponent Build()
         {
             FsharpFolderComposite inputFiles;
@@ -81,7 +84,7 @@ namespace Stryker.Core.Initialisation
 
                 if (!FileSystem.File.Exists(sourceFile))
                 {
-                    _logger.LogWarning($"F# project builder: skipping non existing file {sourceFile}.");
+                    _logger.LogWarning("F# project builder: skipping non existing file {SourceFile}.",sourceFile);
                     continue;
                 }
 
@@ -191,7 +194,7 @@ namespace Stryker.Core.Initialisation
             {
                 var folder = FileSystem.Path.Combine(Path.GetDirectoryName(sourceProjectDir), dir);
 
-                _logger.LogDebug($"Scanning {folder}");
+                _logger.LogDebug("Scanning {Folder}", folder);
                 if (!FileSystem.Directory.Exists(folder))
                 {
                     throw new DirectoryNotFoundException($"Can't find {folder}");

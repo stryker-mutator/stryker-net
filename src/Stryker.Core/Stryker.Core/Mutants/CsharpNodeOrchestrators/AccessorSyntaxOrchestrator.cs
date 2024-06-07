@@ -1,44 +1,21 @@
-using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
 
-namespace Stryker.Core.Mutants.CsharpNodeOrchestrators
+namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
+
+/// <summary>
+/// Orchestrate mutation for Accessors (get/set). Its purpose is to convert arrow expression accessor to body statement form when needed.
+/// </summary>
+internal class AccessorSyntaxOrchestrator : BaseFunctionOrchestrator<AccessorDeclarationSyntax>
 {
-    /// <summary>
-    /// Orchestrate mutation for Accessors. Its purpose is to convert arrow expression accessor to body statement form when needed.
-    /// </summary>
-    internal class AccessorSyntaxOrchestrator : NodeSpecificOrchestrator<AccessorDeclarationSyntax, SyntaxNode>
-    {
-        protected override SyntaxNode InjectMutations(AccessorDeclarationSyntax sourceNode, SyntaxNode targetNode, MutationContext context)
-        {
-            var result = base.InjectMutations(sourceNode, targetNode, context) as AccessorDeclarationSyntax;
-            if (result?.Body == null && result?.ExpressionBody == null)
-            {
-                return result;
-            }
+    protected override (BlockSyntax block, ExpressionSyntax expression) GetBodies(AccessorDeclarationSyntax node) => (node.Body, node.ExpressionBody?.Expression);
 
-            if (!context.HasStatementLevelMutant)
-            {
-                if (result.Body != null && sourceNode.NeedsReturn())
-                {
-                    result = MutantPlacer.AddEndingReturn(result, sourceNode.ReturnType());
-                }
-                return result;
-            }
+    protected override ParameterListSyntax ParameterList(AccessorDeclarationSyntax node) => SyntaxFactory.ParameterList();
 
-            if (result.Body == null)
-            {
-                result = MutantPlacer.ConvertExpressionToBody(result);
-            }
+    protected override TypeSyntax ReturnType(AccessorDeclarationSyntax node) => node.ReturnType();
 
-            var newBody = context.InjectBlockLevelExpressionMutation(result.Body, sourceNode.ExpressionBody!.Expression, sourceNode.NeedsReturn());
-            result = result.WithBody(SyntaxFactory.Block(newBody));
-            if (sourceNode.NeedsReturn())
-            {
-                result = MutantPlacer.AddEndingReturn(result, sourceNode.ReturnType());
-            }
-            return result;
-        }
-    }
+    protected override AccessorDeclarationSyntax SwitchToThisBodies(AccessorDeclarationSyntax node, BlockSyntax blockBody, ExpressionSyntax expressionBody)
+        => expressionBody == null ? node.WithBody(blockBody).WithExpressionBody(null).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.None))
+        : node.WithBody(null).WithExpressionBody(SyntaxFactory.ArrowExpressionClause(expressionBody)).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
 }

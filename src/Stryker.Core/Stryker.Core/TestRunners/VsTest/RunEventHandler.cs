@@ -25,7 +25,8 @@ namespace Stryker.Core.TestRunners.VsTest
         public IReadOnlyList<TestCase> TestsInTimeout => _testsInTimeOut.AsReadOnly();
 
         public SimpleRunResults()
-        {}
+        {
+        }
 
         public SimpleRunResults(IEnumerable<TestResult> results, IEnumerable<TestCase> testsInTimeout)
         {
@@ -61,15 +62,17 @@ namespace Stryker.Core.TestRunners.VsTest
         private readonly IDictionary<Guid, VsTestDescription> _vsTests;
         private readonly IDictionary<Guid, TestRun> _runs = new Dictionary<Guid, TestRun>();
         private readonly Dictionary<Guid, TestCase> _inProgress = new();
+        private SimpleRunResults _currentResults = new();
         private readonly List<TestResult> _rawResults = new();
-        private readonly SimpleRunResults _currentResults = new();
+        private int _initialResultsCount;
         private readonly object _lck = new();
         private bool _completed;
 
-        public event EventHandler VsTestFailed;
         public event EventHandler ResultsUpdated;
 
         public bool CancelRequested { get; set; }
+
+        public bool Failed { get; private set; }
 
         public RunEventHandler(IDictionary<Guid, VsTestDescription> vsTests, ILogger logger, string runnerId)
         {
@@ -82,14 +85,19 @@ namespace Stryker.Core.TestRunners.VsTest
         {
             var testResults = results as TestResult[] ?? results.ToArray();
             _rawResults.AddRange(testResults);
+            AnalyzeRawTestResults(testResults);
+        }
+
+        private void AnalyzeRawTestResults(IEnumerable<TestResult> testResults)
+        {
             foreach (var testResult in testResults)
             {
                 var id = testResult.TestCase.Id;
                 if (!_runs.ContainsKey(id))
                 {
-                    if (_vsTests.ContainsKey(id))
+                    if (_vsTests.TryGetValue(id, out var test))
                     {
-                        _runs[id] = new TestRun(_vsTests[id]);
+                        _runs[id] = new TestRun(test);
                     }
                     else
                     {
@@ -124,6 +132,7 @@ namespace Stryker.Core.TestRunners.VsTest
                     _inProgress[activeTest.Id] = activeTest;
                 }
             }
+
             if (testRunChangedArgs.NewTestResults == null || !testRunChangedArgs.NewTestResults.Any())
             {
                 return;
@@ -139,6 +148,7 @@ namespace Stryker.Core.TestRunners.VsTest
             ICollection<AttachmentSet> runContextAttachments,
             ICollection<string> executorUris)
         {
+            _logger.LogDebug("{RunnerId}: Received testrun complete.", _runnerId);
             if (lastChunkArgs?.ActiveTests != null)
             {
                 foreach (var activeTest in lastChunkArgs.ActiveTests)
@@ -166,16 +176,16 @@ namespace Stryker.Core.TestRunners.VsTest
                 if (testRunCompleteArgs.Error.GetType() == typeof(TransationLayerException))
                 {
                     _logger.LogDebug(testRunCompleteArgs.Error,
-                        $"{_runnerId}: VsTest may have crashed, triggering VsTest restart!");
-                    VsTestFailed?.Invoke(this, EventArgs.Empty);
+                        "{RunnerId}: VsTest may have crashed, triggering VsTest restart!",_runnerId);
+                    Failed = true;
                 }
                 else if (testRunCompleteArgs.Error.InnerException is IOException sock)
                 {
-                    _logger.LogWarning(sock, $"{_runnerId}: Test session ended unexpectedly.");
+                    _logger.LogWarning(sock, "{RunnerId}: Test session ended unexpectedly.", _runnerId);
                 }
                 else if (!CancelRequested)
                 {
-                    _logger.LogDebug(testRunCompleteArgs.Error, $"{_runnerId}: VsTest error:");
+                    _logger.LogDebug(testRunCompleteArgs.Error, "{RunnerId}: VsTest error:", _runnerId);
                 }
             }
 
@@ -189,18 +199,44 @@ namespace Stryker.Core.TestRunners.VsTest
         public int LaunchProcessWithDebuggerAttached(TestProcessStartInfo testProcessStartInfo) =>
             throw new NotSupportedException();
 
-        public void HandleRawMessage(string rawMessage) => _logger.LogTrace($"{_runnerId}: {rawMessage} [RAW]");
+        public void HandleRawMessage(string rawMessage) =>
+            _logger.LogTrace("{RunnerId}: {RawMessage} [RAW]", _runnerId, rawMessage);
 
-        public bool Wait(int timeOut)
+        public void StartSession()
+        {
+            _completed = false;
+            Failed = false;
+            _initialResultsCount = _rawResults.Count;
+            _inProgress.Clear();
+            _runs.Clear();
+        }
+
+        public void DiscardCurrentRun()
+        {
+            // remove all raw results from this run
+            _rawResults.RemoveRange(_initialResultsCount, _rawResults.Count - _initialResultsCount);
+            // we reanalyze results gathered so far, in an event sourced way
+            _runs.Clear();
+            _currentResults = new SimpleRunResults(new List<TestResult>(), _currentResults.TestsInTimeout);
+            AnalyzeRawTestResults(_rawResults);
+        }
+
+        public bool Wait(int timeOut, out bool slept)
         {
             lock (_lck)
             {
                 var watch = new Stopwatch();
                 watch.Start();
 
-                while (!_completed && watch.ElapsedMilliseconds < timeOut )
+                while (!_completed && watch.ElapsedMilliseconds < timeOut)
                 {
-                    Monitor.Wait(_lck, Math.Max(0, (int)(timeOut-watch.ElapsedMilliseconds)));
+                    Monitor.Wait(_lck, Math.Max(0, (int)(timeOut - watch.ElapsedMilliseconds)));
+                }
+
+                slept = watch.ElapsedMilliseconds - timeOut > 30 * 1000;
+                if (slept)
+                {
+                    _logger.LogWarning("{RunnerId}: the computer slept during the testing, need to retry", _runnerId);
                 }
 
                 return _completed;
@@ -216,7 +252,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 TestMessageLevel.Error => LogLevel.Error,
                 _ => throw new ArgumentOutOfRangeException(nameof(level), level, null)
             };
-            _logger.LogTrace($"{_runnerId}: [{levelFinal}] {message}");
+            _logger.LogTrace("{RunnerId}: [{LevelFinal}] {Message}", _runnerId, levelFinal, message);
         }
     }
 }

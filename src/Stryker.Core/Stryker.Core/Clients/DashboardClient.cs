@@ -3,23 +3,30 @@ using Stryker.Core.Logging;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Json;
 using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
+using Stryker.Core.Reporters.Json.SourceFiles;
 
 namespace Stryker.Core.Clients
 {
     public interface IDashboardClient
     {
-        Task<string> PublishReport(JsonReport report, string version);
+        Task<string> PublishReport(JsonReport report, string version, bool realTime = false);
         Task<JsonReport> PullReport(string version);
+        Task PublishMutantBatch(JsonMutant mutant);
+        Task PublishFinished();
     }
 
     public class DashboardClient : IDashboardClient
     {
+        private const int MutantBatchSize = 10;
+
         private readonly StrykerOptions _options;
         private readonly ILogger<DashboardClient> _logger;
         private readonly HttpClient _httpClient;
+        private readonly List<JsonMutant> _batch = new();
 
         public DashboardClient(StrykerOptions options, HttpClient httpClient = null, ILogger<DashboardClient> logger = null)
         {
@@ -36,9 +43,9 @@ namespace Stryker.Core.Clients
             }
         }
 
-        public async Task<string> PublishReport(JsonReport report, string version)
+        public async Task<string> PublishReport(JsonReport report, string version, bool realTime = false)
         {
-            var url = GetUrl(version);
+            var url = GetUrl(version, realTime);
 
             _logger.LogDebug("Sending PUT to {DashboardUrl}", url);
 
@@ -57,9 +64,52 @@ namespace Stryker.Core.Clients
             }
         }
 
+        public async Task PublishMutantBatch(JsonMutant mutant)
+        {
+            _batch.Add(mutant);
+            if (_batch.Count != MutantBatchSize)
+            {
+                return;
+            }
+
+            var url = GetUrl(_options.ProjectVersion, true);
+            try
+            {
+                var response = await _httpClient.PostAsJsonAsync(url, _batch, JsonReportSerialization.Options);
+                response.EnsureSuccessStatusCode();
+                _batch.Clear();
+            }
+            catch(Exception exception)
+            {
+                _logger.LogError(exception, "Failed to upload mutant to the dashboard at {DashboardUrl}", url);
+            }
+        }
+
+        public async Task PublishFinished()
+        {
+            var url = GetUrl(_options.ProjectVersion, true);
+
+            try
+            {
+                if (_batch.Count != 0)
+                {
+                    var batchResponse = await _httpClient.PostAsJsonAsync(url, _batch, JsonReportSerialization.Options);
+                    batchResponse.EnsureSuccessStatusCode();
+                    _batch.Clear();
+                }
+
+                var deleteResponse = await _httpClient.DeleteAsync(url);
+                deleteResponse.EnsureSuccessStatusCode();
+            }
+            catch(Exception exception)
+            {
+                _logger.LogError(exception, "Failed send finished event to the dashboard at {DashboardUrl}", url);
+            }
+        }
+
         public async Task<JsonReport> PullReport(string version)
         {
-            var url = GetUrl(version);
+            var url = GetUrl(version, false);
 
             _logger.LogDebug("Sending GET to {DashboardUrl}", url);
             try
@@ -74,13 +124,13 @@ namespace Stryker.Core.Clients
             }
         }
 
-        private Uri GetUrl(string version)
+        private Uri GetUrl(string version, bool realTime)
         {
-            var url = new Uri($"{_options.DashboardUrl}/api/reports/{_options.ProjectName}/{version}");
-
-            if (_options.ModuleName != null)
+            var module = !string.IsNullOrEmpty(_options.ModuleName) ? $"?module={_options.ModuleName}" : "";
+            var url = new Uri($"{_options.DashboardUrl}/api/reports/{_options.ProjectName}/{version}{module}");
+            if (realTime)
             {
-                url = new Uri(url, $"?module={_options.ModuleName}");
+                url = new Uri($"{_options.DashboardUrl}/api/real-time/{_options.ProjectName}/{version}{module}");
             }
 
             return url;

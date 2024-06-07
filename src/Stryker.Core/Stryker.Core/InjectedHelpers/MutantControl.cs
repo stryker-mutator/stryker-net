@@ -1,25 +1,16 @@
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace Stryker
 {
-    internal static class MutantControl
+    public static class MutantControl
     {
-        private static List<int> _coveredMutants;
-        private static List<int> _coveredStaticdMutants;
-        private static string envName;
-        private static Object _coverageLock = new Object();
+        private static System.Collections.Generic.List<int> _coveredMutants = new System.Collections.Generic.List<int>();
+        private static System.Collections.Generic.List<int> _coveredStaticdMutants = new System.Collections.Generic.List<int>();
+        private static string envName = string.Empty;
+        private static System.Object _coverageLock = new System.Object();
 
         // this attribute will be set by the Stryker Data Collector before each test
         public static bool CaptureCoverage;
         public static int ActiveMutant = -2;
         public const int ActiveMutantNotInitValue = -2;
-
-        static MutantControl()
-        {
-            InitCoverage();
-        }
 
         public static void InitCoverage()
         {
@@ -28,21 +19,21 @@ namespace Stryker
 
         public static void ResetCoverage()
         {
-            _coveredMutants = new List<int>();
-            _coveredStaticdMutants = new List<int>();
+            _coveredMutants = new System.Collections.Generic.List<int>();
+            _coveredStaticdMutants = new System.Collections.Generic.List<int>();
         }
 
-        public static IList<int>[] GetCoverageData()
+        public static System.Collections.Generic.IList<int>[] GetCoverageData()
         {
-            IList<int>[] result = new IList<int>[]{_coveredMutants, _coveredStaticdMutants};
+            System.Collections.Generic.IList<int>[] result = new System.Collections.Generic.IList<int>[]{_coveredMutants, _coveredStaticdMutants};
             ResetCoverage();
             return result;
         }
 
-        private static void CurrentDomain_ProcessExit(object sender, EventArgs e)
+        private static void CurrentDomain_ProcessExit(object sender, System.EventArgs e)
         {
-            GC.KeepAlive(_coveredMutants);
-            GC.KeepAlive(_coveredStaticdMutants);
+            System.GC.KeepAlive(_coveredMutants);
+            System.GC.KeepAlive(_coveredStaticdMutants);
         }
 
         // check with: Stryker.MutantControl.IsActive(ID)
@@ -55,7 +46,8 @@ namespace Stryker
             }
             if (ActiveMutant == ActiveMutantNotInitValue)
             {
-                string environmentVariable = Environment.GetEnvironmentVariable("ActiveMutation");
+                #pragma warning disable CS8600
+                string environmentVariable = System.Environment.GetEnvironmentVariable("ActiveMutation");
                 if (string.IsNullOrEmpty(environmentVariable))
                 {
                     ActiveMutant = -1;

@@ -27,6 +27,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         private readonly string _testAssemblyPath;
         private readonly TestProjectsInfo _testProjectsInfo;
         private readonly MockFileSystem _fileSystem;
+        private readonly Uri _msTestExecutorUri;
         private readonly Uri _executorUri;
         private ConsoleParameters _consoleParameters;
 
@@ -55,8 +56,9 @@ namespace Stryker.Core.UnitTest.TestRunners
 </Project>";
             _testAssemblyPath = FilePathUtils.NormalizePathSeparators(Path.Combine(filesystemRoot, "_firstTest", "bin", "Debug", "TestApp.dll"));
             _executorUri = new Uri("exec://nunit");
+            _msTestExecutorUri = new Uri("exec://mstestV2");
             var firstTest = BuildCase("T0");
-            var secondTest = BuildCase("T1");
+            var secondTest = BuildCaseMsTest("T1");
 
             var content = new CsharpFolderComposite();
             _fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -100,6 +102,8 @@ namespace Stryker.Core.UnitTest.TestRunners
 
         private Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase BuildCase(string name) => new(name, _executorUri, _testAssemblyPath) { Id = new Guid() };
 
+        private Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase BuildCaseMsTest(string name) => new(name, _msTestExecutorUri, _testAssemblyPath) { Id = new Guid() };
+
         private VsTestContextInformation BuildVsTextContext(StrykerOptions options, out Mock<IVsTestConsoleWrapper> mockedVsTestConsole)
         {
             mockedVsTestConsole = new Mock<IVsTestConsoleWrapper>(MockBehavior.Strict);
@@ -107,11 +111,11 @@ namespace Stryker.Core.UnitTest.TestRunners
             mockedVsTestConsole.Setup(x => x.InitializeExtensions(It.IsAny<IEnumerable<string>>()));
             mockedVsTestConsole.Setup(x => x.EndSession());
             mockedVsTestConsole.Setup(x =>
-                x.DiscoverTestsAsync(It.Is<IEnumerable<string>>(d => d.Any(e => e == _testAssemblyPath)),
+                x.DiscoverTests(It.Is<IEnumerable<string>>(d => d.Any(e => e == _testAssemblyPath)),
                     It.IsAny<string>(),
                     It.IsAny<ITestDiscoveryEventsHandler>())).Callback(
                 (IEnumerable<string> _, string _, ITestDiscoveryEventsHandler discoveryEventsHandler) =>
-                    DiscoverTests(discoveryEventsHandler, TestCases, false)).Returns(Task.CompletedTask);
+                    DiscoverTests(discoveryEventsHandler, TestCases, false));
 
             var vsTestConsoleWrapper = mockedVsTestConsole.Object;
             return new VsTestContextInformation(
@@ -168,7 +172,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             using var runner = BuildVsTextContext(new StrykerOptions { LogOptions = new LogOptions { LogToFile = true } }, out _);
             runner.AddTestSource(_testAssemblyPath);
             // logging should be at defined level
-            _consoleParameters.TraceLevel.ShouldBe(TraceLevel.Verbose);
+            _consoleParameters.TraceLevel.ShouldBe(TraceLevel.Info);
 
             // we should have the testdiscoverer log file name
             _consoleParameters.LogFilePath.ShouldBe($"\"logs{_fileSystem.Path.DirectorySeparatorChar}TestDiscoverer-log.txt\"");

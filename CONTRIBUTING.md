@@ -3,7 +3,7 @@ This is the contribution guide for Stryker.NET. Great to have you here! Here are
 
 ## Creating issues
 Do you have an idea for a feature or have you found a bug? Please create an issue so we can talk about it!
-If you found a bug, please run ```dotnet stryker --log-console debug``` and add the output of the Stryker run to the issue.
+If you found a bug, please run ```dotnet stryker --verbosity debug``` and add the output of the Stryker run to the issue.
 
 ## Adding new features
 New features are welcome! Either as requests or proposals.
@@ -23,7 +23,7 @@ While developing on Stryker.NET we advise to work in [the latest Visual Studio](
 
 ### Example: Steps to run Stryker.NET on a local project
 *	Clone the repository `https://github.com/stryker-mutator/stryker-net.git`
-*	Open `Stryker.CLI.sln`
+*	Open `Stryker.sln`
 *	On `Stryker.CLI` open `properties > Debug`
 *	Create a new Debug profile
 *	Set `Launch` as `Project`
@@ -33,7 +33,12 @@ While developing on Stryker.NET we advise to work in [the latest Visual Studio](
 \* Running Stryker on itself doesn't work as the assemblies will be in use by Visual Studio. You can clone Stryker another time to use as a test project.
 
 #### Compiler Platform SDK
-We advise to use the [.NET Compiler Platform SDK](https://marketplace.visualstudio.com/items?itemName=VisualStudioProductTeam.NETCompilerPlatformSDK) during development. The `Syntax Visualizer` can help to understand Abstract Syntax Trees and find out types of `SyntaxNodes` you need to target for certain mutators.
+We advise to use the `.NET Compiler Platform SDK` during development. The `Syntax Visualizer` can help to understand Abstract Syntax Trees and find out types of `SyntaxNodes` you need to target for certain mutators. The `.NET Compiler Platform SDK` is available as a component in the Visual Studio Installer.
+![installer example](./docs/images/visual-studio-installer-sdk-tools.png)
+
+#### Other helpful resources
+- [Roslyn Quoter](http://roslynquoter.azurewebsites.net/), for determining SyntaxFactory AST builder methods required to construct a syntax tree for the any C# input.
+- [Sharplab](https://sharplab.io/), for visualising different compilation steps of C# (AST, IL etc.) 
 
 ## Maintainers
 When merging pull requests or creating commits, please conform to [the angular commit message style](https://docs.google.com/document/d/1rk04jEuGfk9kYzfqCuOlPTSJw3hEDZJTBN5E5f1SALo), so our changelog will be updated.

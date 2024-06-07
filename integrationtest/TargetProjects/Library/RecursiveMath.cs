@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 
 namespace ExampleClassLibrary
 {
     public class RecursiveMath
     {
-        public int Fibinacci(int len)
+        public int Fibonacci(int len)
         {
             return Fibonacci(0, 1, 1, len);
         }

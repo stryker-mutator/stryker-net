@@ -23,7 +23,7 @@ namespace Stryker.Core.UnitTest.Mutators
         {
             var target = new BooleanMutator();
 
-            var result = target.ApplyMutations(SyntaxFactory.LiteralExpression(original)).ToList();
+            var result = target.ApplyMutations(SyntaxFactory.LiteralExpression(original), null).ToList();
 
             var mutation = result.ShouldHaveSingleItem();
 
@@ -41,7 +41,7 @@ namespace Stryker.Core.UnitTest.Mutators
         {
             var target = new BooleanMutator();
 
-            var result = target.ApplyMutations(SyntaxFactory.LiteralExpression(original)).ToList();
+            var result = target.ApplyMutations(SyntaxFactory.LiteralExpression(original), null).ToList();
 
             Assert.Empty(result);
         }

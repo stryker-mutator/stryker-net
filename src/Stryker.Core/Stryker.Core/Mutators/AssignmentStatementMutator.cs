@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
@@ -6,7 +7,7 @@ using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators
 {
-    public class AssignmentExpressionMutator : MutatorBase<AssignmentExpressionSyntax>, IMutator
+    public class AssignmentExpressionMutator : MutatorBase<AssignmentExpressionSyntax>
     {
         private static readonly Dictionary<SyntaxKind, IEnumerable<SyntaxKind>> KindsToMutate = new()
         {
@@ -25,7 +26,7 @@ namespace Stryker.Core.Mutators
 
         public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-        public override IEnumerable<Mutation> ApplyMutations(AssignmentExpressionSyntax node)
+        public override IEnumerable<Mutation> ApplyMutations(AssignmentExpressionSyntax node, SemanticModel semanticModel)
         {
             var assignmentKind = node.Kind();
 

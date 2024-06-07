@@ -71,7 +71,8 @@ namespace Stryker.Core.Initialisation
             {
                 var framework = projects.Any(p => p.IsFullFramework);
                 // Build the complete solution
-                _logger.LogInformation("Building solution {0}", Path.GetRelativePath(options.WorkingDirectory ,options.SolutionPath));
+                _logger.LogInformation("Building solution {0}",
+                    Path.GetRelativePath(options.WorkingDirectory, options.SolutionPath));
                 _initialBuildProcess.InitialBuild(
                     framework,
                     _inputFileResolver.FileSystem.Path.GetDirectoryName(options.SolutionPath),
@@ -98,7 +99,8 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        public IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(StrykerOptions options, IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner)
+        public IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(StrykerOptions options,
+            IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner)
         {
             var result = new List<MutationTestInput>();
             foreach (var info in projects)
@@ -108,7 +110,7 @@ namespace Stryker.Core.Initialisation
                     SourceProjectInfo = info,
                     TestProjectsInfo = info.TestProjectsInfo,
                     TestRunner = runner,
-                    InitialTestRun = InitialTest(options, info, runner, projects.Count==1)
+                    InitialTestRun = InitialTest(options, info, runner, projects.Count == 1)
                 });
             }
 
@@ -121,7 +123,8 @@ namespace Stryker.Core.Initialisation
             DiscoverTests(projectInfo, testRunner);
 
             // initial test
-            _logger.LogInformation("Number of tests found: {0} for project {1}. Initial test run started.",
+            _logger.LogInformation(
+                "Number of tests found: {TestCount} for project {ProjectFilePath}. Initial test run started.",
                 testRunner.GetTests(projectInfo).Count,
                 projectInfo.AnalyzerResult.ProjectFilePath);
 
@@ -133,29 +136,36 @@ namespace Stryker.Core.Initialisation
                 var failingTestsCount = result.Result.FailingTests.Count;
                 if (options.BreakOnInitialTestFailure)
                 {
-                    throw new InputException("Initial testrun has failing tests.", result.Result.ResultMessage);
+                    throw new InputException("Initial test run has failing tests.", result.Result.ResultMessage);
                 }
 
                 if (throwIfFails && (double)failingTestsCount / result.Result.ExecutedTests.Count >= .5)
                 {
-                    throw new InputException("Initial testrun has more than 50% failing tests.", result.Result.ResultMessage);
+                    throw new InputException("Initial test run has more than 50% failing tests.",
+                        result.Result.ResultMessage);
                 }
-                
-                _logger.LogWarning($"{(failingTestsCount == 1 ? "A test is": $"{failingTestsCount} tests are")} failing. Stryker will continue but outcome will be impacted.");
+
+                _logger.LogWarning(
+                    "{failingTestsCount} tests are failing. Stryker will continue but outcome will be impacted.",
+                    failingTestsCount);
             }
 
             if (!result.Result.ExecutedTests.IsEmpty || !throwIfFails)
             {
                 return result;
             }
-            throw new InputException("No test has been detected. Make sure your test project contains test and is compatible with VsTest."+string.Join(Environment.NewLine, projectInfo.Warnings));
+
+            throw new InputException(
+                "No test has been detected. Make sure your test project contains test and is compatible with VsTest." +
+                string.Join(Environment.NewLine, projectInfo.Warnings));
         }
 
         private static readonly Dictionary<string, (string assembly, string package)> TestFrameworks = new()
         {
-            ["xunit.core"] = ("xunit.runner.visualstudio","xunit.runner.visualstudio"),
+            ["xunit.core"] = ("xunit.runner.visualstudio", "xunit.runner.visualstudio"),
             ["nunit.framework"] = ("NUnit3.TestAdapter", "NUnit3TestAdapter"),
-            ["Microsoft.VisualStudio.TestPlatform.TestFramework"] = ("Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter","MSTest.TestAdapter")
+            ["Microsoft.VisualStudio.TestPlatform.TestFramework"] = (
+                "Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter", "MSTest.TestAdapter")
         };
 
         private void DiscoverTests(SourceProjectInfo projectInfo, ITestRunner testRunner)
@@ -171,7 +181,6 @@ namespace Stryker.Core.Initialisation
                 foreach (var (framework, (adapter, package)) in
                          TestFrameworks.Where(t => testProject.References.Any(r => r.Contains(t.Key))))
                 {
-
                     if (testProject.References.Any(r => r.Contains(adapter)))
                     {
                         continue;
@@ -182,14 +191,16 @@ namespace Stryker.Core.Initialisation
                         $"Project '{testProject.ProjectFilePath}' did not report any test.";
                     if (testProject.PackageReferences?.ContainsKey(package) == true)
                     {
-                        message+=$" This may be because the test adapter package, {package}, failed to deploy. " +
-                                 "Check if any dependency is missing or there is a version conflict.";
+                        message += $" This may be because the test adapter package, {package}, failed to deploy. " +
+                                   "Check if any dependency is missing or there is a version conflict.";
                     }
                     else
                     {
-                        message+=$" This may be because it is missing an appropriate VsTest adapter for '{framework}'. " +
-                                 $"Adding '{adapter}' to this project references may resolve the issue.";
+                        message +=
+                            $" This may be because it is missing an appropriate VsTest adapter for '{framework}'. " +
+                            $"Adding '{adapter}' to this project references may resolve the issue.";
                     }
+
                     projectInfo.LogError(message);
                     _logger.LogWarning(message);
                 }

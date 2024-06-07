@@ -57,10 +57,11 @@ namespace Stryker.Core.Initialisation
                 }
                 else
                 {
-                    testProjectFileNames = new List<string> {FindTestProject(options.ProjectPath) };
+                    testProjectFileNames = new List<string> { FindTestProject(options.ProjectPath) };
                 }
 
-                var testProjects = testProjectFileNames.Select(testProjectFile => _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework)).ToList();
+                var testProjects = testProjectFileNames.Select(testProjectFile =>
+                    _projectFileReader.AnalyzeProject(testProjectFile, options.SolutionPath, options.TargetFramework)).ToList();
 
                 var analyzerResult = _projectFileReader.AnalyzeProject(FindSourceProject(testProjects, options),
                     options.SolutionPath, options.TargetFramework);
@@ -75,8 +76,8 @@ namespace Stryker.Core.Initialisation
             var solutionAnalyzerResults = AnalyzeSolution(options);
             var solutionTestProjects = solutionAnalyzerResults.Where(p => p.IsTestProject()).ToList();
             var projectsUnderTestAnalyzerResult = solutionAnalyzerResults.Where(p => !p.IsTestProject()).ToList();
-            _logger.LogInformation("Found {0} source projects", projectsUnderTestAnalyzerResult.Count);
-            _logger.LogInformation("Found {0} test projects", solutionTestProjects.Count);
+            _logger.LogInformation("Found {ProjectsUnderTestCount} source projects", projectsUnderTestAnalyzerResult.Count);
+            _logger.LogInformation("Found {TestProjectsCount} test projects", solutionTestProjects.Count);
 
             var dependents = FindDependentProjects(projectsUnderTestAnalyzerResult);
             if (!string.IsNullOrEmpty(options.SourceProjectName))
@@ -88,20 +89,33 @@ namespace Stryker.Core.Initialisation
             return BuildProjectInfos(options, dependents, projectsUnderTestAnalyzerResult, solutionTestProjects);
         }
 
-        private static Dictionary<string, HashSet<string>> FindDependentProjects(IReadOnlyCollection<IAnalyzerResult> projectsUnderTest)
+        private Dictionary<string, HashSet<string>> FindDependentProjects(IReadOnlyCollection<IAnalyzerResult> projectsUnderTest)
         {
             // need to scan traverse dependencies
             // dependents contains the list of projects depending on each (non test) projects
-            var dependents = projectsUnderTest.ToDictionary(p=>p.ProjectFilePath, p => new HashSet<string>(new []{p.ProjectFilePath}));
+            var dependents = projectsUnderTest.ToDictionary(p => p.ProjectFilePath, p => new HashSet<string>(new[] { p.ProjectFilePath }));
             // register explicit dependencies
             foreach (var result in projectsUnderTest)
             {
                 foreach (var reference in result.ProjectReferences)
                 {
-                    dependents[reference].Add(result.ProjectFilePath);
+                    var correctReference = reference;
+                    if (!dependents.ContainsKey(reference))
+                    {
+                        // find a match disregarding case
+                        correctReference = dependents.Keys.FirstOrDefault(r => string.Compare(r, reference, true, System.Globalization.CultureInfo.InvariantCulture) == 0);
+                        if (correctReference == null)
+                        {
+                            _logger.LogWarning("Project {ProjectFilePath} depends upon unknown project {UnknownReference}. Compilation may fail.", result.ProjectFilePath, reference);
+                            continue;
+                        }
+                        _logger.LogWarning("Project {ProjectFilePath} depends upon unknown project {UnknownReference} which should have been cased like this {CorrectReference}.",
+                            result.ProjectFilePath, reference, correctReference);
+                    }
+                    dependents[correctReference].Add(result.ProjectFilePath);
                 }
             }
-            
+
             // we need to dig recursively to find recursive dependencies, until none are discovered
             bool foundNewDependency;
             do
@@ -127,28 +141,29 @@ namespace Stryker.Core.Initialisation
 
         private List<IAnalyzerResult> AnalyzeSolution(StrykerOptions options)
         {
-            _logger.LogInformation("Identifying projects to mutate in {0}. This can take a while.",  options.SolutionPath);
-            var manager = _projectFileReader.AnalyzeSolution(options.SolutionPath);
+            _logger.LogInformation("Identifying projects to mutate in {SolutionPath}. This can take a while.", options.SolutionPath);
+            var manager = _projectFileReader.GetAnalyzerManager(options.SolutionPath);
 
             // build all projects
             var projectsAnalyzerResults = new ConcurrentBag<IAnalyzerResult>();
             _logger.LogDebug("Analyzing {count} projects.", manager.Projects.Count);
             try
             {
-                Parallel.ForEach(manager.Projects.Values, project =>
+                Parallel.ForEach(manager.Projects.Values, new ParallelOptions{MaxDegreeOfParallelism = options.DevMode ? 1 : Math.Max(options.Concurrency,1)}, project =>
                 {
                     var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
-                    _logger.LogDebug("Analyzing {projectFilePath}", projectLogName);
+                    _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
                     var buildResult = project.Build();
-                    var projectAnalyzerResult = buildResult.Results.FirstOrDefault();
+
+                    var projectAnalyzerResult = _projectFileReader.GetAnalyzerResult(buildResult, options.TargetFramework);
                     if (projectAnalyzerResult is not null)
                     {
                         projectsAnalyzerResults.Add(projectAnalyzerResult);
-                        _logger.LogDebug("Analysis of project {projectFilePath} succeeded.", projectLogName);
+                        _logger.LogDebug("Analysis of project {ProjectFilePath} succeeded.", projectLogName);
                     }
                     else
                     {
-                        _logger.LogWarning("Analysis of project {projectFilePath} failed.", projectLogName);
+                        _logger.LogWarning("Analysis of project {ProjectFilePath} failed.", projectLogName);
                     }
                 });
             }
@@ -171,14 +186,14 @@ namespace Stryker.Core.Initialisation
                 var projectLogName = Path.GetRelativePath(Path.GetDirectoryName(options.SolutionPath), project.ProjectFilePath);
                 var analyzerResultsForTestProjects = testProjects
                     .Where(testProject => testProject.ProjectReferences.Any(reference => dependents[project.ProjectFilePath].Contains(reference)));
-                var relatedTestProjects = analyzerResultsForTestProjects.Select(p =>p.ProjectFilePath).ToList();
+                var relatedTestProjects = analyzerResultsForTestProjects.Select(p => p.ProjectFilePath).ToList();
                 if (relatedTestProjects.Count > 0)
                 {
-                    _logger.LogDebug("Matched {0} to {1} test projects:", projectLogName, relatedTestProjects.Count);
+                    _logger.LogDebug("Matched {ProjectLogName} to {TestProjectsCount} test projects:", projectLogName, relatedTestProjects.Count);
 
                     foreach (var relatedTestProjectAnalyzerResults in relatedTestProjects)
                     {
-                        _logger.LogDebug("{0}", relatedTestProjectAnalyzerResults);
+                        _logger.LogDebug("{AnalyzerResults}", relatedTestProjectAnalyzerResults);
                     }
 
                     var sourceProject = BuildSourceProjectInfo(options, project, analyzerResultsForTestProjects);
@@ -187,7 +202,7 @@ namespace Stryker.Core.Initialisation
                 }
                 else
                 {
-                    _logger.LogWarning("Project {0} will not be mutated because Stryker did not find a test project for it.", projectLogName);
+                    _logger.LogWarning("Project {ProjectLogName} will not be mutated because Stryker did not find a test project for it.", projectLogName);
                 }
             }
             return result;
@@ -214,7 +229,7 @@ namespace Stryker.Core.Initialisation
             var inputFiles = builder.Build();
             targetProjectInfo.ProjectContents = inputFiles;
 
-            _logger.LogInformation("Found project {0} to mutate.", analyzerResult.ProjectFilePath);
+            _logger.LogInformation("Found project {ProjectFilePath} to mutate.", analyzerResult.ProjectFilePath);
             targetProjectInfo.TestProjectsInfo = new(FileSystem)
             {
                 TestProjects = analyzerResults.Select(testProjectAnalyzerResult => new TestProject(FileSystem, testProjectAnalyzerResult)).ToList()
@@ -225,7 +240,7 @@ namespace Stryker.Core.Initialisation
         public string FindTestProject(string path)
         {
             var projectFile = FindProjectFile(path);
-            _logger.LogDebug("Using {0} as test project", projectFile);
+            _logger.LogDebug("Using {ProjectFile} as test project", projectFile);
             return projectFile;
         }
 
@@ -246,7 +261,7 @@ namespace Stryker.Core.Initialisation
                 throw new InputException($"No .csproj or .fsproj file found, please check your project directory at {path}");
             }
 
-            _logger.LogTrace("Scanned the directory {0} for {1} files: found {2}", path, "*.csproj", projectFiles);
+            _logger.LogTrace("Scanned the directory {Path} for *.csproj files: found {ProjectFilesCount}", path, projectFiles);
 
             if (projectFiles.Length > 1)
             {
@@ -275,7 +290,7 @@ namespace Stryker.Core.Initialisation
             var projectReferences = FindProjectsReferencedByAllTestProjects(testProjects.ToList());
             var sourceProjectPath = string.IsNullOrEmpty(options?.SourceProjectName) ? DetermineTargetProjectWithoutNameFilter(projectReferences) : DetermineSourceProjectWithNameFilter(options, projectReferences);
 
-            _logger.LogDebug("Using {0} as project under test", sourceProjectPath);
+            _logger.LogDebug("Using {SourceProjectPath} as project under test", sourceProjectPath);
 
             return sourceProjectPath;
         }
@@ -305,7 +320,7 @@ namespace Stryker.Core.Initialisation
                 stringBuilder.Append("More than one project reference matched the given project filter ")
                 .Append($"'{options.SourceProjectName}'")
                 .AppendLine(", please specify the full name of the project reference.");
-                
+
             }
 
             stringBuilder.Append(BuildReferenceChoice(projectReferences));
@@ -370,10 +385,11 @@ namespace Stryker.Core.Initialisation
 
                 Language.Fsharp => new FsharpProjectComponentsBuilder(
                     projectInfo,
+                    options,
                     _foldersToExclude,
                     _logger,
                     FileSystem),
-                _ => throw new NotSupportedException()
+                _ => throw new NotSupportedException($"Language not supported: {language}")
             };
     }
 }

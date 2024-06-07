@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Moq;
 using Shouldly;
 using Stryker.Core.CoverageAnalysis;
@@ -9,6 +10,7 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
+using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
 using Xunit;
 
@@ -146,7 +148,10 @@ namespace Stryker.Core.UnitTest.TestRunners
             var action = () =>  runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
             action.ShouldThrow<GeneralStrykerException>();
             // the test will always end in a crash, VsTestRunner should retry at least a few times
-            mockVsTest.Verify(m => m.EndSession(), Times.AtLeast(4));
+            mockVsTest.Verify(m => m.RunTestsWithCustomTestHost(It.IsAny<IEnumerable<string>>(),
+                It.IsAny<string>(), It.IsAny<TestPlatformOptions>(),
+                It.IsAny<ITestRunEventsHandler>(),
+                It.IsAny<IStrykerTestHostLauncher>()), Times.AtLeast(3));
         }
 
         [Fact]
@@ -183,10 +188,16 @@ namespace Stryker.Core.UnitTest.TestRunners
         public void ShouldRetryFrozenSession()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
-            // the test session will hung twice
+            var defaultTimeOut = VsTestRunner.VsTestExtraTimeOutInMs;
+            VsTestRunner.VsTestExtraTimeOutInMs = 100;
+            // the test session will freeze twice
             SetupFrozenTestRun(mockVsTest, 2);
             runner.TestMultipleMutants(SourceProjectInfo, new TimeoutValueCalculator(0, 10,9), new[] { Mutant }, null);
-            mockVsTest.Verify(m => m.EndSession(), Times.Exactly(3));
+            VsTestRunner.VsTestExtraTimeOutInMs = defaultTimeOut;
+            mockVsTest.Verify(m => m.RunTestsWithCustomTestHost(It.IsAny<IEnumerable<string>>(),
+                It.IsAny<string>(), It.IsAny<TestPlatformOptions>(),
+                It.IsAny<ITestRunEventsHandler>(),
+                It.IsAny<IStrykerTestHostLauncher>()), Times.Exactly(3));
         }
 
         [Fact]
@@ -195,8 +206,9 @@ namespace Stryker.Core.UnitTest.TestRunners
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             var defaultTimeOut = VsTestRunner.VsTestExtraTimeOutInMs;
             // the test session will end properly, but VsTest will hang
+            // it will be recycled
             SetupFrozenVsTest(mockVsTest, 3);
-            VsTestRunner.VsTestExtraTimeOutInMs = 500;
+            VsTestRunner.VsTestExtraTimeOutInMs = 100;
             runner.TestMultipleMutants(SourceProjectInfo, new TimeoutValueCalculator(0, 10,9), new[] { Mutant }, null);
             VsTestRunner.VsTestExtraTimeOutInMs = defaultTimeOut;
             mockVsTest.Verify(m => m.EndSession(), Times.Exactly(2));
@@ -564,7 +576,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         // this verifies that tests missing any coverage information are
-        // flagged as to be tested used against every mutants
+        // flagged as to be tested used against every mutant
         [Fact]
         public void MarkSuspiciousTests()
         {
@@ -598,6 +610,35 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             var testResult = BuildCoverageTestResult("T0", new[] { "0;", "" });
             var other = BuildCoverageTestResult("T1", new[] { "", "" });
+            SetupMockCoverageRun(mockVsTest, new[] { testResult, other });
+
+
+            var analyzer = new CoverageAnalyser(options);
+            analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
+
+            OtherMutant.CoveringTests.Count.ShouldBe(0);
+            Mutant.CoveringTests.Count.ShouldBe(1);
+        }
+
+        // this verifies extra test results (without any coverage info) are properly handled
+        // are properly handled
+        [Fact]
+        public void HandleExtraTestResult()
+        {
+            var options = new StrykerOptions
+            {
+                OptimizationMode = OptimizationModes.CoverageBasedTest
+            };
+
+            var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
+
+            var testResult = BuildCoverageTestResult("T0", new[] { "0;", "" });
+            var other =  new TestResult(FindOrBuildCase("T0"))
+            {
+                DisplayName = "T0",
+                Outcome = TestOutcome.Passed,
+                ComputerName = "."
+            };
             SetupMockCoverageRun(mockVsTest, new[] { testResult, other });
 
 

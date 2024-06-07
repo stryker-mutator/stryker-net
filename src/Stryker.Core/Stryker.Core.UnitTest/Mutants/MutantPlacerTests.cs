@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -7,6 +8,7 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
+using Stryker.Core.Mutants.CsharpNodeOrchestrators;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Xunit;
@@ -121,17 +123,21 @@ namespace Stryker.Core.UnitTest.Mutants
             var source = $"class Test {{{original}}}";
             var expectedCode = $"class Test {{{injected}}}";
 
-            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BaseMethodDeclarationSyntax>(source, expectedCode, MutantPlacer.ConvertExpressionToBody);
+            var placer = new BaseMethodDeclarationOrchestrator<BaseMethodDeclarationSyntax>();
+
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BaseMethodDeclarationSyntax>(source, expectedCode, placer.ConvertToBlockBody);
         }
 
         [Theory]
         [InlineData("void TestClass(){ void LocalFunction() => Value-='a';}", "void TestClass(){ void LocalFunction() {Value-='a';};}}")]
+        [InlineData("void TestClass(){ int LocalFunction() => 4;}", "void TestClass(){ int LocalFunction() {return 4;};}")]
         public void ShouldConvertExpressionBodyBackLocalFunctionAndForth(string original, string injected)
         {
             var source = $"class Test {{{original}}}";
             var expectedCode = $"class Test {{{injected}}}";
+            var placer = new LocalFunctionStatementOrchestrator();
 
-            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<LocalFunctionStatementSyntax>(source, expectedCode, MutantPlacer.ConvertExpressionToBody);
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<LocalFunctionStatementSyntax>(source, expectedCode, placer.ConvertToBlockBody);
         }
 
         [Theory]
@@ -144,8 +150,9 @@ namespace Stryker.Core.UnitTest.Mutants
         {
             var source = $"class Test {{ private void Any(){{ Register({original});}}}}";
             var expectedCode = $"class Test {{ private void Any(){{ Register({injected});}}}}";
+            var placer = new AnonymousFunctionExpressionOrchestrator();
 
-            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<AnonymousFunctionExpressionSyntax>(source, expectedCode, MutantPlacer.ConvertExpressionToBody);
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<AnonymousFunctionExpressionSyntax>(source, expectedCode, placer.ConvertToBlockBody);
         }
 
         [Theory]
@@ -154,8 +161,9 @@ namespace Stryker.Core.UnitTest.Mutants
         {
             var source = $"class Test {{{original}}}";
             var expectedCode = $"class Test {{{injected}}}";
+            var placer = new AccessorSyntaxOrchestrator();
 
-            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<AccessorDeclarationSyntax>(source, expectedCode, MutantPlacer.ConvertExpressionToBody);
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<AccessorDeclarationSyntax>(source, expectedCode, placer.ConvertToBlockBody);
         }
 
         [Fact]
@@ -163,19 +171,12 @@ namespace Stryker.Core.UnitTest.Mutants
         {
             var source = "class Test {public int X => 1;}";
             var expected = "class Test {public int X {get{return 1;}}}";
+            var placer = new ExpressionBodiedPropertyOrchestrator();
 
-            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<PropertyDeclarationSyntax>(source, expected, MutantPlacer.ConvertPropertyExpressionToBodyAccessor);
+            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<PropertyDeclarationSyntax>(source, expected, placer.ConvertToBlockBody);
         }
 
-        [Fact]
-        public void ShouldInjectReturnAndRestore()
-        {
-            var source = "class Test {bool Method() {x++;}}";
-            var expected = "class Test {bool Method() {x++;return default(bool);}}";
-
-            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BaseMethodDeclarationSyntax, BlockSyntax>(source, expected, MutantPlacer.AddEndingReturn);
-        }
-
+    
         [Fact]
         public void ShouldInjectInitializersAndRestore()
         {
@@ -183,19 +184,11 @@ namespace Stryker.Core.UnitTest.Mutants
             var expected = "class Test {bool Method(out int x) {{x = default(int);}x=0;}}";
 
             CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BlockSyntax>(source, expected,
-                (n) => MutantPlacer.AddDefaultInitializers(n,
-                    new[]{SyntaxFactory.Parameter(SyntaxFactory.Identifier("x")).WithType(SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword))
+                (n) => MutantPlacer.InjectOutParametersInitialization(n,
+                    new[]{SyntaxFactory.Parameter(SyntaxFactory.Identifier("x")).WithModifiers(SyntaxFactory.TokenList(new[] {SyntaxFactory.Token(SyntaxKind.OutKeyword)})).WithType(SyntaxFactory.PredefinedType(SyntaxFactory.Token(SyntaxKind.IntKeyword))
                     )}));
         }
 
-        [Fact]
-        public void ShouldInjectReturnToLocalFunctionAndRestore()
-        {
-            var source = "class Test {void Method(){ bool Method() {x++;};}}";
-            var expected = "class Test {void Method(){ bool Method() {x++;return default(bool);};}}";
-
-            CheckMutantPlacerProperlyPlaceAndRemoveHelpers<LocalFunctionStatementSyntax, BlockSyntax>(source, expected, MutantPlacer.AddEndingReturn);
-        }
 
         [Fact]
         public void ShouldStaticMarkerInStaticFieldInitializers()
@@ -222,7 +215,7 @@ static TestClass()=> Value-='a';}";
                 OptimizationMode = OptimizationModes.CoverageBasedTest,
                 MutationLevel = MutationLevel.Complete
             });
-            var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source).GetRoot());
+            var actualNode = orchestrator.Mutate(CSharpSyntaxTree.ParseText(source), null).GetRoot();
 
             var node = actualNode.DescendantNodes().First(t => t is BlockSyntax);
 
@@ -240,10 +233,10 @@ static TestClass()=> Value-='a';}";
             restored = MutantPlacer.RemoveMutant(node);
             actualNode = actualNode.ReplaceNode(node, restored);
 
-            var expectedNode = CSharpSyntaxTree.ParseText(source.Replace("StrykerNamespace", codeInjection.HelperNamespace)).GetRoot();
+            var expectedNode = CSharpSyntaxTree.ParseText(source.Replace("StrykerNamespace", codeInjection.HelperNamespace));
             expectedNode.ShouldNotContainErrors();
-            actualNode.ShouldBeSemantically(expectedNode);
-            actualNode.ShouldNotContainErrors();
+            actualNode.SyntaxTree.ShouldBeSemantically(expectedNode);
+            actualNode.SyntaxTree.ShouldNotContainErrors();
         }
     }
 }

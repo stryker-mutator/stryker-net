@@ -2,6 +2,7 @@ using System.IO;
 using McMaster.Extensions.CommandLineUtils;
 using Moq;
 using Shouldly;
+using Stryker.CLI.CommandLineConfig;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
@@ -64,7 +65,7 @@ namespace Stryker.CLI.UnitTest
             VerifyConfigFileDeserialized(Times.Once());
         }
 
-        private void VerifyConfigFileDeserialized(Times time) => _inputs.VerifyGet(x => x.BaselineProviderInput, time);
+        private void VerifyConfigFileDeserialized(Times time) => _inputs.VerifyGet(x => x.CoverageAnalysisInput, time);
 
         private static CommandLineApplication GetCommandLineApplication()
         {

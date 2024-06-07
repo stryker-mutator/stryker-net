@@ -22,7 +22,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var expression = GenerateWithRelationalPattern(@operator);
 
-            var result = target.ApplyMutations(expression).ToList();
+            var result = target.ApplyMutations(expression, null).ToList();
 
             result.ForEach(mutation =>
             {
@@ -46,7 +46,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
             var expression = GenerateWithBinaryPattern(@operator);
 
-            var result = target.ApplyMutations(expression).ToList();
+            var result = target.ApplyMutations(expression, null).ToList();
 
             result.ForEach(mutation =>
             {
@@ -67,7 +67,7 @@ namespace Stryker.Core.UnitTest.Mutators
         {
             var target = new SwitchExpressionMutator();
 
-            var result = target.ApplyMutations(expression).ToList();
+            var result = target.ApplyMutations(expression, null).ToList();
 
             result.ShouldBeEmpty();
         }

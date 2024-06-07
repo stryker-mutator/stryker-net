@@ -17,10 +17,7 @@ namespace Stryker.Core.UnitTest
         /// </summary>
         /// <param name="actual">Resulted code</param>
         /// <param name="expected">Expected code</param>
-        public static void ShouldBeSemantically(this string actual, string expected)
-        {
-            ShouldBeSemantically(CSharpSyntaxTree.ParseText(actual).GetRoot(), CSharpSyntaxTree.ParseText(expected).GetRoot());
-        }
+        public static void ShouldBeSemantically(this string actual, string expected) => ShouldBeSemantically(CSharpSyntaxTree.ParseText(actual), CSharpSyntaxTree.ParseText(expected));
 
         /// <summary>
         /// Compares two syntax trees and asserts equality
@@ -29,14 +26,9 @@ namespace Stryker.Core.UnitTest
         /// <param name="expected">Expected code</param>
         /// <remarks>Warning: this code tries to pinpoint the first different lines, but it will work on string comparison, so it may pinpoint spaces
         /// or new line variations, hiding the real differences.</remarks>
-        public static void ShouldBeSemantically(this SyntaxNode actual, SyntaxNode expected)
+        public static void ShouldBeSemantically(this SyntaxTree actual, SyntaxTree expected)
         {
-            // for some reason, nodes can be different while being textually the same
-            if (actual.ToFullString() == expected.ToFullString())
-            {
-                return;
-            }
-            var isSame = SyntaxFactory.AreEquivalent(actual, expected);
+            var isSame = actual.IsEquivalentTo(expected);
 
             if (!isSame)
             {
@@ -63,12 +55,12 @@ namespace Stryker.Core.UnitTest
             actual.ShouldBe(replaced);
         }
 
-        public static void ShouldNotContainErrors(this SyntaxNode actual)
+        public static void ShouldNotContainErrors(this SyntaxTree actual)
         {
-            var errors = actual.SyntaxTree.GetDiagnostics().Count(x => x.Severity == DiagnosticSeverity.Error);
+            var errors = actual.GetDiagnostics().Count(x => x.Severity == DiagnosticSeverity.Error);
             if (errors > 0)
             {
-                errors.ShouldBe(0, $"Actual code has build errors!\n{actual.ToFullString()}\nerrors: {string.Join(Environment.NewLine, actual.SyntaxTree.GetDiagnostics())}");
+                errors.ShouldBe(0, $"Actual code has build errors!\n{actual.GetText()}\nerrors: {string.Join(Environment.NewLine, actual.GetDiagnostics())}");
             }
         }
 
