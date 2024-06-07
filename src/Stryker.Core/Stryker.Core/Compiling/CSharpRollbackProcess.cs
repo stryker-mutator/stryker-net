@@ -68,7 +68,7 @@ namespace Stryker.Core.Compiling
 
                 var updatedSyntaxTree = RemoveCompileErrorMutations(originalTree, syntaxTreeMap.Value);
 
-                if (updatedSyntaxTree == originalTree && lastAttempt)
+                if (updatedSyntaxTree == originalTree || lastAttempt)
                 {
                     Logger.LogCritical(
                         "Stryker.NET could not compile the project after mutation. This is probably an error for Stryker.NET and not your project. Please report this issue on github with the previous error message.");

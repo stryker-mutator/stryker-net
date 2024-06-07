@@ -1,7 +1,6 @@
 using Buildalyzer;
 using FSharp.Compiler.CodeAnalysis;
 using FSharp.Compiler.Text;
-using Microsoft.Build.Logging.StructuredLogger;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Control;
 using Stryker.Core.Exceptions;
@@ -45,6 +44,11 @@ namespace Stryker.Core.Initialisation
             }
             return inputFiles;
         }
+
+        // do nothing
+        public override void InjectHelpers(IProjectComponent inputFiles) {}
+
+        public override Action PostBuildAction() => () => { };
 
         private FsharpFolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult)
         {

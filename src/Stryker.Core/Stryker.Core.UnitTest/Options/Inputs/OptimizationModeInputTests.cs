@@ -46,6 +46,8 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             var exception = Assert.Throws<InputException>(() => target.Validate());
 
             exception.Message.ShouldMatch("Incorrect coverageAnalysis option \\(gibberish\\)\\. The options are \\[.+\\]\\.");
+
+            exception.ToString().ShouldContain("[off, perTest, all, perTestInIsolation].");
         }
     }
 }
