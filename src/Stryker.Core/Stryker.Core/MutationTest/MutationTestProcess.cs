@@ -79,6 +79,7 @@ namespace Stryker.Core.MutationTest
                 throw new GeneralStrykerException(
                     "no valid language detected || no valid csproj or fsproj was given.");
             }
+
             return LanguageMap[Input.SourceProjectInfo.AnalyzerResult.GetLanguage()](_options);
         }
 
@@ -116,7 +117,8 @@ namespace Stryker.Core.MutationTest
 
                 _mutationTestExecutor.Test(Input.SourceProjectInfo, mutants,
                     Input.InitialTestRun.TimeoutValueCalculator,
-                    (testedMutants, tests, ranTests, outTests) => TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants));
+                    (testedMutants, tests, ranTests, outTests) =>
+                        TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants));
 
                 OnMutantsTested(mutants, reportedMutants);
             });
@@ -134,6 +136,7 @@ namespace Stryker.Core.MutationTest
                 failedTests = new TestGuidsList(
                     failedTests.GetGuids().Where(t => !testsFailingInitially.Contains(t)));
             }
+
             foreach (var mutant in testedMutants)
             {
                 mutant.AnalyzeTestRun(failedTests, ranTests, timedOutTest, false);
@@ -155,7 +158,7 @@ namespace Stryker.Core.MutationTest
             {
                 if (mutant.ResultStatus == MutantStatus.Pending)
                 {
-                    Logger.LogWarning($"Mutation {mutant.Id} was not fully tested.");
+                    Logger.LogWarning("Mutation {Id} was not fully tested.", mutant.Id);
                 }
 
                 OnMutantTested(mutant, reportedMutants);
@@ -169,6 +172,7 @@ namespace Stryker.Core.MutationTest
                 // skip duplicates or useless notifications
                 return;
             }
+
             _reporter?.OnMutantTested(mutant);
             reportedMutants.Add(mutant);
         }
@@ -179,9 +183,11 @@ namespace Stryker.Core.MutationTest
             {
                 return false;
             }
+
             if (mutantsToTest.Any(x => x.ResultStatus != MutantStatus.Pending))
             {
-                throw new GeneralStrykerException("Only mutants to run should be passed to the mutation test process. If you see this message please report an issue.");
+                throw new GeneralStrykerException(
+                    "Only mutants to run should be passed to the mutation test process. If you see this message please report an issue.");
             }
 
             return true;
@@ -189,7 +195,8 @@ namespace Stryker.Core.MutationTest
 
         private IEnumerable<List<Mutant>> BuildMutantGroupsForTest(IReadOnlyCollection<Mutant> mutantsNotRun)
         {
-            if (_options.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants) || !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
+            if (_options.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants) ||
+                !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
             {
                 return mutantsNotRun.Select(x => new List<Mutant> { x });
             }
@@ -197,7 +204,8 @@ namespace Stryker.Core.MutationTest
             var blocks = new List<List<Mutant>>(mutantsNotRun.Count);
             var mutantsToGroup = mutantsNotRun.ToList();
             // we deal with mutants needing full testing first
-            blocks.AddRange(mutantsToGroup.Where(m => m.AssessingTests.IsEveryTest).Select(m => new List<Mutant> { m }));
+            blocks.AddRange(mutantsToGroup.Where(m => m.AssessingTests.IsEveryTest)
+                .Select(m => new List<Mutant> { m }));
             mutantsToGroup.RemoveAll(m => m.AssessingTests.IsEveryTest);
 
             mutantsToGroup = mutantsToGroup.Where(m => m.ResultStatus == MutantStatus.Pending).ToList();
@@ -235,13 +243,25 @@ namespace Stryker.Core.MutationTest
                 blocks.Add(nextBlock);
             }
 
-            Logger.LogDebug(
-                $"Mutations will be tested in {blocks.Count} test runs" +
-                (mutantsNotRun.Count > blocks.Count ? $", instead of {mutantsNotRun.Count}." : "."));
+            if (mutantsNotRun.Count > blocks.Count)
+            {
+                Logger.LogDebug(
+                    "Mutations will be tested in {BlocksCount} test runs, instead of {MutantsNotRun}.",
+                    blocks.Count,
+                    mutantsNotRun.Count);
+            }
+            else
+            {
+                Logger.LogDebug(
+                    "Mutations will be tested in {BlocksCount} test runs.",
+                    blocks.Count);
+            }
+
 
             return blocks;
         }
 
-        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(Input.SourceProjectInfo, _mutationTestExecutor.TestRunner, _projectContents.Mutants, Input.InitialTestRun.Result.FailingTests);
+        public void GetCoverage() => _coverageAnalyser.DetermineTestCoverage(Input.SourceProjectInfo,
+            _mutationTestExecutor.TestRunner, _projectContents.Mutants, Input.InitialTestRun.Result.FailingTests);
     }
 }

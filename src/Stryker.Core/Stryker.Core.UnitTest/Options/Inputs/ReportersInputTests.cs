@@ -13,7 +13,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         public void ShouldHaveHelpText()
         {
             var target = new ReportersInput();
-            target.HelpText.ShouldBe("Reporters inform about various stages in the mutation testrun. | default: ['Progress', 'Html'] | allowed: All, Progress, Dots, ClearText, ClearTextTree, Json, Html, Dashboard, Markdown, Baseline");
+            target.HelpText.ShouldBe("Reporters inform about various stages in the mutation testrun. | default: ['Progress', 'Html'] | allowed: All, Progress, Dots, ClearText, ClearTextTree, Json, Html, Dashboard, RealTimeDashboard, Markdown, Baseline");
         }
 
         [Fact]

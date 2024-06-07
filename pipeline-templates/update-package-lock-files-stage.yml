@@ -13,9 +13,9 @@ stages:
         git fetch
         git checkout $(system.pullRequest.sourceBranch)
     - task: UseDotNet@2
-      displayName: 'Use dotnet 6'
+      displayName: 'Use dotnet'
       inputs:
-        version: 6.x
+        version: 8.x
     - task: DotNetCoreCLI@2
       displayName: 'Update stryker cli and stryker core lock files'
       inputs:

@@ -8,7 +8,7 @@ using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.Reporters.Html.Realtime;
+using Stryker.Core.Reporters.Html.RealTime;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.WebBrowserOpener;
 
@@ -20,20 +20,20 @@ public class HtmlReporter : IReporter
     private readonly IFileSystem _fileSystem;
     private readonly IAnsiConsole _console;
     private readonly IWebbrowserOpener _browser;
-    private readonly IRealtimeMutantHandler _mutantHandler;
+    private readonly IRealTimeMutantHandler _mutantHandler;
 
     public HtmlReporter(
         StrykerOptions options,
         IFileSystem fileSystem = null,
         IAnsiConsole console = null,
         IWebbrowserOpener browser = null,
-        IRealtimeMutantHandler mutantHandler = null)
+        IRealTimeMutantHandler mutantHandler = null)
     {
         _options = options;
         _fileSystem = fileSystem ?? new FileSystem();
         _console = console ?? AnsiConsole.Console;
         _browser = browser ?? new CrossPlatformBrowserOpener();
-        _mutantHandler = mutantHandler ?? new RealtimeMutantHandler(_options);
+        _mutantHandler = mutantHandler ?? new RealTimeMutantHandler(_options);
     }
 
     public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
@@ -77,7 +77,7 @@ public class HtmlReporter : IReporter
         }
 
         var aqua = new Style(Color.Aqua);
-        _console.WriteLine("Hint: by passing \"--open-report or -o\" the report will open automatically and update the report in realtime.", aqua);
+        _console.WriteLine("Hint: by passing \"--open-report or -o\" the report will open automatically and update the report in real-time.", aqua);
     }
 
     public void OnMutantTested(IReadOnlyMutant result)

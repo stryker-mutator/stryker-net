@@ -1,22 +1,22 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Microsoft.CodeAnalysis;
 using Stryker.Core.Options;
 
 namespace Stryker.Core.Mutants
 {
     public abstract class BaseMutantOrchestrator
     {
-        public readonly StrykerOptions _options;
+        public readonly StrykerOptions Options;
 
         public bool MustInjectCoverageLogic =>
-            _options != null && _options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) &&
-            !_options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest);
+            Options != null && Options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) &&
+            !Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest);
 
         public ICollection<Mutant> Mutants { get; set; }
-        public int MutantCount { get; set; }
 
-        protected BaseMutantOrchestrator(StrykerOptions options) => _options = options;
+        protected int MutantCount;
+
+        protected BaseMutantOrchestrator(StrykerOptions options) => Options = options;
 
         /// <summary>
         /// Gets the stored mutants and resets the mutant list to an empty collection
@@ -33,12 +33,13 @@ namespace Stryker.Core.Mutants
     /// Mutates abstract syntax trees using mutators and places all mutations inside the abstract syntax tree.
     /// Orchestrator: to arrange or manipulate, especially by means of clever or thorough planning or maneuvering.
     /// </summary>
-    public abstract class BaseMutantOrchestrator<T, Y> : BaseMutantOrchestrator
+    /// <typeparam name="T">The type of syntax node to mutate</typeparam>
+    /// <typeparam name="TY">Associated semantic model if any</typeparam>
+    public abstract class BaseMutantOrchestrator<T, TY> : BaseMutantOrchestrator
     {
         protected BaseMutantOrchestrator(StrykerOptions input) : base(input)
-        {
-        }
+        {}
 
-        public abstract T Mutate(T input, Y semanticModel);
+        public abstract T Mutate(T input, TY semanticModel);
     }
 }

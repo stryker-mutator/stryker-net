@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Json;
+using Stryker.CLI;
 using Xunit;
 
 namespace IntegrationTests
@@ -42,7 +43,7 @@ namespace IntegrationTests
                 SyntaxKind.ConstructorDeclaration,
                 SyntaxKind.FieldDeclaration,
             }
-        );        
+        );
         private const string MutationReportJson = "mutation-report.json";
 
         [Fact]

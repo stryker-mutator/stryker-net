@@ -1,4 +1,5 @@
 using System;
+using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
 using McMaster.Extensions.CommandLineUtils;
@@ -6,6 +7,7 @@ using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 using Spectre.Console;
 using Stryker.CLI.Clients;
+using Stryker.CLI.CommandLineConfig;
 using Stryker.CLI.Logging;
 using Stryker.Core;
 using Stryker.Core.Options;
@@ -19,6 +21,7 @@ namespace Stryker.CLI
         private readonly ILoggingInitializer _loggingInitializer;
         private readonly IStrykerNugetFeedClient _nugetClient;
         private readonly IAnsiConsole _console;
+        private readonly IFileSystem _fileSystem;
 
         public int ExitCode { get; private set; } = ExitCodes.Success;
 
@@ -26,13 +29,15 @@ namespace Stryker.CLI
             IConfigBuilder configReader = null,
             ILoggingInitializer loggingInitializer = null,
             IStrykerNugetFeedClient nugetClient = null,
-            IAnsiConsole console = null)
+            IAnsiConsole console = null,
+            IFileSystem fileSystem = null)
         {
             _stryker = stryker ?? new StrykerRunner();
             _configReader = configReader ?? new ConfigBuilder();
             _loggingInitializer = loggingInitializer ?? new LoggingInitializer();
             _nugetClient = nugetClient ?? new StrykerNugetFeedClient();
             _console = console ?? AnsiConsole.Console;
+            _fileSystem = fileSystem ?? new FileSystem();
         }
 
         /// <summary>
@@ -52,9 +57,10 @@ namespace Stryker.CLI
             app.HelpOption();
 
             var inputs = new StrykerInputs();
-            var cmdConfigReader = new CommandLineConfigReader();
+            var cmdConfigReader = new CommandLineConfigReader(_console);
 
             cmdConfigReader.RegisterCommandLineOptions(app, inputs);
+            cmdConfigReader.RegisterInitCommand(app, _fileSystem, inputs, args);
 
             app.OnExecute(() =>
             {
@@ -81,7 +87,10 @@ namespace Stryker.CLI
                 {
                     Console.Error.WriteLine();
                     Console.Error.WriteLine("Did you mean this?");
-                    Console.Error.WriteLine("    " + uex.NearestMatches.First());
+                    foreach(var match in uex.NearestMatches)
+                    {
+                        Console.Error.WriteLine("    " + match);
+                    }
                 }
 
                 return ExitCodes.OtherError;
@@ -139,12 +148,12 @@ namespace Stryker.CLI
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Bug", "S3168:\"async\" methods should not return \"void\"", Justification = "This method is fire and forget. Task.Run also doesn't work in unit tests")]
         private async void PrintStrykerVersionInformationAsync()
         {
+            var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCli>();
             var assembly = Assembly.GetExecutingAssembly();
             var version = assembly.GetCustomAttribute<AssemblyInformationalVersionAttribute>()?.InformationalVersion;
 
             if (!SemanticVersion.TryParse(version, out var currentVersion))
             {
-                var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCli>();
                 if (string.IsNullOrEmpty(version))
                 {
                     logger.LogWarning("{Attribute} is missing in {Assembly} at {AssemblyLocation}", nameof(AssemblyInformationalVersionAttribute), assembly, assembly.Location);
@@ -157,6 +166,7 @@ namespace Stryker.CLI
             }
 
             _console.MarkupLine($"Version: [Green]{currentVersion}[/]");
+            logger.LogDebug("Stryker starting, version: {Version}", currentVersion);
             _console.WriteLine();
 
             var latestVersion = await _nugetClient.GetLatestVersionAsync();

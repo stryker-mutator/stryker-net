@@ -1,4 +1,6 @@
+#if !DEBUG
 using System;
+#endif
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -63,7 +65,7 @@ namespace Stryker.Core
                 var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.SourceProjectInfo.ProjectContents).ToList(), options);
                 var combinedTestProjectsInfo = _mutationTestProcesses.Select(mtp => mtp.Input.TestProjectsInfo).Aggregate((a, b) => a + b);
 
-                _logger.LogInformation("{0} mutants created", rootComponent.Mutants.Count());
+                _logger.LogInformation("{MutantsCount} mutants created", rootComponent.Mutants.Count());
 
                 AnalyzeCoverage(options);
 
@@ -158,7 +160,7 @@ namespace Stryker.Core
         {
             if (options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) || options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
             {
-                _logger.LogInformation($"Capture mutant coverage using '{options.OptimizationMode}' mode.");
+                _logger.LogInformation("Capture mutant coverage using '{OptimizationMode}' mode.",options.OptimizationMode);
 
                 foreach (var project in _mutationTestProcesses)
                 {

@@ -2,6 +2,7 @@ using System.IO;
 using McMaster.Extensions.CommandLineUtils;
 using Moq;
 using Shouldly;
+using Stryker.CLI.CommandLineConfig;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
@@ -64,7 +65,7 @@ namespace Stryker.CLI.UnitTest
             VerifyConfigFileDeserialized(Times.Once());
         }
 
-        private void VerifyConfigFileDeserialized(Times time) => _inputs.VerifyGet(x => x.BaselineProviderInput, time);
+        private void VerifyConfigFileDeserialized(Times time) => _inputs.VerifyGet(x => x.CoverageAnalysisInput, time);
 
         private static CommandLineApplication GetCommandLineApplication()
         {
@@ -91,6 +92,7 @@ namespace Stryker.CLI.UnitTest
             inputs.Setup(x => x.VerbosityInput).Returns(new VerbosityInput());
             inputs.Setup(x => x.ConcurrencyInput).Returns(new ConcurrencyInput());
             inputs.Setup(x => x.SolutionInput).Returns(new SolutionInput());
+            inputs.Setup(x => x.ConfigurationInput).Returns(new ConfigurationInput());
             inputs.Setup(x => x.SourceProjectNameInput).Returns(new SourceProjectNameInput());
             inputs.Setup(x => x.TestProjectsInput).Returns(new TestProjectsInput());
             inputs.Setup(x => x.MsBuildPathInput).Returns(new MsBuildPathInput());

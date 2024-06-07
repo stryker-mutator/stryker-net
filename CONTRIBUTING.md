@@ -3,7 +3,7 @@ This is the contribution guide for Stryker.NET. Great to have you here! Here are
 
 ## Creating issues
 Do you have an idea for a feature or have you found a bug? Please create an issue so we can talk about it!
-If you found a bug, please run ```dotnet stryker --log-console debug``` and add the output of the Stryker run to the issue.
+If you found a bug, please run ```dotnet stryker --verbosity debug``` and add the output of the Stryker run to the issue.
 
 ## Adding new features
 New features are welcome! Either as requests or proposals.

@@ -6,7 +6,7 @@ using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators
 {
-    public class ObjectCreationMutator : MutatorBase<ObjectCreationExpressionSyntax>, IMutator
+    public class ObjectCreationMutator : MutatorBase<ObjectCreationExpressionSyntax>
     {
         public override MutationLevel MutationLevel => MutationLevel.Standard;
 
