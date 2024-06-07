@@ -7,7 +7,7 @@ using TargetProject.StrykerFeatures;
 namespace NetCoreTestProject.NUnit
 {
     [TestFixture]
-    internal class TestCases
+    internal class Constructs
     {
         // explore the various ways to have test cases
         // explicit
