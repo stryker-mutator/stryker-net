@@ -49,7 +49,7 @@ namespace IntegrationTests
 
         [Fact]
         [Trait("Category", "SingleTestProject")]
-        public void NetFullFramework()
+        public void CSharp_NetFramework_SingleTestProject()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -70,7 +70,7 @@ namespace IntegrationTests
 
         [Fact]
         [Trait("Category", "SingleTestProject")]
-        public void NetCore()
+        public void CSharp_NetCore_SingleTestProject()
         {
             var directory = new DirectoryInfo("../../../../TargetProjects/NetCoreTestProject.XUnit/StrykerOutput");
             directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
@@ -89,7 +89,7 @@ namespace IntegrationTests
 
         [Fact]
         [Trait("Category", "FSharp")]
-        public void FSharp()
+        public void FSharp_SingleTestProject()
         {
             var directory = new DirectoryInfo("../../../../TargetProjects/Library.FSharp.XUnit/StrykerOutput");
             directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
@@ -109,7 +109,7 @@ namespace IntegrationTests
 
         [Fact]
         [Trait("Category", "MultipleTestProjects")]
-        public void NetCoreWithTwoTestProjects()
+        public void CSharp_NetCore_WithTwoTestProjects()
         {
             var directory = new DirectoryInfo("../../../../TargetProjects/Targetproject/StrykerOutput");
             directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
@@ -128,7 +128,7 @@ namespace IntegrationTests
 
         [Fact]
         [Trait("Category", "Solution")]
-        public void SolutionRun()
+        public void CSharp_NetCore_SolutionRun()
         {
             var directory = new DirectoryInfo("../../../../TargetProjects/StrykerOutput");
             directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
@@ -141,7 +141,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutants(report, total: 508, ignored: 205, survived: 4, killed: 6, timeout: 2, nocoverage: 274);
+            CheckReportMutants(report, total: 490, ignored: 201, survived: 1, killed: 1, timeout: 2, nocoverage: 267);
             CheckReportTestCounts(report, total: 30);
         }
 
