@@ -33,12 +33,9 @@ public class Csharp12
 
     public static void RefParameters()
     {
-        DIn dIn = (ref int p) => { }; // error: cannot match `ref` to `in`
-        DRef dRef = (in int p) => { }; // warning: mismatch between `in` and `ref`
-        DRR dRR = (ref int p) => { }; // error: cannot match `ref` to `ref readonly`
-        dRR = (in int p) => { }; // warning: mismatch between `in` and `ref readonly`
-        dIn = (ref readonly int p) => { }; // warning: mismatch between `ref readonly` and `in`
-        dRef = (ref readonly int p) => { }; // warning: mismatch between `ref readonly` and `ref`
+        var dRR = (in int p) => { };
+        var dIn = (ref readonly int p) => { };
+        var dRef = (ref readonly int p) => { };
     }
 
     // lambda improvements
