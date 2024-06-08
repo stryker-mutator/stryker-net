@@ -82,7 +82,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutants(report, total: 577, ignored: 241, survived: 2, killed: 5, timeout: 2, nocoverage: 298);
+            CheckReportMutants(report, total: 585, ignored: 242, survived: 2, killed: 6, timeout: 2, nocoverage: 302);
             CheckReportTestCounts(report, total: 10);
         }
 
@@ -121,7 +121,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutants(report, total: 567, ignored: 101, survived: 2, killed: 7, timeout: 2, nocoverage: 436);
+            CheckReportMutants(report, total: 585, ignored: 101, survived: 2, killed: 7, timeout: 2, nocoverage: 436);
             CheckReportTestCounts(report, total: 20);
         }
 
@@ -140,7 +140,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutants(report, total: 577, ignored: 241, survived: 2, killed: 5, timeout: 2, nocoverage: 298);
+            CheckReportMutants(report, total: 585, ignored: 242, survived: 2, killed: 6, timeout: 2, nocoverage: 302);
             CheckReportTestCounts(report, total: 22);
         }
 
