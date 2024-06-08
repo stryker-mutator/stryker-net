@@ -256,3 +256,9 @@ For the full list of all available regex mutations, see the [regex mutator docs]
 | `a ?? b`            | `b ?? a`                |
 | `a ?? b`            | `a`                 |
 | `a ?? b`            | `b`                 |
+
+## Conditional Operators (_conditional_)
+| Original            | Mutated             |
+|---------------------|---------------------|
+| `x ? a : b`         | `true ? a : b`      |
+| `x ? a : b`         | `false ? a : b`     |
