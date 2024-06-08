@@ -44,7 +44,9 @@ public enum Mutator
     [MutatorDescription("Math methods")]
     Math,
     [MutatorDescription("String Method")]
-    StringMethod
+    StringMethod,
+    [MutatorDescription("Conditional operators")]
+    Conditional
 }
 
 public static class EnumExtension
