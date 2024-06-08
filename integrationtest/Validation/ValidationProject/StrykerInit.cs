@@ -14,7 +14,7 @@ public class StrykerInit
     [Trait("Category", "InitCommand")]
     public void InitCommandDefaults()
     {
-        var directory = new DirectoryInfo("../../../../TargetProjects/InitCommand");
+        var directory = new DirectoryInfo("../../../../../TargetProjects/InitCommand");
         var jsonFile = directory.GetFiles("*.json", SearchOption.AllDirectories).SingleOrDefault();
         jsonFile.ShouldNotBeNull("Json file missing");
 

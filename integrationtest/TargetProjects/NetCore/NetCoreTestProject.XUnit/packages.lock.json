@@ -2,12 +2,6 @@
   "version": 1,
   "dependencies": {
     "net8.0": {
-      "coverlet.collector": {
-        "type": "Direct",
-        "requested": "[6.0.2, )",
-        "resolved": "6.0.2",
-        "contentHash": "bJShQ6uWRTQ100ZeyiMqcFlhP7WJ+bCuabUs885dJiBEzMsJMSFr7BOyeCw4rgvQokteGi5rKQTlkhfQPUXg2A=="
-      },
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
         "requested": "[17.10.0, )",
@@ -34,6 +28,22 @@
         "requested": "[2.8.1, )",
         "resolved": "2.8.1",
         "contentHash": "qBTK0WAcnw65mymIjVDqWUTdqjMyzjwu9e9SF0oGYfYELgbcteDZ4fQLJaXw8mzkvpAD7YdoexBbg8VYQFkWWA=="
+      },
+      "Microsoft.CodeAnalysis.Analyzers": {
+        "type": "Transitive",
+        "resolved": "3.3.4",
+        "contentHash": "AxkxcPR+rheX0SmvpLVIGLhOUXAKG56a64kV9VQZ4y9gR9ZmPXnqZvHJnmwLSwzrEP6junUF11vuc+aqo5r68g=="
+      },
+      "Microsoft.CodeAnalysis.Common": {
+        "type": "Transitive",
+        "resolved": "4.9.2",
+        "contentHash": "M5PThug7b2AdxL7xKmQs50KzAQTl9jENw5jMT3iUt16k+DAFlw1S87juU3UuPs3gvBm8trMBSOEvSFDr31c9Vw==",
+        "dependencies": {
+          "Microsoft.CodeAnalysis.Analyzers": "3.3.4",
+          "System.Collections.Immutable": "8.0.0",
+          "System.Reflection.Metadata": "8.0.0",
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        }
       },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
@@ -62,10 +72,23 @@
         "resolved": "13.0.1",
         "contentHash": "ppPFpBcvxdsfUonNcvITKqLl3bqxWbDCZIzDWHzjpdAHRFfZe0Dw9HmA0+za13IdyrgJwpkDTDA9fHaxOrt20A=="
       },
+      "System.Collections.Immutable": {
+        "type": "Transitive",
+        "resolved": "8.0.0",
+        "contentHash": "AurL6Y5BA1WotzlEvVaIDpqzpIPvYnnldxru8oXJU2yFxFUy3+pNXjXd1ymO+RA0rq0+590Q8gaz2l3Sr7fmqg=="
+      },
       "System.Reflection.Metadata": {
         "type": "Transitive",
-        "resolved": "1.6.0",
-        "contentHash": "COC1aiAJjCoA5GBF+QKL2uLqEBew4JsCkQmoHKbN3TlOZKa2fKLz5CpiRQKDz0RsAOEGsVKqOD5bomsXq/4STQ=="
+        "resolved": "8.0.0",
+        "contentHash": "ptvgrFh7PvWI8bcVqG5rsA/weWM09EnthFHR5SCnS6IN+P4mj6rE1lBDC4U8HL9/57htKAqy4KQ3bBj84cfYyQ==",
+        "dependencies": {
+          "System.Collections.Immutable": "8.0.0"
+        }
+      },
+      "System.Runtime.CompilerServices.Unsafe": {
+        "type": "Transitive",
+        "resolved": "6.0.0",
+        "contentHash": "/iUeP3tq1S0XdNNoMz5C9twLSrM/TH+qElHkXWaPvuNOt+99G75NrV0OS2EqHx5wMN7popYjpc8oTjC1y16DLg=="
       },
       "xunit.abstractions": {
         "type": "Transitive",
@@ -113,7 +136,8 @@
       "targetproject": {
         "type": "Project",
         "dependencies": {
-          "Library": "[1.0.0, )"
+          "Library": "[1.0.0, )",
+          "Microsoft.CodeAnalysis.Common": "[4.9.2, )"
         }
       }
     }

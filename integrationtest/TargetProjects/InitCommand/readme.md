@@ -1,0 +1,1 @@
+This dir is used to test the init command

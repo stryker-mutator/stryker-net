@@ -5,6 +5,7 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
     <LangVersion>latest</LangVersion>
+    <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
   </PropertyGroup>
 
   <!--
@@ -24,5 +25,13 @@
       <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleTo">
         <_Parameter1>$(AssemblyName).Tests</_Parameter1>
       </AssemblyAttribute>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="4.9.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Generator\SourceGenerator.csproj" OutputItemType="Analyzer" ReferenceOutputAssembly="false" />
   </ItemGroup>
 </Project>

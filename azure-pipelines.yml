@@ -189,7 +189,7 @@ stages:
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'windows-netcore'
-        workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
+        workingDirectory: 'integrationtest/TargetProjects/NetCore/NetCoreTestProject.XUnit'
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'windows-netframework'
@@ -210,7 +210,7 @@ stages:
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'windows-fsharp'
-        workingDirectory: 'integrationtest/TargetProjects/Library.FSharp.XUnit'
+        workingDirectory: 'integrationtest/TargetProjects/NetCore/Library.FSharp.XUnit'
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:
@@ -228,7 +228,7 @@ stages:
       parameters:
         testName: 'linux-netcore'
         workingDirectory: 'integrationtest/TargetProjects'
-        strykerCommands: --solution '$(Agent.BuildDirectory)/s/integrationtest/TargetProjects/IntegrationTestApp.sln'
+        strykerCommands: --solution '$(Agent.BuildDirectory)/s/integrationtest/TargetProjects/NetCore/IntegrationTestApp.sln'
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:
@@ -236,7 +236,7 @@ stages:
         projects: '**/Validation.csproj'
         arguments: --filter Category=Solution
     - script: $(Agent.BuildDirectory)/tools/dotnet-stryker
-      workingDirectory: 'integrationtest/TargetProjects/EmptyTestProject'
+      workingDirectory: 'integrationtest/TargetProjects/NetCore/EmptyTestProject'
       failOnStderr: false
       continueOnError: true
 
@@ -249,7 +249,7 @@ stages:
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'macos-netcore'
-        workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
+        workingDirectory: 'integrationtest/TargetProjects/NetCore/NetCoreTestProject.XUnit'
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'macos-init-command'
@@ -264,7 +264,7 @@ stages:
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'macos-netcore-multi-test-project'
-        workingDirectory: 'integrationtest/TargetProjects/TargetProject'
+        workingDirectory: 'integrationtest/TargetProjects/NetCore/TargetProject'
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:

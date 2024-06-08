@@ -53,7 +53,7 @@ namespace IntegrationTests
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                var directory = new DirectoryInfo("../../../../TargetProjects/NetFramework/FullFrameworkApp.Test/StrykerOutput");
+                var directory = new DirectoryInfo("../../../../../TargetProjects/NetFramework/FullFrameworkApp.Test/StrykerOutput");
                 directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
 
                 var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
@@ -72,7 +72,7 @@ namespace IntegrationTests
         [Trait("Category", "SingleTestProject")]
         public void CSharp_NetCore_SingleTestProject()
         {
-            var directory = new DirectoryInfo("../../../../TargetProjects/NetCoreTestProject.XUnit/StrykerOutput");
+            var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/NetCoreTestProject.XUnit/StrykerOutput");
             directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
 
             var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
@@ -91,7 +91,7 @@ namespace IntegrationTests
         [Trait("Category", "FSharp")]
         public void FSharp_SingleTestProject()
         {
-            var directory = new DirectoryInfo("../../../../TargetProjects/Library.FSharp.XUnit/StrykerOutput");
+            var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/Library.FSharp.XUnit/StrykerOutput");
             directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
 
             var latestReport = directory
@@ -111,7 +111,7 @@ namespace IntegrationTests
         [Trait("Category", "MultipleTestProjects")]
         public void CSharp_NetCore_WithTwoTestProjects()
         {
-            var directory = new DirectoryInfo("../../../../TargetProjects/Targetproject/StrykerOutput");
+            var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/Targetproject/StrykerOutput");
             directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
 
             var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
@@ -130,7 +130,7 @@ namespace IntegrationTests
         [Trait("Category", "Solution")]
         public void CSharp_NetCore_SolutionRun()
         {
-            var directory = new DirectoryInfo("../../../../TargetProjects/StrykerOutput");
+            var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/StrykerOutput");
             directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
 
             var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
