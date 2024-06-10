@@ -30,4 +30,4 @@ jobs:
         run: ${{ github.workspace }}/.nuget/tools/dotnet-stryker --dev-mode
         working-directory: ${{ github.workspace }}/integrationtest/TargetProjects/NetCore/NetCoreTestProject.XUnit
       - name: Validate integration test result
-        run: dotnet test ${{ github.workspace }}/integrationtest/ValidationProject --filter Category=SingleTestProject
+        run: dotnet test ${{ github.workspace }}/integrationtest/Validation/ValidationProject --filter Category=SingleTestProject
