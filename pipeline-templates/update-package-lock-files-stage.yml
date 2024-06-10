@@ -30,6 +30,20 @@ stages:
         custom: 'restore'
         arguments: --force-evaluate
         workingDirectory: 'integrationtest/Validation'
+    - task: DotNetCoreCLI@2
+      displayName: 'Update integrationtest lock files'
+      inputs:
+        command: 'custom'
+        custom: 'restore'
+        arguments: --force-evaluate
+        workingDirectory: 'integrationtest/TargetProjects/NetCore'
+    - task: DotNetCoreCLI@2
+      displayName: 'Update integrationtest lock files'
+      inputs:
+        command: 'custom'
+        custom: 'restore'
+        arguments: --force-evaluate
+        workingDirectory: 'integrationtest/TargetProjects/NetFramework'
     - script: |
         git config --global user.email "renovatebot@stryker-mutator.io"
         git config --global user.name "renovatebot"
