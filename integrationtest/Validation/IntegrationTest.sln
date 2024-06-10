@@ -8,10 +8,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Validation", "ValidationPro
 		{CEF61368-68C4-4CC1-8563-9BEC1F56C77F} = {CEF61368-68C4-4CC1-8563-9BEC1F56C77F}
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "TargetProjects", "TargetProjects", "{163B0502-0482-4CD9-A077-793DC7933EF5}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Generator", "TargetProjects\Generator\Generator.csproj", "{F6E3A2C7-36EB-4BDD-9E2F-4FC6CF825794}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Core", "..\..\src\Stryker.Core\Stryker.Core\Stryker.Core.csproj", "{CEF61368-68C4-4CC1-8563-9BEC1F56C77F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.CLI", "..\..\src\Stryker.CLI\Stryker.CLI\Stryker.CLI.csproj", "{A16A982D-BB0F-45D6-ABE1-92A66CF9B64C}"
@@ -26,10 +22,6 @@ Global
 		{FDC1EC26-9CCB-4F6C-A4EE-685E98A3535F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FDC1EC26-9CCB-4F6C-A4EE-685E98A3535F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FDC1EC26-9CCB-4F6C-A4EE-685E98A3535F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F6E3A2C7-36EB-4BDD-9E2F-4FC6CF825794}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F6E3A2C7-36EB-4BDD-9E2F-4FC6CF825794}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F6E3A2C7-36EB-4BDD-9E2F-4FC6CF825794}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F6E3A2C7-36EB-4BDD-9E2F-4FC6CF825794}.Release|Any CPU.Build.0 = Release|Any CPU
 		{CEF61368-68C4-4CC1-8563-9BEC1F56C77F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{CEF61368-68C4-4CC1-8563-9BEC1F56C77F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CEF61368-68C4-4CC1-8563-9BEC1F56C77F}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -41,9 +33,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{F6E3A2C7-36EB-4BDD-9E2F-4FC6CF825794} = {163B0502-0482-4CD9-A077-793DC7933EF5}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {2FEB055D-3A9A-4089-821D-F945309FCF74}
