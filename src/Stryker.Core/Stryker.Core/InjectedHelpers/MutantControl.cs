@@ -3,7 +3,7 @@ namespace Stryker
     public static class MutantControl
     {
         private static System.Collections.Generic.List<int> _coveredMutants = new System.Collections.Generic.List<int>();
-        private static System.Collections.Generic.List<int> _coveredStaticdMutants = new System.Collections.Generic.List<int>();
+        private static System.Collections.Generic.List<int> _coveredStaticMutants = new System.Collections.Generic.List<int>();
         private static string envName = string.Empty;
         private static System.Object _coverageLock = new System.Object();
 
@@ -20,12 +20,12 @@ namespace Stryker
         public static void ResetCoverage()
         {
             _coveredMutants = new System.Collections.Generic.List<int>();
-            _coveredStaticdMutants = new System.Collections.Generic.List<int>();
+            _coveredStaticMutants = new System.Collections.Generic.List<int>();
         }
 
         public static System.Collections.Generic.IList<int>[] GetCoverageData()
         {
-            System.Collections.Generic.IList<int>[] result = new System.Collections.Generic.IList<int>[]{_coveredMutants, _coveredStaticdMutants};
+            System.Collections.Generic.IList<int>[] result = new System.Collections.Generic.IList<int>[]{_coveredMutants, _coveredStaticMutants};
             ResetCoverage();
             return result;
         }
@@ -33,7 +33,7 @@ namespace Stryker
         private static void CurrentDomain_ProcessExit(object sender, System.EventArgs e)
         {
             System.GC.KeepAlive(_coveredMutants);
-            System.GC.KeepAlive(_coveredStaticdMutants);
+            System.GC.KeepAlive(_coveredStaticMutants);
         }
 
         // check with: Stryker.MutantControl.IsActive(ID)
@@ -69,9 +69,9 @@ namespace Stryker
                 {
                     _coveredMutants.Add(id);
                 }
-                if (MutantContext.InStatic() && !_coveredStaticdMutants.Contains(id))
+                if (MutantContext.InStatic() && !_coveredStaticMutants.Contains(id))
                 {
-                    _coveredStaticdMutants.Add(id);
+                    _coveredStaticMutants.Add(id);
                 }
             }
         }
