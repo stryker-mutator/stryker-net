@@ -28,6 +28,6 @@ jobs:
         run: dotnet tool install dotnet-stryker --tool-path ${{ github.workspace }}/.nuget/tools --version $VERSION --add-source $NUGET_FEED
       - name: Run integration test
         run: ${{ github.workspace }}/.nuget/tools/dotnet-stryker --dev-mode
-        working-directory: ${{ github.workspace }}/integrationtest/TargetProjects/NetCoreTestProject.XUnit
+        working-directory: ${{ github.workspace }}/integrationtest/TargetProjects/NetCore/NetCoreTestProject.XUnit
       - name: Validate integration test result
         run: dotnet test ${{ github.workspace }}/integrationtest/ValidationProject --filter Category=SingleTestProject
