@@ -17,12 +17,8 @@ namespace Stryker.Core.UnitTest.Mutators
         }
 
         [Theory]
-        [InlineData("", """
-                        "Stryker was here!"u8
-                        """)]
-        [InlineData("foo", """
-                           ""u8
-                           """)]
+        [InlineData(@"""""u8", @"""Stryker was here!""u8")]
+        [InlineData(@"""foo""u8", @"""""u8")]
         public void ShouldMutateUtf8StringLiteral(string original, string expected)
         {
             var syntaxTree = CSharpSyntaxTree.ParseText($"""var test = "{original}"u8;""");
