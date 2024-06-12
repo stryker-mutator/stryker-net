@@ -60,7 +60,7 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         _initializationProcess.BuildProjects(options, projectInfos);
 
         // create a test runner
-        _runner = runner ?? new VsTestRunnerPool(options, _fileResolver.FileSystem);
+        _runner = runner ?? new MsTestRunner(options, _fileResolver.FileSystem);
 
         InitializeDashboardProjectInformation(options, projectInfos.First());
         var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);

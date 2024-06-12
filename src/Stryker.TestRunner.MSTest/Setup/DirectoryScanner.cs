@@ -4,6 +4,13 @@ namespace Stryker.TestRunner.MSTest.Setup;
 
 internal class DirectoryScanner
 {
+    public static IEnumerable<string> FindProjects(string path)
+    {
+        var root = FindSolutionRoot(path);
+        var csprojFiles = FindCsprojFiles(root);
+        return csprojFiles.Select(file => Path.GetFileNameWithoutExtension(file) ?? string.Empty);
+    }
+
     public static string FindSolutionRoot(string path)
     {
         var directoryPath = Path.GetDirectoryName(path) ?? throw new GeneralStrykerException($"Could not load assembly from path: {path}");

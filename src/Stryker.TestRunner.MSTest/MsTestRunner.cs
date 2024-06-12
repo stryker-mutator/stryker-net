@@ -25,7 +25,11 @@ public class MsTestRunner : ITestRunner
     public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project)
     {
         var assemblies = project.GetTestAssemblies().First();
+
         var testProject = TestProjectLoader.Load(assemblies);
+        testProject.CoverageRun(project.HelperNamespace).GetAwaiter().GetResult();
+
+
         return null;
     }
 

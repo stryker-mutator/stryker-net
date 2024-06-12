@@ -6,5 +6,6 @@ internal interface ITestProject
 {
     Task<int> Discover(DiscoveryResult discoveryResult, string assemblyPath);
     Task<int> InitialTestRun(DiscoveryResult discoveryResult, List<TestNode> executed);
+    Task<int> CoverageRun(string helperNamespace);
     Task<int> Run();
 }

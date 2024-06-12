@@ -13,8 +13,9 @@ internal class AssemblyCopy
    
     public IEnumerable<string> CopyProjects(IEnumerable<string> csprojFilePaths, string testAssembly)
     {
-        var csprojFiles = csprojFilePaths.Select(Path.GetFileNameWithoutExtension).ToList();
+        var csprojFiles = csprojFilePaths.Select(Path.GetFileNameWithoutExtension);
         var testDirectory = Path.GetDirectoryName(testAssembly) ?? string.Empty;
+
         List<string> projectNames = [];
 
         var dlls = csprojFiles

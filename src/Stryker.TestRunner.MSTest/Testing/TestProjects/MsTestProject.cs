@@ -1,7 +1,10 @@
 using System.Reflection;
+using System.Runtime.Loader;
 using Microsoft.Testing.Platform.Builder;
 using Microsoft.Testing.Platform.Extensions.Messages;
+using Stryker.TestRunner.MSTest.Setup;
 using Stryker.TestRunner.MSTest.Testing.Consumers;
+using Stryker.TestRunner.MSTest.Testing.LifeTimeHandlers;
 using Stryker.TestRunner.MSTest.Testing.Options;
 using Stryker.TestRunner.MSTest.Testing.Results;
 
@@ -35,6 +38,15 @@ internal class MsTestProject : ITestProject
         var builder = await TestApplication.CreateBuilderAsync([RunOptions.DiscoverySettings, RunOptions.NoBanner]);
         builder.AddMSTest(() => [_assembly]);
         builder.TestHost.AddDataConsumer((_) => new InitialTestRunConsumer(discoveryResult, executed));
+        using var app = await builder.BuildAsync();
+        return await app.RunAsync();
+    }
+
+    public async Task<int> CoverageRun(string helperNamespace)
+    {
+        var builder = await TestApplication.CreateBuilderAsync([]);
+        builder.AddMSTest(() => [_assembly]);
+        builder.TestHost.AddTestSessionLifetimeHandle((_) => new CoverageLifeTimeHandler());
         using var app = await builder.BuildAsync();
         return await app.RunAsync();
     }
