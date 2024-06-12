@@ -4,10 +4,13 @@ namespace MsTestSample.Project.Unittests;
 public class PersonTests
 {
     [TestMethod]
-    public void PersonCanAge()
+    [DataRow(10, 11)]
+    [DataRow(12, 13)]
+    [DataRow(13, 14)]
+    public void PersonCanAge(int ageA, int ageB)
     {
-        var person = new Person() { Age = 10 };
-        var olderPerson = new Person() { Age = 11 };
+        var person = new Person() { Age = ageA };
+        var olderPerson = new Person() { Age = ageB };
 
         Person.Aged(person);
 

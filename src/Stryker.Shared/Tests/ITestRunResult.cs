@@ -9,5 +9,5 @@ public interface ITestRunResult
     string ResultMessage { get; }
     IEnumerable<string> Messages { get; }
     TimeSpan Duration { get; }
-    IEnumerable<IFrameworkTestDescription> VsTestDescriptions { get; }
+    IEnumerable<IFrameworkTestDescription> TestDescriptions { get; }
 }

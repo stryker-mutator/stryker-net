@@ -10,4 +10,5 @@ public interface ITestIdentifiers
     bool ContainsAny(ITestIdentifiers other);
     bool IsIncludedIn(ITestIdentifiers other);
     ITestIdentifiers Intersect(ITestIdentifiers other);
+    ITestIdentifiers Excluding(ITestIdentifiers testsToSkip);
 }

@@ -82,6 +82,7 @@
     <ProjectReference Include="..\..\Stryker.DataCollector\Stryker.DataCollector\Stryker.DataCollector.csproj" />
     <ProjectReference Include="..\..\Stryker.RegexMutators\Stryker.RegexMutators\Stryker.RegexMutators.csproj" />
     <ProjectReference Include="..\..\Stryker.Shared\Stryker.Shared.csproj" />
+    <ProjectReference Include="..\..\Stryker.TestRunner.MSTest\Stryker.TestRunner.MSTest.csproj" />
     <ProjectReference Include="..\..\Stryker.TestRunner.VSTest\Stryker.TestRunner.VSTest.csproj" />
   </ItemGroup>
 </Project>

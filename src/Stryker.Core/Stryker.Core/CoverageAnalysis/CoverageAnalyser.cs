@@ -39,7 +39,7 @@ public class CoverageAnalyser : ICoverageAnalyser
         ParseCoverage(runner.CaptureCoverage(project), mutants, new TestIdentifiers(resultFailingTests.GetIdentifiers()));
     }
 
-    private void ParseCoverage(IEnumerable<ICoverageRunResult> coverage, IEnumerable<IMutant> mutantsToScan, TestIdentifiers failedTests)
+    private void ParseCoverage(IEnumerable<ICoverageRunResult> coverage, IEnumerable<IMutant> mutantsToScan, ITestIdentifiers failedTests)
     {
         var dubiousTests = new HashSet<Guid>();
         var trustedTests = new HashSet<Guid>();
@@ -92,10 +92,10 @@ public class CoverageAnalyser : ICoverageAnalyser
 
     private void CoverageForThisMutant(IMutant mutant,
         IReadOnlyDictionary<int, List<ICoverageRunResult>> mutationToResultMap,
-        TestIdentifiers everytest,
-        TestIdentifiers allTestsGuidsExceptTrusted,
-        TestIdentifiers dubiousTests,
-        TestIdentifiers failedTest)
+        ITestIdentifiers everytest,
+        ITestIdentifiers allTestsGuidsExceptTrusted,
+        ITestIdentifiers dubiousTests,
+        ITestIdentifiers failedTest)
     {
         var mutantId = mutant.Id;
         var (resultTingRequirements, testGuids) = ParseResultForThisMutant(mutationToResultMap, mutantId);
@@ -141,7 +141,7 @@ public class CoverageAnalyser : ICoverageAnalyser
         }
     }
 
-    private static (MutationTestingRequirements, TestIdentifiers) ParseResultForThisMutant(IReadOnlyDictionary<int, List<ICoverageRunResult>> mutationToResultMap, int mutantId)
+    private static (MutationTestingRequirements, ITestIdentifiers) ParseResultForThisMutant(IReadOnlyDictionary<int, List<ICoverageRunResult>> mutationToResultMap, int mutantId)
     {
         var resultingRequirements = MutationTestingRequirements.None;
         if (!mutationToResultMap.ContainsKey(mutantId))

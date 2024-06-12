@@ -1,15 +1,15 @@
 using Stryker.Shared.Tests;
 
-namespace Stryker.TestRunner.VSTest;
-
-public class WrappedGuidsEnumeration : ITestIdentifiers
+namespace Stryker.TestRunner.MSTest.Testing.Tests;
+internal class WrappedIdentifierEnumeration : ITestIdentifiers
 {
     private readonly IEnumerable<Identifier> _identifiers;
 
+    public WrappedIdentifierEnumeration(IEnumerable<string> ids) => _identifiers = ids.Select(Identifier.Create);
+    public WrappedIdentifierEnumeration(IEnumerable<Identifier> identifiers) => _identifiers = identifiers;
+
     public int Count => _identifiers.Count();
-
     public bool IsEmpty => _identifiers is null || !_identifiers.Any();
-
     public bool IsEveryTest => false;
 
     public ITestIdentifiers Merge(ITestIdentifiers other) => MergeList(this, other);
@@ -20,9 +20,6 @@ public class WrappedGuidsEnumeration : ITestIdentifiers
 
     public bool IsIncludedIn(ITestIdentifiers other) => _identifiers.All(other.Contains);
 
-    public WrappedGuidsEnumeration(IEnumerable<Guid> guids) => _identifiers = guids.Select(Identifier.Create);
-    public WrappedGuidsEnumeration(IEnumerable<Identifier> identifiers) => _identifiers = identifiers;
-
     public static ITestIdentifiers MergeList(ITestIdentifiers a, ITestIdentifiers b)
     {
         if (a.GetIdentifiers() is null)
@@ -30,12 +27,12 @@ public class WrappedGuidsEnumeration : ITestIdentifiers
             return b;
         }
 
-        return b.GetIdentifiers() is null ? a : new WrappedGuidsEnumeration(a.GetIdentifiers().Union(b.GetIdentifiers()));
+        return b.GetIdentifiers() is null ? a : new WrappedIdentifierEnumeration(a.GetIdentifiers().Union(b.GetIdentifiers()));
     }
 
     public IEnumerable<Identifier> GetIdentifiers() => _identifiers;
 
-    public ITestIdentifiers Intersect(ITestIdentifiers other) => IsEveryTest ? new WrappedGuidsEnumeration(other.GetIdentifiers()) : new WrappedGuidsEnumeration(_identifiers.Intersect(other.GetIdentifiers()));
+    public ITestIdentifiers Intersect(ITestIdentifiers other) => IsEveryTest ? new WrappedIdentifierEnumeration(other.GetIdentifiers()) : new WrappedIdentifierEnumeration(_identifiers.Intersect(other.GetIdentifiers()));
 
     public ITestIdentifiers Excluding(ITestIdentifiers testsToSkip) => throw new NotImplementedException();
 }

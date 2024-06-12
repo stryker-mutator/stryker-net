@@ -13,6 +13,7 @@ using Stryker.Shared.Exceptions;
 using Stryker.Shared.Logging;
 using Stryker.Shared.Options;
 using Stryker.Shared.Tests;
+using Stryker.TestRunner.MSTest;
 using Stryker.TestRunner.VSTest;
 
 namespace Stryker.Core.Initialisation;
@@ -59,16 +60,18 @@ public sealed class ProjectOrchestrator : IProjectOrchestrator
         _initializationProcess.BuildProjects(options, projectInfos);
 
         // create a test runner
-        _runner = runner ?? new VsTestRunnerPool(options, fileSystem: _fileResolver.FileSystem);
+        _runner = runner ?? new VsTestRunnerPool(options, _fileResolver.FileSystem);
 
         InitializeDashboardProjectInformation(options, projectInfos.First());
         var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);
 
         var mutationTestProcesses = new ConcurrentBag<IMutationTestProcess>();
+
         Parallel.ForEach(inputs, mutationTestInput =>
         {
             mutationTestProcesses.Add(_projectMutator.MutateProject(options, mutationTestInput, reporters));
         });
+
         return mutationTestProcesses;
     }
 

@@ -157,7 +157,7 @@ namespace Stryker.TestRunner.VSTest
             var result = new TestSet();
             foreach (var source in sources)
             {
-                result.RegisterTests(TestsPerSource[source].Select(id => Tests[id]));
+                result.RegisterTests(TestsPerSource[source].Select(id => Tests[Identifier.Create(id)]));
             }
 
             return result;

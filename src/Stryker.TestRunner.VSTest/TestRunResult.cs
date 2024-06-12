@@ -6,7 +6,7 @@ internal class TestRunResult : ITestRunResult
 {
     public TestRunResult(bool success, string message = null)
     {
-        VsTestDescriptions = new List<VsTestDescription>();
+        TestDescriptions = new List<VsTestDescription>();
         FailingTests = !success ? TestGuidsList.EveryTest() : TestGuidsList.NoTest();
         ExecutedTests = TestGuidsList.EveryTest();
         TimedOutTests = TestGuidsList.NoTest();
@@ -23,7 +23,7 @@ internal class TestRunResult : ITestRunResult
         IEnumerable<string> messages,
         TimeSpan timeSpan)
     {
-        VsTestDescriptions = vsTestDescriptions.Where( p => executedTests.Contains(p.Id)).ToList();
+        TestDescriptions = vsTestDescriptions.Where( p => executedTests.Contains(p.Id)).ToList();
         ExecutedTests = executedTests;
         FailingTests = failedTests;
         TimedOutTests = timedOutTest;
@@ -48,5 +48,5 @@ internal class TestRunResult : ITestRunResult
     public string ResultMessage { get; }
     public IEnumerable<string> Messages { get; }
     public TimeSpan Duration { get; }
-    public IEnumerable<IFrameworkTestDescription> VsTestDescriptions { get; }
+    public IEnumerable<IFrameworkTestDescription> TestDescriptions { get; }
 }

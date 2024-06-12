@@ -43,7 +43,7 @@ public class ProjectMutator : IProjectMutator
     private void EnrichTestProjectsWithTestInfo(InitialTestRun initialTestRun, TestProjectsInfo testProjectsInfo)
     {
         var unitTests =
-            initialTestRun.Result.VsTestDescriptions
+            initialTestRun.Result.TestDescriptions
             .Select(desc => desc.Case)
             // F# has a different syntax tree and would throw further down the line
             .Where(unitTest => Path.GetExtension(unitTest.CodeFilePath) == ".cs");

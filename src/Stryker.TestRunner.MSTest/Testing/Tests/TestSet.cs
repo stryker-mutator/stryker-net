@@ -1,13 +1,9 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Stryker.Shared.Tests;
 
-namespace Stryker.Core.Mutants;
-
-public class TestSet : ITestSet
+namespace Stryker.TestRunner.MSTest.Testing.Tests;
+internal class TestSet : ITestSet
 {
-    private readonly IDictionary<Guid, ITestDescription> _tests = new Dictionary<Guid, ITestDescription>();
+    private readonly IDictionary<string, ITestDescription> _tests = new Dictionary<string, ITestDescription>();
     public int Count => _tests.Count;
     public ITestDescription this[Identifier id] => _tests[id];
 

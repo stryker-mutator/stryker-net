@@ -10,7 +10,7 @@ public class TestRunResult : ITestRunResult
 {
     public TestRunResult(bool success, string message = null)
     {
-        VsTestDescriptions = new List<IFrameworkTestDescription>();
+        TestDescriptions = new List<IFrameworkTestDescription>();
         FailingTests = !success ? TestIdentifiers.EveryTest() : TestIdentifiers.NoTest();
         ExecutedTests = TestIdentifiers.EveryTest();
         TimedOutTests = TestIdentifiers.NoTest();
@@ -27,7 +27,7 @@ public class TestRunResult : ITestRunResult
         IEnumerable<string> messages,
         TimeSpan timeSpan)
     {
-        VsTestDescriptions = vsTestDescriptions.Where( p => executedTests.Contains(p.Id)).ToList();
+        TestDescriptions = vsTestDescriptions.Where( p => executedTests.Contains(p.Id)).ToList();
         ExecutedTests = executedTests;
         FailingTests = failedTests;
         TimedOutTests = timedOutTest;
@@ -52,5 +52,5 @@ public class TestRunResult : ITestRunResult
     public string ResultMessage { get; }
     public IEnumerable<string> Messages { get; }
     public TimeSpan Duration { get; }
-    public IEnumerable<IFrameworkTestDescription> VsTestDescriptions { get; }
+    public IEnumerable<IFrameworkTestDescription> TestDescriptions { get; }
 }

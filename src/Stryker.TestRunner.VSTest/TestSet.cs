@@ -6,7 +6,7 @@ internal class TestSet : ITestSet
 {
     private readonly IDictionary<Guid, ITestDescription> _tests = new Dictionary<Guid, ITestDescription>();
     public int Count => _tests.Count;
-    public ITestDescription this[Guid id] => _tests[id];
+    public ITestDescription this[Identifier id] => _tests[id];
 
     public void RegisterTests(IEnumerable<ITestDescription> tests)
     {
