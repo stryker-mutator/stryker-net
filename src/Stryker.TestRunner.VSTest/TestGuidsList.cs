@@ -11,7 +11,7 @@ internal class TestGuidsList : ITestIdentifiers
 
     private TestGuidsList() => _identifiers = null;
 
-    public TestGuidsList(IEnumerable<ITestDescription> testDescriptions) : this(testDescriptions.Select<ITestDescription, Guid>(t => t.Id))
+    public TestGuidsList(IEnumerable<ITestDescription> testDescriptions) : this(testDescriptions.Select(t => t.Id.ToGuid()))
     { }
 
     public TestGuidsList(IEnumerable<Identifier> identifiers) => _identifiers = new HashSet<Identifier>(identifiers);

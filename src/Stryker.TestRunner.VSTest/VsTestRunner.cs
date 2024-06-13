@@ -139,7 +139,7 @@ public sealed class VsTestRunner : IDisposable
                 mutantTestsMap.Add(mutant.Id, tests);
             }
 
-            testCases = needAll ? null : mutants.SelectMany(m => m.AssessingTests.GetIdentifiers().Select<Identifier, Guid>(t => t)).ToList();
+            testCases = needAll ? null : mutants.SelectMany(m => m.AssessingTests.GetIdentifiers().Select(t => t.ToGuid())).ToList();
             _logger.LogDebug($"{RunnerId}: Testing [{string.Join(',', mutants.Select(m => m.DisplayName))}]");
             _logger.LogTrace($"{RunnerId}: against {(testCases == null ? "all tests." : string.Join(", ", testCases))}.");
         }
@@ -229,7 +229,7 @@ public sealed class VsTestRunner : IDisposable
         foreach (var source in validSources)
         {
             var testForSource = _context.TestsPerSource[source];
-            var testsForAssembly = new TestGuidsList(tests.GetIdentifiers().Where(t => testForSource.Contains(t)));
+            var testsForAssembly = new TestGuidsList(tests.GetIdentifiers().Where(t => testForSource.Contains(t.ToGuid())));
             if (!tests.IsEveryTest && testsForAssembly.Count == 0)
             {
                 // skip empty assemblies
@@ -267,7 +267,7 @@ public sealed class VsTestRunner : IDisposable
                 {
                     _vsTestConsole.RunTestsWithCustomTestHost(tests.GetIdentifiers().Select(t =>
                     {
-                        var testCase = _context.VsTests[t].Case;
+                        var testCase = _context.VsTests[t.ToGuid()].Case;
                         return new TestCase(testCase.FullyQualifiedName, testCase.Uri, testCase.Source);
                     }), runSettings, options, eventHandler, strykerVsTestHostLauncher);
                 }

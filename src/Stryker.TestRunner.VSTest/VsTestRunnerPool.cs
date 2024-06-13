@@ -135,9 +135,9 @@ public sealed class VsTestRunnerPool : ITestRunner
             }
 
             // ensure we returns only entry per test
-            if (!resultCache.TryAdd(coverageRunResult.TestId, coverageRunResult))
+            if (!resultCache.TryAdd(coverageRunResult.TestId.ToGuid(), coverageRunResult))
             {
-                resultCache[coverageRunResult.TestId].Merge(coverageRunResult);
+                resultCache[coverageRunResult.TestId.ToGuid()].Merge(coverageRunResult);
             }
         }
 
@@ -182,14 +182,14 @@ public sealed class VsTestRunnerPool : ITestRunner
             // the coverage collector was not able to report anything ==> it has not been tracked by it, so we do not have coverage data
             // ==> we need it to use this test against every mutation
             _logger.LogDebug($"VsTestRunner: No coverage data for {testResult.TestCase.DisplayName}.");
-            seenTestCases.Add(testDescription.Id);
+            seenTestCases.Add(testDescription.Id.ToGuid());
             coverageRunResult = new CoverageRunResult(testCaseId, CoverageConfidence.Dubious, Enumerable.Empty<int>(),
                 Enumerable.Empty<int>(), Enumerable.Empty<int>());
         }
         else
         {
             // we have coverage data
-            seenTestCases.Add(testDescription.Id);
+            seenTestCases.Add(testDescription.Id.ToGuid());
             var propertyPairValue = value as string;
 
             coverageRunResult = BuildCoverageRunResultFromCoverageInfo(propertyPairValue, testResult, testCaseId,

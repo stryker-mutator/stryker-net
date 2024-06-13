@@ -11,7 +11,7 @@ internal class TestIdentifierList : ITestIdentifiers
 
     private TestIdentifierList() => _identifiers = null;
 
-    public TestIdentifierList(IEnumerable<ITestDescription> testDescriptions) : this(testDescriptions.Select<ITestDescription, string>(t => t.Id))
+    public TestIdentifierList(IEnumerable<ITestDescription> testDescriptions) : this(testDescriptions.Select(t => t.Id.ToString()))
     { }
 
     public TestIdentifierList(IEnumerable<Identifier> identifiers) => _identifiers = new HashSet<Identifier>(identifiers);

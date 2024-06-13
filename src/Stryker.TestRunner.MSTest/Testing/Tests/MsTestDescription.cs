@@ -10,7 +10,7 @@ internal class MsTestDescription : IFrameworkTestDescription
     public MsTestDescription(ITestCase testCase)
     {
         Case = testCase;
-        Description = new TestDescription(testCase.Id, testCase.Name, testCase.CodeFilePath);
+        Description = new TestDescription(testCase.Id.ToString(), testCase.Name, testCase.CodeFilePath);
     }
 
     public TestFrameworks Framework =>

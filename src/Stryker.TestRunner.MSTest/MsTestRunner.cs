@@ -1,5 +1,7 @@
 using Microsoft.Testing.Platform.Extensions.Messages;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Shared.Coverage;
+using Stryker.Shared.Exceptions;
 using Stryker.Shared.Initialisation;
 using Stryker.Shared.Mutants;
 using Stryker.Shared.Options;
@@ -16,29 +18,32 @@ public class MsTestRunner : ITestRunner
     private DiscoveryResult DiscoveryResult { get; }
     private TestProjectLoader TestProjectLoader { get; }
 
+    private IStrykerOptions _strykerOptions;
+
     public MsTestRunner(IStrykerOptions options, IFileSystem? fileSystem = null)
     {
+        _strykerOptions = options;
         DiscoveryResult = new DiscoveryResult();
         TestProjectLoader = new TestProjectLoader(fileSystem);
     }
 
     public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project)
     {
-        var assemblies = project.GetTestAssemblies().First();
+        var coverageCollector = CoverageCollector.CoverageRun(DiscoveryResult, project.HelperNamespace);
 
-        var testProject = TestProjectLoader.Load(assemblies);
-        testProject.CoverageRun(project.HelperNamespace).GetAwaiter().GetResult();
+        foreach (var assembly in project.GetTestAssemblies())
+        {
+            var testProject = TestProjectLoader.Load(assembly);
+            var exitCode = testProject.CoverageRun(coverageCollector).GetAwaiter().GetResult();
+        }
 
-
-        return null;
+        return coverageCollector.GetCoverageRunResult(false);
     }
 
     public bool DiscoverTests(string assembly)
     {
         var testProject = TestProjectLoader.LoadCopy(assembly);
-
-        _ = testProject.Discover(DiscoveryResult, assembly).GetAwaiter().GetResult();
-
+        var exitCode = testProject.Discover(DiscoveryResult, assembly).GetAwaiter().GetResult();
         return DiscoveryResult.TestsPerSource[assembly].Count > 0;
     }
 
@@ -51,14 +56,12 @@ public class MsTestRunner : ITestRunner
             DiscoveryResult.MsTests[test].ClearInitialResult();
         }
 
-        var assemblies = project.GetTestAssemblies();
-
         var executedTests = new List<TestNode>();
 
-        foreach (var assembly in assemblies)
+        foreach (var assembly in project.GetTestAssemblies())
         {
             var testProject = TestProjectLoader.LoadCopy(assembly);
-            _ = testProject.InitialTestRun(DiscoveryResult, executedTests).GetAwaiter().GetResult();
+            var exitCode = testProject.InitialTestRun(DiscoveryResult, executedTests).GetAwaiter().GetResult();
         }
 
         var executed = executedTests
@@ -79,11 +82,53 @@ public class MsTestRunner : ITestRunner
             new WrappedIdentifierEnumeration(executed),
             new WrappedIdentifierEnumeration(failed),
             new WrappedIdentifierEnumeration(timedOut),
-            string.Empty,
-            [],
             duration);
     }
     
-    public ITestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<IMutant> mutants, ITestRunner.TestUpdateHandler update) => throw new NotImplementedException();
+    public ITestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<IMutant> mutants, ITestRunner.TestUpdateHandler update)
+    {
+        var mutantTestsMap = new Dictionary<int, ITestIdentifiers>();
+
+        var testCases = TestCases(mutants, mutantTestsMap);
+
+        if (testCases?.Count == 0)
+        {
+            return TestRunResult.None(DiscoveryResult.MsTests.Values, "Mutants are not covered by any test!");
+        }
+
+        var numberTestCases = testCases?.Count ?? 0;
+        var totalTests = DiscoveryResult.GetTestsForSources(project.GetTestAssemblies()).Count;
+        var expectedTests = testCases == null ? totalTests : numberTestCases;
+
+
+        return TestRunResult.None(DiscoveryResult.MsTests.Values, "");
+    }
+
+    private ICollection<string>? TestCases(IReadOnlyList<IMutant> mutants, Dictionary<int, ITestIdentifiers> mutantTestsMap)
+    {
+
+        if (_strykerOptions.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
+        {
+            var needAll = false;
+            foreach (var mutant in mutants)
+            {
+                var tests = mutant.AssessingTests;
+                needAll = needAll || tests.IsEveryTest;
+                mutantTestsMap.Add(mutant.Id, tests);
+            }
+
+            return needAll ? null : mutants.SelectMany(m => m.AssessingTests.GetIdentifiers().Select(t => t.ToString())).ToList();
+        }
+
+        if (mutants.Count > 1)
+        {
+            throw new GeneralStrykerException("Internal error: trying to test multiple mutants simultaneously without 'perTest' coverage analysis.");
+        }
+
+        mutantTestsMap.Add(mutants[0].Id, TestIdentifierList.EveryTest());
+        return null;
+    }
+
+
     public void Dispose() => throw new NotImplementedException();
 }

@@ -264,7 +264,7 @@ namespace Stryker.TestRunner.VSTest
             var dataCollectorSettings = needDataCollector
                 ? CoverageCollector.GetVsTestSettings(
                     forCoverage,
-                    mutantTestsMap?.Select(e => (e.Key, e.Value.GetIdentifiers().Select<Identifier, Guid>(t => t))),
+                    mutantTestsMap?.Select(e => (e.Key, e.Value.GetIdentifiers().Select(t => t.ToGuid()))),
                     helperNameSpace)
                 : string.Empty;
             if (_testFramework.HasFlag(TestFrameworks.NUnit))

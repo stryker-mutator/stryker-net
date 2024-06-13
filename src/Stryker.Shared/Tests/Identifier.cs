@@ -9,14 +9,11 @@ public sealed class Identifier : IEquatable<Identifier>
 
     public static Identifier Create(Guid guid) => new(guid.ToString());
 
-
-    public static implicit operator Guid(Identifier id)
+    public Guid ToGuid()
     {
-        var isGuid = Guid.TryParse(id._identifier, out var guid);
+        var isGuid = Guid.TryParse(_identifier, out var guid);
         return isGuid ? guid : Guid.Empty;
     }
-
-    public static implicit operator string(Identifier identifier) => identifier._identifier;
 
     public override int GetHashCode() => _identifier.GetHashCode();
 

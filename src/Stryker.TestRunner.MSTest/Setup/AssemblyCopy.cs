@@ -6,7 +6,7 @@ using Stryker.Shared.Exceptions;
 namespace Stryker.TestRunner.MSTest.Setup;
 internal class AssemblyCopy
 {
-    private const string CopySuffix = "Copy";
+    public const string CopySuffix = "Copy";
     private readonly IFileSystem _fileSystem;
 
     public AssemblyCopy(IFileSystem fileSystem) => _fileSystem = fileSystem;

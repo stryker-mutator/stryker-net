@@ -11,7 +11,7 @@ public sealed class VsTestDescription : IFrameworkTestDescription
     public VsTestDescription(ITestCase testCase)
     {
         Case = testCase;
-        Description = new TestDescription(testCase.Id, testCase.Name, testCase.CodeFilePath);
+        Description = new TestDescription(testCase.Id.ToGuid(), testCase.Name, testCase.CodeFilePath);
     }
 
     public TestFrameworks Framework

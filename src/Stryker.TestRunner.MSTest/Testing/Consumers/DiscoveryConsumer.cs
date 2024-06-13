@@ -42,7 +42,7 @@ internal class DiscoveryConsumer : IDataConsumer
 
         _discoveryResult.AddTestSource(_source, update.TestNode.Uid);
         _discoveryResult.AddTestDescription(update.TestNode.Uid, testCase);
-        _discoveryResult.AddTest(new TestDescription(testCase.Id, testCase.Name, testCase.CodeFilePath));
+        _discoveryResult.AddTest(new TestDescription(testCase.Id.ToString(), testCase.Name, testCase.CodeFilePath));
 
         return Task.CompletedTask;
     }

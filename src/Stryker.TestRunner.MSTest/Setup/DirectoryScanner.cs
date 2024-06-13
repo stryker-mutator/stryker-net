@@ -8,7 +8,10 @@ internal class DirectoryScanner
     {
         var root = FindSolutionRoot(path);
         var csprojFiles = FindCsprojFiles(root);
-        return csprojFiles.Select(file => Path.GetFileNameWithoutExtension(file) ?? string.Empty);
+
+        return csprojFiles
+            .Select(file => Path.GetFileNameWithoutExtension(file) ?? string.Empty)
+            .Where(fileName => fileName != string.Empty);
     }
 
     public static string FindSolutionRoot(string path)

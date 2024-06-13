@@ -1,4 +1,5 @@
 using Stryker.Shared.Tests;
+using Stryker.TestRunner.MSTest.Testing.Tests;
 
 namespace Stryker.TestRunner.MSTest.Testing.Results;
 
@@ -30,9 +31,10 @@ internal class TestRunResult : ITestRunResult
         ITestIdentifiers executedTests,
         ITestIdentifiers failingTests,
         ITestIdentifiers timedOutTests,
-        string resultMessage,
-        IEnumerable<string> messages,
-        TimeSpan duration) => new(testDescriptions, executedTests, failingTests, timedOutTests, false, resultMessage, messages, duration);
+        TimeSpan duration) => new(testDescriptions, executedTests, failingTests, timedOutTests, false, string.Empty, [], duration);
+
+    public static TestRunResult None(IEnumerable<IFrameworkTestDescription> testDescriptions,string resultMessage)
+        => new (testDescriptions, TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), false, resultMessage, [], TimeSpan.Zero);
 
     public static TestRunResult TimeOut(
         IEnumerable<IFrameworkTestDescription> testDescriptions,
