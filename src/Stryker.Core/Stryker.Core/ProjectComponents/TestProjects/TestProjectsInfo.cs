@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
@@ -28,7 +27,7 @@ public class TestProjectsInfo
     {
         _fileSystem = fileSystem ?? new FileSystem();
         _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<TestProjectsInfo>();
-        TestProjects = Array.Empty<TestProject>();
+        TestProjects = [];
     }
 
     public static TestProjectsInfo operator +(TestProjectsInfo a, TestProjectsInfo b) =>
@@ -43,20 +42,21 @@ public class TestProjectsInfo
         {
             var injectionPath = GetInjectionFilePath(testProject, sourceProject);
             var backupFilePath = GetBackupName(injectionPath);
-                if (!_fileSystem.File.Exists(backupFilePath))
+
+            if (!_fileSystem.File.Exists(backupFilePath))
             {
-                    continue;
-                }
-                try
-                {
-                    _fileSystem.File.Copy(backupFilePath, injectionPath, true);
-                }
-                catch (IOException ex)
-                {
-                    _logger.LogWarning(ex, "Failed to restore output assembly {Path}. Mutated assembly is still in place.", injectionPath);
-                }
+                continue;
+            }
+            try
+            {
+                _fileSystem.File.Copy(backupFilePath, injectionPath, true);
+            }
+            catch (IOException ex)
+            {
+                _logger.LogWarning(ex, "Failed to restore output assembly {Path}. Mutated assembly is still in place.", injectionPath);
             }
         }
+    }
 
     public void BackupOriginalAssembly(IAnalyzerResult sourceProject)
     {

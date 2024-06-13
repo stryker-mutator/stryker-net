@@ -93,6 +93,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new BinaryExpressionMutator(),
         new BlockMutator(),
         new BooleanMutator(),
+        new ConditionalExpressionMutator(),
         new AssignmentExpressionMutator(),
         new PrefixUnaryMutator(),
         new PostfixUnaryMutator(),
@@ -110,7 +111,8 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new NullCoalescingExpressionMutator(),
         new MathMutator(),
         new SwitchExpressionMutator(),
-        new IsPatternExpressionMutator()
+        new IsPatternExpressionMutator(),
+        new StringMethodMutator()
     ];
 
     private IEnumerable<IMutator> Mutators { get; }

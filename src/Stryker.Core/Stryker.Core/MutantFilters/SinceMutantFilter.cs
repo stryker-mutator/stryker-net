@@ -1,4 +1,6 @@
 
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.DiffProviders;
@@ -6,8 +8,6 @@ using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Stryker.Core.MutantFilters
 {
@@ -120,10 +120,15 @@ namespace Stryker.Core.MutantFilters
 
             foreach (var mutant in mutants)
             {
+                if (mutant.CoveringTests.IsEmpty || mutant.CoveringTests.Count == 0)
+                {
+                    continue;
+                }
                 var coveringTests = _tests.Extract(mutant.CoveringTests.GetGuids());
 
                 if (coveringTests != null
-                    && coveringTests.Any(coveringTest => _diffResult.ChangedTestFiles.Any(changedTestFile => coveringTest.TestFilePath == changedTestFile)))
+                    && coveringTests.Any(coveringTest => _diffResult.ChangedTestFiles.Any(changedTestFile => coveringTest.TestFilePath == changedTestFile
+                        || string.IsNullOrEmpty(coveringTest.TestFilePath))))
                 {
                     mutant.ResultStatus = MutantStatus.Pending;
                     mutant.ResultStatusReason = "One or more covering tests changed";
