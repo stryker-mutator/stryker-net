@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Stryker.Shared.Tests;
@@ -7,7 +6,7 @@ namespace Stryker.Core.Mutants;
 
 public class TestSet : ITestSet
 {
-    private readonly IDictionary<Guid, ITestDescription> _tests = new Dictionary<Guid, ITestDescription>();
+    private readonly IDictionary<Identifier, ITestDescription> _tests = new Dictionary<Identifier, ITestDescription>();
     public int Count => _tests.Count;
     public ITestDescription this[Identifier id] => _tests[id];
 

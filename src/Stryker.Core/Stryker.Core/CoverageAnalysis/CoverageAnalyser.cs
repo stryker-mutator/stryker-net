@@ -41,9 +41,9 @@ public class CoverageAnalyser : ICoverageAnalyser
 
     private void ParseCoverage(IEnumerable<ICoverageRunResult> coverage, IEnumerable<IMutant> mutantsToScan, ITestIdentifiers failedTests)
     {
-        var dubiousTests = new HashSet<Guid>();
-        var trustedTests = new HashSet<Guid>();
-        var testIds = new HashSet<Guid>();
+        var dubiousTests = new HashSet<Identifier>();
+        var trustedTests = new HashSet<Identifier>();
+        var testIds = new HashSet<Identifier>();
 
         var mutationToResultMap = new Dictionary<int, List<ICoverageRunResult>>();
         foreach (var coverageRunResult in coverage)
@@ -148,10 +148,10 @@ public class CoverageAnalyser : ICoverageAnalyser
         {
             return (resultingRequirements, TestIdentifiers.NoTest()); 
         }
-        var testGuids = new List<Guid>();
+        var testIdentifiers = new List<Identifier>();
         foreach (var coverageRunResult in mutationToResultMap[mutantId])
         {
-            testGuids.Add(coverageRunResult.TestId);
+            testIdentifiers.Add(coverageRunResult.TestId);
             // did this test covered the mutation via some static context?
             var mutationTestingRequirement = coverageRunResult[mutantId];
             if (!resultingRequirements.HasFlag(MutationTestingRequirements.Static)
@@ -176,6 +176,6 @@ public class CoverageAnalyser : ICoverageAnalyser
             }
         }
 
-        return (resultingRequirements, new TestIdentifiers(testGuids));
+        return (resultingRequirements, new TestIdentifiers(testIdentifiers));
     }
 }

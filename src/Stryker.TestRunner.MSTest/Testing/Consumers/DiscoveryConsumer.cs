@@ -10,12 +10,15 @@ internal class DiscoveryConsumer : IDataConsumer
     private readonly Uri _executor;
     private readonly string _source;
 
-    public DiscoveryConsumer(string source, Uri executor, DiscoveryResult discoveryResult)
+    private DiscoveryConsumer(string source, Uri executor, DiscoveryResult discoveryResult)
     {
         _source = source;
         _executor = executor;
         _discoveryResult = discoveryResult;
     }
+
+    public static DiscoveryConsumer Create(string source, Uri executor, DiscoveryResult discoveryResult) =>
+        new(source, executor, discoveryResult);
 
     public Type[] DataTypesConsumed => [typeof(TestNodeUpdateMessage)];
 

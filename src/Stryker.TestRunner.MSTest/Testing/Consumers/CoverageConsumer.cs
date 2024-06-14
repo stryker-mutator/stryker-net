@@ -7,10 +7,12 @@ internal class CoverageConsumer : IDataConsumer
 {
     private readonly CoverageCollector _coverageCollector;
 
-    public CoverageConsumer(CoverageCollector coverageCollector)
+    private CoverageConsumer(CoverageCollector coverageCollector)
     {
         _coverageCollector = coverageCollector;
     }
+
+    public static CoverageConsumer Create(CoverageCollector coverageCollector) => new(coverageCollector);
 
     public Type[] DataTypesConsumed => [typeof(TestNodeUpdateMessage)];
 
@@ -21,6 +23,7 @@ internal class CoverageConsumer : IDataConsumer
     public string DisplayName => "Stryker.CoverageConsumer";
 
     public string Description => "Used to gather coverage";
+
     public Task<bool> IsEnabledAsync() => Task.FromResult(true);
 
     public Task ConsumeAsync(IDataProducer dataProducer, IData value, CancellationToken cancellationToken)
@@ -39,24 +42,6 @@ internal class CoverageConsumer : IDataConsumer
         return Task.CompletedTask;
     }
 
-    private void OnTestStart()
-    {
-        if(_coverageCollector.IsCoverageRun)
-        {
-            _coverageCollector.CaptureCoverageOutsideTests();
-            return;
-        }
-
-        // TODO: Implement for not coverage runs
-    }
-
-    private void OnTestEnd(TestNode testNode)
-    {
-        if (!_coverageCollector.IsCoverageRun)
-        {
-            return;
-        }
-
-        _coverageCollector.PublishCoverageData(testNode);
-    }
+    private void OnTestStart() => _coverageCollector.CaptureCoverageOutsideTests();   
+    private void OnTestEnd(TestNode testNode) => _coverageCollector.PublishCoverageData(testNode);
 }

@@ -1,5 +1,6 @@
 using System.IO.Abstractions;
 using System.Reflection;
+using System.Runtime.Loader;
 using Stryker.Shared.Exceptions;
 using Stryker.TestRunner.MSTest.Testing.TestProjects;
 

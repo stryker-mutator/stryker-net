@@ -15,7 +15,6 @@ internal class DiscoveryResult
         var result = new TestSet();
         foreach (var source in sources)
         {
-            var tests = TestsPerSource[source];
             result.RegisterTests(TestsPerSource[source].Select(id => Tests[Identifier.Create(id)]));
         }
 

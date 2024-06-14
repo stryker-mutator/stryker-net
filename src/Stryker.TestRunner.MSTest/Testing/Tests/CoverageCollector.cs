@@ -6,40 +6,24 @@ using Stryker.TestRunner.MSTest.Testing.Results;
 namespace Stryker.TestRunner.MSTest.Testing.Tests;
 internal class CoverageCollector
 {
-    public const string AnyId = "*";
-
-    private readonly IDictionary<string, int> _mutantTestedBy = new Dictionary<string, int>();
     private readonly DiscoveryResult _discoveryResult;
+    private readonly List<TestCoverageInfo> _testCoverageInfos = [];
 
-    private IList<int> _mutationCoveredOutsideTests = [];
-    private IList<TestCoverageInfo> _testCoverageInfos = [];
+    private List<int> _mutationCoveredOutsideTests = [];
 
-    private CoverageCollector(DiscoveryResult discoveryResult, string helperNamespace, bool isCoverageRun)
+    private CoverageCollector(DiscoveryResult discoveryResult, string helperNamespace)
     {
         _discoveryResult = discoveryResult;
         MutantControlClassName = $"{helperNamespace}.MutantControl";
-        IsCoverageRun = isCoverageRun;
     }
 
-    public static CoverageCollector CoverageRun(DiscoveryResult discoveryResult, string helperNamespace) => new(discoveryResult, helperNamespace, true); 
+    public static CoverageCollector Create(DiscoveryResult discoveryResult, string helperNamespace) => new(discoveryResult, helperNamespace);
 
-    public int ActiveMutation { get; private set; }
-
-    public bool IsCoverageRun { get; private set; }
-
-    public string MutantControlClassName { get; private set; }
-
-    public FieldInfo? ActiveMutantField { get; set; } 
+    public string MutantControlClassName { get; }
 
     public FieldInfo? CaptureCoverageField { get; set; }
 
     public MethodInfo? GetCoverageDataMethod { get; set; }
-
-    public void SetActiveMutation(string id)
-    {
-        ActiveMutation = GetActiveMutantForTest(id);
-        ActiveMutantField?.SetValue(null, ActiveMutation);
-    }
 
     public IList<int>[]? RetrieveCoverData()
         => (IList<int>[]?)GetCoverageDataMethod?.Invoke(null, []);
@@ -125,15 +109,5 @@ internal class CoverageCollector
         coverageRunResult = CoverageRunResult.Create(testCaseId, defaultConfidence, testCoverageInfo.CoveredMutations, testCoverageInfo.CoveredStaticMutations, testCoverageInfo.LeakedMutations);
 
         return false;
-    }
-
-    private int GetActiveMutantForTest(string id)
-    {
-        if (_mutantTestedBy.TryGetValue(id, out var test))
-        {
-            return test;
-        }
-
-        return _mutantTestedBy.TryGetValue(AnyId, out var value) ? value : -1;
     }
 }

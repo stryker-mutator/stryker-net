@@ -8,11 +8,14 @@ internal class InitialTestRunConsumer : IDataConsumer
     private readonly DiscoveryResult _discoveryResult;
     private readonly List<TestNode> _executed;
 
-    public InitialTestRunConsumer(DiscoveryResult discoveryResult, List<TestNode> executed)
+    private InitialTestRunConsumer(DiscoveryResult discoveryResult, List<TestNode> executed)
     {
         _discoveryResult = discoveryResult;
         _executed = executed;
     }
+
+    public static InitialTestRunConsumer Create(DiscoveryResult discoveryResult, List<TestNode> executed) =>
+        new(discoveryResult, executed);
 
     public Type[] DataTypesConsumed => [typeof(TestNodeUpdateMessage)];
 

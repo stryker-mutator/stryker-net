@@ -13,7 +13,7 @@ public class TestIdentifiers : ITestIdentifiers
 
     private TestIdentifiers() => _identifiers = null;
 
-    public TestIdentifiers(IEnumerable<ITestDescription> testDescriptions) : this(testDescriptions.Select<ITestDescription, Guid>(t => t.Id))
+    public TestIdentifiers(IEnumerable<ITestDescription> testDescriptions) : this(testDescriptions.Select(t => t.Id))
     { }
 
     public TestIdentifiers(IEnumerable<Identifier> identifiers) => _identifiers = new HashSet<Identifier>(identifiers);

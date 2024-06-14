@@ -1,11 +1,12 @@
 using System;
 using Microsoft.CodeAnalysis;
+using Stryker.Shared.Tests;
 
 namespace Stryker.Core.ProjectComponents.TestProjects
 {
     public sealed class TestCase : IEquatable<TestCase>
     {
-        public Guid Id { get; init; }
+        public Identifier Id { get; init; }
         public string Name { get; init; }
         public SyntaxNode Node { get; init; }
 

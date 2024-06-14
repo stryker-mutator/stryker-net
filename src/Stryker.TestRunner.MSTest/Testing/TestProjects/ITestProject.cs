@@ -8,5 +8,5 @@ internal interface ITestProject
     Task<int> Discover(DiscoveryResult discoveryResult, string assemblyPath);
     Task<int> InitialTestRun(DiscoveryResult discoveryResult, List<TestNode> executed);
     Task<int> CoverageRun(CoverageCollector coverageCollector);
-    Task<int> MutantRun();
+    Task<int> MutantRun(MutantController mutantController, IEnumerable<string>? testCases, List<TestNode> executed);
 }

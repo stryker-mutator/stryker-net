@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Stryker.Shared.Tests;
 
 namespace Stryker.Core.ProjectComponents.TestProjects
 {
@@ -12,7 +13,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
         public string Source { get; init; }
         public IEnumerable<TestCase> Tests { get; private set; } = new List<TestCase>();
 
-        public void AddTest(Guid id, string name, SyntaxNode node)
+        public void AddTest(Identifier id, string name, SyntaxNode node)
         {
             if (Tests.Any(test => test.Id == id))
             {
