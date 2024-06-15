@@ -1,13 +1,15 @@
 using System.IO.Abstractions;
 using System.Reflection;
-using System.Runtime.Loader;
 using Stryker.Shared.Exceptions;
 using Stryker.TestRunner.MSTest.Testing.TestProjects;
 
 namespace Stryker.TestRunner.MSTest.Setup;
 internal class TestProjectLoader
 {
+    // Caches loaded assemblies
+    private readonly Dictionary<string, ITestProject> _projects = [];
     private readonly Dictionary<string, ITestProject> _shadowProjects = [];
+
     private readonly IFileSystem _fileSystem;
     private readonly AssemblyCopy _assemblyCopy;
    
@@ -19,17 +21,18 @@ internal class TestProjectLoader
 
     public ITestProject Load(string path)
     {
-        var assembly = LoadAssembly(path);
+        var isCached = _projects.TryGetValue(path, out var project);
 
-        foreach (var reference in assembly.GetReferencedAssemblies())
+        if (isCached)
         {
-            if (reference.FullName?.Contains(MsTestProject.EntryPoint, StringComparison.OrdinalIgnoreCase) is true)
-            {
-                return MsTestProject.Create(assembly);
-            } 
+            return project!;
         }
 
-        throw new GeneralStrykerException("No test adapter found, exiting...");
+        var assembly = LoadAssembly(path);
+        var testProject = LoadTestProject(assembly);
+
+        _projects.Add(path, testProject);
+        return testProject;
     }
 
     public ITestProject LoadCopy(string path)
@@ -41,6 +44,7 @@ internal class TestProjectLoader
             return project!;
         }
 
+        // Find all .csproj files so we only copy referenced assemblies
         var root = DirectoryScanner.FindSolutionRoot(path);
         var csprojFiles = DirectoryScanner.FindCsprojFiles(root);
 
@@ -49,13 +53,14 @@ internal class TestProjectLoader
         var copyPath = _assemblyCopy.CopyUnitTestProject(path, projectNames);
 
         // Loads the copy into memory
-        var testProject = Load(copyPath);
+        var testAssembly = LoadAssembly(copyPath);
+        var testProject = LoadTestProject(testAssembly);
 
         _shadowProjects.Add(path, testProject);
         return testProject;
     }
 
-    private Assembly LoadAssembly(string path)
+    private static Assembly LoadAssembly(string path)
     {
         try
         {
@@ -67,5 +72,18 @@ internal class TestProjectLoader
         {
             throw new GeneralStrykerException($"Could not load assembly from path: {path}");
         }
+    }
+
+    private static ITestProject LoadTestProject(Assembly assembly)
+    {
+        foreach (var reference in assembly.GetReferencedAssemblies())
+        {
+            if (reference.FullName?.Contains(MsTestProject.EntryPoint, StringComparison.OrdinalIgnoreCase) is true)
+            {
+                return MsTestProject.Create(assembly);
+            }
+        }
+
+        throw new GeneralStrykerException("No supported test adapter found");
     }
 }
