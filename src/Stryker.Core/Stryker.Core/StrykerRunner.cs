@@ -125,6 +125,13 @@ public class StrykerRunner : IStrykerRunner
             // Restore assemblies
             foreach (var project in _mutationTestProcesses)
             {
+                // The assembly files are locked when using this test runner
+                // Should be cleaned up after the Stryker process closes.
+                if (options.UseExperimentalTestRunner)
+                {
+                    break;
+                }
+
                 project.Restore();
             }
 

@@ -18,7 +18,6 @@ public class MsTestRunner : ITestRunner
     private TestProjectLoader TestProjectLoader { get; }
 
     private IStrykerOptions _strykerOptions;
-    private readonly object _mutantRunLock = new();
 
     public MsTestRunner(IStrykerOptions options, IFileSystem? fileSystem = null)
     {
@@ -87,59 +86,47 @@ public class MsTestRunner : ITestRunner
     
     public ITestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<IMutant> mutants, ITestRunner.TestUpdateHandler update)
     {
-            // 1. Get mutants and corresponding tests
-            var mutantTestsMap = new Dictionary<int, ITestIdentifiers>();
-            var testCases = TestCases(mutants, mutantTestsMap);
+        var mutantTestsMap = new Dictionary<int, ITestIdentifiers>();
+        var testCases = TestCases(mutants, mutantTestsMap);
 
-            if (testCases?.Count == 0)
-            {
-                return TestRunResult.None(DiscoveryResult.MsTests.Values, "Mutants are not covered by any test!");
-            }
-
-            var totalCountOfTests = DiscoveryResult.GetTestsForSources(project.GetTestAssemblies()).Count;
-
-            // 2. Initialize coverage collector
-            var coverageCollector = MutantController.Create(project.HelperNamespace, mutantTestsMap);
-            var executed = new List<TestNode>();
-
-        // 2. Load Test Projects
-        lock (_mutantRunLock)
+        if (testCases?.Count == 0)
         {
-
-            foreach (var assembly in project.GetTestAssemblies())
-            {
-                var testProject = TestProjectLoader.Load(assembly);
-                var exitCode = testProject.MutantRun(coverageCollector, testCases, executed).GetAwaiter().GetResult();
-            }
+            return TestRunResult.None(DiscoveryResult.MsTests.Values, "Mutants are not covered by any test!");
         }
 
-            var tests = executed.Select(tn => tn.Uid.Value).Distinct().Count() >= totalCountOfTests ?
-                TestIdentifierList.EveryTest() :
-                new WrappedIdentifierEnumeration(executed.Select(tn => tn.Uid.Value));
+        var totalCountOfTests = DiscoveryResult.GetTestsForSources(project.GetTestAssemblies()).Count;
 
-            var failedTests = executed
-                .Where(tn => tn.Properties.SingleOrDefault<TestNodeStateProperty>() is FailedTestNodeStateProperty)
-                .Select(tn => tn.Uid.Value);
+        var coverageCollector = MutantController.Create(project.HelperNamespace, mutantTestsMap);
+        var executed = new List<TestNode>();
 
-            var timedOutTests = executed
-                .Where(tn => tn.Properties.SingleOrDefault<TestNodeStateProperty>() is TimeoutTestNodeStateProperty)
-                .Select(tn => tn.Uid.Value);
-
-        lock (_mutantRunLock)
+        foreach (var assembly in project.GetTestAssemblies())
         {
-            var remainingMutants = update?.Invoke(mutants, new WrappedIdentifierEnumeration(failedTests), tests, new WrappedIdentifierEnumeration(timedOutTests));
+            var testProject = TestProjectLoader.Load(assembly);
+            var exitCode = testProject.MutantRun(coverageCollector, testCases, executed).GetAwaiter().GetResult();
         }
 
+        var tests = executed.Select(tn => tn.Uid.Value).Distinct().Count() >= totalCountOfTests ?
+            TestIdentifierList.EveryTest() :
+            new WrappedIdentifierEnumeration(executed.Select(tn => tn.Uid.Value));
 
-            var duration = TimeSpan.FromTicks(DiscoveryResult.MsTests.Values.Sum(t => t.InitialRunTime.Ticks));
+        var failedTests = executed
+            .Where(tn => tn.Properties.SingleOrDefault<TestNodeStateProperty>() is FailedTestNodeStateProperty)
+            .Select(tn => tn.Uid.Value);
 
-            return TestRunResult.Successful(
-                DiscoveryResult.MsTests.Values,
-                tests,
-                new WrappedIdentifierEnumeration(failedTests),
-                new WrappedIdentifierEnumeration(timedOutTests),
-                duration);
-        
+        var timedOutTests = executed
+            .Where(tn => tn.Properties.SingleOrDefault<TestNodeStateProperty>() is TimeoutTestNodeStateProperty)
+            .Select(tn => tn.Uid.Value);
+
+        var remainingMutants = update?.Invoke(mutants, new WrappedIdentifierEnumeration(failedTests), tests, new WrappedIdentifierEnumeration(timedOutTests));
+
+        var duration = TimeSpan.FromTicks(DiscoveryResult.MsTests.Values.Sum(t => t.InitialRunTime.Ticks));
+
+        return TestRunResult.Successful(
+            DiscoveryResult.MsTests.Values,
+            tests,
+            new WrappedIdentifierEnumeration(failedTests),
+            new WrappedIdentifierEnumeration(timedOutTests),
+            duration);
     }
 
     private List<string>? TestCases(IReadOnlyList<IMutant> mutants, Dictionary<int, ITestIdentifiers> mutantTestsMap)
