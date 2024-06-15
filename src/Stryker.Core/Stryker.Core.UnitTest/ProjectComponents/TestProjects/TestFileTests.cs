@@ -2,6 +2,7 @@ using System;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Shared.Tests;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
@@ -19,13 +20,13 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
                 FilePath = "/c/",
                 Source = "bla"
             };
-            fileA.AddTest(testCase1Id, "test1", node);
+            fileA.AddTest(Identifier.Create(testCase1Id), "test1", node);
             var fileB = new TestFile
             {
                 FilePath = "/c/",
                 Source = "bla"
             };
-            fileB.AddTest(testCase1Id, "test1", node);
+            fileB.AddTest(Identifier.Create(testCase1Id), "test1", node);
 
             // Assert
             fileA.ShouldBe(fileB);

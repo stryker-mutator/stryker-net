@@ -19,16 +19,11 @@ public sealed class Identifier : IEquatable<Identifier>
 
     public override string ToString() => _identifier;
 
-    public override bool Equals(object? obj)
-    {
-        if (obj is null)
-            return false;
-
-        if (ReferenceEquals(this, obj))
-            return true;
-
-        return obj.GetType() == GetType() && Equals(obj as Identifier);
-    }
+    public override bool Equals(object? obj) => obj is Identifier identifier && Equals(identifier);
 
     public bool Equals(Identifier? other) => _identifier == other?._identifier;
+
+    public static bool operator ==(Identifier? left, Identifier? right) => Equals(left, right);
+
+    public static bool operator !=(Identifier? left, Identifier? right) => !Equals(left, right);
 }

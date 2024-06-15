@@ -2,6 +2,7 @@ using System;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Shared.Tests;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
@@ -16,13 +17,13 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
             var node = SyntaxFactory.Block();
             var testCaseA = new TestCase
             {
-                Id = guid,
+                Id = Identifier.Create(guid),
                 Name = "1",
                 Node = node
             };
             var testCaseB = new TestCase
             {
-                Id = guid,
+                Id = Identifier.Create(guid),
                 Name = "1",
                 Node = node
             };
@@ -41,13 +42,13 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
             var node = SyntaxFactory.Block();
             var testCaseA = new TestCase
             {
-                Id = new Guid(id),
+                Id = Identifier.Create(new Guid(id)),
                 Name = name,
                 Node = node
             };
             var testCaseB = new TestCase
             {
-                Id = Guid.Empty,
+                Id = Identifier.Create(Guid.Empty),
                 Name = "node2",
                 Node = node
             };

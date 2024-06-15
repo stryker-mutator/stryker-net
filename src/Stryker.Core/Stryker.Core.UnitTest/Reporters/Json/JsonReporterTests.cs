@@ -18,6 +18,7 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Json.SourceFiles;
+using Stryker.Shared.Tests;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.Reporters.Json
@@ -183,7 +184,7 @@ namespace ExtraProject.XUnit
                 }
             };
             var node = CSharpSyntaxTree.ParseText(_testFileContents).GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
-            testProjectsInfo.TestProjects.First().TestFiles.First().AddTest(Guid.Empty, "myUnitTestName", node);
+            testProjectsInfo.TestProjects.First().TestFiles.First().AddTest(Identifier.Create(Guid.Empty), "myUnitTestName", node);
 
             var reporter = new JsonReporter(options, mockFileSystem);
 
@@ -235,10 +236,10 @@ namespace ExtraProject.XUnit
                 }
             };
             var node = CSharpSyntaxTree.ParseText(_testFileContents).GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
-            testProjectsInfo.TestProjects.First().TestFiles.First().AddTest(Guid.Empty, "myUnitTestName", node);
-            testProjectsInfo.TestProjects.First().TestFiles.First().AddTest(Guid.NewGuid(), "myOtherTestName", node);
-            testProjectsInfo.TestProjects.ElementAt(1).TestFiles.First().AddTest(Guid.Empty, "myUnitTestName", node);
-            testProjectsInfo.TestProjects.ElementAt(1).TestFiles.First().AddTest(Guid.NewGuid(), "myLastTestName", node);
+            testProjectsInfo.TestProjects.First().TestFiles.First().AddTest(Identifier.Create(Guid.Empty), "myUnitTestName", node);
+            testProjectsInfo.TestProjects.First().TestFiles.First().AddTest(Identifier.Create(Guid.NewGuid()), "myOtherTestName", node);
+            testProjectsInfo.TestProjects.ElementAt(1).TestFiles.First().AddTest(Identifier.Create(Guid.Empty), "myUnitTestName", node);
+            testProjectsInfo.TestProjects.ElementAt(1).TestFiles.First().AddTest(Identifier.Create(Guid.NewGuid()), "myLastTestName", node);
 
             var reporter = new JsonReporter(options, mockFileSystem);
 

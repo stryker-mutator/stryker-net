@@ -6,6 +6,7 @@ public class VsTestCase : ITestCase
 {
     public VsTestCase(TestCase testCase)
     {
+        OriginalTestCase = testCase;
         Id = Identifier.Create(testCase.Id);
         Name = testCase.DisplayName;
         FullyQualifiedName = testCase.FullyQualifiedName;
@@ -14,6 +15,8 @@ public class VsTestCase : ITestCase
         LineNumber = testCase.LineNumber;
         Source = testCase.Source;
     }
+
+    public TestCase OriginalTestCase { get; }
 
     public Identifier Id { get; }
 

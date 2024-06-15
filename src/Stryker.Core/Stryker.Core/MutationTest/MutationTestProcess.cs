@@ -113,7 +113,7 @@ public class MutationTestProcess : IMutationTestProcess
 
         var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.Concurrency };
 
-        /*foreach (var mutants in mutantGroups)
+        foreach (var mutants in mutantGroups)
         {
             var reportedMutants = new HashSet<IMutant>();
 
@@ -122,19 +122,19 @@ public class MutationTestProcess : IMutationTestProcess
                 (testedMutants, tests, ranTests, outTests) => TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants));
 
             OnMutantsTested(mutants, reportedMutants);
-        }*/
+        }
 
+        /*
+                Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
+                {
+                    var reportedMutants = new HashSet<IMutant>();
 
-        Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
-        {
-            var reportedMutants = new HashSet<IMutant>();
+                    _mutationTestExecutor.Test(Input.SourceProjectInfo, mutants,
+                        Input.InitialTestRun.TimeoutValueCalculator,
+                        (testedMutants, tests, ranTests, outTests) => TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants));
 
-            _mutationTestExecutor.Test(Input.SourceProjectInfo, mutants,
-                Input.InitialTestRun.TimeoutValueCalculator,
-                (testedMutants, tests, ranTests, outTests) => TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants));
-
-            OnMutantsTested(mutants, reportedMutants);
-        });
+                    OnMutantsTested(mutants, reportedMutants);
+                });*/
     }
 
     private bool TestUpdateHandler(IEnumerable<IMutant> testedMutants, ITestIdentifiers failedTests, ITestIdentifiers ranTests,

@@ -119,7 +119,7 @@ public class InitialisationProcessTests : TestBase
         var testSet = new TestSet();
         foreach (var ranTest in ranTests.GetIdentifiers())
         {
-            testSet.RegisterTest(new TestDescription(ranTest, "test", "test.cpp"));
+            testSet.RegisterTest(new TestDescription(ranTest.ToGuid(), "test", "test.cpp"));
         }
         testRunnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(true);
         testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(testSet);
@@ -170,8 +170,8 @@ public class InitialisationProcessTests : TestBase
         var ranTests = new TestIdentifiers(failedTest, Guid.NewGuid(), Guid.NewGuid());
         var testSet = new TestSet();
         foreach (var ranTest in ranTests.GetIdentifiers())
-        {
-            testSet.RegisterTest(new TestDescription(ranTest, "test", "test.cpp"));
+        { 
+            testSet.RegisterTest(new TestDescription(ranTest.ToGuid(), "test", "test.cpp"));
         }
         testRunnerMock.Setup(x => x.DiscoverTests( It.IsAny<string>())).Returns(true);
         testRunnerMock.Setup(x => x.GetTests( It.IsAny<IProjectAndTests>())).Returns(testSet);

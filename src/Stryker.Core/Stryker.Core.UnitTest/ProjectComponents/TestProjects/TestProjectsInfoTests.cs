@@ -11,6 +11,7 @@ using Shouldly;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Shared;
+using Stryker.Shared.Tests;
 using Xunit;
 
 namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects;
@@ -63,9 +64,9 @@ public class TestProjectsInfoTests : TestBase
 
         var testProjectA = new TestProject(fileSystem, testProjectAnalyzerResultAMock.Object);
         var testProjectB = new TestProject(fileSystem, testProjectAnalyzerResultBMock.Object);
-        testProjectA.TestFiles.First().AddTest(Guid.NewGuid(), "test1", SyntaxFactory.Block());
-        testProjectA.TestFiles.First().AddTest(Guid.NewGuid(), "test2", SyntaxFactory.Block());
-        testProjectB.TestFiles.First().AddTest(Guid.NewGuid(), "test3", SyntaxFactory.Block());
+        testProjectA.TestFiles.First().AddTest(Identifier.Create(Guid.NewGuid()), "test1", SyntaxFactory.Block());
+        testProjectA.TestFiles.First().AddTest(Identifier.Create(Guid.NewGuid()), "test2", SyntaxFactory.Block());
+        testProjectB.TestFiles.First().AddTest(Identifier.Create(Guid.NewGuid()), "test3", SyntaxFactory.Block());
 
         var testProjectsInfoA = new TestProjectsInfo(fileSystem)
         {
@@ -110,8 +111,8 @@ public class TestProjectsInfoTests : TestBase
 
         var testProjectA = new TestProject(fileSystem, testProjectAnalyzerResultAMock.Object);
         var testProjectB = new TestProject(fileSystem, testProjectAnalyzerResultBMock.Object);
-        testProjectA.TestFiles.First().AddTest(Guid.NewGuid(), "test1", SyntaxFactory.Block());
-        testProjectA.TestFiles.First().AddTest(Guid.NewGuid(), "test2", SyntaxFactory.Block());
+        testProjectA.TestFiles.First().AddTest(Identifier.Create(Guid.NewGuid()), "test1", SyntaxFactory.Block());
+        testProjectA.TestFiles.First().AddTest(Identifier.Create(Guid.NewGuid()), "test2", SyntaxFactory.Block());
 
         var testProjectsInfoA = new TestProjectsInfo(fileSystem)
         {

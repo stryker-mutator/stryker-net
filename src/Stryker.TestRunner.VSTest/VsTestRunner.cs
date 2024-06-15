@@ -267,8 +267,8 @@ public sealed class VsTestRunner : IDisposable
                 {
                     _vsTestConsole.RunTestsWithCustomTestHost(tests.GetIdentifiers().Select(t =>
                     {
-                        var testCase = _context.VsTests[t.ToGuid()].Case;
-                        return new TestCase(testCase.FullyQualifiedName, testCase.Uri, testCase.Source);
+                        var testCase = (VsTestCase)_context.VsTests[t.ToGuid()].Case;
+                        return testCase.OriginalTestCase;
                     }), runSettings, options, eventHandler, strykerVsTestHostLauncher);
                 }
             });

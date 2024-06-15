@@ -67,11 +67,11 @@ internal class FullRunScenario
         foreach (var testId in testIds.Length == 0 ? _tests.Keys.ToArray() : testIds)
         {
             var id = _tests[testId].Id;
-            if (!_testCoverage.ContainsKey(id))
+            if (!_testCoverage.ContainsKey(id.ToGuid()))
             {
-                _testCoverage[id] = new List<int>();
+                _testCoverage[id.ToGuid()] = new List<int>();
             }
-            _testCoverage[id].Add(mutantId);
+            _testCoverage[id.ToGuid()].Add(mutantId);
         }
     }
 
