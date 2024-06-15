@@ -172,6 +172,7 @@ public class CommandLineConfigReader
         AddCliInput(inputs.VerbosityInput, "verbosity", "V");
         AddCliInput(inputs.ConcurrencyInput, "concurrency", "c", argumentHint: "number");
         AddCliInput(inputs.DisableBailInput, "disable-bail", null, optionType: CommandOptionType.NoValue);
+        AddCliInput(inputs.UseExperimentalTestRunnerInput, "experimental", "exp", optionType: CommandOptionType.NoValue, category: InputCategory.Generic);
         // Category: Build
         AddCliInput(inputs.SolutionInput, "solution", "s", argumentHint: "file-path", category: InputCategory.Build);
         AddCliInput(inputs.SourceProjectNameInput, "project", "p", argumentHint: "project-name.csproj", category: InputCategory.Build);

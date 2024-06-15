@@ -8,6 +8,7 @@ internal class MutantRunConsumer : IDataConsumer
     private readonly MutantController _mutantController;
     private readonly List<TestNode> _executed;
 
+    private readonly object _lock = new object();
     private MutantRunConsumer(MutantController mutantController, List<TestNode> executed)
     {
         _mutantController = mutantController;

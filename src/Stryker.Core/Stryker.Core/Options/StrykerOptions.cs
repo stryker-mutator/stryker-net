@@ -233,6 +233,11 @@ public class StrykerOptions : IStrykerOptions
     /// </summary>
     public bool BreakOnInitialTestFailure { get; set; }
 
+    /// <summary>
+    /// Use the new experimental MSTest runner.
+    /// </summary>
+    public bool UseExperimentalTestRunner { get; init; } 
+
     // Keep a reference on the parent instance in order to flow get/set properties (ProjectName and ProjectVersion) up to the parent
     // This is required for the dashboard reporter to work properly
     private IStrykerOptions _parentOptions;

@@ -168,22 +168,22 @@ public interface IStrykerOptions
     /// <summary>
     /// Files that should be mutated or ignored. Uses GLOB as pattern matching. Also parts of files can be ignored by format {10..21}
     /// </summary>
-    public IEnumerable<IFilePattern> Mutate { get; init; }
+    IEnumerable<IFilePattern> Mutate { get; init; }
 
     /// <summary>
     /// Method call mutations that should not be tested. The implementation of the method may still be mutated and tested.
     /// </summary>
-    public IEnumerable<Regex> IgnoredMethods { get; init; }
+    IEnumerable<Regex> IgnoredMethods { get; init; }
 
     /// <summary>
     /// Mutations that should not be tested.
     /// </summary>
-    public IEnumerable<Mutator> ExcludedMutations { get; init; }
+    IEnumerable<Mutator> ExcludedMutations { get; init; }
 
     /// <summary>
     /// Linq expressions mutations that should not be tested.
     /// </summary>
-    public IEnumerable<LinqExpression> ExcludedLinqExpressions { get; init; }
+    IEnumerable<LinqExpression> ExcludedLinqExpressions { get; init; }
 
     /// <summary>
     /// The optimization mode for coverage analysis for the current run.
@@ -194,18 +194,23 @@ public interface IStrykerOptions
     /// This name is used in the dashboard report
     /// Is settable because this version can be detected by using DotNet.ReproducibleBuilds and thus can be overridden by stryker internally
     /// </summary>
-    public string ProjectName { get; set; }
+    string ProjectName { get; set; }
 
     /// <summary>
     /// This projectversion is used in the dashboard report
     /// Is settable because this version can be detected by using DotNet.ReproducibleBuilds and thus can be overridden by stryker internally
     /// </summary>
-    public string ProjectVersion { get; set; }
+    string ProjectVersion { get; set; }
 
     /// <summary>
     /// Instruct Stryker to break execution when at least one test failed on initial run.
     /// </summary>
     bool BreakOnInitialTestFailure { get; set; }
+
+    /// <summary>
+    /// Use the new experimental MSTest runner.
+    /// </summary>
+    bool UseExperimentalTestRunner { get; init; }
 
     IStrykerOptions Copy(string projectPath, string workingDirectory, string sourceProject, IEnumerable<string> testProjects);
 }

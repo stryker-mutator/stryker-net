@@ -44,6 +44,7 @@ public interface IStrykerInputs
     ThresholdBreakInput ThresholdBreakInput { get; init; }
     ThresholdHighInput ThresholdHighInput { get; init; }
     ThresholdLowInput ThresholdLowInput { get; init; }
+    UseExperimentalTestRunnerInput UseExperimentalTestRunnerInput { get; init; }
     VerbosityInput VerbosityInput { get; init; }
     WithBaselineInput WithBaselineInput { get; init; }
     OpenReportInput OpenReportInput { get; init; }
@@ -105,6 +106,7 @@ public class StrykerInputs : IStrykerInputs
     public OpenReportInput OpenReportInput { get; init; } = new();
     public OpenReportEnabledInput OpenReportEnabledInput { get; init; } = new();
     public BreakOnInitialTestFailureInput BreakOnInitialTestFailureInput { get; init; } = new();
+    public UseExperimentalTestRunnerInput UseExperimentalTestRunnerInput { get; init; } = new();
 
     public IStrykerOptions ValidateAll()
     {
@@ -166,6 +168,7 @@ public class StrykerInputs : IStrykerInputs
             SinceTarget = sinceTarget,
             ReportTypeToOpen = OpenReportInput.Validate(OpenReportEnabledInput.Validate()),
             BreakOnInitialTestFailure = BreakOnInitialTestFailureInput.Validate(),
+            UseExperimentalTestRunner = UseExperimentalTestRunnerInput.Validate()
         };
         return _strykerOptionsCache;
     }

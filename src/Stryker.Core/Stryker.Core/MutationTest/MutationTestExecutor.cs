@@ -6,6 +6,7 @@ using Stryker.Core.Testing;
 using Stryker.Shared.Initialisation;
 using Stryker.Shared.Logging;
 using Stryker.Shared.Mutants;
+using Stryker.Shared.Options;
 using Stryker.Shared.Tests;
 
 namespace Stryker.Core.MutationTest;

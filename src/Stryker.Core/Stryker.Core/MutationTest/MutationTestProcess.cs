@@ -111,9 +111,20 @@ public class MutationTestProcess : IMutationTestProcess
     {
         var mutantGroups = BuildMutantGroupsForTest(mutantsToTest.ToList());
 
+        if (_options.UseExperimentalTestRunner)
+        {
+            TestSequentially(mutantGroups);
+            return;
+        }
+
+        TestInParallel(mutantGroups);
+    }
+
+    private void TestInParallel(IEnumerable<List<IMutant>> mutantGroups)
+    {
         var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.Concurrency };
 
-        foreach (var mutants in mutantGroups)
+        Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
         {
             var reportedMutants = new HashSet<IMutant>();
 
@@ -122,19 +133,22 @@ public class MutationTestProcess : IMutationTestProcess
                 (testedMutants, tests, ranTests, outTests) => TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants));
 
             OnMutantsTested(mutants, reportedMutants);
+        });
+    }
+
+    private void TestSequentially(IEnumerable<List<IMutant>> mutantGroups)
+    {
+        foreach(var mutants in mutantGroups)
+        {
+
+            var reportedMutants = new HashSet<IMutant>();
+
+            _mutationTestExecutor.Test(Input.SourceProjectInfo, mutants,
+                Input.InitialTestRun.TimeoutValueCalculator,
+                (testedMutants, tests, ranTests, outTests) => TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants));
+
+            OnMutantsTested(mutants, reportedMutants);
         }
-
-        /*
-                Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
-                {
-                    var reportedMutants = new HashSet<IMutant>();
-
-                    _mutationTestExecutor.Test(Input.SourceProjectInfo, mutants,
-                        Input.InitialTestRun.TimeoutValueCalculator,
-                        (testedMutants, tests, ranTests, outTests) => TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants));
-
-                    OnMutantsTested(mutants, reportedMutants);
-                });*/
     }
 
     private bool TestUpdateHandler(IEnumerable<IMutant> testedMutants, ITestIdentifiers failedTests, ITestIdentifiers ranTests,
@@ -204,7 +218,7 @@ public class MutationTestProcess : IMutationTestProcess
 
     private IEnumerable<List<IMutant>> BuildMutantGroupsForTest(IReadOnlyCollection<IMutant> mutantsNotRun)
     {
-        if (_options.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants) || !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
+        if (_options.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants) || !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) || _options.UseExperimentalTestRunner)
         {
             return mutantsNotRun.Select(x => new List<IMutant> { x });
         }

@@ -24,7 +24,7 @@ internal class MsTestProject : ITestProject
     
     public async Task<int> Discover(DiscoveryResult discoveryResult, string assemblyPath)
     {
-        var builder = await TestApplication.CreateBuilderAsync([RunOptions.DiscoverySettings, RunOptions.NoBanner]);
+        var builder = await TestApplication.CreateBuilderAsync([RunOptions.DiscoverySettings, RunOptions.NoBanner, RunOptions.NoConsole]);
         builder.AddMSTest(() => [_assembly]);
         builder.TestHost.AddDataConsumer(_ => DiscoveryConsumer.Create(assemblyPath, new Uri(ExecutorPath), discoveryResult));
         using var app = await builder.BuildAsync();
@@ -33,7 +33,7 @@ internal class MsTestProject : ITestProject
 
     public async Task<int> InitialTestRun(DiscoveryResult discoveryResult, List<TestNode> executed)
     {
-        var builder = await TestApplication.CreateBuilderAsync([RunOptions.DiscoverySettings, RunOptions.NoBanner]);
+        var builder = await TestApplication.CreateBuilderAsync([RunOptions.DiscoverySettings, RunOptions.NoBanner, RunOptions.NoConsole]);
         builder.AddMSTest(() => [_assembly]);
         builder.TestHost.AddDataConsumer((_) => InitialTestRunConsumer.Create(discoveryResult, executed));
         using var app = await builder.BuildAsync();
@@ -42,7 +42,7 @@ internal class MsTestProject : ITestProject
 
     public async Task<int> CoverageRun(CoverageCollector coverageCollector)
     {
-        var builder = await TestApplication.CreateBuilderAsync([]);
+        var builder = await TestApplication.CreateBuilderAsync([RunOptions.NoBanner, RunOptions.NoConsole]);
         builder.AddMSTest(() => [_assembly]);
         builder.TestHost.AddTestApplicationLifecycleCallbacks((_) => CoverageLifecycleCallbacks.Create(_assembly.Location, coverageCollector));
         builder.TestHost.AddDataConsumer((_) => CoverageConsumer.Create(coverageCollector));
@@ -52,7 +52,7 @@ internal class MsTestProject : ITestProject
 
     public async Task<int> MutantRun(MutantController mutantController, IEnumerable<string>? testCases, List<TestNode> executed)
     {
-        List<string> args = [RunOptions.NoBanner];
+        List<string> args = [RunOptions.NoBanner, RunOptions.NoConsole];
 
         var testCaseFilter = GetTestCaseFilterString(testCases);
 

@@ -115,12 +115,6 @@ public class InitialisationProcess : IInitialisationProcess
         return result;
     }
 
-/*      public InitialTestRun InitialTest(StrykerOptions options, SourceProjectInfo projectInfo, ITestRunner runner, bool throwIfFails)
-    {
-
-    }*/
-
-
     private InitialTestRun InitialTest(IStrykerOptions options, SourceProjectInfo projectInfo,
         ITestRunner testRunner, bool throwIfFails)
     {
