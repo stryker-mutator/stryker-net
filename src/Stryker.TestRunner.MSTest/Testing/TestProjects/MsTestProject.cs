@@ -42,7 +42,7 @@ internal class MsTestProject : ITestProject
 
     public async Task<int> CoverageRun(CoverageCollector coverageCollector)
     {
-        var builder = await TestApplication.CreateBuilderAsync([RunOptions.NoBanner, RunOptions.NoConsole]);
+        var builder = await TestApplication.CreateBuilderAsync([RunOptions.RunSettings, RunOptions.NoBanner, RunOptions.NoConsole]);
         builder.AddMSTest(() => [_assembly]);
         builder.TestHost.AddTestApplicationLifecycleCallbacks((_) => CoverageLifecycleCallbacks.Create(_assembly.Location, coverageCollector));
         builder.TestHost.AddDataConsumer((_) => CoverageConsumer.Create(coverageCollector));
@@ -52,7 +52,7 @@ internal class MsTestProject : ITestProject
 
     public async Task<int> MutantRun(MutantController mutantController, IEnumerable<string>? testCases, List<TestNode> executed)
     {
-        List<string> args = [RunOptions.NoBanner, RunOptions.NoConsole];
+        List<string> args = [RunOptions.RunSettings, RunOptions.NoBanner, RunOptions.NoConsole];
 
         var testCaseFilter = GetTestCaseFilterString(testCases);
 

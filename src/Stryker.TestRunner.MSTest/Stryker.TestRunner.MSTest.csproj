@@ -4,6 +4,9 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="discovery.runsettings" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="dnlib" />
@@ -12,5 +15,10 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Stryker.Shared\Stryker.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="RunSettings\discovery.runsettings" CopyToOutputDirectory="PreserveNewest" />
+    <Content Include="RunSettings\run.runsettings" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>
