@@ -38,12 +38,6 @@ internal class InitialTestRunConsumer : IDataConsumer
             return Task.CompletedTask;
         }
 
-        if (state is TimeoutTestNodeStateProperty)
-        {
-            Console.WriteLine();
-            return Task.CompletedTask;
-        }
-
         var timing = update.TestNode.Properties.Single<TimingProperty>();
         var duration = timing.GlobalTiming.Duration;
         var testResult = new MsTestResult(duration);

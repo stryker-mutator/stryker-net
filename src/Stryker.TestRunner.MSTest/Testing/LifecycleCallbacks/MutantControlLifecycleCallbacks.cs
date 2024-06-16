@@ -1,22 +1,23 @@
 using System.Reflection;
 using Microsoft.Testing.Platform.Extensions.TestHost;
 using Stryker.TestRunner.MSTest.Setup;
-using Stryker.TestRunner.MSTest.Testing.Tests;
 
 namespace Stryker.TestRunner.MSTest.Testing.LifecycleCallbacks;
 internal class MutantControlLifecycleCallbacks : ITestApplicationLifecycleCallbacks
 {
     private readonly string _assemblyPath;
-    private readonly MutantController _mutantController;
+    private readonly int _mutantId;
+    private readonly string _mutantControlNamespace;
 
-    private MutantControlLifecycleCallbacks(string assemblyPath, MutantController mutantController)
+    private MutantControlLifecycleCallbacks(string assemblyPath, int mutantId, string mutantControlNamespace)
     {
         _assemblyPath = assemblyPath;
-        _mutantController = mutantController;
+        _mutantId = mutantId;
+        _mutantControlNamespace = mutantControlNamespace;
     }
 
-    public static MutantControlLifecycleCallbacks Create(string assemblyPath, MutantController mutantController) =>
-        new(assemblyPath, mutantController);
+    public static MutantControlLifecycleCallbacks Create(string assemblyPath, int mutantId, string mutantControlNamespace) =>
+        new(assemblyPath, mutantId, mutantControlNamespace);
 
     public string Uid => nameof(MutantControlLifecycleCallbacks);
 
@@ -51,14 +52,14 @@ internal class MutantControlLifecycleCallbacks : ITestApplicationLifecycleCallba
 
     private void InitializeMutantController(Assembly assembly)
     {
-        var mutantControlType = assembly.DefinedTypes?.FirstOrDefault(t => t.FullName == _mutantController.MutantControlClassName);
+        var mutantControlType = assembly.DefinedTypes?.FirstOrDefault(t => t.FullName == _mutantControlNamespace);
 
         if (mutantControlType is null)
         {
             return;
         }
 
-        _mutantController.ActiveMutantField = mutantControlType.GetField("ActiveMutant");
-        _mutantController.SetActiveMutation(MutantController.AnyId);
+        var activeMutantField = mutantControlType.GetField("ActiveMutant");
+        activeMutantField?.SetValue(null, _mutantId);
     }
 }

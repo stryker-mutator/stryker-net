@@ -111,17 +111,6 @@ public class MutationTestProcess : IMutationTestProcess
     {
         var mutantGroups = BuildMutantGroupsForTest(mutantsToTest.ToList());
 
-        if (_options.UseExperimentalTestRunner)
-        {
-            TestSequentially(mutantGroups);
-            return;
-        }
-
-        TestInParallel(mutantGroups);
-    }
-
-    private void TestInParallel(IEnumerable<List<IMutant>> mutantGroups)
-    {
         var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.Concurrency };
 
         Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
@@ -134,21 +123,6 @@ public class MutationTestProcess : IMutationTestProcess
 
             OnMutantsTested(mutants, reportedMutants);
         });
-    }
-
-    private void TestSequentially(IEnumerable<List<IMutant>> mutantGroups)
-    {
-        foreach(var mutants in mutantGroups)
-        {
-
-            var reportedMutants = new HashSet<IMutant>();
-
-            _mutationTestExecutor.Test(Input.SourceProjectInfo, mutants,
-                Input.InitialTestRun.TimeoutValueCalculator,
-                (testedMutants, tests, ranTests, outTests) => TestUpdateHandler(testedMutants, tests, ranTests, outTests, reportedMutants));
-
-            OnMutantsTested(mutants, reportedMutants);
-        }
     }
 
     private bool TestUpdateHandler(IEnumerable<IMutant> testedMutants, ITestIdentifiers failedTests, ITestIdentifiers ranTests,

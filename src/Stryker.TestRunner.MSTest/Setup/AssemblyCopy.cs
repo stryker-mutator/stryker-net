@@ -69,7 +69,13 @@ internal class AssemblyCopy
         
         foreach(var projectName in projectNames)
         {
-            var assemblyRef = module.GetAssemblyRefs().First(x => x.Name.Contains(projectName));
+            var assemblyRef = module.GetAssemblyRefs().FirstOrDefault(x => x.Name.Contains(projectName));
+
+            if (assemblyRef is null)
+            {
+                continue;
+            }
+
             assemblyRef.Name = $"{projectName}.{CopySuffix}";
         }
 

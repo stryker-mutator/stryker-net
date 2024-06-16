@@ -33,15 +33,11 @@ internal class CoverageConsumer : IDataConsumer
 
         if (state is InProgressTestNodeStateProperty)
         {
-            OnTestStart();
             return Task.CompletedTask;
         }
 
-        OnTestEnd(update.TestNode);
+        _coverageCollector.PublishCoverageData(update.TestNode);
 
         return Task.CompletedTask;
     }
-
-    private void OnTestStart() => _coverageCollector.CaptureCoverageOutsideTests();   
-    private void OnTestEnd(TestNode testNode) => _coverageCollector.PublishCoverageData(testNode);
 }

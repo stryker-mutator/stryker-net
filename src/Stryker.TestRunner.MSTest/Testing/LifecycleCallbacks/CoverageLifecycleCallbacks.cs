@@ -83,5 +83,6 @@ internal class CoverageLifecycleCallbacks : ITestApplicationLifecycleCallbacks
 
         // Method to receive coverage
         _coverageCollector.GetCoverageDataMethod = mutantControlType.GetMethod("GetCoverageData")!;
+        _coverageCollector.CaptureCoverageOutsideTests();
     }
 }

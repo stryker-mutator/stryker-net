@@ -19,6 +19,8 @@ public class MsTestRunner : ITestRunner
 
     private IStrykerOptions _strykerOptions;
 
+    private readonly object _mutantRunLock = new object();
+
     public MsTestRunner(IStrykerOptions options, IFileSystem? fileSystem = null)
     {
         _strykerOptions = options;
@@ -32,11 +34,16 @@ public class MsTestRunner : ITestRunner
 
         foreach (var assembly in project.GetTestAssemblies())
         {
-            var testProject = TestProjectLoader.Load(assembly);
-            var exitCode = testProject.CoverageRun(coverageCollector).GetAwaiter().GetResult();
+            var tests = DiscoveryResult.TestsPerSource[assembly];
+
+            foreach(var test in tests)
+            {
+                var testProject = TestProjectLoader.Load(assembly);
+                var exitCode = testProject.CoverageRun(coverageCollector, test).GetAwaiter().GetResult();
+            }
         }
 
-        return coverageCollector.GetCoverageRunResult(false);
+        return coverageCollector.GetCoverageRunResult(true);
     }
 
     public bool DiscoverTests(string assembly)
@@ -94,15 +101,19 @@ public class MsTestRunner : ITestRunner
             return TestRunResult.None(DiscoveryResult.MsTests.Values, "Mutants are not covered by any test!");
         }
 
+        // Since there is only 1 mutant per test run (for concurrency reasons),
+        // we can just take the first key.
+        var mutantId = mutantTestsMap.Keys.First();
         var totalCountOfTests = DiscoveryResult.GetTestsForSources(project.GetTestAssemblies()).Count;
-
-        var coverageCollector = MutantController.Create(project.HelperNamespace, mutantTestsMap);
         var executed = new List<TestNode>();
 
-        foreach (var assembly in project.GetTestAssemblies())
+        lock (_mutantRunLock)
         {
-            var testProject = TestProjectLoader.Load(assembly);
-            var exitCode = testProject.MutantRun(coverageCollector, testCases, executed).GetAwaiter().GetResult();
+            foreach (var assembly in project.GetTestAssemblies())
+            {
+                var testProject = TestProjectLoader.Load(assembly);
+                var exitCode = testProject.MutantRun(mutantId, testCases, project.HelperNamespace, executed).GetAwaiter().GetResult();
+            }
         }
 
         var tests = executed.Select(tn => tn.Uid.Value).Distinct().Count() >= totalCountOfTests ?
