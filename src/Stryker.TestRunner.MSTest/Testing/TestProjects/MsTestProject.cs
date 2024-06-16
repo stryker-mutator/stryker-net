@@ -43,7 +43,7 @@ internal class MsTestProject : ITestProject
     public async Task<int> CoverageRun(CoverageCollector coverageCollector, string testCase)
     {
         var testCaseFilter = $"--filter {testCase}";
-        var builder = await TestApplication.CreateBuilderAsync([RunOptions.RunSettings, RunOptions.NoBanner, testCaseFilter]);
+        var builder = await TestApplication.CreateBuilderAsync([RunOptions.RunSettings, RunOptions.NoConsole, RunOptions.NoBanner, testCaseFilter]);
         builder.AddMSTest(() => [_assembly]);
         builder.TestHost.AddTestApplicationLifecycleCallbacks((_) => CoverageLifecycleCallbacks.Create(_assembly.Location, coverageCollector));
         builder.TestHost.AddDataConsumer((_) => CoverageConsumer.Create(coverageCollector));
