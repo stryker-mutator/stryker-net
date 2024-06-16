@@ -1602,7 +1602,7 @@
         "dependencies": {
           "McMaster.Extensions.CommandLineUtils": "[4.1.1, )",
           "NuGet.Protocol": "[6.10.0, )",
-          "YamlDotNet": "[15.1.6, )",
+          "YamlDotNet": "[15.3.0, )",
           "stryker": "[4.0.6, )"
         }
       },
@@ -1928,9 +1928,9 @@
       },
       "YamlDotNet": {
         "type": "CentralTransitive",
-        "requested": "[15.1.6, )",
-        "resolved": "15.1.6",
-        "contentHash": "T/cQEK/KHK96Q8kytJ4iUGDXg1/fj2Qtk6rCQeIlHYU1zTeyGVHW0QNZgREQyxZpygGMDMmrXNWt0sj5TsQnjA=="
+        "requested": "[15.3.0, )",
+        "resolved": "15.3.0",
+        "contentHash": "F93japYa9YrJ59AZGhgdaUGHN7ITJ55FBBg/D/8C0BDgahv/rQD6MOSwHxOJJpon1kYyslVbeBrQ2wcJhox01w=="
       }
     }
   }
