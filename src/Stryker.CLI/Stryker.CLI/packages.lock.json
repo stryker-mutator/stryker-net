@@ -34,9 +34,9 @@
       },
       "YamlDotNet": {
         "type": "Direct",
-        "requested": "[15.1.6, )",
-        "resolved": "15.1.6",
-        "contentHash": "T/cQEK/KHK96Q8kytJ4iUGDXg1/fj2Qtk6rCQeIlHYU1zTeyGVHW0QNZgREQyxZpygGMDMmrXNWt0sj5TsQnjA=="
+        "requested": "[15.3.0, )",
+        "resolved": "15.3.0",
+        "contentHash": "F93japYa9YrJ59AZGhgdaUGHN7ITJ55FBBg/D/8C0BDgahv/rQD6MOSwHxOJJpon1kYyslVbeBrQ2wcJhox01w=="
       },
       "Azure.Core": {
         "type": "Transitive",
@@ -1473,8 +1473,8 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.49.1, )",
           "Spectre.Console.Analyzer": "[0.49.1, )",
-          "Stryker.DataCollector": "[4.0.6, )",
-          "Stryker.RegexMutators": "[4.0.6, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[21.0.2, )"
         }
       },
