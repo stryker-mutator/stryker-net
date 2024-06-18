@@ -146,8 +146,8 @@
       },
       "Buildalyzer.Logger": {
         "type": "Transitive",
-        "resolved": "7.0.1",
-        "contentHash": "FalOuJZ/uZcTCYcV76NWw7rl5SF4tnfLgD96ITJxcU03JD3JikBNUB/67xkPgMARY5jGvRN4RF2wkKXp5jep4A=="
+        "resolved": "7.0.2",
+        "contentHash": "awL4TbcBjWAgmeWbi7G6OkUIr0OEPwZASC09Frd6A84LmKSZWOICgZ9vUTCtwlVtepr6FJNTVHxWR6HopfbwLQ=="
       },
       "Castle.Core": {
         "type": "Transitive",
@@ -1586,7 +1586,7 @@
         "type": "Project",
         "dependencies": {
           "Azure.Storage.Files.Shares": "[12.18.0, )",
-          "Buildalyzer": "[7.0.1, )",
+          "Buildalyzer": "[7.0.2, )",
           "DotNet.Glob": "[3.1.3, )",
           "FSharp.Compiler.Service": "[42.7.100-preview.22427.1, )",
           "Grynwald.MarkdownGenerator": "[3.0.106, )",
@@ -1609,8 +1609,8 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.49.1, )",
           "Spectre.Console.Analyzer": "[0.49.1, )",
-          "Stryker.DataCollector": "[4.0.6, )",
-          "Stryker.RegexMutators": "[4.0.6, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[21.0.2, )"
         }
       },
@@ -1639,11 +1639,11 @@
       },
       "Buildalyzer": {
         "type": "CentralTransitive",
-        "requested": "[7.0.1, )",
-        "resolved": "7.0.1",
-        "contentHash": "S7Cyf+7eh17Tesw0QolgvujRecAMQhlyjqgAxN3fLqEBGFZ53uGkgQRAFH5gQXJD8DdWSx/zsR0v4QqgLz+JNw==",
+        "requested": "[7.0.2, )",
+        "resolved": "7.0.2",
+        "contentHash": "LCbBUL22CaMwGJKGomc+DVsL+NNeWs5wxw6ov6/e6sKY+Jij4BM7JnUqjg3htP9AgmU8JBsfs7xTvWfUyaoHnA==",
         "dependencies": {
-          "Buildalyzer.Logger": "7.0.1",
+          "Buildalyzer.Logger": "7.0.2",
           "MSBuild.StructuredLogger": "2.1.815",
           "Microsoft.Build": "17.0.1",
           "Microsoft.Build.Tasks.Core": "17.0.1",
