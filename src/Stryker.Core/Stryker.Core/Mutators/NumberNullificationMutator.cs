@@ -27,7 +27,7 @@ public class NumberNullificationMutator : MutatorBase<LiteralExpressionSyntax>
     private static bool IsNumberLiteral(LiteralExpressionSyntax node)
     {
         var kind = node.Kind();
-        return kind == SyntaxKind.NumericLiteralExpression;
+        return kind == SyntaxKind.NumericLiteralExpression && node.Parent is EqualsValueClauseSyntax;
     }
 
 }
