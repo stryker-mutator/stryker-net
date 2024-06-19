@@ -7,24 +7,24 @@ using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators;
 
-public class NumberNegationMutatorTests : TestBase
+public class IntegerNegationMutatorTests : TestBase
 {
     [Fact]
     public void ShouldBeMutationLevelStandard()
     {
-        var target = new NumberNegationMutator();
+        var target = new IntegerNegationMutator();
         target.MutationLevel.ShouldBe(MutationLevel.Standard);
     }
 
     [Theory]
     [InlineData(10, -10)]
-    [InlineData(0, 0)]
     [InlineData(-10, 10)]
     public void ShouldMutate(int original, int expected)
     {
-        var target = new NumberNegationMutator();
+        var target = new IntegerNegationMutator();
+        var parent = SyntaxFactory.EqualsValueClause(SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(original)));
 
-        var result = target.ApplyMutations(SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(original)), null).ToList();
+        var result = target.ApplyMutations(parent.DescendantNodes().First() as LiteralExpressionSyntax, null).ToList();
 
         var mutation = result.ShouldHaveSingleItem();
 
@@ -42,7 +42,7 @@ public class NumberNegationMutatorTests : TestBase
     [InlineData(SyntaxKind.FalseLiteralExpression)]
     public void ShouldNotMutate(SyntaxKind original)
     {
-        var target = new NumberNegationMutator();
+        var target = new IntegerNegationMutator();
 
         var result = target.ApplyMutations(SyntaxFactory.LiteralExpression(original), null).ToList();
 

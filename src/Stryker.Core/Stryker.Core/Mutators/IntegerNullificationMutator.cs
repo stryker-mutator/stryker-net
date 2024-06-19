@@ -6,21 +6,19 @@ using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators;
 
-public class NumberNegationMutator : MutatorBase<LiteralExpressionSyntax>
+public class IntegerNullificationMutator : MutatorBase<LiteralExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 
     public override IEnumerable<Mutation> ApplyMutations(LiteralExpressionSyntax node, SemanticModel semanticModel)
     {
-        if (IsNumberLiteral(node) && node.Token.Value is not null)
+        if (IsNumberLiteral(node) && node.Token.Value is int value && value != 0)
         {
-            var currentValue = (int)node.Token.Value;
-            var replacementValue = -currentValue;
             yield return new Mutation
             {
                 OriginalNode = node,
-                ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(replacementValue)),
-                DisplayName = "Number negation mutation",
+                ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(0)),
+                DisplayName = "Integer nullification mutation",
                 Type = Mutator.Number
             };
         }
@@ -29,7 +27,6 @@ public class NumberNegationMutator : MutatorBase<LiteralExpressionSyntax>
     private static bool IsNumberLiteral(LiteralExpressionSyntax node)
     {
         var kind = node.Kind();
-        return kind == SyntaxKind.NumericLiteralExpression;
+        return kind == SyntaxKind.NumericLiteralExpression && node.Parent is EqualsValueClauseSyntax;
     }
-
 }
