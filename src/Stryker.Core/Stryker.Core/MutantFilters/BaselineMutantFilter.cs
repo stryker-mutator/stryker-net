@@ -118,7 +118,7 @@ namespace Stryker.Core.MutantFilters
 
         private async Task<JsonReport> GetBaselineAsync()
         {
-            if (_options.BaselineRecreateEnabled)
+            if (_options.RecreateBaseline)
             {
                 _logger.LogInformation("Now running a complete test to establish a fresh baseline.");
 

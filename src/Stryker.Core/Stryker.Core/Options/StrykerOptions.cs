@@ -121,15 +121,15 @@ public class StrykerOptions
     /// </summary>
     public IEnumerable<Reporter> Reporters { get; init; } = [];
 
-        /// <summary>
-        /// When true, a new baseline should be created.
-        /// </summary>
-        public bool BaselineRecreateEnabled { get; init; }
+    /// <summary>
+    /// When true, a new baseline should be created.
+    /// </summary>
+    public bool RecreateBaseline { get; init; }
 
-        /// <summary>
-        /// When true, the baseline feature should be enabled.
-        /// </summary>
-        public bool BaselineEnabled { get; init; }
+    /// <summary>
+    /// When true, the baseline feature should be enabled.
+    /// </summary>
+    public bool BaselineEnabled { get; init; }
 
     /// <summary>
     /// When the baseline feature is enabled, this selects the source of the baseline.

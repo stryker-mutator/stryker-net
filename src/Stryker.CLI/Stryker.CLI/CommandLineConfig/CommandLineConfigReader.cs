@@ -77,9 +77,8 @@ namespace Stryker.CLI.CommandLineConfig
                 baselineCmd.AddName("with-baseline");
                 RegisterCliInputs(baselineCmd);
 
-                var committishArg = baselineCmd.Argument("committish", "The committish to compare with the current HEAD. This can be a branch, tag or commit id.");
-                committishArg.IsRequired(true);
-
+                var committishArg = baselineCmd.Argument("target", "The target to compare with the current version. This can be any version indicator like branch, tag, commit-id or semver.");
+                committishArg.IsRequired(true, "The target argument is required. Example: dotnet stryker baseline main.");
                 baselineCmd.HelpOption();
 
                 baselineCmd.OnExecute(() =>

@@ -165,7 +165,7 @@ namespace Stryker.Core.Options
                 DiffIgnoreChanges = DiffIgnoreChangesInput.Validate(),
                 AzureFileStorageSas = AzureFileStorageSasInput.Validate(baselineProvider, baselineEnabled),
                 AzureFileStorageUrl = AzureFileStorageUrlInput.Validate(baselineProvider, baselineEnabled),
-                BaselineRecreateEnabled = baselineRecreateEnabled,
+                RecreateBaseline = baselineRecreateEnabled,
                 BaselineEnabled = baselineEnabled,
                 BaselineProvider = baselineProvider,
                 FallbackVersion = FallbackVersionInput.Validate(baselineEnabled, sinceTarget),

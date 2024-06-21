@@ -17,7 +17,7 @@ namespace Stryker.Core.Options.Inputs
             {
                 if (baselineEnabled && string.IsNullOrWhiteSpace(SuppliedInput))
                 {
-                    throw new InputException("Project version cannot be empty when baseline is enabled");
+                    throw new InputException("Project version cannot be empty when baseline is enabled.");
                 }
                 return SuppliedInput ?? Default;
             }
