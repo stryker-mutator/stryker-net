@@ -47,7 +47,7 @@ namespace Stryker.Core.UnitTest.Options
             ThresholdBreakInput = new ThresholdBreakInput(),
             ThresholdHighInput = new ThresholdHighInput(),
             ThresholdLowInput = new ThresholdLowInput(),
-            WithBaselineInput = new WithBaselineInput(),
+            BaselineEnabledInput = new BaselineEnabledInput(),
             BreakOnInitialTestFailureInput = new BreakOnInitialTestFailureInput(),
         };
 
@@ -131,7 +131,7 @@ namespace Stryker.Core.UnitTest.Options
             _target.DashboardApiKeyInput.SuppliedInput = "dashboard_api_key";
             _target.ReportersInput.SuppliedInput = new[] { "html" };
             _target.BaselineProviderInput.SuppliedInput = "dashboard";
-            _target.WithBaselineInput.SuppliedInput = true;
+            _target.BaselineEnabledInput.SuppliedInput = true;
             _target.ProjectVersionInput.SuppliedInput = "develop";
 
             var result = _target.ValidateAll();
@@ -145,7 +145,7 @@ namespace Stryker.Core.UnitTest.Options
             _target.DashboardApiKeyInput.SuppliedInput = "dashboard_api_key";
             _target.ReportersInput.SuppliedInput = new[] { "html" };
             _target.BaselineProviderInput.SuppliedInput = "disk";
-            _target.WithBaselineInput.SuppliedInput = true;
+            _target.BaselineEnabledInput.SuppliedInput = true;
             _target.ProjectVersionInput.SuppliedInput = "develop";
 
             var result = _target.ValidateAll();
@@ -156,7 +156,7 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void WithBaselineAndSinceShouldBeMutuallyExclusive()
         {
-            _target.WithBaselineInput.SuppliedInput = true;
+            _target.BaselineEnabledInput.SuppliedInput = true;
             _target.SinceInput.SuppliedInput = true;
 
             var exception = Should.Throw<InputException>(() => _target.ValidateAll());
@@ -167,7 +167,7 @@ namespace Stryker.Core.UnitTest.Options
         public void WithBaselineShouldNotThrow_2743() // https://github.com/stryker-mutator/stryker-net/issues/2743
         {
             _target.ProjectVersionInput.SuppliedInput = "1";
-            _target.WithBaselineInput.SuppliedInput = true;
+            _target.BaselineEnabledInput.SuppliedInput = true;
 
             Should.NotThrow(() => _target.ValidateAll());
         }
@@ -175,14 +175,14 @@ namespace Stryker.Core.UnitTest.Options
         [Fact]
         public void BaseLineOptionsShouldBeSetToDefaultWhenBaselineIsDisabled()
         {
-            _target.WithBaselineInput.SuppliedInput = false;
+            _target.BaselineEnabledInput.SuppliedInput = false;
             _target.BaselineProviderInput.SuppliedInput = "azurefilestorage";
             _target.AzureFileStorageSasInput.SuppliedInput = "sasCredential";
             _target.AzureFileStorageUrlInput.SuppliedInput = "azureUrl";
 
             var result = _target.ValidateAll();
 
-            result.WithBaseline.ShouldBeFalse();
+            result.BaselineEnabled.ShouldBeFalse();
             result.BaselineProvider.ShouldBe(BaselineProvider.Disk);
             result.AzureFileStorageSas.ShouldBe(string.Empty);
             result.AzureFileStorageUrl.ShouldBe(string.Empty);

@@ -11,13 +11,13 @@ namespace Stryker.Core.Options.Inputs
 
         protected override string Description => "Project version used in dashboard reporter and baseline feature.";
 
-        public string Validate(IEnumerable<Reporter> reporters, bool withBaseline)
+        public string Validate(IEnumerable<Reporter> reporters, bool baselineEnabled)
         {
-            if (reporters.Contains(Reporter.Dashboard) || reporters.Contains(Reporter.RealTimeDashboard) || withBaseline)
+            if (reporters.Contains(Reporter.Dashboard) || reporters.Contains(Reporter.RealTimeDashboard) || baselineEnabled)
             {
-                if (withBaseline && string.IsNullOrWhiteSpace(SuppliedInput))
+                if (baselineEnabled && string.IsNullOrWhiteSpace(SuppliedInput))
                 {
-                    throw new InputException("Project version cannot be empty when baseline is enabled");
+                    throw new InputException("Project version cannot be empty when baseline is enabled.");
                 }
                 return SuppliedInput ?? Default;
             }

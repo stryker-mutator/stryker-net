@@ -462,7 +462,7 @@ Config file: `"since": { }`
 
 Use git information to test only code changes since the given target. Stryker will only report on mutants within the changed code. All other mutants will not have a result.
 
-If you wish to test only changed sources and tests but would like to have a complete mutation report see [with-baseline](#with-baseline-flag-committish).
+If you wish to test only changed sources and tests but would like to have a complete mutation report see [with-baseline](#with-baseline-committish).
 
 Set the diffing target on the command line by passing a committish with the since flag in the format `--since:<committish>`.
 Set the diffing target in the config file by setting the [since target](#sincetarget-committish) option.
@@ -502,36 +502,26 @@ Use [globbing syntax](https://en.wikipedia.org/wiki/Glob_(programming)) for wild
 
 ## Baseline
 
-### `with-baseline` &lt;`flag`&gt; [`:committish`]
+### `with-baseline` &lt;`committish`&gt;
 
 Default: `false`  
-Command line: `--with-baseline:feat-2`  
-Config file: `"baseline": { }`
+Command line: `with-baseline feat-2`  
+Config file: `"baseline": { }`  
 
-Enabling `with-baseline` saves the mutation report to a storage location such as the filesystem. The mutation report is loaded at the start of the next mutation run. Any changed source code or unit test results in a reset of the mutants affected by the change. For unchanged mutants the previous result is reused. This feature expands on the [since](#since-flag-committish) feature by providing you with a full report after a partial mutation testrun.
+Enabling `baseline`, alias `with-baseline`, saves the mutation report to a storage location such as the filesystem. The mutation report is loaded at the start of the next mutation run. Any changed source code or unit test results in a reset of the mutants affected by the change. For unchanged mutants the previous result is reused. This feature expands on the [since](#since-flag-committish) feature by providing you with a full report after a partial mutation testrun. The target of the baseline is a `committish` passed as an extra argument. The target determines which committish is used to establish or locate a baseline.
 
 The report name is based on the current branch name or the [project-info.version](#project-infoversion-committish).
 
-Set the diffing target on the command line by passing a committish with the since flag.
-Set the diffing target in the config file by setting the [since target](#sincetarget-committish) option.
 
 *\* The baseline and since features are mutually exclusive. This feature implicitly enables the [since](#since-flag-committish) feature for now.*
-
-### `baseline.enabled` &lt;`flag`&gt;
-
-Default: `null`  
-Command line: `N/A`  
-Config file: `"baseline": { "enabled": false }`
-
-Enable or disable [with-baseline](#with-baseline-flag-committish). If the enabled property is not set but the `baseline` object exists in the config file it is assumed to be enabled. Use this option to (temporarily) disable `with-baseline` without having to delete the other baseline configuration.
 
 ### `baseline.fallback-version` &lt;`string`&gt;
 
 Default: [since-target](#since-flag-committish)  
 Command line: `N/A`  
-Config file: `"baseline": { "fallback-version": 'develop' }`
+Config file: `"baseline": { "fallback-version": 'develop' }`  
 
-When [with-baseline](#with-baseline-flag-committish) is enabled and Stryker cannot find an existing report for the current branch the fallback version is used. When Stryker is still unable to find a baseline we will do a complete instead of partial testrun. The complete testrun will then be saved as the new baseline for the next mutation testrun.
+When [with-baseline](#with-baseline-committish) is enabled and Stryker cannot find an existing report for the current branch the fallback version is used. When Stryker is still unable to find a baseline we will do a complete instead of partial testrun. The complete testrun will then be saved as the new baseline for the next mutation testrun.
 
 **Example**:
 ```json
@@ -566,9 +556,9 @@ new baseline saved to: feat-2
 
 Default: `Disk`  
 Command line: `N/A`  
-Config file: `"baseline": { "provider": 'AzureFileStorage'}`
+Config file: `"baseline": { "provider": 'AzureFileStorage'}`  
 
-Sets the storage provider for the baseline used by [with-baseline](#with-baseline-flag-committish). By default this is set to disk, when the dashboard [reporter](#reporter-string) is enabled this is automatically set to Dashboard.
+Sets the storage provider for the baseline used by [with-baseline](#with-baseline-committish). By default this is set to disk, when the dashboard [reporter](#reporter-string) is enabled this is automatically set to Dashboard.
 
 Supported storage providers are:
 
@@ -611,6 +601,14 @@ Allowed permissions: `Read`, `Write`, `Create`
 
 For more information on how to configure a SAS check the [Azure documentation](https://docs.microsoft.com/en-us/azure/storage/common/storage-sas-overview).
 
+### `baseline recreate`
+
+Default: `false`
+Command line: `with-baseline main recreate`
+Config file: `N/A`
+
+Sometimes your baseline can get corrupted or out of touch with reality. In that case the baseline can be recreated using this command. This will test all mutations in your project and save the result as the new baseline.
+
 ## Troubleshooting
 
 ### `verbosity` &lt;`log-level`&gt;
@@ -630,7 +628,7 @@ All available loglevels are
 
 ### `log-to-file` &lt;`flag`&gt;
 
-Default: `false`  
+Default: `false`
 Command line: `[-L|--log-to-file]`  
 Config file: `N/A`
 

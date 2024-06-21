@@ -50,7 +50,7 @@ namespace Stryker.CLI
             {
                 Name = "Stryker",
                 FullName = "Stryker: Stryker mutator for .Net",
-                Description = "Stryker mutator for .Net",
+                Description = "The mutation test framework for .Net",
                 ExtendedHelpText = "Welcome to Stryker for .Net! Run dotnet stryker to kick off a mutation test run",
                 HelpTextGenerator = new GroupedHelpTextGenerator()
             };
@@ -61,18 +61,11 @@ namespace Stryker.CLI
 
             cmdConfigReader.RegisterCommandLineOptions(app, inputs);
             cmdConfigReader.RegisterInitCommand(app, _fileSystem, inputs, args);
+            cmdConfigReader.RegisterBaselineCommand(app, inputs, args, this);
 
             app.OnExecute(() =>
             {
-                // app started
-                PrintStrykerASCIIName();
-
-                _configReader.Build(inputs, args, app, cmdConfigReader);
-                _loggingInitializer.SetupLogOptions(inputs);
-
-                PrintStrykerVersionInformationAsync();
-                RunStryker(inputs);
-                return ExitCode;
+                return StartApp(inputs, args, app, cmdConfigReader);
             });
 
             try
@@ -87,14 +80,27 @@ namespace Stryker.CLI
                 {
                     Console.Error.WriteLine();
                     Console.Error.WriteLine("Did you mean this?");
-                    foreach(var match in uex.NearestMatches)
+                    foreach (var nearMatch in uex.NearestMatches)
                     {
-                        Console.Error.WriteLine("    " + match);
+                        Console.Error.WriteLine("    " + nearMatch);
                     }
                 }
 
                 return ExitCodes.OtherError;
             }
+        }
+
+        internal int StartApp(IStrykerInputs inputs, string[] args, CommandLineApplication app, CommandLineConfigReader cmdConfigReader)
+        {
+            // app started
+            PrintStrykerASCIIName();
+
+            _configReader.Build(inputs, args, app, cmdConfigReader);
+            _loggingInitializer.SetupLogOptions(inputs);
+
+            PrintStrykerVersionInformationAsync();
+            RunStryker(inputs);
+            return ExitCode;
         }
 
         private void RunStryker(IStrykerInputs inputs)

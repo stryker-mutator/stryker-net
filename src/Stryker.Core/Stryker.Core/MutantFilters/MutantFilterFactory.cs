@@ -42,12 +42,12 @@ namespace Stryker.Core.MutantFilters
                     new IgnoreBlockMutantFilter(),
                 };
 
-            if (options.WithBaseline)
+            if (options.BaselineEnabled)
             {
                 enabledFilters.Add(new BaselineMutantFilter(options,
                     _baselineProvider ?? BaselineProviderFactory.Create(options), _gitInfoProvider ?? new GitInfoProvider(options)));
             }
-            if (options.Since || options.WithBaseline)
+            if (options.Since || options.BaselineEnabled)
             {
                 enabledFilters.Add(new SinceMutantFilter(_diffProvider ?? new GitDiffProvider(options, _input.TestRunner.GetTests(_input.SourceProjectInfo))));
             }

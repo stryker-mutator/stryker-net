@@ -233,7 +233,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var options = new StrykerOptions()
             {
-                WithBaseline = false,
+                BaselineEnabled = false,
                 ProjectVersion = "version"
             };
 
@@ -277,7 +277,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             var options = new StrykerOptions()
             {
-                WithBaseline = false,
+                BaselineEnabled = false,
                 ProjectVersion = "version"
             };
 
@@ -308,7 +308,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Arrange
             var options = new StrykerOptions()
             {
-                WithBaseline = true,
+                BaselineEnabled = true,
                 ProjectVersion = "version"
             };
 
