@@ -51,12 +51,10 @@
     <PackageReference Include="LaunchDarkly.EventSource" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Moq" />
+    <PackageReference Include="MSTest" />
     <PackageReference Include="Shouldly" />
     <PackageReference Include="Spectre.Console.Testing" />
     <PackageReference Include="TestableIO.System.IO.Abstractions.TestingHelpers" />
-    <PackageReference Include="xunit" />
-    <PackageReference Include="xunit.runner.visualstudio" PrivateAssets="all" />
-    <PackageReference Include="Xunit.SkippableFact" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Stryker.Core\Stryker.Core.csproj" />

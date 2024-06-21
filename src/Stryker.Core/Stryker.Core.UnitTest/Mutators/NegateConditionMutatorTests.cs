@@ -4,13 +4,14 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
 using System.Linq;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class NegateConditionMutatorTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldBeMutationLevelStandard()
         {
             var target = new NegateConditionMutator();
@@ -45,10 +46,10 @@ namespace TestApplication
             return invocationExpression;
         }
 
-        [Theory]
-        [InlineData("if (Method()) => return true;")]
-        [InlineData("while (Method()) => age++;")]
-        [InlineData("(Method()? 1:2);")]
+        [TestMethod]
+        [DataRow("if (Method()) => return true;")]
+        [DataRow("while (Method()) => age++;")]
+        [DataRow("(Method()? 1:2);")]
         public void MutatesStatementWithMethodCallWithNoArguments(string method)
         {
             var target = new NegateConditionMutator();
@@ -62,8 +63,8 @@ namespace TestApplication
             mutation.DisplayName.ShouldBe("Negate expression");
         }
 
-        [Theory]
-        [InlineData("var y = x is object result ? result.ToString() : null;")] // can't mutate inline var declaration
+        [TestMethod]
+        [DataRow("var y = x is object result ? result.ToString() : null;")] // can't mutate inline var declaration
         public void ShouldNotMutateThis(string method)
         {
             var target = new NegateConditionMutator();

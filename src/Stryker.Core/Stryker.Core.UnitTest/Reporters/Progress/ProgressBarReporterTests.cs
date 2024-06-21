@@ -2,26 +2,14 @@ using Moq;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Progress;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters.Progress
 {
-    public class FixedClock : TestBase, IStopWatchProvider
-    {
-        public void Start()
-        {
-        }
-
-        public void Stop()
-        {
-        }
-
-        public long GetElapsedMillisecond() => 10L;
-    }
-
+    [TestClass]
     public class ProgressBarReporterTests
     {
-        [Fact]
+        [TestMethod]
         public void ReportInitialState_ShouldReportTestProgressAs0PercentageDone_WhenTotalNumberOfTestsIsTwo()
         {
             var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
@@ -37,7 +25,7 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
             ));
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldSupportWhenNoMutants()
         {
             var progressBarMock = new ProgressBar();
@@ -50,10 +38,10 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
             progressBarMock.Ticks().ShouldBe(-1);
         }
 
-        [Theory]
-        [InlineData(MutantStatus.Killed, "│ Testing mutant 1 / 2 │ K 1 │ S 0 │ T 0 │ ~0m 00s │")]
-        [InlineData(MutantStatus.Survived, "│ Testing mutant 1 / 2 │ K 0 │ S 1 │ T 0 │ ~0m 00s │")]
-        [InlineData(MutantStatus.Timeout, "│ Testing mutant 1 / 2 │ K 0 │ S 0 │ T 1 │ ~0m 00s │")]
+        [TestMethod]
+        [DataRow(MutantStatus.Killed, "│ Testing mutant 1 / 2 │ K 1 │ S 0 │ T 0 │ ~0m 00s │")]
+        [DataRow(MutantStatus.Survived, "│ Testing mutant 1 / 2 │ K 0 │ S 1 │ T 0 │ ~0m 00s │")]
+        [DataRow(MutantStatus.Timeout, "│ Testing mutant 1 / 2 │ K 0 │ S 0 │ T 1 │ ~0m 00s │")]
         public void ReportRunTest_ShouldReportTestProgressAs50PercentageDone_And_FirstTestExecutionTime_WhenHalfOfTestsAreDone(MutantStatus status, string expected)
         {
             var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
@@ -75,10 +63,10 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
             ));
         }
 
-        [Theory]
-        [InlineData(MutantStatus.Killed, "│ Testing mutant 1 / 10000 │ K 1 │ S 0 │ T 0 │ ~1m 39s │")]
-        [InlineData(MutantStatus.Survived, "│ Testing mutant 1 / 10000 │ K 0 │ S 1 │ T 0 │ ~1m 39s │")]
-        [InlineData(MutantStatus.Timeout, "│ Testing mutant 1 / 10000 │ K 0 │ S 0 │ T 1 │ ~1m 39s │")]
+        [TestMethod]
+        [DataRow(MutantStatus.Killed, "│ Testing mutant 1 / 10000 │ K 1 │ S 0 │ T 0 │ ~1m 39s │")]
+        [DataRow(MutantStatus.Survived, "│ Testing mutant 1 / 10000 │ K 0 │ S 1 │ T 0 │ ~1m 39s │")]
+        [DataRow(MutantStatus.Timeout, "│ Testing mutant 1 / 10000 │ K 0 │ S 0 │ T 1 │ ~1m 39s │")]
         public void ReportRunTest_TestExecutionTimeInMinutes(MutantStatus status, string expected)
         {
             var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
@@ -100,10 +88,10 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
             ));
         }
 
-        [Theory]
-        [InlineData(MutantStatus.Killed, "│ Testing mutant 1 / 1000000 │ K 1 │ S 0 │ T 0 │ ~2h 46m │")]
-        [InlineData(MutantStatus.Survived, "│ Testing mutant 1 / 1000000 │ K 0 │ S 1 │ T 0 │ ~2h 46m │")]
-        [InlineData(MutantStatus.Timeout, "│ Testing mutant 1 / 1000000 │ K 0 │ S 0 │ T 1 │ ~2h 46m │")]
+        [TestMethod]
+        [DataRow(MutantStatus.Killed, "│ Testing mutant 1 / 1000000 │ K 1 │ S 0 │ T 0 │ ~2h 46m │")]
+        [DataRow(MutantStatus.Survived, "│ Testing mutant 1 / 1000000 │ K 0 │ S 1 │ T 0 │ ~2h 46m │")]
+        [DataRow(MutantStatus.Timeout, "│ Testing mutant 1 / 1000000 │ K 0 │ S 0 │ T 1 │ ~2h 46m │")]
         public void ReportRunTest_TestExecutionTimeInHours(MutantStatus status, string expected)
         {
             var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
@@ -124,10 +112,10 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
                 It.Is<string>(b => b == expected)));
         }
 
-        [Theory]
-        [InlineData(MutantStatus.Killed, "│ Testing mutant 1 / 100000000 │ K 1 │ S 0 │ T 0 │ ~11d 13h │")]
-        [InlineData(MutantStatus.Survived, "│ Testing mutant 1 / 100000000 │ K 0 │ S 1 │ T 0 │ ~11d 13h │")]
-        [InlineData(MutantStatus.Timeout, "│ Testing mutant 1 / 100000000 │ K 0 │ S 0 │ T 1 │ ~11d 13h │")]
+        [TestMethod]
+        [DataRow(MutantStatus.Killed, "│ Testing mutant 1 / 100000000 │ K 1 │ S 0 │ T 0 │ ~11d 13h │")]
+        [DataRow(MutantStatus.Survived, "│ Testing mutant 1 / 100000000 │ K 0 │ S 1 │ T 0 │ ~11d 13h │")]
+        [DataRow(MutantStatus.Timeout, "│ Testing mutant 1 / 100000000 │ K 0 │ S 0 │ T 1 │ ~11d 13h │")]
         public void ReportRunTest_TestExecutionTimeInDays(MutantStatus status, string expected)
         {
             var progressBarMock = new Mock<IProgressBar>(MockBehavior.Strict);
@@ -150,7 +138,7 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
         }
 
 
-        [Fact]
+        [TestMethod]
         public void ProgressBarSmokeCheck()
         {
             var progress = new ProgressBar();
@@ -162,5 +150,18 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
             progress.Dispose();
             progress.Ticks().ShouldBe(-1);
         }
+    }
+
+    public class FixedClock : TestBase, IStopWatchProvider
+    {
+        public void Start()
+        {
+        }
+
+        public void Stop()
+        {
+        }
+
+        public long GetElapsedMillisecond() => 10L;
     }
 }

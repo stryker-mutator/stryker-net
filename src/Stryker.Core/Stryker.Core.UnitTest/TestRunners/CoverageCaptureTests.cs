@@ -3,10 +3,11 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Xml;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.TestRunners
 {
+    [TestClass]
     public class CoverageCaptureTests : TestBase
     {
         private static bool WaitFor(object lck, Func<bool> predicate, int timeout)
@@ -29,7 +30,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
 
-        [Fact]
+        [TestMethod]
         public void CanParseConfiguration()
         {
             var referenceConf="<Parameters><Environment name=\"ActiveMutant\" value=\"1\"/></Parameters>";

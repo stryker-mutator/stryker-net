@@ -3,22 +3,23 @@ using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.Mutators;
 using System.Linq;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class PostfixUnaryMutatorTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldBeMutationLevelStandard()
         {
             var target = new PostfixUnaryMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
         }
 
-        [Theory]
-        [InlineData(SyntaxKind.PostIncrementExpression, SyntaxKind.PostDecrementExpression)]
-        [InlineData(SyntaxKind.PostDecrementExpression, SyntaxKind.PostIncrementExpression)]
+        [TestMethod]
+        [DataRow(SyntaxKind.PostIncrementExpression, SyntaxKind.PostDecrementExpression)]
+        [DataRow(SyntaxKind.PostDecrementExpression, SyntaxKind.PostIncrementExpression)]
         public void ShouldMutate(SyntaxKind original, SyntaxKind expected)
         {
             var target = new PostfixUnaryMutator();

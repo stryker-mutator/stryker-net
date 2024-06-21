@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
@@ -13,6 +14,7 @@ namespace Stryker.Core.UnitTest.MutationTest
     /// <summary>
     /// This class simplifies the creation of run scenarios
     /// </summary>
+    [TestClass]
     internal class FullRunScenario
     {
         private readonly Dictionary<int, Mutant> _mutants = new();

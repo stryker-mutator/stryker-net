@@ -1,4 +1,5 @@
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
@@ -9,6 +10,7 @@ namespace Stryker.Core.UnitTest.Mutants
     /// <summary>
     /// This base class provides helper to test source file mutation
     /// </summary>
+    [TestClass]
     public class MutantOrchestratorTestsBase : TestBase
     {
         protected CsharpMutantOrchestrator _target;

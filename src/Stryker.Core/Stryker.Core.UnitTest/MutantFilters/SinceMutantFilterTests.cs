@@ -10,13 +10,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
+    [TestClass]
     public class SinceMutantFilterTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public static void ShouldHaveName()
         {
             // Arrange
@@ -29,7 +30,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             target.DisplayName.ShouldBe("since filter");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateUnchangedFiles()
         {
             // Arrange
@@ -59,7 +60,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             filterResult.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldOnlyMutateChangedFiles()
         {
             // Arrange
@@ -90,7 +91,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             filterResult.ShouldContain(mutant);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotFilterMutantsWhereCoveringTestsContainsChangedTestFile()
         {
             // Arrange
@@ -133,7 +134,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             filterResult.ShouldContain(mutant);
         }
 
-        [Fact]
+        [TestMethod]
         public void FilterMutantsWithNoChangedFilesReturnsEmptyList()
         {
             // Arrange
@@ -177,7 +178,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             mutants.ShouldAllBe(m => m.ResultStatusReason == "Mutant not changed compared to target commit");
         }
 
-        [Fact]
+        [TestMethod]
         public void FilterMutantsWithNoChangedFilesAndNoCoverage()
         {
             // Arrange
@@ -225,7 +226,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             mutants.ShouldAllBe(m => m.ResultStatusReason == "Mutant not changed compared to target commit");
         }
 
-        [Fact]
+        [TestMethod]
         public void FilterMutants_FiltersNoMutants_IfTestsChanged()
         {
             // Arrange
@@ -269,7 +270,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             results.ShouldBe(new []{expectedToStay1, expectedToStay2});
         }
 
-        [Fact]
+        [TestMethod]
         public void Should_IgnoreMutants_WithoutCoveringTestsInfo_When_Tests_Have_Changed()
         {
             // Arrange
@@ -302,7 +303,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             results.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void Should_ReturnAllMutants_When_NonSourceCodeFile_In_Tests_Has_Changed()
         {
             // Arrange

@@ -16,10 +16,11 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.CLI.UnitTest
 {
+    [TestClass]
     public class StrykerCLITests
     {
         private IStrykerInputs _inputs;
@@ -43,7 +44,7 @@ namespace Stryker.CLI.UnitTest
             _target = new StrykerCli(_strykerRunnerMock.Object, null, _loggingInitializerMock.Object, _nugetClientMock.Object);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldDisplayInfoOnHelp()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
@@ -73,7 +74,7 @@ Options:";
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldDisplayLogo()
         {
             var strykerRunnerMock = new Mock<IStrykerRunner>(MockBehavior.Strict);
@@ -97,7 +98,7 @@ Options:";
             consoleOutput.ShouldContain(@"A new version of Stryker.NET (10.0.0) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker`");
         }
 
-        [Fact]
+        [TestMethod]
         public void OnMutationScoreBelowThresholdBreak_ShouldReturn_ExitCodeBreakThresholdViolated()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
@@ -123,7 +124,7 @@ Options:";
             result.ShouldBe(ExitCodes.BreakThresholdViolated);
         }
 
-        [Fact]
+        [TestMethod]
         public void OnMutationScoreEqualToNullAndThresholdBreakEqualTo0_ShouldReturnExitCode0()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
@@ -147,7 +148,7 @@ Options:";
             result.ShouldBe(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void OnMutationScoreEqualToNullAndThresholdBreakAbove0_ShouldReturnExitCode0()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
@@ -171,7 +172,7 @@ Options:";
             result.ShouldBe(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void OnMutationScoreAboveThresholdBreak_ShouldReturnExitCode0()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
@@ -194,10 +195,10 @@ Options:";
             result.ShouldBe(0);
         }
 
-        [Theory]
-        [InlineData("--help")]
-        [InlineData("-h")]
-        [InlineData("-?")]
+        [TestMethod]
+        [DataRow("--help")]
+        [DataRow("-h")]
+        [DataRow("-?")]
         public void ShouldNotStartStryker_WithHelpArgument(string argName)
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
@@ -208,7 +209,7 @@ Options:";
             mock.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrow_OnException()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
@@ -217,12 +218,12 @@ Options:";
                 .Verifiable();
 
             var target = new StrykerCli(mock.Object, null, _loggingInitializerMock.Object, _nugetClientMock.Object);
-            Assert.Throws<Exception>(() => target.Run(new string[] { }));
+            Should.Throw<Exception>(() => target.Run(new string[] { }));
         }
 
-        [Theory]
-        [InlineData("--reporter")]
-        [InlineData("-r")]
+        [TestMethod]
+        [DataRow("--reporter")]
+        [DataRow("-r")]
         public void ShouldPassReporterArgumentsToStryker_WithReporterArgument(string argName)
         {
             _target.Run(new string[] { argName, Reporter.Html.ToString(), argName, Reporter.Dots.ToString() });
@@ -233,9 +234,9 @@ Options:";
             _inputs.ReportersInput.SuppliedInput.ShouldContain(Reporter.Dots.ToString());
         }
 
-        [Theory]
-        [InlineData("--project")]
-        [InlineData("-p")]
+        [TestMethod]
+        [DataRow("--project")]
+        [DataRow("-p")]
         public void ShouldPassProjectArgumentsToStryker_WithProjectArgument(string argName)
         {
             _target.Run(new string[] { argName, "SomeProjectName.csproj" });
@@ -245,9 +246,9 @@ Options:";
             _inputs.SourceProjectNameInput.SuppliedInput.ShouldBe("SomeProjectName.csproj");
         }
 
-        [Theory]
-        [InlineData("--solution")]
-        [InlineData("-s")]
+        [TestMethod]
+        [DataRow("--solution")]
+        [DataRow("-s")]
         public void ShouldPassSolutionArgumentPlusBasePathToStryker_WithSolutionArgument(string argName)
         {
             _target.Run(new string[] { argName, "SomeSolutionPath.sln" });
@@ -257,9 +258,9 @@ Options:";
             _inputs.SolutionInput.SuppliedInput.ShouldBe("SomeSolutionPath.sln");
         }
 
-        [Theory]
-        [InlineData("--test-project")]
-        [InlineData("-tp")]
+        [TestMethod]
+        [DataRow("--test-project")]
+        [DataRow("-tp")]
         public void ShouldPassTestProjectArgumentsToStryker_WithTestProjectArgument(string argName)
         {
             _target.Run(new string[] { argName, "SomeProjectName1.csproj", argName, "SomeProjectName2.csproj" });
@@ -270,9 +271,9 @@ Options:";
             _inputs.TestProjectsInput.SuppliedInput.ShouldContain("SomeProjectName2.csproj");
         }
 
-        [Theory]
-        [InlineData("--verbosity")]
-        [InlineData("-V")]
+        [TestMethod]
+        [DataRow("--verbosity")]
+        [DataRow("-V")]
         public void ShouldPassLogConsoleArgumentsToStryker_WithLogConsoleArgument(string argName)
         {
             _target.Run(new[] { argName, "Debug" });
@@ -282,9 +283,9 @@ Options:";
             _inputs.VerbosityInput.SuppliedInput.ShouldBe(LogEventLevel.Debug.ToString());
         }
 
-        [Theory]
-        [InlineData("--log-to-file")]
-        [InlineData("-L")]
+        [TestMethod]
+        [DataRow("--log-to-file")]
+        [DataRow("-L")]
         public void ShouldPassLogFileArgumentsToStryker_WithLogLevelFileArgument(string argName)
         {
             _target.Run(new string[] { argName });
@@ -294,8 +295,8 @@ Options:";
             _inputs.LogToFileInput.SuppliedInput.Value.ShouldBeTrue();
         }
 
-        [Theory]
-        [InlineData("--dev-mode")]
+        [TestMethod]
+        [DataRow("--dev-mode")]
         public void WithDevModeArgument_ShouldPassDevModeArgumentsToStryker(string argName)
         {
             _target.Run(new string[] { argName });
@@ -305,9 +306,9 @@ Options:";
             _inputs.DevModeInput.SuppliedInput.Value.ShouldBeTrue();
         }
 
-        [Theory]
-        [InlineData("--concurrency")]
-        [InlineData("-c")]
+        [TestMethod]
+        [DataRow("--concurrency")]
+        [DataRow("-c")]
         public void WithMaxConcurrentTestrunnerArgument_ShouldPassValidatedConcurrentTestrunnersToStryker(string argName)
         {
             _target.Run(new string[] { argName, "4" });
@@ -317,9 +318,9 @@ Options:";
             _inputs.ConcurrencyInput.SuppliedInput.Value.ShouldBe(4);
         }
 
-        [Theory]
-        [InlineData("--break-at")]
-        [InlineData("-b")]
+        [TestMethod]
+        [DataRow("--break-at")]
+        [DataRow("-b")]
         public void WithCustomThresholdBreakParameter_ShouldPassThresholdBreakToStryker(string argName)
         {
             _target.Run(new string[] { argName, "20" });
@@ -329,9 +330,9 @@ Options:";
             _inputs.ThresholdBreakInput.SuppliedInput.ShouldBe(20);
         }
 
-        [Theory]
-        [InlineData("--mutate")]
-        [InlineData("-m")]
+        [TestMethod]
+        [DataRow("--mutate")]
+        [DataRow("-m")]
         public void ShouldPassFilePatternSetToStryker_WithMutateArgs(string argName)
         {
             var firstFileToExclude = "**/*Service.cs";
@@ -349,8 +350,8 @@ Options:";
             filePatterns.ShouldContain(thirdFileToExclude);
         }
 
-        [Theory]
-        [InlineData("--since")]
+        [TestMethod]
+        [DataRow("--since")]
         public void ShouldEnableDiffFeatureWhenPassed(string argName)
         {
             _target.Run(new string[] { argName });
@@ -360,8 +361,8 @@ Options:";
             _inputs.SinceInput.SuppliedInput.Value.ShouldBeTrue();
         }
 
-        [Theory]
-        [InlineData("--since")]
+        [TestMethod]
+        [DataRow("--since")]
         public void ShouldSetGitDiffTargetWhenPassed(string argName)
         {
             _target.Run(new string[] { $"{argName}:development" });
@@ -372,9 +373,9 @@ Options:";
             _inputs.SinceTargetInput.SuppliedInput.ShouldBe("development");
         }
 
-        [Theory]
-        [InlineData("--mutation-level")]
-        [InlineData("-l")]
+        [TestMethod]
+        [DataRow("--mutation-level")]
+        [DataRow("-l")]
         public void ShouldSetMutationLevelWhenPassed(string argName)
         {
             _target.Run(new string[] { argName, "Advanced" });
@@ -382,9 +383,9 @@ Options:";
             _inputs.MutationLevelInput.SuppliedInput.ShouldBe(MutationLevel.Advanced.ToString());
         }
 
-        [Theory]
-        [InlineData("--version", "master")]
-        [InlineData("-v", "master")]
+        [TestMethod]
+        [DataRow("--version", "master")]
+        [DataRow("-v", "master")]
         public void ShouldSetProjectVersionFeatureWhenPassed(params string[] argName)
         {
             _target.Run(argName);
@@ -394,8 +395,8 @@ Options:";
             _inputs.ProjectVersionInput.SuppliedInput.ShouldBe("master");
         }
 
-        [Theory]
-        [InlineData("--dashboard-api-key", "1234567890")]
+        [TestMethod]
+        [DataRow("--dashboard-api-key", "1234567890")]
         public void ShouldSupplyDashboardApiKeyWhenPassed(params string[] argName)
         {
             _target.Run(argName);
@@ -405,8 +406,8 @@ Options:";
             _inputs.DashboardApiKeyInput.SuppliedInput.ShouldBe("1234567890");
         }
 
-        [Theory]
-        [InlineData("--with-baseline")]
+        [TestMethod]
+        [DataRow("--with-baseline")]
         public void ShouldSupplyWithBaselineWhenPassed(params string[] argName)
         {
             _target.Run(argName);
@@ -416,11 +417,11 @@ Options:";
             _inputs.WithBaselineInput.SuppliedInput.Value.ShouldBeTrue();
         }
 
-        [Theory]
-        [InlineData("-o", null)]
-        [InlineData("-o:html", "html")]
-        [InlineData("--open-report", null)]
-        [InlineData("--open-report:dashboard", "dashboard")]
+        [TestMethod]
+        [DataRow("-o", null)]
+        [DataRow("-o:html", "html")]
+        [DataRow("--open-report", null)]
+        [DataRow("--open-report:dashboard", "dashboard")]
         public void ShouldSupplyOpenReportInputsWhenPassed(string arg, string expected)
         {
             _target.Run(new[] { arg });
@@ -431,8 +432,8 @@ Options:";
             _inputs.OpenReportInput.SuppliedInput.ShouldBe(expected);
         }
 
-        [Theory]
-        [InlineData("--azure-fileshare-sas", "sas")]
+        [TestMethod]
+        [DataRow("--azure-fileshare-sas", "sas")]
         public void ShouldSupplyAzureFileshareSasWhenPassed(params string[] argName)
         {
             _target.Run(argName);
@@ -442,8 +443,8 @@ Options:";
             _inputs.AzureFileStorageSasInput.SuppliedInput.ShouldBe("sas");
         }
 
-        [Theory]
-        [InlineData("--break-on-initial-test-failure")]
+        [TestMethod]
+        [DataRow("--break-on-initial-test-failure")]
         public void ShouldSupplyBreakOnInitialTestFailureWhenPassed(params string[] argName)
         {
             _target.Run(argName);
@@ -454,8 +455,8 @@ Options:";
             _inputs.BreakOnInitialTestFailureInput.SuppliedInput.Value.ShouldBeTrue();
         }
 
-        [Theory]
-        [InlineData("--target-framework", "net7.0")]
+        [TestMethod]
+        [DataRow("--target-framework", "net7.0")]
         public void ShouldSupplyTargetFrameworkWhenPassed(params string[] argName)
         {
             _target.Run(argName);

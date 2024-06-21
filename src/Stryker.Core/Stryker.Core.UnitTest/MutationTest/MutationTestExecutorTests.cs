@@ -8,13 +8,14 @@ using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.MutationTest
 {
+    [TestClass]
     public class MutationTestExecutorTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void MutationTestExecutor_NoFailedTestShouldBeSurvived()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
@@ -29,7 +30,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             testRunnerMock.Verify(x => x.TestMultipleMutants( It.IsAny<IProjectAndTests>(),It.IsAny<ITimeoutValueCalculator>(), It.IsAny<IReadOnlyList<Mutant>>(), null), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void MutationTestExecutor_FailedTestShouldBeKilled()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
@@ -44,7 +45,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             testRunnerMock.Verify(x => x.TestMultipleMutants( It.IsAny<IProjectAndTests>(),null, It.IsAny<IReadOnlyList<Mutant>>(), null), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void MutationTestExecutor_TimeoutShouldBePassedToProcessTimeout()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
@@ -61,7 +62,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             testRunnerMock.Verify(x => x.TestMultipleMutants( It.IsAny<IProjectAndTests>(), timeoutValueCalculator, It.IsAny<IReadOnlyList<Mutant>>(), null), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void MutationTestExecutor_ShouldSwitchToSingleModeOnDubiousTimeouts()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);

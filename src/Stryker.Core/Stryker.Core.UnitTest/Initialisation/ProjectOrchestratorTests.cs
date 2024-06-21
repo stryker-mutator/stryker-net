@@ -16,10 +16,11 @@ using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.Testing;
 using Stryker.Core.TestRunners;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
+    [TestClass]
     public class ProjectOrchestratorTests : TestBase
     {
         private readonly Mock<IBuildalyzerProvider> _buildalyzerProviderMock = new(MockBehavior.Strict);
@@ -40,7 +41,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             _projectPath = _fileSystem.Path.Combine(filesystemRoot, "sourceproject");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldInitializeEachProjectInSolution()
         {
             // arrange
@@ -66,7 +67,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.ShouldHaveSingleItem();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldPassWhenProjectNameIsGiven()
         {
             // arrange
@@ -90,7 +91,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.ShouldHaveSingleItem();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRestoreWhenAnalysisFails()
         {
             // arrange
@@ -115,7 +116,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.ShouldHaveSingleItem();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldFailIfNoProjectFound()
         {
             var testCsprojPathName = _fileSystem.Path.Combine(_projectPath, "testproject.csproj");
@@ -139,7 +140,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             mutateAction.ShouldThrow<InputException>();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldFilterInSolutionMode()
         {
             // when a solutionPath is given and it's inside the current directory (basePath)
@@ -166,7 +167,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldProvideMinimalSupportForFSharp()
         {
             var testCsprojPathName = _fileSystem.Path.Combine(_projectPath, "testproject.csproj");
@@ -194,7 +195,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.ShouldHaveSingleItem();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldDiscoverUpstreamProject()
         {
             // arrange
@@ -228,7 +229,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.Count.ShouldBe(2);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldDiscoverUpstreamProjectWithInvalidCasing()
         {
             // arrange
@@ -260,7 +261,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.Count.ShouldBe(2);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldDisregardInvalidReferences()
         {
             // arrange
@@ -290,7 +291,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.Count.ShouldBe(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldIgnoreProjectWithoutTestAssemblies()
         {
             // arrange

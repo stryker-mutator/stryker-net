@@ -1,13 +1,13 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class FallbackVersionInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new FallbackVersionInput();
@@ -17,7 +17,7 @@ When you don't specify a fallback version the since target will be used as fallb
 Example: If the current branch is based on the main branch, set 'main' as the fallback version | default: 'master'");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotValidate_IfNotEnabled()
         {
             var input = new FallbackVersionInput { SuppliedInput = "master" };
@@ -27,7 +27,7 @@ Example: If the current branch is based on the main branch, set 'main' as the fa
             validatedInput.ShouldBe(new SinceTargetInput().Default);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldUseProvidedInputValue()
         {
             var input = new FallbackVersionInput { SuppliedInput = "development" };
@@ -37,7 +37,7 @@ Example: If the current branch is based on the main branch, set 'main' as the fa
             validatedInput.ShouldBe("development");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldUseSinceTarget_IfNotExplicitlySet()
         {
             var input = new FallbackVersionInput();

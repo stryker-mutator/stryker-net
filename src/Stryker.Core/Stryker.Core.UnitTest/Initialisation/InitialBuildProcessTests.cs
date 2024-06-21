@@ -5,10 +5,11 @@ using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Testing;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
+    [TestClass]
     public class InitialBuildProcessTests : TestBase
     {
         private string _cProjectsExampleCsproj;
@@ -18,7 +19,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             _cProjectsExampleCsproj = Environment.OSVersion.Platform == PlatformID.Win32NT ? @"C:\Projects\Example.csproj" : "/usr/projects/Example.csproj";
         }
 
-        [Fact]
+        [TestMethod]
         public void InitialBuildProcess_ShouldThrowStrykerInputExceptionOnFail()
         {
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
@@ -31,11 +32,9 @@ namespace Stryker.Core.UnitTest.Initialisation
                 .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"dotnet build \"" + @"Example.csproj" + "\"\"");
         }
 
-        [SkippableFact]
+        [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
         public void InitialBuildProcess_WithPathAsBuildCommand_ShouldThrowStrykerInputExceptionOnFailWithQuotes()
         {
-            Skip.IfNot(Environment.OSVersion.Platform == PlatformID.Win32NT, "MSBuild is only available on Windows");
-
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
 
             processMock.SetupProcessMockToReturn("", 1);
@@ -47,11 +46,9 @@ namespace Stryker.Core.UnitTest.Initialisation
                                   @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" + "\" \"" + _cProjectsExampleCsproj + "\"\"");
         }
 
-        [SkippableFact]
+        [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
         public void InitialBuildProcess_WithPathAsBuildCommand_TriesWithMsBuildIfDotnetFails()
         {
-            Skip.IfNot(Environment.OSVersion.Platform == PlatformID.Win32NT, "MSBuild is only available on Windows");
-
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
 
             processMock.SetupProcessMockToReturn("", 2);
@@ -66,7 +63,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             processMock.Verify(x =>x.Start(It.IsAny<string>(), It.Is<string>(app => app.Contains("MSBuild.exe")), It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(3));
         }
 
-        [Fact]
+        [TestMethod]
         public void InitialBuildProcess_ShouldNotThrowExceptionOnSuccess()
         {
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
@@ -81,11 +78,9 @@ namespace Stryker.Core.UnitTest.Initialisation
                 It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Once);
         }
 
-        [SkippableFact]
+        [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
         public void InitialBuildProcess_ShouldRunMsBuildOnDotnetFramework()
         {
-            Skip.IfNot(Environment.OSVersion.Platform == PlatformID.Win32NT, "DotnetFramework does not run on Unix");
-
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
 
             processMock.SetupProcessMockToReturn("");
@@ -102,7 +97,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void InitialBuildProcess_ShouldUseCustomMsbuildIfNotNull()
         {
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
@@ -121,7 +116,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void InitialBuildProcess_ShouldRunDotnetBuildIfNotDotnetFramework()
         {
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
@@ -140,7 +135,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void InitialBuildProcess_ShouldUseSolutionPathIfSet()
         {
             var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);

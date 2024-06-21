@@ -2,13 +2,14 @@ using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class OptimizationModeInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new CoverageAnalysisInput();
@@ -20,12 +21,12 @@ namespace Stryker.Core.UnitTest.Options.Inputs
  | default: 'perTest'");
         }
 
-        [Theory]
-        [InlineData(null, OptimizationModes.CoverageBasedTest)]
-        [InlineData("perTestinisolation", OptimizationModes.CoverageBasedTest, OptimizationModes.CaptureCoveragePerTest)]
-        [InlineData("perTest", OptimizationModes.CoverageBasedTest)]
-        [InlineData("all", OptimizationModes.SkipUncoveredMutants)]
-        [InlineData("off", OptimizationModes.None)]
+        [TestMethod]
+        [DataRow(null, OptimizationModes.CoverageBasedTest)]
+        [DataRow("perTestinisolation", OptimizationModes.CoverageBasedTest, OptimizationModes.CaptureCoveragePerTest)]
+        [DataRow("perTest", OptimizationModes.CoverageBasedTest)]
+        [DataRow("all", OptimizationModes.SkipUncoveredMutants)]
+        [DataRow("off", OptimizationModes.None)]
         public void ShouldSetFlags(string value, params OptimizationModes[] expectedFlags)
         {
             var target = new CoverageAnalysisInput { SuppliedInput = value };
@@ -38,12 +39,12 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrowOnInvalidOptimizationMode()
         {
             var target = new CoverageAnalysisInput { SuppliedInput = "gibberish" };
 
-            var exception = Assert.Throws<InputException>(() => target.Validate());
+            var exception = Should.Throw<InputException>(() => target.Validate());
 
             exception.Message.ShouldMatch("Incorrect coverageAnalysis option \\(gibberish\\)\\. The options are \\[.+\\]\\.");
         }

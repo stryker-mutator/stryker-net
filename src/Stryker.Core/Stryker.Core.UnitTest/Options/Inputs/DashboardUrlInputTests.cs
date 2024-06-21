@@ -1,20 +1,21 @@
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class DashboardUrlInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new DashboardUrlInput();
             target.HelpText.ShouldBe(@"Alternative url for Stryker Dashboard. | default: 'https://dashboard.stryker-mutator.io'");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldHaveDefault()
         {
             var target = new DashboardUrlInput { SuppliedInput = null };
@@ -24,7 +25,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             defaultValue.ShouldBe("https://dashboard.stryker-mutator.io");
         }
         
-        [Fact]
+        [TestMethod]
         public void ShouldAllowValidUri()
         {
             var target = new DashboardUrlInput { SuppliedInput = "http://example.com:8042" };
@@ -34,7 +35,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             defaultValue.ShouldBe("http://example.com:8042");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrowOnInvalidUri()
         {
             var target = new DashboardUrlInput { SuppliedInput = "test" };

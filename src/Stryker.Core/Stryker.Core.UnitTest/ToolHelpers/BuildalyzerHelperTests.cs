@@ -4,13 +4,14 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation.Buildalyzer;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.ToolHelpers
 {
+    [TestClass]
     public class BuildalyzerHelperTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldGetAssemblyAttributeFileName()
         {
             var projectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -23,7 +24,7 @@ namespace Stryker.Core.UnitTest.ToolHelpers
             result.ShouldBe("path.AssemblyInfo.cs");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldGetAssemblyAttributeFileNameDefault()
         {
             var projectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -35,7 +36,7 @@ namespace Stryker.Core.UnitTest.ToolHelpers
             result.ShouldBe("path.assemblyinfo.cs");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldLogAnalyzerLoadFailure()
         {
             var projectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(

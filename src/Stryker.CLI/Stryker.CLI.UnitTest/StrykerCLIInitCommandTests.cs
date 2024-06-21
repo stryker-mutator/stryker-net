@@ -10,10 +10,11 @@ using Stryker.CLI.Clients;
 using Stryker.CLI.Logging;
 using Stryker.Core;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.CLI.UnitTest;
 
+[TestClass]
 public class StrykerCLIInitCommandTests
 {
     private readonly StrykerCli _target;
@@ -28,7 +29,7 @@ public class StrykerCLIInitCommandTests
         _target = new StrykerCli(_strykerRunnerMock.Object, null, _loggingInitializerMock.Object, _nugetClientMock.Object, _consoleMock, _fileSystemMock);
     }
 
-    [Fact]
+    [TestMethod]
     public void Init()
     {
         _target.Run(new[] { "init" });
@@ -59,9 +60,9 @@ public class StrykerCLIInitCommandTests
         config.BreakOnInitialTestFailure.ShouldBe(new BreakOnInitialTestFailureInput().Default);
     }
 
-    [Theory]
-    [InlineData("init", "--config-file", "test.json")]
-    [InlineData("init", "-f", "test.json")]
+    [TestMethod]
+    [DataRow("init", "--config-file", "test.json")]
+    [DataRow("init", "-f", "test.json")]
     public void InitCustomPath(params string[] args)
     {
         _target.Run(args);
@@ -71,7 +72,7 @@ public class StrykerCLIInitCommandTests
         _fileSystemMock.File.Exists(args.Last()).ShouldBeTrue();
     }
 
-    [Fact]
+    [TestMethod]
     public void InitOverwrite()
     {
         // make sure the file exists before calling init
@@ -88,7 +89,7 @@ public class StrykerCLIInitCommandTests
         configFile.ShouldBe("test");
     }
 
-    [Fact]
+    [TestMethod]
     public void InitOverwriteConfirm()
     {
         // make sure the file exists before calling init
@@ -107,7 +108,7 @@ public class StrykerCLIInitCommandTests
         config.ShouldNotBeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void InitOverride()
     {
         _target.Run(new[] { "init",

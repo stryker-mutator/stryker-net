@@ -1,20 +1,21 @@
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class SourceProjectNameInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new SourceProjectNameInput();
             target.HelpText.ShouldBe(@"Used to find the project to test in the project references of the test project. Example: ""ExampleProject.csproj"" | default: ''");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldReturnName()
         {
             var target = new SourceProjectNameInput { SuppliedInput = "name" };
@@ -24,7 +25,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBe("name");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldHaveDefault()
         {
             var target = new SourceProjectNameInput { SuppliedInput = null };
@@ -34,8 +35,8 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBe("");
         }
 
-        [Theory]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow("")]
         public void ShouldThrowOnEmpty(string value)
         {
             var target = new SourceProjectNameInput { SuppliedInput = value };

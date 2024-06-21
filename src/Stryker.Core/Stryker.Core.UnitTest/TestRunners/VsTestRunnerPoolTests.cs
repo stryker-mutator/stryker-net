@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Moq;
 using Shouldly;
@@ -12,7 +12,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.TestRunners
 {
@@ -20,16 +20,17 @@ namespace Stryker.Core.UnitTest.TestRunners
     /// This class hosts the VsTestRunner related tests. The design of VsTest implies the creation of many mocking objects, so the tests may be hard to read.
     /// This is sad but expected. Please use caution when changing/creating tests.
     /// </summary>
+    [TestClass]
     public class VsTestRunnerPoolTests : VsTestMockingHelper
     {
-        [Fact]
+        [TestMethod]
         public void InitializeProperly()
         {
             BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             runner.GetTests(SourceProjectInfo).Count.ShouldBe(2);
         }
 
-        [Fact]
+        [TestMethod]
         public void RunInitialTestsWithOneFailingTest()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
@@ -39,13 +40,13 @@ namespace Stryker.Core.UnitTest.TestRunners
             result.FailingTests.Count.ShouldBe(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldCaptureErrorMessages()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
-            var testResult = new TestResult(TestCases[0])
+            var testResult = new VsTest.TestResult(TestCases[0])
             {
-                Outcome = TestOutcome.Passed,
+                Outcome = VsTest.TestOutcome.Passed,
                 ErrorMessage = "Test"
             };
             SetupMockTestRun(mockVsTest, new[] { testResult });
@@ -53,15 +54,15 @@ namespace Stryker.Core.UnitTest.TestRunners
             result.ResultMessage.ShouldEndWith("Test");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldComputeTimeoutProperly()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             var now = DateTimeOffset.Now;
             var duration = TimeSpan.FromMilliseconds(2);
-            var testResult = new TestResult(TestCases[0])
+            var testResult = new VsTest.TestResult(TestCases[0])
             {
-                Outcome = TestOutcome.Passed,
+                Outcome = VsTest.TestOutcome.Passed,
                 // ensure the test exhibit a long run time: Stryker should only use duration.
                 StartTime = now,
                 EndTime = DateTimeOffset.Now + TimeSpan.FromSeconds(1),
@@ -72,23 +73,23 @@ namespace Stryker.Core.UnitTest.TestRunners
             runner.Context.VsTests[TestCases[0].Id].InitialRunTime.ShouldBe(duration);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldComputeTimeoutProperlyForMultipleResults()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             var now = DateTimeOffset.Now;
             var duration = TimeSpan.FromMilliseconds(2);
-            var testResult = new TestResult(TestCases[0])
+            var testResult = new VsTest.TestResult(TestCases[0])
             {
-                Outcome = TestOutcome.Passed,
+                Outcome = VsTest.TestOutcome.Passed,
                 // ensure the test exhibit a long run time: Stryker should only use duration.
                 StartTime = now,
                 EndTime = DateTimeOffset.Now + TimeSpan.FromSeconds(1),
                 Duration = duration
             };
-            var otherTestResult = new TestResult(TestCases[0])
+            var otherTestResult = new VsTest.TestResult(TestCases[0])
             {
-                Outcome = TestOutcome.Passed,
+                Outcome = VsTest.TestOutcome.Passed,
                 StartTime = testResult.StartTime,
                 EndTime = testResult.EndTime,
                 Duration = duration
@@ -98,7 +99,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             runner.Context.VsTests[TestCases[0].Id].InitialRunTime.ShouldBe(duration);
         }
 
-        [Fact]
+        [TestMethod]
         public void HandleVsTestCreationFailure()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
@@ -108,7 +109,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             action.ShouldThrow<GeneralStrykerException>();
         }
 
-        [Fact]
+        [TestMethod]
         public void RunTests()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
@@ -118,11 +119,11 @@ namespace Stryker.Core.UnitTest.TestRunners
             result.FailingTests.IsEmpty.ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void DoNotTestWhenNoTestPresent()
         {
-            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner, testCases: new List<TestCase>());
-            SetupMockTestRun(mockVsTest, true, new List<TestCase>());
+            var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner, testCases: new List<VsTest.TestCase>());
+            SetupMockTestRun(mockVsTest, true, new List<VsTest.TestCase>());
             var result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
             // tests are successful => run should be successful
             result.ExecutedTests.IsEmpty.ShouldBeTrue();
@@ -130,17 +131,17 @@ namespace Stryker.Core.UnitTest.TestRunners
         
         // If no tests are present in the assembly, VsTest raises no event at all
         // previous versions of Stryker froze when this happened
-        [Fact]
+        [TestMethod]
         public void HandleWhenNoTestAreFound()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner, TestCases);
-            SetupMockTestRun(mockVsTest, true, new List<TestCase>());
+            SetupMockTestRun(mockVsTest, true, new List<VsTest.TestCase>());
             var result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
             // tests are successful => run should be successful
             result.ExecutedTests.IsEmpty.ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void RecycleRunnerOnError()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
@@ -154,7 +155,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 It.IsAny<IStrykerTestHostLauncher>()), Times.AtLeast(3));
         }
 
-        [Fact]
+        [TestMethod]
         public void DetectTestsErrors()
         {
             var options = new StrykerOptions();
@@ -165,7 +166,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             result.FailingTests.IsEmpty.ShouldBeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void DetectTimeout()
         {
             var options = new StrykerOptions
@@ -184,7 +185,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             result.TimedOutTests.IsEmpty.ShouldBeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRetryFrozenSession()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
@@ -200,7 +201,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 It.IsAny<IStrykerTestHostLauncher>()), Times.Exactly(3));
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotRetryFrozenVsTest()
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
@@ -214,7 +215,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             mockVsTest.Verify(m => m.EndSession(), Times.Exactly(2));
         }
 
-        [Fact]
+        [TestMethod]
         public void AbortOnError()
         {
             var options = new StrykerOptions();
@@ -231,7 +232,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             result.FailingTests.IsEmpty.ShouldBeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void IdentifyNonCoveredMutants()
         {
             var options = new StrykerOptions
@@ -251,7 +252,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             OtherMutant.ResultStatus.ShouldBe(MutantStatus.NoCoverage);
         }
 
-        [Fact]
+        [TestMethod]
         public void WorksWhenAllMutantsAreIgnoredPool()
         {
             var options = new StrykerOptions
@@ -268,7 +269,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             Mutant.CoveringTests.Count.ShouldBe(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void RunOnlyUsefulTest()
         {
             var options = new StrykerOptions
@@ -293,7 +294,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             result.ExecutedTests.Count.ShouldBe(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void NotRunTestWhenNotCovered()
         {
             var options = new StrykerOptions
@@ -320,7 +321,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             result.ExecutedTests.IsEmpty.ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void RunTestsSimultaneouslyWhenPossible()
         {
             var options = new StrykerOptions()
@@ -346,7 +347,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             OtherMutant.ResultStatus.ShouldBe(MutantStatus.Killed);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrowWhenTestingMultipleMutantsWithoutCoverageAnalysis()
         {
             var options = new StrykerOptions()
@@ -367,7 +368,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             testFunc.ShouldThrow(typeof(GeneralStrykerException));
         }
 
-        [Fact]
+        [TestMethod]
         public void RunRelevantTestsOnStaticWhenPerTestCoverage()
         {
             var options = new StrykerOptions
@@ -389,7 +390,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             result.FailingTests.IsEmpty.ShouldBeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void HandleMultipleTestResults()
         {
             var options = new StrykerOptions();
@@ -406,11 +407,11 @@ namespace Stryker.Core.UnitTest.TestRunners
             result.ExecutedTests.IsEveryTest.ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void HandleMultipleTestResultsForXUnit()
         {
             var options = new StrykerOptions();
-            var tests = new List<TestCase>
+            var tests = new List<VsTest.TestCase>
             {
                 BuildCase("X0"),
                 BuildCase("X1")
@@ -423,7 +424,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             result.Duration.ShouldBeLessThan(TestDefaultDuration.Duration() * 3);
         }
 
-        [Fact]
+        [TestMethod]
         public void HandleFailureWithinMultipleTestResults()
         {
             var options = new StrykerOptions();
@@ -448,7 +449,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             result.FailingTests.GetGuids().ShouldContain(TestCases[0].Id);
         }
 
-        [Fact]
+        [TestMethod]
         public void HandleTimeOutWithMultipleTestResults()
         {
             var options = new StrykerOptions();
@@ -468,7 +469,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             result.ExecutedTests.IsEveryTest.ShouldBeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void HandleFailureWhenExtraMultipleTestResults()
         {
             var options = new StrykerOptions();
@@ -486,7 +487,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             result.FailingTests.GetGuids().ShouldContain(TestCases[0].Id);
         }
 
-        [Fact]
+        [TestMethod]
         public void HandleUnexpectedTestResult()
         {
             var options = new StrykerOptions();
@@ -503,7 +504,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             result.FailingTests.IsEmpty.ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void HandleUnexpectedTestCase()
         {
             var options = new StrykerOptions();
@@ -516,7 +517,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
         // this verifies that mutant that are covered outside any tests are
         // flagged as to be tested against all tests
-        [Fact]
+        [TestMethod]
         public void MarkSuspiciousCoverage()
         {
             var options = new StrykerOptions
@@ -535,7 +536,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         // this verifies that static mutants are flagged as to be tested against all tests
-        [Fact]
+        [TestMethod]
         public void StaticMutantsShouldBeTestedAgainstAllTests()
         {
             var options = new StrykerOptions
@@ -555,7 +556,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
         // this verifies that mutant that are covered outside any tests are
         // flagged as to be tested against all tests (except failed ones)
-        [Fact]
+        [TestMethod]
         public void MarkSuspiciousCoverageInPresenceOfFailedTests()
         {
             var options = new StrykerOptions
@@ -577,7 +578,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
         // this verifies that tests missing any coverage information are
         // flagged as to be tested used against every mutant
-        [Fact]
+        [TestMethod]
         public void MarkSuspiciousTests()
         {
             var options = new StrykerOptions
@@ -598,7 +599,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
         // this verifies that tests covering no mutants
         // are properly handled
-        [Fact]
+        [TestMethod]
         public void HandleNonCoveringTests()
         {
             var options = new StrykerOptions
@@ -622,7 +623,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
         // this verifies extra test results (without any coverage info) are properly handled
         // are properly handled
-        [Fact]
+        [TestMethod]
         public void HandleExtraTestResult()
         {
             var options = new StrykerOptions
@@ -633,10 +634,10 @@ namespace Stryker.Core.UnitTest.TestRunners
             var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
 
             var testResult = BuildCoverageTestResult("T0", new[] { "0;", "" });
-            var other =  new TestResult(FindOrBuildCase("T0"))
+            var other =  new VsTest.TestResult(FindOrBuildCase("T0"))
             {
                 DisplayName = "T0",
-                Outcome = TestOutcome.Passed,
+                Outcome = VsTest.TestOutcome.Passed,
                 ComputerName = "."
             };
             SetupMockCoverageRun(mockVsTest, new[] { testResult, other });
@@ -651,7 +652,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
         // this verifies that unexpected test case (i.e. unseen during test discovery and without coverage info)
         // are assumed to cover every mutant
-        [Fact]
+        [TestMethod]
         public void DetectUnexpectedCase()
         {
             var options = new StrykerOptions
@@ -661,8 +662,8 @@ namespace Stryker.Core.UnitTest.TestRunners
 
             var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
 
-            var buildCase = BuildCase("unexpected", Core.TestRunners.TestFrameworks.NUnit);
-            SetupMockCoverageRun(mockVsTest, new[] { new TestResult(buildCase) { Outcome = TestOutcome.Passed } });
+            var buildCase = BuildCase("unexpected", TestFrameworks.NUnit);
+            SetupMockCoverageRun(mockVsTest, new[] { new VsTest.TestResult(buildCase) { Outcome = VsTest.TestOutcome.Passed } });
 
             var analyzer = new CoverageAnalyser(options);
             analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
@@ -672,7 +673,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         // this verifies that Stryker disregard skipped tests
-        [Fact]
+        [TestMethod]
         public void IgnoreSkippedTestResults()
         {
             var options = new StrykerOptions
@@ -683,7 +684,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
 
             var testResult = BuildCoverageTestResult("T0", new[] { "0;", "" });
-            testResult.Outcome = TestOutcome.Skipped;
+            testResult.Outcome = VsTest.TestOutcome.Skipped;
             var other = BuildCoverageTestResult("T1", new[] { "0;", "" });
             SetupMockCoverageRun(mockVsTest, new[] { testResult, other });
 
@@ -694,7 +695,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         }
 
         // this verifies that Stryker aggregates multiple coverage results
-        [Fact]
+        [TestMethod]
         public void HandlesMultipleResultsForCoverage()
         {
             var options = new StrykerOptions

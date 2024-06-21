@@ -1,20 +1,21 @@
 using System.IO;
 using Shouldly;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class TestProjectsInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new TestProjectsInput();
             target.HelpText.ShouldBe(@"Specify the test projects. | default: []");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldUseDefaultWhenNull()
         {
             var input = new TestProjectsInput { SuppliedInput = null };
@@ -22,7 +23,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             input.Validate().ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldIgnoreEmptyString()
         {
             var input = new TestProjectsInput { SuppliedInput = new[] { "", "", "" } };
@@ -30,7 +31,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             input.Validate().ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNormalizePaths()
         {
             var paths = new[] { "/c/root/bla/test.csproj" };

@@ -10,13 +10,14 @@ using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
 {
+    [TestClass]
     public class TestProjectsInfoTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldGenerateInjectionPath()
         {
             var sourceProjectAnalyzerResults = TestHelper.SetupProjectAnalyzerResult(
@@ -38,7 +39,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
             result.ShouldBe(expectedPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void MergeTestProjectsInfo()
         {
             // Arrange
@@ -88,7 +89,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
             testProjectsInfoABC.TestFiles.ElementAt(1).Tests.Count().ShouldBe(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void MergeTestProjectsInfoWithASharedSourceFile()
         {
             // Arrange
@@ -132,7 +133,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
             testProjectsInfoABC.TestFiles.Count().ShouldBe(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void RestoreOriginalAssembly_RestoresIfBackupExists()
         {
             // Arrange
@@ -171,7 +172,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
             Mock.Get(file).VerifyAll();
         }
 
-        [Fact]
+        [TestMethod]
         public void RestoreOriginalAssembly_IgnoreIfBackupIsAbsent()
         {
             // Arrange
@@ -210,7 +211,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
         }
 
         
-        [Fact]
+        [TestMethod]
         public void RestoreOriginalAssembly_IgnoreIfBackupCopyFails()
         {
             // Arrange
@@ -249,7 +250,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
             Mock.Get(file).VerifyAll();
         }
 
-        [Fact]
+        [TestMethod]
         public void BackupOriginalAssembly_CreatesBackup()
         {
             // Arrange

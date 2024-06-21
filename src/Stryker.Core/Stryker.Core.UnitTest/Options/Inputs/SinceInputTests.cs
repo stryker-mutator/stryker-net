@@ -1,20 +1,21 @@
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class SinceInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new SinceInput();
             target.HelpText.ShouldBe(@"Enables diff compare. Only test changed files. | default: 'False'");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldBeEnabledWhenTrue()
         {
             var target = new SinceInput { SuppliedInput = true };
@@ -24,7 +25,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldBeEnabledWhenTrueEvenIfWithBaselineFalse()
         {
             var target = new SinceInput { SuppliedInput = true };
@@ -34,7 +35,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldProvideDefaultWhenNull()
         {
             var target = new SinceInput();
@@ -44,7 +45,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBe(target.Default.Value);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotBeEnabledWhenFalse()
         {
             var target = new SinceInput { SuppliedInput = false };
@@ -54,7 +55,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldBeImplicitlyEnabledWithBaseline()
         {
             var sinceEnabled = new SinceInput().Validate(withBaseline: true);
@@ -62,7 +63,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             sinceEnabled.ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotBeAllowedToExplicitlyEnableWithBaseline()
         {
             var sinceEnabled = new SinceInput{SuppliedInput = true };

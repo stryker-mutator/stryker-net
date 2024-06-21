@@ -4,10 +4,11 @@ using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options
 {
+    [TestClass]
     public class StrykerInputsTests : TestBase
     {
         private readonly StrykerInputs _target = new StrykerInputs()
@@ -51,7 +52,7 @@ namespace Stryker.Core.UnitTest.Options
             BreakOnInitialTestFailureInput = new BreakOnInitialTestFailureInput(),
         };
 
-        [Fact]
+        [TestMethod]
         public void PerTestInIsolationShouldSetOptimizationFlags()
         {
             _target.CoverageAnalysisInput.SuppliedInput = "perTestInIsolation";
@@ -62,7 +63,7 @@ namespace Stryker.Core.UnitTest.Options
             result.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void DisableBailShouldSetOptimizationFlags()
         {
             _target.DisableMixMutantsInput.SuppliedInput = true;
@@ -73,7 +74,7 @@ namespace Stryker.Core.UnitTest.Options
             result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void DisableMixMutantsShouldSetOptimizationFlags()
         {
             _target.DisableBailInput.SuppliedInput = true;
@@ -84,7 +85,7 @@ namespace Stryker.Core.UnitTest.Options
             result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void AllShouldSetOptimizationFlags()
         {
             _target.CoverageAnalysisInput.SuppliedInput = "all";
@@ -94,7 +95,7 @@ namespace Stryker.Core.UnitTest.Options
             result.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants).ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void OffShouldSetOptimizationFlags()
         {
             _target.CoverageAnalysisInput.SuppliedInput = "off";
@@ -104,7 +105,7 @@ namespace Stryker.Core.UnitTest.Options
             result.OptimizationMode.HasFlag(OptimizationModes.None).ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void OptimizationFlagsShouldHaveDefaultCoverageBasedTest()
         {
             _target.CoverageAnalysisInput.SuppliedInput = null;
@@ -114,7 +115,7 @@ namespace Stryker.Core.UnitTest.Options
             result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void UsingDashboardReporterShouldEnableDashboardApiKey()
         {
             _target.DashboardApiKeyInput.SuppliedInput = "dashboard_api_key";
@@ -125,7 +126,7 @@ namespace Stryker.Core.UnitTest.Options
             result.DashboardApiKey.ShouldBe("dashboard_api_key");
         }
 
-        [Fact]
+        [TestMethod]
         public void UsingDashboardBaselineStorageWithBaselineShouldEnableDashboardApiKey()
         {
             _target.DashboardApiKeyInput.SuppliedInput = "dashboard_api_key";
@@ -139,7 +140,7 @@ namespace Stryker.Core.UnitTest.Options
             result.DashboardApiKey.ShouldBe("dashboard_api_key");
         }
 
-        [Fact]
+        [TestMethod]
         public void NotUsingDashboardBaselineStorageWithBaselineOrDashboardReporterShouldDisableDashboardApiKey()
         {
             _target.DashboardApiKeyInput.SuppliedInput = "dashboard_api_key";
@@ -153,7 +154,7 @@ namespace Stryker.Core.UnitTest.Options
             result.DashboardApiKey.ShouldBeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void WithBaselineAndSinceShouldBeMutuallyExclusive()
         {
             _target.WithBaselineInput.SuppliedInput = true;
@@ -163,7 +164,7 @@ namespace Stryker.Core.UnitTest.Options
             exception.Message.ShouldBe("The since and baseline features are mutually exclusive.");
         }
 
-        [Fact]
+        [TestMethod]
         public void WithBaselineShouldNotThrow_2743() // https://github.com/stryker-mutator/stryker-net/issues/2743
         {
             _target.ProjectVersionInput.SuppliedInput = "1";
@@ -172,7 +173,7 @@ namespace Stryker.Core.UnitTest.Options
             Should.NotThrow(() => _target.ValidateAll());
         }
 
-        [Fact]
+        [TestMethod]
         public void BaseLineOptionsShouldBeSetToDefaultWhenBaselineIsDisabled()
         {
             _target.WithBaselineInput.SuppliedInput = false;

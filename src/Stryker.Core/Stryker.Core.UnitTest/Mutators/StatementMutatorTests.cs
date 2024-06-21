@@ -4,28 +4,29 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class StatementMutatorTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldBeMutationlevelStandard()
         {
             var target = new StatementMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
         }
 
-        [Theory]
-        [InlineData("return;")]
-        [InlineData("break;")]
-        [InlineData("continue;")]
-        [InlineData("goto test;")]
-        [InlineData("throw null;")]
-        [InlineData("yield break;")]
-        [InlineData("yield return 0;")]
-        [InlineData("await null;")]
+        [TestMethod]
+        [DataRow("return;")]
+        [DataRow("break;")]
+        [DataRow("continue;")]
+        [DataRow("goto test;")]
+        [DataRow("throw null;")]
+        [DataRow("yield break;")]
+        [DataRow("yield return 0;")]
+        [DataRow("await null;")]
         private void ShouldMutate(string statementString)
         {
             var source = $@"class Test {{
@@ -48,7 +49,7 @@ namespace Stryker.Core.UnitTest.Mutators
             mutation.DisplayName.ShouldBe("Statement mutation");
         }
 
-        [Fact]
+        [TestMethod]
         private void ShouldNotMutate()
         {
             SyntaxTree tree = CSharpSyntaxTree.ParseText($@"

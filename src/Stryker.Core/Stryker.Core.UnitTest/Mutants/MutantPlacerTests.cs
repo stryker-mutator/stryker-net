@@ -11,15 +11,16 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Mutants.CsharpNodeOrchestrators;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutants
 {
+    [TestClass]
     public class MutantPlacerTests : TestBase
     {
-        [Theory]
-        [InlineData(0)]
-        [InlineData(4)]
+        [TestMethod]
+        [DataRow(0)]
+        [DataRow(4)]
         public void MutantPlacer_ShouldPlaceWithIfStatement(int id)
         {
             var codeInjection = new CodeInjection();
@@ -82,9 +83,9 @@ namespace Stryker.Core.UnitTest.Mutants
             Should.Throw<InvalidOperationException>(() => MutantPlacer.RemoveMutant(restored));
         }
 
-        [Theory]
-        [InlineData(10)]
-        [InlineData(16)]
+        [TestMethod]
+        [DataRow(10)]
+        [DataRow(16)]
         public void MutantPlacer_ShouldPlaceWithConditionalExpression(int id)
         {
             var codeInjection = new CodeInjection();
@@ -111,13 +112,13 @@ namespace Stryker.Core.UnitTest.Mutants
             removedResult.ToString().ShouldBeSemantically(originalNode.ToString());
         }
 
-        [Theory]
-        [InlineData("static TestClass()=> Value-='a';", "static TestClass(){ Value-='a';}")]
-        [InlineData("void TestClass()=> Value-='a';", "void TestClass(){ Value-='a';}")]
-        [InlineData("int TestClass()=> 1;", "int TestClass(){ return 1;}")]
-        [InlineData("~TestClass()=> Value-='a';", "~TestClass(){ Value-='a';}")]
-        [InlineData("public static operator int(Test t)=> 0;", "public static operator int(Test t){ return 0;}")]
-        [InlineData("public static int operator +(Test t, Test q)=> 0;", "public static int operator +(Test t, Test q){return 0;}")]
+        [TestMethod]
+        [DataRow("static TestClass()=> Value-='a';", "static TestClass(){ Value-='a';}")]
+        [DataRow("void TestClass()=> Value-='a';", "void TestClass(){ Value-='a';}")]
+        [DataRow("int TestClass()=> 1;", "int TestClass(){ return 1;}")]
+        [DataRow("~TestClass()=> Value-='a';", "~TestClass(){ Value-='a';}")]
+        [DataRow("public static operator int(Test t)=> 0;", "public static operator int(Test t){ return 0;}")]
+        [DataRow("public static int operator +(Test t, Test q)=> 0;", "public static int operator +(Test t, Test q){return 0;}")]
         public void ShouldConvertExpressionBodyBackAndForth(string original, string injected)
         {
             var source = $"class Test {{{original}}}";
@@ -128,9 +129,9 @@ namespace Stryker.Core.UnitTest.Mutants
             CheckMutantPlacerProperlyPlaceAndRemoveHelpers<BaseMethodDeclarationSyntax>(source, expectedCode, placer.ConvertToBlockBody);
         }
 
-        [Theory]
-        [InlineData("void TestClass(){ void LocalFunction() => Value-='a';}", "void TestClass(){ void LocalFunction() {Value-='a';};}}")]
-        [InlineData("void TestClass(){ int LocalFunction() => 4;}", "void TestClass(){ int LocalFunction() {return 4;};}")]
+        [TestMethod]
+        [DataRow("void TestClass(){ void LocalFunction() => Value-='a';}", "void TestClass(){ void LocalFunction() {Value-='a';};}}")]
+        [DataRow("void TestClass(){ int LocalFunction() => 4;}", "void TestClass(){ int LocalFunction() {return 4;};}")]
         public void ShouldConvertExpressionBodyBackLocalFunctionAndForth(string original, string injected)
         {
             var source = $"class Test {{{original}}}";
@@ -140,12 +141,12 @@ namespace Stryker.Core.UnitTest.Mutants
             CheckMutantPlacerProperlyPlaceAndRemoveHelpers<LocalFunctionStatementSyntax>(source, expectedCode, placer.ConvertToBlockBody);
         }
 
-        [Theory]
-        [InlineData("() => Call(2)", "() => {return Call(2);}")]
-        [InlineData("(x) => Call(2)", "(x) => {return Call(2);}")]
-        [InlineData("x => Call(2)", "x => {return Call(2);}")]
-        [InlineData("(out x) => Call(out x)", "(out x) => {return Call(out x);}")]
-        [InlineData("(x, y) => Call(2)", "(x, y) => {return Call(2);}")]
+        [TestMethod]
+        [DataRow("() => Call(2)", "() => {return Call(2);}")]
+        [DataRow("(x) => Call(2)", "(x) => {return Call(2);}")]
+        [DataRow("x => Call(2)", "x => {return Call(2);}")]
+        [DataRow("(out x) => Call(out x)", "(out x) => {return Call(out x);}")]
+        [DataRow("(x, y) => Call(2)", "(x, y) => {return Call(2);}")]
         public void ShouldConvertAccessorExpressionBodyBackAndForth(string original, string injected)
         {
             var source = $"class Test {{ private void Any(){{ Register({original});}}}}";
@@ -155,8 +156,8 @@ namespace Stryker.Core.UnitTest.Mutants
             CheckMutantPlacerProperlyPlaceAndRemoveHelpers<AnonymousFunctionExpressionSyntax>(source, expectedCode, placer.ConvertToBlockBody);
         }
 
-        [Theory]
-        [InlineData("public int X { get => 1;}", "public int X { get {return 1;}}")]
+        [TestMethod]
+        [DataRow("public int X { get => 1;}", "public int X { get {return 1;}}")]
         public void ShouldConvertAnonymousFunctionExpressionBodyBackAndForth(string original, string injected)
         {
             var source = $"class Test {{{original}}}";
@@ -166,7 +167,7 @@ namespace Stryker.Core.UnitTest.Mutants
             CheckMutantPlacerProperlyPlaceAndRemoveHelpers<AccessorDeclarationSyntax>(source, expectedCode, placer.ConvertToBlockBody);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldConvertPropertyExpressionBodyBackAndForth()
         {
             var source = "class Test {public int X => 1;}";
@@ -177,7 +178,7 @@ namespace Stryker.Core.UnitTest.Mutants
         }
 
     
-        [Fact]
+        [TestMethod]
         public void ShouldInjectInitializersAndRestore()
         {
             var source = "class Test {bool Method(out int x) {x=0;}}";
@@ -190,7 +191,7 @@ namespace Stryker.Core.UnitTest.Mutants
         }
 
 
-        [Fact]
+        [TestMethod]
         public void ShouldStaticMarkerInStaticFieldInitializers()
         {
             var codeInjection = new CodeInjection();
@@ -202,7 +203,7 @@ namespace Stryker.Core.UnitTest.Mutants
                 placer.PlaceStaticContextMarker, syntax => syntax.Kind() == SyntaxKind.NumericLiteralExpression);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRollBackFailedConstructor()
         {
             var codeInjection = new CodeInjection();

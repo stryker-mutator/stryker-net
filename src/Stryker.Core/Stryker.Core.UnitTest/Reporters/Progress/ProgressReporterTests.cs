@@ -1,10 +1,11 @@
 using Moq;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Progress;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters.Progress
 {
+    [TestClass]
     public class ProgressReporterTests : TestBase
     {
         private readonly Mock<IProgressBarReporter> _progressBarReporter;
@@ -18,7 +19,7 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
             _progressReporter = new ProgressReporter(_progressBarReporter.Object);
         }
 
-        [Fact]
+        [TestMethod]
         public void ProgressReporter_ShouldCallBothReporters_OnReportInitialState()
         {
             var mutants = new Mutant[3] { new Mutant(), new Mutant(), new Mutant() };
@@ -27,7 +28,7 @@ namespace Stryker.Core.UnitTest.Reporters.Progress
             _progressBarReporter.Verify(x => x.ReportInitialState(mutants.Length), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void ProgressReporter_ShouldCallBothReporters_OnReportRunTest()
         {
             var mutant = new Mutant();

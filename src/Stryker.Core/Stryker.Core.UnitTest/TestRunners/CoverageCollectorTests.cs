@@ -6,34 +6,14 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCo
 using Moq;
 using Shouldly;
 using Stryker.DataCollector;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.TestRunners
 {
-    // mock for the actual MutantControl class injected in the mutated assembly.
-    // used for unit test
-    public static class MutantControl
-    {
-        public static bool CaptureCoverage;
-        public static int ActiveMutant = -1;
-        private static List<int>[] coverageData = { new List<int>(), new List<int>() };
-        public static IList<int>[] GetCoverageData()
-        {
-            var result = coverageData;
-            ClearCoverageInfo();
-            return result;
-        }
-
-        public static void ClearCoverageInfo() => coverageData = new[] { new List<int>(), new List<int>() };
-
-        public static void HitNormal(int mutation) => coverageData[0].Add(mutation);
-
-        public static void HitStatic(int mutation) => coverageData[1].Add(mutation);
-    }
-
+    [TestClass]
     public class CoverageCollectorTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ProperlyCaptureParams()
         {
             var collector = new CoverageCollector();
@@ -50,7 +30,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             MutantControl.CaptureCoverage.ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void ProperlySelectMutant()
         {
             var collector = new CoverageCollector();
@@ -74,7 +54,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             MutantControl.ActiveMutant.ShouldBe(10);
         }
 
-        [Fact]
+        [TestMethod]
         public void SelectMutantEarlyIfSingle()
         {
             var collector = new CoverageCollector();
@@ -94,7 +74,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             MutantControl.ActiveMutant.ShouldBe(5);
         }
 
-        [Fact]
+        [TestMethod]
         public void ProperlyCaptureCoverage()
         {
             var collector = new CoverageCollector();
@@ -120,7 +100,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             collector.TestSessionEnd(new TestSessionEndArgs());
         }
 
-        [Fact]
+        [TestMethod]
         public void ProperlyReportNoCoverage()
         {
             var collector = new CoverageCollector();
@@ -143,7 +123,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             collector.TestSessionEnd(new TestSessionEndArgs());
         }
 
-        [Fact]
+        [TestMethod]
         public void ProperlyReportLeakedMutations()
         {
             var collector = new CoverageCollector();
@@ -168,6 +148,26 @@ namespace Stryker.Core.UnitTest.TestRunners
             mock.Verify(sink => sink.SendData(dataCollection,CoverageCollector.OutOfTestsPropertyName, "0"), Times.Once);
             collector.TestSessionEnd(new TestSessionEndArgs());
         }
+    }
 
+    // mock for the actual MutantControl class injected in the mutated assembly.
+    // used for unit test
+    public static class MutantControl
+    {
+        public static bool CaptureCoverage;
+        public static int ActiveMutant = -1;
+        private static List<int>[] coverageData = { new List<int>(), new List<int>() };
+        public static IList<int>[] GetCoverageData()
+        {
+            var result = coverageData;
+            ClearCoverageInfo();
+            return result;
+        }
+
+        public static void ClearCoverageInfo() => coverageData = new[] { new List<int>(), new List<int>() };
+
+        public static void HitNormal(int mutation) => coverageData[0].Add(mutation);
+
+        public static void HitStatic(int mutation) => coverageData[1].Add(mutation);
     }
 }

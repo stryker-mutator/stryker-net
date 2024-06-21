@@ -3,37 +3,38 @@ using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.Mutators;
 using System.Linq;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class BinaryExpressionMutatorTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldBeMutationLevelBasic()
         {
             var target = new BinaryExpressionMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Basic);
         }
 
-        [Theory]
-        [InlineData(Mutator.Arithmetic, SyntaxKind.AddExpression, SyntaxKind.SubtractExpression)]
-        [InlineData(Mutator.Arithmetic, SyntaxKind.SubtractExpression, SyntaxKind.AddExpression)]
-        [InlineData(Mutator.Arithmetic, SyntaxKind.MultiplyExpression, SyntaxKind.DivideExpression)]
-        [InlineData(Mutator.Arithmetic, SyntaxKind.DivideExpression, SyntaxKind.MultiplyExpression)]
-        [InlineData(Mutator.Arithmetic, SyntaxKind.ModuloExpression, SyntaxKind.MultiplyExpression)]
-        [InlineData(Mutator.Equality, SyntaxKind.GreaterThanExpression, SyntaxKind.LessThanExpression, SyntaxKind.GreaterThanOrEqualExpression)]
-        [InlineData(Mutator.Equality, SyntaxKind.LessThanExpression, SyntaxKind.GreaterThanExpression, SyntaxKind.LessThanOrEqualExpression)]
-        [InlineData(Mutator.Equality, SyntaxKind.GreaterThanOrEqualExpression, SyntaxKind.LessThanExpression, SyntaxKind.GreaterThanExpression)]
-        [InlineData(Mutator.Equality, SyntaxKind.LessThanOrEqualExpression, SyntaxKind.GreaterThanExpression, SyntaxKind.LessThanExpression)]
-        [InlineData(Mutator.Equality, SyntaxKind.EqualsExpression, SyntaxKind.NotEqualsExpression)]
-        [InlineData(Mutator.Equality, SyntaxKind.NotEqualsExpression, SyntaxKind.EqualsExpression)]
-        [InlineData(Mutator.Logical, SyntaxKind.LogicalAndExpression, SyntaxKind.LogicalOrExpression)]
-        [InlineData(Mutator.Logical, SyntaxKind.LogicalOrExpression, SyntaxKind.LogicalAndExpression)]
-        [InlineData(Mutator.Bitwise, SyntaxKind.BitwiseAndExpression, SyntaxKind.BitwiseOrExpression)]
-        [InlineData(Mutator.Bitwise, SyntaxKind.BitwiseOrExpression, SyntaxKind.BitwiseAndExpression)]
-        [InlineData(Mutator.Bitwise, SyntaxKind.RightShiftExpression, SyntaxKind.LeftShiftExpression)]
-        [InlineData(Mutator.Bitwise, SyntaxKind.LeftShiftExpression, SyntaxKind.RightShiftExpression)]
+        [TestMethod]
+        [DataRow(Mutator.Arithmetic, SyntaxKind.AddExpression, SyntaxKind.SubtractExpression)]
+        [DataRow(Mutator.Arithmetic, SyntaxKind.SubtractExpression, SyntaxKind.AddExpression)]
+        [DataRow(Mutator.Arithmetic, SyntaxKind.MultiplyExpression, SyntaxKind.DivideExpression)]
+        [DataRow(Mutator.Arithmetic, SyntaxKind.DivideExpression, SyntaxKind.MultiplyExpression)]
+        [DataRow(Mutator.Arithmetic, SyntaxKind.ModuloExpression, SyntaxKind.MultiplyExpression)]
+        [DataRow(Mutator.Equality, SyntaxKind.GreaterThanExpression, SyntaxKind.LessThanExpression, SyntaxKind.GreaterThanOrEqualExpression)]
+        [DataRow(Mutator.Equality, SyntaxKind.LessThanExpression, SyntaxKind.GreaterThanExpression, SyntaxKind.LessThanOrEqualExpression)]
+        [DataRow(Mutator.Equality, SyntaxKind.GreaterThanOrEqualExpression, SyntaxKind.LessThanExpression, SyntaxKind.GreaterThanExpression)]
+        [DataRow(Mutator.Equality, SyntaxKind.LessThanOrEqualExpression, SyntaxKind.GreaterThanExpression, SyntaxKind.LessThanExpression)]
+        [DataRow(Mutator.Equality, SyntaxKind.EqualsExpression, SyntaxKind.NotEqualsExpression)]
+        [DataRow(Mutator.Equality, SyntaxKind.NotEqualsExpression, SyntaxKind.EqualsExpression)]
+        [DataRow(Mutator.Logical, SyntaxKind.LogicalAndExpression, SyntaxKind.LogicalOrExpression)]
+        [DataRow(Mutator.Logical, SyntaxKind.LogicalOrExpression, SyntaxKind.LogicalAndExpression)]
+        [DataRow(Mutator.Bitwise, SyntaxKind.BitwiseAndExpression, SyntaxKind.BitwiseOrExpression)]
+        [DataRow(Mutator.Bitwise, SyntaxKind.BitwiseOrExpression, SyntaxKind.BitwiseAndExpression)]
+        [DataRow(Mutator.Bitwise, SyntaxKind.RightShiftExpression, SyntaxKind.LeftShiftExpression)]
+        [DataRow(Mutator.Bitwise, SyntaxKind.LeftShiftExpression, SyntaxKind.RightShiftExpression)]
         public void ShouldMutate(Mutator expectedKind, SyntaxKind input, params SyntaxKind[] expectedOutput)
         {
             var target = new BinaryExpressionMutator();
@@ -63,7 +64,7 @@ namespace Stryker.Core.UnitTest.Mutators
             }
         }
 
-        [Fact]
+        [TestMethod]
         void ShouldMutate_ExclusiveOr()
         {
             var kind = SyntaxKind.ExclusiveOrExpression;
@@ -96,7 +97,7 @@ namespace Stryker.Core.UnitTest.Mutators
             exclusiveOrExpression.IsKind(SyntaxKind.ExclusiveOrExpression).ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutate_StringsLeft()
         {
             var target = new BinaryExpressionMutator();
@@ -109,7 +110,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutate_StringsRight()
         {
             var target = new BinaryExpressionMutator();

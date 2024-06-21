@@ -2,13 +2,14 @@ using System;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
 {
+    [TestClass]
     public class TestCaseTests
     {
-        [Fact]
+        [TestMethod]
         public void TestCaseEqualsWhenAllPropertiesEqual()
         {
             // Arrange
@@ -32,9 +33,9 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
             testCaseA.GetHashCode().ShouldBe(testCaseB.GetHashCode());
         }
 
-        [Theory]
-        [InlineData("fd4896a2-1bd9-4e83-9e81-308059525bc9", "node2")]
-        [InlineData("00000000-0000-0000-0000-000000000000", "node1")]
+        [TestMethod]
+        [DataRow("fd4896a2-1bd9-4e83-9e81-308059525bc9", "node2")]
+        [DataRow("00000000-0000-0000-0000-000000000000", "node1")]
         public void TestCaseNotEqualsWhenNotAllPropertiesEqual(string id, string name)
         {
             // Arrange

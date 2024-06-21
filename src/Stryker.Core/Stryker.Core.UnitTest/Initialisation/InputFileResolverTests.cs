@@ -17,11 +17,12 @@ using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using static NuGet.Frameworks.FrameworkConstants;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
+    [TestClass]
     public class InputFileResolverTests : TestBase
     {
         private readonly string _currentDirectory;
@@ -69,16 +70,16 @@ namespace Stryker.Core.UnitTest.Initialisation
 </Project>";
         }
 
-        [Theory]
-        [InlineData("netcoreapp2.1", FrameworkIdentifiers.NetCoreApp, "", 2, 1, 0, 0)]
-        [InlineData("netstandard1.6", FrameworkIdentifiers.NetStandard, "", 1, 6, 0, 0)]
-        [InlineData("net4.5", FrameworkIdentifiers.Net, "", 4, 5, 0, 0)]
-        [InlineData("net4.5.1", FrameworkIdentifiers.Net, "", 4, 5, 1, 0)]
-        [InlineData("net45", FrameworkIdentifiers.Net, "", 4, 5, 0, 0)]
-        [InlineData("net452", FrameworkIdentifiers.Net, "", 4, 5, 2, 0)]
-        [InlineData("net5.0", FrameworkIdentifiers.NetCoreApp, "", 5, 0, 0, 0)]
-        [InlineData("net5.0-windows", FrameworkIdentifiers.NetCoreApp, "windows", 5, 0, 0, 0)]
-        [InlineData("net5", FrameworkIdentifiers.NetCoreApp, "", 5, 0, 0, 0)]
+        [TestMethod]
+        [DataRow("netcoreapp2.1", FrameworkIdentifiers.NetCoreApp, "", 2, 1, 0, 0)]
+        [DataRow("netstandard1.6", FrameworkIdentifiers.NetStandard, "", 1, 6, 0, 0)]
+        [DataRow("net4.5", FrameworkIdentifiers.Net, "", 4, 5, 0, 0)]
+        [DataRow("net4.5.1", FrameworkIdentifiers.Net, "", 4, 5, 1, 0)]
+        [DataRow("net45", FrameworkIdentifiers.Net, "", 4, 5, 0, 0)]
+        [DataRow("net452", FrameworkIdentifiers.Net, "", 4, 5, 2, 0)]
+        [DataRow("net5.0", FrameworkIdentifiers.NetCoreApp, "", 5, 0, 0, 0)]
+        [DataRow("net5.0-windows", FrameworkIdentifiers.NetCoreApp, "windows", 5, 0, 0, 0)]
+        [DataRow("net5", FrameworkIdentifiers.NetCoreApp, "", 5, 0, 0, 0)]
         public void ProjectAnalyzerShouldDecodeFramework(string tfm, string framework, string platform, int major, int minor, int build, int revision)
         {
             var version = new Version(major, minor, build, revision);
@@ -93,11 +94,11 @@ namespace Stryker.Core.UnitTest.Initialisation
             nuGetFramework.ShouldBe(new NuGetFramework(framework, version, platform, EmptyVersion));
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("nxt")]
-        [InlineData("mono4.6")]
-        [InlineData("netcoreapp1.2.3.4.5")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("nxt")]
+        [DataRow("mono4.6")]
+        [DataRow("netcoreapp1.2.3.4.5")]
         public void ProjectAnalyzerShouldRaiseExceptionsForIllFormedFramework(string tfm)
         {
             var analyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -109,7 +110,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             lambda.ShouldThrow(typeof(InputException));
         }
 
-        [Fact]
+        [TestMethod]
         public void InitializeShouldFindFilesRecursively()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -145,7 +146,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
 
-        [Fact]
+        [TestMethod]
         public void InitializeShouldUseBuildalyzerResult()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -184,7 +185,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
         }
 
-        [Fact]
+        [TestMethod]
         public void InitializeShouldNotSkipXamlFiles()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -218,7 +219,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.ProjectContents.GetAllFiles().Count().ShouldBe(5);
         }
 
-        [Fact]
+        [TestMethod]
         public void InitializeShouldMutateAssemblyInfo()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -285,7 +286,7 @@ using System.Reflection;
             node.ArgumentList.Arguments.ShouldContain(t => t.Expression.ToString().Contains("Mutated"));
         }
 
-        [Fact]
+        [TestMethod]
         public void InitializeShouldFindSpecifiedTestProjectFile()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -319,7 +320,7 @@ using System.Reflection;
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
 
-        [Fact]
+        [TestMethod]
         public void InitializeShouldResolveImportedProject()
         {
             var readAllText = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
@@ -382,7 +383,7 @@ using System.Reflection;
             result.ProjectContents.GetAllFiles().Count().ShouldBe(3);
         }
 
-        [Fact]
+        [TestMethod]
         public void InitializeShouldNotResolveImportedPropsFile()
         {
             var contents = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
@@ -435,7 +436,7 @@ using System.Reflection;
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
 
-        [Fact]
+        [TestMethod]
         public void InitializeShouldResolveMultipleImportedProjects()
         {
             var contents = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
@@ -513,7 +514,7 @@ using System.Reflection;
             result.ProjectContents.GetAllFiles().Count().ShouldBe(4);
         }
 
-        [Fact]
+        [TestMethod]
         public void InitializeShouldThrowOnMissingSharedProject()
         {
             var contents = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
@@ -563,10 +564,10 @@ using System.Reflection;
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            Assert.Throws<FileNotFoundException>(() => target.ResolveSourceProjectInfos(_options));
+            Should.Throw<FileNotFoundException>(() => target.ResolveSourceProjectInfos(_options));
         }
 
-        [Fact]
+        [TestMethod]
         public void InitializeShouldResolvePropertiesInSharedProjectImports()
         {
             var contents = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
@@ -631,7 +632,7 @@ using System.Reflection;
             allFiles.Count().ShouldBe(3);
         }
 
-        [Fact]
+        [TestMethod]
         public void InitializeShouldThrowIfImportPropertyCannotBeResolved()
         {
             var contents = File.ReadAllText(_currentDirectory + "/TestResources/ExampleSourceFile.cs");
@@ -685,14 +686,14 @@ using System.Reflection;
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            var exception = Assert.Throws<InputException>(() => target.ResolveSourceProjectInfos(_options));
+            var exception = Should.Throw<InputException>(() => target.ResolveSourceProjectInfos(_options));
             exception.Message.ShouldBe($"Missing MSBuild property (SharedDir) in project reference (..{FilePathUtils.NormalizePathSeparators("/$(SharedDir)/Example.projitems")}). Please check your project file ({_sourcePath}) and try again.");
         }
 
-        [Theory]
-        [InlineData("bin")]
-        [InlineData("obj")]
-        [InlineData("node_modules")]
+        [TestMethod]
+        [DataRow("bin")]
+        [DataRow("obj")]
+        [DataRow("node_modules")]
         public void InitializeShouldIgnoreBinFolder(string folderName)
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -730,7 +731,7 @@ using System.Reflection;
             ((CsharpFolderComposite)result.ProjectContents).Children.Count().ShouldBe(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrowExceptionOnNoProjectFile()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -747,10 +748,10 @@ using System.Reflection;
 
             var target = new InputFileResolver(fileSystem, projectFileReaderMock.Object);
 
-            Assert.Throws<InputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject")));
+            Should.Throw<InputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject")));
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrowStrykerInputExceptionOnTwoProjectFiles_AndNoTestProjectFileSpecified()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -777,11 +778,11 @@ $@"Expected exactly one .csproj file, found more than one:
 Please specify a test project name filter that results in one project.
 ";
 
-            var exception = Assert.Throws<InputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject")));
+            var exception = Should.Throw<InputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject")));
             exception.Message.ShouldBe(errorMessage);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotThrowExceptionOnTwoProjectFilesInDifferentLocations()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -798,7 +799,7 @@ Please specify a test project name filter that results in one project.
             actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "ExampleProject.csproj"));
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldChooseGivenTestProjectFileIfPossible()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -814,7 +815,7 @@ Please specify a test project name filter that results in one project.
             actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "TestProject.csproj"));
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrowExceptionIfGivenTestFileDoesNotExist()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -824,11 +825,11 @@ Please specify a test project name filter that results in one project.
             });
             var target = new InputFileResolver(fileSystem, null);
 
-            var exception = Assert.Throws<InputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject", "GivenTestProject.csproj")));
+            var exception = Should.Throw<InputException>(() => target.FindTestProject(Path.Combine(_filesystemRoot, "ExampleProject", "GivenTestProject.csproj")));
             exception.Message.ShouldStartWith("No .csproj or .fsproj file found, please check your project directory at");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldChooseGivenTestProjectFileIfPossible_AtRelativeLocation()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -844,7 +845,7 @@ Please specify a test project name filter that results in one project.
             actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj"));
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldChooseGivenTestProjectFileIfPossible_AtFullPath()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -861,7 +862,7 @@ Please specify a test project name filter that results in one project.
             actual.ShouldBe(Path.Combine(_filesystemRoot, "ExampleProject", "SubFolder", "TestProject.csproj"));
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldSelectCorrectSourceProject_WhenTestProjectsAreGiven()
         {
             // Arrange
@@ -909,7 +910,7 @@ Please specify a test project name filter that results in one project.
             result.AnalyzerResult.ProjectFilePath.ShouldBe(sourceProjectPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrowOnMsTestV1Detected()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -927,14 +928,14 @@ Please specify a test project name filter that results in one project.
                     references: new string[] { "Microsoft.VisualStudio.QualityTools.UnitTestFramework" }).Object;
 
             // Act
-            var ex = Assert.Throws<InputException>(() => new TestProject(fileSystem, testProjectAnalyzerResult));
+            var ex = Should.Throw<InputException>(() => new TestProject(fileSystem, testProjectAnalyzerResult));
 
             ex.Message.ShouldBe("Please upgrade your test projects to MsTest V2. Stryker.NET uses VSTest which does not support MsTest V1.");
             ex.Details.ShouldBe(@"See https://devblogs.microsoft.com/devops/upgrade-to-mstest-v2/ for upgrade instructions.");
         }
 
 
-        [Fact]
+        [TestMethod]
         public void ShouldSkipXamlFiles()
         {
             var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
@@ -972,7 +973,7 @@ Please specify a test project name filter that results in one project.
             result.ProjectContents.GetAllFiles().Count().ShouldBe(2);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldFindAllTestProjects()
         {
             // Arrange
@@ -1025,7 +1026,7 @@ Please specify a test project name filter that results in one project.
             result.ProjectContents.GetAllFiles().Count().ShouldBe(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldFindSourceProjectWhenSingleProjectReferenceAndNoFilter()
         {
             var testProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(projectReferences: new List<string> { @"..\ExampleProject\ExampleProject.csproj" }).Object;
@@ -1034,18 +1035,18 @@ Please specify a test project name filter that results in one project.
             result.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrowOnNoProjectReference()
         {
             var testProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                 projectReferences: Enumerable.Empty<string>()).Object;
 
-            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testProjectAnalyzerResult}, null));
+            var ex = Should.Throw<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testProjectAnalyzerResult}, null));
 
             ex.Message.ShouldContain("no project");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrowOnMultipleProjectsWithoutFilter()
         {
             var testProjectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -1054,18 +1055,18 @@ Please specify a test project name filter that results in one project.
                     @"..\AnotherProject\AnotherProject.csproj"
                 }).Object;
 
-            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testProjectAnalyzerResult}, null));
+            var ex = Should.Throw<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testProjectAnalyzerResult}, null));
 
             ex.Message.ShouldContain("Test project contains more than one project reference. Please set the project option");
             ex.Message.ShouldContain("Choose one of the following references:");
         }
 
-        [Theory]
-        [InlineData("ExampleProject.csproj")]
-        [InlineData("exampleproject.csproj")]
-        [InlineData("ExampleProject")]
-        [InlineData("exampleproject")]
-        [InlineData("Example")]
+        [TestMethod]
+        [DataRow("ExampleProject.csproj")]
+        [DataRow("exampleproject.csproj")]
+        [DataRow("ExampleProject")]
+        [DataRow("exampleproject")]
+        [DataRow("Example")]
         public void ShouldMatchFromMultipleProjectByName(string shouldMatch)
         {
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -1081,11 +1082,11 @@ Please specify a test project name filter that results in one project.
             result.ShouldBe(@"..\ExampleProject\ExampleProject.csproj");
         }
 
-        [Theory]
-        [InlineData("Project.csproj")]
-        [InlineData("project.csproj")]
-        [InlineData("Project")]
-        [InlineData(".csproj")]
+        [TestMethod]
+        [DataRow("Project.csproj")]
+        [DataRow("project.csproj")]
+        [DataRow("Project")]
+        [DataRow(".csproj")]
         public void ShouldThrowWhenTheNameMatchesMore(string shouldMatchMoreThanOne)
         {
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -1095,12 +1096,12 @@ Please specify a test project name filter that results in one project.
                 }).Object;
 
             var options = new StrykerOptions { SourceProjectName = shouldMatchMoreThanOne };
-            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testPojectAnalyzerResult}, options));
+            var ex = Should.Throw<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testPojectAnalyzerResult}, options));
 
             ex.Message.ShouldContain("more than one");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrowWhenTheNameMatchesNone()
         {
             var testPojectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -1111,14 +1112,14 @@ Please specify a test project name filter that results in one project.
 
 
             var options = new StrykerOptions { SourceProjectName = "WrongProject.csproj" };
-            var ex = Assert.Throws<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testPojectAnalyzerResult}, options));
+            var ex = Should.Throw<InputException>(() => new InputFileResolver().FindSourceProject(new [] {testPojectAnalyzerResult}, options));
 
             ex.Message.ShouldContain("no project");
         }
 
-        [Theory]
-        [InlineData("ExampleProject/ExampleProject.csproj")]
-        [InlineData("ExampleProject\\ExampleProject.csproj")]
+        [TestMethod]
+        [DataRow("ExampleProject/ExampleProject.csproj")]
+        [DataRow("ExampleProject\\ExampleProject.csproj")]
         public void ShouldMatchOnBothForwardAndBackwardsSlash(string shouldMatch)
         {
             var projectReferences = new List<string> {

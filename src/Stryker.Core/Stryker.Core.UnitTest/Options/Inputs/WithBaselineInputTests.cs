@@ -1,19 +1,20 @@
 using Shouldly;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class WithBaselineInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new WithBaselineInput();
             target.HelpText.ShouldBe(@"EXPERIMENTAL: Use results stored in stryker dashboard to only test new mutants. | default: 'False'");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldBeEnabledWhenTrue()
         {
             var target = new WithBaselineInput { SuppliedInput = true };
@@ -23,7 +24,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldProvideDefaultFalseWhenNull()
         {
             var target = new WithBaselineInput { SuppliedInput = null };
@@ -33,7 +34,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotBeEnabledWhenFalse()
         {
             var target = new WithBaselineInput { SuppliedInput = false };

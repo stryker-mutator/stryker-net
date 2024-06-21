@@ -20,13 +20,14 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.TestRunners;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Compiling
 {
+    [TestClass]
     public class CSharpCompilingProcessTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void CompilingProcessTests_ShouldCompile()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
@@ -70,7 +71,7 @@ namespace ExampleProject
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void CompilingProcessTests_ShouldSupportReferenceAliases()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"
@@ -116,7 +117,7 @@ namespace ExampleProject
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void CompilingProcessTests_ShouldCallRollbackProcess_OnCompileError()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
@@ -163,7 +164,7 @@ namespace ExampleProject
                 Times.AtLeast(2));
         }
 
-        [Fact]
+        [TestMethod]
         public void CompilingProcessTests_ShouldOnlyRollbackErrors()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
@@ -207,7 +208,7 @@ namespace ExampleProject
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void CompilingProcessTests_SignedAssembliesMustBeSigned()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"
@@ -256,7 +257,7 @@ namespace ExampleProject
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void CompilingProcessTests_AssemblyShouldCompileUnsigned_WhenSignAssemblyTrue_ButKeyFileMissing()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"
@@ -305,7 +306,7 @@ namespace ExampleProject
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void CompilingProcessTests_ProperlyFailsWhenSigningKeyIsNotFound()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"
@@ -349,7 +350,7 @@ namespace ExampleProject
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void CompilingProcessTests_MustIncludeVersionInfo()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
@@ -394,7 +395,7 @@ namespace ExampleProject
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldCompileAndRollbackErrorWhenUninitializedVariable()
         {
             var sourceFile = @"using System;
@@ -431,7 +432,7 @@ namespace ExampleProject
             projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.Pending).ShouldBe(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldCompileAndRollbackErrorsForEventHandler()
         {
             var sourceFile = @"using System;

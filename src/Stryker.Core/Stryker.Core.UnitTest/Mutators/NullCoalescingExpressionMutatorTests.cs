@@ -3,20 +3,21 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
 using System.Linq;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class NullCoalescingExpressionMutatorTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldBeMutationLevelStandard()
         {
             var target = new NullCoalescingExpressionMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Basic);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldMutate()
         {
             // Arrange
@@ -37,7 +38,7 @@ namespace Stryker.Core.UnitTest.Mutators
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldMutateThrowExpression()
         {
             // Arrange

@@ -5,13 +5,14 @@ using Serilog.Events;
 using Shouldly;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options
 {
+    [TestClass]
     public class StrykerOptionsTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldCopyValues()
         {
             var target = new StrykerOptions()
@@ -55,7 +56,7 @@ namespace Stryker.Core.UnitTest.Options
             result.ProjectVersion.ShouldBe("version");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldFlowProjectNameAndProjectVersionToParentOptions()
         {
             var target = new StrykerOptions

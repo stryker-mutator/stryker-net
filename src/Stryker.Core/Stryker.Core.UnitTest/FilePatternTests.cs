@@ -2,24 +2,25 @@ using System;
 using System.Linq;
 using DotNet.Globbing;
 using Microsoft.CodeAnalysis.Text;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Xunit;
 
 namespace Stryker.Core.UnitTest
 {
+    [TestClass]
     public class FilePatternTests : TestBase
     {
-        [Theory]
-        [InlineData("file.cs", "file.cs", true)]
-        [InlineData("TestFolder/file.cs", "**/file.cs", true)]
-        [InlineData("C:\\TestFolder\\file.cs", "**/file.cs", true)]
-        [InlineData("C:\\TestFolder\\file.cs", "file.cs", false)]
-        [InlineData("C:\\TestFolder\\file.cs", "./file.cs", false)]
-        [InlineData("file.cs", "File.cs", false)]
-        [InlineData("differentFile.cs", "file.cs", false)]
-        [InlineData("File.cs", "*File.cs", true)]
-        [InlineData("FileFile.cs", "*File.cs", true)]
-        [InlineData("FileDifferent.cs", "*File.cs", false)]
+        [TestMethod]
+        [DataRow("file.cs", "file.cs", true)]
+        [DataRow("TestFolder/file.cs", "**/file.cs", true)]
+        [DataRow("C:\\TestFolder\\file.cs", "**/file.cs", true)]
+        [DataRow("C:\\TestFolder\\file.cs", "file.cs", false)]
+        [DataRow("C:\\TestFolder\\file.cs", "./file.cs", false)]
+        [DataRow("file.cs", "File.cs", false)]
+        [DataRow("differentFile.cs", "file.cs", false)]
+        [DataRow("File.cs", "*File.cs", true)]
+        [DataRow("FileFile.cs", "*File.cs", true)]
+        [DataRow("FileDifferent.cs", "*File.cs", false)]
         public void IsMatch_should_match_glob_pattern(string file, string glob, bool isMatch)
         {
             // Arrange
@@ -33,15 +34,15 @@ namespace Stryker.Core.UnitTest
             result.ShouldBe(isMatch);
         }
 
-        [Theory]
-        [InlineData("{10..20}", 14, 16, true)]          // Fully contained
-        [InlineData("{10..20}", 04, 06, false)]         // Before
-        [InlineData("{10..20}", 24, 26, false)]         // After
-        [InlineData("{10..20}", 14, 26, false)]         // Partial overlap; exceeds end
-        [InlineData("{10..20}", 04, 16, false)]         // Partial overlap; exceeds start
-        [InlineData("{10..20}{20..30}", 15, 25, true)]  // Two intersecting spans fully contain span
-        [InlineData("{10..23}{17..30}", 15, 25, true)]  // Two overlapping spans fully contain span
-        [InlineData("{10..19}{20..30}", 15, 25, false)] // Two spans with gab; start and end of span are in the spans
+        [TestMethod]
+        [DataRow("{10..20}", 14, 16, true)]          // Fully contained
+        [DataRow("{10..20}", 04, 06, false)]         // Before
+        [DataRow("{10..20}", 24, 26, false)]         // After
+        [DataRow("{10..20}", 14, 26, false)]         // Partial overlap; exceeds end
+        [DataRow("{10..20}", 04, 16, false)]         // Partial overlap; exceeds start
+        [DataRow("{10..20}{20..30}", 15, 25, true)]  // Two intersecting spans fully contain span
+        [DataRow("{10..23}{17..30}", 15, 25, true)]  // Two overlapping spans fully contain span
+        [DataRow("{10..19}{20..30}", 15, 25, false)] // Two spans with gab; start and end of span are in the spans
         public void IsMatch_should_match_textSpans(string spanPattern, int spanStart, int spanEnd, bool isMatch)
         {
             // Arrange
@@ -54,11 +55,11 @@ namespace Stryker.Core.UnitTest
             result.ShouldBe(isMatch);
         }
 
-        [Theory]
-        [InlineData("**/*.cs{10..20}", "**/*.cs", false, new[] { 10, 20 })]
-        [InlineData("**/*.cs{10..20}{20..30}", "**/*.cs", false, new[] { 10, 30 })]
-        [InlineData("**/*.cs{10..20}{30..40}", "**/*.cs", false, new[] { 10, 20, 30, 40 })]
-        [InlineData("!**/*.cs", "**/*.cs", true, new[] { 0, int.MaxValue })]
+        [TestMethod]
+        [DataRow("**/*.cs{10..20}", "**/*.cs", false, new[] { 10, 20 })]
+        [DataRow("**/*.cs{10..20}{20..30}", "**/*.cs", false, new[] { 10, 30 })]
+        [DataRow("**/*.cs{10..20}{30..40}", "**/*.cs", false, new[] { 10, 20, 30, 40 })]
+        [DataRow("!**/*.cs", "**/*.cs", true, new[] { 0, int.MaxValue })]
         public void Parse_should_parse_correctly(string spanPattern, string glob, bool isExclude, int[] spans)
         {
             // Arrange

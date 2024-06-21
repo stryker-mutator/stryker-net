@@ -7,10 +7,11 @@ using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Testing;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
+    [TestClass]
     public class TargetFrameworkResolutionTests : TestBase
     {
         private IEnumerable<IAnalyzerResult> _analyzerResults = Enumerable.Empty<IAnalyzerResult>();
@@ -38,7 +39,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             _projectFileReader = new ProjectFileReader(null, buildalyzerProviderMock.Object);
         }
 
-        [Fact]
+        [TestMethod]
         public void ThrowsIfNoResultsWithFrameworks()
         {
             var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
@@ -53,7 +54,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             analyzeProject.ShouldThrow<InputException>();
         }
 
-        [Fact]
+        [TestMethod]
         public void SelectsFirstFrameworkIfNoneSpecified()
         {
             var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
@@ -74,7 +75,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.TargetFramework.ShouldBe("X");
         }
 
-        [Fact]
+        [TestMethod]
         public void SelectsRespectiveFrameworkIfSpecifiedAndAvailable()
         {
             var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
@@ -95,7 +96,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             result.TargetFramework.ShouldBe("Y");
         }
 
-        [Fact]
+        [TestMethod]
         public void SelectsFirstFrameworkIfSpecifiedButNotAvailable()
         {
             var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();

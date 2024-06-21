@@ -3,22 +3,23 @@ using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
+    [TestClass]
     public class ExcludeMutationMutantFilterTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public static void ShouldHaveName()
         {
             var target = new IgnoreMutationMutantFilter() as IMutantFilter;
             target.DisplayName.ShouldBe("mutation type filter");
         }
 
-        [Theory]
-        [InlineData(Mutator.Arithmetic, true)]
-        [InlineData(Mutator.Assignment, false)]
+        [TestMethod]
+        [DataRow(Mutator.Arithmetic, true)]
+        [DataRow(Mutator.Assignment, false)]
         public void MutantFilter_ShouldSkipMutationsForExcludedMutatorType(Mutator excludedMutation, bool skipped)
         {
             // Arrange
