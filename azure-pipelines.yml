@@ -23,8 +23,8 @@ pr:
     - '.github/*'
 
 variables:
-  PackageVersion: '4.0.1'
-  VersionBuildNumber: $[counter('4.0.1', 1)]
+  PackageVersion: '4.0.6'
+  VersionBuildNumber: $[counter('4.0.6', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   ForkIntegrationNugetFeedUri: https://f.feedz.io/stryker/stryker-net/nuget/index.json
@@ -53,7 +53,7 @@ stages:
       inputs:
         version: 8.x
     - template: pipeline-templates/populate-cache-steps.yml
-    - task: SonarCloudPrepare@1
+    - task: SonarCloudPrepare@2
       inputs:
         SonarCloud: 'SonarCloud stryker-net'
         organization: 'stryker-net'
@@ -67,8 +67,8 @@ stages:
         command: test
         projects: 'src/Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj'
         arguments: '--collect "Code coverage"'
-    - task: SonarCloudAnalyze@1
-    - task: SonarCloudPublish@1
+    - task: SonarCloudAnalyze@2
+    - task: SonarCloudPublish@2
       inputs:
         pollingTimeoutSec: '300'
   - job: RunStrykerCLI
@@ -189,7 +189,7 @@ stages:
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'windows-netcore'
-        workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
+        workingDirectory: 'integrationtest/TargetProjects/NetCore/NetCoreTestProject.XUnit'
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'windows-netframework'
@@ -210,7 +210,7 @@ stages:
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'windows-fsharp'
-        workingDirectory: 'integrationtest/TargetProjects/Library.FSharp.XUnit'
+        workingDirectory: 'integrationtest/TargetProjects/NetCore/Library.FSharp.XUnit'
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:
@@ -227,8 +227,8 @@ stages:
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'linux-netcore'
-        workingDirectory: 'integrationtest/TargetProjects'
-        strykerCommands: --solution '$(Agent.BuildDirectory)/s/integrationtest/TargetProjects/IntegrationTestApp.sln'
+        workingDirectory: 'integrationtest/TargetProjects/NetCore'
+        strykerCommands: --solution '$(Agent.BuildDirectory)/s/integrationtest/TargetProjects/NetCore/IntegrationTestApp.sln'
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:
@@ -236,7 +236,7 @@ stages:
         projects: '**/Validation.csproj'
         arguments: --filter Category=Solution
     - script: $(Agent.BuildDirectory)/tools/dotnet-stryker
-      workingDirectory: 'integrationtest/TargetProjects/EmptyTestProject'
+      workingDirectory: 'integrationtest/TargetProjects/NetCore/EmptyTestProject'
       failOnStderr: false
       continueOnError: true
 
@@ -249,7 +249,7 @@ stages:
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'macos-netcore'
-        workingDirectory: 'integrationtest/TargetProjects/NetCoreTestProject.XUnit'
+        workingDirectory: 'integrationtest/TargetProjects/NetCore/NetCoreTestProject.XUnit'
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'macos-init-command'
@@ -264,7 +264,7 @@ stages:
     - template: pipeline-templates/run-integration-test-steps.yml
       parameters:
         testName: 'macos-netcore-multi-test-project'
-        workingDirectory: 'integrationtest/TargetProjects/TargetProject'
+        workingDirectory: 'integrationtest/TargetProjects/NetCore/TargetProject'
     - task: DotNetCoreCLI@2
       displayName: 'Assert integration test results'
       inputs:

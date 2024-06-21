@@ -16,7 +16,12 @@ namespace Stryker.Core.Initialisation
     [ExcludeFromCodeCoverage]
     public static class EmbeddedResourcesGenerator
     {
-        private static readonly IDictionary<string, IEnumerable<ResourceDescription>> _resourceDescriptions = new Dictionary<string, IEnumerable<ResourceDescription>>();
+        private static readonly Dictionary<string, IEnumerable<(ResourceDescription description, object context)>> _resourceDescriptions = new();
+
+        public static void ResetCache()
+        {
+            _resourceDescriptions.Clear();
+        }
 
         public static IEnumerable<ResourceDescription> GetManifestResources(string assemblyPath, string projectFilePath, string rootNamespace, IEnumerable<string> embeddedResources)
         {
@@ -31,7 +36,7 @@ namespace Stryker.Core.Initialisation
                 // Failed to load some or all resources from module, generate missing resources from disk
                 if (module is not null && _resourceDescriptions[projectFilePath].Count() < embeddedResources.Count())
                 {
-                    var missingEmbeddedResources = embeddedResources.Where(r => _resourceDescriptions[projectFilePath].Any(fr => GetResourceDescriptionInternalName(fr) == GenerateResourceName(r)));
+                    var missingEmbeddedResources = embeddedResources.Where(r => _resourceDescriptions[projectFilePath].Any(fr => GetResourceDescriptionInternalName(fr.description) == GenerateResourceName(r)));
                     _resourceDescriptions[projectFilePath] = _resourceDescriptions[projectFilePath].Concat(GenerateManifestResources(projectFilePath, rootNamespace, missingEmbeddedResources));
                 }
 
@@ -42,9 +47,13 @@ namespace Stryker.Core.Initialisation
                 }
             }
 
-            foreach (var description in _resourceDescriptions.ContainsKey(projectFilePath) ? _resourceDescriptions[projectFilePath] : Enumerable.Empty<ResourceDescription>())
+            if (!_resourceDescriptions.TryGetValue(projectFilePath, out var resourcesDescription))
             {
-                yield return description;
+                yield break;
+            }
+            foreach (var description in resourcesDescription)
+            {
+                yield return description.description;
             }
         }
 
@@ -67,7 +76,7 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private static IEnumerable<ResourceDescription> ReadResourceDescriptionsFromModule(ModuleDefinition module)
+        private static IEnumerable<(ResourceDescription, object)> ReadResourceDescriptionsFromModule(ModuleDefinition module)
         {
             foreach (var moduleResource in module.Resources.Where(r => r.ResourceType == ResourceType.Embedded).Cast<EmbeddedResource>())
             {
@@ -80,26 +89,26 @@ namespace Stryker.Core.Initialisation
                 resourceStream.Position = 0;
                 shortLivedBackingStream.Position = 0;
 
-                yield return new ResourceDescription(
+                yield return (new ResourceDescription(
                     moduleResource.Name,
                     () => resourceStream,
-                    moduleResource.IsPublic);
+                    moduleResource.IsPublic), resourceStream);
             }
         }
 
-        private static IEnumerable<ResourceDescription> GenerateManifestResources(string projectFilePath, string rootNamespace, IEnumerable<string> embeddedResources)
+        private static IEnumerable<(ResourceDescription, object)> GenerateManifestResources(string projectFilePath, string rootNamespace, IEnumerable<string> embeddedResources)
         {
-            var resources = new List<ResourceDescription>();
+            var resources = new List<(ResourceDescription, object)>();
             foreach (var embeddedResource in embeddedResources)
             {
                 var resourceFullFilename = Path.Combine(Path.GetDirectoryName(projectFilePath), embeddedResource);
 
                 var resourceName = GenerateResourceName(embeddedResource);
 
-                resources.Add(new ResourceDescription(
+                resources.Add((new ResourceDescription(
                     $"{rootNamespace}.{string.Join(".", resourceName.Split('\\'))}",
                     () => ProvideResourceData(resourceFullFilename),
-                    true));
+                    true), null));
             }
 
             return resources;

@@ -50,6 +50,7 @@ namespace Stryker.CLI
             inputs.ReportersInput.SuppliedInput = config.Reporters;
 
             inputs.SolutionInput.SuppliedInput = config.Solution;
+            inputs.ConfigurationInput.SuppliedInput = config.Configuration;
             inputs.TargetFrameworkInput.SuppliedInput = config.TargetFramework;
 
             inputs.SourceProjectNameInput.SuppliedInput = config.Project;

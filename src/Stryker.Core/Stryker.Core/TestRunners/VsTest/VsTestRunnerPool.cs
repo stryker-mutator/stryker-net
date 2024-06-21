@@ -74,7 +74,7 @@ namespace Stryker.Core.TestRunners.VsTest
                 }));
         }
 
-        private IEnumerable<CoverageRunResult> CaptureCoverageInOneGo(IProjectAndTests project) => ConvertCoverageResult(RunThis(runner => runner.RunCoverageSession(TestGuidsList.EveryTest(), project.GetTestAssemblies(), project.HelperNamespace, project.IsFullFramework).TestResults), false);
+        private IEnumerable<CoverageRunResult> CaptureCoverageInOneGo(IProjectAndTests project) => ConvertCoverageResult(RunThis(runner => runner.RunCoverageSession(TestGuidsList.EveryTest(), project).TestResults), false);
 
         private IEnumerable<CoverageRunResult> CaptureCoverageTestByTest(IProjectAndTests project) => ConvertCoverageResult(CaptureCoveragePerIsolatedTests(project, Context.VsTests.Keys).TestResults, true);
 
@@ -85,7 +85,7 @@ namespace Stryker.Core.TestRunners.VsTest
             var results = new ConcurrentBag<IRunResults>();
             Parallel.ForEach(tests, options,
                 testCase =>
-                    results.Add(RunThis(runner => runner.RunCoverageSession(new TestGuidsList(testCase), project.GetTestAssemblies(), project.HelperNamespace, project.IsFullFramework))));
+                    results.Add(RunThis(runner => runner.RunCoverageSession(new TestGuidsList(testCase), project))));
 
             return results.Aggregate(result, (runResults, singleResult) => runResults.Merge(singleResult));
         }
@@ -154,16 +154,17 @@ namespace Stryker.Core.TestRunners.VsTest
             var (key, value) = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == CoverageCollector.PropertyName);
             var testCaseId = testResult.TestCase.Id;
             var unexpected = false;
-            var log = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == CoverageCollector.Coveragelog).Value?.ToString();
+            var log = testResult.GetProperties().FirstOrDefault(x => x.Key.Id == CoverageCollector.CoverageLog).Value?.ToString();
             if (!string.IsNullOrEmpty(log))
             {
-                _logger.LogError($"VsTestRunner: Coverage collector error: {log}.");
+                _logger.LogDebug("VsTestRunner: Coverage collector log: {Log}.", log);
             }
 
             if (!Context.VsTests.ContainsKey(testCaseId))
             {
                 _logger.LogWarning(
-                    $"VsTestRunner: Coverage analysis run encountered a unexpected test case ({testResult.TestCase.DisplayName}), mutation tests may be inaccurate. Disable coverage analysis if you have doubts.");
+                    "VsTestRunner: Coverage analysis run encountered a unexpected test case ({TestCase}), mutation tests may be inaccurate. Disable coverage analysis if you have doubts.",
+                    testResult.TestCase.DisplayName);
                 // add the test description to the referential
                 Context.VsTests.Add(testCaseId, new VsTestDescription(testResult.TestCase));
                 unexpected = true;
@@ -177,14 +178,14 @@ namespace Stryker.Core.TestRunners.VsTest
                 {
                     // this is an extra result. Coverage data is already present in the already parsed result
                     _logger.LogDebug(
-                        $"VsTestRunner: Extra result for test {testResult.TestCase.DisplayName}, so no coverage data for it.");
+                        "VsTestRunner: Extra result for test {TestCase}, so no coverage data for it.",testResult.TestCase.DisplayName);
                     coverageRunResult = null;
                     return true;
                 }
 
                 // the coverage collector was not able to report anything ==> it has not been tracked by it, so we do not have coverage data
                 // ==> we need it to use this test against every mutation
-                _logger.LogDebug($"VsTestRunner: No coverage data for {testResult.TestCase.DisplayName}.");
+                _logger.LogDebug("VsTestRunner: No coverage data for {TestCase}.",testResult.TestCase.DisplayName);
                 seenTestCases.Add(testDescription.Id);
                 coverageRunResult = new CoverageRunResult(testCaseId, CoverageConfidence.Dubious, Enumerable.Empty<int>(),
                     Enumerable.Empty<int>(), Enumerable.Empty<int>());
@@ -212,7 +213,7 @@ namespace Stryker.Core.TestRunners.VsTest
             if (string.IsNullOrWhiteSpace(propertyPairValue))
             {
                 // do not attempt to parse empty strings
-                _logger.LogDebug($"VsTestRunner: Test {testResult.TestCase.DisplayName} does not cover any mutation.");
+                _logger.LogDebug("VsTestRunner: Test {TestCase} does not cover any mutation.",testResult.TestCase.DisplayName);
                 coveredMutants = Enumerable.Empty<int>();
                 staticMutants = Enumerable.Empty<int>();
             }
@@ -239,8 +240,8 @@ namespace Stryker.Core.TestRunners.VsTest
                 leakedMutants = string.IsNullOrEmpty(propertyPairValue)
                     ? Enumerable.Empty<int>()
                     : propertyPairValue.Split(',').Select(int.Parse);
-                _logger.LogWarning(
-                    $"VsTestRunner: Some mutations were executed outside any test (mutation ids: {propertyPairValue}).");
+                _logger.LogDebug(
+                    "VsTestRunner: Some mutations were executed outside any test (mutation ids: {MutationIds}).",propertyPairValue);
             }
             else
             {

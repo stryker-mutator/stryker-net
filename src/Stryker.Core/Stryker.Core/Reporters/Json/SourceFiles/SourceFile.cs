@@ -26,8 +26,9 @@ namespace Stryker.Core.Reporters.Json.SourceFiles
                 if (!Mutants.Add(new JsonMutant(mutant)))
                 {
                     logger.LogWarning(
-                        $"Mutant {mutant.Id} was generated twice in file {file.RelativePath}. \n" +
-                        $"This should not have happened. Please create an issue at https://github.com/stryker-mutator/stryker-net/issues");
+                        "Mutant {Id} was generated twice in file {RelativePath}. \n" +
+                        "This should not have happened. Please create an issue at https://github.com/stryker-mutator/stryker-net/issues",
+                        mutant.Id, file.RelativePath);
                 }
             }
         }

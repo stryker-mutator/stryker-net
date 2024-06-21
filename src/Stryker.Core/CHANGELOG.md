@@ -1,3 +1,57 @@
+## [4.0.6](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.5...stryker@4.0.6) (2024-05-25)
+
+
+### Bug Fixes
+
+* **delegate handling:** NullReferenceException when mutating parameterless delegates ([#2926](https://github.com/stryker-mutator/stryker-net/issues/2926)) ([5223ec5](https://github.com/stryker-mutator/stryker-net/commit/5223ec598866be306852103a2a500ab24617979b))
+* Logging of unexpected test case could result in a crash ([#2929](https://github.com/stryker-mutator/stryker-net/issues/2929)) ([#2931](https://github.com/stryker-mutator/stryker-net/issues/2931)) ([1db4b6c](https://github.com/stryker-mutator/stryker-net/commit/1db4b6c948ea06f4867f2d0c9b1fbba3098c8d8b))
+* **mutator:** issue where non-nullable fields were swapped by NullCoalescingExpressionMutator  ([#2915](https://github.com/stryker-mutator/stryker-net/issues/2915)) ([2af2947](https://github.com/stryker-mutator/stryker-net/commit/2af29476768cd2fcdefe41936cd11a0b3f0d192a))
+
+
+
+## [4.0.5](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.4...stryker@4.0.5) (2024-04-26)
+
+
+### Bug Fixes
+
+* Concurrency issue with MutantPlacer ([#2914](https://github.com/stryker-mutator/stryker-net/issues/2914)) ([fae558c](https://github.com/stryker-mutator/stryker-net/commit/fae558c2f5155b61c032c589b9d8bc8a44645b9a)), closes [#2916](https://github.com/stryker-mutator/stryker-net/issues/2916)
+* support generic method calls for ignoremethodfilter ([#2918](https://github.com/stryker-mutator/stryker-net/issues/2918)) ([26f299a](https://github.com/stryker-mutator/stryker-net/commit/26f299a67dc283eade86a7e05179148c206a432d))
+* Support mutating anonymous methods (a.k.a delegate) properly ([#2898](https://github.com/stryker-mutator/stryker-net/issues/2898)) ([ead50c3](https://github.com/stryker-mutator/stryker-net/commit/ead50c335b6296dc5a8a188af8b5b78ed45b99e9))
+
+
+
+## [4.0.4](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.3...stryker@4.0.4) (2024-04-05)
+
+
+### Bug Fixes
+
+* Use ConcurrentBag instead of List to prevent InvalidOperationException during mutation ([#2901](https://github.com/stryker-mutator/stryker-net/issues/2901)) ([181a927](https://github.com/stryker-mutator/stryker-net/commit/181a927a54d4b500d9f3048d5b4690bcf974dbff))
+
+
+
+## [4.0.3](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.2...stryker@4.0.3) (2024-03-29)
+
+
+### Bug Fixes
+
+* Forward build options to code analyzers and generators ([#2891](https://github.com/stryker-mutator/stryker-net/issues/2891)) ([d93b08c](https://github.com/stryker-mutator/stryker-net/commit/d93b08cecdbd941d9b8bf52aaa0679203672992f))
+
+
+### Reverts
+
+* Revert publish and "chore(performance): Parallel testinit" (#2896) ([b45f64f](https://github.com/stryker-mutator/stryker-net/commit/b45f64ff741b3b7332990ff7f0ab606f917aa693)), closes [#2896](https://github.com/stryker-mutator/stryker-net/issues/2896) [#2894](https://github.com/stryker-mutator/stryker-net/issues/2894)
+
+
+
+## [4.0.2](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.1...stryker@4.0.2) (2024-03-20)
+
+
+### Bug Fixes
+
+* Conditional access mutations could lead to unrecoverable NullReferenceException in compilation ([#2888](https://github.com/stryker-mutator/stryker-net/issues/2888)) ([eb8167a](https://github.com/stryker-mutator/stryker-net/commit/eb8167aff9d990e0a185588a4905cdd4882c5612))
+
+
+
 ## [4.0.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.0...stryker@4.0.1) (2024-03-15)
 
 

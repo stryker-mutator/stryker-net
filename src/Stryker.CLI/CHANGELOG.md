@@ -1,3 +1,33 @@
+## [4.0.6](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.0.5...dotnet-stryker@4.0.6) (2024-05-25)
+
+
+### Bug Fixes
+
+* Logging of unexpected test case could result in a crash ([#2929](https://github.com/stryker-mutator/stryker-net/issues/2929)) ([#2931](https://github.com/stryker-mutator/stryker-net/issues/2931)) ([1db4b6c](https://github.com/stryker-mutator/stryker-net/commit/1db4b6c948ea06f4867f2d0c9b1fbba3098c8d8b))
+
+
+
+## [4.0.5](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.0.4...dotnet-stryker@4.0.5) (2024-04-26)
+
+
+
+## [4.0.4](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.0.3...dotnet-stryker@4.0.4) (2024-04-05)
+
+
+
+## [4.0.3](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.0.2...dotnet-stryker@4.0.3) (2024-03-29)
+
+
+### Reverts
+
+* Revert publish and "chore(performance): Parallel testinit" (#2896) ([b45f64f](https://github.com/stryker-mutator/stryker-net/commit/b45f64ff741b3b7332990ff7f0ab606f917aa693)), closes [#2896](https://github.com/stryker-mutator/stryker-net/issues/2896) [#2894](https://github.com/stryker-mutator/stryker-net/issues/2894)
+
+
+
+## [4.0.2](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.0.1...dotnet-stryker@4.0.2) (2024-03-20)
+
+
+
 ## [4.0.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.0.0...dotnet-stryker@4.0.1) (2024-03-15)
 
 

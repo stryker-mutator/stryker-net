@@ -48,7 +48,6 @@ namespace TestApplication
         [Theory]
         [InlineData("if (Method()) => return true;")]
         [InlineData("while (Method()) => age++;")]
-        [InlineData("(Method()? 1:2);")]
         public void MutatesStatementWithMethodCallWithNoArguments(string method)
         {
             var target = new NegateConditionMutator();

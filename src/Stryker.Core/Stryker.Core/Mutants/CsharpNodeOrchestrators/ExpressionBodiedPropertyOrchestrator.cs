@@ -39,9 +39,8 @@ internal class ExpressionBodiedPropertyOrchestrator : BaseFunctionOrchestrator<P
         var children = node.ReplaceNodes(node.ChildNodes(), (original, _) =>
         {
             var determinedContext = original == node.Initializer ? context.EnterStatic() : context;
-            return determinedContext.FindHandler(original).Mutate(original, semanticModel, determinedContext);
+            return determinedContext.Mutate(original, semanticModel);
         });
         return children.WithInitializer(children.Initializer.WithValue(context.PlaceStaticContextMarker(children.Initializer.Value)));
     }
-
 }

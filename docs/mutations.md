@@ -4,7 +4,7 @@ sidebar_position: 40
 custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs/mutations.md
 ---
 
-Stryker supports a variety of mutators, which are listed below. In parentheses the names of correspondent mutations are specified, which you might need for the `exclude-mutations` section of the configuration.
+Stryker supports a variety of mutators, which are listed below. In parentheses the names of correspondent mutations are specified, which you might need for the `ignore-mutations` section of the configuration.
 
 Do you have a suggestion for a (new) mutator? Feel free to create an [issue](https://github.com/stryker-mutator/stryker-net/issues)!
 
@@ -167,6 +167,24 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `string.IsNullOrWhiteSpace(x)` | `(x != "")` |
 | `string.IsNullOrWhiteSpace(x)` | `(x.Trim() != "")` |
 
+## String Methods (_stringmethod_)
+| Original               | Mutated              |
+|------------------------|----------------------|
+| `Trim()`               | `""`                 |
+| `Substring()`          | `""`                 |
+| `ElementAt()`          | `'\0'`               |
+| `ElementAtOrDefault()` | `'\0'`               |
+| `EndsWith()`           | `StartsWith()`       |
+| `StartsWith()`         | `EndsWith()`         |
+| `TrimStart()`          | `TrimEnd()`          |
+| `TrimEnd()`            | `TrimStart()`        |
+| `ToUpper()`            | `ToLower()`          |
+| `ToLower()`            | `ToUpper()`          |
+| `ToUpperInvariant()`   | `ToLowerInvariant()` |
+| `ToLowerInvariant()`   | `ToUpperInvariant()` |
+| `PadLeft()`            | `PadRight()`         |
+| `PadRight()`           | `PadLeft()`          |
+
 ## Bitwise Operators (_bitwise_)
 | Original            | Mutated             |
 |---------------------|---------------------|
@@ -238,3 +256,9 @@ For the full list of all available regex mutations, see the [regex mutator docs]
 | `a ?? b`            | `b ?? a`                |
 | `a ?? b`            | `a`                 |
 | `a ?? b`            | `b`                 |
+
+## Conditional Operators (_conditional_)
+| Original            | Mutated             |
+|---------------------|---------------------|
+| `x ? a : b`         | `true ? a : b`      |
+| `x ? a : b`         | `false ? a : b`     |

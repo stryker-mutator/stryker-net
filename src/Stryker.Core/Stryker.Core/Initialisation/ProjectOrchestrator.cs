@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
 using Stryker.Core.Baseline.Providers;
@@ -52,7 +54,7 @@ namespace Stryker.Core.Initialisation
             if (!projectInfos.Any())
             {
                 _logger.LogWarning("No project to mutate. Stryker will exit prematurely.");
-                yield break;
+                return [];
             }
 
             _initializationProcess.BuildProjects(options, projectInfos);
@@ -63,10 +65,12 @@ namespace Stryker.Core.Initialisation
             InitializeDashboardProjectInformation(options, projectInfos.First());
             var inputs = _initializationProcess.GetMutationTestInputs(options, projectInfos, _runner);
 
-            foreach (var mutationTestInput in inputs)
+            var mutationTestProcesses = new ConcurrentBag<IMutationTestProcess>();
+            Parallel.ForEach(inputs, mutationTestInput =>
             {
-                yield return _projectMutator.MutateProject(options, mutationTestInput, reporters);
-            }
+                mutationTestProcesses.Add(_projectMutator.MutateProject(options, mutationTestInput, reporters));
+            });
+            return mutationTestProcesses;
         }
 
         private void InitializeDashboardProjectInformation(StrykerOptions options, SourceProjectInfo projectInfo)

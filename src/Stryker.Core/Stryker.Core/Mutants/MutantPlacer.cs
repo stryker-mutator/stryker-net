@@ -19,8 +19,8 @@ public class MutantPlacer
     private const string MutationTypeMarker = "MutationType";
     public static readonly string Injector = "Injector";
 
-    private static readonly IDictionary<string, IInstrumentCode> InstrumentEngines = new Dictionary<string, IInstrumentCode>();
-    private static readonly HashSet<string> RequireRecursiveRemoval = new();
+    private static readonly Dictionary<string, (IInstrumentCode engine, SyntaxAnnotation annotation)> instrumentEngines = new ();
+    private static readonly HashSet<string> requireRecursiveRemoval = new();
 
     private static readonly StaticInstrumentationEngine StaticEngine = new();
     private static readonly StaticInitializerMarkerEngine StaticInitializerEngine = new();
@@ -32,6 +32,7 @@ public class MutantPlacer
     private readonly CodeInjection _injection;
     private ExpressionSyntax _binaryExpression;
     private SyntaxNode _placeHolderNode;
+
     public static IEnumerable<string> MutationMarkers => new[] { MutationIdMarker, MutationTypeMarker, Injector };
 
     public MutantPlacer(CodeInjection injection) => _injection = injection;
@@ -43,16 +44,26 @@ public class MutantPlacer
     /// <param name="requireRecursive">true if inner injections should be removed first.</param>
     public static SyntaxAnnotation RegisterEngine(IInstrumentCode engine, bool requireRecursive = false)
     {
-        if (InstrumentEngines.TryGetValue(engine.InstrumentEngineId, out var existing) && existing!.GetType() != engine.GetType())
+        lock(instrumentEngines)
         {
-            throw new InvalidOperationException($"Cannot register {engine.GetType().Name} as name {engine.InstrumentEngineId} is already registered to {existing.GetType().Name}.");
+            if (instrumentEngines.TryGetValue(engine.InstrumentEngineId, out var existing))
+            {
+                if (existing.engine!.GetType() != engine.GetType())
+                {
+                    throw new InvalidOperationException(
+                        $"Cannot register {engine.GetType().Name} as name {engine.InstrumentEngineId} is already registered to {existing.engine.GetType().Name}.");
+                }
+                return existing.annotation;
+            }
+
+            var syntaxAnnotation = new SyntaxAnnotation(Injector, engine.InstrumentEngineId);
+            instrumentEngines[engine.InstrumentEngineId] = (engine, syntaxAnnotation) ;
+            if (requireRecursive)
+            {
+                requireRecursiveRemoval.Add(engine.InstrumentEngineId);
+            }
+            return syntaxAnnotation;
         }
-        InstrumentEngines[engine.InstrumentEngineId] = engine;
-        if (requireRecursive)
-        {
-            RequireRecursiveRemoval.Add(engine.InstrumentEngineId);
-        }
-        return new SyntaxAnnotation(Injector, engine.InstrumentEngineId);
     }
 
     /// <summary>
@@ -85,6 +96,7 @@ public class MutantPlacer
     /// Add initialization for all out parameters
     /// </summary>
     /// <param name="block">block to augment with an initialization block</param>
+    /// <param name="parameters"></param>
     /// <returns><paramref name="block"/> with assignment statements in a block.</returns>
     /// <remarks>return <paramref name="block"/> if there is no 'out' parameter.</remarks>
     public static BlockSyntax InjectOutParametersInitialization(BlockSyntax block, IEnumerable<ParameterSyntax> parameters) =>
@@ -130,10 +142,10 @@ public class MutantPlacer
         var annotatedNode = nodeToRemove.GetAnnotatedNodes(Injector).FirstOrDefault();
         if (annotatedNode != null)
         {
-            var engine = annotatedNode.GetAnnotations(Injector).First().Data;
-            if (!string.IsNullOrEmpty(engine))
+            var id = annotatedNode.GetAnnotations(Injector).First().Data;
+            if (!string.IsNullOrEmpty(id))
             {
-                var restoredNode = InstrumentEngines[engine].RemoveInstrumentation(annotatedNode);
+                var restoredNode = instrumentEngines[id].engine.RemoveInstrumentation(annotatedNode);
                 return annotatedNode == nodeToRemove ? restoredNode : nodeToRemove.ReplaceNode(annotatedNode, restoredNode);
             }
         }
@@ -152,7 +164,7 @@ public class MutantPlacer
         {
             throw new InvalidOperationException("No mutation in this node!");
         }
-        return annotations.Exists(a => RequireRecursiveRemoval.Contains(a.Data));
+        return annotations.Exists(a => requireRecursiveRemoval.Contains(a.Data));
     }
 
     /// <summary>
@@ -208,5 +220,4 @@ public class MutantPlacer
         return _binaryExpression.ReplaceNode(_placeHolderNode,
             SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(mutantId)));
     }
-
 }

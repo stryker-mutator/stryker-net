@@ -20,7 +20,7 @@ namespace Stryker.Core.ToolHelpers
     }
 
     /// <summary>
-    /// Locates VsTest folder. Installs one if none is found. 
+    /// Locates VsTest folder. Installs one if none is found.
     /// </summary>
     /// This class is not unit tested currently, so proceed with caution
     [ExcludeFromCodeCoverage(Justification = "Deeply dependent on current platform, need a lot of work for mocking.")]
@@ -51,6 +51,7 @@ namespace Stryker.Core.ToolHelpers
                 {
                     return _platformVsTestToolPath;
                 }
+
                 var paths = GetVsTestToolPaths();
 
                 if (!paths.Keys.Any(RuntimeInformation.IsOSPlatform))
@@ -61,7 +62,8 @@ namespace Stryker.Core.ToolHelpers
 
                 var osPlatform = paths.Keys.First(RuntimeInformation.IsOSPlatform);
                 _platformVsTestToolPath = paths[osPlatform];
-                _logger.LogDebug("Using vstest.console: {0} for OS {1}", osPlatform, _platformVsTestToolPath);
+                _logger.LogDebug("Using vstest.console: {OsPlatform} for OS {TestToolPath}",
+                    osPlatform, _platformVsTestToolPath);
             }
 
             return _platformVsTestToolPath;
@@ -90,7 +92,8 @@ namespace Stryker.Core.ToolHelpers
             }
             else if (DeployEmbeddedVsTestBinaries() is var deployPath)
             {
-                Merge(_vsTestPaths, SearchNugetPackageFolders(new List<string> { deployPath }, versionDependent: false));
+                Merge(_vsTestPaths,
+                    SearchNugetPackageFolders(new List<string> { deployPath }, versionDependent: false));
                 _logger.LogDebug("Using vstest from deployed vstest package");
             }
 
@@ -105,17 +108,21 @@ namespace Stryker.Core.ToolHelpers
             }
         }
 
-        private Dictionary<OSPlatform, string> SearchNugetPackageFolders(IEnumerable<string> nugetPackageFolders, bool versionDependent = true)
+        private Dictionary<OSPlatform, string> SearchNugetPackageFolders(IEnumerable<string> nugetPackageFolders,
+            bool versionDependent = true)
         {
             var vsTestPaths = new Dictionary<OSPlatform, string>();
 
-            var versionString = FileVersionInfo.GetVersionInfo(typeof(IVsTestConsoleWrapper).Assembly.Location).ProductVersion;
+            var versionString = FileVersionInfo.GetVersionInfo(typeof(IVsTestConsoleWrapper).Assembly.Location)
+                .ProductVersion;
             const string PortablePackageName = "microsoft.testplatform.portable";
             bool dllFound = false, exeFound = false;
 
             foreach (var nugetPackageFolder in nugetPackageFolders)
             {
-                var searchFolder = versionDependent ? Path.Combine(nugetPackageFolder, PortablePackageName, versionString) : nugetPackageFolder;
+                var searchFolder = versionDependent
+                    ? Path.Combine(nugetPackageFolder, PortablePackageName, versionString)
+                    : nugetPackageFolder;
                 if (!_fileSystem.Directory.Exists(searchFolder))
                 {
                     continue;
@@ -138,11 +145,13 @@ namespace Stryker.Core.ToolHelpers
                     vsTestPaths[OSPlatform.OSX] = dllPath;
                     dllFound = true;
                 }
+
                 if (!exeFound && _fileSystem.File.Exists(exePath))
                 {
                     vsTestPaths[OSPlatform.Windows] = exePath;
                     exeFound = true;
                 }
+
                 if (dllFound && exeFound)
                 {
                     break;
@@ -178,7 +187,8 @@ namespace Stryker.Core.ToolHelpers
         {
             var vsTestZip = typeof(VsTestHelper).Assembly
                 .GetManifestResourceNames()
-                .Single(r => r.Contains("Microsoft.TestPlatform.Portable", StringComparison.InvariantCultureIgnoreCase));
+                .Single(r =>
+                    r.Contains("Microsoft.TestPlatform.Portable", StringComparison.InvariantCultureIgnoreCase));
 
             var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), ".vstest");
 
@@ -192,12 +202,12 @@ namespace Stryker.Core.ToolHelpers
                 stream.CopyTo(file);
             }
 
-            _logger.LogDebug("VsTest zip was copied to: {0}", zipPath);
+            _logger.LogDebug("VsTest zip was copied to: {ZipPath}", zipPath);
 
             ZipFile.ExtractToDirectory(zipPath, tempDir);
             _fileSystem.File.Delete(zipPath);
 
-            _logger.LogDebug("VsTest zip was unzipped to: {0}", tempDir);
+            _logger.LogDebug("VsTest zip was unzipped to: {TempDir}", tempDir);
 
             return tempDir;
         }
@@ -216,7 +226,8 @@ namespace Stryker.Core.ToolHelpers
                 {
                     var path = vsTestConsole;
                     // If vstest path is not in nuget package folder, clean it up
-                    if (nugetPackageFolders.Any(nf => path.Contains(nf)) || !_fileSystem.Directory.Exists(Path.GetDirectoryName(path)))
+                    if (nugetPackageFolders.Any(nf => path.Contains(nf)) ||
+                        !_fileSystem.Directory.Exists(Path.GetDirectoryName(path)))
                     {
                         continue;
                     }
@@ -230,11 +241,17 @@ namespace Stryker.Core.ToolHelpers
             }
             catch (Exception)
             {
-                _logger.LogDebug($"Tried cleaning up used vstest resources but we weren't ready to clean. " +
-                    $"{(tries != 0 ? $"Trying {tries} more times." : "Out of tries, we're giving up sorry.")}");
                 if (tries > 0)
                 {
+                    _logger.LogDebug(
+                        $"Tried cleaning up used vstest resources but we weren't ready to clean. Trying {tries} more times.",
+                        tries);
                     Cleanup(tries - 1);
+                }
+                else
+                {
+                    _logger.LogDebug(
+                        "Tried cleaning up used vstest resources but we weren't ready to clean. Out of tries, we're giving up sorry.");
                 }
             }
         }
