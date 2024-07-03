@@ -3,7 +3,6 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
 using Stryker.Core.ToolHelpers;
-using System;
 using System.IO;
 
 namespace Stryker.Core.Initialisation;
@@ -28,89 +27,52 @@ public class InitialBuildProcess : IInitialBuildProcess
     public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string configuration=null,
         string msbuildPath = null)
     {
-            _logger.LogDebug("Started initial build using {BuildExecutable}", fullFramework ? "msbuild.exe" : "dotnet build");
+        if (fullFramework && string.IsNullOrEmpty(solutionPath))
+        {
+            throw new InputException("Stryker could not build your project as no solution file was presented. Please pass the solution path to stryker.");
+        }
 
-        ProcessResult result;
-        string buildCommand;
-        string options;
-        if (fullFramework)
-        {
-            if (string.IsNullOrEmpty(solutionPath))
-            {
-                throw new InputException("Stryker could not build your project as no solution file was presented. Please pass the solution path to stryker.");
-            }
-            result = BuildSolutionWithMsBuild(configuration, ref solutionPath, ref msbuildPath, out options);
-            buildCommand = msbuildPath;
-        }
-        else
-        {
-            var buildPath = QuotesIfNeeded(!string.IsNullOrEmpty(solutionPath) ? solutionPath : Path.GetFileName(projectPath));
-            buildCommand = "dotnet";
+        var msBuildHelper = new MsBuildHelper(executor: _processExecutor ,msBuildPath: msbuildPath);
 
-            _logger.LogDebug("Initial build using path: {buildPath}", buildPath);
-            if (!string.IsNullOrEmpty(configuration))
-            {
-                options = $"build {buildPath} -c {QuotesIfNeeded(configuration)}";
-            }
-            else
-            {
-                options = $"build {buildPath}";
-            }
-            // Build with dotnet build
-            result = _processExecutor.Start(Path.GetDirectoryName(projectPath), buildCommand, options);
-            if (result.ExitCode!=ExitCodes.Success && !string.IsNullOrEmpty(solutionPath))
-            {
-                // dump previous build result
-                _logger.LogTrace("Initial build output: {0}", result.Output);
-                _logger.LogWarning("Dotnet build failed, trying with MsBuild.");
-                buildCommand = msbuildPath;
-                result = BuildSolutionWithMsBuild(configuration, ref solutionPath, ref msbuildPath, out options);
-            }
+        _logger.LogDebug("Started initial build using dotnet build");
 
-        }
-        CheckBuildResult(result, buildCommand, options);
-    }
+        var target = !string.IsNullOrEmpty(solutionPath) ? solutionPath : Path.GetFileName(projectPath);
+        var buildPath = QuotesIfNeeded(target);
+        var (result, exe, args) = msBuildHelper.BuildProject(Path.GetDirectoryName(target), buildPath, fullFramework, configuration);
 
-    private ProcessResult BuildSolutionWithMsBuild(string configuration, ref string solutionPath,
-        ref string msbuildPath, out string options)
-    {
-        solutionPath = Path.GetFullPath(solutionPath);
-        var solutionDir = Path.GetDirectoryName(solutionPath);
-        solutionPath = QuotesIfNeeded(solutionPath);
-        if (Environment.OSVersion.Platform == PlatformID.Win32NT)
+        if (result.ExitCode!=ExitCodes.Success && !string.IsNullOrEmpty(solutionPath))
         {
-            msbuildPath ??= new MsBuildHelper().GetMsBuildPath(_processExecutor);
-            options = solutionPath;
+            // dump previous build result
+            _logger.LogTrace("Initial build output: {0}", result.Output);
+            _logger.LogWarning("Dotnet build failed, trying with MsBuild and forcing package restore.");
+            (result, exe, args) = msBuildHelper.BuildProject(Path.GetDirectoryName(target),
+                buildPath,
+                true,
+                configuration,
+                "-t:restore -p:RestorePackagesConfig=true");
+            if (result.ExitCode != ExitCodes.Success)
+            {
+                _logger.LogWarning("Package restore failed: {Result}", result.Output);
+            }
+            _logger.LogTrace("Last attempt to build.", result.Output);
+            (result, exe, args) = msBuildHelper.BuildProject(Path.GetDirectoryName(target),
+                buildPath,
+                true,
+                configuration);
         }
-        else
-        {
-            msbuildPath = "dotnet";
-            options = $"msbuild {solutionPath}";
-        }
-        if (!string.IsNullOrEmpty(configuration))
-        {
-            options += $" /property:Configuration={QuotesIfNeeded(configuration)}";
-        }
-        // Build project with MSBuild.exe
-        var result = _processExecutor.Start(solutionDir, msbuildPath, options);
-        if (result.ExitCode != ExitCodes.Success)
-        {
-            _logger.LogWarning("MsBuild failed to build the solution, trying to restore packages and build again.");
-            _processExecutor.Start(solutionDir, msbuildPath, $"${options} -t:restore -p:RestorePackagesConfig=true");
-            result = _processExecutor.Start(solutionDir, msbuildPath, solutionPath);
-        }
-        return result;
+
+        CheckBuildResult(result, exe, args);
     }
 
     private void CheckBuildResult(ProcessResult result, string buildCommand, string options)
     {
         if (result.ExitCode != ExitCodes.Success)
         {
-                _logger.LogError("Initial build failed: {Result}", result.Output);
+            _logger.LogError("Initial build failed: {Result}", result.Output);
             // Initial build failed
             throw new InputException(result.Output, FormatBuildResultErrorString(buildCommand, options));
         }
-            _logger.LogTrace("Initial build output {Result}", result.Output);
+        _logger.LogTrace("Initial build output {Result}", result.Output);
         _logger.LogDebug("Initial build successful");
     }
 
@@ -120,7 +82,7 @@ public class InitialBuildProcess : IInitialBuildProcess
 
     private static string QuotesIfNeeded(string parameter)
     {
-        if (!parameter.Contains(' '))
+        if (!parameter.Contains(' ') || parameter.Length<3 || (parameter[0] == '"' && parameter[^1]=='"'))
         {
             return parameter;
         }

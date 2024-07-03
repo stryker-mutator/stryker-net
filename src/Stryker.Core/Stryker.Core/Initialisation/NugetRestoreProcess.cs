@@ -40,19 +40,18 @@ namespace Stryker.Core.Initialisation
             solutionPath = Path.GetFullPath(solutionPath);
             var solutionDir = Path.GetDirectoryName(solutionPath);
 
-
+            var helper = new MsBuildHelper(null, ProcessExecutor, msbuildPath, _logger);
             // Locate MSBuild.exe
-            msbuildPath ??= new MsBuildHelper().GetMsBuildPath(ProcessExecutor);
-            var msBuildVersionOutput = ProcessExecutor.Start(solutionDir, msbuildPath, "-version /nologo");
+            var msBuildVersionOutput = helper.GetVersion();
             string msBuildVersion;
-            if (msBuildVersionOutput.ExitCode != ExitCodes.Success)
+            if (string.IsNullOrWhiteSpace(msBuildVersionOutput))
             {
                 msBuildVersion = string.Empty;
                 _logger.LogDebug("Auto detected msbuild at: {MsBuildPath}, but failed to get version.", msbuildPath);
             }
             else
             {
-                msBuildVersion = msBuildVersionOutput.Output.Trim();
+                msBuildVersion = msBuildVersionOutput.Trim();
                 _logger.LogDebug("Auto detected msbuild version {MsBuildVersion} at: {MsBuildPath}", msBuildVersion,
                     msbuildPath);
             }

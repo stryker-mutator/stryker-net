@@ -60,7 +60,7 @@ public class InitialBuildProcessTests : TestBase
                               @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" + "\" \"" + _cProjectsExampleCsproj + "\"\"");
 
         processMock.Verify(x =>x.Start(It.IsAny<string>(), It.Is<string>(app => app.Contains("dotnet")), It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Once());
-        processMock.Verify(x =>x.Start(It.IsAny<string>(), It.Is<string>(app => app.Contains("MSBuild.exe")), It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(3));
+        processMock.Verify(x =>x.Start(It.IsAny<string>(), It.Is<string>(app => app.Contains("MSBuild.exe")), It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(2));
     }
 
     [Fact]
@@ -143,9 +143,8 @@ public class InitialBuildProcessTests : TestBase
 
         var customMsBuildPath = "C:/User/Test/Msbuild.exe";
         target.InitialBuild(true, "/", "./ExampleProject.sln", null, customMsBuildPath);
-        var executable =Environment.OSVersion.Platform == PlatformID.Win32NT ? customMsBuildPath : "dotnet";
         processMock.Verify(x => x.Start(It.IsAny<string>(),
-                It.Is<string>(applicationParam => applicationParam == executable),
+                It.Is<string>(applicationParam => applicationParam == customMsBuildPath),
                 It.Is<string>(argumentsParam => argumentsParam.Contains("ExampleProject.sln")),
                 It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
                 It.IsAny<int>()),
