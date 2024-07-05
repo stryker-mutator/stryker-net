@@ -10,7 +10,6 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
-using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
@@ -28,14 +27,13 @@ using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
 using Stryker.Core.ToolHelpers;
 using Stryker.DataCollector;
+using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace Stryker.Core.UnitTest.TestRunners;
 
 /// <summary>
 /// This class has a set of methods that can be used to mock VsTest behavior. 
-/// 
 /// </summary>
-[TestClass]
 public class VsTestMockingHelper : TestBase
 {
     protected Mutant Mutant { get; }

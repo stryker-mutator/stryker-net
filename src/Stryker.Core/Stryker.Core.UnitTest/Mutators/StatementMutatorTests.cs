@@ -27,7 +27,7 @@ namespace Stryker.Core.UnitTest.Mutators
         [DataRow("yield break;")]
         [DataRow("yield return 0;")]
         [DataRow("await null;")]
-        private void ShouldMutate(string statementString)
+        public void ShouldMutate(string statementString)
         {
             var source = $@"class Test {{
                 void Method() {{
@@ -50,7 +50,7 @@ namespace Stryker.Core.UnitTest.Mutators
         }
 
         [TestMethod]
-        private void ShouldNotMutate()
+        public void ShouldNotMutate()
         {
             SyntaxTree tree = CSharpSyntaxTree.ParseText($@"
 namespace Test

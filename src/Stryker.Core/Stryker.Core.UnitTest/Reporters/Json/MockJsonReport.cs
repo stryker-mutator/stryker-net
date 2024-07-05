@@ -1,11 +1,9 @@
 using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Json.SourceFiles;
 
 namespace Stryker.Core.UnitTest.Reporters.Json
 {
-    [TestClass]
     public class MockJsonReport : JsonReport
     {
         public MockJsonReport(

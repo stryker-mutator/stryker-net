@@ -2,14 +2,12 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
-    [TestClass]
     public static class ReportTestHelper
     {
         public static IProjectComponent CreateProjectWith(int folders = 2, int files = 5, bool duplicateMutant = false, int mutationScore = 60, string root = "/")

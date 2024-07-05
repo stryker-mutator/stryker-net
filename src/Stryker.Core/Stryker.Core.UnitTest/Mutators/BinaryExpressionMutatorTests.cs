@@ -65,7 +65,7 @@ namespace Stryker.Core.UnitTest.Mutators
         }
 
         [TestMethod]
-        void ShouldMutate_ExclusiveOr()
+        public void ShouldMutate_ExclusiveOr()
         {
             var kind = SyntaxKind.ExclusiveOrExpression;
             var target = new BinaryExpressionMutator();
