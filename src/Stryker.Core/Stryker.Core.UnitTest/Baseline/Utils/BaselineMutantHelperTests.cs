@@ -3,13 +3,14 @@ using Shouldly;
 using Stryker.Core.Baseline.Utils;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Json.SourceFiles;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Baseline.Utils
 {
+    [TestClass]
     public class BaselineMutantHelperTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void GetMutantSourceShouldReturnMutantSource()
         {
             // Arrange
@@ -45,7 +46,7 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
             result.ShouldBe("return Fibonacci(b, a + b, counter + 1, len);");
         }
 
-        [Fact]
+        [TestMethod]
         public void GetMutantSourceShouldReturnMutantSource_When_Multiple_Lines()
         {
             // Arrange
@@ -83,7 +84,7 @@ namespace Stryker.Core.UnitTest.Baseline.Utils
                     Lorem Dolor Sit"";");
         }
 
-        [Fact]
+        [TestMethod]
         public void GetMutantSource_Gets_Partial_Line()
         {
             // Arrange

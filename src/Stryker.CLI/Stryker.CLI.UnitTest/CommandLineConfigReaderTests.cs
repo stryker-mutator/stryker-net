@@ -3,10 +3,11 @@ using McMaster.Extensions.CommandLineUtils;
 using Shouldly;
 using Stryker.CLI.CommandLineConfig;
 using Stryker.Core.Options;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.CLI.UnitTest
 {
+    [TestClass]
     public class CommandLineConfigReaderTests
     {
         private readonly CommandLineApplication _app = new CommandLineApplication
@@ -21,7 +22,7 @@ namespace Stryker.CLI.UnitTest
 
         public CommandLineConfigReaderTests() => _target.RegisterCommandLineOptions(_app, _inputs);
 
-        [Fact]
+        [TestMethod]
         public void ShouldHandleNoValue()
         {
             _target.ReadCommandLineConfig(new[] { "--dev-mode" }, _app, _inputs);
@@ -29,7 +30,7 @@ namespace Stryker.CLI.UnitTest
             _inputs.DevModeInput.SuppliedInput.ShouldBe(true);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldHandleSingleValue()
         {
             _target.ReadCommandLineConfig(new[] { "--concurrency 4" }, _app, _inputs);
@@ -37,7 +38,7 @@ namespace Stryker.CLI.UnitTest
             _inputs.ConcurrencyInput.SuppliedInput.ShouldBe(4);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldHandleSingleOrNoValueWithNoValue()
         {
             _target.ReadCommandLineConfig(new[] { "--since" }, _app, _inputs);
@@ -46,7 +47,7 @@ namespace Stryker.CLI.UnitTest
             _inputs.SinceTargetInput.SuppliedInput.ShouldBe(null);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldHandleSingleOrNoValueWithValue()
         {
             _target.ReadCommandLineConfig(new[] { "--since:test" }, _app, _inputs);
@@ -55,7 +56,7 @@ namespace Stryker.CLI.UnitTest
             _inputs.SinceTargetInput.SuppliedInput.ShouldBe("test");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldHandleMultiValue()
         {
             _target.ReadCommandLineConfig(new[] { "--reporter test", "--reporter test2" }, _app, _inputs);

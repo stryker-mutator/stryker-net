@@ -1,12 +1,13 @@
 using Shouldly;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class DevModeInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new DevModeInput();
@@ -14,10 +15,10 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     Setting this flag makes stryker not remove the mutations but rather crash on failed rollbacks | default: 'False'");
         }
 
-        [Theory]
-        [InlineData(false, false)]
-        [InlineData(true, true)]
-        [InlineData(null, false)]
+        [TestMethod]
+        [DataRow(false, false)]
+        [DataRow(true, true)]
+        [DataRow(null, false)]
         public void ShouldValidate(bool? input, bool expected)
         {
             var target = new DevModeInput { SuppliedInput = input };

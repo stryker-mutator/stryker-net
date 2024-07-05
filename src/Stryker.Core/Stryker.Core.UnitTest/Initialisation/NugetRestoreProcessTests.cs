@@ -1,26 +1,25 @@
-using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Testing;
-using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
+    [TestClass]
     public class NugetRestoreProcessTests : TestBase
     {
         private const string SolutionPath = @"..\MySolution.sln";
         private const string CProgramFilesX86MicrosoftVisualStudio = "C:\\Program Files (x86)\\Microsoft Visual Studio";
         private readonly string _solutionDir = Path.GetDirectoryName(Path.GetFullPath(SolutionPath));
 
-        [SkippableFact]
+        [TestMethodWithIgnoreIfSupport]
+        [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
         public void HappyFlow()
         {
-            Skip.IfNot(Environment.OSVersion.Platform == PlatformID.Win32NT, "DotnetFramework does not run on Unix");
-
             var nugetPath = @"C:\choco\bin\NuGet.exe";
             var msBuildVersion = "16.0.0";
             var nugetDirectory = Path.GetDirectoryName(nugetPath);
@@ -77,11 +76,10 @@ namespace Stryker.Core.UnitTest.Initialisation
                 It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(4));
         }
 
-        [SkippableFact]
+        [TestMethodWithIgnoreIfSupport]
+        [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
         public void ThrowIfRestoreFails()
         {
-            Skip.IfNot(Environment.OSVersion.Platform == PlatformID.Win32NT, "DotnetFramework does not run on Unix");
-
             var nugetPath = @"C:\choco\bin\NuGet.exe";
             var msBuildVersion = "16.0.0";
             var nugetDirectory = Path.GetDirectoryName(nugetPath);
@@ -137,11 +135,10 @@ namespace Stryker.Core.UnitTest.Initialisation
             action.ShouldThrow<InputException>("Packages restore failed."); 
         }
 
-        [SkippableFact]
+        [TestMethodWithIgnoreIfSupport]
+        [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
         public void FailToGetMsBuildVersion()
         {
-            Skip.IfNot(Environment.OSVersion.Platform == PlatformID.Win32NT, "DotnetFramework does not run on Unix");
-
             var nugetPath = @"C:\choco\bin\NuGet.exe";
             var msBuildVersion = string.Empty;
             var nugetDirectory = Path.GetDirectoryName(nugetPath);
@@ -198,11 +195,10 @@ namespace Stryker.Core.UnitTest.Initialisation
                 It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(4));
         }
 
-        [SkippableFact]
+        [TestMethodWithIgnoreIfSupport]
+        [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
         public void NugetIsUsingSuppliedMsBuild()
         {
-            Skip.IfNot(Environment.OSVersion.Platform == PlatformID.Win32NT, "DotnetFramework does not run on Unix");
-
             var nugetPath = @"C:\choco\bin\NuGet.exe";
             var msBuildVersion = "16.0.0";
             var msbuildPath = @$"{CProgramFilesX86MicrosoftVisualStudio}\2019\MSBuild\16.0\Bin\MSBuild.exe";
@@ -260,14 +256,13 @@ namespace Stryker.Core.UnitTest.Initialisation
             processExecutorMock.Verify(x => x.Start(_solutionDir, It.IsAny<string>(), "-version /nologo", null, It.IsAny<int>()), Times.Once);
             processExecutorMock.Verify(x => x.Start(nugetDirectory, nugetPath, string.Format("restore \"{0}\" -MsBuildVersion \"{1}\"", Path.GetFullPath(SolutionPath), msBuildVersion), null, It.IsAny<int>()), Times.Once);
             processExecutorMock.Verify(x => x.Start(It.Is<string>(s => s.Contains("Microsoft Visual Studio")), It.Is<string>(s => s.Contains("vswhere.exe")), @"-latest -requires Microsoft.Component.MSBuild -products * -find MSBuild\**\Bin\MSBuild.exe", null, It.IsAny<int>()), Times.Never);
-            Assert.Equal(msbuildPath, capturedMsBuildPath);
+            msbuildPath.ShouldBe(capturedMsBuildPath);
         }
 
-        [SkippableFact]
+        [TestMethodWithIgnoreIfSupport]
+        [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
         public void ShouldThrowOnNugetNotInstalled()
         {
-            Skip.IfNot(Environment.OSVersion.Platform == PlatformID.Win32NT, "DotnetFramework does not run on Unix");
-
             var processExecutorMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
             var msBuildVersion = "16.0.0";
 
@@ -304,11 +299,10 @@ namespace Stryker.Core.UnitTest.Initialisation
             Should.Throw<InputException>(() => target.RestorePackages(SolutionPath) );
         }
 
-        [SkippableFact]
+        [TestMethodWithIgnoreIfSupport]
+        [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
         public void ShouldPickFirstNugetPath()
         {
-            Skip.IfNot(Environment.OSVersion.Platform == PlatformID.Win32NT, "DotnetFramework does not run on Unix");
-
             string firstNugetPath = @"C:\choco\bin\NuGet.exe";
             string msBuildVersion = "16.0.0";
             var nugetDirectory = Path.GetDirectoryName(firstNugetPath);

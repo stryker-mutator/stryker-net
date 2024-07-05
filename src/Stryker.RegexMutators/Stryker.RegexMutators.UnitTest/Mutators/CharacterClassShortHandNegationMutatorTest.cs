@@ -1,14 +1,15 @@
-﻿using RegexParser.Nodes;
+using RegexParser.Nodes;
 using Shouldly;
 using Stryker.RegexMutators.Mutators;
 using System.Collections.Generic;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.RegexMutators.UnitTest.Mutators
 {
+    [TestClass]
     public class CharacterClassShortHandNegationMutatorTest
     {
-        [Fact]
+        [TestMethod]
         public void ShouldNegateUnnegatedShorthand()
         {
             // Arrange
@@ -35,7 +36,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Character class shorthand \"\\d\" was replaced with \"\\D\" at offset 0.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldUnnegateNegatedShorthand()
         {
             // Arrange
@@ -62,7 +63,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Character class shorthand \"\\D\" was replaced with \"\\d\" at offset 0.");
         }
 
-        [Fact]
+        [TestMethod]
         public void MutateShouldNotMutateNonCharacterClassShorthandNode()
         {
             // Arrange

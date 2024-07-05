@@ -3,23 +3,24 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class ObjectCreationMutatorTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldBeMutationLevelStandard()
         {
             var target = new ObjectCreationMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
         }
 
-        [Theory]
-        [InlineData("new List<int> { 1, 3 }")]
-        [InlineData("new Collection<int> { 1, 3 }")]
-        [InlineData(@"new Dictionary<int, StudentName>()
+        [TestMethod]
+        [DataRow("new List<int> { 1, 3 }")]
+        [DataRow("new Collection<int> { 1, 3 }")]
+        [DataRow(@"new Dictionary<int, StudentName>()
         {
             { 111, new StudentName { FirstName='Foo', LastName='Bar', ID=211 } }
         };")]
@@ -38,7 +39,7 @@ namespace Stryker.Core.UnitTest.Mutators
             replacement.Initializer.Expressions.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveValuesFromObjectInitializer()
         {
             var objectCreationExpression = SyntaxFactory.ParseExpression("new SomeClass { SomeProperty = SomeValue }") as ObjectCreationExpressionSyntax;
@@ -55,9 +56,9 @@ namespace Stryker.Core.UnitTest.Mutators
             replacement.Initializer.Expressions.ShouldBeEmpty();
         }
 
-        [Theory]
-        [InlineData("new List<int> { }")]
-        [InlineData("new SomeClass { }")]
+        [TestMethod]
+        [DataRow("new List<int> { }")]
+        [DataRow("new SomeClass { }")]
         public void ShouldNotMutateEmptyInitializer(string initializer)
         {
             var objectCreationExpression = SyntaxFactory.ParseExpression(initializer) as ObjectCreationExpressionSyntax;

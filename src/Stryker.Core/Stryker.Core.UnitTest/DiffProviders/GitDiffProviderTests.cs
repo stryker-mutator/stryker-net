@@ -1,21 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using DotNet.Globbing;
 using LibGit2Sharp;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
-using Xunit;
 
 namespace Stryker.Core.UnitTest.DiffProviders
 {
+    [TestClass]
     public class GitDiffProviderTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void DoesNotCreateNewRepositoryWhenPassedIntoConstructor()
         {
             var options = new StrykerOptions()
@@ -37,7 +37,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
          * Libgit2sharp has most of its constructors sealed.
          * Because of that we are unable to make the repository mock return a explicit object and are only able to use mocks.
         **/
-        [Fact]
+        [TestMethod]
         public void ScanDiffReturnsListOfFiles()
         {
             // Arrange
@@ -102,7 +102,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             res.ChangedTestFiles.Count().ShouldBe(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void ScanDiffReturnsListOfFiles_IgnoreFolderWithSameStartName()
         {
             // Arrange
@@ -166,7 +166,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             res.ChangedTestFiles.Count().ShouldBe(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void ScanDiff_Throws_Stryker_Input_Exception_When_Commit_null()
         {
             var options = new StrykerOptions()
@@ -209,7 +209,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             Should.Throw<InputException>(() => target.ScanDiff());
         }
 
-        [Fact]
+        [TestMethod]
         public void ScanDiffReturnsListOfFiles_ExcludingTestFilesInDiffIgnoreFiles()
         {
             // Arrange
@@ -285,7 +285,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             res.ChangedSourceFiles.Count().ShouldBe(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void ScanDiffReturnsListOfFiles_ExcludingTestFilesInDiffIgnoreFiles_Single_Asterisk()
         {
             // Arrange
@@ -361,7 +361,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             res.ChangedSourceFiles.Count().ShouldBe(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void ScanDiffReturnsListOfFiles_ExcludingTestFilesInDiffIgnoreFiles_Multi_Asterisk()
         {
             // Arrange
@@ -437,7 +437,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             res.ChangedSourceFiles.Count().ShouldBe(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void ScanDiffReturnsListOfFiles_ExcludingFilesInDiffIgnoreFiles_Multi_Asterisk()
         {
             // Arrange
@@ -507,7 +507,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             res.ChangedSourceFiles.Count().ShouldBe(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void ScanDiffReturnsListOfFiles_ShouldCorrectlyAssignTestAndSourceFiles()
         {
             // Arrange
@@ -597,7 +597,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
             res.ChangedTestFiles.Count().ShouldBe(2);
             res.ChangedSourceFiles.Count().ShouldBe(3);
         }
-        [Fact]
+        [TestMethod]
         public void ScanDiffReturnsListOfFiles_WithoutTestProjects_ShouldCorrectlyAssignTestAndSourceFiles()
         {
             // Arrange

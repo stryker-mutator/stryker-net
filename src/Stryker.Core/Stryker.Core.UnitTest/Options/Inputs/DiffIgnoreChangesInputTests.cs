@@ -1,13 +1,14 @@
 using System.Linq;
 using Shouldly;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class DiffIgnoreChangesInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new DiffIgnoreChangesInput();
@@ -19,7 +20,7 @@ Use glob syntax for wildcards: https://en.wikipedia.org/wiki/Glob_(programming)
 Example: ['**/*Assets.json','**/favicon.ico'] | default: []");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldAcceptGlob()
         {
             var target = new DiffIgnoreChangesInput { SuppliedInput = new[] { "*" } };
@@ -29,7 +30,7 @@ Example: ['**/*Assets.json','**/favicon.ico'] | default: []");
             result.ShouldHaveSingleItem().Glob.ToString().ShouldBe("*");
         }
         
-        [Fact]
+        [TestMethod]
         public void ShouldParseAll()
         {
             var target = new DiffIgnoreChangesInput { SuppliedInput = new[] { "*", "MyFile.cs" } };
@@ -42,7 +43,7 @@ Example: ['**/*Assets.json','**/favicon.ico'] | default: []");
             result.Last().Glob.ToString().ShouldBe("MyFile.cs");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldHaveDefault()
         {
             var target = new DiffIgnoreChangesInput { SuppliedInput = null };

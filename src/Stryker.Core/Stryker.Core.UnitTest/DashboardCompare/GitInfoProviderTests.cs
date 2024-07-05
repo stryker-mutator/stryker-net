@@ -1,20 +1,21 @@
 using System;
 using System.Collections.Generic;
 using LibGit2Sharp;
+using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
+using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
-using Xunit;
 
 namespace Stryker.Core.UnitTest.DashboardCompare
 {
-    using Microsoft.Extensions.Logging;
-    using Stryker.Core.Baseline.Providers;
 
+    [TestClass]
     public class GitInfoProviderTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void WhenProvidedReturnsRepositoryPath()
         {
             var repository = new Mock<IRepository>(MockBehavior.Strict);
@@ -28,7 +29,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             target.RepositoryPath.ShouldBe("path");
         }
 
-        [Fact]
+        [TestMethod]
         public void DoesNotCheckForRepositoryPathWhenDisabled()
         {
             var repository = new Mock<IRepository>(MockBehavior.Strict);
@@ -42,7 +43,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             target.Repository.ShouldBe(null);
         }
 
-        [Fact]
+        [TestMethod]
         public void DoesNotCreateNewRepositoryWhenPassedIntoConstructor()
         {
             var options = new StrykerOptions()
@@ -63,7 +64,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             act.ShouldNotThrow();
         }
 
-        [Fact]
+        [TestMethod]
         public void ThrowsExceptionIfNoCurrentBranchOrProjectVersionSet()
         {
             // Arrange
@@ -78,7 +79,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             result.ShouldThrow<InputException>();
         }
 
-        [Fact]
+        [TestMethod]
         public void ReturnsCurrentBranch()
         {
             // Arrange
@@ -125,7 +126,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             repositoryMock.Verify();
         }
 
-        [Fact]
+        [TestMethod]
         public void ReturnsCurrentBranchWhenMultipleBranches()
         {
             // Arrange
@@ -181,7 +182,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             repositoryMock.Verify();
         }
 
-        [Fact]
+        [TestMethod]
         public void CreateRepository_Throws_InputException_When_RepositoryPath_Empty()
         {
             static void act() => new GitInfoProvider(new StrykerOptions()
@@ -193,7 +194,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
                 .Message.ShouldBe("Could not locate git repository. Unable to determine git diff to filter mutants. Did you run inside a git repo? If not please disable the 'since' feature.");
         }
 
-        [Fact]
+        [TestMethod]
         public void DetermineCommitThrowsStrykerInputException()
         {
             var options = new StrykerOptions()
@@ -228,7 +229,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             Should.Throw<InputException>(act);
         }
 
-        [Fact]
+        [TestMethod]
         public void LooksUpCommitWhenGitSourceIsFortyCharacters()
         {
             // Arrange
@@ -266,7 +267,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             repositoryMock.Verify(x => x.Lookup(It.Is<ObjectId>(x => x.Sha == sha)), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void ReturnsTip_When_Canonical_Name_Is_GitSource()
         {
             // Arrange
@@ -318,7 +319,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             repositoryMock.Verify();
         }
 
-        [Fact]
+        [TestMethod]
         public void GetTargetCommit_Does_Not_Throw_NullReferenceException_When_Branch_Is_Null()
         {
             // Arrange
@@ -366,7 +367,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             Should.Throw<InputException>(act);
         }
 
-        [Fact]
+        [TestMethod]
         public void ReturnsTip_When_Friendly_Name_Is_GitSource()
         {
             // Arrange
@@ -418,7 +419,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             repositoryMock.Verify();
         }
 
-        [Fact]
+        [TestMethod]
         public void ReturnsTip_When_Upstream_Branch_Canonical_Name_Is_GitSource()
         {
             // Arrange

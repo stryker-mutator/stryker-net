@@ -3,10 +3,11 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
 using System.Linq;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class InterpolatedStringMutatorTests : TestBase
     {
         private InterpolatedStringExpressionSyntax GetInterpolatedString(string expression)
@@ -14,17 +15,17 @@ namespace Stryker.Core.UnitTest.Mutators
             return SyntaxFactory.ParseExpression(expression) as InterpolatedStringExpressionSyntax;
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldBeMutationLevelStandard()
         {
             var target = new InterpolatedStringMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
         }
 
-        [Theory]
-        [InlineData("$\"foo\"")]
-        [InlineData("$@\"foo\"")]
-        [InlineData("$\"foo {42}\"")]
+        [TestMethod]
+        [DataRow("$\"foo\"")]
+        [DataRow("$@\"foo\"")]
+        [DataRow("$\"foo {42}\"")]
         public void ShouldMutate(string expression)
         {
             var node = GetInterpolatedString(expression);
@@ -39,9 +40,9 @@ namespace Stryker.Core.UnitTest.Mutators
             mutation.DisplayName.ShouldBe("String mutation");
         }
 
-        [Theory]
-        [InlineData("$\"\"")]
-        [InlineData("$@\"\"")]
+        [TestMethod]
+        [DataRow("$\"\"")]
+        [DataRow("$@\"\"")]
         public void ShouldNotMutateEmptyInterpolatedString(string expression)
         {
             var node = GetInterpolatedString(expression);

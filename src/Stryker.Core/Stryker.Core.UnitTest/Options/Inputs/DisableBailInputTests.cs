@@ -1,28 +1,24 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
-using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class DisableBailInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new DisableBailInput();
             target.HelpText.ShouldBe(@"Disable abort unit testrun as soon as the first unit test fails. | default: 'False'");
         }
 
-        [Theory]
-        [InlineData(false, OptimizationModes.None)]
-        [InlineData(true, OptimizationModes.DisableBail)]
-        [InlineData(null, OptimizationModes.None)]
+        [TestMethod]
+        [DataRow(false, OptimizationModes.None)]
+        [DataRow(true, OptimizationModes.DisableBail)]
+        [DataRow(null, OptimizationModes.None)]
         public void ShouldValidate(bool? input, OptimizationModes expected)
         {
             var target = new DisableBailInput { SuppliedInput = input };

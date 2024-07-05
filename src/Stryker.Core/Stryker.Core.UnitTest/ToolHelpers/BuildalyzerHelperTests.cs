@@ -1,16 +1,17 @@
 using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation.Buildalyzer;
-using Xunit;
 
 namespace Stryker.Core.UnitTest.ToolHelpers;
 
+[TestClass]
 public class BuildalyzerHelperTests : TestBase
 {
-    [Fact]
+    [TestMethod]
     public void ShouldGetAssemblyAttributeFileName()
     {
         var projectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -23,7 +24,7 @@ public class BuildalyzerHelperTests : TestBase
         result.ShouldBe("path.AssemblyInfo.cs");
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldGetAssemblyAttributeFileNameDefault()
     {
         var projectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -35,7 +36,7 @@ public class BuildalyzerHelperTests : TestBase
         result.ShouldBe("path.assemblyinfo.cs");
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldLogAnalyzerLoadGeneralFailure()
     {
         var projectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
@@ -47,7 +48,7 @@ public class BuildalyzerHelperTests : TestBase
         projectAnalyzerResult.GetSourceGenerators(logger.Object).ShouldBeEmpty();
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldLogAnalyzerLoadFailureWhenNoAnalyzer()
     {
         var projectAnalyzerResult = TestHelper.SetupProjectAnalyzerResult(

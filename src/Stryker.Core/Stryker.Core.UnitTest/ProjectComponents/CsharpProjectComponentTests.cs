@@ -3,13 +3,14 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using System.Collections.ObjectModel;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.ProjectComponents
 {
+    [TestClass]
     public class CsharpProjectComponentTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldGet100MutationScore()
         {
             var file = new CsharpFileLeaf()
@@ -33,7 +34,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             file.CheckHealth(thresholds).ShouldBe(Health.Good);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldGet0MutationScore()
         {
             var file = new CsharpFileLeaf()
@@ -64,7 +65,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             file.CheckHealth(thresholdsWarning).ShouldBe(Health.Warning);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldGet50MutationScore()
         {
             var file = new CsharpFileLeaf()
@@ -103,7 +104,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             file.CheckHealth(thresholdsGood).ShouldBe(Health.Good);
         }
 
-        [Fact]
+        [TestMethod]
         public void ReportComponent_ShouldCalculateMutationScoreNaN_NoMutations()
         {
             var target = new CsharpFolderComposite();
@@ -113,7 +114,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             result.ShouldBe(double.NaN);
         }
 
-        [Fact]
+        [TestMethod]
         public void ReportComponent_ShouldCalculateMutationScore_OneMutation()
         {
             var target = new CsharpFolderComposite();
@@ -123,7 +124,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             result.ShouldBe(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void ReportComponent_ShouldCalculateMutationScore_TwoFolders()
         {
             var target = new CsharpFolderComposite();
@@ -134,7 +135,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             result.ShouldBe(0.5);
         }
 
-        [Fact]
+        [TestMethod]
         public void ReportComponent_ShouldCalculateMutationScore_Recursive()
         {
             var target = new CsharpFolderComposite();
@@ -148,7 +149,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             result.ShouldBe(0.5);
         }
 
-        [Fact]
+        [TestMethod]
         public void ReportComponent_ShouldCalculateMutationScore_Recursive2()
         {
             var target = new CsharpFolderComposite();
@@ -166,11 +167,11 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             result.ShouldBe(0.6666666666666666666666666666666666667);
         }
 
-        [Theory]
-        [InlineData(MutantStatus.Killed, 1)]
-        [InlineData(MutantStatus.Timeout, 1)]
-        [InlineData(MutantStatus.Survived, 0)]
-        [InlineData(MutantStatus.Pending, double.NaN)]
+        [TestMethod]
+        [DataRow(MutantStatus.Killed, 1)]
+        [DataRow(MutantStatus.Timeout, 1)]
+        [DataRow(MutantStatus.Survived, 0)]
+        [DataRow(MutantStatus.Pending, double.NaN)]
         public void ReportComponent_ShouldCalculateMutationScore_OnlyKilledIsSuccessful(MutantStatus status, double expectedScore)
         {
             var target = new CsharpFolderComposite();
@@ -180,7 +181,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             result.ShouldBe(expectedScore);
         }
 
-        [Fact]
+        [TestMethod]
         public void ReportComponent_ShouldCalculateMutationScore_BuildErrorIsNull()
         {
             var target = new CsharpFolderComposite();
@@ -190,7 +191,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             result.ShouldBe(double.NaN);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldGetNaNMutationScoreWhenAllExcluded()
         {
             var file = new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.Ignored } } };
@@ -198,7 +199,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents
             file.GetMutationScore().ShouldBe(double.NaN);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldGet0MutationScoreWhenAllNoCoverage()
         {
             var file = new CsharpFileLeaf() { Mutants = new Collection<Mutant>() { new Mutant() { ResultStatus = MutantStatus.NoCoverage } } };

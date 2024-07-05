@@ -9,13 +9,14 @@ using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Json.SourceFiles;
 using Stryker.Core.Reporters.WebBrowserOpener;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
+    [TestClass]
     public class DashboardReporterTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldUploadHumanReadableWhenCompareToDashboardEnabled()
         {
             // Arrange
@@ -43,7 +44,7 @@ namespace Stryker.Core.UnitTest.Reporters
             dashboardClientMock.Verify(x => x.PublishReport(It.IsAny<JsonReport>(), "version/human/readable", false), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldOpenDashboardReportIfOptionIsProvided()
         {
             var reporters = new[] { Reporter.Dashboard };
@@ -70,7 +71,7 @@ namespace Stryker.Core.UnitTest.Reporters
             mockProcess.Verify(m => m.Open("https://dashboard.com"));
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotOpenDashboardWithRealTimeDashboardOptionButItShouldUploadTheInitialReport()
         {
             var reporters = new[] { Reporter.RealTimeDashboard };
@@ -96,7 +97,7 @@ namespace Stryker.Core.UnitTest.Reporters
             dashboardClientMock.Verify(d => d.PublishReport(It.IsAny<JsonReport>(), It.IsAny<string>(), true));
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotDoAnythingIfNotOpeningTheDashboardAndIfNotRealTimeDashboardReporter()
         {
             var reporters = new[] { Reporter.Dashboard };
@@ -118,9 +119,9 @@ namespace Stryker.Core.UnitTest.Reporters
             dashboardClientMock.VerifyNoOtherCalls();
         }
 
-        [Theory]
-        [InlineData(ReportType.Html)]
-        [InlineData(null)]
+        [TestMethod]
+        [DataRow(ReportType.Html)]
+        [DataRow(null)]
         public void ShouldNotOpenDashboardReportIfOptionIsProvided(ReportType? reportType)
         {
             var reporters = new[] { Reporter.Dashboard, Reporter.RealTimeDashboard };
@@ -147,7 +148,7 @@ namespace Stryker.Core.UnitTest.Reporters
             mockProcess.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldSendMutantBatchIfOpenDashboardOptionIsProvided()
         {
             // Arrange
@@ -174,7 +175,7 @@ namespace Stryker.Core.UnitTest.Reporters
             dashboardClientMock.Verify(d => d.PublishMutantBatch(It.IsAny<JsonMutant>()));
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldSendMutantBatchWithRealTimeDashboardOption()
         {
             // Arrange
@@ -200,7 +201,7 @@ namespace Stryker.Core.UnitTest.Reporters
             dashboardClientMock.Verify(d => d.PublishMutantBatch(It.IsAny<JsonMutant>()));
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotSendMutantsIfOpenDashboardOptionIsNotProvided()
         {
             // Arrange
@@ -226,7 +227,7 @@ namespace Stryker.Core.UnitTest.Reporters
             dashboardClientMock.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldSendFinishedIfOpenDashboardOptionIsProvided()
         {
             // Arrange

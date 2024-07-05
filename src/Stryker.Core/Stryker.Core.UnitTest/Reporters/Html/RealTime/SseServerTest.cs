@@ -6,10 +6,11 @@ using LaunchDarkly.EventSource;
 using Shouldly;
 using Stryker.Core.Reporters.Html.RealTime;
 using Stryker.Core.Reporters.Html.RealTime.Events;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters.Html.RealTime;
 
+[TestClass]
 public class SseServerTest : TestBase
 {
     private readonly SseServer _sut;
@@ -46,7 +47,7 @@ public class SseServerTest : TestBase
         return _connected;
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldSendFinishedEventCorrectly()
     {
         _sut.OpenSseEndpoint();
@@ -72,7 +73,7 @@ public class SseServerTest : TestBase
         data.ShouldBeSemantically("\"\"");
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldSendMutantTestedEventCorrectly()
     {
         _sut.OpenSseEndpoint();
@@ -104,7 +105,7 @@ public class SseServerTest : TestBase
         data.ShouldBeSemantically("{\"id\":\"1\",\"status\":\"Survived\"}");
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldIndicateWhenAtLeastOneClientIsConnected()
     {
         _sut.OpenSseEndpoint();

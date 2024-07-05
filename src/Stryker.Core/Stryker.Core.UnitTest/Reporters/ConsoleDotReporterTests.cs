@@ -3,16 +3,17 @@ using Spectre.Console.Testing;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters;
 using System.IO;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
+    [TestClass]
     public class ConsoleDotReporterTests : TestBase
     {
-        [Theory]
-        [InlineData(MutantStatus.Killed, ".", "default")]
-        [InlineData(MutantStatus.Survived, "S", "red")]
-        [InlineData(MutantStatus.Timeout, "T", "default")]
+        [TestMethod]
+        [DataRow(MutantStatus.Killed, ".", "default")]
+        [DataRow(MutantStatus.Survived, "S", "red")]
+        [DataRow(MutantStatus.Timeout, "T", "default")]
         public void ConsoleDotReporter_ShouldPrintRightCharOnMutation(MutantStatus givenStatus, string expectedOutput, string color)
         {
             var console = new TestConsole().EmitAnsiSequences();

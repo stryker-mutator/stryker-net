@@ -2,13 +2,14 @@ using System.IO;
 using System.Linq;
 using Shouldly;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class MutateInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new MutateInput();
@@ -19,7 +20,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     Example: ['**/*Service.cs','!**/MySpecialService.cs', '**/MyOtherService.cs{1..10}{32..45}'] | default: ['**/*']");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldHaveDefault()
         {
             var target = new MutateInput { SuppliedInput = new string[] { } };
@@ -31,7 +32,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             item.IsExclude.ShouldBeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldReturnFiles()
         {
             var target = new MutateInput { SuppliedInput = new[] { Path.Combine("**", "*.cs") } };
@@ -43,7 +44,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             item.IsExclude.ShouldBeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldExcludeAll()
         {
             var target = new MutateInput { SuppliedInput = new[] { "!" + Path.Combine("**", "Test.cs") } };

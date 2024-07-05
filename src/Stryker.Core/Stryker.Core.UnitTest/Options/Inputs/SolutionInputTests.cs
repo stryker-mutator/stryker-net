@@ -3,20 +3,21 @@ using System.IO.Abstractions.TestingHelpers;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class SolutionInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new SolutionInput();
             target.HelpText.ShouldBe(@"Full path to your solution file. Required on dotnet framework.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldReturnSolutionPathIfExists()
         {
             var dir = Directory.GetCurrentDirectory();
@@ -30,7 +31,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             input.Validate(dir, fileSystem).ShouldBe(path);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldReturnFullPathWhenRelativePathGiven()
         {
             var dir = Directory.GetCurrentDirectory();
@@ -46,7 +47,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             input.Validate(dir, fileSystem).ShouldBe(fullPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldDiscoverSolutionFileIfSolutionPathIsNotSupplied()
         {
             var input = new SolutionInput { SuppliedInput = null };
@@ -60,7 +61,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             input.Validate(dir, fileSystem).ShouldBe(fullPath);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrowWhenMultipleSolutionFilesAreDiscovered()
         {
             var input = new SolutionInput { SuppliedInput = null };
@@ -86,7 +87,7 @@ $@"Expected exactly one .sln file, found more than one:
             ex.Message.ShouldBe(errorMessage);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldBeEmptyWhenNullAndCantBeDiscovered()
         {
             var input = new SolutionInput { SuppliedInput = null };
@@ -98,7 +99,7 @@ $@"Expected exactly one .sln file, found more than one:
             input.Validate(dir, fileSystem).ShouldBeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrowWhenNotExists()
         {
             var input = new SolutionInput { SuppliedInput = "/c/root/bla/solution.sln" };
@@ -114,7 +115,7 @@ $@"Expected exactly one .sln file, found more than one:
             ex.Message.ShouldBe("Given path does not exist: /c/root/bla/solution.sln");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrowWhenPathIsNoSolutionFile()
         {
             var input = new SolutionInput { SuppliedInput = "/c/root/bla/solution.csproj" };

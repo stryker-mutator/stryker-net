@@ -18,10 +18,11 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.TestRunners.VsTest;
 using Stryker.Core.ToolHelpers;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.TestRunners
 {
+    [TestClass]
     public class VsTextContextInformationTests: TestBase
     {
         private readonly string _testAssemblyPath;
@@ -132,7 +133,7 @@ namespace Stryker.Core.UnitTest.TestRunners
                 );
         }
 
-        [Fact]
+        [TestMethod]
         public void InitializeAndDiscoverTests()
         {
             using var runner = BuildVsTextContext(new StrykerOptions(), out _);
@@ -144,7 +145,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             runner.VsTests.Count.ShouldBe(2);
         }
 
-        [Fact]
+        [TestMethod]
         public void CleanupProperly()
         {
             using var runner = BuildVsTextContext(new StrykerOptions(), out var mock);
@@ -157,7 +158,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             mock.Verify(m => m.EndSession(), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void InitializeAndSetParameters()
         {
             using var runner = BuildVsTextContext(new StrykerOptions(), out _);
@@ -166,7 +167,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             _consoleParameters.LogFilePath.ShouldBeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void InitializeAndSetParametersAccordingToOptions()
         {
             using var runner = BuildVsTextContext(new StrykerOptions { LogOptions = new LogOptions { LogToFile = true } }, out _);
@@ -181,14 +182,14 @@ namespace Stryker.Core.UnitTest.TestRunners
             _fileSystem.AllDirectories.Last().ShouldMatch(".*logs$");
         }
 
-        [Theory]
-        [InlineData(LogEventLevel.Debug, TraceLevel.Verbose)]
-        [InlineData(LogEventLevel.Verbose, TraceLevel.Verbose)]
-        [InlineData(LogEventLevel.Information, TraceLevel.Info)]
-        [InlineData(LogEventLevel.Warning, TraceLevel.Warning)]
-        [InlineData(LogEventLevel.Error, TraceLevel.Error)]
-        [InlineData(LogEventLevel.Fatal, TraceLevel.Error)]
-        [InlineData((LogEventLevel)(-1), TraceLevel.Off)]
+        [TestMethod]
+        [DataRow(LogEventLevel.Debug, TraceLevel.Verbose)]
+        [DataRow(LogEventLevel.Verbose, TraceLevel.Verbose)]
+        [DataRow(LogEventLevel.Information, TraceLevel.Info)]
+        [DataRow(LogEventLevel.Warning, TraceLevel.Warning)]
+        [DataRow(LogEventLevel.Error, TraceLevel.Error)]
+        [DataRow(LogEventLevel.Fatal, TraceLevel.Error)]
+        [DataRow((LogEventLevel)(-1), TraceLevel.Off)]
         public void InitializeAndSetProperLogLevel(LogEventLevel setLevel, TraceLevel expectedLevel)
         {
             using var runner = BuildVsTextContext(new StrykerOptions { LogOptions = new LogOptions { LogLevel = setLevel } }, out _);

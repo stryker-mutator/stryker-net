@@ -1,16 +1,17 @@
-﻿using RegexParser.Nodes;
+using RegexParser.Nodes;
 using RegexParser.Nodes.QuantifierNodes;
 using Shouldly;
 using Stryker.RegexMutators.Mutators;
 using System.Collections.Generic;
 using System.Linq;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.RegexMutators.UnitTest.Mutators
 {
+    [TestClass]
     public class QuantifierUnlimitedQuantityMutatorTest
     {
-        [Fact]
+        [TestMethod]
         public void ShouldApplyVariationsOnRegularInput()
         {
             // Arrange
@@ -43,7 +44,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutations.Count.ShouldBe(2);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldSkipDecrementOnZeroStartValue()
         {
             // Arrange

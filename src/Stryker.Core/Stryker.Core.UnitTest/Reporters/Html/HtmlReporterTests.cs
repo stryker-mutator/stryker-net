@@ -12,15 +12,16 @@ using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Html;
 using Stryker.Core.Reporters.Html.RealTime;
 using Stryker.Core.Reporters.WebBrowserOpener;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters.Html
 {
+    [TestClass]
     public class HtmlReporterTests : TestBase
     {
         private readonly Mock<IRealTimeMutantHandler> _handlerMock = new();
 
-        [Fact]
+        [TestMethod]
         public void ShouldWriteJsonToFile()
         {
             var mockProcess = new Mock<IWebbrowserOpener>();
@@ -38,7 +39,7 @@ namespace Stryker.Core.UnitTest.Reporters.Html
             mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldReplacePlaceholdersInHtmlFile()
         {
             var mockProcess = new Mock<IWebbrowserOpener>();
@@ -61,7 +62,7 @@ namespace Stryker.Core.UnitTest.Reporters.Html
             fileContents.ShouldNotContain("##REPORT_JSON##");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldSupportSpacesInPath()
         {
             var mockProcess = new Mock<IWebbrowserOpener>();
@@ -84,7 +85,7 @@ namespace Stryker.Core.UnitTest.Reporters.Html
             fileContents.ShouldNotContain("##REPORT_JSON##");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldSupportSpacesInConsole()
         {
             var mockFileSystem = new MockFileSystem();
@@ -112,7 +113,7 @@ namespace Stryker.Core.UnitTest.Reporters.Html
             mockAnsiConsole.Output.ShouldContain(reportUri);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldContainJsonInHtmlReportFile()
         {
             var mockProcess = new Mock<IWebbrowserOpener>();
@@ -136,7 +137,7 @@ namespace Stryker.Core.UnitTest.Reporters.Html
             fileContents.ShouldContain(@"""low"":60");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldOpenHtmlReportImmediatelyIfOptionIsProvided()
         {
             var mockProcess = new Mock<IWebbrowserOpener>();
@@ -162,7 +163,7 @@ namespace Stryker.Core.UnitTest.Reporters.Html
             mockProcess.Verify(m => m.Open(reportUri));
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldOpenHtmlReportImmediatelyIfOptionIsProvidedAndSpacesInPath()
         {
             var mockProcess = new Mock<IWebbrowserOpener>();
@@ -191,7 +192,7 @@ namespace Stryker.Core.UnitTest.Reporters.Html
             mockProcess.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldCloseSseEndpointAfterReportingAllMutantsTested()
         {
             var mockProcess = new Mock<IWebbrowserOpener>();
@@ -211,7 +212,7 @@ namespace Stryker.Core.UnitTest.Reporters.Html
             _handlerMock.Verify(s => s.CloseSseEndpoint());
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldSendMutantEventIfOpenReportOptionIsProvided()
         {
             var mockProcess = new Mock<IWebbrowserOpener>();
@@ -230,7 +231,7 @@ namespace Stryker.Core.UnitTest.Reporters.Html
             _handlerMock.Verify(h => h.SendMutantTestedEvent(It.IsAny<Mutant>()));
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotSendMutantEventIfOpenReportOptionIsProvided()
         {
             var mockProcess = new Mock<IWebbrowserOpener>();
@@ -248,9 +249,9 @@ namespace Stryker.Core.UnitTest.Reporters.Html
             _handlerMock.VerifyNoOtherCalls();
         }
 
-        [Theory]
-        [InlineData(ReportType.Dashboard)]
-        [InlineData(null)]
+        [TestMethod]
+        [DataRow(ReportType.Dashboard)]
+        [DataRow(null)]
         public void ShouldNotOpenHtmlReportIfHtmlOptionIsNotProvided(ReportType? reportType)
         {
             var mockProcess = new Mock<IWebbrowserOpener>();

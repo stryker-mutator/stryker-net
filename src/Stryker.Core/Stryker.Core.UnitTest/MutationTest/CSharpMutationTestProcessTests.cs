@@ -12,11 +12,12 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Mutation = Stryker.Core.Mutants.Mutation;
 
 namespace Stryker.Core.UnitTest.MutationTest
 {
+    [TestClass]
     public class CSharpMutationTestProcessTests : TestBase
     {
         private string CurrentDirectory { get; }
@@ -30,7 +31,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             SourceFile = File.ReadAllText(CurrentDirectory + "/TestResources/ExampleSourceFile.cs");
         }
 
-        [Fact]
+        [TestMethod]
         public void MutateShouldWriteToDisk_IfCompilationIsSuccessful()
         {
             var folder = new CsharpFolderComposite();

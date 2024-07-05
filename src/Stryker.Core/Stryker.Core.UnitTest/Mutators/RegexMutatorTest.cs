@@ -3,20 +3,21 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
 using System.Linq;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class RegexMutatorTest : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldBeMutationLevelAdvanced()
         {
             var target = new RegexMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Advanced);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldMutateStringLiteralInRegexConstructor()
         {
             var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex(@\"^abc\")") as ObjectCreationExpressionSyntax;
@@ -31,7 +32,7 @@ namespace Stryker.Core.UnitTest.Mutators
             replacement.Token.ValueText.ShouldBe("abc");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldMutateStringLiteralInRegexConstructorWithFullName()
         {
             var objectCreationExpression = SyntaxFactory.ParseExpression("new System.Text.RegularExpressions.Regex(@\"^abc\")") as ObjectCreationExpressionSyntax;
@@ -47,7 +48,7 @@ namespace Stryker.Core.UnitTest.Mutators
         }
 
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateRegexWithoutParameters()
         {
             var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex()") as ObjectCreationExpressionSyntax;
@@ -57,7 +58,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateStringLiteralInOtherConstructor()
         {
             var objectCreationExpression = SyntaxFactory.ParseExpression("new Other(@\"^abc\")") as ObjectCreationExpressionSyntax;
@@ -67,7 +68,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldMutateStringLiteralMultipleTimes()
         {
             var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex(@\"^abc$\")") as ObjectCreationExpressionSyntax;
@@ -83,7 +84,7 @@ namespace Stryker.Core.UnitTest.Mutators
             last.Token.ValueText.ShouldBe("^abc");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldMutateStringLiteralAsNamedArgumentPatternInRegexConstructor()
         {
             var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex(options: RegexOptions.None, pattern: @\"^abc\")") as ObjectCreationExpressionSyntax;

@@ -2,22 +2,23 @@ using System.IO.Abstractions.TestingHelpers;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class MsBuildPathInputTests : TestBase
     {
         private readonly MockFileSystem _fileSystemMock = new();
 
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new MsBuildPathInput();
             target.HelpText.ShouldBe("The path to the msbuild executable to use to build your .NET Framework application. Not used for .net (core).");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldReturnValidMsBuildPath()
         {
             var path = "C:/bla/test.exe";
@@ -28,9 +29,9 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBe(result);
         }
 
-        [Theory]
-        [InlineData("C:/bla/test")]
-        [InlineData("test")]
+        [TestMethod]
+        [DataRow("C:/bla/test")]
+        [DataRow("test")]
         public void ShouldThrowOnNonExistingPath(string path)
         {
             var target = new MsBuildPathInput { SuppliedInput = path };
@@ -39,9 +40,9 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             exception.Message.ShouldBe($"Given MsBuild path '{path}' does not exist. Either provide a valid msbuild path or let stryker locate msbuild automatically.");
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("   ")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("   ")]
         public void ShouldThrowOnEmptyValue(string value)
         {
             var target = new MsBuildPathInput { SuppliedInput = value };

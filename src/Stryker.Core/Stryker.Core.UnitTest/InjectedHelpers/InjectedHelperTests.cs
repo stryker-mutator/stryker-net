@@ -6,27 +6,28 @@ using System;
 using System.Collections.Generic;
 using System.IO.Pipes;
 using System.Linq;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.InjectedHelpers
 {
+    [TestClass]
     public class InjectedHelperTests : TestBase
     {
-        [Theory]
-        [InlineData(LanguageVersion.CSharp2)]
-        [InlineData(LanguageVersion.CSharp3)]
-        [InlineData(LanguageVersion.CSharp4)]
-        [InlineData(LanguageVersion.CSharp5)]
-        [InlineData(LanguageVersion.CSharp6)]
-        [InlineData(LanguageVersion.CSharp7)]
-        [InlineData(LanguageVersion.CSharp7_1)]
-        [InlineData(LanguageVersion.CSharp7_2)]
-        [InlineData(LanguageVersion.CSharp7_3)]
-        [InlineData(LanguageVersion.CSharp8)]
-        [InlineData(LanguageVersion.Default)]
-        [InlineData(LanguageVersion.Latest)]
-        [InlineData(LanguageVersion.LatestMajor)]
-        [InlineData(LanguageVersion.Preview)]
+        [TestMethod]
+        [DataRow(LanguageVersion.CSharp2)]
+        [DataRow(LanguageVersion.CSharp3)]
+        [DataRow(LanguageVersion.CSharp4)]
+        [DataRow(LanguageVersion.CSharp5)]
+        [DataRow(LanguageVersion.CSharp6)]
+        [DataRow(LanguageVersion.CSharp7)]
+        [DataRow(LanguageVersion.CSharp7_1)]
+        [DataRow(LanguageVersion.CSharp7_2)]
+        [DataRow(LanguageVersion.CSharp7_3)]
+        [DataRow(LanguageVersion.CSharp8)]
+        [DataRow(LanguageVersion.Default)]
+        [DataRow(LanguageVersion.Latest)]
+        [DataRow(LanguageVersion.LatestMajor)]
+        [DataRow(LanguageVersion.Preview)]
         public void InjectHelpers_ShouldCompile_ForAllLanguageVersions(LanguageVersion version)
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();
@@ -60,16 +61,16 @@ namespace Stryker.Core.UnitTest.InjectedHelpers
                 $"errors :{string.Join(Environment.NewLine, compilation.GetDiagnostics().Where(x => x.Severity == DiagnosticSeverity.Error).Select(diag => $"{diag.Id}: '{diag.GetMessage()}' at {diag.Location.SourceTree.FilePath}, {diag.Location.GetLineSpan().StartLinePosition.Line+1}:{diag.Location.GetLineSpan().StartLinePosition.Character}"))}");
         }
 
-        [Theory]
-        [InlineData(LanguageVersion.CSharp8)]
-        [InlineData(LanguageVersion.CSharp9)]
-        [InlineData(LanguageVersion.CSharp10)]
-        [InlineData(LanguageVersion.CSharp11)]
-        [InlineData(LanguageVersion.CSharp12)]
-        [InlineData(LanguageVersion.Default)]
-        [InlineData(LanguageVersion.Latest)]
-        [InlineData(LanguageVersion.LatestMajor)]
-        [InlineData(LanguageVersion.Preview)]
+        [TestMethod]
+        [DataRow(LanguageVersion.CSharp8)]
+        [DataRow(LanguageVersion.CSharp9)]
+        [DataRow(LanguageVersion.CSharp10)]
+        [DataRow(LanguageVersion.CSharp11)]
+        [DataRow(LanguageVersion.CSharp12)]
+        [DataRow(LanguageVersion.Default)]
+        [DataRow(LanguageVersion.Latest)]
+        [DataRow(LanguageVersion.LatestMajor)]
+        [DataRow(LanguageVersion.Preview)]
         public void InjectHelpers_ShouldCompile_ForAllLanguageVersionsWithNullableOptions(LanguageVersion version)
         {
             var assemblies = AppDomain.CurrentDomain.GetAssemblies();

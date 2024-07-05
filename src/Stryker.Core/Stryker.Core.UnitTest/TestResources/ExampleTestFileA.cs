@@ -2,13 +2,13 @@ namespace ExampleProject
 {
     public class TestClassA
     {
-        [Fact]
+        [TestMethod]
         public int Fibinacci(int len)
         {
             return Fibonacci(0, 1, 1, len);
         }
 
-        [Fact]
+        [TestMethod]
         public int Fibonacci(int a, int b, int counter, int len)
         {
             if (counter <= len)
@@ -19,7 +19,7 @@ namespace ExampleProject
             return 0;
         }
 
-        [Fact]
+        [TestMethod]
         public string LoremIpsum()
         {
             return @"Lorem Ipsum
@@ -27,7 +27,7 @@ namespace ExampleProject
                     Lorem Dolor Sit";
         }
 
-        [Fact]
+        [TestMethod]
         public void StringSplit()
         {
             var testString = "";

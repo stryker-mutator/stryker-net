@@ -1,14 +1,13 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Stryker.Core.Reporters;
-using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class ProjectNameInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new ProjectNameInput();
@@ -16,7 +15,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
 For example: Your project might be called 'consumer-loans' and it might contains sub-modules 'consumer-loans-frontend' and 'consumer-loans-backend'. | default: ''");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldReturnName()
         {
             var input = new ProjectNameInput { SuppliedInput = "name" };
@@ -26,7 +25,7 @@ For example: Your project might be called 'consumer-loans' and it might contains
             result.ShouldBe("name");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldHaveDefault()
         {
             var input = new ProjectNameInput { SuppliedInput = null };

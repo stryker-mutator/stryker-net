@@ -1,18 +1,19 @@
 using System;
 using Shouldly;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest
 {
+    [TestClass]
     public class ExclusionPatternTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ExclusionPattern_Null()
         {
-            _ = Assert.Throws<ArgumentNullException>(() => new ExclusionPattern(null));
+            _ = Should.Throw<ArgumentNullException>(() => new ExclusionPattern(null));
         }
 
-        [Fact]
+        [TestMethod]
         public void ExclusionPattern_Globs()
         {
             var s1 = new ExclusionPattern(@"Person.cs");
@@ -23,7 +24,7 @@ namespace Stryker.Core.UnitTest
             s1.Glob.ToString().ShouldBe(s2.Glob.ToString());
         }
 
-        [Fact]
+        [TestMethod]
         public void ExclusionPattern_MutantSpans()
         {
             var s1 = new ExclusionPattern(@"src/Person.cs{10..100}");

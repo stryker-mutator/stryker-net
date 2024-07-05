@@ -3,22 +3,23 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
 using System.Linq;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class StringMutatorTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldBeMutationLevelStandard()
         {
             var target = new StringMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
         }
 
-        [Theory]
-        [InlineData("", "Stryker was here!")]
-        [InlineData("foo", "")]
+        [TestMethod]
+        [DataRow("", "Stryker was here!")]
+        [DataRow("foo", "")]
         public void ShouldMutate(string original, string expected)
         {
             var node = SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(original));
@@ -33,7 +34,7 @@ namespace Stryker.Core.UnitTest.Mutators
             mutation.DisplayName.ShouldBe("String mutation");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateOnRegexExpression()
         {
             var expressionSyntax = SyntaxFactory.ParseExpression("new Regex(\"myregex\")");
@@ -44,7 +45,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateOnFullyDefinedRegexExpression()
         {
             var expressionSyntax = SyntaxFactory.ParseExpression("new System.Text.RegularExpressions.Regex(\"myregex\")");
@@ -55,7 +56,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateOnRegularExpressionInClass()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System.Text.RegularExpressions;
@@ -75,7 +76,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateOnGuidExpression()
         {
             var expressionSyntax = SyntaxFactory.ParseExpression("new Guid(\"00000-0000\")");
@@ -86,7 +87,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateOnFullyDefinedGuidExpression()
         {
             var expressionSyntax = SyntaxFactory.ParseExpression("new System.Guid(\"00000-0000\")");
@@ -97,7 +98,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateOnGuidInClass()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;

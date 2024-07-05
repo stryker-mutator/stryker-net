@@ -7,10 +7,10 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Core.Compiling;
 using Stryker.Core.Exceptions;
@@ -20,10 +20,10 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.SourceProjects;
-using Xunit;
 
 namespace Stryker.Core.UnitTest.Compiling
 {
+    [TestClass]
     public class CSharpRollbackProcessTests : TestBase
     {
         private readonly SyntaxAnnotation _ifEngineMarker = new("Injector", "IfInstrumentationEngine");
@@ -33,7 +33,7 @@ namespace Stryker.Core.UnitTest.Compiling
 
         private SyntaxAnnotation GetMutationTypeMarker(Mutator type) => new("MutationType", type.ToString());
 
-        [Fact]
+        [TestMethod]
         public void RollbackProcess_ShouldRollbackError_RollbackedCompilationShouldCompile()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
@@ -87,7 +87,7 @@ if(ActiveMutation == 1) {
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRollbackIssueInExpression()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"
@@ -161,7 +161,7 @@ namespace ExampleProject
         }
 
 
-        [Fact]
+        [TestMethod]
         public void ShouldRollbackAllMutationsInsideAExpressionBodyMethod()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"
@@ -246,7 +246,7 @@ namespace ExampleProject
             test.ShouldThrow<CompilationException>();
         }
 
-        [Fact]
+        [TestMethod]
         public void RollbackProcess_ShouldRollbackAllCompileErrors()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
@@ -320,7 +320,7 @@ namespace ExampleProject
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 6, 7 });
         }
 
-        [Fact]
+        [TestMethod]
         public void RollbackProcess_ShouldRollbackErrorsAndKeepTheRest()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
@@ -414,7 +414,7 @@ namespace ExampleProject
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7 });
         }
 
-        [Fact]
+        [TestMethod]
         public void RollbackProcess_ShouldRollbackBlockMutationWhenLocalRollbackFails()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"
@@ -478,7 +478,7 @@ namespace ExampleProject
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 1 });
         }
 
-        [Fact]
+        [TestMethod]
         public void RollbackProcess_ShouldRollbackMethodWhenLocalRollbackFailsAndNoBlockMutationsFound()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
@@ -579,7 +579,7 @@ namespace ExampleProject
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
         }
 
-        [Fact]
+        [TestMethod]
         public void RollbackProcess_ShouldRollbacConstructorWhenLocalRollbackFailsAndNoBlockMutationsFound()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
@@ -679,7 +679,7 @@ namespace ExampleProject
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
         }
 
-        [Fact]
+        [TestMethod]
         public void RollbackProcess_ShouldRollbackAccessorWhenLocalRollbackFails()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
@@ -788,7 +788,7 @@ namespace ExampleProject
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
         }
 
-        [Fact]
+        [TestMethod]
         public void RollbackProcess_ShouldRollbackError_RollbackedCompilationShouldCompileWhenUriIsEmpty()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"
@@ -844,7 +844,7 @@ namespace ExampleProject
             fixedCompilation.RollbackedIds.ShouldBe([1]);
         }
 
-        [Fact]
+        [TestMethod]
         public void RollbackProcess_ShouldOnlyRaiseExceptionOnFinalAttempt()
         {
 
