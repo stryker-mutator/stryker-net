@@ -51,6 +51,7 @@ public static class FileConfigGenerator
                 MutationLevel = inputs.MutationLevelInput.SuppliedInput ?? inputs.MutationLevelInput.Default,
                 Reporters = inputs.ReportersInput.SuppliedInput?.ToArray() ?? inputs.ReportersInput.Default.ToArray(),
                 Solution = inputs.SolutionInput.SuppliedInput ?? inputs.SolutionInput.Default,
+                Configuration = inputs.ConfigurationInput.SuppliedInput ?? inputs.ConfigurationInput.Default,
                 TargetFramework = inputs.TargetFrameworkInput.SuppliedInput ?? inputs.TargetFrameworkInput.Default,
                 Project = inputs.SourceProjectNameInput.SuppliedInput ?? inputs.SourceProjectNameInput.Default,
                 Verbosity = inputs.VerbosityInput.SuppliedInput ?? inputs.VerbosityInput.Default,

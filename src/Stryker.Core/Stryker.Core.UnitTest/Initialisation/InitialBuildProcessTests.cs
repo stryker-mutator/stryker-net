@@ -7,151 +7,149 @@ using Stryker.Core.Initialisation;
 using Stryker.Core.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest.Initialisation
+namespace Stryker.Core.UnitTest.Initialisation;
+
+[TestClass]
+public class InitialBuildProcessTests : TestBase
 {
-    [TestClass]
-    public class InitialBuildProcessTests : TestBase
+    private readonly string _cProjectsExampleCsproj;
+
+    public InitialBuildProcessTests() => _cProjectsExampleCsproj = Environment.OSVersion.Platform == PlatformID.Win32NT ? @"C:\Projects \Example.csproj" : "/usr/projects/Example.csproj";
+
+    [TestMethod]
+    public void InitialBuildProcess_ShouldThrowStrykerInputExceptionOnFail()
     {
-        private string _cProjectsExampleCsproj;
+        var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
 
-        public InitialBuildProcessTests()
-        {
-            _cProjectsExampleCsproj = Environment.OSVersion.Platform == PlatformID.Win32NT ? @"C:\Projects\Example.csproj" : "/usr/projects/Example.csproj";
-        }
+        processMock.SetupProcessMockToReturn("", 1);
 
-        [TestMethod]
-        public void InitialBuildProcess_ShouldThrowStrykerInputExceptionOnFail()
-        {
-            var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
+        var target = new InitialBuildProcess(processMock.Object);
 
-            processMock.SetupProcessMockToReturn("", 1);
+        Should.Throw<InputException>(() => target.InitialBuild(false, _cProjectsExampleCsproj, null))
+            .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"dotnet build Example.csproj\"");
+    }
 
-            var target = new InitialBuildProcess(processMock.Object);
+    [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
+    public void InitialBuildProcess_WithPathAsBuildCommand_ShouldThrowStrykerInputExceptionOnFailWithQuotes()
+    {
+        var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
 
-            Should.Throw<InputException>(() => target.InitialBuild(false, _cProjectsExampleCsproj, null))
-                .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"dotnet build \"" + @"Example.csproj" + "\"\"");
-        }
+        processMock.SetupProcessMockToReturn("", 1);
 
-        [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
-        public void InitialBuildProcess_WithPathAsBuildCommand_ShouldThrowStrykerInputExceptionOnFailWithQuotes()
-        {
-            var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
+        var target = new InitialBuildProcess(processMock.Object);
 
-            processMock.SetupProcessMockToReturn("", 1);
+        Should.Throw<InputException>(() => target.InitialBuild(true, null, _cProjectsExampleCsproj, null, @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
+            .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"\"" +
+                              @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" + "\" \"" + _cProjectsExampleCsproj + "\"\"");
+    }
 
-            var target = new InitialBuildProcess(processMock.Object);
+    [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
+    public void InitialBuildProcess_WithPathAsBuildCommand_TriesWithMsBuildIfDotnetFails()
+    {
+        var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
 
-            Should.Throw<InputException>(() => target.InitialBuild(true, null, _cProjectsExampleCsproj, @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
-                .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"\"" +
-                                  @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" + "\" \"" + _cProjectsExampleCsproj + "\"\"");
-        }
+        processMock.SetupProcessMockToReturn("", 2);
 
-        [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
-        public void InitialBuildProcess_WithPathAsBuildCommand_TriesWithMsBuildIfDotnetFails()
-        {
-            var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
+        var target = new InitialBuildProcess(processMock.Object);
 
-            processMock.SetupProcessMockToReturn("", 2);
+        Should.Throw<InputException>(() => target.InitialBuild(false, null, _cProjectsExampleCsproj, null, @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
+            .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"\"" +
+                              @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" + "\" \"" + _cProjectsExampleCsproj + "\"\"");
 
-            var target = new InitialBuildProcess(processMock.Object);
+        processMock.Verify(x => x.Start(It.IsAny<string>(), It.Is<string>(app => app.Contains("dotnet")), It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Once());
+        processMock.Verify(x => x.Start(It.IsAny<string>(), It.Is<string>(app => app.Contains("MSBuild.exe")), It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(3));
+    }
 
-            Should.Throw<InputException>(() => target.InitialBuild(false, null, _cProjectsExampleCsproj, @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe"))
-                .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"\"" +
-                                  @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" + "\" \"" + _cProjectsExampleCsproj + "\"\"");
+    [TestMethod]
+    public void InitialBuildProcess_ShouldNotThrowExceptionOnSuccess()
+    {
+        var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
 
-            processMock.Verify(x =>x.Start(It.IsAny<string>(), It.Is<string>(app => app.Contains("dotnet")), It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Once());
-            processMock.Verify(x =>x.Start(It.IsAny<string>(), It.Is<string>(app => app.Contains("MSBuild.exe")), It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(3));
-        }
+        processMock.SetupProcessMockToReturn("");
 
-        [TestMethod]
-        public void InitialBuildProcess_ShouldNotThrowExceptionOnSuccess()
-        {
-            var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
+        var target = new InitialBuildProcess(processMock.Object);
 
-            processMock.SetupProcessMockToReturn("");
+        target.InitialBuild(false, "/", "/");
 
-            var target = new InitialBuildProcess(processMock.Object);
+        processMock.Verify(p => p.Start(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+            It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Once);
+    }
 
-            target.InitialBuild(false, "/", "/");
+    [IgnoreIf(nameof(Is.Unix))]
+    public void InitialBuildProcess_ShouldRunMsBuildOnDotnetFramework()
+    {
+        var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
 
-            processMock.Verify( p => p.Start(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Once);
-        }
+        processMock.SetupProcessMockToReturn("");
 
-        [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
-        public void InitialBuildProcess_ShouldRunMsBuildOnDotnetFramework()
-        {
-            var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
+        var target = new InitialBuildProcess(processMock.Object);
 
-            processMock.SetupProcessMockToReturn("");
+        target.InitialBuild(true, "./ExampleProject.sln", "./ExampleProject.sln", "Debug");
 
-            var target = new InitialBuildProcess(processMock.Object);
-
-            target.InitialBuild(true, "/", "./ExampleProject.sln");
-
-            processMock.Verify(x => x.Start(It.IsAny<string>(),
+        processMock.Verify(x => x.Start(It.IsAny<string>(),
                 It.Is<string>(applicationParam => applicationParam.Contains("msbuild.exe", StringComparison.InvariantCultureIgnoreCase)),
+                It.Is<string>(argumentsParam => argumentsParam.Contains("ExampleProject.sln") && argumentsParam.Contains("/property:Configuration=Debug")),
+                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
+                It.IsAny<int>()),
+            Times.Once);
+
+    }
+
+    [TestMethod]
+    public void InitialBuildProcess_ShouldUseCustomMsbuildIfNotNull()
+    {
+        var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
+
+        processMock.SetupProcessMockToReturn("");
+
+        var target = new InitialBuildProcess(processMock.Object);
+
+        var customMsBuildPath = "C:/User/Test/Msbuild.exe";
+        target.InitialBuild(true, "/", "./ExampleProject.sln", null, customMsBuildPath);
+        var executable = Environment.OSVersion.Platform == PlatformID.Win32NT ? customMsBuildPath : "dotnet";
+        processMock.Verify(x => x.Start(It.IsAny<string>(),
+                It.Is<string>(applicationParam => applicationParam == executable),
                 It.Is<string>(argumentsParam => argumentsParam.Contains("ExampleProject.sln")),
                 It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
                 It.IsAny<int>()),
-                Times.Once);
-        }
+            Times.Once);
+    }
 
-        [TestMethod]
-        public void InitialBuildProcess_ShouldUseCustomMsbuildIfNotNull()
-        {
-            var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
+    [TestMethod]
+    public void InitialBuildProcess_ShouldRunDotnetBuildIfNotDotnetFramework()
+    {
+        var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
 
-            processMock.SetupProcessMockToReturn("");
+        processMock.SetupProcessMockToReturn("");
 
-            var target = new InitialBuildProcess(processMock.Object);
+        var target = new InitialBuildProcess(processMock.Object);
 
-            target.InitialBuild(true, "/", "./ExampleProject.sln", "C:/User/Test/Msbuild.exe");
+        target.InitialBuild(false, "./ExampleProject.csproj", null);
 
-            processMock.Verify(x => x.Start(It.IsAny<string>(),
-                It.Is<string>(applicationParam => applicationParam.Contains("C:/User/Test/Msbuild.exe", StringComparison.InvariantCultureIgnoreCase)),
-                It.Is<string>(argumentsParam => argumentsParam.Contains("ExampleProject.sln")),
-                It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
-                It.IsAny<int>()),
-                Times.Once);
-        }
-
-        [TestMethod]
-        public void InitialBuildProcess_ShouldRunDotnetBuildIfNotDotnetFramework()
-        {
-            var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
-
-            processMock.SetupProcessMockToReturn("");
-
-            var target = new InitialBuildProcess(processMock.Object);
-
-            target.InitialBuild(false, "./ExampleProject.csproj", null);
-
-            processMock.Verify(x => x.Start(It.IsAny<string>(),
+        processMock.Verify(x => x.Start(It.IsAny<string>(),
                 It.Is<string>(applicationParam => applicationParam.Contains("dotnet", StringComparison.InvariantCultureIgnoreCase)),
                 It.Is<string>(argumentsParam => argumentsParam.Contains("build")),
                 It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
                 It.IsAny<int>()),
-                Times.Once);
-        }
+            Times.Once);
+    }
 
-        [TestMethod]
-        public void InitialBuildProcess_ShouldUseSolutionPathIfSet()
-        {
-            var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
+    [TestMethod]
+    public void InitialBuildProcess_ShouldUseSolutionPathIfSet()
+    {
+        var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
 
-            processMock.SetupProcessMockToReturn("");
+        processMock.SetupProcessMockToReturn("");
 
-            var target = new InitialBuildProcess(processMock.Object);
+        var target = new InitialBuildProcess(processMock.Object);
 
-            target.InitialBuild(false, "", "./ExampleProject.sln");
+        target.InitialBuild(false, "", "./ExampleProject.sln");
 
-            processMock.Verify(x => x.Start(It.IsAny<string>(),
+        processMock.Verify(x => x.Start(It.IsAny<string>(),
                 It.Is<string>(applicationParam => applicationParam.Contains("dotnet", StringComparison.InvariantCultureIgnoreCase)),
                 It.Is<string>(argumentsParam => argumentsParam.Contains("ExampleProject.sln")),
                 It.IsAny<IEnumerable<KeyValuePair<string, string>>>(),
                 It.IsAny<int>()),
-                Times.Once);
-        }
+            Times.Once);
     }
 }

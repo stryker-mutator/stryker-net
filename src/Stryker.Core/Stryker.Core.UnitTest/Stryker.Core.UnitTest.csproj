@@ -49,6 +49,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="LaunchDarkly.EventSource" />
+    <PackageReference Include="Microsoft.CodeAnalysis.VisualBasic" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="Moq" />
     <PackageReference Include="MSTest" />

@@ -19,16 +19,14 @@ namespace Stryker.CLI.Logging
             if (logToFile)
             {
                 // log on the lowest level to the log file
-                var logFilesPath = Path.Combine(outputPath, "logs");
-                LoggerFactory.AddFile(logFilesPath + "/log-{Date}.txt", traceToFile ? MSLogLevel.Trace : MSLogLevel.Debug);
+                LoggerFactory.AddFile(Path.Combine(outputPath, "logs", "log-{Date}.txt"), traceToFile ? MSLogLevel.Trace : MSLogLevel.Debug);
             }
 
             // When stryker log level is debug or trace, set LibGit2Sharp loglevel
-            if (logLevel < LogEventLevel.Information) // LibGit2Sharp does not handle LogEventLevel.None properly.
-            {
-                var libGit2SharpLogger = LoggerFactory.CreateLogger(nameof(LibGit2Sharp));
-                GlobalSettings.LogConfiguration = new LogConfiguration(LogLevelConverter.Convert(logLevel), (level, message) => libGit2SharpLogger.Log(LogLevelConverter.Convert(level), message));
-            }
+            if (logLevel >= LogEventLevel.Information) return; // LibGit2Sharp does not handle LogEventLevel.None properly.
+
+            var libGit2SharpLogger = LoggerFactory.CreateLogger(nameof(LibGit2Sharp));
+            GlobalSettings.LogConfiguration = new LogConfiguration(LogLevelConverter.Convert(logLevel), (level, message) => libGit2SharpLogger.Log(LogLevelConverter.Convert(level), message));
         }
 
         public static ILoggerFactory LoggerFactory

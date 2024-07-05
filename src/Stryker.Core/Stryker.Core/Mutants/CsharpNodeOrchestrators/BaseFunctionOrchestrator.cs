@@ -142,5 +142,4 @@ internal abstract class BaseFunctionOrchestrator<T> :MemberDefinitionOrchestrato
         targetNode = SwitchToThisBodies(targetNode, newBody, null);
         return targetNode;
     }
-
 }

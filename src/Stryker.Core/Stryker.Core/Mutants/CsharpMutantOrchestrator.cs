@@ -35,7 +35,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         Mutators = mutators ?? DefaultMutatorList();
         Mutants = new Collection<Mutant>();
         Logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpMutantOrchestrator>();
-        
+
     }
 
     private static List<INodeOrchestrator> BuildOrchestratorList() =>
@@ -93,6 +93,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new BinaryExpressionMutator(),
         new BlockMutator(),
         new BooleanMutator(),
+        new ConditionalExpressionMutator(),
         new AssignmentExpressionMutator(),
         new PrefixUnaryMutator(),
         new PostfixUnaryMutator(),
@@ -110,7 +111,8 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new NullCoalescingExpressionMutator(),
         new MathMutator(),
         new SwitchExpressionMutator(),
-        new IsPatternExpressionMutator()
+        new IsPatternExpressionMutator(),
+        new StringMethodMutator()
     ];
 
     private IEnumerable<IMutator> Mutators { get; }
@@ -160,7 +162,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
     private Mutant CreateNewMutant(Mutation mutation, IMutator mutator, MutationContext context)
     {
         var id = MutantCount;
-        Logger.LogDebug("Mutant {0} created {1} -> {2} using {3}", id, mutation.OriginalNode,
+        Logger.LogDebug("Mutant {MutantId} created {OriginalNode} -> {ReplacementNode} using {Mutator}", id, mutation.OriginalNode,
             mutation.ReplacementNode, mutator.GetType());
         var mutantIgnored = context.FilteredMutators?.Contains(mutation.Type) ?? false;
         return new Mutant

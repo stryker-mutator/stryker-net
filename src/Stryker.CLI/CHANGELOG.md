@@ -1,3 +1,12 @@
+## [4.0.6](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.0.5...dotnet-stryker@4.0.6) (2024-05-25)
+
+
+### Bug Fixes
+
+* Logging of unexpected test case could result in a crash ([#2929](https://github.com/stryker-mutator/stryker-net/issues/2929)) ([#2931](https://github.com/stryker-mutator/stryker-net/issues/2931)) ([1db4b6c](https://github.com/stryker-mutator/stryker-net/commit/1db4b6c948ea06f4867f2d0c9b1fbba3098c8d8b))
+
+
+
 ## [4.0.5](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.0.4...dotnet-stryker@4.0.5) (2024-04-26)
 
 
