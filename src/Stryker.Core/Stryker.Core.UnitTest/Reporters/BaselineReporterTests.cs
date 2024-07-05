@@ -5,13 +5,14 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Json;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
+    [TestClass]
     public class BaselineReporterTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void Doesnt_Use_ProjectVersion_When_CurrentBranch_Is_Not_Null()
         {
             var gitInfoProvider = new Mock<IGitInfoProvider>();

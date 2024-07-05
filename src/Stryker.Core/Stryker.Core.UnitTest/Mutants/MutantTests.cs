@@ -1,14 +1,14 @@
 using System;
-using Moq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Core.Mutants;
-using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutants
 {
+    [TestClass]
     public class MutantTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveDisplayName()
         {
             var mutant = new Mutant
@@ -23,14 +23,14 @@ namespace Stryker.Core.UnitTest.Mutants
             mutant.DisplayName.ShouldBe("1: test mutation");
         }
 
-        [Theory]
-        [InlineData(MutantStatus.CompileError, false)]
-        [InlineData(MutantStatus.Ignored, false)]
-        [InlineData(MutantStatus.Killed, true)]
-        [InlineData(MutantStatus.NoCoverage, true)]
-        [InlineData(MutantStatus.Pending, true)]
-        [InlineData(MutantStatus.Survived, true)]
-        [InlineData(MutantStatus.Timeout, true)]
+        [TestMethod]
+        [DataRow(MutantStatus.CompileError, false)]
+        [DataRow(MutantStatus.Ignored, false)]
+        [DataRow(MutantStatus.Killed, true)]
+        [DataRow(MutantStatus.NoCoverage, true)]
+        [DataRow(MutantStatus.Pending, true)]
+        [DataRow(MutantStatus.Survived, true)]
+        [DataRow(MutantStatus.Timeout, true)]
         public void ShouldCountForStats(MutantStatus status, bool doesCount)
         {
             var mutant = new Mutant
@@ -41,7 +41,7 @@ namespace Stryker.Core.UnitTest.Mutants
             mutant.CountForStats.ShouldBe(doesCount);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldSetKilledStateWhenAssesingTestFailed()
         {
             var failingTest = Guid.NewGuid();
@@ -61,7 +61,7 @@ namespace Stryker.Core.UnitTest.Mutants
             killingTest.ShouldBe(failingTest);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldSetSurvivedWhenNonAssesingTestFailed()
         {
             var failingTest = Guid.NewGuid();
@@ -80,7 +80,7 @@ namespace Stryker.Core.UnitTest.Mutants
             mutant.KillingTests.GetGuids().ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldSetSurvivedWhenNoTestSucceeds()
         {
             var succeedingTest = Guid.NewGuid();
@@ -98,7 +98,7 @@ namespace Stryker.Core.UnitTest.Mutants
             mutant.KillingTests.GetGuids().ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldSetTimedOutStateWhenSomeTestTimesOut()
         {
             var mutant = new Mutant
@@ -114,7 +114,7 @@ namespace Stryker.Core.UnitTest.Mutants
             mutant.ResultStatus.ShouldBe(MutantStatus.Timeout);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldSetTimedOutStateWhenSessionTimesOut()
         {
             var mutant = new Mutant

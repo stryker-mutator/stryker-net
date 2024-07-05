@@ -11,13 +11,14 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
+    [TestClass]
     public class ClearTextTreeReporterTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ClearTextTreeReporter_ShouldPrintFullTree()
         {
             var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
@@ -105,7 +106,7 @@ All files [4/5 ({4.0 / 5.0:P2})]
 ");
         }
 
-        [Fact]
+        [TestMethod]
         public void ClearTextTreeReporter_ShouldPrintOnReportDone()
         {
             var console = new TestConsole().EmitAnsiSequences();
@@ -134,7 +135,7 @@ All files [0/0 (N/A)]
             console.Output.DarkGraySpanCount().ShouldBe(2);
         }
 
-        [Fact]
+        [TestMethod]
         public void ClearTextTreeReporter_ShouldPrintKilledMutation()
         {
             var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
@@ -180,7 +181,7 @@ All files [1/1 ({1:P2})]
             console.Output.GreenSpanCount().ShouldBe(3);
         }
 
-        [Fact]
+        [TestMethod]
         public void ClearTextTreeReporter_ShouldPrintSurvivedMutation()
         {
             var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
@@ -226,7 +227,7 @@ All files [0/1 ({0:P2})]
             console.Output.RedSpanCount().ShouldBe(3);
         }
 
-        [Fact]
+        [TestMethod]
         public void ClearTextTreeReporter_ShouldPrintRedUnderThresholdBreak()
         {
             var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
@@ -268,7 +269,7 @@ All files [0/1 ({0:P2})]
             console.Output.RedSpanCount().ShouldBe(4);
         }
 
-        [Fact]
+        [TestMethod]
         public void ClearTextTreeReporter_ShouldPrintYellowBetweenThresholdLowAndThresholdBreak()
         {
             var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
@@ -310,7 +311,7 @@ All files [0/1 ({0:P2})]
             console.Output.YellowSpanCount().ShouldBe(2);
         }
 
-        [Fact]
+        [TestMethod]
         public void ClearTextTreeReporter_ShouldPrintGreenAboveThresholdHigh()
         {
             var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");

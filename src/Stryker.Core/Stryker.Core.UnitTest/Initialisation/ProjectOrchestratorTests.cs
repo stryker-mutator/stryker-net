@@ -4,6 +4,7 @@ using System.Linq;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Serilog;
 using Serilog.Events;
@@ -17,11 +18,10 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
-using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 
-
+[TestClass]
 public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
 {
     private readonly Mock<IMutationTestProcess> _mutationTestProcessMock = new(MockBehavior.Strict);
@@ -41,7 +41,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
 
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldInitializeEachProjectInSolution()
     {
         // arrange
@@ -68,7 +68,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         result.ShouldHaveSingleItem();
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldDiscoverContentFiles()
     {
         // arrange
@@ -102,7 +102,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         scan.Count(f => f?.FilePath == contentFile).ShouldBe(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldPassWhenProjectNameIsGiven()
     {
         // arrange
@@ -127,7 +127,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         result.ShouldHaveSingleItem();
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldUsedDesiredConfigurationWhenDefined()
     {
         // arrange
@@ -159,7 +159,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         buildalyzerAnalyzerManagerMock.Verify( x=> x.SetGlobalProperty("Configuration", "Release"), Times.Once());
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldRestoreWhenAnalysisFails()
     {
         // activate log in order to smoke test logging.
@@ -224,7 +224,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         }
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldFailIfNoProjectFound()
     {
         var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.csproj");
@@ -249,7 +249,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         mutateAction.ShouldThrow<InputException>();
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldFilterInSolutionMode()
     {
         // when a solutionPath is given and it's inside the current directory (basePath)
@@ -276,7 +276,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         result.ShouldThrow<InputException>();
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldProvideMinimalSupportForFSharp()
     {
         var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.fsproj");
@@ -307,7 +307,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         result.ShouldHaveSingleItem();
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldDiscoverUpstreamProject()
     {
         // arrange
@@ -343,7 +343,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         result.Count.ShouldBe(2);
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldDiscoverUpstreamProjectWithInvalidCasing()
     {
         // arrange
@@ -377,7 +377,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         result.Count.ShouldBe(2);
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldDisregardInvalidReferences()
     {
         // arrange
@@ -407,7 +407,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         result.Count.ShouldBe(1);
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldIgnoreProjectWithoutTestAssemblies()
     {
         // arrange

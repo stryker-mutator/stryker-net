@@ -5,13 +5,14 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
 {
+    [TestClass]
     public class TestProjectTests
     {
-        [Fact]
+        [TestMethod]
         public void TestProjectEqualsWhenAllPropertiesEqual()
         {
             // Arrange
@@ -34,7 +35,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
             testProjectA.GetHashCode().ShouldBe(testProjectB.GetHashCode());
         }
 
-        [Fact]
+        [TestMethod]
         public void TestProjectsNotEqualWhenAnalyzerResultsNotEqual()
         {
             // Arrange
@@ -63,7 +64,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
             testProjectA.ShouldNotBe(testProjectB);
         }
 
-        [Fact]
+        [TestMethod]
         public void TestProject_ParseTestFile_WithCsharpParseOptions()
         {
             // Arrange

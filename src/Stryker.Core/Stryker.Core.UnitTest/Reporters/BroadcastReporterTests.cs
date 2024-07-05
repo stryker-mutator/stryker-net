@@ -6,13 +6,14 @@ using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
+    [TestClass]
     public class BroadcastReporterTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void BroadcastReporter_ShouldInvokeSameMethodWithSameObject_OnAllMutantsTested()
         {
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
@@ -30,7 +31,7 @@ namespace Stryker.Core.UnitTest.Reporters
             reporterMock.Verify(x => x.OnAllMutantsTested(exampleInputComponent, It.IsAny<TestProjectsInfo>()), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void BroadcastReporter_ShouldInvokeSameMethodWithSameObject_OnMutantsCreated()
         {
             var mockFileSystem = new MockFileSystem();
@@ -51,7 +52,7 @@ namespace Stryker.Core.UnitTest.Reporters
             reporterMock.Verify(x => x.OnMutantsCreated(exampleInputComponent, exampleTestProjectsInfo), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void BroadcastReporter_ShouldInvokeSameMethodWithSameObject_OnMutantTested()
         {
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
@@ -71,7 +72,7 @@ namespace Stryker.Core.UnitTest.Reporters
             reporterMock.Verify(x => x.OnMutantTested(exampleMutant), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void BroadcastReporter_ShouldInvokeAllReportersInList()
         {
             var mockFileSystem = new MockFileSystem();
@@ -100,7 +101,7 @@ namespace Stryker.Core.UnitTest.Reporters
             reporterMock.Verify(x => x.OnMutantTested(exampleMutant), Times.Exactly(2));
         }
 
-        [Fact]
+        [TestMethod]
         public void BroadcastReporter_NoReportersInList()
         {
             var mockFileSystem = new MockFileSystem();

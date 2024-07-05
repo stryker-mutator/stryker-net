@@ -2,20 +2,21 @@ using System.IO.Abstractions.TestingHelpers;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class BasePathInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new BasePathInput();
             target.HelpText.ShouldBe(@$"The path from which stryker is started.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldAllowExistingDir()
         {
             var target = new BasePathInput { SuppliedInput = "C:/MyDir/" };
@@ -27,7 +28,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBe("C:/MyDir/");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrowOnNonexistentDir()
         {
             var target = new BasePathInput { SuppliedInput = "C:/MyDir/" };
@@ -38,7 +39,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             exception.Message.ShouldBe("Base path must exist.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrowOnNull()
         {
             var target = new BasePathInput { SuppliedInput = null };

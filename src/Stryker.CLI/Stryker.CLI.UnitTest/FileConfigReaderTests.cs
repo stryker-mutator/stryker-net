@@ -6,13 +6,14 @@ using Stryker.Core;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.CLI.UnitTest
 {
+    [TestClass]
     public class FileConfigReaderTests
     {
-        [Fact]
+        [TestMethod]
         public void WithNoArgumentsAndNoConfigFile_ShouldStartStrykerWithConfigOptions()
         {
             var mock = new Mock<IStrykerRunner>(MockBehavior.Strict);
@@ -38,9 +39,9 @@ namespace Stryker.CLI.UnitTest
             Directory.SetCurrentDirectory(currentDirectory);
         }
 
-        [Theory]
-        [InlineData("--config-file")]
-        [InlineData("-f")]
+        [TestMethod]
+        [DataRow("--config-file")]
+        [DataRow("-f")]
         public void WithJsonConfigFile_ShouldStartStrykerWithConfigFileOptions(string argName)
         {
             IStrykerInputs actualInputs = null;
@@ -87,7 +88,7 @@ namespace Stryker.CLI.UnitTest
             actualInputs.BreakOnInitialTestFailureInput.SuppliedInput.ShouldNotBeNull().ShouldBeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void WithYamlConfigFile_ShouldStartStrykerWithConfigFileOptions()
         {
             IStrykerInputs actualInputs = null;

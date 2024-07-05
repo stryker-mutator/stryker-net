@@ -13,14 +13,15 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.UnitTest.Reporters;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Baseline.Providers
 {
+    [TestClass]
     public class AzureFileShareBaselineProviderTests : TestBase
     {
         private readonly string _uri = "https://strykernetbaseline.file.core.windows.net/baselines";
-        [Fact]
+        [TestMethod]
         public async Task Authentication_Failure_Async()
         {
             // Arrange
@@ -38,7 +39,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             Mock.Get(logger).Verify(LogLevel.Debug, $"No baseline was found at {options.AzureFileStorageUrl}/StrykerOutput/v1/stryker-report.json");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Load_Report_Directory_NotFound()
         {
             // Arrange
@@ -71,7 +72,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             Mock.Get(directoryClient).VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Load_Report_File_NotFound()
         {
             // Arrange
@@ -115,7 +116,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             Mock.Get(fileClient).VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Load_Report_Returns_Report()
         {
             // Arrange
@@ -164,10 +165,10 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             Mock.Get(fileClient).VerifyNoOtherCalls();
         }
 
-        [Theory]
-        [InlineData(2, 5)]
-        [InlineData(20, 200)]
-        [InlineData(100, 500)]
+        [TestMethod]
+        [DataRow(2, 5)]
+        [DataRow(20, 200)]
+        [DataRow(100, 500)]
         public async Task Save_Report(int folders, int files)
         {
             var chunkSize = 4194304;

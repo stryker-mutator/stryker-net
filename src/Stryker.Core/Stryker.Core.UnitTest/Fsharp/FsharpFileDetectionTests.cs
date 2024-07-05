@@ -4,6 +4,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation;
@@ -11,6 +12,7 @@ using Stryker.Core.Options;
 
 namespace Stryker.Core.UnitTest.Fsharp
 {
+    [TestClass]
     public class FsharpFileDetectionTests : TestBase
     {
         private readonly string _currentDirectory;

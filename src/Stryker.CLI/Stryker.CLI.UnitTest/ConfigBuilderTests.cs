@@ -6,10 +6,11 @@ using Stryker.CLI.CommandLineConfig;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.CLI.UnitTest
 {
+    [TestClass]
     public class ConfigBuilderTests
     {
         private readonly Mock<IStrykerInputs> _inputs;
@@ -25,18 +26,18 @@ namespace Stryker.CLI.UnitTest
             _cmdConfigHandler.RegisterCommandLineOptions(_app, _inputs.Object);
         }
 
-        [Fact]
+        [TestMethod]
         public void InvalidConfigFile_ShouldThrowInputException()
         {
             var args = new[] { "-f", "invalidconfig.json" };
 
             var reader = new ConfigBuilder();
 
-            var exception = Assert.Throws<InputException>(() => reader.Build(_inputs.Object, args, _app, _cmdConfigHandler));
+            var exception = Should.Throw<InputException>(() => reader.Build(_inputs.Object, args, _app, _cmdConfigHandler));
             exception.Message.ShouldStartWith("Config file not found");
         }
 
-        [Fact]
+        [TestMethod]
         public void InvalidDefaultConfigFile_ShouldNotThrowInputExceptionAndNotParseConfigFile()
         {
             var currentDirectory = Directory.GetCurrentDirectory();
@@ -53,7 +54,7 @@ namespace Stryker.CLI.UnitTest
             Directory.SetCurrentDirectory(currentDirectory);
         }
 
-        [Fact]
+        [TestMethod]
         public void ValidDefaultConfigFile_ShouldParseConfigFile()
         {
             var args = new string[] { };

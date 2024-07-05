@@ -1,19 +1,21 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs;
+
+[TestClass]
 public class ConfigurationInputTests : TestBase
 {
-    [Fact]
+    [TestMethod]
     public void ShouldHaveHelpText()
     {
         var target = new ConfigurationInput();
         target.HelpText.ShouldBe("Configuration to use when building the project(s).");
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldReturnSuppliedInput()
     {
         var target = new ConfigurationInput { SuppliedInput = "Debug" };
@@ -23,7 +25,7 @@ public class ConfigurationInputTests : TestBase
         result.ShouldBe("Debug");
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldReturnDefault()
     {
         var target = new ConfigurationInput { SuppliedInput = null };
@@ -33,12 +35,12 @@ public class ConfigurationInputTests : TestBase
         result.ShouldBeNull();
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldThrowOnEmptyInput()
     {
         var target = new ConfigurationInput { SuppliedInput = "   " };
 
-        var ex = Assert.Throws<InputException>(() => target.Validate());
+        var ex = Should.Throw<InputException>(() => target.Validate());
 
         ex.Message.ShouldBe("Please provide a non whitespace only configuration.");
     }

@@ -4,15 +4,16 @@ using Moq;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class ConcurrencyInputTests : TestBase
     {
         private Mock<ILogger<ConcurrencyInput>> _loggerMock = new Mock<ILogger<ConcurrencyInput>>();
 
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new ConcurrencyInput();
@@ -25,21 +26,21 @@ Reasons you might want to lower this setting:
     - You are running stryker in the background while doing other work | default: '{Math.Max(Environment.ProcessorCount / 2, 1)}'");
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenZeroIsPassedAsMaxConcurrentTestRunnersParam_StrykerInputExceptionShouldBeThrown()
         {
             var target = new ConcurrencyInput { SuppliedInput = 0 };
 
-            var ex = Assert.Throws<InputException>(() => target.Validate(_loggerMock.Object));
+            var ex = Should.Throw<InputException>(() => target.Validate(_loggerMock.Object));
 
             ex.Message.ShouldBe("Concurrency must be at least 1.");
         }
 
-        [Theory]
-        [InlineData(2, LogLevel.Warning)]
-        [InlineData(8, LogLevel.Warning)]
-        [InlineData(16, LogLevel.Warning)]
-        [InlineData(128, LogLevel.Warning)]
+        [TestMethod]
+        [DataRow(2, LogLevel.Warning)]
+        [DataRow(8, LogLevel.Warning)]
+        [DataRow(16, LogLevel.Warning)]
+        [DataRow(128, LogLevel.Warning)]
         public void WhenGivenValueIsPassedAsMaxConcurrentTestRunnersParam_ExpectedValueShouldBeSet_ExpectedMessageShouldBeLogged(int concurrentTestRunners, LogLevel expectedLoglevel)
         {
             var validatedInput = new ConcurrencyInput { SuppliedInput = concurrentTestRunners }.Validate(_loggerMock.Object);
@@ -59,7 +60,7 @@ Reasons you might want to lower this setting:
             _loggerMock.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [TestMethod]
         public void WhenGiven1ShouldPrintWarning()
         {
             var validatedInput = new ConcurrencyInput { SuppliedInput = 1 }.Validate(_loggerMock.Object);
@@ -71,7 +72,7 @@ Reasons you might want to lower this setting:
             _loggerMock.VerifyNoOtherCalls();
         }
         
-        [Fact]
+        [TestMethod]
         public void WhenGivenNullShouldGetDefault()
         {
             var validatedInput = new ConcurrencyInput().Validate(_loggerMock.Object);

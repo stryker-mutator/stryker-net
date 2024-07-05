@@ -5,13 +5,14 @@ using Spectre.Console.Testing;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.Reporters;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
+    [TestClass]
     public class MarkdownSummaryReporterTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void MarkdownSummaryReporter_ShouldGenerateReportOnReportDone()
         {
             // Arrange
@@ -34,7 +35,7 @@ namespace Stryker.Core.UnitTest.Reporters
             mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
         }
 
-        [Fact]
+        [TestMethod]
         public void MarkdownSummaryReporter_ShouldReportCorrectThresholds()
         {
             // Arrange
@@ -61,7 +62,7 @@ namespace Stryker.Core.UnitTest.Reporters
             fileContents.ShouldContain("break:10");
         }
 
-        [Fact]
+        [TestMethod]
         public void MarkdownSummaryReporter_ShouldReportCorrectMutationCoverageValues()
         {
             // Arrange
@@ -95,7 +96,7 @@ namespace Stryker.Core.UnitTest.Reporters
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void MarkdownSummaryReporter_ShouldOutputSummaryLocationToTheConsole()
         {
             // Arrange
@@ -120,7 +121,7 @@ namespace Stryker.Core.UnitTest.Reporters
             console.Output.GreenSpanCount().ShouldBe(2);
         }
 
-        [Fact]
+        [TestMethod]
         public void MarkdownSummaryReporter_ShouldNotOutputForEmptyProject()
         {
             // Arrange

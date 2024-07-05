@@ -1,16 +1,17 @@
-﻿using RegexParser.Nodes;
+using RegexParser.Nodes;
 using RegexParser.Nodes.AnchorNodes;
 using RegexParser.Nodes.GroupNodes;
 using Shouldly;
 using Stryker.RegexMutators.Mutators;
 using System.Collections.Generic;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.RegexMutators.UnitTest.Mutators
 {
+    [TestClass]
     public class AnchorRemovalMutatorTest
     {
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveStartOfLineNode()
         {
             // Arrange
@@ -37,7 +38,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Anchor \"^\" was removed at offset 0.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveEndOfLineNode()
         {
             // Arrange
@@ -64,7 +65,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Anchor \"$\" was removed at offset 3.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveStartOfStringNode()
         {
             // Arrange
@@ -91,7 +92,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Anchor \"\\A\" was removed at offset 0.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveEndOfStringNode()
         {
             // Arrange
@@ -118,7 +119,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Anchor \"\\z\" was removed at offset 3.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveEndOfStringZNode()
         {
             // Arrange
@@ -145,7 +146,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Anchor \"\\Z\" was removed at offset 3.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveWordBoundaryNode()
         {
             // Arrange
@@ -172,7 +173,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Anchor \"\\b\" was removed at offset 0.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveNonWordBoundaryNode()
         {
             // Arrange
@@ -199,7 +200,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Anchor \"\\B\" was removed at offset 0.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveContiguousMatchNode()
         {
             // Arrange
@@ -226,7 +227,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Anchor \"\\G\" was removed at offset 0.");
         }
 
-        [Fact]
+        [TestMethod]
         public void MutateShouldNotMutateNonAnchorNode()
         {
             // Arrange
@@ -241,7 +242,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void MutationShouldNotContainOriginalNodesPrefixInDescription()
         {
             // Arrange

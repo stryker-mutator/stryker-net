@@ -6,10 +6,11 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class MathMutatorTest : TestBase
     {
         /// <summary>
@@ -69,7 +70,7 @@ namespace TestApplication
             return memberAccessExpression;
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldBeMutationLevelAdvanced()
         {
             var target = new MathMutator();
@@ -79,8 +80,8 @@ namespace TestApplication
         /// <summary>
         ///     Test method to check for correct mutation of different Math Expression Mutations (in case of call with class name)
         /// </summary>
-        [Theory]
-        [MemberData(nameof(GetMethodSwapsTestData))]
+        [TestMethod]
+        [DynamicData(nameof(MethodSwapsTestData))]
         public void ShouldMutate(MathExpression original, MathExpression[] mutated)
         {
             var target = new MathMutator();
@@ -108,8 +109,8 @@ namespace TestApplication
         /// <summary>
         ///     Test method to check for correct mutation of different Math Expression Mutations (in case of call without class name)
         /// </summary>
-        [Theory]
-        [MemberData(nameof(GetMethodSwapsTestData))]
+        [TestMethod]
+        [DynamicData(nameof(MethodSwapsTestData))]
         public void ShouldMutateUsingStatic(MathExpression original, MathExpression[] mutated)
         {
             var target = new MathMutator();
@@ -136,16 +137,16 @@ namespace TestApplication
         /// <summary>
         ///     Test Method to check, if different expressions aren't mutated (in case of not supported methods)
         /// </summary>
-        [Theory]
-        [InlineData("Abs")]
-        [InlineData("Atan2")]
-        [InlineData("Cbrt")]
-        [InlineData("DivRem")]
-        [InlineData("Log10")]
-        [InlineData("Sqrt")]
+        [TestMethod]
+        [DataRow("Abs")]
+        [DataRow("Atan2")]
+        [DataRow("Cbrt")]
+        [DataRow("DivRem")]
+        [DataRow("Log10")]
+        [DataRow("Sqrt")]
         // there is no need to mutate Min/Max methods because they will duplicate Linq mutator
-        [InlineData("Min")]
-        [InlineData("Max")]
+        [DataRow("Min")]
+        [DataRow("Max")]
         public void ShouldNotMutateOtherMethods(string methodName)
         {
             var target = new MathMutator();
@@ -158,12 +159,12 @@ namespace TestApplication
         /// <summary>
         /// Test Method to check, if different expressions aren't mutated (in case of non-Math classes)
         /// </summary>
-        [Theory]
-        [InlineData("MyClass")]
-        [InlineData("MyMath")]
+        [TestMethod]
+        [DataRow("MyClass")]
+        [DataRow("MyMath")]
         public void ShouldNotMutateOtherClasses(string className)
         {
-            var original = GetMethodSwapsTestData().First()[0];
+            var original = MethodSwapsTestData.First()[0];
             var target = new MathMutator();
 
             var result = target.ApplyMutations(GenerateClassCallExpression(className, original.ToString()), null);
@@ -171,100 +172,106 @@ namespace TestApplication
             result.ShouldBeEmpty();
         }
 
-        public static IEnumerable<object[]> GetMethodSwapsTestData()
+        public static IEnumerable<object[]> MethodSwapsTestData
         {
-            foreach (var trigonometricHyperbolicTestData in GetTrigonometricHyperbolicTestData())
+            get
             {
-                yield return trigonometricHyperbolicTestData;
+                foreach (var trigonometricHyperbolicTestData in TrigonometricHyperbolicTestData)
+                {
+                    yield return trigonometricHyperbolicTestData;
+                }
+
+                yield return new object[]
+                {
+                    MathExpression.BitDecrement, new[] { MathExpression.BitIncrement }
+                };
+
+                yield return new object[]
+                {
+                    MathExpression.BitIncrement, new[] { MathExpression.BitDecrement }
+                };
+
+                yield return new object[]
+                {
+                    MathExpression.Ceiling, new[] { MathExpression.Floor }
+                };
+
+                yield return new object[]
+                {
+                    MathExpression.Exp, new[] { MathExpression.Log }
+                };
+
+                yield return new object[]
+                {
+                    MathExpression.Floor, new[] { MathExpression.Ceiling }
+                };
+
+                yield return new object[]
+                {
+                    MathExpression.Log, new[] { MathExpression.Exp, MathExpression.Pow }
+                };
+
+                yield return new object[]
+                {
+                    MathExpression.MaxMagnitude, new[] { MathExpression.MinMagnitude }
+                };
+
+                yield return new object[]
+                {
+                    MathExpression.MinMagnitude, new[] { MathExpression.MaxMagnitude }
+                };
+
+                yield return new object[]
+                {
+                    MathExpression.Pow, new[] { MathExpression.Log }
+                };
+
+                yield return new object[]
+                {
+                    MathExpression.ReciprocalEstimate, new[] { MathExpression.ReciprocalSqrtEstimate }
+                };
+
+                yield return new object[]
+                {
+                    MathExpression.ReciprocalSqrtEstimate, new[] { MathExpression.ReciprocalEstimate, MathExpression.Sqrt }
+                };
             }
-
-            yield return new object[]
-            {
-                MathExpression.BitDecrement, new[] { MathExpression.BitIncrement }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.BitIncrement, new[] { MathExpression.BitDecrement }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.Ceiling, new[] { MathExpression.Floor }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.Exp, new[] { MathExpression.Log }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.Floor, new[] { MathExpression.Ceiling }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.Log, new[] { MathExpression.Exp, MathExpression.Pow }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.MaxMagnitude, new[] { MathExpression.MinMagnitude }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.MinMagnitude, new[] { MathExpression.MaxMagnitude }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.Pow, new[] { MathExpression.Log }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.ReciprocalEstimate, new[] { MathExpression.ReciprocalSqrtEstimate }
-            };
-
-            yield return new object[]
-            {
-                MathExpression.ReciprocalSqrtEstimate, new[] { MathExpression.ReciprocalEstimate, MathExpression.Sqrt }
-            };
         }
 
-        private static IEnumerable<object[]> GetTrigonometricHyperbolicTestData()
+        private static IEnumerable<object[]> TrigonometricHyperbolicTestData
         {
-            var functions = new[] { "cos", "sin", "tan" };
-
-            foreach (var function in functions)
+            get
             {
-                var otherFunctions = functions.Where(x => x != function).ToList();
+                var functions = new[] { "cos", "sin", "tan" };
 
-                yield return new object[]
+                foreach (var function in functions)
                 {
-                    Enum.Parse<MathExpression>(function, true),
-                    otherFunctions.Select(x => Enum.Parse<MathExpression>(x, true)).Union(new [] { Enum.Parse<MathExpression>($"{function}h", true) }).ToArray()
-                };
+                    var otherFunctions = functions.Where(x => x != function).ToList();
 
-                yield return new object[]
-                {
-                    Enum.Parse<MathExpression>($"{function}h", true),
-                    otherFunctions.Select(x => Enum.Parse<MathExpression>($"{x}h", true)).Union(new [] { Enum.Parse<MathExpression>(function, true) }).ToArray()
-                };
+                    yield return new object[]
+                    {
+                        Enum.Parse<MathExpression>(function, true),
+                        otherFunctions.Select(x => Enum.Parse<MathExpression>(x, true)).Union(new [] { Enum.Parse<MathExpression>($"{function}h", true) }).ToArray()
+                    };
 
-                yield return new object[]
-                {
-                    Enum.Parse<MathExpression>($"a{function}", true),
-                    otherFunctions.Select(x => Enum.Parse<MathExpression>($"a{x}", true)).Union(new [] { Enum.Parse<MathExpression>($"a{function}h", true) }).ToArray()
-                };
+                    yield return new object[]
+                    {
+                        Enum.Parse<MathExpression>($"{function}h", true),
+                        otherFunctions.Select(x => Enum.Parse<MathExpression>($"{x}h", true)).Union(new [] { Enum.Parse<MathExpression>(function, true) }).ToArray()
+                    };
 
-                yield return new object[]
-                {
-                    Enum.Parse<MathExpression>($"a{function}h", true),
-                    otherFunctions.Select(x => Enum.Parse<MathExpression>($"a{x}h", true)).Union(new [] { Enum.Parse<MathExpression>($"a{function}", true) }).ToArray()
-                };
+                    yield return new object[]
+                    {
+                        Enum.Parse<MathExpression>($"a{function}", true),
+                        otherFunctions.Select(x => Enum.Parse<MathExpression>($"a{x}", true)).Union(new [] { Enum.Parse<MathExpression>($"a{function}h", true) }).ToArray()
+                    };
+
+                    yield return new object[]
+                    {
+                        Enum.Parse<MathExpression>($"a{function}h", true),
+                        otherFunctions.Select(x => Enum.Parse<MathExpression>($"a{x}h", true)).Union(new [] { Enum.Parse<MathExpression>($"a{function}", true) }).ToArray()
+                    };
+                }
             }
         }
     }

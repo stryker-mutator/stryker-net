@@ -18,21 +18,22 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Json.SourceFiles;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters.Json
 {
+    [TestClass]
     public class JsonReporterTests : TestBase
     {
         private readonly IFileSystem _fileSystemMock = new MockFileSystem();
         private readonly string _testFilePath = "c:\\mytestfile.cs";
-        private readonly string _testFileContents = @"using Xunit;
+        private readonly string _testFileContents = @"using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ExtraProject.XUnit
 {
     public class UnitTest1
     {
-        [Fact]
+        [TestMethod]
         public void Test1()
         {
             // example test
@@ -42,21 +43,21 @@ namespace ExtraProject.XUnit
 ";
         public JsonReporterTests() => _fileSystemMock.File.WriteAllText(_testFilePath, _testFileContents);
 
-        [Fact]
+        [TestMethod]
         public void JsonMutantPositionLine_ThrowsArgumentExceptionWhenSetToLessThan1()
         {
             Should.Throw<ArgumentException>(() => new Position().Line = -1);
             Should.Throw<ArgumentException>(() => new Position().Line = 0);
         }
 
-        [Fact]
+        [TestMethod]
         public void JsonMutantPositionColumn_ThrowsArgumentExceptionWhenSetToLessThan1()
         {
             Should.Throw<ArgumentException>(() => new Position().Column = -1);
             Should.Throw<ArgumentException>(() => new Position().Column = 0);
         }
 
-        [Fact]
+        [TestMethod]
         public void JsonMutantLocation_FromValidFileLinePositionSpanShouldAdd1ToLineAndColumnNumbers()
         {
             var lineSpan = new FileLinePositionSpan(
@@ -72,7 +73,7 @@ namespace ExtraProject.XUnit
             jsonMutantLocation.End.Column.ShouldBe(6);
         }
 
-        [Fact]
+        [TestMethod]
         public void JsonReportFileComponent_ShouldHaveLanguageSet()
         {
             var folderComponent = ReportTestHelper.CreateProjectWith();
@@ -81,7 +82,7 @@ namespace ExtraProject.XUnit
             new SourceFile(fileComponent).Language.ShouldBe("cs");
         }
 
-        [Fact]
+        [TestMethod]
         public void JsonReportFileComponent_ShouldContainOriginalSource()
         {
             var folderComponent = ReportTestHelper.CreateProjectWith();
@@ -90,7 +91,7 @@ namespace ExtraProject.XUnit
             new SourceFile(fileComponent).Source.ShouldBe(fileComponent.SourceCode);
         }
 
-        [Fact]
+        [TestMethod]
         public void JsonReportFileComponents_ShouldContainMutants()
         {
             var folderComponent = ReportTestHelper.CreateProjectWith();
@@ -104,7 +105,7 @@ namespace ExtraProject.XUnit
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void JsonReportFileComponent_DoesNotContainDuplicateMutants()
         {
             var loggerMock = Mock.Of<ILogger>();
@@ -119,7 +120,7 @@ namespace ExtraProject.XUnit
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void JsonReport_ThresholdsAreSet()
         {
             var folderComponent = ReportTestHelper.CreateProjectWith();
@@ -131,7 +132,7 @@ namespace ExtraProject.XUnit
                 () => report.Thresholds.ShouldContainKey("low"));
         }
 
-        [Fact]
+        [TestMethod]
         public void JsonReport_ShouldContainAtLeastOneFile()
         {
             var folderComponent = ReportTestHelper.CreateProjectWith();
@@ -141,7 +142,7 @@ namespace ExtraProject.XUnit
             report.Files.Count.ShouldBeGreaterThan(0);
         }
 
-        [Fact]
+        [TestMethod]
         public void JsonReport_ShouldContainTheProjectRoot()
         {
             var folderComponent = ReportTestHelper.CreateProjectWith();
@@ -151,7 +152,7 @@ namespace ExtraProject.XUnit
             report.ProjectRoot.ShouldBe("/home/user/src/project/");
         }
 
-        [Fact]
+        [TestMethod]
         public void JsonReport_ShouldContainFullPath()
         {
             var folderComponent = ReportTestHelper.CreateProjectWith(root: RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "c://" : "/");
@@ -162,7 +163,7 @@ namespace ExtraProject.XUnit
             Path.IsPathFullyQualified(path).ShouldBeTrue($"{path} should not be a relative path");
         }
 
-        [Fact]
+        [TestMethod]
         public void JsonReporter_OnAllMutantsTestedShouldWriteJsonToFile()
         {
             // arrange
@@ -213,7 +214,7 @@ namespace ExtraProject.XUnit
             test.Location.End.Line.ShouldBe(11);
         }
 
-        [Fact]
+        [TestMethod]
         public void JsonReporter_ShouldSupportDuplicateTestFiles()
         {
             // arrange

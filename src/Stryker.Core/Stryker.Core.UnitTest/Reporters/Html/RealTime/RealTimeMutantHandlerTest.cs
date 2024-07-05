@@ -6,15 +6,16 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Html.RealTime;
 using Stryker.Core.Reporters.Html.RealTime.Events;
 using Stryker.Core.Reporters.Json.SourceFiles;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters.Html.RealTime;
 
+[TestClass]
 public class RealTimeMutantHandlerTest : TestBase
 {
     private readonly Mock<ISseServer> _sseEventSenderMock = new();
 
-    [Fact]
+    [TestMethod]
     public void ShouldOpenSseEndpoint()
     {
         var sut = new RealTimeMutantHandler(null, _sseEventSenderMock.Object);
@@ -24,7 +25,7 @@ public class RealTimeMutantHandlerTest : TestBase
         _sseEventSenderMock.Verify(listener => listener.OpenSseEndpoint());
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldWriteMessageToOutputStream()
     {
         _sseEventSenderMock.Setup(sse => sse.HasConnectedClients).Returns(true);
@@ -49,7 +50,7 @@ public class RealTimeMutantHandlerTest : TestBase
             ));
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldCloseSseEndpoint()
     {
         _sseEventSenderMock.Setup(sse => sse.HasConnectedClients).Returns(true);
@@ -64,7 +65,7 @@ public class RealTimeMutantHandlerTest : TestBase
         _sseEventSenderMock.Verify(sse => sse.CloseSseEndpoint());
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldSetPort()
     {
         _sseEventSenderMock.Setup(sse => sse.HasConnectedClients).Returns(true);
@@ -74,7 +75,7 @@ public class RealTimeMutantHandlerTest : TestBase
         sut.Port.ShouldBeEquivalentTo(8080);
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldQueueEventsUntilAtleastOneClientIsConnected()
     {
         _sseEventSenderMock.Setup(sse => sse.HasConnectedClients).Returns(false);

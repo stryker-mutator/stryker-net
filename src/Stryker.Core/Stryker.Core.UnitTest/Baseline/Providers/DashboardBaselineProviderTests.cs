@@ -6,13 +6,14 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.UnitTest.Reporters;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Baseline.Providers
 {
+    [TestClass]
     public class DashboardBaselineProviderTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public async Task Load_Calls_DashboardClient_With_version()
         {
             var strykerOptions = new StrykerOptions();
@@ -28,7 +29,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             dashboardClient.Verify(client => client.PullReport(It.Is<string>(x => x == "version")), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task Save_Calls_DashboardClient_With_version()
         {
             var strykerOptions = new StrykerOptions();

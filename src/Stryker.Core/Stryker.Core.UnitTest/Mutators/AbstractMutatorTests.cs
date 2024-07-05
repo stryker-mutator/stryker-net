@@ -8,11 +8,12 @@ using Stryker.Core.Options;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class AbstractMutatorTests : TestBase
     {
         // This class is needed for the tests in this file
@@ -33,7 +34,7 @@ namespace Stryker.Core.UnitTest.Mutators
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void Mutator_ShouldCallApplyMutations_OnExpectedType()
         {
             // the type BinaryExpressionSyntax should be mutated by the example mutator
@@ -46,7 +47,7 @@ namespace Stryker.Core.UnitTest.Mutators
             Should.Throw<NotImplementedException>(() => target.Mutate(originalNode, null, new StrykerOptions()));
         }
 
-        [Fact]
+        [TestMethod]
         public void Mutator_ShouldNotCallApplyMutations_OnWrongType()
         {
             // the type ReturnStatementSyntax should NOT be mutated
@@ -59,7 +60,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void Mutator_ShouldNotCallApplyMutations_OnWrongType2()
         {
             // the type AssignmentExpressionSyntax should NOT be mutated
@@ -74,7 +75,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateIfMutationLevelIsLow()
         {
             var originalNode = SyntaxFactory.BinaryExpression(SyntaxKind.AddExpression,
@@ -95,7 +96,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldMutateIfLevelIsEqual()
         {
             var originalNode = SyntaxFactory.BinaryExpression(SyntaxKind.AddExpression,

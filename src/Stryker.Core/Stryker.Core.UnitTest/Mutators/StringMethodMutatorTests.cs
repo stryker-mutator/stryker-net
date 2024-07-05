@@ -1,13 +1,14 @@
-﻿using System.Linq;
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Core.Mutators;
-using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators;
 
+[TestClass]
 public class StringMethodMutatorTests : TestBase
 {
     private static (SemanticModel semanticModel, InvocationExpressionSyntax expression)
@@ -42,21 +43,21 @@ public class StringMethodMutatorTests : TestBase
         return (semanticModel, expression);
     }
 
-    [Theory]
-    [InlineData("testString.EndsWith(c)", "StartsWith",
+    [TestMethod]
+    [DataRow("testString.EndsWith(c)", "StartsWith",
         "String Method Mutation (Replace EndsWith() with StartsWith())")]
-    [InlineData("testString.StartsWith(c)", "EndsWith",
+    [DataRow("testString.StartsWith(c)", "EndsWith",
         "String Method Mutation (Replace StartsWith() with EndsWith())")]
-    [InlineData("testString.TrimStart()", "TrimEnd", "String Method Mutation (Replace TrimStart() with TrimEnd())")]
-    [InlineData("testString.TrimEnd()", "TrimStart", "String Method Mutation (Replace TrimEnd() with TrimStart())")]
-    [InlineData("testString.ToUpper()", "ToLower", "String Method Mutation (Replace ToUpper() with ToLower())")]
-    [InlineData("testString.ToLower()", "ToUpper", "String Method Mutation (Replace ToLower() with ToUpper())")]
-    [InlineData("testString.ToUpperInvariant()", "ToLowerInvariant",
+    [DataRow("testString.TrimStart()", "TrimEnd", "String Method Mutation (Replace TrimStart() with TrimEnd())")]
+    [DataRow("testString.TrimEnd()", "TrimStart", "String Method Mutation (Replace TrimEnd() with TrimStart())")]
+    [DataRow("testString.ToUpper()", "ToLower", "String Method Mutation (Replace ToUpper() with ToLower())")]
+    [DataRow("testString.ToLower()", "ToUpper", "String Method Mutation (Replace ToLower() with ToUpper())")]
+    [DataRow("testString.ToUpperInvariant()", "ToLowerInvariant",
         "String Method Mutation (Replace ToUpperInvariant() with ToLowerInvariant())")]
-    [InlineData("testString.ToLowerInvariant()", "ToUpperInvariant",
+    [DataRow("testString.ToLowerInvariant()", "ToUpperInvariant",
         "String Method Mutation (Replace ToLowerInvariant() with ToUpperInvariant())")]
-    [InlineData("testString.PadLeft(10)", "PadRight", "String Method Mutation (Replace PadLeft() with PadRight())")]
-    [InlineData("testString.PadRight(10)", "PadLeft", "String Method Mutation (Replace PadRight() with PadLeft())")]
+    [DataRow("testString.PadLeft(10)", "PadRight", "String Method Mutation (Replace PadLeft() with PadRight())")]
+    [DataRow("testString.PadRight(10)", "PadLeft", "String Method Mutation (Replace PadRight() with PadLeft())")]
     public void ShouldMutateStringMethods(string expression, string mutatedMethod, string expectedDisplayName)
     {
         var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(expression);
@@ -72,9 +73,9 @@ public class StringMethodMutatorTests : TestBase
         access.Name.Identifier.Text.ShouldBe(mutatedMethod);
     }
 
-    [Theory]
-    [InlineData("Trim")]
-    [InlineData("Substring")]
+    [TestMethod]
+    [DataRow("Trim")]
+    [DataRow("Substring")]
     public void ShouldMutateReplaceWithEmptyString(string methodName)
     {
         var expression = $"testString.{methodName}()";
@@ -90,9 +91,9 @@ public class StringMethodMutatorTests : TestBase
         syntax.Token.ValueText.ShouldBe(string.Empty);
     }
 
-    [Theory]
-    [InlineData("ElementAt")]
-    [InlineData("ElementAtOrDefault")]
+    [TestMethod]
+    [DataRow("ElementAt")]
+    [DataRow("ElementAtOrDefault")]
     public void ShouldMutateReplaceWithChar(string methodName)
     {
         var expression = $"testString.{methodName}()";
@@ -108,7 +109,7 @@ public class StringMethodMutatorTests : TestBase
         syntax.Token.ValueText.ShouldBe(char.MinValue.ToString());
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldNotMutateWhenNotAString()
     {
         var expression = (InvocationExpressionSyntax)

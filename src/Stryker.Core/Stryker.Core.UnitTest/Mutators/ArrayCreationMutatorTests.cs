@@ -2,20 +2,21 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class ArrayCreationMutatorTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldBeMutationLevelStandard()
         {
             var target = new ArrayCreationMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveValuesFromArrayCreation()
         {
             var expressionSyntax = SyntaxFactory.ParseExpression("new int[] { 1, 3 }") as ArrayCreationExpressionSyntax;
@@ -31,7 +32,7 @@ namespace Stryker.Core.UnitTest.Mutators
             replacement.Initializer.Expressions.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotRemoveValuesFromImplicitArrayCreation()
         {
             var expressionSyntax = SyntaxFactory.ParseExpression("new [] { 1, 3 }") as ImplicitArrayCreationExpressionSyntax;
@@ -43,7 +44,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateEmptyInitializer()
         {
             var arrayCreationExpression = SyntaxFactory.ParseExpression("new int[] { }") as ArrayCreationExpressionSyntax;
@@ -58,7 +59,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result2.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldMutateStackallocArrays()
         {
             var stackallocArrayCreationExpression = SyntaxFactory.ParseExpression("stackalloc int[] { 1 }") as StackAllocArrayCreationExpressionSyntax;

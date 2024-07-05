@@ -4,12 +4,14 @@ using Microsoft.CodeAnalysis;
 using Moq;
 using Shouldly;
 using Stryker.Core.Initialisation.Buildalyzer;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Initialisation.Buildalyzer;
+
+[TestClass]
 public class AnalyzerResultExtensionsTests
 {
-    [Fact]
+    [TestMethod]
     public void GetDiagnosticOptions_WithNoWarn()
     {
         // Arrange
@@ -26,7 +28,7 @@ public class AnalyzerResultExtensionsTests
         diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0002", ReportDiagnostic.Suppress));
     }
 
-    [Fact]
+    [TestMethod]
     public void GetDiagnosticOptions_WithWarningsAsErrors()
     {
         // Arrange
@@ -43,7 +45,7 @@ public class AnalyzerResultExtensionsTests
         diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0002", ReportDiagnostic.Error));
     }
 
-    [Fact]
+    [TestMethod]
     public void GetDiagnosticOptions_WithWarningsNotAsErrors()
     {
         // Arrange
@@ -60,7 +62,7 @@ public class AnalyzerResultExtensionsTests
         diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0002", ReportDiagnostic.Warn));
     }
 
-    [Fact]
+    [TestMethod]
     public void GetDiagnosticOptions_DealWithConflicts()
     {
         // Arrange

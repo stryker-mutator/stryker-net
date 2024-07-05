@@ -2,13 +2,14 @@ using System;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
 {
+    [TestClass]
     public class TestFileTests
     {
-        [Fact]
+        [TestMethod]
         public void MergeTestFiles()
         {
             // Arrange

@@ -4,6 +4,8 @@
     <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.2.4" />
     <PackageVersion Include="LaunchDarkly.EventSource" Version="5.1.0" />
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.1.1" />
+    <PackageVersion Include="MSTest" Version="3.4.3" />
+    <PackageVersion Include="MSTest.TestFramework" Version="3.4.3" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.3.4" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.10.0" />
     <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.10.0" />
@@ -42,9 +44,6 @@
     <PackageVersion Include="RegexParser" Version="0.5.1" />
     <PackageVersion Include="Shouldly" Version="4.2.1" />
     <PackageVersion Include="Spectre.Console.Testing" Version="0.49.1" />
-    <PackageVersion Include="xunit" Version="2.8.1" />
-    <PackageVersion Include="xunit.runner.visualstudio" Version="2.8.1" />
-    <PackageVersion Include="Xunit.SkippableFact" Version="1.4.13" />
     <PackageVersion Include="TestableIO.System.IO.Abstractions.TestingHelpers" Version="21.0.22" />
   </ItemGroup>
 </Project>

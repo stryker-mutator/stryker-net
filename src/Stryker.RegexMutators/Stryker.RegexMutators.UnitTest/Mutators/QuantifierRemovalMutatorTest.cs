@@ -1,15 +1,16 @@
-﻿using RegexParser.Nodes;
+using RegexParser.Nodes;
 using RegexParser.Nodes.QuantifierNodes;
 using Shouldly;
 using Stryker.RegexMutators.Mutators;
 using System.Collections.Generic;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.RegexMutators.UnitTest.Mutators
 {
+    [TestClass]
     public class QuantifierRemovalMutatorTest
     {
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveQuantifierStar()
         {
             // Arrange
@@ -36,7 +37,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Quantifier \"*\" was removed at offset 4.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveQuantifierPlus()
         {
             // Arrange
@@ -63,7 +64,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Quantifier \"+\" was removed at offset 4.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveQuantifierQuestionMark()
         {
             // Arrange
@@ -90,7 +91,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Quantifier \"?\" was removed at offset 4.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveQuantifierN()
         {
             // Arrange
@@ -117,7 +118,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Quantifier \"{5}\" was removed at offset 4.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveQuantifierNOrMore()
         {
             // Arrange
@@ -144,7 +145,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Quantifier \"{5,}\" was removed at offset 4.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveQuantifierNM()
         {
             // Arrange
@@ -171,7 +172,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Quantifier \"{5,10}\" was removed at offset 4.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveLazyQuantifier()
         {
             // Arrange
@@ -199,7 +200,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Quantifier \"*?\" was removed at offset 4.");
         }
 
-        [Fact]
+        [TestMethod]
         public void MutateShouldNotMutateNonQuantifierNode()
         {
             // Arrange

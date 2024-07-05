@@ -15,10 +15,11 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.MutationTest
 {
+    [TestClass]
     public class MutationTestProcessTests : TestBase
     {
         private string CurrentDirectory { get; }
@@ -61,7 +62,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             };
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldCallMutantionProcess_MutateAndFilterMutants()
         {
             // Arrange
@@ -86,7 +87,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             mutantionProcessMock.Verify(x => x.FilterMutants(It.IsAny<MutationTestInput>()), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldCallExecutorForEveryCoveredMutant()
         {
             _testScenario.CreateMutants(1, 2);
@@ -121,7 +122,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             _testScenario.GetMutantStatus(2).ShouldBe(MutantStatus.NoCoverage);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldCallExecutorForEveryMutantWhenNoOptimization()
         {
             var scenario = new FullRunScenario();
@@ -161,7 +162,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             _testScenario.GetMutantStatus(2).ShouldBe(MutantStatus.Survived);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldHandleCoverage()
         {
             var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
@@ -207,7 +208,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             _testScenario.GetMutantStatus(3).ShouldBe(MutantStatus.NoCoverage);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotKillMutantIfOnlyKilledByFailingTest()
         {
             var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
@@ -250,7 +251,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             _testScenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotKillMutantIfOnlyCoveredByFailingTest()
         {
             var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
@@ -290,7 +291,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             _testScenario.GetMutantStatus(1).ShouldBe(MutantStatus.Survived);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldKillMutantKilledByFailingTestAndNormalTest()
         {
             var basePath = Path.Combine(FilesystemRoot, "ExampleProject.Test");
@@ -332,9 +333,9 @@ namespace Stryker.Core.UnitTest.MutationTest
             _testScenario.GetMutantStatus(1).ShouldBe(MutantStatus.Killed);
         }
 
-        [Theory]
-        [InlineData(MutantStatus.Ignored)]
-        [InlineData(MutantStatus.CompileError)]
+        [TestMethod]
+        [DataRow(MutantStatus.Ignored)]
+        [DataRow(MutantStatus.CompileError)]
         public void ShouldThrowExceptionWhenOtherStatusThanNotRunIsPassed(MutantStatus status)
         {
             var mutants = new List<Mutant> { new Mutant { Id = 1, ResultStatus = status } };
@@ -343,7 +344,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             Should.Throw<GeneralStrykerException>(() => new MutationTestProcess(_input, null, null, null, mutationProcessMock).Test(mutants));
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotTest_WhenThereAreNoMutations()
         {
             var reporter = Mock.Of<IReporter>();
