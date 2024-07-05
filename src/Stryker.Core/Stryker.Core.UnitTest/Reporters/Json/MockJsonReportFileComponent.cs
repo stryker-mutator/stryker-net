@@ -1,21 +1,18 @@
 using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Core.Reporters.Json.SourceFiles;
 
-namespace Stryker.Core.UnitTest.Reporters.Json
+namespace Stryker.Core.UnitTest.Reporters.Json;
+
+public class MockJsonReportFileComponent : SourceFile
 {
-    [TestClass]
-    public class MockJsonReportFileComponent : SourceFile
+    public MockJsonReportFileComponent(
+        string language,
+        string source,
+        ISet<JsonMutant> mutants
+    )
     {
-        public MockJsonReportFileComponent(
-            string language,
-            string source,
-            ISet<JsonMutant> mutants
-        )
-        {
-            Language = language;
-            Source = source;
-            Mutants = mutants;
-        }
+        Language = language;
+        Source = source;
+        Mutants = mutants;
     }
 }
