@@ -16,7 +16,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         private const string CProgramFilesX86MicrosoftVisualStudio = "C:\\Program Files (x86)\\Microsoft Visual Studio";
         private readonly string _solutionDir = Path.GetDirectoryName(Path.GetFullPath(SolutionPath));
 
-        [TestMethod]
+        [TestMethodWithIgnoreIfSupport]
         [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
         public void HappyFlow()
         {
@@ -76,7 +76,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(4));
         }
 
-        [TestMethod]
+        [TestMethodWithIgnoreIfSupport]
         [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
         public void ThrowIfRestoreFails()
         {
@@ -135,7 +135,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             action.ShouldThrow<InputException>("Packages restore failed."); 
         }
 
-        [TestMethod]
+        [TestMethodWithIgnoreIfSupport]
         [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
         public void FailToGetMsBuildVersion()
         {
@@ -195,7 +195,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(4));
         }
 
-        [TestMethod]
+        [TestMethodWithIgnoreIfSupport]
         [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
         public void NugetIsUsingSuppliedMsBuild()
         {
@@ -259,7 +259,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             msbuildPath.ShouldBe(capturedMsBuildPath);
         }
 
-        [TestMethod]
+        [TestMethodWithIgnoreIfSupport]
         [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
         public void ShouldThrowOnNugetNotInstalled()
         {
@@ -299,7 +299,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             Should.Throw<InputException>(() => target.RestorePackages(SolutionPath) );
         }
 
-        [TestMethod]
+        [TestMethodWithIgnoreIfSupport]
         [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
         public void ShouldPickFirstNugetPath()
         {

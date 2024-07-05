@@ -29,6 +29,7 @@ public class InitialBuildProcessTests : TestBase
             .Details.ShouldBe("Initial build of targeted project failed. Please make sure the targeted project is buildable. You can reproduce this error yourself using: \"dotnet build Example.csproj\"");
     }
 
+    [TestMethodWithIgnoreIfSupport]
     [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
     public void InitialBuildProcess_WithPathAsBuildCommand_ShouldThrowStrykerInputExceptionOnFailWithQuotes()
     {
@@ -43,6 +44,7 @@ public class InitialBuildProcessTests : TestBase
                               @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" + "\" \"" + _cProjectsExampleCsproj + "\"\"");
     }
 
+    [TestMethodWithIgnoreIfSupport]
     [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
     public void InitialBuildProcess_WithPathAsBuildCommand_TriesWithMsBuildIfDotnetFails()
     {
@@ -75,7 +77,8 @@ public class InitialBuildProcessTests : TestBase
             It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Once);
     }
 
-    [IgnoreIf(nameof(Is.Unix))]
+    [TestMethodWithIgnoreIfSupport]
+    [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
     public void InitialBuildProcess_ShouldRunMsBuildOnDotnetFramework()
     {
         var processMock = new Mock<IProcessExecutor>(MockBehavior.Strict);

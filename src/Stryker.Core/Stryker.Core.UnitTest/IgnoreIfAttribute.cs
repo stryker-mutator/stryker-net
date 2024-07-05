@@ -27,7 +27,8 @@ public class IgnoreIfAttribute : Attribute
         {
             // Search for the method specified by name in this class or any parent classes.
             var searchFlags = BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy | BindingFlags.Static;
-            var method = testMethod.MethodInfo.DeclaringType.GetMethod(IgnoreCriteriaMethodName, searchFlags);
+            var isType = Assembly.GetCallingAssembly().GetType(typeof(Is).FullName);
+            var method = isType.GetMethod(IgnoreCriteriaMethodName, searchFlags);
             return (bool)method.Invoke(null, null);
         }
         catch (Exception e)
