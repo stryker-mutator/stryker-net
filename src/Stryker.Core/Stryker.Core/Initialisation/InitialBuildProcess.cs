@@ -36,16 +36,17 @@ public class InitialBuildProcess : IInitialBuildProcess
 
         _logger.LogDebug("Started initial build using dotnet build");
 
-        var target = !string.IsNullOrEmpty(solutionPath) ? solutionPath : Path.GetFileName(projectPath);
-        var buildPath = QuotesIfNeeded(target);
-        var (result, exe, args) = msBuildHelper.BuildProject(Path.GetDirectoryName(target), buildPath, fullFramework, configuration);
+        var target = !string.IsNullOrEmpty(solutionPath) ? solutionPath : projectPath;
+        var buildPath = Path.GetFileName(target);
+        var directoryName = Path.GetDirectoryName(target);
+        var (result, exe, args) = msBuildHelper.BuildProject(directoryName, buildPath, fullFramework, configuration);
 
         if (result.ExitCode!=ExitCodes.Success && !string.IsNullOrEmpty(solutionPath))
         {
             // dump previous build result
             _logger.LogTrace("Initial build output: {0}", result.Output);
             _logger.LogWarning("Dotnet build failed, trying with MsBuild and forcing package restore.");
-            (result, exe, args) = msBuildHelper.BuildProject(Path.GetDirectoryName(target),
+            (result, _, _) = msBuildHelper.BuildProject(directoryName,
                 buildPath,
                 true,
                 configuration,
@@ -54,21 +55,21 @@ public class InitialBuildProcess : IInitialBuildProcess
             {
                 _logger.LogWarning("Package restore failed: {Result}", result.Output);
             }
-            _logger.LogTrace("Last attempt to build.", result.Output);
-            (result, exe, args) = msBuildHelper.BuildProject(Path.GetDirectoryName(target),
+            _logger.LogTrace("Last attempt to build.");
+            (result, exe, args) = msBuildHelper.BuildProject(directoryName,
                 buildPath,
                 true,
                 configuration);
         }
 
-        CheckBuildResult(result, exe, args);
+        CheckBuildResult(result, target, exe, args);
     }
 
-    private void CheckBuildResult(ProcessResult result, string buildCommand, string options)
+    private void CheckBuildResult(ProcessResult result, string path, string buildCommand, string options)
     {
         if (result.ExitCode != ExitCodes.Success)
         {
-            _logger.LogError("Initial build failed: {Result}", result.Output);
+            _logger.LogError("Initial build failed. Command was [{exe} {args}] (in folder '{folder}'). Reult: {Result}", buildCommand, options, path, result.Output);
             // Initial build failed
             throw new InputException(result.Output, FormatBuildResultErrorString(buildCommand, options));
         }

@@ -66,11 +66,10 @@ public class MsBuildHelper
         // Else, find in default locations
         _logger.LogInformation("Unable to find msbuild using vswhere, using fallback locations");
 
-        _msBuildPath = fallbackLocations.FirstOrDefault(s => _fileSystem.File.Exists(s)) ?? throw new FileNotFoundException("MsBuild.exe could not be located. If you have MsBuild.exe available but still see this error please create an issue.");
+        _msBuildPath = fallbackLocations.Find(s => _fileSystem.File.Exists(s)) ?? throw new FileNotFoundException("MsBuild.exe could not be located. If you have MsBuild.exe available but still see this error please create an issue.");
 
         return _msBuildPath;
     }
-
 
     public (ProcessResult result, string exe, string command) BuildProject(string path, string projectFile, bool usingMsBuild, string configuration = null, string options = null)
     {
@@ -88,7 +87,7 @@ public class MsBuildHelper
         }
 
         var arguments = string.Join(' ', fullOptions);
-        _logger.LogInformation("Building project {project} using {MsBuildPath} {Options}", path, exe, arguments);
+        _logger.LogInformation("Building project {project} using {MsBuildPath} {Options} (directory {path}.)", projectFile, exe, arguments, path);
         return (_executor.Start(path, exe, arguments), exe, arguments);
     }
 
