@@ -69,7 +69,7 @@ public class InitialisationProcess : IInitialisationProcess
         {
             var framework = projects.Any(p => p.IsFullFramework);
             // Build the complete solution
-                _logger.LogInformation("Building solution {0}",
+            _logger.LogInformation("Building solution {0}",
                     Path.GetRelativePath(options.WorkingDirectory, options.SolutionPath));
             _initialBuildProcess.InitialBuild(
                 framework,
@@ -92,7 +92,7 @@ public class InitialisationProcess : IInitialisationProcess
                     testProjects[i].ProjectFilePath,
                     options.SolutionPath,
                     options.Configuration,
-                    options.MsBuildPath);
+                    options.MsBuildPath ?? testProjects[i].MsBuildPath());
             }
         }
 
@@ -127,13 +127,12 @@ public class InitialisationProcess : IInitialisationProcess
         DiscoverTests(projectInfo, testRunner);
 
         // initial test
-            _logger.LogInformation(
-                "Number of tests found: {TestCount} for project {ProjectFilePath}. Initial test run started.",
-            testRunner.GetTests(projectInfo).Count,
-            projectInfo.AnalyzerResult.ProjectFilePath);
+        _logger.LogInformation(
+            "Number of tests found: {TestCount} for project {ProjectFilePath}. Initial test run started.",
+        testRunner.GetTests(projectInfo).Count,
+        projectInfo.AnalyzerResult.ProjectFilePath);
 
         var result = _initialTestProcess.InitialTest(options, projectInfo, testRunner);
-
 
         if (!result.Result.FailingTests.IsEmpty)
         {
@@ -149,9 +148,9 @@ public class InitialisationProcess : IInitialisationProcess
                         result.Result.ResultMessage);
             }
 
-                _logger.LogWarning(
-                    "{failingTestsCount} tests are failing. Stryker will continue but outcome will be impacted.",
-                    failingTestsCount);
+            _logger.LogWarning(
+                "{failingTestsCount} tests are failing. Stryker will continue but outcome will be impacted.",
+                failingTestsCount);
         }
 
         if (!result.Result.ExecutedTests.IsEmpty || !throwIfFails)
@@ -159,9 +158,9 @@ public class InitialisationProcess : IInitialisationProcess
             return result;
         }
 
-            throw new InputException(
-                "No test has been detected. Make sure your test project contains test and is compatible with VsTest." +
-                string.Join(Environment.NewLine, projectInfo.Warnings));
+        throw new InputException(
+            "No test has been detected. Make sure your test project contains test and is compatible with VsTest." +
+            string.Join(Environment.NewLine, projectInfo.Warnings));
     }
 
     private static readonly Dictionary<string, (string assembly, string package)> TestFrameworks = new()
