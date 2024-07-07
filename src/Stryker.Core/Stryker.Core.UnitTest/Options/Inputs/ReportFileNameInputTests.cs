@@ -1,24 +1,24 @@
 using System.IO;
-using System.IO.Abstractions.TestingHelpers;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class ReportFileNameInputTests : TestBase
     {
         private const string DefaultName = "mutation-report";
 
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new ReportFileNameInput();
             target.HelpText.ShouldBe(@$" | default: '{target.Default}'");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldDefaultToMutationReportFilenameIfEmptyString()
         {
             var target = new ReportFileNameInput() { SuppliedInput = string.Empty };
@@ -27,7 +27,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBe(DefaultName);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldUseDefaultFilenameIfNull()
         {
             var target = new ReportFileNameInput() { SuppliedInput = null };
@@ -36,7 +36,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBe(DefaultName);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldDefaultToMutationReportFilenameIfWhitespace()
         {
             var target = new ReportFileNameInput() { SuppliedInput = "  " };
@@ -45,14 +45,14 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBe(DefaultName);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotAllowInvalidFilenames()
         {
             var target = new ReportFileNameInput() { SuppliedInput = new string(Path.GetInvalidFileNameChars()) };
             Should.Throw<InputException>(() => target.Validate());
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldStripHtmlAndJsonFileExtensions()
         {
             var target = new ReportFileNameInput() { SuppliedInput = $"{DefaultName}.html" };
@@ -61,7 +61,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             target.Validate().ShouldBe(DefaultName);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotStripNoneHtmlAndJsonFileExtensions()
         {
             string input = $"{DefaultName}.project";

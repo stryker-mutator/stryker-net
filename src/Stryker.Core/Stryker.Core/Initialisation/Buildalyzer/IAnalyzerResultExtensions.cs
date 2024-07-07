@@ -21,8 +21,6 @@ public static class IAnalyzerResultExtensions
 
     public static bool BuildsAnAssembly(this IAnalyzerResult analyzerResult) => analyzerResult.Properties.ContainsKey("TargetFileName");
 
-
-
     public static string GetReferenceAssemblyPath(this IAnalyzerResult analyzerResult) => analyzerResult.Properties.TryGetValue("TargetRefPath", out var property) ? FilePathUtils.NormalizePathSeparators(property) : GetAssemblyPath(analyzerResult);
 
     public static string GetAssemblyDirectoryPath(this IAnalyzerResult analyzerResult) =>
@@ -55,6 +53,8 @@ public static class IAnalyzerResultExtensions
         Path.ChangeExtension(analyzerResult.GetAssemblyName(), ".pdb");
 
     public static string TargetPlatform(this IAnalyzerResult analyzerResult) => analyzerResult.GetPropertyOrDefault("TargetPlatform", "AnyCPU");
+
+    public static string MsBuildPath(this IAnalyzerResult analyzerResult) => analyzerResult.Analyzer?.EnvironmentFactory.GetBuildEnvironment()?.MsBuildExePath;
 
     public static IEnumerable<ISourceGenerator> GetSourceGenerators(this IAnalyzerResult analyzerResult, ILogger logger)
     {
@@ -136,7 +136,7 @@ public static class IAnalyzerResultExtensions
 
     internal static NuGetFramework GetNuGetFramework(this IAnalyzerResult analyzerResult)
     {
-        var framework = NuGetFramework.Parse(analyzerResult.TargetFramework ?? "");
+        var framework = NuGetFramework.Parse(analyzerResult.TargetFramework);
         if (framework != NuGetFramework.UnsupportedFramework)
         {
             return framework;
@@ -150,17 +150,7 @@ public static class IAnalyzerResultExtensions
         throw new InputException(message);
     }
 
-    internal static bool TargetsFullFramework(this IAnalyzerResult analyzerResult)
-    {
-        if (analyzerResult.TargetFramework is null)
-        {
-            return false;
-        }
-        var nuGetFramework = GetNuGetFramework(analyzerResult);
-
-        return nuGetFramework.IsDesktop();
-    }
-    internal static bool TargetsFullFramework(this IAnalyzerResults analyzerResults) => analyzerResults.Any(x => x.TargetsFullFramework());
+    internal static bool TargetsFullFramework(this IAnalyzerResult analyzerResult) => GetNuGetFramework(analyzerResult).IsDesktop();
 
     public static Language GetLanguage(this IAnalyzerResult analyzerResult) =>
         analyzerResult.GetPropertyOrDefault("Language") switch
@@ -205,12 +195,7 @@ public static class IAnalyzerResultExtensions
     internal static string GetAssemblyOriginatorKeyFile(this IAnalyzerResult analyzerResult)
     {
         var assemblyKeyFileProp = analyzerResult.GetPropertyOrDefault("AssemblyOriginatorKeyFile");
-        if (assemblyKeyFileProp is null)
-        {
-            return assemblyKeyFileProp;
-        }
-
-        return Path.Combine(Path.GetDirectoryName(analyzerResult.ProjectFilePath), assemblyKeyFileProp);
+        return assemblyKeyFileProp is null ? null : Path.Combine(Path.GetDirectoryName(analyzerResult.ProjectFilePath)??".", assemblyKeyFileProp);
     }
 
     internal static ImmutableDictionary<string, ReportDiagnostic> GetDiagnosticOptions(
@@ -219,19 +204,19 @@ public static class IAnalyzerResultExtensions
         var noWarnString = analyzerResult.GetPropertyOrDefault("NoWarn");
         var noWarn = noWarnString is not null
             ? noWarnString.Split(";").Where(x => !string.IsNullOrWhiteSpace(x))
-                .ToDictionary(x => x, x => ReportDiagnostic.Suppress)
+                .ToDictionary(x => x, _ => ReportDiagnostic.Suppress)
             : new Dictionary<string, ReportDiagnostic>();
 
         var warningsAsErrorsString = analyzerResult.GetPropertyOrDefault("WarningsAsErrors");
         var warningsAsErrors = warningsAsErrorsString is not null
             ? warningsAsErrorsString.Split(";").Where(x => !string.IsNullOrWhiteSpace(x))
-                .ToDictionary(x => x, x => ReportDiagnostic.Error)
+                .ToDictionary(x => x, _ => ReportDiagnostic.Error)
             : new Dictionary<string, ReportDiagnostic>();
 
         var warningsNotAsErrorsString = analyzerResult.GetPropertyOrDefault("WarningsNotAsErrors");
         var warningsNotAsErrors = warningsNotAsErrorsString is not null
             ? warningsNotAsErrorsString.Split(";").Where(x => !string.IsNullOrWhiteSpace(x))
-                .ToDictionary(x => x, x => ReportDiagnostic.Warn)
+                .ToDictionary(x => x, _ => ReportDiagnostic.Warn)
             : new Dictionary<string, ReportDiagnostic>();
 
         // merge settings,
@@ -259,23 +244,8 @@ public static class IAnalyzerResultExtensions
         bool.Parse(GetPropertyOrDefault(analyzerResult, name, defaultBoolean.ToString()));
 
     internal static string GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name,
-        string defaultValue = default)
-    {
-        if (analyzerResult.Properties is null || !analyzerResult.Properties.TryGetValue(name, out var property))
-        {
-            return defaultValue;
-        }
+        string defaultValue = default) =>
+        analyzerResult.Properties.GetValueOrDefault(name, defaultValue);
 
-        return property;
-    }
-
-    private static IEnumerable<IProjectItem> GetItem(this IAnalyzerResult analyzerResult, string name)
-    {
-        if (analyzerResult.Items is null || !analyzerResult.Items.TryGetValue(name, out var item))
-        {
-            return Enumerable.Empty<IProjectItem>();
-        }
-
-        return item;
-    }
+    private static IEnumerable<IProjectItem> GetItem(this IAnalyzerResult analyzerResult, string name) => !analyzerResult.Items.TryGetValue(name, out var item) ? [] : item;
 }

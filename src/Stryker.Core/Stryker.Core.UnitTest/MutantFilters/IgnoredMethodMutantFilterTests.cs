@@ -10,15 +10,16 @@ using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
+    [TestClass]
     public class IgnoredMethodMutantFilterTests : TestBase
     {
 
 
-        [Fact]
+        [TestMethod]
         public static void ShouldHaveName()
         {
             var target = new IgnoredMethodMutantFilter() as IMutantFilter;
@@ -26,16 +27,16 @@ namespace Stryker.Core.UnitTest.MutantFilters
         }
 
         // filter should support documented cases
-        [Theory]
-        [InlineData("IgnoredMethod(true);", "true", true)]
-        [InlineData("x = IgnoredMethod(true);", null, true)]
-        [InlineData("var x = IgnoredMethod(true);", null, true)]
-        [InlineData("while (x == IgnoredMethod(true));", "==", false)]
-        [InlineData("IgnoredMethod()++;", "IgnoredMethod()++", false)]
-        [InlineData("x==1 ? IgnoredMethod(true): IgnoredMethod(false);", "==", true)]
-        [InlineData("IgnoredMethod(x==1 ? true : false);", "false", true)]
-        [InlineData("IgnoredMethod(x==> SomeCall(param));", "param", true)]
-        [InlineData("SomeMethod(true).IgnoredMethod(false);", "true", true)]
+        [TestMethod]
+        [DataRow("IgnoredMethod(true);", "true", true)]
+        [DataRow("x = IgnoredMethod(true);", null, true)]
+        [DataRow("var x = IgnoredMethod(true);", null, true)]
+        [DataRow("while (x == IgnoredMethod(true));", "==", false)]
+        [DataRow("IgnoredMethod()++;", "IgnoredMethod()++", false)]
+        [DataRow("x==1 ? IgnoredMethod(true): IgnoredMethod(false);", "==", true)]
+        [DataRow("SomeMethod(true).IgnoredMethod(false);", "true", true)]
+        [DataRow("IgnoredMethod(x==> SomeCall(param));", "param", true)]
+        [DataRow("IgnoredMethod(x==1 ? true : false);", "false", true)]
         public void ShouldFilterDocumentedCases(string methodCall, string anchor, bool shouldSkipMutant)
         {
             // Arrange
@@ -68,23 +69,23 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
         }
 
-        [Theory]
-        [InlineData("Where", true)]
-        [InlineData("Where*", true)]
-        [InlineData("*Where", true)]
-        [InlineData("*Where*", true)]
-        [InlineData("*ere", true)]
-        [InlineData("Wh*", true)]
-        [InlineData("W*e", true)]
-        [InlineData("*", true)]
-        [InlineData("ToList", true)]
-        [InlineData("*List", true)]
-        [InlineData("To*", true)]
-        [InlineData("T*ist", true)]
-        [InlineData("Range", false)]
-        [InlineData("*Range", false)]
-        [InlineData("Ra*", false)]
-        [InlineData("R*nge", false)]
+        [TestMethod]
+        [DataRow("Where", true)]
+        [DataRow("Where*", true)]
+        [DataRow("*Where", true)]
+        [DataRow("*Where*", true)]
+        [DataRow("*ere", true)]
+        [DataRow("Wh*", true)]
+        [DataRow("W*e", true)]
+        [DataRow("*", true)]
+        [DataRow("ToList", true)]
+        [DataRow("*List", true)]
+        [DataRow("To*", true)]
+        [DataRow("T*ist", true)]
+        [DataRow("Range", false)]
+        [DataRow("*Range", false)]
+        [DataRow("Ra*", false)]
+        [DataRow("R*nge", false)]
         public void MutantFilter_ChainedMethodsCalls(string ignoredMethodName, bool shouldSkipMutant)
         {
             // Arrange
@@ -118,11 +119,11 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             }
         }
 
-        [Theory]
-        [InlineData("Range", false)]
-        [InlineData("Where", false)]
-        [InlineData("ToList", true)]
-        [InlineData("", false)]
+        [TestMethod]
+        [DataRow("Range", false)]
+        [DataRow("Where", false)]
+        [DataRow("ToList", true)]
+        [DataRow("", false)]
         public void MutantFilter_ChainedMethodsCallStatement(string ignoredMethodName, bool shouldSkipMutant)
         {
             // Arrange
@@ -158,10 +159,10 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             }
         }
 
-        [Theory]
-        [InlineData("Where", true)]
-        [InlineData("ToList", true)]
-        [InlineData("Range", false)]
+        [TestMethod]
+        [DataRow("Where", true)]
+        [DataRow("ToList", true)]
+        [DataRow("Range", false)]
         public void MutantFilter_WorksWithConditionalInvocation(string ignoredMethodName, bool shouldSkipMutant)
         {
             // Arrange
@@ -197,10 +198,10 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             }
         }
 
-        [Theory]
-        [InlineData("Range", false)]
-        [InlineData("Where", false)]
-        [InlineData("ToList", true)]
+        [TestMethod]
+        [DataRow("Range", false)]
+        [DataRow("Where", false)]
+        [DataRow("ToList", true)]
         public void MutantFilter_WorksWithConditionalInvocationStatement(string ignoredMethodName, bool shouldSkipMutant)
         {
             // Arrange
@@ -236,7 +237,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void MutantFilter_WorksWithGenericMethodCalls()
         {
             // Arrange
@@ -265,14 +266,14 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             }
         }
 
-        [Theory]
-        [InlineData("Dispose")]
-        [InlineData("Dispose*")]
-        [InlineData("*Dispose")]
-        [InlineData("*Dispose*")]
-        [InlineData("*ispose")]
-        [InlineData("Dis*")]
-        [InlineData("*")]
+        [TestMethod]
+        [DataRow("Dispose")]
+        [DataRow("Dispose*")]
+        [DataRow("*Dispose")]
+        [DataRow("*Dispose*")]
+        [DataRow("*ispose")]
+        [DataRow("Dis*")]
+        [DataRow("*")]
         public void ShouldFilterStandaloneInvocation(string ignoredMethodName)
         {
             // Arrange
@@ -300,7 +301,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             filteredMutants.ShouldNotContain(mutant);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldFilterStatementAndBlockWithOnlyIgnoredMethods()
         {
             // Arrange
@@ -346,7 +347,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             filteredMutants.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldFilterStatementAndBlockWithNonIgnoredMethods()
         {
             // Arrange
@@ -383,25 +384,25 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             }
         }
 
-        [Theory]
-        [InlineData("Bar.Foo.Dispose", true)]
-        [InlineData("Bar.*.Dispose", true)]
-        [InlineData("Foo.Dispose*", true)]
-        [InlineData("Foo.Dispos*", true)]
-        [InlineData("*Foo.Dispose", true)]
-        [InlineData("F*.Dispose", true)]
-        [InlineData("*o.Dispose", true)]
-        [InlineData("*o.D*se", true)]
-        [InlineData("*.*", true)]
-        [InlineData("Foo.*", true)]
-        [InlineData("Foo*Dispose", false)]
-        [InlineData("Bar.Foo", false)]
-        [InlineData("Bar*", false)]
-        [InlineData("Bar.", false)]
-        [InlineData("Bar.*", false)]
-        [InlineData("Foo", false)]
-        [InlineData("Foo.", false)]
-        [InlineData("*.*.*.*", false)]
+        [TestMethod]
+        [DataRow("Bar.Foo.Dispose", true)]
+        [DataRow("Bar.*.Dispose", true)]
+        [DataRow("Foo.Dispose*", true)]
+        [DataRow("Foo.Dispos*", true)]
+        [DataRow("*Foo.Dispose", true)]
+        [DataRow("F*.Dispose", true)]
+        [DataRow("*o.Dispose", true)]
+        [DataRow("*o.D*se", true)]
+        [DataRow("*.*", true)]
+        [DataRow("Foo.*", true)]
+        [DataRow("Foo*Dispose", false)]
+        [DataRow("Bar.Foo", false)]
+        [DataRow("Bar*", false)]
+        [DataRow("Bar.", false)]
+        [DataRow("Bar.*", false)]
+        [DataRow("Foo", false)]
+        [DataRow("Foo.", false)]
+        [DataRow("*.*.*.*", false)]
         public void ShouldFilterInvocationWithQualifiedMemberName(string ignoredMethodName, bool shouldSkipMutant)
         {
             // Arrange
@@ -446,23 +447,23 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             }
         }
 
-        [Theory]
-        [InlineData("Foo.MyType.ctor", true)]
-        [InlineData("MyType.ctor", true)]
-        [InlineData("Foo.MyType*.ctor", true)]
-        [InlineData("Foo*.MyType*.ctor", true)]
-        [InlineData("*.MyType*.ctor", true)]
-        [InlineData("F*.My*ype*.ctor", true)]
-        [InlineData("MyType*.ctor", true)]
-        [InlineData("*MyType.ctor", true)]
-        [InlineData("*MyType*.ctor", true)]
-        [InlineData("*Type.ctor", true)]
-        [InlineData("My*.ctor", true)]
-        [InlineData("*.ctor", true)]
-        [InlineData("*.*.ctor", true)]
-        [InlineData("MyType.constructor", false)]
-        [InlineData("Type.ctor", false)]
-        [InlineData("Foo.ctor", false)]
+        [TestMethod]
+        [DataRow("Foo.MyType.ctor", true)]
+        [DataRow("MyType.ctor", true)]
+        [DataRow("Foo.MyType*.ctor", true)]
+        [DataRow("Foo*.MyType*.ctor", true)]
+        [DataRow("*.MyType*.ctor", true)]
+        [DataRow("F*.My*ype*.ctor", true)]
+        [DataRow("MyType*.ctor", true)]
+        [DataRow("*MyType.ctor", true)]
+        [DataRow("*MyType*.ctor", true)]
+        [DataRow("*Type.ctor", true)]
+        [DataRow("My*.ctor", true)]
+        [DataRow("*.ctor", true)]
+        [DataRow("*.*.ctor", true)]
+        [DataRow("MyType.constructor", false)]
+        [DataRow("Type.ctor", false)]
+        [DataRow("Foo.ctor", false)]
         public void MutantFilter_ShouldIgnoreConstructor(string ignoredMethodName, bool shouldSkipMutant)
         {
             // Arrange
@@ -507,7 +508,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void MutantFilters_ShouldNotApplyWithoutIgnoredMethod()
         {
             // Arrange
@@ -541,7 +542,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             filteredMutants.ShouldContain(mutant);
         }
 
-        [Fact]
+        [TestMethod]
         public void MutantFilters_ConstructorFilterShouldNotMatchMethod()
         {
             // Arrange
@@ -579,7 +580,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             filteredMutants.ShouldContain(mutant);
         }
 
-        [Fact]
+        [TestMethod]
         public void MutantFilters_ShouldIgnoreSyntaxWithoutInvocations()
         {
             // Arrange
@@ -610,7 +611,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             filteredMutants.ShouldContain(mutant);
         }
 
-        [Fact]
+        [TestMethod]
         public void MutantFilters_DoesNotIgnoreOtherMutantsInFile()
         {
             // Arrange
@@ -644,7 +645,7 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
                 baseSyntaxTree.FindNode(new TextSpan(source.IndexOf(node, StringComparison.OrdinalIgnoreCase), node.Length));
         }
 
-        [Fact]
+        [TestMethod]
         public void MutantFilters_DoesNotIgnoreMethodDeclaration()
         {
             // Arrange

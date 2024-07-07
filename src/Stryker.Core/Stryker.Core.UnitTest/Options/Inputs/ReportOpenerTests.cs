@@ -1,20 +1,21 @@
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class ReportOpenerTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new OpenReportInput();
             target.HelpText.ShouldBe(@"When this option is passed, generated reports should open in the browser automatically once Stryker starts testing mutants, and will update the report till Stryker is done. Both html and dashboard reports can be opened automatically. | default: 'Html' | allowed: Html, Dashboard");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldHaveDefaultHtml()
         {
             var target = new OpenReportInput { SuppliedInput = null };
@@ -23,7 +24,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBe(ReportType.Html);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldReturnReportType()
         {
             var target = new OpenReportInput { SuppliedInput = "Html" };
@@ -32,7 +33,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBe(ReportType.Html);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldValidateReportType()
         {
             var target = new OpenReportInput { SuppliedInput = "gibberish" };

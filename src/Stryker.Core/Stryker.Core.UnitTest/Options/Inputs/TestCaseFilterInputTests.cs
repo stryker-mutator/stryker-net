@@ -1,12 +1,13 @@
 using Shouldly;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class TestCaseFilterInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var input = new TestCaseFilterInput();
@@ -15,28 +16,28 @@ Uses the syntax for dotnet test --filter option and vstest.console.exe --testcas
 For more information on running selective tests, see https://docs.microsoft.com/en-us/dotnet/core/testing/selective-unit-tests. | default: ''");
         }
 
-        [Fact]
+        [TestMethod]
         public void DefaultShouldBeEmpty()
         {
             var input = new TestCaseFilterInput();
             input.Default.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldReturnSuppliedInputWhenNotNullOrWhiteSpace()
         {
             var input = new TestCaseFilterInput { SuppliedInput = "Category=Unit" };
             input.Validate().ShouldBe("Category=Unit");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldReturnDefaultWhenSuppliedInputNull()
         {
             var input = new TestCaseFilterInput { SuppliedInput = null };
             input.Validate().ShouldBe("");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldReturnDefaultWhenSuppliedInputWhiteSpace()
         {
             var input = new TestCaseFilterInput { SuppliedInput = "    " };

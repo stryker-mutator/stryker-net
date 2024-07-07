@@ -1,18 +1,16 @@
 using System.Collections.Generic;
-using System.IO.Abstractions.TestingHelpers;
-using System.Linq;
-using Buildalyzer;
 using Microsoft.CodeAnalysis;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.ProjectComponents.SourceProjects;
-using Xunit;
 
 namespace Stryker.Core.UnitTest.ProjectComponents.SourceProjects
 {
+    [TestClass]
     public class SourceProjectInfoTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldGenerateProperDefaultCompilationOptions()
         {
             var target = new SourceProjectInfo()
@@ -32,10 +30,10 @@ namespace Stryker.Core.UnitTest.ProjectComponents.SourceProjects
             options.NullableContextOptions.ShouldBe(NullableContextOptions.Enable);
         }
 
-        [Theory]
-        [InlineData("Exe", OutputKind.ConsoleApplication)]
-        [InlineData("WinExe", OutputKind.WindowsApplication)]
-        [InlineData("AppContainerExe", OutputKind.WindowsRuntimeApplication)]
+        [TestMethod]
+        [DataRow("Exe", OutputKind.ConsoleApplication)]
+        [DataRow("WinExe", OutputKind.WindowsApplication)]
+        [DataRow("AppContainerExe", OutputKind.WindowsRuntimeApplication)]
         public void ShouldGenerateProperCompilationOptions(string kindParam, OutputKind output)
         {
             var target = new SourceProjectInfo()

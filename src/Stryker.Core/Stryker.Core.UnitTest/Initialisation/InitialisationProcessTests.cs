@@ -15,13 +15,14 @@ using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
+    [TestClass]
     public class InitialisationProcessTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void InitialisationProcess_ShouldCallNeededResolvers()
         {
             var inputFileResolverMock = new Mock<IInputFileResolver>(MockBehavior.Strict);
@@ -54,7 +55,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             inputFileResolverMock.Verify(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>()), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void InitialisationProcess_ShouldThrowOnFailedInitialTestRun()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
@@ -89,11 +90,11 @@ namespace Stryker.Core.UnitTest.Initialisation
 
             var projects = target.GetMutableProjectsInfo(options);
             target.BuildProjects(options, projects);
-            Assert.Throws<InputException>(() => target.GetMutationTestInputs(options, projects, testRunnerMock.Object));
+            Should.Throw<InputException>(() => target.GetMutationTestInputs(options, projects, testRunnerMock.Object));
             initialTestProcessMock.Verify(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), testRunnerMock.Object), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void InitialisationProcess_ShouldThrowIfHalfTestsAreFailing()
         {
             var fileSystemMock = new MockFileSystem();
@@ -135,14 +136,14 @@ namespace Stryker.Core.UnitTest.Initialisation
             };
             var projects = target.GetMutableProjectsInfo(options);
             target.BuildProjects(options, projects);
-            Assert.Throws<InputException>(() => target.GetMutationTestInputs(options, projects, testRunnerMock.Object));
+            Should.Throw<InputException>(() => target.GetMutationTestInputs(options, projects, testRunnerMock.Object));
             inputFileResolverMock.Verify(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>()), Times.Once);
             initialTestProcessMock.Verify(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), testRunnerMock.Object), Times.Once);
         }
 
-        [Theory]
-        [InlineData(true)]
-        [InlineData(false)]
+        [TestMethod]
+        [DataRow(true)]
+        [DataRow(false)]
         public void InitialisationProcess_ShouldThrowOnTestTestIfAskedFor(bool breakOnInitialTestFailure)
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
@@ -189,7 +190,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             target.BuildProjects(options, projects);
             if (breakOnInitialTestFailure)
             {
-                Assert.Throws<InputException>(() => target.GetMutationTestInputs(options, projects, testRunnerMock.Object));
+                Should.Throw<InputException>(() => target.GetMutationTestInputs(options, projects, testRunnerMock.Object));
             }
             else
             {
@@ -200,7 +201,7 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
 
-        [Fact]
+        [TestMethod]
         public void InitialisationProcess_ShouldRunTestSession()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
@@ -242,11 +243,11 @@ namespace Stryker.Core.UnitTest.Initialisation
         }
 
 
-        [Theory]
-        [InlineData("xunit.core")]
-        [InlineData("nunit.framework")]
-        [InlineData("Microsoft.VisualStudio.TestPlatform.TestFramework")]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow("xunit.core")]
+        [DataRow("nunit.framework")]
+        [DataRow("Microsoft.VisualStudio.TestPlatform.TestFramework")]
+        [DataRow("")]
         public void InitialisationProcess_ShouldThrowOnWhenNoTestDetected(string libraryName)
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
@@ -289,10 +290,10 @@ namespace Stryker.Core.UnitTest.Initialisation
             };
             var projects = target.GetMutableProjectsInfo(options);
             target.BuildProjects(options, projects);
-            Assert.Throws<InputException>(() => target.GetMutationTestInputs(options, projects, testRunnerMock.Object)).Message.ShouldContain(libraryName);
+            Should.Throw<InputException>(() => target.GetMutationTestInputs(options, projects, testRunnerMock.Object)).Message.ShouldContain(libraryName);
         }
 
-        [Fact]
+        [TestMethod]
         public void InitialisationProcess_ShouldThrowOnWhenNoTestDetectedAndCorrectDependencies()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
@@ -340,7 +341,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             };
             var projects = target.GetMutableProjectsInfo(options);
             target.BuildProjects(options, projects);
-            Assert.Throws<InputException>(() => target.GetMutationTestInputs(options, projects, testRunnerMock.Object)).Message.ShouldContain("failed to deploy or run.");
+            Should.Throw<InputException>(() => target.GetMutationTestInputs(options, projects, testRunnerMock.Object)).Message.ShouldContain("failed to deploy or run.");
         }
     }
 }

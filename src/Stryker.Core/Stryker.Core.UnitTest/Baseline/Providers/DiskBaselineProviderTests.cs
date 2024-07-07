@@ -7,13 +7,14 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.UnitTest.Reporters;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Baseline.Providers
 {
+    [TestClass]
     public class DiskBaselineProviderTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public async Task ShouldWriteToDiskAsync()
         {
             // Arrange
@@ -34,7 +35,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             file.ShouldNotBeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ShouldHandleFileNotFoundExceptionOnLoadAsync()
         {
             // Arrange
@@ -48,7 +49,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             result.ShouldBeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public async Task ShouldLoadReportFromDiskAsync()
         {
             // Arrange

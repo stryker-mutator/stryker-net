@@ -3,22 +3,23 @@ using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.Mutators;
 using System.Linq;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class PrefixUnaryMutatorTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldBeMutationLevelStandard()
         {
             var target = new PrefixUnaryMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
         }
 
-        [Theory]
-        [InlineData(SyntaxKind.UnaryMinusExpression, SyntaxKind.UnaryPlusExpression)]
-        [InlineData(SyntaxKind.UnaryPlusExpression, SyntaxKind.UnaryMinusExpression)]
+        [TestMethod]
+        [DataRow(SyntaxKind.UnaryMinusExpression, SyntaxKind.UnaryPlusExpression)]
+        [DataRow(SyntaxKind.UnaryPlusExpression, SyntaxKind.UnaryMinusExpression)]
         public void ShouldMutateUnaryTypes(SyntaxKind original, SyntaxKind expected)
         {
             var target = new PrefixUnaryMutator();
@@ -33,9 +34,9 @@ namespace Stryker.Core.UnitTest.Mutators
             mutation.Type.ShouldBe(Mutator.Unary);
         }
 
-        [Theory]
-        [InlineData(SyntaxKind.PreIncrementExpression, SyntaxKind.PreDecrementExpression)]
-        [InlineData(SyntaxKind.PreDecrementExpression, SyntaxKind.PreIncrementExpression)]
+        [TestMethod]
+        [DataRow(SyntaxKind.PreIncrementExpression, SyntaxKind.PreDecrementExpression)]
+        [DataRow(SyntaxKind.PreDecrementExpression, SyntaxKind.PreIncrementExpression)]
         public void ShouldMutateUpdateTypes(SyntaxKind original, SyntaxKind expected)
         {
             var target = new PrefixUnaryMutator();
@@ -50,9 +51,9 @@ namespace Stryker.Core.UnitTest.Mutators
             mutation.Type.ShouldBe(Mutator.Update);
         }
 
-        [Theory]
-        [InlineData(SyntaxKind.BitwiseNotExpression)]
-        [InlineData(SyntaxKind.LogicalNotExpression)]
+        [TestMethod]
+        [DataRow(SyntaxKind.BitwiseNotExpression)]
+        [DataRow(SyntaxKind.LogicalNotExpression)]
         public void ShouldMutateAnRemove(SyntaxKind original)
         {
             var target = new PrefixUnaryMutator();
@@ -75,9 +76,9 @@ namespace Stryker.Core.UnitTest.Mutators
             }
         }
 
-        [Theory]
-        [InlineData(SyntaxKind.AddressOfExpression)]
-        [InlineData(SyntaxKind.PointerIndirectionExpression)]
+        [TestMethod]
+        [DataRow(SyntaxKind.AddressOfExpression)]
+        [DataRow(SyntaxKind.PointerIndirectionExpression)]
         public void ShouldNotMutate(SyntaxKind original)
         {
             var target = new PrefixUnaryMutator();

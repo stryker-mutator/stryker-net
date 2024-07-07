@@ -123,6 +123,8 @@ public class BuildAnalyzerTestsBase : TestBase
         sourceProjectAnalyzerResultMock.Setup(x => x.ProjectFilePath).Returns(csprojPathName);
         sourceProjectAnalyzerResultMock.Setup(x => x.TargetFramework).Returns(framework);
         sourceProjectAnalyzerResultMock.Setup(x => x.Succeeded).Returns(success);
+
+        sourceProjectAnalyzerResultMock.Setup(x => x.Analyzer).Returns<AnalyzerManager>(null);
         _projectCache[csprojPathName] = sourceProjectAnalyzerResultMock.Object;
 
         var sourceProjectAnalyzerResultsMock = BuildAnalyzerResultsMock(sourceProjectAnalyzerResultMock.Object);
@@ -130,6 +132,7 @@ public class BuildAnalyzerTestsBase : TestBase
         sourceProjectAnalyzerMock.Setup(x => x.Build(It.IsAny<string[]>(), It.IsAny<EnvironmentOptions>())).Returns(sourceProjectAnalyzerResultsMock);
 
         sourceProjectAnalyzerMock.Setup(x => x.ProjectFile).Returns(sourceProjectFileMock.Object);
+        sourceProjectAnalyzerMock.Setup(x => x.EnvironmentFactory).Returns<EnvironmentFactory>(null);
 
         sourceProjectFileMock.Setup(x => x.Path).Returns(csprojPathName);
         sourceProjectFileMock.Setup(x => x.Name).Returns(FileSystem.Path.GetFileName(csprojPathName));

@@ -1,16 +1,17 @@
-﻿using RegexParser.Nodes;
+using RegexParser.Nodes;
 using Shouldly;
 using Stryker.RegexMutators.Mutators;
 using System.Collections.Generic;
 using System.Linq;
 using RegexParser.Nodes.GroupNodes;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.RegexMutators.UnitTest.Mutators
 {
+    [TestClass]
     public class LookAroundMutatorTest
     {
-        [Fact]
+        [TestMethod]
         public void FlipsPositiveLookBehindToNegativeLookBehind()
         {
             // Arrange
@@ -36,7 +37,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Quantifier \"(?<=foo)\" was replaced with \"(?<!foo)\" at offset 0.");
         }
 
-        [Fact]
+        [TestMethod]
         public void FlipsNegativeLookAheadToPositiveLookAhead()
         {
             // Arrange

@@ -249,7 +249,7 @@ public class InputFileResolver : IInputFileResolver
             if (buildResult.Any(r => !IsValid(r) && r.TargetsFullFramework()))
             {
                 _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
-                _nugetRestoreProcess.RestorePackages(options.SolutionPath);
+                _nugetRestoreProcess.RestorePackages(options.SolutionPath, options.MsBuildPath ?? buildResult.First().MsBuildPath());
             }
             var buildOptions = new EnvironmentOptions
             {

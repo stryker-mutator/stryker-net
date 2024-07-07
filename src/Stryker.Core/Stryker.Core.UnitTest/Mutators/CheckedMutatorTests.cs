@@ -4,21 +4,22 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
 using System.Linq;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class CheckedMutatorTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldBeMutationLevelComplete()
         {
             var target = new CheckedMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
         }
 
-        [Theory]
-        [InlineData(SyntaxKind.CheckedExpression, "4 + 2", SyntaxKind.AddExpression)]
+        [TestMethod]
+        [DataRow(SyntaxKind.CheckedExpression, "4 + 2", SyntaxKind.AddExpression)]
         public void ShouldMutate(SyntaxKind original, string expression, SyntaxKind expected)
         {
             var target = new CheckedMutator();
@@ -32,8 +33,8 @@ namespace Stryker.Core.UnitTest.Mutators
             mutation.DisplayName.ShouldBe("Remove checked expression");
         }
 
-        [Theory]
-        [InlineData(SyntaxKind.UncheckedExpression)]
+        [TestMethod]
+        [DataRow(SyntaxKind.UncheckedExpression)]
         public void ShouldNotMutate(SyntaxKind original)
         {
             var target = new CheckedMutator();

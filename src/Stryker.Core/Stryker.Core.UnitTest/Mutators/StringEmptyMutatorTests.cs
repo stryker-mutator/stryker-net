@@ -1,24 +1,24 @@
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
-using Stryker.Core.Options;
-using Xunit;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class StringEmptyMutatorTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldBeMutationLevelStandard()
         {
             var target = new StringEmptyMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldMutateLowercaseString()
         {
             var node = SyntaxFactory.MemberAccessExpression(
@@ -36,7 +36,7 @@ namespace Stryker.Core.UnitTest.Mutators
             replacement.Token.ValueText.ShouldBe("Stryker was here!");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateUppercaseString()
         {
             var node = SyntaxFactory.MemberAccessExpression(
@@ -50,10 +50,10 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Theory]
-        [InlineData("x")]
-        [InlineData("string.Empty")]
-        [InlineData("args[0].Substring(1)")]
+        [TestMethod]
+        [DataRow("x")]
+        [DataRow("string.Empty")]
+        [DataRow("args[0].Substring(1)")]
         public void ShouldMutateIsNullOrEmpty(string argument)
         {
             var expression = (InvocationExpressionSyntax)SyntaxFactory.ParseExpression($"string.IsNullOrEmpty({argument})");
@@ -65,10 +65,10 @@ namespace Stryker.Core.UnitTest.Mutators
             ValidateMutationIsEmptyCheck(mutated[1], expression);
         }
 
-        [Theory]
-        [InlineData("x")]
-        [InlineData("string.Empty")]
-        [InlineData("args[0].Substring(1)")]
+        [TestMethod]
+        [DataRow("x")]
+        [DataRow("string.Empty")]
+        [DataRow("args[0].Substring(1)")]
         public void ShouldMutateIsNullOrWhiteSpace(string argument)
         {
             var expression = (InvocationExpressionSyntax)SyntaxFactory.ParseExpression($"string.IsNullOrWhiteSpace({argument})");
@@ -81,10 +81,10 @@ namespace Stryker.Core.UnitTest.Mutators
             ValidateMutationIsWhiteSpaceCheck(mutated[2], expression);
         }
 
-        [Theory]
-        [InlineData("IsNormalized")]
-        [InlineData("Test")]
-        [InlineData("IsNotNullOrNotEmpty")]
+        [TestMethod]
+        [DataRow("IsNormalized")]
+        [DataRow("Test")]
+        [DataRow("IsNotNullOrNotEmpty")]
         public void ShouldNotMutateOtherMethods(string method)
         {
             var expression = (InvocationExpressionSyntax)SyntaxFactory.ParseExpression($"string.{method}(x)");

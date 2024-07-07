@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Moq.Protected;
 using Shouldly;
@@ -15,13 +16,12 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Json;
-using Stryker.Core.UnitTest.Reporters.Json;
 using Stryker.Core.Reporters.Json.SourceFiles;
-using Stryker.Core.UnitTest.Reporters;
-using Xunit;
+using Stryker.Core.UnitTest.Reporters.Json;
 
 namespace Stryker.Core.UnitTest.Clients
 {
+    [TestClass]
     public class DashboardClientsTest : TestBase
     {
         private static readonly StrykerOptions OptionsWithoutModule = new()
@@ -77,7 +77,7 @@ namespace Stryker.Core.UnitTest.Clients
             _sut = new DashboardClient(OptionsWithoutModule, new HttpClient(_handlerMock.Object), _loggerMock.Object);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DashboardClient_WhilePublishingReport_ShouldLogAndReturnNullWhenApiDoesNotReturn200()
         {
             // Arrange
@@ -99,7 +99,7 @@ namespace Stryker.Core.UnitTest.Clients
             result.ShouldBeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DashboardClient_WhilePublishingReport_ShouldCallWithTheCorrectUri()
         {
             // Arrange
@@ -124,7 +124,7 @@ namespace Stryker.Core.UnitTest.Clients
             result.ShouldBe("http://www.example.com/api/projectName/version");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DashboardClient_WhilePublishingReport_WithModule_ShouldCallTheCorrectUri()
         {
             // Arrange
@@ -151,7 +151,7 @@ namespace Stryker.Core.UnitTest.Clients
             result.ShouldBe("http://www.example.com/api/projectName/version");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DashboardClient_ShouldNotAppendModuleIfOptionIsAnEmptyString()
         {
             // Arrange
@@ -178,7 +178,7 @@ namespace Stryker.Core.UnitTest.Clients
             result.ShouldBe("http://www.example.com/api/projectName/version");
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DashboardClient_WhilePublishingRealTimeReport_ShouldCallTheCorrectUri()
         {
             // Arrange & Act
@@ -196,7 +196,7 @@ namespace Stryker.Core.UnitTest.Clients
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DashboardClient_WhilePublishingRealTimeReport_WithModule_ShouldCallTheCorrectUri()
         {
             // Arrange
@@ -217,7 +217,7 @@ namespace Stryker.Core.UnitTest.Clients
             );
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DashboardClient_WhilePullingReport_ShouldCallWithTheCorrectUri()
         {
             // Arrange
@@ -247,7 +247,7 @@ namespace Stryker.Core.UnitTest.Clients
             result.ToJson().ShouldBe(json);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DashboardClient_WhilePullingReport_WithModule_ShouldCallWithTheCorrectUri()
         {
             // Arrange
@@ -278,7 +278,7 @@ namespace Stryker.Core.UnitTest.Clients
             result.ToJson().ShouldBe(json);
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DashboardClient_WhilePullingReport_ShouldLogAndReturnNullWhenApiDoesNotReturn200()
         {
             // Arrange
@@ -303,7 +303,7 @@ namespace Stryker.Core.UnitTest.Clients
             result.ShouldBeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DashboardClient_WhilePublishingBatchOnce_ShouldNotCallApi()
         {
             // Arrange & Act
@@ -317,7 +317,7 @@ namespace Stryker.Core.UnitTest.Clients
                 ItExpr.IsAny<CancellationToken>());
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DashBoardClient_WhilePublishingBatch_ShouldCallWithTheCorrectUri()
         {
             // Arrange
@@ -340,7 +340,7 @@ namespace Stryker.Core.UnitTest.Clients
                 ItExpr.IsAny<CancellationToken>());
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DashboardClient_WhilePublishingBatch_ShouldLogErrorWhenApiDoesNotReturn200()
         {
             // Arrange
@@ -356,7 +356,7 @@ namespace Stryker.Core.UnitTest.Clients
             VerifyErrorLogged();
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DashboardClient_WhilePublishingFinishedEvent_ShouldLogErrorWhenApiDoesNotReturn200()
         {
             // Arrange
@@ -369,7 +369,7 @@ namespace Stryker.Core.UnitTest.Clients
             VerifyErrorLogged();
         }
 
-        [Fact]
+        [TestMethod]
         public async Task DashboardClient_WhilePublishingFinishedEvent_ShouldEmptyBatchBeforeSendingFinished()
         {
             // Arrange

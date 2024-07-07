@@ -1,18 +1,19 @@
+/*
 using System.Collections.Generic;
 using System.Linq;
 using Buildalyzer;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
 using Stryker.Core.Testing;
-using Xunit;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 
+[TestClass]
 public class TargetFrameworkResolutionTests : TestBase
 {
-    /*
+    
     private IEnumerable<IAnalyzerResult> _analyzerResults = Enumerable.Empty<IAnalyzerResult>();
     private readonly ProjectFileReader _projectFileReader;
 
@@ -39,7 +40,7 @@ public class TargetFrameworkResolutionTests : TestBase
         _projectFileReader = new ProjectFileReader(null, buildalyzerProviderMock.Object);
     }
 
-    [Fact]
+    [TestMethod]
     public void ThrowsIfNoResultsWithFrameworks()
     {
         var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
@@ -54,7 +55,7 @@ public class TargetFrameworkResolutionTests : TestBase
         analyzeProject.ShouldThrow<InputException>();
     }
 
-    [Fact]
+    [TestMethod]
     public void SelectsFirstFrameworkIfNoneSpecified()
     {
         var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
@@ -75,7 +76,7 @@ public class TargetFrameworkResolutionTests : TestBase
         result.TargetFramework.ShouldBe("X");
     }
 
-    [Fact]
+    [TestMethod]
     public void SelectsRespectiveFrameworkIfSpecifiedAndAvailable()
         {
         var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
@@ -96,7 +97,7 @@ public class TargetFrameworkResolutionTests : TestBase
         result.TargetFramework.ShouldBe("Y");
     }
 
-    [Fact]
+    [TestMethod]
     public void SelectsFirstFrameworkIfSpecifiedButNotAvailable()
     {
         var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
@@ -117,7 +118,7 @@ public class TargetFrameworkResolutionTests : TestBase
         result.TargetFramework.ShouldBe("X");
     }
 
-    [Fact]
+    [TestMethod]
     public void SelectsSpecifiedConfiguration()
     {
         var analyzerResultFrameworkXMock = new Mock<IAnalyzerResult>();
@@ -137,5 +138,5 @@ public class TargetFrameworkResolutionTests : TestBase
         var result = _projectFileReader.AnalyzeProject(null, null, null, "Release");
         result.TargetFramework.ShouldBe("X");
     }
-    */
 }
+*/

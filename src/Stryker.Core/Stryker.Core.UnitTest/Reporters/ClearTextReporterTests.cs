@@ -11,14 +11,15 @@ using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
+    [TestClass]
     public class ClearTextReporterTests : TestBase
     {
 
-        [Fact]
+        [TestMethod]
         public void ClearTextReporter_ShouldPrintOnReportDone()
         {
             var console = new TestConsole().EmitAnsiSequences().Width(160);
@@ -55,7 +56,7 @@ All mutants have been tested, and your mutation score has been calculated
             console.Output.DarkGraySpanCount().ShouldBe(2);
         }
 
-        [Fact]
+        [TestMethod]
         public void ClearTextReporter_ShouldPrintKilledMutation()
         {
             var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
@@ -108,7 +109,7 @@ All mutants have been tested, and your mutation score has been calculated
             console.Output.GreenSpanCount().ShouldBe(2);
         }
 
-        [Fact]
+        [TestMethod]
         public void ClearTextReporter_ShouldPrintSurvivedMutation()
         {
             var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
@@ -161,7 +162,7 @@ All mutants have been tested, and your mutation score has been calculated
             console.Output.RedSpanCount().ShouldBe(2);
         }
 
-        [Fact]
+        [TestMethod]
         public void ClearTextReporter_ShouldPrintRedUnderThresholdBreak()
         {
             var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
@@ -203,7 +204,7 @@ All mutants have been tested, and your mutation score has been calculated
             console.Output.RedSpanCount().ShouldBe(2);
         }
 
-        [Fact]
+        [TestMethod]
         public void ClearTextReporter_ShouldPrintYellowBetweenThresholdLowAndThresholdBreak()
         {
             var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
@@ -245,7 +246,7 @@ All mutants have been tested, and your mutation score has been calculated
             console.Output.YellowSpanCount().ShouldBe(2);
         }
 
-        [Fact]
+        [TestMethod]
         public void ClearTextReporter_ShouldPrintGreenAboveThresholdHigh()
         {
             var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");

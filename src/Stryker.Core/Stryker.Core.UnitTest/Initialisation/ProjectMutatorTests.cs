@@ -14,11 +14,12 @@ using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
+    [TestClass]
     public class ProjectMutatorTests : TestBase
     {
         private readonly Mock<IMutationTestProcess> _mutationTestProcessMock = new(MockBehavior.Strict);
@@ -27,13 +28,13 @@ namespace Stryker.Core.UnitTest.Initialisation
         private readonly MutationTestInput _mutationTestInput;
         private readonly IFileSystem _fileSystemMock = new MockFileSystem();
         private readonly string _testFilePath = "c:\\mytestfile.cs";
-        private readonly string _testFileContents = @"using Xunit;
+        private readonly string _testFileContents = @"using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace ExtraProject.XUnit
 {
     public class UnitTest1
     {
-        [Fact]
+        [TestMethod]
         public void Test1()
         {
             // example test
@@ -59,7 +60,7 @@ namespace ExtraProject.XUnit
             };
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldInitializeEachProjectInSolution()
         {
             // arrange

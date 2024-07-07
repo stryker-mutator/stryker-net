@@ -3,15 +3,16 @@ using System.Linq;
 using FSharp.Compiler.Text;
 using Shouldly;
 using Stryker.Core.Helpers;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Range = FSharp.Compiler.Text.Range;
 
 
 namespace Stryker.Core.UnitTest.Helpers
 {
+    [TestClass]
     public class RangeHelperTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void Reduce_Empty()
         {
             var result = Enumerable.Empty<Range>().Reduce("test.fs");
@@ -19,7 +20,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void Reduce_Hollow()
         {
             var range = GetRange((42, 42), (42, 42));
@@ -29,7 +30,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void Reduce_One()
         {
             var range = GetRange((0, 0), (42, 42));
@@ -39,7 +40,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBe(new[] { range });
         }
 
-        [Fact]
+        [TestMethod]
         public void Reduce_TwoEqual()
         {
             var range1 = GetRange((0, 0), (42, 42));
@@ -50,7 +51,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBe(new[] { range1 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Reduce_TwoSequential()
         {
             var range1 = GetRange((0, 0), (11, 11));
@@ -62,7 +63,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBe(new[] { merged });
         }
 
-        [Fact]
+        [TestMethod]
         public void Reduce_TwoIntersecting()
         {
             var range1 = GetRange((0, 0), (22, 22));
@@ -74,7 +75,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBe(new[] { intersection });
         }
 
-        [Fact]
+        [TestMethod]
         public void Reduce_TwoNotIntersecting()
         {
             var range1 = GetRange((0, 0), (11, 11));
@@ -85,7 +86,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBe(new[] { range1, range2 });
         }
 
-        [Fact]
+        [TestMethod]
         public void Reduce_ThreeSequential()
         {
             var range1 = GetRange((0, 0), (11, 11));
@@ -98,7 +99,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBe(new[] { merged });
         }
 
-        [Fact]
+        [TestMethod]
         public void Reduce_ThreePartiallyIntersecting()
         {
             var range1 = GetRange((0, 0), (22, 22));
@@ -111,7 +112,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBe(new[] { intersection, range3 }, ignoreOrder: true);
         }
 
-        [Fact]
+        [TestMethod]
         public void RemoveOverlap_Empty()
         {
             var result = Enumerable.Empty<Range>().RemoveOverlap(Enumerable.Empty<Range>(), "test.fs");
@@ -119,7 +120,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void RemoveOverlap_OverlappingPartiallyLeft()
         {
             var range1 = GetRange((0, 0), (22, 22));
@@ -131,7 +132,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBe(new[] { rangeWithoutOverlap });
         }
 
-        [Fact]
+        [TestMethod]
         public void RemoveOverlap_OverlappingPartiallyRight()
         {
             var range1 = GetRange((0, 0), (22, 22));
@@ -143,7 +144,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBe(new[] { rangeWithoutOverlap });
         }
 
-        [Fact]
+        [TestMethod]
         public void RemoveOverlap_OverlappingBySequentialRanges()
         {
             var range1 = GetRange((0, 0), (33, 33));
@@ -156,7 +157,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBe(new[] { rangeWithoutOverlap });
         }
 
-        [Fact]
+        [TestMethod]
         public void RemoveOverlap_OverlappingByRangesFromSides()
         {
             var range1 = GetRange((0, 0), (33, 33));
@@ -169,7 +170,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBe(new[] { rangeWithoutOverlap });
         }
 
-        [Fact]
+        [TestMethod]
         public void RemoveOverlap_OverlappingCompletely()
         {
             var range1 = GetRange((0, 0), (42, 42));
@@ -180,7 +181,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void RemoveOverlap_OverlappingByBigger()
         {
             var range1 = GetRange((0, 0), (11, 11));
@@ -191,7 +192,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void RemoveOverlap_CutInTheMiddle()
         {
             var range1 = GetRange((0, 0), (33, 33));
@@ -204,7 +205,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBe(new[] { leftPart, rightPart });
         }
 
-        [Fact]
+        [TestMethod]
         public void RemoveOverlap_NotOverlapping()
         {
             var range1 = GetRange((0, 0), (11, 11));
@@ -215,7 +216,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBe(new[] { range1 });
         }
 
-        [Fact]
+        [TestMethod]
         public void OverlapsWith_OverlappingLeft()
         {
             var range1 = GetRange((0, 0), (22, 22));
@@ -224,7 +225,7 @@ namespace Stryker.Core.UnitTest.Helpers
             range1.OverlapsWith(range2).ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void OverlapsWith_OverlappingRight()
         {
             var range1 = GetRange((11, 11), (33, 33));
@@ -233,7 +234,7 @@ namespace Stryker.Core.UnitTest.Helpers
             range1.OverlapsWith(range2).ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void OverlapsWith_OverlappingBetween()
         {
             var range1 = GetRange((0, 0), (33, 33));
@@ -242,7 +243,7 @@ namespace Stryker.Core.UnitTest.Helpers
             range1.OverlapsWith(range2).ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void OverlapsWith_NotOverlapping()
         {
             var range1 = GetRange((0, 0), (11, 11));
@@ -251,7 +252,7 @@ namespace Stryker.Core.UnitTest.Helpers
             range1.OverlapsWith(range2).ShouldBeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void OverlapsWith_EmptyLeft()
         {
             var range1 = GetRange((0, 0), (42, 42));
@@ -260,7 +261,7 @@ namespace Stryker.Core.UnitTest.Helpers
             range1.OverlapsWith(range2).ShouldBeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void OverlapsWith_EmptyRight()
         {
             var range1 = Range.Zero;
@@ -269,7 +270,7 @@ namespace Stryker.Core.UnitTest.Helpers
             range1.OverlapsWith(range2).ShouldBeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void OverlapsWith_EmptyBoth()
         {
             var range1 = Range.Zero;
@@ -278,7 +279,7 @@ namespace Stryker.Core.UnitTest.Helpers
             range1.OverlapsWith(range2).ShouldBeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void Overlap_Overlapping()
         {
             var range1 = GetRange((0, 0), (22, 22));
@@ -288,7 +289,7 @@ namespace Stryker.Core.UnitTest.Helpers
             range1.Overlap(range2, "test.fs").ShouldBe(overlap);
         }
 
-        [Fact]
+        [TestMethod]
         public void Overlap_Sequential()
         {
             var range1 = GetRange((0, 0), (11, 11));
@@ -297,7 +298,7 @@ namespace Stryker.Core.UnitTest.Helpers
             range1.Overlap(range2, "test.fs").ShouldBeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void Overlap_NotOverlapping()
         {
             var range1 = GetRange((0, 0), (11, 11));
@@ -306,7 +307,7 @@ namespace Stryker.Core.UnitTest.Helpers
             range1.Overlap(range2, "test.fs").ShouldBeNull();
         }
 
-        [Fact]
+        [TestMethod]
         public void Max_Greater()
         {
             var position1 = PositionModule.mkPos(42, 42);
@@ -317,7 +318,7 @@ namespace Stryker.Core.UnitTest.Helpers
             actual.ShouldBe(position1);
         }
 
-        [Fact]
+        [TestMethod]
         public void Max_Equal()
         {
             var position1 = PositionModule.pos0;
@@ -328,7 +329,7 @@ namespace Stryker.Core.UnitTest.Helpers
             actual.ShouldBe(position1);
         }
 
-        [Fact]
+        [TestMethod]
         public void Max_Less()
         {
             var position1 = PositionModule.pos0;
@@ -339,7 +340,7 @@ namespace Stryker.Core.UnitTest.Helpers
             actual.ShouldBe(position2);
         }
 
-        [Fact]
+        [TestMethod]
         public void Min_Greater()
         {
             var position1 = PositionModule.mkPos(42, 42);
@@ -350,7 +351,7 @@ namespace Stryker.Core.UnitTest.Helpers
             actual.ShouldBe(position2);
         }
 
-        [Fact]
+        [TestMethod]
         public void Min_Equal()
         {
             var position1 = PositionModule.pos0;
@@ -361,7 +362,7 @@ namespace Stryker.Core.UnitTest.Helpers
             actual.ShouldBe(position2);
         }
 
-        [Fact]
+        [TestMethod]
         public void Min_Less()
         {
             var position1 = PositionModule.pos0;
@@ -372,7 +373,7 @@ namespace Stryker.Core.UnitTest.Helpers
             actual.ShouldBe(position1);
         }
 
-        [Fact]
+        [TestMethod]
         public void IsEmpty_ZeroRange()
         {
             var range = Range.Zero;
@@ -380,7 +381,7 @@ namespace Stryker.Core.UnitTest.Helpers
             range.IsEmpty().ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void IsEmpty_HollowRange()
         {
             var range = GetRange((42, 42), (42, 42));
@@ -388,7 +389,7 @@ namespace Stryker.Core.UnitTest.Helpers
             range.IsEmpty().ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void IsEmpty_NotEmptyRange()
         {
             var range = GetRange((0, 0), (42, 42));
@@ -396,7 +397,7 @@ namespace Stryker.Core.UnitTest.Helpers
             range.IsEmpty().ShouldBeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void IntersectsWith_Intersecting_Left()
         {
             var range1 = GetRange((0, 0), (22, 22));
@@ -405,7 +406,7 @@ namespace Stryker.Core.UnitTest.Helpers
             range1.IntersectsWith(range2).ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void IntersectsWith_IntersectingRight()
         {
             var range1 = GetRange((11, 11), (33, 33));
@@ -414,7 +415,7 @@ namespace Stryker.Core.UnitTest.Helpers
             range1.IntersectsWith(range2).ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void IntersectsWith_IntersectingBetween()
         {
             var range1 = GetRange((0, 0), (33, 33));
@@ -423,7 +424,7 @@ namespace Stryker.Core.UnitTest.Helpers
             range1.IntersectsWith(range2).ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void IntersectsWith_NoIntersection()
         {
             var range1 = GetRange((0, 0), (11, 11));
@@ -432,7 +433,7 @@ namespace Stryker.Core.UnitTest.Helpers
             range1.IntersectsWith(range2).ShouldBeFalse();
         }
 
-        [Fact]
+        [TestMethod]
         public void GetPosition_OneLine()
         {
             var text = "Line1";
@@ -444,7 +445,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBe(position);
         }
 
-        [Fact]
+        [TestMethod]
         public void GetPosition_NoContent()
         {
             var text = "";
@@ -456,7 +457,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBe(position);
         }
 
-        [Fact]
+        [TestMethod]
         public void GetPosition_NoContent_OutOfBounds()
         {
             var text = "";
@@ -468,11 +469,11 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBe(position);
         }
 
-        [Theory]
-        [InlineData(1, 0, 1)]
-        [InlineData(4, 0, 4)]
-        [InlineData(7, 1, 2)]
-        [InlineData(9, 1, 4)]
+        [TestMethod]
+        [DataRow(1, 0, 1)]
+        [DataRow(4, 0, 4)]
+        [DataRow(7, 1, 2)]
+        [DataRow(9, 1, 4)]
         public void GetPosition_MultipleLines(int index, int expectedRow, int expectedCol)
         {
             var text = $"Line1{Environment.NewLine}Line2";
@@ -483,7 +484,7 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBe(position);
         }
 
-        [Fact]
+        [TestMethod]
         public void GetPosition_OutOfBounds()
         {
             var text = "Line1";
@@ -495,25 +496,25 @@ namespace Stryker.Core.UnitTest.Helpers
             result.ShouldBe(position);
         }
 
-        [Fact]
+        [TestMethod]
         public void GetIndex_OneLine() => GetIndex("Line1", expectedIndex: 1, row: 0, col: 1);
 
-        [Theory]
-        [InlineData(1, 0, 1)]
-        [InlineData(4, 0, 4)]
-        [InlineData(7, 1, 2)]
-        [InlineData(9, 1, 4)]
+        [TestMethod]
+        [DataRow(1, 0, 1)]
+        [DataRow(4, 0, 4)]
+        [DataRow(7, 1, 2)]
+        [DataRow(9, 1, 4)]
 
         public void GetIndex_MultipleLines(int expectedIndex, int row, int col) => GetIndex($"Line1{Environment.NewLine}Line2", expectedIndex, row, col);
 
-        [Theory]
-        [InlineData(-1, 0, 42)]
-        [InlineData(-1, 1, 42)]
-        [InlineData(-1, 2, 0)]
-        [InlineData(-1, 2, 42)]
+        [TestMethod]
+        [DataRow(-1, 0, 42)]
+        [DataRow(-1, 1, 42)]
+        [DataRow(-1, 2, 0)]
+        [DataRow(-1, 2, 42)]
         public void GetIndex_MultipleLines_OutOfBounds(int expectedIndex, int row, int col) => GetIndex($"Line1{Environment.NewLine}Line2", expectedIndex, row, col);
 
-        [Fact]
+        [TestMethod]
         public void GetIndex_OutOfBounds() => GetIndex("Line1", expectedIndex: -1, row: 42, col: 42);
 
         private static void GetIndex(string text, int expectedIndex, int row, int col)

@@ -1,52 +1,53 @@
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class ThresholdLowInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new ThresholdLowInput();
             target.HelpText.ShouldBe(@"Minimum acceptable mutation score. Must be less than or equal to threshold high and more than or equal to threshold break. | default: '60' | allowed: 0 - 100");
         }
 
-        [Theory]
-        [InlineData(-1)]
-        [InlineData(101)]
+        [TestMethod]
+        [DataRow(-1)]
+        [DataRow(101)]
         public void MustBeBetween0and100(int thresholdLow)
         {
-            var ex = Assert.Throws<InputException>(() =>
+            var ex = Should.Throw<InputException>(() =>
             {
                 var options = new ThresholdLowInput { SuppliedInput = thresholdLow }.Validate(@break: 0, high: 100);
             });
             ex.Message.ShouldBe("Threshold low must be between 0 and 100.");
         }
 
-        [Fact]
+        [TestMethod]
         public void MustBeLessthanOrEqualToThresholdHigh()
         {
-            var ex = Assert.Throws<InputException>(() =>
+            var ex = Should.Throw<InputException>(() =>
             {
                 var options = new ThresholdLowInput { SuppliedInput = 61 }.Validate(@break: 60, high: 60);
             });
             ex.Message.ShouldBe("Threshold low must be less than or equal to threshold high. Current low: 61, high: 60.");
         }
 
-        [Fact]
+        [TestMethod]
         public void MustBeMoreThanThresholdBreak()
         {
-            var ex = Assert.Throws<InputException>(() =>
+            var ex = Should.Throw<InputException>(() =>
             {
                 var options = new ThresholdLowInput { SuppliedInput = 59 }.Validate(@break: 60, high: 60);
             });
             ex.Message.ShouldBe("Threshold low must be more than or equal to threshold break. Current low: 59, break: 60.");
         }
 
-        [Fact]
+        [TestMethod]
         public void CanBeEqualToThresholdBreak()
         {
             var input = 60;
@@ -54,7 +55,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             options.ShouldBe(input);
         }
 
-        [Fact]
+        [TestMethod]
         public void CanBeEqualToThresholdHigh()
         {
             var input = 60;
@@ -62,7 +63,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             options.ShouldBe(input);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldAllow0()
         {
             var input = 0;
@@ -70,7 +71,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             options.ShouldBe(input);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldAllow100()
         {
             var input = 100;
@@ -78,7 +79,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             options.ShouldBe(input);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldBeDefaultValueWhenNull()
         {
             var input = new ThresholdLowInput { SuppliedInput = null };
