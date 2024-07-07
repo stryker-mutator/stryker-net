@@ -51,6 +51,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [TestMethod]
         [DataRow("se=2022-08-27T09%3A26%3A07Z&sp=rwdl&spr=https&sr=s&sig=4324234")]
         [DataRow("se=2022-08-27T09%3A26%3A07Z&sp=rwdl&spr=https&sr=s&sv=4324234")]
+        [DataRow("se=2022-08-27T09%3A26%3A07Z&sp=rwdl&spr=https&sv=2018-11-09&sr=s&")]
         public void Should_Throw_Exception_When_Missing_Important_Keys(string input)
         {
             var target = new AzureFileStorageSasInput { SuppliedInput = input };
