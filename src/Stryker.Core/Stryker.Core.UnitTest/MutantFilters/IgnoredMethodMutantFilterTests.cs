@@ -35,11 +35,13 @@ namespace Stryker.Core.UnitTest.MutantFilters
         [DataRow("IgnoredMethod()++;", "IgnoredMethod()++", false)]
         [DataRow("x==1 ? IgnoredMethod(true): IgnoredMethod(false);", "==", true)]
         [DataRow("SomeMethod(true).IgnoredMethod(false);", "true", true)]
+        [DataRow("IgnoredMethod(x==> SomeCall(param));", "param", true)]
+        [DataRow("IgnoredMethod(x==1 ? true : false);", "false", true)]
         public void ShouldFilterDocumentedCases(string methodCall, string anchor, bool shouldSkipMutant)
         {
             // Arrange
-            var source = $@"public void StubMethod()
-{{
+            var source = $@"class Test{{public void StubMethod() =>
+
     {methodCall}
 }}";
             anchor ??= methodCall;
@@ -66,7 +68,6 @@ namespace Stryker.Core.UnitTest.MutantFilters
             }
 
         }
-
 
         [TestMethod]
         [DataRow("Where", true)]
@@ -692,7 +693,7 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
         {
             var baseSyntaxTree = CSharpSyntaxTree.ParseText(csharp).GetRoot();
 
-            var originalNode = FindEnclosingNode<ExpressionSyntax>(baseSyntaxTree, anchor);
+            SyntaxNode originalNode = FindEnclosingNode<ExpressionSyntax>(baseSyntaxTree, anchor);
             if (originalNode != null)
             {
                 yield return (new Mutant
@@ -704,21 +705,29 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
                 }, "Expression mutant");
             }
 
-            yield return (new Mutant
+            originalNode = FindEnclosingNode<StatementSyntax>(baseSyntaxTree, anchor);
+            if (originalNode != null)
             {
-                Mutation = new Mutation
+                yield return (new Mutant
                 {
-                    OriginalNode = FindEnclosingNode<StatementSyntax>(baseSyntaxTree, anchor),
-                }
-            }, "Statement mutant");
+                    Mutation = new Mutation
+                    {
+                        OriginalNode = originalNode,
+                    }
+                }, "Statement mutant");
+            }
 
-            yield return (new Mutant
+            originalNode = FindEnclosingNode<BlockSyntax>(baseSyntaxTree, anchor);
+            if (originalNode != null)
             {
-                Mutation = new Mutation
+                yield return (new Mutant
                 {
-                    OriginalNode = FindEnclosingNode<BlockSyntax>(baseSyntaxTree, anchor),
-                }
-            }, "Block mutant");
+                    Mutation = new Mutation
+                    {
+                        OriginalNode = originalNode,
+                    }
+                }, "Block mutant");
+            }
 
         }
 

@@ -3,7 +3,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Operations;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
@@ -17,7 +16,9 @@ namespace Stryker.Core.MutantFilters
     public sealed class IgnoredMethodMutantFilter : IMutantFilter
     {
         public MutantFilter Type => MutantFilter.IgnoreMethod;
+
         public string DisplayName => "method filter";
+
         private readonly SyntaxTriviaRemover _triviaRemover = new();
 
         public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options) =>
@@ -32,14 +33,15 @@ namespace Stryker.Core.MutantFilters
                 // follow the invocation chain to see if it ends with a filtered one
                 InvocationExpressionSyntax invocation => MatchesAnIgnoredMethod(_triviaRemover.Visit(invocation.Expression).ToString(), options)
                     || (invocation.Parent is MemberAccessExpressionSyntax && invocation.Parent.Parent is InvocationExpressionSyntax &&
-                    IsPartOfIgnoredMethodCall(invocation.Parent.Parent, options, false)),
+                    IsPartOfIgnoredMethodCall(invocation.Parent.Parent, options, false)) || (canGoUp && IsPartOfIgnoredMethodCall(invocation.Parent, options)),
 
                 // Check if the current node is an object creation syntax (constructor invocation).
                 ObjectCreationExpressionSyntax creation => MatchesAnIgnoredMethod(_triviaRemover.Visit(creation.Type) + ".ctor", options),
 
                 ConditionalAccessExpressionSyntax conditional => IsPartOfIgnoredMethodCall(conditional.WhenNotNull, options, false),
 
-                ConditionalExpressionSyntax conditionalExpression => IsPartOfIgnoredMethodCall(conditionalExpression.WhenTrue, options, false) && IsPartOfIgnoredMethodCall(conditionalExpression.WhenFalse, options, false),
+                ConditionalExpressionSyntax conditionalExpression => (IsPartOfIgnoredMethodCall(conditionalExpression.WhenTrue, options, false) && IsPartOfIgnoredMethodCall(conditionalExpression.WhenFalse, options, false))
+                                                                    || (canGoUp && IsPartOfIgnoredMethodCall(conditionalExpression.Parent, options)),
 
                 ExpressionStatementSyntax expressionStatement => IsPartOfIgnoredMethodCall(expressionStatement.Expression, options, false),
 
@@ -49,8 +51,11 @@ namespace Stryker.Core.MutantFilters
   
                 BlockSyntax { Statements.Count: >0 } block => block.Statements.All(s=> IsPartOfIgnoredMethodCall(s, options, false)),
 
+
+                MemberDeclarationSyntax => false,
+
                 // Traverse the tree upwards.
-                { Parent: { } }  => canGoUp && IsPartOfIgnoredMethodCall(syntaxNode.Parent, options),
+                { Parent: not null }  => canGoUp && IsPartOfIgnoredMethodCall(syntaxNode.Parent, options),
                 _ => false,
             };
 
