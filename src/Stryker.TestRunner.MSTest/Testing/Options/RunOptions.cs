@@ -8,6 +8,7 @@ internal static class RunOptions
 
     public static string DiscoverySettings => $"--settings {GetSettingsPath("discovery.runsettings")}";
     public static string RunSettings => $"--settings {GetSettingsPath("run.runsettings")}";
+    public static string CoverageSettings => $"--settings {GetSettingsPath("coverage.runsettings")}";
 
     private const string RunSettingsDirectory = "RunSettings";
 

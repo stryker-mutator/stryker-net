@@ -1,23 +1,22 @@
 using System.Reflection;
 using Microsoft.Testing.Platform.Extensions.TestHost;
 using Stryker.TestRunner.MSTest.Setup;
+using Stryker.TestRunner.MSTest.Testing.Tests;
 
 namespace Stryker.TestRunner.MSTest.Testing.LifecycleCallbacks;
 internal class MutantControlLifecycleCallbacks : ITestApplicationLifecycleCallbacks
 {
     private readonly string _assemblyPath;
-    private readonly int _mutantId;
-    private readonly string _mutantControlNamespace;
+    private readonly MutantController _mutantController;
 
-    private MutantControlLifecycleCallbacks(string assemblyPath, int mutantId, string mutantControlNamespace)
+    private MutantControlLifecycleCallbacks(string assemblyPath, MutantController mutantController)
     {
         _assemblyPath = assemblyPath;
-        _mutantId = mutantId;
-        _mutantControlNamespace = mutantControlNamespace;
+        _mutantController = mutantController;
     }
 
-    public static MutantControlLifecycleCallbacks Create(string assemblyPath, int mutantId, string mutantControlNamespace) =>
-        new(assemblyPath, mutantId, mutantControlNamespace);
+    public static MutantControlLifecycleCallbacks Create(string assemblyPath, MutantController mutantController) =>
+        new(assemblyPath, mutantController);
 
     public string Uid => nameof(MutantControlLifecycleCallbacks);
 
@@ -29,6 +28,11 @@ internal class MutantControlLifecycleCallbacks : ITestApplicationLifecycleCallba
 
     public Task BeforeRunAsync(CancellationToken cancellationToken)
     {
+        if(_mutantController.IsAsyncRunField is not null)
+        {
+            return Task.CompletedTask;
+        }
+
         var projects = DirectoryScanner.FindProjects(_assemblyPath);
 
         // Scan through assemblies containing the name of the .csproj files.
@@ -46,20 +50,23 @@ internal class MutantControlLifecycleCallbacks : ITestApplicationLifecycleCallba
         return Task.FromResult(true);
     }
 
-    public Task AfterRunAsync(int exitCode, CancellationToken cancellation) => Task.FromResult(true);
+    public Task AfterRunAsync(int exitCode, CancellationToken cancellation) => Task.CompletedTask;
 
     public Task<bool> IsEnabledAsync() => Task.FromResult(true);
 
     private void InitializeMutantController(Assembly assembly)
     {
-        var mutantControlType = assembly.DefinedTypes?.FirstOrDefault(t => t.FullName == _mutantControlNamespace);
+        var mutantControlType = assembly.DefinedTypes?.FirstOrDefault(t => t.FullName == _mutantController.MutantControlClassName);
 
         if (mutantControlType is null)
         {
             return;
         }
 
-        var activeMutantField = mutantControlType.GetField("ActiveMutant");
-        activeMutantField?.SetValue(null, _mutantId);
+        _mutantController.IsAsyncRunField = mutantControlType.GetField("IsAsyncRun");
+        _mutantController.SetAsync(true); 
+
+        _mutantController.InitAsyncRunMethod = mutantControlType.GetMethod("InitAsyncRun");
+        _mutantController.InitAsyncRun();
     }
 }

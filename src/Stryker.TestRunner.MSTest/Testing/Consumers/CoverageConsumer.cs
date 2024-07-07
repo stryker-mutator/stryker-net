@@ -33,6 +33,7 @@ internal class CoverageConsumer : IDataConsumer
 
         if (state is InProgressTestNodeStateProperty)
         {
+            _coverageCollector.CaptureCoverageOutsideTests();
             return Task.CompletedTask;
         }
 

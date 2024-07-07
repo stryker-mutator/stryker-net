@@ -13,7 +13,6 @@ public class PersonTests
         var olderPerson = new Person() { Age = ageB };
 
         Person.Aged(person);
-
         Assert.IsTrue(person.SameAge(olderPerson));
     }
 

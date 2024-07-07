@@ -45,15 +45,15 @@ internal class CoverageLifecycleCallbacks : ITestApplicationLifecycleCallbacks
             InitializeCoverageCollector(project);
         }
 
-        return Task.FromResult(true);
+        return Task.CompletedTask;
     }
 
 
     public Task AfterRunAsync(int exitCode, CancellationToken cancellation)
     {
         // Disables capturing coverage
-        _coverageCollector.CaptureCoverageField?.SetValue(null, false);
-        return Task.FromResult(true);
+        _coverageCollector.SetCoverage(false);
+        return Task.CompletedTask;
     }
 
     public Task<bool> IsEnabledAsync() => Task.FromResult(true);
@@ -79,10 +79,9 @@ internal class CoverageLifecycleCallbacks : ITestApplicationLifecycleCallbacks
 
         // Sets capture coverage to true
         _coverageCollector.CaptureCoverageField = mutantControlType.GetField("CaptureCoverage");
-        _coverageCollector.CaptureCoverageField?.SetValue(null, true);
+        _coverageCollector.SetCoverage(true);
 
         // Method to receive coverage
         _coverageCollector.GetCoverageDataMethod = mutantControlType.GetMethod("GetCoverageData")!;
-        _coverageCollector.CaptureCoverageOutsideTests();
     }
 }

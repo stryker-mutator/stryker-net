@@ -6,6 +6,7 @@
   </PropertyGroup>
   <ItemGroup>
     <None Remove="discovery.runsettings" />
+    <None Remove="RunSettings\coverage.runsettings" />
   </ItemGroup>
 
   <ItemGroup>
@@ -18,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="RunSettings\coverage.runsettings" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="RunSettings\discovery.runsettings" CopyToOutputDirectory="PreserveNewest" />
     <Content Include="RunSettings\run.runsettings" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>

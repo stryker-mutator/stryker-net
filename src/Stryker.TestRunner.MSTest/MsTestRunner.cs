@@ -9,6 +9,7 @@ using Stryker.TestRunner.MSTest.Setup;
 using Stryker.TestRunner.MSTest.Testing.Results;
 using Stryker.TestRunner.MSTest.Testing.Tests;
 using System.IO.Abstractions;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace Stryker.TestRunner.MSTest;
 
@@ -17,13 +18,16 @@ public class MsTestRunner : ITestRunner
     private DiscoveryResult DiscoveryResult { get; }
     private TestProjectLoader TestProjectLoader { get; }
 
-    private IStrykerOptions _strykerOptions;
+    private Dictionary<string, List<TestNode>> Executed { get; }
+
+    private readonly IStrykerOptions _strykerOptions;
 
     private readonly object _mutantRunLock = new object();
 
     public MsTestRunner(IStrykerOptions options, IFileSystem? fileSystem = null)
     {
         _strykerOptions = options;
+        Executed = [];
         DiscoveryResult = new DiscoveryResult();
         TestProjectLoader = new TestProjectLoader(fileSystem);
     }
@@ -34,13 +38,8 @@ public class MsTestRunner : ITestRunner
 
         foreach (var assembly in project.GetTestAssemblies())
         {
-            var tests = DiscoveryResult.TestsPerSource[assembly];
-
-            foreach(var test in tests)
-            {
-                var testProject = TestProjectLoader.Load(assembly);
-                var exitCode = testProject.CoverageRun(coverageCollector, test).GetAwaiter().GetResult();
-            }
+            var testProject = TestProjectLoader.Load(assembly);
+            var exitCode = testProject.CoverageRun(coverageCollector).GetAwaiter().GetResult();
         }
 
         return coverageCollector.GetCoverageRunResult(true);
@@ -49,7 +48,9 @@ public class MsTestRunner : ITestRunner
     public bool DiscoverTests(string assembly)
     {
         var testProject = TestProjectLoader.LoadCopy(assembly);
-        var exitCode = testProject.Discover(DiscoveryResult, assembly).GetAwaiter().GetResult();
+        var executedTests = new List<TestNode>();
+        var exitCode = testProject.Discover(DiscoveryResult, executedTests, assembly).GetAwaiter().GetResult();
+        Executed.Add(assembly, executedTests);
         return DiscoveryResult.TestsPerSource[assembly].Count > 0;
     }
 
@@ -57,17 +58,16 @@ public class MsTestRunner : ITestRunner
 
     public ITestRunResult InitialTest(IProjectAndTests project)
     {
-        foreach (var test in DiscoveryResult.MsTests.Keys)
-        {
-            DiscoveryResult.MsTests[test].ClearInitialResult();
-        }
-
         var executedTests = new List<TestNode>();
 
         foreach (var assembly in project.GetTestAssemblies())
         {
-            var testProject = TestProjectLoader.LoadCopy(assembly);
-            var exitCode = testProject.InitialTestRun(DiscoveryResult, executedTests).GetAwaiter().GetResult();
+            var containsExecuted = Executed.TryGetValue(assembly, out var result);
+
+            if (containsExecuted)
+            {
+                executedTests.AddRange(result!);
+            }
         }
 
         var executed = executedTests
@@ -101,18 +101,16 @@ public class MsTestRunner : ITestRunner
             return TestRunResult.None(DiscoveryResult.MsTests.Values, "Mutants are not covered by any test!");
         }
 
-        // Since there is only 1 mutant per test run (for concurrency reasons),
-        // we can just take the first key.
-        var mutantId = mutantTestsMap.Keys.First();
         var totalCountOfTests = DiscoveryResult.GetTestsForSources(project.GetTestAssemblies()).Count;
         var executed = new List<TestNode>();
+        var mutantController = MutantController.Create(project.HelperNamespace, mutantTestsMap.Keys);
 
         lock (_mutantRunLock)
         {
             foreach (var assembly in project.GetTestAssemblies())
             {
                 var testProject = TestProjectLoader.Load(assembly);
-                var exitCode = testProject.MutantRun(mutantId, testCases, project.HelperNamespace, executed).GetAwaiter().GetResult();
+                var exitCode = testProject.MutantRun(mutantController, testCases, executed).GetAwaiter().GetResult();
             }
         }
 

@@ -192,7 +192,7 @@ public class MutationTestProcess : IMutationTestProcess
 
     private IEnumerable<List<IMutant>> BuildMutantGroupsForTest(IReadOnlyCollection<IMutant> mutantsNotRun)
     {
-        if (_options.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants) || !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) || _options.UseExperimentalTestRunner)
+        if (_options.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants) || !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
         {
             return mutantsNotRun.Select(x => new List<IMutant> { x });
         }

@@ -5,11 +5,15 @@ namespace Stryker
     {
         private static System.Collections.Generic.List<int> _coveredMutants = new System.Collections.Generic.List<int>();
         private static System.Collections.Generic.List<int> _coveredStaticdMutants = new System.Collections.Generic.List<int>();
+        private static System.Collections.Generic.HashSet<int> _activeMutants = new System.Collections.Generic.HashSet<int>();
+
         private static string envName = string.Empty;
         private static System.Object _coverageLock = new System.Object();
 
         // this attribute will be set by the Stryker Data Collector before each test
         public static bool CaptureCoverage;
+        public static bool IsAsyncRun;
+
         public static int ActiveMutant = -2;
         public const int ActiveMutantNotInitValue = -2;
 
@@ -22,6 +26,11 @@ namespace Stryker
         {
             _coveredMutants = new System.Collections.Generic.List<int>();
             _coveredStaticdMutants = new System.Collections.Generic.List<int>();
+        }
+
+        public static void InitAsyncRun(System.Collections.Generic.IEnumerable<int> mutantIds)
+        {
+            _activeMutants = new System.Collections.Generic.HashSet<int>(mutantIds);
         }
 
         public static System.Collections.Generic.IList<int>[] GetCoverageData()
@@ -45,6 +54,12 @@ namespace Stryker
                 RegisterCoverage(id);
                 return false;
             }
+
+            if(IsAsyncRun)
+            {
+                return _activeMutants.Contains(id);
+            }
+
             if (ActiveMutant == ActiveMutantNotInitValue)
             {
 #pragma warning disable CS8600

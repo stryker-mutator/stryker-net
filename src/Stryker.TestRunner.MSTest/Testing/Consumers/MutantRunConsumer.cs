@@ -1,6 +1,6 @@
+using System.Diagnostics;
 using Microsoft.Testing.Platform.Extensions.Messages;
 using Microsoft.Testing.Platform.Extensions.TestHost;
-using Stryker.TestRunner.MSTest.Testing.Tests;
 
 namespace Stryker.TestRunner.MSTest.Testing.Consumers;
 internal class MutantRunConsumer : IDataConsumer

@@ -9,16 +9,18 @@ internal class DiscoveryConsumer : IDataConsumer
     private readonly DiscoveryResult _discoveryResult;
     private readonly Uri _executor;
     private readonly string _source;
+    private readonly List<TestNode> _executed;
 
-    private DiscoveryConsumer(string source, Uri executor, DiscoveryResult discoveryResult)
+    private DiscoveryConsumer(string source, Uri executor, DiscoveryResult discoveryResult, List<TestNode> executed)
     {
         _source = source;
         _executor = executor;
         _discoveryResult = discoveryResult;
+        _executed = executed;
     }
 
-    public static DiscoveryConsumer Create(string source, Uri executor, DiscoveryResult discoveryResult) =>
-        new(source, executor, discoveryResult);
+    public static DiscoveryConsumer Create(string source, Uri executor, DiscoveryResult discoveryResult, List<TestNode> executed) =>
+        new(source, executor, discoveryResult, executed);
 
     public Type[] DataTypesConsumed => [typeof(TestNodeUpdateMessage)];
 
@@ -42,10 +44,15 @@ internal class DiscoveryConsumer : IDataConsumer
         }
 
         var testCase = new TestCase(_source, _executor, update.TestNode);
+        var timing = update.TestNode.Properties.Single<TimingProperty>();
+        var duration = timing.GlobalTiming.Duration;
+        var testResult = new MsTestResult(duration);
 
         _discoveryResult.AddTestSource(_source, update.TestNode.Uid);
         _discoveryResult.AddTestDescription(update.TestNode.Uid, testCase);
         _discoveryResult.AddTest(new TestDescription(testCase.Id.ToString(), testCase.Name, testCase.CodeFilePath));
+        _discoveryResult.MsTests[update.TestNode.Uid].RegisterInitialTestResult(testResult);
+        _executed.Add(update.TestNode);
 
         return Task.CompletedTask;
     }

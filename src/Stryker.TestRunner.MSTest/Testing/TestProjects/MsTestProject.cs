@@ -22,11 +22,11 @@ internal class MsTestProject : ITestProject
 
     public static MsTestProject Create(Assembly assembly) => new(assembly);
     
-    public async Task<int> Discover(DiscoveryResult discoveryResult, string assemblyPath)
+    public async Task<int> Discover(DiscoveryResult discoveryResult, List<TestNode> executed, string assemblyPath)
     {
         var builder = await TestApplication.CreateBuilderAsync([RunOptions.DiscoverySettings, RunOptions.NoBanner, RunOptions.NoConsole]);
         builder.AddMSTest(() => [_assembly]);
-        builder.TestHost.AddDataConsumer(_ => DiscoveryConsumer.Create(assemblyPath, new Uri(ExecutorPath), discoveryResult));
+        builder.TestHost.AddDataConsumer(_ => DiscoveryConsumer.Create(assemblyPath, new Uri(ExecutorPath), discoveryResult, executed));
         using var app = await builder.BuildAsync();
         return await app.RunAsync();
     }
@@ -40,10 +40,9 @@ internal class MsTestProject : ITestProject
         return await app.RunAsync();
     }
 
-    public async Task<int> CoverageRun(CoverageCollector coverageCollector, string testCase)
+    public async Task<int> CoverageRun(CoverageCollector coverageCollector)
     {
-        var testCaseFilter = $"--filter {testCase}";
-        var builder = await TestApplication.CreateBuilderAsync([RunOptions.RunSettings, RunOptions.NoConsole, RunOptions.NoBanner, testCaseFilter]);
+        var builder = await TestApplication.CreateBuilderAsync([RunOptions.CoverageSettings, RunOptions.NoConsole, RunOptions.NoBanner]);
         builder.AddMSTest(() => [_assembly]);
         builder.TestHost.AddTestApplicationLifecycleCallbacks((_) => CoverageLifecycleCallbacks.Create(_assembly.Location, coverageCollector));
         builder.TestHost.AddDataConsumer((_) => CoverageConsumer.Create(coverageCollector));
@@ -51,7 +50,7 @@ internal class MsTestProject : ITestProject
         return await app.RunAsync();
     }
 
-    public async Task<int> MutantRun(int mutantId, IEnumerable<string>? testCases, string helperNamespace, List<TestNode> executed)
+    public async Task<int> MutantRun(MutantController mutantController, IEnumerable<string>? testCases, List<TestNode> executed)
     {
         List<string> args = [RunOptions.RunSettings, RunOptions.NoBanner, RunOptions.NoConsole];
 
@@ -63,10 +62,9 @@ internal class MsTestProject : ITestProject
         }
         
         var builder = await TestApplication.CreateBuilderAsync([.. args]);
-        var mutantControlNamespace = $"{helperNamespace}.MutantControl";
 
         builder.AddMSTest(() => [_assembly]);
-        builder.TestHost.AddTestApplicationLifecycleCallbacks((_) => MutantControlLifecycleCallbacks.Create(_assembly.Location, mutantId, mutantControlNamespace));
+        builder.TestHost.AddTestApplicationLifecycleCallbacks((_) => MutantControlLifecycleCallbacks.Create(_assembly.Location, mutantController));
         builder.TestHost.AddDataConsumer((_) => MutantRunConsumer.Create(executed));
 
         var app = await builder.BuildAsync();

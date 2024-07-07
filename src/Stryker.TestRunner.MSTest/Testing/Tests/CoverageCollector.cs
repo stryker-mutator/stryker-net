@@ -61,6 +61,8 @@ internal class CoverageCollector
         _mutationCoveredOutsideTests.Clear();
     }
 
+    public void SetCoverage(bool enabled) => CaptureCoverageField?.SetValue(null, enabled);
+
     public IEnumerable<ICoverageRunResult> GetCoverageRunResult(bool perIsolatedTest)
     {
         var seenTestCases = new HashSet<string>();
