@@ -1,3 +1,21 @@
+# [4.1.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.6...stryker@4.1.0) (2024-07-08)
+
+
+### Bug Fixes
+
+* Improve IgnoreMethod filter mutation search  ([#2965](https://github.com/stryker-mutator/stryker-net/issues/2965)) ([0369d3b](https://github.com/stryker-mutator/stryker-net/commit/0369d3b78250e8aef1a36c5daf726602cb26675d))
+* Improve MsBuild detection  ([#2975](https://github.com/stryker-mutator/stryker-net/issues/2975)) ([f6df01a](https://github.com/stryker-mutator/stryker-net/commit/f6df01adc14c922b18b0006101e6ed3a30118e2c))
+* **since:** Retest all mutants covered by tests for which we cannot determine the filepath ([#2753](https://github.com/stryker-mutator/stryker-net/issues/2753)) ([c68c46c](https://github.com/stryker-mutator/stryker-net/commit/c68c46cb96c4c7ee98f1ad7b9c0f92425a572e74))
+* Strengthen azure sas parsing ([#2978](https://github.com/stryker-mutator/stryker-net/issues/2978)) ([f718818](https://github.com/stryker-mutator/stryker-net/commit/f7188188a6e55c555bcd584438380e54ce42450d))
+
+
+### Features
+
+* **mutator:** Add conditional operator mutator ([#2583](https://github.com/stryker-mutator/stryker-net/issues/2583)) ([6556ab9](https://github.com/stryker-mutator/stryker-net/commit/6556ab96d320fc2b7647363577a62683df48b6d6))
+* Specify build Configuration ([#2928](https://github.com/stryker-mutator/stryker-net/issues/2928)) ([99827d5](https://github.com/stryker-mutator/stryker-net/commit/99827d52b198b394999596d1e13b8f81f26aff9b)), closes [#2930](https://github.com/stryker-mutator/stryker-net/issues/2930) [#2748](https://github.com/stryker-mutator/stryker-net/issues/2748) [#2693](https://github.com/stryker-mutator/stryker-net/issues/2693) [#2587](https://github.com/stryker-mutator/stryker-net/issues/2587) [#2886](https://github.com/stryker-mutator/stryker-net/issues/2886) [#2393](https://github.com/stryker-mutator/stryker-net/issues/2393) [#2077](https://github.com/stryker-mutator/stryker-net/issues/2077) [#2938](https://github.com/stryker-mutator/stryker-net/issues/2938)
+
+
+
 ## [4.0.6](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.5...stryker@4.0.6) (2024-05-25)
 
 

@@ -1,3 +1,12 @@
+# [4.1.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.0.6...dotnet-stryker@4.1.0) (2024-07-08)
+
+
+### Features
+
+* Specify build Configuration ([#2928](https://github.com/stryker-mutator/stryker-net/issues/2928)) ([99827d5](https://github.com/stryker-mutator/stryker-net/commit/99827d52b198b394999596d1e13b8f81f26aff9b)), closes [#2930](https://github.com/stryker-mutator/stryker-net/issues/2930) [#2748](https://github.com/stryker-mutator/stryker-net/issues/2748) [#2693](https://github.com/stryker-mutator/stryker-net/issues/2693) [#2587](https://github.com/stryker-mutator/stryker-net/issues/2587) [#2886](https://github.com/stryker-mutator/stryker-net/issues/2886) [#2393](https://github.com/stryker-mutator/stryker-net/issues/2393) [#2077](https://github.com/stryker-mutator/stryker-net/issues/2077) [#2938](https://github.com/stryker-mutator/stryker-net/issues/2938)
+
+
+
 ## [4.0.6](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.0.5...dotnet-stryker@4.0.6) (2024-05-25)
 
 
