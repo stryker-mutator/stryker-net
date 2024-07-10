@@ -66,6 +66,99 @@ namespace Stryker.CLI.UnitTest
             VerifyConfigFileDeserialized(Times.Once());
         }
 
+        [TestMethod]
+        public void ValidUserConfigFileWithDefault_ShouldParseUserConfig()
+        {
+            string[] args = ["-f", $"ConfigFiles{Path.DirectorySeparatorChar}UserConfigWithDefault{Path.DirectorySeparatorChar}custom_config.json"];
+
+            var reader = new ConfigBuilder();
+
+            reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
+
+            VerifyConfigFileDeserialized(Times.Once());
+            _inputs.Object.ModuleNameInput.Validate().ShouldBe("custom");
+        }
+
+        [TestMethod]
+        public void ValidDefaultYmlFile_ShouldParse()
+        {
+            var currentDirectory = Directory.GetCurrentDirectory();
+
+            // Set directory to test folder containing single config yml
+            Directory.SetCurrentDirectory(Path.Combine(currentDirectory, "ConfigFiles", "SingleDefaultYml"));
+
+            string[] args = [];
+
+            var reader = new ConfigBuilder();
+            reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
+
+            VerifyConfigFileDeserialized(Times.Once());
+            _inputs.Object.ModuleNameInput.Validate().ShouldBe("hello_from_yml");
+
+            // Reset current directory to original folder
+            Directory.SetCurrentDirectory(currentDirectory);
+        }
+
+        [TestMethod]
+        public void ValidDefaultYamlFile_ShouldParse()
+        {
+            var currentDirectory = Directory.GetCurrentDirectory();
+
+            // Set directory to test folder containing single config yml
+            Directory.SetCurrentDirectory(Path.Combine(currentDirectory, "ConfigFiles", "SingleDefaultYaml"));
+
+            string[] args = [];
+
+            var reader = new ConfigBuilder();
+            reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
+
+            VerifyConfigFileDeserialized(Times.Once());
+            _inputs.Object.ModuleNameInput.Validate().ShouldBe("hello_from_yaml");
+
+            // Reset current directory to original folder
+            Directory.SetCurrentDirectory(currentDirectory);
+        }
+
+        [TestMethod]
+        public void MultipleDefaultConfigsWithJson_ShouldParseJsonConfig()
+        {
+            var currentDirectory = Directory.GetCurrentDirectory();
+
+            // Set directory to test folder containing multiple default files
+            Directory.SetCurrentDirectory(Path.Combine(currentDirectory, "ConfigFiles", "MultipleDefaultWithJson"));
+
+            string[] args = [];
+
+            var reader = new ConfigBuilder();
+            reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
+
+            VerifyConfigFileDeserialized(Times.Once());
+            _inputs.Object.ModuleNameInput.Validate().ShouldBe("hello_from_json");
+
+            // Reset current directory to original folder
+            Directory.SetCurrentDirectory(currentDirectory);
+        }
+
+        [TestMethod]
+        public void TwoDefaultConfigsWithYml_ShouldParseYmlConfig()
+        {
+            var currentDirectory = Directory.GetCurrentDirectory();
+
+            // Set directory to test folder containing two default files
+            Directory.SetCurrentDirectory(Path.Combine(currentDirectory, "ConfigFiles", "TwoWithYml"));
+
+            string[] args = [];
+
+            var reader = new ConfigBuilder();
+            reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
+
+            VerifyConfigFileDeserialized(Times.Once());
+            _inputs.Object.ModuleNameInput.Validate().ShouldBe("hello_from_yml");
+
+            // Reset current directory to original folder
+            Directory.SetCurrentDirectory(currentDirectory);
+        }
+
         private void VerifyConfigFileDeserialized(Times time) => _inputs.VerifyGet(x => x.CoverageAnalysisInput, time);
 
         private static CommandLineApplication GetCommandLineApplication()
