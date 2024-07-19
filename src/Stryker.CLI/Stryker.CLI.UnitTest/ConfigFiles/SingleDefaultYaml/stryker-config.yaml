@@ -1,0 +1,3 @@
+stryker-config:
+  project-info:
+    module: "hello_from_yaml"
