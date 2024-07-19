@@ -14,7 +14,7 @@ namespace Stryker.Core.Mutants
 
         public ICollection<Mutant> Mutants { get; set; }
 
-        protected int MutantCount;
+        protected static int MutantCount;
 
         protected BaseMutantOrchestrator(StrykerOptions options) => Options = options;
 
