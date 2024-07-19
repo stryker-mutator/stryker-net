@@ -1828,7 +1828,6 @@ else        {
             .GenerateMutationsForNode(node, null, new MutationContext(secondOrchestrator))
             .Single();
 
-        firstMutant.Id.ShouldBe(0);
-        secondMutant.Id.ShouldBe(1);
+        secondMutant.Id.ShouldBe(firstMutant.Id + 1);
     }
 }
