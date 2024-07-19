@@ -1,5 +1,6 @@
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Core.Mutants;
@@ -1810,5 +1811,24 @@ else        {
             """;
 
         ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldIncrementMutantCountUniquely()
+    {
+        var secondOrchestrator =
+            new CsharpMutantOrchestrator(new MutantPlacer(_injector), options: new StrykerOptions());
+        var node = SyntaxFactory.ParseExpression("1 == 1") as BinaryExpressionSyntax;
+
+        var firstMutant = _target
+            .GenerateMutationsForNode(node, null, new MutationContext(secondOrchestrator))
+            .Single();
+
+        var secondMutant = secondOrchestrator
+            .GenerateMutationsForNode(node, null, new MutationContext(secondOrchestrator))
+            .Single();
+
+        firstMutant.Id.ShouldBe(0);
+        secondMutant.Id.ShouldBe(1);
     }
 }
