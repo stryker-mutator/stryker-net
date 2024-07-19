@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Threading;
 using Stryker.Core.Options;
 
 namespace Stryker.Core.Mutants
@@ -14,7 +15,11 @@ namespace Stryker.Core.Mutants
 
         public ICollection<Mutant> Mutants { get; set; }
 
-        protected static int MutantCount;
+        private static int _mutantCount;
+
+        protected static int MutantCount => _mutantCount;
+
+        protected static void IncreaseMutantCount() => Interlocked.Increment(ref _mutantCount);
 
         protected BaseMutantOrchestrator(StrykerOptions options) => Options = options;
 

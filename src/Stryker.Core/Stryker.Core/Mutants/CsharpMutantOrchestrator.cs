@@ -147,7 +147,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
                 }
 
                 Mutants.Add(newMutant);
-                Interlocked.Increment(ref MutantCount);
+                IncreaseMutantCount();
                 mutations.Add(newMutant);
             }
         }
