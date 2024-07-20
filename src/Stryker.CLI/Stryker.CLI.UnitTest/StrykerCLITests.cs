@@ -55,7 +55,6 @@ namespace Stryker.CLI.UnitTest
             try
             {
                 Console.SetOut(sw);
-
                 target.Run(new string[] { "--help" });
 
                 var expected = @"Stryker: Stryker mutator for .Net

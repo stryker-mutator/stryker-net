@@ -122,7 +122,6 @@ public class SseServerTest : TestBase
         _sut.CloseSseEndpoint();
     }
 
-    // this test works reliably only on windows, probably due to difference in http listener implementation
     [TestMethod]
     public void ShouldHandleDroppedConnection()
     {
