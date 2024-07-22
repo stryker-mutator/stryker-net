@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Linq;
+using System.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
@@ -197,11 +198,14 @@ public sealed class VsTestContextInformation : IDisposable
         var wrapper = BuildVsTestWrapper("TestDiscoverer");
         var messages = new List<string>();
         var handler = new DiscoveryEventHandler(messages);
-        wrapper.DiscoverTests([newSource], GenerateRunSettingsForDiscovery(frameworkVersion, platform), handler);
+        var settings = GenerateRunSettingsForDiscovery(frameworkVersion, platform);
+        wrapper.DiscoverTests([newSource], settings, handler);
 
         handler.WaitEnd();
         if (handler.Aborted)
         {
+            _logger.LogDebug("TestDiscoverer: Discovery settings: {discoverySettings}", settings);
+            _logger.LogDebug("TestDiscoverer: {messages}", string.Join(Environment.NewLine, messages));
             _logger.LogError("TestDiscoverer: Test discovery has been aborted!");
         }
 
@@ -258,10 +262,10 @@ public sealed class VsTestContextInformation : IDisposable
         // cannot specify AnyCPU or default for VsTest
         var platformConfig = (string.IsNullOrWhiteSpace(platform) || platform=="AnyCPU" || platform=="Default")
             ? string.Empty
-            : $"<TargetPlatform>{platform}</TargetPlatform>" + Environment.NewLine;
+            : $"<TargetPlatform>{SecurityElement.Escape(platform)}</TargetPlatform>" + Environment.NewLine;
         var testCaseFilter = string.IsNullOrWhiteSpace(Options.TestCaseFilter)
             ? string.Empty
-            : $"<TestCaseFilter>{Options.TestCaseFilter}</TestCaseFilter>" + Environment.NewLine;
+            : $"<TestCaseFilter>{SecurityElement.Escape(Options.TestCaseFilter)}</TestCaseFilter>" + Environment.NewLine;
         return
             $@"
 <MaxCpuCount>{Math.Max(0, maxCpu)}</MaxCpuCount>
