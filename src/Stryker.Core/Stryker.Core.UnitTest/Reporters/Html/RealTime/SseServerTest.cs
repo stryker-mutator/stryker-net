@@ -47,6 +47,21 @@ public class SseServerTest : TestBase
         return _connected;
     }
 
+    private bool WaitForDisConnection(int timeout)
+    {
+        var watch = new Stopwatch();
+        watch.Start();
+        lock (_lock)
+        {
+            while (_sut.ConnectedClients>0 && watch.ElapsedMilliseconds < timeout)
+            {
+                Monitor.Wait(_lock,  Math.Max(Math.Min( timeout - (int)watch.ElapsedMilliseconds, 100), 1));
+            }
+        }
+
+        return _sut.ConnectedClients==0;
+    }
+
     [TestMethod]
     public void ShouldSendFinishedEventCorrectly()
     {
@@ -71,6 +86,7 @@ public class SseServerTest : TestBase
 
         @event.ShouldBeSemantically("finished");
         data.ShouldBeSemantically("\"\"");
+        _sut.CloseSseEndpoint();
     }
 
     [TestMethod]
@@ -103,6 +119,34 @@ public class SseServerTest : TestBase
 
         @event.ShouldBeSemantically("mutant-tested");
         data.ShouldBeSemantically("{\"id\":\"1\",\"status\":\"Survived\"}");
+        _sut.CloseSseEndpoint();
+    }
+
+    [TestMethod]
+    public void ShouldHandleDroppedConnection()
+    {
+        _sut.OpenSseEndpoint();
+
+        var @object = new { Id = "1", Status = "Survived" };
+        var sseClient = new EventSource(new Uri($"http://localhost:{_sut.Port}/"));
+        
+        Task.Run(() => sseClient.StartAsync());
+        WaitForConnection(500).ShouldBeTrue();
+        Task.Run( ()=> {sseClient.Close(); sseClient.Dispose();}).Wait();
+
+        _sut.SendEvent(new SseEvent<object>
+        {
+            Event = SseEventType.MutantTested,
+            Data = @object
+        });
+        _sut.SendEvent(new SseEvent<object>
+        {
+            Event = SseEventType.MutantTested,
+            Data = @object
+        });
+        WaitForDisConnection(500);
+        sseClient.ReadyState.ShouldBe(ReadyState.Shutdown);
+        _sut.CloseSseEndpoint();
     }
 
     [TestMethod]
@@ -115,5 +159,6 @@ public class SseServerTest : TestBase
         WaitForConnection(500).ShouldBeTrue();
 
         _sut.HasConnectedClients.ShouldBeTrue();
+        _sut.CloseSseEndpoint();
     }
 }

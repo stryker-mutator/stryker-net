@@ -26,6 +26,8 @@ public class SseServer : ISseServer
         _writers = new List<StreamWriter>();
     }
 
+    public int ConnectedClients => _writers.Count;
+
     public event EventHandler<EventArgs> ClientConnected;
 
     private static int FreeTcpPort()
@@ -66,10 +68,24 @@ public class SseServer : ISseServer
     public void SendEvent<T>(SseEvent<T> @event)
     {
         var serialized = @event.Serialize();
+        var lostClients = new List<StreamWriter>();
         foreach (var writer in _writers)
         {
-            writer.Write($"{serialized}{Environment.NewLine}{Environment.NewLine}");
-            writer.Flush();
+            try
+            {
+                writer.Write($"{serialized}{Environment.NewLine}{Environment.NewLine}");
+                writer.Flush();
+            }
+            catch (HttpListenerException)
+            {
+                // The client disconnected
+                lostClients.Add(writer);
+            }
+        }
+        foreach (var lostClient in lostClients)
+        {
+            _writers.Remove(lostClient);
+            lostClient.Dispose();
         }
     }
 
