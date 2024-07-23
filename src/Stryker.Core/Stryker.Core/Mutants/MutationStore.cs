@@ -4,7 +4,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
-using RegexParser.Nodes;
 using Stryker.Core.Helpers;
 using Stryker.Core.Logging;
 
@@ -17,7 +16,7 @@ namespace Stryker.Core.Mutants;
 public enum MutationControl
 {
     /// <summary>
-    /// Syntax that is part of a member access expression (such as class.Property.Property.Invoke()
+    /// Syntax that is part of a member access expression (such as class.Property.Property.Invoke())
     /// </summary>
     MemberAccess,
     /// <summary>

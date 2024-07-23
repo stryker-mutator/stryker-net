@@ -1816,11 +1816,18 @@ else        {
     [TestMethod]
     public void ShouldIncrementMutantCountUniquely()
     {
+        var strykerOptions = new StrykerOptions
+        {
+            MutantIdProvider = new BasicIdProvider()
+        };
+
+        var firstOrchestrator =
+            new CsharpMutantOrchestrator(new MutantPlacer(_injector), options: strykerOptions);
         var secondOrchestrator =
-            new CsharpMutantOrchestrator(new MutantPlacer(_injector), options: new StrykerOptions());
+            new CsharpMutantOrchestrator(new MutantPlacer(_injector), options: strykerOptions);
         var node = SyntaxFactory.ParseExpression("1 == 1") as BinaryExpressionSyntax;
 
-        var firstMutant = _target
+        var firstMutant = firstOrchestrator
             .GenerateMutationsForNode(node, null, new MutationContext(secondOrchestrator))
             .Single();
 
@@ -1830,4 +1837,6 @@ else        {
 
         secondMutant.Id.ShouldBe(firstMutant.Id + 1);
     }
+
+
 }

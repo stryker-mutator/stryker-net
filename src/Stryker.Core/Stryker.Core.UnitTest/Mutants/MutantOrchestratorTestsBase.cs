@@ -12,10 +12,6 @@ namespace Stryker.Core.UnitTest.Mutants
     /// </summary>
     public partial class MutantOrchestratorTestsBase : TestBase
     {
-        [GeneratedRegex(@"IsActive\(\d+\)")]
-        private static partial Regex IsActiveRegex();
-        private const string Replacement = "IsActive(0)";
-
         protected CsharpMutantOrchestrator _target;
         protected CodeInjection _injector = new();
 
@@ -33,8 +29,6 @@ namespace Stryker.Core.UnitTest.Mutants
         {
             var actualNode = _target.Mutate(CSharpSyntaxTree.ParseText(actual), null);
             actual = actualNode.GetRoot().ToFullString();
-            expected = IsActiveRegex().Replace(expected, Replacement);
-            actual = IsActiveRegex().Replace(actual, Replacement);
             actual = actual.Replace(_injector.HelperNamespace, "StrykerNamespace");
             actualNode = CSharpSyntaxTree.ParseText(actual);
             var expectedNode = CSharpSyntaxTree.ParseText(expected);
