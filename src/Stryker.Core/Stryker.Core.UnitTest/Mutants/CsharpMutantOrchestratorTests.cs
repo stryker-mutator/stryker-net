@@ -1838,5 +1838,33 @@ else        {
         secondMutant.Id.ShouldBe(firstMutant.Id + 1);
     }
 
+    [TestMethod]
+    public void ShouldMutateSwitchExpression()
+    {
+        var source = @"
+    public void ListPatterns()
+    {
+        decimal balance = 0m;
+        foreach (string[] transaction in transactions)
+        {
+            balance += transaction switch
+            {
+            [_, ""DEPOSIT"", _, var amount] => decimal.Parse(amount),
+                _ => throw new InvalidOperationException($""Record {string.Join("", "", transaction)} is not in the expected format!""),
+            };
+            Console.WriteLine($""Record: {string.Join("", "", transaction)}, New balance: {balance:C}"");
+        }
+    }";
 
+        var expected = @"static string Value
+{get {if(StrykerNamespace.MutantControl.IsActive(0)){}else{ return (StrykerNamespace.MutantControl.IsActive(1)?"""":""TestDescription"");
+        }
+return default(string);
+        }
+        set {if(StrykerNamespace.MutantControl.IsActive(2)){}else{ value = (StrykerNamespace.MutantControl.IsActive(3)?"""":""TestDescription"");
+        }
+}}
+static TestClass() { using (new StrykerNamespace.MutantContext()) { } }}";
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
 }
