@@ -138,7 +138,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         {
             foreach (var mutation in mutator.Mutate(current, semanticModel, Options))
             {
-                var newMutant = CreateNewMutant(mutation, mutator, context);
+                var newMutant = CreateNewMutant(mutation, context);
                 // Skip if the mutant is a duplicate
                 if (IsMutantDuplicate(newMutant, mutation))
                 {
@@ -159,7 +159,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
     /// Creates a new mutant for the given mutation, mutator and context. Returns null if the mutant
     /// is a duplicate.
     /// </summary>
-    private Mutant CreateNewMutant(Mutation mutation, IMutator mutator, MutationContext context)
+    private Mutant CreateNewMutant(Mutation mutation, MutationContext context)
     {
         var mutantIgnored = context.FilteredMutators?.Contains(mutation.Type) ?? false;
         return new Mutant

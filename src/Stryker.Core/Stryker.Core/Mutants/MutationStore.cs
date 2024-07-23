@@ -114,6 +114,7 @@ internal class MutationStore
     /// Restore mutation injection
     /// </summary>
     public void EnableInjection() => _injectionBlockCounter--;
+
     private PendingMutations FindControl(MutationControl control) => _pendingMutations.FirstOrDefault(item => item.Control >= control);
 
     /// <summary>
@@ -172,7 +173,7 @@ internal class MutationStore
     {
         if (_injectionBlockCounter>0 || _pendingMutations.Peek().Control == MutationControl.MemberAccess)
         {
-            // do not inject if explicitly blocked;
+            // do not inject if explicitly blocked
             // never inject at member access level, there is no known control structure
             return mutatedNode;
         }

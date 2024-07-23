@@ -77,12 +77,12 @@ namespace IntegrationTests
             var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
                 .OrderByDescending(f => f.LastWriteTime)
                 .First();
-
+            
             var strykerRunOutput = File.ReadAllText(latestReport.FullName);
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutants(report, total: 585, ignored: 242, survived: 2, killed: 6, timeout: 2, nocoverage: 302);
+            CheckReportMutants(report, total: 589, ignored: 246, survived: 2, killed: 6, timeout: 2, nocoverage: 302);
             CheckReportTestCounts(report, total: 10);
         }
 
@@ -121,7 +121,7 @@ namespace IntegrationTests
 
             var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
 
-            CheckReportMutants(report, total: 585, ignored: 106, survived: 2, killed: 8, timeout: 2, nocoverage: 436);
+            CheckReportMutants(report, total: 589, ignored: 106, survived: 2, killed: 8, timeout: 2, nocoverage: 440);
             CheckReportTestCounts(report, total: 20);
         }
 
