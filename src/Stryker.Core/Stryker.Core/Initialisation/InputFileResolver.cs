@@ -470,7 +470,7 @@ public class InputFileResolver : IInputFileResolver
             throw new InputException($"No .csproj or .fsproj file found, please check your project directory at {path}");
         }
 
-            _logger.LogTrace("Scanned the directory {Path} for *.csproj files: found {ProjectFilesCount}", path, projectFiles);
+        _logger.LogTrace("Scanned the directory {Path} for *.csproj files: found {ProjectFilesCount}", path, projectFiles);
 
         switch (projectFiles.Length)
         {
