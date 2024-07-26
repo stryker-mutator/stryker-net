@@ -45,7 +45,10 @@ namespace Stryker.Core.UnitTest.TestRunners
             collector.Initialize(mock.Object);
             collector.TestSessionStart(start);
 
-            var assert = () => Debug.Fail("test"); // NOSONAR : This is a test case, we want to test the behavior of Debug.Assert
+            Debug.Write("This is lost.");
+            Debug.WriteLine("This also.");
+
+            var assert = () => Debug.Fail("test");
 
             assert.ShouldThrow<ArgumentException>();
             collector.TestSessionEnd(new TestSessionEndArgs());
