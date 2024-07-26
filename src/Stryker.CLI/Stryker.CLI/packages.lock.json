@@ -49,8 +49,8 @@
       },
       "Azure.Storage.Common": {
         "type": "Transitive",
-        "resolved": "12.20.0",
-        "contentHash": "C0uTY4E1NSGiNf/dlLMQ/d85a2CDazEg4YYtNJOYnLSb8ZXJ5RBPHYGW7a46kN5Xn5Bc9BKMvs8fME285TfEpw==",
+        "resolved": "12.20.1",
+        "contentHash": "KKBFnc4WZ6m9HgsKgwfO1cIxd154b8cAnP3uWhuelvFkzxqBXQQgIsHF0n3DYBG2AoTJCZDXwJpKuVC7CsKJWg==",
         "dependencies": {
           "Azure.Core": "1.41.0",
           "System.IO.Hashing": "6.0.0"
@@ -1391,13 +1391,13 @@
       },
       "TestableIO.System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "21.0.26",
-        "contentHash": "6XwIymB/HIHdu4UAWcW+kP1Q4untd4T01leOfPYObKzwoqKOfXTw6GneBpQZ5TLAq9TUc2yS4j6asK2e2NNXog=="
+        "resolved": "21.0.29",
+        "contentHash": "3TtSs2i0m0QqpAI4EzR1vZXQuHNw5grBy0rDKqMkWi6ySEZ+yhN9HACgIyEq7gDXPLrtQI18ud/OtI0qVhP8Mg=="
       },
       "stryker": {
         "type": "Project",
         "dependencies": {
-          "Azure.Storage.Files.Shares": "[12.19.0, )",
+          "Azure.Storage.Files.Shares": "[12.19.1, )",
           "Buildalyzer": "[7.0.2, )",
           "DotNet.Glob": "[3.1.3, )",
           "FSharp.Compiler.Service": "[42.7.100-preview.22427.1, )",
@@ -1414,7 +1414,7 @@
           "Mono.Cecil": "[0.11.5, )",
           "NuGet.Frameworks": "[6.10.1, )",
           "ResXResourceReader.NetStandard": "[1.3.0, )",
-          "Serilog": "[4.0.0, )",
+          "Serilog": "[4.0.1, )",
           "Serilog.Extensions.Logging": "[8.0.0, )",
           "Serilog.Extensions.Logging.File": "[3.0.0, )",
           "Serilog.Sinks.Console": "[6.0.0, )",
@@ -1423,7 +1423,7 @@
           "Spectre.Console.Analyzer": "[0.49.1, )",
           "Stryker.DataCollector": "[4.1.0, )",
           "Stryker.RegexMutators": "[4.1.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[21.0.26, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[21.0.29, )"
         }
       },
       "stryker.datacollector": {
@@ -1441,11 +1441,11 @@
       },
       "Azure.Storage.Files.Shares": {
         "type": "CentralTransitive",
-        "requested": "[12.19.0, )",
-        "resolved": "12.19.0",
-        "contentHash": "n9qa+c15Q4Bh8+bcFf/knPgaGAUUAU+hftJmjcOcZuPtXJDp2lTQehHWuW0j/D5F+XHXfWS6V7SouTsgU4HzKw==",
+        "requested": "[12.19.1, )",
+        "resolved": "12.19.1",
+        "contentHash": "ezJZYp+B+ggcVq2SSdKV+X1mwNOdcpRhj/1+wucu81MPspCryVc3Lo/SmvmiYcttgbu0rYgdmh2uxCU/8N2sPw==",
         "dependencies": {
-          "Azure.Storage.Common": "12.20.0",
+          "Azure.Storage.Common": "12.20.1",
           "System.Text.Json": "4.7.2"
         }
       },
@@ -1629,9 +1629,9 @@
       },
       "Serilog": {
         "type": "CentralTransitive",
-        "requested": "[4.0.0, )",
-        "resolved": "4.0.0",
-        "contentHash": "2jDkUrSh5EofOp7Lx5Zgy0EB+7hXjjxE2ktTb1WVQmU00lDACR2TdROGKU0K1pDTBSJBN1PqgYpgOZF8mL7NJw=="
+        "requested": "[4.0.1, )",
+        "resolved": "4.0.1",
+        "contentHash": "pzeDRXdpSLSsgBHpZcmpIDxqMy845Ab4s+dfnBg0sN9h8q/4Wo3vAoe0QCGPze1Q06EVtEPupS+UvLm8iXQmTQ=="
       },
       "Serilog.Extensions.Logging": {
         "type": "CentralTransitive",
@@ -1691,11 +1691,11 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[21.0.26, )",
-        "resolved": "21.0.26",
-        "contentHash": "lvrJF2Oz/4vp5rVIndW9RC/cxGfErnE+Bt/jVNFu7/po+7n8UNZDjgUGrbRGtQfW6zkaUPx/WTONT1Tf9iacdQ==",
+        "requested": "[21.0.29, )",
+        "resolved": "21.0.29",
+        "contentHash": "bm1stQx3rGV2qBW2xAAvl8ODVGNVkiAkqNsE+LsKfhMamBUa07IgsgMc9X/zBHc5yfAJOqJIUArQ56DDgwGyYA==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "21.0.26"
+          "TestableIO.System.IO.Abstractions": "21.0.29"
         }
       }
     }
