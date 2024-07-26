@@ -7,6 +7,7 @@ using Moq;
 using Shouldly;
 using Stryker.DataCollector;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using System.Diagnostics;
 
 namespace Stryker.Core.UnitTest.TestRunners
 {
@@ -28,6 +29,26 @@ namespace Stryker.Core.UnitTest.TestRunners
             collector.TestSessionStart(start);
             collector.TestCaseStart(new TestCaseStartArgs(new TestCase("theTest", new Uri("xunit://"), "source.cs")));
             MutantControl.CaptureCoverage.ShouldBeTrue();
+            collector.TestSessionEnd(new TestSessionEndArgs());
+        }
+
+        [TestMethod]
+        public void RedirectDebugAssert()
+        {
+            var collector = new CoverageCollector();
+
+            var start = new TestSessionStartArgs
+            {
+                Configuration = CoverageCollector.GetVsTestSettings(false, null, "Stryker.Core.UnitTest.TestRunners")
+            };
+            var mock = new Mock<IDataCollectionSink>(MockBehavior.Loose);
+            collector.Initialize(mock.Object);
+            collector.TestSessionStart(start);
+
+            var assert = () => Debug.Fail("test"); // NOSONAR : This is a test case, we want to test the behavior of Debug.Assert
+
+            assert.ShouldThrow<ArgumentException>();
+            collector.TestSessionEnd(new TestSessionEndArgs());
         }
 
         [TestMethod]
@@ -52,6 +73,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             collector.TestCaseStart(new TestCaseStartArgs(testCase));
 
             MutantControl.ActiveMutant.ShouldBe(10);
+            collector.TestSessionEnd(new TestSessionEndArgs());
         }
 
         [TestMethod]
@@ -72,6 +94,7 @@ namespace Stryker.Core.UnitTest.TestRunners
             collector.TestSessionStart(start);
 
             MutantControl.ActiveMutant.ShouldBe(5);
+            collector.TestSessionEnd(new TestSessionEndArgs());
         }
 
         [TestMethod]
