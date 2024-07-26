@@ -171,7 +171,7 @@ internal class MutationStore
     /// <returns>a syntax expression with the mutations included </returns>
     public ExpressionSyntax Inject(ExpressionSyntax mutatedNode, ExpressionSyntax sourceNode)
     {
-        if (_injectionBlockCounter>0 || _pendingMutations.Peek().Control == MutationControl.MemberAccess)
+        if (_injectionBlockCounter > 0 || _pendingMutations.Peek().Control == MutationControl.MemberAccess)
         {
             // do not inject if explicitly blocked
             // never inject at member access level, there is no known control structure

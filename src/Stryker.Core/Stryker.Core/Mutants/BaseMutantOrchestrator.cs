@@ -4,7 +4,6 @@ using Stryker.Core.Options;
 
 namespace Stryker.Core.Mutants;
 
-
 public abstract class BaseMutantOrchestrator
 {
     public readonly StrykerOptions Options;
@@ -23,7 +22,6 @@ public abstract class BaseMutantOrchestrator
     public ICollection<Mutant> Mutants { get; set; }
 
     protected int GetNextId() => _idProvider.NextId();
-
 
     /// <summary>
     /// Gets the stored mutants and resets the mutant list to an empty collection
