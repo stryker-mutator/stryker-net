@@ -1,9 +1,9 @@
-using Stryker.Core.Initialisation;
-using Stryker.Core.ProjectComponents.SourceProjects;
-using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.TestRunners;
+using Stryker.Configuration.Initialisation;
+using Stryker.Configuration.ProjectComponents.SourceProjects;
+using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Configuration.TestRunners;
 
-namespace Stryker.Core.MutationTest
+namespace Stryker.Configuration.MutationTest
 {
     /// <summary>
     /// Represents the state the application under test is in.

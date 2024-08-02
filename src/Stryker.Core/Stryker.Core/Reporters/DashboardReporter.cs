@@ -2,18 +2,19 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
-using Stryker.Core.Clients;
-using Stryker.Core.Logging;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.Options.Inputs;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.Reporters.Json;
-using Stryker.Core.Reporters.WebBrowserOpener;
-using Stryker.Core.Reporters.Json.SourceFiles;
+using Stryker.Configuration.Clients;
+using Stryker.Configuration.Logging;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration;
+using Stryker.Configuration.Options.Inputs;
+using Stryker.Configuration.ProjectComponents;
+using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Configuration.Reporters.Json;
+using Stryker.Configuration.Reporters.WebBrowserOpener;
+using Stryker.Configuration.Reporters.Json.SourceFiles;
+using Stryker.Configuration.Reporting;
 
-namespace Stryker.Core.Reporters
+namespace Stryker.Configuration.Reporters
 {
     public class DashboardReporter : IReporter
     {

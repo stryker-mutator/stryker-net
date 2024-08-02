@@ -18,21 +18,17 @@
           "Microsoft.TestPlatform.TestHost": "17.10.0"
         }
       },
-      "MSTest.TestAdapter": {
+      "MSTest": {
         "type": "Direct",
         "requested": "[3.5.0, )",
         "resolved": "3.5.0",
-        "contentHash": "a5a7vo9vp21DbduF6vru34e0nS4Ggxk9pQ3rVJmsI9u+5/Sr83oHsvPGpnSxKi4S6ktEISDEdBuKZNZMsp+JkA==",
+        "contentHash": "lFR6KZcgwRaW6jjqOkX1pAHFa5eWuuElne+Viw9AxH2csZFzdNGmm2TCq1+kwMspEw1Zk4Na/2G/Wcp0/VGT9A==",
         "dependencies": {
-          "Microsoft.Testing.Extensions.VSTestBridge": "1.3.1",
-          "Microsoft.Testing.Platform.MSBuild": "1.3.1"
+          "MSTest.Analyzers": "[3.5.0]",
+          "MSTest.TestAdapter": "[3.5.0]",
+          "MSTest.TestFramework": "[3.5.0]",
+          "Microsoft.NET.Test.Sdk": "17.10.0"
         }
-      },
-      "MSTest.TestFramework": {
-        "type": "Direct",
-        "requested": "[3.5.0, )",
-        "resolved": "3.5.0",
-        "contentHash": "N99l244tFQp4wmYQynUrL8Ws/0mnG+m/G66ahH0JyRoNCd9PMAYBvGUKC1JT3oXyg0YV8o8sHauw2IR6R1M9mQ=="
       },
       "Microsoft.ApplicationInsights": {
         "type": "Transitive",
@@ -121,6 +117,25 @@
           "Newtonsoft.Json": "13.0.1"
         }
       },
+      "MSTest.Analyzers": {
+        "type": "Transitive",
+        "resolved": "3.5.0",
+        "contentHash": "YQMybB8Im4vPQF82pgkH2SCIsaihk9ifGakoRrdiiLt8NshaUkv+rJR+q2peV64MfuadI6FGsiI4BpeA4RG8+Q=="
+      },
+      "MSTest.TestAdapter": {
+        "type": "Transitive",
+        "resolved": "3.5.0",
+        "contentHash": "a5a7vo9vp21DbduF6vru34e0nS4Ggxk9pQ3rVJmsI9u+5/Sr83oHsvPGpnSxKi4S6ktEISDEdBuKZNZMsp+JkA==",
+        "dependencies": {
+          "Microsoft.Testing.Extensions.VSTestBridge": "1.3.1",
+          "Microsoft.Testing.Platform.MSBuild": "1.3.1"
+        }
+      },
+      "MSTest.TestFramework": {
+        "type": "Transitive",
+        "resolved": "3.5.0",
+        "contentHash": "N99l244tFQp4wmYQynUrL8Ws/0mnG+m/G66ahH0JyRoNCd9PMAYBvGUKC1JT3oXyg0YV8o8sHauw2IR6R1M9mQ=="
+      },
       "Newtonsoft.Json": {
         "type": "Transitive",
         "resolved": "13.0.1",
@@ -150,7 +165,7 @@
       "targetproject": {
         "type": "Project",
         "dependencies": {
-          "Library": "[4.1.0, )",
+          "Library": "[1.0.0, )",
           "Microsoft.CodeAnalysis.Common": "[4.10.0, )"
         }
       }

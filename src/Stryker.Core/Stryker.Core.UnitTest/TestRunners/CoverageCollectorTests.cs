@@ -8,7 +8,7 @@ using Shouldly;
 using Stryker.DataCollector;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest.TestRunners
+namespace Stryker.Configuration.UnitTest.TestRunners
 {
     [TestClass]
     public class CoverageCollectorTests : TestBase

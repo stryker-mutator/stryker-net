@@ -9,9 +9,9 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
-using Stryker.Core.Logging;
+using Stryker.Configuration.Logging;
 
-namespace Stryker.Core.ToolHelpers
+namespace Stryker.Configuration.ToolHelpers
 {
     public interface IVsTestHelper
     {

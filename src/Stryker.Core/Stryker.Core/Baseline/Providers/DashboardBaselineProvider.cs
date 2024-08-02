@@ -1,9 +1,9 @@
-using Stryker.Core.Clients;
-using Stryker.Core.Options;
-using Stryker.Core.Reporters.Json;
+using Stryker.Configuration.Clients;
+using Stryker.Configuration;
+using Stryker.Configuration.Reporters.Json;
 using System.Threading.Tasks;
 
-namespace Stryker.Core.Baseline.Providers
+namespace Stryker.Configuration.Baseline.Providers
 {
     public class DashboardBaselineProvider : IBaselineProvider
     {

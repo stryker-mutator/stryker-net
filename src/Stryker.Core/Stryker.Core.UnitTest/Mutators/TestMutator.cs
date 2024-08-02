@@ -1,6 +1,6 @@
-using Stryker.Core.Attributes;
+using Stryker.Configuration.Attributes;
 
-namespace Stryker.Core.UnitTest.Mutators
+namespace Stryker.Configuration.UnitTest.Mutators
 {
     public enum TestMutator
     {

@@ -2,15 +2,15 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Logging;
-using Stryker.Core.Mutants;
+using Stryker.Configuration.Logging;
+using Stryker.Configuration.Mutants;
 using Stryker.RegexMutators;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Stryker.Core.Mutators;
+namespace Stryker.Configuration.Mutators;
 
 public class RegexMutator : MutatorBase<ObjectCreationExpressionSyntax>
 {

@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Mutants.CsharpNodeOrchestrators;
-using Stryker.Core.Mutators;
+using Stryker.Configuration.Mutants.CsharpNodeOrchestrators;
+using Stryker.Configuration.Mutators;
 
-namespace Stryker.Core.Mutants;
+namespace Stryker.Configuration.Mutants;
 
 /// <summary>
 /// Describe the (syntax tree) context during mutation and ensure proper mutation injection.

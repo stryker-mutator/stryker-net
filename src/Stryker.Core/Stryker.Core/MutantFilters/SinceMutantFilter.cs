@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.DiffProviders;
-using Stryker.Core.Logging;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
+using Stryker.Configuration.DiffProviders;
+using Stryker.Configuration.Logging;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration;
+using Stryker.Configuration.ProjectComponents;
 
-namespace Stryker.Core.MutantFilters
+namespace Stryker.Configuration.MutantFilters
 {
     public class SinceMutantFilter : IMutantFilter
     {

@@ -1,8 +1,9 @@
 using System;
+using Stryker.Configuration.Reporting;
 
-namespace Stryker.Core.Reporters.Json
+namespace Stryker.Configuration.Reporters.Json
 {
-    public class Position
+    public class Position : IPosition
     {
         private int _line;
         public int Line

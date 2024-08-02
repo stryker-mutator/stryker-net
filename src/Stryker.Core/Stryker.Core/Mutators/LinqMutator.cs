@@ -1,11 +1,12 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Mutants;
+using Stryker.Configuration;
+using Stryker.Configuration.Mutants;
 using System;
 using System.Collections.Generic;
 
-namespace Stryker.Core.Mutators;
+namespace Stryker.Configuration.Mutators;
 
 /// <summary> Mutator Implementation for LINQ Mutations </summary>
 public class LinqMutator : MutatorBase<ExpressionSyntax>
@@ -130,46 +131,3 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
         return null;
     }
  }
-
-
-
-/// <summary> Enumeration for the different kinds of linq expressions </summary>
-public enum LinqExpression
-{
-    None,
-    Distinct,
-    Reverse,
-    Average,
-    AsEnumerable,
-    OrderBy,
-    OrderByDescending,
-    FirstOrDefault,
-    First,
-    SingleOrDefault,
-    Single,
-    Last,
-    All,
-    Any,
-    Skip,
-    Take,
-    SkipWhile,
-    TakeWhile,
-    Min,
-    Max,
-    Sum,
-    Count,
-    ThenBy,
-    ThenByDescending,
-    Union,
-    Intersect,
-    Concat,
-    Except,
-    IntersectBy,
-    MaxBy,
-    MinBy,
-    Order,
-    OrderDescending,
-    SkipLast,
-    TakeLast,
-    UnionBy
-}

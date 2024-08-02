@@ -1,11 +1,11 @@
 using Shouldly;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration;
+using Stryker.Configuration.ProjectComponents;
 using System.Collections.ObjectModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest.ProjectComponents
+namespace Stryker.Configuration.UnitTest.ProjectComponents
 {
     [TestClass]
     public class CsharpProjectComponentTests : TestBase

@@ -1,11 +1,12 @@
 using Microsoft.CodeAnalysis;
+using Stryker.Configuration.Reporting;
 
-namespace Stryker.Core.Reporters.Json
+namespace Stryker.Configuration.Reporters.Json
 {
-    public class Location
+    public class Location : ILocation
     {
-        public Position Start { get; init; }
-        public Position End { get; init; }
+        public IPosition Start { get; init; }
+        public IPosition End { get; init; }
 
         public Location()
         {

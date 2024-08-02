@@ -1,15 +1,15 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Stryker.Core.Exceptions;
+using Stryker.Configuration.Exceptions;
 using System.Xml.Linq;
 using System.Linq;
-using Stryker.Core.ProjectComponents;
+using Stryker.Configuration.ProjectComponents;
 using Buildalyzer;
 using System.IO;
 using System.IO.Abstractions;
 
-namespace Stryker.Core.Initialisation;
+namespace Stryker.Configuration.Initialisation;
 
 public abstract class ProjectComponentsBuilder
 {

@@ -11,14 +11,14 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
-using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.Logging;
-using Stryker.Core.MutationTest;
-using Stryker.Core.Options;
+using Stryker.Configuration.Exceptions;
+using Stryker.Configuration.Initialisation;
+using Stryker.Configuration.Initialisation.Buildalyzer;
+using Stryker.Configuration.Logging;
+using Stryker.Configuration.MutationTest;
+using Stryker.Configuration;
 
-namespace Stryker.Core.Compiling;
+namespace Stryker.Configuration.Compiling;
 
 public interface ICSharpCompilingProcess
 {

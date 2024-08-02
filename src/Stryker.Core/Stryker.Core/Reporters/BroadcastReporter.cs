@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Stryker.Core.Mutants;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Configuration.Reporting;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.ProjectComponents;
+using Stryker.Configuration.ProjectComponents.TestProjects;
 
-namespace Stryker.Core.Reporters
+namespace Stryker.Configuration.Reporters
 {
     /// <summary>
     /// Broadcasts the report calls to all reporters in the list

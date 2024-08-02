@@ -1,17 +1,17 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Moq;
-using Stryker.Core.Clients;
-using Stryker.Core.Options;
-using Stryker.Core.Options.Inputs;
-using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.Reporters;
-using Stryker.Core.Reporters.Json;
-using Stryker.Core.Reporters.Json.SourceFiles;
-using Stryker.Core.Reporters.WebBrowserOpener;
+using Stryker.Configuration.Clients;
+using Stryker.Configuration;
+using Stryker.Configuration.Options.Inputs;
+using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Configuration.Reporters;
+using Stryker.Configuration.Reporters.Json;
+using Stryker.Configuration.Reporters.Json.SourceFiles;
+using Stryker.Configuration.Reporters.WebBrowserOpener;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest.Reporters
+namespace Stryker.Configuration.UnitTest.Reporters
 {
     [TestClass]
     public class DashboardReporterTests : TestBase

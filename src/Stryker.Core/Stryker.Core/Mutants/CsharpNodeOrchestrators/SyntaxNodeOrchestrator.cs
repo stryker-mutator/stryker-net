@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Configuration.Mutants.CsharpNodeOrchestrators;
 
 /// <summary>
 /// This is the default orchestrator: it does not mutate the node, but it will orchestrate the mutations of its children.

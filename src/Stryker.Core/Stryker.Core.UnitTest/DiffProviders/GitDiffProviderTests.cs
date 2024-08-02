@@ -5,12 +5,12 @@ using LibGit2Sharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Core.Baseline.Providers;
-using Stryker.Core.DiffProviders;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options;
+using Stryker.Configuration.Baseline.Providers;
+using Stryker.Configuration.DiffProviders;
+using Stryker.Configuration.Exceptions;
+using Stryker.Configuration;
 
-namespace Stryker.Core.UnitTest.DiffProviders
+namespace Stryker.Configuration.UnitTest.DiffProviders
 {
     [TestClass]
     public class GitDiffProviderTests : TestBase

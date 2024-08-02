@@ -1,6 +1,6 @@
-using Stryker.Core.Options;
+using Stryker.Configuration;
 
-namespace Stryker.Core
+namespace Stryker.Configuration
 {
     public class StrykerRunResult
     {

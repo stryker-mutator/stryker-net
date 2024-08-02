@@ -2,7 +2,7 @@ using System;
 using Shouldly;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest
+namespace Stryker.Configuration.UnitTest
 {
     [TestClass]
     public class ExclusionPatternTests : TestBase

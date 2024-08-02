@@ -11,7 +11,7 @@ using System.Resources.NetStandard;
 using Microsoft.CodeAnalysis;
 using Mono.Cecil;
 
-namespace Stryker.Core.Initialisation
+namespace Stryker.Configuration.Initialisation
 {
     [ExcludeFromCodeCoverage]
     public static class EmbeddedResourcesGenerator

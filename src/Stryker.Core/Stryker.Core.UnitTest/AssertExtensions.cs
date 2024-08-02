@@ -5,7 +5,7 @@ using System;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 
-namespace Stryker.Core.UnitTest
+namespace Stryker.Configuration.UnitTest
 {
     /// <summary>
     /// Making asserting syntax trees more easy

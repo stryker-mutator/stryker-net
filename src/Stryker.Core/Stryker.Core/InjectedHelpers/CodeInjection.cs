@@ -6,7 +6,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Stryker.Core.InjectedHelpers
+namespace Stryker.Configuration.InjectedHelpers
 {
     public class CodeInjection
     {

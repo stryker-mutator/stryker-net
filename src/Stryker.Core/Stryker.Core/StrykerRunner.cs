@@ -5,16 +5,17 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
-using Stryker.Core.Logging;
-using Stryker.Core.Mutants;
-using Stryker.Core.MutationTest;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.Reporters;
+using Stryker.Configuration.Exceptions;
+using Stryker.Configuration.Initialisation;
+using Stryker.Configuration.Logging;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.MutationTest;
+using Stryker.Configuration;
+using Stryker.Configuration.ProjectComponents;
+using Stryker.Configuration.Reporters;
+using Stryker.Configuration.Options;
 
-namespace Stryker.Core
+namespace Stryker.Configuration
 {
     public interface IStrykerRunner
     {

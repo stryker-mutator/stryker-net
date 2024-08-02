@@ -1,10 +1,10 @@
 using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Core.InjectedHelpers;
-using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
-using Stryker.Core.Options;
+using Stryker.Configuration.InjectedHelpers;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.Mutators;
+using Stryker.Configuration;
 
-namespace Stryker.Core.UnitTest.Mutants
+namespace Stryker.Configuration.UnitTest.Mutants
 {
     /// <summary>
     /// This base class provides helper to test source file mutation

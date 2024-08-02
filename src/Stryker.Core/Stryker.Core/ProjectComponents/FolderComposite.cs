@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Core.Mutants;
+using Stryker.Configuration.Mutants;
 
-namespace Stryker.Core.ProjectComponents
+namespace Stryker.Configuration.ProjectComponents
 {
     public interface IReadOnlyFolderComposite : IProjectComponent
     {

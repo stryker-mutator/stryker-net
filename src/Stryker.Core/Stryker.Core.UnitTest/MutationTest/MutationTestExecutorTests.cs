@@ -3,14 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Moq;
 using Shouldly;
-using Stryker.Core.Initialisation;
-using Stryker.Core.Mutants;
-using Stryker.Core.MutationTest;
-using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
+using Stryker.Configuration.Initialisation;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.MutationTest;
+using Stryker.Configuration.TestRunners;
+using Stryker.Configuration.TestRunners.VsTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest.MutationTest
+namespace Stryker.Configuration.UnitTest.MutationTest
 {
     [TestClass]
     public class MutationTestExecutorTests : TestBase

@@ -1,6 +1,6 @@
 using FSharp.Compiler.Syntax;
 
-namespace Stryker.Core.Mutants.FsharpOrchestrators
+namespace Stryker.Configuration.Mutants.FsharpOrchestrators
 {
     public class IfThenElseOrchestrator : IFsharpTypeHandler<SynExpr>
     {

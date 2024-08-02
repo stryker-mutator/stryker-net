@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.Options;
 using Stryker.Core.Mutants;
-using Stryker.Core.Options;
 
-namespace Stryker.Core.ProjectComponents
+namespace Stryker.Configuration.ProjectComponents
 {
     public delegate void Display(IReadOnlyProjectComponent current);
 
@@ -23,7 +24,7 @@ namespace Stryker.Core.ProjectComponents
         IEnumerable<IReadOnlyMutant> IgnoredMutants();
         IEnumerable<IReadOnlyMutant> NotRunMutants();
 
-        Health CheckHealth(Thresholds threshold);
+        Health CheckHealth(IThresholds threshold);
         IEnumerable<IFileLeaf> GetAllFiles();
         void Display();
         double GetMutationScore();
@@ -87,7 +88,7 @@ namespace Stryker.Core.ProjectComponents
         /// <returns>double between 0 and 1 or NaN when no score could be calculated</returns>
         public double GetMutationScore() => DetectedMutants().Count() / (double)ValidMutants().Count();
 
-        public Health CheckHealth(Thresholds threshold)
+        public Health CheckHealth(IThresholds threshold)
         {
             var mutationScore = GetMutationScore();
             if (double.IsNaN(mutationScore))

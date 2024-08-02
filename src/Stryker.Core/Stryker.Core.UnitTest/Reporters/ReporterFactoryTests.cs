@@ -2,15 +2,15 @@ using System;
 using System.Linq;
 using Moq;
 using Shouldly;
-using Stryker.Core.Baseline.Providers;
-using Stryker.Core.Options;
-using Stryker.Core.Reporters;
-using Stryker.Core.Reporters.Html;
-using Stryker.Core.Reporters.Json;
-using Stryker.Core.Reporters.Progress;
+using Stryker.Configuration.Baseline.Providers;
+using Stryker.Configuration;
+using Stryker.Configuration.Reporters;
+using Stryker.Configuration.Reporters.Html;
+using Stryker.Configuration.Reporters.Json;
+using Stryker.Configuration.Reporters.Progress;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest.Reporters
+namespace Stryker.Configuration.UnitTest.Reporters
 {
     [TestClass]
     public class ReporterFactoryTests : TestBase

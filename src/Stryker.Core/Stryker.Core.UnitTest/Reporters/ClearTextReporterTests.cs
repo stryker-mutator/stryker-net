@@ -2,18 +2,18 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Spectre.Console.Testing;
-using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.Reporters;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.Mutators;
+using Stryker.Configuration.ProjectComponents;
+using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Configuration.Reporters;
+using Stryker.Configuration;
 
-namespace Stryker.Core.UnitTest.Reporters
+namespace Stryker.Configuration.UnitTest.Reporters
 {
     [TestClass]
     public class ClearTextReporterTests : TestBase

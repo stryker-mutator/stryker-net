@@ -9,8 +9,8 @@ using Spectre.Console;
 using Stryker.CLI.Clients;
 using Stryker.CLI.CommandLineConfig;
 using Stryker.CLI.Logging;
-using Stryker.Core;
-using Stryker.Core.Options;
+using Stryker.Configuration;
+using Stryker.Configuration;
 
 namespace Stryker.CLI
 {

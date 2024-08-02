@@ -1,7 +1,7 @@
 using System;
 using Microsoft.CodeAnalysis;
 
-namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Configuration.Mutants.CsharpNodeOrchestrators;
 
 /// <summary>
 /// Generic class for node types (and their children) that must not be mutated

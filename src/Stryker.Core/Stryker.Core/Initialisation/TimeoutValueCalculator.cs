@@ -1,13 +1,7 @@
 using System;
 
-namespace Stryker.Core.Initialisation
+namespace Stryker.Configuration.Initialisation
 {
-    public interface ITimeoutValueCalculator
-    {
-        int CalculateTimeoutValue(int estimatedTime);
-        int DefaultTimeout { get; }
-    }
-
     public class TimeoutValueCalculator : ITimeoutValueCalculator
     {
         private readonly int _extraMs;

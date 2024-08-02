@@ -1559,6 +1559,25 @@
         "resolved": "21.0.26",
         "contentHash": "6XwIymB/HIHdu4UAWcW+kP1Q4untd4T01leOfPYObKzwoqKOfXTw6GneBpQZ5TLAq9TUc2yS4j6asK2e2NNXog=="
       },
+      "stryker.abstractions": {
+        "type": "Project",
+        "dependencies": {
+          "DotNet.Glob": "[3.1.3, )",
+          "Microsoft.CodeAnalysis.CSharp": "[4.10.0, )",
+          "Microsoft.TestPlatform.ObjectModel": "[17.10.0, )",
+          "Serilog": "[4.0.0, )"
+        }
+      },
+      "stryker.configuration": {
+        "type": "Project",
+        "dependencies": {
+          "DotNet.Glob": "[3.1.3, )",
+          "Microsoft.CodeAnalysis.CSharp": "[4.10.0, )",
+          "Microsoft.CodeAnalysis.Common": "[4.10.0, )",
+          "Serilog": "[4.0.0, )",
+          "Stryker.Abstractions": "[1.0.0, )"
+        }
+      },
       "stryker.datacollector": {
         "type": "Project",
         "dependencies": {

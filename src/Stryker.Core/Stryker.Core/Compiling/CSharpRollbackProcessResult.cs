@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 
-namespace Stryker.Core.Compiling
+namespace Stryker.Configuration.Compiling
 {
     public record CSharpRollbackProcessResult(
         CSharpCompilation Compilation,

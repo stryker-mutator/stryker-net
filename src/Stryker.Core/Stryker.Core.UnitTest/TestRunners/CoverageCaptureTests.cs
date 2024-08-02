@@ -5,7 +5,7 @@ using System.Threading;
 using System.Xml;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest.TestRunners
+namespace Stryker.Configuration.UnitTest.TestRunners
 {
     [TestClass]
     public class CoverageCaptureTests : TestBase

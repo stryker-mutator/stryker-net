@@ -9,17 +9,17 @@ using Moq;
 using Serilog;
 using Serilog.Events;
 using Shouldly;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
-using Stryker.Core.Logging;
-using Stryker.Core.Mutants;
-using Stryker.Core.MutationTest;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.Reporters;
-using Stryker.Core.TestRunners;
+using Stryker.Configuration.Exceptions;
+using Stryker.Configuration.Initialisation;
+using Stryker.Configuration.Logging;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.MutationTest;
+using Stryker.Configuration;
+using Stryker.Configuration.ProjectComponents;
+using Stryker.Configuration.TestRunners;
+using Stryker.Configuration.Reporting;
 
-namespace Stryker.Core.UnitTest.Initialisation;
+namespace Stryker.Configuration.UnitTest.Initialisation;
 
 [TestClass]
 public class ProjectOrchestratorTests : BuildAnalyzerTestsBase

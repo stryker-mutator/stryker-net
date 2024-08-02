@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Moq;
-using Stryker.Core.Initialisation;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
+using Stryker.Configuration.Initialisation;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration;
+using Stryker.Configuration.TestRunners;
+using Stryker.Configuration.TestRunners.VsTest;
 
-namespace Stryker.Core.UnitTest.MutationTest;
+namespace Stryker.Configuration.UnitTest.MutationTest;
 
 /// <summary>
 /// This class simplifies the creation of run scenarios

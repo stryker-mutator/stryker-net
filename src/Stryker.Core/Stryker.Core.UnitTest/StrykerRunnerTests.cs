@@ -5,20 +5,21 @@ using System.IO.Abstractions.TestingHelpers;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
-using Stryker.Core.Baseline.Providers;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
-using Stryker.Core.Mutants;
-using Stryker.Core.MutationTest;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.SourceProjects;
-using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.Reporters;
-using Stryker.Core.TestRunners;
+using Stryker.Configuration.Baseline.Providers;
+using Stryker.Configuration.Exceptions;
+using Stryker.Configuration.Initialisation;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.MutationTest;
+using Stryker.Configuration;
+using Stryker.Configuration.ProjectComponents;
+using Stryker.Configuration.ProjectComponents.SourceProjects;
+using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Configuration.Reporters;
+using Stryker.Configuration.TestRunners;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Configuration.Reporting;
 
-namespace Stryker.Core.UnitTest
+namespace Stryker.Configuration.UnitTest
 {
     [TestClass]
     public class StrykerRunnerTests : TestBase

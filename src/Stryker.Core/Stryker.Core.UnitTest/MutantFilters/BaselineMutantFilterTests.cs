@@ -3,20 +3,20 @@ using System.Linq;
 using System.Threading.Tasks;
 using Moq;
 using Shouldly;
-using Stryker.Core.Baseline.Providers;
-using Stryker.Core.Baseline.Utils;
-using Stryker.Core.MutantFilters;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.Reporters;
-using Stryker.Core.Reporters.Json;
-using Stryker.Core.Reporters.Json.SourceFiles;
-using Stryker.Core.UnitTest.Reporters.Json;
+using Stryker.Configuration.Baseline.Providers;
+using Stryker.Configuration.Baseline.Utils;
+using Stryker.Configuration.MutantFilters;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration;
+using Stryker.Configuration.ProjectComponents;
+using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Configuration.Reporters;
+using Stryker.Configuration.Reporters.Json;
+using Stryker.Configuration.Reporters.Json.SourceFiles;
+using Stryker.Configuration.UnitTest.Reporters.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest.MutantFilters
+namespace Stryker.Configuration.UnitTest.MutantFilters
 {
     [TestClass]
     public class BaselineMutantFilterTests : TestBase

@@ -3,9 +3,9 @@ using McMaster.Extensions.CommandLineUtils;
 using Moq;
 using Shouldly;
 using Stryker.CLI.CommandLineConfig;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options;
-using Stryker.Core.Options.Inputs;
+using Stryker.Configuration.Exceptions;
+using Stryker.Configuration;
+using Stryker.Configuration.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.CLI.UnitTest

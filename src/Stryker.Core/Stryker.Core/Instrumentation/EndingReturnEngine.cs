@@ -2,9 +2,9 @@ using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Helpers;
+using Stryker.Configuration.Helpers;
 
-namespace Stryker.Core.Instrumentation;
+namespace Stryker.Configuration.Instrumentation;
 
 /// <summary>
 /// Injects 'return default(...)' statement at the end of a method

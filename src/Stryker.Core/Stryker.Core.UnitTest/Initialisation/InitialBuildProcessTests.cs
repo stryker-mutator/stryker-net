@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.IO;
 using Moq;
 using Shouldly;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
-using Stryker.Core.Testing;
+using Stryker.Configuration.Exceptions;
+using Stryker.Configuration.Initialisation;
+using Stryker.Configuration.Testing;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest.Initialisation;
+namespace Stryker.Configuration.UnitTest.Initialisation;
 
 [TestClass]
 public class InitialBuildProcessTests : TestBase

@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Helpers;
-using Stryker.Core.Mutants;
+using Stryker.Configuration.Helpers;
+using Stryker.Configuration.Mutants;
 
-namespace Stryker.Core.Mutators
+namespace Stryker.Configuration.Mutators
 {
     public class AssignmentExpressionMutator : MutatorBase<AssignmentExpressionSyntax>
     {

@@ -1,11 +1,11 @@
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Logging;
-using Stryker.Core.Testing;
-using Stryker.Core.ToolHelpers;
+using Stryker.Configuration.Exceptions;
+using Stryker.Configuration.Logging;
+using Stryker.Configuration.Testing;
+using Stryker.Configuration.ToolHelpers;
 using System.IO;
 
-namespace Stryker.Core.Initialisation;
+namespace Stryker.Configuration.Initialisation;
 
 public interface IInitialBuildProcess
 {

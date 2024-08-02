@@ -2,12 +2,12 @@ using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using Shouldly;
 using Spectre.Console.Testing;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.Reporters;
+using Stryker.Configuration;
+using Stryker.Configuration.ProjectComponents;
+using Stryker.Configuration.Reporters;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest.Reporters
+namespace Stryker.Configuration.UnitTest.Reporters
 {
     [TestClass]
     public class MarkdownSummaryReporterTests : TestBase

@@ -1,11 +1,11 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Mutants;
+using Stryker.Configuration.Mutants;
 using System.Collections.Generic;
-using Stryker.Core.Helpers;
+using Stryker.Configuration.Helpers;
 using Microsoft.CodeAnalysis;
 
-namespace Stryker.Core.Mutators
+namespace Stryker.Configuration.Mutators
 {
     public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>
     {

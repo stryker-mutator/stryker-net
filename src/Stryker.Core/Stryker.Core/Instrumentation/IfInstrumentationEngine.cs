@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Stryker.Core.Instrumentation;
+namespace Stryker.Configuration.Instrumentation;
 
 /// <summary>
 /// Injects a mutation controlled by an if Statement.

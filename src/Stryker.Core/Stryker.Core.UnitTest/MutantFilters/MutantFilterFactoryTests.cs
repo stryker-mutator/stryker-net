@@ -3,16 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using Moq;
 using Shouldly;
-using Stryker.Core.Baseline.Providers;
-using Stryker.Core.DiffProviders;
-using Stryker.Core.MutantFilters;
-using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
-using Stryker.Core.Options;
-using Stryker.Core.Reporters.Json;
+using Stryker.Configuration.Baseline.Providers;
+using Stryker.Configuration.DiffProviders;
+using Stryker.Configuration.MutantFilters;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.Mutators;
+using Stryker.Configuration;
+using Stryker.Configuration.Reporters.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Configuration;
+using Stryker.Configuration;
 
-namespace Stryker.Core.UnitTest.MutantFilters
+namespace Stryker.Configuration.UnitTest.MutantFilters
 {
     [TestClass]
     public class MutantFilterFactoryTests : TestBase

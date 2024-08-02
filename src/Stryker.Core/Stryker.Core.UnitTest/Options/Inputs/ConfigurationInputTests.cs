@@ -1,9 +1,9 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options.Inputs;
+using Stryker.Configuration.Exceptions;
+using Stryker.Configuration.Options.Inputs;
 
-namespace Stryker.Core.UnitTest.Options.Inputs;
+namespace Stryker.Configuration.UnitTest.Options.Inputs;
 
 [TestClass]
 public class ConfigurationInputTests : TestBase

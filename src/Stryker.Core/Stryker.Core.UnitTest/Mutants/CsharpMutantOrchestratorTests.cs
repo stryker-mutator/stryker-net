@@ -2,11 +2,11 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
-using Stryker.Core.Options;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.Mutators;
+using Stryker.Configuration;
 
-namespace Stryker.Core.UnitTest.Mutants;
+namespace Stryker.Configuration.UnitTest.Mutants;
 
 [TestClass]
 public class CsharpMutantOrchestratorTests : MutantOrchestratorTestsBase

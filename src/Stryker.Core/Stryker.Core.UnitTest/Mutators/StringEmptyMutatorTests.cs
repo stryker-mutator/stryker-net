@@ -3,10 +3,10 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.Mutators;
 
-namespace Stryker.Core.UnitTest.Mutators
+namespace Stryker.Configuration.UnitTest.Mutators
 {
     [TestClass]
     public class StringEmptyMutatorTests : TestBase

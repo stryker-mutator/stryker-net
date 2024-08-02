@@ -1,11 +1,11 @@
 using System.Linq;
 using Shouldly;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options.Inputs;
-using Stryker.Core.Reporters;
+using Stryker.Configuration.Exceptions;
+using Stryker.Configuration.Options.Inputs;
+using Stryker.Configuration.Reporters;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest.Options.Inputs
+namespace Stryker.Configuration.UnitTest.Options.Inputs
 {
     [TestClass]
     public class ReportersInputTests : TestBase

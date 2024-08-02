@@ -2,17 +2,17 @@ using FSharp.Compiler.Syntax;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
-using Stryker.Core.Compiling;
-using Stryker.Core.Logging;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
+using Stryker.Configuration.Compiling;
+using Stryker.Configuration.Logging;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration;
+using Stryker.Configuration.ProjectComponents;
 using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 
-namespace Stryker.Core.MutationTest
+namespace Stryker.Configuration.MutationTest
 {
     public class FsharpMutationProcess : IMutationProcess
     {

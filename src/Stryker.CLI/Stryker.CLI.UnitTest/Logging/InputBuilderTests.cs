@@ -3,10 +3,10 @@ using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Text;
-using Shouldly;
-using Stryker.CLI.Logging;
-using Stryker.Core.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
+using Stryker.Configuration.Options;
+using Stryker.CLI.Logging;
 
 namespace Stryker.CLI.UnitTest
 {

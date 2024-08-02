@@ -9,17 +9,17 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Moq.Protected;
 using Shouldly;
-using Stryker.Core.Clients;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.Reporters;
-using Stryker.Core.Reporters.Json;
-using Stryker.Core.Reporters.Json.SourceFiles;
-using Stryker.Core.UnitTest.Reporters.Json;
+using Stryker.Configuration.Clients;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration;
+using Stryker.Configuration.ProjectComponents;
+using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Configuration.Reporters;
+using Stryker.Configuration.Reporters.Json;
+using Stryker.Configuration.Reporters.Json.SourceFiles;
+using Stryker.Configuration.UnitTest.Reporters.Json;
 
-namespace Stryker.Core.UnitTest.Clients
+namespace Stryker.Configuration.UnitTest.Clients
 {
     [TestClass]
     public class DashboardClientsTest : TestBase

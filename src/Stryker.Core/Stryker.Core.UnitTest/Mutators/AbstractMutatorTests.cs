@@ -2,16 +2,16 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
-using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
-using Stryker.Core.Options;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.Mutators;
+using Stryker.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
-namespace Stryker.Core.UnitTest.Mutators
+namespace Stryker.Configuration.UnitTest.Mutators
 {
     [TestClass]
     public class AbstractMutatorTests : TestBase

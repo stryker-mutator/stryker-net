@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Helpers;
+using Stryker.Configuration.Helpers;
 
-namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Configuration.Mutants.CsharpNodeOrchestrators;
 
 internal class InvocationExpressionOrchestrator: MemberAccessExpressionOrchestrator<InvocationExpressionSyntax>
 {

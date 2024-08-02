@@ -6,18 +6,18 @@ using System.Linq;
 using Buildalyzer;
 using Moq;
 using Shouldly;
-using Stryker.Core.Initialisation;
-using Stryker.Core.Mutants;
-using Stryker.Core.MutationTest;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.Reporters;
-using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
+using Stryker.Configuration.Initialisation;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.MutationTest;
+using Stryker.Configuration;
+using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Configuration.TestRunners;
+using Stryker.Configuration.TestRunners.VsTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Stryker.Configuration.Reporting;
 
-namespace Stryker.Core.UnitTest.Initialisation
+namespace Stryker.Configuration.UnitTest.Initialisation
 {
     [TestClass]
     public class ProjectMutatorTests : TestBase

@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Stryker.Core.Options;
+using Stryker.Configuration;
 
-namespace Stryker.Core.Mutants
+namespace Stryker.Configuration.Mutants
 {
     public abstract class BaseMutantOrchestrator
     {

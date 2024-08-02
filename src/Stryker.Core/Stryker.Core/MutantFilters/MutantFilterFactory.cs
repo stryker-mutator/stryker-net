@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Core.Baseline.Providers;
-using Stryker.Core.DiffProviders;
-using Stryker.Core.MutationTest;
-using Stryker.Core.Options;
+using Stryker.Configuration.Baseline;
+using Stryker.Configuration.Baseline.Providers;
+using Stryker.Configuration.DiffProviders;
+using Stryker.Configuration.MutationTest;
+using Stryker.Configuration;
 
-namespace Stryker.Core.MutantFilters
+namespace Stryker.Configuration.MutantFilters
 {
     public static class MutantFilterFactory
     {

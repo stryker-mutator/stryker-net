@@ -1,10 +1,12 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Logging;
-using Stryker.Core.Options;
-using Stryker.Core.TestRunners;
+using Stryker.Configuration.Logging;
+using Stryker.Configuration;
+using Stryker.Configuration.TestRunners;
+using Stryker.Configuration.TestRunners;
+using Stryker.Configuration;
 
-namespace Stryker.Core.Initialisation
+namespace Stryker.Configuration.Initialisation
 {
     public interface IInitialTestProcess
     {

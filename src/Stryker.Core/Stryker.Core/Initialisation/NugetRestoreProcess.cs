@@ -2,12 +2,12 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Logging;
-using Stryker.Core.Testing;
-using Stryker.Core.ToolHelpers;
+using Stryker.Configuration.Exceptions;
+using Stryker.Configuration.Logging;
+using Stryker.Configuration.Testing;
+using Stryker.Configuration.ToolHelpers;
 
-namespace Stryker.Core.Initialisation
+namespace Stryker.Configuration.Initialisation
 {
     public interface INugetRestoreProcess
     {

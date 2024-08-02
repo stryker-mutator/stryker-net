@@ -1,15 +1,17 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Logging;
-using Stryker.Core.ProjectComponents;
+using Stryker.Configuration.Logging;
+using Stryker.Configuration.ProjectComponents;
+using Stryker.Configuration.Reporters.Json.SourceFiles;
+using Stryker.Configuration.Reporting;
 
-namespace Stryker.Core.Reporters.Json.SourceFiles
+namespace Stryker.Reporters.Json.SourceFiles
 {
-    public class SourceFile
+    public class SourceFile : ISourceFile
     {
         public string Language { get; init; }
         public string Source { get; init; }
-        public ISet<JsonMutant> Mutants { get; init; }
+        public ISet<IJsonMutant> Mutants { get; init; }
 
         public SourceFile() { }
 
@@ -19,7 +21,7 @@ namespace Stryker.Core.Reporters.Json.SourceFiles
 
             Source = file.SourceCode;
             Language = "cs";
-            Mutants = new HashSet<JsonMutant>(new UniqueJsonMutantComparer());
+            Mutants = new HashSet<IJsonMutant>(new UniqueJsonMutantComparer());
 
             foreach (var mutant in file.Mutants)
             {

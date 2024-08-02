@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.Mutators;
+using Stryker.Configuration;
+using Stryker.Configuration.ProjectComponents;
 
-namespace Stryker.Core.MutantFilters
+namespace Stryker.Configuration.MutantFilters
 {
     public class IgnoreBlockMutantFilter : IMutantFilter
     {

@@ -2,7 +2,7 @@ using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using Shouldly;
 using Stryker.CLI.CommandLineConfig;
-using Stryker.Core.Options;
+using Stryker.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.CLI.UnitTest

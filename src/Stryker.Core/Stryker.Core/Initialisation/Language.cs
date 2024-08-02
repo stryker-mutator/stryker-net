@@ -1,4 +1,4 @@
-﻿namespace Stryker.Core.Initialisation
+﻿namespace Stryker.Configuration.Initialisation
 {
     public enum Language
     {

@@ -1,10 +1,10 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Mutants;
+using Stryker.Configuration.Mutants;
 using System.Collections.Generic;
 
-namespace Stryker.Core.Mutators
+namespace Stryker.Configuration.Mutators
 {
     public class ObjectCreationMutator : MutatorBase<ObjectCreationExpressionSyntax>
     {

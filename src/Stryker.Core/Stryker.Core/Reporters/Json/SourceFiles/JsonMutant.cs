@@ -1,17 +1,17 @@
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Core.Mutants;
+using Stryker.Configuration.Reporting;
 
-namespace Stryker.Core.Reporters.Json.SourceFiles
+namespace Stryker.Configuration.Reporters.Json.SourceFiles
 {
-    public class JsonMutant
+    public class JsonMutant : IJsonMutant
     {
         public string Id { get; init; }
         public string MutatorName { get; init; }
         public string Description { get; init; }
 
         public string Replacement { get; init; }
-        public Location Location { get; init; }
+        public ILocation Location { get; init; }
 
         public string Status { get; init; }
         public string StatusReason { get; init; }

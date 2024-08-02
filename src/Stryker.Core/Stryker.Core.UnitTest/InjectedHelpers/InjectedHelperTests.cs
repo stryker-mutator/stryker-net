@@ -1,14 +1,14 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
-using Stryker.Core.InjectedHelpers;
+using Stryker.Configuration.InjectedHelpers;
 using System;
 using System.Collections.Generic;
 using System.IO.Pipes;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest.InjectedHelpers
+namespace Stryker.Configuration.UnitTest.InjectedHelpers
 {
     [TestClass]
     public class InjectedHelperTests : TestBase

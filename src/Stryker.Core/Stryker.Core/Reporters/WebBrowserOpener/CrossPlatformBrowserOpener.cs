@@ -3,9 +3,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Logging;
+using Stryker.Configuration.Logging;
 
-namespace Stryker.Core.Reporters.WebBrowserOpener
+namespace Stryker.Configuration.Reporters.WebBrowserOpener
 {
     [ExcludeFromCodeCoverage]
     public class CrossPlatformBrowserOpener : IWebbrowserOpener

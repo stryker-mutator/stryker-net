@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using Stryker.Core.Mutants;
-using Stryker.Core.Reporters.Json.SourceFiles;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.Reporters.Json.SourceFiles;
 
-namespace Stryker.Core.Baseline.Utils
+namespace Stryker.Configuration.Baseline.Utils
 {
     public interface IBaselineMutantHelper
     {

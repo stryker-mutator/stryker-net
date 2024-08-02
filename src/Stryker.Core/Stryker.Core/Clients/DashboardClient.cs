@@ -1,15 +1,15 @@
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Logging;
-using Stryker.Core.Options;
-using Stryker.Core.Reporters.Json;
+using Stryker.Configuration.Logging;
+using Stryker.Configuration;
+using Stryker.Configuration.Reporters.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using Stryker.Core.Reporters.Json.SourceFiles;
+using Stryker.Configuration.Reporters.Json.SourceFiles;
 
-namespace Stryker.Core.Clients
+namespace Stryker.Configuration.Clients
 {
     public interface IDashboardClient
     {

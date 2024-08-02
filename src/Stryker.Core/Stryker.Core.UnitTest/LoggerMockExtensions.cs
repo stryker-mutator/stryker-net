@@ -2,7 +2,7 @@
 using Moq;
 using System;
 
-namespace Stryker.Core.UnitTest
+namespace Stryker.Configuration.UnitTest
 {
     public static class LoggerMockExtensions
     {

@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Core.Mutants;
-using Stryker.Core.TestRunners.VsTest;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.TestRunners.VsTest;
 
-namespace Stryker.Core.TestRunners
+namespace Stryker.Configuration.TestRunners
 {
     public class TestRunResult
     {

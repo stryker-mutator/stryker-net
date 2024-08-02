@@ -1,5 +1,5 @@
 using McMaster.Extensions.CommandLineUtils;
-using Stryker.Core.Options;
+using Stryker.Configuration;
 
 namespace Stryker.CLI;
 

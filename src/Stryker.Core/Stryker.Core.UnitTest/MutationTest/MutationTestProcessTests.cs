@@ -5,19 +5,19 @@ using System.Linq;
 using System.Reflection;
 using Moq;
 using Shouldly;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Initialisation;
-using Stryker.Core.Mutants;
-using Stryker.Core.MutationTest;
-using Stryker.Core.Mutators;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.SourceProjects;
-using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.Reporters;
+using Stryker.Configuration.Exceptions;
+using Stryker.Configuration.Initialisation;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.MutationTest;
+using Stryker.Configuration.Mutators;
+using Stryker.Configuration;
+using Stryker.Configuration.ProjectComponents;
+using Stryker.Configuration.ProjectComponents.SourceProjects;
+using Stryker.Configuration.ProjectComponents.TestProjects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Configuration.Reporting;
 
-namespace Stryker.Core.UnitTest.MutationTest
+namespace Stryker.Configuration.UnitTest.MutationTest
 {
     [TestClass]
     public class MutationTestProcessTests : TestBase

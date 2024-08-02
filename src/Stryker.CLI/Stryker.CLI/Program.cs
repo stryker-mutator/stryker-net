@@ -1,6 +1,6 @@
 using Spectre.Console;
-using Stryker.Core;
-using Stryker.Core.Exceptions;
+using Stryker.Configuration;
+using Stryker.Configuration.Exceptions;
 
 namespace Stryker.CLI
 {

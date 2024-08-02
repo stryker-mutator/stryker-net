@@ -1,6 +1,11 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
+    <!-- Enable the MSTest runner, this is an opt-in feature -->
+    <EnableMSTestRunner>true</EnableMSTestRunner>
+    <!-- We need to produce an executable and not a DLL -->
+    <OutputType>Exe</OutputType>
+    
     <TargetFramework>net8.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
@@ -12,8 +17,7 @@
   <ItemGroup>
     <PackageReference Include="coverlet.collector" Version="6.0.2" />
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.10.0" />
-    <PackageReference Include="MSTest.TestAdapter" Version="3.5.0" />
-    <PackageReference Include="MSTest.TestFramework" Version="3.5.0" />
+    <PackageReference Include="MSTest" Version="3.5.0" />
   </ItemGroup>
 
   <ItemGroup>

@@ -1,10 +1,10 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Mutants;
+using Stryker.Configuration.Mutants;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 
-namespace Stryker.Core.Mutators
+namespace Stryker.Configuration.Mutators
 {
     public class NullCoalescingExpressionMutator : MutatorBase<BinaryExpressionSyntax>
     {

@@ -10,9 +10,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
 using NuGet.Frameworks;
-using Stryker.Core.Exceptions;
+using Stryker.Configuration.Exceptions;
 
-namespace Stryker.Core.Initialisation.Buildalyzer;
+namespace Stryker.Configuration.Initialisation.Buildalyzer;
 
 public static class IAnalyzerResultExtensions
 {

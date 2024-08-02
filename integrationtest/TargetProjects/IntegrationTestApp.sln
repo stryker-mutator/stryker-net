@@ -1,0 +1,66 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.1.32421.90
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Library", "Library\Library.csproj", "{506AB0A3-E830-4504-A1EE-0C9F531A9ACE}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreTestProject.NUnit", "NetCoreTestProject.NUnit\NetCoreTestProject.NUnit.csproj", "{602929D8-22C6-47AD-BD1F-9DB81FB76231}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "NetCoreTestProject.XUnit", "NetCoreTestProject.XUnit\NetCoreTestProject.XUnit.csproj", "{D2502C99-4676-4F4F-88F2-4F0384BF76EA}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "SharedProject", "SharedProject\SharedProject.shproj", "{AE33CEEA-7EB1-438D-ABD4-3208D032C5D3}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TargetProject", "TargetProject\TargetProject.csproj", "{FD5B399F-F31D-4E95-824D-EF3FDC2F610C}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExtraProject", "ExtraProject\ExtraProject.csproj", "{70462F5F-6EC9-43F9-B360-3F61C9636804}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ExtraProject.XUnit", "ExtraProject.XUnit\ExtraProject.XUnit.csproj", "{A862920A-7A81-4317-984E-2302A47B1792}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmptyTestProject", "EmptyTestProject\EmptyTestProject.csproj", "{4EF7D9F7-8BEC-48B7-A336-0CD89EEBF627}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{506AB0A3-E830-4504-A1EE-0C9F531A9ACE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{506AB0A3-E830-4504-A1EE-0C9F531A9ACE}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{506AB0A3-E830-4504-A1EE-0C9F531A9ACE}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{506AB0A3-E830-4504-A1EE-0C9F531A9ACE}.Release|Any CPU.Build.0 = Release|Any CPU
+		{602929D8-22C6-47AD-BD1F-9DB81FB76231}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{602929D8-22C6-47AD-BD1F-9DB81FB76231}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{602929D8-22C6-47AD-BD1F-9DB81FB76231}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{602929D8-22C6-47AD-BD1F-9DB81FB76231}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D2502C99-4676-4F4F-88F2-4F0384BF76EA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D2502C99-4676-4F4F-88F2-4F0384BF76EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D2502C99-4676-4F4F-88F2-4F0384BF76EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D2502C99-4676-4F4F-88F2-4F0384BF76EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD5B399F-F31D-4E95-824D-EF3FDC2F610C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD5B399F-F31D-4E95-824D-EF3FDC2F610C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD5B399F-F31D-4E95-824D-EF3FDC2F610C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD5B399F-F31D-4E95-824D-EF3FDC2F610C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{70462F5F-6EC9-43F9-B360-3F61C9636804}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{70462F5F-6EC9-43F9-B360-3F61C9636804}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{70462F5F-6EC9-43F9-B360-3F61C9636804}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{70462F5F-6EC9-43F9-B360-3F61C9636804}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A862920A-7A81-4317-984E-2302A47B1792}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A862920A-7A81-4317-984E-2302A47B1792}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A862920A-7A81-4317-984E-2302A47B1792}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A862920A-7A81-4317-984E-2302A47B1792}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4EF7D9F7-8BEC-48B7-A336-0CD89EEBF627}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4EF7D9F7-8BEC-48B7-A336-0CD89EEBF627}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4EF7D9F7-8BEC-48B7-A336-0CD89EEBF627}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4EF7D9F7-8BEC-48B7-A336-0CD89EEBF627}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {0C29E1AA-5805-4524-8160-B0C28E4050D8}
+	EndGlobalSection
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		SharedProject\SharedProject.projitems*{ae33ceea-7eb1-438d-abd4-3208d032c5d3}*SharedItemsImports = 13
+	EndGlobalSection
+EndGlobal

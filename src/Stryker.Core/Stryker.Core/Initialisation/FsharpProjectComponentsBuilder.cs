@@ -3,10 +3,10 @@ using FSharp.Compiler.CodeAnalysis;
 using FSharp.Compiler.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Control;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Configuration.Exceptions;
+using Stryker.Configuration;
+using Stryker.Configuration.ProjectComponents;
+using Stryker.Configuration.ProjectComponents.SourceProjects;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,7 +14,7 @@ using System.Linq;
 using static FSharp.Compiler.Syntax.ParsedInput;
 using IFileSystem = System.IO.Abstractions.IFileSystem;
 
-namespace Stryker.Core.Initialisation
+namespace Stryker.Configuration.Initialisation
 {
     internal class FsharpProjectComponentsBuilder : ProjectComponentsBuilder
     {

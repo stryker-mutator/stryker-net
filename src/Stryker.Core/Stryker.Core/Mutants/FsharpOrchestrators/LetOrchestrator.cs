@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using FSharp.Compiler.Syntax;
 using Microsoft.FSharp.Collections;
 
-namespace Stryker.Core.Mutants.FsharpOrchestrators
+namespace Stryker.Configuration.Mutants.FsharpOrchestrators
 {
     public class LetOrchestrator : IFsharpTypeHandler<SynModuleDecl>
     {

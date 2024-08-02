@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Configuration.TestRunners;
 
-namespace Stryker.Core.Mutants
+namespace Stryker.Configuration.Mutants
 {
 
     public class TestGuidsList : ITestGuids

@@ -2,8 +2,8 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using Spectre.Console;
-using Stryker.Core;
-using Stryker.Core.Options;
+using Stryker.Configuration;
+using Stryker.Configuration;
 
 namespace Stryker.CLI.Logging
 {

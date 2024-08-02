@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Stryker.Core.Helpers
+namespace Stryker.Configuration.Helpers
 {
     // type based strategy pattern implementation: finds the proper implementation according the type of a given object
     // keeping a cache for faster resolution

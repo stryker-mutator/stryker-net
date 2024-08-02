@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Configuration.ProjectComponents.TestProjects;
 
-namespace Stryker.Core.Reporters.Json.TestFiles
+namespace Stryker.Configuration.Reporters.Json.TestFiles
 {
-    public class JsonTestFile
+    public class JsonTestFile : IJsonTestFile
     {
         public string Language { get; init; }
         public string Source { get; init; }
-        public ISet<Test> Tests { get; set; }
+        public ISet<JsonTest> Tests { get; set; }
 
         public JsonTestFile() { }
 
@@ -16,7 +16,7 @@ namespace Stryker.Core.Reporters.Json.TestFiles
         {
             Source = testFile?.Source;
             Language = "cs";
-            Tests = new HashSet<Test>();
+            Tests = new HashSet<JsonTest>();
 
             AddTestFile(testFile);
         }
@@ -25,7 +25,7 @@ namespace Stryker.Core.Reporters.Json.TestFiles
         {
             foreach (var test in testFile?.Tests ?? Enumerable.Empty<TestCase>())
             {
-                Tests.Add(new Test(test.Id.ToString())
+                Tests.Add(new JsonTest(test.Id.ToString())
                 {
                     Name = test.Name,
                     Location = new Location(test.Node.GetLocation().GetMappedLineSpan())

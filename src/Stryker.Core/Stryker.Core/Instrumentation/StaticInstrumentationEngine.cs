@@ -1,9 +1,9 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.InjectedHelpers;
+using Stryker.Configuration.InjectedHelpers;
 
-namespace Stryker.Core.Instrumentation
+namespace Stryker.Configuration.Instrumentation
 {
     /// <summary>
     /// Injects a static marker, to help identification of mutations executed through a static constructor/method/property...

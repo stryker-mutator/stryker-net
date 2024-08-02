@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Stryker.Core.Reporters.Html.RealTime.Events;
+namespace Stryker.Configuration.Reporters.Html.RealTime.Events;
 
 public enum SseEventType
 {

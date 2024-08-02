@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options.Inputs;
+using Stryker.Configuration.Exceptions;
+using Stryker.Configuration.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest.Options.Inputs
+namespace Stryker.Configuration.UnitTest.Options.Inputs
 {
     [TestClass]
     public class LanguageVersionInputTests : TestBase

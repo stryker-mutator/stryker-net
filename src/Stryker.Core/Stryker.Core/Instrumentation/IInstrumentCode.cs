@@ -1,7 +1,7 @@
 using Microsoft.CodeAnalysis;
 using System;
 
-namespace Stryker.Core.Instrumentation;
+namespace Stryker.Configuration.Instrumentation;
 
 /// <summary>
 /// Implements code instrumentation logic.

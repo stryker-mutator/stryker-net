@@ -2,13 +2,13 @@ using System;
 using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Shouldly;
-using Stryker.Core.Mutants;
-using Stryker.Core.Reporters.Html.RealTime;
-using Stryker.Core.Reporters.Html.RealTime.Events;
-using Stryker.Core.Reporters.Json.SourceFiles;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.Reporters.Html.RealTime;
+using Stryker.Configuration.Reporters.Html.RealTime.Events;
+using Stryker.Configuration.Reporters.Json.SourceFiles;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest.Reporters.Html.RealTime;
+namespace Stryker.Configuration.UnitTest.Reporters.Html.RealTime;
 
 [TestClass]
 public class RealTimeMutantHandlerTest : TestBase

@@ -1,16 +1,18 @@
 using DotNet.Globbing;
 using Microsoft.CodeAnalysis.Text;
-using Stryker.Core.Helpers;
+using Stryker.Configuration.Options;
+using Stryker.Configuration.Helpers;
+using Stryker.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Stryker.Core
+namespace Stryker.Configuration
 {
     /// <summary>
     /// Contains information about which files and which parts of a file should be in- or excluded.
     /// </summary>
-    public sealed class FilePattern : IEquatable<FilePattern>
+    public sealed class FilePattern : IEquatable<FilePattern>, IFilePattern
     {
         private static readonly TextSpan _textSpanMaxValue = new TextSpan(0, int.MaxValue);
 

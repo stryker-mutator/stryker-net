@@ -7,12 +7,12 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Logging;
-using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
+using Stryker.Configuration.Exceptions;
+using Stryker.Configuration.Logging;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.Mutators;
 
-namespace Stryker.Core.Compiling
+namespace Stryker.Configuration.Compiling
 {
     public interface ICSharpRollbackProcess
     {

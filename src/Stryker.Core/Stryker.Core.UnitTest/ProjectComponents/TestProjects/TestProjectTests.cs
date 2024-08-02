@@ -4,10 +4,10 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
-using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Configuration.ProjectComponents.TestProjects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
+namespace Stryker.Configuration.UnitTest.ProjectComponents.TestProjects
 {
     [TestClass]
     public class TestProjectTests

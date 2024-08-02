@@ -1,9 +1,9 @@
 using Moq;
-using Stryker.Core.Mutants;
-using Stryker.Core.Reporters.Progress;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.Reporters.Progress;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest.Reporters.Progress
+namespace Stryker.Configuration.UnitTest.Reporters.Progress
 {
     [TestClass]
     public class ProgressReporterTests : TestBase

@@ -1,6 +1,6 @@
 using Microsoft.CodeAnalysis;
 
-namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Configuration.Mutants.CsharpNodeOrchestrators;
 
 /// <summary>
 /// Base class for node types (and their children) that are member definitions

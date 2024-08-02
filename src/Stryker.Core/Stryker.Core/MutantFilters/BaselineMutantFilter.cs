@@ -4,16 +4,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Baseline.Providers;
-using Stryker.Core.Baseline.Utils;
-using Stryker.Core.Logging;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.Reporters.Json;
-using Stryker.Core.Reporters.Json.SourceFiles;
+using Stryker.Configuration.Baseline;
+using Stryker.Configuration.Baseline.Providers;
+using Stryker.Configuration.Baseline.Utils;
+using Stryker.Configuration.Logging;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.ProjectComponents;
+using Stryker.Configuration.Reporters.Json;
+using Stryker.Configuration.Reporting;
+using Stryker.Configuration;
 
-namespace Stryker.Core.MutantFilters
+namespace Stryker.Configuration.MutantFilters
 {
     public class BaselineMutantFilter : IMutantFilter
     {
@@ -72,7 +73,7 @@ namespace Stryker.Core.MutantFilters
                 return;
             }
 
-            SourceFile baselineFile = _baseline.Files[FilePathUtils.NormalizePathSeparators(file.RelativePath)];
+            var baselineFile = _baseline.Files[FilePathUtils.NormalizePathSeparators(file.RelativePath)];
 
             if (baselineFile is { })
             {
@@ -97,7 +98,7 @@ namespace Stryker.Core.MutantFilters
             }
         }
 
-        private void SetMutantStatusToBaselineMutantStatus(JsonMutant baselineMutant,
+        private void SetMutantStatusToBaselineMutantStatus(IJsonMutant baselineMutant,
             IEnumerable<Mutant> matchingMutants)
         {
             if (matchingMutants.Count() == 1)

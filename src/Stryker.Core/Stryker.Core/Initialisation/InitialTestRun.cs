@@ -1,6 +1,7 @@
-using Stryker.Core.TestRunners;
+using Stryker.Configuration;
+using Stryker.Configuration.TestRunners;
 
-namespace Stryker.Core.Initialisation
+namespace Stryker.Configuration.Initialisation
 {
     public class InitialTestRun
     {

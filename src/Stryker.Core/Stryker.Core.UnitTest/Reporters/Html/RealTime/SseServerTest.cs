@@ -4,11 +4,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.EventSource;
 using Shouldly;
-using Stryker.Core.Reporters.Html.RealTime;
-using Stryker.Core.Reporters.Html.RealTime.Events;
+using Stryker.Configuration.Reporters.Html.RealTime;
+using Stryker.Configuration.Reporters.Html.RealTime.Events;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest.Reporters.Html.RealTime;
+namespace Stryker.Configuration.UnitTest.Reporters.Html.RealTime;
 
 [TestClass]
 public class SseServerTest : TestBase

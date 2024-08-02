@@ -6,14 +6,14 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
-using Stryker.Core.InjectedHelpers;
-using Stryker.Core.Mutants;
-using Stryker.Core.Mutants.CsharpNodeOrchestrators;
-using Stryker.Core.Mutators;
-using Stryker.Core.Options;
+using Stryker.Configuration.InjectedHelpers;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.Mutants.CsharpNodeOrchestrators;
+using Stryker.Configuration.Mutators;
+using Stryker.Configuration;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest.Mutants
+namespace Stryker.Configuration.UnitTest.Mutants
 {
     [TestClass]
     public class MutantPlacerTests : TestBase

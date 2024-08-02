@@ -1,6 +1,6 @@
 using System;
 
-namespace Stryker.Core.Mutants
+namespace Stryker.Configuration.Mutants
 {
     public sealed class TestDescription
     {

@@ -6,16 +6,16 @@ using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Moq;
-using Stryker.Core.Mutants;
-using Stryker.Core.MutationTest;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.SourceProjects;
-using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.MutationTest;
+using Stryker.Configuration;
+using Stryker.Configuration.ProjectComponents;
+using Stryker.Configuration.ProjectComponents.SourceProjects;
+using Stryker.Configuration.ProjectComponents.TestProjects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Mutation = Stryker.Core.Mutants.Mutation;
+using Mutation = Stryker.Configuration.Mutants.Mutation;
 
-namespace Stryker.Core.UnitTest.MutationTest
+namespace Stryker.Configuration.UnitTest.MutationTest
 {
     [TestClass]
     public class CSharpMutationTestProcessTests : TestBase

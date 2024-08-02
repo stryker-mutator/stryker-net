@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Stryker.Core.Mutants;
+using Stryker.Configuration.Mutants;
 
-namespace Stryker.Core.TestRunners.VsTest
+namespace Stryker.Configuration.TestRunners.VsTest
 {
     public sealed class VsTestDescription
     {

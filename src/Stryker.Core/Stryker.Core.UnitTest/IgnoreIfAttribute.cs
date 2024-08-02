@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Core.UnitTest;
+namespace Stryker.Configuration.UnitTest;
 
 /// <summary>
 /// An extension to the [Ignore] attribute. Instead of using test lists / test categories to conditionally

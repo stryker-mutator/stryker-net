@@ -1,6 +1,6 @@
 using Microsoft.CodeAnalysis;
 
-namespace Stryker.Core.Mutants
+namespace Stryker.Configuration.Mutants
 {
     /// <summary>
     /// Used to keep track of mutant info. For example during the rollback process.

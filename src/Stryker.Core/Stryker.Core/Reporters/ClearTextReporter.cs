@@ -2,22 +2,25 @@ using System.Collections.Generic;
 using System.Linq;
 using Spectre.Console;
 using Spectre.Console.Rendering;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Configuration;
+using Stryker.Configuration.Options;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration;
+using Stryker.Configuration.ProjectComponents;
+using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Configuration.Reporting;
 
-namespace Stryker.Core.Reporters
+namespace Stryker.Configuration.Reporters
 {
     /// <summary>
     /// The clear text reporter, prints a table with results.
     /// </summary>
     public class ClearTextReporter : IReporter
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IAnsiConsole _console;
 
-        public ClearTextReporter(StrykerOptions strykerOptions, IAnsiConsole console = null)
+        public ClearTextReporter(IStrykerOptions strykerOptions, IAnsiConsole console = null)
         {
             _options = strykerOptions;
             _console = console ?? AnsiConsole.Console;

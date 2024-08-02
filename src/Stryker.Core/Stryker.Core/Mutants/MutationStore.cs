@@ -5,10 +5,10 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using RegexParser.Nodes;
-using Stryker.Core.Helpers;
-using Stryker.Core.Logging;
+using Stryker.Configuration.Helpers;
+using Stryker.Configuration.Logging;
 
-namespace Stryker.Core.Mutants;
+namespace Stryker.Configuration.Mutants;
 
 
 /// <summary>

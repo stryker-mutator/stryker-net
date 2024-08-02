@@ -16,20 +16,20 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Stryker.Core.Initialisation;
-using Stryker.Core.Mutants;
-using Stryker.Core.MutationTest;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.SourceProjects;
-using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
-using Stryker.Core.ToolHelpers;
+using Stryker.Configuration.Initialisation;
+using Stryker.Configuration.Mutants;
+using Stryker.Configuration.MutationTest;
+using Stryker.Configuration;
+using Stryker.Configuration.ProjectComponents;
+using Stryker.Configuration.ProjectComponents.SourceProjects;
+using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Configuration.TestRunners;
+using Stryker.Configuration.TestRunners.VsTest;
+using Stryker.Configuration.ToolHelpers;
 using Stryker.DataCollector;
 using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
-namespace Stryker.Core.UnitTest.TestRunners;
+namespace Stryker.Configuration.UnitTest.TestRunners;
 
 /// <summary>
 /// This class has a set of methods that can be used to mock VsTest behavior. 

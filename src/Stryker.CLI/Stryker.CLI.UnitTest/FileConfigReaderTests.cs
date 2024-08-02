@@ -2,10 +2,10 @@ using System.IO;
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
-using Stryker.Core;
-using Stryker.Core.Initialisation;
-using Stryker.Core.Options;
-using Stryker.Core.Reporters;
+using Stryker.Configuration;
+using Stryker.Configuration.Initialisation;
+using Stryker.Configuration;
+using Stryker.Configuration.Reporters;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.CLI.UnitTest

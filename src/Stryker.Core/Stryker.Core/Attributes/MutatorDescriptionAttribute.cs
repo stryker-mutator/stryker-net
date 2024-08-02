@@ -1,7 +1,7 @@
 using System;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Stryker.Core.Attributes
+namespace Stryker.Configuration.Attributes
 {
     [AttributeUsage(AttributeTargets.All, AllowMultiple = true)]
     public class MutatorDescriptionAttribute : Attribute

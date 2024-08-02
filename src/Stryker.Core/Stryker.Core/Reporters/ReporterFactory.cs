@@ -1,12 +1,13 @@
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Core.Baseline.Providers;
-using Stryker.Core.Options;
-using Stryker.Core.Reporters.Html;
-using Stryker.Core.Reporters.Json;
-using Stryker.Core.Reporters.Progress;
+using Stryker.Configuration.Baseline.Providers;
+using Stryker.Configuration;
+using Stryker.Configuration.Reporters.Html;
+using Stryker.Configuration.Reporters.Json;
+using Stryker.Configuration.Reporters.Progress;
+using Stryker.Configuration.Reporting;
 
-namespace Stryker.Core.Reporters
+namespace Stryker.Configuration.Reporters
 {
     public interface IReporterFactory
     {
