@@ -5,7 +5,7 @@
   ],
   "configMigration": true,
   "gitAuthor": "Renovatebot <renovatebot@stryker-mutator.io>",
-  "platformCommit": false,
+  "platformCommit": "disabled",
   "platformAutomerge": true,
   "ignorePaths": [
     "/ExampleProjects/**"
