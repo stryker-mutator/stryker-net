@@ -18,7 +18,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
     public class SinceMutantFilterTests : TestBase
     {
         [TestMethod]
-        public static void ShouldHaveName()
+        public void ShouldHaveName()
         {
             // Arrange
             var diffProviderMock = new Mock<IDiffProvider>(MockBehavior.Loose);

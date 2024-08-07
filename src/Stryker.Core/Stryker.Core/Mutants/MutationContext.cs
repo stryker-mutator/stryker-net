@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Mutants.CsharpNodeOrchestrators;
 using Stryker.Core.Mutators;
 
 namespace Stryker.Core.Mutants;
@@ -100,6 +99,17 @@ internal class MutationContext
         return control is MutationControl.Block or MutationControl.Member ? new MutationContext(this): this;
     }
 
+    public MutationContext BlockInjection()
+    {
+        _mutation.BlockInjection();
+        return this;
+    }
+
+    public MutationContext EnableInjection()
+    {
+        _mutation.EnableInjection();
+        return this;
+    }
     /// <summary>
     /// Call this when leaving a control syntax structure
     /// </summary>

@@ -1,7 +1,9 @@
 using System;
+using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
@@ -14,6 +16,53 @@ using Stryker.Core.Options;
 
 namespace Stryker.CLI
 {
+
+    internal class ConsoleWrapper : IConsole
+    {
+
+        private IAnsiConsole _console;
+
+        public ConsoleWrapper(IAnsiConsole console)
+        {
+            _console = console;
+            Out = new OutWriter(this);
+            Error = new OutWriter(this);
+        }
+
+        public void ResetColor() => throw new NotImplementedException();
+
+        public TextWriter Out { get; init;}
+        public TextWriter Error { get; init;}
+        public TextReader In { get; }
+        public bool IsInputRedirected { get; }
+        public bool IsOutputRedirected { get; }
+        public bool IsErrorRedirected { get; }
+        public ConsoleColor ForegroundColor { get; set; }
+        public ConsoleColor BackgroundColor { get; set; }
+
+
+        public event ConsoleCancelEventHandler CancelKeyPress;
+
+        private class OutWriter : TextWriter
+        {
+            private ConsoleWrapper _host;
+
+            public OutWriter(ConsoleWrapper host) => _host = host;
+
+            public override Encoding Encoding => _host._console.Profile.Encoding;
+
+            public override void Write(char value)
+            {
+                if (value == '\r')
+                {
+                    // Spectre adds a '\r' automatically
+                    return;
+                }
+                _host._console.Write(value.ToString());
+            }
+        }
+    }
+
     public class StrykerCli
     {
         private readonly IStrykerRunner _stryker;
@@ -46,7 +95,7 @@ namespace Stryker.CLI
         /// <param name="args">User input</param>
         public int Run(string[] args)
         {
-            var app = new CommandLineApplication
+            var app = new CommandLineApplication(new ConsoleWrapper(_console))
             {
                 Name = "Stryker",
                 FullName = "Stryker: Stryker mutator for .Net",

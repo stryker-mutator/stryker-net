@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Core.Baseline.Providers;
+using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options.Inputs;
 using Stryker.Core.Reporters;
@@ -18,7 +19,7 @@ public class StrykerOptions
     public string MsBuildPath { get; init; }
 
     /// <summary>
-    /// If true, stryker will fail when mutants are not being rollbacked.
+    /// when true: adjust Stryker logic to make it easier to analyse/debug
     /// </summary>
     public bool DevMode { get; init; }
 
@@ -224,7 +225,13 @@ public class StrykerOptions
     /// Instruct Stryker to break execution when at least one test failed on initial run.
     /// </summary>
     public bool BreakOnInitialTestFailure { get; set; }
-    
+
+
+    /// <summary>
+    /// Get/set the mutation id provider
+    /// </summary>
+    public IProvideId MutantIdProvider {get; set;}
+
 
     private readonly string _workingDirectoryField;
 
