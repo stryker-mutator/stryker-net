@@ -47,10 +47,11 @@ namespace Stryker.Core.MutantFilters
 
                 AssignmentExpressionSyntax assignmentExpression =>  IsPartOfIgnoredMethodCall(assignmentExpression.Right, options, false),
 
+                AwaitExpressionSyntax awaitExpression => IsPartOfIgnoredMethodCall(awaitExpression.Expression, options, false),
+
                 LocalDeclarationStatementSyntax localDeclaration => localDeclaration.Declaration.Variables.All(v => IsPartOfIgnoredMethodCall(v.Initializer?.Value, options, false)),
   
                 BlockSyntax { Statements.Count: >0 } block => block.Statements.All(s=> IsPartOfIgnoredMethodCall(s, options, false)),
-
 
                 MemberDeclarationSyntax => false,
 
