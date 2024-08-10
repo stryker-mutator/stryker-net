@@ -4,7 +4,7 @@ namespace NetCoreTestProject.XUnit;
 public class VariousTests
 {
     [Fact]
-    public void UseAssertTest()
+    public void AssertShouldKillMutation()
     {
         var target = new TargetProject.StrykerFeatures.UseAssert();
         target.IncrementCounter();
