@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -10,6 +11,17 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.InProcDataCollector;
 
 namespace Stryker.DataCollector
 {
+    internal class ThrowingListener : TraceListener
+    {
+        public override void Fail(string message) => throw new ArgumentException(message);
+
+        public override void Fail(string message, string detailMessage) => throw new ArgumentException(detailMessage, message);
+
+        public override void Write(string message) {}
+
+        public override void WriteLine(string message) {}
+    }
+
     [DataCollectorFriendlyName("StrykerCoverage")]
     [DataCollectorTypeUri("https://stryker-mutator.io/")]
     public class CoverageCollector : InProcDataCollection
@@ -28,6 +40,8 @@ namespace Stryker.DataCollector
 
         private MethodInfo _getCoverageData;
         private IList<int> _mutationCoveredOutsideTests;
+        private DefaultTraceListener _defaultTraceListener;
+        private ThrowingListener _throwingListener;
 
         private const string AnyId = "*";
         private const string TemplateForConfiguration =
@@ -79,6 +93,7 @@ namespace Stryker.DataCollector
         public void Initialize(IDataCollectionSink dataCollectionSink)
         {
             _dataSink = dataCollectionSink;
+            _throwingListener = new ThrowingListener();
             SetLogger(Console.WriteLine);
         }
 
@@ -89,6 +104,14 @@ namespace Stryker.DataCollector
         // called before any test is run
         public void TestSessionStart(TestSessionStartArgs testSessionStartArgs)
         {
+            _defaultTraceListener = Trace.Listeners.OfType<DefaultTraceListener>().FirstOrDefault();
+            if (_defaultTraceListener != null)
+            {
+                Trace.Listeners.Remove(_defaultTraceListener);
+            }
+
+            Trace.Listeners.Add(_throwingListener);
+
             var configuration = testSessionStartArgs.Configuration;
             ReadConfiguration(configuration);
 
@@ -104,6 +127,16 @@ namespace Stryker.DataCollector
             }
 
             Log($"Test Session start with conf {configuration}.");
+        }
+
+        public void TestSessionEnd(TestSessionEndArgs testSessionEndArgs)
+        {
+            Log($"TestSession ends.");
+            Trace.Listeners.Remove(_throwingListener);
+            if (_defaultTraceListener != null)
+            {
+                Trace.Listeners.Add(_defaultTraceListener);
+            }
         }
 
         private void OnAssemblyLoaded(object sender, AssemblyLoadEventArgs args)
@@ -285,8 +318,6 @@ namespace Stryker.DataCollector
                 _mutationCoveredOutsideTests = covered[1].ToList();
             }
         }
-
-        public void TestSessionEnd(TestSessionEndArgs testSessionEndArgs) => Log($"TestSession ends.");
 
         private readonly struct TestCoverageInfo
         {
