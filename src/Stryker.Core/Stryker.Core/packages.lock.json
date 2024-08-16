@@ -1574,7 +1574,7 @@
       },
       "Microsoft.CodeAnalysis.VisualBasic": {
         "type": "CentralTransitive",
-        "requested": "[4.10.0, )",
+        "requested": "[4.11.0, )",
         "resolved": "4.0.0",
         "contentHash": "FK+OGUMUh9O6/GCwyIy4c/sOrarF36/yEY07BbXVYMql1qCqHGWfyWXyCQKQ6m/KqReCqW6aO4cK7kK/AYBpyA==",
         "dependencies": {
