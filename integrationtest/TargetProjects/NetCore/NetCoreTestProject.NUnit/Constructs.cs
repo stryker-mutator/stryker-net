@@ -49,7 +49,7 @@ namespace NetCoreTestProject.NUnit
         [Test]
         [TestCaseSource(nameof(ObjectSource))]
         // all test cases refer to the same test
-        public void TestAgeIndirectObject(StrykerComments sut)
+        public void TestAgeIndirectObject(KilledMutants sut)
         {
             Console.WriteLine($"ObjectSource test:{sut.Age}");
             ClassicAssert.AreEqual(sut.Age > 29 ? "Yes" : "No", sut.IsExpired());
