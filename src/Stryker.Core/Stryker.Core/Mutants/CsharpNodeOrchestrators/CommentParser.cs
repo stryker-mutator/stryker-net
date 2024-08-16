@@ -65,7 +65,7 @@ internal static class CommentParser
         return context.FilterMutators(disable, filteredMutators, match.Groups[OnceGroup].Value.ToLower() == "once", comment);
     }
 
-    public static MutationContext ParseNodeComments(SyntaxNode node, MutationContext context)
+    public static MutationContext ParseNodeLeadingComments(SyntaxNode node, MutationContext context)
     {
         foreach (var commentTrivia in node.GetLeadingTrivia()
                      .Where(t => t.IsKind(SyntaxKind.SingleLineCommentTrivia) ||

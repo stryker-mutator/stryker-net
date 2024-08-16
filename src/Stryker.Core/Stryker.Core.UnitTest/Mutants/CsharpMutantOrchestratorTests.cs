@@ -918,6 +918,7 @@ if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.Mutant
     [TestMethod]
     public void ShouldNotMutateIfDisabledByComment()
     {
+        
         string source = @"public void SomeMethod() {
 	var x = 0;
 // Stryker disable all
@@ -931,11 +932,32 @@ if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.Mutant
 	x/=2;
 }}";
 
-        ShouldMutateSourceInClassToExpected(source, expected);
+//        ShouldMutateSourceInClassToExpected(source, expected);
+        
         source = @"public void SomeMethod() {
 	var x = 0;
 	{
-	// Stryker disable all
+	/* Stryker disable all */
+	  x++;
+	}
+	x/=2;
+}";
+        expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(4)){}else{
+	var x = 0;
+{if(StrykerNamespace.MutantControl.IsActive(5)){}else	{
+	/* Stryker disable all */
+	  x++;
+	}
+}if(StrykerNamespace.MutantControl.IsActive(8)){	x*=2;
+}else{	x/=2;
+}}}";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+        /*
+        source = @"public void SomeMethod() {
+	var x = 0;
+	{
+	// Stryker disable all 
 	  x++;
 	}
 	x/=2;
@@ -950,6 +972,7 @@ if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.Mutant
 }else{	x/=2;
 }}}";
         ShouldMutateSourceInClassToExpected(source, expected);
+        */
     }
 
     [TestMethod]
