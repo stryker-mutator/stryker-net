@@ -22,7 +22,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
     public class BaselineMutantFilterTests : TestBase
     {
         [TestMethod]
-        public static void ShouldHaveName()
+        public void ShouldHaveName()
         {
             // Arrange
             var gitInfoProvider = new Mock<IGitInfoProvider>(MockBehavior.Loose);

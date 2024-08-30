@@ -18,7 +18,7 @@ namespace Stryker.Core.UnitTest.MutantFilters;
 public class IgnoredMethodMutantFilterTests : TestBase
 {
     [TestMethod]
-    public static void ShouldHaveName()
+        public void ShouldHaveName()
     {
         var target = new IgnoredMethodMutantFilter() as IMutantFilter;
         target.DisplayName.ShouldBe("method filter");

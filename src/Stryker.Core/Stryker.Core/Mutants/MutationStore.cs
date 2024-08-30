@@ -4,7 +4,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
-using RegexParser.Nodes;
 using Stryker.Core.Helpers;
 using Stryker.Core.Logging;
 
@@ -17,7 +16,7 @@ namespace Stryker.Core.Mutants;
 public enum MutationControl
 {
     /// <summary>
-    /// Syntax that is part of a member access expression (such as class.Property.Property.Invoke()
+    /// Syntax that is part of a member access expression (such as class.Property.Property.Invoke())
     /// </summary>
     MemberAccess,
     /// <summary>
@@ -47,6 +46,7 @@ internal class MutationStore
     protected static readonly ILogger Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationStore>();
     private readonly MutantPlacer _mutantPlacer;
     private readonly Stack<PendingMutations> _pendingMutations = new();
+    private int _injectionBlockCounter;
 
     /// <summary>
     /// Constructor
@@ -104,6 +104,17 @@ internal class MutationStore
         }
     }
 
+    /// <summary>
+    /// Prevent any mutation injection
+    /// </summary>
+    /// <remarks>This method is typically used for constant syntax node, where mutations need to be controlled at a higher syntax level.</remarks>
+    public void BlockInjection() => _injectionBlockCounter++;
+
+    /// <summary>
+    /// Restore mutation injection
+    /// </summary>
+    public void EnableInjection() => _injectionBlockCounter--;
+
     private PendingMutations FindControl(MutationControl control) => _pendingMutations.FirstOrDefault(item => item.Control >= control);
 
     /// <summary>
@@ -160,8 +171,9 @@ internal class MutationStore
     /// <returns>a syntax expression with the mutations included </returns>
     public ExpressionSyntax Inject(ExpressionSyntax mutatedNode, ExpressionSyntax sourceNode)
     {
-        if (_pendingMutations.Peek().Control == MutationControl.MemberAccess)
+        if (_injectionBlockCounter > 0 || _pendingMutations.Peek().Control == MutationControl.MemberAccess)
         {
+            // do not inject if explicitly blocked
             // never inject at member access level, there is no known control structure
             return mutatedNode;
         }
