@@ -11,8 +11,8 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 internal static class CommentParser
 {
-    private static readonly Regex Pattern = new("^\\s*\\/\\/\\s*Stryker", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(20));
-    private static readonly Regex Parser = new("^\\s*\\/\\/\\s*Stryker\\s*(disable|restore)\\s*(once|)\\s*([^:]*)\\s*:?(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(20));
+    private static readonly Regex Pattern = new("^\\s*(\\/\\/\\s*Stryker(.*))|(\\/\\*\\s*Stryker(.*[^\\*][^\\\\])\\*\\/\\s*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(20));
+    private static readonly Regex Parser = new("^\\s*(disable|restore)\\s*(once|)\\s*([^:]*)\\s*:?(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(20));
     private static readonly ILogger Logger = ApplicationLogging.LoggerFactory.CreateLogger("CommentParser");
 
     private static MutationContext ParseStrykerComment(MutationContext context, Match match, SyntaxNode node)
@@ -72,12 +72,17 @@ internal static class CommentParser
                                  t.IsKind(SyntaxKind.MultiLineCommentTrivia)).Select(t => t.ToString()))
         {
             // perform a quick pattern check to see if it is a 'Stryker comment'
-            if (!Pattern.Match(commentTrivia).Success)
+            var strykerCommentMatch = Pattern.Match(commentTrivia);
+            if (!strykerCommentMatch.Success)
             {
                 continue;
             }
 
-            var match = Parser.Match(commentTrivia);
+            // now we can extract actual command
+            var isSingleLine = strykerCommentMatch.Groups[1].Success;
+            var command = isSingleLine ? strykerCommentMatch.Groups[2].Value : strykerCommentMatch.Groups[4].Value;
+
+            var match = Parser.Match(command);
             if (match.Success)
             {
                 // this is a Stryker comments, now we parse it
