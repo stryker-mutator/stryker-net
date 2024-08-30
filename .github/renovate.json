@@ -21,6 +21,21 @@
       "automerge": true
     },
     {
+      "matchPackageNames": [
+        "Microsoft.CodeAnalysis",
+        "Microsoft.CodeAnalysis.Common",
+        "Microsoft.CodeAnalysis.Features",
+        "Microsoft.CodeAnalysis.VisualBasic",
+        "Microsoft.CodeAnalysis.VisualBasic.Workspaces",
+        "Microsoft.CodeAnalysis.CSharp",
+        "Microsoft.CodeAnalysis.CSharp.Workspaces",
+        "Microsoft.CodeAnalysis.Workspaces",
+        "Microsoft.CodeAnalysis.Workspaces.Common",
+        "Microsoft.CodeAnalysis.Workspaces.MSBuild"
+      ],
+      "groupName": "roslyn"
+    },
+    {
       "matchDatasources": [
         "azure-pipelines-tasks"
       ],

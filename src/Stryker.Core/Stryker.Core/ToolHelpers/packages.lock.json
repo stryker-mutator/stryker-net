@@ -10,9 +10,9 @@
       },
       "Microsoft.TestPlatform.Portable": {
         "type": "Direct",
-        "requested": "[17.10.0, )",
-        "resolved": "17.10.0",
-        "contentHash": "lBzvhSA6hQ6T8ML1ld1E9fdi1EvXu4X/0d3fxNxST/D1SSNBPMq02gj3K3GyGru1JDs+ggOv8FMt7Cg6Cy9oWw=="
+        "requested": "[17.11.0, )",
+        "resolved": "17.11.0",
+        "contentHash": "ahepXaLDf3rMi5Wu9JoY2N1OhFIKQ/oPbh/L3UJqyarMDbyJt3/SrTDjZ0fHJWXQht3e0VnzHmz6OYqFns6jfg=="
       }
     }
   }
