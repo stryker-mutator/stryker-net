@@ -51,6 +51,13 @@ public class DefaultParameterMutator : MutatorBase<InvocationExpressionSyntax>
         {
             var parameterName = parameter.Name;
             var argumentNameColon = SyntaxFactory.NameColon(parameterName);
+
+            // If we cannot find the parameter declaration, we should not try to mutate.
+            if (parameter.DeclaringSyntaxReferences.IsDefaultOrEmpty)
+            {
+                yield break;
+            }
+
             var parameterSyntaxNode = (ParameterSyntax)parameter.DeclaringSyntaxReferences[0].GetSyntax();
 
             var parameterDefaultExpressionNode = parameterSyntaxNode.Default!.Value;
