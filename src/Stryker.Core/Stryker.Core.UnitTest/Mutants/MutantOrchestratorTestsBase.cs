@@ -16,7 +16,7 @@ namespace Stryker.Core.UnitTest.Mutants
         private static partial Regex IsActiveRegex();
         private const string Replacement = "IsActive(0)";
 
-        protected CsharpMutantOrchestrator _target;
+        protected CSharpMutantOrchestrator _target;
         protected CodeInjection _injector = new();
 
         public MutantOrchestratorTestsBase()
@@ -26,7 +26,7 @@ namespace Stryker.Core.UnitTest.Mutants
                 MutationLevel = MutationLevel.Complete,
                 OptimizationMode = OptimizationModes.CoverageBasedTest,
             };
-            _target = new CsharpMutantOrchestrator(new MutantPlacer(_injector), options: options);
+            _target = new CSharpMutantOrchestrator(new MutantPlacer(_injector), options: options);
         }
 
         protected void ShouldMutateSourceToExpected(string actual, string expected)

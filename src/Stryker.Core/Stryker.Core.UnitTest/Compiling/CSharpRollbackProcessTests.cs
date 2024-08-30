@@ -113,7 +113,7 @@ namespace ExampleProject
             };
             var codeInjection = new CodeInjection();
             var placer = new MutantPlacer(codeInjection);
-            var mutator = new CsharpMutantOrchestrator( placer, options: options);
+            var mutator = new CSharpMutantOrchestrator( placer, options: options);
             var helpers = new List<SyntaxTree>();
             foreach (var (name, code) in codeInjection.MutantHelpers)
             {
@@ -197,7 +197,7 @@ namespace ExampleProject
             };
             var codeInjection = new CodeInjection();
             var placer = new MutantPlacer(codeInjection);
-            var mutator = new CsharpMutantOrchestrator( placer, options: options);
+            var mutator = new CSharpMutantOrchestrator( placer, options: options);
             var helpers = new List<SyntaxTree>();
             foreach (var (name, code) in codeInjection.MutantHelpers)
             {

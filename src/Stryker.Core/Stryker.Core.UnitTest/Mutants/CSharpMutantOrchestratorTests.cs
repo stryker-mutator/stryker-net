@@ -10,7 +10,7 @@ using Stryker.Core.Options;
 namespace Stryker.Core.UnitTest.Mutants;
 
 [TestClass]
-public class CsharpMutantOrchestratorTests : MutantOrchestratorTestsBase
+public class CSharpMutantOrchestratorTests : MutantOrchestratorTestsBase
 {
     [TestMethod]
     public void ShouldNotMutateEmptyInterfaces()
@@ -86,7 +86,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
             MutationLevel = MutationLevel.Complete,
             OptimizationMode = OptimizationModes.CoverageBasedTest,
         };
-        _target = new CsharpMutantOrchestrator(new MutantPlacer(_injector), options: options);
+        _target = new CSharpMutantOrchestrator(new MutantPlacer(_injector), options: options);
 
         string source = @"private void Move()
 			{
@@ -1817,7 +1817,7 @@ else        {
     public void ShouldIncrementMutantCountUniquely()
     {
         var secondOrchestrator =
-            new CsharpMutantOrchestrator(new MutantPlacer(_injector), options: new StrykerOptions());
+            new CSharpMutantOrchestrator(new MutantPlacer(_injector), options: new StrykerOptions());
         var node = SyntaxFactory.ParseExpression("1 == 1") as BinaryExpressionSyntax;
 
         var firstMutant = _target
