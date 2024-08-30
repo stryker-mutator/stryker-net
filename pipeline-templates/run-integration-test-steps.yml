@@ -4,7 +4,7 @@ parameters:
   strykerCommands: ''
 
 steps:
-- script: $(Agent.BuildDirectory)/tools/dotnet-stryker ${{ parameters.strykerCommands }} --dev-mode -L --mutation-level "Complete"
+- script: $(Agent.BuildDirectory)/tools/dotnet-stryker ${{ parameters.strykerCommands }} --dev-mode -L
   workingDirectory: ${{ parameters.workingDirectory }}
   displayName: 'Run integration test ${{ parameters.testName }}'
   failOnStderr: false
