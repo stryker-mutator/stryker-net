@@ -77,15 +77,12 @@ public class DefaultParameterMutator : MutatorBase<InvocationExpressionSyntax>
     private IEnumerable<ExpressionSyntax> MutateDefaultValueNode(SyntaxNode defaultValueNode, SemanticModel semanticModel)
     {
         List<ExpressionSyntax> nodeMutations = new();
-        foreach (var mutator in _orchestrator.Mutators)
+        foreach (var mutator in _orchestrator.Mutators.Where(m => m is not DefaultParameterMutator))
         {
-            if (mutator is not DefaultParameterMutator)
+            var mutations = mutator.Mutate(defaultValueNode, semanticModel, _options);
+            foreach (var mutation in mutations)
             {
-                var mutations = mutator.Mutate(defaultValueNode, semanticModel, _options);
-                foreach (var mutation in mutations)
-                {
-                    nodeMutations.Add((ExpressionSyntax)mutation.ReplacementNode);
-                }
+                nodeMutations.Add((ExpressionSyntax)mutation.ReplacementNode);
             }
         }
 

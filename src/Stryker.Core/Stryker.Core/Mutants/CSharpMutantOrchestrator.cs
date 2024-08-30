@@ -128,7 +128,7 @@ public class CSharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         // search for node specific handler
         input.WithRootAndOptions(GetHandler(input.GetRoot()).Mutate(input.GetRoot(), semanticModel, new MutationContext(this)), input.Options);
 
-    internal INodeOrchestrator GetHandler(SyntaxNode currentNode) => specificOrchestrator.FindHandler(currentNode);
+    internal static INodeOrchestrator GetHandler(SyntaxNode currentNode) => specificOrchestrator.FindHandler(currentNode);
 
     internal IEnumerable<Mutant> GenerateMutationsForNode(SyntaxNode current, SemanticModel semanticModel, MutationContext context)
     {

@@ -10,7 +10,7 @@ namespace Stryker.Core.Mutants;
 /// <summary>
 /// Describe the (syntax tree) context during mutation and ensure proper mutation injection.
 /// It has several responsibilities:
-/// 1) It is in charge of storing mutations as they are generated, inject them at the appropriate syntax level.  
+/// 1) It is in charge of storing mutations as they are generated, inject them at the appropriate syntax level.
 /// 2) it also tracks mutator disabled via comments and restores them at adequate times
 /// </summary>
 ///
@@ -80,7 +80,7 @@ internal class MutationContext
     /// <param name="node">handler for which to find an orchestrator.</param>
     /// <param name="model"></param>
     /// <returns>A handler for this node.</returns>
-    public SyntaxNode Mutate(SyntaxNode node, SemanticModel model) => _mainOrchestrator.GetHandler(node).Mutate(node, model, this);
+    public SyntaxNode Mutate(SyntaxNode node, SemanticModel model) => CSharpMutantOrchestrator.GetHandler(node).Mutate(node, model, this);
 
     /// <summary>
     /// Call this to signal mutation occurs in static method or fields
