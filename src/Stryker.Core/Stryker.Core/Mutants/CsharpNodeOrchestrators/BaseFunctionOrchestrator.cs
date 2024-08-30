@@ -2,11 +2,11 @@ using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Configuration.Helpers;
-using Stryker.Configuration.Instrumentation;
+using Stryker.Abstractions.Helpers;
+using Stryker.Abstractions.Instrumentation;
 
 
-namespace Stryker.Configuration.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
 
 /// <summary>
 /// This class implements a roslyn type independent orchestrator for method, functions, getters....

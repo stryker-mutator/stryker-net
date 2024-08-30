@@ -1,7 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Utilities;
 
-namespace Stryker.Configuration.Options.Inputs
+namespace Stryker.Abstractions.Options.Inputs
 {
     public class MutateInput : Input<IEnumerable<string>>
     {
@@ -14,11 +16,11 @@ namespace Stryker.Configuration.Options.Inputs
     Use '{<start>..<end>}' at the end of a pattern to specify spans of text in files to in- or exclude.
     Example: ['**/*Service.cs','!**/MySpecialService.cs', '**/MyOtherService.cs{1..10}{32..45}']";
 
-        public IEnumerable<FilePattern> Validate()
+        public IEnumerable<IFilePattern> Validate()
         {
             if (SuppliedInput is { } && SuppliedInput.Any())
             {
-                var filesToInclude = new List<FilePattern>();
+                var filesToInclude = new List<IFilePattern>();
 
                 foreach (var pattern in SuppliedInput)
                 {

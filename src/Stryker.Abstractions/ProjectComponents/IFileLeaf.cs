@@ -1,4 +1,4 @@
-namespace Stryker.Configuration.ProjectComponents
+namespace Stryker.Abstractions.ProjectComponents
 {
     public interface IReadOnlyFileLeaf : IReadOnlyProjectComponent
     {

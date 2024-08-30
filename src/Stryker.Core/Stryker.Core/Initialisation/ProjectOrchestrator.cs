@@ -6,18 +6,17 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration.Logging;
-using Stryker.Configuration.MutationTest;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents.SourceProjects;
-using Stryker.Configuration.Reporters;
-using Stryker.Configuration.TestRunners;
-using Stryker.Configuration.TestRunners.VsTest;
-using Stryker.Configuration.Reporting;
-using Stryker.Configuration.Baseline;
+using Stryker.Abstractions.Baseline;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.MutationTest;
+using Stryker.Abstractions.ProjectComponents.SourceProjects;
+using Stryker.Abstractions.Reporters;
+using Stryker.Abstractions.Reporting;
+using Stryker.Abstractions.TestRunners.VsTest;
+using Stryker.Abstractions.TestRunners;
 
-namespace Stryker.Configuration.Initialisation
+namespace Stryker.Abstractions.Initialisation
 {
     public interface IProjectOrchestrator: IDisposable
     {

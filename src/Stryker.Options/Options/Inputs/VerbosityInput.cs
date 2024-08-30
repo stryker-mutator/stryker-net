@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using Serilog.Events;
-using Stryker.Configuration.Exceptions;
+using Stryker.Abstractions.Exceptions;
 
-namespace Stryker.Configuration.Options.Inputs
+namespace Stryker.Abstractions.Options.Inputs
 {
     public class VerbosityInput : Input<string>
     {

@@ -1,13 +1,12 @@
 using System.Collections.Generic;
-using Stryker.Configuration.Baseline.Providers;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.ProjectComponents.TestProjects;
-using Stryker.Configuration.Reporters.Json;
-using Stryker.Configuration.Reporting;
+using Stryker.Abstractions.Baseline;
+using Stryker.Abstractions.Baseline.Providers;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Reporters.Json;
+using Stryker.Abstractions.Reporting;
 
-namespace Stryker.Configuration.Reporters
+namespace Stryker.Abstractions.Reporters
 {
     public class BaselineReporter : IReporter
     {

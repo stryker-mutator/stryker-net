@@ -1,7 +1,6 @@
-using Stryker.Configuration;
-using Stryker.Configuration.TestRunners;
+using Stryker.Abstractions.TestRunners;
 
-namespace Stryker.Configuration.Initialisation
+namespace Stryker.Abstractions.Initialisation
 {
     public class InitialTestRun
     {

@@ -1,7 +1,8 @@
 using DotNet.Globbing;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Stryker.Configuration;
+namespace Stryker.Abstractions.ProjectComponents;
+
 public interface IFilePattern
 {
     Glob Glob { get; }

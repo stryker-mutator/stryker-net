@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
-using Stryker.Configuration.Initialisation;
-using Stryker.Configuration.Mutants;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Initialisation;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.TestRunners;
+using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Configuration.TestRunners
+namespace Stryker.Abstractions.TestRunners
 {
     public delegate bool TestUpdateHandler(IReadOnlyList<Mutant> testedMutants,
         ITestGuids failedTests,

@@ -5,14 +5,14 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Configuration;
-using Stryker.Configuration.MutantFilters;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration.Mutators;
-using Stryker.Configuration;
-using Stryker.Configuration;
+using Stryker.Abstractions;
+using Stryker.Abstractions.MutantFilters;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions;
+using Stryker.Abstractions;
 
-namespace Stryker.Configuration.UnitTest.MutantFilters
+namespace Stryker.Abstractions.UnitTest.MutantFilters
 {
     [TestClass]
     public class ExcludeLinqExpressionFilterTests : TestBase

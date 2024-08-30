@@ -1,9 +1,9 @@
 using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
-using Stryker.Configuration.Exceptions;
+using Stryker.Abstractions.Exceptions;
 
-namespace Stryker.Configuration.Options.Inputs
+namespace Stryker.Abstractions.Options.Inputs
 {
     public class SolutionInput : Input<string>
     {

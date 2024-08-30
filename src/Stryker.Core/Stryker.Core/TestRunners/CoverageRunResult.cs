@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Stryker.Configuration.TestRunners
+namespace Stryker.Abstractions.TestRunners
 {
     public enum CoverageConfidence
     {

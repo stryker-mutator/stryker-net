@@ -1,6 +1,6 @@
 using Serilog.Events;
 
-namespace Stryker.Configuration.Options;
+namespace Stryker.Abstractions.Options;
 
 public interface ILogOptions
 {

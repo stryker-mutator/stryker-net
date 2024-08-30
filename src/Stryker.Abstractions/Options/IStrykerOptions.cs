@@ -1,13 +1,11 @@
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Configuration.Baseline;
-using Stryker.Configuration.Mutators;
-using Stryker.Configuration.Options.Inputs;
-using Stryker.Configuration.Reporters;
-using Stryker.Configuration.Reporting;
+using Stryker.Abstractions.Baseline;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporting;
 
-namespace Stryker.Configuration.Options;
+namespace Stryker.Abstractions.Options;
 
 public interface IStrykerOptions
 {

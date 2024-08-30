@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Stryker.Configuration.Helpers
+namespace Stryker.Abstractions.Helpers
 {
     // describe a strategy that is specialized in a given type
     // and support sub-specialization 

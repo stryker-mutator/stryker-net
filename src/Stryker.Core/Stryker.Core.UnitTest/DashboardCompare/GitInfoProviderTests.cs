@@ -5,11 +5,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Configuration.Baseline.Providers;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration;
+using Stryker.Abstractions.Baseline.Providers;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions;
 
-namespace Stryker.Configuration.UnitTest.DashboardCompare
+namespace Stryker.Abstractions.UnitTest.DashboardCompare
 {
 
     [TestClass]

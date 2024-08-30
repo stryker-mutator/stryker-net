@@ -1,9 +1,9 @@
 using LibGit2Sharp;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions;
 using System;
 
-namespace Stryker.Configuration.Baseline.Providers
+namespace Stryker.Abstractions.Baseline.Providers
 {
     using Logging;
     using Microsoft.Extensions.Logging;

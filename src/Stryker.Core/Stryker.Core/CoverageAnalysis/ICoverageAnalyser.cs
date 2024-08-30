@@ -1,9 +1,9 @@
 using System.Collections.Generic;
-using Stryker.Configuration.Initialisation;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration.TestRunners;
+using Stryker.Abstractions.Initialisation;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.TestRunners;
 
-namespace Stryker.Configuration.CoverageAnalysis
+namespace Stryker.Abstractions.CoverageAnalysis
 {
     public interface ICoverageAnalyser
     {

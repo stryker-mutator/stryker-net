@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Stryker.Configuration.Mutants
+namespace Stryker.Abstractions.Mutants
 {
     public class TestSet
     {

@@ -1,13 +1,13 @@
 using Moq;
-using Stryker.Configuration.Baseline.Providers;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.ProjectComponents.TestProjects;
-using Stryker.Configuration.Reporters;
-using Stryker.Configuration.Reporters.Json;
+using Stryker.Abstractions.Baseline.Providers;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Reporters;
+using Stryker.Abstractions.Reporters.Json;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Abstractions.Baseline;
 
-namespace Stryker.Configuration.UnitTest.Reporters
+namespace Stryker.Abstractions.UnitTest.Reporters
 {
     [TestClass]
     public class BaselineReporterTests : TestBase

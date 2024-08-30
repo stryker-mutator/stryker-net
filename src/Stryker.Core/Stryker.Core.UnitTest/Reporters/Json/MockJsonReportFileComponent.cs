@@ -1,14 +1,15 @@
 using System.Collections.Generic;
-using Stryker.Configuration.Reporters.Json.SourceFiles;
+using Stryker.Abstractions.Reporting;
+using Stryker.Reporters.Json.SourceFiles;
 
-namespace Stryker.Configuration.UnitTest.Reporters.Json;
+namespace Stryker.Abstractions.UnitTest.Reporters.Json;
 
 public class MockJsonReportFileComponent : SourceFile
 {
     public MockJsonReportFileComponent(
         string language,
         string source,
-        ISet<JsonMutant> mutants
+        ISet<IJsonMutant> mutants
     )
     {
         Language = language;

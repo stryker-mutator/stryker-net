@@ -1,12 +1,13 @@
 using System.IO;
 using Shouldly;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration;
-using Stryker.Configuration.Options.Inputs;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Stryker.Configuration.Baseline;
+using Stryker.Abstractions.Baseline;
+using Stryker.Abstractions.Options;
 
-namespace Stryker.Configuration.UnitTest.Options
+namespace Stryker.Abstractions.UnitTest.Options
 {
     [TestClass]
     public class StrykerInputsTests : TestBase

@@ -1,18 +1,15 @@
 using DotNet.Globbing;
 using Microsoft.CodeAnalysis.Text;
-using Stryker.Configuration.Options;
-using Stryker.Configuration.Helpers;
-using Stryker.Configuration;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Utilities;
 
-namespace Stryker.Configuration
+namespace Stryker.Abstractions
 {
     /// <summary>
     /// Contains information about which files and which parts of a file should be in- or excluded.
     /// </summary>
-    public sealed class FilePattern : IEquatable<FilePattern>, IFilePattern
+    public sealed class FilePattern : IEquatable<IFilePattern>, IFilePattern
     {
         private static readonly TextSpan _textSpanMaxValue = new TextSpan(0, int.MaxValue);
 
@@ -88,7 +85,7 @@ namespace Stryker.Configuration
             return false;
         }
 
-        public bool Equals(FilePattern other) => Glob.ToString() == other.Glob.ToString() && IsExclude == other.IsExclude && TextSpans.SequenceEqual(other.TextSpans);
+        public bool Equals(IFilePattern other) => Glob.ToString() == other.Glob.ToString() && IsExclude == other.IsExclude && TextSpans.SequenceEqual(other.TextSpans);
 
         public override bool Equals(object obj)
         {

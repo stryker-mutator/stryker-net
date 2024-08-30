@@ -1,8 +1,6 @@
-using Stryker.Configuration;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration.TestRunners;
+using Stryker.Abstractions.TestRunners;
 
-namespace Stryker.Core.Mutants
+namespace Stryker.Abstractions.Mutants
 {
     /// <summary>
     /// Represents a single mutation on domain level

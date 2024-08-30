@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using Stryker.Configuration.Initialisation;
-using Stryker.Configuration.Logging;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
-using Stryker.Configuration.TestRunners;
+using Stryker.Abstractions.Initialisation;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
+using Stryker.Abstractions.TestRunners;
 
-namespace Stryker.Configuration.CoverageAnalysis
+namespace Stryker.Abstractions.CoverageAnalysis
 {
     public class CoverageAnalyser : ICoverageAnalyser
     {

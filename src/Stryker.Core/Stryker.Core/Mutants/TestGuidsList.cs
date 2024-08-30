@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Configuration.TestRunners;
+using Stryker.Abstractions.TestRunners;
+using Stryker.Abstractions.TestRunners;
 
-namespace Stryker.Configuration.Mutants
+namespace Stryker.Abstractions.Mutants
 {
 
     public class TestGuidsList : ITestGuids

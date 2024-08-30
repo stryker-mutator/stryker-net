@@ -3,18 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
-using Stryker.Configuration.CoverageAnalysis;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration.Initialisation;
-using Stryker.Configuration.Initialisation.Buildalyzer;
-using Stryker.Configuration.Logging;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.Reporting;
-using Stryker.Configuration.TestRunners;
+using Stryker.Abstractions.CoverageAnalysis;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Initialisation;
+using Stryker.Abstractions.Initialisation.Buildalyzer;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporting;
+using Stryker.Abstractions.TestRunners;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.TestRunners;
+using Stryker.Abstractions.Options;
 
-namespace Stryker.Configuration.MutationTest
+namespace Stryker.Abstractions.MutationTest
 {
     public interface IMutationTestProcess
     {
@@ -29,7 +32,7 @@ namespace Stryker.Configuration.MutationTest
     public class MutationTestProcess : IMutationTestProcess
     {
         private static readonly ILogger Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-        private readonly IProjectComponent _projectContents;
+        private readonly IReadOnlyProjectComponent _projectContents;
         private readonly IMutationTestExecutor _mutationTestExecutor;
         private readonly IReporter _reporter;
         private readonly ICoverageAnalyser _coverageAnalyser;

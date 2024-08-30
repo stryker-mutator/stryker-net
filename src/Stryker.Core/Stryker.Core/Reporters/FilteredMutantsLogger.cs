@@ -1,10 +1,10 @@
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using Stryker.Configuration.Logging;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration.ProjectComponents;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.ProjectComponents;
 
-namespace Stryker.Configuration.Reporters
+namespace Stryker.Abstractions.Reporters
 {
     public class FilteredMutantsLogger
     {

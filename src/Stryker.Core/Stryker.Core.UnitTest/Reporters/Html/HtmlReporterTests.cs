@@ -5,16 +5,16 @@ using System.IO.Abstractions.TestingHelpers;
 using Moq;
 using Shouldly;
 using Spectre.Console.Testing;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
-using Stryker.Configuration.Options.Inputs;
-using Stryker.Configuration.ProjectComponents.TestProjects;
-using Stryker.Configuration.Reporters.Html;
-using Stryker.Configuration.Reporters.Html.RealTime;
-using Stryker.Configuration.Reporters.WebBrowserOpener;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Options.Inputs;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Reporters.Html;
+using Stryker.Abstractions.Reporters.Html.RealTime;
+using Stryker.Abstractions.Reporters.WebBrowserOpener;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Configuration.UnitTest.Reporters.Html
+namespace Stryker.Abstractions.UnitTest.Reporters.Html
 {
     [TestClass]
     public class HtmlReporterTests : TestBase

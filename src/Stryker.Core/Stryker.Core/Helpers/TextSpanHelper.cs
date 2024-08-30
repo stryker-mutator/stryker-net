@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.Text;
 
-namespace Stryker.Configuration.Helpers
+namespace Stryker.Abstractions.Helpers
 {
     public static class TextSpanHelper
     {

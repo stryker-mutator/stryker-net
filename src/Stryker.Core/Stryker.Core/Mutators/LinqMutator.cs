@@ -1,12 +1,12 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Configuration;
-using Stryker.Configuration.Mutants;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Mutants;
 using System;
 using System.Collections.Generic;
 
-namespace Stryker.Configuration.Mutators;
+namespace Stryker.Abstractions.Mutators;
 
 /// <summary> Mutator Implementation for LINQ Mutations </summary>
 public class LinqMutator : MutatorBase<ExpressionSyntax>

@@ -1574,10 +1574,14 @@
       "stryker.abstractions": {
         "type": "Project",
         "dependencies": {
+          "Buildalyzer": "[7.0.2, )",
           "DotNet.Glob": "[3.1.3, )",
           "Microsoft.CodeAnalysis.CSharp": "[4.10.0, )",
+          "Microsoft.CodeAnalysis.Common": "[4.10.0, )",
           "Microsoft.TestPlatform.ObjectModel": "[17.10.0, )",
-          "Serilog": "[4.0.0, )"
+          "Serilog": "[4.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )",
+          "TestableIO.System.IO.Abstractions.Wrappers": "[21.0.26, )"
         }
       },
       "stryker.configuration": {
@@ -1602,6 +1606,9 @@
         "dependencies": {
           "RegexParser": "[0.5.1, )"
         }
+      },
+      "stryker.utilities": {
+        "type": "Project"
       },
       "Azure.Storage.Files.Shares": {
         "type": "CentralTransitive",

@@ -1,6 +1,6 @@
 using FSharp.Compiler.Syntax;
 
-namespace Stryker.Configuration.Mutants.FsharpOrchestrators
+namespace Stryker.Abstractions.Mutants.FsharpOrchestrators
 {
     public class NestedModuleOrchestrator : IFsharpTypeHandler<SynModuleDecl>
     {

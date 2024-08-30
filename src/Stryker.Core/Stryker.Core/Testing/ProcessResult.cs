@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace Stryker.Configuration.Testing
+namespace Stryker.Abstractions.Testing
 {
     [ExcludeFromCodeCoverage]
     public class ProcessResult

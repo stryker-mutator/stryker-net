@@ -1,7 +1,7 @@
 using System;
-using Stryker.Configuration.Reporters.Html.RealTime.Events;
+using Stryker.Abstractions.Reporters.Html.RealTime.Events;
 
-namespace Stryker.Configuration.Reporters.Html.RealTime;
+namespace Stryker.Abstractions.Reporters.Html.RealTime;
 
 public interface ISseServer
 {

@@ -1,4 +1,4 @@
-﻿namespace Stryker.Configuration.Mutants.FsharpOrchestrators
+﻿namespace Stryker.Abstractions.Mutants.FsharpOrchestrators
 {
     public class DefaultOrchestrator<T> : IFsharpTypeHandler<T>
     {

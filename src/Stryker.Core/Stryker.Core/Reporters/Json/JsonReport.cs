@@ -1,13 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.ProjectComponents.TestProjects;
-using Stryker.Configuration.Reporters.Json.TestFiles;
-using Stryker.Configuration.Reporting;
-using Stryker.Configuration;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Reporters.Json.TestFiles;
+using Stryker.Abstractions.Reporting;
 using Stryker.Reporters.Json.SourceFiles;
 
-namespace Stryker.Configuration.Reporters.Json
+namespace Stryker.Abstractions.Reporters.Json
 {
     public class JsonReport : IJsonReport
     {
@@ -15,7 +14,7 @@ namespace Stryker.Configuration.Reporters.Json
         public IDictionary<string, int> Thresholds { get; init; } = new Dictionary<string, int>();
         public string ProjectRoot { get; init; }
         public IDictionary<string, ISourceFile> Files { get; init; } = new Dictionary<string, ISourceFile>();
-        public IDictionary<string, JsonTestFile> TestFiles { get; set; } = null;
+        public IDictionary<string, IJsonTestFile> TestFiles { get; set; } = null;
 
         public JsonReport() { }
 
@@ -30,7 +29,7 @@ namespace Stryker.Configuration.Reporters.Json
             AddTestFiles(testProjectsInfo);
         }
 
-        public static JsonReport Build(StrykerOptions options, IReadOnlyProjectComponent mutationReport, TestProjectsInfo testProjectsInfo) => new(options, mutationReport, testProjectsInfo);
+        public static IJsonReport Build(StrykerOptions options, IReadOnlyProjectComponent mutationReport, TestProjectsInfo testProjectsInfo) => new JsonReport(options, mutationReport, testProjectsInfo);
 
         private IDictionary<string, ISourceFile> GenerateReportComponents(IReadOnlyProjectComponent component)
         {

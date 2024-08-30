@@ -4,12 +4,12 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration.Mutators;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions;
 
-namespace Stryker.Configuration.MutantFilters
+namespace Stryker.Abstractions.MutantFilters
 {
     /// <summary>
     /// Checks if the linq expression of the mutant should be excluded.

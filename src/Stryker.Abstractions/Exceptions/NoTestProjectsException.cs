@@ -1,4 +1,4 @@
-namespace Stryker.Configuration.Exceptions;
+namespace Stryker.Abstractions.Exceptions;
 
 /// <summary>
 /// Represents error when no test projects are found in the solution or configured for stryker.

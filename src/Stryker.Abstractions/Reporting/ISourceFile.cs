@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Stryker.Configuration.Reporting;
+namespace Stryker.Abstractions.Reporting;
 
 public interface ISourceFile
 {

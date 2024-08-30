@@ -1,6 +1,6 @@
-using Stryker.Configuration.Options;
+using Stryker.Abstractions.Options;
 
-namespace Stryker.Configuration
+namespace Stryker.Abstractions
 {
     public class Thresholds : IThresholds
     {

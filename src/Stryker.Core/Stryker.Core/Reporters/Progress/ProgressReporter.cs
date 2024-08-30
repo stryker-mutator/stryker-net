@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Configuration.Reporting;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Reporting;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
 
-namespace Stryker.Configuration.Reporters.Progress
+namespace Stryker.Abstractions.Reporters.Progress
 {
     public class ProgressReporter : IReporter
     {

@@ -3,11 +3,11 @@ using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration.Initialisation;
-using Stryker.Configuration.Testing;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Initialisation;
+using Stryker.Abstractions.Testing;
 
-namespace Stryker.Configuration.UnitTest.Initialisation;
+namespace Stryker.Abstractions.UnitTest.Initialisation;
 
 [TestClass]
 public class NugetRestoreProcessTests : TestBase

@@ -1,12 +1,12 @@
 using Microsoft.Extensions.Logging;
-using Stryker.Configuration.Logging;
-using Stryker.Configuration;
-using Stryker.Configuration.Reporters.Json;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Reporters.Json;
 using System.IO;
 using System.IO.Abstractions;
 using System.Threading.Tasks;
 
-namespace Stryker.Configuration.Baseline.Providers
+namespace Stryker.Abstractions.Baseline.Providers
 {
     public class DiskBaselineProvider : IBaselineProvider
     {

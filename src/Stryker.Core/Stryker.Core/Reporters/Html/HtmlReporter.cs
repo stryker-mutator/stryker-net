@@ -3,17 +3,16 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using Spectre.Console;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
-using Stryker.Configuration.Options.Inputs;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.ProjectComponents.TestProjects;
-using Stryker.Configuration.Reporters.Html.RealTime;
-using Stryker.Configuration.Reporters.Json;
-using Stryker.Configuration.Reporters.WebBrowserOpener;
-using Stryker.Configuration.Reporting;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options.Inputs;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Reporters.Html.RealTime;
+using Stryker.Abstractions.Reporters.Json;
+using Stryker.Abstractions.Reporters.WebBrowserOpener;
+using Stryker.Abstractions.Reporting;
 
-namespace Stryker.Configuration.Reporters.Html;
+namespace Stryker.Abstractions.Reporters.Html;
 
 public class HtmlReporter : IReporter
 {

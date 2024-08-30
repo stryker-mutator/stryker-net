@@ -3,12 +3,12 @@ using System.Collections.ObjectModel;
 using FSharp.Compiler.Syntax;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
-using Stryker.Configuration.Logging;
-using Stryker.Configuration.Mutants.FsharpOrchestrators;
-using Stryker.Configuration.Mutators;
-using Stryker.Configuration;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Mutants.FsharpOrchestrators;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Configuration.Mutants
+namespace Stryker.Abstractions.Mutants
 {
     /// <inheritdoc/>
     public class FsharpMutantOrchestrator : BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>, object>

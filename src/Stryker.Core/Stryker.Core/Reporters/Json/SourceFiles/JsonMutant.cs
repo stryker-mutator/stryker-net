@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Configuration.Reporting;
+using Stryker.Abstractions.Reporting;
 
-namespace Stryker.Configuration.Reporters.Json.SourceFiles
+namespace Stryker.Abstractions.Reporters.Json.SourceFiles
 {
     public class JsonMutant : IJsonMutant
     {

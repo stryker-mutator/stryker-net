@@ -1,13 +1,13 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Shouldly;
-using Stryker.Configuration.MutantFilters;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
+using Stryker.Abstractions.MutantFilters;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Configuration.UnitTest.MutantFilters
+namespace Stryker.Abstractions.UnitTest.MutantFilters
 {
     [TestClass]
     public class ExcludeFromCodeCoverageFilterTests : TestBase

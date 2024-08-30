@@ -1,9 +1,9 @@
 using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Configuration.Mutants;
+using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Configuration.Instrumentation;
+namespace Stryker.Abstractions.Instrumentation;
 
 /// <summary>
 /// Base logic for all instrumentation helpers. It takes of generating a specific annotation

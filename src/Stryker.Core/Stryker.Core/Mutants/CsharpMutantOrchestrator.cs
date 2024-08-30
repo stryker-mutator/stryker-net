@@ -6,13 +6,13 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
-using Stryker.Configuration.Helpers;
-using Stryker.Configuration.Logging;
-using Stryker.Configuration.Mutants.CsharpNodeOrchestrators;
-using Stryker.Configuration.Mutators;
-using Stryker.Configuration;
+using Stryker.Abstractions.Helpers;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Configuration.Mutants;
+namespace Stryker.Abstractions.Mutants;
 
 /// <inheritdoc/>
 public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, SemanticModel>

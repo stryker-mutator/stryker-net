@@ -1,4 +1,4 @@
-namespace Stryker.Configuration;
+namespace Stryker.Abstractions;
 
 public interface ITimeoutValueCalculator
 {

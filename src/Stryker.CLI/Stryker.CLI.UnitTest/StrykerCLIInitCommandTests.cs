@@ -8,8 +8,8 @@ using Shouldly;
 using Spectre.Console.Testing;
 using Stryker.CLI.Clients;
 using Stryker.CLI.Logging;
-using Stryker.Configuration;
-using Stryker.Configuration.Options.Inputs;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.CLI.UnitTest;

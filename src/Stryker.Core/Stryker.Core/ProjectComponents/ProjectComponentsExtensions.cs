@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Configuration.Helpers;
+using Stryker.Abstractions.Helpers;
 
-namespace Stryker.Configuration.ProjectComponents
+namespace Stryker.Abstractions.ProjectComponents
 {
     /// <summary>
     /// Contains extension methods for project components.

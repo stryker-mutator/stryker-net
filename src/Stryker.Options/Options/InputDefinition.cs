@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Stryker.Configuration.Options
+namespace Stryker.Abstractions.Options
 {
     public interface IInput
     {

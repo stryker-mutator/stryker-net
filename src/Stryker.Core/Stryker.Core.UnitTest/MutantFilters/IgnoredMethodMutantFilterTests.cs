@@ -6,13 +6,13 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Shouldly;
-using Stryker.Configuration.MutantFilters;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
-using Stryker.Configuration.Options.Inputs;
+using Stryker.Abstractions.MutantFilters;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Configuration.UnitTest.MutantFilters
+namespace Stryker.Abstractions.UnitTest.MutantFilters
 {
     [TestClass]
     public class IgnoredMethodMutantFilterTests : TestBase

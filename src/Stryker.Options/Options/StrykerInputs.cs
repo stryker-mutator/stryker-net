@@ -1,7 +1,8 @@
-using Stryker.Configuration.Mutators;
-using Stryker.Configuration.Options.Inputs;
+using System.IO.Abstractions;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions.Options.Inputs;
 
-namespace Stryker.Configuration.Options
+namespace Stryker.Abstractions.Options
 {
     public interface IStrykerInputs
     {

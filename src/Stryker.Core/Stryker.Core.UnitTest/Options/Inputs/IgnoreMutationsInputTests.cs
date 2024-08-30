@@ -2,14 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Shouldly;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration.Mutators;
-using Stryker.Configuration.Options.Inputs;
-using Stryker.Configuration.UnitTest.Mutators;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions.Options.Inputs;
+using Stryker.Abstractions.UnitTest.Mutators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Stryker.Configuration;
+using Stryker.Abstractions;
 
-namespace Stryker.Configuration.UnitTest.Options.Inputs
+namespace Stryker.Abstractions.UnitTest.Options.Inputs
 {
     [TestClass]
     public class IgnoreMutationsInputTests : TestBase

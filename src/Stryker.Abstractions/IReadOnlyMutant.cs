@@ -1,12 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration.TestRunners;
+using Stryker.Abstractions.TestRunners;
+using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Configuration;
+namespace Stryker.Abstractions;
 
 /// <summary>
 /// This interface should only contain readonly properties to ensure that others than the mutation test process cannot modify mutants.

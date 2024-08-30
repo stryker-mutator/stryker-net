@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using Stryker.Configuration.Options;
-using Stryker.Configuration.Exceptions;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Exceptions;
 
-namespace Stryker.Configuration.Options.Inputs
+namespace Stryker.Abstractions.Options.Inputs
 {
     public class CoverageAnalysisInput : Input<string>
     {

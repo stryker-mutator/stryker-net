@@ -1,4 +1,4 @@
-namespace Stryker.Configuration
+namespace Stryker.Abstractions
 {
     /// <summary>
     /// Known Stryker exit codes.

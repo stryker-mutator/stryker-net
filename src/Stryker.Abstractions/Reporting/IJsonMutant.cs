@@ -1,4 +1,4 @@
-namespace Stryker.Configuration.Reporting;
+namespace Stryker.Abstractions.Reporting;
 
 public interface IJsonMutant
 {

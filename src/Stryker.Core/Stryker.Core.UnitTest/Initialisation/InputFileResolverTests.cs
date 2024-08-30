@@ -12,15 +12,16 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using NuGet.Frameworks;
 using Shouldly;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration.Initialisation;
-using Stryker.Configuration.Initialisation.Buildalyzer;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Initialisation;
+using Stryker.Abstractions.Initialisation.Buildalyzer;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
 using static NuGet.Frameworks.FrameworkConstants;
+using Stryker.Utilities;
 
-namespace Stryker.Configuration.UnitTest.Initialisation;
+namespace Stryker.Abstractions.UnitTest.Initialisation;
 
 [TestClass]
 public class InputFileResolverTests : BuildAnalyzerTestsBase

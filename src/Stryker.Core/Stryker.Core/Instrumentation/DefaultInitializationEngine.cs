@@ -4,9 +4,9 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Configuration.Helpers;
+using Stryker.Abstractions.Helpers;
 
-namespace Stryker.Configuration.Instrumentation;
+namespace Stryker.Abstractions.Instrumentation;
 
 /// <summary>
 /// Injects initialization to default value for a parameter or a variable at the beginning of a method.

@@ -7,14 +7,14 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Serilog.Events;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration.Logging;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
-using Stryker.Configuration.ToolHelpers;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ToolHelpers;
 using Stryker.DataCollector;
 
-namespace Stryker.Configuration.TestRunners.VsTest;
+namespace Stryker.Abstractions.TestRunners.VsTest;
 
 /// <summary>
 ///     Handles VsTest setup and configuration.

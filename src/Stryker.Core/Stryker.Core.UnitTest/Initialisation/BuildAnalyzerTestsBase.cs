@@ -7,10 +7,10 @@ using Buildalyzer;
 using Buildalyzer.Construction;
 using Buildalyzer.Environment;
 using Moq;
-using Stryker.Configuration.Initialisation.Buildalyzer;
-using Stryker.Configuration.Testing;
+using Stryker.Abstractions.Initialisation.Buildalyzer;
+using Stryker.Abstractions.Testing;
 
-namespace Stryker.Configuration.UnitTest.Initialisation;
+namespace Stryker.Abstractions.UnitTest.Initialisation;
 
 public class BuildAnalyzerTestsBase : TestBase
 {

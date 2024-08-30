@@ -6,14 +6,16 @@ using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration.Initialisation;
-using Stryker.Configuration.Initialisation.Buildalyzer;
-using Stryker.Configuration.Logging;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Initialisation;
+using Stryker.Abstractions.Initialisation.Buildalyzer;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.TestRunners;
 
-namespace Stryker.Configuration.TestRunners.VsTest;
+namespace Stryker.Abstractions.TestRunners.VsTest;
 
 public sealed class VsTestRunner : IDisposable
 {

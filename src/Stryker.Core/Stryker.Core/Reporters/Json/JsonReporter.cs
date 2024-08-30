@@ -2,13 +2,12 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using Spectre.Console;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.ProjectComponents.TestProjects;
-using Stryker.Configuration.Reporting;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Reporting;
 
-namespace Stryker.Configuration.Reporters.Json
+namespace Stryker.Abstractions.Reporters.Json
 {
     public partial class JsonReporter : IReporter
     {

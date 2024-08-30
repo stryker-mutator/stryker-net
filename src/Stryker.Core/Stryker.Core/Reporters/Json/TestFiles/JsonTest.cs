@@ -1,8 +1,8 @@
 
 using System;
-using Stryker.Configuration.Reporting;
+using Stryker.Abstractions.Reporting;
 
-namespace Stryker.Configuration.Reporters.Json.TestFiles
+namespace Stryker.Abstractions.Reporters.Json.TestFiles
 {
     public sealed class JsonTest : IEquatable<IJsonTest>, IJsonTest
     {

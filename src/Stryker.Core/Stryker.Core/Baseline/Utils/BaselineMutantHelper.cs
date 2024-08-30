@@ -3,10 +3,10 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration.Reporters.Json.SourceFiles;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Reporters.Json.SourceFiles;
 
-namespace Stryker.Configuration.Baseline.Utils
+namespace Stryker.Abstractions.Baseline.Utils
 {
     public class BaselineMutantHelper : IBaselineMutantHelper
     {

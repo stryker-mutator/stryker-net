@@ -1,4 +1,4 @@
-namespace Stryker.Configuration.Mutators;
+namespace Stryker.Abstractions.Mutators;
 
 public enum MutationLevel
 {

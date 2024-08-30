@@ -1,8 +1,8 @@
 using Microsoft.CodeAnalysis;
-using Stryker.Configuration.Mutants;
+using Stryker.Abstractions.Mutants;
 using System.Collections.Generic;
 
-namespace Stryker.Configuration.ProjectComponents
+namespace Stryker.Abstractions.ProjectComponents
 {
     public class CsharpFileLeaf : ProjectComponent<SyntaxTree>, IFileLeaf<SyntaxTree>
     {

@@ -3,7 +3,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Stryker.Configuration.Instrumentation;
+namespace Stryker.Abstractions.Instrumentation;
 
 /// <summary>
 /// Injects a mutation controlled by a conditional operator.

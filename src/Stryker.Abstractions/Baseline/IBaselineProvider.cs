@@ -1,6 +1,6 @@
-using Stryker.Configuration.Reporting;
+using Stryker.Abstractions.Reporting;
 
-namespace Stryker.Configuration.Baseline
+namespace Stryker.Abstractions.Baseline
 {
     public interface IBaselineProvider
     {

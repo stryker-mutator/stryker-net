@@ -2,7 +2,7 @@ using System;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Stryker.Configuration.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
 
 internal class AnonymousFunctionExpressionOrchestrator : BaseFunctionOrchestrator<AnonymousFunctionExpressionSyntax>
 {

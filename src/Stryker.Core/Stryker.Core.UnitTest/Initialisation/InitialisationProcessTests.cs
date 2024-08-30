@@ -6,18 +6,19 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Moq;
 using Shouldly;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration.Initialisation;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.ProjectComponents.SourceProjects;
-using Stryker.Configuration.ProjectComponents.TestProjects;
-using Stryker.Configuration.TestRunners;
-using Stryker.Configuration.TestRunners.VsTest;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Initialisation;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.ProjectComponents.SourceProjects;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
+using Stryker.Abstractions.TestRunners;
+using Stryker.Abstractions.TestRunners.VsTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Abstractions.TestRunners;
 
-namespace Stryker.Configuration.UnitTest.Initialisation
+namespace Stryker.Abstractions.UnitTest.Initialisation
 {
     [TestClass]
     public class InitialisationProcessTests : TestBase
@@ -124,7 +125,7 @@ namespace Stryker.Configuration.UnitTest.Initialisation
             var failedTests = new TestGuidsList(failedTest);
             initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(),It.IsAny<ITestRunner>())).Returns(
                 new InitialTestRun(
-                new TestRunResult(Array.Empty<VsTestDescription>() ,ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, Enumerable.Empty<string>(),TimeSpan.Zero), new TimeoutValueCalculator(0) )); // failing test
+                new TestRunResult(Array.Empty<VsTestDescription>(), ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, Enumerable.Empty<string>(),TimeSpan.Zero), new TimeoutValueCalculator(0) )); // failing test
 
             var target = new InitialisationProcess(inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,

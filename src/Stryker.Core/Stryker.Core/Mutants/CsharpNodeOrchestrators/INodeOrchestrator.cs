@@ -1,7 +1,7 @@
 using Microsoft.CodeAnalysis;
-using Stryker.Configuration.Helpers;
+using Stryker.Abstractions.Helpers;
 
-namespace Stryker.Configuration.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
 
 internal interface INodeOrchestrator : ITypeHandler<SyntaxNode>
 {

@@ -3,10 +3,10 @@ using FSharp.Compiler.CodeAnalysis;
 using FSharp.Compiler.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Control;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.ProjectComponents.SourceProjects;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.ProjectComponents.SourceProjects;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,7 +14,7 @@ using System.Linq;
 using static FSharp.Compiler.Syntax.ParsedInput;
 using IFileSystem = System.IO.Abstractions.IFileSystem;
 
-namespace Stryker.Configuration.Initialisation
+namespace Stryker.Abstractions.Initialisation
 {
     internal class FsharpProjectComponentsBuilder : ProjectComponentsBuilder
     {
@@ -31,7 +31,7 @@ namespace Stryker.Configuration.Initialisation
             _logger = logger;
         }
 
-        public override IProjectComponent Build()
+        public override IReadOnlyProjectComponent Build()
         {
             FsharpFolderComposite inputFiles;
             if (_projectInfo.AnalyzerResult.SourceFiles != null && _projectInfo.AnalyzerResult.SourceFiles.Any())
@@ -46,7 +46,7 @@ namespace Stryker.Configuration.Initialisation
         }
 
         // do nothing
-        public override void InjectHelpers(IProjectComponent inputFiles) {}
+        public override void InjectHelpers(IReadOnlyProjectComponent inputFiles) {}
 
         public override Action PostBuildAction() => () => { };
 

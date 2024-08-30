@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
-using Stryker.Configuration.Reporters.Html.RealTime.Events;
-using Stryker.Configuration.Reporters.Json.SourceFiles;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Reporters.Html.RealTime.Events;
+using Stryker.Abstractions.Reporters.Json.SourceFiles;
 
-namespace Stryker.Configuration.Reporters.Html.RealTime;
+namespace Stryker.Abstractions.Reporters.Html.RealTime;
 
 public class RealTimeMutantHandler : IRealTimeMutantHandler
 {

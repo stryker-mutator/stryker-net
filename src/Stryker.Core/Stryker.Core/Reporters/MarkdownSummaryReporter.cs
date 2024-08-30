@@ -5,13 +5,12 @@ using System.IO.Abstractions;
 using System.Linq;
 using Grynwald.MarkdownGenerator;
 using Spectre.Console;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.ProjectComponents.TestProjects;
-using Stryker.Configuration.Reporting;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Reporting;
 
-namespace Stryker.Configuration.Reporters
+namespace Stryker.Abstractions.Reporters
 {
     /// <summary>
     /// Markdown result table reporter.

@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Configuration.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
 
 /// <summary>
 /// This purpose of each implementation of this class is to support one specific C# code construct during the mutation process.

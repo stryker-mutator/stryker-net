@@ -1,7 +1,7 @@
 using ShellProgressBar;
 using System;
 
-namespace Stryker.Configuration.Reporters.Progress
+namespace Stryker.Abstractions.Reporters.Progress
 {
     public interface IProgressBar
     {

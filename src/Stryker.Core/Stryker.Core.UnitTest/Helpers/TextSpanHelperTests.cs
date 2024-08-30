@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.Text;
 using Shouldly;
-using Stryker.Configuration.Helpers;
+using Stryker.Abstractions.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Configuration.UnitTest.Helpers
+namespace Stryker.Abstractions.UnitTest.Helpers
 {
     [TestClass]
     public class TextSpanHelperTests : TestBase

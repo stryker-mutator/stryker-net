@@ -10,19 +10,22 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Moq;
 using Shouldly;
-using Stryker.Configuration.Compiling;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration.MutationTest;
-using Stryker.Configuration.Mutators;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.ProjectComponents.SourceProjects;
-using Stryker.Configuration.ProjectComponents.TestProjects;
-using Stryker.Configuration.TestRunners;
+using Stryker.Abstractions.Compiling;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.MutationTest;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.ProjectComponents.SourceProjects;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
+using Stryker.Abstractions.TestRunners;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.TestRunners;
+using Stryker.Abstractions.Options;
 
-namespace Stryker.Configuration.UnitTest.Compiling;
+namespace Stryker.Abstractions.UnitTest.Compiling;
 
 [TestClass]
 public class CSharpCompilingProcessTests : TestBase

@@ -4,9 +4,9 @@ using System.IO.Abstractions;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Stryker.Configuration.Exceptions;
+using Stryker.Abstractions.Exceptions;
 
-namespace Stryker.Configuration.Options.Inputs
+namespace Stryker.Abstractions.Options.Inputs
 {
     public class MsBuildPathInput : Input<string>
     {

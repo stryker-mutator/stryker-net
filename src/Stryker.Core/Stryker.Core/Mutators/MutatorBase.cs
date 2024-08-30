@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Stryker.Configuration.Options;
-using Stryker.Configuration.Mutants;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Configuration.Mutators;
+namespace Stryker.Abstractions.Mutators;
 
 /// <summary>
 /// Mutators can implement this class to check the type of the node and cast the node to the expected type.

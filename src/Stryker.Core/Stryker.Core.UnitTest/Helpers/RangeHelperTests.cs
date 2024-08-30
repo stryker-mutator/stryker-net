@@ -2,12 +2,12 @@ using System;
 using System.Linq;
 using FSharp.Compiler.Text;
 using Shouldly;
-using Stryker.Configuration.Helpers;
+using Stryker.Abstractions.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Range = FSharp.Compiler.Text.Range;
 
 
-namespace Stryker.Configuration.UnitTest.Helpers
+namespace Stryker.Abstractions.UnitTest.Helpers
 {
     [TestClass]
     public class RangeHelperTests : TestBase

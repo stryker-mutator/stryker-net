@@ -1,12 +1,12 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
-using Stryker.Configuration.Mutators;
+using Stryker.Abstractions.Mutators;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Configuration.UnitTest.Mutators;
+namespace Stryker.Abstractions.UnitTest.Mutators;
 
 [TestClass]
 public class NullCoalescingExpressionMutatorTests : TestBase

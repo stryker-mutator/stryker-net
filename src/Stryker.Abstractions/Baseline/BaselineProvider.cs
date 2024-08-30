@@ -1,4 +1,4 @@
-namespace Stryker.Configuration.Baseline
+namespace Stryker.Abstractions.Baseline
 {
     public enum BaselineProvider
     {

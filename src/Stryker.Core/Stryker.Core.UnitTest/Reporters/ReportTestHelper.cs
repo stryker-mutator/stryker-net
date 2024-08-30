@@ -2,11 +2,11 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration.Mutators;
-using Stryker.Configuration.ProjectComponents;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions.ProjectComponents;
 
-namespace Stryker.Configuration.UnitTest.Reporters
+namespace Stryker.Abstractions.UnitTest.Reporters
 {
     public static class ReportTestHelper
     {

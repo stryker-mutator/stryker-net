@@ -1,10 +1,10 @@
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Stryker.Configuration.MutantFilters
+namespace Stryker.Abstractions.MutantFilters
 {
     public class BroadcastMutantFilter : IMutantFilter
     {

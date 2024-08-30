@@ -1,9 +1,9 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Configuration.Mutants;
+using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Configuration.UnitTest.Mutants
+namespace Stryker.Abstractions.UnitTest.Mutants
 {
     [TestClass]
     public class MutantTests : TestBase

@@ -1,9 +1,9 @@
 using Shouldly;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration.Options.Inputs;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Configuration.UnitTest.Options.Inputs
+namespace Stryker.Abstractions.UnitTest.Options.Inputs
 {
     [TestClass]
     public class ThresholdBreakInputTests : TestBase

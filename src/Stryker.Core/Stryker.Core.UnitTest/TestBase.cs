@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Logging;
-using Stryker.Configuration.Logging;
+using Stryker.Abstractions.Logging;
 
-namespace Stryker.Configuration.UnitTest;
+namespace Stryker.Abstractions.UnitTest;
 public abstract class TestBase
 {
     protected TestBase() =>

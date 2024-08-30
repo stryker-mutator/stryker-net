@@ -4,8 +4,9 @@ using DotNet.Globbing;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
+using Stryker.Utilities;
 
-namespace Stryker.Configuration.UnitTest
+namespace Stryker.Abstractions.UnitTest
 {
     [TestClass]
     public class FilePatternTests : TestBase

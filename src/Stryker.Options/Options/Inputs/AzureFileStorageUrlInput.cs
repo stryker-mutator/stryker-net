@@ -1,8 +1,8 @@
 using System;
-using Stryker.Configuration.Baseline;
-using Stryker.Configuration.Exceptions;
+using Stryker.Abstractions.Baseline;
+using Stryker.Abstractions.Exceptions;
 
-namespace Stryker.Configuration.Options.Inputs
+namespace Stryker.Abstractions.Options.Inputs
 {
     public class AzureFileStorageUrlInput : Input<string>
     {

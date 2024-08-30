@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Configuration.Options;
+using Stryker.Abstractions.Options;
 using Stryker.CLI.Logging;
 
 namespace Stryker.CLI.UnitTest

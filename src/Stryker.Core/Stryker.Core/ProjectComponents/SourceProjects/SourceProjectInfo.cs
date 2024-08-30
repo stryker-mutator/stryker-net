@@ -1,12 +1,12 @@
 using System;
 using System.Collections.Generic;
 using Buildalyzer;
-using Stryker.Configuration.Initialisation;
-using Stryker.Configuration.Initialisation.Buildalyzer;
-using Stryker.Configuration.InjectedHelpers;
-using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Initialisation;
+using Stryker.Abstractions.Initialisation.Buildalyzer;
+using Stryker.Abstractions.InjectedHelpers;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
 
-namespace Stryker.Configuration.ProjectComponents.SourceProjects;
+namespace Stryker.Abstractions.ProjectComponents.SourceProjects;
 
 public class SourceProjectInfo : IProjectAndTests
 {

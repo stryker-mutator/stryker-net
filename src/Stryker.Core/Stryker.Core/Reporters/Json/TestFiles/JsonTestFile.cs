@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
 
-namespace Stryker.Configuration.Reporters.Json.TestFiles
+namespace Stryker.Abstractions.Reporters.Json.TestFiles
 {
     public class JsonTestFile : IJsonTestFile
     {

@@ -1,4 +1,4 @@
-﻿namespace Stryker.Configuration.Mutants
+﻿namespace Stryker.Abstractions.Mutants
 {
     public enum MutantStatus
     {

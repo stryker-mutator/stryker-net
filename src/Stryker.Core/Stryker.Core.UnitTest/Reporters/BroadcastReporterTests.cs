@@ -2,14 +2,14 @@ using System.Collections.ObjectModel;
 using System.IO.Abstractions.TestingHelpers;
 using Moq;
 using Shouldly;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.ProjectComponents.TestProjects;
-using Stryker.Configuration.Reporters;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Reporters;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Stryker.Configuration.Reporting;
+using Stryker.Abstractions.Reporting;
 
-namespace Stryker.Configuration.UnitTest.Reporters
+namespace Stryker.Abstractions.UnitTest.Reporters
 {
     [TestClass]
     public class BroadcastReporterTests : TestBase

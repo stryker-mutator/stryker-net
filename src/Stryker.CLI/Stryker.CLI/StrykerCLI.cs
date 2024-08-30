@@ -6,11 +6,11 @@ using McMaster.Extensions.CommandLineUtils;
 using Microsoft.Extensions.Logging;
 using NuGet.Versioning;
 using Spectre.Console;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Options;
 using Stryker.CLI.Clients;
 using Stryker.CLI.CommandLineConfig;
 using Stryker.CLI.Logging;
-using Stryker.Configuration;
-using Stryker.Configuration;
 
 namespace Stryker.CLI
 {

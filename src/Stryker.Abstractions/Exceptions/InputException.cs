@@ -1,6 +1,6 @@
 using System.Text;
 
-namespace Stryker.Configuration.Exceptions;
+namespace Stryker.Abstractions.Exceptions;
 
 /// <summary>
 /// Represents errors which are related to user input.

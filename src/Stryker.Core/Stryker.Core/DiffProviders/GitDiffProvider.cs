@@ -2,12 +2,13 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using LibGit2Sharp;
-using Stryker.Configuration.Baseline.Providers;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
+using Stryker.Abstractions.Baseline.Providers;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
+using Stryker.Utilities;
 
-namespace Stryker.Configuration.DiffProviders
+namespace Stryker.Abstractions.DiffProviders
 {
     public class GitDiffProvider : IDiffProvider
     {

@@ -7,15 +7,15 @@ using FSharp.Compiler.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using Microsoft.FSharp.Control;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration.Initialisation.Buildalyzer;
-using Stryker.Configuration.Logging;
-using Stryker.Configuration.MutationTest;
-using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Initialisation.Buildalyzer;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.MutationTest;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
 using IFileSystem = System.IO.Abstractions.IFileSystem;
 using ParsedInput = FSharp.Compiler.Syntax.ParsedInput;
 
-namespace Stryker.Configuration.Compiling
+namespace Stryker.Abstractions.Compiling
 {
     public class FsharpCompilingProcess
     {

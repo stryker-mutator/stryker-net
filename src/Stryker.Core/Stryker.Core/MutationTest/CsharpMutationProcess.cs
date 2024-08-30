@@ -4,16 +4,16 @@ using System.IO.Abstractions;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using Stryker.Configuration.Compiling;
-using Stryker.Configuration.Initialisation.Buildalyzer;
-using Stryker.Configuration.Logging;
-using Stryker.Configuration.MutantFilters;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Compiling;
+using Stryker.Abstractions.Initialisation.Buildalyzer;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.MutantFilters;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
 
-namespace Stryker.Configuration.MutationTest
+namespace Stryker.Abstractions.MutationTest
 {
     public class CsharpMutationProcess : IMutationProcess
     {

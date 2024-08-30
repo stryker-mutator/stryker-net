@@ -5,7 +5,7 @@ using System.IO;
 using System.Text;
 using Mono.Cecil;
 
-namespace Stryker.Configuration.Initialisation
+namespace Stryker.Abstractions.Initialisation
 {
     // This (CrossPlatformAssemblyResolver) is a copy of Mono.Cecil's BaseAssemblyResolver with all the conditional compilation removed and changes made to "Resolve"
     // Original: https://github.com/jbevain/cecil/blob/7b8ee049a151204997eecf587c69acc2f67c8405/Mono.Cecil/BaseAssemblyResolver.cs

@@ -4,9 +4,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Configuration.Initialisation.Buildalyzer;
+using Stryker.Abstractions.Initialisation.Buildalyzer;
 
-namespace Stryker.Configuration.UnitTest.ToolHelpers;
+namespace Stryker.Abstractions.UnitTest.ToolHelpers;
 
 [TestClass]
 public class BuildalyzerHelperTests : TestBase

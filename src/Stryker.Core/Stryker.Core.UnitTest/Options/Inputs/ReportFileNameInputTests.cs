@@ -1,10 +1,10 @@
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration.Options.Inputs;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Options.Inputs;
 
-namespace Stryker.Configuration.UnitTest.Options.Inputs
+namespace Stryker.Abstractions.UnitTest.Options.Inputs
 {
     [TestClass]
     public class ReportFileNameInputTests : TestBase

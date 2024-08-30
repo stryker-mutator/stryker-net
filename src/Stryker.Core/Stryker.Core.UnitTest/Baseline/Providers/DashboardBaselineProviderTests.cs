@@ -1,14 +1,14 @@
 using System.Threading.Tasks;
 using Moq;
-using Stryker.Configuration.Baseline.Providers;
-using Stryker.Configuration.Clients;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents.TestProjects;
-using Stryker.Configuration.Reporters.Json;
-using Stryker.Configuration.UnitTest.Reporters;
+using Stryker.Abstractions.Baseline.Providers;
+using Stryker.Abstractions.Clients;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Reporters.Json;
+using Stryker.Abstractions.UnitTest.Reporters;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Configuration.UnitTest.Baseline.Providers
+namespace Stryker.Abstractions.UnitTest.Baseline.Providers
 {
     [TestClass]
     public class DashboardBaselineProviderTests : TestBase

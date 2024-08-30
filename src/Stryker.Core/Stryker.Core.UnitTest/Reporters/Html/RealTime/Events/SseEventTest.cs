@@ -1,7 +1,7 @@
-using Stryker.Configuration.Reporters.Html.RealTime.Events;
+using Stryker.Abstractions.Reporters.Html.RealTime.Events;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Configuration.UnitTest.Reporters.Html.RealTime.Events;
+namespace Stryker.Abstractions.UnitTest.Reporters.Html.RealTime.Events;
 
 [TestClass]
 public class SseEventTest : TestBase

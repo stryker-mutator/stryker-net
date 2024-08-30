@@ -3,10 +3,10 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using Stryker.Configuration.Logging;
-using Stryker.Configuration.Testing;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Testing;
 
-namespace Stryker.Configuration.ToolHelpers;
+namespace Stryker.Abstractions.ToolHelpers;
 
 public class MsBuildHelper
 {

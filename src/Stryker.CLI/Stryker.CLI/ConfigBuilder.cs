@@ -1,8 +1,8 @@
 using System.IO;
 using McMaster.Extensions.CommandLineUtils;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Options;
 using Stryker.CLI.CommandLineConfig;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration;
 
 namespace Stryker.CLI
 {

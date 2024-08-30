@@ -1,7 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Stryker.Configuration.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
 internal class ConditionalExpressionOrchestrator :MemberAccessExpressionOrchestrator<ConditionalAccessExpressionSyntax>
 {
     

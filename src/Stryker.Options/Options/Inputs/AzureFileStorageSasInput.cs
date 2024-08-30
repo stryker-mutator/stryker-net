@@ -1,9 +1,9 @@
 using System.Linq;
 using System.Web;
-using Stryker.Configuration.Baseline;
-using Stryker.Configuration.Exceptions;
+using Stryker.Abstractions.Baseline;
+using Stryker.Abstractions.Exceptions;
 
-namespace Stryker.Configuration.Options.Inputs
+namespace Stryker.Abstractions.Options.Inputs
 {
     public class AzureFileStorageSasInput : Input<string>
     {

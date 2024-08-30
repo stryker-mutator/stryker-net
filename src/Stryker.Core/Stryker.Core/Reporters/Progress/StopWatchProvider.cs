@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 
-namespace Stryker.Configuration.Reporters.Progress
+namespace Stryker.Abstractions.Reporters.Progress
 {
     public interface IStopWatchProvider
     {

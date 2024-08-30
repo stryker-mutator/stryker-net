@@ -1,4 +1,4 @@
-namespace Stryker.Configuration.Exceptions;
+namespace Stryker.Abstractions.Exceptions;
 
 /// <summary>
 /// Represents errors which are related to roslyn compilation errors that we cannot fix, 

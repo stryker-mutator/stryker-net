@@ -1,13 +1,15 @@
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Configuration;
-using Stryker.Configuration.Baseline;
-using Stryker.Configuration.Options;
-using Stryker.Configuration.Reporting;
-using Stryker.Configuration.Mutators;
-using Stryker.Configuration.Options.Inputs;
+using Stryker.Abstractions.Baseline;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Reporting;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions.Options.Inputs;
+using Stryker.Utilities;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporters;
 
-namespace Stryker.Configuration;
+namespace Stryker.Abstractions;
 
 public class StrykerOptions : IStrykerOptions
 {
@@ -118,7 +120,7 @@ public class StrykerOptions : IStrykerOptions
     /// <summary>
     /// The reports that should be activated when stryker is done testing.
     /// </summary>
-    public IEnumerable<IReporter> Reporters { get; init; } = [];
+    public IEnumerable<Reporter> Reporters { get; init; } = [];
 
     /// <summary>
     /// When true, the baseline feature should be enabled.
@@ -128,7 +130,7 @@ public class StrykerOptions : IStrykerOptions
     /// <summary>
     /// When the baseline feature is enabled, this selects the source of the baseline.
     /// </summary>
-    public IBaselineProvider BaselineProvider { get; init; }
+    public BaselineProvider BaselineProvider { get; init; }
 
     /// <summary>
     /// The url to connect to the Azure File Storage API
@@ -185,7 +187,7 @@ public class StrykerOptions : IStrykerOptions
     /// <summary>
     /// Files that should be mutated or ignored. Uses GLOB as pattern matching. Also parts of files can be ignored by format {10..21}
     /// </summary>
-    public IEnumerable<FilePattern> Mutate { get; init; } = [FilePattern.Parse("**/*")];
+    public IEnumerable<IFilePattern> Mutate { get; init; } = [FilePattern.Parse("**/*")];
 
     /// <summary>
     /// Method call mutations that should not be tested. The implementation of the method may still be mutated and tested.

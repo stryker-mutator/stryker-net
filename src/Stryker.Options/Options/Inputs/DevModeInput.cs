@@ -1,4 +1,4 @@
-namespace Stryker.Configuration.Options.Inputs
+namespace Stryker.Abstractions.Options.Inputs
 {
     public class DevModeInput : Input<bool?>
     {

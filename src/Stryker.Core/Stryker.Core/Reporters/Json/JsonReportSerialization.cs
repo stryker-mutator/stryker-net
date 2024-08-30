@@ -3,7 +3,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
-namespace Stryker.Configuration.Reporters.Json
+namespace Stryker.Abstractions.Reporters.Json
 {
     internal static class JsonReportSerialization
     {

@@ -5,16 +5,17 @@ using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Moq;
 using Shouldly;
-using Stryker.Configuration.CoverageAnalysis;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration.Initialisation;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
-using Stryker.Configuration.TestRunners;
-using Stryker.Configuration.TestRunners.VsTest;
+using Stryker.Abstractions.CoverageAnalysis;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Initialisation;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
+using Stryker.Abstractions.TestRunners;
+using Stryker.Abstractions.TestRunners.VsTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Abstractions.Options;
 
-namespace Stryker.Configuration.UnitTest.TestRunners
+namespace Stryker.Abstractions.UnitTest.TestRunners
 {
     /// <summary>
     /// This class hosts the VsTestRunner related tests. The design of VsTest implies the creation of many mocking objects, so the tests may be hard to read.

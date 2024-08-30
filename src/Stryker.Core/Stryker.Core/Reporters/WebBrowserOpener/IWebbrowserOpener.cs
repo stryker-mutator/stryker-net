@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace Stryker.Configuration.Reporters.WebBrowserOpener
+namespace Stryker.Abstractions.Reporters.WebBrowserOpener
 {
     public interface IWebbrowserOpener
     {

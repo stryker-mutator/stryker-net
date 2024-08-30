@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Configuration.Helpers;
+using Stryker.Abstractions.Helpers;
+using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Configuration.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
 
 /// <summary>
 /// Orchestrate mutations for expressions (and sub expressions).

@@ -4,9 +4,9 @@ using System.IO.Abstractions;
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration;
-using Stryker.Configuration.Options.Inputs;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Options.Inputs;
 
 namespace Stryker.CLI.CommandLineConfig
 {

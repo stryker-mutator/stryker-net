@@ -1,6 +1,6 @@
-using Stryker.Configuration.Exceptions;
+using Stryker.Abstractions.Exceptions;
 
-namespace Stryker.Configuration.Options.Inputs
+namespace Stryker.Abstractions.Options.Inputs
 {
     public class ModuleNameInput : Input<string>
     {

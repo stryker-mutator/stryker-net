@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using FSharp.Compiler.Syntax;
 using Microsoft.FSharp.Collections;
 
-namespace Stryker.Configuration.Mutants.FsharpOrchestrators
+namespace Stryker.Abstractions.Mutants.FsharpOrchestrators
 {
     public class LetOrUseOrchestrator : IFsharpTypeHandler<SynExpr>
     {

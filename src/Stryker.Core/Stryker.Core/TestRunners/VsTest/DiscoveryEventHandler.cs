@@ -4,7 +4,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using System.Collections.Generic;
 using System.Threading;
 
-namespace Stryker.Configuration.TestRunners.VsTest
+namespace Stryker.Abstractions.TestRunners.VsTest
 {
     public class DiscoveryEventHandler : ITestDiscoveryEventsHandler
     {

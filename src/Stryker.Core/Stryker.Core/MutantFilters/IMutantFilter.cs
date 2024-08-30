@@ -1,9 +1,8 @@
 using System.Collections.Generic;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Configuration.MutantFilters
+namespace Stryker.Abstractions.MutantFilters
 {
     /// <summary>
     /// Allows to filter a set of mutants before the mutants are tested.

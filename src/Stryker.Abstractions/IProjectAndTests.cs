@@ -1,11 +1,10 @@
-using System.Collections.Generic;
-using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Abstractions.ProjectComponents;
 
-namespace Stryker.Configuration.Initialisation;
+namespace Stryker.Abstractions.Initialisation;
 
 public interface IProjectAndTests
 {
-    TestProjectsInfo TestProjectsInfo { get;}
+    ITestProjectsInfo TestProjectsInfo { get;}
 
     string HelperNamespace { get; }
 

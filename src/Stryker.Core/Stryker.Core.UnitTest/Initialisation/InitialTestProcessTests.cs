@@ -4,14 +4,15 @@ using System.Linq;
 using System.Threading;
 using Moq;
 using Shouldly;
-using Stryker.Configuration.Initialisation;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
-using Stryker.Configuration.TestRunners;
-using Stryker.Configuration.TestRunners.VsTest;
+using Stryker.Abstractions.Initialisation;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
+using Stryker.Abstractions.TestRunners;
+using Stryker.Abstractions.TestRunners.VsTest;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Abstractions.TestRunners;
 
-namespace Stryker.Configuration.UnitTest.Initialisation
+namespace Stryker.Abstractions.UnitTest.Initialisation
 {
     [TestClass]
     public class InitialTestProcessTests : TestBase

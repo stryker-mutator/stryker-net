@@ -1,16 +1,16 @@
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.Reporters;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporters;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Configuration.UnitTest.Reporters
+namespace Stryker.Abstractions.UnitTest.Reporters
 {
     [TestClass]
     public class StatusReporterTests : TestBase

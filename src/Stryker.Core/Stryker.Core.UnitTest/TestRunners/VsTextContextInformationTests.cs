@@ -13,14 +13,15 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Moq;
 using Serilog.Events;
 using Shouldly;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.ProjectComponents.TestProjects;
-using Stryker.Configuration.TestRunners.VsTest;
-using Stryker.Configuration.ToolHelpers;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
+using Stryker.Abstractions.TestRunners.VsTest;
+using Stryker.Abstractions.ToolHelpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Utilities;
 
-namespace Stryker.Configuration.UnitTest.TestRunners
+namespace Stryker.Abstractions.UnitTest.TestRunners
 {
     [TestClass]
     public class VsTextContextInformationTests: TestBase

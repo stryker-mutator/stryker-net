@@ -1,42 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration.Options;
-using Stryker.Core.Mutants;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options;
 
-namespace Stryker.Configuration.ProjectComponents
+namespace Stryker.Abstractions.ProjectComponents
 {
-    public delegate void Display(IReadOnlyProjectComponent current);
-
-    public interface IReadOnlyProjectComponent
-    {
-        string FullPath { get; }
-        IEnumerable<Mutant> Mutants { get; }
-        IReadOnlyFolderComposite Parent { get; }
-        string RelativePath { get; set; }
-        public Display DisplayFile { get; set; }
-        public Display DisplayFolder { get; set; }
-        IEnumerable<IReadOnlyMutant> TotalMutants();
-        IEnumerable<IReadOnlyMutant> ValidMutants();
-        IEnumerable<IReadOnlyMutant> UndetectedMutants();
-        IEnumerable<IReadOnlyMutant> DetectedMutants();
-        IEnumerable<IReadOnlyMutant> InvalidMutants();
-        IEnumerable<IReadOnlyMutant> IgnoredMutants();
-        IEnumerable<IReadOnlyMutant> NotRunMutants();
-
-        Health CheckHealth(IThresholds threshold);
-        IEnumerable<IFileLeaf> GetAllFiles();
-        void Display();
-        double GetMutationScore();
-    }
-
-    public interface IProjectComponent : IReadOnlyProjectComponent
-    {
-        new string FullPath { get; set; }
-        new IEnumerable<Mutant> Mutants { get; set; }
-        new IReadOnlyFolderComposite Parent { get; set; }
-        new string RelativePath { get; set; }
-    }
 
     public abstract class ProjectComponent : IProjectComponent
     {
@@ -52,7 +20,7 @@ namespace Stryker.Configuration.ProjectComponents
 
         public Display DisplayFolder { get; set; }
 
-        public virtual IEnumerable<Mutant> Mutants { get; set; }
+        public virtual IEnumerable<IMutant> Mutants { get; set; }
 
         public abstract IEnumerable<IFileLeaf> GetAllFiles();
 

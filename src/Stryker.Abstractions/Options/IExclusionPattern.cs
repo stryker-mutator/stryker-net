@@ -1,7 +1,7 @@
 
 using DotNet.Globbing;
 
-namespace Stryker.Configuration.Options;
+namespace Stryker.Abstractions.Options;
 
 public interface IExclusionPattern
 {

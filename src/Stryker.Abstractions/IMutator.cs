@@ -1,8 +1,8 @@
 using Microsoft.CodeAnalysis;
-using Stryker.Configuration.Options;
-using Stryker.Configuration.Mutants;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Configuration.Mutators;
+namespace Stryker.Abstractions.Mutators;
 
 public interface IMutator
 {

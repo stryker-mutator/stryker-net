@@ -1,6 +1,6 @@
 using LibGit2Sharp;
 
-namespace Stryker.Configuration.Baseline.Providers
+namespace Stryker.Abstractions.Baseline.Providers
 {
     public interface IGitInfoProvider
     {

@@ -2,9 +2,9 @@ using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Configuration.InjectedHelpers;
+using Stryker.Abstractions.InjectedHelpers;
 
-namespace Stryker.Configuration.Instrumentation
+namespace Stryker.Abstractions.Instrumentation
 {
     /// <summary>
     /// Injects static tracking logic in static fields/properties' initializers.

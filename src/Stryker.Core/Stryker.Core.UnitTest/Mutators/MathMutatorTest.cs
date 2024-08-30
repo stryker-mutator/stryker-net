@@ -5,10 +5,10 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
-using Stryker.Configuration.Mutators;
+using Stryker.Abstractions.Mutators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Configuration.UnitTest.Mutators
+namespace Stryker.Abstractions.UnitTest.Mutators
 {
     [TestClass]
     public class MathMutatorTest : TestBase

@@ -1,6 +1,6 @@
 using Microsoft.Extensions.Logging;
 
-namespace Stryker.Configuration.Logging
+namespace Stryker.Abstractions.Logging
 {
     public static class ApplicationLogging
     {

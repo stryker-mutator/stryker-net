@@ -8,11 +8,12 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
-using Stryker.Configuration.Initialisation.Buildalyzer;
-using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Initialisation.Buildalyzer;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Utilities;
 
-namespace Stryker.Configuration.UnitTest.ProjectComponents.TestProjects
+namespace Stryker.Abstractions.UnitTest.ProjectComponents.TestProjects
 {
     [TestClass]
     public class TestProjectsInfoTests : TestBase

@@ -1,8 +1,8 @@
 using FSharp.Compiler.Syntax;
-using Stryker.Configuration.Mutants;
+using Stryker.Abstractions.Mutants;
 using System.Collections.Generic;
 
-namespace Stryker.Configuration.ProjectComponents
+namespace Stryker.Abstractions.ProjectComponents
 {
     public class FsharpFileLeaf : ProjectComponent<ParsedInput>, IFileLeaf<ParsedInput>
     {

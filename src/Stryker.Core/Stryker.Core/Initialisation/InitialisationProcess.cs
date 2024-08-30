@@ -3,15 +3,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using Stryker.Configuration.TestRunners;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration.Initialisation.Buildalyzer;
-using Stryker.Configuration.Logging;
-using Stryker.Configuration.MutationTest;
-using Stryker.Configuration.ProjectComponents.SourceProjects;
-using Stryker.Configuration;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Initialisation.Buildalyzer;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.MutationTest;
+using Stryker.Abstractions.ProjectComponents.SourceProjects;
+using Stryker.Abstractions.TestRunners;
 
-namespace Stryker.Configuration.Initialisation;
+namespace Stryker.Abstractions.Initialisation;
 // For mocking purposes
 
 public interface IInitialisationProcess

@@ -2,13 +2,13 @@ using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
-using Stryker.Configuration.Logging;
-using Stryker.Configuration.MutationTest;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents.TestProjects;
-using Stryker.Configuration.Reporting;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.MutationTest;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Reporting;
 
-namespace Stryker.Configuration.Initialisation
+namespace Stryker.Abstractions.Initialisation
 {
     public interface IProjectMutator
     {

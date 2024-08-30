@@ -1,9 +1,10 @@
 using Shouldly;
-using Stryker.Configuration;
-using Stryker.Configuration.Options.Inputs;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Abstractions.Options;
 
-namespace Stryker.Configuration.UnitTest.Options.Inputs
+namespace Stryker.Abstractions.UnitTest.Options.Inputs
 {
     [TestClass]
     public class DisableMixMutantsInputTests : TestBase

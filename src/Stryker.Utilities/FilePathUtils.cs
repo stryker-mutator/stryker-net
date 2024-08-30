@@ -1,4 +1,4 @@
-namespace Stryker.Configuration
+namespace Stryker.Utilities
 {
     public static class FilePathUtils
     {

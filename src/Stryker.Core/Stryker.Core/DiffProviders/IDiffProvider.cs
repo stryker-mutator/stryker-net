@@ -1,6 +1,6 @@
-using Stryker.Configuration.Mutants;
+using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Configuration.DiffProviders
+namespace Stryker.Abstractions.DiffProviders
 {
     public interface IDiffProvider
     {

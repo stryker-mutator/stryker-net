@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using FSharp.Compiler.Text;
 
-namespace Stryker.Configuration.Helpers;
+namespace Stryker.Abstractions.Helpers;
 
 public static class RangeHelper
 {

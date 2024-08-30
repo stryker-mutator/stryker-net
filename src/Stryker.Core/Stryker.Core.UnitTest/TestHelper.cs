@@ -3,7 +3,7 @@ using System.IO;
 using Buildalyzer;
 using Moq;
 
-namespace Stryker.Configuration.UnitTest;
+namespace Stryker.Abstractions.UnitTest;
 
 public static class TestHelper
 {

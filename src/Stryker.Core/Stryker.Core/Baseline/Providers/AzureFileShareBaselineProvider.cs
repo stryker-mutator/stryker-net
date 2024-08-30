@@ -5,11 +5,11 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Storage.Files.Shares;
 using Microsoft.Extensions.Logging;
-using Stryker.Configuration.Logging;
-using Stryker.Configuration;
-using Stryker.Configuration.Reporters.Json;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Reporters.Json;
 
-namespace Stryker.Configuration.Baseline.Providers
+namespace Stryker.Abstractions.Baseline.Providers
 {
     public class AzureFileShareBaselineProvider : IBaselineProvider
     {

@@ -1,4 +1,4 @@
-namespace Stryker.Configuration;
+namespace Stryker.Abstractions;
 
 /// <summary> Enumeration for the different kinds of linq expressions </summary>
 public enum LinqExpression

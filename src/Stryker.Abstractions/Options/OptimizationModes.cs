@@ -1,6 +1,6 @@
 using System;
 
-namespace Stryker.Configuration.Options
+namespace Stryker.Abstractions.Options
 {
     // Optimization options 
     [Flags]

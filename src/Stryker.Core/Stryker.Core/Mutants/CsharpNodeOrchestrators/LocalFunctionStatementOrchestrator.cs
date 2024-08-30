@@ -1,9 +1,9 @@
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Configuration.Helpers;
+using Stryker.Abstractions.Helpers;
 
-namespace Stryker.Configuration.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
 
 internal class LocalFunctionStatementOrchestrator : BaseFunctionOrchestrator<LocalFunctionStatementSyntax>
 {

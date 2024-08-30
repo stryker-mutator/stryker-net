@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
-using Stryker.Configuration.Logging;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.Reporters.Json.SourceFiles;
-using Stryker.Configuration.Reporting;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporters.Json.SourceFiles;
+using Stryker.Abstractions.Reporting;
 
 namespace Stryker.Reporters.Json.SourceFiles
 {

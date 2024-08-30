@@ -3,9 +3,9 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Configuration.Mutants;
+using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Configuration.Helpers
+namespace Stryker.Abstractions.Helpers
 {
     internal static class RoslynHelper
     {

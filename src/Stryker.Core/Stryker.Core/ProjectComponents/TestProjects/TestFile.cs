@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 
-namespace Stryker.Configuration.ProjectComponents.TestProjects
+namespace Stryker.Abstractions.ProjectComponents.TestProjects
 {
-    public sealed class TestFile : IEquatable<TestFile>
+    public sealed class TestFile : IEquatable<TestFile>, ITestFile
     {
         public SyntaxTree SyntaxTree { get; init; }
         public string FilePath { get; init; }
@@ -27,7 +27,7 @@ namespace Stryker.Configuration.ProjectComponents.TestProjects
             });
         }
 
-        public bool Equals(TestFile other) => other!=null && other.FilePath.Equals(FilePath) && other.Source.Equals(Source);
+        public bool Equals(TestFile other) => other != null && other.FilePath.Equals(FilePath) && other.Source.Equals(Source);
 
         public override bool Equals(object obj) => obj is TestFile file && Equals(file);
 

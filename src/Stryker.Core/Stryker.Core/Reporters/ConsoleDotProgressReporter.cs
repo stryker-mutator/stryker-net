@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using Spectre.Console;
-using Stryker.Configuration.Reporting;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Reporting;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
 
-namespace Stryker.Configuration.Reporters
+namespace Stryker.Abstractions.Reporters
 {
     /// <summary>
     /// The default reporter, prints a simple progress by printing dots

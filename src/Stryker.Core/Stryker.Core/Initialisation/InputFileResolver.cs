@@ -9,15 +9,15 @@ using System.Threading.Tasks;
 using Buildalyzer;
 using Buildalyzer.Environment;
 using Microsoft.Extensions.Logging;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration.Initialisation.Buildalyzer;
-using Stryker.Configuration.Logging;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents.SourceProjects;
-using Stryker.Configuration.ProjectComponents.TestProjects;
-using Stryker.Configuration.Testing;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Initialisation.Buildalyzer;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents.SourceProjects;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Testing;
 
-namespace Stryker.Configuration.Initialisation;
+namespace Stryker.Abstractions.Initialisation;
 
 public interface IInputFileResolver
 {

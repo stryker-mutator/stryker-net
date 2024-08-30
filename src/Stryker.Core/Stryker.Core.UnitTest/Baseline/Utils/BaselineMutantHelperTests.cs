@@ -1,11 +1,11 @@
 using System.IO;
 using Shouldly;
-using Stryker.Configuration.Baseline.Utils;
-using Stryker.Configuration.Reporters.Json;
-using Stryker.Configuration.Reporters.Json.SourceFiles;
+using Stryker.Abstractions.Baseline.Utils;
+using Stryker.Abstractions.Reporters.Json;
+using Stryker.Abstractions.Reporters.Json.SourceFiles;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Configuration.UnitTest.Baseline.Utils
+namespace Stryker.Abstractions.UnitTest.Baseline.Utils
 {
     [TestClass]
     public class BaselineMutantHelperTests : TestBase

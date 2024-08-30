@@ -4,17 +4,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using Stryker.Configuration.Baseline;
-using Stryker.Configuration.Baseline.Providers;
-using Stryker.Configuration.Baseline.Utils;
-using Stryker.Configuration.Logging;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.Reporters.Json;
-using Stryker.Configuration.Reporting;
-using Stryker.Configuration;
+using Stryker.Abstractions.Baseline;
+using Stryker.Abstractions.Baseline.Providers;
+using Stryker.Abstractions.Baseline.Utils;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporters.Json;
+using Stryker.Abstractions.Reporting;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Mutants;
+using Stryker.Utilities;
 
-namespace Stryker.Configuration.MutantFilters
+namespace Stryker.Abstractions.MutantFilters
 {
     public class BaselineMutantFilter : IMutantFilter
     {

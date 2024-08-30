@@ -1,7 +1,7 @@
 ﻿using Microsoft.CodeAnalysis;
-using Stryker.Configuration.Mutators;
+using Stryker.Abstractions.Mutators;
 
-namespace Stryker.Configuration.Mutants
+namespace Stryker.Abstractions.Mutants
 {
     /// <summary>
     /// Represents a single mutation on code level

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
-using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Abstractions.ProjectComponents.TestProjects;
 
-namespace Stryker.Configuration.Reporting;
+namespace Stryker.Abstractions.Reporting;
 
 public interface IJsonTestFile
 {

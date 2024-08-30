@@ -1,6 +1,6 @@
-using Stryker.Configuration;
+using Stryker.Abstractions;
 
-namespace Stryker.Configuration
+namespace Stryker.Abstractions
 {
     public class StrykerRunResult
     {

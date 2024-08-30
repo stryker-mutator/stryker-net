@@ -9,13 +9,13 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
-using Stryker.Configuration.Initialisation.Buildalyzer;
-using Stryker.Configuration.MutantFilters.Extensions;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents;
-using Stryker.Configuration.ProjectComponents.SourceProjects;
+using Stryker.Abstractions.Initialisation.Buildalyzer;
+using Stryker.Abstractions.MutantFilters.Extensions;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.ProjectComponents.SourceProjects;
 
-namespace Stryker.Configuration.Initialisation
+namespace Stryker.Abstractions.Initialisation
 {
     public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
     {
@@ -32,7 +32,7 @@ namespace Stryker.Configuration.Initialisation
             _logger = logger;
         }
 
-        public override IProjectComponent Build()
+        public override IReadOnlyProjectComponent Build()
         {
             CsharpFolderComposite inputFiles;
             if (_projectInfo.AnalyzerResult.SourceFiles != null && _projectInfo.AnalyzerResult.SourceFiles.Any())
@@ -63,7 +63,7 @@ namespace Stryker.Configuration.Initialisation
             return inputFiles;
         }
 
-        public override void InjectHelpers(IProjectComponent inputFiles)
+        public override void InjectHelpers(IReadOnlyProjectComponent inputFiles)
             => InjectMutantHelpers((CsharpFolderComposite)inputFiles, BuildCsharpParseOptions(_projectInfo.AnalyzerResult, _options));
 
         private CsharpFolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult, StrykerOptions options)

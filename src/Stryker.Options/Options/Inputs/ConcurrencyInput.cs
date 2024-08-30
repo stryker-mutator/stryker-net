@@ -1,9 +1,9 @@
 using System;
 using Microsoft.Extensions.Logging;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration.Logging;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Logging;
 
-namespace Stryker.Configuration.Options.Inputs
+namespace Stryker.Abstractions.Options.Inputs
 {
     public class ConcurrencyInput : Input<int?>
     {

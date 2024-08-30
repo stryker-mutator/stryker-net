@@ -4,9 +4,9 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Configuration.Mutators;
+using Stryker.Abstractions.Mutators;
 
-namespace Stryker.Configuration.UnitTest.Mutators;
+namespace Stryker.Abstractions.UnitTest.Mutators;
 
 [TestClass]
 public class StringMethodMutatorTests : TestBase

@@ -2,9 +2,9 @@ using System;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Configuration;
+using Stryker.Abstractions;
 
-namespace Stryker.Configuration.Initialisation.Buildalyzer
+namespace Stryker.Abstractions.Initialisation.Buildalyzer
 {
     public static class IAnalyzerResultCSharpExtensions
     {

@@ -4,7 +4,7 @@ using Microsoft.FSharp.Collections;
 using static FSharp.Compiler.Syntax.SynConst;
 using static FSharp.Compiler.Syntax.SynPat;
 
-namespace Stryker.Configuration.Mutants.FsharpOrchestrators
+namespace Stryker.Abstractions.Mutants.FsharpOrchestrators
 {
     //this orchestrtor also places a mutation. This is to proof the code works
     //the mutation should come from a mutator, however mutators are currently not implemented

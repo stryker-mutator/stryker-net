@@ -5,9 +5,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Threading.Tasks;
-using Stryker.Configuration.Reporters.Html.RealTime.Events;
+using Stryker.Abstractions.Reporters.Html.RealTime.Events;
 
-namespace Stryker.Configuration.Reporters.Html.RealTime;
+namespace Stryker.Abstractions.Reporters.Html.RealTime;
 
 public class SseServer : ISseServer
 {

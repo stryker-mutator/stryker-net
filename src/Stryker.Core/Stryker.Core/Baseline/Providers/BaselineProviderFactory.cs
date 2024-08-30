@@ -1,7 +1,7 @@
-using Stryker.Configuration.Baseline;
-using Stryker.Configuration;
+using Stryker.Abstractions.Baseline;
+using Stryker.Abstractions;
 
-namespace Stryker.Configuration.Baseline.Providers
+namespace Stryker.Abstractions.Baseline.Providers
 {
     public static class BaselineProviderFactory
     {

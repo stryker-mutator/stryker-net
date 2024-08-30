@@ -4,10 +4,11 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Configuration.InjectedHelpers;
-using Stryker.Configuration.Instrumentation;
+using Stryker.Abstractions.InjectedHelpers;
+using Stryker.Abstractions.Instrumentation;
+using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Configuration.Mutants;
+namespace Stryker.Abstractions.Mutants;
 
 /// <summary>
 /// Implements multiple (reversible) patterns for injecting code in the mutated assembly

@@ -12,16 +12,16 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Configuration.Compiling;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration.InjectedHelpers;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration.MutationTest;
-using Stryker.Configuration.Mutators;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents.SourceProjects;
+using Stryker.Abstractions.Compiling;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.InjectedHelpers;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.MutationTest;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents.SourceProjects;
 
-namespace Stryker.Configuration.UnitTest.Compiling
+namespace Stryker.Abstractions.UnitTest.Compiling
 {
     [TestClass]
     public class CSharpRollbackProcessTests : TestBase

@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Configuration.Baseline;
-using Stryker.Configuration.Exceptions;
-using Stryker.Configuration.Reporters;
+using Stryker.Abstractions.Baseline;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Reporters;
 
-namespace Stryker.Configuration.Options.Inputs
+namespace Stryker.Abstractions.Options.Inputs
 {
     public class DashboardApiKeyInput : Input<string>
     {

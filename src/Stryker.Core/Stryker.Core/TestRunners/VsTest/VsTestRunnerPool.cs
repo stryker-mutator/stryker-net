@@ -8,14 +8,14 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Stryker.Configuration.Initialisation;
-using Stryker.Configuration.Logging;
-using Stryker.Configuration.Mutants;
-using Stryker.Configuration;
-using Stryker.Configuration.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Initialisation;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.TestRunners;
 using Stryker.DataCollector;
 
-namespace Stryker.Configuration.TestRunners.VsTest
+namespace Stryker.Abstractions.TestRunners.VsTest
 {
     public sealed class VsTestRunnerPool : ITestRunner
     {

@@ -1,8 +1,9 @@
 using System;
 using Shouldly;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Abstractions.Options;
 
-namespace Stryker.Configuration.UnitTest
+namespace Stryker.Abstractions.UnitTest
 {
     [TestClass]
     public class ExclusionPatternTests : TestBase

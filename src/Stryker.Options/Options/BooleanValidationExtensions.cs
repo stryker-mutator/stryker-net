@@ -1,4 +1,4 @@
-namespace Stryker.Configuration.Options
+namespace Stryker.Abstractions.Options
 {
     public static class BooleanValidationExtensions
     {

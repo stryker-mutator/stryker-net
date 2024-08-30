@@ -1,15 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Configuration.Mutants;
+using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Configuration.ProjectComponents
+namespace Stryker.Abstractions.ProjectComponents
 {
-    public interface IReadOnlyFolderComposite : IProjectComponent
+    public interface IProjectComponent : IReadOnlyProjectComponent
     {
-        IEnumerable<IProjectComponent> Children { get; }
-        void Add(IProjectComponent child);
-        void AddRange(IEnumerable<IProjectComponent> children);
+        new string FullPath { get; set; }
+        new IEnumerable<IMutant> Mutants { get; set; }
+        new IReadOnlyFolderComposite Parent { get; set; }
+        new string RelativePath { get; set; }
     }
 
     public class FolderComposite<T> : ProjectComponent<T>, IReadOnlyFolderComposite
@@ -19,7 +20,7 @@ namespace Stryker.Configuration.ProjectComponents
 
         public IEnumerable<IProjectComponent> Children => _children;
 
-        public override IEnumerable<Mutant> Mutants
+        public override IEnumerable<IMutant> Mutants
         {
             get => Children.SelectMany(x => x.Mutants);
             set => throw new NotSupportedException("Folders do not contain mutants.");

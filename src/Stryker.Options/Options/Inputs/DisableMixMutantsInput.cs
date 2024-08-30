@@ -1,6 +1,6 @@
-using Stryker.Configuration.Options;
+using Stryker.Abstractions.Options;
 
-namespace Stryker.Configuration.Options.Inputs
+namespace Stryker.Abstractions.Options.Inputs
 {
     public class DisableMixMutantsInput : Input<bool?>
     {

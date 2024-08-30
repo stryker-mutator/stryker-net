@@ -1,4 +1,4 @@
-namespace Stryker.Configuration.Reporters
+namespace Stryker.Abstractions.Reporters
 {
     public enum Reporter
     {

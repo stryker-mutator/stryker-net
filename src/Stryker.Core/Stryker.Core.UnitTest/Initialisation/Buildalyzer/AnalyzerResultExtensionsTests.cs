@@ -3,10 +3,10 @@ using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Moq;
 using Shouldly;
-using Stryker.Configuration.Initialisation.Buildalyzer;
+using Stryker.Abstractions.Initialisation.Buildalyzer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Configuration.UnitTest.Initialisation.Buildalyzer;
+namespace Stryker.Abstractions.UnitTest.Initialisation.Buildalyzer;
 
 [TestClass]
 public class AnalyzerResultExtensionsTests
