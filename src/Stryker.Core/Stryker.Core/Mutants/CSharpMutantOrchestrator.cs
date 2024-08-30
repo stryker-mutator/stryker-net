@@ -89,11 +89,12 @@ public class CSharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new SyntaxNodeOrchestrator()
     ];
 
-    private static List<IMutator> DefaultMutatorList() =>
+    private List<IMutator> DefaultMutatorList() =>
     [
         new BinaryExpressionMutator(),
         new BlockMutator(),
         new BooleanMutator(),
+        new DefaultParameterMutator(this, Options),
         new ConditionalExpressionMutator(),
         new AssignmentExpressionMutator(),
         new PrefixUnaryMutator(),
