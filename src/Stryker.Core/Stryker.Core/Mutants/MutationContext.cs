@@ -18,7 +18,7 @@ internal class MutationContext
 {
     // main orchestrator
     // the orchestrator is used to perform actual mutation injections
-    private readonly CsharpMutantOrchestrator _mainOrchestrator;
+    private readonly CSharpMutantOrchestrator _mainOrchestrator;
     // pending mutation stacks. An entry is pushed in the stack when entering a member or function and popping it when leaving
     private readonly MutationStore _mutation;
 
@@ -26,7 +26,7 @@ internal class MutationContext
     /// Mutation context must be created once when starting a mutation process.
     /// </summary>
     /// <param name="mutantOrchestrator"></param>
-    public MutationContext(CsharpMutantOrchestrator mutantOrchestrator)
+    public MutationContext(CSharpMutantOrchestrator mutantOrchestrator)
     {
         _mainOrchestrator = mutantOrchestrator;
         _mutation = new MutationStore(mutantOrchestrator.Placer);

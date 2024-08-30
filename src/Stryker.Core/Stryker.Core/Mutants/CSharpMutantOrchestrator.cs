@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -14,27 +13,29 @@ using Stryker.Core.Options;
 
 namespace Stryker.Core.Mutants;
 
-/// <inheritdoc/>
-public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, SemanticModel>
+/// <inheritdoc cref="Stryker.Core.Mutants.BaseMutantOrchestrator{T,TY}" />
+public class CSharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, SemanticModel>, ICSharpMutantOrchestrator
 {
     private static readonly TypeBasedStrategy<SyntaxNode, INodeOrchestrator> specificOrchestrator =
         new();
 
     private ILogger Logger { get; }
 
-    static CsharpMutantOrchestrator() =>
+    public IEnumerable<IMutator> Mutators { get; }
+
+    static CSharpMutantOrchestrator() =>
     // declare node specific orchestrators. Note that order is relevant, they should be declared from more specific to more generic one
         specificOrchestrator.RegisterHandlers(BuildOrchestratorList());
 
     /// <summary>
     /// <param name="mutators">The mutators that should be active during the mutation process</param>
     /// </summary>
-    public CsharpMutantOrchestrator(MutantPlacer placer, IEnumerable<IMutator> mutators = null, StrykerOptions options = null) : base(options)
+    public CSharpMutantOrchestrator(MutantPlacer placer, IEnumerable<IMutator> mutators = null, StrykerOptions options = null) : base(options)
     {
         Placer = placer;
         Mutators = mutators ?? DefaultMutatorList();
         Mutants = new Collection<Mutant>();
-        Logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpMutantOrchestrator>();
+        Logger = ApplicationLogging.LoggerFactory.CreateLogger<CSharpMutantOrchestrator>();
 
     }
 
@@ -114,8 +115,6 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new IsPatternExpressionMutator(),
         new StringMethodMutator()
     ];
-
-    private IEnumerable<IMutator> Mutators { get; }
 
     public MutantPlacer Placer { get; }
 

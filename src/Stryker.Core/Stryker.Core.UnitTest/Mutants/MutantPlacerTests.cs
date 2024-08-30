@@ -211,7 +211,7 @@ namespace Stryker.Core.UnitTest.Mutants
             var source = @"class Test {
 static TestClass()=> Value-='a';}";
 
-            var orchestrator = new CsharpMutantOrchestrator(placer, options: new StrykerOptions
+            var orchestrator = new CSharpMutantOrchestrator(placer, options: new StrykerOptions
             {
                 OptimizationMode = OptimizationModes.CoverageBasedTest,
                 MutationLevel = MutationLevel.Complete
