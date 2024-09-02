@@ -932,25 +932,8 @@ if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.Mutant
 	x/=2;
 }}";
 
-        //ShouldMutateSourceInClassToExpected(source, expected);
-        
-        source = @"public void SomeMethod() {
-	var x = 0;
-	{ /* Stryker disable all */
-	  x++;
-	}
-	x/=2;
-}";
-        expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(4)){}else{
-	var x = 0;
-{if(StrykerNamespace.MutantControl.IsActive(5)){}else{ /* Stryker disable all */
-	  x++;
-	}
-}if(StrykerNamespace.MutantControl.IsActive(8)){	x*=2;
-}else{	x/=2;
-}}}";
-
         ShouldMutateSourceInClassToExpected(source, expected);
+
         source = @"public void SomeMethod() {
 	var x = 0;
 	{
@@ -969,6 +952,70 @@ if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.Mutant
 }else{	x/=2;
 }}}";
         ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldNotMutateIfDisabledByMultilineComment()
+    {
+        var source = @"public void SomeMethod() {
+	var x = 0;
+    if (condition && other) /* Stryker disable once all */ {  
+	  x++;
+      x*=2;
+	}
+	x/=2;
+}";
+        var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+	var x = 0;
+    if ((StrykerNamespace.MutantControl.IsActive(0)?!(condition && other):(StrykerNamespace.MutantControl.IsActive(0)?condition || other:condition && other))) /* Stryker disable once all */ {  
+	  x++;
+      x*=2;
+	}
+if(StrykerNamespace.MutantControl.IsActive(0)){	x*=2;
+}else{	x/=2;
+}}}";
+        ;
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+
+        source = @"public void SomeMethod() {
+	var x = 0;
+	{ /* Stryker disable all */
+	  x++;
+	}
+	x/=2;
+}";
+        expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(4)){}else{
+	var x = 0;
+{if(StrykerNamespace.MutantControl.IsActive(5)){}else{ /* Stryker disable all */
+	  x++;
+	}
+}if(StrykerNamespace.MutantControl.IsActive(8)){	x*=2;
+}else{	x/=2;
+}}}";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+        
+
+    }
+
+    [TestMethod]
+    [DataRow("/* Stryker disable once all*/ x++;", "/* Stryker disable once all*/ x++;")]
+    [DataRow("if (cond) /* Stryker disable once all*/ x++;", "if ((StrykerNamespace.MutantControl.IsActive(0)?!(cond):cond)) /* Stryker disable once all*/ x++;")]
+    [DataRow("if (/* Stryker disable once all*/cond) x++;", "if (/* Stryker disable once all*/cond) if(StrykerNamespace.MutantControl.IsActive(0)){;}else{if(StrykerNamespace.MutantControl.IsActive(0)){x--;}else{x++;}}")]
+    public void ShouldNotMutateDependingOnWhereMultilineCommentIs(string source, string expected)
+    {
+        var sourceTemplate = $@"public void SomeMethod() {{
+	var x = 0;
+	{source}
+}}";
+        var expectedTemplate = $@"public void SomeMethod() {{if(StrykerNamespace.MutantControl.IsActive(0)){{}}else{{
+	var x = 0;
+{expected}
+ }}}}";
+        ;
+
+        ShouldMutateSourceInClassToExpected(sourceTemplate, expectedTemplate);
     }
 
     [TestMethod]

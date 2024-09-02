@@ -198,13 +198,28 @@ namespace Stryker.Core.Helpers
                        && (child.Parent is not LocalFunctionStatementSyntax localFunction || localFunction.ExpressionBody != child);
             } ).Any(predicate);
 
-        public static bool HasAMemberBindingExpression(this ExpressionSyntax expression) =>
-            expression switch
+        /// <summary>
+        /// Find the syntax node or token that is just before the given node.
+        /// </summary>
+        /// <param name="node"></param>
+        /// <returns>previous node or token. Null if non exists.</returns>
+        public static SyntaxNodeOrToken GetPreviousSyntaxNode(this SyntaxNode node)
+        {
+            SyntaxNodeOrToken previous = node.Parent;
+            if (previous == null)
             {
-                MemberBindingExpressionSyntax => true,
-                MemberAccessExpressionSyntax memberAccess => memberAccess.Expression.HasAMemberBindingExpression(),
-                InvocationExpressionSyntax invocation => invocation.Expression.HasAMemberBindingExpression(),
-                _ => false
-            };
+                return null;
+            }
+
+            foreach(var child in previous.ChildNodesAndTokens())
+            {
+                if (child == node)
+                {
+                    return previous;
+                }
+                previous = child;
+            }
+            return null;
+        }
     }
 }

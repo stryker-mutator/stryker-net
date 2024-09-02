@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
+using Stryker.Core.Helpers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 
@@ -67,35 +68,53 @@ internal static class CommentParser
 
     public static MutationContext ParseNodeLeadingComments(SyntaxNode node, MutationContext context)
     {
-        foreach (var commentTrivia in node.GetLeadingTrivia()
-                     .Where(t => t.IsKind(SyntaxKind.SingleLineCommentTrivia) ||
-                                 t.IsKind(SyntaxKind.MultiLineCommentTrivia)).Select(t => t.ToString()))
+        // parse comment that is on a dedicated line before the syntx node
+        if (node.GetLeadingTrivia()
+            .Where(t => t.IsKind(SyntaxKind.SingleLineCommentTrivia) ||
+                        t.IsKind(SyntaxKind.MultiLineCommentTrivia)).Select(t => t.ToString()).Any(commentTrivia => ProcessComment(node, ref context, commentTrivia)))
         {
-            // perform a quick pattern check to see if it is a 'Stryker comment'
-            var strykerCommentMatch = Pattern.Match(commentTrivia);
-            if (!strykerCommentMatch.Success)
-            {
-                continue;
-            }
-
-            // now we can extract actual command
-            var isSingleLine = strykerCommentMatch.Groups[1].Success;
-            var command = isSingleLine ? strykerCommentMatch.Groups[2].Value : strykerCommentMatch.Groups[4].Value;
-
-            var match = Parser.Match(command);
-            if (match.Success)
-            {
-                // this is a Stryker comments, now we parse it
-                context = ParseStrykerComment(context, match, node);
-                break;
-            }
-
-            Logger.LogWarning(
-                "Invalid Stryker comments at {Position}, {FilePath}.",
-                node.GetLocation().GetMappedLineSpan().StartLinePosition,
-                node.SyntaxTree.FilePath);
+            return context;
         }
 
+        // identify the previous syntax node if possible
+        var previousSyntaxNode = node.GetPreviousSyntaxNode();
+        if (previousSyntaxNode == null)
+        {
+            return context;
+        }
+        // parse any trailing comment, assuming the user intend it to apply to this node.
+        previousSyntaxNode.GetTrailingTrivia()
+            .Where(t => t.IsKind(SyntaxKind.MultiLineCommentTrivia)).Select(t => t.ToString()).
+            Any(commentTrivia => ProcessComment(node, ref context, commentTrivia));
+
         return context;
+    }
+
+    private static bool ProcessComment(SyntaxNode node, ref MutationContext context, string commentTrivia)
+    {
+        // perform a quick pattern check to see if it is a 'Stryker comment'
+        var strykerCommentMatch = Pattern.Match(commentTrivia);
+        if (!strykerCommentMatch.Success)
+        {
+            return false;
+        }
+
+        // now we can extract actual command
+        var isSingleLine = strykerCommentMatch.Groups[1].Success;
+        var command = isSingleLine ? strykerCommentMatch.Groups[2].Value : strykerCommentMatch.Groups[4].Value;
+
+        var match = Parser.Match(command);
+        if (match.Success)
+        {
+            // this is a Stryker comments, now we parse it
+            context = ParseStrykerComment(context, match, node);
+            return true;
+        }
+
+        Logger.LogWarning(
+            "Invalid Stryker comments at {Position}, {FilePath}.",
+            node.GetLocation().GetMappedLineSpan().StartLinePosition,
+            node.SyntaxTree.FilePath);
+        return false;
     }
 }
