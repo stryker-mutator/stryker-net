@@ -1535,7 +1535,7 @@ int TestMethod()
     }
 
     [TestMethod]
-    public void ShouldSkipStringsInSwitchExpression()
+    public void ShouldMutatetringsInSwitchExpression()
     {
         string source = @"string TestMethod()
 {
@@ -1546,11 +1546,14 @@ int TestMethod()
 }";
         string expected = @"string TestMethod()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
-	return input switch
+	return (StrykerNamespace.MutantControl.IsActive(1)?input switch
 	{
-		""test"" => (StrykerNamespace.MutantControl.IsActive(1)?"""":""test""
-)	};
-    }return default(string);}
+""""=> ""test""
+	}:input switch
+	{
+		""test"" => (StrykerNamespace.MutantControl.IsActive(2)?"""":""test""
+)	});
+}return default(string);}
 ";
         ShouldMutateSourceInClassToExpected(source, expected);
     }
@@ -1882,11 +1885,18 @@ else        {
     [TestMethod]
     public void ShouldIncrementMutantCountUniquely()
     {
+        var strykerOptions = new StrykerOptions
+        {
+            MutantIdProvider = new BasicIdProvider()
+        };
+
+        var firstOrchestrator =
+            new CsharpMutantOrchestrator(new MutantPlacer(_injector), options: strykerOptions);
         var secondOrchestrator =
-            new CsharpMutantOrchestrator(new MutantPlacer(_injector), options: new StrykerOptions());
+            new CsharpMutantOrchestrator(new MutantPlacer(_injector), options: strykerOptions);
         var node = SyntaxFactory.ParseExpression("1 == 1") as BinaryExpressionSyntax;
 
-        var firstMutant = _target
+        var firstMutant = firstOrchestrator
             .GenerateMutationsForNode(node, null, new MutationContext(secondOrchestrator))
             .Single();
 

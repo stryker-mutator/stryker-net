@@ -11,7 +11,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
     public class ExcludeMutationMutantFilterTests : TestBase
     {
         [TestMethod]
-        public static void ShouldHaveName()
+        public void ShouldHaveName()
         {
             var target = new IgnoreMutationMutantFilter() as IMutantFilter;
             target.DisplayName.ShouldBe("mutation type filter");
