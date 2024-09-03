@@ -49,21 +49,42 @@ Or on command line: `-m "!**/*.Generated.cs"`
 
 ## Stryker comments
 
+### Overview
 It's also possible to filter mutants at the source code level using special comments. This filtering gives the most fine-grained level of control.
 
 The syntax for the comments is: `Stryker [disable|restore][once][all| mutator list][: reason for disabling]`
 
-`// Stryker disable all` Disables all mutants from that line on.
+`// Stryker disable all` Marks all mutants as ignored from that line on.
 
 `// Stryker restore all` re-enables all mutants from that line on.
 
-`// Stryker disable once all` will only disable mutants on the next line.
+`// Stryker disable once all` will mark mutants as ignored for next line only.
+
+`// Stryker disable all: we do not want to test this` will mark mutations on the next line as ignored with comment: 'we do not want to test this'.
 
 `// Stryker disable once Arithmetic,Update` will only disable Arithmetic and Update mutants on the next line.
 
 For the complete list of the types of mutators you may ignore, check out the [mutations](./mutations.md) page. For each mutator, use the name in parentheses. For example: to ignore `Boolean Literals (boolean)`, comment `// Stryker disable once Boolean`.
 
-Example:
+### Technical considerations
+**Format and placement**:
+Stryker supports both single (//) and multi-line (/\* \*/) comments. We recommend using single-line comments on dedicated lines for clarity and scope control.
+You should use /\* \*/ format only when constrained so by code style rules.
+**Scope and limitations**:
+- 'once` means that ALL mutations within the next SYNTAX CONSTRUCT will be mark as ignored. This usually means the next statement.
+But if used at the beginning of a block, it will apply to ALL MUTATIONS WITHIN THAT BLOCK. Same for a whole method or even a class.
+- 'once' can also be used within an expression if you want fine grained control. Eg
+```csharp
+x = x + 
+// Stryker disable once Arithmetic
+SomeMethod(x*5)
+* SomeOtherMethod(x/2);
+```
+will only mark mutations impacting `SomeMEthod(x*5)` as ignored, keeping every other mutations in the expression.
+- while multi line comments cannot be used anywhere within the code, Stryker may not be able to identiy which part of the code they refer to.
+Meaning you may get what you expect. This is due to how Stryker and the Roslyn compiler interact. That is why we recommend using single line comments.
+
+### Examples
 
 ```csharp
 var i = 0;
@@ -73,8 +94,6 @@ i++; // won't be mutated
 y++; // won't be mutated
 // Stryker restore all
 i--; // will be mutated
-// Stryker disable once all
-y--; // won't be mutated
 i++; // will be mutated
 // Stryker disable once Arithmetic
 y++; // will be mutated
@@ -82,4 +101,3 @@ y++; // will be mutated
 i--; // won't be mutated
 ```
 
-_Note that this feature is scope aware. If you disable mutators inside a method, the scope will not leak outside the method, even if there is more code below._

@@ -86,7 +86,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
             MutationLevel = MutationLevel.Complete,
             OptimizationMode = OptimizationModes.CoverageBasedTest,
         };
-        _target = new CsharpMutantOrchestrator(new MutantPlacer(_injector), options: options);
+        Target = new CsharpMutantOrchestrator(new MutantPlacer(Injector), options: options);
 
         string source = @"private void Move()
 			{
@@ -967,11 +967,11 @@ if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.Mutant
 }";
         var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	var x = 0;
-    if ((StrykerNamespace.MutantControl.IsActive(0)?!(condition && other):(StrykerNamespace.MutantControl.IsActive(0)?condition || other:condition && other))) /* Stryker disable once all */ {  
+    if ((StrykerNamespace.MutantControl.IsActive(2)?!(condition && other):(StrykerNamespace.MutantControl.IsActive(1)?condition || other:condition && other))) /* Stryker disable once all */ {  
 	  x++;
       x*=2;
 	}
-if(StrykerNamespace.MutantControl.IsActive(0)){	x*=2;
+if(StrykerNamespace.MutantControl.IsActive(7)){	x*=2;
 }else{	x/=2;
 }}}";
         ;
@@ -985,12 +985,12 @@ if(StrykerNamespace.MutantControl.IsActive(0)){	x*=2;
 	}
 	x/=2;
 }";
-        expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(4)){}else{
+        expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(8)){}else{
 	var x = 0;
-{if(StrykerNamespace.MutantControl.IsActive(5)){}else{ /* Stryker disable all */
+{if(StrykerNamespace.MutantControl.IsActive(9)){}else{ /* Stryker disable all */
 	  x++;
 	}
-}if(StrykerNamespace.MutantControl.IsActive(8)){	x*=2;
+}if(StrykerNamespace.MutantControl.IsActive(12)){	x*=2;
 }else{	x/=2;
 }}}";
 
@@ -1001,10 +1001,11 @@ if(StrykerNamespace.MutantControl.IsActive(0)){	x*=2;
 
     [TestMethod]
     [DataRow("/* Stryker disable once all*/ x++;", "/* Stryker disable once all*/ x++;")]
-    [DataRow("if (cond) /* Stryker disable once all*/ x++;", "if ((StrykerNamespace.MutantControl.IsActive(0)?!(cond):cond)) /* Stryker disable once all*/ x++;")]
-    [DataRow("if (/* Stryker disable once all*/cond) x++;", "if (/* Stryker disable once all*/cond) if(StrykerNamespace.MutantControl.IsActive(0)){;}else{if(StrykerNamespace.MutantControl.IsActive(0)){x--;}else{x++;}}")]
+    [DataRow("if (cond) /* Stryker disable once all*/ x++;", "if ((StrykerNamespace.MutantControl.IsActive(1)?!(cond):cond)) /* Stryker disable once all*/ x++;")]
+    [DataRow("if (/* Stryker disable once all*/cond) x++;", "if (/* Stryker disable once all*/cond) if(StrykerNamespace.MutantControl.IsActive(2)){;}else{if(StrykerNamespace.MutantControl.IsActive(3)){x--;}else{x++;}}")]
     public void ShouldNotMutateDependingOnWhereMultilineCommentIs(string source, string expected)
     {
+        // must call reset as MsTest reuse test instance on datarow
         var sourceTemplate = $@"public void SomeMethod() {{
 	var x = 0;
 	{source}
@@ -1161,13 +1162,13 @@ if(StrykerNamespace.MutantControl.IsActive(3)){// Stryker restore all
 
         ShouldMutateSourceInClassToExpected(source, expected);
 
-        _target.Mutants.Count.ShouldBe(4);
-        _target.Mutants.ElementAt(0).ResultStatus.ShouldBe(MutantStatus.Pending);
-        _target.Mutants.ElementAt(1).ResultStatus.ShouldBe(MutantStatus.Ignored);
-        _target.Mutants.ElementAt(1).ResultStatusReason.ShouldBe("comment");
-        _target.Mutants.ElementAt(2).ResultStatus.ShouldBe(MutantStatus.Ignored);
-        _target.Mutants.ElementAt(2).ResultStatusReason.ShouldBe("comment");
-        _target.Mutants.ElementAt(3).ResultStatus.ShouldBe(MutantStatus.Pending);
+        Target.Mutants.Count.ShouldBe(4);
+        Target.Mutants.ElementAt(0).ResultStatus.ShouldBe(MutantStatus.Pending);
+        Target.Mutants.ElementAt(1).ResultStatus.ShouldBe(MutantStatus.Ignored);
+        Target.Mutants.ElementAt(1).ResultStatusReason.ShouldBe("comment");
+        Target.Mutants.ElementAt(2).ResultStatus.ShouldBe(MutantStatus.Ignored);
+        Target.Mutants.ElementAt(2).ResultStatusReason.ShouldBe("comment");
+        Target.Mutants.ElementAt(3).ResultStatus.ShouldBe(MutantStatus.Pending);
     }
 
     [TestMethod]
@@ -1341,9 +1342,9 @@ if(StrykerNamespace.MutantControl.IsActive(2)){;}else{Console.WriteLine((Stryker
 {
 	var test3 = 2 + 5;
 }";
-        _target.Mutate(CSharpSyntaxTree.ParseText(source), null);
+        Target.Mutate(CSharpSyntaxTree.ParseText(source), null);
 
-        var mutants = _target.GetLatestMutantBatch().ToList();
+        var mutants = Target.GetLatestMutantBatch().ToList();
         mutants.Count.ShouldBe(2);
         var blockLinespan = mutants.First().Mutation.OriginalNode.GetLocation().GetLineSpan();
         blockLinespan.StartLinePosition.Line.ShouldBe(1);
@@ -1368,9 +1369,9 @@ namespace TestApp
 		}
 	}
 }";
-        _target.Mutate(CSharpSyntaxTree.ParseText(source), null);
+        Target.Mutate(CSharpSyntaxTree.ParseText(source), null);
 
-        var mutants = _target.GetLatestMutantBatch().ToList();
+        var mutants = Target.GetLatestMutantBatch().ToList();
         mutants.Count.ShouldBe(7);
 
         var blockLinespan = mutants.First().Mutation.OriginalNode.GetLocation().GetLineSpan();
@@ -1666,8 +1667,8 @@ static string Value {get;} = """";}";
         var expected = @"class Test {
 static string Value {get;} = StrykerNamespace.MutantContext.TrackValue(()=>(StrykerNamespace.MutantControl.IsActive(0)?""Stryker was here!"":""""));}}}";
         ShouldMutateSourceInClassToExpected(source, expected);
-        _target.Mutants.Count.ShouldBe(1);
-        _target.Mutants.First().IsStaticValue.ShouldBeTrue();
+        Target.Mutants.Count.ShouldBe(1);
+        Target.Mutants.First().IsStaticValue.ShouldBeTrue();
     }
 
     [TestMethod]
@@ -1891,9 +1892,9 @@ else        {
         };
 
         var firstOrchestrator =
-            new CsharpMutantOrchestrator(new MutantPlacer(_injector), options: strykerOptions);
+            new CsharpMutantOrchestrator(new MutantPlacer(Injector), options: strykerOptions);
         var secondOrchestrator =
-            new CsharpMutantOrchestrator(new MutantPlacer(_injector), options: strykerOptions);
+            new CsharpMutantOrchestrator(new MutantPlacer(Injector), options: strykerOptions);
         var node = SyntaxFactory.ParseExpression("1 == 1") as BinaryExpressionSyntax;
 
         var firstMutant = firstOrchestrator
