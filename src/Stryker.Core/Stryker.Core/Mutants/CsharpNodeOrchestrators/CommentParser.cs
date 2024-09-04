@@ -1,10 +1,10 @@
 using System;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Helpers;
 using Stryker.Core.Logging;
 using Stryker.Core.Mutators;
 
@@ -12,8 +12,8 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 internal static class CommentParser
 {
-    private static readonly Regex Pattern = new("^\\s*(\\/\\/\\s*Stryker(.*))|(\\/\\*\\s*Stryker(.*[^\\*][^\\\\])\\*\\/\\s*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(20));
-    private static readonly Regex Parser = new("^\\s*(disable|restore)\\s*(once|)\\s*([^:]*)\\s*:?(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(20));
+    private static readonly Regex Pattern = new("^\\s*(\\/\\/\\s*Stryker(.*))|(\\/\\*\\s*Stryker(.*[^\\*][^\\\\])\\*\\/\\s*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(200));
+    private static readonly Regex Parser = new("^\\s*(disable|restore)\\s*(once|)\\s*([^:]*)\\s*:?(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(200));
     private static readonly ILogger Logger = ApplicationLogging.LoggerFactory.CreateLogger("CommentParser");
 
     private static MutationContext ParseStrykerComment(MutationContext context, Match match, SyntaxNode node)
@@ -68,28 +68,24 @@ internal static class CommentParser
 
     public static MutationContext ParseNodeLeadingComments(SyntaxNode node, MutationContext context)
     {
-        // parse comment that is on a dedicated line before the syntax node
-        var firstResult = node.GetLeadingTrivia()
-            .Where(t => t.IsKind(SyntaxKind.SingleLineCommentTrivia) ||
-                        t.IsKind(SyntaxKind.MultiLineCommentTrivia))
-            .Select(t => ProcessComment(node, context, t.ToString()))
-            .FirstOrDefault( t => t!= null);
+        var processedComments = node.GetFirstToken(true).GetPreviousToken(true).TrailingTrivia
+            .Union(node.GetLeadingTrivia())
+            .Where(t => t.IsKind(SyntaxKind.MultiLineCommentTrivia) || t.IsKind(SyntaxKind.SingleLineCommentTrivia))
+            .Select(t => (ProcessComment(node, context, t.ToString()), t)).Where(t => t.Item1 != null).ToList();
 
-        if (firstResult != null)
-        {
-            return firstResult;
-        }
-        // identify the previous syntax node if possible
-        var previousSyntaxNode = node.GetPreviousSyntaxNode();
-        if (previousSyntaxNode == null)
+        if (processedComments.Count == 0)
         {
             return context;
         }
-        // parse any trailing comment, assuming the user intend it to apply to this node.
-        return previousSyntaxNode.GetTrailingTrivia()
-            .Where(t => t.IsKind(SyntaxKind.MultiLineCommentTrivia))
-            .Select(t => ProcessComment(node, context, t.ToString()))
-            .FirstOrDefault( t => t!= null) ?? context;
+        if (processedComments.Count > 1)
+        {
+            var errorMessage = new StringBuilder().Append(  
+                $"Multiple Stryker comments at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}. Only the first one will be used");
+            errorMessage.Append(string.Join(Environment.NewLine, processedComments.Select(c => c.Item2.ToString())));
+            Logger.LogWarning(errorMessage.ToString());
+
+        }
+        return processedComments[0].Item1;
     }
 
     private static MutationContext ProcessComment(SyntaxNode node, MutationContext context, string commentTrivia)

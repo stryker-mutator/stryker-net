@@ -197,29 +197,5 @@ namespace Stryker.Core.Helpers
                 return (child.Parent is not AnonymousFunctionExpressionSyntax function || function.ExpressionBody != child)
                        && (child.Parent is not LocalFunctionStatementSyntax localFunction || localFunction.ExpressionBody != child);
             } ).Any(predicate);
-
-        /// <summary>
-        /// Find the syntax node or token that is just before the given node.
-        /// </summary>
-        /// <param name="node"></param>
-        /// <returns>previous node or token. Null if non exists.</returns>
-        public static SyntaxNodeOrToken GetPreviousSyntaxNode(this SyntaxNode node)
-        {
-            SyntaxNodeOrToken previous = node.Parent;
-            if (previous == null)
-            {
-                return null;
-            }
-
-            foreach(var child in previous.ChildNodesAndTokens())
-            {
-                if (child == node)
-                {
-                    return previous;
-                }
-                previous = child;
-            }
-            return null;
-        }
     }
 }

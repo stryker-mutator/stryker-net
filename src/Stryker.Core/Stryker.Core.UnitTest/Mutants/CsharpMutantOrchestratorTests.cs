@@ -995,17 +995,21 @@ if(StrykerNamespace.MutantControl.IsActive(7)){	x*=2;
 }}}";
 
         ShouldMutateSourceInClassToExpected(source, expected);
-        
-
     }
 
     [TestMethod]
     [DataRow("/* Stryker disable once all*/ x++;", "/* Stryker disable once all*/ x++;")]
     [DataRow("if (cond) /* Stryker disable once all*/ x++;", "if ((StrykerNamespace.MutantControl.IsActive(1)?!(cond):cond)) /* Stryker disable once all*/ x++;")]
+    [DataRow("if (cond);/* Stryker disable once all*/ else x++;", "if ((StrykerNamespace.MutantControl.IsActive(1)?!(cond):cond));/* Stryker disable once all*/ else x++;")]
+    [DataRow(@"if (cond) // Stryker disable once all
+x++;",
+        @"if ((StrykerNamespace.MutantControl.IsActive(1)?!(cond):cond)) // Stryker disable once all
+x++;")]
     [DataRow("if (/* Stryker disable once all*/cond) x++;", "if (/* Stryker disable once all*/cond) if(StrykerNamespace.MutantControl.IsActive(2)){;}else{if(StrykerNamespace.MutantControl.IsActive(3)){x--;}else{x++;}}")]
+    
     public void ShouldNotMutateDependingOnWhereMultilineCommentIs(string source, string expected)
     {
-        // must call reset as MsTest reuse test instance on datarow
+        // must call reset as MsTest reuse test instance on/datarow
         var sourceTemplate = $@"public void SomeMethod() {{
 	var x = 0;
 	{source}
@@ -1014,7 +1018,6 @@ if(StrykerNamespace.MutantControl.IsActive(7)){	x*=2;
 	var x = 0;
 {expected}
  }}}}";
-        ;
 
         ShouldMutateSourceInClassToExpected(sourceTemplate, expectedTemplate);
     }
@@ -1029,6 +1032,42 @@ if(StrykerNamespace.MutantControl.IsActive(7)){	x*=2;
         var expected = @"
     // Stryker disable all
     static string x = StrykerNamespace.MutantContext.TrackValue(()=>""test"");";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldMutateIfInvalidComment()
+    {
+        var source = @"public int SomeMethod()// Stryker disabel all
+{x++;}";
+        var expected = @"public int SomeMethod()// Stryker disabel all
+{if(StrykerNamespace.MutantControl.IsActive(0)){}else{if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.MutantControl.IsActive(2)){x--;}else{x++;}}}}";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+
+        source = @"public int SomeMethod()// Stryker disable maths
+{x++;}";
+        expected = @"public int SomeMethod()// Stryker disable maths
+{if(StrykerNamespace.MutantControl.IsActive(3)){}else{if(StrykerNamespace.MutantControl.IsActive(5)){x--;}else{x++;}}}}";
+
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldOnlyUseFirstComment()
+    {
+        // enabling Stryker comment should have no impact
+        var source = @"public void SomeMethod() {
+    /* Stryker disable once all */
+    // Stryker restore all
+        x++;
+    }";
+        var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+    /* Stryker disable once all */
+    // Stryker restore all
+        x++;
+    }}";
 
         ShouldMutateSourceInClassToExpected(source, expected);
     }

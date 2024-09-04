@@ -80,8 +80,8 @@ x = x +
 SomeMethod(x*5)
 * SomeOtherMethod(x/2);
 ```
-will only mark mutations impacting `SomeMEthod(x*5)` as ignored, keeping every other mutations in the expression.
-- while multi line comments cannot be used anywhere within the code, Stryker may not be able to identiy which part of the code they refer to.
+will only mark mutations impacting `SomeMethod(x*5)` as ignored, keeping every other mutations in the expression.
+- while multi line comments cann be used anywhere within the code, Stryker may not be able to identiy which part of the code they refer to.
 Meaning you may get what you expect. This is due to how Stryker and the Roslyn compiler interact. That is why we recommend using single line comments.
 
 ### Examples
@@ -100,4 +100,3 @@ y++; // will be mutated
 // Stryker disable once Arithmetic,Update
 i--; // won't be mutated
 ```
-
