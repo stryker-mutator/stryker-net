@@ -1,7 +1,7 @@
 <Project>
   <ItemGroup>
     <PackageVersion Include="Azure.Storage.Files.Shares" Version="12.19.1" />
-    <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.2.4" />
+    <PackageVersion Include="DotNet.ReproducibleBuilds" Version="1.2.25" />
     <PackageVersion Include="LaunchDarkly.EventSource" Version="5.1.0" />
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.1.1" />
     <PackageVersion Include="MSTest" Version="3.5.2" />
