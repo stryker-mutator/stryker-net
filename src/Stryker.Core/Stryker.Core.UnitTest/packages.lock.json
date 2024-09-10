@@ -16,9 +16,9 @@
       },
       "DotNet.ReproducibleBuilds": {
         "type": "Direct",
-        "requested": "[1.2.4, )",
-        "resolved": "1.2.4",
-        "contentHash": "Ch9U74tQA2fQH+U0hcYH7WyIFUfAq7jrjgSHVu2FAcYiMBtbrCMyq2nGA/ZZnB2jSaUeOOYiCjxeaDVB7Ssbdw=="
+        "requested": "[1.2.25, )",
+        "resolved": "1.2.25",
+        "contentHash": "xCXiw7BCxHJ8pF6wPepRUddlh2dlQlbr81gXA72hdk4FLHkKXas7EH/n+fk5UCA/YfMqG1Z6XaPiUjDbUNBUzg=="
       },
       "LaunchDarkly.EventSource": {
         "type": "Direct",
@@ -1564,8 +1564,8 @@
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.49.1, )",
           "Spectre.Console.Analyzer": "[1.0.0, )",
-          "Stryker.DataCollector": "[4.1.0, )",
-          "Stryker.RegexMutators": "[4.1.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[21.0.29, )"
         }
       },

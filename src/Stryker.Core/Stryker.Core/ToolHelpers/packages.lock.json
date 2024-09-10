@@ -4,9 +4,9 @@
     "net8.0": {
       "DotNet.ReproducibleBuilds": {
         "type": "Direct",
-        "requested": "[1.2.4, )",
-        "resolved": "1.2.4",
-        "contentHash": "Ch9U74tQA2fQH+U0hcYH7WyIFUfAq7jrjgSHVu2FAcYiMBtbrCMyq2nGA/ZZnB2jSaUeOOYiCjxeaDVB7Ssbdw=="
+        "requested": "[1.2.25, )",
+        "resolved": "1.2.25",
+        "contentHash": "xCXiw7BCxHJ8pF6wPepRUddlh2dlQlbr81gXA72hdk4FLHkKXas7EH/n+fk5UCA/YfMqG1Z6XaPiUjDbUNBUzg=="
       },
       "Microsoft.TestPlatform.Portable": {
         "type": "Direct",
