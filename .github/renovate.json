@@ -58,5 +58,7 @@
         "\\\"library\\\":\\s\\\"(?<depName>.*?)@(?<currentValue>.*?)\\\""
       ]
     }
-  ]
+  ],
+  "npm": {
+    "enabled": false
 }
