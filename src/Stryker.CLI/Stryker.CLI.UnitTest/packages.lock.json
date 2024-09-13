@@ -1569,8 +1569,8 @@
         "dependencies": {
           "McMaster.Extensions.CommandLineUtils": "[4.1.1, )",
           "NuGet.Protocol": "[6.11.0, )",
-          "YamlDotNet": "[16.1.0, )",
-          "stryker": "[4.1.0, )"
+          "YamlDotNet": "[16.1.2, )",
+          "stryker": "[4.2.0, )"
         }
       },
       "stryker": {
@@ -1599,9 +1599,9 @@
           "Serilog.Sinks.Console": "[6.0.0, )",
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.49.1, )",
-          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.DataCollector": "[4.2.0, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
-          "Stryker.RegexMutators": "[1.0.0, )",
+          "Stryker.RegexMutators": "[4.2.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[21.0.29, )"
         }
       },
@@ -1897,9 +1897,9 @@
       },
       "YamlDotNet": {
         "type": "CentralTransitive",
-        "requested": "[16.1.0, )",
-        "resolved": "16.1.0",
-        "contentHash": "ywYsFpZi0SKeQ+wrg1V7wZIz/ym0QJKN8IOPi06vYOgTMwHlQEr02BV5yC9IUXOBzD/pbYTuVflcObz2WdzSOw=="
+        "requested": "[16.1.2, )",
+        "resolved": "16.1.2",
+        "contentHash": "VHBamNzHIKqkdWgYrGk48mEos+lVDFHzJyk0JiFYydoViSiCNIdoDTL3kaqAh+exQ2m2ZgZQphBgaOngR1fYjg=="
       }
     }
   }
