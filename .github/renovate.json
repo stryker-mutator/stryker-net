@@ -55,7 +55,7 @@
       "customType": "regex",
       "datasourceTemplate": "npm",
       "matchStrings": [
-        "\\\"library\\\":\\s\\\"(?<packageName>.*?)@(?<currentValue>.*?)\\\""
+        "\\\"library\\\":\\s?\\\"(?<packageName>.*)@(?<currentValue>.*)\\\""
       ]
     }
   ],
