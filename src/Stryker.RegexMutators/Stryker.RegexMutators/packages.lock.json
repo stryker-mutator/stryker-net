@@ -8,11 +8,11 @@
         "resolved": "1.2.4",
         "contentHash": "Ch9U74tQA2fQH+U0hcYH7WyIFUfAq7jrjgSHVu2FAcYiMBtbrCMyq2nGA/ZZnB2jSaUeOOYiCjxeaDVB7Ssbdw=="
       },
-      "RegexParser": {
+      "Stryker.Regex.Parser": {
         "type": "Direct",
-        "requested": "[0.5.1, )",
-        "resolved": "0.5.1",
-        "contentHash": "cFqI0vxy4E7C83ijq1uFIkIOEnG3kezH+xBkBaQX9FvJKikrt+riQRDC4J4NQ5QXh/p6R3DC8qBVGXloC58zEQ=="
+        "requested": "[1.0.0, )",
+        "resolved": "1.0.0",
+        "contentHash": "39OYYkvF2KlMbhxLBM+GTJEzPLu0HfN1v4AOApDFt3+ivd5F8HXwV5yp2A2+i7a7F5Tv2zr/7faCIqZj9c7x4g=="
       }
     }
   }
