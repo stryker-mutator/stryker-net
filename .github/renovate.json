@@ -54,9 +54,8 @@
       "customType": "regex",
       "fileMatch": ["^libman\\.json$"],
       "matchStrings": [
-        "\"library\": \"mutation-testing-elements\",\n\\s*\"version\": \"(?<currentValue>.*?)\""
+        "\\\"library\\\":\\s\\\"(?<depName>.*?)@(?<currentValue>.*?)\\\""
       ],
-      "depName": "mutation-testing-elements",
       "datasourceTemplate": "npm"
     }
   ]
