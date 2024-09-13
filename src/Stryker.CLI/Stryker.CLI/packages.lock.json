@@ -1420,9 +1420,9 @@
           "Serilog.Sinks.Console": "[6.0.0, )",
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.49.1, )",
-          "Spectre.Console.Analyzer": "[1.0.0, )",
-          "Stryker.DataCollector": "[4.1.0, )",
-          "Stryker.RegexMutators": "[4.1.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.Regex.Parser": "[1.0.0, )",
+          "Stryker.RegexMutators": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[21.0.29, )"
         }
       },
@@ -1436,7 +1436,7 @@
       "stryker.regexmutators": {
         "type": "Project",
         "dependencies": {
-          "RegexParser": "[0.5.1, )"
+          "Stryker.Regex.Parser": "[1.0.0, )"
         }
       },
       "Azure.Storage.Files.Shares": {
@@ -1615,12 +1615,6 @@
         "resolved": "6.11.0",
         "contentHash": "Ew/mrfmLF5phsprysHbph2+tdZ10HMHAURavsr/Kx1WhybDG4vmGuoNLbbZMZOqnPRdpyCTc42OKWLoedxpYtA=="
       },
-      "RegexParser": {
-        "type": "CentralTransitive",
-        "requested": "[0.5.1, )",
-        "resolved": "0.5.1",
-        "contentHash": "cFqI0vxy4E7C83ijq1uFIkIOEnG3kezH+xBkBaQX9FvJKikrt+riQRDC4J4NQ5QXh/p6R3DC8qBVGXloC58zEQ=="
-      },
       "ResXResourceReader.NetStandard": {
         "type": "CentralTransitive",
         "requested": "[1.3.0, )",
@@ -1683,11 +1677,11 @@
         "resolved": "0.49.1",
         "contentHash": "USV+pdu49OJ3nCjxNuw1K9Zw/c1HCBbwbjXZp0EOn6wM99tFdAtN34KEBZUMyRuJuXlUMDqhd8Yq9obW2MslYA=="
       },
-      "Spectre.Console.Analyzer": {
+      "Stryker.Regex.Parser": {
         "type": "CentralTransitive",
         "requested": "[1.0.0, )",
         "resolved": "1.0.0",
-        "contentHash": "TojbwWASRf3PMUsotXa8MQ9SNwEwWZZ5bAYf1eLv+jiDsxaD/n7TKTi3da6z4+m8uZHri2i+BVRuLj5w+6j64Q=="
+        "contentHash": "39OYYkvF2KlMbhxLBM+GTJEzPLu0HfN1v4AOApDFt3+ivd5F8HXwV5yp2A2+i7a7F5Tv2zr/7faCIqZj9c7x4g=="
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",

@@ -57,6 +57,14 @@
     <PackageReference Include="Spectre.Console.Testing" />
     <PackageReference Include="TestableIO.System.IO.Abstractions.TestingHelpers" />
   </ItemGroup>
+
+  <!--This avoids conflict with System.Text.RegularExpression-->
+  <ItemGroup>
+    <PackageReference Include="Stryker.Regex.Parser">
+      <Aliases>StrykerRegexParser</Aliases>
+    </PackageReference>
+  </ItemGroup>
+  
   <ItemGroup>
     <ProjectReference Include="..\Stryker.Core\Stryker.Core.csproj" />
   </ItemGroup>

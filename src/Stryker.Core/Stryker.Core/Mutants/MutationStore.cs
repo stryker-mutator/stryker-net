@@ -58,7 +58,7 @@ internal class MutationStore
     /// Checks if there are pending mutations for the current syntax level
     /// </summary>
     /// <returns></returns>
-    public bool HasPendingMutations() => _pendingMutations.Count > 0 && _pendingMutations.Peek().Store.Count>0;
+    public bool HasPendingMutations() => _pendingMutations.Count > 0 && _pendingMutations.Peek().Store.Count > 0;
 
     /// <summary>
     /// Returns the current mutation control
@@ -86,7 +86,10 @@ internal class MutationStore
     /// If there is none (leaving a member), mutations are flagged as compile errors (and logged).</remarks>
     public void Leave()
     {
-        if (!_pendingMutations.Peek().Leave()) return;
+        if (!_pendingMutations.Peek().Leave())
+        {
+            return;
+        }
         // we need to store pending mutations at the higher level
         var old = _pendingMutations.Pop();
         if (_pendingMutations.Count > 0)
@@ -245,13 +248,14 @@ internal class MutationStore
     {
         public readonly MutationControl Control;
         private int _depth;
-        public readonly List<Mutant> Store = new();
+        public readonly List<Mutant> Store = [];
 
         public PendingMutations(MutationControl control) => Control = control;
 
         public bool Aggregate(MutationControl control)
         {
-            if (Store.Count != 0 || Control != control) {
+            if (Store.Count != 0 || Control != control)
+            {
                 return false;
             }
             _depth++;

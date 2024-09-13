@@ -15,7 +15,6 @@
     </PackageReference>
     <PackageReference Include="Microsoft.NET.Test.Sdk" />
     <PackageReference Include="MSTest" />
-    <PackageReference Include="RegexParser" />
     <PackageReference Include="Shouldly" />
   </ItemGroup>
 
