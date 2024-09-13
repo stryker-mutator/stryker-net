@@ -43,7 +43,7 @@ namespace Stryker.Core.MutationTest
                     "Test run for {Mutants} is {Result} ",
                     string.Join(", ", mutantsToTest.Select(x => x.DisplayName)),
                     result.FailingTests.Count == 0 ? "success" : "failed");
-                Logger.LogTrace("Test run : {ResultMessage}",result.ResultMessage);
+ 
                 if (result.Messages is not null && result.Messages.Any())
                 {
                     Logger.LogTrace(
