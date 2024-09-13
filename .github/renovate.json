@@ -48,5 +48,15 @@
       "azure.*pipelines?.*\\.ya?ml$",
       "pipeline-templates/.*\\.ya?ml$"
     ]
-  }
+  },
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": ["^libman\\.json$"],
+      "matchStrings": [
+        "\\\"library\\\":\\s\\\"(?<depName>.*?)@(?<currentValue>.*?)\\\""
+      ],
+      "datasourceTemplate": "npm"
+    }
+  ]
 }

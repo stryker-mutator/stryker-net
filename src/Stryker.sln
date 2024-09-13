@@ -25,6 +25,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Directory.Build.targets = Directory.Build.targets
 		Directory.Packages.props = Directory.Packages.props
 		..\README.md = ..\README.md
+		..\.github\renovate.json = ..\.github\renovate.json
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "pipeline-templates", "pipeline-templates", "{A9BCC324-3DF8-493A-9792-A15C9797AD11}"
