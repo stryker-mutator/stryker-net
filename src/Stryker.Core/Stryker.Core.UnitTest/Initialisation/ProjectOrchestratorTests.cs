@@ -9,18 +9,18 @@ using Moq;
 using Serilog;
 using Serilog.Events;
 using Shouldly;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Initialisation;
 using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.MutationTest;
-using Stryker.Abstractions;
-using Stryker.Abstractions.ProjectComponents;
-using Stryker.Abstractions.TestRunners;
 using Stryker.Abstractions.Reporting;
-using Stryker.Abstractions.TestRunners;
+using Stryker.Core.Initialisation;
+using Stryker.Core.Mutants;
+using Stryker.Core.MutationTest;
+using Stryker.Core.ProjectComponents;
+using Stryker.Core.TestRunners;
 
-namespace Stryker.Abstractions.UnitTest.Initialisation;
+namespace Stryker.Core.UnitTest.Initialisation;
 
 [TestClass]
 public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
@@ -32,11 +32,11 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
     public ProjectOrchestratorTests()
     {
         _mutationTestProcessMock.Setup(x => x.Mutate());
-        _projectMutatorMock.Setup(x => x.MutateProject(It.IsAny<StrykerOptions>(),  It.IsAny<MutationTestInput>(), It.IsAny<IReporter>()))
-            .Returns(   (StrykerOptions options, MutationTestInput input, IReporter reporter) =>
+        _projectMutatorMock.Setup(x => x.MutateProject(It.IsAny<StrykerOptions>(), It.IsAny<MutationTestInput>(), It.IsAny<IReporter>()))
+            .Returns((StrykerOptions options, MutationTestInput input, IReporter reporter) =>
             {
-                var mock= new Mock<IMutationTestProcess>();
-                mock.Setup( m => m.Input).Returns(input);
+                var mock = new Mock<IMutationTestProcess>();
+                mock.Setup(m => m.Input).Returns(input);
                 return mock.Object;
             });
 
@@ -57,11 +57,11 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
 
         var csPathName = FileSystem.Path.Combine(ProjectPath, "someFile.cs");
         var sourceProjectAnalyzerMock = SourceProjectAnalyzerMock(csprojPathName, new[] { csPathName }).Object;
-        var target = BuildProjectOrchestratorForSimpleProject(sourceProjectAnalyzerMock, 
+        var target = BuildProjectOrchestratorForSimpleProject(sourceProjectAnalyzerMock,
             TestProjectAnalyzerMock(testCsprojPathName, csprojPathName).Object, out var mockRunner);
 
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
-            
+
         // act
         var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
 
@@ -90,11 +90,11 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         var properties = GetSourceProjectDefaultProperties();
         properties["ContentPreprocessorOutputDirectory"] = contentFolder;
         var sourceProjectAnalyzerMock = BuildProjectAnalyzerMock(csprojPathName, new[] { csPathName }, properties).Object;
-        var target = BuildProjectOrchestratorForSimpleProject(sourceProjectAnalyzerMock, 
+        var target = BuildProjectOrchestratorForSimpleProject(sourceProjectAnalyzerMock,
             TestProjectAnalyzerMock(testCsprojPathName, csprojPathName).Object, out var mockRunner);
 
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
-            
+
         // act
         var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
 
@@ -118,7 +118,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
 
         var csPathName = FileSystem.Path.Combine(ProjectPath, "someFile.cs");
         var sourceProjectAnalyzerMock = SourceProjectAnalyzerMock(csprojPathName, new[] { csPathName }).Object;
-        var target = BuildProjectOrchestratorForSimpleProject(sourceProjectAnalyzerMock, 
+        var target = BuildProjectOrchestratorForSimpleProject(sourceProjectAnalyzerMock,
             TestProjectAnalyzerMock(testCsprojPathName, csprojPathName).Object, out var mockRunner);
 
         // act
@@ -157,7 +157,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
 
         // assert
-        buildalyzerAnalyzerManagerMock.Verify( x=> x.SetGlobalProperty("Configuration", "Release"), Times.Once());
+        buildalyzerAnalyzerManagerMock.Verify(x => x.SetGlobalProperty("Configuration", "Release"), Times.Once());
     }
 
     [TestMethod]
@@ -238,11 +238,11 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
 
         var csPathName = FileSystem.Path.Combine(ProjectPath, "someFile.cs");
         var sourceProjectAnalyzer = SourceProjectAnalyzerMock(csprojPathName, new[] { csPathName }).Object;
-        var target = BuildProjectOrchestratorForSimpleProject(sourceProjectAnalyzer, 
+        var target = BuildProjectOrchestratorForSimpleProject(sourceProjectAnalyzer,
             TestProjectAnalyzerMock(testCsprojPathName, csprojPathName).Object, out var mockRunner);
-            
+
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
-            
+
         // act
         var mutateAction = () => target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
 
@@ -266,11 +266,11 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
 
         var csPathName = FileSystem.Path.Combine(ProjectPath, "someFile.cs");
         var sourceProjectAnalyzer = SourceProjectAnalyzerMock(csprojPathName, new[] { csPathName }).Object;
-        var target = BuildProjectOrchestratorForSimpleProject(sourceProjectAnalyzer, 
+        var target = BuildProjectOrchestratorForSimpleProject(sourceProjectAnalyzer,
             TestProjectAnalyzerMock(testCsprojPathName, csprojPathName).Object, out var mockRunner);
-            
+
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
-            
+
         // act
         var result = () => target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
         // assert
@@ -297,10 +297,10 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         var target = BuildProjectOrchestratorForSimpleProject(
             sourceProjectAnalyzer,
             BuildProjectAnalyzerMock(testCsprojPathName, Array.Empty<string>(), properties1,
-                new List<string>{ csprojPathName}).Object, out var mockRunner);
-            
+                new List<string> { csprojPathName }).Object, out var mockRunner);
+
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
-            
+
         // act
         var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
 
@@ -326,7 +326,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
             new[] { FileSystem.Path.Combine(ProjectPath, "mylib.cs") }).Object;
         var projectAnalyzer = SourceProjectAnalyzerMock(csprojPathName, new[]
                 { FileSystem.Path.Combine(ProjectPath, "someFile.cs")}
-            , new[] {libraryProject}).Object;
+            , new[] { libraryProject }).Object;
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>
         {
             { "MyProject", projectAnalyzer },
@@ -336,7 +336,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         var target = BuildProjectOrchestrator(analyzerResults, out var mockRunner);
 
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
-            
+
         // act
         var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
 
@@ -362,7 +362,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
             new[] { FileSystem.Path.Combine(ProjectPath, "mylib.cs") }).Object;
         var projectAnalyzer = SourceProjectAnalyzerMock(csprojPathName, new[]
                 { FileSystem.Path.Combine(ProjectPath, "someFile.cs")}
-            , new[] {libraryProject}).Object;
+            , new[] { libraryProject }).Object;
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>
         {
             { "MyProject", projectAnalyzer },
@@ -390,10 +390,10 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
             SolutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln")
         };
         var libraryProject = FileSystem.Path.Combine(ProjectPath, "libraryproject.csproj");
-  
+
         // The analyzer finds two projects
         var projectAnalyzer = SourceProjectAnalyzerMock(csprojPathName, [FileSystem.Path.Combine(ProjectPath, "someFile.cs")]
-            , new[] {libraryProject}).Object;
+            , new[] { libraryProject }).Object;
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>
         {
             { "MyProject", projectAnalyzer },
@@ -434,7 +434,7 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         var target = BuildProjectOrchestrator(analyzerResults, out var mockRunner);
 
         FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
-            
+
         // act
         var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
 

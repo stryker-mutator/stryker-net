@@ -1,6 +1,6 @@
 using System;
 
-namespace Stryker.Abstractions.Mutants
+namespace Stryker.Core.Mutants
 {
     public sealed class TestDescription
     {
@@ -23,9 +23,11 @@ namespace Stryker.Abstractions.Mutants
         }
         public override bool Equals(object obj)
         {
-            if (obj is null) return false;
-            if (ReferenceEquals(this, obj)) return true;
-            return obj.GetType() == GetType() && Equals((TestDescription) obj);
+            if (obj is null)
+                return false;
+            if (ReferenceEquals(this, obj))
+                return true;
+            return obj.GetType() == GetType() && Equals((TestDescription)obj);
         }
 
         public override int GetHashCode()

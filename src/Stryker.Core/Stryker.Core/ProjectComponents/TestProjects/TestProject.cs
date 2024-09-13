@@ -7,9 +7,10 @@ using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.MutantFilters.Extensions;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Core.MutantFilters;
 
-namespace Stryker.Abstractions.ProjectComponents.TestProjects
+namespace Stryker.Core.ProjectComponents.TestProjects
 {
     public sealed class TestProject : IEquatable<ITestProject>, ITestProject
     {

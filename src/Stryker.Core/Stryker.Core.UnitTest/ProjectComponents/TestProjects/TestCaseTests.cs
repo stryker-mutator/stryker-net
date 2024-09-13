@@ -1,10 +1,10 @@
 using System;
 using Microsoft.CodeAnalysis.CSharp;
-using Shouldly;
-using Stryker.Abstractions.ProjectComponents.TestProjects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
+using Stryker.Core.ProjectComponents.TestProjects;
 
-namespace Stryker.Abstractions.UnitTest.ProjectComponents.TestProjects
+namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
 {
     [TestClass]
     public class TestCaseTests

@@ -1,4 +1,4 @@
-namespace Stryker.Abstractions.MutationTest
+namespace Stryker.Core.MutationTest
 {
     public interface IMutationProcess
     {

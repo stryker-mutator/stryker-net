@@ -1,11 +1,12 @@
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Abstractions.Mutators;
-using System.Collections.Generic;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.Mutators;
 
-namespace Stryker.Abstractions.UnitTest.Mutators
+namespace Stryker.Core.UnitTest.Mutators
 {
     [TestClass]
     public class InitializerMutatorTests : TestBase

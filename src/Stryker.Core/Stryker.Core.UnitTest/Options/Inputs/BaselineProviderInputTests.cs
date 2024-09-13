@@ -2,11 +2,12 @@ using System.Collections.Generic;
 using Shouldly;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options.Inputs;
-using Stryker.Abstractions.Reporters;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Abstractions.Baseline;
+using Stryker.Abstractions.Options;
+using Stryker.Core.UnitTest;
 
-namespace Stryker.Abstractions.UnitTest.Options.Inputs
+namespace Stryker.Core.UnitTest.Options.Inputs
 {
     [TestClass]
     public class BaselineProviderInputTests : TestBase

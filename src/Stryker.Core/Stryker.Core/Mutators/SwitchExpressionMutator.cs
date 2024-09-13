@@ -4,7 +4,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Abstractions.Mutators;
+namespace Stryker.Core.Mutators;
 
 /// <summary> Mutator implementation for switch expression</summary>
 public class SwitchExpressionMutator : PatternMutatorBase<SwitchExpressionSyntax>
@@ -13,5 +13,5 @@ public class SwitchExpressionMutator : PatternMutatorBase<SwitchExpressionSyntax
     public override IEnumerable<Mutation> ApplyMutations(SwitchExpressionSyntax node, SemanticModel semanticModel) => node
         .DescendantNodes()
         .OfType<PatternSyntax>()
-        .SelectMany(x => base.ApplyMutations(x, semanticModel));
+        .SelectMany(x => ApplyMutations(x, semanticModel));
 }

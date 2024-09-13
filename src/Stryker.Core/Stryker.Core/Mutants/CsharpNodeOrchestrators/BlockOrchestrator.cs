@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Stryker.Core.Mutants;
 
-namespace Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 /// <summary>
 /// Orchestrate mutations for syntax block

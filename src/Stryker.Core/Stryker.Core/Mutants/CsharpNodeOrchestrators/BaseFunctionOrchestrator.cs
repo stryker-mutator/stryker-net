@@ -2,11 +2,10 @@ using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Helpers;
-using Stryker.Abstractions.Instrumentation;
+using Stryker.Core.Helpers;
+using Stryker.Core.Instrumentation;
 
-
-namespace Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 /// <summary>
 /// This class implements a roslyn type independent orchestrator for method, functions, getters....
@@ -14,7 +13,7 @@ namespace Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
 /// </summary>
 /// <typeparam name="T">SyntaxNode type</typeparam>
 /// <remarks>This class is helpful because there is no (useful) shared parent class for those syntax construct</remarks>
-internal abstract class BaseFunctionOrchestrator<T> :MemberDefinitionOrchestrator<T>, IInstrumentCode where T : SyntaxNode
+internal abstract class BaseFunctionOrchestrator<T> : MemberDefinitionOrchestrator<T>, IInstrumentCode where T : SyntaxNode
 {
     private readonly SeparatedSyntaxList<ParameterSyntax> _emptyParameterList;
 

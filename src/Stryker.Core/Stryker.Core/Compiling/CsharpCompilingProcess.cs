@@ -12,13 +12,14 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Initialisation;
-using Stryker.Abstractions.Initialisation.Buildalyzer;
 using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.MutationTest;
 using Stryker.Abstractions;
+using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Core.MutationTest;
+using Stryker.Core.Initialisation;
+using Stryker.Abstractions.Options;
 
-namespace Stryker.Abstractions.Compiling;
+namespace Stryker.Core.Compiling;
 
 public interface ICSharpCompilingProcess
 {
@@ -34,13 +35,13 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
 {
     private const int MaxAttempt = 50;
     private readonly MutationTestInput _input;
-    private readonly StrykerOptions _options;
+    private readonly IStrykerOptions _options;
     private readonly ICSharpRollbackProcess _rollbackProcess;
     private readonly ILogger _logger;
 
     public CsharpCompilingProcess(MutationTestInput input,
         ICSharpRollbackProcess rollbackProcess = null,
-        StrykerOptions options = null)
+        IStrykerOptions options = null)
     {
         _input = input;
         _options = options ?? new StrykerOptions();
@@ -83,7 +84,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
 
         if (emitResult.Success)
         {
-            return new (
+            return new(
                 true,
                 rollbackProcessResult?.RollbackedIds ?? Enumerable.Empty<int>());
         }
@@ -176,7 +177,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
             _input.SourceProjectInfo.AnalyzerResult.GetSymbolFileName());
         EmitResult emitResult = null;
         var resourceDescriptions = _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger);
-        while(emitResult == null)
+        while (emitResult == null)
         {
             if (previousEmitResult != null)
             {
@@ -214,14 +215,14 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
 
         LogEmitResult(emitResult);
 
-        return (rollbackProcessResult, emitResult, retryCount+1);
+        return (rollbackProcessResult, emitResult, retryCount + 1);
     }
 
     private CSharpCompilation ScanForCauseOfException(CSharpCompilation compilation)
     {
         var syntaxTrees = compilation.SyntaxTrees;
         // we add each file incrementally until it fails
-        foreach(var st in syntaxTrees)
+        foreach (var st in syntaxTrees)
         {
             var local = compilation.RemoveAllSyntaxTrees().AddSyntaxTrees(st);
             try
@@ -232,7 +233,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
                     manifestResources: _input.SourceProjectInfo.AnalyzerResult.GetResources(_logger),
                     options: null);
             }
-            catch(Exception e)
+            catch (Exception e)
             {
                 _logger.LogError(e, "Failed to compile {FilePath}", st.FilePath);
                 _logger.LogTrace("source code:\n {Source}", st.GetText());
@@ -276,12 +277,12 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
     }
 
     private static string ReadableNumber(int number) => number switch
-        {
-            1 => "first",
-            2 => "second",
-            3 => "third",
-            _ => number + "th"
-        };
+    {
+        1 => "first",
+        2 => "second",
+        3 => "third",
+        _ => number + "th"
+    };
 
     // This class is used to provide the options to the source generators
     [ExcludeFromCodeCoverage]
@@ -326,7 +327,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
                 return false;
             }
 
-            public override IEnumerable<string> Keys =>[];
+            public override IEnumerable<string> Keys => [];
         }
 
     }

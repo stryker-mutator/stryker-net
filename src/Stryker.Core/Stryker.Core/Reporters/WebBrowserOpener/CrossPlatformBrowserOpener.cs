@@ -5,7 +5,7 @@ using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Logging;
 
-namespace Stryker.Abstractions.Reporters.WebBrowserOpener
+namespace Stryker.Core.Reporters.WebBrowserOpener
 {
     [ExcludeFromCodeCoverage]
     public class CrossPlatformBrowserOpener : IWebbrowserOpener

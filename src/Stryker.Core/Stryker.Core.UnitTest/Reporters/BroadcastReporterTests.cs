@@ -1,15 +1,17 @@
 using System.Collections.ObjectModel;
 using System.IO.Abstractions.TestingHelpers;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.ProjectComponents;
-using Stryker.Abstractions.ProjectComponents.TestProjects;
-using Stryker.Abstractions.Reporters;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Abstractions.Reporting;
+using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents.Csharp;
+using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Core.Reporters;
 
-namespace Stryker.Abstractions.UnitTest.Reporters
+namespace Stryker.Core.UnitTest.Reporters
 {
     [TestClass]
     public class BroadcastReporterTests : TestBase
@@ -57,7 +59,7 @@ namespace Stryker.Abstractions.UnitTest.Reporters
         public void BroadcastReporter_ShouldInvokeSameMethodWithSameObject_OnMutantTested()
         {
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
-            reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
+            reporterMock.Setup(x => x.OnMutantTested(It.IsAny<IMutant>()));
 
             var exampleInputComponent = new CsharpFileLeaf();
             var exampleMutant = new Mutant();
@@ -80,7 +82,7 @@ namespace Stryker.Abstractions.UnitTest.Reporters
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
             reporterMock.Setup(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()));
             reporterMock.Setup(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()));
-            reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
+            reporterMock.Setup(x => x.OnMutantTested(It.IsAny<IMutant>()));
 
             var exampleTestProjectsInfo = new TestProjectsInfo(mockFileSystem);
             var exampleInputComponent = new CsharpFileLeaf();

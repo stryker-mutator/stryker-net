@@ -7,9 +7,12 @@ using Azure.Storage.Files.Shares;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Reporters.Json;
+using Stryker.Abstractions.Baseline;
+using Stryker.Abstractions.Reporting;
+using Stryker.Core.Reporters.Json;
+using Stryker.Abstractions.Options;
 
-namespace Stryker.Abstractions.Baseline.Providers
+namespace Stryker.Core.Baseline.Providers
 {
     public class AzureFileShareBaselineProvider : IBaselineProvider
     {
@@ -20,7 +23,7 @@ namespace Stryker.Abstractions.Baseline.Providers
         private readonly ILogger<AzureFileShareBaselineProvider> _logger;
         private readonly string _outputPath;
 
-        public AzureFileShareBaselineProvider(StrykerOptions options, ShareClient shareClient = null, ILogger<AzureFileShareBaselineProvider> logger = null)
+        public AzureFileShareBaselineProvider(IStrykerOptions options, ShareClient shareClient = null, ILogger<AzureFileShareBaselineProvider> logger = null)
         {
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<AzureFileShareBaselineProvider>();
 
@@ -28,7 +31,7 @@ namespace Stryker.Abstractions.Baseline.Providers
             _fileShareClient = shareClient ?? new ShareClient(new Uri(options.AzureFileStorageUrl), new AzureSasCredential(options.AzureFileStorageSas));
         }
 
-        public async Task<JsonReport> Load(string version)
+        public async Task<IJsonReport> Load(string version)
         {
             var (uri, root, subdirectoryNames, fileName) = BuildFileUriComponents(version);
 
@@ -52,7 +55,7 @@ namespace Stryker.Abstractions.Baseline.Providers
             return null;
         }
 
-        public async Task Save(JsonReport report, string version)
+        public async Task Save(IJsonReport report, string version)
         {
             var (uri, root, subdirectoryNames, fileName) = BuildFileUriComponents(version);
 

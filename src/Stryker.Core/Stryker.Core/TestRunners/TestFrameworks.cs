@@ -1,6 +1,6 @@
 using System;
 
-namespace Stryker.Abstractions.TestRunners
+namespace Stryker.Core.TestRunners
 {
     [Flags]
     public enum TestFrameworks

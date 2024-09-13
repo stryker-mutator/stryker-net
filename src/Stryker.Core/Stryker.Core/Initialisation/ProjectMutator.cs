@@ -3,16 +3,18 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.MutationTest;
 using Stryker.Abstractions;
-using Stryker.Abstractions.ProjectComponents.TestProjects;
 using Stryker.Abstractions.Reporting;
+using Stryker.Core.MutationTest;
+using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
 
-namespace Stryker.Abstractions.Initialisation
+namespace Stryker.Core.Initialisation
 {
     public interface IProjectMutator
     {
-        IMutationTestProcess MutateProject(StrykerOptions options, MutationTestInput input, IReporter reporters);
+        IMutationTestProcess MutateProject(IStrykerOptions options, MutationTestInput input, IReporter reporters);
     }
 
     public class ProjectMutator : IProjectMutator
@@ -26,11 +28,11 @@ namespace Stryker.Abstractions.Initialisation
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<ProjectOrchestrator>();
         }
 
-        public IMutationTestProcess MutateProject(StrykerOptions options, MutationTestInput input, IReporter reporters)
+        public IMutationTestProcess MutateProject(IStrykerOptions options, MutationTestInput input, IReporter reporters)
         {
             var process = _injectedMutationTestProcess ?? new MutationTestProcess(input, options, reporters,
                 new MutationTestExecutor(input.TestRunner));
-            
+
             // Enrich test projects info with unit tests
             EnrichTestProjectsWithTestInfo(input.InitialTestRun, input.TestProjectsInfo);
 
@@ -40,7 +42,7 @@ namespace Stryker.Abstractions.Initialisation
             return process;
         }
 
-        private void EnrichTestProjectsWithTestInfo(InitialTestRun initialTestRun, TestProjectsInfo testProjectsInfo)
+        private void EnrichTestProjectsWithTestInfo(InitialTestRun initialTestRun, ITestProjectsInfo testProjectsInfo)
         {
             var unitTests =
                 initialTestRun.Result.VsTestDescriptions

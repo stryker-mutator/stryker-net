@@ -2,12 +2,13 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Mutators;
-using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
+using Stryker.Core.Mutants;
 
-namespace Stryker.Abstractions.UnitTest.Mutants;
+namespace Stryker.Core.UnitTest.Mutants;
 
 [TestClass]
 public class CsharpMutantOrchestratorTests : MutantOrchestratorTestsBase
@@ -88,11 +89,11 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
         };
         _target = new CsharpMutantOrchestrator(new MutantPlacer(_injector), options: options);
 
-        string source = @"private void Move()
+        var source = @"private void Move()
 			{
 				;
 			}";
-        string expected = @"private void Move()
+        var expected = @"private void Move()
     {if(StrykerNamespace.MutantControl.IsActive(0)){}else		    {
     			    ;
     		    }}";
@@ -114,10 +115,10 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
     [TestMethod]
     public void ShouldAddReturnDefaultToOperator()
     {
-        string source = @"public static string operator+ (TestClass value, TestClass other)
+        var source = @"public static string operator+ (TestClass value, TestClass other)
 { while(true) return value;
 }";
-        string expected = @"public static string operator+ (TestClass value, TestClass other)
+        var expected = @"public static string operator+ (TestClass value, TestClass other)
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else{ while((StrykerNamespace.MutantControl.IsActive(2)?!(true):(StrykerNamespace.MutantControl.IsActive(1)?false:true))) return value;
 }return default(string);}";
         ShouldMutateSourceInClassToExpected(source, expected);
@@ -126,9 +127,9 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
     [TestMethod]
     public void ShouldAddReturnDefaultToArrowExpressionOperator()
     {
-        string source =
+        var source =
             @"public static int operator+ (TestClass value, TestClass other) => Sub(out var x, """")?1:2;";
-        string expected =
+        var expected =
             @"public static int operator+ (TestClass value, TestClass other) {if(StrykerNamespace.MutantControl.IsActive(1)){return(false?1:2);}else{if(StrykerNamespace.MutantControl.IsActive(0)){return(true?1:2);}else{return Sub(out var x, (StrykerNamespace.MutantControl.IsActive(2)?""Stryker was here!"":""""))?1:2;}}}";
         ShouldMutateSourceInClassToExpected(source, expected);
     }
@@ -154,10 +155,10 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
     [TestMethod]
     public void ShouldMutateExpressionBodiedLocalFunction()
     {
-        string source = @"void TestMethod(){
+        var source = @"void TestMethod(){
 int SomeMethod()  => (true && SomeOtherMethod(out var x)) ? x : 5;
 }";
-        string expected = @"void TestMethod(){if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+        var expected = @"void TestMethod(){if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 int SomeMethod()  {if(StrykerNamespace.MutantControl.IsActive(2)){return(false?x :5);}else{if(StrykerNamespace.MutantControl.IsActive(1)){return(true?x :5);}else{if(StrykerNamespace.MutantControl.IsActive(3)){return(true || SomeOtherMethod(out var x)) ? x : 5;}else{return((StrykerNamespace.MutantControl.IsActive(4)?false:true )&& SomeOtherMethod(out var x)) ? x : 5;}}}};
 }}";
 
@@ -167,7 +168,7 @@ int SomeMethod()  {if(StrykerNamespace.MutantControl.IsActive(2)){return(false?x
     [TestMethod]
     public void IfStatementsShouldBeNested()
     {
-        string source = @"void TestMethod()
+        var source = @"void TestMethod()
 {
 	int i = 0;
 	if (i + 8 == 8)
@@ -202,7 +203,7 @@ private bool Out(out string test)
 {
 	return true;
 }";
-        string expected = @"void TestMethod()
+        var expected = @"void TestMethod()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else{if(StrykerNamespace.MutantControl.IsActive(19)){
 	int i = 0;
 	if (i + 8 == 8)
@@ -302,7 +303,7 @@ private bool Out(out string test)
     [TestMethod]
     public void ShouldNotLeakMutationsToNextMethodOrProperty()
     {
-        string source = @"public static class ExampleExtension
+        var source = @"public static class ExampleExtension
 	{
 		private static string[] tabs = { ""tab1"", ""tab2""};
 
@@ -318,7 +319,7 @@ private bool Out(out string test)
 			}
 		}
 	}";
-        string expected = @"public static class ExampleExtension
+        var expected = @"public static class ExampleExtension
 	{
 		private static string[] tabs = { (StrykerNamespace.MutantControl.IsActive(1)?"""":""tab1""), (StrykerNamespace.MutantControl.IsActive(2)?"""":""tab2"")};
 
@@ -347,7 +348,7 @@ private bool Out(out string test)
     [TestMethod]
     public void ShouldNotMutateWhenDeclaration()
     {
-        string source = @"void TestMethod()
+        var source = @"void TestMethod()
 {
 	int i = 0;
 	var result = Out(out var test) ? test : """";
@@ -356,7 +357,7 @@ private bool Out(out string test)
 {
 	   return true;
 }";
-        string expected = @"void TestMethod()
+        var expected = @"void TestMethod()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else{if(StrykerNamespace.MutantControl.IsActive(2)){
 	int i = 0;
 	var result = (false?test :"""");
@@ -380,7 +381,7 @@ else{
     [TestMethod]
     public void ShouldMutateWhenDeclarationInInnerScope()
     {
-        string source = @"void TestMethod()
+        var source = @"void TestMethod()
 {
 	int i = 0;
 	var result = Out(i, (x) => { int.TryParse(""3"", out int y); return x == y;} ) ? i.ToString() : """";
@@ -390,7 +391,7 @@ private bool Out(int test, Func<int, bool>lambda )
 	return true;
 }
 ";
-        string expected = @"void TestMethod()
+        var expected = @"void TestMethod()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	int i = 0;
 	var result = (StrykerNamespace.MutantControl.IsActive(2)?(false?i.ToString() :""""):(StrykerNamespace.MutantControl.IsActive(1)?(true?i.ToString() :""""):Out(i, (x) => {if(StrykerNamespace.MutantControl.IsActive(3)){}else{ int.TryParse((StrykerNamespace.MutantControl.IsActive(4)?"""":""3""), out int y); return (StrykerNamespace.MutantControl.IsActive(5)?x != y:x == y);} return default;}) ? i.ToString() : (StrykerNamespace.MutantControl.IsActive(6)?""Stryker was here!"":"""")));
@@ -560,10 +561,10 @@ var employeePerson = (StrykerNamespace.MutantControl.IsActive(1)?group.FirstOrDe
     [TestMethod]
     public void ShouldMutateArrayInitializer()
     {
-        string source = @"public int[] Foo(){
+        var source = @"public int[] Foo(){
 int[] test = { 1 };
 }";
-        string expected =
+        var expected =
             @"public int[] Foo(){if(StrykerNamespace.MutantControl.IsActive(0)){}else{if(StrykerNamespace.MutantControl.IsActive(1)){
 int[] test = {};
 }else{
@@ -596,8 +597,8 @@ int[] test = { 1 };
     [TestMethod]
     public void ShouldNotMutateImplicitArrayCreationProperties()
     {
-        string source = @"public int[] Foo() => new [] { 1 };";
-        string expected = @"public int[] Foo() => new [] { 1 };";
+        var source = @"public int[] Foo() => new [] { 1 };";
+        var expected = @"public int[] Foo() => new [] { 1 };";
 
         ShouldMutateSourceInClassToExpected(source, expected);
     }
@@ -605,8 +606,8 @@ int[] test = { 1 };
     [TestMethod]
     public void ShouldNotMutateImplicitArrayCreation()
     {
-        string source = "public static readonly int[] Foo =  { 1 };";
-        string expected = "public static readonly int[] Foo =  { 1 };";
+        var source = "public static readonly int[] Foo =  { 1 };";
+        var expected = "public static readonly int[] Foo =  { 1 };";
 
         ShouldMutateSourceInClassToExpected(source, expected);
     }
@@ -614,8 +615,8 @@ int[] test = { 1 };
     [TestMethod]
     public void ShouldMutateProperties()
     {
-        string source = @"private string text => ""Some"" + ""Text"";";
-        string expected =
+        var source = @"private string text => ""Some"" + ""Text"";";
+        var expected =
             @"private string text => (StrykerNamespace.MutantControl.IsActive(0) ? """" : ""Some"") + (StrykerNamespace.MutantControl.IsActive(1) ? """" : ""Text"");";
 
         ShouldMutateSourceInClassToExpected(source, expected);
@@ -624,10 +625,10 @@ int[] test = { 1 };
     [TestMethod]
     public void ShouldMutateTupleDeclaration()
     {
-        string source = @"public void TestMethod() {
+        var source = @"public void TestMethod() {
 var (one, two) = (1 + 1, """");
 }";
-        string expected = @"public void TestMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+        var expected = @"public void TestMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 var (one, two) = ((StrykerNamespace.MutantControl.IsActive(1)?1 - 1:1 + 1), (StrykerNamespace.MutantControl.IsActive(2)?""Stryker was here!"":""""));
 }
     }";
@@ -638,8 +639,8 @@ var (one, two) = ((StrykerNamespace.MutantControl.IsActive(1)?1 - 1:1 + 1), (Str
     [TestMethod]
     public void ShouldNotMutateConst()
     {
-        string source = @"private const int x = 1 + 2;";
-        string expected = @"private const int x = 1 + 2;";
+        var source = @"private const int x = 1 + 2;";
+        var expected = @"private const int x = 1 + 2;";
 
         ShouldMutateSourceInClassToExpected(source, expected);
     }
@@ -647,8 +648,8 @@ var (one, two) = ((StrykerNamespace.MutantControl.IsActive(1)?1 - 1:1 + 1), (Str
     [TestMethod]
     public void ShouldMutateStackalloc()
     {
-        string source = @"Span<ushort> kindaUnrelated = stackalloc ushort[] { 0 };";
-        string expected =
+        var source = @"Span<ushort> kindaUnrelated = stackalloc ushort[] { 0 };";
+        var expected =
             @"Span<ushort> kindaUnrelated = (StrykerNamespace.MutantControl.IsActive(0)?stackalloc ushort[] {}:stackalloc ushort[] { 0 });";
 
         ShouldMutateSourceInClassToExpected(source, expected);
@@ -662,8 +663,8 @@ var (one, two) = ((StrykerNamespace.MutantControl.IsActive(1)?1 - 1:1 + 1), (Str
     [TestMethod]
     public void ShouldNotMutateEnum()
     {
-        string source = @"private enum Numbers { One = 1, Two = One + 1 }";
-        string expected = @"private enum Numbers { One = 1, Two = One + 1 }";
+        var source = @"private enum Numbers { One = 1, Two = One + 1 }";
+        var expected = @"private enum Numbers { One = 1, Two = One + 1 }";
 
         ShouldMutateSourceInClassToExpected(source, expected);
     }
@@ -671,9 +672,9 @@ var (one, two) = ((StrykerNamespace.MutantControl.IsActive(1)?1 - 1:1 + 1), (Str
     [TestMethod]
     public void ShouldNotMutateAttributes()
     {
-        string source = @"[Obsolete(""thismustnotbemutated"")]
+        var source = @"[Obsolete(""thismustnotbemutated"")]
 public void SomeMethod() {}";
-        string expected = @"[Obsolete(""thismustnotbemutated"")]
+        var expected = @"[Obsolete(""thismustnotbemutated"")]
 public void SomeMethod() {}";
 
         ShouldMutateSourceInClassToExpected(source, expected);
@@ -682,11 +683,11 @@ public void SomeMethod() {}";
     [TestMethod]
     public void ShouldMutateForWithIfStatementAndConditionalStatement()
     {
-        string source = @"public void SomeMethod() {
+        var source = @"public void SomeMethod() {
 for (var i = 0; i < 10; i++)
 { }
 }";
-        string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+        var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 if(StrykerNamespace.MutantControl.IsActive(3)){for (var i = 0; i < 10; i--)
 { }
 }else{for (var i = 0; (StrykerNamespace.MutantControl.IsActive(2)?i <= 10:(StrykerNamespace.MutantControl.IsActive(1)?i > 10:i < 10)); i++)
@@ -730,8 +731,8 @@ if(StrykerNamespace.MutantControl.IsActive(2)){for (var i = Method(true); ; i--)
     [TestMethod]
     public void ShouldMutateComplexExpressionBodiedMethod()
     {
-        string source = @"public int SomeMethod()  => (true && SomeOtherMethod(out var x)) ? x : 5;";
-        string expected =
+        var source = @"public int SomeMethod()  => (true && SomeOtherMethod(out var x)) ? x : 5;";
+        var expected =
             @"public int SomeMethod()  {if(StrykerNamespace.MutantControl.IsActive(1)){return(false?x :5);}else{if(StrykerNamespace.MutantControl.IsActive(0)){return(true?x :5);}else{if(StrykerNamespace.MutantControl.IsActive(2)){return(true || SomeOtherMethod(out var x)) ? x : 5;}else{return ((StrykerNamespace.MutantControl.IsActive(3)?false:true )&& SomeOtherMethod(out var x)) ? x : 5;}}}}";
 
         ShouldMutateSourceInClassToExpected(source, expected);
@@ -740,8 +741,8 @@ if(StrykerNamespace.MutantControl.IsActive(2)){for (var i = Method(true); ; i--)
     [TestMethod]
     public void ShouldMutateExpressionBodiedStaticConstructor()
     {
-        string source = @"static Test()  => (true && SomeOtherMethod(out var x)) ? x : 5;";
-        string expected =
+        var source = @"static Test()  => (true && SomeOtherMethod(out var x)) ? x : 5;";
+        var expected =
             @"static Test()  {using(new StrykerNamespace.MutantContext()){if(StrykerNamespace.MutantControl.IsActive(1)){(false?x :5);}else{if(StrykerNamespace.MutantControl.IsActive(0)){(true?x :5);}else{if(StrykerNamespace.MutantControl.IsActive(2)){(true || SomeOtherMethod(out var x)) ? x : 5;}else{((StrykerNamespace.MutantControl.IsActive(3)?false:true )&& SomeOtherMethod(out var x)) ? x : 5;}}}}}";
 
         ShouldMutateSourceInClassToExpected(source, expected);
@@ -750,10 +751,10 @@ if(StrykerNamespace.MutantControl.IsActive(2)){for (var i = Method(true); ; i--)
     [TestMethod]
     public void ShouldMutateInlineArrowFunction()
     {
-        string source = @"public void SomeMethod() {
+        var source = @"public void SomeMethod() {
 int Add(int x, int y) => x + y;
 }";
-        string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+        var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 int Add(int x, int y) => (StrykerNamespace.MutantControl.IsActive(1)?x - y:x + y);
 }}";
 
@@ -763,10 +764,10 @@ int Add(int x, int y) => (StrykerNamespace.MutantControl.IsActive(1)?x - y:x + y
     [TestMethod]
     public void ShouldMutateLambdaSecondParameter()
     {
-        string source = @"public void SomeMethod() {
+        var source = @"public void SomeMethod() {
 Action act = () => Console.WriteLine(1 + 1, 1 + 1);
 }";
-        string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+        var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(1)?1 - 1:1 + 1), (StrykerNamespace.MutantControl.IsActive(2)?1 - 1:1 + 1));
 }}";
 
@@ -776,11 +777,11 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(1)
     [TestMethod]
     public void ShouldMutateLinqMethods()
     {
-        string source = @"public int TestLinq(int count){
+        var source = @"public int TestLinq(int count){
 	var list = Enumerable.Range(1, count);
 	return list.Last();
 }";
-        string expected = @"public int TestLinq(int count){if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+        var expected = @"public int TestLinq(int count){if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	var list = Enumerable.Range(1, count);
 	return (StrykerNamespace.MutantControl.IsActive(1)?list.First():list.Last());
 }return default(int);}";
@@ -791,14 +792,14 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(1)
     [TestMethod]
     public void ShouldMutateComplexLinqMethods()
     {
-        string source = @"private void Linq()
+        var source = @"private void Linq()
 		{
 			var array = new []{1, 2};
 
 			var alt1 = array.Count(x => x % 2 == 0);
 			var alt2 = array.Min();
 		}";
-        string expected = @"private void Linq()
+        var expected = @"private void Linq()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else		{
 			var array = new []{1, 2};
 
@@ -812,11 +813,11 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(1)
     [TestMethod]
     public void ShouldMutateReturnStatements()
     {
-        string source = @"private bool Move()
+        var source = @"private bool Move()
 		{
 			return true;
 		}";
-        string expected = @"private bool Move()
+        var expected = @"private bool Move()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else		{
 			return (StrykerNamespace.MutantControl.IsActive(1)?false:true);
 		}return default(bool);}";
@@ -827,14 +828,14 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(1)
     [TestMethod]
     public void ShouldMutateWhileLoop()
     {
-        string source = @"private void DummyLoop()
+        var source = @"private void DummyLoop()
 		{
 			while (this.Move())
 			{
 				int x = 2 + 3;
 			}
 		}";
-        string expected = @"private void DummyLoop()
+        var expected = @"private void DummyLoop()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else		{
 			while ((StrykerNamespace.MutantControl.IsActive(1)?!(this.Move()):this.Move()))
 {if(StrykerNamespace.MutantControl.IsActive(2)){}else			{
@@ -848,11 +849,11 @@ Action act = () => Console.WriteLine((StrykerNamespace.MutantControl.IsActive(1)
     [TestMethod]
     public void ShouldMutateAssignmentStatementsWithIfStatement()
     {
-        string source = @"public void SomeMethod() {
+        var source = @"public void SomeMethod() {
 	var x = 0;
 	x *= x + 2;
 }";
-        string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+        var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	var x = 0;
 if(StrykerNamespace.MutantControl.IsActive(1)){	x /=x + 2;
 }else{	x *= (StrykerNamespace.MutantControl.IsActive(2)?x - 2:x + 2);
@@ -864,12 +865,12 @@ if(StrykerNamespace.MutantControl.IsActive(1)){	x /=x + 2;
     [TestMethod]
     public void ShouldMutateRecursiveCoalescingAssignmentStatements()
     {
-        string source = @"public void SomeMethod() {
+        var source = @"public void SomeMethod() {
     List<int> a = null;
     List<int> b = null;
     a ??= b ??= new List<int>();
 }";
-        string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+        var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
     List<int> a = null;
     List<int> b = null;
 if(StrykerNamespace.MutantControl.IsActive(1)){    a = b ??= new List<int>();
@@ -883,13 +884,13 @@ if(StrykerNamespace.MutantControl.IsActive(1)){    a = b ??= new List<int>();
     [TestMethod]
     public void ShouldMutateRecursiveNullCoalescingStatements()
     {
-        string source = @"public void SomeMethod() {
+        var source = @"public void SomeMethod() {
     List<int> a = null;
     List<int> b = null;
     List<int> c = null;
     var d = a ?? b ?? c;
 }";
-        string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+        var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
     List<int> a = null;
     List<int> b = null;
     List<int> c = null;
@@ -902,11 +903,11 @@ if(StrykerNamespace.MutantControl.IsActive(1)){    a = b ??= new List<int>();
     [TestMethod]
     public void ShouldMutateIncrementStatementWithIfStatement()
     {
-        string source = @"public void SomeMethod() {
+        var source = @"public void SomeMethod() {
 	var x = 0;
 	x++;
 }";
-        string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+        var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	var x = 0;
 if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.MutantControl.IsActive(2)){	x--;
 }else{	x++;
@@ -918,13 +919,13 @@ if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.Mutant
     [TestMethod]
     public void ShouldNotMutateIfDisabledByComment()
     {
-        string source = @"public void SomeMethod() {
+        var source = @"public void SomeMethod() {
 	var x = 0;
 // Stryker disable all
 	x++;
 	x/=2;
 }";
-        string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+        var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	var x = 0;
 // Stryker disable all
 	x++;
@@ -969,7 +970,7 @@ if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.Mutant
     [TestMethod]
     public void ShouldNotMutateIfDisabledByCommentAtMethodLevel()
     {
-        string source = @"
+        var source = @"
 // Stryker disable all : testing
 public void SomeMethod()
  {
@@ -977,7 +978,7 @@ public void SomeMethod()
 	x++;
 	x/=2;
 }";
-        string expected = @"// Stryker disable all : testing
+        var expected = @"// Stryker disable all : testing
 public void SomeMethod()
  {
 	var x = 0;
@@ -1011,13 +1012,13 @@ public void SomeMethod()
     [TestMethod]
     public void ShouldNotMutateOneLineIfDisabledByComment()
     {
-        string source = @"public void SomeMethod() {
+        var source = @"public void SomeMethod() {
 	var x = 0;
 // Stryker disable once all
 	x++;
 	x/=2;
 }";
-        string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+        var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	var x = 0;
 // Stryker disable once all
 	x++;
@@ -1031,14 +1032,14 @@ if(StrykerNamespace.MutantControl.IsActive(3)){	x*=2;
     [TestMethod]
     public void ShouldNotMutateOneLineIfDisabledAndEnabledByComment()
     {
-        string source = @"public void SomeMethod() {
+        var source = @"public void SomeMethod() {
 	var x = 0;
 // Stryker disable all
 	x++;
 // Stryker restore all
 	x/=2;
 }";
-        string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+        var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	var x = 0;
 // Stryker disable all
 	x++;
@@ -1054,13 +1055,13 @@ if(StrykerNamespace.MutantControl.IsActive(3)){// Stryker restore all
     [TestMethod]
     public void ShouldNotMutateOneLineIfDisabledOnce()
     {
-        string source = @"public void SomeMethod() {
+        var source = @"public void SomeMethod() {
 	var x = 0;
 // Stryker disable once all
 	x++;
 	x/=2;
 }";
-        string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+        var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	var x = 0;
 // Stryker disable Update , Statement : comment
 	x++;
@@ -1076,14 +1077,14 @@ if(StrykerNamespace.MutantControl.IsActive(3)){// Stryker restore all
     [TestMethod]
     public void ShouldNotMutateOneLineIfSpecificMutatorDisabled()
     {
-        string source = @"public void SomeMethod() {
+        var source = @"public void SomeMethod() {
 	var x = 0;
 // Stryker disable Update , Statement : comment
 	x++;
 // Stryker restore all
 	x/=2;
 }";
-        string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+        var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	var x = 0;
 // Stryker disable Update , Statement : comment
 	x++;
@@ -1107,13 +1108,13 @@ if(StrykerNamespace.MutantControl.IsActive(3)){// Stryker restore all
     [TestMethod]
     public void ShouldNotMutateASubExpressionIfDisabledByComment()
     {
-        string source = @"public void SomeMethod() {
+        var source = @"public void SomeMethod() {
 	var x = 0;
 	x/=
 // Stryker disable once all
 x +2;
 }";
-        string expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+        var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	var x = 0;
 if(StrykerNamespace.MutantControl.IsActive(1)){	x*=// Stryker disable once all
 x +2;
@@ -1128,7 +1129,7 @@ x +2;
     [TestMethod]
     public void ShouldMutateChainedMutations()
     {
-        string source = @"public void Simple()
+        var source = @"public void Simple()
 		{
 			object value = null;
 			var flag1 = false;
@@ -1137,7 +1138,7 @@ x +2;
 			{
 			}
 		}";
-        string expected = @"public void Simple()
+        var expected = @"public void Simple()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else		{
 			object value = null;
 			var flag1 = (StrykerNamespace.MutantControl.IsActive(1)?true:false);
@@ -1153,7 +1154,7 @@ x +2;
     [TestMethod]
     public void ShouldMutateStatics()
     {
-        string source = @"private static bool willMutateToFalse = true;
+        var source = @"private static bool willMutateToFalse = true;
 
 		private static bool NoWorries => false;
 		private static bool NoWorriesGetter
@@ -1166,7 +1167,7 @@ static Mutator_Flag_MutatedStatics()
 			int x = 0;
 			var y = x++;
 		}";
-        string expected = @"private static bool willMutateToFalse = StrykerNamespace.MutantContext.TrackValue(()=>(StrykerNamespace.MutantControl.IsActive(0)?false:true));
+        var expected = @"private static bool willMutateToFalse = StrykerNamespace.MutantContext.TrackValue(()=>(StrykerNamespace.MutantControl.IsActive(0)?false:true));
 
 		private static bool NoWorries => (StrykerNamespace.MutantControl.IsActive(1)?true:false);
 		private static bool NoWorriesGetter
@@ -1186,8 +1187,8 @@ static Mutator_Flag_MutatedStatics()
     [TestMethod]
     public void ShouldNotMutateDefaultValues()
     {
-        string source = @"public void SomeMethod(bool option = true) {}";
-        string expected = @"public void SomeMethod(bool option = true) {}";
+        var source = @"public void SomeMethod(bool option = true) {}";
+        var expected = @"public void SomeMethod(bool option = true) {}";
 
         ShouldMutateSourceInClassToExpected(source, expected);
     }
@@ -1195,8 +1196,8 @@ static Mutator_Flag_MutatedStatics()
     [TestMethod]
     public void ShouldInitializeOutVars()
     {
-        string source = @"public void SomeMethod(out int x, out string text) { x = 1; text = ""hello"";}";
-        string expected = @"public void SomeMethod(out int x, out string text) {{x= default(int);text= default(string);}if(StrykerNamespace.MutantControl.IsActive(0)){}else{ x = 1; text = (StrykerNamespace.MutantControl.IsActive(1)?"""":""hello"");
+        var source = @"public void SomeMethod(out int x, out string text) { x = 1; text = ""hello"";}";
+        var expected = @"public void SomeMethod(out int x, out string text) {{x= default(int);text= default(string);}if(StrykerNamespace.MutantControl.IsActive(0)){}else{ x = 1; text = (StrykerNamespace.MutantControl.IsActive(1)?"""":""hello"");
         }}";
 
         ShouldMutateSourceInClassToExpected(source, expected);
@@ -1205,7 +1206,7 @@ static Mutator_Flag_MutatedStatics()
     [TestMethod]
     public void ShouldMutateInsideLambda()
     {
-        string source = @"private async Task GoodLuck()
+        var source = @"private async Task GoodLuck()
 {
 	await SendRequest(url, HttpMethod.Get, (request) =>
 	{
@@ -1213,7 +1214,7 @@ static Mutator_Flag_MutatedStatics()
 		request.Headers.TryAddWithoutValidation(""Date"", date);
 }, ensureSuccessStatusCode: false);
 }";
-        string expected = @"private async Task GoodLuck()
+        var expected = @"private async Task GoodLuck()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 if(StrykerNamespace.MutantControl.IsActive(1)){;}else{	await SendRequest(url, HttpMethod.Get, (request) =>
 {if(StrykerNamespace.MutantControl.IsActive(2)){}else	{
@@ -1236,7 +1237,7 @@ if(StrykerNamespace.MutantControl.IsActive(3)){;}else{		request.Headers.Add((Str
 Console.WriteLine($""Hello {name}"");
 };
 }";
-        string expected = @"private void LocalFun()
+        var expected = @"private void LocalFun()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	var test = delegate(string name)
 {if(StrykerNamespace.MutantControl.IsActive(1)){}else{
@@ -1257,7 +1258,7 @@ if(StrykerNamespace.MutantControl.IsActive(2)){;}else{Console.WriteLine((Stryker
 Console.WriteLine(""Hello"");
 };
 }";
-        string expected = @"private void LocalFun()
+        var expected = @"private void LocalFun()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	var test = delegate
 {if(StrykerNamespace.MutantControl.IsActive(1)){}else{
@@ -1271,7 +1272,7 @@ if(StrykerNamespace.MutantControl.IsActive(2)){;}else{Console.WriteLine((Stryker
     [TestMethod]
     public void MutationsShouldHaveLinespan()
     {
-        string source = @"void TestMethod()
+        var source = @"void TestMethod()
 {
 	var test3 = 2 + 5;
 }";
@@ -1288,7 +1289,7 @@ if(StrykerNamespace.MutantControl.IsActive(2)){;}else{Console.WriteLine((Stryker
     [TestMethod]
     public void MutationsShouldHaveLinespan2()
     {
-        string source = @"using System;
+        var source = @"using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -1319,11 +1320,11 @@ namespace TestApp
     [TestMethod]
     public void ShouldAddReturnDefaultToMethods()
     {
-        string source = @"bool TestMethod()
+        var source = @"bool TestMethod()
 {
 	while(true) return false;
 }";
-        string expected = @"bool TestMethod()
+        var expected = @"bool TestMethod()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	while((StrykerNamespace.MutantControl.IsActive(2)?!(true):(StrykerNamespace.MutantControl.IsActive(1)?false:true))) return (StrykerNamespace.MutantControl.IsActive(3)?true:false);
 }return default(bool);}";
@@ -1333,10 +1334,10 @@ namespace TestApp
     [TestMethod]
     public void ShouldAddReturnDefaultToConversion()
     {
-        string source = @"public static explicit operator string(TestClass value)
+        var source = @"public static explicit operator string(TestClass value)
 { while(true) return value;
 }";
-        string expected = @"public static explicit operator string(TestClass value)
+        var expected = @"public static explicit operator string(TestClass value)
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else{ while((StrykerNamespace.MutantControl.IsActive(2)?!(true):(StrykerNamespace.MutantControl.IsActive(1)?false:true))) return value;
 }return default(string);}";
         ShouldMutateSourceInClassToExpected(source, expected);
@@ -1355,10 +1356,10 @@ const string text = ""a""+""b"";}}";
     [TestMethod]
     public void ShouldAddReturnDefaultToAsyncMethods()
     {
-        string source = @"public async Task<bool> TestMethod()
+        var source = @"public async Task<bool> TestMethod()
 {   while(true) return false;
 }";
-        string expected = @"public async Task<bool> TestMethod()
+        var expected = @"public async Task<bool> TestMethod()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else{  while((StrykerNamespace.MutantControl.IsActive(2)?!(true):(StrykerNamespace.MutantControl.IsActive(1)?false:true))) return (StrykerNamespace.MutantControl.IsActive(3)?true:false);
 }return default(bool);}";
         ShouldMutateSourceInClassToExpected(source, expected);
@@ -1367,14 +1368,14 @@ const string text = ""a""+""b"";}}";
     [TestMethod]
     public void ShouldAddReturnDefaultToIndexerGetter()
     {
-        string source = @"public string this[string key]
+        var source = @"public string this[string key]
 {
     get
     {
         return key;
     }
 }";
-        string expected = @"public string this[string key]
+        var expected = @"public string this[string key]
 {
     get
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else        {
@@ -1388,7 +1389,7 @@ return default(string);}
     [TestMethod]
     public void ShouldNotAddReturnDefaultToEnumerationMethods()
     {
-        string source = @"public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable, string propertyName)
+        var source = @"public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable, string propertyName)
 	  {
 		foreach (var o in enumerable)
 		{
@@ -1399,7 +1400,7 @@ public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable)
 	  {
 		yield break;
 	  }";
-        string expected = @"public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable, string propertyName)
+        var expected = @"public static IEnumerable<object> Extracting<T>(this IEnumerable<T> enumerable, string propertyName)
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else	  {
 		foreach (var o in enumerable)
 {if(StrykerNamespace.MutantControl.IsActive(1)){}else		{
@@ -1416,10 +1417,10 @@ if(StrykerNamespace.MutantControl.IsActive(4)){;}else{		yield break;
     [TestMethod]
     public void ShouldAddReturnDefaultToAsyncWithFullNamespaceMethods()
     {
-        string source = @"public async System.Threading.Tasks.Task<bool> TestMethod()
+        var source = @"public async System.Threading.Tasks.Task<bool> TestMethod()
 {  while(true) return false;
 }";
-        string expected = @"public async System.Threading.Tasks.Task<bool> TestMethod()
+        var expected = @"public async System.Threading.Tasks.Task<bool> TestMethod()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else{  while((StrykerNamespace.MutantControl.IsActive(2)?!(true):(StrykerNamespace.MutantControl.IsActive(1)?false:true))) return (StrykerNamespace.MutantControl.IsActive(3)?true:false);
 }return default(bool);}";
         ShouldMutateSourceInClassToExpected(source, expected);
@@ -1428,11 +1429,11 @@ if(StrykerNamespace.MutantControl.IsActive(4)){;}else{		yield break;
     [TestMethod]
     public void ShouldNotAddReturnDefaultToAsyncTaskMethods()
     {
-        string source = @"public async Task TestMethod()
+        var source = @"public async Task TestMethod()
 {
 	;
 }";
-        string expected = @"public async Task TestMethod()
+        var expected = @"public async Task TestMethod()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	;
 }}";
@@ -1442,11 +1443,11 @@ if(StrykerNamespace.MutantControl.IsActive(4)){;}else{		yield break;
     [TestMethod]
     public void ShouldNotAddReturnDefaultToMethodsWithReturnTypeVoid()
     {
-        string source = @"void TestMethod()
+        var source = @"void TestMethod()
 {
 	;
 }";
-        string expected = @"void TestMethod()
+        var expected = @"void TestMethod()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	;
 }}";
@@ -1461,7 +1462,7 @@ if(StrykerNamespace.MutantControl.IsActive(4)){;}else{		yield break;
     [DataRow("{;}")]
     public void ShouldNotAddReturnOnSomeBlocks(string code)
     {
-        string source = @$"
+        var source = @$"
 int TestMethod()
 // Stryker disable all
 {code}";
@@ -1471,14 +1472,14 @@ int TestMethod()
     [TestMethod]
     public void ShouldSkipStringsInSwitchExpression()
     {
-        string source = @"string TestMethod()
+        var source = @"string TestMethod()
 {
 	return input switch
 	{
 		""test"" => ""test""
 	};
 }";
-        string expected = @"string TestMethod()
+        var expected = @"string TestMethod()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	return input switch
 	{
@@ -1551,12 +1552,12 @@ static TestClass(){using(new StrykerNamespace.MutantContext()){}}}";
     [TestMethod]
     public void ShouldMutateConditionalExpression()
     {
-        string source = @"void TestMethod()
+        var source = @"void TestMethod()
 {
 var a = 1;
 var x = a == 1 ? 5 : 7;
 }";
-        string expected = @"void TestMethod()
+        var expected = @"void TestMethod()
 {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 var a = 1;
 var x = (StrykerNamespace.MutantControl.IsActive(2)?(false?5 :7):(StrykerNamespace.MutantControl.IsActive(1)?(true?5 :7):(StrykerNamespace.MutantControl.IsActive(3)?a != 1 :a == 1 )? 5 : 7));

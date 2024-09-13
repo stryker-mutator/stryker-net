@@ -1,7 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 
-namespace Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 /// <summary>
 /// General handler for Statements. Remember to inherit from this class when you wand to create a statement specific logic.

@@ -8,8 +8,9 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Runtime.InteropServices;
+using Stryker.Core;
 
-namespace Stryker.Abstractions.Testing
+namespace Stryker.Core.Testing
 {
     // integration with OS
     [ExcludeFromCodeCoverage]

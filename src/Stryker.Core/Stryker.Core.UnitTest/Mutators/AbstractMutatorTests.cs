@@ -9,9 +9,11 @@ using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.Mutators;
+using Stryker.Core.UnitTest;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
-namespace Stryker.Abstractions.UnitTest.Mutators
+namespace Stryker.Core.UnitTest.Mutators
 {
     [TestClass]
     public class AbstractMutatorTests : TestBase

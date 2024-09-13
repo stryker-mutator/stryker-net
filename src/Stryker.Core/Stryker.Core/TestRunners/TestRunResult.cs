@@ -2,10 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Stryker.Abstractions.TestRunners;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.TestRunners.VsTest;
+using Stryker.Core.Mutants;
+using Stryker.Core.TestRunners.VsTest;
 
-namespace Stryker.Abstractions.TestRunners
+namespace Stryker.Core.TestRunners
 {
     public class TestRunResult : ITestRunResult
     {

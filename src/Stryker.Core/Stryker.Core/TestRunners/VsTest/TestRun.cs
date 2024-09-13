@@ -17,7 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
-namespace Stryker.Abstractions.TestRunners.VsTest
+namespace Stryker.Core.TestRunners.VsTest
 {
     internal class TestRun
     {

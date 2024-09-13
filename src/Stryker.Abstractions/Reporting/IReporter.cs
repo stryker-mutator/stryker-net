@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Stryker.Abstractions.ProjectComponents;
 
 namespace Stryker.Abstractions.Reporting;

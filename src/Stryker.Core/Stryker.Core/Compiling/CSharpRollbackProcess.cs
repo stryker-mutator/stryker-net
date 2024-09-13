@@ -9,10 +9,10 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Mutators;
+using Stryker.Core.Mutants;
 
-namespace Stryker.Abstractions.Compiling
+namespace Stryker.Core.Compiling
 {
     public interface ICSharpRollbackProcess
     {

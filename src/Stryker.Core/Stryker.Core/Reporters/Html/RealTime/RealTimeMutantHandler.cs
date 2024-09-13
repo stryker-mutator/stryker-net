@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Reporters.Html.RealTime.Events;
-using Stryker.Abstractions.Reporters.Json.SourceFiles;
+using Stryker.Abstractions.Options;
+using Stryker.Core.Reporters.Html.RealTime.Events;
+using Stryker.Core.Reporters.Json.SourceFiles;
 
-namespace Stryker.Abstractions.Reporters.Html.RealTime;
+namespace Stryker.Core.Reporters.Html.RealTime;
 
 public class RealTimeMutantHandler : IRealTimeMutantHandler
 {
@@ -14,7 +14,7 @@ public class RealTimeMutantHandler : IRealTimeMutantHandler
     private readonly ISseServer _server;
     private readonly Queue<JsonMutant> _delayedEventQueue = new();
 
-    public RealTimeMutantHandler(StrykerOptions options, ISseServer server = null)
+    public RealTimeMutantHandler(IStrykerOptions options, ISseServer server = null)
     {
         _server = server ?? new SseServer();
         _server.ClientConnected += ClientConnectedHandler;

@@ -2,12 +2,11 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Abstractions.UnitTest.Mutators
+namespace Stryker.Core.Mutators.Mutators
 {
     [TestClass]
     public class BlockMutatorTests

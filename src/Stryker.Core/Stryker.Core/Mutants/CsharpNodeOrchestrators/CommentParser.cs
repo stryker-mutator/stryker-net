@@ -6,8 +6,9 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Mutators;
+using Stryker.Core.Mutants;
 
-namespace Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 internal static class CommentParser
 {

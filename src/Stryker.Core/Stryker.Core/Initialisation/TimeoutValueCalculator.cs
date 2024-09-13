@@ -1,6 +1,7 @@
 using System;
+using Stryker.Abstractions;
 
-namespace Stryker.Abstractions.Initialisation
+namespace Stryker.Core.Initialisation
 {
     public class TimeoutValueCalculator : ITimeoutValueCalculator
     {
@@ -17,7 +18,7 @@ namespace Stryker.Abstractions.Initialisation
             _initializationTime = Math.Max(testSessionTime - aggregatedTestTimes, 0);
             _aggregatedTestTimes = aggregatedTestTimes;
         }
-        
+
         public int DefaultTimeout => CalculateTimeoutValue(_aggregatedTestTimes);
 
         public int CalculateTimeoutValue(int estimatedTime) => (int)((_initializationTime + estimatedTime) * Ratio) + _extraMs;

@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
 
-namespace Stryker.Abstractions.ProjectComponents
+namespace Stryker.Core.ProjectComponents
 {
 
     public abstract class ProjectComponent : IProjectComponent
@@ -14,7 +16,7 @@ namespace Stryker.Abstractions.ProjectComponents
         /// </summary>
         public string RelativePath { get; set; }
 
-        public IReadOnlyFolderComposite Parent { get; set; }
+        public IFolderComposite Parent { get; set; }
 
         public Display DisplayFile { get; set; }
 
@@ -65,7 +67,7 @@ namespace Stryker.Abstractions.ProjectComponents
                 return Health.None;
             }
 
-            return (mutationScore*100) switch
+            return (mutationScore * 100) switch
             {
                 var score when score >= threshold.High => Health.Good,
                 var score when score < threshold.High && score >= threshold.Low => Health.Warning,

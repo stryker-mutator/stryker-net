@@ -1,17 +1,17 @@
 using System.Linq;
 using System.Threading.Tasks;
-using Moq;
-using Stryker.Abstractions.Clients;
-using Stryker.Abstractions;
-using Stryker.Abstractions.Options.Inputs;
-using Stryker.Abstractions.ProjectComponents.TestProjects;
-using Stryker.Abstractions.Reporters;
-using Stryker.Abstractions.Reporters.Json;
-using Stryker.Abstractions.Reporters.Json.SourceFiles;
-using Stryker.Abstractions.Reporters.WebBrowserOpener;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Options;
+using Stryker.Core.Clients;
+using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Core.Reporters;
+using Stryker.Core.Reporters.Json;
+using Stryker.Core.Reporters.Json.SourceFiles;
+using Stryker.Core.Reporters.WebBrowserOpener;
 
-namespace Stryker.Abstractions.UnitTest.Reporters
+namespace Stryker.Core.UnitTest.Reporters
 {
     [TestClass]
     public class DashboardReporterTests : TestBase

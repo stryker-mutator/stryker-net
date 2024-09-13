@@ -9,17 +9,18 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Moq.Protected;
 using Shouldly;
-using Stryker.Abstractions.Clients;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
-using Stryker.Abstractions.ProjectComponents.TestProjects;
-using Stryker.Abstractions.Reporters;
-using Stryker.Abstractions.Reporters.Json;
-using Stryker.Abstractions.Reporters.Json.SourceFiles;
-using Stryker.Abstractions.UnitTest.Reporters.Json;
-using Stryker.Abstractions.Mutants;
+using Stryker.Core.Clients;
+using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Core.Reporters.Json;
+using Stryker.Core.Reporters.Json.SourceFiles;
+using Stryker.Core.UnitTest.Reporters.Json;
 
-namespace Stryker.Abstractions.UnitTest.Clients
+namespace Stryker.Core.UnitTest.Clients
 {
     [TestClass]
     public class DashboardClientsTest : TestBase
@@ -30,7 +31,7 @@ namespace Stryker.Abstractions.UnitTest.Clients
             DashboardApiKey = "Access_Token",
             ProjectName = "github.com/JohnDoe/project",
             ProjectVersion = "test/version",
-            Reporters = new [] { Reporter.Dashboard },
+            Reporters = new[] { Reporter.Dashboard },
         };
 
         private static readonly StrykerOptions OptionsWithModule = new()

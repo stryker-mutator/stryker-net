@@ -2,14 +2,14 @@ using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Helpers;
+using Stryker.Core.Helpers;
 
-namespace Stryker.Abstractions.Instrumentation;
+namespace Stryker.Core.Instrumentation;
 
 /// <summary>
 /// Injects 'return default(...)' statement at the end of a method
 /// </summary>
-internal class EndingReturnEngine: BaseEngine<BlockSyntax>
+internal class EndingReturnEngine : BaseEngine<BlockSyntax>
 {
     public BlockSyntax InjectReturn(BlockSyntax block, TypeSyntax type)
     {
@@ -25,7 +25,7 @@ internal class EndingReturnEngine: BaseEngine<BlockSyntax>
             return block;
         }
 
-        block = block.AddStatements(SyntaxFactory.ReturnStatement( type == null ?
+        block = block.AddStatements(SyntaxFactory.ReturnStatement(type == null ?
             SyntaxFactory.LiteralExpression(SyntaxKind.DefaultLiteralExpression).WithLeadingTrivia(SyntaxFactory.Space)
             : type.BuildDefaultExpression())).WithAdditionalAnnotations(Marker);
 

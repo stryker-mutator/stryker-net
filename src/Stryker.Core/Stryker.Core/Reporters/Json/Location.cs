@@ -1,7 +1,7 @@
 using Microsoft.CodeAnalysis;
 using Stryker.Abstractions.Reporting;
 
-namespace Stryker.Abstractions.Reporters.Json
+namespace Stryker.Core.Reporters.Json
 {
     public class Location : ILocation
     {

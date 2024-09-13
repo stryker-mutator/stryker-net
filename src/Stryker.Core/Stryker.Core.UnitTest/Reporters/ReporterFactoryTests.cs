@@ -1,16 +1,17 @@
 using System;
 using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Abstractions.Baseline.Providers;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Reporters;
-using Stryker.Abstractions.Reporters.Html;
-using Stryker.Abstractions.Reporters.Json;
-using Stryker.Abstractions.Reporters.Progress;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Abstractions.Options;
+using Stryker.Core.Baseline.Providers;
+using Stryker.Core.Reporters;
+using Stryker.Core.Reporters.Html;
+using Stryker.Core.Reporters.Json;
+using Stryker.Core.Reporters.Progress;
 
-namespace Stryker.Abstractions.UnitTest.Reporters
+namespace Stryker.Core.UnitTest.Reporters
 {
     [TestClass]
     public class ReporterFactoryTests : TestBase

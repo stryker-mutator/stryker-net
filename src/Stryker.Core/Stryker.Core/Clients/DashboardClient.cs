@@ -1,21 +1,22 @@
-using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Logging;
-using Stryker.Abstractions;
-using Stryker.Abstractions.Reporters.Json;
 using System;
 using System.Collections.Generic;
 using System.Net.Http;
 using System.Net.Http.Json;
 using System.Threading.Tasks;
-using Stryker.Abstractions.Reporters.Json.SourceFiles;
+using Microsoft.Extensions.Logging;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Reporting;
+using Stryker.Core.Reporters.Json;
 
-namespace Stryker.Abstractions.Clients
+namespace Stryker.Core.Clients
 {
     public interface IDashboardClient
     {
-        Task<string> PublishReport(JsonReport report, string version, bool realTime = false);
+        Task<string> PublishReport(IJsonReport report, string version, bool realTime = false);
         Task<JsonReport> PullReport(string version);
-        Task PublishMutantBatch(JsonMutant mutant);
+        Task PublishMutantBatch(IJsonMutant mutant);
         Task PublishFinished();
     }
 
@@ -23,12 +24,12 @@ namespace Stryker.Abstractions.Clients
     {
         private const int MutantBatchSize = 10;
 
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly ILogger<DashboardClient> _logger;
         private readonly HttpClient _httpClient;
-        private readonly List<JsonMutant> _batch = new();
+        private readonly List<IJsonMutant> _batch = new();
 
-        public DashboardClient(StrykerOptions options, HttpClient httpClient = null, ILogger<DashboardClient> logger = null)
+        public DashboardClient(IStrykerOptions options, HttpClient httpClient = null, ILogger<DashboardClient> logger = null)
         {
             _options = options;
             _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DashboardClient>();
@@ -43,7 +44,7 @@ namespace Stryker.Abstractions.Clients
             }
         }
 
-        public async Task<string> PublishReport(JsonReport report, string version, bool realTime = false)
+        public async Task<string> PublishReport(IJsonReport report, string version, bool realTime = false)
         {
             var url = GetUrl(version, realTime);
 
@@ -57,14 +58,14 @@ namespace Stryker.Abstractions.Clients
                 var result = await response.Content.ReadFromJsonAsync<DashboardResult>();
                 return result?.Href;
             }
-            catch(Exception exception)
+            catch (Exception exception)
             {
                 _logger.LogError(exception, "Failed to upload report to the dashboard at {DashboardUrl}", url);
                 return null;
             }
         }
 
-        public async Task PublishMutantBatch(JsonMutant mutant)
+        public async Task PublishMutantBatch(IJsonMutant mutant)
         {
             _batch.Add(mutant);
             if (_batch.Count != MutantBatchSize)
@@ -79,7 +80,7 @@ namespace Stryker.Abstractions.Clients
                 response.EnsureSuccessStatusCode();
                 _batch.Clear();
             }
-            catch(Exception exception)
+            catch (Exception exception)
             {
                 _logger.LogError(exception, "Failed to upload mutant to the dashboard at {DashboardUrl}", url);
             }
@@ -101,7 +102,7 @@ namespace Stryker.Abstractions.Clients
                 var deleteResponse = await _httpClient.DeleteAsync(url);
                 deleteResponse.EnsureSuccessStatusCode();
             }
-            catch(Exception exception)
+            catch (Exception exception)
             {
                 _logger.LogError(exception, "Failed send finished event to the dashboard at {DashboardUrl}", url);
             }

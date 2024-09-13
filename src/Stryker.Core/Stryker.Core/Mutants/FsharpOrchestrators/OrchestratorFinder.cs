@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Stryker.Abstractions.Mutants.FsharpOrchestrators
+namespace Stryker.Core.Mutants.FsharpOrchestrators
 {
     public class OrchestratorFinder<T>
     {

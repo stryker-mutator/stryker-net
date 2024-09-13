@@ -8,14 +8,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Initialisation;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Options;
-using Stryker.Abstractions.TestRunners;
+using Stryker.Core.Mutants;
 using Stryker.DataCollector;
 
-namespace Stryker.Abstractions.TestRunners.VsTest
+namespace Stryker.Core.TestRunners.VsTest
 {
     public sealed class VsTestRunnerPool : ITestRunner
     {
@@ -43,7 +44,7 @@ namespace Stryker.Abstractions.TestRunners.VsTest
         }
 
         [ExcludeFromCodeCoverage(Justification = "It depends on the deployment of VsTest.")]
-        public VsTestRunnerPool(StrykerOptions options, IFileSystem fileSystem = null)
+        public VsTestRunnerPool(IStrykerOptions options, IFileSystem fileSystem = null)
         {
             Context = new VsTestContextInformation(options, fileSystem: fileSystem);
             _countOfRunners = Math.Max(1, options.Concurrency);
@@ -55,7 +56,7 @@ namespace Stryker.Abstractions.TestRunners.VsTest
 
         public TestSet GetTests(IProjectAndTests project) => Context.GetTestsForSources(project.GetTestAssemblies());
 
-        public TestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update)
+        public TestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler update)
             => RunThis(runner => runner.TestMultipleMutants(project, timeoutCalc, mutants, update));
 
         public TestRunResult InitialTest(IProjectAndTests project)
@@ -178,14 +179,14 @@ namespace Stryker.Abstractions.TestRunners.VsTest
                 {
                     // this is an extra result. Coverage data is already present in the already parsed result
                     _logger.LogDebug(
-                        "VsTestRunner: Extra result for test {TestCase}, so no coverage data for it.",testResult.TestCase.DisplayName);
+                        "VsTestRunner: Extra result for test {TestCase}, so no coverage data for it.", testResult.TestCase.DisplayName);
                     coverageRunResult = null;
                     return true;
                 }
 
                 // the coverage collector was not able to report anything ==> it has not been tracked by it, so we do not have coverage data
                 // ==> we need it to use this test against every mutation
-                _logger.LogDebug("VsTestRunner: No coverage data for {TestCase}.",testResult.TestCase.DisplayName);
+                _logger.LogDebug("VsTestRunner: No coverage data for {TestCase}.", testResult.TestCase.DisplayName);
                 seenTestCases.Add(testDescription.Id);
                 coverageRunResult = new CoverageRunResult(testCaseId, CoverageConfidence.Dubious, Enumerable.Empty<int>(),
                     Enumerable.Empty<int>(), Enumerable.Empty<int>());
@@ -213,7 +214,7 @@ namespace Stryker.Abstractions.TestRunners.VsTest
             if (string.IsNullOrWhiteSpace(propertyPairValue))
             {
                 // do not attempt to parse empty strings
-                _logger.LogDebug("VsTestRunner: Test {TestCase} does not cover any mutation.",testResult.TestCase.DisplayName);
+                _logger.LogDebug("VsTestRunner: Test {TestCase} does not cover any mutation.", testResult.TestCase.DisplayName);
                 coveredMutants = Enumerable.Empty<int>();
                 staticMutants = Enumerable.Empty<int>();
             }
@@ -241,7 +242,7 @@ namespace Stryker.Abstractions.TestRunners.VsTest
                     ? Enumerable.Empty<int>()
                     : propertyPairValue.Split(',').Select(int.Parse);
                 _logger.LogDebug(
-                    "VsTestRunner: Some mutations were executed outside any test (mutation ids: {MutationIds}).",propertyPairValue);
+                    "VsTestRunner: Some mutations were executed outside any test (mutation ids: {MutationIds}).", propertyPairValue);
             }
             else
             {

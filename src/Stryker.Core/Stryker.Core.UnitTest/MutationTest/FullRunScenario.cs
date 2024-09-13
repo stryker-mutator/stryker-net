@@ -5,11 +5,12 @@ using Moq;
 using Stryker.Abstractions.Initialisation;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions;
-using Stryker.Abstractions.TestRunners;
-using Stryker.Abstractions.TestRunners.VsTest;
 using Stryker.Abstractions.Options;
+using Stryker.Core.TestRunners;
+using Stryker.Core.Mutants;
+using Stryker.Core.TestRunners.VsTest;
 
-namespace Stryker.Abstractions.UnitTest.MutationTest;
+namespace Stryker.Core.UnitTest.MutationTest;
 
 /// <summary>
 /// This class simplifies the creation of run scenarios
@@ -168,10 +169,10 @@ internal class FullRunScenario
             string.Empty,
             Enumerable.Empty<string>(),
             TimeSpan.Zero);
-        runnerMock.Setup(x => x.DiscoverTests( It.IsAny<string>())).Returns(true);
-        runnerMock.Setup(x => x.GetTests( It.IsAny<IProjectAndTests>())).Returns(TestSet);
-        runnerMock.Setup(x => x.InitialTest( It.IsAny<IProjectAndTests>())).Returns(GetRunResult(InitialRunId));
-        runnerMock.Setup(x => x.CaptureCoverage( It.IsAny<IProjectAndTests>()))
+        runnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(true);
+        runnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(TestSet);
+        runnerMock.Setup(x => x.InitialTest(It.IsAny<IProjectAndTests>())).Returns(GetRunResult(InitialRunId));
+        runnerMock.Setup(x => x.CaptureCoverage(It.IsAny<IProjectAndTests>()))
             .Returns(() =>
             {
                 var result = new List<CoverageRunResult>(_tests.Count);
@@ -184,7 +185,7 @@ internal class FullRunScenario
                 }
                 return result;
             });
-        runnerMock.Setup(x => x.TestMultipleMutants( It.IsAny<IProjectAndTests>(), It.IsAny<ITimeoutValueCalculator>(),
+        runnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<IProjectAndTests>(), It.IsAny<ITimeoutValueCalculator>(),
                 It.IsAny<IReadOnlyList<Mutant>>(), It.IsAny<TestUpdateHandler>())).
             Callback((Action<IProjectAndTests, ITimeoutValueCalculator, IReadOnlyList<Mutant>, TestUpdateHandler>)((_, test1, list,
                 update) =>

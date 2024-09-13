@@ -3,7 +3,7 @@ using Shouldly;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Options.Inputs;
 
-namespace Stryker.Abstractions.UnitTest.Options.Inputs
+namespace Stryker.Core.UnitTest.Options.Inputs
 {
     [TestClass]
     public class DisableBailInputTests : TestBase

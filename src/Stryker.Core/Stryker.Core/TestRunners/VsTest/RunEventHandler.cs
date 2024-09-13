@@ -10,7 +10,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 
-namespace Stryker.Abstractions.TestRunners.VsTest
+namespace Stryker.Core.TestRunners.VsTest
 {
     public interface IRunResults
     {
@@ -176,7 +176,7 @@ namespace Stryker.Abstractions.TestRunners.VsTest
                 if (testRunCompleteArgs.Error.GetType() == typeof(TransationLayerException))
                 {
                     _logger.LogDebug(testRunCompleteArgs.Error,
-                        "{RunnerId}: VsTest may have crashed, triggering VsTest restart!",_runnerId);
+                        "{RunnerId}: VsTest may have crashed, triggering VsTest restart!", _runnerId);
                     Failed = true;
                 }
                 else if (testRunCompleteArgs.Error.InnerException is IOException sock)

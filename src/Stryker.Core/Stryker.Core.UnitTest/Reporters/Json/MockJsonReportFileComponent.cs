@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using Stryker.Abstractions.Reporting;
-using Stryker.Reporters.Json.SourceFiles;
+using Stryker.Core.Reporters.Json.SourceFiles;
 
-namespace Stryker.Abstractions.UnitTest.Reporters.Json;
+namespace Stryker.Core.UnitTest.Reporters.Json;
 
 public class MockJsonReportFileComponent : SourceFile
 {

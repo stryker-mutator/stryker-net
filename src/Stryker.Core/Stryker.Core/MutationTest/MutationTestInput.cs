@@ -1,10 +1,10 @@
-using Stryker.Abstractions.Initialisation;
-using Stryker.Abstractions.ProjectComponents.SourceProjects;
-using Stryker.Abstractions.ProjectComponents.TestProjects;
-using Stryker.Abstractions.TestRunners;
-using Stryker.Abstractions.TestRunners;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Core.Initialisation;
+using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Core.TestRunners;
 
-namespace Stryker.Abstractions.MutationTest
+namespace Stryker.Core.MutationTest
 {
     /// <summary>
     /// Represents the state the application under test is in.
@@ -19,7 +19,7 @@ namespace Stryker.Abstractions.MutationTest
         /// <summary>
         /// Contains all information about the tests to run
         /// </summary>
-        public TestProjectsInfo TestProjectsInfo { get; set; }
+        public ITestProjectsInfo TestProjectsInfo { get; set; }
 
         /// <summary>
         /// The testrunner that will be used for the mutation test run

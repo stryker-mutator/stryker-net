@@ -6,7 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading;
 
-namespace Stryker.Abstractions.TestRunners.VsTest
+namespace Stryker.Core.TestRunners.VsTest
 {
     public interface IStrykerTestHostLauncher : ITestHostLauncher
     {

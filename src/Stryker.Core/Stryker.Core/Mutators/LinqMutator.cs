@@ -3,10 +3,11 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
 using System;
 using System.Collections.Generic;
 
-namespace Stryker.Abstractions.Mutators;
+namespace Stryker.Core.Mutators;
 
 /// <summary> Mutator Implementation for LINQ Mutations </summary>
 public class LinqMutator : MutatorBase<ExpressionSyntax>
@@ -95,7 +96,7 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
             default:
                 yield break;
         }
-            
+
         if (Enum.TryParse(memberName, out LinqExpression expression) &&
             KindsToMutate.TryGetValue(expression, out var replacementExpression))
         {
@@ -130,4 +131,4 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
         }
         return null;
     }
- }
+}

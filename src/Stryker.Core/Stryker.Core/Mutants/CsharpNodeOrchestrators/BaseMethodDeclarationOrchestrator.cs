@@ -1,9 +1,9 @@
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Helpers;
+using Stryker.Core.Helpers;
 
-namespace Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 /// <summary>
 /// Handles Methods/properties' accessors/constructors and finalizers.
@@ -30,9 +30,9 @@ internal class BaseMethodDeclarationOrchestrator<T> : BaseFunctionOrchestrator<T
     {
         if (expressionBody == null)
         {
-            return (T) node.WithBody(blockBody).WithExpressionBody(null).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.None));
+            return (T)node.WithBody(blockBody).WithExpressionBody(null).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.None));
         }
 
-        return (T) node.WithBody(null).WithExpressionBody(SyntaxFactory.ArrowExpressionClause(expressionBody)).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
+        return (T)node.WithBody(null).WithExpressionBody(SyntaxFactory.ArrowExpressionClause(expressionBody)).WithSemicolonToken(SyntaxFactory.Token(SyntaxKind.SemicolonToken));
     }
 }

@@ -4,12 +4,13 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
-using Stryker.Abstractions;
 
-namespace Stryker.Abstractions.MutantFilters
+namespace Stryker.Core.MutantFilters
 {
     /// <summary>
     /// Checks if the linq expression of the mutant should be excluded.
@@ -21,11 +22,11 @@ namespace Stryker.Abstractions.MutantFilters
         public string DisplayName => "linq expression filter";
         private SyntaxTriviaRemover _triviaRemover { get; init; } = new SyntaxTriviaRemover();
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options) => options.ExcludedLinqExpressions.Any() ?
+        public IEnumerable<IMutant> FilterMutants(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file, IStrykerOptions options) => options.ExcludedLinqExpressions.Any() ?
                     mutants.Where(m => m.Mutation.Type != Mutator.Linq || !IsIgnoreExpression(m.Mutation.OriginalNode, options)) :
                     mutants;
 
-        private bool IsIgnoreExpression(SyntaxNode syntaxNode, StrykerOptions options) =>
+        private bool IsIgnoreExpression(SyntaxNode syntaxNode, IStrykerOptions options) =>
             syntaxNode switch
             {
                 // Check if the current node is an invocation. This will also ignore invokable properties like `Func<bool> MyProp { get;}`
@@ -40,7 +41,7 @@ namespace Stryker.Abstractions.MutantFilters
             };
 
 
-        private static bool MatchesAnIgnoredExpression(string expressionString, StrykerOptions options) => options.ExcludedLinqExpressions.Any(r => expressionString.EndsWith(Enum.GetName(r)));
+        private static bool MatchesAnIgnoredExpression(string expressionString, IStrykerOptions options) => options.ExcludedLinqExpressions.Any(r => expressionString.EndsWith(Enum.GetName(r)));
 
         /// <summary>
         /// Removes comments, whitespace, and other junk from a syntax tree.

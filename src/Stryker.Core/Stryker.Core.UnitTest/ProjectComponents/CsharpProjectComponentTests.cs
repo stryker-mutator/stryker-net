@@ -4,8 +4,10 @@ using Stryker.Abstractions;
 using Stryker.Abstractions.ProjectComponents;
 using System.Collections.ObjectModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents.Csharp;
 
-namespace Stryker.Abstractions.UnitTest.ProjectComponents
+namespace Stryker.Core.UnitTest.ProjectComponents
 {
     [TestClass]
     public class CsharpProjectComponentTests : TestBase

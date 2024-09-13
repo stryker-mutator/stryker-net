@@ -4,19 +4,19 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Baseline;
-using Stryker.Abstractions.Baseline.Providers;
-using Stryker.Abstractions.Baseline.Utils;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
-using Stryker.Abstractions.Reporters.Json;
 using Stryker.Abstractions.Reporting;
-using Stryker.Abstractions;
-using Stryker.Abstractions.Mutants;
+using Stryker.Core.Baseline.Providers;
+using Stryker.Core.Baseline.Utils;
+using Stryker.Core.Mutants;
 using Stryker.Utilities;
 
-namespace Stryker.Abstractions.MutantFilters
+namespace Stryker.Core.MutantFilters
 {
     public class BaselineMutantFilter : IMutantFilter
     {
@@ -25,13 +25,13 @@ namespace Stryker.Abstractions.MutantFilters
         private readonly ILogger<BaselineMutantFilter> _logger;
         private readonly IBaselineMutantHelper _baselineMutantHelper;
 
-        private readonly StrykerOptions _options;
-        private readonly JsonReport _baseline;
+        private readonly IStrykerOptions _options;
+        private readonly IJsonReport _baseline;
 
         public MutantFilter Type => MutantFilter.Baseline;
         public string DisplayName => "baseline filter";
 
-        public BaselineMutantFilter(StrykerOptions options, IBaselineProvider baselineProvider = null,
+        public BaselineMutantFilter(IStrykerOptions options, IBaselineProvider baselineProvider = null,
             IGitInfoProvider gitInfoProvider = null, IBaselineMutantHelper baselineMutantHelper = null)
         {
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<BaselineMutantFilter>();
@@ -48,8 +48,8 @@ namespace Stryker.Abstractions.MutantFilters
         }
 
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file,
-            StrykerOptions options)
+        public IEnumerable<IMutant> FilterMutants(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file,
+            IStrykerOptions options)
         {
             if (options.WithBaseline)
             {
@@ -68,7 +68,7 @@ namespace Stryker.Abstractions.MutantFilters
             return mutants;
         }
 
-        private void UpdateMutantsWithBaselineStatus(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file)
+        private void UpdateMutantsWithBaselineStatus(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file)
         {
             if (!_baseline.Files.ContainsKey(FilePathUtils.NormalizePathSeparators(file.RelativePath)))
             {
@@ -91,7 +91,7 @@ namespace Stryker.Abstractions.MutantFilters
                         continue;
                     }
 
-                    IEnumerable<Mutant> matchingMutants =
+                    var matchingMutants =
                         _baselineMutantHelper.GetMutantMatchingSourceCode(mutants, baselineMutant,
                             baselineMutantSourceCode);
 
@@ -101,7 +101,7 @@ namespace Stryker.Abstractions.MutantFilters
         }
 
         private void SetMutantStatusToBaselineMutantStatus(IJsonMutant baselineMutant,
-            IEnumerable<Mutant> matchingMutants)
+            IEnumerable<IMutant> matchingMutants)
         {
             if (matchingMutants.Count() == 1)
             {
@@ -119,7 +119,7 @@ namespace Stryker.Abstractions.MutantFilters
             }
         }
 
-        private async Task<JsonReport> GetBaselineAsync()
+        private async Task<IJsonReport> GetBaselineAsync()
         {
             var branchName = _gitInfoProvider.GetCurrentBranchName();
 
@@ -141,7 +141,7 @@ namespace Stryker.Abstractions.MutantFilters
             return report;
         }
 
-        private async Task<JsonReport> GetFallbackBaselineAsync(bool baseline = true)
+        private async Task<IJsonReport> GetFallbackBaselineAsync(bool baseline = true)
         {
             var report = await _baselineProvider.Load($"{(baseline ? "baseline/" : "")}{_options.FallbackVersion}");
 

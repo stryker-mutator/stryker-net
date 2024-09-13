@@ -4,9 +4,9 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Helpers;
+using Stryker.Core.Helpers;
 
-namespace Stryker.Abstractions.Instrumentation;
+namespace Stryker.Core.Instrumentation;
 
 /// <summary>
 /// Injects initialization to default value for a parameter or a variable at the beginning of a method.
@@ -54,7 +54,7 @@ internal class DefaultInitializationEngine : BaseEngine<BlockSyntax>
             originalStatements = body.Statements;
         }
 
-        var initializersBlock = SyntaxFactory.Block(initializers.Union( parameters.Select( p => SyntaxFactory.ExpressionStatement(SyntaxFactory.AssignmentExpression(
+        var initializersBlock = SyntaxFactory.Block(initializers.Union(parameters.Select(p => SyntaxFactory.ExpressionStatement(SyntaxFactory.AssignmentExpression(
                 SyntaxKind.SimpleAssignmentExpression, SyntaxFactory.IdentifierName(p.Identifier),
                 p.Type.BuildDefaultExpression())))))
             .WithAdditionalAnnotations(BlockMarker);

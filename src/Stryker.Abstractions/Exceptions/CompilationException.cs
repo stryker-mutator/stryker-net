@@ -1,3 +1,5 @@
+using System;
+
 namespace Stryker.Abstractions.Exceptions;
 
 /// <summary>

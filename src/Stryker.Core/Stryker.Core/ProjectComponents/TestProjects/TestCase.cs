@@ -1,7 +1,8 @@
 using System;
 using Microsoft.CodeAnalysis;
+using Stryker.Abstractions.ProjectComponents;
 
-namespace Stryker.Abstractions.ProjectComponents.TestProjects
+namespace Stryker.Core.ProjectComponents.TestProjects
 {
     public sealed class TestCase : IEquatable<ITestCase>, ITestCase
     {

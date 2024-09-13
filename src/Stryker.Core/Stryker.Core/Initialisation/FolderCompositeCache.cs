@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Stryker.Abstractions.Initialisation
+namespace Stryker.Core.Initialisation
 {
     public class FolderCompositeCache<T>
     {

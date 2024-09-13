@@ -1,17 +1,17 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Helpers;
+using Stryker.Core.Helpers;
 
-namespace Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
-internal class InvocationExpressionOrchestrator: MemberAccessExpressionOrchestrator<InvocationExpressionSyntax>
+internal class InvocationExpressionOrchestrator : MemberAccessExpressionOrchestrator<InvocationExpressionSyntax>
 {
 
     protected override MutationContext StoreMutations(InvocationExpressionSyntax node,
         IEnumerable<Mutant> mutations,
         MutationContext context) =>
-        // if the invocation contains a declaration, it must be controlled at the block level.
+         // if the invocation contains a declaration, it must be controlled at the block level.
          context.AddMutations(mutations, node.ArgumentList.ContainsDeclarations() ? MutationControl.Block : MutationControl.Expression);
 
     protected override ExpressionSyntax OrchestrateChildrenMutation(InvocationExpressionSyntax node, SemanticModel semanticModel,

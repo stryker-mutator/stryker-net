@@ -1,17 +1,16 @@
-using LibGit2Sharp;
-using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions;
 using System;
+using System.Linq;
+using LibGit2Sharp;
+using Microsoft.Extensions.Logging;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Options;
 
-namespace Stryker.Abstractions.Baseline.Providers
+namespace Stryker.Core.Baseline.Providers
 {
-    using Logging;
-    using Microsoft.Extensions.Logging;
-    using System.Linq;
-
     public class GitInfoProvider : IGitInfoProvider
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly string _repositoryPath;
         private readonly ILogger<GitInfoProvider> _logger;
 
@@ -19,7 +18,7 @@ namespace Stryker.Abstractions.Baseline.Providers
 
         public string RepositoryPath => _repositoryPath ?? LibGit2Sharp.Repository.Discover(_options.ProjectPath)?.Split(".git")[0];
 
-        public GitInfoProvider(StrykerOptions options, IRepository repository = null, string repositoryPath = null, ILogger<GitInfoProvider> logger = null)
+        public GitInfoProvider(IStrykerOptions options, IRepository repository = null, string repositoryPath = null, ILogger<GitInfoProvider> logger = null)
         {
             _repositoryPath = repositoryPath;
             _options = options;

@@ -2,14 +2,15 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
 using System.Collections.Generic;
 
-namespace Stryker.Abstractions.Mutators;
+namespace Stryker.Core.Mutators;
 
 public class PostfixUnaryMutator : MutatorBase<PostfixUnaryExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
-                
+
     public override IEnumerable<Mutation> ApplyMutations(PostfixUnaryExpressionSyntax node, SemanticModel semanticModel)
     {
         var unaryKind = node.Kind();

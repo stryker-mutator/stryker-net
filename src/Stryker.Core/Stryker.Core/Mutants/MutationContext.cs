@@ -2,11 +2,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
 using Stryker.Abstractions.Mutators;
-using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Abstractions.Mutants;
+namespace Stryker.Core.Mutants;
 
 /// <summary>
 /// Describe the (syntax tree) context during mutation and ensure proper mutation injection.
@@ -98,7 +96,7 @@ internal class MutationContext
     public MutationContext Enter(MutationControl control)
     {
         _mutation.Enter(control);
-        return control is MutationControl.Block or MutationControl.Member ? new MutationContext(this): this;
+        return control is MutationControl.Block or MutationControl.Member ? new MutationContext(this) : this;
     }
 
     /// <summary>

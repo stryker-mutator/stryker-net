@@ -1,8 +1,9 @@
 using Microsoft.CodeAnalysis;
 using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.ProjectComponents;
 using System.Collections.Generic;
 
-namespace Stryker.Abstractions.ProjectComponents
+namespace Stryker.Core.ProjectComponents.Csharp
 {
     public class CsharpFileLeaf : ProjectComponent<SyntaxTree>, IFileLeaf<SyntaxTree>
     {
@@ -18,7 +19,7 @@ namespace Stryker.Abstractions.ProjectComponents
         /// </summary>
         public SyntaxTree MutatedSyntaxTree { get; set; }
 
-        public override IEnumerable<Mutant> Mutants { get; set; }
+        public override IEnumerable<IMutant> Mutants { get; set; }
 
         public override IEnumerable<SyntaxTree> CompilationSyntaxTrees => MutatedSyntaxTrees;
 

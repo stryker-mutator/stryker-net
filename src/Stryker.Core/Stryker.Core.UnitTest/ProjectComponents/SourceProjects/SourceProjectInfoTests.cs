@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Abstractions.Initialisation.Buildalyzer;
-using Stryker.Abstractions.ProjectComponents.SourceProjects;
+using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Core.ProjectComponents.SourceProjects;
 
-namespace Stryker.Abstractions.UnitTest.ProjectComponents.SourceProjects
+namespace Stryker.Core.UnitTest.ProjectComponents.SourceProjects
 {
     [TestClass]
     public class SourceProjectInfoTests : TestBase

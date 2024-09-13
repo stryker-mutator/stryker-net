@@ -1,10 +1,10 @@
-﻿using System;
+using System;
 
-namespace Stryker.Abstractions.Helpers
+namespace Stryker.Utilities.Helpers
 {
     // describe a strategy that is specialized in a given type
     // and support sub-specialization 
-    internal interface ITypeHandler<in T>
+    public interface ITypeHandler<in T>
     {
         // supported type
         Type ManagedType { get; }

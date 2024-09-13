@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
-using Stryker.Abstractions.Mutants;
+using Stryker.Core.Mutants;
 
-namespace Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 /// <summary>
 /// This purpose of each implementation of this class is to support one specific C# code construct during the mutation process.
@@ -15,7 +15,8 @@ namespace Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
 /// <typeparam name="TBase">Type of the node once mutated. In practice, either <see cref="TNode"/> or a base class of it.</typeparam>
 /// <remarks>Those classes are an implementation of the 'Strategy' pattern. They must remain stateless, as the same instance is used for all syntax node of
 /// the given type. They can still embark some readonly options/parameters, as long as they remain constant during parsing.</remarks>
-internal class NodeSpecificOrchestrator<TNode, TBase> : INodeOrchestrator where TBase : SyntaxNode where TNode : TBase{
+internal class NodeSpecificOrchestrator<TNode, TBase> : INodeOrchestrator where TBase : SyntaxNode where TNode : TBase
+{
     /// <summary>
     /// Get the Roslyn type handled by this class
     /// </summary>

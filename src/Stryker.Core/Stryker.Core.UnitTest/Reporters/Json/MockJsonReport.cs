@@ -1,8 +1,8 @@
 using System.Collections.Generic;
-using Stryker.Abstractions.Reporters.Json;
 using Stryker.Abstractions.Reporting;
+using Stryker.Core.Reporters.Json;
 
-namespace Stryker.Abstractions.UnitTest.Reporters.Json
+namespace Stryker.Core.UnitTest.Reporters.Json
 {
     public class MockJsonReport : JsonReport
     {

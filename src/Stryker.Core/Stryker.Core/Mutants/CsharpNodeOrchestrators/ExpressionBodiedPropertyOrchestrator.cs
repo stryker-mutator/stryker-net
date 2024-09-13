@@ -1,13 +1,14 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Helpers;
+using Stryker.Core.Helpers;
+using Stryker.Core.Mutants;
 
-namespace Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 internal class ExpressionBodiedPropertyOrchestrator : BaseFunctionOrchestrator<PropertyDeclarationSyntax>
 {
-    protected override bool CanHandle(PropertyDeclarationSyntax t) => t.ExpressionBody!= null || (t.Initializer!=null && t.IsStatic());
+    protected override bool CanHandle(PropertyDeclarationSyntax t) => t.ExpressionBody != null || t.Initializer != null && t.IsStatic();
 
     protected override (BlockSyntax block, ExpressionSyntax expression) GetBodies(PropertyDeclarationSyntax node) => (node.GetAccessor()?.Body, node.ExpressionBody?.Expression);
 
@@ -24,7 +25,7 @@ internal class ExpressionBodiedPropertyOrchestrator : BaseFunctionOrchestrator<P
         }
 
         return node.WithExpressionBody(null).WithAccessorList(
-                SyntaxFactory.AccessorList(SyntaxFactory.List(new []{
+                SyntaxFactory.AccessorList(SyntaxFactory.List(new[]{
                     SyntaxFactory.AccessorDeclaration(SyntaxKind.GetAccessorDeclaration, blockBody)}))).
             WithSemicolonToken(SyntaxFactory.MissingToken(SyntaxKind.SemicolonToken));
     }

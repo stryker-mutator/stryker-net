@@ -1,11 +1,12 @@
+using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions.Mutants;
-using System.Collections.Generic;
-using Stryker.Abstractions.Helpers;
-using Microsoft.CodeAnalysis;
+using Stryker.Abstractions.Mutators;
+using Stryker.Core.Helpers;
 
-namespace Stryker.Abstractions.Mutators
+namespace Stryker.Core.Mutators
 {
     public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>
     {
@@ -19,7 +20,6 @@ namespace Stryker.Abstractions.Mutators
                 Mutator = mutator;
                 KindsToMutate = kindsToMutate;
             }
-
         }
 
         private static readonly Dictionary<SyntaxKind, MutationData> _kindsToMutate = new Dictionary<SyntaxKind, MutationData>()

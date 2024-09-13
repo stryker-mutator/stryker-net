@@ -1,8 +1,9 @@
 using System;
 using Spectre.Console;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Abstractions.Reporters.Progress
+namespace Stryker.Core.Reporters.Progress
 {
     public interface IProgressBarReporter
     {

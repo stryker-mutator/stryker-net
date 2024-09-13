@@ -2,15 +2,16 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions;
 using Stryker.Abstractions.ProjectComponents;
-using Stryker.Abstractions.Reporters;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.Reporters;
+using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents.Csharp;
 
-namespace Stryker.Abstractions.UnitTest.Reporters
+namespace Stryker.Core.UnitTest.Reporters
 {
     [TestClass]
     public class StatusReporterTests : TestBase
@@ -29,7 +30,7 @@ namespace Stryker.Abstractions.UnitTest.Reporters
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf()
             {
-                Mutants = new Collection<Mutant>()
+                Mutants = new Collection<IMutant>()
                 {
                 }
             });
@@ -48,7 +49,7 @@ namespace Stryker.Abstractions.UnitTest.Reporters
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf()
             {
-                Mutants = new Collection<Mutant>()
+                Mutants = new Collection<IMutant>()
                 {
                     new Mutant() { ResultStatus = MutantStatus.Ignored, ResultStatusReason = "In excluded file" },
                 }
@@ -61,7 +62,7 @@ namespace Stryker.Abstractions.UnitTest.Reporters
             _loggerMock.Verify(LogLevel.Information, "0     total mutants will be tested", Times.Once);
             _loggerMock.VerifyNoOtherCalls();
         }
-        
+
         [TestMethod]
         public void ShouldPrintEachReasonWithCount()
         {
@@ -70,7 +71,7 @@ namespace Stryker.Abstractions.UnitTest.Reporters
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf()
             {
-                Mutants = new Collection<Mutant>()
+                Mutants = new Collection<IMutant>()
                 {
                     new Mutant() { ResultStatus = MutantStatus.Ignored, ResultStatusReason = "In excluded file" },
                     new Mutant() { ResultStatus = MutantStatus.Ignored, ResultStatusReason = "In excluded file" },

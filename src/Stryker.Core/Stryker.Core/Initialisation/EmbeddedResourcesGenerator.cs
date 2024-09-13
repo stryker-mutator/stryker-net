@@ -11,7 +11,7 @@ using System.Resources.NetStandard;
 using Microsoft.CodeAnalysis;
 using Mono.Cecil;
 
-namespace Stryker.Abstractions.Initialisation
+namespace Stryker.Core.Initialisation
 {
     [ExcludeFromCodeCoverage]
     public static class EmbeddedResourcesGenerator
@@ -119,7 +119,7 @@ namespace Stryker.Abstractions.Initialisation
             // For non-.resx files just create a FileStream object to read the file as binary data
             if (!resourceFullFilename.EndsWith(".resx", StringComparison.OrdinalIgnoreCase))
             {
-                
+
                 if (!File.Exists(resourceFullFilename))
                 {
                     return new MemoryStream();

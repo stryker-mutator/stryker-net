@@ -1,6 +1,7 @@
-using Stryker.Abstractions.TestRunners;
+using Stryker.Abstractions;
+using Stryker.Core.TestRunners;
 
-namespace Stryker.Abstractions.Initialisation
+namespace Stryker.Core.Initialisation
 {
     public class InitialTestRun
     {
@@ -11,6 +12,6 @@ namespace Stryker.Abstractions.Initialisation
         }
 
         public TestRunResult Result { get; }
-        public ITimeoutValueCalculator TimeoutValueCalculator { get;}
+        public ITimeoutValueCalculator TimeoutValueCalculator { get; }
     }
 }

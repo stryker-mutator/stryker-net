@@ -2,14 +2,14 @@ using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.InjectedHelpers;
+using Stryker.Core.InjectedHelpers;
 
-namespace Stryker.Abstractions.Instrumentation
+namespace Stryker.Core.Instrumentation
 {
     /// <summary>
     /// Injects static tracking logic in static fields/properties' initializers.
     /// </summary>
-    internal class StaticInitializerMarkerEngine: BaseEngine<ExpressionSyntax>
+    internal class StaticInitializerMarkerEngine : BaseEngine<ExpressionSyntax>
     {
         private const string MutantContextValueTrackName = "TrackValue";
 

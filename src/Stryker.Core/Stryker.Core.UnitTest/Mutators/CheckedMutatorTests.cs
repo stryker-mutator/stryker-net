@@ -1,12 +1,12 @@
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Abstractions.Mutators;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.Mutators;
 
-namespace Stryker.Abstractions.UnitTest.Mutators
+namespace Stryker.Core.UnitTest.Mutators
 {
     [TestClass]
     public class CheckedMutatorTests : TestBase
@@ -24,7 +24,7 @@ namespace Stryker.Abstractions.UnitTest.Mutators
         {
             var target = new CheckedMutator();
 
-            ExpressionSyntax es = SyntaxFactory.ParseExpression(expression);
+            var es = SyntaxFactory.ParseExpression(expression);
             var result = target.ApplyMutations(SyntaxFactory.CheckedExpression(original, es), null).ToList();
 
             var mutation = result.ShouldHaveSingleItem();
@@ -39,7 +39,7 @@ namespace Stryker.Abstractions.UnitTest.Mutators
         {
             var target = new CheckedMutator();
 
-            ExpressionSyntax es = SyntaxFactory.ParseExpression("4 + 2");
+            var es = SyntaxFactory.ParseExpression("4 + 2");
             var result = target.ApplyMutations(SyntaxFactory.CheckedExpression(original, es), null).ToList();
 
             result.ShouldBeEmpty();

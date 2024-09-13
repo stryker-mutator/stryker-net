@@ -3,22 +3,20 @@ using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
-using Buildalyzer;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Abstractions.Initialisation;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.MutationTest;
 using Stryker.Abstractions;
-using Stryker.Abstractions.ProjectComponents.TestProjects;
-using Stryker.Abstractions.TestRunners;
-using Stryker.Abstractions.TestRunners.VsTest;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Abstractions.Reporting;
-using Stryker.Abstractions.TestRunners;
+using Stryker.Core.Initialisation;
+using Stryker.Core.Mutants;
+using Stryker.Core.MutationTest;
+using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Core.TestRunners;
+using Stryker.Core.TestRunners.VsTest;
+using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
-namespace Stryker.Abstractions.UnitTest.Initialisation
+namespace Stryker.Core.UnitTest.Initialisation
 {
     [TestClass]
     public class ProjectMutatorTests : TestBase
@@ -71,7 +69,7 @@ namespace ExtraProject.XUnit
             {
                 CodeFilePath = _testFilePath,
                 LineNumber = 7,
-   
+
             };
             var failedTest = testCase1.Id;
             var testCase2 = new VsTest.TestCase("mytestname", new Uri(_testFilePath), _testFileContents)
@@ -94,7 +92,7 @@ namespace ExtraProject.XUnit
 
             _mutationTestInput.InitialTestRun = initialTestrun;
             // act
-            var result = target.MutateProject(options, _mutationTestInput,_reporterMock.Object);
+            var result = target.MutateProject(options, _mutationTestInput, _reporterMock.Object);
 
             // assert
             result.ShouldNotBeNull();

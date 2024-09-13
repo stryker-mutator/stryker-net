@@ -2,28 +2,27 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Spectre.Console;
-using Stryker.Abstractions.Clients;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Options.Inputs;
+using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
-using Stryker.Abstractions.ProjectComponents.TestProjects;
-using Stryker.Abstractions.Reporters.Json;
-using Stryker.Abstractions.Reporters.WebBrowserOpener;
-using Stryker.Abstractions.Reporters.Json.SourceFiles;
 using Stryker.Abstractions.Reporting;
+using Stryker.Core.Clients;
+using Stryker.Core.Reporters.Json;
+using Stryker.Core.Reporters.Json.SourceFiles;
+using Stryker.Core.Reporters.WebBrowserOpener;
 
-namespace Stryker.Abstractions.Reporters
+namespace Stryker.Core.Reporters
 {
     public class DashboardReporter : IReporter
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IDashboardClient _dashboardClient;
         private readonly ILogger<DashboardReporter> _logger;
         private readonly IAnsiConsole _console;
         private readonly IWebbrowserOpener _browser;
 
-        public DashboardReporter(StrykerOptions options, IDashboardClient dashboardClient = null, ILogger<DashboardReporter> logger = null,
+        public DashboardReporter(IStrykerOptions options, IDashboardClient dashboardClient = null, ILogger<DashboardReporter> logger = null,
             IAnsiConsole console = null, IWebbrowserOpener browser = null)
         {
             _options = options;
@@ -33,7 +32,7 @@ namespace Stryker.Abstractions.Reporters
             _browser = browser ?? new CrossPlatformBrowserOpener();
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
         {
             var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
             _dashboardClient.PublishReport(mutationReport, _options.ProjectVersion).Wait();
@@ -77,7 +76,7 @@ namespace Stryker.Abstractions.Reporters
             _console.WriteLine();
         }
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
         {
             if (!ShouldPublishInRealTime())
             {

@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace Stryker.Utilities
 {
     public static class FilePathUtils

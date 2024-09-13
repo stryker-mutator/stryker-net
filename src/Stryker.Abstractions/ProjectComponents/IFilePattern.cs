@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using DotNet.Globbing;
 using Microsoft.CodeAnalysis.Text;
 

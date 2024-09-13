@@ -1,8 +1,8 @@
-using Shouldly;
-using Stryker.Abstractions.Initialisation;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
+using Stryker.Core.Initialisation;
 
-namespace Stryker.Abstractions.UnitTest.Initialisation
+namespace Stryker.Core.UnitTest.Initialisation
 {
     [TestClass]
     public class TimeoutValueCalculatorTests : TestBase

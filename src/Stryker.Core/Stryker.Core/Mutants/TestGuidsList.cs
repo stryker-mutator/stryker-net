@@ -4,7 +4,7 @@ using System.Linq;
 using Stryker.Abstractions.TestRunners;
 using Stryker.Abstractions.TestRunners;
 
-namespace Stryker.Abstractions.Mutants
+namespace Stryker.Core.Mutants
 {
 
     public class TestGuidsList : ITestGuids

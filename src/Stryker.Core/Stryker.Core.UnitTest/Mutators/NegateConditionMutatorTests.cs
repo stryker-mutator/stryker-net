@@ -1,12 +1,12 @@
-using Microsoft.CodeAnalysis;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Abstractions.Mutators;
-using System.Linq;
+using Stryker.Core.Mutators;
 
-namespace Stryker.Abstractions.UnitTest.Mutators;
+namespace Stryker.Core.UnitTest.Mutators;
 
 [TestClass]
 public class NegateConditionMutatorTests : TestBase
@@ -25,7 +25,7 @@ public class NegateConditionMutatorTests : TestBase
     /// <returns></returns>
     private InvocationExpressionSyntax GenerateExpressions(string expression)
     {
-        SyntaxTree tree = CSharpSyntaxTree.ParseText($@"
+        var tree = CSharpSyntaxTree.ParseText($@"
 using System;
 
 namespace TestApplication
@@ -67,7 +67,7 @@ namespace TestApplication
     public void ShouldNotMutateThis(string method)
     {
         var target = new NegateConditionMutator();
-        SyntaxTree tree = CSharpSyntaxTree.ParseText(method);
+        var tree = CSharpSyntaxTree.ParseText(method);
 
 
         var expressionSyntax = tree.GetRoot().DescendantNodes().OfType<ConditionalExpressionSyntax>().Single();

@@ -9,12 +9,13 @@ using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Serilog.Events;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions;
-using Stryker.Abstractions.ToolHelpers;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.TestRunners;
+using Stryker.Core.Helpers;
+using Stryker.Core.Mutants;
 using Stryker.DataCollector;
 
-namespace Stryker.Abstractions.TestRunners.VsTest;
+namespace Stryker.Core.TestRunners.VsTest;
 
 /// <summary>
 ///     Handles VsTest setup and configuration.
@@ -31,15 +32,35 @@ public sealed class VsTestContextInformation : IDisposable
     private TestFrameworks _testFramework;
 
     /// <summary>
-    ///     Creates an instance.
+    ///     Discovered tests (VsTest format)
     /// </summary>
+    public IDictionary<Guid, VsTestDescription> VsTests { get; private set; }
+
+    /// <summary>
+    /// Tests in each source (assembly)
+    /// </summary>
+    public IDictionary<string, ISet<Guid>> TestsPerSource { get; } = new Dictionary<string, ISet<Guid>>();
+
+    /// <summary>
+    ///     Tests (Stryker format)
+    /// </summary>
+    public TestSet Tests { get; } = new();
+
+    public IStrykerOptions Options { get; }
+
+    /// <summary>
+    ///     Log folder path
+    /// </summary>
+    public string LogPath =>
+        Options.OutputPath == null ? "logs" : _fileSystem.Path.Combine(Options.OutputPath, "logs");
+
     /// <param name="options">Configuration options</param>
     /// <param name="helper"></param>
     /// <param name="fileSystem"></param>
     /// <param name="builder"></param>
     /// <param name="hostBuilder"></param>
     /// <param name="logger"></param>
-    public VsTestContextInformation(StrykerOptions options,
+    public VsTestContextInformation(IStrykerOptions options,
         IVsTestHelper helper = null,
         IFileSystem fileSystem = null,
         Func<ConsoleParameters, IVsTestConsoleWrapper> builder = null,
@@ -55,34 +76,6 @@ public sealed class VsTestContextInformation : IDisposable
         _hostBuilder = hostBuilder ?? (name => new StrykerVsTestHostLauncher(name, devMode));
         _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestContextInformation>();
     }
-
-    /// <summary>
-    ///     Discovered tests (VsTest format)
-    /// </summary>
-    public IDictionary<Guid, VsTestDescription> VsTests { get; private set; }
-
-    /// <summary>
-    /// Tests in each source (assembly)
-    /// </summary>
-    public IDictionary<string, ISet<Guid>> TestsPerSource { get; } = new Dictionary<string, ISet<Guid>>();
-
-
-
-    /// <summary>
-    ///     Tests (Stryker format)
-    /// </summary>
-    public TestSet Tests { get; } = new();
-
-    /// <summary>
-    ///    Stryker options
-    /// </summary>
-    public StrykerOptions Options { get; }
-
-    /// <summary>
-    ///     Log folder path
-    /// </summary>
-    public string LogPath =>
-        Options.OutputPath == null ? "logs" : _fileSystem.Path.Combine(Options.OutputPath, "logs");
 
     public void Dispose()
     {
@@ -256,7 +249,7 @@ public sealed class VsTestContextInformation : IDisposable
             ? string.Empty
             : $"<TargetFrameworkVersion>{frameworkVersion}</TargetFrameworkVersion>" + Environment.NewLine;
         // cannot specify AnyCPU or default for VsTest
-        var platformConfig = (string.IsNullOrWhiteSpace(platform) || platform=="AnyCPU" || platform=="Default")
+        var platformConfig = string.IsNullOrWhiteSpace(platform) || platform == "AnyCPU" || platform == "Default"
             ? string.Empty
             : $"<TargetPlatform>{platform}</TargetPlatform>" + Environment.NewLine;
         var testCaseFilter = string.IsNullOrWhiteSpace(Options.TestCaseFilter)
@@ -269,7 +262,7 @@ public sealed class VsTestContextInformation : IDisposable
 <DisableAppDomain>true</DisableAppDomain>";
     }
 
-    private string GenerateRunSettingsForDiscovery(string frameworkVersion= null, string platform = null) =>
+    private string GenerateRunSettingsForDiscovery(string frameworkVersion = null, string platform = null) =>
         $@"<RunSettings>
  <RunConfiguration>
 {GenerateCoreSettings(Options.Concurrency, frameworkVersion, platform)}  <DesignMode>true</DesignMode>

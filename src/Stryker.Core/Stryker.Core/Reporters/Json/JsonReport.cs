@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
-using Stryker.Abstractions.ProjectComponents.TestProjects;
-using Stryker.Abstractions.Reporters.Json.TestFiles;
 using Stryker.Abstractions.Reporting;
-using Stryker.Reporters.Json.SourceFiles;
+using Stryker.Core.Reporters.Json.SourceFiles;
+using Stryker.Core.Reporters.Json.TestFiles;
 
-namespace Stryker.Abstractions.Reporters.Json
+namespace Stryker.Core.Reporters.Json
 {
     public class JsonReport : IJsonReport
     {
@@ -18,7 +18,7 @@ namespace Stryker.Abstractions.Reporters.Json
 
         public JsonReport() { }
 
-        private JsonReport(StrykerOptions options, IReadOnlyProjectComponent mutationReport, TestProjectsInfo testProjectsInfo)
+        private JsonReport(IStrykerOptions options, IReadOnlyProjectComponent mutationReport, ITestProjectsInfo testProjectsInfo)
         {
             Thresholds.Add("high", options.Thresholds.High);
             Thresholds.Add("low", options.Thresholds.Low);
@@ -29,12 +29,12 @@ namespace Stryker.Abstractions.Reporters.Json
             AddTestFiles(testProjectsInfo);
         }
 
-        public static IJsonReport Build(StrykerOptions options, IReadOnlyProjectComponent mutationReport, TestProjectsInfo testProjectsInfo) => new JsonReport(options, mutationReport, testProjectsInfo);
+        public static IJsonReport Build(IStrykerOptions options, IReadOnlyProjectComponent mutationReport, ITestProjectsInfo testProjectsInfo) => new JsonReport(options, mutationReport, testProjectsInfo);
 
         private IDictionary<string, ISourceFile> GenerateReportComponents(IReadOnlyProjectComponent component)
         {
             var files = new Dictionary<string, ISourceFile>();
-            if (component is IReadOnlyFolderComposite folder)
+            if (component is IFolderComposite folder)
             {
                 Merge(files, GenerateFolderReportComponents(folder));
             }
@@ -46,7 +46,7 @@ namespace Stryker.Abstractions.Reporters.Json
             return files;
         }
 
-        private IDictionary<string, ISourceFile> GenerateFolderReportComponents(IReadOnlyFolderComposite folderComponent)
+        private IDictionary<string, ISourceFile> GenerateFolderReportComponents(IFolderComposite folderComponent)
         {
             var files = new Dictionary<string, ISourceFile>();
             foreach (var child in folderComponent.Children)
@@ -59,11 +59,11 @@ namespace Stryker.Abstractions.Reporters.Json
 
         private static IDictionary<string, ISourceFile> GenerateFileReportComponents(IReadOnlyFileLeaf fileComponent) => new Dictionary<string, ISourceFile> { { fileComponent.FullPath, new SourceFile(fileComponent) } };
 
-        private void AddTestFiles(TestProjectsInfo testProjectsInfo)
+        private void AddTestFiles(ITestProjectsInfo testProjectsInfo)
         {
             if (testProjectsInfo?.TestFiles is not null)
             {
-                TestFiles = new Dictionary<string, JsonTestFile>();
+                TestFiles = new Dictionary<string, IJsonTestFile>();
                 foreach (var testFile in testProjectsInfo.TestFiles)
                 {
                     if (TestFiles.TryGetValue(testFile.FilePath, out var jsonFile))

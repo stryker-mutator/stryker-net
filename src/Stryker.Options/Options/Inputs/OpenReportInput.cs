@@ -5,12 +5,6 @@ using Stryker.Abstractions.Exceptions;
 
 namespace Stryker.Abstractions.Options.Inputs
 {
-    public enum ReportType
-    {
-        Html,
-        Dashboard
-    }
-
     public class OpenReportInput : Input<string>
     {
         public override string Default => "Html";

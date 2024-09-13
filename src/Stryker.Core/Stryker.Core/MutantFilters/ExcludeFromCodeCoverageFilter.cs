@@ -1,20 +1,20 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions;
-using Stryker.Abstractions.ProjectComponents;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
 
-namespace Stryker.Abstractions.MutantFilters
+namespace Stryker.Core.MutantFilters
 {
     public class ExcludeFromCodeCoverageFilter : IMutantFilter
     {
         public MutantFilter Type => MutantFilter.ExcludeFromCodeCoverage;
         public string DisplayName => "exclude from code coverage filter";
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options)
+        public IEnumerable<IMutant> FilterMutants(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file, IStrykerOptions options)
         {
             return mutants.Where(m => !Exclude(m.Mutation.OriginalNode));
         }

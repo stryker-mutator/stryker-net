@@ -4,14 +4,15 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Baseline;
-using Stryker.Abstractions.Baseline.Providers;
-using Stryker.Abstractions.DiffProviders;
-using Stryker.Abstractions.MutantFilters;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Reporters.Json;
+using Stryker.Core.Baseline.Providers;
+using Stryker.Core.DiffProviders;
+using Stryker.Core.MutantFilters;
+using Stryker.Core.Mutants;
+using Stryker.Core.Reporters.Json;
 
-namespace Stryker.Abstractions.UnitTest.MutantFilters
+namespace Stryker.Core.UnitTest.MutantFilters
 {
     [TestClass]
     public class MutantFilterFactoryTests : TestBase
@@ -109,7 +110,8 @@ namespace Stryker.Abstractions.UnitTest.MutantFilters
         }
 
         [TestMethod]
-        public void MutantFilterFactory_Creates_DashboardMutantFilter_And_DiffMutantFilter_WithBaseline_Enabled() {
+        public void MutantFilterFactory_Creates_DashboardMutantFilter_And_DiffMutantFilter_WithBaseline_Enabled()
+        {
             var options = new StrykerOptions()
             {
                 WithBaseline = true,

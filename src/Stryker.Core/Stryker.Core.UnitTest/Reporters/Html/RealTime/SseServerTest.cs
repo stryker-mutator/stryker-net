@@ -4,11 +4,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.EventSource;
 using Shouldly;
-using Stryker.Abstractions.Reporters.Html.RealTime;
-using Stryker.Abstractions.Reporters.Html.RealTime.Events;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.Reporters.Html.RealTime.Events;
+using Stryker.Core.Reporters.Html.RealTime;
+using Stryker.Core.UnitTest;
 
-namespace Stryker.Abstractions.UnitTest.Reporters.Html.RealTime;
+namespace Stryker.Core.UnitTest.Reporters.Html.RealTime;
 
 [TestClass]
 public class SseServerTest : TestBase
@@ -83,7 +84,7 @@ public class SseServerTest : TestBase
         var @object = new { Id = "1", Status = "Survived" };
         var eventReceived = new ManualResetEvent(false);
         var sseClient = new EventSource(new Uri($"http://localhost:{_sut.Port}/"));
-        
+
         sseClient.MessageReceived += (_, e) =>
         {
             @event = e.EventName;
@@ -93,7 +94,7 @@ public class SseServerTest : TestBase
 
         Task.Run(() => sseClient.StartAsync());
         WaitForConnection(500).ShouldBeTrue();
-        
+
         _sut.SendEvent(new SseEvent<object>
         {
             Event = SseEventType.MutantTested,

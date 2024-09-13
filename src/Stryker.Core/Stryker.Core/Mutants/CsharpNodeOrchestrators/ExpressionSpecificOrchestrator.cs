@@ -1,10 +1,9 @@
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Helpers;
-using Stryker.Abstractions.Mutants;
+using Stryker.Core.Helpers;
 
-namespace Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 /// <summary>
 /// Orchestrate mutations for expressions (and sub expressions).
@@ -19,7 +18,7 @@ internal class ExpressionSpecificOrchestrator<T> : NodeSpecificOrchestrator<T, E
     protected override MutationContext StoreMutations(T node,
         IEnumerable<Mutant> mutations,
         MutationContext context) =>
-        // if the expression contains a declaration, it must be controlled at the block level.
+         // if the expression contains a declaration, it must be controlled at the block level.
          context.AddMutations(mutations, node.ContainsDeclarations() ? MutationControl.Block : MutationControl.Expression);
 
     protected override MutationContext PrepareContext(T node, MutationContext context) => base.PrepareContext(node, context.Enter(MutationControl.Expression));

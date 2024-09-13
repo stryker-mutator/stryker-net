@@ -5,8 +5,9 @@ using Shouldly;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.UnitTest;
 
-namespace Stryker.Abstractions.UnitTest.Options.Inputs
+namespace Stryker.Core.UnitTest.Options.Inputs
 {
     [TestClass]
     public class ConcurrencyInputTests : TestBase
@@ -71,7 +72,7 @@ Reasons you might want to lower this setting:
             _loggerMock.Verify(LogLevel.Warning, "Stryker is running in single threaded mode due to concurrency being set to 1.", Times.Once);
             _loggerMock.VerifyNoOtherCalls();
         }
-        
+
         [TestMethod]
         public void WhenGivenNullShouldGetDefault()
         {

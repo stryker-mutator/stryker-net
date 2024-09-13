@@ -1,32 +1,32 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options;
 
-namespace Stryker.Abstractions.Mutants
+namespace Stryker.Core.Mutants
 {
     public abstract class BaseMutantOrchestrator
     {
-        public readonly StrykerOptions Options;
+        public readonly IStrykerOptions Options;
 
         public bool MustInjectCoverageLogic =>
             Options != null && Options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest) &&
             !Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest);
 
-        public ICollection<Mutant> Mutants { get; set; }
+        public ICollection<IMutant> Mutants { get; set; }
 
         protected int MutantCount;
 
-        protected BaseMutantOrchestrator(StrykerOptions options) => Options = options;
+        protected BaseMutantOrchestrator(IStrykerOptions options) => Options = options;
 
         /// <summary>
         /// Gets the stored mutants and resets the mutant list to an empty collection
         /// </summary>
-        public virtual IReadOnlyCollection<Mutant> GetLatestMutantBatch()
+        public virtual IReadOnlyCollection<IMutant> GetLatestMutantBatch()
         {
             var tempMutants = Mutants;
-            Mutants = new Collection<Mutant>();
-            return (IReadOnlyCollection<Mutant>)tempMutants;
+            Mutants = new Collection<IMutant>();
+            return (IReadOnlyCollection<IMutant>)tempMutants;
         }
     }
 
@@ -38,8 +38,8 @@ namespace Stryker.Abstractions.Mutants
     /// <typeparam name="TY">Associated semantic model if any</typeparam>
     public abstract class BaseMutantOrchestrator<T, TY> : BaseMutantOrchestrator
     {
-        protected BaseMutantOrchestrator(StrykerOptions input) : base(input)
-        {}
+        protected BaseMutantOrchestrator(IStrykerOptions input) : base(input)
+        { }
 
         public abstract T Mutate(T input, TY semanticModel);
     }

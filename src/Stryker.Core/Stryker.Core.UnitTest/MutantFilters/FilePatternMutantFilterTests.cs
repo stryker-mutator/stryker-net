@@ -2,14 +2,15 @@ using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Shouldly;
-using Stryker.Abstractions.MutantFilters;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions;
-using Stryker.Abstractions.ProjectComponents;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Mutants;
+using Stryker.Core.MutantFilters;
+using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents.Csharp;
 
-namespace Stryker.Abstractions.UnitTest.MutantFilters
+namespace Stryker.Core.UnitTest.MutantFilters
 {
     [TestClass]
     public class FilePatternMutantFilterTests : TestBase

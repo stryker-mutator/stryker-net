@@ -1,10 +1,12 @@
 using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Abstractions.InjectedHelpers;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions;
+using Stryker.Core.Mutants;
+using Stryker.Core.InjectedHelpers;
+using Stryker.Abstractions.Options;
 
-namespace Stryker.Abstractions.UnitTest.Mutants
+namespace Stryker.Core.UnitTest.Mutants
 {
     /// <summary>
     /// This base class provides helper to test source file mutation

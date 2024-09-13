@@ -7,11 +7,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Abstractions.Initialisation;
-using Stryker.Abstractions;
 using Stryker.Utilities;
+using Stryker.Core.Initialisation;
+using Stryker.Core.UnitTest;
 
-namespace Stryker.Abstractions.UnitTest.Fsharp
+namespace Stryker.Core.UnitTest.Fsharp
 {
     [TestClass]
     public class FsharpFileDetectionTests : TestBase

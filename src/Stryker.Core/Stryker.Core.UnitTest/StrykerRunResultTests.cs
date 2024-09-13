@@ -2,7 +2,7 @@ using Shouldly;
 using Stryker.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
-namespace Stryker.Abstractions.UnitTest
+namespace Stryker.Core.UnitTest
 {
     [TestClass]
     public class StrykerRunResultTests : TestBase

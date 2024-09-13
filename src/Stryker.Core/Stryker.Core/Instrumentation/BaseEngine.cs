@@ -1,9 +1,9 @@
 using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Abstractions.Mutants;
+using Stryker.Core.Mutants;
 
-namespace Stryker.Abstractions.Instrumentation;
+namespace Stryker.Core.Instrumentation;
 
 /// <summary>
 /// Base logic for all instrumentation helpers. It takes of generating a specific annotation
@@ -11,7 +11,7 @@ namespace Stryker.Abstractions.Instrumentation;
 /// <typeparam name="T">SyntaxNode type handled by this helper.</typeparam>
 /// <remarks>There is no standard helper injection method as each injector may require specific arguments.</remarks>
 /// <remarks>Multiple helpers can work on the same type of constructs.</remarks>
-internal abstract class BaseEngine<T>: IInstrumentCode where T: CSharpSyntaxNode
+internal abstract class BaseEngine<T> : IInstrumentCode where T : CSharpSyntaxNode
 {
     protected BaseEngine() => Marker = MutantPlacer.RegisterEngine(this);
 

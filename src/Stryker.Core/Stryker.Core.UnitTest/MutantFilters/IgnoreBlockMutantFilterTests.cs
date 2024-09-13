@@ -3,11 +3,12 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Abstractions.MutantFilters;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Mutators;
+using Stryker.Core.MutantFilters;
+using Stryker.Core.Mutants;
 
-namespace Stryker.Abstractions.UnitTest.MutantFilters
+namespace Stryker.Core.UnitTest.MutantFilters
 {
     [TestClass]
     public class IgnoreBlockMutantFilterTests : TestBase

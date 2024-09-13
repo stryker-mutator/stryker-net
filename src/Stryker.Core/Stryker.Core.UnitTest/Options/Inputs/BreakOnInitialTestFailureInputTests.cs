@@ -1,8 +1,9 @@
 using Shouldly;
 using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.UnitTest;
 
-namespace Stryker.Abstractions.UnitTest.Options.Inputs
+namespace Stryker.Core.UnitTest.Options.Inputs
 {
     [TestClass]
     public class BreakOnInitialTestFailureInputTests : TestBase
@@ -13,7 +14,7 @@ namespace Stryker.Abstractions.UnitTest.Options.Inputs
             var target = new BreakOnInitialTestFailureInput();
             target.HelpText.ShouldBe(@"Instruct Stryker to break execution when at least one test failed on initial run. | default: 'False'");
         }
-        
+
         [TestMethod]
         [DataRow(null, false)]
         [DataRow(false, false)]

@@ -4,11 +4,12 @@ using FSharp.Compiler.Syntax;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
 using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.Mutants.FsharpOrchestrators;
-using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions.Options;
+using Stryker.Core.Mutants.FsharpOrchestrators;
 
-namespace Stryker.Abstractions.Mutants
+namespace Stryker.Core.Mutants
 {
     /// <inheritdoc/>
     public class FsharpMutantOrchestrator : BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>, object>
@@ -20,7 +21,7 @@ namespace Stryker.Abstractions.Mutants
 
         private ILogger Logger { get; }
 
-        public FsharpMutantOrchestrator(IEnumerable<IMutator> mutators = null, StrykerOptions options = null) : base(options)
+        public FsharpMutantOrchestrator(IEnumerable<IMutator> mutators = null, IStrykerOptions options = null) : base(options)
         {
             _fsharpMutationsSynModuleDecl = new OrchestratorFinder<SynModuleDecl>();
             _fsharpMutationsSynModuleDecl.Add(typeof(SynModuleDecl.Let), new LetOrchestrator());
@@ -35,7 +36,7 @@ namespace Stryker.Abstractions.Mutants
             {
             };
 
-            Mutants = new Collection<Mutant>();
+            Mutants = new Collection<IMutant>();
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<FsharpMutantOrchestrator>();
         }
 
@@ -43,7 +44,7 @@ namespace Stryker.Abstractions.Mutants
             FSharpList<SynModuleOrNamespace> input, object semanticModel)
         {
             var list = new List<SynModuleOrNamespace>();
-            foreach (SynModuleOrNamespace module in input)
+            foreach (var module in input)
             {
                 var mutation = Mutate(module.decls);
                 list.Add(SynModuleOrNamespace.NewSynModuleOrNamespace(
@@ -63,7 +64,7 @@ namespace Stryker.Abstractions.Mutants
         public FSharpList<SynModuleDecl> Mutate(FSharpList<SynModuleDecl> decls)
         {
             var list = new List<SynModuleDecl>();
-            foreach (SynModuleDecl declaration in decls)
+            foreach (var declaration in decls)
             {
                 var handler = _fsharpMutationsSynModuleDecl.FindHandler(declaration.GetType());
                 list.Add(handler.Mutate(declaration, this));

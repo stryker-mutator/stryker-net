@@ -4,8 +4,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
 
-namespace Stryker.Abstractions.Mutators
+namespace Stryker.Core.Mutators
 {
     public class ConditionalExpressionMutator : MutatorBase<ConditionalExpressionSyntax>
     {

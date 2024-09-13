@@ -2,11 +2,12 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-namespace Stryker.Abstractions.Mutators;
+namespace Stryker.Core.Mutators;
 
 public class StringMutator : MutatorBase<LiteralExpressionSyntax>
 {

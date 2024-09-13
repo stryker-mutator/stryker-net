@@ -7,10 +7,11 @@ using Buildalyzer;
 using Buildalyzer.Construction;
 using Buildalyzer.Environment;
 using Moq;
-using Stryker.Abstractions.Initialisation.Buildalyzer;
-using Stryker.Abstractions.Testing;
+using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Core.Testing;
+using Stryker.Core.UnitTest;
 
-namespace Stryker.Abstractions.UnitTest.Initialisation;
+namespace Stryker.Core.UnitTest.Initialisation;
 
 public class BuildAnalyzerTestsBase : TestBase
 {
@@ -40,7 +41,7 @@ public class BuildAnalyzerTestsBase : TestBase
         IEnumerable<string> projectReferences = null, string framework = DefaultFramework, Func<bool> success = null)
     {
         var properties = GetSourceProjectDefaultProperties();
-        projectReferences??= new List<string>();
+        projectReferences ??= new List<string>();
 
         return BuildProjectAnalyzerMock(csprojPathName, sourceFiles, properties, projectReferences, framework, success);
     }
@@ -63,8 +64,8 @@ public class BuildAnalyzerTestsBase : TestBase
     /// <remarks>the test project references the production code project and contains no source file</remarks>
     protected Mock<IProjectAnalyzer> TestProjectAnalyzerMock(string testCsprojPathName, string csProj, string framework = DefaultFramework, bool success = true)
     {
-        var properties = new Dictionary<string, string>{ { "IsTestProject", "True" }, { "Language", "C#" } };
-        var projectReferences =  string.IsNullOrEmpty(csProj) ? [] : _projectCache[csProj].ProjectReferences.Append(csProj).ToList();
+        var properties = new Dictionary<string, string> { { "IsTestProject", "True" }, { "Language", "C#" } };
+        var projectReferences = string.IsNullOrEmpty(csProj) ? [] : _projectCache[csProj].ProjectReferences.Append(csProj).ToList();
         return BuildProjectAnalyzerMock(testCsprojPathName, [], properties, projectReferences, framework, () => success);
     }
 
@@ -92,8 +93,8 @@ public class BuildAnalyzerTestsBase : TestBase
         var sourceProjectAnalyzerMock = new Mock<IProjectAnalyzer>(MockBehavior.Strict);
         var sourceProjectAnalyzerResultMock = new Mock<IAnalyzerResult>(MockBehavior.Strict);
         var sourceProjectFileMock = new Mock<IProjectFile>(MockBehavior.Strict);
-        success??= () => true;
-        projectReferences??= [];
+        success ??= () => true;
+        projectReferences ??= [];
         // create dummy project and source files
         FileSystem.AddFile(csprojPathName, new MockFileData(""));
         foreach (var file in sourceFiles)
@@ -106,12 +107,12 @@ public class BuildAnalyzerTestsBase : TestBase
         FileSystem.AddDirectory(projectUnderTestBin);
 
         var projectBin =
-            FileSystem.Path.Combine(projectUnderTestBin, FileSystem.Path.GetFileNameWithoutExtension(csprojPathName)+".dll");
+            FileSystem.Path.Combine(projectUnderTestBin, FileSystem.Path.GetFileNameWithoutExtension(csprojPathName) + ".dll");
         FileSystem.AddFile(FileSystem.Path.Combine(projectUnderTestBin, projectBin), new MockFileData(""));
         sourceProjectAnalyzerResultMock.Setup(x => x.ProjectReferences).Returns(projectReferences);
         sourceProjectAnalyzerResultMock.Setup(x => x.References).Returns(projectReferences.
-            Where (_projectCache.ContainsKey).
-            Select( iar => _projectCache[iar].GetAssemblyPath()).Union(rawReferences).ToArray());
+            Where(_projectCache.ContainsKey).
+            Select(iar => _projectCache[iar].GetAssemblyPath()).Union(rawReferences).ToArray());
         sourceProjectAnalyzerResultMock.Setup(x => x.SourceFiles).Returns(sourceFiles);
         sourceProjectAnalyzerResultMock.Setup(x => x.PreprocessorSymbols).Returns(["NET"]);
         properties.Add("TargetRefPath", projectBin);
@@ -136,15 +137,15 @@ public class BuildAnalyzerTestsBase : TestBase
 
         sourceProjectFileMock.Setup(x => x.Path).Returns(csprojPathName);
         sourceProjectFileMock.Setup(x => x.Name).Returns(FileSystem.Path.GetFileName(csprojPathName));
-        sourceProjectFileMock.Setup(x=> x.TargetFrameworks).Returns([framework]);
+        sourceProjectFileMock.Setup(x => x.TargetFrameworks).Returns([framework]);
         return sourceProjectAnalyzerMock;
     }
 
     internal static IAnalyzerResults BuildAnalyzerResultsMock(IAnalyzerResult sourceProjectAnalyzerResult)
     {
-        IEnumerable<IAnalyzerResult> analyzerResults = [ sourceProjectAnalyzerResult];
+        IEnumerable<IAnalyzerResult> analyzerResults = [sourceProjectAnalyzerResult];
         var sourceProjectAnalyzerResultsMock = new Mock<IAnalyzerResults>(MockBehavior.Strict);
-        sourceProjectAnalyzerResultsMock.Setup(x => x.OverallSuccess).Returns(() => analyzerResults.All(r=> r.Succeeded));
+        sourceProjectAnalyzerResultsMock.Setup(x => x.OverallSuccess).Returns(() => analyzerResults.All(r => r.Succeeded));
         sourceProjectAnalyzerResultsMock.Setup(x => x.Results).Returns(analyzerResults);
         sourceProjectAnalyzerResultsMock.Setup(x => x.Count).Returns(analyzerResults.Count());
         sourceProjectAnalyzerResultsMock.Setup(x => x.GetEnumerator()).Returns(() => analyzerResults.GetEnumerator());

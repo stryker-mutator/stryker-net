@@ -5,14 +5,15 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
-using Shouldly;
-using Stryker.Abstractions.MutantFilters;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions;
-using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options.Inputs;
+using Stryker.Core.MutantFilters;
+using Stryker.Core.Mutants;
 
-namespace Stryker.Abstractions.UnitTest.MutantFilters
+namespace Stryker.Core.UnitTest.MutantFilters
 {
     [TestClass]
     public class IgnoredMethodMutantFilterTests : TestBase
@@ -51,7 +52,7 @@ namespace Stryker.Abstractions.UnitTest.MutantFilters
             };
 
             var sut = new IgnoredMethodMutantFilter();
-            foreach(var (mutant, label) in BuildMutantsToFilter(source, anchor))
+            foreach (var (mutant, label) in BuildMutantsToFilter(source, anchor))
             {
                 // Act
                 var filteredMutants = sut.FilterMutants(new[] { mutant }, null, options);
@@ -105,7 +106,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
 
             var sut = new IgnoredMethodMutantFilter();
 
-           var (mutant, label) = BuildExpressionMutant(source, "<");
+            var (mutant, label) = BuildExpressionMutant(source, "<");
             var filteredMutants = sut.FilterMutants(new[] { mutant }, null, options);
 
             // Assert
@@ -142,7 +143,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             };
 
             var sut = new IgnoredMethodMutantFilter();
-            foreach(var (mutant, label) in BuildMutantsToFilter(source, "ToList"))
+            foreach (var (mutant, label) in BuildMutantsToFilter(source, "ToList"))
             {
                 // Act
                 var filteredMutants = sut.FilterMutants(new[] { mutant }, null, options);
@@ -220,7 +221,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
 
             var sut = new IgnoredMethodMutantFilter();
 
-            foreach( var (mutant, label) in BuildMutantsToFilter(source, "ToList"))
+            foreach (var (mutant, label) in BuildMutantsToFilter(source, "ToList"))
             {
                 // Act
                 var filteredMutants = sut.FilterMutants(new[] { mutant }, null, options);
@@ -256,7 +257,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
 
             var sut = new IgnoredMethodMutantFilter();
 
-            foreach( var (mutant, label) in BuildMutantsToFilter(source, "ToList"))
+            foreach (var (mutant, label) in BuildMutantsToFilter(source, "ToList"))
             {
                 // Act
                 var filteredMutants = sut.FilterMutants(new[] { mutant }, null, options);
@@ -368,7 +369,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             };
             var sut = new IgnoredMethodMutantFilter();
 
-            foreach(var (mutant, label) in BuildMutantsToFilter(source, "Dispose"))
+            foreach (var (mutant, label) in BuildMutantsToFilter(source, "Dispose"))
             {
                 // act
                 var filteredMutants = sut.FilterMutants(new[] { mutant }, null, options);
@@ -626,7 +627,7 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
     }
 }";
             var baseSyntaxTree = CSharpSyntaxTree.ParseText(source).GetRoot();
-            var mutants = new[] { "true", @"""A Mutation""", "42"}.Select(GetOriginalNode).Select(node => new Mutant { Mutation = new Mutation { OriginalNode = node } }).ToArray();
+            var mutants = new[] { "true", @"""A Mutation""", "42" }.Select(GetOriginalNode).Select(node => new Mutant { Mutation = new Mutation { OriginalNode = node } }).ToArray();
             var options = new StrykerOptions
             {
                 IgnoredMethods = new IgnoreMethodsInput { SuppliedInput = new[] { "Bar" } }.Validate()
@@ -641,7 +642,7 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
             filteredMutants.ShouldNotContain(mutants[1]); // Bar(""A Mutation"");
             filteredMutants.ShouldContain(mutants[2]); // Quux(42);
 
-            Microsoft.CodeAnalysis.SyntaxNode GetOriginalNode(string node) =>
+            SyntaxNode GetOriginalNode(string node) =>
                 baseSyntaxTree.FindNode(new TextSpan(source.IndexOf(node, StringComparison.OrdinalIgnoreCase), node.Length));
         }
 
@@ -675,11 +676,11 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
             filteredMutants.ShouldContain(mutants[1]); // Bar(""A Mutation"");
             filteredMutants.ShouldContain(mutants[2]); // Quux(42);
 
-            Microsoft.CodeAnalysis.SyntaxNode GetOriginalNode(string node) =>
+            SyntaxNode GetOriginalNode(string node) =>
                 baseSyntaxTree.FindNode(new TextSpan(source.IndexOf(node, StringComparison.OrdinalIgnoreCase), node.Length));
         }
 
-        private T FindEnclosingNode<T>(SyntaxNode start) where T: SyntaxNode =>
+        private T FindEnclosingNode<T>(SyntaxNode start) where T : SyntaxNode =>
             start switch
             {
                 null => null,
@@ -687,7 +688,7 @@ public class MutantFilters_DoNotIgnoreOtherMutantsInFile
                 _ => FindEnclosingNode<T>(start.Parent)
             };
 
-        private T FindEnclosingNode<T>(SyntaxNode start, string anchor) where T: SyntaxNode => FindEnclosingNode<T>(start.FindNode(new TextSpan(start.ToFullString().IndexOf(anchor), anchor.Length)));
+        private T FindEnclosingNode<T>(SyntaxNode start, string anchor) where T : SyntaxNode => FindEnclosingNode<T>(start.FindNode(new TextSpan(start.ToFullString().IndexOf(anchor), anchor.Length)));
 
         private IEnumerable<(Mutant, string)> BuildMutantsToFilter(string csharp, string anchor)
         {

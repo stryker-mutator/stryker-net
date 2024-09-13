@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Buildalyzer;
 
 namespace Stryker.Abstractions.ProjectComponents;

@@ -1,29 +1,30 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using Buildalyzer;
 using FSharp.Compiler.CodeAnalysis;
 using FSharp.Compiler.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Control;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions;
+using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
-using Stryker.Abstractions.ProjectComponents.SourceProjects;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
+using Stryker.Core.ProjectComponents.Fsharp;
+using Stryker.Core.ProjectComponents.SourceProjects;
 using static FSharp.Compiler.Syntax.ParsedInput;
 using IFileSystem = System.IO.Abstractions.IFileSystem;
 
-namespace Stryker.Abstractions.Initialisation
+namespace Stryker.Core.Initialisation
 {
     internal class FsharpProjectComponentsBuilder : ProjectComponentsBuilder
     {
         private readonly SourceProjectInfo _projectInfo;
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly string[] _foldersToExclude;
         private readonly ILogger _logger;
 
-        public FsharpProjectComponentsBuilder(SourceProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) : base(fileSystem)
+        public FsharpProjectComponentsBuilder(SourceProjectInfo projectInfo, IStrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) : base(fileSystem)
         {
             _projectInfo = projectInfo;
             _options = options;
@@ -46,7 +47,7 @@ namespace Stryker.Abstractions.Initialisation
         }
 
         // do nothing
-        public override void InjectHelpers(IReadOnlyProjectComponent inputFiles) {}
+        public override void InjectHelpers(IReadOnlyProjectComponent inputFiles) { }
 
         public override Action PostBuildAction() => () => { };
 
@@ -88,7 +89,7 @@ namespace Stryker.Abstractions.Initialisation
 
                 if (!FileSystem.File.Exists(sourceFile))
                 {
-                    _logger.LogWarning("F# project builder: skipping non existing file {SourceFile}.",sourceFile);
+                    _logger.LogWarning("F# project builder: skipping non existing file {SourceFile}.", sourceFile);
                     continue;
                 }
 
@@ -182,7 +183,7 @@ namespace Stryker.Abstractions.Initialisation
                 }
                 else
                 {
-                    (cache[folder]).Add(subDir);
+                    cache[folder].Add(subDir);
                     break;
                 }
             }

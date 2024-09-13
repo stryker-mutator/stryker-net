@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.TestRunners;
 
-namespace Stryker.Abstractions.Mutants
+namespace Stryker.Core.Mutants
 {
     public class WrappedGuidsEnumeration : ITestGuids
     {
@@ -27,7 +28,7 @@ namespace Stryker.Abstractions.Mutants
 
         public WrappedGuidsEnumeration(IEnumerable<Guid> guids) => _guids = guids;
 
-        public ITestGuids Excluding(ISet<Guid> testsToSkip) => (IsEveryTest || IsEmpty) ? this : new TestGuidsList(_guids.Except(testsToSkip));
+        public ITestGuids Excluding(ISet<Guid> testsToSkip) => IsEveryTest || IsEmpty ? this : new TestGuidsList(_guids.Except(testsToSkip));
 
         public static ITestGuids MergeList(ITestGuids a, ITestGuids b)
         {

@@ -3,8 +3,9 @@ using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Options;
 
-namespace Stryker.Abstractions.Initialisation.Buildalyzer
+namespace Stryker.Core.Initialisation.Buildalyzer
 {
     public static class IAnalyzerResultCSharpExtensions
     {
@@ -28,7 +29,7 @@ namespace Stryker.Abstractions.Initialisation.Buildalyzer
             return compilationOptions;
         }
 
-        public static CSharpParseOptions GetParseOptions(this IAnalyzerResult analyzerResult, StrykerOptions options) => new CSharpParseOptions(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: analyzerResult.PreprocessorSymbols);
+        public static CSharpParseOptions GetParseOptions(this IAnalyzerResult analyzerResult, IStrykerOptions options) => new CSharpParseOptions(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: analyzerResult.PreprocessorSymbols);
 
         private static NullableContextOptions GetNullableContextOptions(this IAnalyzerResult analyzerResult)
         {

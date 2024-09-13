@@ -5,17 +5,17 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Reflection;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Moq;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.MutationTest;
-using Stryker.Abstractions;
-using Stryker.Abstractions.ProjectComponents;
-using Stryker.Abstractions.ProjectComponents.SourceProjects;
-using Stryker.Abstractions.ProjectComponents.TestProjects;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Stryker.Abstractions;
+using Stryker.Core.Mutants;
+using Stryker.Core.MutationTest;
+using Stryker.Core.ProjectComponents.Csharp;
+using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TestProjects;
 using Mutation = Stryker.Abstractions.Mutants.Mutation;
 
-namespace Stryker.Abstractions.UnitTest.MutationTest
+namespace Stryker.Core.UnitTest.MutationTest
 {
     [TestClass]
     public class CSharpMutationTestProcessTests : TestBase
@@ -88,7 +88,7 @@ namespace Stryker.Abstractions.UnitTest.MutationTest
             orchestratorMock.SetupAllProperties();
             orchestratorMock.Setup(x => x.GetLatestMutantBatch()).Returns(mockMutants);
 
-            var target = new CsharpMutationProcess( fileSystem, options, null, orchestratorMock.Object);
+            var target = new CsharpMutationProcess(fileSystem, options, null, orchestratorMock.Object);
 
             target.Mutate(input);
 

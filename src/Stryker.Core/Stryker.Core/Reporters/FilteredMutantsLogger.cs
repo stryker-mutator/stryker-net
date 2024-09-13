@@ -4,7 +4,7 @@ using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.ProjectComponents;
 
-namespace Stryker.Abstractions.Reporters
+namespace Stryker.Core.Reporters
 {
     public class FilteredMutantsLogger
     {

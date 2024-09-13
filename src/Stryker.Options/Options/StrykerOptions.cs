@@ -1,13 +1,13 @@
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Abstractions.Baseline;
-using Stryker.Abstractions.Options;
-using Stryker.Abstractions.Reporting;
 using Stryker.Abstractions.Mutators;
-using Stryker.Abstractions.Options.Inputs;
-using Stryker.Utilities;
+using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
-using Stryker.Abstractions.Reporters;
+using Stryker.Utilities;
 
 namespace Stryker.Abstractions;
 
@@ -85,7 +85,7 @@ public class StrykerOptions : IStrykerOptions
     /// <summary>
     /// Used to set colors in the reports and fail stryker if the mutation score is lower than the break value.
     /// </summary>
-    public Thresholds Thresholds { get; init; } = new Thresholds() { Break = 0, Low = 60, High = 80 };
+    public IThresholds Thresholds { get; init; } = new Thresholds() { Break = 0, Low = 60, High = 80 };
 
     /// <summary>
     /// The ammount of milliseconds that should be added to the timeout period when testing mutants.

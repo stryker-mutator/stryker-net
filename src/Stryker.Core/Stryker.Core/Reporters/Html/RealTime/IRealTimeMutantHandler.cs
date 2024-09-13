@@ -1,6 +1,7 @@
-﻿using Stryker.Abstractions.Mutants;
+﻿using Stryker.Abstractions;
+using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Abstractions.Reporters.Html.RealTime;
+namespace Stryker.Core.Reporters.Html.RealTime;
 
 public interface IRealTimeMutantHandler
 {

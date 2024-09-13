@@ -3,11 +3,11 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Shouldly;
-using Stryker.Abstractions.Mutators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
+using Stryker.Core.Mutators;
 
-namespace Stryker.Abstractions.UnitTest.Mutators
+namespace Stryker.Core.UnitTest.Mutators
 {
     [TestClass]
     public class SwitchExpressionMutatorTests : TestBase
@@ -75,7 +75,7 @@ namespace Stryker.Abstractions.UnitTest.Mutators
 
         private SwitchExpressionSyntax GenerateWithRelationalPattern(string @operator)
         {
-            SyntaxTree tree = CSharpSyntaxTree.ParseText($@"
+            var tree = CSharpSyntaxTree.ParseText($@"
 using System;
 
 namespace TestApplication
@@ -101,7 +101,7 @@ namespace TestApplication
 
         private SwitchExpressionSyntax GenerateWithBinaryPattern(string pattern)
         {
-            SyntaxTree tree = CSharpSyntaxTree.ParseText($@"
+            var tree = CSharpSyntaxTree.ParseText($@"
 using System;
 
 namespace TestApplication

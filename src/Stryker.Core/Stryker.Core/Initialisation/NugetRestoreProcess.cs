@@ -4,10 +4,10 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.Testing;
-using Stryker.Abstractions.ToolHelpers;
+using Stryker.Core.Helpers;
+using Stryker.Core.Testing;
 
-namespace Stryker.Abstractions.Initialisation
+namespace Stryker.Core.Initialisation
 {
     public interface INugetRestoreProcess
     {

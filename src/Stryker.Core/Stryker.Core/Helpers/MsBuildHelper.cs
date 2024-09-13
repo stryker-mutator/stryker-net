@@ -1,12 +1,11 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
-using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.Testing;
+using Stryker.Core.Testing;
 
-namespace Stryker.Abstractions.ToolHelpers;
+namespace Stryker.Core.Helpers;
 
 public class MsBuildHelper
 {
@@ -37,7 +36,7 @@ public class MsBuildHelper
 
     public static string QuotesIfNeeded(string parameter)
     {
-        if (!parameter.Contains(' ') || parameter.Length<3 || (parameter[0] == '"' && parameter[^1]=='"'))
+        if (!parameter.Contains(' ') || parameter.Length < 3 || parameter[0] == '"' && parameter[^1] == '"')
         {
             return parameter;
         }
@@ -75,7 +74,7 @@ public class MsBuildHelper
     {
         var (exe, command) = usingMsBuild ? GetMsBuildExeAndCommand() : ("dotnet", "build");
 
-        List<string> fullOptions =  string.IsNullOrEmpty(command) ? [QuotesIfNeeded(projectFile)] : [command, QuotesIfNeeded(projectFile)];
+        List<string> fullOptions = string.IsNullOrEmpty(command) ? [QuotesIfNeeded(projectFile)] : [command, QuotesIfNeeded(projectFile)];
         if (!string.IsNullOrEmpty(configuration))
         {
             fullOptions.Add(usingMsBuild ? $"/property:Configuration={QuotesIfNeeded(configuration)}" : $"-c {QuotesIfNeeded(configuration)}");
@@ -91,14 +90,15 @@ public class MsBuildHelper
         return (_executor.Start(path, exe, arguments), exe, arguments);
     }
 
-    private (string executable, string command) GetMsBuildExeAndCommand() => GetMsBuildPath().EndsWith(".exe", System.StringComparison.InvariantCultureIgnoreCase) ? (_msBuildPath, string.Empty) : ("dotnet", QuotesIfNeeded(_msBuildPath)+' ');
+    private (string executable, string command) GetMsBuildExeAndCommand() => GetMsBuildPath().EndsWith(".exe", System.StringComparison.InvariantCultureIgnoreCase) ? (_msBuildPath, string.Empty) : ("dotnet", QuotesIfNeeded(_msBuildPath) + ' ');
 
     private string SearchMsBuildVersion(string version)
     {
         foreach (var drive in Directory.GetLogicalDrives())
         {
             var visualStudioPath = Path.Combine(drive, "Program Files (x86)", "Microsoft Visual Studio");
-            if (!_fileSystem.Directory.Exists(visualStudioPath)) continue;
+            if (!_fileSystem.Directory.Exists(visualStudioPath))
+                continue;
             _logger.LogDebug("Using vswhere.exe to locate msbuild");
 
             var vsWherePath = Path.Combine(visualStudioPath, "Installer", "vswhere.exe");
@@ -106,10 +106,12 @@ public class MsBuildHelper
                 $@"-{version} -requires Microsoft.Component.MSBuild -products * -find MSBuild\**\Bin\MSBuild.exe";
             var vsWhereResult = _executor.Start(visualStudioPath, vsWherePath, vsWhereCommand);
 
-            if (vsWhereResult.ExitCode != ExitCodes.Success) continue;
+            if (vsWhereResult.ExitCode != ExitCodes.Success)
+                continue;
             var msBuildPath = vsWhereResult.Output.Trim();
-            if (!_fileSystem.File.Exists(msBuildPath)) continue;
-            _logger.LogDebug("Msbuild executable path found at {MsBuildPath}",msBuildPath);
+            if (!_fileSystem.File.Exists(msBuildPath))
+                continue;
+            _logger.LogDebug("Msbuild executable path found at {MsBuildPath}", msBuildPath);
 
             return msBuildPath;
         }

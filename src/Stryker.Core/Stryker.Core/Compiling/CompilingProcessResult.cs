@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 
-namespace Stryker.Abstractions.Compiling
+namespace Stryker.Core.Compiling
 {
     public record CompilingProcessResult(
         bool Success,

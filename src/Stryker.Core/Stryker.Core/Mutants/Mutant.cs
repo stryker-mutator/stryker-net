@@ -1,6 +1,7 @@
+using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.TestRunners;
 
-namespace Stryker.Abstractions.Mutants
+namespace Stryker.Core.Mutants
 {
     /// <summary>
     /// Represents a single mutation on domain level
@@ -40,7 +41,7 @@ namespace Stryker.Abstractions.Mutants
             {
                 ResultStatus = MutantStatus.Timeout;
             }
-            else if (resultRanTests.IsEveryTest || (resultRanTests.IsEveryTest is not true && AssessingTests.IsIncludedIn(resultRanTests)))
+            else if (resultRanTests.IsEveryTest || resultRanTests.IsEveryTest is not true && AssessingTests.IsIncludedIn(resultRanTests))
             {
                 ResultStatus = MutantStatus.Survived;
             }

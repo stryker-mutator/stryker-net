@@ -2,23 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.ProjectComponents;
 
-namespace Stryker.Abstractions.ProjectComponents
+namespace Stryker.Core.ProjectComponents
 {
-    public interface IProjectComponent : IReadOnlyProjectComponent
+    public class FolderComposite<T> : ProjectComponent<T>, IFolderComposite
     {
-        new string FullPath { get; set; }
-        new IEnumerable<IMutant> Mutants { get; set; }
-        new IReadOnlyFolderComposite Parent { get; set; }
-        new string RelativePath { get; set; }
-    }
-
-    public class FolderComposite<T> : ProjectComponent<T>, IReadOnlyFolderComposite
-    {
-        private readonly List<IProjectComponent> _children = [];
+        private readonly List<IReadOnlyProjectComponent> _children = [];
         public readonly List<T> _compilationSyntaxTrees = [];
 
-        public IEnumerable<IProjectComponent> Children => _children;
+        public IEnumerable<IReadOnlyProjectComponent> Children => _children;
 
         public override IEnumerable<IMutant> Mutants
         {

@@ -1,12 +1,13 @@
+using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Abstractions.Mutators;
-using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.Mutators;
 
-namespace Stryker.Abstractions.UnitTest.Mutators
+namespace Stryker.Core.UnitTest.Mutators
 {
     [TestClass]
     public class AssignmentStatementMutatorTests : TestBase

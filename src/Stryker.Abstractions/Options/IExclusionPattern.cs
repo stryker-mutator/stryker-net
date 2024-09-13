@@ -1,4 +1,5 @@
 
+using System.Collections.Generic;
 using DotNet.Globbing;
 
 namespace Stryker.Abstractions.Options;

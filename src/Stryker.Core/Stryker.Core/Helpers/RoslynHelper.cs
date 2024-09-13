@@ -5,7 +5,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions.Mutants;
 
-namespace Stryker.Abstractions.Helpers
+namespace Stryker.Core.Helpers
 {
     internal static class RoslynHelper
     {

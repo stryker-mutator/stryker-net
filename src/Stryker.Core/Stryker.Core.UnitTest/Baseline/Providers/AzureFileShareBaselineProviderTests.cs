@@ -6,16 +6,16 @@ using Azure;
 using Azure.Storage.Files.Shares;
 using Azure.Storage.Files.Shares.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Abstractions.Baseline.Providers;
 using Stryker.Abstractions;
-using Stryker.Abstractions.ProjectComponents.TestProjects;
-using Stryker.Abstractions.Reporters.Json;
-using Stryker.Abstractions.UnitTest.Reporters;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.Baseline.Providers;
+using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Core.Reporters.Json;
+using Stryker.Core.UnitTest.Reporters;
 
-namespace Stryker.Abstractions.UnitTest.Baseline.Providers
+namespace Stryker.Core.UnitTest.Baseline.Providers
 {
     [TestClass]
     public class AzureFileShareBaselineProviderTests : TestBase
@@ -200,7 +200,7 @@ namespace Stryker.Abstractions.UnitTest.Baseline.Providers
             var fileLength = Encoding.UTF8.GetBytes(report.ToJson()).Length;
 
             var fullChunks = (int)Math.Floor((double)fileLength / chunkSize);
-            var lastChunkSize = fileLength - (fullChunks * chunkSize);
+            var lastChunkSize = fileLength - fullChunks * chunkSize;
 
             var fileClient = Mock.Of<ShareFileClient>();
 

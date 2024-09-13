@@ -1,14 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Initialisation;
-using Stryker.Abstractions.Testing;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.Initialisation;
+using Stryker.Core.Testing;
 
-namespace Stryker.Abstractions.UnitTest.Initialisation;
+namespace Stryker.Core.UnitTest.Initialisation;
 
 [TestClass]
 public class InitialBuildProcessTests : TestBase
@@ -60,7 +60,7 @@ public class InitialBuildProcessTests : TestBase
                               @"C:\Program Files\Microsoft Visual Studio\2022\Professional\MSBuild\Current\Bin\MSBuild.exe" + "\" " + Path.GetFileName(_cProjectsExampleCsproj) + "\"");
 
         processMock.Verify(x => x.Start(It.IsAny<string>(), It.Is<string>(app => app.Contains("dotnet")), It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Once());
-        processMock.Verify(x =>x.Start(It.IsAny<string>(), It.Is<string>(app => app.Contains("MSBuild.exe")), It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(2));
+        processMock.Verify(x => x.Start(It.IsAny<string>(), It.Is<string>(app => app.Contains("MSBuild.exe")), It.IsAny<string>(), It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(2));
     }
 
     [TestMethod]

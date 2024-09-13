@@ -10,7 +10,7 @@ using System.IO;
 using System.IO.Abstractions;
 using Stryker.Utilities;
 
-namespace Stryker.Abstractions.Initialisation;
+namespace Stryker.Core.Initialisation;
 
 public abstract class ProjectComponentsBuilder
 {

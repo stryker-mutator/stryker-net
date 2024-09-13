@@ -1,9 +1,9 @@
-﻿using Moq;
-using Stryker.Abstractions.Testing;
 using System.Collections.Generic;
 using System.IO;
+using Moq;
+using Stryker.Core.Testing;
 
-namespace Stryker.Abstractions.UnitTest
+namespace Stryker.Core.UnitTest
 {
     public static class MockExtensions
     {

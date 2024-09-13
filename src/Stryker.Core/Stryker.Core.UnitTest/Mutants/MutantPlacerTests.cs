@@ -1,20 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Shouldly;
-using Stryker.Abstractions.InjectedHelpers;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
-using Stryker.Abstractions.Mutators;
-using Stryker.Abstractions;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions.Options;
+using Stryker.Core.InjectedHelpers;
+using Stryker.Core.Mutants;
+using Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
-namespace Stryker.Abstractions.UnitTest.Mutants
+namespace Stryker.Core.UnitTest.Mutants
 {
     [TestClass]
     public class MutantPlacerTests : TestBase
@@ -178,7 +178,7 @@ namespace Stryker.Abstractions.UnitTest.Mutants
             CheckMutantPlacerProperlyPlaceAndRemoveHelpers<PropertyDeclarationSyntax>(source, expected, placer.ConvertToBlockBody);
         }
 
-    
+
         [TestMethod]
         public void ShouldInjectInitializersAndRestore()
         {

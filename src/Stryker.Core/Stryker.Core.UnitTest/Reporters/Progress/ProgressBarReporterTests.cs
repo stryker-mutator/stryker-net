@@ -1,10 +1,11 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Reporters.Progress;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.Mutants;
+using Stryker.Core.Reporters.Progress;
 
-namespace Stryker.Abstractions.UnitTest.Reporters.Progress
+namespace Stryker.Core.UnitTest.Reporters.Progress
 {
     [TestClass]
     public class ProgressBarReporterTests

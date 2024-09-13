@@ -50,12 +50,12 @@ namespace Stryker.Abstractions.Options
         OpenReportEnabledInput OpenReportEnabledInput { get; init; }
         BreakOnInitialTestFailureInput BreakOnInitialTestFailureInput { get; init; }
 
-        StrykerOptions ValidateAll();
+        IStrykerOptions ValidateAll();
     }
 
     public class StrykerInputs : IStrykerInputs
     {
-        private StrykerOptions _strykerOptionsCache;
+        private IStrykerOptions _strykerOptionsCache;
         private readonly IFileSystem _fileSystem;
 
         public StrykerInputs(IFileSystem fileSystem = null)
@@ -107,7 +107,7 @@ namespace Stryker.Abstractions.Options
         public OpenReportEnabledInput OpenReportEnabledInput { get; init; } = new();
         public BreakOnInitialTestFailureInput BreakOnInitialTestFailureInput { get; init; } = new();
 
-        public StrykerOptions ValidateAll()
+        public IStrykerOptions ValidateAll()
         {
             var basePath = BasePathInput.Validate(_fileSystem);
             var outputPath = OutputPathInput.Validate(_fileSystem);

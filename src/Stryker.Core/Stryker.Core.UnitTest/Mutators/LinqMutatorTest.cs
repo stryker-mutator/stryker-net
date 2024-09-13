@@ -1,13 +1,13 @@
-using Microsoft.CodeAnalysis;
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Shouldly;
-using Stryker.Abstractions.Mutators;
-using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
 using Stryker.Abstractions;
+using Stryker.Abstractions.Mutators;
+using Stryker.Core.Mutators;
 
-namespace Stryker.Abstractions.UnitTest.Mutators
+namespace Stryker.Core.UnitTest.Mutators
 {
     [TestClass]
     public class LinqMutatorTest : TestBase
@@ -102,9 +102,9 @@ namespace TestApplication
 
             var mutation = result.ShouldHaveSingleItem();
             var replacement = mutation.ReplacementNode.ShouldBeOfType<MemberAccessExpressionSyntax>();
-           replacement.Name.Identifier.ValueText.ShouldBe(expected.ToString());
+            replacement.Name.Identifier.ValueText.ShouldBe(expected.ToString());
 
-            mutation.DisplayName.ShouldBe($"Linq method mutation ({ original }() to { expected }())");
+            mutation.DisplayName.ShouldBe($"Linq method mutation ({original}() to {expected}())");
         }
 
         /// <summary>

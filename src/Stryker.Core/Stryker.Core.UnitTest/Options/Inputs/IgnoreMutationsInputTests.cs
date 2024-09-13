@@ -5,11 +5,12 @@ using Shouldly;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions.Options.Inputs;
-using Stryker.Abstractions.UnitTest.Mutators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Abstractions;
+using Stryker.Core.UnitTest.Mutators;
+using Stryker.Core.UnitTest;
 
-namespace Stryker.Abstractions.UnitTest.Options.Inputs
+namespace Stryker.Core.UnitTest.Options.Inputs
 {
     [TestClass]
     public class IgnoreMutationsInputTests : TestBase
@@ -55,10 +56,13 @@ namespace Stryker.Abstractions.UnitTest.Options.Inputs
         [TestMethod]
         public void ShouldReturnMultipleMutators()
         {
-            var target = new IgnoreMutationsInput { SuppliedInput = new[] {
+            var target = new IgnoreMutationsInput
+            {
+                SuppliedInput = new[] {
                 Mutator.String.ToString(),
                 Mutator.Regex.ToString(),
-            } };
+            }
+            };
 
             var result = target.Validate<Mutator>();
 

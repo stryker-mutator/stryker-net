@@ -1,21 +1,22 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Abstractions.CoverageAnalysis;
-using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Initialisation;
-using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions;
-using Stryker.Abstractions.TestRunners;
-using Stryker.Abstractions.TestRunners.VsTest;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Options;
+using Stryker.Core.CoverageAnalysis;
+using Stryker.Core.Initialisation;
+using Stryker.Core.Mutants;
+using Stryker.Core.TestRunners;
+using Stryker.Core.TestRunners.VsTest;
+using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
-namespace Stryker.Abstractions.UnitTest.TestRunners
+namespace Stryker.Core.UnitTest.TestRunners
 {
     /// <summary>
     /// This class hosts the VsTestRunner related tests. The design of VsTest implies the creation of many mocking objects, so the tests may be hard to read.
@@ -129,7 +130,7 @@ namespace Stryker.Abstractions.UnitTest.TestRunners
             // tests are successful => run should be successful
             result.ExecutedTests.IsEmpty.ShouldBeTrue();
         }
-        
+
         // If no tests are present in the assembly, VsTest raises no event at all
         // previous versions of Stryker froze when this happened
         [TestMethod]
@@ -147,7 +148,7 @@ namespace Stryker.Abstractions.UnitTest.TestRunners
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             SetupFailingTestRun(mockVsTest);
-            var action = () =>  runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
+            var action = () => runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
             action.ShouldThrow<GeneralStrykerException>();
             // the test will always end in a crash, VsTestRunner should retry at least a few times
             mockVsTest.Verify(m => m.RunTestsWithCustomTestHost(It.IsAny<IEnumerable<string>>(),
@@ -194,7 +195,7 @@ namespace Stryker.Abstractions.UnitTest.TestRunners
             VsTestRunner.VsTestExtraTimeOutInMs = 100;
             // the test session will freeze twice
             SetupFrozenTestRun(mockVsTest, 2);
-            runner.TestMultipleMutants(SourceProjectInfo, new TimeoutValueCalculator(0, 10,9), new[] { Mutant }, null);
+            runner.TestMultipleMutants(SourceProjectInfo, new TimeoutValueCalculator(0, 10, 9), new[] { Mutant }, null);
             VsTestRunner.VsTestExtraTimeOutInMs = defaultTimeOut;
             mockVsTest.Verify(m => m.RunTestsWithCustomTestHost(It.IsAny<IEnumerable<string>>(),
                 It.IsAny<string>(), It.IsAny<TestPlatformOptions>(),
@@ -211,7 +212,7 @@ namespace Stryker.Abstractions.UnitTest.TestRunners
             // it will be recycled
             SetupFrozenVsTest(mockVsTest, 3);
             VsTestRunner.VsTestExtraTimeOutInMs = 100;
-            runner.TestMultipleMutants(SourceProjectInfo, new TimeoutValueCalculator(0, 10,9), new[] { Mutant }, null);
+            runner.TestMultipleMutants(SourceProjectInfo, new TimeoutValueCalculator(0, 10, 9), new[] { Mutant }, null);
             VsTestRunner.VsTestExtraTimeOutInMs = defaultTimeOut;
             mockVsTest.Verify(m => m.EndSession(), Times.Exactly(2));
         }
@@ -635,7 +636,7 @@ namespace Stryker.Abstractions.UnitTest.TestRunners
             var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
 
             var testResult = BuildCoverageTestResult("T0", new[] { "0;", "" });
-            var other =  new VsTest.TestResult(FindOrBuildCase("T0"))
+            var other = new VsTest.TestResult(FindOrBuildCase("T0"))
             {
                 DisplayName = "T0",
                 Outcome = VsTest.TestOutcome.Passed,

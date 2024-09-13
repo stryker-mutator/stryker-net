@@ -1,4 +1,4 @@
-﻿namespace Stryker.Abstractions.Initialisation
+﻿namespace Stryker.Core.Initialisation
 {
     public enum Language
     {

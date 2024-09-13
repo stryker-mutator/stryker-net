@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Stryker.Abstractions.DiffProviders
+namespace Stryker.Core.DiffProviders
 {
     public class DiffResult
     {

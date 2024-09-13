@@ -1,6 +1,7 @@
+using System.Collections.Generic;
+using System.Linq;
 using Stryker.Abstractions.Baseline;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Reporters;
 
 namespace Stryker.Abstractions.Options.Inputs
 {

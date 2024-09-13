@@ -4,9 +4,9 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Initialisation;
 using Stryker.Abstractions.Options;
-using Stryker.Abstractions.Reporters;
+using Stryker.Core;
+using Stryker.Core.Initialisation;
 
 namespace Stryker.CLI.UnitTest
 {

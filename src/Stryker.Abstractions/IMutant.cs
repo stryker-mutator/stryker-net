@@ -12,10 +12,10 @@ public interface IMutant : IReadOnlyMutant
     new ITestGuids CoveringTests { get; set; }
     new ITestGuids KillingTests { get; set; }
     new ITestGuids AssessingTests { get; set; }
-    new bool CountForStats { get; set; }
+    new bool CountForStats { get; }
     new bool IsStaticValue { get; set; }
 
-    string DisplayName { get; set; }
+    string DisplayName { get; }
     bool MustBeTestedInIsolation { get; set; }
 
     void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests, bool sessionTimedOut);

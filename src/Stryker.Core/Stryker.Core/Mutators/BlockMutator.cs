@@ -3,10 +3,11 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Helpers;
 using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
+using Stryker.Core.Helpers;
 
-namespace Stryker.Abstractions.Mutators;
+namespace Stryker.Core.Mutators;
 
 class BlockMutator : MutatorBase<BlockSyntax>
 {

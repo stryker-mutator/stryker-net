@@ -1,8 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using DotNet.Globbing;
 using Microsoft.CodeAnalysis.Text;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Utilities;
+using Stryker.Utilities.Helpers;
 
 namespace Stryker.Abstractions
 {

@@ -3,27 +3,28 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
 using Spectre.Console;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Options.Inputs;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
-using Stryker.Abstractions.ProjectComponents.TestProjects;
-using Stryker.Abstractions.Reporters.Html.RealTime;
-using Stryker.Abstractions.Reporters.Json;
-using Stryker.Abstractions.Reporters.WebBrowserOpener;
 using Stryker.Abstractions.Reporting;
+using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Core.Reporters.Html.RealTime;
+using Stryker.Core.Reporters.Json;
+using Stryker.Core.Reporters.WebBrowserOpener;
+using Stryker.Utilities;
 
-namespace Stryker.Abstractions.Reporters.Html;
+namespace Stryker.Core.Reporters.Html;
 
 public class HtmlReporter : IReporter
 {
-    private readonly StrykerOptions _options;
+    private readonly IStrykerOptions _options;
     private readonly IFileSystem _fileSystem;
     private readonly IAnsiConsole _console;
     private readonly IWebbrowserOpener _browser;
     private readonly IRealTimeMutantHandler _mutantHandler;
 
     public HtmlReporter(
-        StrykerOptions options,
+        IStrykerOptions options,
         IFileSystem fileSystem = null,
         IAnsiConsole console = null,
         IWebbrowserOpener browser = null,
@@ -36,7 +37,7 @@ public class HtmlReporter : IReporter
         _mutantHandler = mutantHandler ?? new RealTimeMutantHandler(_options);
     }
 
-    public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+    public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
     {
         var reportPath = BuildReportPath();
         WriteHtmlReport(reportPath, reportComponent, testProjectsInfo);
@@ -64,7 +65,7 @@ public class HtmlReporter : IReporter
         _console.WriteLine("You can open it in your browser of choice.", green);
     }
 
-    public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+    public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
     {
         if (_options.ReportTypeToOpen == ReportType.Html)
         {
@@ -105,7 +106,7 @@ public class HtmlReporter : IReporter
         return reportPathNormalized;
     }
 
-    private void WriteHtmlReport(string filePath, IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+    private void WriteHtmlReport(string filePath, IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
     {
         var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo).ToJsonHtmlSafe();
 

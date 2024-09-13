@@ -12,12 +12,11 @@ using Spectre.Console.Testing;
 using Stryker.CLI.Clients;
 using Stryker.CLI.Logging;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Initialisation;
 using Stryker.Abstractions.Mutators;
-using Stryker.Abstractions;
-using Stryker.Abstractions.Reporters;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Abstractions.Options;
+using Stryker.Core.Initialisation;
+using Stryker.Core;
 
 namespace Stryker.CLI.UnitTest
 {

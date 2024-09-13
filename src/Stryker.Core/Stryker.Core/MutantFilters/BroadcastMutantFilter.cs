@@ -1,10 +1,10 @@
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions;
-using Stryker.Abstractions.ProjectComponents;
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
 
-namespace Stryker.Abstractions.MutantFilters
+namespace Stryker.Core.MutantFilters
 {
     public class BroadcastMutantFilter : IMutantFilter
     {
@@ -15,7 +15,7 @@ namespace Stryker.Abstractions.MutantFilters
 
         public string DisplayName => "broadcast filter";
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options)
+        public IEnumerable<IMutant> FilterMutants(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file, IStrykerOptions options)
         {
             var mutantsToTest = mutants.Where(m => m.ResultStatus is not MutantStatus.Ignored);
 

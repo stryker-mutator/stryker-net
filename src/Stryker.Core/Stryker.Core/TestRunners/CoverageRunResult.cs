@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Stryker.Abstractions.TestRunners
+namespace Stryker.Core.TestRunners
 {
     public enum CoverageConfidence
     {
@@ -57,7 +57,7 @@ namespace Stryker.Abstractions.TestRunners
 
             foreach (var leakedMutation in leakedMutations)
             {
-                _mutationFlags[leakedMutation] = confidence == CoverageConfidence.Exact ? MutationTestingRequirements.NeedEarlyActivation: MutationTestingRequirements.CoveredOutsideTest;
+                _mutationFlags[leakedMutation] = confidence == CoverageConfidence.Exact ? MutationTestingRequirements.NeedEarlyActivation : MutationTestingRequirements.CoveredOutsideTest;
             }
 
             Confidence = confidence;

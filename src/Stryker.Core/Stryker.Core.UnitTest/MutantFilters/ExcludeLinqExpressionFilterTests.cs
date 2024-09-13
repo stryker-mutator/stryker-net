@@ -6,13 +6,12 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Abstractions;
-using Stryker.Abstractions.MutantFilters;
 using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
-using Stryker.Abstractions;
-using Stryker.Abstractions;
+using Stryker.Core.MutantFilters;
+using Stryker.Core.Mutants;
+using Stryker.Core.Mutators;
 
-namespace Stryker.Abstractions.UnitTest.MutantFilters
+namespace Stryker.Core.UnitTest.MutantFilters
 {
     [TestClass]
     public class ExcludeLinqExpressionFilterTests : TestBase

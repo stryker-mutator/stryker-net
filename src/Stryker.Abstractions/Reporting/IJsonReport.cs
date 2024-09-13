@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+
 namespace Stryker.Abstractions.Reporting;
 
 public interface IJsonReport

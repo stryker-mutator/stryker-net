@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Stryker.Abstractions.Reporting;
 
 namespace Stryker.Abstractions.Baseline

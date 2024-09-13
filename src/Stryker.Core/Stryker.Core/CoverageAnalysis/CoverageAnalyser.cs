@@ -7,21 +7,24 @@ using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions;
 using Stryker.Abstractions.TestRunners;
+using Stryker.Core.TestRunners;
+using Stryker.Core.Mutants;
+using Stryker.Abstractions.Options;
 
-namespace Stryker.Abstractions.CoverageAnalysis
+namespace Stryker.Core.CoverageAnalysis
 {
     public class CoverageAnalyser : ICoverageAnalyser
     {
         private readonly ILogger<CoverageAnalyser> _logger;
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
 
-        public CoverageAnalyser(StrykerOptions options)
+        public CoverageAnalyser(IStrykerOptions options)
         {
             _options = options;
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<CoverageAnalyser>();
         }
 
-        public void DetermineTestCoverage(IProjectAndTests project, ITestRunner runner, IEnumerable<Mutant> mutants,
+        public void DetermineTestCoverage(IProjectAndTests project, ITestRunner runner, IEnumerable<IMutant> mutants,
             ITestGuids resultFailingTests)
         {
             if (!_options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
@@ -39,7 +42,7 @@ namespace Stryker.Abstractions.CoverageAnalysis
             ParseCoverage(runner.CaptureCoverage(project), mutants, new TestGuidsList(resultFailingTests.GetGuids()));
         }
 
-        private void ParseCoverage(IEnumerable<CoverageRunResult> coverage, IEnumerable<Mutant> mutantsToScan,
+        private void ParseCoverage(IEnumerable<CoverageRunResult> coverage, IEnumerable<IMutant> mutantsToScan,
             TestGuidsList failedTests)
         {
             var dubiousTests = new HashSet<Guid>();
@@ -79,7 +82,7 @@ namespace Stryker.Abstractions.CoverageAnalysis
 
 
             var allTest = TestGuidsList.EveryTest();
-            var allTestsExceptTrusted = (trustedTests.Count == 0 && failedTests.Count == 0)
+            var allTestsExceptTrusted = trustedTests.Count == 0 && failedTests.Count == 0
                 ? TestGuidsList.EveryTest()
                 : new TestGuidsList(testIds.Except(trustedTests).ToHashSet()).Excluding(failedTests);
 
@@ -96,7 +99,7 @@ namespace Stryker.Abstractions.CoverageAnalysis
             }
         }
 
-        private void CoverageForThisMutant(Mutant mutant,
+        private void CoverageForThisMutant(IMutant mutant,
             IReadOnlyDictionary<int, List<CoverageRunResult>> mutationToResultMap,
             TestGuidsList everytest,
             TestGuidsList allTestsGuidsExceptTrusted,
@@ -146,7 +149,7 @@ namespace Stryker.Abstractions.CoverageAnalysis
             {
                 _logger.LogDebug(
                     "Mutant {MutantId} will be tested against ({TestCases}) tests.", mutant.Id,
-                    (mutant.AssessingTests.IsEveryTest ? "all" : mutant.AssessingTests.Count));
+                    mutant.AssessingTests.IsEveryTest ? "all" : mutant.AssessingTests.Count);
             }
         }
 

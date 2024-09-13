@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 using Stryker.Abstractions.TestRunners;
-using Stryker.Abstractions.TestRunners.VsTest;
+using Stryker.Core.TestRunners.VsTest;
 
-namespace Stryker.Abstractions.TestRunners;
+namespace Stryker.Core.TestRunners;
 
 public interface ITestRunResult
 {

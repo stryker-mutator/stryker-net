@@ -3,8 +3,9 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
 
-namespace Stryker.Abstractions.Mutators;
+namespace Stryker.Core.Mutators;
 
 /// <summary>
 /// Mutators can implement this class to check the type of the node and cast the node to the expected type.

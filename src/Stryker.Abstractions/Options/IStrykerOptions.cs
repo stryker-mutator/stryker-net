@@ -1,9 +1,9 @@
+using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Abstractions.Baseline;
 using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions.ProjectComponents;
-using Stryker.Abstractions.Reporting;
 
 namespace Stryker.Abstractions.Options;
 
@@ -36,7 +36,7 @@ public interface IStrykerOptions
     string ProjectName { get; set; }
     string ProjectPath { get; init; }
     string ProjectVersion { get; set; }
-    IEnumerable<IReporter> Reporters { get; init; }
+    IEnumerable<Reporter> Reporters { get; init; }
     string ReportFileName { get; init; }
     string ReportPath { get; }
     ReportType? ReportTypeToOpen { get; init; }

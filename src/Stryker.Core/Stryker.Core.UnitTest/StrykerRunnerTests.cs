@@ -1,25 +1,27 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Abstractions.Baseline.Providers;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Initialisation;
 using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.MutationTest;
-using Stryker.Abstractions.ProjectComponents;
-using Stryker.Abstractions.ProjectComponents.SourceProjects;
-using Stryker.Abstractions.ProjectComponents.TestProjects;
-using Stryker.Abstractions.Reporters;
-using Stryker.Abstractions.TestRunners;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Stryker.Abstractions.Reporting;
 using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporting;
+using Stryker.Core.Baseline.Providers;
+using Stryker.Core.Initialisation;
+using Stryker.Core.Mutants;
+using Stryker.Core.MutationTest;
+using Stryker.Core.ProjectComponents.Csharp;
+using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Core.Reporters;
+using Stryker.Core.TestRunners;
 
-namespace Stryker.Abstractions.UnitTest
+namespace Stryker.Core.UnitTest
 {
     [TestClass]
     public class StrykerRunnerTests : TestBase
@@ -37,7 +39,7 @@ namespace Stryker.Abstractions.UnitTest
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf()
             {
-                Mutants = new List<Mutant> { new Mutant { Id = 1 } }
+                Mutants = new List<IMutant> { new Mutant { Id = 1 } }
             });
 
             var projectInfo = Mock.Of<SourceProjectInfo>();
@@ -68,7 +70,7 @@ namespace Stryker.Abstractions.UnitTest
 
             mutationTestProcessMock.SetupGet(x => x.Input).Returns(mutationTestInput);
             mutationTestProcessMock.Setup(x => x.GetCoverage());
-            mutationTestProcessMock.Setup(x => x.Test(It.IsAny<IEnumerable<Mutant>>()))
+            mutationTestProcessMock.Setup(x => x.Test(It.IsAny<IEnumerable<IMutant>>()))
                 .Returns(new StrykerRunResult(It.IsAny<StrykerOptions>(), It.IsAny<double>()));
             mutationTestProcessMock.Setup(x => x.Restore());
 
@@ -84,7 +86,7 @@ namespace Stryker.Abstractions.UnitTest
 
             projectOrchestratorMock.Verify(x => x.MutateProjects(It.Is<StrykerOptions>(x => x.ProjectPath == "C:/test"), It.IsAny<IReporter>(), It.IsAny<ITestRunner>()), Times.Once);
             mutationTestProcessMock.Verify(x => x.GetCoverage(), Times.Once);
-            mutationTestProcessMock.Verify(x => x.Test(It.IsAny<IEnumerable<Mutant>>()), Times.Once);
+            mutationTestProcessMock.Verify(x => x.Test(It.IsAny<IEnumerable<IMutant>>()), Times.Once);
             reporterMock.Verify(x => x.OnMutantsCreated(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()), Times.Once);
             reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IEnumerable<IReadOnlyMutant>>()), Times.Once);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()), Times.Once);
@@ -103,7 +105,7 @@ namespace Stryker.Abstractions.UnitTest
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf
             {
-                Mutants = new Collection<Mutant>() { new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored } }
+                Mutants = new Collection<IMutant>() { new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored } }
             });
             var mutationTestInput = new MutationTestInput()
             {
@@ -138,8 +140,8 @@ namespace Stryker.Abstractions.UnitTest
 
             result.MutationScore.ShouldBe(double.NaN);
 
-            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
-            reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
+            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<IMutant>>()), Times.Never);
+            reporterMock.Verify(x => x.OnMutantTested(It.IsAny<IMutant>()), Times.Never);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()), Times.Once);
         }
 
@@ -155,7 +157,7 @@ namespace Stryker.Abstractions.UnitTest
             var folder = new CsharpFolderComposite();
             folder.Add(new CsharpFileLeaf
             {
-                Mutants = new Collection<Mutant>() { new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored } }
+                Mutants = new Collection<IMutant>() { new Mutant() { Id = 1, ResultStatus = MutantStatus.Ignored } }
             });
             var mutationTestInput = new MutationTestInput()
             {
@@ -181,8 +183,8 @@ namespace Stryker.Abstractions.UnitTest
 
             Should.Throw<NoTestProjectsException>(() => target.RunMutationTest(inputsMock.Object, new LoggerFactory(), projectOrchestratorMock.Object));
 
-            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<Mutant>>()), Times.Never);
-            reporterMock.Verify(x => x.OnMutantTested(It.IsAny<Mutant>()), Times.Never);
+            reporterMock.Verify(x => x.OnStartMutantTestRun(It.IsAny<IList<IMutant>>()), Times.Never);
+            reporterMock.Verify(x => x.OnMutantTested(It.IsAny<IMutant>()), Times.Never);
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()), Times.Never);
         }
     }

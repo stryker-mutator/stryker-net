@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Options;
 
@@ -7,7 +8,7 @@ public interface IReadOnlyProjectComponent
 {
     string FullPath { get; }
     IEnumerable<IMutant> Mutants { get; }
-    IReadOnlyFolderComposite Parent { get; }
+    IFolderComposite Parent { get; }
     string RelativePath { get; set; }
     public Display DisplayFile { get; set; }
     public Display DisplayFolder { get; set; }
@@ -26,3 +27,11 @@ public interface IReadOnlyProjectComponent
 }
 
 public delegate void Display(IReadOnlyProjectComponent current);
+
+public interface IProjectComponent : IReadOnlyProjectComponent
+{
+    new string FullPath { get; set; }
+    new IEnumerable<IMutant> Mutants { get; set; }
+    new IFolderComposite Parent { get; set; }
+    new string RelativePath { get; set; }
+}

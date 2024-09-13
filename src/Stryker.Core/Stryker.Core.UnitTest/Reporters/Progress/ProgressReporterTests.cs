@@ -1,9 +1,10 @@
 using Moq;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Reporters.Progress;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.Reporters.Progress;
+using Stryker.Core.Mutants;
+using Stryker.Core.UnitTest;
 
-namespace Stryker.Abstractions.UnitTest.Reporters.Progress
+namespace Stryker.Core.UnitTest.Reporters.Progress
 {
     [TestClass]
     public class ProgressReporterTests : TestBase

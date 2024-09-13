@@ -4,12 +4,11 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
-using RegexParser.Nodes;
-using Stryker.Abstractions.Helpers;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Mutants;
+using Stryker.Core.Helpers;
 
-namespace Stryker.Abstractions.Mutants;
+namespace Stryker.Core.Mutants;
 
 
 /// <summary>
@@ -59,7 +58,7 @@ internal class MutationStore
     /// Checks if there are pending mutations for the current syntax level
     /// </summary>
     /// <returns></returns>
-    public bool HasPendingMutations() => _pendingMutations.Count > 0 && _pendingMutations.Peek().Store.Count>0;
+    public bool HasPendingMutations() => _pendingMutations.Count > 0 && _pendingMutations.Peek().Store.Count > 0;
 
     /// <summary>
     /// Returns the current mutation control
@@ -87,7 +86,8 @@ internal class MutationStore
     /// If there is none (leaving a member), mutations are flagged as compile errors (and logged).</remarks>
     public void Leave()
     {
-        if (!_pendingMutations.Peek().Leave()) return;
+        if (!_pendingMutations.Peek().Leave())
+            return;
         // we need to store pending mutations at the higher level
         var old = _pendingMutations.Pop();
         if (_pendingMutations.Count > 0)
@@ -240,7 +240,8 @@ internal class MutationStore
 
         public bool Aggregate(MutationControl control)
         {
-            if (Store.Count != 0 || Control != control) {
+            if (Store.Count != 0 || Control != control)
+            {
                 return false;
             }
             _depth++;

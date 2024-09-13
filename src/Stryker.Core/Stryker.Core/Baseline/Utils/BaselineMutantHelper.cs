@@ -4,22 +4,22 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
 using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Reporters.Json.SourceFiles;
+using Stryker.Abstractions.Reporting;
 
-namespace Stryker.Abstractions.Baseline.Utils
+namespace Stryker.Core.Baseline.Utils
 {
     public class BaselineMutantHelper : IBaselineMutantHelper
     {
-        public IEnumerable<Mutant> GetMutantMatchingSourceCode(IEnumerable<Mutant> mutants, JsonMutant baselineMutant, string baselineMutantSourceCode)
+        public IEnumerable<IMutant> GetMutantMatchingSourceCode(IEnumerable<IMutant> mutants, IJsonMutant baselineMutant, string baselineMutantSourceCode)
         {
             return mutants.Where(x =>
                x.Mutation.OriginalNode.ToString() == baselineMutantSourceCode &&
                x.Mutation.DisplayName == baselineMutant.MutatorName);
         }
 
-        public string GetMutantSourceCode(string source, JsonMutant baselineMutant)
+        public string GetMutantSourceCode(string source, IJsonMutant baselineMutant)
         {
-            SyntaxTree tree = CSharpSyntaxTree.ParseText(source);
+            var tree = CSharpSyntaxTree.ParseText(source);
 
             var beginLinePosition = new LinePosition(baselineMutant.Location.Start.Line - 1, baselineMutant.Location.Start.Column - 1);
             var endLinePosition = new LinePosition(baselineMutant.Location.End.Line - 1, baselineMutant.Location.End.Column - 1);

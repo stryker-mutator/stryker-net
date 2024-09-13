@@ -2,19 +2,20 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Spectre.Console.Testing;
-using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Options.Inputs;
-using Stryker.Abstractions.ProjectComponents.TestProjects;
-using Stryker.Abstractions.Reporters.Html;
-using Stryker.Abstractions.Reporters.Html.RealTime;
-using Stryker.Abstractions.Reporters.WebBrowserOpener;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options;
+using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Core.Reporters.Html;
+using Stryker.Core.Reporters.Html.RealTime;
+using Stryker.Core.Reporters.WebBrowserOpener;
 
-namespace Stryker.Abstractions.UnitTest.Reporters.Html
+namespace Stryker.Core.UnitTest.Reporters.Html
 {
     [TestClass]
     public class HtmlReporterTests : TestBase
@@ -228,7 +229,7 @@ namespace Stryker.Abstractions.UnitTest.Reporters.Html
 
             reporter.OnMutantTested(new Mutant());
 
-            _handlerMock.Verify(h => h.SendMutantTestedEvent(It.IsAny<Mutant>()));
+            _handlerMock.Verify(h => h.SendMutantTestedEvent(It.IsAny<IMutant>()));
         }
 
         [TestMethod]

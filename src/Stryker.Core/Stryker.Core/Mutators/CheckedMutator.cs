@@ -2,9 +2,10 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
 using System.Collections.Generic;
 
-namespace Stryker.Abstractions.Mutators;
+namespace Stryker.Core.Mutators;
 
 public class CheckedMutator : MutatorBase<CheckedExpressionSyntax>
 {

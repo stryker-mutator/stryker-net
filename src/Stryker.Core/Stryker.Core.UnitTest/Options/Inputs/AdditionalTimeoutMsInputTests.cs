@@ -2,8 +2,9 @@ using Shouldly;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.UnitTest;
 
-namespace Stryker.Abstractions.UnitTest.Options.Inputs
+namespace Stryker.Core.UnitTest.Options.Inputs
 {
     [TestClass]
     public class AdditionalTimeoutMsInputTests : TestBase
@@ -26,7 +27,7 @@ If you experience a lot of timeouts you might need to increase the timeout value
 
             result.ShouldBe(0);
         }
-        
+
         [TestMethod]
         public void ShouldHaveDefault()
         {

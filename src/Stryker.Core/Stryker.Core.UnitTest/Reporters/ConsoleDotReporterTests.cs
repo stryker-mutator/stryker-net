@@ -1,11 +1,11 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Spectre.Console.Testing;
 using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Reporters;
-using System.IO;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.Mutants;
+using Stryker.Core.Reporters;
 
-namespace Stryker.Abstractions.UnitTest.Reporters
+namespace Stryker.Core.UnitTest.Reporters
 {
     [TestClass]
     public class ConsoleDotReporterTests : TestBase

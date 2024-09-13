@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace Stryker.Abstractions.Reporters.Html.RealTime.Events;
+namespace Stryker.Core.Reporters.Html.RealTime.Events;
 
 public class SseEvent<T>
 {

@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions;
+using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 
-namespace Stryker.Abstractions.MutantFilters
+namespace Stryker.Core.MutantFilters
 {
     /// <summary>
     /// Checks if the mutation should be skipped depending on the file and position of the mutation.
@@ -13,20 +13,20 @@ namespace Stryker.Abstractions.MutantFilters
     {
         public MutantFilter Type => MutantFilter.FilePattern;
         public string DisplayName => "mutate filter";
-        private readonly IEnumerable<FilePattern> _includePattern;
-        private readonly IEnumerable<FilePattern> _excludePattern;
+        private readonly IEnumerable<IFilePattern> _includePattern;
+        private readonly IEnumerable<IFilePattern> _excludePattern;
 
-        public FilePatternMutantFilter(StrykerOptions options)
+        public FilePatternMutantFilter(IStrykerOptions options)
         {
             _includePattern = options.Mutate.Where(x => !x.IsExclude).ToList();
             _excludePattern = options.Mutate.Where(x => x.IsExclude).ToList();
         }
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options)
+        public IEnumerable<IMutant> FilterMutants(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file, IStrykerOptions options)
         {
             return mutants.Where(IsMutantIncluded);
 
-            bool IsMutantIncluded(Mutant mutant)
+            bool IsMutantIncluded(IMutant mutant)
             {
                 // Check if the the mutant is included.
                 if (!_includePattern.Any(MatchesPattern))
@@ -37,7 +37,7 @@ namespace Stryker.Abstractions.MutantFilters
                 // Check if the mutant is excluded.
                 return !_excludePattern.Any(MatchesPattern);
 
-                bool MatchesPattern(FilePattern pattern)
+                bool MatchesPattern(IFilePattern pattern)
                 {
                     // if we do not have the original node, we cannot exclude the mutation according to its location
                     if (mutant.Mutation.OriginalNode == null)

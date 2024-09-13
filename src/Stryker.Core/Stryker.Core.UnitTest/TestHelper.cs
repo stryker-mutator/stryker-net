@@ -3,7 +3,7 @@ using System.IO;
 using Buildalyzer;
 using Moq;
 
-namespace Stryker.Abstractions.UnitTest;
+namespace Stryker.Core.UnitTest;
 
 public static class TestHelper
 {
@@ -35,7 +35,7 @@ public static class TestHelper
             if (!properties.ContainsKey("TargetDir"))
             {
                 properties["TargetDir"] = Path.Combine(Path.GetFullPath(projectFilePath), "bin", "Debug", targetFramework ?? "net");
-                properties["TargetFileName"] = Path.GetFileNameWithoutExtension(projectFilePath)+".dll";
+                properties["TargetFileName"] = Path.GetFileNameWithoutExtension(projectFilePath) + ".dll";
             }
         }
         if (sourceFiles != null)

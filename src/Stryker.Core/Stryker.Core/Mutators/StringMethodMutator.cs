@@ -4,8 +4,9 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
 
-namespace Stryker.Abstractions.Mutators;
+namespace Stryker.Core.Mutators;
 
 /// <summary> Mutator Implementation for String method Mutations </summary>
 public class StringMethodMutator : MutatorBase<ExpressionSyntax>

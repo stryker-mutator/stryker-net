@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Stryker.Abstractions.UnitTest
+namespace Stryker.Core.UnitTest
 {
     internal static class StringExtensions
     {

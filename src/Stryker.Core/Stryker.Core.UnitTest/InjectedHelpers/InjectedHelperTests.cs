@@ -1,14 +1,14 @@
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Shouldly;
-using Stryker.Abstractions.InjectedHelpers;
 using System;
 using System.Collections.Generic;
 using System.IO.Pipes;
 using System.Linq;
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
+using Stryker.Core.InjectedHelpers;
 
-namespace Stryker.Abstractions.UnitTest.InjectedHelpers
+namespace Stryker.Core.UnitTest.InjectedHelpers
 {
     [TestClass]
     public class InjectedHelperTests : TestBase
@@ -58,7 +58,7 @@ namespace Stryker.Abstractions.UnitTest.InjectedHelpers
                 references: references);
 
             compilation.GetDiagnostics().ShouldNotContain(diag => diag.Severity == DiagnosticSeverity.Error,
-                $"errors :{string.Join(Environment.NewLine, compilation.GetDiagnostics().Where(x => x.Severity == DiagnosticSeverity.Error).Select(diag => $"{diag.Id}: '{diag.GetMessage()}' at {diag.Location.SourceTree.FilePath}, {diag.Location.GetLineSpan().StartLinePosition.Line+1}:{diag.Location.GetLineSpan().StartLinePosition.Character}"))}");
+                $"errors :{string.Join(Environment.NewLine, compilation.GetDiagnostics().Where(x => x.Severity == DiagnosticSeverity.Error).Select(diag => $"{diag.Id}: '{diag.GetMessage()}' at {diag.Location.SourceTree.FilePath}, {diag.Location.GetLineSpan().StartLinePosition.Line + 1}:{diag.Location.GetLineSpan().StartLinePosition.Character}"))}");
         }
 
         [TestMethod]
@@ -101,7 +101,7 @@ namespace Stryker.Abstractions.UnitTest.InjectedHelpers
                 references: references);
 
             compilation.GetDiagnostics().ShouldNotContain(diag => diag.Severity == DiagnosticSeverity.Error,
-                $"errors :{string.Join(Environment.NewLine, compilation.GetDiagnostics().Where(x => x.Severity == DiagnosticSeverity.Error).Select(diag => $"{diag.Id}: '{diag.GetMessage()}' at {diag.Location.SourceTree.FilePath}, {diag.Location.GetLineSpan().StartLinePosition.Line+1}:{diag.Location.GetLineSpan().StartLinePosition.Character}"))}");
+                $"errors :{string.Join(Environment.NewLine, compilation.GetDiagnostics().Where(x => x.Severity == DiagnosticSeverity.Error).Select(diag => $"{diag.Id}: '{diag.GetMessage()}' at {diag.Location.SourceTree.FilePath}, {diag.Location.GetLineSpan().StartLinePosition.Line + 1}:{diag.Location.GetLineSpan().StartLinePosition.Character}"))}");
         }
     }
 }

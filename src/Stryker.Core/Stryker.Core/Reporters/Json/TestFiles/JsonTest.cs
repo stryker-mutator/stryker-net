@@ -2,7 +2,7 @@
 using System;
 using Stryker.Abstractions.Reporting;
 
-namespace Stryker.Abstractions.Reporters.Json.TestFiles
+namespace Stryker.Core.Reporters.Json.TestFiles
 {
     public sealed class JsonTest : IEquatable<IJsonTest>, IJsonTest
     {

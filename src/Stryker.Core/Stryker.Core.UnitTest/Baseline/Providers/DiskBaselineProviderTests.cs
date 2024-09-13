@@ -1,16 +1,16 @@
 using System.IO.Abstractions.TestingHelpers;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Abstractions.Baseline.Providers;
 using Stryker.Abstractions;
-using Stryker.Abstractions.ProjectComponents.TestProjects;
-using Stryker.Abstractions.Reporters.Json;
-using Stryker.Abstractions.UnitTest.Reporters;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.Baseline.Providers;
+using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Core.Reporters.Json;
+using Stryker.Core.UnitTest.Reporters;
 using Stryker.Utilities;
 
-namespace Stryker.Abstractions.UnitTest.Baseline.Providers
+namespace Stryker.Core.UnitTest.Baseline.Providers
 {
     [TestClass]
     public class DiskBaselineProviderTests : TestBase

@@ -1,11 +1,11 @@
 using System.Collections.Generic;
 using Spectre.Console;
-using Stryker.Abstractions.Reporting;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.ProjectComponents;
-using Stryker.Abstractions.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Reporting;
 
-namespace Stryker.Abstractions.Reporters
+namespace Stryker.Core.Reporters
 {
     /// <summary>
     /// The default reporter, prints a simple progress by printing dots
@@ -16,7 +16,7 @@ namespace Stryker.Abstractions.Reporters
 
         public ConsoleDotProgressReporter(IAnsiConsole console = null) => _console = console ?? AnsiConsole.Console;
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
         {
             // don't report on mutant creation
         }
@@ -42,6 +42,6 @@ namespace Stryker.Abstractions.Reporters
             }
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo) => _console.WriteLine();
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo) => _console.WriteLine();
     }
 }

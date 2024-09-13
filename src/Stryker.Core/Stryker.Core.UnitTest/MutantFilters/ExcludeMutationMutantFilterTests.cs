@@ -1,11 +1,12 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Abstractions.MutantFilters;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Mutators;
-using Stryker.Abstractions;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.MutantFilters;
+using Stryker.Core.Mutants;
 
-namespace Stryker.Abstractions.UnitTest.MutantFilters
+namespace Stryker.Core.UnitTest.MutantFilters
 {
     [TestClass]
     public class ExcludeMutationMutantFilterTests : TestBase

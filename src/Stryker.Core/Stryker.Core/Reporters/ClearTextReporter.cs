@@ -2,13 +2,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Spectre.Console;
 using Spectre.Console.Rendering;
-using Stryker.Abstractions.Options;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
-using Stryker.Abstractions.ProjectComponents.TestProjects;
 using Stryker.Abstractions.Reporting;
+using Stryker.Core.ProjectComponents;
 
-namespace Stryker.Abstractions.Reporters
+namespace Stryker.Core.Reporters
 {
     /// <summary>
     /// The clear text reporter, prints a table with results.
@@ -24,7 +25,7 @@ namespace Stryker.Abstractions.Reporters
             _console = console ?? AnsiConsole.Console;
         }
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
         {
             // This reporter does not report during the testrun
         }
@@ -39,7 +40,7 @@ namespace Stryker.Abstractions.Reporters
             // This reporter does not report during the testrun
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
         {
             var files = reportComponent.GetAllFiles();
             if (files.Any())

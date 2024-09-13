@@ -2,12 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Initialisation;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.TestRunners;
+using Stryker.Core.Mutants;
+using Stryker.Core.TestRunners;
 
-namespace Stryker.Abstractions.MutationTest
+namespace Stryker.Core.MutationTest
 {
     /// <summary>
     /// Executes exactly one mutation test and stores the result
@@ -16,7 +18,7 @@ namespace Stryker.Abstractions.MutationTest
     {
         ITestRunner TestRunner { get; }
 
-        void Test(IProjectAndTests project, IList<Mutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
+        void Test(IProjectAndTests project, IList<IMutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
             TestUpdateHandler updateHandler);
     }
 
@@ -31,7 +33,7 @@ namespace Stryker.Abstractions.MutationTest
             Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
         }
 
-        public void Test(IProjectAndTests project, IList<Mutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
+        public void Test(IProjectAndTests project, IList<IMutant> mutantsToTest, ITimeoutValueCalculator timeoutMs,
             TestUpdateHandler updateHandler)
         {
             var forceSingle = false;
@@ -43,7 +45,7 @@ namespace Stryker.Abstractions.MutationTest
                     "Test run for {Mutants} is {Result} ",
                     string.Join(", ", mutantsToTest.Select(x => x.DisplayName)),
                     result.FailingTests.Count == 0 ? "success" : "failed");
-                Logger.LogTrace("Test run : {ResultMessage}",result.ResultMessage);
+                Logger.LogTrace("Test run : {ResultMessage}", result.ResultMessage);
                 if (result.Messages is not null && result.Messages.Any())
                 {
                     Logger.LogTrace(
@@ -60,7 +62,7 @@ namespace Stryker.Abstractions.MutationTest
                     if (!result.SessionTimedOut)
                     {
                         // something bad happened.
-                        Logger.LogError("Stryker failed to test {RemainingMutantsCount} mutant(s).",remainingMutants.Count);
+                        Logger.LogError("Stryker failed to test {RemainingMutantsCount} mutant(s).", remainingMutants.Count);
                         return;
                     }
 
@@ -88,11 +90,11 @@ namespace Stryker.Abstractions.MutationTest
             }
         }
 
-        private TestRunResult RunTestSession(IProjectAndTests projectAndTests, ICollection<Mutant> mutantsToTest,
+        private TestRunResult RunTestSession(IProjectAndTests projectAndTests, ICollection<IMutant> mutantsToTest,
             ITimeoutValueCalculator timeoutMs,
             TestUpdateHandler updateHandler, bool forceSingle)
         {
-            Logger.LogTrace("Testing {MutantsToTest}.",string.Join(" ,", mutantsToTest.Select(x => x.DisplayName)));
+            Logger.LogTrace("Testing {MutantsToTest}.", string.Join(" ,", mutantsToTest.Select(x => x.DisplayName)));
             if (forceSingle)
             {
                 foreach (var mutant in mutantsToTest)

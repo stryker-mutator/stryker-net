@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Stryker.Abstractions.ProjectComponents.TestProjects;
+using Stryker.Abstractions.ProjectComponents;
 
 namespace Stryker.Abstractions.Reporting;
 
@@ -9,5 +9,5 @@ public interface IJsonTestFile
     string Source { get; init; }
     ISet<IJsonTest> Tests { get; set; }
 
-    void AddTestFile(TestFile testFile);
+    void AddTestFile(ITestFile testFile);
 }

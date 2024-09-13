@@ -1,9 +1,9 @@
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Helpers;
+using Stryker.Core.Helpers;
 
-namespace Stryker.Abstractions.Mutants.CsharpNodeOrchestrators;
+namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 internal class LocalFunctionStatementOrchestrator : BaseFunctionOrchestrator<LocalFunctionStatementSyntax>
 {
@@ -23,6 +23,6 @@ internal class LocalFunctionStatementOrchestrator : BaseFunctionOrchestrator<Loc
     }
 
     protected override LocalFunctionStatementSyntax SwitchToThisBodies(LocalFunctionStatementSyntax node, BlockSyntax blockBody,
-        ExpressionSyntax expressionBody) => node.WithBody(blockBody).WithExpressionBody(expressionBody is null ? null : SyntaxFactory.ArrowExpressionClause(expressionBody));        
+        ExpressionSyntax expressionBody) => node.WithBody(blockBody).WithExpressionBody(expressionBody is null ? null : SyntaxFactory.ArrowExpressionClause(expressionBody));
 
 }

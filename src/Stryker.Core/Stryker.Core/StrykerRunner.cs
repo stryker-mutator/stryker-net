@@ -5,16 +5,19 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.Logging;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Initialisation;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.MutationTest;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
-using Stryker.Abstractions.Reporters;
+using Stryker.Core.Initialisation;
+using Stryker.Core.MutationTest;
+using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Core.Reporters;
 
-namespace Stryker.Abstractions
+namespace Stryker.Core
 {
     public interface IStrykerRunner
     {
@@ -63,7 +66,7 @@ namespace Stryker.Abstractions
                 _mutationTestProcesses = projectOrchestrator.MutateProjects(options, reporters).ToList();
 
                 var rootComponent = AddRootFolderIfMultiProject(_mutationTestProcesses.Select(x => x.Input.SourceProjectInfo.ProjectContents).ToList(), options);
-                var combinedTestProjectsInfo = _mutationTestProcesses.Select(mtp => mtp.Input.TestProjectsInfo).Aggregate((a, b) => a + b);
+                var combinedTestProjectsInfo = _mutationTestProcesses.Select(mtp => mtp.Input.TestProjectsInfo).Aggregate((a, b) => (TestProjectsInfo)a + (TestProjectsInfo)b);
 
                 _logger.LogInformation("{MutantsCount} mutants created", rootComponent.Mutants.Count());
 
@@ -156,11 +159,11 @@ namespace Stryker.Abstractions
             _logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerRunner>();
         }
 
-        private void AnalyzeCoverage(StrykerOptions options)
+        private void AnalyzeCoverage(IStrykerOptions options)
         {
             if (options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) || options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
             {
-                _logger.LogInformation("Capture mutant coverage using '{OptimizationMode}' mode.",options.OptimizationMode);
+                _logger.LogInformation("Capture mutant coverage using '{OptimizationMode}' mode.", options.OptimizationMode);
 
                 foreach (var project in _mutationTestProcesses)
                 {
@@ -175,7 +178,7 @@ namespace Stryker.Abstractions
         /// <param name="projectComponents">A list of all project root components</param>
         /// <param name="options">The current stryker options</param>
         /// <returns>The root folder component</returns>
-        private IProjectComponent AddRootFolderIfMultiProject(IEnumerable<IProjectComponent> projectComponents, StrykerOptions options)
+        private IReadOnlyProjectComponent AddRootFolderIfMultiProject(IEnumerable<IReadOnlyProjectComponent> projectComponents, IStrykerOptions options)
         {
             if (!projectComponents.Any())
             {
@@ -188,7 +191,7 @@ namespace Stryker.Abstractions
                 {
                     FullPath = options.ProjectPath // in case of a solution run the basePath will be where the solution file is
                 };
-                rootComponent.AddRange(projectComponents);
+                rootComponent.AddRange((IEnumerable<IProjectComponent>)projectComponents);
                 return rootComponent;
             }
 

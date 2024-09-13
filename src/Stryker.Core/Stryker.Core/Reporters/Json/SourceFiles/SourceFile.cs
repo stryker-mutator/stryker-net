@@ -2,10 +2,9 @@ using System.Collections.Generic;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.ProjectComponents;
-using Stryker.Abstractions.Reporters.Json.SourceFiles;
 using Stryker.Abstractions.Reporting;
 
-namespace Stryker.Reporters.Json.SourceFiles
+namespace Stryker.Core.Reporters.Json.SourceFiles
 {
     public class SourceFile : ISourceFile
     {
@@ -35,11 +34,11 @@ namespace Stryker.Reporters.Json.SourceFiles
             }
         }
 
-        private sealed class UniqueJsonMutantComparer : EqualityComparer<JsonMutant>
+        private sealed class UniqueJsonMutantComparer : EqualityComparer<IJsonMutant>
         {
-            public override bool Equals(JsonMutant left, JsonMutant right) => left.Id == right.Id;
+            public override bool Equals(IJsonMutant left, IJsonMutant right) => left.Id == right.Id;
 
-            public override int GetHashCode(JsonMutant jsonMutant) => jsonMutant.Id.GetHashCode();
+            public override int GetHashCode(IJsonMutant jsonMutant) => jsonMutant.Id.GetHashCode();
         }
     }
 }

@@ -10,17 +10,17 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
 using Shouldly;
 using Stryker.Abstractions;
-using Stryker.Abstractions.ProjectComponents;
-using Stryker.Abstractions.ProjectComponents.TestProjects;
-using Stryker.Abstractions.Reporters.Json;
-using Stryker.Abstractions.Reporters.Json.SourceFiles;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.ProjectComponents.Csharp;
+using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Core.Reporters.Json;
+using Stryker.Core.Reporters.Json.SourceFiles;
 
-namespace Stryker.Abstractions.UnitTest.Reporters.Json
+namespace Stryker.Core.UnitTest.Reporters.Json
 {
     [TestClass]
     public class JsonReporterTests : TestBase
@@ -65,7 +65,7 @@ namespace ExtraProject.XUnit
                 new LinePosition(2, 2),
                 new LinePosition(4, 5));
 
-            var jsonMutantLocation = new Abstractions.Reporters.Json.Location(lineSpan);
+            var jsonMutantLocation = new Core.Reporters.Json.Location(lineSpan);
 
             jsonMutantLocation.Start.Line.ShouldBe(3);
             jsonMutantLocation.Start.Column.ShouldBe(3);
