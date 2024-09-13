@@ -1,11 +1,12 @@
 using Stryker.Core.Reporters.Html.RealTime.Events;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters.Html.RealTime.Events;
 
+[TestClass]
 public class SseEventTest : TestBase
 {
-    [Fact]
+    [TestMethod]
     public void ShouldSerializeFinishedCorrectly()
     {
         var @event = new SseEvent<string>
@@ -17,7 +18,7 @@ public class SseEventTest : TestBase
         @event.Serialize().ShouldBeSemantically("event:finished\ndata:\"\"");
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldSerializeMutantTestedCorrectly()
     {
         var @object = new { Id = "1", Status = "Survived" };
@@ -30,7 +31,7 @@ public class SseEventTest : TestBase
         @event.Serialize().ShouldBeSemantically("event:mutant-tested\ndata:{\"id\":\"1\",\"status\":\"Survived\"}");
     }
 
-    [Fact]
+    [TestMethod]
     public void ShouldSerializeMutantWhitespaceCorrectly()
     {
         var @object = new { Id = "1", Status = "Survived", Replacement = "Stryker was here!" };

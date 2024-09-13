@@ -4,22 +4,23 @@ using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
 using Stryker.Core.Reporters;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class DashboardApiKeyInputTests : TestBase
     {
         const string StrykerDashboardApiKey = "STRYKER_DASHBOARD_API_KEY";
 
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new DashboardApiKeyInput();
             target.HelpText.ShouldBe(@"Api key for dashboard reporter.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrowWhenNull()
         {
             var key = Environment.GetEnvironmentVariable(StrykerDashboardApiKey);
@@ -40,7 +41,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldSkipValidationWhenDashboardNotEnabled()
         {
             var key = Environment.GetEnvironmentVariable(StrykerDashboardApiKey);
@@ -59,7 +60,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldTakeEnvironmentVariableValueWhenAvailable()
         {
             var key = Environment.GetEnvironmentVariable(StrykerDashboardApiKey);
@@ -78,7 +79,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldOverrideEnvironmentVariableWhenInputSupplied()
         {
             var key = Environment.GetEnvironmentVariable(StrykerDashboardApiKey);

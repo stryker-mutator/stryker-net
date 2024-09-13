@@ -7,33 +7,34 @@ using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
+    [TestClass]
     public class FilePatternMutantFilterTests : TestBase
     {
-        [Fact]
-        public static void ShouldHaveName()
+        [TestMethod]
+        public void ShouldHaveName()
         {
             var target = new FilePatternMutantFilter(new StrykerOptions()) as IMutantFilter;
             target.DisplayName.ShouldBe("mutate filter");
         }
 
-        [Theory]
-        [InlineData(new[] { "**/*" }, "myFolder/MyFile.cs", 5, 10, true)]
-        [InlineData(new[] { "**/*File.cs" }, "myFolder/MyFile.cs", 5, 10, true)]
-        [InlineData(new[] { "**/*File.cs" }, "myFolder/MyFileSomething.cs", 5, 10, false)]
-        [InlineData(new[] { "**/*", "!**/MyFile.cs" }, "myFolder/MyFile.cs", 5, 10, false)]
-        [InlineData(new[] { "**/*", "!**/MyFile.cs", "**/*" }, "myFolder/MyFile.cs", 5, 10, false)]
-        [InlineData(new[] { "**/*", "!MyFile.cs" }, "myFolder/MyFile.cs", 5, 10, true)]
-        [InlineData(new[] { "**/*", "!**/MyFile.cs{3..13}" }, "myFolder/MyFile.cs", 5, 10, false)]
-        [InlineData(new[] { "**/*", "!**/MyFile.cs{1..7}{7..13}" }, "myFolder/MyFile.cs", 5, 10, false)]
-        [InlineData(new[] { "**/*", "!**/MyFile.cs{1..3}{5..10}" }, "myFolder/MyFile.cs", 5, 10, false)]
-        [InlineData(new[] { "**/*", "!**/MyFile.cs{1..7}" }, "myFolder/MyFile.cs", 5, 10, true)]
-        [InlineData(new[] { "**/*", "!**/MyFile.cs{7..13}" }, "myFolder/MyFile.cs", 5, 10, true)]
-        [InlineData(new[] { "**/*", "!C:/test/myFolder/MyFile.cs" }, "myFolder/MyFile.cs", 5, 10, false)]
-        [InlineData(new[] { "**/*", "!C:\\test\\myFolder\\MyFile.cs" }, "myFolder/MyFile.cs", 5, 10, false)]
+        [TestMethod]
+        [DataRow(new[] { "**/*" }, "myFolder/MyFile.cs", 5, 10, true)]
+        [DataRow(new[] { "**/*File.cs" }, "myFolder/MyFile.cs", 5, 10, true)]
+        [DataRow(new[] { "**/*File.cs" }, "myFolder/MyFileSomething.cs", 5, 10, false)]
+        [DataRow(new[] { "**/*", "!**/MyFile.cs" }, "myFolder/MyFile.cs", 5, 10, false)]
+        [DataRow(new[] { "**/*", "!**/MyFile.cs", "**/*" }, "myFolder/MyFile.cs", 5, 10, false)]
+        [DataRow(new[] { "**/*", "!MyFile.cs" }, "myFolder/MyFile.cs", 5, 10, true)]
+        [DataRow(new[] { "**/*", "!**/MyFile.cs{3..13}" }, "myFolder/MyFile.cs", 5, 10, false)]
+        [DataRow(new[] { "**/*", "!**/MyFile.cs{1..7}{7..13}" }, "myFolder/MyFile.cs", 5, 10, false)]
+        [DataRow(new[] { "**/*", "!**/MyFile.cs{1..3}{5..10}" }, "myFolder/MyFile.cs", 5, 10, false)]
+        [DataRow(new[] { "**/*", "!**/MyFile.cs{1..7}" }, "myFolder/MyFile.cs", 5, 10, true)]
+        [DataRow(new[] { "**/*", "!**/MyFile.cs{7..13}" }, "myFolder/MyFile.cs", 5, 10, true)]
+        [DataRow(new[] { "**/*", "!C:/test/myFolder/MyFile.cs" }, "myFolder/MyFile.cs", 5, 10, false)]
+        [DataRow(new[] { "**/*", "!C:\\test\\myFolder\\MyFile.cs" }, "myFolder/MyFile.cs", 5, 10, false)]
         public void FilterMutants_should_filter_included_and_excluded_files(
             string[] patterns,
             string filePath,

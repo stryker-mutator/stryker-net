@@ -10,13 +10,14 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.Reporters.Json;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
+    [TestClass]
     public class MutantFilterFactoryTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void MutantFilterFactory_Creates_of_type_BroadcastFilter()
         {
             var options = new StrykerOptions()
@@ -33,13 +34,13 @@ namespace Stryker.Core.UnitTest.MutantFilters
             result.ShouldBeOfType<BroadcastMutantFilter>();
         }
 
-        [Fact]
+        [TestMethod]
         public void Create_Throws_ArgumentNullException_When_Stryker_Options_Is_Null()
         {
             var result = Should.Throw<ArgumentNullException>(() => MutantFilterFactory.Create(null, null));
         }
 
-        [Fact]
+        [TestMethod]
         public void MutantFilterFactory_Creates_Standard_Mutant_Filters()
         {
             // Arrange
@@ -60,7 +61,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             resultAsBroadcastFilter.MutantFilters.Count().ShouldBe(5);
         }
 
-        [Fact]
+        [TestMethod]
         public void MutantFilterFactory_Creates_DiffMutantFilter_When_Since_Enabled()
         {
             // Arrange
@@ -84,7 +85,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(SinceMutantFilter)).Count().ShouldBe(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void MutantFilterFactory_Creates_ExcludeLinqExpressionFilter_When_ExcludedLinqExpressions_IsNotEmpty()
         {
             // Arrange
@@ -108,7 +109,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(ExcludeLinqExpressionFilter)).Count().ShouldBe(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void MutantFilterFactory_Creates_DashboardMutantFilter_And_DiffMutantFilter_WithBaseline_Enabled() {
             var options = new StrykerOptions()
             {
@@ -129,7 +130,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             resultAsBroadcastFilter.MutantFilters.Where(x => x.GetType() == typeof(SinceMutantFilter)).Count().ShouldBe(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void MutantFilterFactory_Creates_BlockMutantFilter_Last()
         {
             // Arrange

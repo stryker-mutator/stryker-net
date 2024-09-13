@@ -1,12 +1,13 @@
-﻿using Shouldly;
+using Shouldly;
 using System.Linq;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.RegexMutators.UnitTest
 {
+    [TestClass]
     public class RegexMutantOrchestratorTest
     {
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveAnchor()
         {
             // Arrange
@@ -24,7 +25,7 @@ namespace Stryker.RegexMutators.UnitTest
             mutation.Description.ShouldBe("Anchor \"^\" was removed at offset 0.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveQuantifier()
         {
             // Arrange
@@ -42,7 +43,7 @@ namespace Stryker.RegexMutators.UnitTest
             mutation.Description.ShouldBe("Quantifier \"?\" was removed at offset 4.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveLazyQuantifier()
         {
             // Arrange
@@ -60,7 +61,7 @@ namespace Stryker.RegexMutators.UnitTest
             mutation.Description.ShouldBe("Quantifier \"??\" was removed at offset 4.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNegateUnnegatedCharacterClass()
         {
             // Arrange
@@ -78,7 +79,7 @@ namespace Stryker.RegexMutators.UnitTest
             mutation.Description.ShouldBe("Character class \"[XY]\" was replaced with \"[^XY]\" at offset 3.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldUnnegateNegatedCharacterClass()
         {
             // Arrange
@@ -96,7 +97,7 @@ namespace Stryker.RegexMutators.UnitTest
             mutation.Description.ShouldBe("Character class \"[^XY]\" was replaced with \"[XY]\" at offset 3.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNegateUnnegatedCharacterClassShorthand()
         {
             // Arrange
@@ -114,7 +115,7 @@ namespace Stryker.RegexMutators.UnitTest
             mutation.Description.ShouldBe("Character class shorthand \"\\d\" was replaced with \"\\D\" at offset 3.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldUnnegateNegatedCharacterClassShorthand()
         {
             // Arrange
@@ -132,7 +133,7 @@ namespace Stryker.RegexMutators.UnitTest
             mutation.Description.ShouldBe("Character class shorthand \"\\D\" was replaced with \"\\d\" at offset 3.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldApplyMultipleMutations()
         {
             // Arrange

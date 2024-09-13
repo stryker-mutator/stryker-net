@@ -1,20 +1,21 @@
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class TargetFrameworkInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new TargetFrameworkInput();
             target.HelpText.ShouldBe("The framework to build the project against.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldHaveDefaultNull()
         {
             var target = new TargetFrameworkInput { SuppliedInput = null };
@@ -24,9 +25,9 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBeNull();
         }
 
-        [Theory]
-        [InlineData("")]
-        [InlineData("  ")]
+        [TestMethod]
+        [DataRow("")]
+        [DataRow("  ")]
         public void ShouldThrowOnEmptyInput(string input)
         {
             var target = new TargetFrameworkInput { SuppliedInput = input };
@@ -39,7 +40,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
                 "https://docs.microsoft.com/en-us/dotnet/standard/frameworks");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldReturnFramework()
         {
             var target = new TargetFrameworkInput { SuppliedInput = "netcoreapp3.1" };

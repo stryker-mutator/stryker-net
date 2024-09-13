@@ -22,7 +22,7 @@ namespace Stryker.Core.Options.Inputs
 
                 var query = HttpUtility.ParseQueryString(SuppliedInput);
 
-                var hasImportantKey = query.AllKeys.Where(x => x.Equals("sv", System.StringComparison.InvariantCultureIgnoreCase) || x.Equals("sig", System.StringComparison.InvariantCultureIgnoreCase));
+                var hasImportantKey = query.AllKeys.Where(x => (x!= null && (x.Equals("sv", System.StringComparison.InvariantCultureIgnoreCase) || x.Equals("sig", System.StringComparison.InvariantCultureIgnoreCase))));
 
                 if (hasImportantKey.Count() < 2)
                 {

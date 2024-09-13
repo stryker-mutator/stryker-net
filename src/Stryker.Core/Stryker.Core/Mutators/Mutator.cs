@@ -42,7 +42,11 @@ public enum Mutator
     [MutatorDescription("Null coalescing")]
     NullCoalescing,
     [MutatorDescription("Math methods")]
-    Math
+    Math,
+    [MutatorDescription("String Method")]
+    StringMethod,
+    [MutatorDescription("Conditional operators")]
+    Conditional
 }
 
 public static class EnumExtension

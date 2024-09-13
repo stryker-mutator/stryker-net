@@ -8,20 +8,21 @@ using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Html;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Progress;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
+    [TestClass]
     public class ReporterFactoryTests : TestBase
     {
         private Mock<IGitInfoProvider> _branchProviderMock = new Mock<IGitInfoProvider>(MockBehavior.Loose);
 
-        [Theory]
-        [InlineData(Reporter.Json, typeof(JsonReporter))]
-        [InlineData(Reporter.Html, typeof(HtmlReporter))]
-        [InlineData(Reporter.Progress, typeof(ProgressReporter))]
-        [InlineData(Reporter.Dots, typeof(ConsoleDotProgressReporter))]
-        [InlineData(Reporter.ClearText, typeof(ClearTextReporter))]
+        [TestMethod]
+        [DataRow(Reporter.Json, typeof(JsonReporter))]
+        [DataRow(Reporter.Html, typeof(HtmlReporter))]
+        [DataRow(Reporter.Progress, typeof(ProgressReporter))]
+        [DataRow(Reporter.Dots, typeof(ConsoleDotProgressReporter))]
+        [DataRow(Reporter.ClearText, typeof(ClearTextReporter))]
         public void ReporterFactory_CreatesRequestedReporters(Reporter option, Type reporter)
         {
             var target = new ReporterFactory();
@@ -32,7 +33,7 @@ namespace Stryker.Core.UnitTest.Reporters
             broadcastReporter.Reporters.ShouldHaveSingleItem().ShouldBeOfType(reporter);
         }
 
-        [Fact]
+        [TestMethod]
         public void ReporterFactory_CreatesAllReporters()
         {
             var target = new ReporterFactory();

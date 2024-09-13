@@ -2,20 +2,21 @@ using Serilog.Events;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class VerbosityInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new VerbosityInput();
             target.HelpText.ShouldBe(@"The verbosity (loglevel) for output to the console. | default: 'info' | allowed: error, warning, info, debug, trace");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldBeInformationWhenNull()
         {
             var input = new VerbosityInput { SuppliedInput = null };
@@ -24,12 +25,12 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             validatedInput.ShouldBe(LogEventLevel.Information);
         }
 
-        [Theory]
-        [InlineData("error", LogEventLevel.Error)]
-        [InlineData("warning", LogEventLevel.Warning)]
-        [InlineData("info", LogEventLevel.Information)]
-        [InlineData("debug", LogEventLevel.Debug)]
-        [InlineData("trace", LogEventLevel.Verbose)]
+        [TestMethod]
+        [DataRow("error", LogEventLevel.Error)]
+        [DataRow("warning", LogEventLevel.Warning)]
+        [DataRow("info", LogEventLevel.Information)]
+        [DataRow("debug", LogEventLevel.Debug)]
+        [DataRow("trace", LogEventLevel.Verbose)]
         public void ShouldTranslateLogLevelToLogEventLevel(string argValue, LogEventLevel expectedLogLevel)
         {
             var validatedInput = new VerbosityInput { SuppliedInput = argValue }.Validate();
@@ -37,12 +38,12 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             validatedInput.ShouldBe(expectedLogLevel);
         }
 
-        [Theory]
-        [InlineData("incorrect")]
-        [InlineData("")]
+        [TestMethod]
+        [DataRow("incorrect")]
+        [DataRow("")]
         public void ShouldThrowWhenInputCannotBeTranslated(string logLevel)
         {
-            var ex = Assert.Throws<InputException>(() =>
+            var ex = Should.Throw<InputException>(() =>
             {
                 new VerbosityInput { SuppliedInput = logLevel }.Validate();
             });

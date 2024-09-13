@@ -3,20 +3,21 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
 using System.Collections.Generic;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class InitializerMutatorTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldBeMutationLevelStandard()
         {
             var target = new InitializerMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRemoveValuesFromArrayInitializer()
         {
             var initializerExpression = SyntaxFactory.InitializerExpression(SyntaxKind.ArrayInitializerExpression,
@@ -34,7 +35,7 @@ namespace Stryker.Core.UnitTest.Mutators
             replacement.Expressions.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateEmptyInitializer()
         {
             var emptyInitializerExpression = SyntaxFactory.InitializerExpression(SyntaxKind.ArrayInitializerExpression,
@@ -46,7 +47,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateStackallocArrayCreationExpressionSyntax()
         {
             var arrayCreationExpression = SyntaxFactory.ParseExpression("stackalloc int[] { 0 }") as StackAllocArrayCreationExpressionSyntax;
@@ -58,7 +59,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateArrayCreationExpressionSyntax()
         {
             var arrayCreationExpression = SyntaxFactory.ParseExpression("new int[] { 0 }") as ArrayCreationExpressionSyntax;
@@ -70,7 +71,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateImplicitArrayCreationExpressionSyntax()
         {
             var arrayCreationExpression = SyntaxFactory.ParseExpression("new [] { 0 }") as ImplicitArrayCreationExpressionSyntax;

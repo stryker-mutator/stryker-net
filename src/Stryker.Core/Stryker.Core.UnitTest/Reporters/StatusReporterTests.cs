@@ -8,10 +8,11 @@ using Stryker.Core.Reporters;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters
 {
+    [TestClass]
     public class StatusReporterTests : TestBase
     {
         private Mock<ILogger<FilteredMutantsLogger>> _loggerMock = new Mock<ILogger<FilteredMutantsLogger>>();
@@ -20,7 +21,7 @@ namespace Stryker.Core.UnitTest.Reporters
         {
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldPrintNoMutations()
         {
             var target = new FilteredMutantsLogger(_loggerMock.Object);
@@ -39,7 +40,7 @@ namespace Stryker.Core.UnitTest.Reporters
             _loggerMock.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldPrintIgnoredStatus()
         {
             var target = new FilteredMutantsLogger(_loggerMock.Object);
@@ -61,7 +62,7 @@ namespace Stryker.Core.UnitTest.Reporters
             _loggerMock.VerifyNoOtherCalls();
         }
         
-        [Fact]
+        [TestMethod]
         public void ShouldPrintEachReasonWithCount()
         {
             var target = new FilteredMutantsLogger(_loggerMock.Object);

@@ -2,20 +2,21 @@ using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class MutationLevelInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new MutationLevelInput();
             target.HelpText.ShouldBe(@"Specify which mutation levels to place. Every higher level includes the mutations from the lower levels. | default: 'Standard' | allowed: Basic, Standard, Advanced, Complete");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldHaveDefault()
         {
             var target = new MutationLevelInput { SuppliedInput = null };
@@ -25,7 +26,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBe(MutationLevel.Standard);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrowOnInvalidMutationLevel()
         {
             var target = new MutationLevelInput { SuppliedInput = "gibberish" };
@@ -35,9 +36,9 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             ex.Message.ShouldBe($"The given mutation level (gibberish) is invalid. Valid options are: [Basic, Standard, Advanced, Complete]");
         }
 
-        [Theory]
-        [InlineData("complete")]
-        [InlineData("Complete")]
+        [TestMethod]
+        [DataRow("complete")]
+        [DataRow("Complete")]
         public void ShouldReturnMutationLevel(string input)
         {
             var target = new MutationLevelInput { SuppliedInput = input };

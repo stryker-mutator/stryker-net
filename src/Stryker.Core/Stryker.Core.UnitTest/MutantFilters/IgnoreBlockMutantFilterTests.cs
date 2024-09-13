@@ -1,28 +1,25 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.CSharp;
-using Xunit;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
+using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
-using Stryker.Core.MutantFilters;
-using Shouldly;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
+    [TestClass]
     public class IgnoreBlockMutantFilterTests : TestBase
     {
-        [Fact]
-        public static void ShouldHaveName()
+        [TestMethod]
+        public void ShouldHaveName()
         {
             var sut = new IgnoreBlockMutantFilter();
             sut.DisplayName.ShouldBe("block already covered filter");
         }
 
-        [Fact]
+        [TestMethod]
         public void Type_ShouldBeIgnoreBlockRemoval()
         {
             // Arrange
@@ -32,7 +29,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             sut.Type.ShouldBe(MutantFilter.IgnoreBlockRemoval);
         }
 
-        [Fact]
+        [TestMethod]
         public void MutantFilter_WithMutationsInBlock_ShouldIgnoreBlockMutant()
         {
             // Arrange
@@ -72,7 +69,7 @@ public void SomeMethod()
             filteredMutants.ShouldNotContain(blockMutant);
         }
 
-        [Fact]
+        [TestMethod]
         public void MutantFilter_WithNoMutationsInBlock_ShouldNotIgnoreBlockMutant()
         {
             // Arrange

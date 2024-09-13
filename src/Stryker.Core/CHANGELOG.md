@@ -1,3 +1,43 @@
+# [4.1.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.6...stryker@4.1.0) (2024-07-08)
+
+
+### Bug Fixes
+
+* Improve IgnoreMethod filter mutation search  ([#2965](https://github.com/stryker-mutator/stryker-net/issues/2965)) ([0369d3b](https://github.com/stryker-mutator/stryker-net/commit/0369d3b78250e8aef1a36c5daf726602cb26675d))
+* Improve MsBuild detection  ([#2975](https://github.com/stryker-mutator/stryker-net/issues/2975)) ([f6df01a](https://github.com/stryker-mutator/stryker-net/commit/f6df01adc14c922b18b0006101e6ed3a30118e2c))
+* **since:** Retest all mutants covered by tests for which we cannot determine the filepath ([#2753](https://github.com/stryker-mutator/stryker-net/issues/2753)) ([c68c46c](https://github.com/stryker-mutator/stryker-net/commit/c68c46cb96c4c7ee98f1ad7b9c0f92425a572e74))
+* Strengthen azure sas parsing ([#2978](https://github.com/stryker-mutator/stryker-net/issues/2978)) ([f718818](https://github.com/stryker-mutator/stryker-net/commit/f7188188a6e55c555bcd584438380e54ce42450d))
+
+
+### Features
+
+* **mutator:** Add conditional operator mutator ([#2583](https://github.com/stryker-mutator/stryker-net/issues/2583)) ([6556ab9](https://github.com/stryker-mutator/stryker-net/commit/6556ab96d320fc2b7647363577a62683df48b6d6))
+* Specify build Configuration ([#2928](https://github.com/stryker-mutator/stryker-net/issues/2928)) ([99827d5](https://github.com/stryker-mutator/stryker-net/commit/99827d52b198b394999596d1e13b8f81f26aff9b)), closes [#2930](https://github.com/stryker-mutator/stryker-net/issues/2930) [#2748](https://github.com/stryker-mutator/stryker-net/issues/2748) [#2693](https://github.com/stryker-mutator/stryker-net/issues/2693) [#2587](https://github.com/stryker-mutator/stryker-net/issues/2587) [#2886](https://github.com/stryker-mutator/stryker-net/issues/2886) [#2393](https://github.com/stryker-mutator/stryker-net/issues/2393) [#2077](https://github.com/stryker-mutator/stryker-net/issues/2077) [#2938](https://github.com/stryker-mutator/stryker-net/issues/2938)
+
+
+
+## [4.0.6](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.5...stryker@4.0.6) (2024-05-25)
+
+
+### Bug Fixes
+
+* **delegate handling:** NullReferenceException when mutating parameterless delegates ([#2926](https://github.com/stryker-mutator/stryker-net/issues/2926)) ([5223ec5](https://github.com/stryker-mutator/stryker-net/commit/5223ec598866be306852103a2a500ab24617979b))
+* Logging of unexpected test case could result in a crash ([#2929](https://github.com/stryker-mutator/stryker-net/issues/2929)) ([#2931](https://github.com/stryker-mutator/stryker-net/issues/2931)) ([1db4b6c](https://github.com/stryker-mutator/stryker-net/commit/1db4b6c948ea06f4867f2d0c9b1fbba3098c8d8b))
+* **mutator:** issue where non-nullable fields were swapped by NullCoalescingExpressionMutator  ([#2915](https://github.com/stryker-mutator/stryker-net/issues/2915)) ([2af2947](https://github.com/stryker-mutator/stryker-net/commit/2af29476768cd2fcdefe41936cd11a0b3f0d192a))
+
+
+
+## [4.0.5](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.4...stryker@4.0.5) (2024-04-26)
+
+
+### Bug Fixes
+
+* Concurrency issue with MutantPlacer ([#2914](https://github.com/stryker-mutator/stryker-net/issues/2914)) ([fae558c](https://github.com/stryker-mutator/stryker-net/commit/fae558c2f5155b61c032c589b9d8bc8a44645b9a)), closes [#2916](https://github.com/stryker-mutator/stryker-net/issues/2916)
+* support generic method calls for ignoremethodfilter ([#2918](https://github.com/stryker-mutator/stryker-net/issues/2918)) ([26f299a](https://github.com/stryker-mutator/stryker-net/commit/26f299a67dc283eade86a7e05179148c206a432d))
+* Support mutating anonymous methods (a.k.a delegate) properly ([#2898](https://github.com/stryker-mutator/stryker-net/issues/2898)) ([ead50c3](https://github.com/stryker-mutator/stryker-net/commit/ead50c335b6296dc5a8a188af8b5b78ed45b99e9))
+
+
+
 ## [4.0.4](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.3...stryker@4.0.4) (2024-04-05)
 
 

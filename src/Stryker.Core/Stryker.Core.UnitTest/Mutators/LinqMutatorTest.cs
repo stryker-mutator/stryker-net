@@ -4,10 +4,11 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
 using System.Linq;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class LinqMutatorTest : TestBase
     {
         /// <summary>
@@ -44,7 +45,7 @@ namespace TestApplication
             return memberAccessExpression;
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldBeMutationLevelStandard()
         {
             var target = new LinqMutator();
@@ -56,40 +57,40 @@ namespace TestApplication
         /// </summary>
         /// <param name="original"></param>
         /// <param name="expected"></param>
-        [Theory]
-        [InlineData(LinqExpression.FirstOrDefault, LinqExpression.First)]
-        [InlineData(LinqExpression.First, LinqExpression.FirstOrDefault)]
-        [InlineData(LinqExpression.SingleOrDefault, LinqExpression.Single)]
-        [InlineData(LinqExpression.Single, LinqExpression.SingleOrDefault)]
-        [InlineData(LinqExpression.Last, LinqExpression.First)]
-        [InlineData(LinqExpression.All, LinqExpression.Any)]
-        [InlineData(LinqExpression.Any, LinqExpression.All)]
-        [InlineData(LinqExpression.Skip, LinqExpression.Take)]
-        [InlineData(LinqExpression.Take, LinqExpression.Skip)]
-        [InlineData(LinqExpression.SkipWhile, LinqExpression.TakeWhile)]
-        [InlineData(LinqExpression.TakeWhile, LinqExpression.SkipWhile)]
-        [InlineData(LinqExpression.Min, LinqExpression.Max)]
-        [InlineData(LinqExpression.Max, LinqExpression.Min)]
-        [InlineData(LinqExpression.Sum, LinqExpression.Max)]
-        [InlineData(LinqExpression.Average, LinqExpression.Min)]
-        [InlineData(LinqExpression.OrderBy, LinqExpression.OrderByDescending)]
-        [InlineData(LinqExpression.OrderByDescending, LinqExpression.OrderBy)]
-        [InlineData(LinqExpression.ThenBy, LinqExpression.ThenByDescending)]
-        [InlineData(LinqExpression.ThenByDescending, LinqExpression.ThenBy)]
-        [InlineData(LinqExpression.Reverse, LinqExpression.AsEnumerable)]
-        [InlineData(LinqExpression.AsEnumerable, LinqExpression.Reverse)]
-        [InlineData(LinqExpression.Union, LinqExpression.Intersect)]
-        [InlineData(LinqExpression.Intersect, LinqExpression.Union)]
-        [InlineData(LinqExpression.Concat, LinqExpression.Except)]
-        [InlineData(LinqExpression.Except, LinqExpression.Concat)]
-        [InlineData(LinqExpression.MinBy, LinqExpression.MaxBy)]
-        [InlineData(LinqExpression.MaxBy, LinqExpression.MinBy)]
-        [InlineData(LinqExpression.SkipLast, LinqExpression.TakeLast)]
-        [InlineData(LinqExpression.TakeLast, LinqExpression.SkipLast)]
-        [InlineData(LinqExpression.Order, LinqExpression.OrderDescending)]
-        [InlineData(LinqExpression.OrderDescending, LinqExpression.Order)]
-        [InlineData(LinqExpression.UnionBy, LinqExpression.IntersectBy)]
-        [InlineData(LinqExpression.IntersectBy, LinqExpression.UnionBy)]
+        [TestMethod]
+        [DataRow(LinqExpression.FirstOrDefault, LinqExpression.First)]
+        [DataRow(LinqExpression.First, LinqExpression.FirstOrDefault)]
+        [DataRow(LinqExpression.SingleOrDefault, LinqExpression.Single)]
+        [DataRow(LinqExpression.Single, LinqExpression.SingleOrDefault)]
+        [DataRow(LinqExpression.Last, LinqExpression.First)]
+        [DataRow(LinqExpression.All, LinqExpression.Any)]
+        [DataRow(LinqExpression.Any, LinqExpression.All)]
+        [DataRow(LinqExpression.Skip, LinqExpression.Take)]
+        [DataRow(LinqExpression.Take, LinqExpression.Skip)]
+        [DataRow(LinqExpression.SkipWhile, LinqExpression.TakeWhile)]
+        [DataRow(LinqExpression.TakeWhile, LinqExpression.SkipWhile)]
+        [DataRow(LinqExpression.Min, LinqExpression.Max)]
+        [DataRow(LinqExpression.Max, LinqExpression.Min)]
+        [DataRow(LinqExpression.Sum, LinqExpression.Max)]
+        [DataRow(LinqExpression.Average, LinqExpression.Min)]
+        [DataRow(LinqExpression.OrderBy, LinqExpression.OrderByDescending)]
+        [DataRow(LinqExpression.OrderByDescending, LinqExpression.OrderBy)]
+        [DataRow(LinqExpression.ThenBy, LinqExpression.ThenByDescending)]
+        [DataRow(LinqExpression.ThenByDescending, LinqExpression.ThenBy)]
+        [DataRow(LinqExpression.Reverse, LinqExpression.AsEnumerable)]
+        [DataRow(LinqExpression.AsEnumerable, LinqExpression.Reverse)]
+        [DataRow(LinqExpression.Union, LinqExpression.Intersect)]
+        [DataRow(LinqExpression.Intersect, LinqExpression.Union)]
+        [DataRow(LinqExpression.Concat, LinqExpression.Except)]
+        [DataRow(LinqExpression.Except, LinqExpression.Concat)]
+        [DataRow(LinqExpression.MinBy, LinqExpression.MaxBy)]
+        [DataRow(LinqExpression.MaxBy, LinqExpression.MinBy)]
+        [DataRow(LinqExpression.SkipLast, LinqExpression.TakeLast)]
+        [DataRow(LinqExpression.TakeLast, LinqExpression.SkipLast)]
+        [DataRow(LinqExpression.Order, LinqExpression.OrderDescending)]
+        [DataRow(LinqExpression.OrderDescending, LinqExpression.Order)]
+        [DataRow(LinqExpression.UnionBy, LinqExpression.IntersectBy)]
+        [DataRow(LinqExpression.IntersectBy, LinqExpression.UnionBy)]
         public void ShouldMutate(LinqExpression original, LinqExpression expected)
         {
             var target = new LinqMutator();
@@ -109,12 +110,12 @@ namespace TestApplication
         ///     Test Method to check, if different expressions aren't mutated
         /// </summary>
         /// <param name="methodName"></param>
-        [Theory]
-        [InlineData("AllData")]
-        [InlineData("PriceFirstOrDefault")]
-        [InlineData("TakeEntry")]
-        [InlineData("ShouldNotMutate")]
-        [InlineData("WriteLine")]
+        [TestMethod]
+        [DataRow("AllData")]
+        [DataRow("PriceFirstOrDefault")]
+        [DataRow("TakeEntry")]
+        [DataRow("ShouldNotMutate")]
+        [DataRow("WriteLine")]
         public void ShouldNotMutate(string methodName)
         {
             var target = new LinqMutator();
@@ -124,7 +125,7 @@ namespace TestApplication
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldMutateProperlyConditionalExpression()
         {
             var tree = CSharpSyntaxTree.ParseText(@"

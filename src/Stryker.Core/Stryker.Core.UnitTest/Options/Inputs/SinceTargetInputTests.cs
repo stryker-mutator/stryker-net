@@ -1,20 +1,21 @@
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class SinceTargetInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new SinceTargetInput();
             target.HelpText.ShouldBe(@"The target branch/commit to compare with the current codebase when the since feature is enabled. | default: 'master'");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldUseSuppliedInputWhenSinceEnabled()
         {
             var suppliedInput = "develop";
@@ -22,7 +23,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             validatedSinceBranch.ShouldBe(suppliedInput);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldUseDefaultWhenSinceEnabledAndInputNull()
         {
             var input = new SinceTargetInput();
@@ -30,17 +31,17 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             validatedSinceBranch.ShouldBe(input.Default);
         }
 
-        [Fact]
+        [TestMethod]
         public void MustNotBeEmptyStringWhenSinceEnabled()
         {
-            var ex = Assert.Throws<InputException>(() =>
+            var ex = Should.Throw<InputException>(() =>
             {
                 new SinceTargetInput { SuppliedInput = "" }.Validate(sinceEnabled: true);
             });
             ex.Message.ShouldBe("The since target cannot be empty when the since feature is enabled");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotValidateSinceTargetWhenSinceDisabled()
         {
             var validatedSinceBranch = new SinceTargetInput { SuppliedInput = "develop" }.Validate(sinceEnabled: false);

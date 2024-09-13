@@ -4,31 +4,32 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
 using System.Linq;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class AssignmentStatementMutatorTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldBeMutationLevelStandard()
         {
             var target = new AssignmentExpressionMutator();
             target.MutationLevel.ShouldBe(MutationLevel.Standard);
         }
 
-        [Theory]
-        [InlineData(SyntaxKind.AddAssignmentExpression, SyntaxKind.SubtractAssignmentExpression)]
-        [InlineData(SyntaxKind.SubtractAssignmentExpression, SyntaxKind.AddAssignmentExpression)]
-        [InlineData(SyntaxKind.MultiplyAssignmentExpression, SyntaxKind.DivideAssignmentExpression)]
-        [InlineData(SyntaxKind.DivideAssignmentExpression, SyntaxKind.MultiplyAssignmentExpression)]
-        [InlineData(SyntaxKind.ModuloAssignmentExpression, SyntaxKind.MultiplyAssignmentExpression)]
-        [InlineData(SyntaxKind.LeftShiftAssignmentExpression, SyntaxKind.RightShiftAssignmentExpression)]
-        [InlineData(SyntaxKind.RightShiftAssignmentExpression, SyntaxKind.LeftShiftAssignmentExpression)]
-        [InlineData(SyntaxKind.AndAssignmentExpression, SyntaxKind.OrAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression)]
-        [InlineData(SyntaxKind.OrAssignmentExpression, SyntaxKind.AndAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression)]
-        [InlineData(SyntaxKind.ExclusiveOrAssignmentExpression, SyntaxKind.OrAssignmentExpression, SyntaxKind.AndAssignmentExpression)]
-        [InlineData(SyntaxKind.CoalesceAssignmentExpression, SyntaxKind.SimpleAssignmentExpression)]
+        [TestMethod]
+        [DataRow(SyntaxKind.AddAssignmentExpression, SyntaxKind.SubtractAssignmentExpression)]
+        [DataRow(SyntaxKind.SubtractAssignmentExpression, SyntaxKind.AddAssignmentExpression)]
+        [DataRow(SyntaxKind.MultiplyAssignmentExpression, SyntaxKind.DivideAssignmentExpression)]
+        [DataRow(SyntaxKind.DivideAssignmentExpression, SyntaxKind.MultiplyAssignmentExpression)]
+        [DataRow(SyntaxKind.ModuloAssignmentExpression, SyntaxKind.MultiplyAssignmentExpression)]
+        [DataRow(SyntaxKind.LeftShiftAssignmentExpression, SyntaxKind.RightShiftAssignmentExpression)]
+        [DataRow(SyntaxKind.RightShiftAssignmentExpression, SyntaxKind.LeftShiftAssignmentExpression)]
+        [DataRow(SyntaxKind.AndAssignmentExpression, SyntaxKind.OrAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression)]
+        [DataRow(SyntaxKind.OrAssignmentExpression, SyntaxKind.AndAssignmentExpression, SyntaxKind.ExclusiveOrAssignmentExpression)]
+        [DataRow(SyntaxKind.ExclusiveOrAssignmentExpression, SyntaxKind.OrAssignmentExpression, SyntaxKind.AndAssignmentExpression)]
+        [DataRow(SyntaxKind.CoalesceAssignmentExpression, SyntaxKind.SimpleAssignmentExpression)]
         public void AssignmentMutator_ShouldMutate(SyntaxKind input, SyntaxKind expectedOutput, SyntaxKind? additionalOutput = null)
         {
             var target = new AssignmentExpressionMutator();
@@ -59,12 +60,12 @@ namespace Stryker.Core.UnitTest.Mutators
             }
         }
 
-        [Theory]
-        [InlineData("a += b", "a -= b")]
-        [InlineData("a +=  b", "a -=  b")]
-        [InlineData("a  += b", "a  -= b")]
-        [InlineData("a +=\nb", "a -=\nb")]
-        [InlineData("a\n+= b", "a\n-= b")]
+        [TestMethod]
+        [DataRow("a += b", "a -= b")]
+        [DataRow("a +=  b", "a -=  b")]
+        [DataRow("a  += b", "a  -= b")]
+        [DataRow("a +=\nb", "a -=\nb")]
+        [DataRow("a\n+= b", "a\n-= b")]
         public void ShouldKeepTrivia(string originalExpressionString, string expectedExpressionString)
         {
             // Arrange
@@ -80,7 +81,7 @@ namespace Stryker.Core.UnitTest.Mutators
             mutation.ReplacementNode.ToString().ShouldBe(expectedExpressionString);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateSimpleAssignment()
         {
             var target = new AssignmentExpressionMutator();
@@ -95,7 +96,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateStringLiteralsLeft()
         {
             var target = new AssignmentExpressionMutator();
@@ -110,7 +111,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateStringLiteralsRight()
         {
             var target = new AssignmentExpressionMutator();
@@ -125,7 +126,7 @@ namespace Stryker.Core.UnitTest.Mutators
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateStringLiteralsBoth()
         {
             var target = new AssignmentExpressionMutator();

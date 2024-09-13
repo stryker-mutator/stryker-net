@@ -13,9 +13,13 @@ namespace Stryker.CLI
 
     public class ConfigBuilder : IConfigBuilder
     {
+        // Default config file names in order of precedence
+        private readonly string[] _defaultConfigFileNames = ["stryker-config.json", "stryker-config.yml", "stryker-config.yaml"];
+
         /// <summary>
         /// Reads all config from json and console to fill stryker inputs
         /// </summary>
+        /// <param name="inputs">Stryker inputs to fill</param>
         /// <param name="args">Console app arguments</param>
         /// <param name="app">The console application containing all argument information</param>
         /// <param name="cmdConfigHandler">Mock console config handler</param>
@@ -26,18 +30,42 @@ namespace Stryker.CLI
             var basePath = Directory.GetCurrentDirectory();
             inputs.BasePathInput.SuppliedInput = basePath;
 
-            var configFileOption = cmdConfigHandler.GetConfigFileOption(args, app);
+            var finalConfigFilePath = string.Empty;
+            var isConfigUserProvided = false;
 
-            // read config from json and commandline
-            var configFilePath = Path.Combine(basePath, configFileOption?.Value() ?? "stryker-config.json");
-            if (File.Exists(configFilePath))
+            // Check user provided config file option
+            var configFileOption = cmdConfigHandler.GetConfigFileOption(args, app);
+            if (configFileOption != null && configFileOption.HasValue())
             {
-                FileConfigReader.DeserializeConfig(configFilePath, inputs);
+                var userConfigFilePath = Path.Combine(basePath, configFileOption.Value()!);
+                if (!File.Exists(userConfigFilePath))
+                {
+                    // Throw if user provided config file does not exist
+                    throw new InputException($"Config file not found at {userConfigFilePath}");
+                }
+
+                finalConfigFilePath = userConfigFilePath;
+                isConfigUserProvided = true;
             }
-            else if (configFileOption.HasValue())
+
+            // Attempt to read config with default names if user didn't provide one
+            if (!isConfigUserProvided)
             {
-                // throw exception if the config file path is provided by the user yet it does not exist
-                throw new InputException($"Config file not found at {configFilePath}");
+                foreach (var defaultConfigFileName in _defaultConfigFileNames)
+                {
+                    var defaultConfigFilePath = Path.Combine(basePath, defaultConfigFileName);
+                    if (File.Exists(defaultConfigFileName))
+                    {
+                        finalConfigFilePath = defaultConfigFilePath;
+                        break;
+                    }
+                }
+            }
+
+            // Deserialize if final path is filled in
+            if (!string.IsNullOrWhiteSpace(finalConfigFilePath))
+            {
+                FileConfigReader.DeserializeConfig(finalConfigFilePath, inputs);
             }
 
             cmdConfigHandler.ReadCommandLineConfig(args, app, inputs);

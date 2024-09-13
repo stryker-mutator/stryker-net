@@ -6,10 +6,11 @@ using Stryker.CLI.CommandLineConfig;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.CLI.UnitTest
 {
+    [TestClass]
     public class ConfigBuilderTests
     {
         private readonly Mock<IStrykerInputs> _inputs;
@@ -25,18 +26,18 @@ namespace Stryker.CLI.UnitTest
             _cmdConfigHandler.RegisterCommandLineOptions(_app, _inputs.Object);
         }
 
-        [Fact]
+        [TestMethod]
         public void InvalidConfigFile_ShouldThrowInputException()
         {
             var args = new[] { "-f", "invalidconfig.json" };
 
             var reader = new ConfigBuilder();
 
-            var exception = Assert.Throws<InputException>(() => reader.Build(_inputs.Object, args, _app, _cmdConfigHandler));
+            var exception = Should.Throw<InputException>(() => reader.Build(_inputs.Object, args, _app, _cmdConfigHandler));
             exception.Message.ShouldStartWith("Config file not found");
         }
 
-        [Fact]
+        [TestMethod]
         public void InvalidDefaultConfigFile_ShouldNotThrowInputExceptionAndNotParseConfigFile()
         {
             var currentDirectory = Directory.GetCurrentDirectory();
@@ -53,7 +54,7 @@ namespace Stryker.CLI.UnitTest
             Directory.SetCurrentDirectory(currentDirectory);
         }
 
-        [Fact]
+        [TestMethod]
         public void ValidDefaultConfigFile_ShouldParseConfigFile()
         {
             var args = new string[] { };
@@ -63,6 +64,99 @@ namespace Stryker.CLI.UnitTest
             reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
 
             VerifyConfigFileDeserialized(Times.Once());
+        }
+
+        [TestMethod]
+        public void ValidUserConfigFileWithDefault_ShouldParseUserConfig()
+        {
+            string[] args = ["-f", $"ConfigFiles{Path.DirectorySeparatorChar}UserConfigWithDefault{Path.DirectorySeparatorChar}custom_config.json"];
+
+            var reader = new ConfigBuilder();
+
+            reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
+
+            VerifyConfigFileDeserialized(Times.Once());
+            _inputs.Object.ModuleNameInput.Validate().ShouldBe("custom");
+        }
+
+        [TestMethod]
+        public void ValidDefaultYmlFile_ShouldParse()
+        {
+            var currentDirectory = Directory.GetCurrentDirectory();
+
+            // Set directory to test folder containing single config yml
+            Directory.SetCurrentDirectory(Path.Combine(currentDirectory, "ConfigFiles", "SingleDefaultYml"));
+
+            string[] args = [];
+
+            var reader = new ConfigBuilder();
+            reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
+
+            VerifyConfigFileDeserialized(Times.Once());
+            _inputs.Object.ModuleNameInput.Validate().ShouldBe("hello_from_yml");
+
+            // Reset current directory to original folder
+            Directory.SetCurrentDirectory(currentDirectory);
+        }
+
+        [TestMethod]
+        public void ValidDefaultYamlFile_ShouldParse()
+        {
+            var currentDirectory = Directory.GetCurrentDirectory();
+
+            // Set directory to test folder containing single config yml
+            Directory.SetCurrentDirectory(Path.Combine(currentDirectory, "ConfigFiles", "SingleDefaultYaml"));
+
+            string[] args = [];
+
+            var reader = new ConfigBuilder();
+            reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
+
+            VerifyConfigFileDeserialized(Times.Once());
+            _inputs.Object.ModuleNameInput.Validate().ShouldBe("hello_from_yaml");
+
+            // Reset current directory to original folder
+            Directory.SetCurrentDirectory(currentDirectory);
+        }
+
+        [TestMethod]
+        public void MultipleDefaultConfigsWithJson_ShouldParseJsonConfig()
+        {
+            var currentDirectory = Directory.GetCurrentDirectory();
+
+            // Set directory to test folder containing multiple default files
+            Directory.SetCurrentDirectory(Path.Combine(currentDirectory, "ConfigFiles", "MultipleDefaultWithJson"));
+
+            string[] args = [];
+
+            var reader = new ConfigBuilder();
+            reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
+
+            VerifyConfigFileDeserialized(Times.Once());
+            _inputs.Object.ModuleNameInput.Validate().ShouldBe("hello_from_json");
+
+            // Reset current directory to original folder
+            Directory.SetCurrentDirectory(currentDirectory);
+        }
+
+        [TestMethod]
+        public void TwoDefaultConfigsWithYml_ShouldParseYmlConfig()
+        {
+            var currentDirectory = Directory.GetCurrentDirectory();
+
+            // Set directory to test folder containing two default files
+            Directory.SetCurrentDirectory(Path.Combine(currentDirectory, "ConfigFiles", "TwoWithYml"));
+
+            string[] args = [];
+
+            var reader = new ConfigBuilder();
+            reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
+
+            VerifyConfigFileDeserialized(Times.Once());
+            _inputs.Object.ModuleNameInput.Validate().ShouldBe("hello_from_yml");
+
+            // Reset current directory to original folder
+            Directory.SetCurrentDirectory(currentDirectory);
         }
 
         private void VerifyConfigFileDeserialized(Times time) => _inputs.VerifyGet(x => x.CoverageAnalysisInput, time);
@@ -92,6 +186,7 @@ namespace Stryker.CLI.UnitTest
             inputs.Setup(x => x.VerbosityInput).Returns(new VerbosityInput());
             inputs.Setup(x => x.ConcurrencyInput).Returns(new ConcurrencyInput());
             inputs.Setup(x => x.SolutionInput).Returns(new SolutionInput());
+            inputs.Setup(x => x.ConfigurationInput).Returns(new ConfigurationInput());
             inputs.Setup(x => x.SourceProjectNameInput).Returns(new SourceProjectNameInput());
             inputs.Setup(x => x.TestProjectsInput).Returns(new TestProjectsInput());
             inputs.Setup(x => x.MsBuildPathInput).Returns(new MsBuildPathInput());

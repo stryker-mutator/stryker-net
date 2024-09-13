@@ -5,20 +5,21 @@ using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class LanguageVersionInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new LanguageVersionInput();
             target.HelpText.ShouldBe(@"The c# version used in compilation. | default: 'latest' | allowed: Default, CSharp2, CSharp3, CSharp4, CSharp5, CSharp6, CSharp7, CSharp7_1, CSharp7_2, CSharp7_3, CSharp8, CSharp9, CSharp10, CSharp11, CSharp12, LatestMajor, Preview, Latest");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldHaveDefault()
         {
             var target = new LanguageVersionInput { SuppliedInput = null };
@@ -28,7 +29,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBe(LanguageVersion.Default);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldReturnLanguageVersion()
         {
             var target = new LanguageVersionInput { SuppliedInput = "CSharp9" };
@@ -38,7 +39,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBe(LanguageVersion.CSharp9);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldValidateLanguageVersion()
         {
             var target = new LanguageVersionInput { SuppliedInput = "gibberish" };

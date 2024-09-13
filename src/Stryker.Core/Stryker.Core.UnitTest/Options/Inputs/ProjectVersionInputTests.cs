@@ -3,20 +3,21 @@ using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
 using Stryker.Core.Reporters;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class ProjectVersionInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new ProjectVersionInput();
             target.HelpText.ShouldBe(@"Project version used in dashboard reporter and baseline feature. | default: ''");
         }
 
-        [Fact]
+        [TestMethod]
         public void ProjectVersion_UsesSuppliedInput_IfDashboardReporterEnabled()
         {
             var suppliedInput = "test";
@@ -26,7 +27,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBe(suppliedInput);
         }
 
-        [Fact]
+        [TestMethod]
         public void ProjectVersion_UsesSuppliedInput_IfBaselineEnabled()
         {
             var suppliedInput = "test";
@@ -36,7 +37,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBe(suppliedInput);
         }
 
-        [Fact]
+        [TestMethod]
         public void ProjectVersion_ShouldBeDefault_IfBaselineAndDashboardDisabled()
         {
             var suppliedInput = "test";
@@ -46,7 +47,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBe(string.Empty);
         }
 
-        [Fact]
+        [TestMethod]
         public void ProjectVersion_ShouldBeDefault_IfDashboardEnabledAndSuppliedInputNull()
         {
             var input = new ProjectVersionInput();
@@ -55,7 +56,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBe(string.Empty);
         }
 
-        [Fact]
+        [TestMethod]
         public void ProjectVersion_CannotBeEmpty_WhenBaselineEnabled()
         {
             var input = new ProjectVersionInput();

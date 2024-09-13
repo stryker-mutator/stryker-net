@@ -5,20 +5,21 @@ using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using System;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
+    [TestClass]
     public class ExcludeFromCodeCoverageFilterTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveName()
         {
             var target = new ExcludeFromCodeCoverageFilter() as IMutantFilter;
             target.DisplayName.ShouldBe("exclude from code coverage filter");
         }
 
-        [Fact]
+        [TestMethod]
         public void OnMethod()
         {
             // Arrange
@@ -41,7 +42,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             results.ShouldNotContain(mutant);
         }
 
-        [Fact]
+        [TestMethod]
         public void OnProperty()
         {
             // Arrange
@@ -61,7 +62,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             results.ShouldNotContain(mutant);
         }
 
-        [Fact]
+        [TestMethod]
         public void OnClass()
         {
             // Arrange
@@ -84,7 +85,7 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             results.ShouldNotContain(mutant);
         }
 
-        [Fact]
+        [TestMethod]
         public void Not()
         {
             // Arrange
@@ -106,10 +107,10 @@ public class IgnoredMethodMutantFilter_NestedMethodCalls
             results.ShouldContain(mutant);
         }
 
-        [Theory]
-        [InlineData("System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute")]
-        [InlineData("ExcludeFromCodeCoverageAttribute")]
-        [InlineData("ExcludeFromCodeCoverage")]
+        [TestMethod]
+        [DataRow("System.Diagnostics.CodeAnalysis.ExcludeFromCodeCoverageAttribute")]
+        [DataRow("ExcludeFromCodeCoverageAttribute")]
+        [DataRow("ExcludeFromCodeCoverage")]
         public void Writings(string attr)
         {
             // Arrange

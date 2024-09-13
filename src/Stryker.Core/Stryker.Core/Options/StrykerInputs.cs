@@ -1,4 +1,5 @@
 using System.IO.Abstractions;
+using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options.Inputs;
 
@@ -12,6 +13,7 @@ namespace Stryker.Core.Options
         BaselineProviderInput BaselineProviderInput { get; init; }
         BasePathInput BasePathInput { get; init; }
         ConcurrencyInput ConcurrencyInput { get; init; }
+        ConfigurationInput ConfigurationInput { get; init; }
         CoverageAnalysisInput CoverageAnalysisInput { get; init; }
         DashboardApiKeyInput DashboardApiKeyInput { get; init; }
         DashboardUrlInput DashboardUrlInput { get; init; }
@@ -67,6 +69,7 @@ namespace Stryker.Core.Options
         public OutputPathInput OutputPathInput { get; init; } = new();
         public ReportFileNameInput ReportFileNameInput { get; init; } = new();
         public SolutionInput SolutionInput { get; init; } = new();
+        public ConfigurationInput ConfigurationInput { get; init; } = new();
         public TargetFrameworkInput TargetFrameworkInput { get; init; } = new();
         public VerbosityInput VerbosityInput { get; init; } = new();
         public LogToFileInput LogToFileInput { get; init; } = new();
@@ -127,6 +130,7 @@ namespace Stryker.Core.Options
                 DevMode = DevModeInput.Validate(),
                 MsBuildPath = MsBuildPathInput.Validate(_fileSystem),
                 SolutionPath = SolutionInput.Validate(basePath, _fileSystem),
+                Configuration = ConfigurationInput.Validate(),
                 TargetFramework = TargetFrameworkInput.Validate(),
                 Thresholds = new Thresholds
                 {
@@ -165,6 +169,7 @@ namespace Stryker.Core.Options
                 SinceTarget = sinceTarget,
                 ReportTypeToOpen = OpenReportInput.Validate(OpenReportEnabledInput.Validate()),
                 BreakOnInitialTestFailure = BreakOnInitialTestFailureInput.Validate(),
+                MutantIdProvider = new BasicIdProvider()
             };
             return _strykerOptionsCache;
         }

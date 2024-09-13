@@ -1,15 +1,16 @@
-﻿using RegexParser.Nodes;
+using RegexParser.Nodes;
 using RegexParser.Nodes.CharacterClass;
 using Shouldly;
 using Stryker.RegexMutators.Mutators;
 using System.Collections.Generic;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.RegexMutators.UnitTest.Mutators
 {
+    [TestClass]
     public class CharacterClassNegationMutatorTest
     {
-        [Fact]
+        [TestMethod]
         public void ShouldNegateUnnegatedCharacterClass()
         {
             // Arrange
@@ -34,7 +35,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Character class \"[abc-[a]]\" was replaced with \"[^abc-[a]]\" at offset 1.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldUnnegateNegatedCharacterClass()
         {
             // Arrange
@@ -59,7 +60,7 @@ namespace Stryker.RegexMutators.UnitTest.Mutators
             mutation.Description.ShouldBe("Character class \"[^abc-[a]]\" was replaced with \"[abc-[a]]\" at offset 1.");
         }
 
-        [Fact]
+        [TestMethod]
         public void MutateShouldNotMutateNonCharacterClassNode()
         {
             // Arrange

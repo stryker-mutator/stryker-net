@@ -16,13 +16,14 @@ using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest
 {
+    [TestClass]
     public class StrykerRunnerTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void Stryker_ShouldInvokeAllProcesses()
         {
             var projectOrchestratorMock = new Mock<IProjectOrchestrator>(MockBehavior.Strict);
@@ -88,7 +89,7 @@ namespace Stryker.Core.UnitTest
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldStop_WhenAllMutationsWereIgnored()
         {
             var projectOrchestratorMock = new Mock<IProjectOrchestrator>(MockBehavior.Strict);
@@ -141,7 +142,7 @@ namespace Stryker.Core.UnitTest
             reporterMock.Verify(x => x.OnAllMutantsTested(It.IsAny<IReadOnlyProjectComponent>(), It.IsAny<TestProjectsInfo>()), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrow_WhenNoProjectsFound()
         {
             var projectOrchestratorMock = new Mock<IProjectOrchestrator>(MockBehavior.Strict);

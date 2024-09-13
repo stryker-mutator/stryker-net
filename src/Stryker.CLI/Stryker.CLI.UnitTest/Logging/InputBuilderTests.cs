@@ -6,13 +6,14 @@ using System.Text;
 using Shouldly;
 using Stryker.CLI.Logging;
 using Stryker.Core.Options;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.CLI.UnitTest
 {
+    [TestClass]
     public class InputBuilderTests
     {
-        [Fact]
+        [TestMethod]
         public void ShouldAddGitIgnore()
         {
             var fileSystemMock = new MockFileSystem();
@@ -31,7 +32,7 @@ namespace Stryker.CLI.UnitTest
             Encoding.Default.GetString(fileContents).ShouldBe("*");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldAddGitIgnoreWithAbsolutePath()
         {
             var fileSystemMock = new MockFileSystem();
@@ -48,7 +49,7 @@ namespace Stryker.CLI.UnitTest
             Encoding.Default.GetString(fileContents).ShouldBe("*");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldAddGitIgnoreWithRelativePath()
         {
             var fileSystemMock = new MockFileSystem();

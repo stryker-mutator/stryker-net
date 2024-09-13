@@ -5,13 +5,14 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class BlockMutatorTests
     {
-        [Fact]
+        [TestMethod]
         public void ShouldMutateNonEmptyConstructorOnClass()
         {
             var source = @"
@@ -29,7 +30,7 @@ class Program
             mutation.ReplacementNode.ChildNodes().ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateStructConstructorAssignments()
         {
             var source = @"
@@ -56,7 +57,7 @@ struct Program
             GetMutations(source).ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateSwitchCasesBlock()
         {
             var source = @"
@@ -80,7 +81,7 @@ struct Program
             GetMutations(source).ShouldHaveSingleItem();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldMutateLocalFunctionsInStructConstructors()
         {
             var source = @"
@@ -106,7 +107,7 @@ struct Program
                 "Should mutate the local function and only the local function");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldMutateStructConstructorNonAssignmentsAtRoot()
         {
             var source = @"
@@ -121,7 +122,7 @@ struct Program
             GetMutations(source).Count().ShouldBe(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldMutateStructConstructorNonAssignmentChild()
         {
             var source = @"
@@ -143,7 +144,7 @@ struct Program
             GetMutations(source).Count().ShouldBe(1);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldMutateVoidReturnsAsEmptyInMethod()
         {
             var source = @"
@@ -161,7 +162,7 @@ class Program
             GetMutations(source).ShouldAllBe(mutation => !mutation.ReplacementNode.ChildNodes().Any());
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldMutateVoidReturnsAsEmptyInLocalFunction()
         {
             var source = @"
@@ -187,7 +188,7 @@ class Program
             mutation.ReplacementNode.ChildNodes().ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateAlreadyEmptyBlocks()
         {
             // E.g. empty constructors bodies and method overrides are totally valid
@@ -209,7 +210,7 @@ class Program
             GetMutations(source).ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotMutateInfiniteWhileLoops()
         {
             var source = @"

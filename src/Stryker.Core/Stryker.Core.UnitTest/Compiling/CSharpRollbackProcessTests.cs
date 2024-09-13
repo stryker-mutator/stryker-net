@@ -1,4 +1,5 @@
 using System;
+using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -6,10 +7,10 @@ using System.IO.Pipes;
 using System.Linq;
 using System.Reflection;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Core.Compiling;
 using Stryker.Core.Exceptions;
@@ -19,10 +20,10 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.SourceProjects;
-using Xunit;
 
 namespace Stryker.Core.UnitTest.Compiling
 {
+    [TestClass]
     public class CSharpRollbackProcessTests : TestBase
     {
         private readonly SyntaxAnnotation _ifEngineMarker = new("Injector", "IfInstrumentationEngine");
@@ -32,7 +33,7 @@ namespace Stryker.Core.UnitTest.Compiling
 
         private SyntaxAnnotation GetMutationTypeMarker(Mutator type) => new("MutationType", type.ToString());
 
-        [Fact]
+        [TestMethod]
         public void RollbackProcess_ShouldRollbackError_RollbackedCompilationShouldCompile()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
@@ -86,7 +87,7 @@ if(ActiveMutation == 1) {
             }
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldRollbackIssueInExpression()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"
@@ -160,7 +161,7 @@ namespace ExampleProject
         }
 
 
-        [Fact]
+        [TestMethod]
         public void ShouldRollbackAllMutationsInsideAExpressionBodyMethod()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"
@@ -245,7 +246,7 @@ namespace ExampleProject
             test.ShouldThrow<CompilationException>();
         }
 
-        [Fact]
+        [TestMethod]
         public void RollbackProcess_ShouldRollbackAllCompileErrors()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
@@ -319,7 +320,7 @@ namespace ExampleProject
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 6, 7 });
         }
 
-        [Fact]
+        [TestMethod]
         public void RollbackProcess_ShouldRollbackErrorsAndKeepTheRest()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
@@ -413,7 +414,7 @@ namespace ExampleProject
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7 });
         }
 
-        [Fact]
+        [TestMethod]
         public void RollbackProcess_ShouldRollbackBlockMutationWhenLocalRollbackFails()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"
@@ -477,7 +478,7 @@ namespace ExampleProject
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 1 });
         }
 
-        [Fact]
+        [TestMethod]
         public void RollbackProcess_ShouldRollbackMethodWhenLocalRollbackFailsAndNoBlockMutationsFound()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
@@ -578,7 +579,7 @@ namespace ExampleProject
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
         }
 
-        [Fact]
+        [TestMethod]
         public void RollbackProcess_ShouldRollbacConstructorWhenLocalRollbackFailsAndNoBlockMutationsFound()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
@@ -678,7 +679,7 @@ namespace ExampleProject
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
         }
 
-        [Fact]
+        [TestMethod]
         public void RollbackProcess_ShouldRollbackAccessorWhenLocalRollbackFails()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
@@ -787,7 +788,7 @@ namespace ExampleProject
             fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
         }
 
-        [Fact]
+        [TestMethod]
         public void RollbackProcess_ShouldRollbackError_RollbackedCompilationShouldCompileWhenUriIsEmpty()
         {
             var syntaxTree = CSharpSyntaxTree.ParseText(@"
@@ -839,28 +840,51 @@ namespace ExampleProject
             var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, false, false);
             fixedCompilation.Compilation.Emit(ms).Success.ShouldBeTrue();
 
-            // validate that only one of the compile errors marked the mutation as rollbacked.
-            fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 1 });
+            // validate that only one of the compile errors marked the mutation as rolled back.
+            fixedCompilation.RollbackedIds.ShouldBe([1]);
         }
 
-        [Fact]
+        [TestMethod]
         public void RollbackProcess_ShouldOnlyRaiseExceptionOnFinalAttempt()
         {
-            var syntaxTree = CSharpSyntaxTree.ParseText(@"
+
+                        var syntaxTree = CSharpSyntaxTree.ParseText(@"
 using System;
 
 namespace ExampleProject
 {
-    public class MyException: Exception
+    public class Query
     {
-        public MyException(""a""-""b"", new Exception())
+        public int ActiveMutation = 1;
+
+        public void Break()
         {
+            if(ActiveMutation == 1)
+            {
+                string someQuery = ""test"";
+                new Uri(new Uri(string.Empty), ""/API?"" - someQuery);
+            }
+            else
+            {
+                string someQuery = ""test"";
+                new System.Uri(new System.Uri(string.Empty), ""/API?"" + someQuery);
+            }
+            var error = ""a""-""b"":
         }
     }
 }");
+            var ifStatement = syntaxTree
+                .GetRoot()
+                .DescendantNodes()
+                .First(x => x is IfStatementSyntax);
+            var annotatedSyntaxTree = syntaxTree.GetRoot()
+                .ReplaceNode(
+                    ifStatement,
+                    ifStatement.WithAdditionalAnnotations(GetMutationIdMarker(1), _ifEngineMarker)
+                ).SyntaxTree;
 
             var compiler = CSharpCompilation.Create("TestCompilation",
-                syntaxTrees: new Collection<SyntaxTree>() { syntaxTree },
+                syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
                 options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
                 references: new List<PortableExecutableReference>() {
                     MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
@@ -871,10 +895,11 @@ namespace ExampleProject
             var target = new CSharpRollbackProcess();
 
             using var ms = new MemoryStream();
-            var compileResult = compiler.Emit(ms);
+            // first compilation will roll back the mutation
+            var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, false, false);
 
-            Should.NotThrow(() => target.Start(compiler, compileResult.Diagnostics, false, false));
-            Should.Throw<CompilationException>(() => target.Start(compiler, compileResult.Diagnostics, true, false));
+            // next attempt cannot roll back anything, so it assumes this is not fixable
+            Should.Throw<CompilationException>(() => target.Start(fixedCompilation.Compilation, fixedCompilation.Compilation.Emit(ms).Diagnostics, true, false));
         }
     }
 }

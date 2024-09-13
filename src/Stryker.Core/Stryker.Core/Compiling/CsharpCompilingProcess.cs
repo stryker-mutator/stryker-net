@@ -69,7 +69,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
         // If compiling failed and the error has no location, log and throw exception.
         if (!emitResult.Success && emitResult.Diagnostics.Any(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error))
         {
-            _logger.LogError("Failed to build the mutated assembly due to unrecoverable error: {0}",
+            _logger.LogError("Failed to build the mutated assembly due to unrecoverable error: {Error}",
                 emitResult.Diagnostics.First(diagnostic => diagnostic.Location == Location.None && diagnostic.Severity == DiagnosticSeverity.Error));
             DumpErrorDetails(emitResult.Diagnostics);
             throw new CompilationException("General Build Failure detected.");
@@ -136,7 +136,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
             }
             else
             {
-                _logger.LogError("Failed to generate source code for mutated assembly: {0}", diagnostic);
+                _logger.LogError("Failed to generate source code for mutated assembly: {Diagnostics}", diagnostic);
                 fail = true;
             }
         }
@@ -201,7 +201,7 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
                         null),
                     options: emitOptions);
             }
-#pragma warning disable S1696 // this catches an exception raised by the C# compiler 
+#pragma warning disable S1696 // this catches an exception raised by the C# compiler
             catch (NullReferenceException e)
             {
                 _logger.LogError("Roslyn C# compiler raised an NullReferenceException. This is a known Roslyn's issue that may be triggered by invalid usage of conditional access expression.");
@@ -234,8 +234,8 @@ public class CsharpCompilingProcess : ICSharpCompilingProcess
             }
             catch(Exception e)
             {
-                _logger.LogError(e, "Failed to compile {0}", st.FilePath);
-                _logger.LogTrace("source code:\n {0}", st.GetText());
+                _logger.LogError(e, "Failed to compile {FilePath}", st.FilePath);
+                _logger.LogTrace("source code:\n {Source}", st.GetText());
                 syntaxTrees = syntaxTrees.Where(x => x != st).Append(_rollbackProcess.CleanUpFile(st)).ToImmutableArray();
             }
         }

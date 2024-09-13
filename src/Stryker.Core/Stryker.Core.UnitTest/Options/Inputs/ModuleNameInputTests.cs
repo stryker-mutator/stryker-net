@@ -1,20 +1,21 @@
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class ModuleNameInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new ModuleNameInput();
             target.HelpText.ShouldBe(@"Module name used by reporters. Usually a project in your solution would be a module. | default: ''");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldHaveDefault()
         {
             var target = new ModuleNameInput { SuppliedInput = null };
@@ -24,7 +25,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBe(string.Empty);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldReturnName()
         {
             var target = new ModuleNameInput { SuppliedInput = "TestName" };
@@ -34,7 +35,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBe("TestName");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrowOnNull()
         {
             var target = new ModuleNameInput { SuppliedInput = string.Empty };

@@ -40,6 +40,9 @@ namespace Stryker.CLI
         [JsonPropertyName("solution")]
         public string Solution { get; init; }
 
+        [JsonPropertyName("configuration")]
+        public string Configuration { get; init; }
+
         [JsonPropertyName("target-framework")]
         public string TargetFramework { get; init; }
 

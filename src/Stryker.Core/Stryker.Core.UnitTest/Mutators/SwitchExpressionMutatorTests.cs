@@ -5,17 +5,18 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using Stryker.Core.Mutators;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
+    [TestClass]
     public class SwitchExpressionMutatorTests : TestBase
     {
-        [Theory]
-        [InlineData(">", new[] { SyntaxKind.LessThanToken, SyntaxKind.GreaterThanEqualsToken })]
-        [InlineData("<", new[] { SyntaxKind.GreaterThanToken, SyntaxKind.LessThanEqualsToken })]
-        [InlineData(">=", new[] { SyntaxKind.GreaterThanToken, SyntaxKind.LessThanToken })]
-        [InlineData("<=", new[] { SyntaxKind.GreaterThanToken, SyntaxKind.LessThanToken })]
+        [TestMethod]
+        [DataRow(">", new[] { SyntaxKind.LessThanToken, SyntaxKind.GreaterThanEqualsToken })]
+        [DataRow("<", new[] { SyntaxKind.GreaterThanToken, SyntaxKind.LessThanEqualsToken })]
+        [DataRow(">=", new[] { SyntaxKind.GreaterThanToken, SyntaxKind.LessThanToken })]
+        [DataRow("<=", new[] { SyntaxKind.GreaterThanToken, SyntaxKind.LessThanToken })]
         public void ShouldMutateRelationalPattern(string @operator, SyntaxKind[] mutated)
         {
             var target = new SwitchExpressionMutator();
@@ -37,9 +38,9 @@ namespace Stryker.Core.UnitTest.Mutators
                 .ShouldBe(mutated, true);
         }
 
-        [Theory]
-        [InlineData("and", new[] { SyntaxKind.OrPattern })]
-        [InlineData("or", new[] { SyntaxKind.AndPattern })]
+        [TestMethod]
+        [DataRow("and", new[] { SyntaxKind.OrPattern })]
+        [DataRow("or", new[] { SyntaxKind.AndPattern })]
         public void ShouldMutateLogicalPattern(string @operator, SyntaxKind[] mutated)
         {
             var target = new SwitchExpressionMutator();
@@ -61,8 +62,8 @@ namespace Stryker.Core.UnitTest.Mutators
                 .ShouldBe(mutated, true);
         }
 
-        [Theory]
-        [MemberData(nameof(GenerateNotSupportedPatterns))]
+        [TestMethod]
+        [DynamicData(nameof(GenerateNotSupportedPatterns))]
         public void ShouldNotMutateNotSupportedPatterns(SwitchExpressionSyntax expression)
         {
             var target = new SwitchExpressionMutator();
@@ -124,141 +125,144 @@ namespace TestApplication
             return switchExpression;
         }
 
-        public static IEnumerable<object[]> GenerateNotSupportedPatterns()
+        public static IEnumerable<object[]> GenerateNotSupportedPatterns
         {
-            SwitchExpressionSyntax GetExpressionFromTree(SyntaxTree tree)
+            get
             {
-                return tree.GetRoot()
-                    .DescendantNodes()
-                    .OfType<SwitchExpressionSyntax>()
-                    .Single();
+                SwitchExpressionSyntax GetExpressionFromTree(SyntaxTree tree)
+                {
+                    return tree.GetRoot()
+                        .DescendantNodes()
+                        .OfType<SwitchExpressionSyntax>()
+                        .Single();
+                }
+
+                yield return new[]
+                {
+                    GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
+                        using System;
+
+                        namespace TestApplication
+                        {{
+                            class Program
+                            {{
+                                static void Main(string[] args)
+                                {{
+                                    var a = 1 switch
+                                    {{
+                                        1 => 2
+                                    }};
+                                }}
+                            }}
+                        }}"
+                    ))
+                };
+
+                yield return new[]
+                {
+                    GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
+                        using System;
+
+                        namespace TestApplication
+                        {{
+                            class Program
+                            {{
+                                static void Main(string[] args)
+                                {{
+                                    var a = 1 switch
+                                    {{
+                                        _ => 2
+                                    }};
+                                }}
+                            }}
+                        }}"
+                    ))
+                };
+
+                yield return new[]
+                {
+                    GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
+                        using System;
+
+                        namespace TestApplication
+                        {{
+                            class Program
+                            {{
+                                static void Main(string[] args)
+                                {{
+                                    var a = 1 switch
+                                    {{
+                                        int b => 1
+                                    }};
+                                }}
+                            }}
+                        }}"
+                    ))
+                };
+
+                yield return new[]
+                {
+                    GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
+                        using System;
+
+                        namespace TestApplication
+                        {{
+                            class Program
+                            {{
+                                static void Main(string[] args)
+                                {{
+                                    var a = 1 switch
+                                    {{
+                                        int => 1
+                                    }};
+                                }}
+                            }}
+                        }}"
+                    ))
+                };
+
+                yield return new[]
+                {
+                    GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
+                        using System;
+
+                        namespace TestApplication
+                        {{
+                            class Program
+                            {{
+                                static void Main(string[] args)
+                                {{
+                                    var a = ""test"" switch
+                                    {{
+                                        {{ Length: 1 }} => 1
+                                    }};
+                                }}
+                            }}
+                        }}"
+                    ))
+                };
+
+                yield return new[]
+                {
+                    GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
+                        using System;
+
+                        namespace TestApplication
+                        {{
+                            class Program
+                            {{
+                                static void Main(string[] args)
+                                {{
+                                    var a = new[] {{ 1, 2 }} switch
+                                    {{
+                                        [1, _] => 1
+                                    }};
+                                }}
+                            }}
+                        }}"
+                    ))
+                };
             }
-
-            yield return new[]
-            {
-                GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
-                    using System;
-
-                    namespace TestApplication
-                    {{
-                        class Program
-                        {{
-                            static void Main(string[] args)
-                            {{
-                                var a = 1 switch
-                                {{
-                                    1 => 2
-                                }};
-                            }}
-                        }}
-                    }}"
-                ))
-            };
-
-            yield return new[]
-            {
-                GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
-                    using System;
-
-                    namespace TestApplication
-                    {{
-                        class Program
-                        {{
-                            static void Main(string[] args)
-                            {{
-                                var a = 1 switch
-                                {{
-                                    _ => 2
-                                }};
-                            }}
-                        }}
-                    }}"
-                ))
-            };
-
-            yield return new[]
-            {
-                GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
-                    using System;
-
-                    namespace TestApplication
-                    {{
-                        class Program
-                        {{
-                            static void Main(string[] args)
-                            {{
-                                var a = 1 switch
-                                {{
-                                    int b => 1
-                                }};
-                            }}
-                        }}
-                    }}"
-                ))
-            };
-
-            yield return new[]
-            {
-                GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
-                    using System;
-
-                    namespace TestApplication
-                    {{
-                        class Program
-                        {{
-                            static void Main(string[] args)
-                            {{
-                                var a = 1 switch
-                                {{
-                                    int => 1
-                                }};
-                            }}
-                        }}
-                    }}"
-                ))
-            };
-
-            yield return new[]
-            {
-                GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
-                    using System;
-
-                    namespace TestApplication
-                    {{
-                        class Program
-                        {{
-                            static void Main(string[] args)
-                            {{
-                                var a = ""test"" switch
-                                {{
-                                    {{ Length: 1 }} => 1
-                                }};
-                            }}
-                        }}
-                    }}"
-                ))
-            };
-
-            yield return new[]
-            {
-                GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
-                    using System;
-
-                    namespace TestApplication
-                    {{
-                        class Program
-                        {{
-                            static void Main(string[] args)
-                            {{
-                                var a = new[] {{ 1, 2 }} switch
-                                {{
-                                    [1, _] => 1
-                                }};
-                            }}
-                        }}
-                    }}"
-                ))
-            };
         }
     }
 }

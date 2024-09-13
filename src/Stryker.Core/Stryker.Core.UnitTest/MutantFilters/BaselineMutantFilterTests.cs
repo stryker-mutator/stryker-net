@@ -14,14 +14,15 @@ using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Json.SourceFiles;
 using Stryker.Core.UnitTest.Reporters.Json;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
+    [TestClass]
     public class BaselineMutantFilterTests : TestBase
     {
-        [Fact]
-        public static void ShouldHaveName()
+        [TestMethod]
+        public void ShouldHaveName()
         {
             // Arrange
             var gitInfoProvider = new Mock<IGitInfoProvider>(MockBehavior.Loose);
@@ -35,7 +36,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             target.DisplayName.ShouldBe("baseline filter");
         }
 
-        [Fact]
+        [TestMethod]
         public void GetBaseline_UsesBaselineFallbackVersion_WhenReportForCurrentVersionNotFound()
         {
             // Arrange
@@ -72,7 +73,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             baselineProvider.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [TestMethod]
         public void GetBaseline_UsesFallbackVersion_WhenBaselineFallbackVersionNotFound()
         {
             // Arrange
@@ -111,7 +112,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             baselineProvider.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [TestMethod]
         public void GetBaseline_UsesCurrentVersionReport_IfReportExists()
         {
             // Arrange
@@ -146,7 +147,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             baselineProvider.VerifyNoOtherCalls();
         }
 
-        [Fact]
+        [TestMethod]
         public void FilterMutantsReturnAllMutantsWhenCompareToDashboardEnabledAndBaselineNotAvailable()
         {
             // Arrange
@@ -177,7 +178,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             results.Count().ShouldBe(3);
         }
 
-        [Fact]
+        [TestMethod]
         public void FilterMutants_WhenMutantSourceCodeIsNull_MutantIsReturned()
         {
             // Arrange
@@ -229,7 +230,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             results.ShouldHaveSingleItem();
         }
 
-        [Fact]
+        [TestMethod]
         public void FilterMutants_WhenMutantMatchesSourceCode_StatusIsSetToJsonMutant()
         {
             // Arrange
@@ -292,7 +293,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             baselineMutantHelper.Verify();
         }
 
-        [Fact]
+        [TestMethod]
         public void FilterMutants_WhenMultipleMatchingMutants_ResultIsSetToNotRun()
         {
             // Arrange
@@ -365,7 +366,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             baselineMutantHelper.Verify();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldNotUpdateMutantsWithBaselineIfFileNotInBaseline()
         {
             // Arrange

@@ -1,13 +1,14 @@
 using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class AdditionalTimeoutMsInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new AdditionalTimeoutInput();
@@ -16,7 +17,7 @@ To prevent infinite loops Stryker cancels a testrun if it runs longer than the t
 If you experience a lot of timeouts you might need to increase the timeout value. | default: '5000'");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldAllowZero()
         {
             var target = new AdditionalTimeoutInput { SuppliedInput = 0 };
@@ -26,7 +27,7 @@ If you experience a lot of timeouts you might need to increase the timeout value
             result.ShouldBe(0);
         }
         
-        [Fact]
+        [TestMethod]
         public void ShouldHaveDefault()
         {
             var target = new AdditionalTimeoutInput { SuppliedInput = null };
@@ -36,7 +37,7 @@ If you experience a lot of timeouts you might need to increase the timeout value
             result.ShouldBe(5000);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldAllowMillion()
         {
             var target = new AdditionalTimeoutInput { SuppliedInput = 1000000 };
@@ -46,7 +47,7 @@ If you experience a lot of timeouts you might need to increase the timeout value
             result.ShouldBe(1000000);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldThrowAtNegative()
         {
             var target = new AdditionalTimeoutInput { SuppliedInput = -1 };

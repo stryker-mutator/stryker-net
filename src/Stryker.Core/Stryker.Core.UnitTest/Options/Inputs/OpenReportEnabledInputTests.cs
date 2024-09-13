@@ -1,27 +1,27 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
-using Xunit;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class OpenReportEnabledInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveNoHelpText()
         {
             var target = new OpenReportEnabledInput();
             target.HelpText.ShouldBe(@" | default: 'False'");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldSetToTrue()
         {
             var target = new OpenReportEnabledInput { SuppliedInput = true };
             target.Validate().ShouldBeTrue();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldSetToFalse()
         {
             var target = new OpenReportEnabledInput { SuppliedInput = false };

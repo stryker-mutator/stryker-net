@@ -3,20 +3,21 @@ using Shouldly;
 using Stryker.Core.Exceptions;
 using Stryker.Core.Options.Inputs;
 using Stryker.Core.Reporters;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class ReportersInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new ReportersInput();
             target.HelpText.ShouldBe("Reporters inform about various stages in the mutation testrun. | default: ['Progress', 'Html'] | allowed: All, Progress, Dots, ClearText, ClearTextTree, Json, Html, Dashboard, RealTimeDashboard, Markdown, Baseline");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldHaveDefault()
         {
             var target = new ReportersInput { SuppliedInput = null };
@@ -28,7 +29,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldContain(Reporter.Html);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldReturnReporter()
         {
             var target = new ReportersInput { SuppliedInput = new[] { "Html", } };
@@ -38,7 +39,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldHaveSingleItem().ShouldBe(Reporter.Html);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldReturnReporters()
         {
             var target = new ReportersInput { SuppliedInput = new[] {
@@ -65,7 +66,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldContain(Reporter.Dots);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldValidateReporters()
         {
             var target = new ReportersInput { SuppliedInput = new[] { "Gibberish", "Test" } };
@@ -75,7 +76,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             ex.Message.ShouldBe($"These reporter values are incorrect: Gibberish, Test.");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldEnableBaselineReporterWhenWithBaselineEnabled()
         {
             var target = new ReportersInput { SuppliedInput = null };

@@ -6,13 +6,14 @@ using Stryker.Core.Exceptions;
 using Stryker.Core.Mutators;
 using Stryker.Core.Options.Inputs;
 using Stryker.Core.UnitTest.Mutators;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
+    [TestClass]
     public class IgnoreMutationsInputTests : TestBase
     {
-        [Fact]
+        [TestMethod]
         public void ShouldHaveHelpText()
         {
             var target = new IgnoreMutationsInput();
@@ -20,17 +21,17 @@ namespace Stryker.Core.UnitTest.Options.Inputs
     This argument takes a json array as value. Example: ['string', 'logical'] | default: []");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldValidateExcludedMutation()
         {
             var target = new IgnoreMutationsInput { SuppliedInput = new[] { "gibberish" } };
 
             var ex = Should.Throw<InputException>(() => target.Validate<Mutator>());
 
-            ex.Message.ShouldBe($"Invalid excluded mutation (gibberish). The excluded mutations options are [Statement, Arithmetic, Block, Equality, Boolean, Logical, Assignment, Unary, Update, Checked, Linq, String, Bitwise, Initializer, Regex, NullCoalescing, Math]");
+            ex.Message.ShouldBe($"Invalid excluded mutation (gibberish). The excluded mutations options are [Statement, Arithmetic, Block, Equality, Boolean, Logical, Assignment, Unary, Update, Checked, Linq, String, Bitwise, Initializer, Regex, NullCoalescing, Math, StringMethod, Conditional]");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldHaveDefault()
         {
             var target = new IgnoreMutationsInput { SuppliedInput = new string[] { } };
@@ -40,7 +41,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldIgnoreMutatorWithOptions()
         {
             var target = new IgnoreMutationsInput { SuppliedInput = new string[] { "linq.Sum", "string.empty", "logical.equal" } };
@@ -50,7 +51,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             result.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldReturnMultipleMutators()
         {
             var target = new IgnoreMutationsInput { SuppliedInput = new[] {
@@ -71,7 +72,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
                     .Where(w => w != LinqExpression.None);
 
 
-        [Fact]
+        [TestMethod]
         public void ShouldReturnEmptyLinqExpressionsWithNonLinqOptions()
         {
             var target = new IgnoreMutationsInput { SuppliedInput = new[] { "gibberish" } };
@@ -80,10 +81,10 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         }
 
 
-        [Theory]
-        [InlineData("linq.nothing")]
-        [InlineData("linq.test")]
-        [InlineData("linq.first.default")]
+        [TestMethod]
+        [DataRow("linq.nothing")]
+        [DataRow("linq.test")]
+        [DataRow("linq.first.default")]
         public void ShouldValidateExcludedLinqExpression(string method)
         {
             var target = new IgnoreMutationsInput
@@ -96,7 +97,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             ex.Message.ShouldBe($"Invalid excluded linq expression ({string.Join(".", method.Split(".").Skip(1))}). The excluded linq expression options are [{string.Join(", ", AllLinqExpressions)}]");
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldHaveDefaultLinqExpressions()
         {
             var target = new IgnoreMutationsInput { SuppliedInput = new string[] { } };
@@ -106,7 +107,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             linqExpressions.ShouldBeEmpty();
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldReturnMultipleLinqExpressions()
         {
             var target = new IgnoreMutationsInput
@@ -124,7 +125,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             linqExpressions.Last().ShouldBe(LinqExpression.First);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldIgnoreIncorrectFormatWhenValidateLinqExpressions()
         {
             var target = new IgnoreMutationsInput
@@ -146,7 +147,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         /// <summary>
         /// This test is needed as other mutators also have "statement" in their name. It should pick the right mutator.
         /// </summary>
-        [Fact]
+        [TestMethod]
         public void ShouldIgnoreStatementMutator()
         {
             var target = new IgnoreMutationsInput
@@ -159,7 +160,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
             mutators.ShouldHaveSingleItem().ShouldBe(Mutator.Statement);
         }
 
-        [Fact]
+        [TestMethod]
         public void ShouldIgnoreBasedOnEitherDescription()
         {
             var targetWithFirstDescription = new IgnoreMutationsInput

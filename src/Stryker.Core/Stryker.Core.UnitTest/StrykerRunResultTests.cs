@@ -1,15 +1,16 @@
 using Shouldly;
 using Stryker.Core.Options;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest
 {
+    [TestClass]
     public class StrykerRunResultTests : TestBase
     {
-        [Theory]
-        [InlineData(1, 80)]
-        [InlineData(0.5, 50)]
-        [InlineData(0.1, 0)]
+        [TestMethod]
+        [DataRow(1, 80)]
+        [DataRow(0.5, 50)]
+        [DataRow(0.1, 0)]
         public void ScoreIsLowerThanThresholdBreak_ShouldReturnFalseWhen(double mutationScore, int thresholdBreak)
         {
             // Arrange
@@ -31,10 +32,10 @@ namespace Stryker.Core.UnitTest
             scoreIsLowerThanThresholdBreak.ShouldBeFalse("because the mutation score is higher than or equal to the threshold break");
         }
 
-        [Theory]
-        [InlineData(0.79, 80)]
-        [InlineData(0.4, 50)]
-        [InlineData(0, 1)]
+        [TestMethod]
+        [DataRow(0.79, 80)]
+        [DataRow(0.4, 50)]
+        [DataRow(0, 1)]
         public void ScoreIsLowerThanThresholdBreak_ShouldReturnTrueWhen(double mutationScore, int thresholdBreak)
         {
             // Arrange

@@ -9,10 +9,11 @@ using Stryker.Core.Mutants;
 using Stryker.Core.Options;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
-using Xunit;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
+    [TestClass]
     public class InitialTestProcessTests : TestBase
     {
         private readonly InitialTestProcess _target;
@@ -27,7 +28,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             };
         }
    
-        [Fact]
+        [TestMethod]
         public void InitialTestProcess_ShouldNotThrowIfAFewTestsFail()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);
@@ -51,7 +52,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             testRunnerMock.Verify(p => p.InitialTest(It.IsAny<IProjectAndTests>()), Times.Once);
         }
 
-        [Fact]
+        [TestMethod]
         public void InitialTestProcess_ShouldCalculateTestTimeout()
         {
             var testRunnerMock = new Mock<ITestRunner>(MockBehavior.Strict);

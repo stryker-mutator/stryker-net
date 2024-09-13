@@ -37,7 +37,7 @@ namespace Stryker.Core.Compiling
             var trees = ListModule.OfSeq(syntaxTrees.Reverse());
             var dependencies = ListModule.OfSeq(analyzerResult.References);
 
-            //we need a checker if we want to compile 
+            //we need a checker if we want to compile
             var checker = FSharpChecker.Create(
                 projectCacheSize: null,
                 keepAssemblyContents: null,
@@ -67,7 +67,7 @@ namespace Stryker.Core.Compiling
                     _fileSystem.File.Copy(pdbPath, pdbInjectionpath, true);
                 }
 
-                _logger.LogDebug("Injected the mutated assembly file into {0}", injectionPath);
+                _logger.LogDebug("Injected the mutated assembly file into {InjectionPath}", injectionPath);
             }
 
             //rollback still needs to be implemented
