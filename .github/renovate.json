@@ -51,11 +51,11 @@
   },
   "customManagers": [
     {
-      "fileMatch": ["^libman\\.json$"],
+      "fileMatch": ["(^|/)libman\\.json$"],
       "customType": "regex",
       "datasourceTemplate": "npm",
       "matchStrings": [
-        "\\\"library\\\":\\s\\\"(?<depName>.*?)@(?<currentValue>.*?)\\\""
+        "\\\"library\\\":\\s\\\"(?<packageName>.*?)@(?<currentValue>.*?)\\\""
       ]
     }
   ],
