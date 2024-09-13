@@ -28,9 +28,9 @@
       },
       "YamlDotNet": {
         "type": "Direct",
-        "requested": "[16.1.0, )",
-        "resolved": "16.1.0",
-        "contentHash": "ywYsFpZi0SKeQ+wrg1V7wZIz/ym0QJKN8IOPi06vYOgTMwHlQEr02BV5yC9IUXOBzD/pbYTuVflcObz2WdzSOw=="
+        "requested": "[16.1.2, )",
+        "resolved": "16.1.2",
+        "contentHash": "VHBamNzHIKqkdWgYrGk48mEos+lVDFHzJyk0JiFYydoViSiCNIdoDTL3kaqAh+exQ2m2ZgZQphBgaOngR1fYjg=="
       },
       "Azure.Core": {
         "type": "Transitive",
