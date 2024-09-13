@@ -21,6 +21,7 @@
       "automerge": true
     },
     {
+      "groupName": "roslyn",
       "matchPackageNames": [
         "Microsoft.CodeAnalysis",
         "Microsoft.CodeAnalysis.Common",
@@ -32,8 +33,7 @@
         "Microsoft.CodeAnalysis.Workspaces",
         "Microsoft.CodeAnalysis.Workspaces.Common",
         "Microsoft.CodeAnalysis.Workspaces.MSBuild"
-      ],
-      "groupName": "roslyn"
+      ]
     },
     {
       "matchDatasources": [
@@ -51,12 +51,15 @@
   },
   "customManagers": [
     {
+      "fileMatch": ["(^|/)libman\\.json$"],
       "customType": "regex",
-      "fileMatch": ["^libman\\.json$"],
+      "datasourceTemplate": "npm",
       "matchStrings": [
-        "\\\"library\\\":\\s\\\"(?<depName>.*?)@(?<currentValue>.*?)\\\""
-      ],
-      "datasourceTemplate": "npm"
+        "\\\"library\\\":\\s?\\\"(?<packageName>.*)@(?<currentValue>.*)\\\""
+      ]
     }
-  ]
+  ],
+  "npm": {
+    "enabled": false
+  }
 }
