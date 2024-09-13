@@ -1,11 +1,7 @@
 # top-most EditorConfig file
 root = true
 
-# Set default behavior to:
-#   UTF-8 encoding,
-#   a newline ending the file,
-#   4 space indentation,
-#   trimming of trailing whitespace
+# Generic
 [*]
 charset = utf-8
 insert_final_newline = true
@@ -77,7 +73,7 @@ csharp_preserve_single_line_statements = false
 
 # CSharp styling options
 # @see: https://docs.microsoft.com/en-us/dotnet/fundamentals/code-analysis/style-rules/language-rules#c-style-rules
-csharp_prefer_braces = false:when_multiline
+csharp_prefer_braces = true:suggestion
 csharp_prefer_simple_default_expression = true:suggestion
 csharp_preferred_modifier_order = public,private,protected,internal,static,extern,new,virtual,abstract,sealed,override,readonly,unsafe,volatile,async:suggestion
 
@@ -104,10 +100,44 @@ csharp_style_unused_value_expression_statement_preference = discard_variable:sug
 csharp_style_unused_value_assignment_preference = discard_variable:suggestion
 
 csharp_style_var_for_built_in_types = true:suggestion
-csharp_style_var_when_type_is_apparent = true:warning
+csharp_style_var_when_type_is_apparent = true:suggestion
 csharp_style_var_elsewhere = true:suggestion
 
 csharp_style_namespace_declarations = file_scoped:suggestion
+
+csharp_using_directive_placement = outside_namespace:silent
+csharp_prefer_simple_using_statement = true:suggestion
+csharp_style_prefer_method_group_conversion = true:suggestion
+csharp_style_prefer_top_level_statements = true:suggestion
+csharp_style_prefer_primary_constructors = true:suggestion
+csharp_style_expression_bodied_local_functions = false:suggestion
+csharp_style_prefer_null_check_over_type_check = true:suggestion
+csharp_style_prefer_index_operator = true:suggestion
+csharp_style_prefer_local_over_anonymous_function = true:suggestion
+csharp_style_implicit_object_creation_when_type_is_apparent = true:suggestion
+csharp_style_prefer_range_operator = true:suggestion
+csharp_style_prefer_tuple_swap = true:suggestion
+csharp_style_prefer_utf8_string_literals = true:suggestion
+csharp_style_prefer_readonly_struct_member = true:suggestion
+csharp_style_prefer_readonly_struct = true:suggestion
+csharp_prefer_static_anonymous_function = true:suggestion
+csharp_prefer_static_local_function = true:suggestion
+csharp_style_allow_blank_line_after_token_in_arrow_expression_clause_experimental = true:silent
+csharp_style_allow_blank_line_after_token_in_conditional_expression_experimental = true:silent
+csharp_style_allow_blank_line_after_colon_in_constructor_initializer_experimental = true:silent
+csharp_style_allow_blank_lines_between_consecutive_braces_experimental = true:silent
+csharp_style_allow_embedded_statements_on_same_line_experimental = true:silent
+csharp_style_prefer_pattern_matching = true:suggestion
+csharp_style_prefer_switch_expression = true:suggestion
+csharp_style_prefer_extended_property_pattern = true:suggestion
+csharp_style_prefer_not_pattern = true:suggestion
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_else = true
+csharp_new_line_before_catch = true
+csharp_new_line_before_finally = true
+csharp_new_line_before_members_in_object_initializers = true
+csharp_new_line_before_members_in_anonymous_types = true
+csharp_new_line_between_query_expression_clauses = true
 
 # Default naming styles
 dotnet_naming_rule.async_members_should_be_pascal_case_suffixed_with_async.severity = suggestion
@@ -127,17 +157,16 @@ dotnet_naming_rule.parameters_should_be_camel_case.style = camel_case
 dotnet_naming_rule.parameters_should_be_camel_case.symbols = parameters
 
 dotnet_naming_rule.private_and_internal_static_fields_should_be_camel_case.severity = suggestion
-dotnet_naming_rule.private_and_internal_static_fields_should_be_camel_case.style = camel_case
+dotnet_naming_rule.private_and_internal_static_fields_should_be_camel_case.style = prefix_underscore
 dotnet_naming_rule.private_and_internal_static_fields_should_be_camel_case.symbols = private_and_internal_static_fields
 
 dotnet_naming_rule.private_and_internal_fields_should_be_camel_case.severity = suggestion
-dotnet_naming_rule.private_and_internal_fields_should_be_camel_case.style = camel_case
+dotnet_naming_rule.private_and_internal_fields_should_be_camel_case.style = prefix_underscore
 dotnet_naming_rule.private_and_internal_fields_should_be_camel_case.symbols = private_and_internal_fields
 
 dotnet_naming_rule.public_and_protected_declarations_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.public_and_protected_declarations_should_be_pascal_case.style = pascal_case
 dotnet_naming_rule.public_and_protected_declarations_should_be_pascal_case.symbols = public_and_protected_declarations
-dotnet_naming_symbols.public_and_protected_declarations.applicable_kinds = method, field, event, property
 
 dotnet_naming_rule.static_readonly_declarations_should_be_pascal_case.severity = suggestion
 dotnet_naming_rule.static_readonly_declarations_should_be_pascal_case.style = pascal_case
@@ -169,6 +198,9 @@ dotnet_naming_symbols.interfaces.applicable_kinds = interface
 
 dotnet_naming_symbols.parameters.applicable_kinds = parameter
 
+dotnet_naming_symbols.public_and_protected_declarations.applicable_accessibilities = public, protected
+dotnet_naming_symbols.public_and_protected_declarations.applicable_kinds = method, field, event, property
+
 dotnet_naming_symbols.private_and_internal_fields.applicable_accessibilities = private, internal
 dotnet_naming_symbols.private_and_internal_fields.applicable_kinds = field
 
@@ -176,7 +208,6 @@ dotnet_naming_symbols.private_and_internal_static_fields.applicable_accessibilit
 dotnet_naming_symbols.private_and_internal_static_fields.applicable_kinds = field
 dotnet_naming_symbols.private_and_internal_static_fields.required_modifiers = static
 
-dotnet_naming_symbols.public_and_protected_declarations.applicable_accessibilities = public, protected
 
 dotnet_naming_symbols.static_readonly_declarations.required_modifiers = static, readonly
 
@@ -184,7 +215,7 @@ dotnet_naming_symbols.type_parameters.applicable_kinds = type_parameter
 
 # Private members are camelCase and start with _
 dotnet_naming_rule.private_members_with_underscore.symbols  = private_members
-dotnet_naming_rule.private_members_with_underscore.style    = prefix_underscore
+dotnet_naming_rule.private_members_with_underscore.style = prefix_underscore
 dotnet_naming_rule.private_members_with_underscore.severity = suggestion
 
 dotnet_naming_symbols.private_members.applicable_kinds           = field
@@ -212,8 +243,10 @@ dotnet_style_parentheses_in_relational_binary_operators = always_for_clarity:sug
 dotnet_style_predefined_type_for_locals_parameters_members = true:warning
 dotnet_style_predefined_type_for_member_access = true:suggestion
 
+dotnet_style_prefer_simplified_interpolation = true:suggestion
 dotnet_style_prefer_auto_properties = true:suggestion
 dotnet_style_prefer_compound_assignment = true:suggestion
+dotnet_style_prefer_simplified_boolean_expressions = true:suggestion
 dotnet_style_prefer_conditional_expression_over_assignment = false:suggestion
 dotnet_style_prefer_conditional_expression_over_return = false:suggestion
 dotnet_style_prefer_inferred_anonymous_type_member_names = true:suggestion
@@ -229,3 +262,8 @@ dotnet_style_readonly_field = true:suggestion
 dotnet_style_require_accessibility_modifiers = for_non_interface_members:suggestion
 
 dotnet_code_quality_unused_parameters = all:suggestion
+
+dotnet_style_operator_placement_when_wrapping = beginning_of_line
+
+dotnet_style_namespace_match_folder = true:suggestion
+dotnet_style_prefer_collection_expression = when_types_loosely_match:suggestion
