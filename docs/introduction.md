@@ -10,7 +10,7 @@ Welcome to the documentation for Stryker for .NET. Also known as Stryker.NET or 
 
 Stryker.NET offers you mutation testing for your .NET Core and .NET Framework projects. It allows you to test your tests by temporarily inserting bugs. Stryker.NET is installed using NuGet.
 
-New to Stryker.NET? Begin with our guide on [getting started](https://stryker-mutator.io/docs/stryker-net/Getting-started)
+New to Stryker.NET? Begin with our guide on [getting started](https://stryker-mutator.io/docs/stryker-net/getting-started/)
 
 # Background
 
