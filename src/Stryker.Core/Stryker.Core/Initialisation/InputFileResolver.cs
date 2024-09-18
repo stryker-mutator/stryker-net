@@ -40,7 +40,6 @@ public class InputFileResolver : IInputFileResolver
 
     private readonly INugetRestoreProcess _nugetRestoreProcess;
 
-
     private readonly StringWriter _buildalyzerLog = new();
 
     public InputFileResolver(IFileSystem fileSystem,
@@ -256,7 +255,7 @@ public class InputFileResolver : IInputFileResolver
                 Restore = true
             };
             // retry the analysis
-            buildResult = project.Build([options.TargetFramework], buildOptions);
+            buildResult = project.Build(buildOptions);
 
             // check the new status
             buildResultOverallSuccess = Array.TrueForAll(project.ProjectFile.TargetFrameworks,tf =>
