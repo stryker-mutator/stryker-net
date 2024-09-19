@@ -104,18 +104,31 @@ public static class IAnalyzerResultExtensions
 
     public static IEnumerable<MetadataReference> LoadReferences(this IAnalyzerResult analyzerResult)
     {
+        // https://github.com/dotnet/roslyn/blob/a182892bf997a457cfcdbece5352e1a139eb2a12/src/Compilers/CSharp/Portable/CommandLine/CSharpCommandLineParser.cs#L1908
+        // https://github.com/dotnet/roslyn/commit/bc3a4be334f029911b2e47dd1f0a92016361c9a6
+        var relevantArgs = analyzerResult.CompilerArguments.Where(a => a.StartsWith("/reference:") || a.StartsWith("/r:")).ToArray();
         foreach (var reference in analyzerResult.References)
         {
-            if (reference.Contains('='))
+            var refCopy = reference;
+            foreach (var argument in relevantArgs)
+            {
+                if ((argument.EndsWith(reference) || argument.EndsWith($"{reference}\"")) && argument.Contains('='))
+                {
+                    refCopy = argument.Substring(argument.IndexOf(':')).Trim('"');
+                    break;
+                }
+            }
+
+            if (refCopy.Contains('='))
             {
                 // we have an alias
-                var split = reference.Split('=');
+                var split = refCopy.Split('=');
                 var aliases = split[0].Split(',');
-                yield return MetadataReference.CreateFromFile(split[1]).WithAliases(aliases);
+                yield return MetadataReference.CreateFromFile(split[1].TrimStart('"')).WithAliases(aliases);
             }
             else
             {
-                yield return MetadataReference.CreateFromFile(reference);
+                yield return MetadataReference.CreateFromFile(refCopy);
             }
         }
     }
