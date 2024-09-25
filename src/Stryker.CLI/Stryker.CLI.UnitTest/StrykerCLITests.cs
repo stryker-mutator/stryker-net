@@ -1,5 +1,4 @@
 using System;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -41,7 +40,6 @@ public class StrykerCLITests
             .Returns(_runResults)
             .Verifiable();
         _nugetClientMock.Setup(x => x.GetLatestVersionAsync()).Returns(Task.FromResult(new SemanticVersion(10, 0, 0)));
-        _nugetClientMock.Setup(x => x.GetPreviewVersionAsync()).Returns(Task.FromResult(new SemanticVersion(20, 0, 0)));
         _target = new StrykerCli(_strykerRunnerMock.Object, null, _loggingInitializerMock.Object, _nugetClientMock.Object);
     }
 
@@ -86,6 +84,28 @@ Options:";
 
         consoleOutput.ShouldContain("Version:");
         consoleOutput.ShouldContain(@"A new version of Stryker.NET (10.0.0) is available. Please consider upgrading using `dotnet tool update -g dotnet-stryker`");
+
+        _nugetClientMock.Verify(x => x.GetLatestVersionAsync(), Times.Once);
+    }
+
+    [TestMethod]
+    public void ShouldCallNugetClient()
+    {
+        _target.Run([]);
+
+        _nugetClientMock.Verify(x => x.GetLatestVersionAsync(), Times.Once);
+        _nugetClientMock.VerifyNoOtherCalls();
+    }
+
+    [TestMethod]
+    public void OnAlreadyNewestVersion_ShouldCallNugetClientForPreview()
+    {
+        _nugetClientMock.Setup(x => x.GetLatestVersionAsync()).Returns(Task.FromResult(new SemanticVersion(0, 0, 0)));
+        _nugetClientMock.Setup(x => x.GetPreviewVersionAsync()).Returns(Task.FromResult(new SemanticVersion(20, 0, 0)));
+
+        _target.Run([]);
+
+        _nugetClientMock.VerifyAll();
     }
 
     [TestMethod]
@@ -454,5 +474,17 @@ Options:";
         _strykerRunnerMock.VerifyAll();
 
         _inputs.TargetFrameworkInput.SuppliedInput.ShouldBe("net7.0");
+    }
+
+    [TestMethod]
+    [DataRow("--skip-version-check")]
+    public void ShouldSupplyDisableCheckForNewerVersion(params string[] argName)
+    {
+        _target.Run(argName);
+
+        _strykerRunnerMock.VerifyAll();
+
+        _inputs.SkipVersionCheckInput.SuppliedInput.ShouldBe(true);
+        _nugetClientMock.VerifyNoOtherCalls();
     }
 }

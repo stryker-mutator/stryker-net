@@ -194,6 +194,7 @@ namespace Stryker.CLI.CommandLineConfig
             // Category: Misc
             AddCliInput(inputs.BreakOnInitialTestFailureInput, "break-on-initial-test-failure", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
             AddCliInput(inputs.DevModeInput, "dev-mode", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
+            AddCliInput(inputs.SkipVersionCheckInput, "skip-version-check", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
         }
 
         private void RegisterCliInput(CommandLineApplication app, CliInput option)

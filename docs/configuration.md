@@ -683,3 +683,12 @@ Command line: `--break-on-initial-test-failure`
 Config file: `break-on-initial-test-failure`
 
 Instruct Stryker to break execution when at least one test failed on initial test run.
+
+### `skip-version-check` &lt;`flag`&gt;
+
+Default: `false`  
+Command line: `--dev-mode`  
+Config file: `N/A`
+
+This flag disables the automatic version check for Stryker updates when running the tool.
+Use this option if you want to prevent Stryker from checking for newer versions, such as in environments with restricted internet access or where update checking is unnecessary.

@@ -119,7 +119,7 @@ namespace Stryker.CLI
                 _configReader.Build(inputs, args, app, cmdConfigReader);
                 _loggingInitializer.SetupLogOptions(inputs);
 
-                PrintStrykerVersionInformationAsync();
+                PrintStrykerVersionInformationAsync(inputs);
                 RunStryker(inputs);
                 return ExitCode;
             });
@@ -195,7 +195,7 @@ namespace Stryker.CLI
         }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Bug", "S3168:\"async\" methods should not return \"void\"", Justification = "This method is fire and forget. Task.Run also doesn't work in unit tests")]
-        private async void PrintStrykerVersionInformationAsync()
+        private async void PrintStrykerVersionInformationAsync(IStrykerInputs inputs)
         {
             var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCli>();
             var assembly = Assembly.GetExecutingAssembly();
@@ -217,6 +217,11 @@ namespace Stryker.CLI
             _console.MarkupLine($"Version: [Green]{currentVersion}[/]");
             logger.LogDebug("Stryker starting, version: {Version}", currentVersion);
             _console.WriteLine();
+
+            if (inputs.SkipVersionCheckInput.Validate())
+            {
+                return;
+            }
 
             var latestVersion = await _nugetClient.GetLatestVersionAsync();
             if (latestVersion > currentVersion)

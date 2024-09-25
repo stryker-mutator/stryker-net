@@ -200,6 +200,7 @@ namespace Stryker.CLI.UnitTest
             inputs.Setup(x => x.DashboardApiKeyInput).Returns(new DashboardApiKeyInput());
             inputs.Setup(x => x.AzureFileStorageSasInput).Returns(new AzureFileStorageSasInput());
             inputs.Setup(x => x.DevModeInput).Returns(new DevModeInput());
+            inputs.Setup(x => x.SkipVersionCheckInput).Returns(new SkipVersionCheck());
 
             inputs.Setup(x => x.SinceInput).Returns(new SinceInput());
             inputs.Setup(x => x.BaselineProviderInput).Returns(new BaselineProviderInput());
