@@ -131,6 +131,7 @@ public class BuildAnalyzerTestsBase : TestBase
         sourceProjectAnalyzerMock.Setup(x => x.Build(It.IsAny<string[]>())).Returns(sourceProjectAnalyzerResultsMock);
         sourceProjectAnalyzerMock.Setup(x => x.Build(It.IsAny<string[]>(), It.IsAny<EnvironmentOptions>())).Returns(sourceProjectAnalyzerResultsMock);
         sourceProjectAnalyzerMock.Setup(x => x.Build(It.IsAny<EnvironmentOptions>())).Returns(sourceProjectAnalyzerResultsMock);
+        sourceProjectAnalyzerMock.Setup(x => x.Build()).Returns(sourceProjectAnalyzerResultsMock);
 
         sourceProjectAnalyzerMock.Setup(x => x.ProjectFile).Returns(sourceProjectFileMock.Object);
         sourceProjectAnalyzerMock.Setup(x => x.EnvironmentFactory).Returns<EnvironmentFactory>(null);
