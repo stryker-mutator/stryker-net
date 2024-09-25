@@ -160,29 +160,9 @@ public class InputFileResolver : IInputFileResolver
                     new ParallelOptions
                         { MaxDegreeOfParallelism = options.DevMode ? 1 : Math.Max(options.Concurrency, 1) }, entry =>
                     {
-                        var project = manager.GetProject(entry.projectFile);
-                        IEnumerable<IAnalyzerResult> buildResult = AnalyzeSingleProject(project, entry.framework, options);
-                        if (!buildResult.Any())
-                        {
-                            // analysis failed
-                            return;
-                        }
-                        var isTestProject = buildResult.IsTestProject();
-                        if (isTestProject)
-                        {
-                            var keep = SelectAnalyzerResult(buildResult, entry.framework);
-                            buildResult = new List<IAnalyzerResult>{keep};
-                        }
-                        var referencesToAdd = ScanReferences(mode, buildResult);
+                        var buildResult = GetProjectAndAddIt(options, manager, entry, normalizedProjectUnderTestNameFilter, mutableProjectsAnalyzerResults);
 
-                        if (isTestProject || normalizedProjectUnderTestNameFilter == null ||
-                            project.ProjectFile.Path.Replace('\\', '/')
-                                .Contains(normalizedProjectUnderTestNameFilter, StringComparison.InvariantCultureIgnoreCase))
-                        {
-                            mutableProjectsAnalyzerResults.Add((buildResult, isTestProject));
-                        }
-
-                        foreach (var reference in referencesToAdd)
+                        foreach (var reference in ScanReferences(mode, buildResult))
                         {
                             list.Add((reference, null));
                         }
@@ -195,6 +175,36 @@ public class InputFileResolver : IInputFileResolver
         }
 
         return mutableProjectsAnalyzerResults;
+    }
+
+    private IEnumerable<IAnalyzerResult> GetProjectAndAddIt(StrykerOptions options, IAnalyzerManager manager,
+        (string projectFile, string framework) entry, string normalizedProjectUnderTestNameFilter,
+        ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)> mutableProjectsAnalyzerResults)
+    {
+        var project = manager.GetProject(entry.projectFile);
+        IEnumerable<IAnalyzerResult> buildResult = AnalyzeSingleProject(project, options);
+        if (!buildResult.Any())
+        {
+            // analysis failed
+            return buildResult;
+        }
+        var isTestProject = buildResult.IsTestProject();
+        if (isTestProject)
+        {
+            buildResult = new List<IAnalyzerResult>
+            {
+                SelectAnalyzerResult(buildResult, entry.framework)
+            };
+        }
+
+        if (isTestProject || normalizedProjectUnderTestNameFilter == null ||
+            project.ProjectFile.Path.Replace('\\', '/')
+                .Contains(normalizedProjectUnderTestNameFilter, StringComparison.InvariantCultureIgnoreCase))
+        {
+            mutableProjectsAnalyzerResults.Add((buildResult, isTestProject));
+        }
+
+        return buildResult;
     }
 
     /// <summary>
@@ -229,7 +239,7 @@ public class InputFileResolver : IInputFileResolver
         return referencesToAdd;
     }
 
-    private IAnalyzerResults AnalyzeSingleProject(IProjectAnalyzer project, string targetFramework, StrykerOptions options)
+    private IAnalyzerResults AnalyzeSingleProject(IProjectAnalyzer project, StrykerOptions options)
     {
         if (options.DevMode)
         {
@@ -313,12 +323,12 @@ public class InputFileResolver : IInputFileResolver
             {
                 log.AppendLine($"Property {property}={properties.GetValueOrDefault(property)??"\"'undefined'\""}");
             }
-            foreach (var sourceFile in analyzerResult.SourceFiles ?? Enumerable.Empty<string>())
+            foreach (var sourceFile in analyzerResult.SourceFiles)
             {
                 log.AppendLine($"SourceFile {sourceFile}");
             }
 
-            foreach (var reference in analyzerResult.References ?? Enumerable.Empty<string>())
+            foreach (var reference in analyzerResult.References)
             {
                 log.AppendLine($"References: {Path.GetFileName(reference)} (in {Path.GetDirectoryName(reference)})");
             }
@@ -336,7 +346,7 @@ public class InputFileResolver : IInputFileResolver
 
     public IAnalyzerResult SelectAnalyzerResult(IEnumerable<IAnalyzerResult> analyzerResults, string targetFramework)
     {
-        var validResults = analyzerResults.Where(a => a.TargetFramework is not null).ToList();
+        var validResults = analyzerResults.ToList();
         var projectName = analyzerResults.First().ProjectFilePath;
         if (validResults.Count == 0)
         {
@@ -383,7 +393,7 @@ public class InputFileResolver : IInputFileResolver
     }
 
     // checks if an analyzer result is valid
-    private static bool IsValid(IAnalyzerResult br) => br.Succeeded || (br.SourceFiles.Length > 0 && br.References.Length > 0 && br.TargetFramework !=null);
+    private static bool IsValid(IAnalyzerResult br) => br.Succeeded || (br.SourceFiles.Length > 0 && br.References.Length > 0);
 
     private static Dictionary<IAnalyzerResult, List<IAnalyzerResult>> FindMutableAnalyzerResults(ConcurrentBag<(IEnumerable<IAnalyzerResult> result, bool isTest)> mutableProjectsAnalyzerResults)
     {
