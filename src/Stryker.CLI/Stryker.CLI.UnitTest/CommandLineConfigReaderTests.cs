@@ -25,7 +25,9 @@ namespace Stryker.CLI.UnitTest
         [TestMethod]
         public void ShouldHandleNoValue()
         {
-            _target.ReadCommandLineConfig(new[] { "--dev-mode" }, _app, _inputs);
+            var selectedCommand = _app.Parse(new[] { "--dev-mode" }).SelectedCommand;
+
+            _target.ReadCommandLineConfig(selectedCommand, _inputs);
 
             _inputs.DevModeInput.SuppliedInput.ShouldBe(true);
         }
@@ -33,7 +35,9 @@ namespace Stryker.CLI.UnitTest
         [TestMethod]
         public void ShouldHandleSingleValue()
         {
-            _target.ReadCommandLineConfig(new[] { "--concurrency 4" }, _app, _inputs);
+            var selectedCommand = _app.Parse(new[] { "--concurrency 4" }).SelectedCommand;
+
+            _target.ReadCommandLineConfig(selectedCommand, _inputs);
 
             _inputs.ConcurrencyInput.SuppliedInput.ShouldBe(4);
         }
@@ -41,7 +45,9 @@ namespace Stryker.CLI.UnitTest
         [TestMethod]
         public void ShouldHandleSingleOrNoValueWithNoValue()
         {
-            _target.ReadCommandLineConfig(new[] { "--since" }, _app, _inputs);
+            var selectedCommand = _app.Parse(new[] { "--since" }).SelectedCommand;
+
+            _target.ReadCommandLineConfig(selectedCommand, _inputs);
 
             _inputs.SinceInput.SuppliedInput.ShouldBe(true);
             _inputs.SinceTargetInput.SuppliedInput.ShouldBe(null);
@@ -50,7 +56,9 @@ namespace Stryker.CLI.UnitTest
         [TestMethod]
         public void ShouldHandleSingleOrNoValueWithValue()
         {
-            _target.ReadCommandLineConfig(new[] { "--since:test" }, _app, _inputs);
+            var selectedCommand = _app.Parse(new[] { "--since:test" }).SelectedCommand;
+
+            _target.ReadCommandLineConfig(selectedCommand, _inputs);
 
             _inputs.SinceInput.SuppliedInput.ShouldBe(true);
             _inputs.SinceTargetInput.SuppliedInput.ShouldBe("test");
@@ -59,7 +67,9 @@ namespace Stryker.CLI.UnitTest
         [TestMethod]
         public void ShouldHandleMultiValue()
         {
-            _target.ReadCommandLineConfig(new[] { "--reporter test", "--reporter test2" }, _app, _inputs);
+            var selectedCommand = _app.Parse(new[] { "--reporter test", "--reporter test2" }).SelectedCommand;
+
+            _target.ReadCommandLineConfig(selectedCommand, _inputs);
 
             _inputs.ReportersInput.SuppliedInput.Count().ShouldBe(2);
             _inputs.ReportersInput.SuppliedInput.First().ShouldBe("test");

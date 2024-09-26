@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using LibGit2Sharp;
 using McMaster.Extensions.CommandLineUtils;
 using Spectre.Console;
 using Stryker.Core.Exceptions;
@@ -14,10 +15,12 @@ namespace Stryker.CLI.CommandLineConfig
     {
         private readonly IDictionary<string, CliInput> _cliInputs = new Dictionary<string, CliInput>();
         private readonly CliInput _configFileInput;
+        private readonly CliInput _skipVersionCheckInput;
         private readonly IAnsiConsole _console;
 
         public CommandLineConfigReader(IAnsiConsole console = null) {
             _configFileInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. Supports json and yaml formats. | default: stryker-config.json", argumentHint: "relative-path");
+            _skipVersionCheckInput = AddCliOnlyInput("skip-version-check", null, "Skips the check for updated versions of Stryker.", CommandOptionType.NoValue);
             _console = console ?? AnsiConsole.Console;
         }
 
@@ -39,7 +42,7 @@ namespace Stryker.CLI.CommandLineConfig
                     _console.WriteLine($"Initializing new config file.");
                     _console.WriteLine();
 
-                    ReadCommandLineConfig(args[1..], initCommandApp, inputs);
+                    ReadCommandLineConfig(initCommandApp, inputs);
                     var configOption = initCommandApp.Options.SingleOrDefault(o => o.LongName == _configFileInput.ArgumentName);
                     var basePath = fileSystem.Directory.GetCurrentDirectory();
                     var configFilePath = Path.Combine(basePath, configOption?.Value() ?? "stryker-config.json");
@@ -68,31 +71,38 @@ namespace Stryker.CLI.CommandLineConfig
             });
         }
 
-        public CommandOption GetConfigFileOption(string[] args, CommandLineApplication app)
+        public string? GetConfigFileOption(CommandLineApplication selectedCommand)
         {
-            var commands = app.Parse(args);
-            return commands.SelectedCommand.Options.SingleOrDefault(o => o.LongName == _configFileInput.ArgumentName);
+            return selectedCommand.Options.SingleOrDefault(o => o.LongName == _configFileInput.ArgumentName)?.Value();
         }
 
-        public void ReadCommandLineConfig(string[] args, CommandLineApplication app, IStrykerInputs inputs)
+        public bool ShouldSkipVersionCheck(CommandLineApplication selectedCommand)
         {
-            foreach (var cliInput in app.Parse(args).SelectedCommand.Options.Where(option => option.HasValue()))
+            return selectedCommand.Options.SingleOrDefault(o => o.LongName == _skipVersionCheckInput.ArgumentName)?.HasValue() ?? false;
+        }
+
+        public void ReadCommandLineConfig(CommandLineApplication selectedCommand, IStrykerInputs inputs)
+        {
+            foreach (var cliInput in selectedCommand.Options.Where(option => option.HasValue()))
             {
                 var strykerInput = GetStrykerInput(cliInput);
 
-                switch (cliInput.OptionType)
+                if (strykerInput != null)
                 {
-                    case CommandOptionType.NoValue:
-                        HandleNoValue((IInput<bool?>)strykerInput);
-                        break;
+                    switch (cliInput.OptionType)
+                    {
+                        case CommandOptionType.NoValue:
+                            HandleNoValue((IInput<bool?>)strykerInput);
+                            break;
 
-                    case CommandOptionType.MultipleValue:
-                        HandleMultiValue(cliInput, (IInput<IEnumerable<string>>)strykerInput);
-                        break;
+                        case CommandOptionType.MultipleValue:
+                            HandleMultiValue(cliInput, (IInput<IEnumerable<string>>)strykerInput);
+                            break;
 
-                    case CommandOptionType.SingleOrNoValue:
-                        HandleSingleOrNoValue(strykerInput, cliInput, inputs);
-                        break;
+                        case CommandOptionType.SingleOrNoValue:
+                            HandleSingleOrNoValue(strykerInput, cliInput, inputs);
+                            break;
+                    }
                 }
 
                 switch (strykerInput)
