@@ -15,9 +15,12 @@ namespace Stryker.CLI.CommandLineConfig
         private readonly IDictionary<string, CliInput> _cliInputs = new Dictionary<string, CliInput>();
         private readonly CliInput _configFileInput;
         private readonly IAnsiConsole _console;
+        private readonly SkipVersionCheck _skipVersionCheckInput = new();
+        public bool SkipVersionCheck => _skipVersionCheckInput.Validate();
 
         public CommandLineConfigReader(IAnsiConsole console = null) {
             _configFileInput = AddCliOnlyInput("config-file", "f", "Choose the file containing your stryker configuration relative to current working directory. Supports json and yaml formats. | default: stryker-config.json", argumentHint: "relative-path");
+            AddCliInput(_skipVersionCheckInput, "skip-version-check", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
             _console = console ?? AnsiConsole.Console;
         }
 
@@ -194,7 +197,6 @@ namespace Stryker.CLI.CommandLineConfig
             // Category: Misc
             AddCliInput(inputs.BreakOnInitialTestFailureInput, "break-on-initial-test-failure", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
             AddCliInput(inputs.DevModeInput, "dev-mode", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
-            AddCliInput(inputs.SkipVersionCheckInput, "skip-version-check", null, optionType: CommandOptionType.NoValue, category: InputCategory.Misc);
         }
 
         private void RegisterCliInput(CommandLineApplication app, CliInput option)

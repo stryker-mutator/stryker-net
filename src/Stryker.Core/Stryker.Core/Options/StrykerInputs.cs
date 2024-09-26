@@ -18,7 +18,6 @@ namespace Stryker.Core.Options
         DashboardApiKeyInput DashboardApiKeyInput { get; init; }
         DashboardUrlInput DashboardUrlInput { get; init; }
         DevModeInput DevModeInput { get; init; }
-        SkipVersionCheck SkipVersionCheckInput { get; init; }
         DiffIgnoreChangesInput DiffIgnoreChangesInput { get; init; }
         DisableBailInput DisableBailInput { get; set; }
         DisableMixMutantsInput DisableMixMutantsInput { get; set; }
@@ -66,7 +65,6 @@ namespace Stryker.Core.Options
         }
 
         public DevModeInput DevModeInput { get; init; } = new();
-        public SkipVersionCheck SkipVersionCheckInput { get; init; } = new();
         public BasePathInput BasePathInput { get; init; } = new();
         public OutputPathInput OutputPathInput { get; init; } = new();
         public ReportFileNameInput ReportFileNameInput { get; init; } = new();

@@ -484,7 +484,6 @@ Options:";
 
         _strykerRunnerMock.VerifyAll();
 
-        _inputs.SkipVersionCheckInput.SuppliedInput.ShouldBe(true);
         _nugetClientMock.VerifyNoOtherCalls();
     }
 }
