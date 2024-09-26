@@ -3,6 +3,7 @@ using LibGit2Sharp;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
+using Serilog.Sinks.SystemConsole.Themes;
 using LibGitLogLevel = LibGit2Sharp.LogLevel;
 using MSLogLevel = Microsoft.Extensions.Logging.LogLevel;
 
@@ -14,7 +15,7 @@ namespace Stryker.CLI.Logging
 
         public static void ConfigureLogger(LogEventLevel logLevel, bool logToFile, bool traceToFile, string outputPath)
         {
-            LoggerFactory.AddSerilog(new LoggerConfiguration().MinimumLevel.Is(logLevel).Enrich.FromLogContext().WriteTo.Console().CreateLogger());
+            LoggerFactory.AddSerilog(new LoggerConfiguration().MinimumLevel.Is(logLevel).Enrich.FromLogContext().WriteTo.Console(theme: AnsiConsoleTheme.Sixteen).CreateLogger());
 
             if (logToFile)
             {
