@@ -15,7 +15,7 @@ namespace Stryker.CLI.CommandLineConfig
         private readonly IDictionary<string, CliInput> _cliInputs = new Dictionary<string, CliInput>();
         private readonly CliInput _configFileInput;
         private readonly IAnsiConsole _console;
-        private readonly SkipVersionCheck _skipVersionCheckInput = new();
+        private readonly SkipVersionCheckInput _skipVersionCheckInput = new();
         public bool SkipVersionCheck => _skipVersionCheckInput.Validate();
 
         public CommandLineConfigReader(IAnsiConsole console = null) {
@@ -249,6 +249,18 @@ namespace Stryker.CLI.CommandLineConfig
             };
 
             _cliInputs[argumentName] = cliOption;
+        }
+
+        private class SkipVersionCheckInput : Input<bool?>
+        {
+            public override bool? Default => false;
+
+            protected override string Description => @"Skips check for newer version.";
+
+            public bool Validate()
+            {
+                return SuppliedInput ?? false;
+            }
         }
     }
 
