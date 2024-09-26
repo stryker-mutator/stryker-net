@@ -65,9 +65,7 @@
 
   <!--This avoids conflict with System.Text.RegularExpression-->
   <ItemGroup>
-    <PackageReference Include="Stryker.Regex.Parser">
-      <Aliases>StrykerRegexParser</Aliases>
-    </PackageReference>
+    <PackageReference Include="Stryker.Regex.Parser" Aliases="StrykerRegexParser" />
   </ItemGroup>
 
    <!--Analyzers-->
