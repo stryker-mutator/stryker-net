@@ -687,7 +687,7 @@ Instruct Stryker to break execution when at least one test failed on initial tes
 ### `skip-version-check` &lt;`flag`&gt;
 
 Default: `false`  
-Command line: `--dev-mode`  
+Command line: `--skip-version-check`  
 Config file: `N/A`
 
 This flag disables the automatic version check for Stryker updates when running the tool.
