@@ -33,7 +33,7 @@ namespace Stryker.CLI.UnitTest
 
             var reader = new ConfigBuilder();
 
-            var exception = Should.Throw<InputException>(() => reader.Build(_inputs.Object, args, _app, _cmdConfigHandler));
+            var exception = Should.Throw<InputException>(() => reader.Build(_inputs.Object, _app.Parse(args).SelectedCommand, _cmdConfigHandler));
             exception.Message.ShouldStartWith("Config file not found");
         }
 
@@ -47,7 +47,7 @@ namespace Stryker.CLI.UnitTest
 
             var reader = new ConfigBuilder();
 
-            reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
+            reader.Build(_inputs.Object, _app.Parse(args).SelectedCommand, _cmdConfigHandler);
 
             VerifyConfigFileDeserialized(Times.Never());
 
@@ -61,7 +61,7 @@ namespace Stryker.CLI.UnitTest
 
             var reader = new ConfigBuilder();
 
-            reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
+            reader.Build(_inputs.Object, _app.Parse(args).SelectedCommand, _cmdConfigHandler);
 
             VerifyConfigFileDeserialized(Times.Once());
         }
@@ -73,7 +73,7 @@ namespace Stryker.CLI.UnitTest
 
             var reader = new ConfigBuilder();
 
-            reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
+            reader.Build(_inputs.Object, _app.Parse(args).SelectedCommand, _cmdConfigHandler);
 
             VerifyConfigFileDeserialized(Times.Once());
             _inputs.Object.ModuleNameInput.Validate().ShouldBe("custom");
@@ -90,7 +90,7 @@ namespace Stryker.CLI.UnitTest
             string[] args = [];
 
             var reader = new ConfigBuilder();
-            reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
+            reader.Build(_inputs.Object, _app.Parse(args).SelectedCommand, _cmdConfigHandler);
 
             VerifyConfigFileDeserialized(Times.Once());
             _inputs.Object.ModuleNameInput.Validate().ShouldBe("hello_from_yml");
@@ -110,7 +110,7 @@ namespace Stryker.CLI.UnitTest
             string[] args = [];
 
             var reader = new ConfigBuilder();
-            reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
+            reader.Build(_inputs.Object, _app.Parse(args).SelectedCommand, _cmdConfigHandler);
 
             VerifyConfigFileDeserialized(Times.Once());
             _inputs.Object.ModuleNameInput.Validate().ShouldBe("hello_from_yaml");
@@ -130,7 +130,7 @@ namespace Stryker.CLI.UnitTest
             string[] args = [];
 
             var reader = new ConfigBuilder();
-            reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
+            reader.Build(_inputs.Object, _app.Parse(args).SelectedCommand, _cmdConfigHandler);
 
             VerifyConfigFileDeserialized(Times.Once());
             _inputs.Object.ModuleNameInput.Validate().ShouldBe("hello_from_json");
@@ -150,7 +150,7 @@ namespace Stryker.CLI.UnitTest
             string[] args = [];
 
             var reader = new ConfigBuilder();
-            reader.Build(_inputs.Object, args, _app, _cmdConfigHandler);
+            reader.Build(_inputs.Object, _app.Parse(args).SelectedCommand, _cmdConfigHandler);
 
             VerifyConfigFileDeserialized(Times.Once());
             _inputs.Object.ModuleNameInput.Validate().ShouldBe("hello_from_yml");

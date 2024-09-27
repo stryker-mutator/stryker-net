@@ -116,10 +116,15 @@ namespace Stryker.CLI
                 // app started
                 PrintStrykerASCIIName();
 
-                _configReader.Build(inputs, args, app, cmdConfigReader);
+                var selectedCommand = app.Parse(args).SelectedCommand;
+
+                _configReader.Build(inputs, selectedCommand, cmdConfigReader);
                 _loggingInitializer.SetupLogOptions(inputs);
 
-                PrintStrykerVersionInformationAsync();
+                if (!cmdConfigReader.ShouldSkipVersionCheck(selectedCommand))
+                {
+                    PrintStrykerVersionInformationAsync();
+                }
                 RunStryker(inputs);
                 return ExitCode;
             });
