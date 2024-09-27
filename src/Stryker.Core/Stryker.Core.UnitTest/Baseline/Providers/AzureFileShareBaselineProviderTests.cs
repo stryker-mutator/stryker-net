@@ -10,6 +10,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
@@ -142,7 +143,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             Mock.Get(fileClient).Setup(f => f.ExistsAsync(default)).Returns(Task.FromResult(Response.FromValue(true, default)));
 
             // report file content download
-            var json = JsonReport.Build(new StrykerOptions(), ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>()).ToJson();
+            var json = JsonReport.Build(new StrykerOptions(), ReportTestHelper.CreateProjectWith(), It.IsAny<ITestProjectsInfo>()).ToJson();
             var file = FilesModelFactory.StorageFileDownloadInfo(content: new MemoryStream(Encoding.Default.GetBytes(json)));
             Mock.Get(fileClient).Setup(f => f.Download(null, default)).Returns(Response.FromValue(file, default));
 

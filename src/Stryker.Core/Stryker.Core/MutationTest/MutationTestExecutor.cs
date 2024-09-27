@@ -113,8 +113,7 @@ namespace Stryker.Core.MutationTest
                 return new TestRunResult(true);
             }
 
-            var result =
-                TestRunner.TestMultipleMutants(projectAndTests, timeoutMs, mutantsToTest.ToList(), updateHandler);
+            var result = TestRunner.TestMultipleMutants(projectAndTests, timeoutMs, mutantsToTest.ToList(), updateHandler);
             if (updateHandler != null && !result.SessionTimedOut)
             {
                 return result;

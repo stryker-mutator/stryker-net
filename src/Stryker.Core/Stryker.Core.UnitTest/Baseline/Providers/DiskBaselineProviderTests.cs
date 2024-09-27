@@ -4,6 +4,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
@@ -59,7 +60,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             {
                 ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder"
             };
-            var report = JsonReport.Build(options, ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>());
+            var report = JsonReport.Build(options, ReportTestHelper.CreateProjectWith(), It.IsAny<ITestProjectsInfo>());
 
             fileSystemMock.AddFile("C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/baseline/version/stryker-report.json", report.ToJson());
 

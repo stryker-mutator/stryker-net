@@ -281,10 +281,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
             baselineProvider.Setup(mock => mock.Load(It.IsAny<string>()))
                 .Returns(Task.FromResult(baseline as IJsonReport));
 
-            baselineMutantHelper.Setup(mock => mock.GetMutantSourceCode(It.IsAny<string>(), It.IsAny<JsonMutant>())).Returns("var foo = \"bar\";");
+            baselineMutantHelper.Setup(mock => mock.GetMutantSourceCode(It.IsAny<string>(), It.IsAny<IJsonMutant>())).Returns("var foo = \"bar\";");
             baselineMutantHelper.Setup(mock => mock.GetMutantMatchingSourceCode(
-                It.IsAny<IEnumerable<Mutant>>(),
-                It.Is<JsonMutant>(m => m == jsonMutants.First()),
+                It.IsAny<IEnumerable<IMutant>>(),
+                It.Is<IJsonMutant>(m => m == jsonMutants.First()),
                 It.Is<string>(source => source == "var foo = \"bar\";"))).Returns(mutants).Verifiable();
 
             // Act
@@ -348,10 +348,10 @@ namespace Stryker.Core.UnitTest.MutantFilters
             baselineProvider.Setup(mock => mock.Load(It.IsAny<string>()))
                 .Returns(Task.FromResult(baseline as IJsonReport));
 
-            baselineMutantHelper.Setup(mock => mock.GetMutantSourceCode(It.IsAny<string>(), It.IsAny<JsonMutant>())).Returns("var foo = \"bar\";");
+            baselineMutantHelper.Setup(mock => mock.GetMutantSourceCode(It.IsAny<string>(), It.IsAny<IJsonMutant>())).Returns("var foo = \"bar\";");
             baselineMutantHelper.Setup(mock => mock.GetMutantMatchingSourceCode(
-                It.IsAny<IEnumerable<Mutant>>(),
-                It.Is<JsonMutant>(m => m == jsonMutants.First()),
+                It.IsAny<IEnumerable<IMutant>>(),
+                It.Is<IJsonMutant>(m => m == jsonMutants.First()),
                 It.Is<string>(source => source == "var foo = \"bar\";"))).Returns(mutants).Verifiable();
 
             // Act

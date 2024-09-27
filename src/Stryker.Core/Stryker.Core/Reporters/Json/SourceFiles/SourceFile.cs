@@ -1,8 +1,11 @@
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;
+using System;
 
 namespace Stryker.Core.Reporters.Json.SourceFiles
 {
@@ -39,6 +42,22 @@ namespace Stryker.Core.Reporters.Json.SourceFiles
             public override bool Equals(IJsonMutant left, IJsonMutant right) => left.Id == right.Id;
 
             public override int GetHashCode(IJsonMutant jsonMutant) => jsonMutant.Id.GetHashCode();
+        }
+    }
+
+    public class SourceFileConverter : JsonConverter<ISourceFile>
+    {
+        public override ISourceFile Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            // Deserialize the JSON into the concrete type
+            var sourceFile = JsonSerializer.Deserialize<SourceFile>(ref reader, options);
+            return sourceFile;
+        }
+
+        public override void Write(Utf8JsonWriter writer, ISourceFile value, JsonSerializerOptions options)
+        {
+            // Serialize the concrete type
+            JsonSerializer.Serialize(writer, (SourceFile)value, options);
         }
     }
 }

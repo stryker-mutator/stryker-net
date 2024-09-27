@@ -186,8 +186,8 @@ internal class FullRunScenario
                 return result;
             });
         runnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<IProjectAndTests>(), It.IsAny<ITimeoutValueCalculator>(),
-                It.IsAny<IReadOnlyList<Mutant>>(), It.IsAny<TestUpdateHandler>())).
-            Callback((Action<IProjectAndTests, ITimeoutValueCalculator, IReadOnlyList<Mutant>, TestUpdateHandler>)((_, test1, list,
+                It.IsAny<IReadOnlyList<IMutant>>(), It.IsAny<TestUpdateHandler>())).
+            Callback((Action<IProjectAndTests, ITimeoutValueCalculator, IReadOnlyList<IMutant>, TestUpdateHandler>)((_, test1, list,
                 update) =>
             {
                 foreach (var m in list)
