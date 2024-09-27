@@ -194,6 +194,8 @@ public class StrykerCli
         _console.WriteLine();
     }
 
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("CodeQuality", "IDE0079:Remove unnecessary suppression", Justification = "<Pending>")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Major Bug", "S3168:\"async\" methods should not return \"void\"", Justification = "This method is fire and forget. Task.Run also doesn't work in unit tests")]
     private async void PrintStrykerVersionInformationAsync(bool skipVersionCheck)
     {
         var logger = ApplicationLogging.LoggerFactory.CreateLogger<StrykerCli>();
