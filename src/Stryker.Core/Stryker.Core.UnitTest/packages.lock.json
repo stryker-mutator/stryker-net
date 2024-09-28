@@ -1569,9 +1569,9 @@
           "Serilog.Sinks.Console": "[6.0.0, )",
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.49.1, )",
-          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.DataCollector": "[4.2.0, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
-          "Stryker.RegexMutators": "[1.0.0, )",
+          "Stryker.RegexMutators": "[4.2.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[21.0.29, )"
         }
       },
