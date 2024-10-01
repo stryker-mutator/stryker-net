@@ -58,6 +58,8 @@ public class StringMethodMutatorTests : TestBase
         "String Method Mutation (Replace ToLowerInvariant() with ToUpperInvariant())")]
     [DataRow("testString.PadLeft(10)", "PadRight", "String Method Mutation (Replace PadLeft() with PadRight())")]
     [DataRow("testString.PadRight(10)", "PadLeft", "String Method Mutation (Replace PadRight() with PadLeft())")]
+    [DataRow("testString.LastIndexOf(c)", "IndexOf", "String Method Mutation (Replace LastIndexOf() with IndexOf())")]
+    [DataRow("testString.IndexOf(c)", "LastIndexOf", "String Method Mutation (Replace IndexOf() with LastIndexOf())")]
     public void ShouldMutateStringMethods(string expression, string mutatedMethod, string expectedDisplayName)
     {
         var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(expression);

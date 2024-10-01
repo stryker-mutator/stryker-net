@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -62,6 +62,8 @@ public class StringMethodMutator : MutatorBase<ExpressionSyntax>
             "ToLowerInvariant" => "ToUpperInvariant",
             "PadLeft" => "PadRight",
             "PadRight" => "PadLeft",
+            "IndexOf" => "LastIndexOf",
+            "LastIndexOf" => "IndexOf",
             _ => null
         };
 
