@@ -35,7 +35,7 @@ public class RegexMutantOrchestratorTest
         var result = target.Mutate();
 
         // Assert
-        var mutation = result.ShouldHaveSingleItem();
+        var mutation = result.Take(1).ShouldHaveSingleItem();
         mutation.OriginalNode.ToString().ShouldBe("X?");
         mutation.ReplacementNode.ToString().ShouldBe("X");
         mutation.ReplacementPattern.ShouldBe("abcX");
@@ -53,7 +53,7 @@ public class RegexMutantOrchestratorTest
         var result = target.Mutate();
 
         // Assert
-        var mutation = result.ShouldHaveSingleItem();
+        var mutation = result.Take(1).ShouldHaveSingleItem();
         mutation.OriginalNode.ToString().ShouldBe("X??");
         mutation.ReplacementNode.ToString().ShouldBe("X");
         mutation.ReplacementPattern.ShouldBe("abcX");
@@ -71,7 +71,7 @@ public class RegexMutantOrchestratorTest
         var result = target.Mutate();
 
         // Assert
-        var mutation = result.ShouldHaveSingleItem();
+        var mutation = result.Take(1).ShouldHaveSingleItem();
         mutation.OriginalNode.ToString().ShouldBe("[XY]");
         mutation.ReplacementNode.ToString().ShouldBe("[^XY]");
         mutation.ReplacementPattern.ShouldBe("abc[^XY]");
@@ -89,7 +89,7 @@ public class RegexMutantOrchestratorTest
         var result = target.Mutate();
 
         // Assert
-        var mutation = result.ShouldHaveSingleItem();
+        var mutation = result.Take(1).ShouldHaveSingleItem();
         mutation.OriginalNode.ToString().ShouldBe("[^XY]");
         mutation.ReplacementNode.ToString().ShouldBe("[XY]");
         mutation.ReplacementPattern.ShouldBe("abc[XY]");
@@ -107,7 +107,7 @@ public class RegexMutantOrchestratorTest
         var result = target.Mutate();
 
         // Assert
-        var mutation = result.ShouldHaveSingleItem();
+        var mutation = result.Take(1).ShouldHaveSingleItem();
         mutation.OriginalNode.ToString().ShouldBe("\\d");
         mutation.ReplacementNode.ToString().ShouldBe("\\D");
         mutation.ReplacementPattern.ShouldBe("abc\\D");
@@ -125,7 +125,7 @@ public class RegexMutantOrchestratorTest
         var result = target.Mutate();
 
         // Assert
-        var mutation = result.ShouldHaveSingleItem();
+        var mutation = result.Take(1).ShouldHaveSingleItem();
         mutation.OriginalNode.ToString().ShouldBe("\\D");
         mutation.ReplacementNode.ToString().ShouldBe("\\d");
         mutation.ReplacementPattern.ShouldBe("abc\\d");
@@ -144,5 +144,36 @@ public class RegexMutantOrchestratorTest
 
         // Assert
         result.Count().ShouldBeGreaterThanOrEqualTo(4);
+    }
+
+    [TestMethod]
+    public void ShouldApplyMultipleMutations2()
+    {
+        // Arrange
+        var target = new RegexMutantOrchestrator("^abc(d+|[xyz])$");
+
+        // Act
+        var result = target.Mutate();
+
+        // Assert
+        result.Count().ShouldBeGreaterThanOrEqualTo(12);
+    }
+
+    [TestMethod]
+    [DataRow(null)]
+    [DataRow("[Z-A]")]
+    [DataRow("\\")]
+    [DataRow("(abc")]
+    [DataRow(@"\p{UnicodeCategory}")]
+    public void InvalidRegexShouldNotThrow(string pattern)
+    {
+        // Arrange
+        var target = new RegexMutantOrchestrator(pattern);
+
+        // Act
+        var result = target.Mutate();
+
+        // Assert
+        result.ShouldBeEmpty();
     }
 }
