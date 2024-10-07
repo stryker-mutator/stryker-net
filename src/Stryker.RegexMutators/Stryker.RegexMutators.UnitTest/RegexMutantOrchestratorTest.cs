@@ -35,7 +35,8 @@ public class RegexMutantOrchestratorTest
         var result = target.Mutate();
 
         // Assert
-        var mutation = result.Take(1).ShouldHaveSingleItem();
+        result.Count().ShouldBe(5);
+        var mutation = result.ElementAt(0);
         mutation.OriginalNode.ToString().ShouldBe("X?");
         mutation.ReplacementNode.ToString().ShouldBe("X");
         mutation.ReplacementPattern.ShouldBe("abcX");
@@ -53,7 +54,8 @@ public class RegexMutantOrchestratorTest
         var result = target.Mutate();
 
         // Assert
-        var mutation = result.Take(1).ShouldHaveSingleItem();
+        result.Count().ShouldBe(4);
+        var mutation = result.ElementAt(0);
         mutation.OriginalNode.ToString().ShouldBe("X??");
         mutation.ReplacementNode.ToString().ShouldBe("X");
         mutation.ReplacementPattern.ShouldBe("abcX");
@@ -71,7 +73,8 @@ public class RegexMutantOrchestratorTest
         var result = target.Mutate();
 
         // Assert
-        var mutation = result.Take(1).ShouldHaveSingleItem();
+        result.Count().ShouldBe(4);
+        var mutation = result.ElementAt(0);
         mutation.OriginalNode.ToString().ShouldBe("[XY]");
         mutation.ReplacementNode.ToString().ShouldBe("[^XY]");
         mutation.ReplacementPattern.ShouldBe("abc[^XY]");
@@ -89,7 +92,8 @@ public class RegexMutantOrchestratorTest
         var result = target.Mutate();
 
         // Assert
-        var mutation = result.Take(1).ShouldHaveSingleItem();
+        result.Count().ShouldBe(4);
+        var mutation = result.ElementAt(0);
         mutation.OriginalNode.ToString().ShouldBe("[^XY]");
         mutation.ReplacementNode.ToString().ShouldBe("[XY]");
         mutation.ReplacementPattern.ShouldBe("abc[XY]");
@@ -107,7 +111,8 @@ public class RegexMutantOrchestratorTest
         var result = target.Mutate();
 
         // Assert
-        var mutation = result.Take(1).ShouldHaveSingleItem();
+        result.Count().ShouldBe(3);
+        var mutation = result.ElementAt(0);
         mutation.OriginalNode.ToString().ShouldBe("\\d");
         mutation.ReplacementNode.ToString().ShouldBe("\\D");
         mutation.ReplacementPattern.ShouldBe("abc\\D");
@@ -125,7 +130,8 @@ public class RegexMutantOrchestratorTest
         var result = target.Mutate();
 
         // Assert
-        var mutation = result.Take(1).ShouldHaveSingleItem();
+        result.Count().ShouldBe(3);
+        var mutation = result.ElementAt(0);
         mutation.OriginalNode.ToString().ShouldBe("\\D");
         mutation.ReplacementNode.ToString().ShouldBe("\\d");
         mutation.ReplacementPattern.ShouldBe("abc\\d");
