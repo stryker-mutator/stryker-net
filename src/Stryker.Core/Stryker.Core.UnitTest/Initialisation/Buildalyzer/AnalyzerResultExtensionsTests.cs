@@ -62,6 +62,45 @@ public class AnalyzerResultExtensionsTests
         diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0002", ReportDiagnostic.Warn));
     }
 
+    [DataTestMethod]
+    [DataRow("NoWarn", ReportDiagnostic.Suppress)]
+    [DataRow("WarningsAsErrors", ReportDiagnostic.Error)]
+    [DataRow("WarningsNotAsErrors", ReportDiagnostic.Warn)]
+    public void GetDiagnosticOptions_DealWithDuplicate(string property, ReportDiagnostic reportDiagnostic)
+    {
+        // Arrange
+        var analyzerResult = Mock.Of<IAnalyzerResult>();
+        Mock.Get(analyzerResult)
+            .SetupGet(g => g.Properties)
+            .Returns(new Dictionary<string, string> { { property, "EXTEX0001;EXTEX0001" } });
+
+        // Act
+        var diagOptions = IAnalyzerResultExtensions.GetDiagnosticOptions(analyzerResult);
+
+        // Assert
+        diagOptions.ShouldHaveSingleItem();
+        diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEX0001", reportDiagnostic));
+    }
+
+    [TestMethod]
+    public void GetDiagnosticOptions_DealWithDuplicateConflicts()
+    {
+        // Arrange
+        var analyzerResult = Mock.Of<IAnalyzerResult>();
+        Mock.Get(analyzerResult)
+            .SetupGet(g => g.Properties)
+            .Returns(new Dictionary<string, string> { { "NoWarn", "EXTEX0001;EXTEX0001" },{ "WarningsAsErrors", "EXTEX0001;EXTEX0001" },
+                { "WarningsNotAsErrors", "EXTEX0001;EXTEX0001" }});
+
+        // Act
+        var diagOptions = IAnalyzerResultExtensions.GetDiagnosticOptions(analyzerResult);
+
+        // Assert
+        diagOptions.ShouldHaveSingleItem();
+        diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEX0001", ReportDiagnostic.Suppress));
+    }
+
+
     [TestMethod]
     public void GetDiagnosticOptions_DealWithConflicts()
     {
