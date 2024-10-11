@@ -1,8 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;
 using Stryker.Core.ProjectComponents.TestProjects;
+using System;
 
 namespace Stryker.Core.Reporters.Json.TestFiles
 {
@@ -33,6 +36,22 @@ namespace Stryker.Core.Reporters.Json.TestFiles
                     Location = new Location(test.Node.GetLocation().GetMappedLineSpan())
                 });
             }
+        }
+    }
+
+    public class JsonTestFileConverter : JsonConverter<IJsonTestFile>
+    {
+        public override IJsonTestFile Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            // Deserialize the JSON into the concrete type
+            var jsonTestFile = JsonSerializer.Deserialize<JsonTestFile>(ref reader, options);
+            return jsonTestFile;
+        }
+
+        public override void Write(Utf8JsonWriter writer, IJsonTestFile value, JsonSerializerOptions options)
+        {
+            // Serialize the concrete type
+            JsonSerializer.Serialize(writer, (JsonTestFile)value, options);
         }
     }
 }

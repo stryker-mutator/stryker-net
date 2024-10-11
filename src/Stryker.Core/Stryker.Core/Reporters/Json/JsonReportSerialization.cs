@@ -4,6 +4,7 @@ using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 using Stryker.Abstractions.Reporting;
 using Stryker.Core.Reporters.Json.SourceFiles;
+using Stryker.Core.Reporters.Json.TestFiles;
 
 namespace Stryker.Core.Reporters.Json
 {
@@ -12,7 +13,7 @@ namespace Stryker.Core.Reporters.Json
         public static readonly JsonSerializerOptions Options = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            Converters = { new SourceFileConverter(), new JsonMutantConverter() },
+            Converters = { new SourceFileConverter(), new JsonMutantConverter(), new LocationConverter(), new PositionConverter(), new JsonTestFileConverter(), new JsonTestConverter() },
             WriteIndented = false,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };
