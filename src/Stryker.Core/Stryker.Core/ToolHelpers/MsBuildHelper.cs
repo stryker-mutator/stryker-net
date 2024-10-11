@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
-using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Core.Logging;
 using Stryker.Core.Testing;
