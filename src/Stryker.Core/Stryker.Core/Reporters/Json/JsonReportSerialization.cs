@@ -8,7 +8,7 @@ using Stryker.Core.Reporters.Json.TestFiles;
 
 namespace Stryker.Core.Reporters.Json
 {
-    internal static class JsonReportSerialization
+    public static class JsonReportSerialization
     {
         public static readonly JsonSerializerOptions Options = new()
         {
