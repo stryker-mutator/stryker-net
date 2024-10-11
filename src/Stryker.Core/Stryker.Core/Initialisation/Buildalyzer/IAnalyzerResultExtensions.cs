@@ -163,7 +163,7 @@ public static class IAnalyzerResultExtensions
 
     private static readonly string[] knownTestPackages = ["MSTest.TestFramework", "xunit", "NUnit"];
 
-    public static bool IsTestProject(this IAnalyzerResults analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
+    public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
 
     public static bool IsTestProject(this IAnalyzerResult analyzerResult)
     {
