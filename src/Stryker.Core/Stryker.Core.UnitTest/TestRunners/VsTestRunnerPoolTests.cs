@@ -107,8 +107,11 @@ namespace Stryker.Core.UnitTest.TestRunners
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             SetupFailingTestRun(mockVsTest);
 
-            Action action = () => runner.InitialTest(SourceProjectInfo);
-            action.ShouldThrow<GeneralStrykerException>();
+            var result = runner.InitialTest(SourceProjectInfo);
+            // legacy behavior was to crash on VsTest crash as an fail fast strategy
+            // now We have fixed Stryker issues related to VsTest and issues are rare, so this should be a minor event
+
+            result.SessionTimedOut.ShouldBeTrue();
         }
 
         [TestMethod]
@@ -148,8 +151,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         {
             var mockVsTest = BuildVsTestRunnerPool(new StrykerOptions(), out var runner);
             SetupFailingTestRun(mockVsTest);
-            var action = () => runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
-            action.ShouldThrow<GeneralStrykerException>();
+            runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
             // the test will always end in a crash, VsTestRunner should retry at least a few times
             mockVsTest.Verify(m => m.RunTestsWithCustomTestHost(It.IsAny<IEnumerable<string>>(),
                 It.IsAny<string>(), It.IsAny<TestPlatformOptions>(),

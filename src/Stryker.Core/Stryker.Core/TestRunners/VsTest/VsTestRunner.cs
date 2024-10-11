@@ -171,7 +171,7 @@ public sealed class VsTestRunner : IDisposable
     }
 
     private TestRunResult BuildTestRunResult(IRunResults testResults, int expectedTests, int totalCountOfTests,
-        bool compressAll = true)
+            bool compressAll = true)
     {
         var resultAsArray = testResults.TestResults.ToArray();
         var testCases = resultAsArray.Select(t => t.TestCase.Id).ToHashSet();
@@ -193,17 +193,17 @@ public sealed class VsTestRunner : IDisposable
 
         var duration = TimeSpan.FromTicks(_context.VsTests.Values.Sum(t => t.InitialRunTime.Ticks));
 
-        var message = string.Join(Environment.NewLine,
+        var errorMessages = string.Join(Environment.NewLine,
             resultAsArray.Where(tr => !string.IsNullOrWhiteSpace(tr.ErrorMessage))
                 .Select(tr => $"{tr.DisplayName}{Environment.NewLine}{Environment.NewLine}{tr.ErrorMessage}"));
         var messages = resultAsArray.Select(tr =>
-            $"{tr.DisplayName}{Environment.NewLine}{Environment.NewLine}{string.Join(Environment.NewLine, tr.Messages.Select(tm => tm.Text))}");
+                $"{tr.DisplayName}{Environment.NewLine}{Environment.NewLine}{string.Join(Environment.NewLine, tr.Messages.Select(tm => tm.Text))}");
         var failedTestsDescription = new WrappedGuidsEnumeration(failedTests);
         var timedOutTests = new WrappedGuidsEnumeration(testResults.TestsInTimeout?.Select(t => t.Id));
         return timeout
                 ? TestRunResult.TimedOut(_context.VsTests.Values, ranTests, failedTestsDescription, timedOutTests,
-                    message, messages, duration)
-                : new TestRunResult(_context.VsTests.Values, ranTests, failedTestsDescription, timedOutTests, message,
+                    errorMessages, messages, duration)
+                : new TestRunResult(_context.VsTests.Values, ranTests, failedTestsDescription, timedOutTests, errorMessages,
                     messages, duration);
     }
 
@@ -268,9 +268,10 @@ public sealed class VsTestRunner : IDisposable
     }
 
     private void RunVsTest(ITestGuids tests, string source, string runSettings, TestPlatformOptions options,
-        int? timeOut, RunEventHandler eventHandler)
+            int? timeOut, RunEventHandler eventHandler)
     {
-        for (var attempt = 0; attempt < MaxAttempts; attempt++)
+        var attempt = 0;
+        while (attempt<MaxAttempts)
         {
             var strykerVsTestHostLauncher = _context.BuildHostLauncher(RunnerId);
 
@@ -301,15 +302,15 @@ public sealed class VsTestRunner : IDisposable
             {
                 return;
             }
-
-            _logger.LogWarning("{RunnerId}: Retrying the test session.", RunnerId);
-            eventHandler.DiscardCurrentRun();
+            attempt++;
+            if (attempt < MaxAttempts)
+            {
+                _logger.LogInformation("{RunnerId}: Retrying the test session.", RunnerId);
+                eventHandler.DiscardCurrentRun();
+            }
         }
 
-        _logger.LogCritical("{0}: VsTest failed, settings: {1}", RunnerId, runSettings);
-
-        throw new GeneralStrykerException(
-            $"{RunnerId}: failed to run a test session despite {MaxAttempts} attempts. Aborting session.");
+        _logger.LogWarning("{0}: VsTest failed {2} times, settings: {1}", RunnerId, runSettings, attempt);
     }
 
     private bool WaitForEnd(Task session, RunEventHandler eventHandler, int? timeOut, ref int attempt)
