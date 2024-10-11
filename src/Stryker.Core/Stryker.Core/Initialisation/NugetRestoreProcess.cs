@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Logging;
+using Stryker.Configuration;
 using Stryker.Core.Helpers;
 using Stryker.Core.Testing;
 

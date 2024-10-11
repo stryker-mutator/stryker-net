@@ -3,19 +3,20 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using NuGet.Versioning;
 using Serilog.Events;
 using Shouldly;
 using Spectre.Console.Testing;
-using Stryker.CLI.Clients;
-using Stryker.CLI.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Mutators;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Abstractions.Options;
-using Stryker.Core.Initialisation;
+using Stryker.CLI.Clients;
+using Stryker.CLI.Logging;
+using Stryker.Configuration;
 using Stryker.Core;
+using Stryker.Core.Initialisation;
 
 namespace Stryker.CLI.UnitTest;
 

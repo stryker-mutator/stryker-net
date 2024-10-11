@@ -12,6 +12,7 @@ using Stryker.Abstractions.Options;
 using Stryker.CLI.Clients;
 using Stryker.CLI.CommandLineConfig;
 using Stryker.CLI.Logging;
+using Stryker.Configuration;
 using Stryker.Core;
 
 namespace Stryker.CLI;
