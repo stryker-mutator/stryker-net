@@ -1,3 +1,18 @@
+# [4.2.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.1.0...dotnet-stryker@4.2.0) (2024-09-13)
+
+
+### Bug Fixes
+
+* **real-time-reporting:** Properly handle when browser is closed during mutation testing ([#2985](https://github.com/stryker-mutator/stryker-net/issues/2985)) ([963225d](https://github.com/stryker-mutator/stryker-net/commit/963225d0f96fddf27c324d7b0cb6e0519f695ccd))
+
+
+### Features
+
+* **mutating:** constant patterns ([#2992](https://github.com/stryker-mutator/stryker-net/issues/2992)) ([83349de](https://github.com/stryker-mutator/stryker-net/commit/83349de662c53368b344e67bf65ae872e8a31288))
+* Parse stryker-config.yml and stryker-config.yaml by default ([#2954](https://github.com/stryker-mutator/stryker-net/issues/2954)) ([d1196c0](https://github.com/stryker-mutator/stryker-net/commit/d1196c0cd8becbbbd8e96604bf9ccfcd900807f3))
+
+
+
 # [4.1.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.0.6...dotnet-stryker@4.1.0) (2024-07-08)
 
 

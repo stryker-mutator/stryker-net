@@ -8,7 +8,7 @@
   </PropertyGroup>
   
   <PropertyGroup>
-    <VersionPrefix>4.1.0</VersionPrefix>
+    <VersionPrefix>4.2.0</VersionPrefix>
     <VersionSuffix></VersionSuffix>
     <PackageId>stryker</PackageId>
     <Product>Mutation Testing</Product>
@@ -38,10 +38,6 @@
     <PackageReference Include="Azure.Storage.Files.Shares" />
     <PackageReference Include="Grynwald.MarkdownGenerator" />
     <PackageReference Include="LibGit2Sharp" />
-    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.Common" />
     <PackageReference Include="FSharp.Compiler.Service" />
     <PackageReference Include="DotNet.Glob" />
@@ -62,8 +58,24 @@
     <PackageReference Include="Serilog.Sinks.Console" />
     <PackageReference Include="ShellProgressBar" />
     <PackageReference Include="Spectre.Console" />
-    <PackageReference Include="Spectre.Console.Analyzer" />
     <PackageReference Include="TestableIO.System.IO.Abstractions.Wrappers" />
+  </ItemGroup>
+
+  <!--This avoids conflict with System.Text.RegularExpression-->
+  <ItemGroup>
+    <PackageReference Include="Stryker.Regex.Parser" Aliases="StrykerRegexParser" />
+  </ItemGroup>
+
+   <!--Analyzers-->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.CodeAnalysis.Analyzers">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Spectre.Console.Analyzer">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>

@@ -14,7 +14,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
     public class IgnoreBlockMutantFilterTests : TestBase
     {
         [TestMethod]
-        public static void ShouldHaveName()
+        public void ShouldHaveName()
         {
             var sut = new IgnoreBlockMutantFilter();
             sut.DisplayName.ShouldBe("block already covered filter");

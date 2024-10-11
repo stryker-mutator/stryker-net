@@ -50,4 +50,5 @@ public interface IStrykerOptions
     IThresholds Thresholds { get; init; }
     bool WithBaseline { get; init; }
     string WorkingDirectory { get; init; }
+    IProvideId MutantIdProvider { get; set; }
 }

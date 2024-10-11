@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using System.Text;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -12,8 +13,8 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 internal static class CommentParser
 {
-    private static readonly Regex Pattern = new("^\\s*\\/\\/\\s*Stryker", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(20));
-    private static readonly Regex Parser = new("^\\s*\\/\\/\\s*Stryker\\s*(disable|restore)\\s*(once|)\\s*([^:]*)\\s*:?(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(20));
+    private static readonly Regex Pattern = new("^\\s*(\\/\\/\\s*Stryker(.*))|(\\/\\*\\s*Stryker(.*[^\\*][^\\\\])\\*\\/\\s*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(200));
+    private static readonly Regex Parser = new("^\\s*(disable|restore)\\s*(once|)\\s*([^:]*)\\s*:?(.*)$", RegexOptions.Compiled | RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(200));
     private static readonly ILogger Logger = ApplicationLogging.LoggerFactory.CreateLogger("CommentParser");
 
     private static MutationContext ParseStrykerComment(MutationContext context, Match match, SyntaxNode node)
@@ -66,32 +67,52 @@ internal static class CommentParser
         return context.FilterMutators(disable, filteredMutators, match.Groups[OnceGroup].Value.ToLower() == "once", comment);
     }
 
-    public static MutationContext ParseNodeComments(SyntaxNode node, MutationContext context)
+    public static MutationContext ParseNodeLeadingComments(SyntaxNode node, MutationContext context)
     {
-        foreach (var commentTrivia in node.GetLeadingTrivia()
-                     .Where(t => t.IsKind(SyntaxKind.SingleLineCommentTrivia) ||
-                                 t.IsKind(SyntaxKind.MultiLineCommentTrivia)).Select(t => t.ToString()))
+        var processedComments = node.GetFirstToken(true).GetPreviousToken(true).TrailingTrivia
+            .Union(node.GetLeadingTrivia())
+            .Where(t => t.IsKind(SyntaxKind.MultiLineCommentTrivia) || t.IsKind(SyntaxKind.SingleLineCommentTrivia))
+            .Select(t => (ProcessComment(node, context, t.ToString()), t)).Where(t => t.Item1 != null).ToList();
+
+        if (processedComments.Count == 0)
         {
-            // perform a quick pattern check to see if it is a 'Stryker comment'
-            if (!Pattern.Match(commentTrivia).Success)
-            {
-                continue;
-            }
+            return context;
+        }
+        if (processedComments.Count > 1)
+        {
+            var errorMessage = new StringBuilder().Append(  
+                $"Multiple Stryker comments at {node.GetLocation().GetMappedLineSpan().StartLinePosition}, {node.SyntaxTree.FilePath}. Only the first one will be used");
+            errorMessage.Append(string.Join(Environment.NewLine, processedComments.Select(c => c.Item2.ToString())));
+            Logger.LogWarning(errorMessage.ToString());
 
-            var match = Parser.Match(commentTrivia);
-            if (match.Success)
-            {
-                // this is a Stryker comments, now we parse it
-                context = ParseStrykerComment(context, match, node);
-                break;
-            }
+        }
+        return processedComments[0].Item1;
+    }
 
-            Logger.LogWarning(
-                "Invalid Stryker comments at {Position}, {FilePath}.",
-                node.GetLocation().GetMappedLineSpan().StartLinePosition,
-                node.SyntaxTree.FilePath);
+    private static MutationContext ProcessComment(SyntaxNode node, MutationContext context, string commentTrivia)
+    {
+        // perform a quick pattern check to see if it is a 'Stryker comment'
+        var strykerCommentMatch = Pattern.Match(commentTrivia);
+        if (!strykerCommentMatch.Success)
+        {
+            return null;
         }
 
-        return context;
+        // now we can extract actual command
+        var isSingleLine = strykerCommentMatch.Groups[1].Success;
+        var command = isSingleLine ? strykerCommentMatch.Groups[2].Value : strykerCommentMatch.Groups[4].Value;
+
+        var match = Parser.Match(command);
+        if (match.Success)
+        {
+            // this is a Stryker comments, now we parse it
+            return ParseStrykerComment(context, match, node);
+        }
+
+        Logger.LogWarning(
+            "Invalid Stryker comments at {Position}, {FilePath}.",
+            node.GetLocation().GetMappedLineSpan().StartLinePosition,
+            node.SyntaxTree.FilePath);
+        return null;
     }
 }

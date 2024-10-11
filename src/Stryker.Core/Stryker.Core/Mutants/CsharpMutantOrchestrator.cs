@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-using System.Threading;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -38,7 +38,6 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         Mutators = mutators ?? DefaultMutatorList();
         Mutants = new Collection<IMutant>();
         Logger = ApplicationLogging.LoggerFactory.CreateLogger<CsharpMutantOrchestrator>();
-
     }
 
     private static List<INodeOrchestrator> BuildOrchestratorList() =>
@@ -67,6 +66,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new MemberAccessExpressionOrchestrator<PostfixUnaryExpressionSyntax>(t =>
             t.IsKind(SyntaxKind.SuppressNullableWarningExpression)),
         new ConditionalExpressionOrchestrator(),
+        new ConstantPatternSyntaxOrchestrator(),
         // ensure static constructs are marked properly
         new StaticFieldDeclarationOrchestrator(),
         new StaticConstructorOrchestrator(),
@@ -141,16 +141,16 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         {
             foreach (var mutation in mutator.Mutate(current, semanticModel, Options))
             {
-                var newMutant = CreateNewMutant(mutation, mutator, context);
-
+                var newMutant = CreateNewMutant(mutation, context);
                 // Skip if the mutant is a duplicate
                 if (IsMutantDuplicate(newMutant, mutation))
                 {
                     continue;
                 }
-
+                newMutant.Id = GetNextId();
+                Logger.LogDebug("Mutant {MutantId} created {OriginalNode} -> {ReplacementNode} using {Mutator}", newMutant.Id, mutation.OriginalNode,
+                    mutation.ReplacementNode, mutator.GetType());
                 Mutants.Add(newMutant);
-                Interlocked.Increment(ref MutantCount);
                 mutations.Add(newMutant);
             }
         }
@@ -162,15 +162,11 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
     /// Creates a new mutant for the given mutation, mutator and context. Returns null if the mutant
     /// is a duplicate.
     /// </summary>
-    private Mutant CreateNewMutant(Mutation mutation, IMutator mutator, MutationContext context)
+    private Mutant CreateNewMutant(Mutation mutation, MutationContext context)
     {
-        var id = MutantCount;
-        Logger.LogDebug("Mutant {MutantId} created {OriginalNode} -> {ReplacementNode} using {Mutator}", id, mutation.OriginalNode,
-            mutation.ReplacementNode, mutator.GetType());
         var mutantIgnored = context.FilteredMutators?.Contains(mutation.Type) ?? false;
         return new Mutant
         {
-            Id = id,
             Mutation = mutation,
             ResultStatus = mutantIgnored ? MutantStatus.Ignored : MutantStatus.Pending,
             IsStaticValue = context.InStaticValue,

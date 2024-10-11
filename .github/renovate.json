@@ -5,7 +5,7 @@
   ],
   "configMigration": true,
   "gitAuthor": "Renovatebot <renovatebot@stryker-mutator.io>",
-  "platformCommit": false,
+  "platformCommit": "disabled",
   "platformAutomerge": true,
   "ignorePaths": [
     "/ExampleProjects/**"
@@ -21,6 +21,21 @@
       "automerge": true
     },
     {
+      "groupName": "roslyn",
+      "matchPackageNames": [
+        "Microsoft.CodeAnalysis",
+        "Microsoft.CodeAnalysis.Common",
+        "Microsoft.CodeAnalysis.Features",
+        "Microsoft.CodeAnalysis.VisualBasic",
+        "Microsoft.CodeAnalysis.VisualBasic.Workspaces",
+        "Microsoft.CodeAnalysis.CSharp",
+        "Microsoft.CodeAnalysis.CSharp.Workspaces",
+        "Microsoft.CodeAnalysis.Workspaces",
+        "Microsoft.CodeAnalysis.Workspaces.Common",
+        "Microsoft.CodeAnalysis.Workspaces.MSBuild"
+      ]
+    },
+    {
       "matchDatasources": [
         "azure-pipelines-tasks"
       ],
@@ -33,5 +48,18 @@
       "azure.*pipelines?.*\\.ya?ml$",
       "pipeline-templates/.*\\.ya?ml$"
     ]
+  },
+  "customManagers": [
+    {
+      "fileMatch": ["(^|/)libman\\.json$"],
+      "customType": "regex",
+      "datasourceTemplate": "npm",
+      "matchStrings": [
+        "\\\"library\\\":\\s?\\\"(?<packageName>.*)@(?<currentValue>.*)\\\""
+      ]
+    }
+  ],
+  "npm": {
+    "enabled": false
   }
 }

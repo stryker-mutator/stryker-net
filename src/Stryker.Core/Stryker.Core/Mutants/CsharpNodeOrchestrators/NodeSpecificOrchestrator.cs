@@ -90,7 +90,7 @@ internal class NodeSpecificOrchestrator<TNode, TBase> : INodeOrchestrator where 
     /// <param name="context">context to be updated</param>
     /// <returns>a context capturing changes, if any</returns>
     /// <remarks>base implementation parse stryker comments.</remarks>
-    protected virtual MutationContext PrepareContext(TNode node, MutationContext context) => CommentParser.ParseNodeComments(node, context);
+    protected virtual MutationContext PrepareContext(TNode node, MutationContext context) => CommentParser.ParseNodeLeadingComments(node, context);
 
     /// <summary>
     /// Restore the mutation context after mutation have been performed

@@ -1,6 +1,7 @@
 using System.IO.Abstractions;
 using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions.Options.Inputs;
+using Stryker.Configuration;
 
 namespace Stryker.Abstractions.Options
 {
@@ -168,6 +169,7 @@ namespace Stryker.Abstractions.Options
                 SinceTarget = sinceTarget,
                 ReportTypeToOpen = OpenReportInput.Validate(OpenReportEnabledInput.Validate()),
                 BreakOnInitialTestFailure = BreakOnInitialTestFailureInput.Validate(),
+                MutantIdProvider = new BasicIdProvider()
             };
             return _strykerOptionsCache;
         }

@@ -99,6 +99,17 @@ internal class MutationContext
         return control is MutationControl.Block or MutationControl.Member ? new MutationContext(this) : this;
     }
 
+    public MutationContext BlockInjection()
+    {
+        _mutation.BlockInjection();
+        return this;
+    }
+
+    public MutationContext EnableInjection()
+    {
+        _mutation.EnableInjection();
+        return this;
+    }
     /// <summary>
     /// Call this when leaving a control syntax structure
     /// </summary>
