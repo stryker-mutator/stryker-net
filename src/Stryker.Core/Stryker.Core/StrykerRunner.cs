@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Mutants;
@@ -191,7 +190,7 @@ namespace Stryker.Core
                 {
                     FullPath = options.ProjectPath // in case of a solution run the basePath will be where the solution file is
                 };
-                rootComponent.AddRange((IEnumerable<IProjectComponent>)projectComponents);
+                rootComponent.AddRange(projectComponents.Cast<IProjectComponent>());
                 return rootComponent;
             }
 
