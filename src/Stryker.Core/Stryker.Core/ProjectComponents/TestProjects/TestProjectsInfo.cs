@@ -10,7 +10,7 @@ using Stryker.Core.Initialisation.Buildalyzer;
 
 namespace Stryker.Core.ProjectComponents.TestProjects;
 
-public class TestProjectsInfo : ITestProjectsInfo
+internal class TestProjectsInfo : ITestProjectsInfo
 {
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<TestProjectsInfo> _logger;

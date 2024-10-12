@@ -99,7 +99,7 @@ public class VsTestMockingHelper : TestBase
         TestCases = new List<VsTest.TestCase> { firstTest, secondTest };
     }
 
-    protected SourceProjectInfo BuildSourceProjectInfo(IEnumerable<Mutant> mutants = null)
+    internal SourceProjectInfo BuildSourceProjectInfo(IEnumerable<Mutant> mutants = null)
     {
         var content = new CsharpFolderComposite();
         content.Add(new CsharpFileLeaf { Mutants = mutants ?? new[] { Mutant, OtherMutant } });
@@ -117,7 +117,7 @@ public class VsTestMockingHelper : TestBase
         };
     }
 
-    protected TestProjectsInfo BuildTestProjectsInfo() =>
+    internal TestProjectsInfo BuildTestProjectsInfo() =>
         new(_fileSystem)
         {
             TestProjects = new List<TestProject> { new(_fileSystem, TestHelper.SetupProjectAnalyzerResult(

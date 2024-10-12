@@ -44,7 +44,7 @@ namespace Stryker.Abstractions.Options
         /// </summary>
         public TInput SuppliedInput { get; set; } = default;
 
-        protected IEnumerable<string> EnumToStrings(Type enumType) => Enum.GetNames(enumType).Select(e => e.ToString());
+        protected static IEnumerable<string> EnumToStrings(Type enumType) => Enum.GetNames(enumType).Select(e => e.ToString());
 
         private string FormatAllowedInputText()
         {

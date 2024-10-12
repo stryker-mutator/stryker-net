@@ -41,7 +41,7 @@ namespace Stryker.Core.Mutants
             {
                 ResultStatus = MutantStatus.Timeout;
             }
-            else if (resultRanTests.IsEveryTest || resultRanTests.IsEveryTest is not true && AssessingTests.IsIncludedIn(resultRanTests))
+            else if (resultRanTests.IsEveryTest || !resultRanTests.IsEveryTest && AssessingTests.IsIncludedIn(resultRanTests))
             {
                 ResultStatus = MutantStatus.Survived;
             }

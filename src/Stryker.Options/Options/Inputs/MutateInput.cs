@@ -27,7 +27,7 @@ namespace Stryker.Abstractions.Options.Inputs
                     filesToInclude.Add(FilePattern.Parse(FilePathUtils.NormalizePathSeparators(pattern)));
                 }
 
-                if (filesToInclude.All(f => f.IsExclude))
+                if (filesToInclude.TrueForAll(f => f.IsExclude))
                 {
                     // If there are only exclude patterns, we add a pattern that matches every file.
                     filesToInclude.Add(FilePattern.Parse(_defaultInput));

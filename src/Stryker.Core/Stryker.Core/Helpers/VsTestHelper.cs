@@ -240,18 +240,18 @@ namespace Stryker.Core.Helpers
                     }
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 if (tries > 0)
                 {
-                    _logger.LogDebug(
-                        $"Tried cleaning up used vstest resources but we weren't ready to clean. Trying {tries} more times.",
+                    _logger.LogDebug(ex,
+                        "Tried cleaning up used vstest resources but we weren't ready to clean. Trying {tries} more times.",
                         tries);
                     Cleanup(tries - 1);
                 }
                 else
                 {
-                    _logger.LogDebug(
+                    _logger.LogWarning(ex,
                         "Tried cleaning up used vstest resources but we weren't ready to clean. Out of tries, we're giving up sorry.");
                 }
             }

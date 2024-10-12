@@ -82,7 +82,7 @@ namespace Stryker.Core.MutantFilters
             return filteredMutants;
         }
 
-        private IEnumerable<IMutant> SetNotRunMutantsToIgnored(IEnumerable<IMutant> mutants)
+        private static IEnumerable<IMutant> SetNotRunMutantsToIgnored(IEnumerable<IMutant> mutants)
         {
             foreach (var mutant in mutants.Where(m => m.ResultStatus == MutantStatus.Pending || m.ResultStatus == MutantStatus.NoCoverage))
             {
@@ -93,7 +93,7 @@ namespace Stryker.Core.MutantFilters
             return new List<IMutant>();
         }
 
-        private IEnumerable<IMutant> SetMutantStatusForFileChanged(IEnumerable<IMutant> mutants)
+        private static IEnumerable<IMutant> SetMutantStatusForFileChanged(IEnumerable<IMutant> mutants)
         {
             foreach (var mutant in mutants.Where(m => m.ResultStatus != MutantStatus.NoCoverage))
             {
@@ -104,7 +104,7 @@ namespace Stryker.Core.MutantFilters
             return mutants;
         }
 
-        private IEnumerable<IMutant> SetMutantStatusForNonCSharpFileChanged(IEnumerable<IMutant> mutants)
+        private static IEnumerable<IMutant> SetMutantStatusForNonCSharpFileChanged(IEnumerable<IMutant> mutants)
         {
             foreach (var mutant in mutants.Where(m => m.ResultStatus != MutantStatus.NoCoverage))
             {

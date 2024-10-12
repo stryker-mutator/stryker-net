@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions;
 using Stryker.Abstractions.Baseline;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Mutants;
@@ -13,7 +12,6 @@ using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Baseline.Utils;
-using Stryker.Core.Mutants;
 using Stryker.Utilities;
 
 namespace Stryker.Core.MutantFilters
@@ -100,7 +98,7 @@ namespace Stryker.Core.MutantFilters
             }
         }
 
-        private void SetMutantStatusToBaselineMutantStatus(IJsonMutant baselineMutant,
+        private static void SetMutantStatusToBaselineMutantStatus(IJsonMutant baselineMutant,
             IEnumerable<IMutant> matchingMutants)
         {
             if (matchingMutants.Count() == 1)
