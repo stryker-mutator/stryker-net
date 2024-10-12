@@ -13,7 +13,14 @@ namespace Stryker.Core.Reporters.Json
         public static readonly JsonSerializerOptions Options = new()
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-            Converters = { new SourceFileConverter(), new JsonMutantConverter(), new LocationConverter(), new PositionConverter(), new JsonTestFileConverter(), new JsonTestConverter() },
+            Converters = {
+                new SourceFileConverter(),
+                new JsonMutantConverter(),
+                new LocationConverter(),
+                new PositionConverter(),
+                new JsonTestFileConverter(),
+                new JsonTestConverter()
+            },
             WriteIndented = false,
             DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
         };

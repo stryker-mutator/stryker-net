@@ -5,7 +5,6 @@ using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using Newtonsoft.Json;
 using Shouldly;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Reporting;
@@ -50,7 +49,7 @@ namespace IntegrationTests
 
         [Fact]
         [Trait("Category", "SingleTestProject")]
-        public void CSharp_NetFramework_SingleTestProject()
+        public async Task CSharp_NetFramework_SingleTestProject()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -61,9 +60,9 @@ namespace IntegrationTests
                     .OrderByDescending(f => f.LastWriteTime)
                     .First();
 
-                var strykerRunOutput = File.ReadAllText(latestReport.FullName);
+                using var strykerRunOutput = File.OpenRead(latestReport.FullName);
 
-                var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
+                var report = await JsonReportSerialization.DeserializeJsonReportAsync(strykerRunOutput);
 
                 CheckReportMutants(report, total: 29, ignored: 7, survived: 3, killed: 7, timeout: 0, nocoverage: 11);
             }
@@ -71,7 +70,7 @@ namespace IntegrationTests
 
         [Fact]
         [Trait("Category", "SingleTestProject")]
-        public void CSharp_NetCore_SingleTestProject()
+        public async Task CSharp_NetCore_SingleTestProject()
         {
             var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/NetCoreTestProject.XUnit/StrykerOutput");
             directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
@@ -79,10 +78,10 @@ namespace IntegrationTests
             var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
                 .OrderByDescending(f => f.LastWriteTime)
                 .First();
-            
-            var strykerRunOutput = File.ReadAllText(latestReport.FullName);
 
-            var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
+            using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+            var report = await JsonReportSerialization.DeserializeJsonReportAsync(strykerRunOutput);
 
             CheckReportMutants(report, total: 589, ignored: 246, survived: 4, killed: 9, timeout: 2, nocoverage: 297);
             CheckReportTestCounts(report, total: 11);
@@ -90,7 +89,7 @@ namespace IntegrationTests
 
         [Fact]
         [Trait("Category", "FSharp")]
-        public void FSharp_SingleTestProject()
+        public async Task FSharp_SingleTestProject()
         {
             var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/Library.FSharp.XUnit/StrykerOutput");
             directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
@@ -100,9 +99,9 @@ namespace IntegrationTests
                 .OrderByDescending(f => f.LastWriteTime)
                 .First();
 
-            var strykerRunOutput = File.ReadAllText(latestReport.FullName);
+            using var strykerRunOutput = File.OpenRead(latestReport.FullName);
 
-            var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
+            var report = await JsonReportSerialization.DeserializeJsonReportAsync(strykerRunOutput);
 
             CheckReportMutants(report, total: 0, ignored: 0, survived: 0, killed: 0, timeout: 0, nocoverage: 0);
             CheckReportTestCounts(report, total: 0);
