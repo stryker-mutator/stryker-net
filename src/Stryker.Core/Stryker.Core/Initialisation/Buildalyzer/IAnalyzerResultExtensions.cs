@@ -162,7 +162,7 @@ public static class IAnalyzerResultExtensions
 
     private static readonly string[] knownTestPackages = ["MSTest.TestFramework", "xunit", "NUnit"];
 
-    public static bool IsTestProject(this IAnalyzerResults analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
+    public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
 
     public static bool IsTestProject(this IAnalyzerResult analyzerResult)
     {
@@ -202,22 +202,13 @@ public static class IAnalyzerResultExtensions
         this IAnalyzerResult analyzerResult)
     {
         var noWarnString = analyzerResult.GetPropertyOrDefault("NoWarn");
-        var noWarn = noWarnString is not null
-            ? noWarnString.Split(";").Where(x => !string.IsNullOrWhiteSpace(x))
-                .ToDictionary(x => x, _ => ReportDiagnostic.Suppress)
-            : new Dictionary<string, ReportDiagnostic>();
+        var noWarn = ParseDiagnostics(noWarnString).ToDictionary(x => x, _ => ReportDiagnostic.Suppress);
 
         var warningsAsErrorsString = analyzerResult.GetPropertyOrDefault("WarningsAsErrors");
-        var warningsAsErrors = warningsAsErrorsString is not null
-            ? warningsAsErrorsString.Split(";").Where(x => !string.IsNullOrWhiteSpace(x))
-                .ToDictionary(x => x, _ => ReportDiagnostic.Error)
-            : new Dictionary<string, ReportDiagnostic>();
+        var warningsAsErrors = ParseDiagnostics(warningsAsErrorsString).ToDictionary(x => x, _ => ReportDiagnostic.Error);
 
         var warningsNotAsErrorsString = analyzerResult.GetPropertyOrDefault("WarningsNotAsErrors");
-        var warningsNotAsErrors = warningsNotAsErrorsString is not null
-            ? warningsNotAsErrorsString.Split(";").Where(x => !string.IsNullOrWhiteSpace(x))
-                .ToDictionary(x => x, _ => ReportDiagnostic.Warn)
-            : new Dictionary<string, ReportDiagnostic>();
+        var warningsNotAsErrors = ParseDiagnostics(warningsNotAsErrorsString).ToDictionary(x => x, _ => ReportDiagnostic.Warn);
 
         // merge settings,
         var diagnosticOptions = new Dictionary<string, ReportDiagnostic>(warningsAsErrors);
@@ -233,6 +224,19 @@ public static class IAnalyzerResultExtensions
 
         return diagnosticOptions.ToImmutableDictionary();
     }
+
+    private static IEnumerable<string> ParseDiagnostics(string diagnostics)
+    {
+        if(string.IsNullOrWhiteSpace(diagnostics))
+        {
+            return [];
+        }
+
+        return diagnostics
+            .Split(";")
+            .Distinct()
+            .Where(x => !string.IsNullOrWhiteSpace(x));
+    } 
 
     internal static int GetWarningLevel(this IAnalyzerResult analyzerResult) =>
         int.Parse(analyzerResult.GetPropertyOrDefault("WarningLevel", "4"));
