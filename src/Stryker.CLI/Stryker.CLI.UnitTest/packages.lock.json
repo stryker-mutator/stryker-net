@@ -1591,11 +1591,11 @@
           "Serilog.Sinks.Console": "[6.0.0, )",
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.49.1, )",
-          "Stryker.Abstractions": "[1.0.0, )",
-          "Stryker.Configuration": "[1.0.0, )",
-          "Stryker.DataCollector": "[1.0.0, )",
+          "Stryker.Abstractions": "[4.3.0, )",
+          "Stryker.Configuration": "[4.3.0, )",
+          "Stryker.DataCollector": "[4.3.0, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
-          "Stryker.RegexMutators": "[1.0.0, )",
+          "Stryker.RegexMutators": "[4.3.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[21.0.29, )"
         }
       },
@@ -1608,7 +1608,7 @@
           "Microsoft.CodeAnalysis.Common": "[4.11.0, )",
           "Microsoft.TestPlatform.ObjectModel": "[17.11.1, )",
           "Serilog": "[4.0.2, )",
-          "Stryker.Utilities": "[1.0.0, )",
+          "Stryker.Utilities": "[4.3.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[21.0.29, )"
         }
       },
@@ -1619,8 +1619,8 @@
           "Microsoft.CodeAnalysis.CSharp": "[4.11.0, )",
           "Microsoft.CodeAnalysis.Common": "[4.11.0, )",
           "Serilog": "[4.0.2, )",
-          "Stryker.Abstractions": "[1.0.0, )",
-          "Stryker.Utilities": "[1.0.0, )"
+          "Stryker.Abstractions": "[4.3.0, )",
+          "Stryker.Utilities": "[4.3.0, )"
         }
       },
       "stryker.datacollector": {
