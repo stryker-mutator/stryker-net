@@ -505,7 +505,7 @@
           "Microsoft.CodeAnalysis.Common": "[4.11.0, )",
           "Microsoft.TestPlatform.ObjectModel": "[17.11.1, )",
           "Serilog": "[4.0.2, )",
-          "Stryker.Utilities": "[1.0.0, )",
+          "Stryker.Utilities": "[4.3.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[21.0.29, )"
         }
       },
