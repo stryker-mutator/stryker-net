@@ -1599,7 +1599,7 @@
         "dependencies": {
           "FSharp.Compiler.Service": "[42.7.100-preview.22427.1, )",
           "Microsoft.CodeAnalysis.CSharp": "[4.11.0, )",
-          "Microsoft.Extensions.Logging.Abstractions": "[8.0.0, )"
+          "Microsoft.Extensions.Logging.Abstractions": "[8.0.2, )"
         }
       },
       "Microsoft.CodeAnalysis.VisualBasic": {
@@ -1613,7 +1613,7 @@
       },
       "Microsoft.Extensions.Logging.Abstractions": {
         "type": "CentralTransitive",
-        "requested": "[8.0.0, )",
+        "requested": "[8.0.2, )",
         "resolved": "8.0.2",
         "contentHash": "nroMDjS7hNBPtkZqVBbSiQaQjWRDxITI8Y7XnDs97rqG3EbzVTNLZQf7bIeUJcaHOV8bca47s1Uxq94+2oGdxA==",
         "dependencies": {
