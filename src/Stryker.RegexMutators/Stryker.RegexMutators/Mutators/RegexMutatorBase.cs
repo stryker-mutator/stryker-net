@@ -14,9 +14,9 @@ public abstract class RegexMutatorBase<T>
 {
     public IEnumerable<RegexMutation> Mutate(RegexNode node, RegexNode root)
     {
-        if (node is T)
+        if (node is T regexNode)
         {
-            return ApplyMutations(node as T, root);
+            return ApplyMutations(regexNode, root);
         }
 
         return Enumerable.Empty<RegexMutation>();
@@ -28,4 +28,6 @@ public abstract class RegexMutatorBase<T>
     /// <param name="node">The node to mutate</param>
     /// <returns>One or more mutations</returns>
     public abstract IEnumerable<RegexMutation> ApplyMutations(T node, RegexNode root);
+
+    public bool CanHandle(RegexNode node) => node is T;
 }

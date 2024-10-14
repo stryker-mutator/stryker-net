@@ -1,64 +1,67 @@
-﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 using Stryker.Regex.Parser;
+using Stryker.Regex.Parser.Exceptions;
 using Stryker.Regex.Parser.Nodes;
-using Stryker.Regex.Parser.Nodes.AnchorNodes;
-using Stryker.Regex.Parser.Nodes.CharacterClass;
-using Stryker.Regex.Parser.Nodes.GroupNodes;
-using Stryker.Regex.Parser.Nodes.QuantifierNodes;
 using Stryker.RegexMutators.Mutators;
 
 namespace Stryker.RegexMutators;
 
-public class RegexMutantOrchestrator
+public sealed class RegexMutantOrchestrator(string pattern)
 {
-    private readonly string _pattern;
-    private readonly IDictionary<Type, IEnumerable<IRegexMutator>> _mutatorsByRegexNodeType;
-    private RegexNode _root;
+    private static readonly IReadOnlyCollection<IRegexMutator> _mutators =
+    [
+        // Level 1
+        new AnchorRemovalMutator(),
+        new CharacterClassNegationMutator(),
+        new CharacterClassShorthandNegationMutator(),
+        new QuantifierRemovalMutator(),
+        new UnicodeCharClassNegationMutator(),
+        new LookAroundMutator(),
 
-    public RegexMutantOrchestrator(string pattern)
-    {
-        _pattern = pattern;
-        _mutatorsByRegexNodeType = new Dictionary<Type, IEnumerable<IRegexMutator>>
-        {
-            { typeof(AnchorNode), new List<IRegexMutator> { new AnchorRemovalMutator() } },
-            { typeof(QuantifierNode), new List<IRegexMutator> { new QuantifierRemovalMutator() } },
-            { typeof(CharacterClassNode), new List<IRegexMutator> { new CharacterClassNegationMutator() } },
-            { typeof(CharacterClassShorthandNode), new List<IRegexMutator> { new CharacterClassShorthandNegationMutator() } },
-            { typeof(QuantifierNOrMoreNode), new List<IRegexMutator> { new QuantifierUnlimitedQuantityMutator() } },
-            { typeof(QuantifierNMNode), new List<IRegexMutator> { new QuantifierQuantityMutator() } },
-            { typeof(LookaroundGroupNode), new List<IRegexMutator> { new LookAroundMutator() } },
-        };
-    }
+        // Level 2
+        new CharacterClassChildRemovalMutator(),
+        new CharacterClassToAnyCharMutator(),
+        new CharacterClassShorthandNullificationMutator(),
+        new CharacterClassShorthandAnyCharMutator(),
+        new QuantifierUnlimitedQuantityMutator(),
+        new QuantifierQuantityMutator(),
+        new QuantifierShortMutator(),
+        new GroupToNcGroupMutator(),
+
+        // Level 3
+        new CharacterClassRangeMutator(),
+        new QuantifierReluctantAdditionMutator()
+    ];
 
     public IEnumerable<RegexMutation> Mutate()
     {
+        RegexNode root;
+
         try
         {
-            var parser = new Parser(_pattern);
+            var parser = new Parser(pattern);
             var tree = parser.Parse();
-            _root = tree.Root;
+            root = tree.Root;
         }
-
         catch (RegexParseException)
         {
             yield break;
         }
 
-        var regexNodes = _root.GetDescendantNodes().ToList();
-        regexNodes.Add(_root);
+        IEnumerable<RegexNode> regexNodes = [..root.GetDescendantNodes(), root];
 
-        foreach (var mutant in regexNodes.SelectMany(node => FindMutants(node, _root)))
+        foreach (var regexNode in regexNodes)
         {
-            yield return mutant;
+            foreach (var item in _mutators)
+            {
+                if (item.CanHandle(regexNode))
+                {
+                    foreach (var regexMutation in item.Mutate(regexNode, root))
+                    {
+                        yield return regexMutation;
+                    }
+                }
+            }
         }
     }
-
-    private IEnumerable<RegexMutation> FindMutants(RegexNode regexNode, RegexNode root) => _mutatorsByRegexNodeType
-            .Where(item => regexNode.GetType() == item.Key || regexNode.GetType().IsSubclassOf(item.Key))
-            .SelectMany(item => item.Value)
-            .SelectMany(mutator => mutator.Mutate(regexNode, root));
-
 }
