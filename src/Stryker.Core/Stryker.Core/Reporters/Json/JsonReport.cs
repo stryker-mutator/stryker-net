@@ -1,24 +1,24 @@
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporting;
 using Stryker.Core.Reporters.Json.SourceFiles;
 using Stryker.Core.Reporters.Json.TestFiles;
 
 namespace Stryker.Core.Reporters.Json
 {
-    public class JsonReport
+    public class JsonReport : IJsonReport
     {
         public string SchemaVersion { get; init; } = "2";
         public IDictionary<string, int> Thresholds { get; init; } = new Dictionary<string, int>();
         public string ProjectRoot { get; init; }
-        public IDictionary<string, SourceFile> Files { get; init; } = new Dictionary<string, SourceFile>();
-        public IDictionary<string, JsonTestFile> TestFiles { get; set; } = null;
+        public IDictionary<string, ISourceFile> Files { get; init; } = new Dictionary<string, ISourceFile>();
+        public IDictionary<string, IJsonTestFile> TestFiles { get; set; } = null;
 
         public JsonReport() { }
 
-        private JsonReport(StrykerOptions options, IReadOnlyProjectComponent mutationReport, TestProjectsInfo testProjectsInfo)
+        private JsonReport(IStrykerOptions options, IReadOnlyProjectComponent mutationReport, ITestProjectsInfo testProjectsInfo)
         {
             Thresholds.Add("high", options.Thresholds.High);
             Thresholds.Add("low", options.Thresholds.Low);
@@ -29,12 +29,12 @@ namespace Stryker.Core.Reporters.Json
             AddTestFiles(testProjectsInfo);
         }
 
-        public static JsonReport Build(StrykerOptions options, IReadOnlyProjectComponent mutationReport, TestProjectsInfo testProjectsInfo) => new(options, mutationReport, testProjectsInfo);
+        public static IJsonReport Build(IStrykerOptions options, IReadOnlyProjectComponent mutationReport, ITestProjectsInfo testProjectsInfo) => new JsonReport(options, mutationReport, testProjectsInfo);
 
-        private IDictionary<string, SourceFile> GenerateReportComponents(IReadOnlyProjectComponent component)
+        private IDictionary<string, ISourceFile> GenerateReportComponents(IReadOnlyProjectComponent component)
         {
-            var files = new Dictionary<string, SourceFile>();
-            if (component is IReadOnlyFolderComposite folder)
+            var files = new Dictionary<string, ISourceFile>();
+            if (component is IFolderComposite folder)
             {
                 Merge(files, GenerateFolderReportComponents(folder));
             }
@@ -46,9 +46,9 @@ namespace Stryker.Core.Reporters.Json
             return files;
         }
 
-        private IDictionary<string, SourceFile> GenerateFolderReportComponents(IReadOnlyFolderComposite folderComponent)
+        private IDictionary<string, ISourceFile> GenerateFolderReportComponents(IFolderComposite folderComponent)
         {
-            var files = new Dictionary<string, SourceFile>();
+            var files = new Dictionary<string, ISourceFile>();
             foreach (var child in folderComponent.Children)
             {
                 Merge(files, GenerateReportComponents(child));
@@ -57,13 +57,13 @@ namespace Stryker.Core.Reporters.Json
             return files;
         }
 
-        private static IDictionary<string, SourceFile> GenerateFileReportComponents(IReadOnlyFileLeaf fileComponent) => new Dictionary<string, SourceFile> { { fileComponent.FullPath, new SourceFile(fileComponent) } };
+        private static IDictionary<string, ISourceFile> GenerateFileReportComponents(IReadOnlyFileLeaf fileComponent) => new Dictionary<string, ISourceFile> { { fileComponent.FullPath, new SourceFile(fileComponent) } };
 
-        private void AddTestFiles(TestProjectsInfo testProjectsInfo)
+        private void AddTestFiles(ITestProjectsInfo testProjectsInfo)
         {
             if (testProjectsInfo?.TestFiles is not null)
             {
-                TestFiles = new Dictionary<string, JsonTestFile>();
+                TestFiles = new Dictionary<string, IJsonTestFile>();
                 foreach (var testFile in testProjectsInfo.TestFiles)
                 {
                     if (TestFiles.TryGetValue(testFile.FilePath, out var jsonFile))

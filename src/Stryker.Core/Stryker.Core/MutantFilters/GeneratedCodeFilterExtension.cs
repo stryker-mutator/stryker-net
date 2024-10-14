@@ -4,7 +4,7 @@
 
 using System;
 
-namespace Stryker.Core.MutantFilters.Extensions
+namespace Stryker.Core.MutantFilters
 {
     using Microsoft.CodeAnalysis;
     using Microsoft.CodeAnalysis.CSharp;

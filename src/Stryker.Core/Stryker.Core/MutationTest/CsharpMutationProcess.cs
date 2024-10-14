@@ -4,21 +4,24 @@ using System.IO.Abstractions;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Compiling;
-using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.Logging;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
+using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
-using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Core.Compiling;
 using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Abstractions.Options;
 
 namespace Stryker.Core.MutationTest
 {
     public class CsharpMutationProcess : IMutationProcess
     {
         private readonly ILogger _logger;
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IFileSystem _fileSystem;
         private readonly BaseMutantOrchestrator<SyntaxTree, SemanticModel> _orchestrator;
         private readonly IMutantFilter _mutantFilter;
@@ -32,7 +35,7 @@ namespace Stryker.Core.MutationTest
         /// <param name="orchestrator"></param>
         public CsharpMutationProcess(
             IFileSystem fileSystem = null,
-            StrykerOptions options = null,
+            IStrykerOptions options = null,
             IMutantFilter mutantFilter = null,
             BaseMutantOrchestrator<SyntaxTree, SemanticModel> orchestrator = null)
         {
@@ -48,7 +51,7 @@ namespace Stryker.Core.MutationTest
         /// This constructor is used by the <see cref="MutationTestProcess"/> initialization logic.
         /// </summary>
         /// <param name="options"></param>
-        public CsharpMutationProcess(StrykerOptions options) : this(null, options)
+        public CsharpMutationProcess(IStrykerOptions options) : this(null, options)
         { }
 
         public void Mutate(MutationTestInput input)
@@ -59,9 +62,9 @@ namespace Stryker.Core.MutationTest
             var semanticModels = compilingProcess.GetSemanticModels(projectInfo.GetAllFiles().Cast<CsharpFileLeaf>().Select(x => x.SyntaxTree));
 
             // Mutate source files
-            foreach(var file in projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
+            foreach (var file in projectInfo.GetAllFiles().Cast<CsharpFileLeaf>())
             {
-                _logger.LogDebug("Mutating {FilePath}",file.FullPath);
+                _logger.LogDebug("Mutating {FilePath}", file.FullPath);
                 // Mutate the syntax tree
                 var mutatedSyntaxTree = orchestrator.Mutate(file.SyntaxTree, semanticModels.First(x => x.SyntaxTree == file.SyntaxTree));
                 // Add the mutated syntax tree for compilation
@@ -69,7 +72,7 @@ namespace Stryker.Core.MutationTest
                 if (_options.DevMode)
                 {
                     _logger.LogTrace("Mutated {FullPath}:{NewLine}{MutatedSyntaxTree}",
-                        file.FullPath,Environment.NewLine,mutatedSyntaxTree.GetText());
+                        file.FullPath, Environment.NewLine, mutatedSyntaxTree.GetText());
                 }
                 // Filter the mutants
                 file.Mutants = orchestrator.GetLatestMutantBatch();
@@ -83,7 +86,7 @@ namespace Stryker.Core.MutationTest
         private void CompileMutations(MutationTestInput input, CsharpCompilingProcess compilingProcess)
         {
             var info = input.SourceProjectInfo;
-            var projectInfo =  (ProjectComponent<SyntaxTree>) info.ProjectContents;
+            var projectInfo = (ProjectComponent<SyntaxTree>)info.ProjectContents;
             using var ms = new MemoryStream();
             using var msForSymbols = _options.DevMode ? new MemoryStream() : null;
             // compile the mutated syntax trees

@@ -5,8 +5,8 @@ using System.Linq;
 using System.Reflection;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Options;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
 

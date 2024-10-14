@@ -1,12 +1,13 @@
 using System;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
+using Stryker.Abstractions.Mutants;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Html.RealTime;
 using Stryker.Core.Reporters.Html.RealTime.Events;
 using Stryker.Core.Reporters.Json.SourceFiles;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters.Html.RealTime;
 

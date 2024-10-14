@@ -1,9 +1,10 @@
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using Shouldly;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options.Inputs;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.UnitTest;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
@@ -106,7 +107,7 @@ $@"Expected exactly one .sln file, found more than one:
             var dir = Directory.GetCurrentDirectory();
             var fileSystem = new MockFileSystem();
             fileSystem.AddDirectory(dir);
-            
+
             var ex = Should.Throw<InputException>(() =>
             {
                 input.Validate(dir, fileSystem);

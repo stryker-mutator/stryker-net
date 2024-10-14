@@ -2,13 +2,15 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
-using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
-using Stryker.Core.Options;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions;
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.Mutators;
+using Stryker.Core.UnitTest;
 
 [assembly: InternalsVisibleTo("DynamicProxyGenAssembly2")]
 namespace Stryker.Core.UnitTest.Mutators

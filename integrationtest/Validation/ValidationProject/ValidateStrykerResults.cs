@@ -2,11 +2,12 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Threading.Tasks;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using Newtonsoft.Json;
 using Shouldly;
-using Stryker.Core.Mutants;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Reporting;
 using Stryker.Core.Reporters.Json;
 using Xunit;
 
@@ -48,7 +49,7 @@ namespace IntegrationTests
 
         [Fact]
         [Trait("Category", "SingleTestProject")]
-        public void CSharp_NetFramework_SingleTestProject()
+        public async Task CSharp_NetFramework_SingleTestProject()
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
@@ -59,9 +60,9 @@ namespace IntegrationTests
                     .OrderByDescending(f => f.LastWriteTime)
                     .First();
 
-                var strykerRunOutput = File.ReadAllText(latestReport.FullName);
+                using var strykerRunOutput = File.OpenRead(latestReport.FullName);
 
-                var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
+                var report = await JsonReportSerialization.DeserializeJsonReportAsync(strykerRunOutput);
 
                 CheckReportMutants(report, total: 29, ignored: 7, survived: 3, killed: 7, timeout: 0, nocoverage: 11);
             }
@@ -69,7 +70,7 @@ namespace IntegrationTests
 
         [Fact]
         [Trait("Category", "SingleTestProject")]
-        public void CSharp_NetCore_SingleTestProject()
+        public async Task CSharp_NetCore_SingleTestProject()
         {
             var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/NetCoreTestProject.XUnit/StrykerOutput");
             directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
@@ -77,10 +78,10 @@ namespace IntegrationTests
             var latestReport = directory.GetFiles(MutationReportJson, SearchOption.AllDirectories)
                 .OrderByDescending(f => f.LastWriteTime)
                 .First();
-            
-            var strykerRunOutput = File.ReadAllText(latestReport.FullName);
 
-            var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
+            using var strykerRunOutput = File.OpenRead(latestReport.FullName);
+
+            var report = await JsonReportSerialization.DeserializeJsonReportAsync(strykerRunOutput);
 
             CheckReportMutants(report, total: 589, ignored: 246, survived: 4, killed: 9, timeout: 2, nocoverage: 297);
             CheckReportTestCounts(report, total: 11);
@@ -88,7 +89,7 @@ namespace IntegrationTests
 
         [Fact]
         [Trait("Category", "FSharp")]
-        public void FSharp_SingleTestProject()
+        public async Task FSharp_SingleTestProject()
         {
             var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/Library.FSharp.XUnit/StrykerOutput");
             directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
@@ -98,9 +99,9 @@ namespace IntegrationTests
                 .OrderByDescending(f => f.LastWriteTime)
                 .First();
 
-            var strykerRunOutput = File.ReadAllText(latestReport.FullName);
+            using var strykerRunOutput = File.OpenRead(latestReport.FullName);
 
-            var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
+            var report = await JsonReportSerialization.DeserializeJsonReportAsync(strykerRunOutput);
 
             CheckReportMutants(report, total: 0, ignored: 0, survived: 0, killed: 0, timeout: 0, nocoverage: 0);
             CheckReportTestCounts(report, total: 0);
@@ -108,7 +109,7 @@ namespace IntegrationTests
 
         [Fact]
         [Trait("Category", "MultipleTestProjects")]
-        public void CSharp_NetCore_WithTwoTestProjects()
+        public async Task CSharp_NetCore_WithTwoTestProjects()
         {
             var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/Targetproject/StrykerOutput");
             directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
@@ -117,9 +118,9 @@ namespace IntegrationTests
                 .OrderByDescending(f => f.LastWriteTime)
                 .First();
 
-            var strykerRunOutput = File.ReadAllText(latestReport.FullName);
+            using var strykerRunOutput = File.OpenRead(latestReport.FullName);
 
-            var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
+            var report = await JsonReportSerialization.DeserializeJsonReportAsync(strykerRunOutput);
 
             CheckReportMutants(report, total: 589, ignored: 105, survived: 5, killed: 11, timeout: 2, nocoverage: 435);
             CheckReportTestCounts(report, total: 21);
@@ -127,7 +128,7 @@ namespace IntegrationTests
 
         [Fact]
         [Trait("Category", "Solution")]
-        public void CSharp_NetCore_SolutionRun()
+        public async Task CSharp_NetCore_SolutionRun()
         {
             var directory = new DirectoryInfo("../../../../../TargetProjects/NetCore/StrykerOutput");
             directory.GetFiles("*.json", SearchOption.AllDirectories).ShouldNotBeEmpty("No reports available to assert");
@@ -136,15 +137,15 @@ namespace IntegrationTests
                 .OrderByDescending(f => f.LastWriteTime)
                 .First();
 
-            var strykerRunOutput = File.ReadAllText(latestReport.FullName);
+            using var strykerRunOutput = File.OpenRead(latestReport.FullName);
 
-            var report = JsonConvert.DeserializeObject<JsonReport>(strykerRunOutput);
+            var report = await JsonReportSerialization.DeserializeJsonReportAsync(strykerRunOutput);
 
             CheckReportMutants(report, total: 589, ignored: 246, survived: 4, killed: 9, timeout: 2, nocoverage: 297);
             CheckReportTestCounts(report, total: 23);
         }
 
-        private void CheckMutationKindsValidity(JsonReport report)
+        private void CheckMutationKindsValidity(IJsonReport report)
         {
             foreach (var file in report.Files)
             {
@@ -164,7 +165,7 @@ namespace IntegrationTests
             }
         }
 
-        private void CheckReportMutants(JsonReport report, int total, int ignored, int survived, int killed, int timeout, int nocoverage)
+        private void CheckReportMutants(IJsonReport report, int total, int ignored, int survived, int killed, int timeout, int nocoverage)
         {
             var actualTotal = report.Files.Select(f => f.Value.Mutants.Count()).Sum();
             var actualIgnored = report.Files.Select(f => f.Value.Mutants.Count(m => m.Status == MutantStatus.Ignored.ToString())).Sum();
@@ -185,7 +186,7 @@ namespace IntegrationTests
             CheckMutationKindsValidity(report);
         }
 
-        private void CheckReportTestCounts(JsonReport report, int total)
+        private void CheckReportTestCounts(IJsonReport report, int total)
         {
             var actualTotal = report.TestFiles.Sum(tf => tf.Value.Tests.Count);
 

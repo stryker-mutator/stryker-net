@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Mutants;
+using Stryker.Abstractions.Mutants;
 
 namespace Stryker.Core.Mutators;
 
@@ -13,5 +13,5 @@ public class SwitchExpressionMutator : PatternMutatorBase<SwitchExpressionSyntax
     public override IEnumerable<Mutation> ApplyMutations(SwitchExpressionSyntax node, SemanticModel semanticModel) => node
         .DescendantNodes()
         .OfType<PatternSyntax>()
-        .SelectMany(x => base.ApplyMutations(x, semanticModel));
+        .SelectMany(x => ApplyMutations(x, semanticModel));
 }

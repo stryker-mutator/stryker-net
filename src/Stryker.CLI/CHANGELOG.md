@@ -1,3 +1,12 @@
+# [4.3.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.2.0...dotnet-stryker@4.3.0) (2024-10-14)
+
+
+### Features
+
+* Add --skip-version-check flag to disable automatic version checks ([#3045](https://github.com/stryker-mutator/stryker-net/issues/3045)) ([db8e9e8](https://github.com/stryker-mutator/stryker-net/commit/db8e9e8e86b00d4b3c2d77aa8725db4c4904a5e2))
+
+
+
 # [4.2.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.1.0...dotnet-stryker@4.2.0) (2024-09-13)
 
 

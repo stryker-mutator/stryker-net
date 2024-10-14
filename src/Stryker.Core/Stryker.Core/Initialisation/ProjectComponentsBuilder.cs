@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Stryker.Core.Exceptions;
+using Stryker.Abstractions.Exceptions;
 using System.Xml.Linq;
 using System.Linq;
-using Stryker.Core.ProjectComponents;
+using Stryker.Abstractions.ProjectComponents;
 using Buildalyzer;
 using System.IO;
 using System.IO.Abstractions;
+using Stryker.Utilities;
 
 namespace Stryker.Core.Initialisation;
 
@@ -15,7 +16,7 @@ public abstract class ProjectComponentsBuilder
 {
     protected readonly IFileSystem FileSystem;
 
-    public abstract IProjectComponent Build();
+    public abstract IReadOnlyProjectComponent Build();
 
     protected ProjectComponentsBuilder(IFileSystem fileSystem) => FileSystem = fileSystem;
 
@@ -76,6 +77,6 @@ public abstract class ProjectComponentsBuilder
             });
     }
 
-    public abstract void InjectHelpers(IProjectComponent inputFiles);
+    public abstract void InjectHelpers(IReadOnlyProjectComponent inputFiles);
     public abstract Action PostBuildAction();
 }

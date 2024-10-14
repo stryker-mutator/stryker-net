@@ -11,7 +11,7 @@ namespace Stryker.Core.Instrumentation;
 /// <typeparam name="T">SyntaxNode type handled by this helper.</typeparam>
 /// <remarks>There is no standard helper injection method as each injector may require specific arguments.</remarks>
 /// <remarks>Multiple helpers can work on the same type of constructs.</remarks>
-internal abstract class BaseEngine<T>: IInstrumentCode where T: CSharpSyntaxNode
+internal abstract class BaseEngine<T> : IInstrumentCode where T : CSharpSyntaxNode
 {
     protected BaseEngine() => Marker = MutantPlacer.RegisterEngine(this);
 

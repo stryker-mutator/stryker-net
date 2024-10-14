@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
 
 namespace Stryker.Core.MutantFilters
 {
@@ -16,6 +16,6 @@ namespace Stryker.Core.MutantFilters
         public string DisplayName => "mutation type filter";
 
         /// <inheritdoc />
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options) => mutants.Where(mutant => !options.ExcludedMutations.Contains(mutant.Mutation.Type));
+        public IEnumerable<IMutant> FilterMutants(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file, IStrykerOptions options) => mutants.Where(mutant => !options.ExcludedMutations.Contains(mutant.Mutation.Type));
     }
 }

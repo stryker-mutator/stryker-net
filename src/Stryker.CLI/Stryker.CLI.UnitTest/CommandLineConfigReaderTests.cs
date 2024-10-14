@@ -1,9 +1,9 @@
 using System.Linq;
 using McMaster.Extensions.CommandLineUtils;
-using Shouldly;
-using Stryker.CLI.CommandLineConfig;
-using Stryker.Core.Options;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
+using Stryker.Abstractions.Options;
+using Stryker.CLI.CommandLineConfig;
 
 namespace Stryker.CLI.UnitTest
 {

@@ -9,22 +9,25 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.MutantFilters.Extensions;
-using Stryker.Core.Options;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Core.MutantFilters;
+using Stryker.Abstractions.Options;
 
 namespace Stryker.Core.Initialisation
 {
     public class CsharpProjectComponentsBuilder : ProjectComponentsBuilder
     {
         private readonly SourceProjectInfo _projectInfo;
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly string[] _foldersToExclude;
         private readonly ILogger _logger;
 
-        public CsharpProjectComponentsBuilder(SourceProjectInfo projectInfo, StrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) : base(fileSystem)
+        public CsharpProjectComponentsBuilder(SourceProjectInfo projectInfo, IStrykerOptions options, string[] foldersToExclude, ILogger logger, IFileSystem fileSystem) : base(fileSystem)
         {
             _projectInfo = projectInfo;
             _options = options;
@@ -32,7 +35,7 @@ namespace Stryker.Core.Initialisation
             _logger = logger;
         }
 
-        public override IProjectComponent Build()
+        public override IReadOnlyProjectComponent Build()
         {
             CsharpFolderComposite inputFiles;
             if (_projectInfo.AnalyzerResult.SourceFiles != null && _projectInfo.AnalyzerResult.SourceFiles.Any())
@@ -56,17 +59,17 @@ namespace Stryker.Core.Initialisation
             foreach (var dir in ExtractProjectFolders(analyzerResult))
             {
                 var folder = FileSystem.Path.Combine(Path.GetDirectoryName(sourceProjectDir), dir);
-                _logger.LogDebug("Scanning {Folder}",folder);
+                _logger.LogDebug("Scanning {Folder}", folder);
                 inputFiles.Add(FindInputFiles(folder, sourceProjectDir, analyzerResult, cSharpParseOptions));
             }
 
             return inputFiles;
         }
 
-        public override void InjectHelpers(IProjectComponent inputFiles)
+        public override void InjectHelpers(IReadOnlyProjectComponent inputFiles)
             => InjectMutantHelpers((CsharpFolderComposite)inputFiles, BuildCsharpParseOptions(_projectInfo.AnalyzerResult, _options));
 
-        private CsharpFolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult, StrykerOptions options)
+        private CsharpFolderComposite FindProjectFilesUsingBuildalyzer(IAnalyzerResult analyzerResult, IStrykerOptions options)
         {
             var generatedAssemblyInfo = analyzerResult.AssemblyAttributeFileName();
             var projectUnderTestFolderComposite = new CsharpFolderComposite()
@@ -114,13 +117,13 @@ namespace Stryker.Core.Initialisation
             return projectUnderTestFolderComposite;
         }
 
-        public override Action PostBuildAction() => ( )=> ScanPackageContentFiles(_projectInfo.AnalyzerResult, (CsharpFolderComposite)_projectInfo.ProjectContents);
+        public override Action PostBuildAction() => () => ScanPackageContentFiles(_projectInfo.AnalyzerResult, (CsharpFolderComposite)_projectInfo.ProjectContents);
 
         public void ScanPackageContentFiles(IAnalyzerResult analyzerResult, CsharpFolderComposite projectUnderTestFolderComposite)
         {
             // look for extra source files coming from Nuget packages
-            var folder= analyzerResult.GetProperty("ContentPreprocessorOutputDirectory");
-            var sourceProjectDir= Path.GetDirectoryName(analyzerResult.ProjectFilePath);
+            var folder = analyzerResult.GetProperty("ContentPreprocessorOutputDirectory");
+            var sourceProjectDir = Path.GetDirectoryName(analyzerResult.ProjectFilePath);
             if (string.IsNullOrEmpty(folder))
             {
                 return;
@@ -234,7 +237,7 @@ namespace Stryker.Core.Initialisation
             }
         }
 
-        private static CSharpParseOptions BuildCsharpParseOptions(IAnalyzerResult analyzerResult, StrykerOptions options) =>
+        private static CSharpParseOptions BuildCsharpParseOptions(IAnalyzerResult analyzerResult, IStrykerOptions options) =>
             new(options.LanguageVersion, DocumentationMode.None, preprocessorSymbols: analyzerResult.PreprocessorSymbols);
 
         // get the FolderComposite object representing the project's folder 'targetFolder'. Build the needed FolderComposite(s) for a complete path
@@ -281,7 +284,7 @@ namespace Stryker.Core.Initialisation
                 if (string.IsNullOrEmpty(folder))
                 {
                     // we are at root
-                    (inputFiles as IReadOnlyFolderComposite).Add(subDir);
+                    (inputFiles as IFolderComposite).Add(subDir);
                 }
             }
 

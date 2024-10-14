@@ -1,5 +1,4 @@
 using System;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
@@ -12,13 +11,13 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Mutators;
 using Stryker.Core.Compiling;
-using Stryker.Core.Exceptions;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
-using Stryker.Core.Mutators;
-using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.SourceProjects;
 
 namespace Stryker.Core.UnitTest.Compiling
@@ -113,7 +112,7 @@ namespace ExampleProject
             };
             var codeInjection = new CodeInjection();
             var placer = new MutantPlacer(codeInjection);
-            var mutator = new CsharpMutantOrchestrator( placer, options: options);
+            var mutator = new CsharpMutantOrchestrator(placer, options: options);
             var helpers = new List<SyntaxTree>();
             foreach (var (name, code) in codeInjection.MutantHelpers)
             {
@@ -197,7 +196,7 @@ namespace ExampleProject
             };
             var codeInjection = new CodeInjection();
             var placer = new MutantPlacer(codeInjection);
-            var mutator = new CsharpMutantOrchestrator( placer, options: options);
+            var mutator = new CsharpMutantOrchestrator(placer, options: options);
             var helpers = new List<SyntaxTree>();
             foreach (var (name, code) in codeInjection.MutantHelpers)
             {
@@ -241,7 +240,7 @@ namespace ExampleProject
             var target = new CsharpCompilingProcess(input, rollbackProcess, options);
 
             using var ms = new MemoryStream();
-            
+
             Action test = () => target.Compile(helpers, ms, null);
             test.ShouldThrow<CompilationException>();
         }
@@ -848,7 +847,7 @@ namespace ExampleProject
         public void RollbackProcess_ShouldOnlyRaiseExceptionOnFinalAttempt()
         {
 
-                        var syntaxTree = CSharpSyntaxTree.ParseText(@"
+            var syntaxTree = CSharpSyntaxTree.ParseText(@"
 using System;
 
 namespace ExampleProject

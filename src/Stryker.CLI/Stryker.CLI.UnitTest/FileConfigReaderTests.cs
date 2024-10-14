@@ -1,12 +1,12 @@
 using System.IO;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Options;
 using Stryker.Core;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Options;
-using Stryker.Core.Reporters;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.CLI.UnitTest
 {

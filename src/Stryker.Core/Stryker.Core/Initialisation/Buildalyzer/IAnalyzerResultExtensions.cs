@@ -10,7 +10,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
 using NuGet.Frameworks;
-using Stryker.Core.Exceptions;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Utilities;
 
 namespace Stryker.Core.Initialisation.Buildalyzer;
 
@@ -21,7 +22,7 @@ public static class IAnalyzerResultExtensions
 
     public static bool BuildsAnAssembly(this IAnalyzerResult analyzerResult) => analyzerResult.Properties.ContainsKey("TargetFileName");
 
-    public static string GetReferenceAssemblyPath(this IAnalyzerResult analyzerResult) => analyzerResult.Properties.TryGetValue("TargetRefPath", out var property) ? FilePathUtils.NormalizePathSeparators(property) : GetAssemblyPath(analyzerResult);
+    public static string GetReferenceAssemblyPath(this IAnalyzerResult analyzerResult) => analyzerResult.Properties.TryGetValue("TargetRefPath", out var property) ? FilePathUtils.NormalizePathSeparators(property) : analyzerResult.GetAssemblyPath();
 
     public static string GetAssemblyDirectoryPath(this IAnalyzerResult analyzerResult) =>
         FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["TargetDir"]);
@@ -98,7 +99,7 @@ public static class IAnalyzerResultExtensions
 
         if (e.Exception != null)
         {
-            logger?.LogWarning("Failed to load analyzer '{Source}': Exception {Exception}.", source,e.Exception);
+            logger?.LogWarning("Failed to load analyzer '{Source}': Exception {Exception}.", source, e.Exception);
         }
     }
 
@@ -150,7 +151,7 @@ public static class IAnalyzerResultExtensions
         throw new InputException(message);
     }
 
-    internal static bool TargetsFullFramework(this IAnalyzerResult analyzerResult) => GetNuGetFramework(analyzerResult).IsDesktop();
+    internal static bool TargetsFullFramework(this IAnalyzerResult analyzerResult) => analyzerResult.GetNuGetFramework().IsDesktop();
 
     public static Language GetLanguage(this IAnalyzerResult analyzerResult) =>
         analyzerResult.GetPropertyOrDefault("Language") switch
@@ -195,7 +196,7 @@ public static class IAnalyzerResultExtensions
     internal static string GetAssemblyOriginatorKeyFile(this IAnalyzerResult analyzerResult)
     {
         var assemblyKeyFileProp = analyzerResult.GetPropertyOrDefault("AssemblyOriginatorKeyFile");
-        return assemblyKeyFileProp is null ? null : Path.Combine(Path.GetDirectoryName(analyzerResult.ProjectFilePath)??".", assemblyKeyFileProp);
+        return assemblyKeyFileProp is null ? null : Path.Combine(Path.GetDirectoryName(analyzerResult.ProjectFilePath) ?? ".", assemblyKeyFileProp);
     }
 
     internal static ImmutableDictionary<string, ReportDiagnostic> GetDiagnosticOptions(
@@ -245,7 +246,7 @@ public static class IAnalyzerResultExtensions
         analyzerResult.GetPropertyOrDefault("RootNamespace") ?? analyzerResult.GetAssemblyName();
 
     internal static bool GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, bool defaultBoolean) =>
-        bool.Parse(GetPropertyOrDefault(analyzerResult, name, defaultBoolean.ToString()));
+        bool.Parse(analyzerResult.GetPropertyOrDefault(name, defaultBoolean.ToString()));
 
     internal static string GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name,
         string defaultValue = default) =>

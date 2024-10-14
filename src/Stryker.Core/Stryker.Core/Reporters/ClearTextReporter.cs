@@ -2,10 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Spectre.Console;
 using Spectre.Console.Rendering;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporting;
 using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.Reporters
 {
@@ -14,16 +16,16 @@ namespace Stryker.Core.Reporters
     /// </summary>
     public class ClearTextReporter : IReporter
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IAnsiConsole _console;
 
-        public ClearTextReporter(StrykerOptions strykerOptions, IAnsiConsole console = null)
+        public ClearTextReporter(IStrykerOptions strykerOptions, IAnsiConsole console = null)
         {
             _options = strykerOptions;
             _console = console ?? AnsiConsole.Console;
         }
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
         {
             // This reporter does not report during the testrun
         }
@@ -38,7 +40,7 @@ namespace Stryker.Core.Reporters
             // This reporter does not report during the testrun
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
         {
             var files = reportComponent.GetAllFiles();
             if (files.Any())

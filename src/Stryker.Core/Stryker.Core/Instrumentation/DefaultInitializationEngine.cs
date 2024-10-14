@@ -54,7 +54,7 @@ internal class DefaultInitializationEngine : BaseEngine<BlockSyntax>
             originalStatements = body.Statements;
         }
 
-        var initializersBlock = SyntaxFactory.Block(initializers.Union( parameters.Select( p => SyntaxFactory.ExpressionStatement(SyntaxFactory.AssignmentExpression(
+        var initializersBlock = SyntaxFactory.Block(initializers.Union(parameters.Select(p => SyntaxFactory.ExpressionStatement(SyntaxFactory.AssignmentExpression(
                 SyntaxKind.SimpleAssignmentExpression, SyntaxFactory.IdentifierName(p.Identifier),
                 p.Type.BuildDefaultExpression())))))
             .WithAdditionalAnnotations(BlockMarker);

@@ -5,10 +5,12 @@ using LibGit2Sharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Options;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.DiffProviders;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options;
+using Stryker.Utilities;
 
 namespace Stryker.Core.UnitTest.DiffProviders
 {
@@ -213,7 +215,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         public void ScanDiffReturnsListOfFiles_ExcludingTestFilesInDiffIgnoreFiles()
         {
             // Arrange
-            var diffIgnoreFiles = new[] { new ExclusionPattern("/c/Users/JohnDoe/Project/Tests/Test.cs") };
+            var diffIgnoreFiles = new IExclusionPattern[] { new ExclusionPattern("/c/Users/JohnDoe/Project/Tests/Test.cs") };
 
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions()
@@ -289,7 +291,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         public void ScanDiffReturnsListOfFiles_ExcludingTestFilesInDiffIgnoreFiles_Single_Asterisk()
         {
             // Arrange
-            var diffIgnoreFiles = new[] { new ExclusionPattern("/c/Users/JohnDoe/Project/*/Test.cs") };
+            var diffIgnoreFiles = new IExclusionPattern[] { new ExclusionPattern("/c/Users/JohnDoe/Project/*/Test.cs") };
 
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions()
@@ -365,7 +367,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         public void ScanDiffReturnsListOfFiles_ExcludingTestFilesInDiffIgnoreFiles_Multi_Asterisk()
         {
             // Arrange
-            var diffIgnoreFiles = new[] { new ExclusionPattern("**/Test.cs") };
+            var diffIgnoreFiles = new IExclusionPattern[] { new ExclusionPattern("**/Test.cs") };
 
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions()
@@ -441,7 +443,7 @@ namespace Stryker.Core.UnitTest.DiffProviders
         public void ScanDiffReturnsListOfFiles_ExcludingFilesInDiffIgnoreFiles_Multi_Asterisk()
         {
             // Arrange
-            var diffIgnoreFiles = new[] { new ExclusionPattern("**/file.cs") };
+            var diffIgnoreFiles = new IExclusionPattern[] { new ExclusionPattern("**/file.cs") };
 
             var basePath = FilePathUtils.NormalizePathSeparators("/c/Users/JohnDoe/Project/Tests");
             var options = new StrykerOptions()

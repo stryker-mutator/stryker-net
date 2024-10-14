@@ -3,8 +3,11 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Spectre.Console;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporting;
 using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
 
@@ -15,16 +18,16 @@ namespace Stryker.Core.Reporters
     /// </summary>
     public class ClearTextTreeReporter : IReporter
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IAnsiConsole _console;
 
-        public ClearTextTreeReporter(StrykerOptions strykerOptions, IAnsiConsole console = null)
+        public ClearTextTreeReporter(IStrykerOptions strykerOptions, IAnsiConsole console = null)
         {
             _options = strykerOptions;
             _console = console ?? AnsiConsole.Console;
         }
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
         {
             // This reporter does not report during the testrun
         }
@@ -39,14 +42,14 @@ namespace Stryker.Core.Reporters
             // This reporter does not report during the testrun
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
         {
             Tree root = null;
 
             var stack = new Stack<IHasTreeNodes>();
 
             // setup display handlers
-            reportComponent.DisplayFolder = (IReadOnlyProjectComponent current) =>
+            reportComponent.DisplayFolder = (current) =>
             {
                 var name = Path.GetFileName(current.RelativePath);
 
@@ -61,7 +64,7 @@ namespace Stryker.Core.Reporters
                 }
             };
 
-            reportComponent.DisplayFile = (IReadOnlyProjectComponent current) =>
+            reportComponent.DisplayFile = (current) =>
             {
                 var name = Path.GetFileName(current.RelativePath);
 
@@ -107,7 +110,7 @@ namespace Stryker.Core.Reporters
             var stringBuilder = new StringBuilder();
 
             // Convert the threshold integer values to decimal values
-            stringBuilder.Append($" [[{ inputComponent.DetectedMutants().Count()}/{ inputComponent.TotalMutants().Count()} ");
+            stringBuilder.Append($" [[{inputComponent.DetectedMutants().Count()}/{inputComponent.TotalMutants().Count()} ");
 
             if (inputComponent.IsComponentExcluded(_options.Mutate))
             {

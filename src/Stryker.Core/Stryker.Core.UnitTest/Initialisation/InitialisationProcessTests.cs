@@ -4,18 +4,20 @@ using System.Collections.ObjectModel;
 using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Core.Exceptions;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Initialisation;
+using Stryker.Abstractions.ProjectComponents;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Initialisation
 {
@@ -42,11 +44,12 @@ namespace Stryker.Core.UnitTest.Initialisation
                 }
             });
 
-            inputFileResolverMock.SetupGet( x => x.FileSystem).Returns(new FileSystem());
+            inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(new FileSystem());
             var target = new InitialisationProcess(inputFileResolverMock.Object);
 
             var options = new StrykerOptions
-            { ProjectName = "TheProjectName",
+            {
+                ProjectName = "TheProjectName",
                 ProjectVersion = "TheProjectVersion"
             };
 
@@ -73,11 +76,11 @@ namespace Stryker.Core.UnitTest.Initialisation
                     TestProjectsInfo = new TestProjectsInfo(new MockFileSystem())
                 }});
 
-            inputFileResolverMock.SetupGet( x => x.FileSystem).Returns(new FileSystem());
+            inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(new FileSystem());
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), null));
-            testRunnerMock.Setup(x => x.GetTests( It.IsAny<IProjectAndTests>())).Returns(new TestSet());
-            testRunnerMock.Setup(x => x.DiscoverTests( It.IsAny<string>())).Returns(true);
-            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(),It.IsAny<ITestRunner>())).Throws(new InputException("")); // failing test
+            testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
+            testRunnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(true);
+            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>())).Throws(new InputException("")); // failing test
 
             var target = new InitialisationProcess(inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
@@ -110,7 +113,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>())).Returns(
                 new[] { new SourceProjectInfo { AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(references: Array.Empty<string>()).Object, TestProjectsInfo = new TestProjectsInfo(new MockFileSystem()) } });
 
-            inputFileResolverMock.SetupGet( x => x.FileSystem).Returns(fileSystemMock);
+            inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(fileSystemMock);
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), null));
             var failedTest = Guid.NewGuid();
             var ranTests = new TestGuidsList(failedTest, Guid.NewGuid());
@@ -122,9 +125,9 @@ namespace Stryker.Core.UnitTest.Initialisation
             testRunnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(true);
             testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(testSet);
             var failedTests = new TestGuidsList(failedTest);
-            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(),It.IsAny<ITestRunner>())).Returns(
+            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>())).Returns(
                 new InitialTestRun(
-                new TestRunResult(Array.Empty<VsTestDescription>() ,ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, Enumerable.Empty<string>(),TimeSpan.Zero), new TimeoutValueCalculator(0) )); // failing test
+                new TestRunResult(Array.Empty<VsTestDescription>(), ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), new TimeoutValueCalculator(0))); // failing test
 
             var target = new InitialisationProcess(inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
@@ -156,13 +159,13 @@ namespace Stryker.Core.UnitTest.Initialisation
 
 
             inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>())).Returns(
-                new [] {new SourceProjectInfo {
+                new[] {new SourceProjectInfo {
                     AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
                         references: Array.Empty<string>()).Object,
                     TestProjectsInfo = new TestProjectsInfo(new MockFileSystem())
                 }});
 
-            inputFileResolverMock.SetupGet( x => x.FileSystem).Returns(new FileSystem());
+            inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(new FileSystem());
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), null));
             var failedTest = Guid.NewGuid();
             var ranTests = new TestGuidsList(failedTest, Guid.NewGuid(), Guid.NewGuid());
@@ -171,11 +174,11 @@ namespace Stryker.Core.UnitTest.Initialisation
             {
                 testSet.RegisterTest(new TestDescription(ranTest, "test", "test.cpp"));
             }
-            testRunnerMock.Setup(x => x.DiscoverTests( It.IsAny<string>())).Returns(true);
-            testRunnerMock.Setup(x => x.GetTests( It.IsAny<IProjectAndTests>())).Returns(testSet);
+            testRunnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(true);
+            testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(testSet);
             var failedTests = new TestGuidsList(failedTest);
-            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(),It.IsAny<ITestRunner>())).Returns( new InitialTestRun(
-                new TestRunResult(Array.Empty<VsTestDescription>() ,ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), new TimeoutValueCalculator(0) )); // failing test
+            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>())).Returns(new InitialTestRun(
+                new TestRunResult(Array.Empty<VsTestDescription>(), ranTests, failedTests, TestGuidsList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), new TimeoutValueCalculator(0))); // failing test
 
             var target = new InitialisationProcess(inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
@@ -216,13 +219,13 @@ namespace Stryker.Core.UnitTest.Initialisation
                 new[] { new SourceProjectInfo() { AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(references: Array.Empty<string>()).Object, TestProjectsInfo = new TestProjectsInfo(new MockFileSystem()) } });
 
 
-            inputFileResolverMock.SetupGet( x => x.FileSystem).Returns(new FileSystem());
+            inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(new FileSystem());
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), null));
             var testSet = new TestSet();
             testSet.RegisterTest(new TestDescription(Guid.Empty, "test", "test.cs"));
-            testRunnerMock.Setup(x => x.DiscoverTests( It.IsAny<string>())).Returns(true);
-            testRunnerMock.Setup(x => x.GetTests( It.IsAny<IProjectAndTests>())).Returns(testSet);
-            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(),It.IsAny<ITestRunner>()))
+            testRunnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(true);
+            testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(testSet);
+            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>()))
                 .Returns(new InitialTestRun(new TestRunResult(true), null)); // failing test
 
             var target = new InitialisationProcess(inputFileResolverMock.Object,
@@ -237,7 +240,7 @@ namespace Stryker.Core.UnitTest.Initialisation
             var projects = target.GetMutableProjectsInfo(options);
             target.BuildProjects(options, projects);
             var input = target.GetMutationTestInputs(options, projects, testRunnerMock.Object).First();
- 
+
             inputFileResolverMock.Verify(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>()), Times.Once);
             initialTestProcessMock.Verify(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), testRunnerMock.Object), Times.Once);
         }
@@ -264,7 +267,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 targetFramework: "netcoreapp2.1",
                 references: [libraryName]).Object;
 
-            inputFileResolverMock.SetupGet( x => x.FileSystem).Returns(new FileSystem());
+            inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(new FileSystem());
 
             inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>())).Returns(
                 new[] {new SourceProjectInfo
@@ -275,10 +278,10 @@ namespace Stryker.Core.UnitTest.Initialisation
                 }});
 
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), null));
-            testRunnerMock.Setup(x => x.DiscoverTests( It.IsAny<string>())).Returns(false);
-            testRunnerMock.Setup(x => x.GetTests( It.IsAny<IProjectAndTests>())).Returns(new TestSet());
-            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(),  It.IsAny<IProjectAndTests>(),It.IsAny<ITestRunner>()))
-                .Returns(new InitialTestRun(new TestRunResult(Array.Empty<VsTestDescription>(),  TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), null)); // failing test
+            testRunnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(false);
+            testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
+            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>()))
+                .Returns(new InitialTestRun(new TestRunResult(Array.Empty<VsTestDescription>(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), null)); // failing test
 
             var target = new InitialisationProcess(inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,
@@ -315,7 +318,7 @@ namespace Stryker.Core.UnitTest.Initialisation
                 { ["xunit.core"] = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>()), ["xunit.runner.visualstudio"] = new ReadOnlyDictionary<string, string>(new Dictionary<string, string>()) }));
             var testProjectAnalyzerResult = testProjectAnalyzerResultMock.Object;
 
-            inputFileResolverMock.SetupGet( x => x.FileSystem).Returns(new FileSystem());
+            inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(new FileSystem());
 
             inputFileResolverMock.Setup(x => x.ResolveSourceProjectInfos(It.IsAny<StrykerOptions>())).Returns(
                 new[] {new SourceProjectInfo
@@ -326,10 +329,10 @@ namespace Stryker.Core.UnitTest.Initialisation
                 }});
 
             initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), null));
-            testRunnerMock.Setup(x => x.DiscoverTests( It.IsAny<string>())).Returns(false);
-            testRunnerMock.Setup(x => x.GetTests( It.IsAny<IProjectAndTests>())).Returns(new TestSet());
-            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(),  It.IsAny<IProjectAndTests>(),It.IsAny<ITestRunner>()))
-                .Returns(new InitialTestRun(new TestRunResult(Array.Empty<VsTestDescription>(),  TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), null)); // failing test
+            testRunnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(false);
+            testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(new TestSet());
+            initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>()))
+                .Returns(new InitialTestRun(new TestRunResult(Array.Empty<VsTestDescription>(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), TestGuidsList.NoTest(), string.Empty, Enumerable.Empty<string>(), TimeSpan.Zero), null)); // failing test
 
             var target = new InitialisationProcess(inputFileResolverMock.Object,
                 initialBuildProcessMock.Object,

@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Threading;
 using System.Xml;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.UnitTest;
 
 namespace Stryker.Core.UnitTest.TestRunners
 {
@@ -33,7 +34,7 @@ namespace Stryker.Core.UnitTest.TestRunners
         [TestMethod]
         public void CanParseConfiguration()
         {
-            var referenceConf="<Parameters><Environment name=\"ActiveMutant\" value=\"1\"/></Parameters>";
+            var referenceConf = "<Parameters><Environment name=\"ActiveMutant\" value=\"1\"/></Parameters>";
             var node = new XmlDocument();
 
             node.LoadXml(referenceConf);

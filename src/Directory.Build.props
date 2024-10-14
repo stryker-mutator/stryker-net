@@ -8,6 +8,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <DisableImplicitNuGetFallbackFolder>true</DisableImplicitNuGetFallbackFolder>
+    <ImplicitUsings>disable</ImplicitUsings>
     <RestoreLockedMode Condition="'$(RestoreLockedMode)' == 'true'">true</RestoreLockedMode>
   </PropertyGroup>
 

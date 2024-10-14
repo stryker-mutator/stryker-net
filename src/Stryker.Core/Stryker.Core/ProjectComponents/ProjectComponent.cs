@@ -1,41 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public delegate void Display(IReadOnlyProjectComponent current);
-
-    public interface IReadOnlyProjectComponent
-    {
-        string FullPath { get; }
-        IEnumerable<Mutant> Mutants { get; }
-        IReadOnlyFolderComposite Parent { get; }
-        string RelativePath { get; set; }
-        public Display DisplayFile { get; set; }
-        public Display DisplayFolder { get; set; }
-        IEnumerable<IReadOnlyMutant> TotalMutants();
-        IEnumerable<IReadOnlyMutant> ValidMutants();
-        IEnumerable<IReadOnlyMutant> UndetectedMutants();
-        IEnumerable<IReadOnlyMutant> DetectedMutants();
-        IEnumerable<IReadOnlyMutant> InvalidMutants();
-        IEnumerable<IReadOnlyMutant> IgnoredMutants();
-        IEnumerable<IReadOnlyMutant> NotRunMutants();
-
-        Health CheckHealth(Thresholds threshold);
-        IEnumerable<IFileLeaf> GetAllFiles();
-        void Display();
-        double GetMutationScore();
-    }
-
-    public interface IProjectComponent : IReadOnlyProjectComponent
-    {
-        new string FullPath { get; set; }
-        new IEnumerable<Mutant> Mutants { get; set; }
-        new IReadOnlyFolderComposite Parent { get; set; }
-        new string RelativePath { get; set; }
-    }
 
     public abstract class ProjectComponent : IProjectComponent
     {
@@ -45,13 +16,13 @@ namespace Stryker.Core.ProjectComponents
         /// </summary>
         public string RelativePath { get; set; }
 
-        public IReadOnlyFolderComposite Parent { get; set; }
+        public IFolderComposite Parent { get; set; }
 
         public Display DisplayFile { get; set; }
 
         public Display DisplayFolder { get; set; }
 
-        public virtual IEnumerable<Mutant> Mutants { get; set; }
+        public virtual IEnumerable<IMutant> Mutants { get; set; }
 
         public abstract IEnumerable<IFileLeaf> GetAllFiles();
 
@@ -87,7 +58,7 @@ namespace Stryker.Core.ProjectComponents
         /// <returns>double between 0 and 1 or NaN when no score could be calculated</returns>
         public double GetMutationScore() => DetectedMutants().Count() / (double)ValidMutants().Count();
 
-        public Health CheckHealth(Thresholds threshold)
+        public Health CheckHealth(IThresholds threshold)
         {
             var mutationScore = GetMutationScore();
             if (double.IsNaN(mutationScore))
@@ -96,7 +67,7 @@ namespace Stryker.Core.ProjectComponents
                 return Health.None;
             }
 
-            return (mutationScore*100) switch
+            return (mutationScore * 100) switch
             {
                 var score when score >= threshold.High => Health.Good,
                 var score when score < threshold.High && score >= threshold.Low => Health.Warning,

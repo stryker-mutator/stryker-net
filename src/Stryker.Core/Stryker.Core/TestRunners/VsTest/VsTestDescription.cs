@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Core.Mutants;
+using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.TestRunners.VsTest
 {

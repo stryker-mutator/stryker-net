@@ -3,7 +3,7 @@ using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Core.Exceptions;
+using Stryker.Abstractions.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Testing;
 
@@ -64,7 +64,7 @@ public class NugetRestoreProcessTests : TestBase
 
         target.RestorePackages(SolutionPath);
 
-        processExecutorMock.Verify( p => p.Start(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+        processExecutorMock.Verify(p => p.Start(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
             It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), It.IsAny<int>()), Times.Exactly(5));
     }
 
@@ -124,7 +124,7 @@ public class NugetRestoreProcessTests : TestBase
 
         var action = () => target.RestorePackages(SolutionPath);
 
-        action.ShouldThrow<InputException>("Packages restore failed."); 
+        action.ShouldThrow<InputException>("Packages restore failed.");
     }
 
     [TestMethodWithIgnoreIfSupport]
@@ -183,7 +183,7 @@ public class NugetRestoreProcessTests : TestBase
 
         target.RestorePackages(SolutionPath);
 
-        processExecutorMock.Verify( p => p.Start(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+        processExecutorMock.Verify(p => p.Start(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
             It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(4));
     }
 
@@ -248,7 +248,7 @@ public class NugetRestoreProcessTests : TestBase
         processExecutorMock.Verify(x => x.Start(It.IsAny<string>(), It.IsAny<string>(), "-version /nologo", null, It.IsAny<int>()), Times.Once);
         processExecutorMock.Verify(x => x.Start(nugetDirectory, nugetPath, string.Format("restore \"{0}\" -MsBuildVersion \"{1}\"", Path.GetFullPath(SolutionPath), msBuildVersion), null, It.IsAny<int>()), Times.Once);
         processExecutorMock.Verify(x => x.Start(It.Is<string>(s => s.Contains("Microsoft Visual Studio")), It.Is<string>(s => s.Contains("vswhere.exe")), @"-latest -requires Microsoft.Component.MSBuild -products * -find MSBuild\**\Bin\MSBuild.exe", null, It.IsAny<int>()), Times.Never);
-            msbuildPath.ShouldBe(capturedMsBuildPath);
+        msbuildPath.ShouldBe(capturedMsBuildPath);
     }
 
     [TestMethodWithIgnoreIfSupport]
@@ -279,7 +279,7 @@ public class NugetRestoreProcessTests : TestBase
                 Output = msBuildVersion
             });
 
-        processExecutorMock.Setup(x => x.Start(_solutionDir, "where.exe",  It.Is<string>( s => s.EndsWith("nuget.exe")),
+        processExecutorMock.Setup(x => x.Start(_solutionDir, "where.exe", It.Is<string>(s => s.EndsWith("nuget.exe")),
                 null, It.IsAny<int>()))
             .Returns(new ProcessResult()
             {
@@ -288,15 +288,15 @@ public class NugetRestoreProcessTests : TestBase
             });
 
         var target = new NugetRestoreProcess(processExecutorMock.Object);
-        Should.Throw<InputException>(() => target.RestorePackages(SolutionPath) );
+        Should.Throw<InputException>(() => target.RestorePackages(SolutionPath));
     }
 
     [TestMethodWithIgnoreIfSupport]
     [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
     public void ShouldPickFirstNugetPath()
     {
-        string firstNugetPath = @"C:\choco\bin\NuGet.exe";
-        string msBuildVersion = "16.0.0";
+        var firstNugetPath = @"C:\choco\bin\NuGet.exe";
+        var msBuildVersion = "16.0.0";
         var nugetDirectory = Path.GetDirectoryName(firstNugetPath);
 
         var processExecutorMock = new Mock<IProcessExecutor>(MockBehavior.Strict);
@@ -349,7 +349,7 @@ C:\Users\LEON\bin\NuGet.exe"
         var target = new NugetRestoreProcess(processExecutorMock.Object);
 
         target.RestorePackages(SolutionPath);
-        processExecutorMock.Verify( p => p.Start(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+        processExecutorMock.Verify(p => p.Start(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
             It.IsAny<IEnumerable<KeyValuePair<string, string>>>(), 0), Times.Exactly(4));
     }
 }

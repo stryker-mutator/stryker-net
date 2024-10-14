@@ -57,7 +57,7 @@ namespace Stryker.Core.TestRunners
 
             foreach (var leakedMutation in leakedMutations)
             {
-                _mutationFlags[leakedMutation] = confidence == CoverageConfidence.Exact ? MutationTestingRequirements.NeedEarlyActivation: MutationTestingRequirements.CoveredOutsideTest;
+                _mutationFlags[leakedMutation] = confidence == CoverageConfidence.Exact ? MutationTestingRequirements.NeedEarlyActivation : MutationTestingRequirements.CoveredOutsideTest;
             }
 
             Confidence = confidence;

@@ -1,11 +1,11 @@
+using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Shouldly;
-using Stryker.Core.Mutators;
-using System.Linq;
-using Microsoft.CodeAnalysis;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Stryker.Core.Mutants;
+using Shouldly;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
+using Stryker.Core.Mutators;
 
 namespace Stryker.Core.UnitTest.Mutators;
 
@@ -58,7 +58,7 @@ public class ConditionalExpressionMutatorTests : TestBase
     {
         var target = new ConditionalExpressionMutator();
         var source = "var y = x is object result ? result.ToString() : null;";
-        SyntaxTree tree = CSharpSyntaxTree.ParseText(source);
+        var tree = CSharpSyntaxTree.ParseText(source);
 
         var expressionSyntax = tree.GetRoot().DescendantNodes().OfType<ConditionalExpressionSyntax>().Single();
         var result = target.ApplyMutations(expressionSyntax, null).ToList();

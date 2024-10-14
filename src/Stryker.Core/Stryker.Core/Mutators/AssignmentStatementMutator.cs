@@ -2,8 +2,9 @@ using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
 using Stryker.Core.Helpers;
-using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutators
 {
@@ -30,7 +31,7 @@ namespace Stryker.Core.Mutators
         {
             var assignmentKind = node.Kind();
 
-            if (assignmentKind == SyntaxKind.AddAssignmentExpression 
+            if (assignmentKind == SyntaxKind.AddAssignmentExpression
                 && (node.Left.IsAStringExpression() || node.Right.IsAStringExpression()))
             {
                 yield break;

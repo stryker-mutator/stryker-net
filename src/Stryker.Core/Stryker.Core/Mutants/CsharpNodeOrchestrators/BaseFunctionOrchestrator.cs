@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Core.Helpers;
 using Stryker.Core.Instrumentation;
 
-
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 /// <summary>
@@ -14,7 +13,7 @@ namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 /// </summary>
 /// <typeparam name="T">SyntaxNode type</typeparam>
 /// <remarks>This class is helpful because there is no (useful) shared parent class for those syntax construct</remarks>
-internal abstract class BaseFunctionOrchestrator<T> :MemberDefinitionOrchestrator<T>, IInstrumentCode where T : SyntaxNode
+internal abstract class BaseFunctionOrchestrator<T> : MemberDefinitionOrchestrator<T>, IInstrumentCode where T : SyntaxNode
 {
     private readonly SeparatedSyntaxList<ParameterSyntax> _emptyParameterList;
 

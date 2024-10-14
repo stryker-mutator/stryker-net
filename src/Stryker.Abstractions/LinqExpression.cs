@@ -1,0 +1,42 @@
+namespace Stryker.Abstractions;
+
+/// <summary> Enumeration for the different kinds of linq expressions </summary>
+public enum LinqExpression
+{
+    None,
+    Distinct,
+    Reverse,
+    Average,
+    AsEnumerable,
+    OrderBy,
+    OrderByDescending,
+    FirstOrDefault,
+    First,
+    SingleOrDefault,
+    Single,
+    Last,
+    All,
+    Any,
+    Skip,
+    Take,
+    SkipWhile,
+    TakeWhile,
+    Min,
+    Max,
+    Sum,
+    Count,
+    ThenBy,
+    ThenByDescending,
+    Union,
+    Intersect,
+    Concat,
+    Except,
+    IntersectBy,
+    MaxBy,
+    MinBy,
+    Order,
+    OrderDescending,
+    SkipLast,
+    TakeLast,
+    UnionBy
+}

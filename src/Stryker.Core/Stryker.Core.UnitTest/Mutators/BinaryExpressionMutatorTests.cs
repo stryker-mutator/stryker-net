@@ -1,9 +1,11 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Shouldly;
-using Stryker.Core.Mutators;
+using Stryker.Abstractions.Mutators;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.UnitTest;
+using Stryker.Core.Mutators;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
@@ -54,7 +56,7 @@ namespace Stryker.Core.UnitTest.Mutators
                 // there should be two mutations
                 result.Count.ShouldBe(2, "Two mutations should have been made");
             }
-            int index = 0;
+            var index = 0;
             foreach (var mutation in result)
             {
                 mutation.ReplacementNode.IsKind(expectedOutput[index]).ShouldBeTrue();

@@ -1,3 +1,4 @@
+using Stryker.Abstractions.ProjectComponents;
 using Stryker.Core.Initialisation;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
@@ -18,7 +19,7 @@ namespace Stryker.Core.MutationTest
         /// <summary>
         /// Contains all information about the tests to run
         /// </summary>
-        public TestProjectsInfo TestProjectsInfo { get; set; }
+        public ITestProjectsInfo TestProjectsInfo { get; set; }
 
         /// <summary>
         /// The testrunner that will be used for the mutation test run

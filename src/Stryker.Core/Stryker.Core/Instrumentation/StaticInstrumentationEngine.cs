@@ -17,12 +17,12 @@ namespace Stryker.Core.Instrumentation
         /// <param name="injector"></param>
         /// <returns></returns>
         public BlockSyntax PlaceStaticContextMarker(BlockSyntax block, CodeInjection injector) =>
-            SyntaxFactory.Block( 
+            SyntaxFactory.Block(
                 SyntaxFactory.UsingStatement(null, injector.GetContextClassConstructor(), block)).WithAdditionalAnnotations(Marker);
-    
+
         protected override SyntaxNode Revert(BlockSyntax node)
         {
-            if ( node.Statements.Count == 1 && node.Statements[0] is UsingStatementSyntax usingStatement)
+            if (node.Statements.Count == 1 && node.Statements[0] is UsingStatementSyntax usingStatement)
             {
                 return usingStatement.Statement;
             }

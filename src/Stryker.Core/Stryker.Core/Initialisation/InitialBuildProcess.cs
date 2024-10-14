@@ -1,9 +1,10 @@
-using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Logging;
-using Stryker.Core.Testing;
-using Stryker.Core.ToolHelpers;
 using System.IO;
+using Microsoft.Extensions.Logging;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Logging;
+using Stryker.Configuration;
+using Stryker.Core.Helpers;
+using Stryker.Core.Testing;
 
 namespace Stryker.Core.Initialisation;
 
@@ -24,7 +25,7 @@ public class InitialBuildProcess : IInitialBuildProcess
         _logger = ApplicationLogging.LoggerFactory.CreateLogger<InitialBuildProcess>();
     }
 
-    public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string configuration=null,
+    public void InitialBuild(bool fullFramework, string projectPath, string solutionPath, string configuration = null,
         string msbuildPath = null)
     {
         if (fullFramework && string.IsNullOrEmpty(solutionPath))
@@ -32,7 +33,7 @@ public class InitialBuildProcess : IInitialBuildProcess
             throw new InputException("Stryker could not build your project as no solution file was presented. Please pass the solution path to stryker.");
         }
 
-        var msBuildHelper = new MsBuildHelper(executor: _processExecutor ,msBuildPath: msbuildPath);
+        var msBuildHelper = new MsBuildHelper(executor: _processExecutor, msBuildPath: msbuildPath);
 
         _logger.LogDebug("Started initial build using dotnet build");
 
@@ -41,7 +42,7 @@ public class InitialBuildProcess : IInitialBuildProcess
         var directoryName = Path.GetDirectoryName(target);
         var (result, exe, args) = msBuildHelper.BuildProject(directoryName, buildPath, fullFramework, configuration);
 
-        if (result.ExitCode!=ExitCodes.Success && !string.IsNullOrEmpty(solutionPath))
+        if (result.ExitCode != ExitCodes.Success && !string.IsNullOrEmpty(solutionPath))
         {
             // dump previous build result
             _logger.LogTrace("Initial build output: {0}", result.Output);
@@ -83,7 +84,7 @@ public class InitialBuildProcess : IInitialBuildProcess
 
     private static string QuotesIfNeeded(string parameter)
     {
-        if (!parameter.Contains(' ') || parameter.Length<3 || (parameter[0] == '"' && parameter[^1]=='"'))
+        if (!parameter.Contains(' ') || parameter.Length < 3 || parameter[0] == '"' && parameter[^1] == '"')
         {
             return parameter;
         }
