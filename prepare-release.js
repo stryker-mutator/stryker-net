@@ -67,10 +67,10 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
 
     console.log(`Creating commit`);
     exec('git add .');
-    exec(`git commit ${commitMessageLines.map(entry => `-m "${entry}"`).join(' ')}`);
+    // exec(`git commit ${commitMessageLines.map(entry => `-m "${entry}"`).join(' ')}`);
 
     console.log(`Pushing commit ${versionSuffix?'':' and tags'}`);
-    exec('git push --follow-tags');
+    // exec('git push --follow-tags');
     rl.close();
 });
 
