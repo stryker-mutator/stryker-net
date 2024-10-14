@@ -35,7 +35,7 @@
     <PackageVersion Include="Microsoft.TestPlatform.TranslationLayer" Version="17.11.1" />
     <PackageVersion Include="TestableIO.System.IO.Abstractions.Wrappers" Version="21.0.29" />
     <PackageVersion Include="Microsoft.Extensions.Logging" Version="8.0.1" />
-    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.2" />
   </ItemGroup>
   <ItemGroup>
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.11.1" />
