@@ -1,3 +1,18 @@
+# [4.3.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.2.0...stryker@4.3.0) (2024-10-14)
+
+
+### Bug Fixes
+
+* Duplicate Analyzer diagnostics ([#3059](https://github.com/stryker-mutator/stryker-net/issues/3059)) ([e9f3763](https://github.com/stryker-mutator/stryker-net/commit/e9f3763ce34d45ec03ba226bbab790f9d96ef2f7))
+* Handle Vstest freezes more gracefully ([#3063](https://github.com/stryker-mutator/stryker-net/issues/3063)) ([b6c9e9d](https://github.com/stryker-mutator/stryker-net/commit/b6c9e9df5c69111a3ba81be8742a8e33812c3079))
+
+
+### Features
+
+* Respect specified target framework only if this results in a valid version ([#3039](https://github.com/stryker-mutator/stryker-net/issues/3039)) ([85a4384](https://github.com/stryker-mutator/stryker-net/commit/85a4384df9a24aa15fad55a2901988f1c042588b))
+
+
+
 # [4.2.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.1.0...stryker@4.2.0) (2024-09-13)
 
 
