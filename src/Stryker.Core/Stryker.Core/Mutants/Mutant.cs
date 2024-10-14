@@ -1,25 +1,12 @@
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.TestRunners;
+
 namespace Stryker.Core.Mutants
 {
     /// <summary>
-    /// This interface should only contain readonly properties to ensure that others than the mutation test process cannot modify mutants.
-    /// </summary>
-    public interface IReadOnlyMutant
-    {
-        int Id { get; }
-        Mutation Mutation { get; }
-        MutantStatus ResultStatus { get; }
-        string ResultStatusReason { get; }
-        ITestGuids CoveringTests { get; }
-        ITestGuids KillingTests { get; }
-        ITestGuids AssessingTests { get; }
-        bool CountForStats { get; }
-        bool IsStaticValue { get; }
-    }
-
-    /// <summary>
     /// Represents a single mutation on domain level
     /// </summary>
-    public class Mutant : IReadOnlyMutant
+    public class Mutant : IMutant
     {
         public int Id { get; set; }
 
@@ -54,7 +41,7 @@ namespace Stryker.Core.Mutants
             {
                 ResultStatus = MutantStatus.Timeout;
             }
-            else if (resultRanTests.IsEveryTest || (resultRanTests.IsEveryTest is not true && AssessingTests.IsIncludedIn(resultRanTests)))
+            else if (resultRanTests.IsEveryTest || !resultRanTests.IsEveryTest && AssessingTests.IsIncludedIn(resultRanTests))
             {
                 ResultStatus = MutantStatus.Survived;
             }

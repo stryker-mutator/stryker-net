@@ -1,8 +1,9 @@
 using System.IO;
 using System.Linq;
 using Shouldly;
-using Stryker.Core.Options.Inputs;
+using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.UnitTest;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {

@@ -3,10 +3,10 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using LaunchDarkly.EventSource;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Core.Reporters.Html.RealTime;
 using Stryker.Core.Reporters.Html.RealTime.Events;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters.Html.RealTime;
 
@@ -53,13 +53,13 @@ public class SseServerTest : TestBase
         watch.Start();
         lock (_lock)
         {
-            while (_sut.ConnectedClients>0 && watch.ElapsedMilliseconds < timeout)
+            while (_sut.HasConnectedClients && watch.ElapsedMilliseconds < timeout)
             {
                 Monitor.Wait(_lock,  Math.Max(Math.Min( timeout - (int)watch.ElapsedMilliseconds, 100), 1));
             }
         }
 
-        return _sut.ConnectedClients==0;
+        return !_sut.HasConnectedClients;
     }
 
     [TestMethod]
@@ -99,7 +99,7 @@ public class SseServerTest : TestBase
         var @object = new { Id = "1", Status = "Survived" };
         var eventReceived = new ManualResetEvent(false);
         var sseClient = new EventSource(new Uri($"http://localhost:{_sut.Port}/"));
-        
+
         sseClient.MessageReceived += (_, e) =>
         {
             @event = e.EventName;
@@ -109,7 +109,7 @@ public class SseServerTest : TestBase
 
         Task.Run(() => sseClient.StartAsync());
         WaitForConnection(500).ShouldBeTrue();
-        
+
         _sut.SendEvent(new SseEvent<object>
         {
             Event = SseEventType.MutantTested,

@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Abstractions.TestRunners;
+using Stryker.Abstractions.TestRunners;
 
 namespace Stryker.Core.Mutants
 {

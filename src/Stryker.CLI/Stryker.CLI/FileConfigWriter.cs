@@ -1,6 +1,6 @@
 using System.Linq;
 using System.Text.Json;
-using Stryker.Core.Options;
+using Stryker.Abstractions.Options;
 
 namespace Stryker.CLI;
 

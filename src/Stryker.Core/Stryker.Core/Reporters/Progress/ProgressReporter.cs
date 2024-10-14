@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Core.Mutants;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporting;
 
 namespace Stryker.Core.Reporters.Progress
 {
@@ -11,7 +11,7 @@ namespace Stryker.Core.Reporters.Progress
         private readonly IProgressBarReporter _progressBarReporter;
         public ProgressReporter(IProgressBarReporter progressBarReporter) => _progressBarReporter = progressBarReporter;
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
         {
             // we don't track mutant creation
         }
@@ -20,7 +20,7 @@ namespace Stryker.Core.Reporters.Progress
 
         public void OnMutantTested(IReadOnlyMutant result) => _progressBarReporter.ReportRunTest(result);
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
         {
             if (reportComponent.Mutants.Any())
             {

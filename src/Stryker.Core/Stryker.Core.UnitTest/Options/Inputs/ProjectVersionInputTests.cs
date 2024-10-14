@@ -1,9 +1,10 @@
 using System.Linq;
 using Shouldly;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options.Inputs;
-using Stryker.Core.Reporters;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Abstractions.Options;
+using Stryker.Core.UnitTest;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
@@ -61,7 +62,8 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         {
             var input = new ProjectVersionInput();
 
-            var exception = Should.Throw<InputException>(() => {
+            var exception = Should.Throw<InputException>(() =>
+            {
                 input.Validate(reporters: Enumerable.Empty<Reporter>(), withBaseline: true);
             });
 

@@ -1,9 +1,11 @@
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Core.InjectedHelpers;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions;
 using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
-using Stryker.Core.Options;
+using Stryker.Core.InjectedHelpers;
+using Stryker.Abstractions.Options;
 
 namespace Stryker.Core.UnitTest.Mutants;
 

@@ -2,10 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Moq;
-using Stryker.Core.Initialisation;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
+using Stryker.Abstractions.Initialisation;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Options;
 using Stryker.Core.TestRunners;
+using Stryker.Core.Mutants;
 using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.UnitTest.MutationTest;
@@ -167,10 +169,10 @@ internal class FullRunScenario
             string.Empty,
             Enumerable.Empty<string>(),
             TimeSpan.Zero);
-        runnerMock.Setup(x => x.DiscoverTests( It.IsAny<string>())).Returns(true);
-        runnerMock.Setup(x => x.GetTests( It.IsAny<IProjectAndTests>())).Returns(TestSet);
-        runnerMock.Setup(x => x.InitialTest( It.IsAny<IProjectAndTests>())).Returns(GetRunResult(InitialRunId));
-        runnerMock.Setup(x => x.CaptureCoverage( It.IsAny<IProjectAndTests>()))
+        runnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(true);
+        runnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(TestSet);
+        runnerMock.Setup(x => x.InitialTest(It.IsAny<IProjectAndTests>())).Returns(GetRunResult(InitialRunId));
+        runnerMock.Setup(x => x.CaptureCoverage(It.IsAny<IProjectAndTests>()))
             .Returns(() =>
             {
                 var result = new List<CoverageRunResult>(_tests.Count);
@@ -183,9 +185,9 @@ internal class FullRunScenario
                 }
                 return result;
             });
-        runnerMock.Setup(x => x.TestMultipleMutants( It.IsAny<IProjectAndTests>(), It.IsAny<ITimeoutValueCalculator>(),
-                It.IsAny<IReadOnlyList<Mutant>>(), It.IsAny<TestUpdateHandler>())).
-            Callback((Action<IProjectAndTests, ITimeoutValueCalculator, IReadOnlyList<Mutant>, TestUpdateHandler>)((_, test1, list,
+        runnerMock.Setup(x => x.TestMultipleMutants(It.IsAny<IProjectAndTests>(), It.IsAny<ITimeoutValueCalculator>(),
+                It.IsAny<IReadOnlyList<IMutant>>(), It.IsAny<TestUpdateHandler>())).
+            Callback((Action<IProjectAndTests, ITimeoutValueCalculator, IReadOnlyList<IMutant>, TestUpdateHandler>)((_, test1, list,
                 update) =>
             {
                 foreach (var m in list)

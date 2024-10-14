@@ -5,8 +5,10 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
-using Stryker.Core.Mutators;
+using Stryker.Abstractions.Mutators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.Mutators;
+using Stryker.Core.UnitTest;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
@@ -20,7 +22,7 @@ namespace Stryker.Core.UnitTest.Mutators
         /// <returns></returns>
         private InvocationExpressionSyntax GenerateClassCallExpression(string memberName, string expression)
         {
-            SyntaxTree tree = CSharpSyntaxTree.ParseText($@"
+            var tree = CSharpSyntaxTree.ParseText($@"
 using System;
 
 namespace TestApplication
@@ -48,7 +50,7 @@ namespace TestApplication
         /// <returns></returns>
         private InvocationExpressionSyntax GenerateStaticCallExpression(string expression)
         {
-            SyntaxTree tree = CSharpSyntaxTree.ParseText($@"
+            var tree = CSharpSyntaxTree.ParseText($@"
 using System;
 using static System.Math;
 

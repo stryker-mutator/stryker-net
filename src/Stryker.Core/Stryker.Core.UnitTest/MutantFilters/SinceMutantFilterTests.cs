@@ -1,16 +1,17 @@
-using Moq;
-using Shouldly;
-using Stryker.Core.DiffProviders;
-using Stryker.Core.MutantFilters;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Moq;
+using Shouldly;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Mutants;
+using Stryker.Core.DiffProviders;
+using Stryker.Core.MutantFilters;
+using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents.Csharp;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
@@ -40,7 +41,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
             };
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
 
-            string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
+            var myFile = Path.Combine("C:/test/", "myfile.cs");
+            ;
 
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
             {
@@ -70,7 +72,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
             };
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
 
-            string myFile = Path.Combine("C:/test/", "myfile.cs"); ;
+            var myFile = Path.Combine("C:/test/", "myfile.cs");
+            ;
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult()
             {
                 ChangedSourceFiles = new Collection<string>()
@@ -101,10 +104,11 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var diffProvider = new Mock<IDiffProvider>(MockBehavior.Loose);
 
             // If a file inside the test project is changed, a test has been changed
-            var myTestPath = Path.Combine(testProjectPath, "myTest.cs"); ;
+            var myTestPath = Path.Combine(testProjectPath, "myTest.cs");
+            ;
             var tests = new TestSet();
             var test = new TestDescription(Guid.NewGuid(), "name", myTestPath);
-            tests.RegisterTests(new[] {test});
+            tests.RegisterTests(new[] { test });
             diffProvider.SetupGet(x => x.Tests).Returns(tests);
             diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
             {
@@ -123,7 +127,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var file = new CsharpFileLeaf { FullPath = Path.Combine("C:/NotMyTests", "myfile.cs") };
             var mutant = new Mutant
             {
-                CoveringTests = new TestGuidsList(new[] {test})
+                CoveringTests = new TestGuidsList(new[] { test })
             };
 
 
@@ -247,15 +251,15 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var tests = new TestSet();
             var test1 = new TestDescription(Guid.NewGuid(), "name1", "C:/testfile1.cs");
             var test2 = new TestDescription(Guid.NewGuid(), "name2", "C:/testfile2.cs");
-            tests.RegisterTests(new[] {test1, test2});
+            tests.RegisterTests(new[] { test1, test2 });
             diffProvider.SetupGet(x => x.Tests).Returns(tests);
             var target = new SinceMutantFilter(diffProvider.Object);
-            var testFile1 = new TestGuidsList(new [] {test1});
-            var testFile2 = new TestGuidsList(new [] {test2});
+            var testFile1 = new TestGuidsList(new[] { test1 });
+            var testFile2 = new TestGuidsList(new[] { test2 });
 
-            var expectedToStay1 = new Mutant {CoveringTests = testFile1};
-            var expectedToStay2 = new Mutant {CoveringTests = testFile1};
-            var newMutant = new Mutant {CoveringTests = testFile2};
+            var expectedToStay1 = new Mutant { CoveringTests = testFile1 };
+            var expectedToStay2 = new Mutant { CoveringTests = testFile1 };
+            var newMutant = new Mutant { CoveringTests = testFile2 };
             var mutants = new List<Mutant>
             {
                 expectedToStay1,
@@ -267,7 +271,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var results = target.FilterMutants(mutants, new CsharpFileLeaf(), options);
 
             // Assert
-            results.ShouldBe(new []{expectedToStay1, expectedToStay2});
+            results.ShouldBe(new[] { expectedToStay1, expectedToStay2 });
         }
 
         [TestMethod]

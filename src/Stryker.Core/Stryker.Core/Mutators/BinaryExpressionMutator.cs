@@ -1,9 +1,10 @@
+using System.Collections.Generic;
+using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Mutants;
-using System.Collections.Generic;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
 using Stryker.Core.Helpers;
-using Microsoft.CodeAnalysis;
 
 namespace Stryker.Core.Mutators
 {
@@ -19,7 +20,6 @@ namespace Stryker.Core.Mutators
                 Mutator = mutator;
                 KindsToMutate = kindsToMutate;
             }
-
         }
 
         private static readonly Dictionary<SyntaxKind, MutationData> _kindsToMutate = new Dictionary<SyntaxKind, MutationData>()

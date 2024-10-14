@@ -1,7 +1,7 @@
-﻿using Moq;
-using Stryker.Core.Testing;
 using System.Collections.Generic;
 using System.IO;
+using Moq;
+using Stryker.Core.Testing;
 
 namespace Stryker.Core.UnitTest
 {

@@ -9,6 +9,7 @@ using Buildalyzer.Environment;
 using Moq;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.Testing;
+using Stryker.Core.UnitTest;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 
@@ -40,7 +41,7 @@ public class BuildAnalyzerTestsBase : TestBase
         IEnumerable<string> projectReferences = null, string framework = DefaultFramework, Func<bool> success = null)
     {
         var properties = GetSourceProjectDefaultProperties();
-        projectReferences??= new List<string>();
+        projectReferences ??= new List<string>();
 
         return BuildProjectAnalyzerMock(csprojPathName, sourceFiles, properties, projectReferences, [framework], success);
     }
@@ -201,9 +202,9 @@ public class BuildAnalyzerTestsBase : TestBase
         IEnumerable<string> rawReferences = null)
     {
         var projectFileMock = new Mock<IProjectFile>(MockBehavior.Strict);
-        success??= () => true;
-        projectReferences??= [];
-        frameworks??=[DefaultFramework];
+        success ??= () => true;
+        projectReferences ??= [];
+        frameworks ??=[DefaultFramework];
         // create dummy project and source files
         FileSystem.AddFile(csprojPathName, new MockFileData(""));
         foreach (var file in sourceFiles)
@@ -267,7 +268,7 @@ public class BuildAnalyzerTestsBase : TestBase
     {
         var analyzerResults = projectAnalyzerResults.Values.ToList();
         var sourceProjectAnalyzerResultsMock = new Mock<IAnalyzerResults>(MockBehavior.Strict);
-        sourceProjectAnalyzerResultsMock.Setup(x => x.OverallSuccess).Returns(() => analyzerResults.All(r=> r.Succeeded));
+        sourceProjectAnalyzerResultsMock.Setup(x => x.OverallSuccess).Returns(() => analyzerResults.All(r => r.Succeeded));
         sourceProjectAnalyzerResultsMock.Setup(x => x.Results).Returns(analyzerResults);
         sourceProjectAnalyzerResultsMock.Setup(x => x.Count).Returns(analyzerResults.Count);
         sourceProjectAnalyzerResultsMock.Setup(x => x.GetEnumerator()).Returns(() => analyzerResults.GetEnumerator());

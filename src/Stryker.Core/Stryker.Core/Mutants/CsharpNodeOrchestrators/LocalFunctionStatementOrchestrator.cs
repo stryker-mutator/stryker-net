@@ -23,6 +23,6 @@ internal class LocalFunctionStatementOrchestrator : BaseFunctionOrchestrator<Loc
     }
 
     protected override LocalFunctionStatementSyntax SwitchToThisBodies(LocalFunctionStatementSyntax node, BlockSyntax blockBody,
-        ExpressionSyntax expressionBody) => node.WithBody(blockBody).WithExpressionBody(expressionBody is null ? null : SyntaxFactory.ArrowExpressionClause(expressionBody));        
+        ExpressionSyntax expressionBody) => node.WithBody(blockBody).WithExpressionBody(expressionBody is null ? null : SyntaxFactory.ArrowExpressionClause(expressionBody));
 
 }

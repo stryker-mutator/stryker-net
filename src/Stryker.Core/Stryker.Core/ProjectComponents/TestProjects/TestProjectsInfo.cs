@@ -4,19 +4,20 @@ using System.IO.Abstractions;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.ProjectComponents;
 using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.Logging;
 
 namespace Stryker.Core.ProjectComponents.TestProjects;
 
-public class TestProjectsInfo
+internal class TestProjectsInfo : ITestProjectsInfo
 {
     private readonly IFileSystem _fileSystem;
     private readonly ILogger<TestProjectsInfo> _logger;
 
-    public IEnumerable<TestProject> TestProjects { get; set; }
+    public IEnumerable<ITestProject> TestProjects { get; set; }
 
-    public IEnumerable<TestFile> TestFiles => TestProjects.SelectMany(testProject => testProject.TestFiles).Distinct();
+    public IEnumerable<ITestFile> TestFiles => TestProjects.SelectMany(testProject => testProject.TestFiles).Distinct();
 
     public IEnumerable<IAnalyzerResult> AnalyzerResults => TestProjects.Select(testProject => testProject.AnalyzerResult);
 

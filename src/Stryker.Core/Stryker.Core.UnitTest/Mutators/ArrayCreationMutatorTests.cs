@@ -1,8 +1,9 @@
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Shouldly;
-using Stryker.Core.Mutators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
+using Stryker.Abstractions.Mutators;
+using Stryker.Core.Mutators;
 
 namespace Stryker.Core.UnitTest.Mutators
 {

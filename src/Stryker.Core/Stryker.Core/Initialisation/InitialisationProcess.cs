@@ -3,16 +3,15 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Options;
 using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.Logging;
 using Stryker.Core.MutationTest;
-using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.Initialisation;
-// For mocking purposes
 
 public interface IInitialisationProcess
 {
@@ -21,11 +20,11 @@ public interface IInitialisationProcess
     /// </summary>
     /// <param name="options">stryker options</param>
     /// <returns>an enumeration of <see cref="SourceProjectInfo"/>, one for each found project (if any).</returns>
-    IReadOnlyCollection<SourceProjectInfo> GetMutableProjectsInfo(StrykerOptions options);
+    IReadOnlyCollection<SourceProjectInfo> GetMutableProjectsInfo(IStrykerOptions options);
 
-    void BuildProjects(StrykerOptions options, IEnumerable<SourceProjectInfo> projects);
+    void BuildProjects(IStrykerOptions options, IEnumerable<SourceProjectInfo> projects);
 
-    IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(StrykerOptions options,
+    IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(IStrykerOptions options,
         IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner);
 }
 
@@ -48,7 +47,7 @@ public class InitialisationProcess : IInitialisationProcess
     }
 
     /// <inheritdoc/>
-    public IReadOnlyCollection<SourceProjectInfo> GetMutableProjectsInfo(StrykerOptions options)
+    public IReadOnlyCollection<SourceProjectInfo> GetMutableProjectsInfo(IStrykerOptions options)
     {
         _logger.LogInformation("Analysis starting.");
         try
@@ -63,7 +62,7 @@ public class InitialisationProcess : IInitialisationProcess
     }
 
     /// <inheritdoc/>
-    public void BuildProjects(StrykerOptions options, IEnumerable<SourceProjectInfo> projects)
+    public void BuildProjects(IStrykerOptions options, IEnumerable<SourceProjectInfo> projects)
     {
         if (options.IsSolutionContext)
         {
@@ -99,12 +98,12 @@ public class InitialisationProcess : IInitialisationProcess
         // perform post build update (to capture some content files in C# project for example)
         foreach (var project in projects)
         {
-          project.OnProjectBuilt?.Invoke();
-        }   
+            project.OnProjectBuilt?.Invoke();
+        }
     }
 
-        public IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(StrykerOptions options,
-            IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner)
+    public IReadOnlyCollection<MutationTestInput> GetMutationTestInputs(IStrykerOptions options,
+        IReadOnlyCollection<SourceProjectInfo> projects, ITestRunner runner)
     {
         var result = new List<MutationTestInput>();
         foreach (var info in projects)
@@ -114,14 +113,14 @@ public class InitialisationProcess : IInitialisationProcess
                 SourceProjectInfo = info,
                 TestProjectsInfo = info.TestProjectsInfo,
                 TestRunner = runner,
-                    InitialTestRun = InitialTest(options, info, runner, projects.Count == 1)
+                InitialTestRun = InitialTest(options, info, runner, projects.Count == 1)
             });
         }
 
         return result;
     }
 
-    private InitialTestRun InitialTest(StrykerOptions options, SourceProjectInfo projectInfo,
+    private InitialTestRun InitialTest(IStrykerOptions options, SourceProjectInfo projectInfo,
         ITestRunner testRunner, bool throwIfFails)
     {
         DiscoverTests(projectInfo, testRunner);
@@ -165,9 +164,9 @@ public class InitialisationProcess : IInitialisationProcess
 
     private static readonly Dictionary<string, (string assembly, string package)> TestFrameworks = new()
     {
-        ["xunit.core"] = ("xunit.runner.visualstudio","xunit.runner.visualstudio"),
+        ["xunit.core"] = ("xunit.runner.visualstudio", "xunit.runner.visualstudio"),
         ["nunit.framework"] = ("NUnit3.TestAdapter", "NUnit3TestAdapter"),
-        ["Microsoft.VisualStudio.TestPlatform.TestFramework"] = 
+        ["Microsoft.VisualStudio.TestPlatform.TestFramework"] =
                 ("Microsoft.VisualStudio.TestPlatform.MSTest.TestAdapter", "MSTest.TestAdapter")
     };
 
@@ -194,14 +193,14 @@ public class InitialisationProcess : IInitialisationProcess
                     $"Project '{testProject.ProjectFilePath}' did not report any test.";
                 if (testProject.PackageReferences?.ContainsKey(package) == true)
                 {
-                    message+=$" This may be because the test adapter package, {package}, failed to deploy or run. " +
+                    message += $" This may be because the test adapter package, {package}, failed to deploy or run. " +
                              "Check if any dependency is missing or there is a version conflict, check the testdiscovery logs or explore with VsTest.console.";
                 }
                 else
                 {
-                        message +=
-                            $" This may be because it is missing an appropriate VsTest adapter for '{framework}'. " +
-                             $"Adding '{adapter}' to this project references may resolve the issue.";
+                    message +=
+                        $" This may be because it is missing an appropriate VsTest adapter for '{framework}'. " +
+                         $"Adding '{adapter}' to this project references may resolve the issue.";
                 }
 
                 projectInfo.LogError(message);

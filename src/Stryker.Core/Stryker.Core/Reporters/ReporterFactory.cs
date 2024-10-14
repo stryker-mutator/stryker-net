@@ -1,7 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Reporting;
 using Stryker.Core.Baseline.Providers;
-using Stryker.Core.Options;
 using Stryker.Core.Reporters.Html;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Progress;
@@ -10,17 +11,17 @@ namespace Stryker.Core.Reporters
 {
     public interface IReporterFactory
     {
-        IReporter Create(StrykerOptions options, IGitInfoProvider branchProvider = null);
+        IReporter Create(IStrykerOptions options, IGitInfoProvider branchProvider = null);
     }
 
     public class ReporterFactory : IReporterFactory
     {
-        public IReporter Create(StrykerOptions options, IGitInfoProvider branchProvider = null)
+        public IReporter Create(IStrykerOptions options, IGitInfoProvider branchProvider = null)
         {
             return new BroadcastReporter(DetermineEnabledReporters(options.Reporters.ToList(), CreateReporters(options)));
         }
 
-        private IDictionary<Reporter, IReporter> CreateReporters(StrykerOptions options)
+        private IDictionary<Reporter, IReporter> CreateReporters(IStrykerOptions options)
         {
             return new Dictionary<Reporter, IReporter>
             {

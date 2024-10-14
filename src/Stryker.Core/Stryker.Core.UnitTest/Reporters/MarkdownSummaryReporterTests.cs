@@ -1,11 +1,11 @@
 using System.IO;
 using System.IO.Abstractions.TestingHelpers;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Spectre.Console.Testing;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
+using Stryker.Abstractions;
+using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.Reporters;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters
 {

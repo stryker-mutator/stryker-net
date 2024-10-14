@@ -2,27 +2,27 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using Spectre.Console;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporting;
 
 namespace Stryker.Core.Reporters.Json
 {
     public partial class JsonReporter : IReporter
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IFileSystem _fileSystem;
         private readonly IAnsiConsole _console;
 
-        public JsonReporter(StrykerOptions options, IFileSystem fileSystem = null, IAnsiConsole console = null)
+        public JsonReporter(IStrykerOptions options, IFileSystem fileSystem = null, IAnsiConsole console = null)
         {
             _options = options;
             _fileSystem = fileSystem ?? new FileSystem();
             _console = console ?? AnsiConsole.Console;
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
         {
             var mutationReport = JsonReport.Build(_options, reportComponent, testProjectsInfo);
             var filename = _options.ReportFileName + ".json";
@@ -46,14 +46,14 @@ namespace Stryker.Core.Reporters.Json
             }
         }
 
-        private void WriteReportToJsonFile(string filePath, JsonReport mutationReport)
+        private void WriteReportToJsonFile(string filePath, IJsonReport mutationReport)
         {
             _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(filePath));
             using var file = _fileSystem.File.Create(filePath);
             mutationReport.Serialize(file);
         }
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
         {
             // This reporter does not currently report when mutants are created
         }

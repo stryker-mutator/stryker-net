@@ -2,15 +2,16 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
+using Stryker.Abstractions.ProjectComponents;
 
 namespace Stryker.Core.ProjectComponents.TestProjects
 {
-    public sealed class TestFile : IEquatable<TestFile>
+    public sealed class TestFile : IEquatable<ITestFile>, ITestFile
     {
         public SyntaxTree SyntaxTree { get; init; }
         public string FilePath { get; init; }
         public string Source { get; init; }
-        public IEnumerable<TestCase> Tests { get; private set; } = new List<TestCase>();
+        public IList<ITestCase> Tests { get; private set; } = new List<ITestCase>();
 
         public void AddTest(Guid id, string name, SyntaxNode node)
         {
@@ -19,7 +20,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
                 return;
             }
 
-            ((IList<TestCase>)Tests).Add(new TestCase
+            Tests.Add(new TestCase
             {
                 Id = id,
                 Name = name,
@@ -27,7 +28,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             });
         }
 
-        public bool Equals(TestFile other) => other!=null && other.FilePath.Equals(FilePath) && other.Source.Equals(Source);
+        public bool Equals(ITestFile other) => other != null && other.FilePath.Equals(FilePath) && other.Source.Equals(Source);
 
         public override bool Equals(object obj) => obj is TestFile file && Equals(file);
 

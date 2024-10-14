@@ -8,9 +8,10 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 using Shouldly;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Utilities;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
 {
@@ -210,7 +211,7 @@ namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
             Mock.Get(file).VerifyAll();
         }
 
-        
+
         [TestMethod]
         public void RestoreOriginalAssembly_IgnoreIfBackupCopyFails()
         {

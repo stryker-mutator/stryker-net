@@ -3,8 +3,8 @@ using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Moq;
 using Shouldly;
-using Stryker.Core.Initialisation.Buildalyzer;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.Initialisation.Buildalyzer;
 
 namespace Stryker.Core.UnitTest.Initialisation.Buildalyzer;
 
@@ -21,7 +21,7 @@ public class AnalyzerResultExtensionsTests
             .Returns(new Dictionary<string, string> { { "NoWarn", "EXTEXP0001;EXTEXP0002" } });
 
         // Act
-        var diagOptions = IAnalyzerResultExtensions.GetDiagnosticOptions(analyzerResult);
+        var diagOptions = analyzerResult.GetDiagnosticOptions();
 
         // Assert
         diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0001", ReportDiagnostic.Suppress));
@@ -38,7 +38,7 @@ public class AnalyzerResultExtensionsTests
             .Returns(new Dictionary<string, string> { { "WarningsAsErrors", "EXTEXP0001;EXTEXP0002" } });
 
         // Act
-        var diagOptions = IAnalyzerResultExtensions.GetDiagnosticOptions(analyzerResult);
+        var diagOptions = analyzerResult.GetDiagnosticOptions();
 
         // Assert
         diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0001", ReportDiagnostic.Error));
@@ -55,7 +55,7 @@ public class AnalyzerResultExtensionsTests
             .Returns(new Dictionary<string, string> { { "WarningsNotAsErrors", "EXTEXP0001;EXTEXP0002" } });
 
         // Act
-        var diagOptions = IAnalyzerResultExtensions.GetDiagnosticOptions(analyzerResult);
+        var diagOptions = analyzerResult.GetDiagnosticOptions();
 
         // Assert
         diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0001", ReportDiagnostic.Warn));
@@ -112,7 +112,7 @@ public class AnalyzerResultExtensionsTests
                 { "NoWarn", "EXTEXP0001" }});
 
         // Act
-        var diagOptions = IAnalyzerResultExtensions.GetDiagnosticOptions(analyzerResult);
+        var diagOptions = analyzerResult.GetDiagnosticOptions();
 
         // Assert
         diagOptions.ShouldContain(new KeyValuePair<string, ReportDiagnostic>("EXTEXP0001", ReportDiagnostic.Suppress));

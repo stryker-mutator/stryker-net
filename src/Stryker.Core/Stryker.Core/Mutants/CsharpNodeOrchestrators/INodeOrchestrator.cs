@@ -1,5 +1,5 @@
 using Microsoft.CodeAnalysis;
-using Stryker.Core.Helpers;
+using Stryker.Utilities.Helpers;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 

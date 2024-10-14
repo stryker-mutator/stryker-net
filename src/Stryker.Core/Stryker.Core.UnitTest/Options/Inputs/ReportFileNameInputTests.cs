@@ -1,8 +1,9 @@
 using System.IO;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options.Inputs;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Options.Inputs;
+using Stryker.Core.UnitTest;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
@@ -64,7 +65,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [TestMethod]
         public void ShouldNotStripNoneHtmlAndJsonFileExtensions()
         {
-            string input = $"{DefaultName}.project";
+            var input = $"{DefaultName}.project";
             var target = new ReportFileNameInput() { SuppliedInput = input };
             target.Validate().ShouldBe(input);
         }

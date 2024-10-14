@@ -3,19 +3,21 @@ using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Reflection;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Stryker.Core.Exceptions;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Reporting;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
-using Stryker.Core.Mutators;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.Reporters;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.MutationTest
 {
@@ -141,7 +143,7 @@ namespace Stryker.Core.UnitTest.MutationTest
             });
 
             var reporterMock = new Mock<IReporter>(MockBehavior.Strict);
-            reporterMock.Setup(x => x.OnMutantTested(It.IsAny<Mutant>()));
+            reporterMock.Setup(x => x.OnMutantTested(It.IsAny<IMutant>()));
 
             var mutationExecutor = new MutationTestExecutor(_testScenario.GetTestRunnerMock().Object);
 

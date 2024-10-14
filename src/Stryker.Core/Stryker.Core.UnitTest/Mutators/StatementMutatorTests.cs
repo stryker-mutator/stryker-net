@@ -2,9 +2,10 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Shouldly;
-using Stryker.Core.Mutators;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
+using Stryker.Abstractions.Mutators;
+using Stryker.Core.Mutators;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
@@ -52,7 +53,7 @@ namespace Stryker.Core.UnitTest.Mutators
         [TestMethod]
         public void ShouldNotMutate()
         {
-            SyntaxTree tree = CSharpSyntaxTree.ParseText($@"
+            var tree = CSharpSyntaxTree.ParseText($@"
 namespace Test
 {{
     class Program

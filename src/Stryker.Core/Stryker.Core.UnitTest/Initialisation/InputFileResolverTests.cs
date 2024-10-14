@@ -12,12 +12,14 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using NuGet.Frameworks;
 using Shouldly;
-using Stryker.Core.Exceptions;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Utilities;
 using static NuGet.Frameworks.FrameworkConstants;
 
 namespace Stryker.Core.UnitTest.Initialisation;
@@ -74,7 +76,7 @@ public class InputFileResolverTests : BuildAnalyzerTestsBase
 </Project>";
 
         _nugetMock = new Mock<INugetRestoreProcess>();
-        _nugetMock.Setup( x => x.RestorePackages(It.IsAny<string>(), It.IsAny<string>()));
+        _nugetMock.Setup(x => x.RestorePackages(It.IsAny<string>(), It.IsAny<string>()));
 
     }
 
@@ -320,8 +322,8 @@ using System.Reflection;
 
         var result = target.ResolveSourceProjectInfos(_options).First();
 
-       ((ProjectComponent<SyntaxTree>)result.ProjectContents).CompilationSyntaxTrees.FirstOrDefault(s => s != null && s.FilePath.Contains("AssemblyInfo.cs")).
-            ShouldBeSemantically(CSharpSyntaxTree.ParseText(textContents));
+        ((ProjectComponent<SyntaxTree>)result.ProjectContents).CompilationSyntaxTrees.FirstOrDefault(s => s != null && s.FilePath.Contains("AssemblyInfo.cs")).
+             ShouldBeSemantically(CSharpSyntaxTree.ParseText(textContents));
     }
 
     [TestMethod]
@@ -709,9 +711,9 @@ using System.Reflection;
 
         ((CsharpFolderComposite)result.ProjectContents).Children.Count().ShouldBe(1);
 
-        var sub =(CsharpFolderComposite) ((CsharpFolderComposite)result.ProjectContents).Children.First();
+        var sub = (CsharpFolderComposite)((CsharpFolderComposite)result.ProjectContents).Children.First();
         // here sub is the root folder of the project
-        sub =(CsharpFolderComposite) sub.Children.First();
+        sub = (CsharpFolderComposite)sub.Children.First();
         sub.Children.Count().ShouldBe(2);
     }
 
@@ -719,8 +721,8 @@ using System.Reflection;
     public void ShouldThrowExceptionOnNullPath()
     {
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
-            {
-            });
+        {
+        });
 
         BuildBuildAnalyzerMock(new Dictionary<string, IProjectAnalyzer>());
 
@@ -764,7 +766,7 @@ Please specify a test project name filter that results in one project.
 
         var exception = Should.Throw<InputException>(() => target.FindTestProject(Path.Combine(_sourcePath)));
         exception.Message.ShouldBe(errorMessage);
-       
+
     }
 
     [TestMethod]
@@ -857,7 +859,7 @@ Please specify a test project name filter that results in one project.
         var testProjectPath = Path.Combine(_sourcePath, "TestProjectFolder", "TestProject.csproj");
         var sourceProjectPath = Path.Combine(_sourcePath, "ExampleProject", "ExampleProject.csproj");
         var sourceProjectNameFilter = "ExampleProject.csproj";
-        
+
         var fileSystem = new MockFileSystem(new Dictionary<string, MockFileData>
         {
             { sourceProjectPath, new MockFileData(_defaultTestProjectFileContents)},
@@ -873,7 +875,7 @@ Please specify a test project name filter that results in one project.
             TargetFramework = targetFramework
         };
 
-        var sourceProjectManagerMock = SourceProjectAnalyzerMock(sourceProjectPath,  fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
+        var sourceProjectManagerMock = SourceProjectAnalyzerMock(sourceProjectPath, fileSystem.AllFiles.Where(s => s.EndsWith(".cs")).ToArray());
         var testProjectManagerMock = TestProjectAnalyzerMock(testProjectPath, sourceProjectPath);
 
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>

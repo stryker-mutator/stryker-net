@@ -17,7 +17,7 @@ namespace Stryker.Core.UnitTest
         /// </summary>
         /// <param name="actual">Resulted code</param>
         /// <param name="expected">Expected code</param>
-        public static void ShouldBeSemantically(this string actual, string expected) => ShouldBeSemantically(CSharpSyntaxTree.ParseText(actual), CSharpSyntaxTree.ParseText(expected));
+        public static void ShouldBeSemantically(this string actual, string expected) => CSharpSyntaxTree.ParseText(actual).ShouldBeSemantically(CSharpSyntaxTree.ParseText(expected));
 
         /// <summary>
         /// Compares two syntax trees and asserts equality
@@ -51,7 +51,7 @@ namespace Stryker.Core.UnitTest
 
         public static void ShouldBeWithNewlineReplace(this string actual, string expected)
         {
-            string replaced = expected.Replace("\r\n", Environment.NewLine, StringComparison.InvariantCultureIgnoreCase);
+            var replaced = expected.Replace("\r\n", Environment.NewLine, StringComparison.InvariantCultureIgnoreCase);
             actual.ShouldBe(replaced);
         }
 

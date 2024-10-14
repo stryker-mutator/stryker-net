@@ -5,20 +5,22 @@ using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Newtonsoft.Json;
 using Shouldly;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
+using Stryker.Abstractions;
+using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Json.SourceFiles;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using static FSharp.Compiler.AbstractIL.IL.ILType;
 
 namespace Stryker.Core.UnitTest.Reporters.Json
 {
@@ -194,9 +196,9 @@ namespace ExtraProject.XUnit
             // assert
             var reportPath = Path.Combine(options.ReportPath, "mutation-report.json");
             mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
-            var fileContents = mockFileSystem.File.ReadAllText(reportPath);
+            var fileContents = mockFileSystem.File.OpenRead(reportPath);
 
-            var report = JsonConvert.DeserializeObject<JsonReport>(fileContents);
+            var report = JsonReportSerialization.DeserializeJsonReportAsync(fileContents).Result;
 
             report.ShouldNotBeNull();
             report.Thresholds.ShouldContainKeyAndValue("high", 80);
@@ -249,9 +251,9 @@ namespace ExtraProject.XUnit
             // assert
             var reportPath = Path.Combine(options.ReportPath, "mutation-report.json");
             mockFileSystem.FileExists(reportPath).ShouldBeTrue($"Path {reportPath} should exist but it does not.");
-            var fileContents = mockFileSystem.File.ReadAllText(reportPath);
+            var fileContents = mockFileSystem.File.OpenRead(reportPath);
 
-            var report = JsonConvert.DeserializeObject<JsonReport>(fileContents);
+            var report = JsonReportSerialization.DeserializeJsonReportAsync(fileContents).Result;
 
             var testFile = report.TestFiles.ShouldHaveSingleItem();
 

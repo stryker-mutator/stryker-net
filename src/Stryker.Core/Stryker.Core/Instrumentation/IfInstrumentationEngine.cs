@@ -8,7 +8,7 @@ namespace Stryker.Core.Instrumentation;
 /// <summary>
 /// Injects a mutation controlled by an if Statement.
 /// </summary>
-internal class IfInstrumentationEngine: BaseEngine<IfStatementSyntax>
+internal class IfInstrumentationEngine : BaseEngine<IfStatementSyntax>
 {
     /// <summary>
     /// Injects an if statement with the original code or the mutated one, depending on condition's result.
@@ -19,7 +19,7 @@ internal class IfInstrumentationEngine: BaseEngine<IfStatementSyntax>
     /// <returns>A statement containing the expected construct.</returns>
     /// <remarks>This method works with statement and block.</remarks>
     public IfStatementSyntax InjectIf(ExpressionSyntax condition, StatementSyntax originalNode, StatementSyntax mutatedNode) =>
-        SyntaxFactory.IfStatement(condition, 
+        SyntaxFactory.IfStatement(condition,
             AsBlock(mutatedNode),
             SyntaxFactory.ElseClause(AsBlock(originalNode))).WithAdditionalAnnotations(Marker);
 
