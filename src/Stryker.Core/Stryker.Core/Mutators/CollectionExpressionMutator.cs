@@ -42,14 +42,6 @@ public sealed class CollectionExpressionMutator : MutatorBase<CollectionExpressi
                 DisplayName     = "Collection expression mutation",
                 Type            = Mutator.CollectionExpression
             };
-
-            yield return new Mutation
-            {
-                OriginalNode    = node,
-                ReplacementNode = node.AddElements(DefaultElementSyntax, DefaultElementSyntax),
-                DisplayName     = "Collection expression mutation",
-                Type            = Mutator.CollectionExpression
-            };
         }
     }
 }
