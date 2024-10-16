@@ -262,3 +262,9 @@ For the full list of all available regex mutations, see the [regex mutator docs]
 |---------------------|---------------------|
 | `x ? a : b`         | `true ? a : b`      |
 | `x ? a : b`         | `false ? a : b`     |
+
+## Collection Expressions (_collectionexpression_)
+| Original            | Mutated     |
+|---------------------|-------------|
+| `[]`                | `[default]` |
+| `[1, 2, 3]`         | `[]`        |

@@ -1948,4 +1948,355 @@ else        {
 
         secondMutant.Id.ShouldBe(firstMutant.Id + 1);
     }
+
+    [TestMethod]
+    public void ShouldMutateCollectionExpression()
+    {
+        var source = "static ReadOnlySpan<int> Value => [1, 2, 3];";
+
+        var expected =
+            "static ReadOnlySpan<int> Value => (StrykerNamespace.MutantControl.IsActive(0)?[]:[1,2,3]);";
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldMutateCollectionExpression2()
+    {
+        var source = """
+                     public void M() {
+                         int[] abc = { 5, 5 };
+                         int[] bcd = [1, .. abc, 3];
+                     }
+                     """;
+
+        var expected =
+            """
+            public void M() {
+                if (StrykerNamespace.MutantControl.IsActive(0)) { }
+                else{
+                    if(StrykerNamespace.MutantControl.IsActive(1)){
+                        int[] abc = {};
+                        int[] bcd = [1, .. abc, 3];
+                    } else {
+                        int[] abc = { 5, 5 };
+                        int[] bcd = (StrykerNamespace.MutantControl.IsActive(2)?[]:[1, .. abc, 3]);
+                    }
+                }
+            }
+            """;
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldMutateCollectionExpression3()
+    {
+        var source = """
+                     public void M() {
+                         int[] abc = { 5, 5 };
+                         var bcd = (int[])[1, .. abc, 3];
+                     }
+                     """;
+
+        var expected =
+            """
+            public void M() {
+              if (StrykerNamespace.MutantControl.IsActive(0)) {
+              } else {
+                if (StrykerNamespace.MutantControl.IsActive(1)) {
+                  int[] abc = {};
+                  var bcd = (int[])[1, ..abc, 3];
+                } else {
+                  int[] abc = {5, 5};
+                  var bcd = (int[])(
+                      StrykerNamespace.MutantControl.IsActive(2) ? [] : [ 1, ..abc, 3 ]);
+                }
+              }
+            }
+            """;
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldMutateCollectionExpression4()
+    {
+        var source = """
+                     public void M() {
+                         Span<string> weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+                         foreach (var day in weekDays)
+                         {
+                             Console.WriteLine(day);
+                         }
+                     }
+                     """;
+
+        var expected =
+            """
+            public void M() {
+              if (StrykerNamespace.MutantControl.IsActive(0)) {
+              } else {
+                Span<string> weekDays = (StrykerNamespace.MutantControl.IsActive(1) ? [] : [
+                  (StrykerNamespace.MutantControl.IsActive(2) ? "" : "Sun"),
+                  (StrykerNamespace.MutantControl.IsActive(3) ? "" : "Mon"),
+                  (StrykerNamespace.MutantControl.IsActive(4) ? "" : "Tue"),
+                  (StrykerNamespace.MutantControl.IsActive(5) ? "" : "Wed"),
+                  (StrykerNamespace.MutantControl.IsActive(6) ? "" : "Thu"),
+                  (StrykerNamespace.MutantControl.IsActive(7) ? "" : "Fri"),
+                  (StrykerNamespace.MutantControl.IsActive(8) ? "" : "Sat")
+                ]);
+                foreach (var day in weekDays) {
+                  if (StrykerNamespace.MutantControl.IsActive(9)) {
+                  } else {
+                    if (StrykerNamespace.MutantControl.IsActive(10)) {
+                      ;
+                    } else {
+                      Console.WriteLine(day);
+                    }
+                  }
+                }
+              }
+            }
+            """;
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldMutateCollectionExpression5()
+    {
+        var source = """
+                     // Initialize private field:
+                     private static readonly ImmutableArray<string> _months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+                     // property with expression body:
+                     public IEnumerable<int> MaxDays =>
+                         [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+                     public int Sum(IEnumerable<int> values) =>
+                         values.Sum();
+                     public void Example()
+                     {
+                         // As a parameter:
+                         int sum = Sum([1, 2, 3, 4, 5]);
+                     }
+                     """;
+
+        var expected =
+            """
+            // Initialize private field:
+            private static readonly ImmutableArray<string> _months =
+                StrykerNamespace.MutantContext.TrackValue(
+                    () =>(StrykerNamespace.MutantControl.IsActive(0) ? [] : [
+                      (StrykerNamespace.MutantControl.IsActive(1) ? "" : "Jan"),
+                      (StrykerNamespace.MutantControl.IsActive(2) ? "" : "Feb"),
+                      (StrykerNamespace.MutantControl.IsActive(3) ? "" : "Mar"),
+                      (StrykerNamespace.MutantControl.IsActive(4) ? "" : "Apr"),
+                      (StrykerNamespace.MutantControl.IsActive(5) ? "" : "May"),
+                      (StrykerNamespace.MutantControl.IsActive(6) ? "" : "Jun"),
+                      (StrykerNamespace.MutantControl.IsActive(7) ? "" : "Jul"),
+                      (StrykerNamespace.MutantControl.IsActive(8) ? "" : "Aug"),
+                      (StrykerNamespace.MutantControl.IsActive(9) ? "" : "Sep"),
+                      (StrykerNamespace.MutantControl.IsActive(10) ? "" : "Oct"),
+                      (StrykerNamespace.MutantControl.IsActive(11) ? "" : "Nov"),
+                      (StrykerNamespace.MutantControl.IsActive(12) ? "" : "Dec")
+                    ]));
+
+            // property with expression body:
+            public IEnumerable<int> MaxDays =>
+                (StrykerNamespace.MutantControl.IsActive(13)
+                     ? []
+                     : [ 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ]);
+
+            public int Sum(IEnumerable<int> values) =>
+                (StrykerNamespace.MutantControl.IsActive(14) ? values.Max() : values.Sum());
+
+            public void Example() {
+              if (StrykerNamespace.MutantControl.IsActive(15)) {
+              } else {
+                // As a parameter:
+                int sum = Sum(
+                    (StrykerNamespace.MutantControl.IsActive(16) ? [] : [ 1, 2, 3, 4, 5 ]));
+              }
+            }
+            """;
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldMutateCollectionExpression6()
+    {
+        var source = """
+                     public void M() {
+                         string hydrogen = "H";
+                         string helium = "He";
+                         string lithium = "Li";
+                         string beryllium = "Be";
+                         string boron = "B";
+                         string carbon = "C";
+                         string nitrogen = "N";
+                         string oxygen = "O";
+                         string fluorine = "F";
+                         string neon = "Ne";
+                         string[] elements = [hydrogen, helium, lithium, beryllium, boron, carbon, nitrogen, oxygen, fluorine, neon];
+                         foreach (var element in elements)
+                         {
+                             Console.WriteLine(element);
+                         }
+                     }
+                     """;
+
+        var expected =
+            """
+            public void M() {
+              if (StrykerNamespace.MutantControl.IsActive(0)) {
+              } else {
+                string hydrogen = (StrykerNamespace.MutantControl.IsActive(1) ? "" : "H");
+                string helium = (StrykerNamespace.MutantControl.IsActive(2) ? "" : "He");
+                string lithium = (StrykerNamespace.MutantControl.IsActive(3) ? "" : "Li");
+                string beryllium = (StrykerNamespace.MutantControl.IsActive(4) ? "" : "Be");
+                string boron = (StrykerNamespace.MutantControl.IsActive(5) ? "" : "B");
+                string carbon = (StrykerNamespace.MutantControl.IsActive(6) ? "" : "C");
+                string nitrogen = (StrykerNamespace.MutantControl.IsActive(7) ? "" : "N");
+                string oxygen = (StrykerNamespace.MutantControl.IsActive(8) ? "" : "O");
+                string fluorine = (StrykerNamespace.MutantControl.IsActive(9) ? "" : "F");
+                string neon = (StrykerNamespace.MutantControl.IsActive(10) ? "" : "Ne");
+                string[] elements = (StrykerNamespace.MutantControl.IsActive(11) ? [] : [
+                  hydrogen, helium, lithium, beryllium, boron, carbon, nitrogen, oxygen,
+                  fluorine, neon
+                ]);
+                foreach (var element in elements) {
+                  if (StrykerNamespace.MutantControl.IsActive(12)) {
+                  } else {
+                    if (StrykerNamespace.MutantControl.IsActive(13)) {
+                      ;
+                    } else {
+                      Console.WriteLine(element);
+                    }
+                  }
+                }
+              }
+            }
+            """;
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldMutateCollectionExpression7()
+    {
+        var source = """
+                     public void M() {
+                        string[] vowels = ["a", "e", "i", "o", "u"];
+                        string[] consonants = ["b", "c", "d", "f", "g", "h", "j", "k", "l", "m",
+                                               "n", "p", "q", "r", "s", "t", "v", "w", "x", "z"];
+                        string[] alphabet = [.. vowels, .. consonants, "y"];
+                     }
+                     """;
+
+        var expected =
+            """
+            public void M() {
+              if (StrykerNamespace.MutantControl.IsActive(0)) {
+              } else {
+                string[] vowels = (StrykerNamespace.MutantControl.IsActive(1) ? [] : [
+                  (StrykerNamespace.MutantControl.IsActive(2) ? "" : "a"),
+                  (StrykerNamespace.MutantControl.IsActive(3) ? "" : "e"),
+                  (StrykerNamespace.MutantControl.IsActive(4) ? "" : "i"),
+                  (StrykerNamespace.MutantControl.IsActive(5) ? "" : "o"),
+                  (StrykerNamespace.MutantControl.IsActive(6) ? "" : "u")
+                ]);
+                string[] consonants = (StrykerNamespace.MutantControl.IsActive(7) ? [] : [
+                  (StrykerNamespace.MutantControl.IsActive(8) ? "" : "b"),
+                  (StrykerNamespace.MutantControl.IsActive(9) ? "" : "c"),
+                  (StrykerNamespace.MutantControl.IsActive(10) ? "" : "d"),
+                  (StrykerNamespace.MutantControl.IsActive(11) ? "" : "f"),
+                  (StrykerNamespace.MutantControl.IsActive(12) ? "" : "g"),
+                  (StrykerNamespace.MutantControl.IsActive(13) ? "" : "h"),
+                  (StrykerNamespace.MutantControl.IsActive(14) ? "" : "j"),
+                  (StrykerNamespace.MutantControl.IsActive(15) ? "" : "k"),
+                  (StrykerNamespace.MutantControl.IsActive(16) ? "" : "l"),
+                  (StrykerNamespace.MutantControl.IsActive(17) ? "" : "m"),
+                  (StrykerNamespace.MutantControl.IsActive(18) ? "" : "n"),
+                  (StrykerNamespace.MutantControl.IsActive(19) ? "" : "p"),
+                  (StrykerNamespace.MutantControl.IsActive(20) ? "" : "q"),
+                  (StrykerNamespace.MutantControl.IsActive(21) ? "" : "r"),
+                  (StrykerNamespace.MutantControl.IsActive(22) ? "" : "s"),
+                  (StrykerNamespace.MutantControl.IsActive(23) ? "" : "t"),
+                  (StrykerNamespace.MutantControl.IsActive(24) ? "" : "v"),
+                  (StrykerNamespace.MutantControl.IsActive(25) ? "" : "w"),
+                  (StrykerNamespace.MutantControl.IsActive(26) ? "" : "x"),
+                  (StrykerNamespace.MutantControl.IsActive(27) ? "" : "z")
+                ]);
+                string[] alphabet =
+                    (StrykerNamespace.MutantControl.IsActive(28)
+                         ? []
+                         : [
+                                 ..vowels, ..consonants,
+                                 (StrykerNamespace.MutantControl.IsActive(29) ? "" : "y")
+                           ]);
+              }
+            }
+            """;
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldMutateCollectionExpression8()
+    {
+        var source = """
+                     public void M() {
+                         Iter([1]);
+                     }
+                     public IEnumerable<T> Iter<T>(IList<T> list) {
+                         foreach (var l in list) {
+                             yield return l;
+                         }
+                     }
+                     """;
+
+        var expected =
+            """
+            public void M() {
+              if (StrykerNamespace.MutantControl.IsActive(0)) {
+              } else {
+                if (StrykerNamespace.MutantControl.IsActive(1)) {
+                  ;
+                } else {
+                  Iter((StrykerNamespace.MutantControl.IsActive(2) ? [] : [ 1 ]));
+                }
+              }
+            }
+            public IEnumerable<T> Iter<T>(IList<T> list) {
+              if (StrykerNamespace.MutantControl.IsActive(3)) {
+              } else {
+                foreach (var l in list) {
+                  if (StrykerNamespace.MutantControl.IsActive(4)) {
+                  } else {
+                    if (StrykerNamespace.MutantControl.IsActive(5)) {
+                      ;
+                    } else {
+                      yield return l;
+                    }
+                  }
+                }
+              }
+            }
+            """;
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldMutateCollectionExpression9()
+    {
+        var source = "static int[][] Value => [[1, 2], [3]];";
+
+        var expected =
+            "static int[][] Value => (StrykerNamespace.MutantControl.IsActive(0)?[]:[(StrykerNamespace.MutantControl.IsActive(1)?[]:[1, 2]), (StrykerNamespace.MutantControl.IsActive(2)?[]:[3])]);";
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
+
+    [TestMethod]
+    public void ShouldMutateCollectionExpression10()
+    {
+        var source = "static int[][] Value => [[1, 2], new int[] { 3 }];";
+
+        var expected =
+            "static int[][] Value => (StrykerNamespace.MutantControl.IsActive(0)?[]:[(StrykerNamespace.MutantControl.IsActive(1)?[]:[1, 2]), (StrykerNamespace.MutantControl.IsActive(2)?new int[] {}:new int[] { 3 })]);";
+        ShouldMutateSourceInClassToExpected(source, expected);
+    }
 }
