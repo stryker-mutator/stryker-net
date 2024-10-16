@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -48,7 +49,15 @@ namespace Stryker.Core.Initialisation
                 initialTestRun.Result.VsTestDescriptions
                 .Select(desc => desc.Case)
                 // F# has a different syntax tree and would throw further down the line
-                .Where(unitTest => Path.GetExtension(unitTest.CodeFilePath) == ".cs");
+                .Where(unitTest => Path.GetExtension(unitTest.CodeFilePath) == ".cs").ToList();
+
+            if (!unitTests.Any())
+            {
+                unitTests = initialTestRun.Result.VsTestDescriptions
+                    .Select(desc => desc.Case)
+                    // F# has a different syntax tree and would throw further down the line
+                    .Where(unitTest => Path.GetExtension(unitTest.CodeFilePath) != ".fs").ToList();
+            }
 
             foreach (var unitTest in unitTests)
             {
@@ -62,7 +71,49 @@ namespace Stryker.Core.Initialisation
                 }
                 else
                 {
-                    _logger.LogDebug("Could not locate unit test in any testfile. This should not happen and results in incorrect test reporting.");
+                    //Test if you can find the file by scanning the sources for testcase name
+                    var qualifiedNameArray = unitTest.FullyQualifiedName.Split('.');
+                    var methodName = qualifiedNameArray[^1];
+                    var className = qualifiedNameArray[^2];
+                    var nameSpace1 = new ArraySegment<string>(qualifiedNameArray, 0, qualifiedNameArray.Length - 2);
+                    var nameSpace = $"namespace {string.Join('.', nameSpace1)}";
+
+                    testFile = testProjectsInfo.TestFiles.Where(tFile => !tFile.FilePath.EndsWith("GlobalSuppressions.cs")).SingleOrDefault(tFile =>
+                        tFile.Source.Contains(className) && tFile.Source.Contains(methodName) && tFile.Source.Contains(nameSpace));
+                    if (testFile is not null)
+                    {
+                        var testDescriptions =
+                            initialTestRun.Result.VsTestDescriptions.Where(td => td.Description.Name == unitTest.FullyQualifiedName);
+                        foreach (var testDescription in testDescriptions)
+                        {
+                            testDescription.Description.TestFilePath = testFile.FilePath;
+                        }
+
+                        var lineNumber = unitTest.LineNumber;
+                        if (lineNumber < 1)
+                        {
+                            var lines = testFile.Source.Split("\r\n");
+                            foreach (var line in lines)
+                            {
+                                if (line.Contains(methodName) && !line.Contains("class"))
+                                {
+                                    lineNumber = Array.IndexOf(testFile.Source.Split("\r\n"),
+                                        testFile.Source.Split("\r\n").First(sourceLine => sourceLine.Contains(methodName) && !sourceLine.Contains("class")));
+                                    break;
+                                }
+                            }
+                        }
+
+                        var lineSpan = testFile.SyntaxTree.GetText().Lines[lineNumber].Span;
+                        var nodesInSpan = testFile.SyntaxTree.GetRoot().DescendantNodes(lineSpan);
+                        var node = nodesInSpan.First(n => n is MethodDeclarationSyntax);
+                        testFile.AddTest(unitTest.Id, unitTest.FullyQualifiedName, node);
+                    }
+                    else
+                    {
+                        _logger.LogDebug(
+                            "Could not locate unit test in any testfile. This should not happen and results in incorrect test reporting.");
+                    }
                 }
             }
         }
