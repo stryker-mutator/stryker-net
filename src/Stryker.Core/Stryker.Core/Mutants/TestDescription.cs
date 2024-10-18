@@ -15,7 +15,7 @@ namespace Stryker.Core.Mutants
 
         public string Name { get; }
 
-        public string TestFilePath { get; }
+        public string TestFilePath { get; set; }
 
         private bool Equals(TestDescription other)
         {
