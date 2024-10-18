@@ -4,6 +4,8 @@ using DotNet.Globbing;
 using Microsoft.CodeAnalysis.Text;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
+using Stryker.Abstractions;
+using Stryker.Utilities;
 
 namespace Stryker.Core.UnitTest
 {

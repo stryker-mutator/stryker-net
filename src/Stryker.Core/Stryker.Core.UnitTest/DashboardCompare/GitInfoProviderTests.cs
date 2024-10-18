@@ -5,9 +5,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions;
 using Stryker.Core.Baseline.Providers;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options;
+using Stryker.Core.UnitTest;
 
 namespace Stryker.Core.UnitTest.DashboardCompare
 {
@@ -233,7 +234,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
         public void LooksUpCommitWhenGitSourceIsFortyCharacters()
         {
             // Arrange
-            string sha = "5a6940131b31f6958007ecbc0c51cbc35177f4e0";
+            var sha = "5a6940131b31f6958007ecbc0c51cbc35177f4e0";
             var options = new StrykerOptions()
             {
                 Since = true,
@@ -260,7 +261,7 @@ namespace Stryker.Core.UnitTest.DashboardCompare
             var target = new GitInfoProvider(options, repositoryMock.Object);
 
             // Act
-            Commit result = target.DetermineCommit();
+            var result = target.DetermineCommit();
 
             // Assert
             result.ShouldNotBeNull();

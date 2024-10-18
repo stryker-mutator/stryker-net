@@ -1,9 +1,9 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Spectre.Console.Testing;
+using Stryker.Abstractions.Mutants;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters;
-using System.IO;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters
 {

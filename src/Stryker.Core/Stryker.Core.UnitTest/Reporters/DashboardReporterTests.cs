@@ -1,15 +1,15 @@
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Options;
 using Stryker.Core.Clients;
-using Stryker.Core.Options;
-using Stryker.Core.Options.Inputs;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Json.SourceFiles;
 using Stryker.Core.Reporters.WebBrowserOpener;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters
 {

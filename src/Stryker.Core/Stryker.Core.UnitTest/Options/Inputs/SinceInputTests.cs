@@ -1,7 +1,8 @@
 using Shouldly;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options.Inputs;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.UnitTest;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
@@ -66,7 +67,7 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [TestMethod]
         public void ShouldNotBeAllowedToExplicitlyEnableWithBaseline()
         {
-            var sinceEnabled = new SinceInput{SuppliedInput = true };
+            var sinceEnabled = new SinceInput { SuppliedInput = true };
 
             var exception = Should.Throw<InputException>(() => sinceEnabled.Validate(withBaseline: true));
             exception.Message.ShouldBe("The since and baseline features are mutually exclusive.");

@@ -6,14 +6,15 @@ using Azure;
 using Azure.Storage.Files.Shares;
 using Azure.Storage.Files.Shares.Models;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents;
 using Stryker.Core.Baseline.Providers;
-using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.UnitTest.Reporters;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Baseline.Providers
 {
@@ -142,7 +143,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             Mock.Get(fileClient).Setup(f => f.ExistsAsync(default)).Returns(Task.FromResult(Response.FromValue(true, default)));
 
             // report file content download
-            var json = JsonReport.Build(new StrykerOptions(), ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>()).ToJson();
+            var json = JsonReport.Build(new StrykerOptions(), ReportTestHelper.CreateProjectWith(), It.IsAny<ITestProjectsInfo>()).ToJson();
             var file = FilesModelFactory.StorageFileDownloadInfo(content: new MemoryStream(Encoding.Default.GetBytes(json)));
             Mock.Get(fileClient).Setup(f => f.Download(null, default)).Returns(Response.FromValue(file, default));
 
@@ -200,7 +201,7 @@ namespace Stryker.Core.UnitTest.Baseline.Providers
             var fileLength = Encoding.UTF8.GetBytes(report.ToJson()).Length;
 
             var fullChunks = (int)Math.Floor((double)fileLength / chunkSize);
-            var lastChunkSize = fileLength - (fullChunks * chunkSize);
+            var lastChunkSize = fileLength - fullChunks * chunkSize;
 
             var fileClient = Mock.Of<ShareFileClient>();
 

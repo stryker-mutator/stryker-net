@@ -184,7 +184,7 @@ namespace Stryker.Core.Initialisation
                     {
                         return GetAssembly(file, parameters);
                     }
-                    catch (System.BadImageFormatException)
+                    catch (BadImageFormatException)
                     {
                         continue;
                     }

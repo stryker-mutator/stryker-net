@@ -7,8 +7,9 @@ using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
+using Stryker.Utilities;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Options;
+using Stryker.Core.UnitTest;
 
 namespace Stryker.Core.UnitTest.Fsharp
 {

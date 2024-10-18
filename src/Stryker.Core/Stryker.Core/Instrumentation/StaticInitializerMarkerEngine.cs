@@ -9,7 +9,7 @@ namespace Stryker.Core.Instrumentation
     /// <summary>
     /// Injects static tracking logic in static fields/properties' initializers.
     /// </summary>
-    internal class StaticInitializerMarkerEngine: BaseEngine<ExpressionSyntax>
+    internal class StaticInitializerMarkerEngine : BaseEngine<ExpressionSyntax>
     {
         private const string MutantContextValueTrackName = "TrackValue";
 

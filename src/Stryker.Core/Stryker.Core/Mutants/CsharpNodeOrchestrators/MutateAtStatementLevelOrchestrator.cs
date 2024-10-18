@@ -1,13 +1,14 @@
 using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
 /// <summary>
 /// Generic class to deal with syntax nodes which mutations must be injected at statement level 
 /// </summary>
-internal class MutateAtStatementLevelOrchestrator<T>: NodeSpecificOrchestrator<T, T> where T: SyntaxNode
+internal class MutateAtStatementLevelOrchestrator<T> : NodeSpecificOrchestrator<T, T> where T : SyntaxNode
 {
     private readonly Predicate<T> _predicate;
 

@@ -1,7 +1,8 @@
 using Shouldly;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options.Inputs;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.UnitTest;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
@@ -26,7 +27,7 @@ If you experience a lot of timeouts you might need to increase the timeout value
 
             result.ShouldBe(0);
         }
-        
+
         [TestMethod]
         public void ShouldHaveDefault()
         {

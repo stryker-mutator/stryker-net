@@ -1,14 +1,15 @@
 using System;
 using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Options;
 using Stryker.Core.Baseline.Providers;
-using Stryker.Core.Options;
 using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Html;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Progress;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters
 {

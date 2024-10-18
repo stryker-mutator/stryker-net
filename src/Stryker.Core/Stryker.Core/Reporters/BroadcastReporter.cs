@@ -2,9 +2,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using Stryker.Core.Mutants;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporting;
 
 namespace Stryker.Core.Reporters
 {
@@ -19,7 +19,7 @@ namespace Stryker.Core.Reporters
 
         public BroadcastReporter(IEnumerable<IReporter> reporters) => Reporters = reporters;
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
         {
             foreach (var reporter in Reporters)
             {
@@ -51,7 +51,7 @@ namespace Stryker.Core.Reporters
             }
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
         {
             // make sure all other console caches are flushed before writing final reports
             Thread.Sleep(TimeSpan.FromSeconds(1));

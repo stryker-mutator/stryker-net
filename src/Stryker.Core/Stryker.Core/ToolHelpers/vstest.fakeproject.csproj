@@ -2,9 +2,9 @@
   <PropertyGroup>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
-  </PropertyGroup> 
+  </PropertyGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Microsoft.TestPlatform.Portable" />
-	</ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.TestPlatform.Portable" />
+  </ItemGroup>
 </Project>

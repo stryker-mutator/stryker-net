@@ -3,9 +3,9 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
 
 namespace Stryker.Core.MutantFilters;
 
@@ -21,12 +21,12 @@ public sealed class IgnoredMethodMutantFilter : IMutantFilter
 
     private readonly SyntaxTriviaRemover _triviaRemover = new();
 
-    public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options) =>
-        options.IgnoredMethods.Any() ?
-            mutants.Where(m => !IsPartOfIgnoredMethodCall(m.Mutation.OriginalNode, options)) :
-            mutants;
+        public IEnumerable<IMutant> FilterMutants(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file, IStrykerOptions options) =>
+            options.IgnoredMethods.Any() ?
+                    mutants.Where(m => !IsPartOfIgnoredMethodCall(m.Mutation.OriginalNode, options)) :
+                    mutants;
 
-    private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, StrykerOptions options, bool canGoUp = true) =>
+    private bool IsPartOfIgnoredMethodCall(SyntaxNode syntaxNode, IStrykerOptions options, bool canGoUp = true) =>
         syntaxNode switch
         {
             // Check if the current node is an invocation. This will also ignore invokable properties like `Func<bool> MyProp { get;}`
@@ -78,7 +78,7 @@ public sealed class IgnoredMethodMutantFilter : IMutantFilter
             _ => false,
         };
 
-    private static bool MatchesAnIgnoredMethod(string expressionString, StrykerOptions options) => options.IgnoredMethods.Any(r => r.IsMatch(expressionString));
+    private static bool MatchesAnIgnoredMethod(string expressionString, IStrykerOptions options) => options.IgnoredMethods.Any(r => r.IsMatch(expressionString));
 
     /// <summary>
     /// Removes comments, whitespace, and other junk from a syntax tree.

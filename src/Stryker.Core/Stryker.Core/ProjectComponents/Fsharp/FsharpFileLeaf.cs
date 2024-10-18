@@ -1,8 +1,9 @@
 using FSharp.Compiler.Syntax;
-using Stryker.Core.Mutants;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.ProjectComponents;
 using System.Collections.Generic;
 
-namespace Stryker.Core.ProjectComponents
+namespace Stryker.Core.ProjectComponents.Fsharp
 {
     public class FsharpFileLeaf : ProjectComponent<ParsedInput>, IFileLeaf<ParsedInput>
     {
@@ -18,7 +19,7 @@ namespace Stryker.Core.ProjectComponents
         /// </summary>
         public ParsedInput MutatedSyntaxTree { get; set; }
 
-        public override IEnumerable<Mutant> Mutants { get; set; }
+        public override IEnumerable<IMutant> Mutants { get; set; }
 
         public override IEnumerable<ParsedInput> CompilationSyntaxTrees => MutatedSyntaxTrees;
 

@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Baseline;
+using Stryker.Abstractions.Options;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutationTest;
-using Stryker.Core.Options;
 
 namespace Stryker.Core.MutantFilters
 {
@@ -15,7 +17,7 @@ namespace Stryker.Core.MutantFilters
         private static IBaselineProvider _baselineProvider;
         private static MutationTestInput _input;
 
-        public static IMutantFilter Create(StrykerOptions options, MutationTestInput mutationTestInput,
+        public static IMutantFilter Create(IStrykerOptions options, MutationTestInput mutationTestInput,
             IDiffProvider diffProvider = null, IBaselineProvider baselineProvider = null,
             IGitInfoProvider gitInfoProvider = null)
         {
@@ -25,14 +27,14 @@ namespace Stryker.Core.MutantFilters
             }
 
             _input = mutationTestInput;
-            _diffProvider = diffProvider ;
+            _diffProvider = diffProvider;
             _baselineProvider = baselineProvider;
             _gitInfoProvider = gitInfoProvider;
 
             return new BroadcastMutantFilter(DetermineEnabledMutantFilters(options));
         }
 
-        private static IEnumerable<IMutantFilter> DetermineEnabledMutantFilters(StrykerOptions options)
+        private static IEnumerable<IMutantFilter> DetermineEnabledMutantFilters(IStrykerOptions options)
         {
             var enabledFilters = new SortedSet<IMutantFilter>(new ByMutantFilterType()) {
                     new FilePatternMutantFilter(options),
@@ -61,7 +63,7 @@ namespace Stryker.Core.MutantFilters
 
         private sealed class ByMutantFilterType : IComparer<IMutantFilter>
         {
-            public int Compare(IMutantFilter x, IMutantFilter y) => x?.Type.CompareTo(y?.Type) ?? -1; 
+            public int Compare(IMutantFilter x, IMutantFilter y) => x?.Type.CompareTo(y?.Type) ?? -1;
         }
     }
 }

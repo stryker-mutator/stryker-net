@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Mutators;
+using Stryker.Abstractions.Mutators;
 
 namespace Stryker.Core.Mutants;
 
@@ -96,7 +96,7 @@ internal class MutationContext
     public MutationContext Enter(MutationControl control)
     {
         _mutation.Enter(control);
-        return control is MutationControl.Block or MutationControl.Member ? new MutationContext(this): this;
+        return control is MutationControl.Block or MutationControl.Member ? new MutationContext(this) : this;
     }
 
     public MutationContext BlockInjection()

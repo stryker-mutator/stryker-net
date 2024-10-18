@@ -1,8 +1,8 @@
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Logging;
-using Stryker.Core.Mutants;
-using Stryker.Core.ProjectComponents;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.ProjectComponents;
 
 namespace Stryker.Core.Reporters
 {

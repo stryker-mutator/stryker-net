@@ -3,11 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
 using Stryker.Core.DiffProviders;
-using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
 
 namespace Stryker.Core.MutantFilters
 {
@@ -48,10 +49,10 @@ namespace Stryker.Core.MutantFilters
             }
         }
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options)
+        public IEnumerable<IMutant> FilterMutants(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file, IStrykerOptions options)
         {
             // Mutants can be enabled for testing based on multiple reasons. We store all the filtered mutants in this list and return this list.
-            IEnumerable<Mutant> filteredMutants;
+            IEnumerable<IMutant> filteredMutants;
 
             // A non-csharp file is flagged by the diff result as modified. We cannot determine which mutants will be affected by this, thus all mutants have to be tested.
             if (_diffResult.ChangedTestFiles is { } && _diffResult.ChangedTestFiles.Any(x => !x.EndsWith(".cs")))
@@ -81,7 +82,7 @@ namespace Stryker.Core.MutantFilters
             return filteredMutants;
         }
 
-        private IEnumerable<Mutant> SetNotRunMutantsToIgnored(IEnumerable<Mutant> mutants)
+        private static IEnumerable<IMutant> SetNotRunMutantsToIgnored(IEnumerable<IMutant> mutants)
         {
             foreach (var mutant in mutants.Where(m => m.ResultStatus == MutantStatus.Pending || m.ResultStatus == MutantStatus.NoCoverage))
             {
@@ -89,10 +90,10 @@ namespace Stryker.Core.MutantFilters
                 mutant.ResultStatusReason = "Mutant not changed compared to target commit";
             }
 
-            return new List<Mutant>();
+            return new List<IMutant>();
         }
 
-        private IEnumerable<Mutant> SetMutantStatusForFileChanged(IEnumerable<Mutant> mutants)
+        private static IEnumerable<IMutant> SetMutantStatusForFileChanged(IEnumerable<IMutant> mutants)
         {
             foreach (var mutant in mutants.Where(m => m.ResultStatus != MutantStatus.NoCoverage))
             {
@@ -103,7 +104,7 @@ namespace Stryker.Core.MutantFilters
             return mutants;
         }
 
-        private IEnumerable<Mutant> SetMutantStatusForNonCSharpFileChanged(IEnumerable<Mutant> mutants)
+        private static IEnumerable<IMutant> SetMutantStatusForNonCSharpFileChanged(IEnumerable<IMutant> mutants)
         {
             foreach (var mutant in mutants.Where(m => m.ResultStatus != MutantStatus.NoCoverage))
             {
@@ -114,9 +115,9 @@ namespace Stryker.Core.MutantFilters
             return mutants;
         }
 
-        private IEnumerable<Mutant> ResetMutantStatusForChangedTests(IEnumerable<Mutant> mutants)
+        private IEnumerable<IMutant> ResetMutantStatusForChangedTests(IEnumerable<IMutant> mutants)
         {
-            var filteredMutants = new List<Mutant>();
+            var filteredMutants = new List<IMutant>();
 
             foreach (var mutant in mutants)
             {

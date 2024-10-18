@@ -3,9 +3,9 @@ using System.IO;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects
 {

@@ -1,5 +1,6 @@
 using System;
 using Microsoft.CodeAnalysis;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 

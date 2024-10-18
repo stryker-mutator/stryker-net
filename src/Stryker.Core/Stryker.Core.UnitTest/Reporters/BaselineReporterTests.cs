@@ -1,11 +1,12 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Baseline;
+using Stryker.Abstractions.ProjectComponents;
 using Stryker.Core.Baseline.Providers;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Json;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Reporters
 {

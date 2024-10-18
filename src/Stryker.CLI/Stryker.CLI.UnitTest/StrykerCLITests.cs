@@ -3,19 +3,20 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using NuGet.Versioning;
 using Serilog.Events;
 using Shouldly;
 using Spectre.Console.Testing;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions.Options;
 using Stryker.CLI.Clients;
 using Stryker.CLI.Logging;
+using Stryker.Configuration;
 using Stryker.Core;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Mutators;
-using Stryker.Core.Options;
-using Stryker.Core.Reporters;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.CLI.UnitTest;
 
@@ -121,10 +122,10 @@ Options:";
         };
         var strykerRunResult = new StrykerRunResult(options, 0.3);
 
-        mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>()))
-            .Callback<IStrykerInputs, ILoggerFactory, IProjectOrchestrator>((c, l, p) => Core.Logging.ApplicationLogging.LoggerFactory = l)
-            .Returns(strykerRunResult)
-            .Verifiable();
+            mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>()))
+                .Callback<IStrykerInputs, ILoggerFactory, IProjectOrchestrator>((c, l, p) => Abstractions.Logging.ApplicationLogging.LoggerFactory = l)
+                .Returns(strykerRunResult)
+                .Verifiable();
 
         var target = new StrykerCli(mock.Object);
         var result = target.Run(new string[] { });

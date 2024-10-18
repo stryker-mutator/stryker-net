@@ -1,9 +1,9 @@
 using System.Linq;
 using Shouldly;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options.Inputs;
-using Stryker.Core.Reporters;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Abstractions.Options;
 
 namespace Stryker.Core.UnitTest.Options.Inputs
 {
@@ -42,7 +42,9 @@ namespace Stryker.Core.UnitTest.Options.Inputs
         [TestMethod]
         public void ShouldReturnReporters()
         {
-            var target = new ReportersInput { SuppliedInput = new[] {
+            var target = new ReportersInput
+            {
+                SuppliedInput = new[] {
                 Reporter.Html.ToString(),
                 Reporter.Json.ToString(),
                 Reporter.Progress.ToString(),
@@ -51,7 +53,8 @@ namespace Stryker.Core.UnitTest.Options.Inputs
                 Reporter.ClearTextTree.ToString(),
                 Reporter.Dashboard.ToString(),
                 Reporter.Dots.ToString(),
-            } };
+            }
+            };
 
             var result = target.Validate(false);
 

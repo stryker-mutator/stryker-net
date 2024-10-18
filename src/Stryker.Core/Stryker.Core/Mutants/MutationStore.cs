@@ -4,8 +4,9 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Mutants;
 using Stryker.Core.Helpers;
-using Stryker.Core.Logging;
 
 namespace Stryker.Core.Mutants;
 

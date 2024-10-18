@@ -2,20 +2,21 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using LibGit2Sharp;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Options;
 using Stryker.Core.Baseline.Providers;
-using Stryker.Core.Exceptions;
 using Stryker.Core.Mutants;
-using Stryker.Core.Options;
+using Stryker.Utilities;
 
 namespace Stryker.Core.DiffProviders
 {
     public class GitDiffProvider : IDiffProvider
     {
         public TestSet Tests { get; }
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IGitInfoProvider _gitInfoProvider;
 
-        public GitDiffProvider(StrykerOptions options, TestSet tests, IGitInfoProvider gitInfoProvider = null)
+        public GitDiffProvider(IStrykerOptions options, TestSet tests, IGitInfoProvider gitInfoProvider = null)
         {
             Tests = tests;
             _options = options;
@@ -53,7 +54,7 @@ namespace Stryker.Core.DiffProviders
 
             foreach (var patchChanges in repository.Diff.Compare<Patch>(commit.Tree, DiffTargets.WorkingDirectory))
             {
-                string diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_gitInfoProvider.RepositoryPath, patchChanges.Path));
+                var diffPath = FilePathUtils.NormalizePathSeparators(Path.Combine(_gitInfoProvider.RepositoryPath, patchChanges.Path));
 
                 if (testPaths.Any(testPath => diffPath.StartsWith(testPath)))
                 {

@@ -3,15 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporting;
+using Stryker.Abstractions.TestRunners;
 using Stryker.Core.CoverageAnalysis;
-using Stryker.Core.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.Logging;
 using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.Reporters;
 
 namespace Stryker.Core.MutationTest
 {
@@ -19,7 +21,7 @@ namespace Stryker.Core.MutationTest
     {
         MutationTestInput Input { get; }
         void Mutate();
-        StrykerRunResult Test(IEnumerable<Mutant> mutantsToTest);
+        StrykerRunResult Test(IEnumerable<IMutant> mutantsToTest);
         void Restore();
         void GetCoverage();
         void FilterMutants();
@@ -28,13 +30,13 @@ namespace Stryker.Core.MutationTest
     public class MutationTestProcess : IMutationTestProcess
     {
         private static readonly ILogger Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationTestProcess>();
-        private readonly IProjectComponent _projectContents;
+        private readonly IReadOnlyProjectComponent _projectContents;
         private readonly IMutationTestExecutor _mutationTestExecutor;
         private readonly IReporter _reporter;
         private readonly ICoverageAnalyser _coverageAnalyser;
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IMutationProcess _mutationProcess;
-        private static readonly Dictionary<Language, Func<StrykerOptions, IMutationProcess>> LanguageMap = new();
+        private static readonly Dictionary<Language, Func<IStrykerOptions, IMutationProcess>> LanguageMap = new();
 
         static MutationTestProcess()
         {
@@ -44,7 +46,7 @@ namespace Stryker.Core.MutationTest
 
         public static void DeclareMutationProcessForLanguage<T>(Language language) where T : IMutationProcess
         {
-            var constructor = typeof(T).GetConstructor(new[] { typeof(StrykerOptions) });
+            var constructor = typeof(T).GetConstructor(new[] { typeof(IStrykerOptions) });
             if (constructor == null)
             {
                 throw new NotSupportedException(
@@ -55,7 +57,7 @@ namespace Stryker.Core.MutationTest
         }
 
         public MutationTestProcess(MutationTestInput input,
-            StrykerOptions options,
+            IStrykerOptions options,
             IReporter reporter,
             IMutationTestExecutor executor,
             IMutationProcess mutationProcess = null,
@@ -91,7 +93,7 @@ namespace Stryker.Core.MutationTest
 
         public void FilterMutants() => _mutationProcess.FilterMutants(Input);
 
-        public StrykerRunResult Test(IEnumerable<Mutant> mutantsToTest)
+        public StrykerRunResult Test(IEnumerable<IMutant> mutantsToTest)
         {
             if (!MutantsToTest(mutantsToTest))
             {
@@ -105,7 +107,7 @@ namespace Stryker.Core.MutationTest
 
         public void Restore() => Input.TestProjectsInfo.RestoreOriginalAssembly(Input.SourceProjectInfo.AnalyzerResult);
 
-        private void TestMutants(IEnumerable<Mutant> mutantsToTest)
+        private void TestMutants(IEnumerable<IMutant> mutantsToTest)
         {
             var mutantGroups = BuildMutantGroupsForTest(mutantsToTest.ToList());
 
@@ -113,7 +115,7 @@ namespace Stryker.Core.MutationTest
 
             Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
             {
-                var reportedMutants = new HashSet<Mutant>();
+                var reportedMutants = new HashSet<IMutant>();
 
                 _mutationTestExecutor.Test(Input.SourceProjectInfo, mutants,
                     Input.InitialTestRun.TimeoutValueCalculator,
@@ -124,8 +126,8 @@ namespace Stryker.Core.MutationTest
             });
         }
 
-        private bool TestUpdateHandler(IEnumerable<Mutant> testedMutants, ITestGuids failedTests, ITestGuids ranTests,
-            ITestGuids timedOutTest, ISet<Mutant> reportedMutants)
+        private bool TestUpdateHandler(IEnumerable<IMutant> testedMutants, ITestGuids failedTests, ITestGuids ranTests,
+            ITestGuids timedOutTest, ISet<IMutant> reportedMutants)
         {
             var testsFailingInitially = Input.InitialTestRun.Result.FailingTests.GetGuids().ToHashSet();
             var continueTestRun = _options.OptimizationMode.HasFlag(OptimizationModes.DisableBail);
@@ -152,7 +154,7 @@ namespace Stryker.Core.MutationTest
             return continueTestRun;
         }
 
-        private void OnMutantsTested(IEnumerable<Mutant> mutants, ISet<Mutant> reportedMutants)
+        private void OnMutantsTested(IEnumerable<IMutant> mutants, ISet<IMutant> reportedMutants)
         {
             foreach (var mutant in mutants)
             {
@@ -165,7 +167,7 @@ namespace Stryker.Core.MutationTest
             }
         }
 
-        private void OnMutantTested(Mutant mutant, ISet<Mutant> reportedMutants)
+        private void OnMutantTested(IMutant mutant, ISet<IMutant> reportedMutants)
         {
             if (mutant.ResultStatus == MutantStatus.Pending || reportedMutants.Contains(mutant))
             {
@@ -177,7 +179,7 @@ namespace Stryker.Core.MutationTest
             reportedMutants.Add(mutant);
         }
 
-        private static bool MutantsToTest(IEnumerable<Mutant> mutantsToTest)
+        private static bool MutantsToTest(IEnumerable<IMutant> mutantsToTest)
         {
             if (!mutantsToTest.Any())
             {
@@ -193,19 +195,19 @@ namespace Stryker.Core.MutationTest
             return true;
         }
 
-        private IEnumerable<List<Mutant>> BuildMutantGroupsForTest(IReadOnlyCollection<Mutant> mutantsNotRun)
+        private IEnumerable<List<IMutant>> BuildMutantGroupsForTest(IReadOnlyCollection<IMutant> mutantsNotRun)
         {
             if (_options.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants) ||
                 !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
             {
-                return mutantsNotRun.Select(x => new List<Mutant> { x });
+                return mutantsNotRun.Select(x => new List<IMutant> { x });
             }
 
-            var blocks = new List<List<Mutant>>(mutantsNotRun.Count);
+            var blocks = new List<List<IMutant>>(mutantsNotRun.Count);
             var mutantsToGroup = mutantsNotRun.ToList();
             // we deal with mutants needing full testing first
             blocks.AddRange(mutantsToGroup.Where(m => m.AssessingTests.IsEveryTest)
-                .Select(m => new List<Mutant> { m }));
+                .Select(m => new List<IMutant> { m }));
             mutantsToGroup.RemoveAll(m => m.AssessingTests.IsEveryTest);
 
             mutantsToGroup = mutantsToGroup.Where(m => m.ResultStatus == MutantStatus.Pending).ToList();
@@ -216,7 +218,7 @@ namespace Stryker.Core.MutationTest
             {
                 // we pick the first mutant
                 var usedTests = mutantsToGroup[0].AssessingTests;
-                var nextBlock = new List<Mutant> { mutantsToGroup[0] };
+                var nextBlock = new List<IMutant> { mutantsToGroup[0] };
                 mutantsToGroup.RemoveAt(0);
                 for (var j = 0; j < mutantsToGroup.Count; j++)
                 {

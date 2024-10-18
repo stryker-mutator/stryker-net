@@ -5,13 +5,13 @@ using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 
-internal class InvocationExpressionOrchestrator: MemberAccessExpressionOrchestrator<InvocationExpressionSyntax>
+internal class InvocationExpressionOrchestrator : MemberAccessExpressionOrchestrator<InvocationExpressionSyntax>
 {
 
     protected override MutationContext StoreMutations(InvocationExpressionSyntax node,
         IEnumerable<Mutant> mutations,
         MutationContext context) =>
-        // if the invocation contains a declaration, it must be controlled at the block level.
+         // if the invocation contains a declaration, it must be controlled at the block level.
          context.AddMutations(mutations, node.ArgumentList.ContainsDeclarations() ? MutationControl.Block : MutationControl.Expression);
 
     protected override ExpressionSyntax OrchestrateChildrenMutation(InvocationExpressionSyntax node, SemanticModel semanticModel,

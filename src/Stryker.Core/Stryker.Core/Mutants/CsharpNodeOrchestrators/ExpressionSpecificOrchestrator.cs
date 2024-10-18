@@ -18,7 +18,7 @@ internal class ExpressionSpecificOrchestrator<T> : NodeSpecificOrchestrator<T, E
     protected override MutationContext StoreMutations(T node,
         IEnumerable<Mutant> mutations,
         MutationContext context) =>
-        // if the expression contains a declaration, it must be controlled at the block level.
+         // if the expression contains a declaration, it must be controlled at the block level.
          context.AddMutations(mutations, node.ContainsDeclarations() ? MutationControl.Block : MutationControl.Expression);
 
     protected override MutationContext PrepareContext(T node, MutationContext context) => base.PrepareContext(node, context.Enter(MutationControl.Expression));
