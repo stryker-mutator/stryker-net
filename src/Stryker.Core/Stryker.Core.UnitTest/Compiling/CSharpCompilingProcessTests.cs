@@ -72,11 +72,11 @@ public class Calculator
     }
 
     [TestMethod]
-    public void CompilingProcessTests_ShouldSupportReferenceAliases()
+    public void CompilingProcessTests_ShouldSupportPackageReferenceAliases()
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(@"
-extern alias Texte;
-using System;
+extern alias TestAlias;
+using TestAlias::System;
 
 namespace ExampleProject
 {
@@ -97,15 +97,30 @@ public class Calculator
                     properties: new Dictionary<string, string>()
                     {
                         { "TargetDir", "" },
-                        { "AssemblyName", "AssemblyName"},
-                        { "TargetFileName", "TargetFileName.dll"},
+                        { "AssemblyName", "AssemblyName" },
+                        { "TargetFileName", "TargetFileName.dll" },
                     },
                     // add a reference to system so the example code can compile
-                    references: new[] { typeof(object).Assembly.Location, $"Texte={typeof(StringBuilder).Assembly.Location}" }
+                    references: new[] { typeof(object).Assembly.Location },
+                    packageReferences: new ReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>(
+                         new Dictionary<string, IReadOnlyDictionary<string, string>>
+                         {
+                             {
+                                 typeof(object).Assembly.GetName().Name,
+                                 new ReadOnlyDictionary<string, string>(
+                                     new Dictionary<string, string>
+                                     {
+                                         { "Aliases", "TestAlias" }
+                                     }
+                                 )
+                             }
+                         }
+                    )
                 ).Object
             }
         };
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
+
 
         var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
