@@ -110,7 +110,7 @@ public static class IAnalyzerResultExtensions
             var referenceFileNameWithoutExtension = Path.GetFileNameWithoutExtension(reference);
             string packageWithAlias = null;
 
-            if (analyzerResult.PackageReferences is not null) // Check if the analyzer result has package references because the Unit Tests don't have them.
+            if (analyzerResult.PackageReferences is not null)
             {
                 // Check for any matching package reference with an alias using LINQ
                 packageWithAlias = analyzerResult.PackageReferences
