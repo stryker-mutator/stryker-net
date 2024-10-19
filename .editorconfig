@@ -96,7 +96,9 @@ csharp_style_pattern_matching_over_is_with_cast_check = true:suggestion
 
 csharp_style_throw_expression = true:suggestion
 
-csharp_style_unused_value_expression_statement_preference = discard_variable:suggestion
+# csharp_style_unused_value_expression_statement_preference = discard_variable:suggestion
+# Disable IDE0058: Not relevant to fluent api
+dotnet_diagnostic.IDE0058.severity = none
 csharp_style_unused_value_assignment_preference = discard_variable:suggestion
 
 csharp_style_var_for_built_in_types = true:suggestion
