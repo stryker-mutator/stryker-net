@@ -173,6 +173,8 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 | `ElementAt()`          | `'\0'`               |
 | `ElementAtOrDefault()` | `'\0'`               |
 | `EndsWith()`           | `StartsWith()`       |
+| `IndexOf()`            | `LastIndexOf()`      |
+| `LastIndexOf()`        | `IndexOf()`          |
 | `PadLeft()`            | `PadRight()`         |
 | `PadRight()`           | `PadLeft()`          |
 | `StartsWith()`         | `EndsWith()`         |
