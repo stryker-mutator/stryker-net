@@ -61,6 +61,14 @@ public class NugetRestoreProcess : INugetRestoreProcess
         var nugetPath = nugetWhereExeResult.Output
             .Split(new[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries).First().Trim();
 
+        if (!InternalRestore(solutionPath, msBuildVersion, nugetPath) && !string.IsNullOrEmpty(msBuildVersion))
+        {
+            InternalRestore(solutionPath, string.Empty, nugetPath);
+        }
+    }
+
+    private bool InternalRestore(string solutionPath, string msBuildVersion, string nugetPath)
+    {
         // Restore packages using nuget.exe
         var nugetRestoreCommand = $"restore \"{solutionPath}\"";
         if (!string.IsNullOrEmpty(msBuildVersion))
@@ -76,19 +84,19 @@ public class NugetRestoreProcess : INugetRestoreProcess
         {
             var nugetRestoreResult = ProcessExecutor.Start(Path.GetDirectoryName(nugetPath), nugetPath,
                 nugetRestoreCommand, timeoutMs: NugetRestoreTimeoutMs);
-            if (nugetRestoreResult.ExitCode != ExitCodes.Success)
+            if (nugetRestoreResult.ExitCode == ExitCodes.Success)
             {
-                _logger.LogError("Failed to restore nuget packages. Nuget error: {Error}",
-                    nugetRestoreResult.Error);
-                return;
+                _logger.LogDebug("Restored packages using nuget.exe, output: {Error}", nugetRestoreResult.Output);
+                return true;
             }
 
-            _logger.LogDebug("Restored packages using nuget.exe, output: {Error}", nugetRestoreResult.Output);
+            _logger.LogError("Failed to restore nuget packages. Nuget error: {Error}", nugetRestoreResult.Error);
         }
         catch (OperationCanceledException)
         {
-            _logger.LogError("Failed to restore nuget packages in less than {time} seconds.", NugetRestoreTimeoutMs/1000);
+            _logger.LogError("Failed to restore nuget packages in less than {time} seconds.", NugetRestoreTimeoutMs / 1000);
         }
+        return false;
     }
 
     private string FindMsBuildShortVersion(MsBuildHelper helper)
