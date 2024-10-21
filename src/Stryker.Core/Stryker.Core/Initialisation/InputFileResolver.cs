@@ -265,6 +265,13 @@ public class InputFileResolver : IInputFileResolver
             if (buildResult.Any(r => !IsValid(r) && r.TargetsFullFramework()))
             {
                 _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
+                
+                if (options.DevMode)
+                {
+                    _logger.LogWarning("The MsBuild log is below.");
+                    _logger.LogInformation(_buildalyzerLog.ToString());
+                }
+
                 _nugetRestoreProcess.RestorePackages(options.SolutionPath, options.MsBuildPath ?? buildResult.First().MsBuildPath());
             }
             var buildOptions = new EnvironmentOptions
@@ -316,7 +323,7 @@ public class InputFileResolver : IInputFileResolver
         foreach (var analyzerResult in analyzerResults)
         {
             log.AppendLine($"TargetFramework: {analyzerResult.TargetFramework}");
-            log.AppendLine("Succeeded: {analyzerResult.Succeeded}");
+            log.AppendLine($"Succeeded: {analyzerResult.Succeeded}");
 
             var properties = analyzerResult.Properties ?? new Dictionary<string, string>();
             foreach (var property in importantProperties)
