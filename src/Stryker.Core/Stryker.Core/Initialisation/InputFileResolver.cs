@@ -256,11 +256,6 @@ public class InputFileResolver : IInputFileResolver
 
         if (!buildResultOverallSuccess)
         {
-            if (options.DevMode)
-            {
-                // clear the logs to remove the noise
-                _buildalyzerLog.GetStringBuilder().Clear();
-            }
             // if this is a full framework project, we can retry after a nuget restore
             if (buildResult.Any(r => !IsValid(r) && r.TargetsFullFramework()))
             {
@@ -270,6 +265,7 @@ public class InputFileResolver : IInputFileResolver
                 {
                     _logger.LogWarning("The MsBuild log is below.");
                     _logger.LogInformation(_buildalyzerLog.ToString());
+                    _buildalyzerLog.GetStringBuilder().Clear();
                 }
 
                 _nugetRestoreProcess.RestorePackages(options.SolutionPath, options.MsBuildPath ?? buildResult.First().MsBuildPath());
@@ -286,10 +282,10 @@ public class InputFileResolver : IInputFileResolver
                 buildResult.Any(br => IsValid(br) && br.TargetFramework == tf));
         }
 
+        LogAnalyzerResult(buildResult, options);
         if (buildResultOverallSuccess)
         {
             _logger.LogDebug("Analysis of project {projectFilePath} succeeded.", projectLogName);
-            LogAnalyzerResult(buildResult, options);
             return buildResult;
         }
         var failedFrameworks = project.ProjectFile.TargetFrameworks.Where(tf =>

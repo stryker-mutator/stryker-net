@@ -92,9 +92,9 @@ public class NugetRestoreProcess : INugetRestoreProcess
 
             _logger.LogError("Failed to restore nuget packages. Nuget error: {Error}", nugetRestoreResult.Error);
         }
-        catch (OperationCanceledException)
+        catch (OperationCanceledException e)
         {
-            _logger.LogError("Failed to restore nuget packages in less than {time} seconds.", NugetRestoreTimeoutMs / 1000);
+            _logger.LogError(e, "Failed to restore nuget packages in less than {time} seconds.", NugetRestoreTimeoutMs / 1000);
         }
         return false;
     }
