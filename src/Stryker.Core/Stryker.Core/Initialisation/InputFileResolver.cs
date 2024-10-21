@@ -256,15 +256,18 @@ public class InputFileResolver : IInputFileResolver
 
         if (!buildResultOverallSuccess)
         {
-            if (options.DevMode)
-            {
-                // clear the logs to remove the noise
-                _buildalyzerLog.GetStringBuilder().Clear();
-            }
             // if this is a full framework project, we can retry after a nuget restore
             if (buildResult.Any(r => !IsValid(r) && r.TargetsFullFramework()))
             {
                 _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
+                
+                if (options.DevMode)
+                {
+                    _logger.LogWarning("The MsBuild log is below.");
+                    _logger.LogInformation(_buildalyzerLog.ToString());
+                    _buildalyzerLog.GetStringBuilder().Clear();
+                }
+
                 _nugetRestoreProcess.RestorePackages(options.SolutionPath, options.MsBuildPath ?? buildResult.First().MsBuildPath());
             }
             var buildOptions = new EnvironmentOptions
@@ -279,10 +282,10 @@ public class InputFileResolver : IInputFileResolver
                 buildResult.Any(br => IsValid(br) && br.TargetFramework == tf));
         }
 
+        LogAnalyzerResult(buildResult, options);
         if (buildResultOverallSuccess)
         {
             _logger.LogDebug("Analysis of project {projectFilePath} succeeded.", projectLogName);
-            LogAnalyzerResult(buildResult, options);
             return buildResult;
         }
         var failedFrameworks = project.ProjectFile.TargetFrameworks.Where(tf =>
@@ -316,7 +319,7 @@ public class InputFileResolver : IInputFileResolver
         foreach (var analyzerResult in analyzerResults)
         {
             log.AppendLine($"TargetFramework: {analyzerResult.TargetFramework}");
-            log.AppendLine("Succeeded: {analyzerResult.Succeeded}");
+            log.AppendLine($"Succeeded: {analyzerResult.Succeeded}");
 
             var properties = analyzerResult.Properties ?? new Dictionary<string, string>();
             foreach (var property in importantProperties)
