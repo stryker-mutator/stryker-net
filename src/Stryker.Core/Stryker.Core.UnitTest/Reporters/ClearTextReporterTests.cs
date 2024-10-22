@@ -14,37 +14,37 @@ using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
 
-namespace Stryker.Core.UnitTest.Reporters
+namespace Stryker.Core.UnitTest.Reporters;
+
+[TestClass]
+public class ClearTextReporterTests : TestBase
 {
-    [TestClass]
-    public class ClearTextReporterTests : TestBase
+
+    [TestMethod]
+    public void ClearTextReporter_ShouldPrintOnReportDone()
     {
+        var console = new TestConsole().EmitAnsiSequences().Width(160);
+        var target = new ClearTextReporter(new StrykerOptions(), console);
 
-        [TestMethod]
-        public void ClearTextReporter_ShouldPrintOnReportDone()
+        var rootFolder = new CsharpFolderComposite();
+
+        var folder = new CsharpFolderComposite()
         {
-            var console = new TestConsole().EmitAnsiSequences().Width(160);
-            var target = new ClearTextReporter(new StrykerOptions(), console);
+            RelativePath = "FolderA",
+            FullPath = "C://Project/FolderA",
+        };
+        folder.Add(new CsharpFileLeaf()
+        {
+            RelativePath = "FolderA/SomeFile.cs",
+            FullPath = "C://Project/FolderA/SomeFile.cs",
+            Mutants = new Collection<Mutant>() { }
+        });
 
-            var rootFolder = new CsharpFolderComposite();
+        rootFolder.Add(folder);
 
-            var folder = new CsharpFolderComposite()
-            {
-                RelativePath = "FolderA",
-                FullPath = "C://Project/FolderA",
-            };
-            folder.Add(new CsharpFileLeaf()
-            {
-                RelativePath = "FolderA/SomeFile.cs",
-                FullPath = "C://Project/FolderA/SomeFile.cs",
-                Mutants = new Collection<Mutant>() { }
-            });
+        target.OnAllMutantsTested(rootFolder, It.IsAny<TestProjectsInfo>());
 
-            rootFolder.Add(folder);
-
-            target.OnAllMutantsTested(rootFolder, It.IsAny<TestProjectsInfo>());
-
-            console.Output.RemoveAnsi().ShouldBeWithNewlineReplace($@"
+        console.Output.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
 All mutants have been tested, and your mutation score has been calculated
 ╭─────────────────────┬─────────┬──────────┬───────────┬────────────┬──────────┬─────────╮
@@ -54,50 +54,50 @@ All mutants have been tested, and your mutation score has been calculated
 │ FolderA/SomeFile.cs │     N/A │        0 │         0 │          0 │        0 │       0 │
 ╰─────────────────────┴─────────┴──────────┴───────────┴────────────┴──────────┴─────────╯
 ");
-            console.Output.DarkGraySpanCount().ShouldBe(2);
-        }
+        console.Output.DarkGraySpanCount().ShouldBe(2);
+    }
 
-        [TestMethod]
-        public void ClearTextReporter_ShouldPrintKilledMutation()
+    [TestMethod]
+    public void ClearTextReporter_ShouldPrintKilledMutation()
+    {
+        var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
+        var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
+
+        var mutation = new Mutation()
         {
-            var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
-            var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
+            OriginalNode = originalNode,
+            ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
+            DisplayName = "This name should display",
+            Type = Mutator.Arithmetic
+        };
 
-            var mutation = new Mutation()
-            {
-                OriginalNode = originalNode,
-                ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
-                DisplayName = "This name should display",
-                Type = Mutator.Arithmetic
-            };
+        var console = new TestConsole().EmitAnsiSequences().Width(160);
+        var target = new ClearTextReporter(new StrykerOptions(), console);
 
-            var console = new TestConsole().EmitAnsiSequences().Width(160);
-            var target = new ClearTextReporter(new StrykerOptions(), console);
+        var rootFolder = new CsharpFolderComposite();
 
-            var rootFolder = new CsharpFolderComposite();
-
-            var folder = new CsharpFolderComposite()
-            {
-                RelativePath = "FolderA",
-                FullPath = "C://Project/FolderA",
-            };
-            folder.Add(new CsharpFileLeaf()
-            {
-                RelativePath = "FolderA/SomeFile.cs",
-                FullPath = "C://Project/FolderA/SomeFile.cs",
-                Mutants = new Collection<Mutant>() {
-                    new Mutant() {
-                        ResultStatus = MutantStatus.Killed,
-                        Mutation = mutation
-                    }
+        var folder = new CsharpFolderComposite()
+        {
+            RelativePath = "FolderA",
+            FullPath = "C://Project/FolderA",
+        };
+        folder.Add(new CsharpFileLeaf()
+        {
+            RelativePath = "FolderA/SomeFile.cs",
+            FullPath = "C://Project/FolderA/SomeFile.cs",
+            Mutants = new Collection<Mutant>() {
+                new Mutant() {
+                    ResultStatus = MutantStatus.Killed,
+                    Mutation = mutation
                 }
-            });
+            }
+        });
 
-            rootFolder.Add(folder);
+        rootFolder.Add(folder);
 
-            target.OnAllMutantsTested(rootFolder, It.IsAny<TestProjectsInfo>());
+        target.OnAllMutantsTested(rootFolder, It.IsAny<TestProjectsInfo>());
 
-            console.Output.RemoveAnsi().ShouldBeWithNewlineReplace($@"
+        console.Output.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
 All mutants have been tested, and your mutation score has been calculated
 ╭─────────────────────┬─────────┬──────────┬───────────┬────────────┬──────────┬─────────╮
@@ -107,49 +107,49 @@ All mutants have been tested, and your mutation score has been calculated
 │ FolderA/SomeFile.cs │  {100:N2} │        1 │         0 │          0 │        0 │       0 │
 ╰─────────────────────┴─────────┴──────────┴───────────┴────────────┴──────────┴─────────╯
 ");
-            console.Output.GreenSpanCount().ShouldBe(2);
-        }
+        console.Output.GreenSpanCount().ShouldBe(2);
+    }
 
-        [TestMethod]
-        public void ClearTextReporter_ShouldPrintSurvivedMutation()
+    [TestMethod]
+    public void ClearTextReporter_ShouldPrintSurvivedMutation()
+    {
+        var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
+        var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
+
+        var mutation = new Mutation()
         {
-            var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
-            var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
+            OriginalNode = originalNode,
+            ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
+            DisplayName = "This name should display",
+            Type = Mutator.Arithmetic
+        };
 
-            var mutation = new Mutation()
-            {
-                OriginalNode = originalNode,
-                ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
-                DisplayName = "This name should display",
-                Type = Mutator.Arithmetic
-            };
+        var console = new TestConsole().EmitAnsiSequences().Width(160);
+        var target = new ClearTextReporter(new StrykerOptions(), console);
 
-            var console = new TestConsole().EmitAnsiSequences().Width(160);
-            var target = new ClearTextReporter(new StrykerOptions(), console);
+        var rootFolder = new CsharpFolderComposite();
 
-            var rootFolder = new CsharpFolderComposite();
-
-            var folder = new CsharpFolderComposite()
-            {
-                RelativePath = "FolderA",
-                FullPath = "C://Project/FolderA",
-            };
-            folder.Add(new CsharpFileLeaf()
-            {
-                RelativePath = "FolderA/SomeFile.cs",
-                FullPath = "C://Project/FolderA/SomeFile.cs",
-                Mutants = new Collection<Mutant>() {
-                    new Mutant() {
-                        ResultStatus = MutantStatus.Survived,
-                        Mutation = mutation
-                    }
+        var folder = new CsharpFolderComposite()
+        {
+            RelativePath = "FolderA",
+            FullPath = "C://Project/FolderA",
+        };
+        folder.Add(new CsharpFileLeaf()
+        {
+            RelativePath = "FolderA/SomeFile.cs",
+            FullPath = "C://Project/FolderA/SomeFile.cs",
+            Mutants = new Collection<Mutant>() {
+                new Mutant() {
+                    ResultStatus = MutantStatus.Survived,
+                    Mutation = mutation
                 }
-            });
-            rootFolder.Add(folder);
+            }
+        });
+        rootFolder.Add(folder);
 
-            target.OnAllMutantsTested(rootFolder, It.IsAny<TestProjectsInfo>());
+        target.OnAllMutantsTested(rootFolder, It.IsAny<TestProjectsInfo>());
 
-            console.Output.RemoveAnsi().ShouldBeWithNewlineReplace($@"
+        console.Output.RemoveAnsi().ShouldBeWithNewlineReplace($@"
 
 All mutants have been tested, and your mutation score has been calculated
 ╭─────────────────────┬─────────┬──────────┬───────────┬────────────┬──────────┬─────────╮
@@ -159,129 +159,128 @@ All mutants have been tested, and your mutation score has been calculated
 │ FolderA/SomeFile.cs │    {0:N2} │        0 │         0 │          1 │        0 │       0 │
 ╰─────────────────────┴─────────┴──────────┴───────────┴────────────┴──────────┴─────────╯
 ");
-            // All percentages should be red and the [Survived] too
-            console.Output.RedSpanCount().ShouldBe(2);
-        }
+        // All percentages should be red and the [Survived] too
+        console.Output.RedSpanCount().ShouldBe(2);
+    }
 
-        [TestMethod]
-        public void ClearTextReporter_ShouldPrintRedUnderThresholdBreak()
+    [TestMethod]
+    public void ClearTextReporter_ShouldPrintRedUnderThresholdBreak()
+    {
+        var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
+        var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
+
+        var mutation = new Mutation()
         {
-            var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
-            var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
+            OriginalNode = originalNode,
+            ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
+            DisplayName = "This name should display",
+            Type = Mutator.Arithmetic
+        };
 
-            var mutation = new Mutation()
-            {
-                OriginalNode = originalNode,
-                ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
-                DisplayName = "This name should display",
-                Type = Mutator.Arithmetic
-            };
+        var options = new StrykerOptions { Thresholds = new Thresholds { High = 80, Low = 70, Break = 0 } };
+        var console = new TestConsole().EmitAnsiSequences().Width(160);
+        var target = new ClearTextReporter(options, console);
 
-            var options = new StrykerOptions { Thresholds = new Thresholds { High = 80, Low = 70, Break = 0 } };
-            var console = new TestConsole().EmitAnsiSequences().Width(160);
-            var target = new ClearTextReporter(options, console);
-
-            var folder = new CsharpFolderComposite()
-            {
-                RelativePath = "RootFolder",
-                FullPath = "C://RootFolder",
-            };
-            folder.Add(new CsharpFileLeaf()
-            {
-                RelativePath = "RootFolder/SomeFile.cs",
-                FullPath = "C://RootFolder/SomeFile.cs",
-                Mutants = new Collection<Mutant>()
-                {
-                    new Mutant() { ResultStatus = MutantStatus.Survived, Mutation = mutation },
-                    new Mutant() { ResultStatus = MutantStatus.Survived, Mutation = mutation },
-                    new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation },
-                    new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation },
-                    new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation }
-                }
-            });
-
-            target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
-
-            console.Output.RedSpanCount().ShouldBe(2);
-        }
-
-        [TestMethod]
-        public void ClearTextReporter_ShouldPrintYellowBetweenThresholdLowAndThresholdBreak()
+        var folder = new CsharpFolderComposite()
         {
-            var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
-            var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
-
-            var mutation = new Mutation()
-            {
-                OriginalNode = originalNode,
-                ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
-                DisplayName = "This name should display",
-                Type = Mutator.Arithmetic
-            };
-
-            var options = new StrykerOptions { Thresholds = new Thresholds { High = 90, Low = 70, Break = 0 } };
-            var console = new TestConsole().EmitAnsiSequences().Width(160);
-            var target = new ClearTextReporter(options, console);
-
-            var folder = new CsharpFolderComposite()
-            {
-                RelativePath = "RootFolder",
-                FullPath = "C://RootFolder",
-            };
-            folder.Add(new CsharpFileLeaf()
-            {
-                RelativePath = "RootFolder/SomeFile.cs",
-                FullPath = "C://RootFolder/SomeFile.cs",
-                Mutants = new Collection<Mutant>()
-                {
-                    new Mutant() { ResultStatus = MutantStatus.Survived, Mutation = mutation },
-                    new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation },
-                    new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation },
-                    new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation },
-                    new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation }
-                }
-            });
-
-            target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
-
-            console.Output.YellowSpanCount().ShouldBe(2);
-        }
-
-        [TestMethod]
-        public void ClearTextReporter_ShouldPrintGreenAboveThresholdHigh()
+            RelativePath = "RootFolder",
+            FullPath = "C://RootFolder",
+        };
+        folder.Add(new CsharpFileLeaf()
         {
-            var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
-            var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
-
-            var mutation = new Mutation()
+            RelativePath = "RootFolder/SomeFile.cs",
+            FullPath = "C://RootFolder/SomeFile.cs",
+            Mutants = new Collection<Mutant>()
             {
-                OriginalNode = originalNode,
-                ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
-                DisplayName = "This name should display",
-                Type = Mutator.Arithmetic
-            };
+                new Mutant() { ResultStatus = MutantStatus.Survived, Mutation = mutation },
+                new Mutant() { ResultStatus = MutantStatus.Survived, Mutation = mutation },
+                new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation },
+                new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation },
+                new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation }
+            }
+        });
 
-            var console = new TestConsole().EmitAnsiSequences().Width(160);
-            var target = new ClearTextReporter(new StrykerOptions(), console);
+        target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
-            var folder = new CsharpFolderComposite()
+        console.Output.RedSpanCount().ShouldBe(2);
+    }
+
+    [TestMethod]
+    public void ClearTextReporter_ShouldPrintYellowBetweenThresholdLowAndThresholdBreak()
+    {
+        var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
+        var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
+
+        var mutation = new Mutation()
+        {
+            OriginalNode = originalNode,
+            ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
+            DisplayName = "This name should display",
+            Type = Mutator.Arithmetic
+        };
+
+        var options = new StrykerOptions { Thresholds = new Thresholds { High = 90, Low = 70, Break = 0 } };
+        var console = new TestConsole().EmitAnsiSequences().Width(160);
+        var target = new ClearTextReporter(options, console);
+
+        var folder = new CsharpFolderComposite()
+        {
+            RelativePath = "RootFolder",
+            FullPath = "C://RootFolder",
+        };
+        folder.Add(new CsharpFileLeaf()
+        {
+            RelativePath = "RootFolder/SomeFile.cs",
+            FullPath = "C://RootFolder/SomeFile.cs",
+            Mutants = new Collection<Mutant>()
             {
-                RelativePath = "RootFolder",
-                FullPath = "C://RootFolder",
-            };
-            folder.Add(new CsharpFileLeaf()
+                new Mutant() { ResultStatus = MutantStatus.Survived, Mutation = mutation },
+                new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation },
+                new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation },
+                new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation },
+                new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation }
+            }
+        });
+
+        target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
+
+        console.Output.YellowSpanCount().ShouldBe(2);
+    }
+
+    [TestMethod]
+    public void ClearTextReporter_ShouldPrintGreenAboveThresholdHigh()
+    {
+        var tree = CSharpSyntaxTree.ParseText("void M(){ int i = 0 + 8; }");
+        var originalNode = tree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
+
+        var mutation = new Mutation()
+        {
+            OriginalNode = originalNode,
+            ReplacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.SubtractExpression, originalNode.Left, originalNode.Right),
+            DisplayName = "This name should display",
+            Type = Mutator.Arithmetic
+        };
+
+        var console = new TestConsole().EmitAnsiSequences().Width(160);
+        var target = new ClearTextReporter(new StrykerOptions(), console);
+
+        var folder = new CsharpFolderComposite()
+        {
+            RelativePath = "RootFolder",
+            FullPath = "C://RootFolder",
+        };
+        folder.Add(new CsharpFileLeaf()
+        {
+            RelativePath = "RootFolder/SomeFile.cs",
+            FullPath = "C://RootFolder/SomeFile.cs",
+            Mutants = new Collection<Mutant>()
             {
-                RelativePath = "RootFolder/SomeFile.cs",
-                FullPath = "C://RootFolder/SomeFile.cs",
-                Mutants = new Collection<Mutant>()
-                {
-                    new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation },
-                }
-            });
+                new Mutant() { ResultStatus = MutantStatus.Killed, Mutation = mutation },
+            }
+        });
 
-            target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
+        target.OnAllMutantsTested(folder, It.IsAny<TestProjectsInfo>());
 
-            console.Output.GreenSpanCount().ShouldBe(2);
-        }
+        console.Output.GreenSpanCount().ShouldBe(2);
     }
 }

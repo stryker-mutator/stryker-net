@@ -4,39 +4,38 @@ using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Core.UnitTest;
 
-namespace Stryker.Core.UnitTest.Options.Inputs
+namespace Stryker.Core.UnitTest.Options.Inputs;
+
+[TestClass]
+public class LogToFileInputTests : TestBase
 {
-    [TestClass]
-    public class LogToFileInputTests : TestBase
+    [TestMethod]
+    public void ShouldHaveHelpText()
     {
-        [TestMethod]
-        public void ShouldHaveHelpText()
-        {
-            var target = new LogToFileInput();
-            target.HelpText.ShouldBe(@"Makes the logger write to a file. Logging to file always uses loglevel trace. | default: 'False'");
-        }
+        var target = new LogToFileInput();
+        target.HelpText.ShouldBe(@"Makes the logger write to a file. Logging to file always uses loglevel trace. | default: 'False'");
+    }
 
-        [TestMethod]
-        public void ShouldThrowIfTrueAndNoOutputPath()
-        {
-            var target = new LogToFileInput { SuppliedInput = true };
+    [TestMethod]
+    public void ShouldThrowIfTrueAndNoOutputPath()
+    {
+        var target = new LogToFileInput { SuppliedInput = true };
 
-            var exception = Should.Throw<InputException>(() => target.Validate(null));
+        var exception = Should.Throw<InputException>(() => target.Validate(null));
 
-            exception.Message.ShouldBe("Output path must be set if log to file is enabled");
-        }
+        exception.Message.ShouldBe("Output path must be set if log to file is enabled");
+    }
 
-        [TestMethod]
-        [DataRow(false, false)]
-        [DataRow(true, true)]
-        [DataRow(null, false)]
-        public void ShouldValidate(bool? input, bool expected)
-        {
-            var target = new LogToFileInput { SuppliedInput = input };
+    [TestMethod]
+    [DataRow(false, false)]
+    [DataRow(true, true)]
+    [DataRow(null, false)]
+    public void ShouldValidate(bool? input, bool expected)
+    {
+        var target = new LogToFileInput { SuppliedInput = input };
 
-            var result = target.Validate("TestPath");
+        var result = target.Validate("TestPath");
 
-            result.ShouldBe(expected);
-        }
+        result.ShouldBe(expected);
     }
 }

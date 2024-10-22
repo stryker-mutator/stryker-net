@@ -1,9 +1,8 @@
 using Microsoft.Extensions.Logging;
 
-namespace Stryker.Abstractions.Logging
+namespace Stryker.Abstractions.Logging;
+
+public static class ApplicationLogging
 {
-    public static class ApplicationLogging
-    {
-        public static ILoggerFactory LoggerFactory { get; set; }
-    }
+    public static ILoggerFactory LoggerFactory { get; set; }
 }
