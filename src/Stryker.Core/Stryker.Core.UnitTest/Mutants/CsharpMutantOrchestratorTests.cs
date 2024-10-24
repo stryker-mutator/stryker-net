@@ -2020,7 +2020,7 @@ else        {
     }
 
     [TestMethod]
-    public void ShouldMutateCollectionExpression4()
+    public void ShouldMutateUsedCollectionExpression()
     {
         var source = """
                      public void M() {
