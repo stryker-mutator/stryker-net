@@ -19,6 +19,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.Mutators;
 using Stryker.Core.ProjectComponents.SourceProjects;
+using System.Text;
 
 namespace Stryker.Core.UnitTest.Mutators;
 
@@ -256,19 +257,22 @@ public class CollectionExpressionMutatorTests : TestBase
         var syntaxTree = CSharpSyntaxTree.ParseText(inputText);
 
         var compilation = CSharpCompilation.Create("TestAssembly")
-                                        .WithOptions(new
-                                                         CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
-                                                          nullableContextOptions: NullableContextOptions.Enable))
-                                        .AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly
-                                                       .Location))
-                                        .AddSyntaxTrees(syntaxTree);
+                                           .WithOptions(new
+                                                            CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
+                                                             nullableContextOptions: NullableContextOptions.Enable))
+                                           .AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly
+                                                             .Location))
+                                           .AddSyntaxTrees(syntaxTree);
         var semanticModel = compilation.GetSemanticModel(syntaxTree);
 
-        var orchestrator = new CsharpMutantOrchestrator(new MutantPlacer(new CodeInjection()),
+        var injector = new CodeInjection();
+        var orchestrator = new CsharpMutantOrchestrator(new MutantPlacer(injector),
                                                         options: new StrykerOptions
                                                         {
                                                             MutationLevel    = MutationLevel.Complete,
-                                                            OptimizationMode = OptimizationModes.CoverageBasedTest
+                                                            OptimizationMode = OptimizationModes.CoverageBasedTest,
+                                                            ExcludedMutations = Enum.GetValues<Mutator>()
+                                                               .Except([Mutator.CollectionExpression])
                                                         });
         syntaxTree = orchestrator.Mutate(syntaxTree, semanticModel);
         orchestrator.Mutants.Count(a => a.Mutation.Type == Mutator.CollectionExpression).ShouldBe(expectedMutants);
@@ -299,7 +303,7 @@ public class CollectionExpressionMutatorTests : TestBase
                                                                        },
                                                                        references: references.ToArray()
                                                                       )
-                                        .Object
+                                           .Object
             }
         };
 
@@ -307,8 +311,15 @@ public class CollectionExpressionMutatorTests : TestBase
 
         try
         {
-            var result = target.Compile([syntaxTree], Stream.Null, Stream.Null);
+            var result =
+                target.Compile([
+                                   syntaxTree,
+                                   ..injector.MutantHelpers.Select(a => CSharpSyntaxTree.ParseText(a.Value, path: a.Key,
+                                                                    encoding: Encoding.UTF32))
+                               ],
+                               Stream.Null, Stream.Null);
             result.Success.ShouldBe(true);
+            result.RollbackedIds.ShouldBeEmpty();
         }
         catch (CompilationException)
         {
