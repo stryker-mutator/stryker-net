@@ -2024,6 +2024,7 @@ else        {
     {
         var source = """
                      public void M() {
+                         // Stryker disable String : Not mutation under test
                          Span<string> weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
                          foreach (var day in weekDays)
                          {
@@ -2037,15 +2038,8 @@ else        {
             public void M() {
               if (StrykerNamespace.MutantControl.IsActive(0)) {
               } else {
-                Span<string> weekDays = (StrykerNamespace.MutantControl.IsActive(1) ? [] : [
-                  (StrykerNamespace.MutantControl.IsActive(2) ? "" : "Sun"),
-                  (StrykerNamespace.MutantControl.IsActive(3) ? "" : "Mon"),
-                  (StrykerNamespace.MutantControl.IsActive(4) ? "" : "Tue"),
-                  (StrykerNamespace.MutantControl.IsActive(5) ? "" : "Wed"),
-                  (StrykerNamespace.MutantControl.IsActive(6) ? "" : "Thu"),
-                  (StrykerNamespace.MutantControl.IsActive(7) ? "" : "Fri"),
-                  (StrykerNamespace.MutantControl.IsActive(8) ? "" : "Sat")
-                ]);
+                // Stryker disable String : Not mutation under test
+                Span<string> weekDays = (StrykerNamespace.MutantControl.IsActive(1) ? [] : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]);
                 foreach (var day in weekDays) {
                   if (StrykerNamespace.MutantControl.IsActive(9)) {
                   } else {
@@ -2067,6 +2061,7 @@ else        {
     {
         var source = """
                      // Initialize private field:
+                     // Stryker disable String : Not mutation under test
                      private static readonly ImmutableArray<string> _months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
                      // property with expression body:
                      public IEnumerable<int> MaxDays =>
@@ -2083,22 +2078,10 @@ else        {
         var expected =
             """
             // Initialize private field:
+            // Stryker disable String : Not mutation under test
             private static readonly ImmutableArray<string> _months =
                 StrykerNamespace.MutantContext.TrackValue(
-                    () =>(StrykerNamespace.MutantControl.IsActive(0) ? [] : [
-                      (StrykerNamespace.MutantControl.IsActive(1) ? "" : "Jan"),
-                      (StrykerNamespace.MutantControl.IsActive(2) ? "" : "Feb"),
-                      (StrykerNamespace.MutantControl.IsActive(3) ? "" : "Mar"),
-                      (StrykerNamespace.MutantControl.IsActive(4) ? "" : "Apr"),
-                      (StrykerNamespace.MutantControl.IsActive(5) ? "" : "May"),
-                      (StrykerNamespace.MutantControl.IsActive(6) ? "" : "Jun"),
-                      (StrykerNamespace.MutantControl.IsActive(7) ? "" : "Jul"),
-                      (StrykerNamespace.MutantControl.IsActive(8) ? "" : "Aug"),
-                      (StrykerNamespace.MutantControl.IsActive(9) ? "" : "Sep"),
-                      (StrykerNamespace.MutantControl.IsActive(10) ? "" : "Oct"),
-                      (StrykerNamespace.MutantControl.IsActive(11) ? "" : "Nov"),
-                      (StrykerNamespace.MutantControl.IsActive(12) ? "" : "Dec")
-                    ]));
+                    () =>(StrykerNamespace.MutantControl.IsActive(0) ? [] : ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]));
 
             // property with expression body:
             public IEnumerable<int> MaxDays =>
@@ -2126,6 +2109,7 @@ else        {
     {
         var source = """
                      public void M() {
+                         // Stryker disable String : Not mutation under test
                          string hydrogen = "H";
                          string helium = "He";
                          string lithium = "Li";
@@ -2147,18 +2131,19 @@ else        {
         var expected =
             """
             public void M() {
+              // Stryker disable String : Not mutation under test
               if (StrykerNamespace.MutantControl.IsActive(0)) {
               } else {
-                string hydrogen = (StrykerNamespace.MutantControl.IsActive(1) ? "" : "H");
-                string helium = (StrykerNamespace.MutantControl.IsActive(2) ? "" : "He");
-                string lithium = (StrykerNamespace.MutantControl.IsActive(3) ? "" : "Li");
-                string beryllium = (StrykerNamespace.MutantControl.IsActive(4) ? "" : "Be");
-                string boron = (StrykerNamespace.MutantControl.IsActive(5) ? "" : "B");
-                string carbon = (StrykerNamespace.MutantControl.IsActive(6) ? "" : "C");
-                string nitrogen = (StrykerNamespace.MutantControl.IsActive(7) ? "" : "N");
-                string oxygen = (StrykerNamespace.MutantControl.IsActive(8) ? "" : "O");
-                string fluorine = (StrykerNamespace.MutantControl.IsActive(9) ? "" : "F");
-                string neon = (StrykerNamespace.MutantControl.IsActive(10) ? "" : "Ne");
+                string hydrogen = "H";
+                string helium = "He";
+                string lithium = "Li";
+                string beryllium = "Be";
+                string boron = "B";
+                string carbon = "C";
+                string nitrogen = "N";
+                string oxygen = "O";
+                string fluorine = "F";
+                string neon = "Ne";
                 string[] elements = (StrykerNamespace.MutantControl.IsActive(11) ? [] : [
                   hydrogen, helium, lithium, beryllium, boron, carbon, nitrogen, oxygen,
                   fluorine, neon
@@ -2184,6 +2169,7 @@ else        {
     {
         var source = """
                      public void M() {
+                        // Stryker disable String : Not mutation under test
                         string[] vowels = ["a", "e", "i", "o", "u"];
                         string[] consonants = ["b", "c", "d", "f", "g", "h", "j", "k", "l", "m",
                                                "n", "p", "q", "r", "s", "t", "v", "w", "x", "z"];
@@ -2194,44 +2180,18 @@ else        {
         var expected =
             """
             public void M() {
+              // Stryker disable String : Not mutation under test
               if (StrykerNamespace.MutantControl.IsActive(0)) {
               } else {
-                string[] vowels = (StrykerNamespace.MutantControl.IsActive(1) ? [] : [
-                  (StrykerNamespace.MutantControl.IsActive(2) ? "" : "a"),
-                  (StrykerNamespace.MutantControl.IsActive(3) ? "" : "e"),
-                  (StrykerNamespace.MutantControl.IsActive(4) ? "" : "i"),
-                  (StrykerNamespace.MutantControl.IsActive(5) ? "" : "o"),
-                  (StrykerNamespace.MutantControl.IsActive(6) ? "" : "u")
-                ]);
+                string[] vowels = (StrykerNamespace.MutantControl.IsActive(1) ? [] : ["a", "e", "i", "o", "u"]);
                 string[] consonants = (StrykerNamespace.MutantControl.IsActive(7) ? [] : [
-                  (StrykerNamespace.MutantControl.IsActive(8) ? "" : "b"),
-                  (StrykerNamespace.MutantControl.IsActive(9) ? "" : "c"),
-                  (StrykerNamespace.MutantControl.IsActive(10) ? "" : "d"),
-                  (StrykerNamespace.MutantControl.IsActive(11) ? "" : "f"),
-                  (StrykerNamespace.MutantControl.IsActive(12) ? "" : "g"),
-                  (StrykerNamespace.MutantControl.IsActive(13) ? "" : "h"),
-                  (StrykerNamespace.MutantControl.IsActive(14) ? "" : "j"),
-                  (StrykerNamespace.MutantControl.IsActive(15) ? "" : "k"),
-                  (StrykerNamespace.MutantControl.IsActive(16) ? "" : "l"),
-                  (StrykerNamespace.MutantControl.IsActive(17) ? "" : "m"),
-                  (StrykerNamespace.MutantControl.IsActive(18) ? "" : "n"),
-                  (StrykerNamespace.MutantControl.IsActive(19) ? "" : "p"),
-                  (StrykerNamespace.MutantControl.IsActive(20) ? "" : "q"),
-                  (StrykerNamespace.MutantControl.IsActive(21) ? "" : "r"),
-                  (StrykerNamespace.MutantControl.IsActive(22) ? "" : "s"),
-                  (StrykerNamespace.MutantControl.IsActive(23) ? "" : "t"),
-                  (StrykerNamespace.MutantControl.IsActive(24) ? "" : "v"),
-                  (StrykerNamespace.MutantControl.IsActive(25) ? "" : "w"),
-                  (StrykerNamespace.MutantControl.IsActive(26) ? "" : "x"),
-                  (StrykerNamespace.MutantControl.IsActive(27) ? "" : "z")
-                ]);
+                                        "b", "c", "d", "f", "g", "h", "j", "k", "l", "m",
+                                        "n", "p", "q", "r", "s", "t", "v", "w", "x", "z"
+                                       ]);
                 string[] alphabet =
                     (StrykerNamespace.MutantControl.IsActive(28)
                          ? []
-                         : [
-                                 ..vowels, ..consonants,
-                                 (StrykerNamespace.MutantControl.IsActive(29) ? "" : "y")
-                           ]);
+                         : [..vowels, ..consonants, "y"]);
               }
             }
             """;
