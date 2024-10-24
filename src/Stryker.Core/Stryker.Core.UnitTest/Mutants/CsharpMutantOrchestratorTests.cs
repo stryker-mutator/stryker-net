@@ -1953,7 +1953,7 @@ else        {
     }
 
     [TestMethod]
-    public void ShouldMutateCollectionExpression()
+    public void ShouldMutateCollectionExpressionSpanProperty()
     {
         var source = "static ReadOnlySpan<int> Value => [1, 2, 3];";
 
@@ -1963,7 +1963,7 @@ else        {
     }
 
     [TestMethod]
-    public void ShouldMutateCollectionExpression2()
+    public void ShouldMutateCollectionExpressionLocalsInMethod()
     {
         var source = """
                      public void M() {
@@ -1991,7 +1991,7 @@ else        {
     }
 
     [TestMethod]
-    public void ShouldMutateCollectionExpression3()
+    public void ShouldMutateImplicitCollectionExpressionInMethod()
     {
         var source = """
                      public void M() {
@@ -2057,7 +2057,7 @@ else        {
     }
 
     [TestMethod]
-    public void ShouldMutateCollectionExpression5()
+    public void ShouldMutateCollectionExpressionInManyForms()
     {
         var source = """
                      // Initialize private field:
@@ -2105,7 +2105,7 @@ else        {
     }
 
     [TestMethod]
-    public void ShouldMutateCollectionExpression6()
+    public void ShouldMutateNonConstatCollectionExpression()
     {
         var source = """
                      public void M() {
@@ -2165,7 +2165,7 @@ else        {
     }
 
     [TestMethod]
-    public void ShouldMutateCollectionExpression7()
+    public void ShouldMutateSpreadCollectionExpression()
     {
         var source = """
                      public void M() {
@@ -2199,7 +2199,7 @@ else        {
     }
 
     [TestMethod]
-    public void ShouldMutateCollectionExpression8()
+    public void ShouldMutateImplicitCollectionExpressionParameter()
     {
         var source = """
                      public void M() {
@@ -2244,7 +2244,7 @@ else        {
     }
 
     [TestMethod]
-    public void ShouldMutateCollectionExpression9()
+    public void ShouldMutateNestedImplicitCollectionExpression()
     {
         var source = "static int[][] Value => [[1, 2], [3]];";
 
@@ -2254,7 +2254,7 @@ else        {
     }
 
     [TestMethod]
-    public void ShouldMutateCollectionExpression10()
+    public void ShouldMutateNestedExplicitCollectionExpression()
     {
         var source = "static int[][] Value => [[1, 2], new int[] { 3 }];";
 
