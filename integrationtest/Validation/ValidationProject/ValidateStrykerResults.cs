@@ -83,7 +83,7 @@ namespace IntegrationTests
 
             var report = await JsonReportSerialization.DeserializeJsonReportAsync(strykerRunOutput);
 
-            CheckReportMutants(report, total: 589, ignored: 246, survived: 4, killed: 9, timeout: 2, nocoverage: 297);
+            CheckReportMutants(report, total: 601, ignored: 247, survived: 4, killed: 9, timeout: 2, nocoverage: 308);
             CheckReportTestCounts(report, total: 11);
         }
 
