@@ -57,7 +57,7 @@ stages:
       inputs:
         SonarCloud: 'SonarCloud stryker-net'
         organization: 'stryker-net'
-        scannerMode: 'MSBuild'
+        scannerMode: 'dotnet'
         projectKey: 'stryker-net'
         projectName: 'Stryker .NET'
         projectVersion: '$(PackageVersion)'
