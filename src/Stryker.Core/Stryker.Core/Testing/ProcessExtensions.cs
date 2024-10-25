@@ -10,101 +10,100 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Stryker.Configuration;
 
-namespace Stryker.Core.Testing
+namespace Stryker.Core.Testing;
+
+// integration with OS
+[ExcludeFromCodeCoverage]
+internal static class ProcessExtensions
 {
-    // integration with OS
-    [ExcludeFromCodeCoverage]
-    internal static class ProcessExtensions
-    {
 #if NET451
-        private static readonly bool _isWindows = true;
+    private static readonly bool _isWindows = true;
 #else
-        private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
+    private static readonly bool IsWindows = RuntimeInformation.IsOSPlatform(OSPlatform.Windows);
 #endif
 
-        public static void KillTree(this Process process, TimeSpan timeout)
+    public static void KillTree(this Process process, TimeSpan timeout)
+    {
+        if (IsWindows)
         {
-            if (IsWindows)
+            RunProcessAndWaitForExit(
+                "taskkill",
+                $"/T /F /PID {process.Id}",
+                timeout,
+                out _);
+        }
+        else
+        {
+            var children = new HashSet<int>();
+            GetAllChildIdsUnix(process.Id, children, timeout);
+            foreach (var childId in children)
             {
-                RunProcessAndWaitForExit(
-                    "taskkill",
-                    $"/T /F /PID {process.Id}",
-                    timeout,
-                    out _);
+                KillProcessUnix(childId, timeout);
             }
-            else
-            {
-                var children = new HashSet<int>();
-                GetAllChildIdsUnix(process.Id, children, timeout);
-                foreach (var childId in children)
-                {
-                    KillProcessUnix(childId, timeout);
-                }
-                KillProcessUnix(process.Id, timeout);
-            }
+            KillProcessUnix(process.Id, timeout);
+        }
+    }
+
+    private static void GetAllChildIdsUnix(int parentId, ISet<int> children, TimeSpan timeout)
+    {
+        var exitCode = RunProcessAndWaitForExit(
+            "pgrep",
+            $"-P {parentId}",
+            timeout,
+            out var stdout);
+
+        if (exitCode != ExitCodes.Success || string.IsNullOrEmpty(stdout))
+        {
+            return;
         }
 
-        private static void GetAllChildIdsUnix(int parentId, ISet<int> children, TimeSpan timeout)
+        using var reader = new StringReader(stdout);
+        while (true)
         {
-            var exitCode = RunProcessAndWaitForExit(
-                "pgrep",
-                $"-P {parentId}",
-                timeout,
-                out var stdout);
-
-            if (exitCode != ExitCodes.Success || string.IsNullOrEmpty(stdout))
+            var text = reader.ReadLine();
+            if (text == null)
             {
                 return;
             }
 
-            using var reader = new StringReader(stdout);
-            while (true)
+            if (int.TryParse(text, out var id))
             {
-                var text = reader.ReadLine();
-                if (text == null)
-                {
-                    return;
-                }
-
-                if (int.TryParse(text, out var id))
-                {
-                    children.Add(id);
-                    // Recursively get the children
-                    GetAllChildIdsUnix(id, children, timeout);
-                }
+                children.Add(id);
+                // Recursively get the children
+                GetAllChildIdsUnix(id, children, timeout);
             }
         }
+    }
 
-        private static void KillProcessUnix(int processId, TimeSpan timeout) =>
-            RunProcessAndWaitForExit(
-                "kill",
-                $"-TERM {processId}",
-                timeout,
-                out _);
+    private static void KillProcessUnix(int processId, TimeSpan timeout) =>
+        RunProcessAndWaitForExit(
+            "kill",
+            $"-TERM {processId}",
+            timeout,
+            out _);
 
-        private static int RunProcessAndWaitForExit(string fileName, string arguments, TimeSpan timeout, out string stdout)
+    private static int RunProcessAndWaitForExit(string fileName, string arguments, TimeSpan timeout, out string stdout)
+    {
+        var startInfo = new ProcessStartInfo
         {
-            var startInfo = new ProcessStartInfo
-            {
-                FileName = fileName,
-                Arguments = arguments,
-                RedirectStandardOutput = true,
-                UseShellExecute = false
-            };
+            FileName = fileName,
+            Arguments = arguments,
+            RedirectStandardOutput = true,
+            UseShellExecute = false
+        };
 
-            var process = Process.Start(startInfo);
+        var process = Process.Start(startInfo);
 
-            stdout = null;
-            if (process.WaitForExit((int)timeout.TotalMilliseconds))
-            {
-                stdout = process.StandardOutput.ReadToEnd();
-            }
-            else
-            {
-                process.Kill();
-            }
-
-            return process.ExitCode;
+        stdout = null;
+        if (process.WaitForExit((int)timeout.TotalMilliseconds))
+        {
+            stdout = process.StandardOutput.ReadToEnd();
         }
+        else
+        {
+            process.Kill();
+        }
+
+        return process.ExitCode;
     }
 }
