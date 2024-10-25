@@ -3,19 +3,21 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions.Options;
 using Stryker.Core.Mutants;
-using Stryker.Core.Options;
 
 namespace Stryker.Core.Mutators;
 
 public class DefaultParameterMutator : MutatorBase<InvocationExpressionSyntax>
 {
     private readonly ICSharpMutantOrchestrator _orchestrator;
-    private readonly StrykerOptions _options;
+    private readonly IStrykerOptions _options;
 
     public override MutationLevel MutationLevel => MutationLevel.Complete;
 
-    public DefaultParameterMutator(ICSharpMutantOrchestrator orchestrator, StrykerOptions options)
+    public DefaultParameterMutator(ICSharpMutantOrchestrator orchestrator, IStrykerOptions options)
     {
         _orchestrator = orchestrator;
         _options = options;

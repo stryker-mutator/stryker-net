@@ -6,9 +6,11 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
 using Stryker.Core.Mutants;
 using Stryker.Core.Mutators;
-using Stryker.Core.Options;
 
 namespace Stryker.Core.UnitTest.Mutators;
 

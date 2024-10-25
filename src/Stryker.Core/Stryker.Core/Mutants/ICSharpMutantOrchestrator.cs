@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Stryker.Core.Mutators;
+using Stryker.Abstractions.Mutators;
 
 namespace Stryker.Core.Mutants;
 
