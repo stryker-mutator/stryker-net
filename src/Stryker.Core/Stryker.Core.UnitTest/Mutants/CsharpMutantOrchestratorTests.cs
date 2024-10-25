@@ -2026,10 +2026,6 @@ else        {
                      public void M() {
                          // Stryker disable String : Not mutation under test
                          Span<string> weekDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-                         foreach (var day in weekDays)
-                         {
-                             Console.WriteLine(day);
-                         }
                      }
                      """;
 
@@ -2040,16 +2036,6 @@ else        {
               } else {
                 // Stryker disable String : Not mutation under test
                 Span<string> weekDays = (StrykerNamespace.MutantControl.IsActive(1) ? [] : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]);
-                foreach (var day in weekDays) {
-                  if (StrykerNamespace.MutantControl.IsActive(9)) {
-                  } else {
-                    if (StrykerNamespace.MutantControl.IsActive(10)) {
-                      ;
-                    } else {
-                      Console.WriteLine(day);
-                    }
-                  }
-                }
               }
             }
             """;
@@ -2121,10 +2107,6 @@ else        {
                          string fluorine = "F";
                          string neon = "Ne";
                          string[] elements = [hydrogen, helium, lithium, beryllium, boron, carbon, nitrogen, oxygen, fluorine, neon];
-                         foreach (var element in elements)
-                         {
-                             Console.WriteLine(element);
-                         }
                      }
                      """;
 
@@ -2148,16 +2130,6 @@ else        {
                   hydrogen, helium, lithium, beryllium, boron, carbon, nitrogen, oxygen,
                   fluorine, neon
                 ]);
-                foreach (var element in elements) {
-                  if (StrykerNamespace.MutantControl.IsActive(12)) {
-                  } else {
-                    if (StrykerNamespace.MutantControl.IsActive(13)) {
-                      ;
-                    } else {
-                      Console.WriteLine(element);
-                    }
-                  }
-                }
               }
             }
             """;
@@ -2205,11 +2177,7 @@ else        {
                      public void M() {
                          Iter([1]);
                      }
-                     public IEnumerable<T> Iter<T>(IList<T> list) {
-                         foreach (var l in list) {
-                             yield return l;
-                         }
-                     }
+                     public IEnumerable<T> Iter<T>(IList<T> list) { }
                      """;
 
         var expected =
@@ -2224,21 +2192,7 @@ else        {
                 }
               }
             }
-            public IEnumerable<T> Iter<T>(IList<T> list) {
-              if (StrykerNamespace.MutantControl.IsActive(3)) {
-              } else {
-                foreach (var l in list) {
-                  if (StrykerNamespace.MutantControl.IsActive(4)) {
-                  } else {
-                    if (StrykerNamespace.MutantControl.IsActive(5)) {
-                      ;
-                    } else {
-                      yield return l;
-                    }
-                  }
-                }
-              }
-            }
+            public IEnumerable<T> Iter<T>(IList<T> list) { }
             """;
         ShouldMutateSourceInClassToExpected(source, expected);
     }

@@ -47,7 +47,8 @@ public class CollectionExpressionMutatorTests : TestBase
         var mutation = result.ShouldHaveSingleItem();
         mutation.DisplayName.ShouldBe("Collection expression mutation");
         var replacement = mutation.ReplacementNode.ShouldBeOfType<CollectionExpressionSyntax>();
-        replacement.Elements.ShouldNotBeEmpty();
+        var element = replacement.Elements.ShouldHaveSingleItem();
+        element.ShouldBeOfType<ExpressionElementSyntax>().Expression.ShouldBeOfType<LiteralExpressionSyntax>().Token.IsKind(SyntaxKind.DefaultKeyword).ShouldBeTrue();
     }
 
     [TestMethod]
