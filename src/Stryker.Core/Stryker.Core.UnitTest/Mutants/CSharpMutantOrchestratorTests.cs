@@ -13,7 +13,7 @@ using Stryker.Core.Mutants;
 namespace Stryker.Core.UnitTest.Mutants;
 
 [TestClass]
-public class CsharpMutantOrchestratorTests : MutantOrchestratorTestsBase
+public class CSharpMutantOrchestratorTests : MutantOrchestratorTestsBase
 {
     [TestMethod]
     public void ShouldNotMutateEmptyInterfaces()
@@ -89,7 +89,7 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
             MutationLevel = MutationLevel.Complete,
             OptimizationMode = OptimizationModes.CoverageBasedTest,
         };
-        Target = new CsharpMutantOrchestrator(new MutantPlacer(Injector), options: options);
+        Target = new CSharpMutantOrchestrator(new MutantPlacer(Injector), options: options);
 
         var source = @"private void Move()
 			{
@@ -939,7 +939,7 @@ if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.Mutant
         source = @"public void SomeMethod() {
 	var x = 0;
 	{
-	// Stryker disable all 
+	// Stryker disable all
 	  x++;
 	}
 	x/=2;
@@ -961,7 +961,7 @@ if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.Mutant
     {
         var source = @"public void SomeMethod() {
 	var x = 0;
-    if (condition && other) /* Stryker disable once all */ {  
+    if (condition && other) /* Stryker disable once all */ {
 	  x++;
       x*=2;
 	}
@@ -969,7 +969,7 @@ if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.Mutant
 }";
         var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
 	var x = 0;
-    if ((StrykerNamespace.MutantControl.IsActive(2)?!(condition && other):(StrykerNamespace.MutantControl.IsActive(1)?condition || other:condition && other))) /* Stryker disable once all */ {  
+    if ((StrykerNamespace.MutantControl.IsActive(2)?!(condition && other):(StrykerNamespace.MutantControl.IsActive(1)?condition || other:condition && other))) /* Stryker disable once all */ {
 	  x++;
       x*=2;
 	}
@@ -1008,7 +1008,7 @@ x++;",
         @"if ((StrykerNamespace.MutantControl.IsActive(1)?!(cond):cond)) // Stryker disable once all
 x++;")]
     [DataRow("if (/* Stryker disable once all*/cond) x++;", "if (/* Stryker disable once all*/cond) if(StrykerNamespace.MutantControl.IsActive(2)){;}else{if(StrykerNamespace.MutantControl.IsActive(3)){x--;}else{x++;}}")]
-    
+
     public void ShouldNotMutateDependingOnWhereMultilineCommentIs(string source, string expected)
     {
         // must call reset as MsTest reuse test instance on/datarow
@@ -1933,9 +1933,9 @@ else        {
         };
 
         var firstOrchestrator =
-            new CsharpMutantOrchestrator(new MutantPlacer(Injector), options: strykerOptions);
+            new CSharpMutantOrchestrator(new MutantPlacer(Injector), options: strykerOptions);
         var secondOrchestrator =
-            new CsharpMutantOrchestrator(new MutantPlacer(Injector), options: strykerOptions);
+            new CSharpMutantOrchestrator(new MutantPlacer(Injector), options: strykerOptions);
         var node = SyntaxFactory.ParseExpression("1 == 1") as BinaryExpressionSyntax;
 
         var firstMutant = firstOrchestrator
