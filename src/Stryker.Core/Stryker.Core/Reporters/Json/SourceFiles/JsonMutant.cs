@@ -1,17 +1,21 @@
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Core.Mutants;
+using System.Text.Json.Serialization;
+using System.Text.Json;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Reporting;
+using System;
 
 namespace Stryker.Core.Reporters.Json.SourceFiles
 {
-    public class JsonMutant
+    public class JsonMutant : IJsonMutant
     {
         public string Id { get; init; }
         public string MutatorName { get; init; }
         public string Description { get; init; }
 
         public string Replacement { get; init; }
-        public Location Location { get; init; }
+        public ILocation Location { get; init; }
 
         public string Status { get; init; }
         public string StatusReason { get; init; }
@@ -41,6 +45,22 @@ namespace Stryker.Core.Reporters.Json.SourceFiles
 
             CoveredBy = mutant.CoveringTests.GetGuids()?.Select(g => g.ToString());
             KilledBy = mutant.KillingTests.GetGuids()?.Select(g => g.ToString());
+        }
+    }
+
+    public class JsonMutantConverter : JsonConverter<IJsonMutant>
+    {
+        public override IJsonMutant Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            // Deserialize the JSON into the concrete type
+            var sourceFile = JsonSerializer.Deserialize<JsonMutant>(ref reader, options);
+            return sourceFile;
+        }
+
+        public override void Write(Utf8JsonWriter writer, IJsonMutant value, JsonSerializerOptions options)
+        {
+            // Serialize the concrete type
+            JsonSerializer.Serialize(writer, (JsonMutant)value, options);
         }
     }
 }

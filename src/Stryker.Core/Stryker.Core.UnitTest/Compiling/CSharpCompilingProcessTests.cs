@@ -8,19 +8,20 @@ using System.Reflection;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions.Options;
 using Stryker.Core.Compiling;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
-using Stryker.Core.Mutators;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.TestRunners;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Compiling;
 
@@ -71,11 +72,11 @@ public class Calculator
     }
 
     [TestMethod]
-    public void CompilingProcessTests_ShouldSupportReferenceAliases()
+    public void CompilingProcessTests_ShouldSupportPackageReferenceAliases()
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(@"
-extern alias Texte;
-using System;
+extern alias TestAlias;
+using TestAlias::System;
 
 namespace ExampleProject
 {
@@ -96,15 +97,30 @@ public class Calculator
                     properties: new Dictionary<string, string>()
                     {
                         { "TargetDir", "" },
-                        { "AssemblyName", "AssemblyName"},
-                        { "TargetFileName", "TargetFileName.dll"},
+                        { "AssemblyName", "AssemblyName" },
+                        { "TargetFileName", "TargetFileName.dll" },
                     },
                     // add a reference to system so the example code can compile
-                    references: new[] { typeof(object).Assembly.Location, $"Texte={typeof(System.Text.StringBuilder).Assembly.Location}" }
+                    references: new[] { typeof(object).Assembly.Location },
+                    packageReferences: new ReadOnlyDictionary<string, IReadOnlyDictionary<string, string>>(
+                         new Dictionary<string, IReadOnlyDictionary<string, string>>
+                         {
+                             {
+                                 typeof(object).Assembly.GetName().Name,
+                                 new ReadOnlyDictionary<string, string>(
+                                     new Dictionary<string, string>
+                                     {
+                                         { "Aliases", "TestAlias" }
+                                     }
+                                 )
+                             }
+                         }
+                    )
                 ).Object
             }
         };
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
+
 
         var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 
@@ -151,7 +167,7 @@ public class Calculator
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
         rollbackProcessMock.Setup(x => x.Start(It.IsAny<CSharpCompilation>(), It.IsAny<ImmutableArray<Diagnostic>>(), It.IsAny<bool>(), false))
                         .Returns((CSharpCompilation compilation, ImmutableArray<Diagnostic> diagnostics, bool _, bool _) =>
-                        new (compilation, null));
+                        new(compilation, null));
 
         var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object, new StrykerOptions());
 
@@ -457,7 +473,7 @@ public class Calculator
         projectContentsMutants.Count(t => t.ResultStatus == MutantStatus.Pending).ShouldBe(3);
     }
 
-    private static IEnumerable<Mutant> MutateAndCompileSource(string sourceFile)
+    private static IEnumerable<IMutant> MutateAndCompileSource(string sourceFile)
     {
         var filesystemRoot = Path.GetPathRoot(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location));
 
@@ -515,7 +531,7 @@ public class Calculator
                         ).Object),
                     }
                 }
-                },
+            },
 
             TestRunner = new Mock<ITestRunner>(MockBehavior.Default).Object
         };

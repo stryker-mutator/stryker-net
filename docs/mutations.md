@@ -118,40 +118,40 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 ## Linq Methods (_linq_)
 |      Original         |       Mutated         |
 | --------------------- | --------------------- |
-| `SingleOrDefault()`  | `Single()`             |
-| `Single()`           | `SingleOrDefault()`    |
-| `FirstOrDefault()`   | `First()`              |
-| `First()`             | `FirstOrDefault()`    |
-| `Last()`              | `First()`             |
 | `All()`               | `Any()`               |
 | `Any()`               | `All()`               |
-| `Skip()`              | `Take()`              |
-| `Take()`              | `Skip()`              |
-| `SkipWhile()`        | `TakeWhile()`        |
-| `TakeWhile()`        | `SkipWhile()`        |
-| `Min()`               | `Max()`               |
-| `Max()`               | `Min()`               |
-| `Sum()`               | `Max()`               |
-| `Count()`             | `Sum()`               |
+| `AsEnumerable()`     | `Reverse()`           |
 | `Average()`           | `Min()`               |
+| `Concat()`           | `Except()`            |
+| `Count()`             | `Sum()`               |
+| `Except()`           | `Concat()`            |
+| `First()`             | `FirstOrDefault()`    |
+| `FirstOrDefault()`   | `First()`              |
+| `Intersect()`        | `Union()`             |
+| `IntersectBy()`      | `UnionBy()`           |
+| `Last()`              | `First()`             |
+| `Max()`               | `Min()`               |
+| `MaxBy()`            | `MinBy()`             |
+| `Min()`               | `Max()`               |
+| `MinBy()`            | `MaxBy()`             |
+| `Order()`            | `OrderDescending()`   |
 | `OrderBy()`           | `OrderByDescending()` |
 | `OrderByDescending()` | `OrderBy()`           |
+| `OrderDescending()`  | `Order()`             |
+| `Reverse()`           | `AsEnumerable()`     |
+| `Single()`           | `SingleOrDefault()`    |
+| `SingleOrDefault()`  | `Single()`             |
+| `Skip()`              | `Take()`              |
+| `SkipLast()`         | `TakeLast()`          |
+| `SkipWhile()`        | `TakeWhile()`        |
+| `Sum()`               | `Max()`               |
+| `Take()`              | `Skip()`              |
+| `TakeLast()`         | `SkipLast()`          |
+| `TakeWhile()`        | `SkipWhile()`        |
 | `ThenBy()`            | `ThenByDescending()`  |
 | `ThenByDescending()`  | `ThenBy()`            |
-| `Reverse()`           | `AsEnumerable()`     |
-| `AsEnumerable()`     | `Reverse()`           |
 | `Union()`            | `Intersect()`         |
-| `Intersect()`        | `Union()`             |
-| `Concat()`           | `Except()`            |
-| `Except()`           | `Concat()`            |
-| `MinBy()`            | `MaxBy()`             |
-| `MaxBy()`            | `MinBy()`             |
-| `SkipLast()`         | `TakeLast()`          |
-| `TakeLast()`         | `SkipLast()`          |
-| `Order()`            | `OrderDescending()`   |
-| `OrderDescending()`  | `Order()`             |
 | `UnionBy()`          | `IntersectBy()`       |
-| `IntersectBy()`      | `UnionBy()`           |
 
 ## String Literals (_string_)
 | Original | Mutated |
@@ -170,20 +170,22 @@ Do you have a suggestion for a (new) mutator? Feel free to create an [issue](htt
 ## String Methods (_stringmethod_)
 | Original               | Mutated              |
 |------------------------|----------------------|
-| `Trim()`               | `""`                 |
-| `Substring()`          | `""`                 |
 | `ElementAt()`          | `'\0'`               |
 | `ElementAtOrDefault()` | `'\0'`               |
 | `EndsWith()`           | `StartsWith()`       |
-| `StartsWith()`         | `EndsWith()`         |
-| `TrimStart()`          | `TrimEnd()`          |
-| `TrimEnd()`            | `TrimStart()`        |
-| `ToUpper()`            | `ToLower()`          |
-| `ToLower()`            | `ToUpper()`          |
-| `ToUpperInvariant()`   | `ToLowerInvariant()` |
-| `ToLowerInvariant()`   | `ToUpperInvariant()` |
+| `IndexOf()`            | `LastIndexOf()`      |
+| `LastIndexOf()`        | `IndexOf()`          |
 | `PadLeft()`            | `PadRight()`         |
 | `PadRight()`           | `PadLeft()`          |
+| `StartsWith()`         | `EndsWith()`         |
+| `Substring()`          | `""`                 |
+| `ToLower()`            | `ToUpper()`          |
+| `ToLowerInvariant()`   | `ToUpperInvariant()` |
+| `ToUpper()`            | `ToLower()`          |
+| `ToUpperInvariant()`   | `ToLowerInvariant()` |
+| `Trim()`               | `""`                 |
+| `TrimEnd()`            | `TrimStart()`        |
+| `TrimStart()`          | `TrimEnd()`          |
 
 ## Bitwise Operators (_bitwise_)
 | Original            | Mutated             |

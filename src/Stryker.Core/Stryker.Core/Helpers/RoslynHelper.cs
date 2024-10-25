@@ -3,7 +3,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Mutants;
+using Stryker.Abstractions.Mutants;
 
 namespace Stryker.Core.Helpers
 {
@@ -197,14 +197,5 @@ namespace Stryker.Core.Helpers
                 return (child.Parent is not AnonymousFunctionExpressionSyntax function || function.ExpressionBody != child)
                        && (child.Parent is not LocalFunctionStatementSyntax localFunction || localFunction.ExpressionBody != child);
             } ).Any(predicate);
-
-        public static bool HasAMemberBindingExpression(this ExpressionSyntax expression) =>
-            expression switch
-            {
-                MemberBindingExpressionSyntax => true,
-                MemberAccessExpressionSyntax memberAccess => memberAccess.Expression.HasAMemberBindingExpression(),
-                InvocationExpressionSyntax invocation => invocation.Expression.HasAMemberBindingExpression(),
-                _ => false
-            };
     }
 }

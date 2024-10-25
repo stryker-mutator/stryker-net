@@ -4,9 +4,9 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
-using RegexParser.Nodes;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Mutants;
 using Stryker.Core.Helpers;
-using Stryker.Core.Logging;
 
 namespace Stryker.Core.Mutants;
 
@@ -17,7 +17,7 @@ namespace Stryker.Core.Mutants;
 public enum MutationControl
 {
     /// <summary>
-    /// Syntax that is part of a member access expression (such as class.Property.Property.Invoke()
+    /// Syntax that is part of a member access expression (such as class.Property.Property.Invoke())
     /// </summary>
     MemberAccess,
     /// <summary>
@@ -47,6 +47,7 @@ internal class MutationStore
     protected static readonly ILogger Logger = ApplicationLogging.LoggerFactory.CreateLogger<MutationStore>();
     private readonly MutantPlacer _mutantPlacer;
     private readonly Stack<PendingMutations> _pendingMutations = new();
+    private int _injectionBlockCounter;
 
     /// <summary>
     /// Constructor
@@ -58,7 +59,7 @@ internal class MutationStore
     /// Checks if there are pending mutations for the current syntax level
     /// </summary>
     /// <returns></returns>
-    public bool HasPendingMutations() => _pendingMutations.Count > 0 && _pendingMutations.Peek().Store.Count>0;
+    public bool HasPendingMutations() => _pendingMutations.Count > 0 && _pendingMutations.Peek().Store.Count > 0;
 
     /// <summary>
     /// Returns the current mutation control
@@ -86,7 +87,10 @@ internal class MutationStore
     /// If there is none (leaving a member), mutations are flagged as compile errors (and logged).</remarks>
     public void Leave()
     {
-        if (!_pendingMutations.Peek().Leave()) return;
+        if (!_pendingMutations.Peek().Leave())
+        {
+            return;
+        }
         // we need to store pending mutations at the higher level
         var old = _pendingMutations.Pop();
         if (_pendingMutations.Count > 0)
@@ -103,6 +107,17 @@ internal class MutationStore
             }
         }
     }
+
+    /// <summary>
+    /// Prevent any mutation injection
+    /// </summary>
+    /// <remarks>This method is typically used for constant syntax node, where mutations need to be controlled at a higher syntax level.</remarks>
+    public void BlockInjection() => _injectionBlockCounter++;
+
+    /// <summary>
+    /// Restore mutation injection
+    /// </summary>
+    public void EnableInjection() => _injectionBlockCounter--;
 
     private PendingMutations FindControl(MutationControl control) => _pendingMutations.FirstOrDefault(item => item.Control >= control);
 
@@ -160,8 +175,9 @@ internal class MutationStore
     /// <returns>a syntax expression with the mutations included </returns>
     public ExpressionSyntax Inject(ExpressionSyntax mutatedNode, ExpressionSyntax sourceNode)
     {
-        if (_pendingMutations.Peek().Control == MutationControl.MemberAccess)
+        if (_injectionBlockCounter > 0 || _pendingMutations.Peek().Control == MutationControl.MemberAccess)
         {
+            // do not inject if explicitly blocked
             // never inject at member access level, there is no known control structure
             return mutatedNode;
         }
@@ -233,13 +249,14 @@ internal class MutationStore
     {
         public readonly MutationControl Control;
         private int _depth;
-        public readonly List<Mutant> Store = new();
+        public readonly List<Mutant> Store = [];
 
         public PendingMutations(MutationControl control) => Control = control;
 
         public bool Aggregate(MutationControl control)
         {
-            if (Store.Count != 0 || Control != control) {
+            if (Store.Count != 0 || Control != control)
+            {
                 return false;
             }
             _depth++;

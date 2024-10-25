@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Mutants;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
 
 namespace Stryker.Core.Mutators;
 
@@ -62,6 +63,8 @@ public class StringMethodMutator : MutatorBase<ExpressionSyntax>
             "ToLowerInvariant" => "ToUpperInvariant",
             "PadLeft" => "PadRight",
             "PadRight" => "PadLeft",
+            "IndexOf" => "LastIndexOf",
+            "LastIndexOf" => "IndexOf",
             _ => null
         };
 

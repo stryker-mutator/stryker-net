@@ -3,10 +3,11 @@ using McMaster.Extensions.CommandLineUtils;
 using Moq;
 using Shouldly;
 using Stryker.CLI.CommandLineConfig;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Options;
-using Stryker.Core.Options.Inputs;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Options.Inputs;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Abstractions.Options;
 
 namespace Stryker.CLI.UnitTest
 {

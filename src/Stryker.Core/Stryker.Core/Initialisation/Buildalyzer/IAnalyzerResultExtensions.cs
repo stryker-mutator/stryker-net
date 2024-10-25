@@ -10,7 +10,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Microsoft.Extensions.Logging;
 using NuGet.Frameworks;
-using Stryker.Core.Exceptions;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Utilities;
 
 namespace Stryker.Core.Initialisation.Buildalyzer;
 
@@ -21,7 +22,7 @@ public static class IAnalyzerResultExtensions
 
     public static bool BuildsAnAssembly(this IAnalyzerResult analyzerResult) => analyzerResult.Properties.ContainsKey("TargetFileName");
 
-    public static string GetReferenceAssemblyPath(this IAnalyzerResult analyzerResult) => analyzerResult.Properties.TryGetValue("TargetRefPath", out var property) ? FilePathUtils.NormalizePathSeparators(property) : GetAssemblyPath(analyzerResult);
+    public static string GetReferenceAssemblyPath(this IAnalyzerResult analyzerResult) => analyzerResult.Properties.TryGetValue("TargetRefPath", out var property) ? FilePathUtils.NormalizePathSeparators(property) : analyzerResult.GetAssemblyPath();
 
     public static string GetAssemblyDirectoryPath(this IAnalyzerResult analyzerResult) =>
         FilePathUtils.NormalizePathSeparators(analyzerResult.Properties["TargetDir"]);
@@ -98,7 +99,7 @@ public static class IAnalyzerResultExtensions
 
         if (e.Exception != null)
         {
-            logger?.LogWarning("Failed to load analyzer '{Source}': Exception {Exception}.", source,e.Exception);
+            logger?.LogWarning("Failed to load analyzer '{Source}': Exception {Exception}.", source, e.Exception);
         }
     }
 
@@ -106,15 +107,26 @@ public static class IAnalyzerResultExtensions
     {
         foreach (var reference in analyzerResult.References)
         {
-            if (reference.Contains('='))
+            var referenceFileNameWithoutExtension = Path.GetFileNameWithoutExtension(reference);
+            string packageWithAlias = null;
+
+            if (analyzerResult.PackageReferences is not null)
             {
-                // we have an alias
-                var split = reference.Split('=');
-                var aliases = split[0].Split(',');
-                yield return MetadataReference.CreateFromFile(split[1]).WithAliases(aliases);
+                // Check for any matching package reference with an alias using LINQ
+                packageWithAlias = analyzerResult.PackageReferences
+                    .Where(pr => pr.Key == referenceFileNameWithoutExtension && pr.Value.ContainsKey("Aliases"))
+                    .Select(pr => pr.Value["Aliases"])
+                    .FirstOrDefault();
+            }
+                
+            if (packageWithAlias is not null)
+            {
+                // Return the reference with the alias
+                yield return MetadataReference.CreateFromFile(reference).WithAliases(new[] { packageWithAlias });
             }
             else
             {
+                // If no alias is found, return the reference without aliases
                 yield return MetadataReference.CreateFromFile(reference);
             }
         }
@@ -150,7 +162,7 @@ public static class IAnalyzerResultExtensions
         throw new InputException(message);
     }
 
-    internal static bool TargetsFullFramework(this IAnalyzerResult analyzerResult) => GetNuGetFramework(analyzerResult).IsDesktop();
+    internal static bool TargetsFullFramework(this IAnalyzerResult analyzerResult) => analyzerResult.GetNuGetFramework().IsDesktop();
 
     public static Language GetLanguage(this IAnalyzerResult analyzerResult) =>
         analyzerResult.GetPropertyOrDefault("Language") switch
@@ -162,7 +174,7 @@ public static class IAnalyzerResultExtensions
 
     private static readonly string[] knownTestPackages = ["MSTest.TestFramework", "xunit", "NUnit"];
 
-    public static bool IsTestProject(this IAnalyzerResults analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
+    public static bool IsTestProject(this IEnumerable<IAnalyzerResult> analyzerResults) => analyzerResults.Any(x => x.IsTestProject());
 
     public static bool IsTestProject(this IAnalyzerResult analyzerResult)
     {
@@ -195,29 +207,20 @@ public static class IAnalyzerResultExtensions
     internal static string GetAssemblyOriginatorKeyFile(this IAnalyzerResult analyzerResult)
     {
         var assemblyKeyFileProp = analyzerResult.GetPropertyOrDefault("AssemblyOriginatorKeyFile");
-        return assemblyKeyFileProp is null ? null : Path.Combine(Path.GetDirectoryName(analyzerResult.ProjectFilePath)??".", assemblyKeyFileProp);
+        return assemblyKeyFileProp is null ? null : Path.Combine(Path.GetDirectoryName(analyzerResult.ProjectFilePath) ?? ".", assemblyKeyFileProp);
     }
 
     internal static ImmutableDictionary<string, ReportDiagnostic> GetDiagnosticOptions(
         this IAnalyzerResult analyzerResult)
     {
         var noWarnString = analyzerResult.GetPropertyOrDefault("NoWarn");
-        var noWarn = noWarnString is not null
-            ? noWarnString.Split(";").Where(x => !string.IsNullOrWhiteSpace(x))
-                .ToDictionary(x => x, _ => ReportDiagnostic.Suppress)
-            : new Dictionary<string, ReportDiagnostic>();
+        var noWarn = ParseDiagnostics(noWarnString).ToDictionary(x => x, _ => ReportDiagnostic.Suppress);
 
         var warningsAsErrorsString = analyzerResult.GetPropertyOrDefault("WarningsAsErrors");
-        var warningsAsErrors = warningsAsErrorsString is not null
-            ? warningsAsErrorsString.Split(";").Where(x => !string.IsNullOrWhiteSpace(x))
-                .ToDictionary(x => x, _ => ReportDiagnostic.Error)
-            : new Dictionary<string, ReportDiagnostic>();
+        var warningsAsErrors = ParseDiagnostics(warningsAsErrorsString).ToDictionary(x => x, _ => ReportDiagnostic.Error);
 
         var warningsNotAsErrorsString = analyzerResult.GetPropertyOrDefault("WarningsNotAsErrors");
-        var warningsNotAsErrors = warningsNotAsErrorsString is not null
-            ? warningsNotAsErrorsString.Split(";").Where(x => !string.IsNullOrWhiteSpace(x))
-                .ToDictionary(x => x, _ => ReportDiagnostic.Warn)
-            : new Dictionary<string, ReportDiagnostic>();
+        var warningsNotAsErrors = ParseDiagnostics(warningsNotAsErrorsString).ToDictionary(x => x, _ => ReportDiagnostic.Warn);
 
         // merge settings,
         var diagnosticOptions = new Dictionary<string, ReportDiagnostic>(warningsAsErrors);
@@ -234,6 +237,19 @@ public static class IAnalyzerResultExtensions
         return diagnosticOptions.ToImmutableDictionary();
     }
 
+    private static IEnumerable<string> ParseDiagnostics(string diagnostics)
+    {
+        if(string.IsNullOrWhiteSpace(diagnostics))
+        {
+            return [];
+        }
+
+        return diagnostics
+            .Split(";")
+            .Distinct()
+            .Where(x => !string.IsNullOrWhiteSpace(x));
+    } 
+
     internal static int GetWarningLevel(this IAnalyzerResult analyzerResult) =>
         int.Parse(analyzerResult.GetPropertyOrDefault("WarningLevel", "4"));
 
@@ -241,7 +257,7 @@ public static class IAnalyzerResultExtensions
         analyzerResult.GetPropertyOrDefault("RootNamespace") ?? analyzerResult.GetAssemblyName();
 
     internal static bool GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name, bool defaultBoolean) =>
-        bool.Parse(GetPropertyOrDefault(analyzerResult, name, defaultBoolean.ToString()));
+        bool.Parse(analyzerResult.GetPropertyOrDefault(name, defaultBoolean.ToString()));
 
     internal static string GetPropertyOrDefault(this IAnalyzerResult analyzerResult, string name,
         string defaultValue = default) =>

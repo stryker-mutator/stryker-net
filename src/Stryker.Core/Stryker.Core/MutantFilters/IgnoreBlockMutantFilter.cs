@@ -1,9 +1,11 @@
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents;
 using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
+using Stryker.Abstractions.Options;
 
 namespace Stryker.Core.MutantFilters
 {
@@ -24,7 +26,7 @@ namespace Stryker.Core.MutantFilters
             };
         }
 
-        public IEnumerable<Mutant> FilterMutants(IEnumerable<Mutant> mutants, IReadOnlyFileLeaf file, StrykerOptions options)
+        public IEnumerable<IMutant> FilterMutants(IEnumerable<IMutant> mutants, IReadOnlyFileLeaf file, IStrykerOptions options)
         {
             var blockMutants = mutants.Where(m => m.Mutation.Type == Mutator.Block);
             var mutantsToIgnore = blockMutants.Where(blockMutant => mutants.Any(

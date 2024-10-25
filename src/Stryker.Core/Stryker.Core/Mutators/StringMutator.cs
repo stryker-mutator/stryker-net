@@ -1,7 +1,8 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Core.Mutants;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
 using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
@@ -34,8 +35,7 @@ public class StringMutator : MutatorBase<LiteralExpressionSyntax>
     private static bool IsStringLiteral(LiteralExpressionSyntax node)
     {
         var kind = node.Kind();
-        return kind == SyntaxKind.StringLiteralExpression
-               && node.Parent is not ConstantPatternSyntax;
+        return kind == SyntaxKind.StringLiteralExpression;
     }
 
     private static bool IsSpecialType(SyntaxNode root) => root switch

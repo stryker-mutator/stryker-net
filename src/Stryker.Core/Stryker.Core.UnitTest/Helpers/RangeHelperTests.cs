@@ -1,11 +1,10 @@
 using System;
 using System.Linq;
 using FSharp.Compiler.Text;
-using Shouldly;
-using Stryker.Core.Helpers;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Shouldly;
+using Stryker.Utilities.Helpers;
 using Range = FSharp.Compiler.Text.Range;
-
 
 namespace Stryker.Core.UnitTest.Helpers
 {

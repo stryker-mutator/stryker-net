@@ -13,17 +13,21 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Moq;
 using Serilog.Events;
 using Shouldly;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.TestRunners.VsTest;
-using Stryker.Core.ToolHelpers;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Utilities;
+using Stryker.Core.TestRunners.VsTest;
+using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Core.Helpers;
+using Stryker.Core.ProjectComponents.Csharp;
+using Stryker.Abstractions.Options;
+using Stryker.Core.UnitTest;
 
 namespace Stryker.Core.UnitTest.TestRunners
 {
     [TestClass]
-    public class VsTextContextInformationTests: TestBase
+    public class VsTextContextInformationTests : TestBase
     {
         private readonly string _testAssemblyPath;
         private readonly TestProjectsInfo _testProjectsInfo;
@@ -105,7 +109,7 @@ namespace Stryker.Core.UnitTest.TestRunners
 
         private Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase BuildCaseMsTest(string name) => new(name, _msTestExecutorUri, _testAssemblyPath) { Id = new Guid() };
 
-        private VsTestContextInformation BuildVsTextContext(StrykerOptions options, out Mock<IVsTestConsoleWrapper> mockedVsTestConsole)
+        private VsTestContextInformation BuildVsTextContext(IStrykerOptions options, out Mock<IVsTestConsoleWrapper> mockedVsTestConsole)
         {
             mockedVsTestConsole = new Mock<IVsTestConsoleWrapper>(MockBehavior.Strict);
             mockedVsTestConsole.Setup(x => x.StartSession());

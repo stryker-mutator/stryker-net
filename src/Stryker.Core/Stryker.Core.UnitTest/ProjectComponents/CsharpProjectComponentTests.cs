@@ -1,9 +1,11 @@
 using Shouldly;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
+using Stryker.Abstractions.ProjectComponents;
 using System.Collections.ObjectModel;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents.Csharp;
 
 namespace Stryker.Core.UnitTest.ProjectComponents
 {

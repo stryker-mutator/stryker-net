@@ -1,25 +1,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Core.Mutants;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.ProjectComponents;
 
 namespace Stryker.Core.ProjectComponents
 {
-    public interface IReadOnlyFolderComposite : IProjectComponent
+    public class FolderComposite<T> : ProjectComponent<T>, IFolderComposite
     {
-        IEnumerable<IProjectComponent> Children { get; }
-        void Add(IProjectComponent child);
-        void AddRange(IEnumerable<IProjectComponent> children);
-    }
-
-    public class FolderComposite<T> : ProjectComponent<T>, IReadOnlyFolderComposite
-    {
-        private readonly List<IProjectComponent> _children = [];
+        private readonly List<IReadOnlyProjectComponent> _children = [];
         public readonly List<T> _compilationSyntaxTrees = [];
 
-        public IEnumerable<IProjectComponent> Children => _children;
+        public IEnumerable<IReadOnlyProjectComponent> Children => _children;
 
-        public override IEnumerable<Mutant> Mutants
+        public override IEnumerable<IMutant> Mutants
         {
             get => Children.SelectMany(x => x.Mutants);
             set => throw new NotSupportedException("Folders do not contain mutants.");

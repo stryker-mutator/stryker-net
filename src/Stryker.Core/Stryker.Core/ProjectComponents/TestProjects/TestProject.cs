@@ -6,17 +6,18 @@ using System.Text;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Core.Exceptions;
-using Stryker.Core.MutantFilters.Extensions;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Core.MutantFilters;
 
 namespace Stryker.Core.ProjectComponents.TestProjects
 {
-    public sealed class TestProject : IEquatable<TestProject>
+    public sealed class TestProject : IEquatable<ITestProject>, ITestProject
     {
         public IAnalyzerResult AnalyzerResult { get; }
 
         public string ProjectFilePath => AnalyzerResult.ProjectFilePath;
-        public IEnumerable<TestFile> TestFiles { get; }
+        public IEnumerable<ITestFile> TestFiles { get; }
 
         public TestProject(IFileSystem fileSystem, IAnalyzerResult testProjectAnalyzerResult)
         {
@@ -58,9 +59,9 @@ namespace Stryker.Core.ProjectComponents.TestProjects
             }
         }
 
-        public bool Equals(TestProject other) => other.AnalyzerResult.Equals(AnalyzerResult) && other.TestFiles.SequenceEqual(TestFiles);
+        public bool Equals(ITestProject other) => other.AnalyzerResult.Equals(AnalyzerResult) && other.TestFiles.SequenceEqual(TestFiles);
 
-        public override bool Equals(object obj) => obj is TestProject project && Equals(project);
+        public override bool Equals(object obj) => obj is ITestProject project && Equals(project);
 
         public override int GetHashCode() => AnalyzerResult.GetHashCode();
     }

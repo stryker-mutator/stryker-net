@@ -3,9 +3,9 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Core.Mutators;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.Mutators
 {
@@ -103,7 +103,7 @@ namespace Stryker.Core.UnitTest.Mutators
 
         private IsPatternExpressionSyntax GenerateSimpleConstantPattern(bool isNotPattern)
         {
-            SyntaxTree tree = CSharpSyntaxTree.ParseText($@"
+            var tree = CSharpSyntaxTree.ParseText($@"
 using System;
 
 namespace TestApplication
@@ -126,7 +126,7 @@ namespace TestApplication
 
         private IsPatternExpressionSyntax GenerateWithRelationalPattern(string @operator)
         {
-            SyntaxTree tree = CSharpSyntaxTree.ParseText($@"
+            var tree = CSharpSyntaxTree.ParseText($@"
 using System;
 
 namespace TestApplication
@@ -149,7 +149,7 @@ namespace TestApplication
 
         private IsPatternExpressionSyntax GenerateWithBinaryPattern(string pattern)
         {
-            SyntaxTree tree = CSharpSyntaxTree.ParseText($@"
+            var tree = CSharpSyntaxTree.ParseText($@"
 using System;
 
 namespace TestApplication

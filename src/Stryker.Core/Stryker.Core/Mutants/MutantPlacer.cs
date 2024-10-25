@@ -19,7 +19,7 @@ public class MutantPlacer
     private const string MutationTypeMarker = "MutationType";
     public static readonly string Injector = "Injector";
 
-    private static readonly Dictionary<string, (IInstrumentCode engine, SyntaxAnnotation annotation)> instrumentEngines = new ();
+    private static readonly Dictionary<string, (IInstrumentCode engine, SyntaxAnnotation annotation)> instrumentEngines = new();
     private static readonly HashSet<string> requireRecursiveRemoval = new();
 
     private static readonly StaticInstrumentationEngine StaticEngine = new();
@@ -44,7 +44,7 @@ public class MutantPlacer
     /// <param name="requireRecursive">true if inner injections should be removed first.</param>
     public static SyntaxAnnotation RegisterEngine(IInstrumentCode engine, bool requireRecursive = false)
     {
-        lock(instrumentEngines)
+        lock (instrumentEngines)
         {
             if (instrumentEngines.TryGetValue(engine.InstrumentEngineId, out var existing))
             {
@@ -57,7 +57,7 @@ public class MutantPlacer
             }
 
             var syntaxAnnotation = new SyntaxAnnotation(Injector, engine.InstrumentEngineId);
-            instrumentEngines[engine.InstrumentEngineId] = (engine, syntaxAnnotation) ;
+            instrumentEngines[engine.InstrumentEngineId] = (engine, syntaxAnnotation);
             if (requireRecursive)
             {
                 requireRecursiveRemoval.Add(engine.InstrumentEngineId);
@@ -209,7 +209,7 @@ public class MutantPlacer
     /// </summary>
     /// <param name="mutantId"></param>
     /// <returns></returns>
-    private  ExpressionSyntax GetBinaryExpression(int mutantId)
+    private ExpressionSyntax GetBinaryExpression(int mutantId)
     {
         if (_binaryExpression == null)
         {

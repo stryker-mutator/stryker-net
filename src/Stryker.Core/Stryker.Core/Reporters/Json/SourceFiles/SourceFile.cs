@@ -1,15 +1,19 @@
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
+using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Logging;
-using Stryker.Core.ProjectComponents;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporting;
+using System;
 
 namespace Stryker.Core.Reporters.Json.SourceFiles
 {
-    public class SourceFile
+    public class SourceFile : ISourceFile
     {
         public string Language { get; init; }
         public string Source { get; init; }
-        public ISet<JsonMutant> Mutants { get; init; }
+        public ISet<IJsonMutant> Mutants { get; init; }
 
         public SourceFile() { }
 
@@ -19,7 +23,7 @@ namespace Stryker.Core.Reporters.Json.SourceFiles
 
             Source = file.SourceCode;
             Language = "cs";
-            Mutants = new HashSet<JsonMutant>(new UniqueJsonMutantComparer());
+            Mutants = new HashSet<IJsonMutant>(new UniqueJsonMutantComparer());
 
             foreach (var mutant in file.Mutants)
             {
@@ -33,11 +37,27 @@ namespace Stryker.Core.Reporters.Json.SourceFiles
             }
         }
 
-        private sealed class UniqueJsonMutantComparer : EqualityComparer<JsonMutant>
+        private sealed class UniqueJsonMutantComparer : EqualityComparer<IJsonMutant>
         {
-            public override bool Equals(JsonMutant left, JsonMutant right) => left.Id == right.Id;
+            public override bool Equals(IJsonMutant left, IJsonMutant right) => left.Id == right.Id;
 
-            public override int GetHashCode(JsonMutant jsonMutant) => jsonMutant.Id.GetHashCode();
+            public override int GetHashCode(IJsonMutant jsonMutant) => jsonMutant.Id.GetHashCode();
+        }
+    }
+
+    public class SourceFileConverter : JsonConverter<ISourceFile>
+    {
+        public override ISourceFile Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            // Deserialize the JSON into the concrete type
+            var sourceFile = JsonSerializer.Deserialize<SourceFile>(ref reader, options);
+            return sourceFile;
+        }
+
+        public override void Write(Utf8JsonWriter writer, ISourceFile value, JsonSerializerOptions options)
+        {
+            // Serialize the concrete type
+            JsonSerializer.Serialize(writer, (SourceFile)value, options);
         }
     }
 }

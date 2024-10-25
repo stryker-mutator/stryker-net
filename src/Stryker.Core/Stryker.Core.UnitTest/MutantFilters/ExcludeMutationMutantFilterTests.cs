@@ -1,9 +1,10 @@
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
-using Stryker.Core.Options;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
@@ -11,7 +12,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
     public class ExcludeMutationMutantFilterTests : TestBase
     {
         [TestMethod]
-        public static void ShouldHaveName()
+        public void ShouldHaveName()
         {
             var target = new IgnoreMutationMutantFilter() as IMutantFilter;
             target.DisplayName.ShouldBe("mutation type filter");

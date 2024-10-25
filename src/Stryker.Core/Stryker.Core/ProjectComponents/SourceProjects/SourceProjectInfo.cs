@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Buildalyzer;
-using Stryker.Core.Initialisation;
+using Stryker.Abstractions.Initialisation;
+using Stryker.Abstractions.ProjectComponents;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.ProjectComponents.TestProjects;
@@ -12,22 +13,22 @@ public class SourceProjectInfo : IProjectAndTests
 {
     private readonly List<string> _warnings = [];
 
-    public Action OnProjectBuilt {get;set;}
+    public Action OnProjectBuilt { get; set; }
 
     public IAnalyzerResult AnalyzerResult { get; set; }
 
     /// <summary>
     /// The Folder/File structure found in the project under test.
     /// </summary>
-    public IProjectComponent ProjectContents { get; set; }
+    public IReadOnlyProjectComponent ProjectContents { get; set; }
 
     public bool IsFullFramework => AnalyzerResult.TargetsFullFramework();
 
     public string HelperNamespace => CodeInjector.HelperNamespace;
 
-    public CodeInjection CodeInjector { get;} = new();
+    public CodeInjection CodeInjector { get; } = new();
 
-    public TestProjectsInfo TestProjectsInfo { get; set; }
+    public ITestProjectsInfo TestProjectsInfo { get; set; }
 
     public IReadOnlyCollection<string> Warnings => _warnings;
 

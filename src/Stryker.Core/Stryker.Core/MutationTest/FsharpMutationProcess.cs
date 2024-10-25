@@ -1,16 +1,17 @@
-using FSharp.Compiler.Syntax;
-using Microsoft.CodeAnalysis;
-using Microsoft.Extensions.Logging;
-using Microsoft.FSharp.Collections;
-using Stryker.Core.Compiling;
-using Stryker.Core.Logging;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
 using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Linq;
+using FSharp.Compiler.Syntax;
+using Microsoft.CodeAnalysis;
+using Microsoft.Extensions.Logging;
+using Microsoft.FSharp.Collections;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Options;
+using Stryker.Core.Compiling;
+using Stryker.Core.Mutants;
+using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.Fsharp;
 
 namespace Stryker.Core.MutationTest
 {
@@ -18,7 +19,7 @@ namespace Stryker.Core.MutationTest
     {
         private readonly ILogger _logger;
         private readonly IFileSystem _fileSystem;
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>, object> _orchestrator;
 
         /// <summary>
@@ -29,7 +30,7 @@ namespace Stryker.Core.MutationTest
         /// <param name="orchestrator"></param>
         public FsharpMutationProcess(
             IFileSystem fileSystem,
-            StrykerOptions options,
+            IStrykerOptions options,
             BaseMutantOrchestrator<FSharpList<SynModuleOrNamespace>, object> orchestrator)
         {
             _fileSystem = fileSystem;
@@ -42,7 +43,7 @@ namespace Stryker.Core.MutationTest
         /// This constructor is used by the <see cref="MutationTestProcess"/> initialization logic.
         /// </summary>
         /// <param name="options"></param>
-        public FsharpMutationProcess(StrykerOptions options) : this(null, options, null) { }
+        public FsharpMutationProcess(IStrykerOptions options) : this(null, options, null) { }
 
         public void Mutate(MutationTestInput input)
         {

@@ -5,10 +5,11 @@ using System.IO.Abstractions;
 using System.Linq;
 using Grynwald.MarkdownGenerator;
 using Spectre.Console;
-using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporting;
 
 namespace Stryker.Core.Reporters
 {
@@ -17,11 +18,11 @@ namespace Stryker.Core.Reporters
     /// </summary>
     public class MarkdownSummaryReporter : IReporter
     {
-        private readonly StrykerOptions _options;
+        private readonly IStrykerOptions _options;
         private readonly IAnsiConsole _console;
         private readonly IFileSystem _fileSystem;
 
-        public MarkdownSummaryReporter(StrykerOptions strykerOptions, IFileSystem fileSystem = null, IAnsiConsole console = null)
+        public MarkdownSummaryReporter(IStrykerOptions strykerOptions, IFileSystem fileSystem = null, IAnsiConsole console = null)
         {
             _options = strykerOptions;
             _console = console ?? AnsiConsole.Console;
@@ -33,7 +34,7 @@ namespace Stryker.Core.Reporters
             // This reporter does not report during the testrun
         }
 
-        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+        public void OnMutantsCreated(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
         {
             // This reporter does not report during the testrun
         }
@@ -43,7 +44,7 @@ namespace Stryker.Core.Reporters
             // This reporter does not report during the testrun
         }
 
-        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, TestProjectsInfo testProjectsInfo)
+        public void OnAllMutantsTested(IReadOnlyProjectComponent reportComponent, ITestProjectsInfo testProjectsInfo)
         {
             var files = reportComponent.GetAllFiles();
             if (files.Any())
@@ -59,7 +60,7 @@ namespace Stryker.Core.Reporters
 
                 // We must print the report path as the link text because on some terminals links might be supported but not actually clickable: https://github.com/spectreconsole/spectre.console/issues/764
                 _console.MarkupLineInterpolated(_console.Profile.Capabilities.Links
-                    ? (FormattableString)$"[Green][link={reportUri}]{reportPath}[/][/]"
+                    ? $"[Green][link={reportUri}]{reportPath}[/][/]"
                     : (FormattableString)$"[Green]{reportUri}[/]");
             }
         }

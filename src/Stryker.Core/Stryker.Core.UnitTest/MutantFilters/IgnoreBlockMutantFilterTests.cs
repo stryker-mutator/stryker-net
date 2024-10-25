@@ -3,9 +3,10 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
-using Stryker.Core.Mutators;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
@@ -13,7 +14,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
     public class IgnoreBlockMutantFilterTests : TestBase
     {
         [TestMethod]
-        public static void ShouldHaveName()
+        public void ShouldHaveName()
         {
             var sut = new IgnoreBlockMutantFilter();
             sut.DisplayName.ShouldBe("block already covered filter");

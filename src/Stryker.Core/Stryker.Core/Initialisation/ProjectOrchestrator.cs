@@ -6,23 +6,24 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Mono.Cecil;
-using Stryker.Core.Baseline.Providers;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Logging;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Baseline;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Reporting;
 using Stryker.Core.MutationTest;
-using Stryker.Core.Options;
 using Stryker.Core.ProjectComponents.SourceProjects;
-using Stryker.Core.Reporters;
 using Stryker.Core.TestRunners;
 using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.Initialisation
 {
-    public interface IProjectOrchestrator: IDisposable
+    public interface IProjectOrchestrator : IDisposable
     {
-        IEnumerable<IMutationTestProcess> MutateProjects(StrykerOptions options, IReporter reporters, ITestRunner runner = null);
+        IEnumerable<IMutationTestProcess> MutateProjects(IStrykerOptions options, IReporter reporters, ITestRunner runner = null);
     }
-    
+
     public sealed class ProjectOrchestrator : IProjectOrchestrator
     {
         private IInitialisationProcess _initializationProcess;
@@ -44,7 +45,7 @@ namespace Stryker.Core.Initialisation
             _initializationProcess = initializationProcess;
         }
 
-        public IEnumerable<IMutationTestProcess> MutateProjects(StrykerOptions options, IReporter reporters,
+        public IEnumerable<IMutationTestProcess> MutateProjects(IStrykerOptions options, IReporter reporters,
             ITestRunner runner = null)
         {
 
@@ -73,14 +74,14 @@ namespace Stryker.Core.Initialisation
             return mutationTestProcesses;
         }
 
-        private void InitializeDashboardProjectInformation(StrykerOptions options, SourceProjectInfo projectInfo)
+        private void InitializeDashboardProjectInformation(IStrykerOptions options, SourceProjectInfo projectInfo)
         {
             var dashboardReporterEnabled = options.Reporters.Contains(Reporter.Dashboard) || options.Reporters.Contains(Reporter.All);
             var dashboardBaselineEnabled = options.WithBaseline && options.BaselineProvider == BaselineProvider.Dashboard;
             var requiresProjectInformation = dashboardReporterEnabled || dashboardBaselineEnabled;
             var missingProjectName = string.IsNullOrEmpty(options.ProjectName);
             var missingProjectVersion = string.IsNullOrEmpty(options.ProjectVersion);
-            if (!requiresProjectInformation || (!missingProjectVersion && !missingProjectName))
+            if (!requiresProjectInformation || !missingProjectVersion && !missingProjectName)
             {
                 return;
             }

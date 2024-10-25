@@ -1,6 +1,6 @@
 using System.Collections.Generic;
+using Stryker.Abstractions.Reporting;
 using Stryker.Core.Reporters.Json;
-using Stryker.Core.Reporters.Json.SourceFiles;
 
 namespace Stryker.Core.UnitTest.Reporters.Json
 {
@@ -8,7 +8,7 @@ namespace Stryker.Core.UnitTest.Reporters.Json
     {
         public MockJsonReport(
             IDictionary<string, int> thresholds,
-            IDictionary<string, SourceFile> files
+            IDictionary<string, ISourceFile> files
         )
         {
             Thresholds = thresholds;

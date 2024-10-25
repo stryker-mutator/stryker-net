@@ -1,12 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Abstractions.TestRunners;
 using Stryker.Core.Mutants;
 using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.TestRunners
 {
-    public class TestRunResult
+    public class TestRunResult : ITestRunResult
     {
         public TestRunResult(bool success, string message = null)
         {
@@ -27,7 +28,7 @@ namespace Stryker.Core.TestRunners
             IEnumerable<string> messages,
             TimeSpan timeSpan)
         {
-            VsTestDescriptions = vsTestDescriptions.Where( p => executedTests.Contains(p.Id)).ToList();
+            VsTestDescriptions = vsTestDescriptions.Where(p => executedTests.Contains(p.Id)).ToList();
             ExecutedTests = executedTests;
             FailingTests = failedTests;
             TimedOutTests = timedOutTest;

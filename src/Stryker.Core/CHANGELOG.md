@@ -1,3 +1,37 @@
+# [4.3.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.2.0...stryker@4.3.0) (2024-10-14)
+
+
+### Bug Fixes
+
+* Duplicate Analyzer diagnostics ([#3059](https://github.com/stryker-mutator/stryker-net/issues/3059)) ([e9f3763](https://github.com/stryker-mutator/stryker-net/commit/e9f3763ce34d45ec03ba226bbab790f9d96ef2f7))
+* Handle Vstest freezes more gracefully ([#3063](https://github.com/stryker-mutator/stryker-net/issues/3063)) ([b6c9e9d](https://github.com/stryker-mutator/stryker-net/commit/b6c9e9df5c69111a3ba81be8742a8e33812c3079))
+
+
+### Features
+
+* Respect specified target framework only if this results in a valid version ([#3039](https://github.com/stryker-mutator/stryker-net/issues/3039)) ([85a4384](https://github.com/stryker-mutator/stryker-net/commit/85a4384df9a24aa15fad55a2901988f1c042588b))
+
+
+
+# [4.2.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.1.0...stryker@4.2.0) (2024-09-13)
+
+
+### Bug Fixes
+
+* Disable debug trace ([#3000](https://github.com/stryker-mutator/stryker-net/issues/3000)) ([12c8799](https://github.com/stryker-mutator/stryker-net/commit/12c879910b3eb4386d0533f36649e3c5fb345ad0))
+* Escape test case filter before passing to VsTest ([#2991](https://github.com/stryker-mutator/stryker-net/issues/2991)) ([afab19d](https://github.com/stryker-mutator/stryker-net/commit/afab19d29f98e02c9e1493ff064079468dfbc3ff))
+* **ignore-methods:** Support async expressions ([#3010](https://github.com/stryker-mutator/stryker-net/issues/3010)) ([9facfcc](https://github.com/stryker-mutator/stryker-net/commit/9facfcc1d8e363e36feeba6ef6685b32888a44d0))
+* **real-time-reporting:** missing mutants when running in solution mode ([#2989](https://github.com/stryker-mutator/stryker-net/issues/2989)) ([55ab462](https://github.com/stryker-mutator/stryker-net/commit/55ab462abeb03ebba3ff39692f4a6ace0068fac9))
+* **real-time-reporting:** Properly handle when browser is closed during mutation testing ([#2985](https://github.com/stryker-mutator/stryker-net/issues/2985)) ([963225d](https://github.com/stryker-mutator/stryker-net/commit/963225d0f96fddf27c324d7b0cb6e0519f695ccd))
+
+
+### Features
+
+* **ignore mutation:** Add support for ignoring mutations in code using mutiline string comments ([#3028](https://github.com/stryker-mutator/stryker-net/issues/3028)) ([481ce6f](https://github.com/stryker-mutator/stryker-net/commit/481ce6f828c12c78ae404ab6700339aff4bef01f))
+* **mutating:** constant patterns ([#2992](https://github.com/stryker-mutator/stryker-net/issues/2992)) ([83349de](https://github.com/stryker-mutator/stryker-net/commit/83349de662c53368b344e67bf65ae872e8a31288))
+
+
+
 # [4.1.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.0.6...stryker@4.1.0) (2024-07-08)
 
 

@@ -2,12 +2,13 @@ using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Mutants;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.ProjectComponents.Csharp;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
@@ -15,7 +16,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
     public class FilePatternMutantFilterTests : TestBase
     {
         [TestMethod]
-        public static void ShouldHaveName()
+        public void ShouldHaveName()
         {
             var target = new FilePatternMutantFilter(new StrykerOptions()) as IMutantFilter;
             target.DisplayName.ShouldBe("mutate filter");

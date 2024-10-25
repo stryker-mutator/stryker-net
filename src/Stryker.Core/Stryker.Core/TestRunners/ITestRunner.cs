@@ -1,15 +1,18 @@
 using System;
 using System.Collections.Generic;
-using Stryker.Core.Initialisation;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Initialisation;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.TestRunners;
 using Stryker.Core.Mutants;
 
 namespace Stryker.Core.TestRunners
 {
-    public delegate bool TestUpdateHandler(IReadOnlyList<Mutant> testedMutants,
+    public delegate bool TestUpdateHandler(IReadOnlyList<IMutant> testedMutants,
         ITestGuids failedTests,
         ITestGuids ranTests,
         ITestGuids timedOutTests);
-    
+
     public interface ITestRunner : IDisposable
     {
         bool DiscoverTests(string assembly);
@@ -20,6 +23,6 @@ namespace Stryker.Core.TestRunners
 
         IEnumerable<CoverageRunResult> CaptureCoverage(IProjectAndTests project);
 
-        TestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<Mutant> mutants, TestUpdateHandler update);
+        TestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler update);
     }
 }

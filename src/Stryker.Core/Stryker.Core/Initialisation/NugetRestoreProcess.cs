@@ -2,10 +2,11 @@ using System;
 using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Exceptions;
-using Stryker.Core.Logging;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Abstractions.Logging;
+using Stryker.Configuration;
+using Stryker.Core.Helpers;
 using Stryker.Core.Testing;
-using Stryker.Core.ToolHelpers;
 
 namespace Stryker.Core.Initialisation
 {

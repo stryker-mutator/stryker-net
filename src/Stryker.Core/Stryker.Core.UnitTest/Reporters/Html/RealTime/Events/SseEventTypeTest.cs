@@ -1,7 +1,8 @@
 using System;
 using Shouldly;
-using Stryker.Core.Reporters.Html.RealTime.Events;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Stryker.Core.Reporters.Html.RealTime.Events;
+using Stryker.Core.UnitTest;
 
 namespace Stryker.Core.UnitTest.Reporters.Html.RealTime.Events;
 

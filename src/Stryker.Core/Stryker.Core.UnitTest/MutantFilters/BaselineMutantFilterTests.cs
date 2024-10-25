@@ -1,20 +1,24 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Baseline;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Reporting;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Baseline.Utils;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
-using Stryker.Core.Options;
-using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.Reporters;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Json.SourceFiles;
 using Stryker.Core.UnitTest.Reporters.Json;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Stryker.Core.UnitTest.MutantFilters
 {
@@ -22,7 +26,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
     public class BaselineMutantFilterTests : TestBase
     {
         [TestMethod]
-        public static void ShouldHaveName()
+        public void ShouldHaveName()
         {
             // Arrange
             var gitInfoProvider = new Mock<IGitInfoProvider>(MockBehavior.Loose);
@@ -61,7 +65,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns(branchName);
 
-            baselineProvider.Setup(x => x.Load($"baseline/{branchName}")).Returns(Task.FromResult<JsonReport>(null));
+            baselineProvider.Setup(x => x.Load($"baseline/{branchName}")).Returns(Task.FromResult<IJsonReport>(null));
             baselineProvider.Setup(x => x.Load($"baseline/{options.FallbackVersion}")).Returns(Task.FromResult(jsonReport));
 
             // Act
@@ -98,8 +102,8 @@ namespace Stryker.Core.UnitTest.MutantFilters
 
             gitInfoProvider.Setup(x => x.GetCurrentBranchName()).Returns(branchName);
 
-            baselineProvider.Setup(x => x.Load(branchName)).Returns(Task.FromResult<JsonReport>(null));
-            baselineProvider.Setup(x => x.Load($"baseline/{options.FallbackVersion}")).Returns(Task.FromResult<JsonReport>(null));
+            baselineProvider.Setup(x => x.Load(branchName)).Returns(Task.FromResult<IJsonReport>(null));
+            baselineProvider.Setup(x => x.Load($"baseline/{options.FallbackVersion}")).Returns(Task.FromResult<IJsonReport>(null));
             baselineProvider.Setup(x => x.Load(options.FallbackVersion)).Returns(Task.FromResult(jsonReport));
 
             // Act
@@ -201,7 +205,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 new Mutant()
             };
 
-            var jsonMutants = new HashSet<JsonMutant>
+            var jsonMutants = new HashSet<IJsonMutant>
             {
                 new JsonMutant()
             };
@@ -209,7 +213,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Setup Mocks
             var jsonReportFileComponent = new MockJsonReportFileComponent("", "", jsonMutants);
 
-            var jsonFileComponents = new Dictionary<string, SourceFile>
+            var jsonFileComponents = new Dictionary<string, ISourceFile>
             {
                 ["foo.cs"] = jsonReportFileComponent
             };
@@ -217,7 +221,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var baseline = new MockJsonReport(null, jsonFileComponents);
 
             baselineProvider.Setup(mock => mock.Load(It.IsAny<string>()))
-                .Returns(Task.FromResult((JsonReport)baseline));
+                .Returns(Task.FromResult((IJsonReport)baseline));
 
             baselineMutantHelper.Setup(mock => mock.GetMutantSourceCode(It.IsAny<string>(), It.IsAny<JsonMutant>())).Returns(string.Empty);
 
@@ -248,7 +252,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 RelativePath = "foo.cs"
             };
 
-            var mutants = new List<Mutant>
+            var mutants = new List<IMutant>
             {
                 new Mutant
                 {
@@ -256,7 +260,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 }
             };
 
-            var jsonMutants = new HashSet<JsonMutant>
+            var jsonMutants = new HashSet<IJsonMutant>
             {
                 new JsonMutant
                 {
@@ -267,7 +271,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Setup Mocks
             var jsonReportFileComponent = new MockJsonReportFileComponent("", "", jsonMutants);
 
-            var jsonFileComponents = new Dictionary<string, SourceFile>
+            var jsonFileComponents = new Dictionary<string, ISourceFile>
             {
                 ["foo.cs"] = jsonReportFileComponent
             };
@@ -275,12 +279,12 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var baseline = new MockJsonReport(null, jsonFileComponents);
 
             baselineProvider.Setup(mock => mock.Load(It.IsAny<string>()))
-                .Returns(Task.FromResult(baseline as JsonReport));
+                .Returns(Task.FromResult(baseline as IJsonReport));
 
-            baselineMutantHelper.Setup(mock => mock.GetMutantSourceCode(It.IsAny<string>(), It.IsAny<JsonMutant>())).Returns("var foo = \"bar\";");
+            baselineMutantHelper.Setup(mock => mock.GetMutantSourceCode(It.IsAny<string>(), It.IsAny<IJsonMutant>())).Returns("var foo = \"bar\";");
             baselineMutantHelper.Setup(mock => mock.GetMutantMatchingSourceCode(
-                It.IsAny<IEnumerable<Mutant>>(),
-                It.Is<JsonMutant>(m => m == jsonMutants.First()),
+                It.IsAny<IEnumerable<IMutant>>(),
+                It.Is<IJsonMutant>(m => m == jsonMutants.First()),
                 It.Is<string>(source => source == "var foo = \"bar\";"))).Returns(mutants).Verifiable();
 
             // Act
@@ -311,7 +315,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 RelativePath = "foo.cs"
             };
 
-            var mutants = new List<Mutant>
+            var mutants = new List<IMutant>
             {
                 new Mutant
                 {
@@ -323,7 +327,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 }
             };
 
-            var jsonMutants = new HashSet<JsonMutant>
+            var jsonMutants = new HashSet<IJsonMutant>
             {
                 new JsonMutant
                 {
@@ -334,7 +338,7 @@ namespace Stryker.Core.UnitTest.MutantFilters
             // Setup Mocks
             var jsonReportFileComponent = new MockJsonReportFileComponent("", "", jsonMutants);
 
-            var jsonFileComponents = new Dictionary<string, SourceFile>
+            var jsonFileComponents = new Dictionary<string, ISourceFile>
             {
                 ["foo.cs"] = jsonReportFileComponent
             };
@@ -342,12 +346,12 @@ namespace Stryker.Core.UnitTest.MutantFilters
             var baseline = new MockJsonReport(null, jsonFileComponents);
 
             baselineProvider.Setup(mock => mock.Load(It.IsAny<string>()))
-                .Returns(Task.FromResult(baseline as JsonReport));
+                .Returns(Task.FromResult(baseline as IJsonReport));
 
-            baselineMutantHelper.Setup(mock => mock.GetMutantSourceCode(It.IsAny<string>(), It.IsAny<JsonMutant>())).Returns("var foo = \"bar\";");
+            baselineMutantHelper.Setup(mock => mock.GetMutantSourceCode(It.IsAny<string>(), It.IsAny<IJsonMutant>())).Returns("var foo = \"bar\";");
             baselineMutantHelper.Setup(mock => mock.GetMutantMatchingSourceCode(
-                It.IsAny<IEnumerable<Mutant>>(),
-                It.Is<JsonMutant>(m => m == jsonMutants.First()),
+                It.IsAny<IEnumerable<IMutant>>(),
+                It.Is<IJsonMutant>(m => m == jsonMutants.First()),
                 It.Is<string>(source => source == "var foo = \"bar\";"))).Returns(mutants).Verifiable();
 
             // Act
@@ -385,23 +389,23 @@ namespace Stryker.Core.UnitTest.MutantFilters
                 RelativePath = "foo.cs"
             };
 
-            var mutants = new List<Mutant>
+            var mutants = new List<IMutant>
             {
                 new Mutant()
             };
 
-            var jsonMutants = new HashSet<JsonMutant>
+            var jsonMutants = new HashSet<IJsonMutant>
             {
                 new JsonMutant()
             };
 
             // Setup Mocks
 
-            var jsonFileComponents = new Dictionary<string, SourceFile>();
+            var jsonFileComponents = new Dictionary<string, ISourceFile>();
 
             var baseline = new MockJsonReport(null, jsonFileComponents);
 
-            baselineProvider.Setup(mock => mock.Load(It.IsAny<string>())).Returns(Task.FromResult((JsonReport)baseline));
+            baselineProvider.Setup(mock => mock.Load(It.IsAny<string>())).Returns(Task.FromResult((IJsonReport)baseline));
 
             // Act
             var target = new BaselineMutantFilter(options, baselineProvider.Object, branchProvider.Object, baselineMutantHelper.Object);

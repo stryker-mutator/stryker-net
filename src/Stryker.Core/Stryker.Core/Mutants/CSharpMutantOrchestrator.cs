@@ -1,15 +1,19 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
-using Stryker.Core.Helpers;
-using Stryker.Core.Logging;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Logging;
+using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions.Options;
 using Stryker.Core.Mutants.CsharpNodeOrchestrators;
 using Stryker.Core.Mutators;
-using Stryker.Core.Options;
+using Stryker.Utilities.Helpers;
 
 namespace Stryker.Core.Mutants;
 
@@ -30,13 +34,12 @@ public class CSharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
     /// <summary>
     /// <param name="mutators">The mutators that should be active during the mutation process</param>
     /// </summary>
-    public CSharpMutantOrchestrator(MutantPlacer placer, IEnumerable<IMutator> mutators = null, StrykerOptions options = null) : base(options)
+    public CSharpMutantOrchestrator(MutantPlacer placer, IEnumerable<IMutator> mutators = null, IStrykerOptions options = null) : base(options)
     {
         Placer = placer;
         Mutators = mutators ?? DefaultMutatorList();
-        Mutants = new Collection<Mutant>();
+        Mutants = new Collection<IMutant>();
         Logger = ApplicationLogging.LoggerFactory.CreateLogger<CSharpMutantOrchestrator>();
-
     }
 
     private static List<INodeOrchestrator> BuildOrchestratorList() =>
@@ -65,6 +68,7 @@ public class CSharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new MemberAccessExpressionOrchestrator<PostfixUnaryExpressionSyntax>(t =>
             t.IsKind(SyntaxKind.SuppressNullableWarningExpression)),
         new ConditionalExpressionOrchestrator(),
+        new ConstantPatternSyntaxOrchestrator(),
         // ensure static constructs are marked properly
         new StaticFieldDeclarationOrchestrator(),
         new StaticConstructorOrchestrator(),
@@ -138,16 +142,16 @@ public class CSharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         {
             foreach (var mutation in mutator.Mutate(current, semanticModel, Options))
             {
-                var newMutant = CreateNewMutant(mutation, mutator, context);
-
+                var newMutant = CreateNewMutant(mutation, context);
                 // Skip if the mutant is a duplicate
                 if (IsMutantDuplicate(newMutant, mutation))
                 {
                     continue;
                 }
-
+                newMutant.Id = GetNextId();
+                Logger.LogDebug("Mutant {MutantId} created {OriginalNode} -> {ReplacementNode} using {Mutator}", newMutant.Id, mutation.OriginalNode,
+                    mutation.ReplacementNode, mutator.GetType());
                 Mutants.Add(newMutant);
-                IncreaseMutantCount();
                 mutations.Add(newMutant);
             }
         }
@@ -159,15 +163,11 @@ public class CSharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
     /// Creates a new mutant for the given mutation, mutator and context. Returns null if the mutant
     /// is a duplicate.
     /// </summary>
-    private Mutant CreateNewMutant(Mutation mutation, IMutator mutator, MutationContext context)
+    private Mutant CreateNewMutant(Mutation mutation, MutationContext context)
     {
-        var id = MutantCount;
-        Logger.LogDebug("Mutant {MutantId} created {OriginalNode} -> {ReplacementNode} using {Mutator}", id, mutation.OriginalNode,
-            mutation.ReplacementNode, mutator.GetType());
         var mutantIgnored = context.FilteredMutators?.Contains(mutation.Type) ?? false;
         return new Mutant
         {
-            Id = id,
             Mutation = mutation,
             ResultStatus = mutantIgnored ? MutantStatus.Ignored : MutantStatus.Pending,
             IsStaticValue = context.InStaticValue,
