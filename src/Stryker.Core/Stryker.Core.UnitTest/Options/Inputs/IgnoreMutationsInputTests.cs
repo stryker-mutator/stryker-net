@@ -10,178 +10,177 @@ using Stryker.Abstractions;
 using Stryker.Core.UnitTest.Mutators;
 using Stryker.Core.UnitTest;
 
-namespace Stryker.Core.UnitTest.Options.Inputs
+namespace Stryker.Core.UnitTest.Options.Inputs;
+
+[TestClass]
+public class IgnoreMutationsInputTests : TestBase
 {
-    [TestClass]
-    public class IgnoreMutationsInputTests : TestBase
+    [TestMethod]
+    public void ShouldHaveHelpText()
     {
-        [TestMethod]
-        public void ShouldHaveHelpText()
-        {
-            var target = new IgnoreMutationsInput();
-            target.HelpText.ShouldBe(@"The given mutators will be excluded for this mutation testrun.
+        var target = new IgnoreMutationsInput();
+        target.HelpText.ShouldBe(@"The given mutators will be excluded for this mutation testrun.
     This argument takes a json array as value. Example: ['string', 'logical'] | default: []");
-        }
+    }
 
-        [TestMethod]
-        public void ShouldValidateExcludedMutation()
+    [TestMethod]
+    public void ShouldValidateExcludedMutation()
+    {
+        var target = new IgnoreMutationsInput { SuppliedInput = new[] { "gibberish" } };
+
+        var ex = Should.Throw<InputException>(() => target.Validate<Mutator>());
+
+        ex.Message.ShouldBe($"Invalid excluded mutation (gibberish). The excluded mutations options are [Statement, Arithmetic, Block, Equality, Boolean, Logical, Assignment, Unary, Update, Checked, Linq, String, Bitwise, Initializer, Regex, NullCoalescing, Math, StringMethod, Conditional, CollectionExpression]");
+    }
+
+    [TestMethod]
+    public void ShouldHaveDefault()
+    {
+        var target = new IgnoreMutationsInput { SuppliedInput = new string[] { } };
+
+        var result = target.Validate<Mutator>();
+
+        result.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void ShouldIgnoreMutatorWithOptions()
+    {
+        var target = new IgnoreMutationsInput { SuppliedInput = new string[] { "linq.Sum", "string.empty", "logical.equal" } };
+
+        var result = target.Validate<Mutator>();
+
+        result.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void ShouldReturnMultipleMutators()
+    {
+        var target = new IgnoreMutationsInput
         {
-            var target = new IgnoreMutationsInput { SuppliedInput = new[] { "gibberish" } };
-
-            var ex = Should.Throw<InputException>(() => target.Validate<Mutator>());
-
-            ex.Message.ShouldBe($"Invalid excluded mutation (gibberish). The excluded mutations options are [Statement, Arithmetic, Block, Equality, Boolean, Logical, Assignment, Unary, Update, Checked, Linq, String, Bitwise, Initializer, Regex, NullCoalescing, Math, StringMethod, Conditional, CollectionExpression]");
+            SuppliedInput = new[] {
+            Mutator.String.ToString(),
+            Mutator.Regex.ToString(),
         }
+        };
 
-        [TestMethod]
-        public void ShouldHaveDefault()
+        var result = target.Validate<Mutator>();
+
+        result.Count().ShouldBe(2);
+        result.First().ShouldBe(Mutator.String);
+        result.ElementAt(1).ShouldBe(Mutator.Regex);
+    }
+
+
+    private IEnumerable<LinqExpression> AllLinqExpressions { get; } = Enum.GetValues(typeof(LinqExpression))
+                .Cast<LinqExpression>()
+                .Where(w => w != LinqExpression.None);
+
+
+    [TestMethod]
+    public void ShouldReturnEmptyLinqExpressionsWithNonLinqOptions()
+    {
+        var target = new IgnoreMutationsInput { SuppliedInput = new[] { "gibberish" } };
+        var linqExpressions = target.ValidateLinqExpressions();
+        linqExpressions.ShouldBeEmpty();
+    }
+
+
+    [TestMethod]
+    [DataRow("linq.nothing")]
+    [DataRow("linq.test")]
+    [DataRow("linq.first.default")]
+    public void ShouldValidateExcludedLinqExpression(string method)
+    {
+        var target = new IgnoreMutationsInput
         {
-            var target = new IgnoreMutationsInput { SuppliedInput = new string[] { } };
+            SuppliedInput = new[] { method }
+        };
 
-            var result = target.Validate<Mutator>();
+        var ex = Should.Throw<InputException>(() => target.ValidateLinqExpressions());
 
-            result.ShouldBeEmpty();
-        }
+        ex.Message.ShouldBe($"Invalid excluded linq expression ({string.Join(".", method.Split(".").Skip(1))}). The excluded linq expression options are [{string.Join(", ", AllLinqExpressions)}]");
+    }
 
-        [TestMethod]
-        public void ShouldIgnoreMutatorWithOptions()
+    [TestMethod]
+    public void ShouldHaveDefaultLinqExpressions()
+    {
+        var target = new IgnoreMutationsInput { SuppliedInput = new string[] { } };
+
+        var linqExpressions = target.ValidateLinqExpressions();
+
+        linqExpressions.ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void ShouldReturnMultipleLinqExpressions()
+    {
+        var target = new IgnoreMutationsInput
         {
-            var target = new IgnoreMutationsInput { SuppliedInput = new string[] { "linq.Sum", "string.empty", "logical.equal" } };
-
-            var result = target.Validate<Mutator>();
-
-            result.ShouldBeEmpty();
-        }
-
-        [TestMethod]
-        public void ShouldReturnMultipleMutators()
-        {
-            var target = new IgnoreMutationsInput
-            {
-                SuppliedInput = new[] {
-                Mutator.String.ToString(),
-                Mutator.Regex.ToString(),
+            SuppliedInput = new[] {
+            "linq.FirstOrDefault",
+            "linq.First",
             }
-            };
+        };
 
-            var result = target.Validate<Mutator>();
+        var linqExpressions = target.ValidateLinqExpressions();
 
-            result.Count().ShouldBe(2);
-            result.First().ShouldBe(Mutator.String);
-            result.ElementAt(1).ShouldBe(Mutator.Regex);
-        }
+        linqExpressions.Count().ShouldBe(2);
+        linqExpressions.First().ShouldBe(LinqExpression.FirstOrDefault);
+        linqExpressions.Last().ShouldBe(LinqExpression.First);
+    }
 
-
-        private IEnumerable<LinqExpression> AllLinqExpressions { get; } = Enum.GetValues(typeof(LinqExpression))
-                    .Cast<LinqExpression>()
-                    .Where(w => w != LinqExpression.None);
-
-
-        [TestMethod]
-        public void ShouldReturnEmptyLinqExpressionsWithNonLinqOptions()
+    [TestMethod]
+    public void ShouldIgnoreIncorrectFormatWhenValidateLinqExpressions()
+    {
+        var target = new IgnoreMutationsInput
         {
-            var target = new IgnoreMutationsInput { SuppliedInput = new[] { "gibberish" } };
-            var linqExpressions = target.ValidateLinqExpressions();
-            linqExpressions.ShouldBeEmpty();
-        }
+            SuppliedInput = new[] {
+            "linq.Max",
+            "linq.Sum",
+            "test",
+            }
+        };
 
+        var linqExpressions = target.ValidateLinqExpressions();
 
-        [TestMethod]
-        [DataRow("linq.nothing")]
-        [DataRow("linq.test")]
-        [DataRow("linq.first.default")]
-        public void ShouldValidateExcludedLinqExpression(string method)
+        linqExpressions.Count().ShouldBe(2);
+        linqExpressions.First().ShouldBe(LinqExpression.Max);
+        linqExpressions.Last().ShouldBe(LinqExpression.Sum);
+    }
+
+    /// <summary>
+    /// This test is needed as other mutators also have "statement" in their name. It should pick the right mutator.
+    /// </summary>
+    [TestMethod]
+    public void ShouldIgnoreStatementMutator()
+    {
+        var target = new IgnoreMutationsInput
         {
-            var target = new IgnoreMutationsInput
-            {
-                SuppliedInput = new[] { method }
-            };
+            SuppliedInput = new[] { "statement" }
+        };
 
-            var ex = Should.Throw<InputException>(() => target.ValidateLinqExpressions());
+        var mutators = target.Validate<Mutator>();
 
-            ex.Message.ShouldBe($"Invalid excluded linq expression ({string.Join(".", method.Split(".").Skip(1))}). The excluded linq expression options are [{string.Join(", ", AllLinqExpressions)}]");
-        }
+        mutators.ShouldHaveSingleItem().ShouldBe(Mutator.Statement);
+    }
 
-        [TestMethod]
-        public void ShouldHaveDefaultLinqExpressions()
+    [TestMethod]
+    public void ShouldIgnoreBasedOnEitherDescription()
+    {
+        var targetWithFirstDescription = new IgnoreMutationsInput
         {
-            var target = new IgnoreMutationsInput { SuppliedInput = new string[] { } };
-
-            var linqExpressions = target.ValidateLinqExpressions();
-
-            linqExpressions.ShouldBeEmpty();
-        }
-
-        [TestMethod]
-        public void ShouldReturnMultipleLinqExpressions()
+            SuppliedInput = new[] { "Multi-description mutator" }
+        };
+        var targetWithSecondDescription = new IgnoreMutationsInput
         {
-            var target = new IgnoreMutationsInput
-            {
-                SuppliedInput = new[] {
-                "linq.FirstOrDefault",
-                "linq.First",
-                }
-            };
+            SuppliedInput = new[] { "Two descriptions mutator" }
+        };
 
-            var linqExpressions = target.ValidateLinqExpressions();
+        var mutatorsWithFirstDescription = targetWithFirstDescription.Validate<TestMutator>();
+        var mutatorsWithSecondDescription = targetWithSecondDescription.Validate<TestMutator>();
 
-            linqExpressions.Count().ShouldBe(2);
-            linqExpressions.First().ShouldBe(LinqExpression.FirstOrDefault);
-            linqExpressions.Last().ShouldBe(LinqExpression.First);
-        }
-
-        [TestMethod]
-        public void ShouldIgnoreIncorrectFormatWhenValidateLinqExpressions()
-        {
-            var target = new IgnoreMutationsInput
-            {
-                SuppliedInput = new[] {
-                "linq.Max",
-                "linq.Sum",
-                "test",
-                }
-            };
-
-            var linqExpressions = target.ValidateLinqExpressions();
-
-            linqExpressions.Count().ShouldBe(2);
-            linqExpressions.First().ShouldBe(LinqExpression.Max);
-            linqExpressions.Last().ShouldBe(LinqExpression.Sum);
-        }
-
-        /// <summary>
-        /// This test is needed as other mutators also have "statement" in their name. It should pick the right mutator.
-        /// </summary>
-        [TestMethod]
-        public void ShouldIgnoreStatementMutator()
-        {
-            var target = new IgnoreMutationsInput
-            {
-                SuppliedInput = new[] { "statement" }
-            };
-
-            var mutators = target.Validate<Mutator>();
-
-            mutators.ShouldHaveSingleItem().ShouldBe(Mutator.Statement);
-        }
-
-        [TestMethod]
-        public void ShouldIgnoreBasedOnEitherDescription()
-        {
-            var targetWithFirstDescription = new IgnoreMutationsInput
-            {
-                SuppliedInput = new[] { "Multi-description mutator" }
-            };
-            var targetWithSecondDescription = new IgnoreMutationsInput
-            {
-                SuppliedInput = new[] { "Two descriptions mutator" }
-            };
-
-            var mutatorsWithFirstDescription = targetWithFirstDescription.Validate<TestMutator>();
-            var mutatorsWithSecondDescription = targetWithSecondDescription.Validate<TestMutator>();
-
-            mutatorsWithFirstDescription.ShouldHaveSingleItem().ShouldBe(TestMutator.MultipleDescriptions);
-            mutatorsWithSecondDescription.ShouldHaveSingleItem().ShouldBe(TestMutator.MultipleDescriptions);
-        }
+        mutatorsWithFirstDescription.ShouldHaveSingleItem().ShouldBe(TestMutator.MultipleDescriptions);
+        mutatorsWithSecondDescription.ShouldHaveSingleItem().ShouldBe(TestMutator.MultipleDescriptions);
     }
 }
