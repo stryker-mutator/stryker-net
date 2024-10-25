@@ -53,7 +53,7 @@ stages:
       inputs:
         version: 8.x
     - template: pipeline-templates/populate-cache-steps.yml
-    - task: SonarCloudPrepare@2
+    - task: SonarCloudPrepare@3
       inputs:
         SonarCloud: 'SonarCloud stryker-net'
         organization: 'stryker-net'
