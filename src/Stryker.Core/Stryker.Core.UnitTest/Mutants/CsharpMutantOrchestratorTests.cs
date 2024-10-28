@@ -957,6 +957,28 @@ if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.Mutant
     }
 
     [TestMethod]
+    public void ShouldNotMutateTopLevelStatementsIfDisabledByComment()
+    {
+        var source = @"
+	var x = 0;
+x++;
+// Stryker disable all
+	x++;
+	x/=2;
+";
+        var expected = @"	var x = 0;
+if(StrykerNamespace.MutantControl.IsActive(0)){;}else{if(StrykerNamespace.MutantControl.IsActive(1)){x--;
+}else{x++;
+}}// Stryker disable all
+	x++;
+	x/=2;
+";
+
+        ShouldMutateSourceToExpected(source, expected);
+            
+    }
+
+    [TestMethod]
     public void ShouldNotMutateIfDisabledByMultilineComment()
     {
         var source = @"public void SomeMethod() {
