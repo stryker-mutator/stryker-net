@@ -1,9 +1,10 @@
 using System.Collections.Generic;
 
-namespace Stryker.Core.DiffProviders;
-
-public class DiffResult
+namespace Stryker.Core.DiffProviders
 {
-    public ICollection<string> ChangedTestFiles { get; set; }
-    public ICollection<string> ChangedSourceFiles { get; set; }
+    public class DiffResult
+    {
+        public IDictionary<string, List<int>> ChangedTestFiles { get; set; }
+        public IDictionary<string, List<int>> ChangedSourceFiles { get; set; }
+    }
 }
