@@ -13,7 +13,7 @@ public static class Program
             var app = new StrykerCli();
             return app.Run(args);
         }
-        catch (NoTestProjectsException exception)
+        catch (InvalidProjectsException exception)
         {
             AnsiConsole.WriteLine(exception.Message);
             return ExitCodes.Success;
