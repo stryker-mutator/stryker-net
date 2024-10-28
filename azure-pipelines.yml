@@ -53,11 +53,11 @@ stages:
       inputs:
         version: 8.x
     - template: pipeline-templates/populate-cache-steps.yml
-    - task: SonarCloudPrepare@2
+    - task: SonarCloudPrepare@3
       inputs:
         SonarCloud: 'SonarCloud stryker-net'
         organization: 'stryker-net'
-        scannerMode: 'MSBuild'
+        scannerMode: 'dotnet'
         projectKey: 'stryker-net'
         projectName: 'Stryker .NET'
         projectVersion: '$(PackageVersion)'
@@ -67,8 +67,8 @@ stages:
         command: test
         projects: 'src/Stryker.Core/Stryker.Core.UnitTest/Stryker.Core.UnitTest.csproj'
         arguments: '--collect "Code coverage"'
-    - task: SonarCloudAnalyze@2
-    - task: SonarCloudPublish@2
+    - task: SonarCloudAnalyze@3
+    - task: SonarCloudPublish@3
       inputs:
         pollingTimeoutSec: '300'
   - job: RunStrykerCLI
