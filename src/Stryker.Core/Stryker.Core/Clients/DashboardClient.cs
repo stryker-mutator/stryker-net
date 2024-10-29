@@ -10,136 +10,135 @@ using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Reporting;
 using Stryker.Core.Reporters.Json;
 
-namespace Stryker.Core.Clients
+namespace Stryker.Core.Clients;
+
+public interface IDashboardClient
 {
-    public interface IDashboardClient
+    Task<string> PublishReport(IJsonReport report, string version, bool realTime = false);
+    Task<JsonReport> PullReport(string version);
+    Task PublishMutantBatch(IJsonMutant mutant);
+    Task PublishFinished();
+}
+
+public class DashboardClient : IDashboardClient
+{
+    private const int MutantBatchSize = 10;
+
+    private readonly IStrykerOptions _options;
+    private readonly ILogger<DashboardClient> _logger;
+    private readonly HttpClient _httpClient;
+    private readonly List<IJsonMutant> _batch = new();
+
+    public DashboardClient(IStrykerOptions options, HttpClient httpClient = null, ILogger<DashboardClient> logger = null)
     {
-        Task<string> PublishReport(IJsonReport report, string version, bool realTime = false);
-        Task<JsonReport> PullReport(string version);
-        Task PublishMutantBatch(IJsonMutant mutant);
-        Task PublishFinished();
+        _options = options;
+        _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DashboardClient>();
+        if (httpClient != null)
+        {
+            _httpClient = httpClient;
+        }
+        else
+        {
+            _httpClient = new HttpClient();
+            _httpClient.DefaultRequestHeaders.Add("X-Api-Key", _options.DashboardApiKey);
+        }
     }
 
-    public class DashboardClient : IDashboardClient
+    public async Task<string> PublishReport(IJsonReport report, string version, bool realTime = false)
     {
-        private const int MutantBatchSize = 10;
+        var url = GetUrl(version, realTime);
 
-        private readonly IStrykerOptions _options;
-        private readonly ILogger<DashboardClient> _logger;
-        private readonly HttpClient _httpClient;
-        private readonly List<IJsonMutant> _batch = new();
+        _logger.LogDebug("Sending PUT to {DashboardUrl}", url);
 
-        public DashboardClient(IStrykerOptions options, HttpClient httpClient = null, ILogger<DashboardClient> logger = null)
+        try
         {
-            _options = options;
-            _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<DashboardClient>();
-            if (httpClient != null)
-            {
-                _httpClient = httpClient;
-            }
-            else
-            {
-                _httpClient = new HttpClient();
-                _httpClient.DefaultRequestHeaders.Add("X-Api-Key", _options.DashboardApiKey);
-            }
+            using var response = await _httpClient.PutAsJsonAsync(url, report, JsonReportSerialization.Options);
+            response.EnsureSuccessStatusCode();
+
+            var result = await response.Content.ReadFromJsonAsync<DashboardResult>();
+            return result?.Href;
+        }
+        catch (Exception exception)
+        {
+            _logger.LogError(exception, "Failed to upload report to the dashboard at {DashboardUrl}", url);
+            return null;
+        }
+    }
+
+    public async Task PublishMutantBatch(IJsonMutant mutant)
+    {
+        _batch.Add(mutant);
+        if (_batch.Count != MutantBatchSize)
+        {
+            return;
         }
 
-        public async Task<string> PublishReport(IJsonReport report, string version, bool realTime = false)
+        var url = GetUrl(_options.ProjectVersion, true);
+        try
         {
-            var url = GetUrl(version, realTime);
-
-            _logger.LogDebug("Sending PUT to {DashboardUrl}", url);
-
-            try
-            {
-                using var response = await _httpClient.PutAsJsonAsync(url, report, JsonReportSerialization.Options);
-                response.EnsureSuccessStatusCode();
-
-                var result = await response.Content.ReadFromJsonAsync<DashboardResult>();
-                return result?.Href;
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(exception, "Failed to upload report to the dashboard at {DashboardUrl}", url);
-                return null;
-            }
+            var response = await _httpClient.PostAsJsonAsync(url, _batch, JsonReportSerialization.Options);
+            response.EnsureSuccessStatusCode();
+            _batch.Clear();
         }
-
-        public async Task PublishMutantBatch(IJsonMutant mutant)
+        catch (Exception exception)
         {
-            _batch.Add(mutant);
-            if (_batch.Count != MutantBatchSize)
-            {
-                return;
-            }
+            _logger.LogError(exception, "Failed to upload mutant to the dashboard at {DashboardUrl}", url);
+        }
+    }
 
-            var url = GetUrl(_options.ProjectVersion, true);
-            try
+    public async Task PublishFinished()
+    {
+        var url = GetUrl(_options.ProjectVersion, true);
+
+        try
+        {
+            if (_batch.Count != 0)
             {
-                var response = await _httpClient.PostAsJsonAsync(url, _batch, JsonReportSerialization.Options);
-                response.EnsureSuccessStatusCode();
+                var batchResponse = await _httpClient.PostAsJsonAsync(url, _batch, JsonReportSerialization.Options);
+                batchResponse.EnsureSuccessStatusCode();
                 _batch.Clear();
             }
-            catch (Exception exception)
-            {
-                _logger.LogError(exception, "Failed to upload mutant to the dashboard at {DashboardUrl}", url);
-            }
-        }
 
-        public async Task PublishFinished()
+            var deleteResponse = await _httpClient.DeleteAsync(url);
+            deleteResponse.EnsureSuccessStatusCode();
+        }
+        catch (Exception exception)
         {
-            var url = GetUrl(_options.ProjectVersion, true);
-
-            try
-            {
-                if (_batch.Count != 0)
-                {
-                    var batchResponse = await _httpClient.PostAsJsonAsync(url, _batch, JsonReportSerialization.Options);
-                    batchResponse.EnsureSuccessStatusCode();
-                    _batch.Clear();
-                }
-
-                var deleteResponse = await _httpClient.DeleteAsync(url);
-                deleteResponse.EnsureSuccessStatusCode();
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(exception, "Failed send finished event to the dashboard at {DashboardUrl}", url);
-            }
+            _logger.LogError(exception, "Failed send finished event to the dashboard at {DashboardUrl}", url);
         }
+    }
 
-        public async Task<JsonReport> PullReport(string version)
+    public async Task<JsonReport> PullReport(string version)
+    {
+        var url = GetUrl(version, false);
+
+        _logger.LogDebug("Sending GET to {DashboardUrl}", url);
+        try
         {
-            var url = GetUrl(version, false);
-
-            _logger.LogDebug("Sending GET to {DashboardUrl}", url);
-            try
-            {
-                var report = await _httpClient.GetFromJsonAsync<JsonReport>(url, JsonReportSerialization.Options);
-                return report;
-            }
-            catch (Exception exception)
-            {
-                _logger.LogError(exception, "Failed to retrieve the report at {DashboardUrl}", url);
-                return null;
-            }
+            var report = await _httpClient.GetFromJsonAsync<JsonReport>(url, JsonReportSerialization.Options);
+            return report;
         }
-
-        private Uri GetUrl(string version, bool realTime)
+        catch (Exception exception)
         {
-            var module = !string.IsNullOrEmpty(_options.ModuleName) ? $"?module={_options.ModuleName}" : "";
-            var url = new Uri($"{_options.DashboardUrl}/api/reports/{_options.ProjectName}/{version}{module}");
-            if (realTime)
-            {
-                url = new Uri($"{_options.DashboardUrl}/api/real-time/{_options.ProjectName}/{version}{module}");
-            }
-
-            return url;
+            _logger.LogError(exception, "Failed to retrieve the report at {DashboardUrl}", url);
+            return null;
         }
+    }
 
-        private sealed class DashboardResult
+    private Uri GetUrl(string version, bool realTime)
+    {
+        var module = !string.IsNullOrEmpty(_options.ModuleName) ? $"?module={_options.ModuleName}" : "";
+        var url = new Uri($"{_options.DashboardUrl}/api/reports/{_options.ProjectName}/{version}{module}");
+        if (realTime)
         {
-            public string Href { get; init; } //NOSONAR: init accessor is used for json serialization
+            url = new Uri($"{_options.DashboardUrl}/api/real-time/{_options.ProjectName}/{version}{module}");
         }
+
+        return url;
+    }
+
+    private sealed class DashboardResult
+    {
+        public string Href { get; init; } //NOSONAR: init accessor is used for json serialization
     }
 }

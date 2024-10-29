@@ -20,22 +20,22 @@ using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.SourceProjects;
 
-namespace Stryker.Core.UnitTest.Compiling
+namespace Stryker.Core.UnitTest.Compiling;
+
+[TestClass]
+public class CSharpRollbackProcessTests : TestBase
 {
-    [TestClass]
-    public class CSharpRollbackProcessTests : TestBase
+    private readonly SyntaxAnnotation _ifEngineMarker = new("Injector", "IfInstrumentationEngine");
+    private readonly SyntaxAnnotation _conditionalEngineMarker = new("Injector", "ConditionalInstrumentationEngine");
+
+    private SyntaxAnnotation GetMutationIdMarker(int id) => new("MutationId", id.ToString());
+
+    private SyntaxAnnotation GetMutationTypeMarker(Mutator type) => new("MutationType", type.ToString());
+
+    [TestMethod]
+    public void RollbackProcess_ShouldRollbackError_RollbackedCompilationShouldCompile()
     {
-        private readonly SyntaxAnnotation _ifEngineMarker = new("Injector", "IfInstrumentationEngine");
-        private readonly SyntaxAnnotation _conditionalEngineMarker = new("Injector", "ConditionalInstrumentationEngine");
-
-        private SyntaxAnnotation GetMutationIdMarker(int id) => new("MutationId", id.ToString());
-
-        private SyntaxAnnotation GetMutationTypeMarker(Mutator type) => new("MutationType", type.ToString());
-
-        [TestMethod]
-        public void RollbackProcess_ShouldRollbackError_RollbackedCompilationShouldCompile()
-        {
-            var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
+        var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
 
 namespace ExampleProject
 {
@@ -54,42 +54,42 @@ if(ActiveMutation == 1) {
         }
     }
 }");
-            var ifStatement = syntaxTree
-                .GetRoot()
-                .DescendantNodes()
-                .First(x => x is IfStatementSyntax);
-            var annotatedSyntaxTree = syntaxTree.GetRoot()
-                .ReplaceNode(
-                    ifStatement,
-                    ifStatement.WithAdditionalAnnotations(GetMutationIdMarker(1), _ifEngineMarker)
-                ).SyntaxTree;
+        var ifStatement = syntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .First(x => x is IfStatementSyntax);
+        var annotatedSyntaxTree = syntaxTree.GetRoot()
+            .ReplaceNode(
+                ifStatement,
+                ifStatement.WithAdditionalAnnotations(GetMutationIdMarker(1), _ifEngineMarker)
+            ).SyntaxTree;
 
-            var compiler = CSharpCompilation.Create("TestCompilation",
-                syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
-                references: new List<PortableExecutableReference>() {
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
-                });
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: new List<PortableExecutableReference>() {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+            });
 
-            var target = new CSharpRollbackProcess();
+        var target = new CSharpRollbackProcess();
 
-            using (var ms = new MemoryStream())
-            {
-                var compileResult = compiler.Emit(ms);
-
-                var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
-
-                var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
-
-                rollbackedResult.Success.ShouldBeTrue();
-            }
-        }
-
-        [TestMethod]
-        public void ShouldRollbackIssueInExpression()
+        using (var ms = new MemoryStream())
         {
-            var syntaxTree = CSharpSyntaxTree.ParseText(@"
+            var compileResult = compiler.Emit(ms);
+
+            var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+
+            var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+
+            rollbackedResult.Success.ShouldBeTrue();
+        }
+    }
+
+    [TestMethod]
+    public void ShouldRollbackIssueInExpression()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(@"
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -105,65 +105,65 @@ namespace ExampleProject
         }
     }
 }");
-            var options = new StrykerOptions
-            {
-                MutationLevel = MutationLevel.Complete,
-                DevMode = true
-            };
-            var codeInjection = new CodeInjection();
-            var placer = new MutantPlacer(codeInjection);
-            var mutator = new CsharpMutantOrchestrator(placer, options: options);
-            var helpers = new List<SyntaxTree>();
-            foreach (var (name, code) in codeInjection.MutantHelpers)
-            {
-                helpers.Add(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32));
-            }
-
-            var mutant = mutator.Mutate(syntaxTree, null);
-            helpers.Add(mutant);
-
-            var references = new List<string> {
-                typeof(object).Assembly.Location,
-                typeof(List<string>).Assembly.Location,
-                typeof(Enumerable).Assembly.Location,
-                typeof(PipeStream).Assembly.Location,
-            };
-            Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(Assembly.Load(a).Location));
-
-            var input = new MutationTestInput()
-            {
-                SourceProjectInfo = new SourceProjectInfo
-                {
-                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                        properties: new Dictionary<string, string>()
-                        {
-                            { "TargetDir", "" },
-                            { "AssemblyName", "AssemblyName"},
-                            { "TargetFileName", "TargetFileName.dll"},
-                            { "SignAssembly", "true" },
-                            { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
-                        },
-                        projectFilePath: "TestResources",
-                        // add a reference to system so the example code can compile
-                        references: references.ToArray()
-                    ).Object
-                }
-            };
-
-            var rollbackProcess = new CSharpRollbackProcess();
-
-            var target = new CsharpCompilingProcess(input, rollbackProcess, options);
-
-            using var ms = new MemoryStream();
-            var result = target.Compile(helpers, ms, null);
-            result.RollbackedIds.Count().ShouldBe(2); // should actually be 1 but thanks to issue #1745 rollback doesn't work
+        var options = new StrykerOptions
+        {
+            MutationLevel = MutationLevel.Complete,
+            DevMode = true
+        };
+        var codeInjection = new CodeInjection();
+        var placer = new MutantPlacer(codeInjection);
+        var mutator = new CsharpMutantOrchestrator(placer, options: options);
+        var helpers = new List<SyntaxTree>();
+        foreach (var (name, code) in codeInjection.MutantHelpers)
+        {
+            helpers.Add(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32));
         }
 
+        var mutant = mutator.Mutate(syntaxTree, null);
+        helpers.Add(mutant);
 
-        [TestMethod]
-        public void ShouldRollbackAllMutationsInsideAExpressionBodyMethod()
+        var references = new List<string> {
+            typeof(object).Assembly.Location,
+            typeof(List<string>).Assembly.Location,
+            typeof(Enumerable).Assembly.Location,
+            typeof(PipeStream).Assembly.Location,
+        };
+        Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(Assembly.Load(a).Location));
+
+        var input = new MutationTestInput()
         {
-            var syntaxTree = CSharpSyntaxTree.ParseText(@"
+            SourceProjectInfo = new SourceProjectInfo
+            {
+                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>()
+                    {
+                        { "TargetDir", "" },
+                        { "AssemblyName", "AssemblyName"},
+                        { "TargetFileName", "TargetFileName.dll"},
+                        { "SignAssembly", "true" },
+                        { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
+                    },
+                    projectFilePath: "TestResources",
+                    // add a reference to system so the example code can compile
+                    references: references.ToArray()
+                ).Object
+            }
+        };
+
+        var rollbackProcess = new CSharpRollbackProcess();
+
+        var target = new CsharpCompilingProcess(input, rollbackProcess, options);
+
+        using var ms = new MemoryStream();
+        var result = target.Compile(helpers, ms, null);
+        result.RollbackedIds.Count().ShouldBe(2); // should actually be 1 but thanks to issue #1745 rollback doesn't work
+    }
+
+
+    [TestMethod]
+    public void ShouldRollbackAllMutationsInsideAExpressionBodyMethod()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(@"
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -189,66 +189,66 @@ namespace ExampleProject
         }
     }
 }");
-            var options = new StrykerOptions
-            {
-                MutationLevel = MutationLevel.Complete,
-                DevMode = true
-            };
-            var codeInjection = new CodeInjection();
-            var placer = new MutantPlacer(codeInjection);
-            var mutator = new CsharpMutantOrchestrator(placer, options: options);
-            var helpers = new List<SyntaxTree>();
-            foreach (var (name, code) in codeInjection.MutantHelpers)
-            {
-                helpers.Add(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32));
-            }
-
-            var mutant = mutator.Mutate(syntaxTree, null);
-
-            helpers.Add(mutant);
-
-            var references = new List<string> {
-                typeof(object).Assembly.Location,
-                typeof(List<string>).Assembly.Location,
-                typeof(Enumerable).Assembly.Location,
-                typeof(PipeStream).Assembly.Location,
-            };
-            Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(Assembly.Load(a).Location));
-
-            var input = new MutationTestInput()
-            {
-                SourceProjectInfo = new SourceProjectInfo
-                {
-                    AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
-                        properties: new Dictionary<string, string>()
-                        {
-                            { "TargetDir", "" },
-                            { "AssemblyName", "AssemblyName"},
-                            { "TargetFileName", "TargetFileName.dll"},
-                            { "SignAssembly", "true" },
-                            { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
-                        },
-                        projectFilePath: "TestResources",
-                        // add a reference to system so the example code can compile
-                        references: references.ToArray()
-                    ).Object
-                }
-            };
-
-            var rollbackProcess = new CSharpRollbackProcess();
-
-            var target = new CsharpCompilingProcess(input, rollbackProcess, options);
-
-            using var ms = new MemoryStream();
-
-            Action test = () => target.Compile(helpers, ms, null);
-            test.ShouldThrow<CompilationException>();
+        var options = new StrykerOptions
+        {
+            MutationLevel = MutationLevel.Complete,
+            DevMode = true
+        };
+        var codeInjection = new CodeInjection();
+        var placer = new MutantPlacer(codeInjection);
+        var mutator = new CsharpMutantOrchestrator(placer, options: options);
+        var helpers = new List<SyntaxTree>();
+        foreach (var (name, code) in codeInjection.MutantHelpers)
+        {
+            helpers.Add(CSharpSyntaxTree.ParseText(code, path: name, encoding: Encoding.UTF32));
         }
 
-        [TestMethod]
-        public void RollbackProcess_ShouldRollbackAllCompileErrors()
+        var mutant = mutator.Mutate(syntaxTree, null);
+
+        helpers.Add(mutant);
+
+        var references = new List<string> {
+            typeof(object).Assembly.Location,
+            typeof(List<string>).Assembly.Location,
+            typeof(Enumerable).Assembly.Location,
+            typeof(PipeStream).Assembly.Location,
+        };
+        Assembly.GetEntryAssembly().GetReferencedAssemblies().ToList().ForEach(a => references.Add(Assembly.Load(a).Location));
+
+        var input = new MutationTestInput()
         {
-            var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
+            SourceProjectInfo = new SourceProjectInfo
+            {
+                AnalyzerResult = TestHelper.SetupProjectAnalyzerResult(
+                    properties: new Dictionary<string, string>()
+                    {
+                        { "TargetDir", "" },
+                        { "AssemblyName", "AssemblyName"},
+                        { "TargetFileName", "TargetFileName.dll"},
+                        { "SignAssembly", "true" },
+                        { "AssemblyOriginatorKeyFile", Path.GetFullPath(Path.Combine("TestResources", "StrongNameKeyFile.snk")) }
+                    },
+                    projectFilePath: "TestResources",
+                    // add a reference to system so the example code can compile
+                    references: references.ToArray()
+                ).Object
+            }
+        };
+
+        var rollbackProcess = new CSharpRollbackProcess();
+
+        var target = new CsharpCompilingProcess(input, rollbackProcess, options);
+
+        using var ms = new MemoryStream();
+
+        Action test = () => target.Compile(helpers, ms, null);
+        test.ShouldThrow<CompilationException>();
+    }
+
+    [TestMethod]
+    public void RollbackProcess_ShouldRollbackAllCompileErrors()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
 
 namespace ExampleProject
 {
@@ -282,47 +282,47 @@ namespace ExampleProject
         }
     }
 }");
-            var root = syntaxTree.GetRoot();
+        var root = syntaxTree.GetRoot();
 
-            var mutantIf = root.DescendantNodes().OfType<IfStatementSyntax>().First();
-            root = root.ReplaceNode(
-                mutantIf,
-                mutantIf.WithAdditionalAnnotations(GetMutationIdMarker(6), _ifEngineMarker)
-            );
-            var y = root.DescendantNodes().OfType<ParenthesizedExpressionSyntax>();
-            var mutantCondition = root.DescendantNodes().OfType<ParenthesizedExpressionSyntax>().First(x => x.Expression is ConditionalExpressionSyntax);
-            root = root.ReplaceNode(
-                mutantCondition,
-                mutantCondition.WithAdditionalAnnotations(GetMutationIdMarker(7), _conditionalEngineMarker)
-            );
+        var mutantIf = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+        root = root.ReplaceNode(
+            mutantIf,
+            mutantIf.WithAdditionalAnnotations(GetMutationIdMarker(6), _ifEngineMarker)
+        );
+        var y = root.DescendantNodes().OfType<ParenthesizedExpressionSyntax>();
+        var mutantCondition = root.DescendantNodes().OfType<ParenthesizedExpressionSyntax>().First(x => x.Expression is ConditionalExpressionSyntax);
+        root = root.ReplaceNode(
+            mutantCondition,
+            mutantCondition.WithAdditionalAnnotations(GetMutationIdMarker(7), _conditionalEngineMarker)
+        );
 
-            var annotatedSyntaxTree = root.SyntaxTree;
+        var annotatedSyntaxTree = root.SyntaxTree;
 
-            var compiler = CSharpCompilation.Create("TestCompilation",
-                syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
-                references: new List<PortableExecutableReference>() {
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
-                });
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: new List<PortableExecutableReference>() {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+            });
 
-            var target = new CSharpRollbackProcess();
+        var target = new CSharpRollbackProcess();
 
-            using var ms = new MemoryStream();
-            var compileResult = compiler.Emit(ms);
+        using var ms = new MemoryStream();
+        var compileResult = compiler.Emit(ms);
 
-            var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
 
-            var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+        var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
-            rollbackedResult.Success.ShouldBeTrue();
-            fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 6, 7 });
-        }
+        rollbackedResult.Success.ShouldBeTrue();
+        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 6, 7 });
+    }
 
-        [TestMethod]
-        public void RollbackProcess_ShouldRollbackErrorsAndKeepTheRest()
-        {
-            var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
+    [TestMethod]
+    public void RollbackProcess_ShouldRollbackErrorsAndKeepTheRest()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
 
 namespace ExampleProject
 {
@@ -376,47 +376,47 @@ namespace ExampleProject
         }
     }
 }");
-            var root = syntaxTree.GetRoot();
+        var root = syntaxTree.GetRoot();
 
-            var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
-            root = root.ReplaceNode(
-                mutantIf1,
-                mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(8), _ifEngineMarker)
-            );
-            var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
-            root = root.ReplaceNode(
-                mutantIf2,
-                mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(7), _ifEngineMarker)
-            );
+        var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+        root = root.ReplaceNode(
+            mutantIf1,
+            mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(8), _ifEngineMarker)
+        );
+        var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
+        root = root.ReplaceNode(
+            mutantIf2,
+            mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(7), _ifEngineMarker)
+        );
 
-            var annotatedSyntaxTree = root.SyntaxTree;
+        var annotatedSyntaxTree = root.SyntaxTree;
 
-            var compiler = CSharpCompilation.Create("TestCompilation",
-                syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
-                references: new List<PortableExecutableReference>() {
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
-                });
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: new List<PortableExecutableReference>() {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+            });
 
-            var target = new CSharpRollbackProcess();
+        var target = new CSharpRollbackProcess();
 
-            using var ms = new MemoryStream();
-            var compileResult = compiler.Emit(ms);
+        using var ms = new MemoryStream();
+        var compileResult = compiler.Emit(ms);
 
-            var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
 
-            var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+        var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
-            rollbackedResult.Success.ShouldBeTrue();
-            // validate that only mutation 8 and 7 were rollbacked
-            fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7 });
-        }
+        rollbackedResult.Success.ShouldBeTrue();
+        // validate that only mutation 8 and 7 were rollbacked
+        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7 });
+    }
 
-        [TestMethod]
-        public void RollbackProcess_ShouldRollbackBlockMutationWhenLocalRollbackFails()
-        {
-            var syntaxTree = CSharpSyntaxTree.ParseText(@"
+    [TestMethod]
+    public void RollbackProcess_ShouldRollbackBlockMutationWhenLocalRollbackFails()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(@"
 namespace ExampleProject
 {
     public class StringMagic
@@ -438,49 +438,49 @@ namespace ExampleProject
         }
     }
 }");
-            var root = syntaxTree.GetRoot();
+        var root = syntaxTree.GetRoot();
 
-            var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
-            root = root.ReplaceNode(
-                mutantIf1,
-                mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(1), GetMutationTypeMarker(Mutator.Block), _ifEngineMarker)
-            );
-            var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
-            root = root.ReplaceNode(
-                mutantIf2,
-                mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(2), GetMutationTypeMarker(Mutator.String), _ifEngineMarker)
-            );
-            var annotatedSyntaxTree = root.SyntaxTree;
+        var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+        root = root.ReplaceNode(
+            mutantIf1,
+            mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(1), GetMutationTypeMarker(Mutator.Block), _ifEngineMarker)
+        );
+        var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
+        root = root.ReplaceNode(
+            mutantIf2,
+            mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(2), GetMutationTypeMarker(Mutator.String), _ifEngineMarker)
+        );
+        var annotatedSyntaxTree = root.SyntaxTree;
 
-            var compiler = CSharpCompilation.Create("TestCompilation",
-                syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
-                references: new List<PortableExecutableReference>() {
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
-                });
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: new List<PortableExecutableReference>() {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+            });
 
-            var target = new CSharpRollbackProcess();
+        var target = new CSharpRollbackProcess();
 
-            using var ms = new MemoryStream();
-            var compileResult = compiler.Emit(ms);
+        using var ms = new MemoryStream();
+        var compileResult = compiler.Emit(ms);
 
-            compileResult.Success.ShouldBeFalse();
-            compileResult.Diagnostics.ShouldHaveSingleItem();
+        compileResult.Success.ShouldBeFalse();
+        compileResult.Diagnostics.ShouldHaveSingleItem();
 
-            var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
 
-            var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+        var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
-            rollbackedResult.Success.ShouldBeTrue();
-            // validate that only the block mutation was rollbacked
-            fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 1 });
-        }
+        rollbackedResult.Success.ShouldBeTrue();
+        // validate that only the block mutation was rollbacked
+        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 1 });
+    }
 
-        [TestMethod]
-        public void RollbackProcess_ShouldRollbackMethodWhenLocalRollbackFailsAndNoBlockMutationsFound()
-        {
-            var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
+    [TestMethod]
+    public void RollbackProcess_ShouldRollbackMethodWhenLocalRollbackFailsAndNoBlockMutationsFound()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
 
 namespace ExampleProject
 {
@@ -532,56 +532,56 @@ namespace ExampleProject
         }
     }
 }");
-            var root = syntaxTree.GetRoot();
+        var root = syntaxTree.GetRoot();
 
-            var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
-            root = root.ReplaceNode(
-                mutantIf1,
-                mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(8), _ifEngineMarker)
-            );
-            var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
-            root = root.ReplaceNode(
-                mutantIf2,
-                mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(7), _ifEngineMarker)
-            );
-            var mutantIf3 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[2];
-            root = root.ReplaceNode(
-                mutantIf3,
-                mutantIf3.WithAdditionalAnnotations(GetMutationIdMarker(6), _ifEngineMarker)
-            );
-            var annotatedSyntaxTree = root.SyntaxTree;
+        var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+        root = root.ReplaceNode(
+            mutantIf1,
+            mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(8), _ifEngineMarker)
+        );
+        var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
+        root = root.ReplaceNode(
+            mutantIf2,
+            mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(7), _ifEngineMarker)
+        );
+        var mutantIf3 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[2];
+        root = root.ReplaceNode(
+            mutantIf3,
+            mutantIf3.WithAdditionalAnnotations(GetMutationIdMarker(6), _ifEngineMarker)
+        );
+        var annotatedSyntaxTree = root.SyntaxTree;
 
-            var compiler = CSharpCompilation.Create("TestCompilation",
-                syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
-                references: new List<PortableExecutableReference>() {
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
-                });
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: new List<PortableExecutableReference>() {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+            });
 
-            var target = new CSharpRollbackProcess();
+        var target = new CSharpRollbackProcess();
 
-            using var ms = new MemoryStream();
-            var compileResult = compiler.Emit(ms);
+        using var ms = new MemoryStream();
+        var compileResult = compiler.Emit(ms);
 
-            var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
 
-            var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+        var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
-            rollbackedResult.Success.ShouldBeFalse();
-            rollbackedResult.Diagnostics.ShouldHaveSingleItem();
+        rollbackedResult.Success.ShouldBeFalse();
+        rollbackedResult.Diagnostics.ShouldHaveSingleItem();
 
-            fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
-            rollbackedResult = fixedCompilation.Compilation.Emit(ms);
-            rollbackedResult.Success.ShouldBeTrue();
-            // validate that all mutations are rolled back
-            fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
-        }
+        fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
+        rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+        rollbackedResult.Success.ShouldBeTrue();
+        // validate that all mutations are rolled back
+        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
+    }
 
-        [TestMethod]
-        public void RollbackProcess_ShouldRollbacConstructorWhenLocalRollbackFailsAndNoBlockMutationsFound()
-        {
-            var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
+    [TestMethod]
+    public void RollbackProcess_ShouldRollbacConstructorWhenLocalRollbackFailsAndNoBlockMutationsFound()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
 
 namespace ExampleProject
 {
@@ -632,56 +632,56 @@ namespace ExampleProject
         }
     }
 }");
-            var root = syntaxTree.GetRoot();
-            // we manually inject mutation markers
-            var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
-            root = root.ReplaceNode(
-                mutantIf1,
-                mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(8), _ifEngineMarker)
-            );
-            var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
-            root = root.ReplaceNode(
-                mutantIf2,
-                mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(7), _ifEngineMarker)
-            );
-            var mutantIf3 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[2];
-            root = root.ReplaceNode(
-                mutantIf3,
-                mutantIf3.WithAdditionalAnnotations(GetMutationIdMarker(6), _ifEngineMarker)
-            );
-            var annotatedSyntaxTree = root.SyntaxTree;
+        var root = syntaxTree.GetRoot();
+        // we manually inject mutation markers
+        var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+        root = root.ReplaceNode(
+            mutantIf1,
+            mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(8), _ifEngineMarker)
+        );
+        var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
+        root = root.ReplaceNode(
+            mutantIf2,
+            mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(7), _ifEngineMarker)
+        );
+        var mutantIf3 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[2];
+        root = root.ReplaceNode(
+            mutantIf3,
+            mutantIf3.WithAdditionalAnnotations(GetMutationIdMarker(6), _ifEngineMarker)
+        );
+        var annotatedSyntaxTree = root.SyntaxTree;
 
-            var compiler = CSharpCompilation.Create("TestCompilation",
-                syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
-                references: new List<PortableExecutableReference>() {
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
-                });
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: new List<PortableExecutableReference>() {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+            });
 
-            var target = new CSharpRollbackProcess();
+        var target = new CSharpRollbackProcess();
 
-            using var ms = new MemoryStream();
-            var compileResult = compiler.Emit(ms);
+        using var ms = new MemoryStream();
+        var compileResult = compiler.Emit(ms);
 
-            var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
 
-            var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+        var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
-            rollbackedResult.Success.ShouldBeFalse();
-            rollbackedResult.Diagnostics.ShouldHaveSingleItem();
+        rollbackedResult.Success.ShouldBeFalse();
+        rollbackedResult.Diagnostics.ShouldHaveSingleItem();
 
-            fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
-            rollbackedResult = fixedCompilation.Compilation.Emit(ms);
-            rollbackedResult.Success.ShouldBeTrue();
-            // validate that all mutations are rolled back
-            fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
-        }
+        fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
+        rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+        rollbackedResult.Success.ShouldBeTrue();
+        // validate that all mutations are rolled back
+        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
+    }
 
-        [TestMethod]
-        public void RollbackProcess_ShouldRollbackAccessorWhenLocalRollbackFails()
-        {
-            var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
+    [TestMethod]
+    public void RollbackProcess_ShouldRollbackAccessorWhenLocalRollbackFails()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(@"using System;
 
 namespace ExampleProject
 {
@@ -740,57 +740,57 @@ namespace ExampleProject
         }
     }
 }");
-            var root = syntaxTree.GetRoot();
+        var root = syntaxTree.GetRoot();
 
-            var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
-            root = root.ReplaceNode(
-                mutantIf1,
-                mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(8), _ifEngineMarker)
-            );
-            var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
-            root = root.ReplaceNode(
-                mutantIf2,
-                mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(7), _ifEngineMarker)
-            );
-            var mutantIf3 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[2];
-            root = root.ReplaceNode(
-                mutantIf3,
-                mutantIf3.WithAdditionalAnnotations(GetMutationIdMarker(6), _ifEngineMarker)
-            );
-            var annotatedSyntaxTree = root.SyntaxTree;
+        var mutantIf1 = root.DescendantNodes().OfType<IfStatementSyntax>().First();
+        root = root.ReplaceNode(
+            mutantIf1,
+            mutantIf1.WithAdditionalAnnotations(GetMutationIdMarker(8), _ifEngineMarker)
+        );
+        var mutantIf2 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[1];
+        root = root.ReplaceNode(
+            mutantIf2,
+            mutantIf2.WithAdditionalAnnotations(GetMutationIdMarker(7), _ifEngineMarker)
+        );
+        var mutantIf3 = root.DescendantNodes().OfType<IfStatementSyntax>().ToList()[2];
+        root = root.ReplaceNode(
+            mutantIf3,
+            mutantIf3.WithAdditionalAnnotations(GetMutationIdMarker(6), _ifEngineMarker)
+        );
+        var annotatedSyntaxTree = root.SyntaxTree;
 
-            var compiler = CSharpCompilation.Create("TestCompilation",
-                syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
-                references: new List<PortableExecutableReference>() {
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
-                });
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: new List<PortableExecutableReference>() {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location)
+            });
 
-            var target = new CSharpRollbackProcess();
+        var target = new CSharpRollbackProcess();
 
-            using var ms = new MemoryStream();
-            var compileResult = compiler.Emit(ms);
+        using var ms = new MemoryStream();
+        var compileResult = compiler.Emit(ms);
 
-            var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
+        var fixedCompilation = target.Start(compiler, compileResult.Diagnostics, false, false);
 
-            var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+        var rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
-            rollbackedResult.Success.ShouldBeFalse();
-            rollbackedResult.Diagnostics.ShouldHaveSingleItem();
+        rollbackedResult.Success.ShouldBeFalse();
+        rollbackedResult.Diagnostics.ShouldHaveSingleItem();
 
-            fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
-            rollbackedResult = fixedCompilation.Compilation.Emit(ms);
+        fixedCompilation = target.Start(fixedCompilation.Compilation, rollbackedResult.Diagnostics, false, false);
+        rollbackedResult = fixedCompilation.Compilation.Emit(ms);
 
-            rollbackedResult.Success.ShouldBeTrue();
-            // validate that only mutation 8 and 7 were rolled back
-            fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
-        }
+        rollbackedResult.Success.ShouldBeTrue();
+        // validate that only mutation 8 and 7 were rolled back
+        fixedCompilation.RollbackedIds.ShouldBe(new Collection<int> { 8, 7, 6 });
+    }
 
-        [TestMethod]
-        public void RollbackProcess_ShouldRollbackError_RollbackedCompilationShouldCompileWhenUriIsEmpty()
-        {
-            var syntaxTree = CSharpSyntaxTree.ParseText(@"
+    [TestMethod]
+    public void RollbackProcess_ShouldRollbackError_RollbackedCompilationShouldCompileWhenUriIsEmpty()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(@"
 using System;
 
 namespace ExampleProject
@@ -814,40 +814,40 @@ namespace ExampleProject
         }
     }
 }");
-            var ifStatement = syntaxTree
-                .GetRoot()
-                .DescendantNodes()
-                .First(x => x is IfStatementSyntax);
-            var annotatedSyntaxTree = syntaxTree.GetRoot()
-                .ReplaceNode(
-                    ifStatement,
-                    ifStatement.WithAdditionalAnnotations(GetMutationIdMarker(1), _ifEngineMarker)
-                ).SyntaxTree;
+        var ifStatement = syntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .First(x => x is IfStatementSyntax);
+        var annotatedSyntaxTree = syntaxTree.GetRoot()
+            .ReplaceNode(
+                ifStatement,
+                ifStatement.WithAdditionalAnnotations(GetMutationIdMarker(1), _ifEngineMarker)
+            ).SyntaxTree;
 
-            var compiler = CSharpCompilation.Create("TestCompilation",
-                syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
-                references: new List<PortableExecutableReference>() {
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),
-                });
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: new List<PortableExecutableReference>() {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),
+            });
 
-            var target = new CSharpRollbackProcess();
+        var target = new CSharpRollbackProcess();
 
-            using var ms = new MemoryStream();
-            var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, false, false);
-            fixedCompilation.Compilation.Emit(ms).Success.ShouldBeTrue();
+        using var ms = new MemoryStream();
+        var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, false, false);
+        fixedCompilation.Compilation.Emit(ms).Success.ShouldBeTrue();
 
-            // validate that only one of the compile errors marked the mutation as rolled back.
-            fixedCompilation.RollbackedIds.ShouldBe([1]);
-        }
+        // validate that only one of the compile errors marked the mutation as rolled back.
+        fixedCompilation.RollbackedIds.ShouldBe([1]);
+    }
 
-        [TestMethod]
-        public void RollbackProcess_ShouldOnlyRaiseExceptionOnFinalAttempt()
-        {
+    [TestMethod]
+    public void RollbackProcess_ShouldOnlyRaiseExceptionOnFinalAttempt()
+    {
 
-            var syntaxTree = CSharpSyntaxTree.ParseText(@"
+        var syntaxTree = CSharpSyntaxTree.ParseText(@"
 using System;
 
 namespace ExampleProject
@@ -872,33 +872,32 @@ namespace ExampleProject
         }
     }
 }");
-            var ifStatement = syntaxTree
-                .GetRoot()
-                .DescendantNodes()
-                .First(x => x is IfStatementSyntax);
-            var annotatedSyntaxTree = syntaxTree.GetRoot()
-                .ReplaceNode(
-                    ifStatement,
-                    ifStatement.WithAdditionalAnnotations(GetMutationIdMarker(1), _ifEngineMarker)
-                ).SyntaxTree;
+        var ifStatement = syntaxTree
+            .GetRoot()
+            .DescendantNodes()
+            .First(x => x is IfStatementSyntax);
+        var annotatedSyntaxTree = syntaxTree.GetRoot()
+            .ReplaceNode(
+                ifStatement,
+                ifStatement.WithAdditionalAnnotations(GetMutationIdMarker(1), _ifEngineMarker)
+            ).SyntaxTree;
 
-            var compiler = CSharpCompilation.Create("TestCompilation",
-                syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
-                options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
-                references: new List<PortableExecutableReference>() {
-                    MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location),
-                    MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),
-                });
+        var compiler = CSharpCompilation.Create("TestCompilation",
+            syntaxTrees: new Collection<SyntaxTree>() { annotatedSyntaxTree },
+            options: new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary),
+            references: new List<PortableExecutableReference>() {
+                MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Environment).Assembly.Location),
+                MetadataReference.CreateFromFile(typeof(Uri).Assembly.Location),
+            });
 
-            var target = new CSharpRollbackProcess();
+        var target = new CSharpRollbackProcess();
 
-            using var ms = new MemoryStream();
-            // first compilation will roll back the mutation
-            var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, false, false);
+        using var ms = new MemoryStream();
+        // first compilation will roll back the mutation
+        var fixedCompilation = target.Start(compiler, compiler.Emit(ms).Diagnostics, false, false);
 
-            // next attempt cannot roll back anything, so it assumes this is not fixable
-            Should.Throw<CompilationException>(() => target.Start(fixedCompilation.Compilation, fixedCompilation.Compilation.Emit(ms).Diagnostics, true, false));
-        }
+        // next attempt cannot roll back anything, so it assumes this is not fixable
+        Should.Throw<CompilationException>(() => target.Start(fixedCompilation.Compilation, fixedCompilation.Compilation.Emit(ms).Diagnostics, true, false));
     }
 }

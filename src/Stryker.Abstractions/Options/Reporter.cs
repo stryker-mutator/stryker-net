@@ -1,17 +1,16 @@
-namespace Stryker.Abstractions.Options
+namespace Stryker.Abstractions.Options;
+
+public enum Reporter
 {
-    public enum Reporter
-    {
-        All,
-        Progress,
-        Dots,
-        ClearText,
-        ClearTextTree,
-        Json,
-        Html,
-        Dashboard,
-        RealTimeDashboard,
-        Markdown,
-        Baseline
-    }
+    All,
+    Progress,
+    Dots,
+    ClearText,
+    ClearTextTree,
+    Json,
+    Html,
+    Dashboard,
+    RealTimeDashboard,
+    Markdown,
+    Baseline
 }

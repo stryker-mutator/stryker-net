@@ -1,5 +1,6 @@
 namespace Stryker
 {
+
     public static class MutantControl
     {
         private static System.Collections.Generic.List<int> _coveredMutants = new System.Collections.Generic.List<int>();
@@ -25,7 +26,7 @@ namespace Stryker
 
         public static System.Collections.Generic.IList<int>[] GetCoverageData()
         {
-            System.Collections.Generic.IList<int>[] result = new System.Collections.Generic.IList<int>[]{_coveredMutants, _coveredStaticMutants};
+            System.Collections.Generic.IList<int>[] result = new System.Collections.Generic.IList<int>[] { _coveredMutants, _coveredStaticMutants };
             ResetCoverage();
             return result;
         }
@@ -46,7 +47,7 @@ namespace Stryker
             }
             if (ActiveMutant == ActiveMutantNotInitValue)
             {
-                #pragma warning disable CS8600
+#pragma warning disable CS8600
                 string environmentVariable = System.Environment.GetEnvironmentVariable("ActiveMutation");
                 if (string.IsNullOrEmpty(environmentVariable))
                 {
@@ -57,7 +58,7 @@ namespace Stryker
                     ActiveMutant = int.Parse(environmentVariable);
                 }
             }
-            
+
             return id == ActiveMutant;
         }
 

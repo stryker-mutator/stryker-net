@@ -1,7 +1,6 @@
-namespace Stryker.Core.Mutants.FsharpOrchestrators
+namespace Stryker.Core.Mutants.FsharpOrchestrators;
+
+public interface IFsharpTypeHandler<T>
 {
-    public interface IFsharpTypeHandler<T>
-    {
-        public T Mutate(T input, FsharpMutantOrchestrator iterator);
-    }
+    public T Mutate(T input, FsharpMutantOrchestrator iterator);
 }

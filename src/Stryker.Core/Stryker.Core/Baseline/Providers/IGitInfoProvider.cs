@@ -1,15 +1,14 @@
 using LibGit2Sharp;
 
-namespace Stryker.Core.Baseline.Providers
+namespace Stryker.Core.Baseline.Providers;
+
+public interface IGitInfoProvider
 {
-    public interface IGitInfoProvider
-    {
-        IRepository Repository { get; }
+    IRepository Repository { get; }
 
-        string RepositoryPath { get; }
+    string RepositoryPath { get; }
 
-        string GetCurrentBranchName();
+    string GetCurrentBranchName();
 
-        Commit DetermineCommit();
-    }
+    Commit DetermineCommit();
 }
