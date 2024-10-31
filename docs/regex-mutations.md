@@ -5,6 +5,7 @@ custom_edit_url: https://github.com/stryker-mutator/stryker-net/edit/master/docs
 ---
 
 Stryker supports a variety of regular expression mutators, which are listed below. Do you have a suggestion for a (new) mutator? Feel free to create an [issue](https://github.com/stryker-mutator/stryker-net/issues)!
+Regex mutations are applied to arguments that are annotated with `[StringSyntax(StringSyntaxAttribute.Regex)]` on NET7+, and just the Regex constructor on other frameworks.
 
 ## Common tokens
 | Original | Mutated |
