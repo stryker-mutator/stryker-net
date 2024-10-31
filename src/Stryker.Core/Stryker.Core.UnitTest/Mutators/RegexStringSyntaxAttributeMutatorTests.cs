@@ -127,4 +127,72 @@ public class RegexStringSyntaxAttributeMutatorTests : TestBase
 
         return ShouldMutateCompiledSourceToExpectedAsync(source, expected);
     }
+
+    [TestMethod]
+    public Task ShouldNotMutateCustomNonRegexMethods()
+    {
+        var source = """
+                     using System.Diagnostics.CodeAnalysis;
+                     public class C {
+                         public void M() {
+                             Call("^abc");
+                         }
+
+                         public static void Call(string s) {
+
+                         }
+                     }
+                     """;
+
+        var expected =
+            """
+            using System.Diagnostics.CodeAnalysis;
+            public class C {
+                public void M() {
+                    if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+                        if(StrykerNamespace.MutantControl.IsActive(1)){;}else{
+                            Call((StrykerNamespace.MutantControl.IsActive(2)?"":"^abc"));
+                        }
+                    }
+                }
+                public static void Call(string s) {}
+            }
+            """;
+
+        return ShouldMutateCompiledSourceToExpectedAsync(source, expected);
+    }
+
+    [TestMethod]
+    public Task ShouldNotMutateUnrelatedMethods()
+    {
+        var source = """
+                     using System.Diagnostics.CodeAnalysis;
+                     public class C {
+                         public void M() {
+                             Call(false);
+                         }
+
+                         public static void Call(bool s) {
+
+                         }
+                     }
+                     """;
+
+        var expected =
+            """
+            using System.Diagnostics.CodeAnalysis;
+            public class C {
+                public void M() {
+                    if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+                        if(StrykerNamespace.MutantControl.IsActive(1)){;}else{
+                            Call((StrykerNamespace.MutantControl.IsActive(2)?true:false));
+                        }
+                    }
+                }
+                public static void Call(bool s) {}
+            }
+            """;
+
+        return ShouldMutateCompiledSourceToExpectedAsync(source, expected);
+    }
 }
