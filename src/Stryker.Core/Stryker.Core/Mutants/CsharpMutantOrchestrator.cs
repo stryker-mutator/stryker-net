@@ -88,6 +88,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new BlockOrchestrator(),
         new StatementSpecificOrchestrator<StatementSyntax>(),
         new ExpressionSpecificOrchestrator<ExpressionSyntax>(),
+        new ArgumentSpecificOrchestrator(),
         new SyntaxNodeOrchestrator()
     ];
 
@@ -111,6 +112,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new ArrayCreationMutator(),
         new StatementMutator(),
         new RegexMutator(),
+        new RegexStringSyntaxAttributeMutator(),
         new NullCoalescingExpressionMutator(),
         new MathMutator(),
         new SwitchExpressionMutator(),
