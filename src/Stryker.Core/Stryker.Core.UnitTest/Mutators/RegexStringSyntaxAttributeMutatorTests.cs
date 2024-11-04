@@ -25,7 +25,7 @@ public class RegexStringSyntaxAttributeMutatorTests : TestBase
                                                {
                                                    MutationLevel = MutationLevel.Complete,
                                                    OptimizationMode = OptimizationModes.CoverageBasedTest,
-                                                   ExcludedMutations = [Mutator.Block],
+                                                   ExcludedMutations = [Mutator.Block, Mutator.Statement],
                                                    LogOptions = new LogOptions { LogLevel = LogEventLevel.Verbose }
                                                });
 
@@ -58,6 +58,7 @@ public class RegexStringSyntaxAttributeMutatorTests : TestBase
     public Task ShouldMutateRegexStaticMethods()
     {
         var source = """
+                     // Stryker disable block,statement
                      using System.Text.RegularExpressions;
                      namespace StrykerNet.UnitTest.Mutants.TestResources;
                      class RegexClass {
@@ -68,20 +69,13 @@ public class RegexStringSyntaxAttributeMutatorTests : TestBase
                      """;
 
         var expected = """
+                       // Stryker disable block,statement
                        using System.Text.RegularExpressions;
                        namespace StrykerNet.UnitTest.Mutants.TestResources;
                        class RegexClass {
-                         bool A(string input) {
-                           if (StrykerNamespace.MutantControl.IsActive(0)) {
-                           } else {
-                             return Regex.IsMatch(
-                                 input,
-                                 (StrykerNamespace.MutantControl.IsActive(1)
-                                      ? "abc"
-                                      : (StrykerNamespace.MutantControl.IsActive(2) ? "" : @"^abc")));
+                           bool A(string input) {
+                               return Regex.IsMatch(input, (StrykerNamespace.MutantControl.IsActive(1)?"abc":@"^abc"));
                            }
-                           return default(bool);
-                         }
                        }
                        """;
         return ShouldMutateCompiledSourceToExpectedAsync(source, expected);
@@ -91,6 +85,7 @@ public class RegexStringSyntaxAttributeMutatorTests : TestBase
     public Task ShouldMutateCustomRegexMethods()
     {
         var source = """
+                     // Stryker disable block,statement
                      using System.Diagnostics.CodeAnalysis;
                      public class C {
                          public void M() {
@@ -105,23 +100,15 @@ public class RegexStringSyntaxAttributeMutatorTests : TestBase
 
         var expected =
             """
+            // Stryker disable block,statement
             using System.Diagnostics.CodeAnalysis;
             public class C {
-              public void M() {
-                if (StrykerNamespace.MutantControl.IsActive(0)) {
-                } else {
-                  if (StrykerNamespace.MutantControl.IsActive(1)) {
-                    ;
-                  } else {
-                    Call(
-                        (StrykerNamespace.MutantControl.IsActive(2)
-                             ? "abc"
-                             : (StrykerNamespace.MutantControl.IsActive(3) ? "" : "^abc")));
-                  }
+                public void M() {
+                    Call((StrykerNamespace.MutantControl.IsActive(2)?"abc":"^abc"));
                 }
-              }
-              public static void Call(
-                  [StringSyntax(StringSyntaxAttribute.Regex)] string s) {}
+                public static void Call([StringSyntax(StringSyntaxAttribute.Regex)]string s) {
+            
+                }
             }
             """;
 
@@ -132,28 +119,26 @@ public class RegexStringSyntaxAttributeMutatorTests : TestBase
     public Task ShouldNotMutateCustomNonRegexMethods()
     {
         var source = """
+                     // Stryker disable block,statement
                      using System.Diagnostics.CodeAnalysis;
                      public class C {
                          public void M() {
                              Call("^abc");
                          }
-
+                     
                          public static void Call(string s) {
-
+                     
                          }
                      }
                      """;
 
         var expected =
             """
+            // Stryker disable block,statement
             using System.Diagnostics.CodeAnalysis;
             public class C {
                 public void M() {
-                    if(StrykerNamespace.MutantControl.IsActive(0)){}else{
-                        if(StrykerNamespace.MutantControl.IsActive(1)){;}else{
-                            Call((StrykerNamespace.MutantControl.IsActive(2)?"":"^abc"));
-                        }
-                    }
+                    Call((StrykerNamespace.MutantControl.IsActive(2)?"":"^abc"));
                 }
                 public static void Call(string s) {}
             }
@@ -166,15 +151,42 @@ public class RegexStringSyntaxAttributeMutatorTests : TestBase
     public Task ShouldNotMutateUnrelatedMethods()
     {
         var source = """
+                     // Stryker disable block,statement
                      using System.Diagnostics.CodeAnalysis;
                      public class C {
                          public void M() {
                              Call(false);
                          }
-
+                     
                          public static void Call(bool s) {
-
+                     
                          }
+                     }
+                     """;
+
+        var expected =
+            """
+            // Stryker disable block,statement
+            using System.Diagnostics.CodeAnalysis;
+            public class C {
+                public void M() {
+                    Call((StrykerNamespace.MutantControl.IsActive(2)?true:false));
+                }
+                public static void Call(bool s) {}
+            }
+            """;
+
+        return ShouldMutateCompiledSourceToExpectedAsync(source, expected);
+    }
+
+    [TestMethod]
+    public Task ShouldMutateRegexFields()
+    {
+        var source = """
+                     using System.Diagnostics.CodeAnalysis;
+                     public class C {
+                         [StringSyntax(StringSyntaxAttribute.Regex)]
+                         public string RegexPattern = "^abc";
                      }
                      """;
 
@@ -182,14 +194,306 @@ public class RegexStringSyntaxAttributeMutatorTests : TestBase
             """
             using System.Diagnostics.CodeAnalysis;
             public class C {
+                [StringSyntax(StringSyntaxAttribute.Regex)]
+                public string RegexPattern = (StrykerNamespace.MutantControl.IsActive(0)?"abc":"^abc");
+            }
+            """;
+
+        return ShouldMutateCompiledSourceToExpectedAsync(source, expected);
+    }
+
+    [TestMethod]
+    public Task ShouldMutateRegexProperties()
+    {
+        var source = """
+                     using System.Diagnostics.CodeAnalysis;
+                     public class C {
+                         [StringSyntax(StringSyntaxAttribute.Regex)]
+                         public string RegexPattern => "^abc";
+                     }
+                     """;
+
+        var expected =
+            """
+            using System.Diagnostics.CodeAnalysis;
+            public class C {
+                [StringSyntax(StringSyntaxAttribute.Regex)]
+                public string RegexPattern => (StrykerNamespace.MutantControl.IsActive(0)?"abc":"^abc");
+            }
+            """;
+
+        return ShouldMutateCompiledSourceToExpectedAsync(source, expected);
+    }
+
+    [TestMethod]
+    public Task ShouldNotApplyRegexMutationToNormalFields()
+    {
+        var source = """
+                     using System.Diagnostics.CodeAnalysis;
+                     public class C {
+                         public string RegexPattern = "^abc";
+                     }
+                     """;
+
+        var expected =
+            """
+            using System.Diagnostics.CodeAnalysis;
+            public class C {
+                public string RegexPattern = (StrykerNamespace.MutantControl.IsActive(0)?"":"^abc");
+            }
+            """;
+
+        return ShouldMutateCompiledSourceToExpectedAsync(source, expected);
+    }
+
+    [TestMethod]
+    public Task ShouldNotMutateOtherFields()
+    {
+        var source = """
+                     using System.Diagnostics.CodeAnalysis;
+                     public class C {
+                         public bool RegexPattern = true;
+                     }
+                     """;
+
+        var expected =
+            """
+            using System.Diagnostics.CodeAnalysis;
+            public class C {
+                public bool RegexPattern = (StrykerNamespace.MutantControl.IsActive(0)?false:true);
+            }
+            """;
+
+        return ShouldMutateCompiledSourceToExpectedAsync(source, expected);
+    }
+
+    [TestMethod]
+    public Task ShouldMutateImplicitRegexConstructor()
+    {
+        var source = """
+                     using System.Diagnostics.CodeAnalysis;
+                     public class C {
+                         public static Regex RegexPattern = new("^abc");
+                     }
+                     """;
+
+        var expected =
+            """
+            using System.Diagnostics.CodeAnalysis;
+            public class C {
+                public static Regex RegexPattern = StrykerNamespace.MutantContext.TrackValue(()=>new((StrykerNamespace.MutantControl.IsActive(0)?"abc":"^abc")));
+            }
+            """;
+
+        return ShouldMutateCompiledSourceToExpectedAsync(source, expected);
+    }
+
+    [TestMethod]
+    public Task ShouldMutateRegexFieldAssignment()
+    {
+        var source = """
+                     // Stryker disable block,statement
+                     using System.Diagnostics.CodeAnalysis;
+                     public class C {
+                         [StringSyntax(StringSyntaxAttribute.Regex)]
+                         public string RegexPattern;
+                         
+                         public void M() {
+                            RegexPattern = "^abc";
+                         }
+                     }
+                     """;
+
+        var expected =
+            """
+            // Stryker disable block,statement
+            using System.Diagnostics.CodeAnalysis;
+            public class C {
+                [StringSyntax(StringSyntaxAttribute.Regex)]
+                public string RegexPattern;
+                
                 public void M() {
-                    if(StrykerNamespace.MutantControl.IsActive(0)){}else{
-                        if(StrykerNamespace.MutantControl.IsActive(1)){;}else{
-                            Call((StrykerNamespace.MutantControl.IsActive(2)?true:false));
-                        }
-                    }
+                   RegexPattern = (StrykerNamespace.MutantControl.IsActive(1)?"abc":"^abc");
                 }
-                public static void Call(bool s) {}
+            }
+            """;
+
+        return ShouldMutateCompiledSourceToExpectedAsync(source, expected);
+    }
+
+    [TestMethod]
+    public Task ShouldMutateRegexPropertyAssignment()
+    {
+        var source = """
+                     // Stryker disable block,statement
+                     using System.Diagnostics.CodeAnalysis;
+                     public class C {
+                         [StringSyntax(StringSyntaxAttribute.Regex)]
+                         public string RegexPattern { get; set; }
+                         
+                         public void M() {
+                            RegexPattern = "^abc";
+                         }
+                     }
+                     """;
+
+        var expected =
+            """
+            // Stryker disable block,statement
+            using System.Diagnostics.CodeAnalysis;
+            public class C {
+                [StringSyntax(StringSyntaxAttribute.Regex)]
+                public string RegexPattern { get; set; }
+                
+                public void M() {
+                   RegexPattern = (StrykerNamespace.MutantControl.IsActive(1)?"abc":"^abc");
+                }
+            }
+            """;
+
+        return ShouldMutateCompiledSourceToExpectedAsync(source, expected);
+    }
+
+    [TestMethod]
+    public Task ShouldNotMutateNonRegexFieldAssignment()
+    {
+        var source = """
+                     // Stryker disable block,statement
+                     using System.Diagnostics.CodeAnalysis;
+                     public class C {
+                         public string RegexPattern;
+                         
+                         public void M() {
+                            RegexPattern = "^abc";
+                         }
+                     }
+                     """;
+
+        var expected =
+            """
+            // Stryker disable block,statement
+            using System.Diagnostics.CodeAnalysis;
+            public class C {
+                public string RegexPattern;
+                
+                public void M() {
+                   RegexPattern = (StrykerNamespace.MutantControl.IsActive(1)?"":"^abc");
+                }
+            }
+            """;
+
+        return ShouldMutateCompiledSourceToExpectedAsync(source, expected);
+    }
+
+    [TestMethod]
+    public Task ShouldNotMutateNonRegexPropertyAssignment()
+    {
+        var source = """
+                     // Stryker disable block,statement
+                     using System.Diagnostics.CodeAnalysis;
+                     public class C {
+                         public string RegexPattern { get; set; }
+                         
+                         public void M() {
+                            RegexPattern = "^abc";
+                         }
+                     }
+                     """;
+
+        var expected =
+            """
+            // Stryker disable block,statement
+            using System.Diagnostics.CodeAnalysis;
+            public class C {
+                public string RegexPattern { get; set; }
+                
+                public void M() {
+                   RegexPattern = (StrykerNamespace.MutantControl.IsActive(1)?"":"^abc");
+                }
+            }
+            """;
+
+        return ShouldMutateCompiledSourceToExpectedAsync(source, expected);
+    }
+
+    [TestMethod]
+    public Task ShouldMutateFullyQualifiedAttributeCustomRegexMethod()
+    {
+        var source = """
+                     // Stryker disable block,statement
+                     public class C {
+                         public void M() {
+                             Call("^abc");
+                         }
+                     
+                         public static void Call([System.Diagnostics.CodeAnalysis.StringSyntax(System.Diagnostics.CodeAnalysis.StringSyntaxAttribute.Regex)]string s) {
+                     
+                         }
+                     }
+                     """;
+
+        var expected =
+            """
+            // Stryker disable block,statement
+            public class C {
+                public void M() {
+                    Call((StrykerNamespace.MutantControl.IsActive(2)?"abc":"^abc"));
+                }
+                public static void Call([System.Diagnostics.CodeAnalysis.StringSyntax(System.Diagnostics.CodeAnalysis.StringSyntaxAttribute.Regex)]string s) {
+            
+                }
+            }
+            """;
+
+        return ShouldMutateCompiledSourceToExpectedAsync(source, expected);
+    }
+
+    [TestMethod]
+    public Task ShouldMutateFullyQualifiedAttributeOnFieldAssignment()
+    {
+        var source = """
+                     // Stryker disable block,statement
+                     public class C {
+                         [System.Diagnostics.CodeAnalysis.StringSyntax(System.Diagnostics.CodeAnalysis.StringSyntaxAttribute.Regex)]
+                         public string RegexPattern;
+                         
+                         public void M() {
+                            RegexPattern = "^abc";
+                         }
+                     }
+                     """;
+
+        var expected =
+            """
+            // Stryker disable block,statement
+            public class C {
+                [System.Diagnostics.CodeAnalysis.StringSyntax(System.Diagnostics.CodeAnalysis.StringSyntaxAttribute.Regex)]
+                public string RegexPattern;
+                
+                public void M() {
+                   RegexPattern = (StrykerNamespace.MutantControl.IsActive(1)?"abc":"^abc");
+                }
+            }
+            """;
+
+        return ShouldMutateCompiledSourceToExpectedAsync(source, expected);
+    }
+
+    [TestMethod]
+    public Task ShouldMutateFullyQualifiedAttributeOnFieldInitialisation()
+    {
+        var source = """
+                     public class C {
+                         [System.Diagnostics.CodeAnalysis.StringSyntax(System.Diagnostics.CodeAnalysis.StringSyntaxAttribute.Regex)]
+                         public string RegexPattern = "^abc";
+                     }
+                     """;
+
+        var expected =
+            """
+            public class C {
+                [System.Diagnostics.CodeAnalysis.StringSyntax(System.Diagnostics.CodeAnalysis.StringSyntaxAttribute.Regex)]
+                public string RegexPattern = (StrykerNamespace.MutantControl.IsActive(0)?"abc":"^abc");
             }
             """;
 

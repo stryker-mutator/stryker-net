@@ -14,17 +14,17 @@ public class RegexMutatorTest : TestBase
     [TestMethod]
     public void ShouldBeMutationLevelAdvanced()
     {
-        var target = new RegexMutator();
-        target.MutationLevel.ShouldBe(MutationLevel.Advanced);
+        var target = new StringMutator();
+        target.RegexMutationLevel.ShouldBe(MutationLevel.Advanced);
     }
 
     [TestMethod]
     public void ShouldMutateStringLiteralInRegexConstructor()
     {
         var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex(@\"^abc\")") as ObjectCreationExpressionSyntax;
-        var target = new RegexMutator();
+        var target = new StringMutator();
 
-        var result = target.ApplyMutations(objectCreationExpression, null);
+        var result = target.ApplyMutations(objectCreationExpression.DescendantNodesAndSelf().OfType<LiteralExpressionSyntax>().First(), null, MutationLevel.Advanced);
 
         var mutation = result.ShouldHaveSingleItem();
 
@@ -37,9 +37,9 @@ public class RegexMutatorTest : TestBase
     public void ShouldMutateStringLiteralInRegexConstructorWithFullName()
     {
         var objectCreationExpression = SyntaxFactory.ParseExpression("new System.Text.RegularExpressions.Regex(@\"^abc\")") as ObjectCreationExpressionSyntax;
-        var target = new RegexMutator();
+        var target = new StringMutator();
 
-        var result = target.ApplyMutations(objectCreationExpression, null);
+        var result = target.ApplyMutations(objectCreationExpression.DescendantNodesAndSelf().OfType<LiteralExpressionSyntax>().First(), null, MutationLevel.Advanced);
 
         var mutation = result.ShouldHaveSingleItem();
 
@@ -48,34 +48,23 @@ public class RegexMutatorTest : TestBase
         replacement.Token.ValueText.ShouldBe("abc");
     }
 
-
-    [TestMethod]
-    public void ShouldNotMutateRegexWithoutParameters()
-    {
-        var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex()") as ObjectCreationExpressionSyntax;
-        var target = new RegexMutator();
-        var result = target.ApplyMutations(objectCreationExpression, null);
-
-        result.ShouldBeEmpty();
-    }
-
     [TestMethod]
     public void ShouldNotMutateStringLiteralInOtherConstructor()
     {
         var objectCreationExpression = SyntaxFactory.ParseExpression("new Other(@\"^abc\")") as ObjectCreationExpressionSyntax;
-        var target = new RegexMutator();
-        var result = target.ApplyMutations(objectCreationExpression, null);
+        var target = new StringMutator();
+        var result = target.ApplyMutations(objectCreationExpression.DescendantNodesAndSelf().OfType<LiteralExpressionSyntax>().First(), null, MutationLevel.Advanced);
 
-        result.ShouldBeEmpty();
+        result.Where(a=>a.Type == Mutator.Regex).ShouldBeEmpty();
     }
 
     [TestMethod]
     public void ShouldMutateStringLiteralMultipleTimes()
     {
         var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex(@\"^abc$\")") as ObjectCreationExpressionSyntax;
-        var target = new RegexMutator();
+        var target = new StringMutator();
 
-        var result = target.ApplyMutations(objectCreationExpression, null);
+        var result = target.ApplyMutations(objectCreationExpression.DescendantNodesAndSelf().OfType<LiteralExpressionSyntax>().First(), null, MutationLevel.Advanced);
 
         result.Count().ShouldBe(2);
         result.ShouldAllBe(mutant => mutant.DisplayName == "Regex anchor removal mutation");
@@ -89,9 +78,9 @@ public class RegexMutatorTest : TestBase
     public void ShouldMutateStringLiteralAsNamedArgumentPatternInRegexConstructor()
     {
         var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex(options: RegexOptions.None, pattern: @\"^abc\")") as ObjectCreationExpressionSyntax;
-        var target = new RegexMutator();
+        var target = new StringMutator();
 
-        var result = target.ApplyMutations(objectCreationExpression, null);
+        var result = target.ApplyMutations(objectCreationExpression.DescendantNodesAndSelf().OfType<LiteralExpressionSyntax>().First(), null, MutationLevel.Advanced);
 
         var mutation = result.ShouldHaveSingleItem();
 

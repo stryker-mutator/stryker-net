@@ -15,7 +15,7 @@ public class StringMutatorTests : TestBase
     public void ShouldBeMutationLevelStandard()
     {
         var target = new StringMutator();
-        target.MutationLevel.ShouldBe(MutationLevel.Standard);
+        target.OtherMutationLevel.ShouldBe(MutationLevel.Standard);
     }
 
     [TestMethod]
@@ -26,7 +26,7 @@ public class StringMutatorTests : TestBase
         var node = SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression, SyntaxFactory.Literal(original));
         var mutator = new StringMutator();
 
-        var result = mutator.ApplyMutations(node, null).ToList();
+        var result = mutator.ApplyMutations(node, null, MutationLevel.Standard).ToList();
 
         var mutation = result.ShouldHaveSingleItem();
 
@@ -41,7 +41,7 @@ public class StringMutatorTests : TestBase
         var expressionSyntax = SyntaxFactory.ParseExpression("new Regex(\"myregex\")");
         var literalExpression = expressionSyntax.DescendantNodes().OfType<LiteralExpressionSyntax>().First();
         var mutator = new StringMutator();
-        var result = mutator.ApplyMutations(literalExpression, null).ToList();
+        var result = mutator.ApplyMutations(literalExpression, null, MutationLevel.Standard).ToList();
 
         result.ShouldBeEmpty();
     }
@@ -52,7 +52,7 @@ public class StringMutatorTests : TestBase
         var expressionSyntax = SyntaxFactory.ParseExpression("new System.Text.RegularExpressions.Regex(\"myregex\")");
         var literalExpression = expressionSyntax.DescendantNodes().OfType<LiteralExpressionSyntax>().First();
         var mutator = new StringMutator();
-        var result = mutator.ApplyMutations(literalExpression, null).ToList();
+        var result = mutator.ApplyMutations(literalExpression, null, MutationLevel.Standard).ToList();
 
         result.ShouldBeEmpty();
     }
@@ -72,7 +72,7 @@ namespace Stryker.Core.UnitTest.Mutators
 ");
         var literalExpression = syntaxTree.GetRoot().DescendantNodes().OfType<LiteralExpressionSyntax>().First();
         var mutator = new StringMutator();
-        var result = mutator.ApplyMutations(literalExpression, null).ToList();
+        var result = mutator.ApplyMutations(literalExpression, null, MutationLevel.Standard).ToList();
 
         result.ShouldBeEmpty();
     }
@@ -83,7 +83,7 @@ namespace Stryker.Core.UnitTest.Mutators
         var expressionSyntax = SyntaxFactory.ParseExpression("new Guid(\"00000-0000\")");
         var literalExpression = expressionSyntax.DescendantNodes().OfType<LiteralExpressionSyntax>().First();
         var mutator = new StringMutator();
-        var result = mutator.ApplyMutations(literalExpression, null).ToList();
+        var result = mutator.ApplyMutations(literalExpression, null, MutationLevel.Standard).ToList();
 
         result.ShouldBeEmpty();
     }
@@ -94,7 +94,7 @@ namespace Stryker.Core.UnitTest.Mutators
         var expressionSyntax = SyntaxFactory.ParseExpression("new System.Guid(\"00000-0000\")");
         var literalExpression = expressionSyntax.DescendantNodes().OfType<LiteralExpressionSyntax>().First();
         var mutator = new StringMutator();
-        var result = mutator.ApplyMutations(literalExpression, null).ToList();
+        var result = mutator.ApplyMutations(literalExpression, null, MutationLevel.Standard).ToList();
 
         result.ShouldBeEmpty();
     }
@@ -114,7 +114,7 @@ namespace Stryker.Core.UnitTest.Mutators
 ");
         var literalExpression = syntaxTree.GetRoot().DescendantNodes().OfType<LiteralExpressionSyntax>().First();
         var mutator = new StringMutator();
-        var result = mutator.ApplyMutations(literalExpression, null).ToList();
+        var result = mutator.ApplyMutations(literalExpression, null, MutationLevel.Standard).ToList();
 
         result.ShouldBeEmpty();
     }
