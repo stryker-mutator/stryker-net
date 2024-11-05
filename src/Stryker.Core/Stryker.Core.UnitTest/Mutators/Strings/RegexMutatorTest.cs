@@ -6,11 +6,18 @@ using Shouldly;
 using Stryker.Abstractions.Mutators;
 using Stryker.Core.Mutators;
 
-namespace Stryker.Core.UnitTest.Mutators;
+namespace Stryker.Core.UnitTest.Mutators.Strings;
 
 [TestClass]
 public class RegexMutatorTest : TestBase
 {
+
+    private static LiteralExpressionSyntax ParseExpression(string text)
+    {
+        var objectCreationExpression = SyntaxFactory.ParseExpression(text) as ObjectCreationExpressionSyntax;
+        return objectCreationExpression?.DescendantNodesAndSelf().OfType<LiteralExpressionSyntax>().FirstOrDefault();
+    }
+
     [TestMethod]
     public void ShouldBeMutationLevelAdvanced()
     {
@@ -21,10 +28,10 @@ public class RegexMutatorTest : TestBase
     [TestMethod]
     public void ShouldMutateStringLiteralInRegexConstructor()
     {
-        var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex(@\"^abc\")") as ObjectCreationExpressionSyntax;
+        var literalExpression = ParseExpression("new Regex(@\"^abc\")");
         var target = new StringMutator();
 
-        var result = target.ApplyMutations(objectCreationExpression.DescendantNodesAndSelf().OfType<LiteralExpressionSyntax>().First(), null, MutationLevel.Advanced);
+        var result = target.ApplyMutations(literalExpression, null, MutationLevel.Advanced);
 
         var mutation = result.ShouldHaveSingleItem();
 
@@ -36,10 +43,10 @@ public class RegexMutatorTest : TestBase
     [TestMethod]
     public void ShouldMutateStringLiteralInRegexConstructorWithFullName()
     {
-        var objectCreationExpression = SyntaxFactory.ParseExpression("new System.Text.RegularExpressions.Regex(@\"^abc\")") as ObjectCreationExpressionSyntax;
+        var literalExpression = ParseExpression("new System.Text.RegularExpressions.Regex(@\"^abc\")");
         var target = new StringMutator();
 
-        var result = target.ApplyMutations(objectCreationExpression.DescendantNodesAndSelf().OfType<LiteralExpressionSyntax>().First(), null, MutationLevel.Advanced);
+        var result = target.ApplyMutations(literalExpression, null, MutationLevel.Advanced);
 
         var mutation = result.ShouldHaveSingleItem();
 
@@ -51,20 +58,30 @@ public class RegexMutatorTest : TestBase
     [TestMethod]
     public void ShouldNotMutateStringLiteralInOtherConstructor()
     {
-        var objectCreationExpression = SyntaxFactory.ParseExpression("new Other(@\"^abc\")") as ObjectCreationExpressionSyntax;
+        var literalExpression = ParseExpression("new Other(@\"^abc\")");
         var target = new StringMutator();
-        var result = target.ApplyMutations(objectCreationExpression.DescendantNodesAndSelf().OfType<LiteralExpressionSyntax>().First(), null, MutationLevel.Advanced);
+        var result = target.ApplyMutations(literalExpression, null, MutationLevel.Advanced);
 
-        result.Where(a=>a.Type == Mutator.Regex).ShouldBeEmpty();
+        result.Where(a => a.Type == Mutator.Regex).ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void ShouldNotMutateAtLowerMutationLevel()
+    {
+        var literalExpression = ParseExpression("new Other(@\"^abc\")");
+        var target = new StringMutator();
+        var result = target.ApplyMutations(literalExpression, null, MutationLevel.Standard);
+
+        result.Where(a => a.Type == Mutator.Regex).ShouldBeEmpty();
     }
 
     [TestMethod]
     public void ShouldMutateStringLiteralMultipleTimes()
     {
-        var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex(@\"^abc$\")") as ObjectCreationExpressionSyntax;
+        var literalExpression = ParseExpression("new Regex(@\"^abc$\")");
         var target = new StringMutator();
 
-        var result = target.ApplyMutations(objectCreationExpression.DescendantNodesAndSelf().OfType<LiteralExpressionSyntax>().First(), null, MutationLevel.Advanced);
+        var result = target.ApplyMutations(literalExpression, null, MutationLevel.Advanced);
 
         result.Count().ShouldBe(2);
         result.ShouldAllBe(mutant => mutant.DisplayName == "Regex anchor removal mutation");
@@ -77,10 +94,10 @@ public class RegexMutatorTest : TestBase
     [TestMethod]
     public void ShouldMutateStringLiteralAsNamedArgumentPatternInRegexConstructor()
     {
-        var objectCreationExpression = SyntaxFactory.ParseExpression("new Regex(options: RegexOptions.None, pattern: @\"^abc\")") as ObjectCreationExpressionSyntax;
+        var literalExpression = ParseExpression("new Regex(options: RegexOptions.None, pattern: @\"^abc\")");
         var target = new StringMutator();
 
-        var result = target.ApplyMutations(objectCreationExpression.DescendantNodesAndSelf().OfType<LiteralExpressionSyntax>().First(), null, MutationLevel.Advanced);
+        var result = target.ApplyMutations(literalExpression, null, MutationLevel.Advanced);
 
         var mutation = result.ShouldHaveSingleItem();
 

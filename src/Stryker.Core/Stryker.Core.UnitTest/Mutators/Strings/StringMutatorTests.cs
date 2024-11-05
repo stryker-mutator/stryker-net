@@ -6,7 +6,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Core.Mutators;
 
-namespace Stryker.Core.UnitTest.Mutators;
+namespace Stryker.Core.UnitTest.Mutators.Strings;
 
 [TestClass]
 public class StringMutatorTests : TestBase

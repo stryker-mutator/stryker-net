@@ -13,6 +13,7 @@ using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions.Options;
 using Stryker.RegexMutators;
+using static Microsoft.CodeAnalysis.CSharp.SyntaxFactory;
 
 namespace Stryker.Core.Mutators;
 
@@ -40,54 +41,65 @@ public class StringMutator : IMutator
     {
         if (IsRegexString(node, semanticModel))
         {
-            if (RegexMutationLevel > mutationLevel)
-            {
-                yield break;
-            }
-
-            var currentValue = node.Token.ValueText;
-            var regexMutantOrchestrator = new RegexMutantOrchestrator(currentValue);
-            var replacementValues = regexMutantOrchestrator.Mutate();
-
-            foreach (var regexMutation in replacementValues)
-            {
-                try
-                {
-                    _ = new Regex(regexMutation.ReplacementPattern);
-                }
-                catch (ArgumentException exception)
-                {
-                    Logger?.LogDebug(
-                                     "RegexMutator created mutation {CurrentValue} -> {ReplacementPattern} which is an invalid regular expression:\n{Message}",
-                                     currentValue, regexMutation.ReplacementPattern, exception.Message);
-                    continue;
-                }
-
-                yield return new Mutation
-                {
-                    OriginalNode = node,
-                    ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression,
-                                                                      SyntaxFactory.Literal(regexMutation
-                                                                      .ReplacementPattern)),
-                    DisplayName = regexMutation.DisplayName,
-                    Type        = Mutator.Regex,
-                    Description = regexMutation.Description
-                };
-            }
+            return ApplyRegexMutations(node, mutationLevel);
         }
-        else if (OtherMutationLevel <= mutationLevel && !IsSpecialType(node.Parent?.Parent?.Parent))
+
+        if (OtherMutationLevel <= mutationLevel && !IsGuidType(node.Parent?.Parent?.Parent, semanticModel))
         {
-            var currentValue = (string)node.Token.Value;
-            var replacementValue = currentValue == "" ? "Stryker was here!" : "";
+            return [ApplyStringMutations(node)];
+        }
+
+        return [];
+    }
+
+    private static Mutation ApplyStringMutations(LiteralExpressionSyntax node)
+    {
+        var currentValue = (string)node.Token.Value;
+        var replacementValue = currentValue == "" ? "Stryker was here!" : "";
+
+        return new Mutation
+        {
+            OriginalNode    = node,
+            ReplacementNode = LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(replacementValue)),
+            DisplayName     = "String mutation",
+            Type            = Mutator.String
+        };
+    }
+
+    private IEnumerable<Mutation> ApplyRegexMutations(LiteralExpressionSyntax node, MutationLevel mutationLevel)
+    {
+        if (RegexMutationLevel > mutationLevel)
+        {
+            yield break;
+        }
+
+        var currentValue = node.Token.ValueText;
+        var regexMutantOrchestrator = new RegexMutantOrchestrator(currentValue);
+        var replacementValues = regexMutantOrchestrator.Mutate();
+
+        foreach (var regexMutation in replacementValues)
+        {
+            try
+            {
+                _ = new Regex(regexMutation.ReplacementPattern);
+            }
+            catch (ArgumentException exception)
+            {
+                Logger?.LogDebug(
+                                 "RegexMutator created mutation {CurrentValue} -> {ReplacementPattern} which is an invalid regular expression:\n{Message}",
+                                 currentValue, regexMutation.ReplacementPattern, exception.Message);
+                continue;
+            }
 
             yield return new Mutation
             {
                 OriginalNode = node,
                 ReplacementNode =
-                    SyntaxFactory.LiteralExpression(SyntaxKind.StringLiteralExpression,
-                                                    SyntaxFactory.Literal(replacementValue)),
-                DisplayName = "String mutation",
-                Type        = Mutator.String
+                    LiteralExpression(SyntaxKind.StringLiteralExpression,
+                                      Literal(regexMutation.ReplacementPattern)),
+                DisplayName = regexMutation.DisplayName,
+                Type        = Mutator.Regex,
+                Description = regexMutation.Description
             };
         }
     }
@@ -102,11 +114,9 @@ public class StringMutator : IMutator
                     return IsCtorOfType(ctor, typeof(Regex));
                 case ImplicitObjectCreationExpressionSyntax ctor:
                     return IsCtorOfType(ctor, typeof(Regex), semanticModel);
-                case ArgumentSyntax argument when semanticModel is not null &&
-                                                  argument.Parent?.Parent is InvocationExpressionSyntax parentInvocation
-                    :
-                    var invocationOp = semanticModel?.GetOperation(parentInvocation) as IInvocationOperation;
-                    var argumentOp = invocationOp?.Arguments.SingleOrDefault(a => a.Syntax == argument);
+                case ArgumentSyntax { Parent.Parent: InvocationExpressionSyntax parentInvocation } argument
+                    when semanticModel?.GetOperation(parentInvocation) is IInvocationOperation invocationOp:
+                    var argumentOp = invocationOp.Arguments.SingleOrDefault(a => a.Syntax == argument);
 
                     return argumentOp?.Parameter?.Type.Name is "String" &&
                            argumentOp.Parameter.GetAttributes().Any(IsRegexSyntaxAttribute);
@@ -119,11 +129,11 @@ public class StringMutator : IMutator
                     {
                         Type.SpecialType: SpecialType.System_String
                     } expressionOp:
-                    return expressionOp?.Target switch
+                    return expressionOp.Target switch
                     {
                         IFieldReferenceOperation field => field.Field.GetAttributes().Any(IsRegexSyntaxAttribute),
                         IPropertyReferenceOperation property => property.Property.GetAttributes()
-                                                                     .Any(IsRegexSyntaxAttribute),
+                                                                        .Any(IsRegexSyntaxAttribute),
                         _ => false
                     };
             }
@@ -136,7 +146,7 @@ public class StringMutator : IMutator
         IsStringSyntaxAttribute(attributeSyntax.Name)        &&
         attributeSyntax.ArgumentList?.Arguments is [var arg] &&
         (arg.Expression is
-             LiteralExpressionSyntax { Token.Text: "Regex" } or
+             LiteralExpressionSyntax { Token.ValueText: "Regex" } or
              IdentifierNameSyntax { Identifier.Text: "Regex" } ||
          (arg.Expression is MemberAccessExpressionSyntax
              {
@@ -208,9 +218,10 @@ public class StringMutator : IMutator
         (attributeData.AttributeClass?.Name.Equals("StringSyntaxAttribute") ?? false) &&
         attributeData.ConstructorArguments.FirstOrDefault().Value is StringSyntaxAttribute.Regex;
 
-    private static bool IsSpecialType(SyntaxNode root) => root switch
+    private static bool IsGuidType(SyntaxNode root, SemanticModel semanticModel) => root switch
     {
         ObjectCreationExpressionSyntax ctor => IsCtorOfType(ctor, typeof(Guid)),
+        ImplicitObjectCreationExpressionSyntax ctor => IsCtorOfType(ctor, typeof(Guid), semanticModel),
         _ => false
     };
 

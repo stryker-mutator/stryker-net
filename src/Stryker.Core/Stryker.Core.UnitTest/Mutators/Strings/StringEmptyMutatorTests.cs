@@ -7,7 +7,7 @@ using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Mutators;
 using Stryker.Core.Mutators;
 
-namespace Stryker.Core.UnitTest.Mutators;
+namespace Stryker.Core.UnitTest.Mutators.Strings;
 
 [TestClass]
 public class StringEmptyMutatorTests : TestBase
