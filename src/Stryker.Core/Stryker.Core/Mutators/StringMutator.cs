@@ -27,7 +27,8 @@ public class StringMutator : IMutator
 
     public IEnumerable<Mutation> Mutate(SyntaxNode node, SemanticModel semanticModel, IStrykerOptions options)
     {
-        if (node is LiteralExpressionSyntax tNode && node.IsKind(SyntaxKind.StringLiteralExpression))
+        if (node is LiteralExpressionSyntax tNode &&
+            node.Kind() is SyntaxKind.StringLiteralExpression or SyntaxKind.Utf8StringLiteralExpression)
         {
             // the node was of the expected type, so invoke the mutation method
             return ApplyMutations(tNode, semanticModel, options.MutationLevel);
@@ -44,9 +45,10 @@ public class StringMutator : IMutator
             return ApplyRegexMutations(node, mutationLevel);
         }
 
-        if (OtherMutationLevel <= mutationLevel && !IsGuidType(node.Parent?.Parent?.Parent, semanticModel))
+        if (OtherMutationLevel <= mutationLevel && !IsGuidType(node.Parent?.Parent?.Parent, semanticModel) &&
+            ApplyStringMutations(node) is { } mutation)
         {
-            return [ApplyStringMutations(node)];
+            return [mutation];
         }
 
         return [];
@@ -57,14 +59,34 @@ public class StringMutator : IMutator
         var currentValue = (string)node.Token.Value;
         var replacementValue = currentValue == "" ? "Stryker was here!" : "";
 
+
+        LiteralExpressionSyntax replacement;
+        if (node.IsKind(SyntaxKind.StringLiteralExpression))
+        {
+            replacement = LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(replacementValue));
+        }
+        else if (node.IsKind(SyntaxKind.Utf8StringLiteralExpression) && !InAdditionOperator(node))
+        {
+            replacement = CreateUtf88String(node.GetLeadingTrivia(), replacementValue, node.GetTrailingTrivia());
+        }
+        else
+        {
+            return null;
+        }
+
         return new Mutation
         {
             OriginalNode    = node,
-            ReplacementNode = LiteralExpression(SyntaxKind.StringLiteralExpression, Literal(replacementValue)),
+            ReplacementNode = replacement,
             DisplayName     = "String mutation",
             Type            = Mutator.String
         };
     }
+
+    // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-11.0/utf8-string-literals#addition-operator
+    private static bool InAdditionOperator(LiteralExpressionSyntax node) => node.AncestorsAndSelf()
+       .Any(a => a.IsKind(SyntaxKind.AddExpression) && a is BinaryExpressionSyntax bes && bes.DescendantNodes()
+                    .OfType<LiteralExpressionSyntax>().All(b => b.IsKind(SyntaxKind.Utf8StringLiteralExpression)));
 
     private IEnumerable<Mutation> ApplyRegexMutations(LiteralExpressionSyntax node, MutationLevel mutationLevel)
     {
@@ -117,8 +139,15 @@ public class StringMutator : IMutator
                 case ArgumentSyntax { Parent.Parent: InvocationExpressionSyntax parentInvocation } argument
                     when semanticModel?.GetOperation(parentInvocation) is IInvocationOperation invocationOp:
                     var argumentOp = invocationOp.Arguments.SingleOrDefault(a => a.Syntax == argument);
-
-                    return argumentOp?.Parameter?.Type.Name is "String" &&
+                    return argumentOp?.Parameter?.Type is INamedTypeSymbol
+                               {
+                                   TypeKind: TypeKind.Structure, IsRefLikeType: true, IsReadOnly: true,
+                                   IsValueType: true, MetadataName: "ReadOnlySpan`1", CanBeReferencedByName: true,
+                                   TypeArguments: [{ SpecialType: SpecialType.System_Char or SpecialType.System_Byte }]
+                               } or
+                               {
+                                   SpecialType: SpecialType.System_String
+                               } &&
                            argumentOp.Parameter.GetAttributes().Any(IsRegexSyntaxAttribute);
                 case FieldDeclarationSyntax field:
                     return field.AttributeLists.Any(static a => a.Attributes.Any(IsRegexSyntaxAttribute));
@@ -239,5 +268,17 @@ public class StringMutator : IMutator
         var ti = semanticModel?.GetTypeInfo(ctor);
         var ctorType = ti?.Type?.ToDisplayString();
         return ctorType == type.Name || ctorType == type.FullName;
+    }
+
+    private static LiteralExpressionSyntax CreateUtf88String(SyntaxTriviaList leadingTrivia, string stringValue,
+                                                             SyntaxTriviaList trailingTrivia)
+    {
+        const char QuoteCharacter = '"';
+        var literal = Token(leadingTrivia,
+                            SyntaxKind.Utf8StringLiteralToken,
+                            $"{QuoteCharacter}{stringValue}{QuoteCharacter}u8",
+                            stringValue,
+                            trailingTrivia);
+        return LiteralExpression(SyntaxKind.Utf8StringLiteralExpression, literal);
     }
 }

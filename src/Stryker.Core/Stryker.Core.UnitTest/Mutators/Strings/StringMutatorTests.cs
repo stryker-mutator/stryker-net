@@ -118,4 +118,40 @@ namespace Stryker.Core.UnitTest.Mutators
 
         result.ShouldBeEmpty();
     }
+
+    [TestMethod]
+    [DataRow(@"""""u8", @"""Stryker was here!""u8")]
+    [DataRow(@"""foo""u8", @"""""u8")]
+    public void ShouldMutateUtf8StringLiteral(string original, string expected)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText($"var test = {original};");
+
+        var literalExpression = syntaxTree.GetRoot().DescendantNodes().OfType<LiteralExpressionSyntax>().First();
+        var mutator = new StringMutator();
+
+        var result = mutator.ApplyMutations(literalExpression, null, MutationLevel.Standard);
+
+        var mutation = result.ShouldHaveSingleItem();
+
+        mutation.ReplacementNode.ShouldBeOfType<LiteralExpressionSyntax>()
+                .Token.Text.ShouldBe(expected);
+        mutation.DisplayName.ShouldBe("String mutation");
+    }
+
+    [TestMethod]
+    [DataRow(@"""""u8 + """"u8")]
+    [DataRow(@"""foo""u8 + """"u8")]
+    [DataRow(@" """"u8 + ""foo""u8")]
+    public void ShouldNotMutateConcatenatedUtf8StringLiteral(string original)
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText($"var test = {original};");
+
+        var literalExpression = syntaxTree.GetRoot().DescendantNodes().OfType<LiteralExpressionSyntax>().First();
+        var mutator = new StringMutator();
+
+        var result = mutator.ApplyMutations(literalExpression, null, MutationLevel.Standard);
+
+        result.ShouldBeEmpty();
+    }
+
 }

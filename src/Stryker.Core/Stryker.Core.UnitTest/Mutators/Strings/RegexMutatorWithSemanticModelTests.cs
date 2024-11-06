@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -29,12 +30,14 @@ public class RegexMutatorWithSemanticModelTests : TestBase
         // Create a compilation that contains the syntax tree
         var basePath = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
         var mscorlib = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
+        var ros = MetadataReference.CreateFromFile(typeof(ReadOnlySpan<>).Assembly.Location);
         var regex = MetadataReference.CreateFromFile(typeof(Regex).Assembly.Location);
         var attribute = MetadataReference.CreateFromFile(Path.Combine(basePath, "System.Runtime.dll"));
         var compilation = CSharpCompilation.Create("TestAssembly")
                                            .WithOptions(new CSharpCompilationOptions(OutputKind
-                                                           .DynamicallyLinkedLibrary))
+                                                                .DynamicallyLinkedLibrary))
                                            .AddReferences(mscorlib)
+                                           .AddReferences(ros)
                                            .AddReferences(regex)
                                            .AddReferences(attribute)
                                            .AddSyntaxTrees(syntaxTree);
@@ -48,7 +51,35 @@ public class RegexMutatorWithSemanticModelTests : TestBase
         return (semanticModel, expression);
     }
 
-    private static void ValidateMutation(IEnumerable<Mutation> result)
+    private static (SemanticModel semanticModel, IEnumerable<LiteralExpressionSyntax> expression)
+        CreateSemanticModelFromExpressions(string input)
+    {
+        // Parse the code into a syntax tree
+        var syntaxTree = CSharpSyntaxTree.ParseText(input);
+
+        // Create a compilation that contains the syntax tree
+        var basePath = Path.GetDirectoryName(typeof(object).Assembly.Location)!;
+        var mscorlib = MetadataReference.CreateFromFile(typeof(object).Assembly.Location);
+        var regex = MetadataReference.CreateFromFile(typeof(Regex).Assembly.Location);
+        var attribute = MetadataReference.CreateFromFile(Path.Combine(basePath, "System.Runtime.dll"));
+        var compilation = CSharpCompilation.Create("TestAssembly")
+                                           .WithOptions(new CSharpCompilationOptions(OutputKind
+                                                                .DynamicallyLinkedLibrary))
+                                           .AddReferences(mscorlib)
+                                           .AddReferences(regex)
+                                           .AddReferences(attribute)
+                                           .AddSyntaxTrees(syntaxTree);
+
+        // Get the semantic model from the compilation
+        var semanticModel = compilation.GetSemanticModel(syntaxTree);
+
+        var expression = syntaxTree.GetRoot().DescendantNodes().OfType<LiteralExpressionSyntax>()
+                                   .Where(a => a.IsKind(SyntaxKind.StringLiteralExpression));
+
+        return (semanticModel, expression);
+    }
+
+    private static void ValidateRegexMutation(IEnumerable<Mutation> result)
     {
         var mutation = result.ShouldHaveSingleItem();
 
@@ -76,7 +107,55 @@ public class RegexMutatorWithSemanticModelTests : TestBase
         var target = new StringMutator();
         var result = target.Mutate(expressionSyntax, semanticModel, _options);
 
-        ValidateMutation(result);
+        ValidateRegexMutation(result);
+    }
+
+    [TestMethod]
+    public void ShouldMutateRegexStaticMethodsMultipleString()
+    {
+        var source = """
+                     using System.Text.RegularExpressions;
+                     namespace StrykerNet.UnitTest.Mutants.TestResources;
+                     class RegexClass {
+                         bool A() {
+                             return Regex.IsMatch("input", @"^abc");
+                         }
+                     }
+                     """;
+
+        var (semanticModel, expressionSyntaxes) = CreateSemanticModelFromExpressions(source);
+        var target = new StringMutator();
+
+        var syntaxes = expressionSyntaxes.ToList();
+        var stringResult = target.Mutate(syntaxes[0], semanticModel, _options);
+        var regexResult = target.Mutate(syntaxes[1], semanticModel, _options);
+
+        stringResult.Where(a => a.Type == Mutator.Regex).ShouldBeEmpty();
+        ValidateRegexMutation(regexResult);
+    }
+
+    [TestMethod]
+    public void ShouldMutateRegexStaticMethodsMultipleStringNamedParameters()
+    {
+        var source = """
+                     using System.Text.RegularExpressions;
+                     namespace StrykerNet.UnitTest.Mutants.TestResources;
+                     class RegexClass {
+                         bool A() {
+                             return Regex.IsMatch(pattern: @"^abc", input: "input");
+                         }
+                     }
+                     """;
+
+        var (semanticModel, expressionSyntaxes) = CreateSemanticModelFromExpressions(source);
+        var target = new StringMutator();
+
+        var syntaxes = expressionSyntaxes.ToList();
+        var regexResult = target.Mutate(syntaxes[0], semanticModel, _options);
+        var stringResult = target.Mutate(syntaxes[1], semanticModel, _options);
+
+        stringResult.Where(a => a.Type == Mutator.Regex).ShouldBeEmpty();
+        ValidateRegexMutation(regexResult);
     }
 
     [TestMethod]
@@ -99,7 +178,31 @@ public class RegexMutatorWithSemanticModelTests : TestBase
         var target = new StringMutator();
         var result = target.Mutate(expressionSyntax, semanticModel, _options);
 
-        ValidateMutation(result);
+        ValidateRegexMutation(result);
+    }
+
+    [TestMethod]
+    public void ShouldMutateCustomRegexMethodReadonlySpan()
+    {
+        var source = """
+                     using System;
+                     using System.Diagnostics.CodeAnalysis;
+                     public class C {
+                         public void M() {
+                             Call("^abc");
+                         }
+                     
+                         public static void Call([StringSyntax(StringSyntaxAttribute.Regex)]ReadOnlySpan<char> s) {
+                     
+                         }
+                     }
+                     """;
+
+        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(source);
+        var target = new StringMutator();
+        var result = target.Mutate(expressionSyntax, semanticModel, _options);
+
+        ValidateRegexMutation(result);
     }
 
     [TestMethod]
@@ -122,7 +225,7 @@ public class RegexMutatorWithSemanticModelTests : TestBase
         var target = new StringMutator();
         var result = target.Mutate(expressionSyntax, semanticModel, _options);
 
-        ValidateMutation(result);
+        ValidateRegexMutation(result);
     }
 
     [TestMethod]
@@ -231,7 +334,7 @@ public class RegexMutatorWithSemanticModelTests : TestBase
         var target = new StringMutator();
         var result = target.Mutate(expressionSyntax, semanticModel, _options);
 
-        ValidateMutation(result);
+        ValidateRegexMutation(result);
     }
 
     [TestMethod]
@@ -249,7 +352,25 @@ public class RegexMutatorWithSemanticModelTests : TestBase
         var target = new StringMutator();
         var result = target.Mutate(expressionSyntax, semanticModel, _options);
 
-        ValidateMutation(result);
+        ValidateRegexMutation(result);
+    }
+
+    [TestMethod]
+    public void ShouldMutateReadOnlySpanRegexProperties()
+    {
+        var source = """
+                     using System.Diagnostics.CodeAnalysis;
+                     public class C {
+                         [StringSyntax(StringSyntaxAttribute.Regex)]
+                         public ReadOnlySpan<char> RegexPattern => "^abc";
+                     }
+                     """;
+
+        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(source);
+        var target = new StringMutator();
+        var result = target.Mutate(expressionSyntax, semanticModel, _options);
+
+        ValidateRegexMutation(result);
     }
 
     [TestMethod]
@@ -268,7 +389,7 @@ public class RegexMutatorWithSemanticModelTests : TestBase
         var target = new StringMutator();
         var result = target.Mutate(expressionSyntax, semanticModel, _options);
 
-        ValidateMutation(result);
+        ValidateRegexMutation(result);
     }
 
     [TestMethod]
@@ -287,7 +408,7 @@ public class RegexMutatorWithSemanticModelTests : TestBase
         var target = new StringMutator();
         var result = target.Mutate(expressionSyntax, semanticModel, _options);
 
-        ValidateMutation(result);
+        ValidateRegexMutation(result);
     }
 
     [TestMethod]
@@ -321,7 +442,7 @@ public class RegexMutatorWithSemanticModelTests : TestBase
         var target = new StringMutator();
         var result = target.Mutate(expressionSyntax, semanticModel, _options);
 
-        ValidateMutation(result);
+        ValidateRegexMutation(result);
     }
 
     [TestMethod]
@@ -343,7 +464,7 @@ public class RegexMutatorWithSemanticModelTests : TestBase
         var target = new StringMutator();
         var result = target.Mutate(expressionSyntax, semanticModel, _options);
 
-        ValidateMutation(result);
+        ValidateRegexMutation(result);
     }
 
     [TestMethod]
@@ -365,7 +486,7 @@ public class RegexMutatorWithSemanticModelTests : TestBase
         var target = new StringMutator();
         var result = target.Mutate(expressionSyntax, semanticModel, _options);
 
-        ValidateMutation(result);
+        ValidateRegexMutation(result);
     }
 
     [TestMethod]
@@ -429,7 +550,7 @@ public class RegexMutatorWithSemanticModelTests : TestBase
         var target = new StringMutator();
         var result = target.Mutate(expressionSyntax, semanticModel, _options);
 
-        ValidateMutation(result);
+        ValidateRegexMutation(result);
     }
 
     [TestMethod]
@@ -450,7 +571,7 @@ public class RegexMutatorWithSemanticModelTests : TestBase
         var target = new StringMutator();
         var result = target.Mutate(expressionSyntax, semanticModel, _options);
 
-        ValidateMutation(result);
+        ValidateRegexMutation(result);
     }
 
     [TestMethod]
@@ -467,6 +588,6 @@ public class RegexMutatorWithSemanticModelTests : TestBase
         var target = new StringMutator();
         var result = target.Mutate(expressionSyntax, semanticModel, _options);
 
-        ValidateMutation(result);
+        ValidateRegexMutation(result);
     }
 }
