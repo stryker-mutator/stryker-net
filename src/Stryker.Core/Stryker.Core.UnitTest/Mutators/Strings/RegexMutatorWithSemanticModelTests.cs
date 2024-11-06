@@ -33,7 +33,7 @@ public class RegexMutatorWithSemanticModelTests : TestBase
         var attribute = MetadataReference.CreateFromFile(Path.Combine(basePath, "System.Runtime.dll"));
         var compilation = CSharpCompilation.Create("TestAssembly")
                                            .WithOptions(new CSharpCompilationOptions(OutputKind
-                                                                .DynamicallyLinkedLibrary))
+                                                           .DynamicallyLinkedLibrary))
                                            .AddReferences(mscorlib)
                                            .AddReferences(regex)
                                            .AddReferences(attribute)
@@ -42,7 +42,8 @@ public class RegexMutatorWithSemanticModelTests : TestBase
         // Get the semantic model from the compilation
         var semanticModel = compilation.GetSemanticModel(syntaxTree);
 
-        var expression = syntaxTree.GetRoot().DescendantNodes().OfType<LiteralExpressionSyntax>().First();
+        var expression = syntaxTree.GetRoot().DescendantNodes().OfType<LiteralExpressionSyntax>()
+                                   .First(a => a.IsKind(SyntaxKind.StringLiteralExpression));
 
         return (semanticModel, expression);
     }
@@ -102,7 +103,7 @@ public class RegexMutatorWithSemanticModelTests : TestBase
     }
 
     [TestMethod]
-    public void ShouldNotMutateCustomNonRegexMethods()
+    public void ShouldMutateCustomRegexMethodsWithManualSyntax()
     {
         var source = """
                      using System.Diagnostics.CodeAnalysis;
@@ -111,7 +112,30 @@ public class RegexMutatorWithSemanticModelTests : TestBase
                              Call("^abc");
                          }
                      
-                         public static void Call(string s) {
+                         public static void Call([StringSyntax("Regex")]string s) {
+                     
+                         }
+                     }
+                     """;
+
+        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(source);
+        var target = new StringMutator();
+        var result = target.Mutate(expressionSyntax, semanticModel, _options);
+
+        ValidateMutation(result);
+    }
+
+    [TestMethod]
+    public void ShouldNotMutateNonRegexParametersWithSimilarSyntax()
+    {
+        var source = """
+                     using System.ComponentModel;
+                     public class C {
+                         public void M() {
+                             Call("^abc");
+                         }
+                     
+                         public static void Call([DefaultValue("Regex")]string s) {
                      
                          }
                      }
@@ -125,16 +149,61 @@ public class RegexMutatorWithSemanticModelTests : TestBase
     }
 
     [TestMethod]
-    public void ShouldNotMutateUnrelatedMethods()
+    public void ShouldNotMutateBadNonRegexMethod()
     {
         var source = """
                      using System.Diagnostics.CodeAnalysis;
                      public class C {
                          public void M() {
-                             Call(false);
+                             Call("^abc");
                          }
                      
-                         public static void Call(bool s) {
+                         public static void Call([StringSyntaxAttribute]string s) {
+                     
+                         }
+                     }
+                     """;
+
+        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(source);
+        var target = new StringMutator();
+        var result = target.Mutate(expressionSyntax, semanticModel, _options);
+
+        result.Where(a => a.Type == Mutator.Regex).ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void ShouldNotMutateNonRegexParameters()
+    {
+        var source = """
+                     using System.Diagnostics.CodeAnalysis;
+                     public class C {
+                         public void M() {
+                             Call("^abc");
+                         }
+                     
+                         public static void Call([StringSyntaxAttribute(StringSyntaxAttribute.Json)]string s) {
+                     
+                         }
+                     }
+                     """;
+
+        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(source);
+        var target = new StringMutator();
+        var result = target.Mutate(expressionSyntax, semanticModel, _options);
+
+        result.Where(a => a.Type == Mutator.Regex).ShouldBeEmpty();
+    }
+
+    [TestMethod]
+    public void ShouldNotMutateCustomNonRegexMethods()
+    {
+        var source = """
+                     public class C {
+                         public void M() {
+                             Call("^abc");
+                         }
+                     
+                         public static void Call(string s) {
                      
                          }
                      }
@@ -184,11 +253,13 @@ public class RegexMutatorWithSemanticModelTests : TestBase
     }
 
     [TestMethod]
-    public void ShouldNotApplyRegexMutationToNormalFields()
+    public void ShouldMutateRegexFieldsWithMultipleAttributes()
     {
         var source = """
+                     using System.ComponentModel;
                      using System.Diagnostics.CodeAnalysis;
                      public class C {
+                         [StringSyntax(StringSyntaxAttribute.Regex), DefaultValue(false)]
                          public string RegexPattern = "^abc";
                      }
                      """;
@@ -197,16 +268,35 @@ public class RegexMutatorWithSemanticModelTests : TestBase
         var target = new StringMutator();
         var result = target.Mutate(expressionSyntax, semanticModel, _options);
 
-        result.Where(a => a.Type == Mutator.Regex).ShouldBeEmpty();
+        ValidateMutation(result);
     }
 
     [TestMethod]
-    public void ShouldNotMutateOtherFields()
+    public void ShouldMutateRegexPropertiesWithMultipleAttributes()
+    {
+        var source = """
+                     using System.ComponentModel;
+                     using System.Diagnostics.CodeAnalysis;
+                     public class C {
+                         [StringSyntax(StringSyntaxAttribute.Regex), DefaultValue(false)]
+                         public string RegexPattern => "^abc";
+                     }
+                     """;
+
+        var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(source);
+        var target = new StringMutator();
+        var result = target.Mutate(expressionSyntax, semanticModel, _options);
+
+        ValidateMutation(result);
+    }
+
+    [TestMethod]
+    public void ShouldNotApplyRegexMutationToNormalFields()
     {
         var source = """
                      using System.Diagnostics.CodeAnalysis;
                      public class C {
-                         public bool RegexPattern = true;
+                         public string RegexPattern = "^abc";
                      }
                      """;
 

@@ -125,17 +125,19 @@ public class StringMutator : IMutator
                 case PropertyDeclarationSyntax field:
                     return field.AttributeLists.Any(static a => a.Attributes.Any(IsRegexSyntaxAttribute));
                 case AssignmentExpressionSyntax assignment
-                    when semanticModel?.GetOperation(assignment) is ISimpleAssignmentOperation
+                    when semanticModel?.GetOperation(assignment) is IAssignmentOperation
                     {
-                        Type.SpecialType: SpecialType.System_String
-                    } expressionOp:
-                    return expressionOp.Target switch
-                    {
-                        IFieldReferenceOperation field => field.Field.GetAttributes().Any(IsRegexSyntaxAttribute),
-                        IPropertyReferenceOperation property => property.Property.GetAttributes()
-                                                                        .Any(IsRegexSyntaxAttribute),
-                        _ => false
-                    };
+                        Type.SpecialType: SpecialType.System_String,
+                        Target: IMemberReferenceOperation
+                        {
+                            Member: var member
+                        }
+                    }:
+                    return member.GetAttributes().Any(IsRegexSyntaxAttribute);
+                case BlockSyntax: // Early exits
+                case MemberDeclarationSyntax:
+                case UsingDirectiveSyntax:
+                    return false;
             }
         }
 

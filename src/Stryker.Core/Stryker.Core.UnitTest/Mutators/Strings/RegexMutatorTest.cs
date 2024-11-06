@@ -26,6 +26,19 @@ public class RegexMutatorTest : TestBase
     }
 
     [TestMethod]
+    [DataRow(MutationLevel.Basic)]
+    [DataRow(MutationLevel.Standard)]
+    public void ShouldNotMutateWithLowerMutationLevel(MutationLevel level)
+    {
+        var literalExpression = ParseExpression("new Regex(@\"^abc\")");
+        var target = new StringMutator();
+
+        var result = target.ApplyMutations(literalExpression, null, level);
+
+        result.ShouldBeEmpty();
+    }
+
+    [TestMethod]
     public void ShouldMutateStringLiteralInRegexConstructor()
     {
         var literalExpression = ParseExpression("new Regex(@\"^abc\")");
