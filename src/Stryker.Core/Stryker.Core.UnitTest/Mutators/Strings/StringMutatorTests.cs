@@ -141,17 +141,17 @@ namespace Stryker.Core.UnitTest.Mutators
     [TestMethod]
     [DataRow(@"""""u8 + """"u8")]
     [DataRow(@"""foo""u8 + """"u8")]
-    [DataRow(@" """"u8 + ""foo""u8")]
+    [DataRow(@"""""u8 + ""foo""u8")]
+    [DataRow(@"""foo""u8 + ""foo""u8 + ""foo""u8")]
     public void ShouldNotMutateConcatenatedUtf8StringLiteral(string original)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText($"var test = {original};");
 
-        var literalExpression = syntaxTree.GetRoot().DescendantNodes().OfType<LiteralExpressionSyntax>().First();
         var mutator = new StringMutator();
-
-        var result = mutator.ApplyMutations(literalExpression, null, MutationLevel.Standard);
-
-        result.ShouldBeEmpty();
+        foreach (var literalExpression in syntaxTree.GetRoot().DescendantNodes().OfType<LiteralExpressionSyntax>())
+        {
+            var result = mutator.ApplyMutations(literalExpression, null, MutationLevel.Standard);
+            result.ShouldBeEmpty();
+        }
     }
-
 }

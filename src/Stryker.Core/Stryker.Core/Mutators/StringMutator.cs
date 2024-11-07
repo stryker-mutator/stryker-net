@@ -84,9 +84,11 @@ public class StringMutator : IMutator
     }
 
     // https://learn.microsoft.com/en-us/dotnet/csharp/language-reference/proposals/csharp-11.0/utf8-string-literals#addition-operator
-    private static bool InAdditionOperator(LiteralExpressionSyntax node) => node.AncestorsAndSelf()
-       .Any(a => a.IsKind(SyntaxKind.AddExpression) && a is BinaryExpressionSyntax bes && bes.DescendantNodes()
-                    .OfType<LiteralExpressionSyntax>().All(b => b.IsKind(SyntaxKind.Utf8StringLiteralExpression)));
+    private static bool InAdditionOperator(LiteralExpressionSyntax node) =>
+        node.AncestorsAndSelf()
+         .Any(static a => a.IsKind(SyntaxKind.AddExpression) && a.DescendantNodes()
+                                                              .OfType<LiteralExpressionSyntax>()
+                                                              .All(static b => b.IsKind(SyntaxKind.Utf8StringLiteralExpression)));
 
     private IEnumerable<Mutation> ApplyRegexMutations(LiteralExpressionSyntax node, MutationLevel mutationLevel)
     {
@@ -146,7 +148,7 @@ public class StringMutator : IMutator
                                    TypeArguments: [{ SpecialType: SpecialType.System_Char or SpecialType.System_Byte }]
                                } or
                                {
-                                   SpecialType: SpecialType.System_String
+                                   SpecialType: SpecialType.System_String or SpecialType.System_Object
                                } &&
                            argumentOp.Parameter.GetAttributes().Any(IsRegexSyntaxAttribute);
                 case FieldDeclarationSyntax field:
