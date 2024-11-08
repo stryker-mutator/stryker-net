@@ -70,7 +70,7 @@ public class NugetRestoreProcessTests : TestBase
 
     [TestMethodWithIgnoreIfSupport]
     [IgnoreIf(nameof(Is.Unix))] //DotnetFramework does not run on Unix
-    public void ThrowIfRestoreFails()
+    public void RetryIfRestoreFails()
     {
         var nugetPath = @"C:\choco\bin\NuGet.exe";
         var msBuildVersion = "16.0.0";
@@ -112,19 +112,21 @@ public class NugetRestoreProcessTests : TestBase
             {
                 ExitCode = 1,
                 Output = "Packages restore failed."
-            });
-        processExecutorMock.Setup(x => x.Start(It.Is<string>(s => s.Contains("Microsoft Visual Studio")), It.Is<string>(s => s.Contains("vswhere.exe")),
-                @"-latest -requires Microsoft.Component.MSBuild -products * -find MSBuild\**\Bin\MSBuild.exe", null, It.IsAny<int>()))
+            }).Verifiable(Times.Once);
+
+        processExecutorMock.Setup(x => x.Start(nugetDirectory, nugetPath,
+                $"restore \"{Path.GetFullPath(SolutionPath)}\"", null, It.IsAny<int>()))
             .Returns(new ProcessResult()
             {
-                ExitCode = 0,
-                Output = "Msbuild executable path found at "
-            });
+                ExitCode = 1,
+                Output = "Packages restore failed."
+            }).Verifiable(Times.Once);
+
         var target = new NugetRestoreProcess(processExecutorMock.Object);
+        
+        target.RestorePackages(SolutionPath);
 
-        var action = () => target.RestorePackages(SolutionPath);
-
-        action.ShouldThrow<InputException>("Packages restore failed.");
+        processExecutorMock.VerifyAll();
     }
 
     [TestMethodWithIgnoreIfSupport]
