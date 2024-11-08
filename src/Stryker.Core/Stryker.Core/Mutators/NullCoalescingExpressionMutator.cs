@@ -52,7 +52,7 @@ public class NullCoalescingExpressionMutator : MutatorBase<BinaryExpressionSynta
         }
 
         // Only create a "remove left" mutant if the right side is nullable.
-        if (IsNullable(node.Right, semanticModel))
+        if (IsNullable(node.Right, semanticModel) || node.Right.IsKind(SyntaxKind.CollectionExpression))
         {
             yield return new Mutation
             {
