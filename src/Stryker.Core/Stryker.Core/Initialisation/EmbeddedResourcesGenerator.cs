@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Collections.Concurrent;
 using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
@@ -16,7 +17,7 @@ namespace Stryker.Core.Initialisation;
 [ExcludeFromCodeCoverage]
 public static class EmbeddedResourcesGenerator
 {
-    private static readonly Dictionary<string, IEnumerable<(ResourceDescription description, object context)>> _resourceDescriptions = new();
+    private static readonly ConcurrentDictionary<string, IEnumerable<(ResourceDescription description, object context)>> _resourceDescriptions = new();
 
     public static void ResetCache()
     {
@@ -30,7 +31,7 @@ public static class EmbeddedResourcesGenerator
             using var module = LoadModule(assemblyPath);
             if (module is not null)
             {
-                _resourceDescriptions.Add(projectFilePath, ReadResourceDescriptionsFromModule(module).ToList());
+                _resourceDescriptions.TryAdd(projectFilePath, ReadResourceDescriptionsFromModule(module).ToList());
             }
 
             // Failed to load some or all resources from module, generate missing resources from disk
@@ -43,7 +44,7 @@ public static class EmbeddedResourcesGenerator
             // Failed to load module, generate all resources from disk
             if (module is null)
             {
-                _resourceDescriptions.Add(projectFilePath, GenerateManifestResources(projectFilePath, rootNamespace, embeddedResources));
+                _resourceDescriptions.TryAdd(projectFilePath, GenerateManifestResources(projectFilePath, rootNamespace, embeddedResources));
             }
         }
 

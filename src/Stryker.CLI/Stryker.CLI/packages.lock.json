@@ -1383,8 +1383,8 @@
       },
       "TestableIO.System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "21.0.29",
-        "contentHash": "3TtSs2i0m0QqpAI4EzR1vZXQuHNw5grBy0rDKqMkWi6ySEZ+yhN9HACgIyEq7gDXPLrtQI18ud/OtI0qVhP8Mg=="
+        "resolved": "21.1.1",
+        "contentHash": "rOpwfPzkMnXEm1tXzCuFAIcB5vEy2WQJ4vZ4ixAHv6UE95ddYeJ6JJh4rg/3fmf+5ewit9Oful6POUjnbOkang=="
       },
       "stryker": {
         "type": "Project",
@@ -1417,7 +1417,7 @@
           "Stryker.DataCollector": "[4.3.0, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
           "Stryker.RegexMutators": "[4.3.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[21.0.29, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[21.1.1, )"
         }
       },
       "stryker.abstractions": {
@@ -1430,7 +1430,7 @@
           "Microsoft.TestPlatform.ObjectModel": "[17.11.1, )",
           "Serilog": "[4.1.0, )",
           "Stryker.Utilities": "[4.3.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[21.0.29, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[21.1.1, )"
         }
       },
       "stryker.configuration": {
@@ -1720,11 +1720,11 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[21.0.29, )",
-        "resolved": "21.0.29",
-        "contentHash": "bm1stQx3rGV2qBW2xAAvl8ODVGNVkiAkqNsE+LsKfhMamBUa07IgsgMc9X/zBHc5yfAJOqJIUArQ56DDgwGyYA==",
+        "requested": "[21.1.1, )",
+        "resolved": "21.1.1",
+        "contentHash": "BVymeYb9xqUdffJq9zqVyGglyQDi8QXv+VYUM0Z9Mrfau+rFFGk6GmFhEiCC3TIGOfDSIFWFUPWzxXHXjWmXIQ==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "21.0.29"
+          "TestableIO.System.IO.Abstractions": "21.1.1"
         }
       }
     }
