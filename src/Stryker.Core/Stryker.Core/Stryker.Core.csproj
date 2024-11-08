@@ -36,6 +36,7 @@
 
   <ItemGroup>
     <PackageReference Include="Azure.Storage.Files.Shares" />
+    <PackageReference Include="dnlib" />
     <PackageReference Include="Grynwald.MarkdownGenerator" />
     <PackageReference Include="LibGit2Sharp" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" />
@@ -44,12 +45,15 @@
     <PackageReference Include="Buildalyzer" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />
     <PackageReference Include="Microsoft.Extensions.Logging" />
+    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" />
     <PackageReference Include="Microsoft.TestPlatform" />
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
     <PackageReference Include="Microsoft.TestPlatform.Portable" />
     <PackageReference Include="Microsoft.TestPlatform.TranslationLayer" />
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" />
     <PackageReference Include="Mono.Cecil" />
+    <PackageReference Include="MSTest.TestAdapter" />
+    <PackageReference Include="MSTest.TestFramework" />
     <PackageReference Include="NuGet.Frameworks" />
     <PackageReference Include="ResXResourceReader.NetStandard" />
     <PackageReference Include="Serilog" />

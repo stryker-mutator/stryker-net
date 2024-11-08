@@ -196,4 +196,17 @@ public class StrykerRunner : IStrykerRunner
 
         return projectComponents.FirstOrDefault();
     }
+
+    private bool Test(int x, int y)
+    {
+        if (x == y)
+        {
+            y++;
+        }
+        if (y == 0)
+        {
+            return true;
+        }
+        return false;
+    }
 }
