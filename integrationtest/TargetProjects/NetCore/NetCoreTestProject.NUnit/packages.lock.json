@@ -85,7 +85,7 @@
       "targetproject": {
         "type": "Project",
         "dependencies": {
-          "Library": "[4.3.0, )",
+          "Library": "[4.4.0, )",
           "Microsoft.CodeAnalysis.Common": "[4.11.0, )"
         }
       }
