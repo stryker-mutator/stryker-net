@@ -1596,7 +1596,7 @@
           "Stryker.DataCollector": "[4.3.0, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
           "Stryker.RegexMutators": "[4.3.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[21.1.1, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[21.1.2, )"
         }
       },
       "stryker.abstractions": {
@@ -1609,7 +1609,7 @@
           "Microsoft.TestPlatform.ObjectModel": "[17.11.1, )",
           "Serilog": "[4.1.0, )",
           "Stryker.Utilities": "[4.3.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[21.1.1, )"
+          "TestableIO.System.IO.Abstractions.Wrappers": "[21.1.2, )"
         }
       },
       "stryker.configuration": {
@@ -1923,7 +1923,7 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[21.1.1, )",
+        "requested": "[21.1.2, )",
         "resolved": "21.1.2",
         "contentHash": "xe/ZdK+9PvLyYV/GIwU2M84bSfsYz/aYHFb43JXXJVo/Xu5EFXhDDkTlSVPFrypjFT4TiKi//EHxZfD4Uu6SIg==",
         "dependencies": {
