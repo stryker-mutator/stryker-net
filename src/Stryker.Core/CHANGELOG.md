@@ -1,3 +1,21 @@
+# [4.4.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.3.0...stryker@4.4.0) (2024-11-08)
+
+
+### Bug Fixes
+
+* **embedded resources:** Use concurrent dictionnary for resource cache ([#3095](https://github.com/stryker-mutator/stryker-net/issues/3095)) ([b3f0ef0](https://github.com/stryker-mutator/stryker-net/commit/b3f0ef0a009984922a010f8b90e7fc1880cfd282))
+* **reference alias:** Properly support PackageReference Alias ([#3070](https://github.com/stryker-mutator/stryker-net/issues/3070)) ([d1a9ade](https://github.com/stryker-mutator/stryker-net/commit/d1a9ade0eb2fa9f15aef4d92e3549cb64372644e))
+* **top-level statements:** Fix issue with global statements ([#3087](https://github.com/stryker-mutator/stryker-net/issues/3087)) ([96d7c8c](https://github.com/stryker-mutator/stryker-net/commit/96d7c8c3fa1bb055db0284130a1ed602420730ab))
+
+
+### Features
+
+* Add string mutators for LastIndexOf and IndexOf. ([#3054](https://github.com/stryker-mutator/stryker-net/issues/3054)) ([3f6e3ad](https://github.com/stryker-mutator/stryker-net/commit/3f6e3ad8dc13ddb0aa244178321788ddaee209dc))
+* **Mutators:** Add Collection Expression Mutator ([#3082](https://github.com/stryker-mutator/stryker-net/issues/3082)) ([4ba906b](https://github.com/stryker-mutator/stryker-net/commit/4ba906bc19453093fa6bb952f31d26920cd481d4))
+* **nuget:** Make nuget restore errors non fatal ([#3072](https://github.com/stryker-mutator/stryker-net/issues/3072)) ([b7f9cca](https://github.com/stryker-mutator/stryker-net/commit/b7f9ccac7e384b14f7c21321006cbae4261f6d56))
+
+
+
 # [4.3.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.2.0...stryker@4.3.0) (2024-10-14)
 
 
