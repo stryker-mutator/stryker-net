@@ -100,12 +100,12 @@
       },
       "TestableIO.System.IO.Abstractions.TestingHelpers": {
         "type": "Direct",
-        "requested": "[21.1.1, )",
-        "resolved": "21.1.1",
-        "contentHash": "mBG+qZdA+nrMVEEm0GIRTiWnVtqndGGuutLlMqBCc/42lPDQx1Nboyuz2oO3BVf8Jm7haJllu9druFYmJP7t3w==",
+        "requested": "[21.1.2, )",
+        "resolved": "21.1.2",
+        "contentHash": "w9BAhBhV+KVz8cob8PpBTJa9RZqT4H7oAGK99TNS2zRtWCi/EY+L+w3riP/3Vr+Ws9tec7g6rhp0wv7Tw4lV3A==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "21.1.1",
-          "TestableIO.System.IO.Abstractions.Wrappers": "21.1.1"
+          "TestableIO.System.IO.Abstractions": "21.1.2",
+          "TestableIO.System.IO.Abstractions.Wrappers": "21.1.2"
         }
       },
       "Azure.Core": {
