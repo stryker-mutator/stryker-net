@@ -95,7 +95,7 @@ Also, if a mutation ends up changing a test case name - typically by changing th
 test identifier so this testcase will only run when running **all tests** and can no longer be executed in isolation, as
 Stryker can't anticipate the test name.
 
-### NUnit
+## NUnit
 
 ### Conflicting test cases
 If multiple NUnit test cases have the same id (_Guid_), NUnit will report them as a single test case, and will merge all associated results in a single test result.
