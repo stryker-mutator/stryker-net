@@ -134,13 +134,6 @@ stages:
             inputs:
               version: 8.x
           - task: DotNetCoreCLI@2
-            displayName: 'Restore vstest binaries'
-            inputs:
-              command: 'custom'
-              custom: 'restore'
-              arguments: '--packages ./.vstest/'
-              workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
-          - task: DotNetCoreCLI@2
             displayName: 'Pack integrationtest packages'
             inputs:
               command: pack
@@ -287,13 +280,6 @@ stages:
       displayName: 'Use dotnet'
       inputs:
         version: 8.x
-    - task: DotNetCoreCLI@2
-      displayName: 'Restore vstest binaries'
-      inputs:
-        command: 'custom'
-        custom: 'restore'
-        arguments: '--packages ./.vstest/'
-        workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
     - task: DotNetCoreCLI@2
       displayName: 'Pack Stryker.CLI'
       inputs:
