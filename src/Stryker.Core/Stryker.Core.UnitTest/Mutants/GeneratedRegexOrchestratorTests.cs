@@ -76,9 +76,9 @@ public partial class GeneratedRegexOrchestratorTests : TestBase
                                                            new CSharpCompilationOptions(OutputKind
                                                            .DynamicallyLinkedLibrary));
 
-        var regexGeneratorDll = Path.Combine(basePath, @"..\..\..\packs\Microsoft.NETCore.App.Ref\",
+        var regexGeneratorDll = Path.Combine(basePath, "..", "..", "..", "packs", "Microsoft.NETCore.App.Ref",
                                              Path.GetFileName(basePath),
-                                             @"analyzers\dotnet\cs\System.Text.RegularExpressions.Generator.dll");
+                                             "analyzers", "dotnet", "cs", "System.Text.RegularExpressions.Generator.dll");
 
         var sourceGenerator =
             Activator.CreateInstanceFrom(regexGeneratorDll, "System.Text.RegularExpressions.Generator.RegexGenerator")
