@@ -6,7 +6,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
