@@ -32,6 +32,7 @@
     <EmbeddedResource Include="InjectedHelpers\Coverage\MutantContext.cs" />
     <EmbeddedResource Include="Reporters\Html\Files\dist\mutation-test-elements.js" />
     <EmbeddedResource Include="Reporters\Html\Files\mutation-report.html" />
+    <EmbeddedResource Include="$(PkgMicrosoft_TestPlatform_Portable)\*.nupkg" LogicalName="Microsoft.TestPlatform.Portable.nupkg" Visible="false" />
   </ItemGroup>
 
   <ItemGroup>
@@ -46,7 +47,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" />
     <PackageReference Include="Microsoft.TestPlatform" />
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
-    <PackageReference Include="Microsoft.TestPlatform.Portable" />
+    <PackageReference Include="Microsoft.TestPlatform.Portable" GeneratePathProperty="true" />
     <PackageReference Include="Microsoft.TestPlatform.TranslationLayer" />
     <PackageReference Include="Microsoft.Web.LibraryManager.Build" />
     <PackageReference Include="Mono.Cecil" />
