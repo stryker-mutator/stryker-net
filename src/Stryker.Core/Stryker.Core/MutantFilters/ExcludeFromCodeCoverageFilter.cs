@@ -9,7 +9,7 @@ using Stryker.Abstractions.ProjectComponents;
 
 namespace Stryker.Core.MutantFilters;
 
-public class ExcludeFromCodeCoverageFilter : IMutantFilter
+public partial class ExcludeFromCodeCoverageFilter : IMutantFilter
 {
     public MutantFilter Type => MutantFilter.ExcludeFromCodeCoverage;
     public string DisplayName => "exclude from code coverage filter";
@@ -39,7 +39,9 @@ public class ExcludeFromCodeCoverageFilter : IMutantFilter
     {
         return m.AttributeLists
             .SelectMany(attr => attr.Attributes)
-            .Any(attr => Regex.IsMatch(attr.Name.ToString(),
-                @"^(?:System\.Diagnostics\.CodeAnalysis\.)?ExcludeFromCodeCoverage(?:Attribute)?$"));
+            .Any(attr => ExcludeFromCodeCoverageRegex().IsMatch(attr.Name.ToString()));
     }
+
+    [GeneratedRegex(@"^(?:System\.Diagnostics\.CodeAnalysis\.)?ExcludeFromCodeCoverage(?:Attribute)?$")]
+    private static partial Regex ExcludeFromCodeCoverageRegex();
 }

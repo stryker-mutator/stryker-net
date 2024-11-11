@@ -8,12 +8,12 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace Stryker.Core.InjectedHelpers;
 
-public class CodeInjection
+public partial class CodeInjection
 {
     // files to be injected into the mutated assembly
     private static readonly string[] Files = {"Stryker.Core.InjectedHelpers.MutantControl.cs",
         "Stryker.Core.InjectedHelpers.Coverage.MutantContext.cs"};
-    private const string PatternForCheck = "\\/\\/ *check with: *([^\\r\\n]+)";
+
     private const string MutantContextClassName = "MutantContext";
     private const string StrykerNamespace = "Stryker";
     private static readonly string Selector;
@@ -21,7 +21,7 @@ public class CodeInjection
     static CodeInjection() //NOSONAR : no way to get read of static constructors
     {
         var helper = GetSourceFromResource("Stryker.Core.InjectedHelpers.MutantControl.cs");
-        var extractor = new Regex(PatternForCheck);
+        var extractor = PatternForCheckRegex();
         var result = extractor.Match(helper);
         if (!result.Success)
         {
@@ -114,4 +114,7 @@ public class CodeInjection
         using var reader = new StreamReader(stream!);
         return reader.ReadToEnd();
     }
+
+    [GeneratedRegex(@"\/\/ *check with: *([^\r\n]+)")]
+    private static partial Regex PatternForCheckRegex();
 }

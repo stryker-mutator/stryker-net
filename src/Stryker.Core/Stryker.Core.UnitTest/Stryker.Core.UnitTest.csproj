@@ -2,6 +2,11 @@
   <PropertyGroup>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="**\Verified\**" />
+    <EmbeddedResource Remove="**\Verified\**" />
+    <None Remove="**\Verified\**" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Remove="TestResources\ExampleSourceFile.cs" />
@@ -56,6 +61,7 @@
     <PackageReference Include="Shouldly" />
     <PackageReference Include="Spectre.Console.Testing" />
     <PackageReference Include="TestableIO.System.IO.Abstractions.TestingHelpers" />
+    <PackageReference Include="Verify.MSTest" />
   </ItemGroup>
 
   <!--This avoids conflict with System.Text.RegularExpression-->

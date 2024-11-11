@@ -108,6 +108,21 @@
           "TestableIO.System.IO.Abstractions.Wrappers": "21.1.3"
         }
       },
+      "Verify.MSTest": {
+        "type": "Direct",
+        "requested": "[26.6.0, )",
+        "resolved": "26.6.0",
+        "contentHash": "Rr4Dj0Z665q0kZidsemcjxecO/jmi8t4Ubndd6q6nMASeFi7J+p+DWJU2Cc+k7ej43JHnVL9l+YhSObhsfUxwQ==",
+        "dependencies": {
+          "MSTest.TestFramework": "3.6.0",
+          "Verify": "26.6.0"
+        }
+      },
+      "Argon": {
+        "type": "Transitive",
+        "resolved": "0.21.0",
+        "contentHash": "c515pzYDOmF3o8TywrIsTjxbc5KJwSdZW3I7JkhhduLz15wAlxo53nLg2UnD+dqTAT838LcuawRNgneK83A30Q=="
+      },
       "Azure.Core": {
         "type": "Transitive",
         "resolved": "1.41.0",
@@ -147,17 +162,17 @@
       },
       "DiffEngine": {
         "type": "Transitive",
-        "resolved": "11.3.0",
-        "contentHash": "k0ZgZqd09jLZQjR8FyQbSQE86Q7QZnjEzq1LPHtj1R2AoWO8sjV5x+jlSisL7NZAbUOI4y+7Bog8gkr9WIRBGw==",
+        "resolved": "15.5.1",
+        "contentHash": "8j7Ke8odgqsflzwhdNYek6XHCGAL8sACuxJbzm7luvKrPubLPbTwppidvHe++rbJoVBh9Jj2BiF8b00U+TT35Q==",
         "dependencies": {
-          "EmptyFiles": "4.4.0",
-          "System.Management": "6.0.1"
+          "EmptyFiles": "8.4.0",
+          "System.Management": "8.0.0"
         }
       },
       "EmptyFiles": {
         "type": "Transitive",
-        "resolved": "4.4.0",
-        "contentHash": "gwJEfIGS7FhykvtZoscwXj/XwW+mJY6UbAZk+qtLKFUGWC95kfKXnj8VkxsZQnWBxJemM/q664rGLN5nf+OHZw=="
+        "resolved": "8.4.0",
+        "contentHash": "M+GhsRIbqmfoGqB4XYya1ikuVb5GLT+F2bjitGAOs1Mg14Ojt9+MkEKWU3Kf3tse/2TuM5ozhxi3TBmPaSQ6GA=="
       },
       "FSharp.Core": {
         "type": "Transitive",
@@ -593,6 +608,11 @@
           "System.Text.Encoding.Extensions": "4.0.11"
         }
       },
+      "SimpleInfoName": {
+        "type": "Transitive",
+        "resolved": "2.3.0",
+        "contentHash": "oasLpQjcW+x3/EEgAmFI1NkrSmjIuXGgxm9dbzTY8XHgv05324QJZb4dh07PzHjKOUK28ImObtXGF7h4pEbpaA=="
+      },
       "Spectre.Console.Cli": {
         "type": "Transitive",
         "resolved": "0.49.1",
@@ -617,8 +637,8 @@
       },
       "System.CodeDom": {
         "type": "Transitive",
-        "resolved": "6.0.0",
-        "contentHash": "CPc6tWO1LAer3IzfZufDBRL+UZQcj5uS207NHALQzP84Vp/z6wF0Aa0YZImOQY8iStY0A2zI/e3ihKNPfUm8XA=="
+        "resolved": "8.0.0",
+        "contentHash": "WTlRjL6KWIMr/pAaq3rYqh0TJlzpouaQ/W1eelssHgtlwHAH25jXTkUphTYx9HaIIf7XA6qs/0+YhtLEQRkJ+Q=="
       },
       "System.Collections": {
         "type": "Transitive",
@@ -818,8 +838,8 @@
       },
       "System.IO.Hashing": {
         "type": "Transitive",
-        "resolved": "6.0.0",
-        "contentHash": "Rfm2jYCaUeGysFEZjDe7j1R4x6Z6BzumS/vUT5a1AA/AWJuGX71PoGB0RmpyX3VmrGqVnAwtfMn39OHR8Y/5+g=="
+        "resolved": "8.0.0",
+        "contentHash": "ne1843evDugl0md7Fjzy6QjJrzsjh46ZKbhf8GwBXb5f/gw97J4bxMs0NQKifDuThh/f0bZ0e62NPl1jzTuRqA=="
       },
       "System.Linq": {
         "type": "Transitive",
@@ -874,10 +894,10 @@
       },
       "System.Management": {
         "type": "Transitive",
-        "resolved": "6.0.1",
-        "contentHash": "10J1D0h/lioojphfJ4Fuh5ZUThT/xOVHdV9roGBittKKNP2PMjrvibEdbVTGZcPra1399Ja3tqIJLyQrc5Wmhg==",
+        "resolved": "8.0.0",
+        "contentHash": "jrK22i5LRzxZCfGb+tGmke2VH7oE0DvcDlJ1HAKYU8cPmD8XnpUT0bYn2Gy98GEhGjtfbR/sxKTVb+dE770pfA==",
         "dependencies": {
-          "System.CodeDom": "6.0.0"
+          "System.CodeDom": "8.0.0"
         }
       },
       "System.Memory": {
@@ -1534,6 +1554,17 @@
         "type": "Transitive",
         "resolved": "21.1.3",
         "contentHash": "qe/gIjOPCoyiSCToouJx/vCvcTQXVGj/eJVRK/7s2F8yIv0zvEpjByfXZvS3yqmcpg0/S6x6w7DvNyPrLe/RRw=="
+      },
+      "Verify": {
+        "type": "Transitive",
+        "resolved": "26.6.0",
+        "contentHash": "n1lR8znqqFqvx6EA8M602B7TYm7RDk9QlFb77l2moCqIZ9/sKm2wKijmJlgYR2KueQjt3eUvm7nWKJjjdPQX9Q==",
+        "dependencies": {
+          "Argon": "0.21.0",
+          "DiffEngine": "15.5.1",
+          "SimpleInfoName": "2.3.0",
+          "System.IO.Hashing": "8.0.0"
+        }
       },
       "stryker": {
         "type": "Project",
