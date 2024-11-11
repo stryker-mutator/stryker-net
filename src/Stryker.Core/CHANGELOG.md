@@ -1,3 +1,12 @@
+## [4.4.1](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.4.0...stryker@4.4.1) (2024-11-11)
+
+
+### Bug Fixes
+
+* Simplify embedding the Microsoft.TestPlatform.Portable nupkg ([#3105](https://github.com/stryker-mutator/stryker-net/issues/3105)) ([5f6b089](https://github.com/stryker-mutator/stryker-net/commit/5f6b08910215a4087d386e6a31039cbd3a768636)), closes [#3103](https://github.com/stryker-mutator/stryker-net/issues/3103)
+
+
+
 # [4.4.0](https://github.com/stryker-mutator/stryker-net/compare/stryker@4.3.0...stryker@4.4.0) (2024-11-08)
 
 
