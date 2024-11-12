@@ -542,20 +542,20 @@ public class InputFileResolver : IInputFileResolver
 
     private sealed class DynamicEnumerableQueue<T>
     {
-        private readonly Queue<T> _queue;
-        private readonly HashSet<T> _cache;
+        private readonly ConcurrentQueue<T> _queue;
+        private readonly ConcurrentDictionary<T, bool> _cache;
 
         public DynamicEnumerableQueue(IEnumerable<T> init)
         {
-            _cache = [.. init];
-            _queue = new Queue<T>(_cache);
+            _cache = new(init.ToDictionary(x => x, x => true));
+            _queue = new (_cache.Keys);
         }
 
-        public bool Empty => _queue.Count == 0;
+        public bool Empty => _queue.IsEmpty;
 
         public void Add(T entry)
         {
-            if (!_cache.Add(entry))
+            if (!_cache.TryAdd(entry, true))
             {
                 return;
             }
@@ -566,7 +566,10 @@ public class InputFileResolver : IInputFileResolver
         {
             while (_queue.Count > 0)
             {
-                yield return _queue.Dequeue();
+                if (_queue.TryDequeue(out var entry))
+                {
+                    yield return entry;
+                }
             }
         }
     }
