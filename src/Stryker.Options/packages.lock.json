@@ -1187,7 +1187,7 @@
           "Microsoft.CodeAnalysis.Common": "[4.11.0, )",
           "Microsoft.TestPlatform.ObjectModel": "[17.11.1, )",
           "Serilog": "[4.1.0, )",
-          "Stryker.Utilities": "[4.4.1, )",
+          "Stryker.Utilities": "[1.0.0, )",
           "TestableIO.System.IO.Abstractions.Wrappers": "[21.1.3, )"
         }
       },
@@ -1298,7 +1298,7 @@
       },
       "NuGet.Frameworks": {
         "type": "CentralTransitive",
-        "requested": "[6.11.1, )",
+        "requested": "[6.12.1, )",
         "resolved": "6.9.1",
         "contentHash": "DaKh3lenPUvzGccPkbI97BIvA27z+/UsL3ankfoZlX/4vBVDK5N1sheFTQ+GuJf+IgSzsJz/A21SPUpQLHwUtA=="
       },
