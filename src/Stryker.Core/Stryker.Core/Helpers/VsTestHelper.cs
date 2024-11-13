@@ -184,19 +184,27 @@ public class VsTestHelper : IVsTestHelper
         }
     }
 
-    private string DeployEmbeddedVsTestBinaries()
+    internal string DeployEmbeddedVsTestBinaries()
     {
-        var vsTestZip = typeof(VsTestHelper).Assembly
-            .GetManifestResourceNames()
-            .Single(r =>
-                r.Contains("Microsoft.TestPlatform.Portable", StringComparison.InvariantCultureIgnoreCase));
+        var assembly = typeof(VsTestHelper).Assembly;
+        var vsTestZips = assembly.GetManifestResourceNames().Where(r => r == "Microsoft.TestPlatform.Portable.nupkg").ToList();
+
+        var vsTestZip = vsTestZips.Count switch
+        {
+            0 => throw new InvalidOperationException($"The Microsoft.TestPlatform.Portable.nupkg embedded resource was not found in {assembly.GetName().Name}. " +
+                                                     "Please report this issue at https://github.com/stryker-mutator/stryker-net/issues"),
+            1 => vsTestZips[0],
+            _ => throw new InvalidOperationException($"Multiple Microsoft.TestPlatform.Portable.nupkg embedded resources were found in {assembly.GetName().Name}. " +
+                                                     "Please report this issue at https://github.com/stryker-mutator/stryker-net/issues"),
+        };
+
+        using var stream = assembly.GetManifestResourceStream(vsTestZip)
+                           ?? throw new InvalidOperationException($"Failed to get the resource stream of {vsTestZip} in {assembly.GetName().Name}. " +
+                                                                  "Please report this issue at https://github.com/stryker-mutator/stryker-net/issues");
 
         var tempDir = Path.Combine(Path.GetTempPath(), Path.GetRandomFileName(), ".vstest");
-
-        using var stream = typeof(VsTestHelper).Assembly
-            .GetManifestResourceStream(vsTestZip);
         var zipPath = Path.Combine(tempDir, "vstest.zip");
-        _fileSystem.Directory.CreateDirectory(Path.GetDirectoryName(zipPath));
+        _fileSystem.Directory.CreateDirectory(tempDir);
 
         using (var file = _fileSystem.FileStream.New(zipPath, FileMode.Create))
         {

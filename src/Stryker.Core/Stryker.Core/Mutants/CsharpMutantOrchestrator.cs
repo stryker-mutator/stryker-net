@@ -83,6 +83,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         // ensure declaration are mutated at the block level
         new LocalDeclarationOrchestrator(),
         new InvocationExpressionOrchestrator(),
+        new NodeSpecificOrchestrator<GlobalStatementSyntax, GlobalStatementSyntax>(),
         new MemberDefinitionOrchestrator<MemberDeclarationSyntax>(),
         new MutateAtStatementLevelOrchestrator<AssignmentExpressionSyntax>(),
         new BlockOrchestrator(),

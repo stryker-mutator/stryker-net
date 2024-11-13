@@ -23,8 +23,8 @@ pr:
     - '.github/*'
 
 variables:
-  PackageVersion: '4.3.0'
-  VersionBuildNumber: $[counter('4.3.0', 1)]
+  PackageVersion: '4.4.1'
+  VersionBuildNumber: $[counter('4.4.1', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   ForkIntegrationNugetFeedUri: https://f.feedz.io/stryker/stryker-net/nuget/index.json
@@ -133,13 +133,6 @@ stages:
             displayName: 'Use dotnet'
             inputs:
               version: 8.x
-          - task: DotNetCoreCLI@2
-            displayName: 'Restore vstest binaries'
-            inputs:
-              command: 'custom'
-              custom: 'restore'
-              arguments: '--packages ./.vstest/'
-              workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
           - task: DotNetCoreCLI@2
             displayName: 'Pack integrationtest packages'
             inputs:
@@ -287,13 +280,6 @@ stages:
       displayName: 'Use dotnet'
       inputs:
         version: 8.x
-    - task: DotNetCoreCLI@2
-      displayName: 'Restore vstest binaries'
-      inputs:
-        command: 'custom'
-        custom: 'restore'
-        arguments: '--packages ./.vstest/'
-        workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
     - task: DotNetCoreCLI@2
       displayName: 'Pack Stryker.CLI'
       inputs:
