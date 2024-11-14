@@ -65,21 +65,27 @@ internal sealed class GeneratedRegexOrchestrator : MemberDefinitionOrchestrator<
 
         foreach (var (oldNode, marker, (proxyMethod, renamedMethod, _), mutations2) in toProcess)
         {
+            var newContext = CommentParser.ParseNodeLeadingComments(oldNode.RawNode, context);
+            var l = new List<(Mutant, ExpressionSyntax)>(mutations2.Length);
+
+            foreach (var mutation in mutations2.OrderBy(static a => a.Name))
+            {
+                if (newContext.GenerateMutant(mutation.Mutation, typeof(GeneratedRegexOrchestrator)) is { } m)
+                {
+                    l.Add((m, (ExpressionSyntax)mutation.Mutation.ReplacementNode));
+                }
+            }
+
+            if (context.FilteredMutators?.Contains(Mutator.Regex) ?? false)
+            {
+                continue;
+            }
+
             node = node.ReplaceNode(node.GetCurrentNode<MemberDeclarationSyntax>(oldNode)!, [
                 proxyMethod,
                 renamedMethod,
                 ..mutations2.OrderBy(static a => a.Name).Select(static a => a.NewMethod)
             ]);
-
-            var l = new List<(Mutant, ExpressionSyntax)>(mutations2.Length);
-
-            foreach (var mutation in mutations2.OrderBy(static a => a.Name))
-            {
-                if (context.GenerateMutant(context, mutation.Mutation, typeof(GeneratedRegexOrchestrator)) is { } m)
-                {
-                    l.Add((m, (ExpressionSyntax)mutation.Mutation.ReplacementNode));
-                }
-            }
 
             var nodeToMutate = node.GetAnnotatedNodes(marker).OfType<ExpressionSyntax>().First();
             node = node.ReplaceNode(nodeToMutate, context.Placer.PlaceExpressionControlledMutations(nodeToMutate, l));
@@ -283,6 +289,8 @@ internal sealed class GeneratedRegexOrchestrator : MemberDefinitionOrchestrator<
 internal sealed class MethodOrPropertyDeclarationSyntax
 {
     private readonly MemberDeclarationSyntax _memberDeclaration;
+
+    public SyntaxNode RawNode => _memberDeclaration;
 
     public SyntaxToken Identifier => _memberDeclaration switch
     {

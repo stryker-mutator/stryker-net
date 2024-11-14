@@ -245,7 +245,16 @@ public partial class GeneratedRegexOrchestratorTests : TestBase
                                        [GeneratedRegex(@"\b\w{5}\b")]
                                        private static partial Regex AbcGeneratedRegex { get; }
                                    }
-                                   """]
+                                   """],
+        ["SupportsStrykerComments", """
+                                    using System.Text.RegularExpressions;
+                                    namespace StrykerNet.UnitTest.Mutants.TestResources;
+                                    public partial class R {
+                                        // stryker disable Regex
+                                        [GeneratedRegex(@"\b\w{5}\b")]
+                                        private static partial Regex AbcGeneratedRegex();
+                                    }
+                                    """]
     ];
 
     public static IEnumerable<object[]> RequiresCompilationTests =>

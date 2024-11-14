@@ -77,8 +77,8 @@ internal class MutationContext
     public IEnumerable<Mutant> GenerateMutantsForNode(SyntaxNode node, SemanticModel semanticModel) =>
         _mainOrchestrator.GenerateMutationsForNode(node, semanticModel, this);
 
-    public Mutant GenerateMutant(MutationContext context, Mutation mutation, Type mutator) =>
-        _mainOrchestrator.GenerateMutation(context, mutation, mutator);
+    public Mutant GenerateMutant(Mutation mutation, Type mutator) =>
+        _mainOrchestrator.GenerateMutation(this, mutation, mutator);
 
     /// <summary>
     /// Find the appropriate node handler for the given node.
