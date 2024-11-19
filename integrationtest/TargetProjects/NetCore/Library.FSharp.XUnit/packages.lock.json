@@ -4,9 +4,9 @@
     "net6.0": {
       "FSharp.Core": {
         "type": "Direct",
-        "requested": "[9.0.100, )",
-        "resolved": "9.0.100",
-        "contentHash": "ye8yagHGsH08H2Twno5GRWkSbrMtxK/SWiHuPcF+3nODpW65/VJ8RO0aWxp8n9+KQbmahg90wAEL3TEXjF0r6A=="
+        "requested": "[8.0.403, )",
+        "resolved": "8.0.403",
+        "contentHash": "t1Pvv2++3zMQKKNuiQc1Lz4TCdaBajgG4mLhOE8AoFzborHQ/JbjIaJr6Mrq8m2z15KLu4r6Qz7E3oeACpljTg=="
       },
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
@@ -110,7 +110,7 @@
       "library.fsharp": {
         "type": "Project",
         "dependencies": {
-          "FSharp.Core": "[9.0.100, )"
+          "FSharp.Core": "[8.0.403, )"
         }
       }
     }
