@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -9,8 +8,10 @@ using Stryker.Abstractions.Mutators;
 namespace Stryker.Core.Mutators;
 
 /// <summary> Mutator implementation for is expression</summary>
-public class IsPatternExpressionMutator : PatternMutatorBase<IsPatternExpressionSyntax>
+public class IsPatternExpressionMutator : MutatorBase<IsPatternExpressionSyntax>
 {
+    public override MutationLevel MutationLevel => MutationLevel.Basic;
+
     /// <summary>
     /// Apply mutations to all <see cref="PatternSyntax"/> inside an <see cref="IsPatternExpressionSyntax"/>.
     /// Apply mutations to the root pattern.
@@ -18,31 +19,21 @@ public class IsPatternExpressionMutator : PatternMutatorBase<IsPatternExpression
     public override IEnumerable<Mutation> ApplyMutations(IsPatternExpressionSyntax node, SemanticModel semanticModel)
     {
         yield return ReverseRootPattern(node);
-
-        var descendantMutations = node
-            .DescendantNodes()
-            .OfType<PatternSyntax>()
-            .SelectMany(x => ApplyMutations(x, semanticModel));
-
-        foreach (var descendantMutation in descendantMutations)
-        {
-            yield return descendantMutation;
-        }
     }
 
     private static Mutation ReverseRootPattern(IsPatternExpressionSyntax node) => node.Pattern switch
     {
         UnaryPatternSyntax notPattern => new Mutation
         {
-            OriginalNode = notPattern,
-            ReplacementNode = notPattern.Pattern,
+            OriginalNode = node,
+            ReplacementNode = node.WithPattern(notPattern.Pattern),
             Type = Mutator.Equality,
             DisplayName = "Equality mutation"
         },
         _ => new Mutation
         {
-            OriginalNode = node.Pattern,
-            ReplacementNode = SyntaxFactory.UnaryPattern(node.Pattern.WithLeadingTrivia(SyntaxFactory.Space)),
+            OriginalNode = node,
+            ReplacementNode = node.WithPattern(SyntaxFactory.UnaryPattern(node.Pattern.WithLeadingTrivia(SyntaxFactory.Space))),
             Type = Mutator.Equality,
             DisplayName = "Equality mutation"
         }

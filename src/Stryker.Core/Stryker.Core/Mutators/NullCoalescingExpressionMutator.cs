@@ -18,25 +18,18 @@ public class NullCoalescingExpressionMutator : MutatorBase<BinaryExpressionSynta
             yield break;
         }
 
-        // Flip left and right
-        var replacementNode = SyntaxFactory
-            .BinaryExpression(SyntaxKind.CoalesceExpression, node.Right, node.Left);
-        replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken
-            .WithTriviaFrom(node.OperatorToken)
-            .WithLeadingTrivia(node.Left.GetTrailingTrivia())
-        );
-
+        var rightPartIsNullable = IsNullable(node.Right, semanticModel);
         // Do not create "left to right", or "remove right" mutants when the right
         // hand side is a throw expression, as they result in invalid code.
         if (!node.Right.IsKind(SyntaxKind.ThrowExpression))
         {
             // Only create a "left to right" mutant if both sides are nullable.
-            if (IsNullable(node.Right, semanticModel))
+            if (rightPartIsNullable)
             {
                 yield return new Mutation
                 {
                     OriginalNode = node,
-                    ReplacementNode = replacementNode,
+                    ReplacementNode = node.WithLeft(node.Right).WithRight(node.Left),
                     DisplayName = "Null coalescing mutation (left to right)",
                     Type = Mutator.NullCoalescing
                 };
@@ -45,23 +38,24 @@ public class NullCoalescingExpressionMutator : MutatorBase<BinaryExpressionSynta
             yield return new Mutation
             {
                 OriginalNode = node,
-                ReplacementNode = replacementNode.Left,
-                DisplayName = "Null coalescing mutation (remove right)",
+                ReplacementNode = node.Right,
+                DisplayName = "Null coalescing mutation (remove left)",
                 Type = Mutator.NullCoalescing
             };
         }
 
-        // Only create a "remove left" mutant if the right side is nullable.
-        if (IsNullable(node.Right, semanticModel) || node.Right.IsKind(SyntaxKind.CollectionExpression))
+        // Only create a "remove right" mutant if the right side is nullable.
+        if (rightPartIsNullable || node.Right.IsKind(SyntaxKind.CollectionExpression))
         {
             yield return new Mutation
             {
                 OriginalNode = node,
-                ReplacementNode = replacementNode.Right,
-                DisplayName = $"Null coalescing mutation (remove left)",
+                ReplacementNode = node.Left,
+                DisplayName = $"Null coalescing mutation (remove right)",
                 Type = Mutator.NullCoalescing
             };
         }
+
     }
 
     private static bool IsNullable(SyntaxNode node, SemanticModel semanticModel)
@@ -74,6 +68,8 @@ public class NullCoalescingExpressionMutator : MutatorBase<BinaryExpressionSynta
         }
 
         var typeInfo = semanticModel.GetTypeInfo(node);
-        return typeInfo.Nullability.FlowState == NullableFlowState.MaybeNull;
+        // assume nullability if type resolution failed for some reason
+        return (typeInfo.ConvertedType is { } && typeInfo.ConvertedType.TypeKind is TypeKind.Error or TypeKind.Unknown)
+            || typeInfo.Nullability.FlowState == NullableFlowState.MaybeNull;
     }
 }

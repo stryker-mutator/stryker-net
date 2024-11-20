@@ -21,8 +21,8 @@ public class IsPatternExpressionMutatorTests : TestBase
 
         var mutation = target.ApplyMutations(expression, null).First();
 
-        mutation.OriginalNode.ShouldBeOfType<ConstantPatternSyntax>();
-        mutation.ReplacementNode.ShouldBeOfType<UnaryPatternSyntax>();
+        mutation.OriginalNode.ToString().ShouldBe("1 is 1");
+        mutation.ReplacementNode.ToString().ShouldBe("1 is not 1");
         mutation.DisplayName.ShouldBe("Equality mutation");
     }
 
@@ -35,8 +35,8 @@ public class IsPatternExpressionMutatorTests : TestBase
 
         var mutation = target.ApplyMutations(expression, null).First();
 
-        mutation.OriginalNode.ShouldBeOfType<UnaryPatternSyntax>();
-        mutation.ReplacementNode.ShouldBeOfType<ConstantPatternSyntax>();
+        mutation.OriginalNode.ToString().ShouldBe("1 is not 1");
+        mutation.ReplacementNode.ToString().ShouldBe("1 is 1");
         mutation.DisplayName.ShouldBe("Equality mutation");
     }
 
@@ -47,11 +47,11 @@ public class IsPatternExpressionMutatorTests : TestBase
     [DataRow("<=", new[] { SyntaxKind.GreaterThanToken, SyntaxKind.LessThanToken })]
     public void ShouldMutateRelationalPattern(string @operator, SyntaxKind[] mutated)
     {
-        var target = new IsPatternExpressionMutator();
+        var target = new RelationalPatternMutator();
 
-        var expression = GenerateWithRelationalPattern(@operator);
+        var expression = GenerateWithRelationalPattern(@operator).DescendantNodes().OfType<RelationalPatternSyntax>().First();
 
-        var result = target.ApplyMutations(expression, null).Skip(1).ToList();
+        var result = target.ApplyMutations(expression, null).ToList();
 
         result.ForEach(mutation =>
         {
@@ -71,11 +71,11 @@ public class IsPatternExpressionMutatorTests : TestBase
     [DataRow("or", new[] { SyntaxKind.AndPattern })]
     public void ShouldMutateLogicalPattern(string @operator, SyntaxKind[] mutated)
     {
-        var target = new IsPatternExpressionMutator();
+        var target = new BinaryPatternMutator();
 
         var expression = GenerateWithBinaryPattern(@operator);
 
-        var result = target.ApplyMutations(expression, null).Skip(1).ToList();
+        var result = target.ApplyMutations(expression, null).ToList();
 
         result.ForEach(mutation =>
         {
@@ -112,7 +112,7 @@ namespace TestApplication
     {{
         static void Main(string[] args)
         {{
-            var a = 1 is {(isNotPattern ? "not" : string.Empty)} 1;
+            var a = 1 is{(isNotPattern ? " not" : string.Empty)} 1;
         }}
     }}
 }}");
@@ -147,7 +147,7 @@ namespace TestApplication
         return isPatternExpression;
     }
 
-    private IsPatternExpressionSyntax GenerateWithBinaryPattern(string pattern)
+    private BinaryPatternSyntax GenerateWithBinaryPattern(string pattern)
     {
         var tree = CSharpSyntaxTree.ParseText($@"
 using System;
@@ -164,7 +164,7 @@ namespace TestApplication
 }}");
         var isPatternExpression = tree.GetRoot()
             .DescendantNodes()
-            .OfType<IsPatternExpressionSyntax>()
+            .OfType<BinaryPatternSyntax>()
             .Single();
 
         return isPatternExpression;
