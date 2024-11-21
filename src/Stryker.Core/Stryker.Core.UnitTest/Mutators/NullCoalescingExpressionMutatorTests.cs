@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -25,7 +26,7 @@ public class NullCoalescingExpressionMutatorTests : TestBase
         // Arrange
         var target = new NullCoalescingExpressionMutator();
         var originalExpressionString = "a ?? b";
-        var expectedExpressionStrings = new[] { "a", "b", "b ?? a" };
+        var expectedExpressionStrings = new[] { "a", "b", "b?? a" };
         var originalExpression = SyntaxFactory.ParseExpression(originalExpressionString);
 
         // Act
@@ -61,6 +62,7 @@ public class NullCoalescingExpressionMutatorTests : TestBase
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(
             """
+            using System;
             public TimeSpan? GetLocalDateTime(DateTimeOffset startTime, DateTimeOffset? endTime)
             {
                 return (endTime ?? startTime).LocalDateTime;

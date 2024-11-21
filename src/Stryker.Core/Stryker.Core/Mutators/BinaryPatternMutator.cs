@@ -1,9 +1,10 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Mutators;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutators;
 
@@ -27,8 +28,8 @@ public class BinaryPatternMutator : MutatorBase<BinaryPatternSyntax>
         foreach (var mutation in mutations)
         {
             // can't use the update method here, because roslyn implementation is broken
-            var replacementNode = SyntaxFactory.BinaryPattern(mutation, node.Left, node.Right);
-            replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithTriviaFrom(node.OperatorToken));
+            var replacementNode = SyntaxFactory.BinaryPattern(mutation, node.Left.WithCleanTrivia(), node.Right.WithCleanTrivia());
+            replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithCleanTriviaFrom(node.OperatorToken));
             yield return new()
             {
                 OriginalNode = node,

@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Mutators;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutators;
 
@@ -31,7 +32,7 @@ public class RelationalPatternMutator : MutatorBase<RelationalPatternSyntax>
             yield return new()
             {
                 OriginalNode = node,
-                ReplacementNode = node.WithOperatorToken(SyntaxFactory.Token(mutation).WithTriviaFrom(node.OperatorToken)),
+                ReplacementNode = node.WithOperatorToken(SyntaxFactory.Token(mutation).WithCleanTriviaFrom(node.OperatorToken)).WithCleanTrivia(),
                 DisplayName = "Equality mutation",
                 Type = Mutator.Equality
             };

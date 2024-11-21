@@ -5,6 +5,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
+using Spectre.Console;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Mutants;
@@ -144,6 +145,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         {
             foreach (var mutation in mutator.Mutate(current, semanticModel, Options))
             {
+                mutation.OriginalNode = current;
                 var newMutant = CreateNewMutant(mutation, context);
                 // Skip if the mutant is a duplicate
                 if (IsMutantDuplicate(newMutant, mutation))

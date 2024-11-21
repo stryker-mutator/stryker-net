@@ -4,6 +4,7 @@ using Stryker.Abstractions.Mutants;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Stryker.Abstractions.Mutators;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutators;
 
@@ -29,7 +30,7 @@ public class NullCoalescingExpressionMutator : MutatorBase<BinaryExpressionSynta
                 yield return new Mutation
                 {
                     OriginalNode = node,
-                    ReplacementNode = node.WithLeft(node.Right).WithRight(node.Left),
+                    ReplacementNode = node.WithLeft(node.Right).WithRight(node.Left).WithCleanTrivia(),
                     DisplayName = "Null coalescing mutation (left to right)",
                     Type = Mutator.NullCoalescing
                 };
@@ -38,7 +39,7 @@ public class NullCoalescingExpressionMutator : MutatorBase<BinaryExpressionSynta
             yield return new Mutation
             {
                 OriginalNode = node,
-                ReplacementNode = node.Right,
+                ReplacementNode = node.Right.WithCleanTrivia(),
                 DisplayName = "Null coalescing mutation (remove left)",
                 Type = Mutator.NullCoalescing
             };
@@ -50,7 +51,7 @@ public class NullCoalescingExpressionMutator : MutatorBase<BinaryExpressionSynta
             yield return new Mutation
             {
                 OriginalNode = node,
-                ReplacementNode = node.Left,
+                ReplacementNode = node.Left.WithCleanTrivia(),
                 DisplayName = $"Null coalescing mutation (remove right)",
                 Type = Mutator.NullCoalescing
             };

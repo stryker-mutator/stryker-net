@@ -1,8 +1,4 @@
-using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Abstractions.Mutants;
@@ -10,7 +6,7 @@ using Stryker.Abstractions.Mutants;
 namespace Stryker.Core.UnitTest.Mutants;
 internal class StrykerCommentTests : MutantOrchestratorTestsBase
 {
-        [TestMethod]
+    [TestMethod]
     public void ShouldNotMutateIfDisabledByComment()
     {
         var source = @"public void SomeMethod() {

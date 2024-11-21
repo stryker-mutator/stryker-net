@@ -1,7 +1,9 @@
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
 using System;
+using System.Collections.Generic;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 
@@ -32,14 +34,21 @@ public static class AssertionExtensions
 
         if (!isSame)
         {
-            // find the different
-            var actualLines = actual.ToString().Split(Environment.NewLine);
+            var diff = ScanDiff(actual.GetRoot(), expected.GetRoot());
+
+            Console.WriteLine(string.Join(Environment.NewLine, diff));
+
+        }
+
+        // find the different
+        var actualLines = actual.ToString().Split(Environment.NewLine);
             var expectedLines = expected.ToString().Split(Environment.NewLine);
             for (var i = 0; i < actualLines.Length; i++)
             {
                 if (expectedLines.Length <= i)
                 {
                     isSame.ShouldBeTrue($"AST's are not equivalent. Line[{i + 1}]{Environment.NewLine}actual:{actualLines[i]}{Environment.NewLine}expect: nothing{Environment.NewLine}Actual(full):{Environment.NewLine}{actual}{Environment.NewLine}, expected:{Environment.NewLine}{expected}");
+                    continue;
                 }
                 if (actualLines[i] != expectedLines[i])
                 {
@@ -47,6 +56,30 @@ public static class AssertionExtensions
                 }
             }
         }
+
+    private static List<string> ScanDiff(SyntaxNode actual, SyntaxNode expected)
+    {
+        var actualChildren = actual.ChildNodes().ToList();
+        var expectedChildren = expected.ChildNodes().ToList();
+        var failedStatements = new List<string>();
+        for (var i = 0; i < actualChildren.Count; i++)
+        {
+            if (expectedChildren.Count <= i)
+            {
+                failedStatements.Add($"Extra statements: {actualChildren[i]}");
+                continue;
+            }
+            if ((actualChildren[i] is not StatementSyntax) || (actualChildren[i] is BlockSyntax or IfStatementSyntax or ForStatementSyntax or WhileStatementSyntax ))
+            {
+                failedStatements.AddRange(ScanDiff(actualChildren[i], expectedChildren[i]));
+                continue;
+            }
+            if (!actualChildren[i].IsEquivalentTo(expectedChildren[i]))
+            {
+                failedStatements.Add($"Not equivalent. Actual:{Environment.NewLine}{actualChildren[i]}{Environment.NewLine}Expected:{Environment.NewLine}{expectedChildren[i]}");
+            }
+        }
+        return failedStatements;
     }
 
     public static void ShouldBeWithNewlineReplace(this string actual, string expected)

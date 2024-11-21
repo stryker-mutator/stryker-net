@@ -4,7 +4,10 @@ using Stryker.Abstractions;
 using Stryker.Core.Mutants;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Abstractions.Options;
-using System.Linq.Expressions;
+using Microsoft.CodeAnalysis;
+using System.Linq;
+using System.Collections.Generic;
+using System;
 
 namespace Stryker.Core.UnitTest.Mutants;
 
@@ -25,11 +28,12 @@ public class MutantOrchestratorTestsBase : TestBase
     protected void ShouldMutateSourceToExpected(string actual, string expected)
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(actual);
-        
-        var compilation = CSharpCompilation.Create(null)
-                        .AddSyntaxTrees(syntaxTree);
-        var model = compilation.GetSemanticModel(syntaxTree);
-        var actualNode = Target.Mutate(syntaxTree, model);
+        Type[] typeToLoad = [typeof(object), typeof(List<>), typeof(Enumerable), typeof(Nullable<>)];
+        MetadataReference[] references = typeToLoad.Select( t=> MetadataReference.CreateFromFile(t.Assembly.Location)).ToArray();
+        var compilation = CSharpCompilation.Create(null).WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary)
+            .WithNullableContextOptions(NullableContextOptions.Enable))
+                        .AddSyntaxTrees(syntaxTree).WithReferences(references);
+        var actualNode = Target.Mutate(syntaxTree, compilation.GetSemanticModel(syntaxTree));
         actual = actualNode.GetRoot().ToFullString();
         actual = actual.Replace(Injector.HelperNamespace, "StrykerNamespace");
         actualNode = CSharpSyntaxTree.ParseText(actual);
@@ -40,21 +44,26 @@ public class MutantOrchestratorTestsBase : TestBase
 
     protected void ShouldMutateSourceInClassToExpected(string actual, string expected)
     {
-        actual = @"using System;
+        var initBlock=@"using System;
+using System.Linq;
 using System.Collections.Generic;
 using System.Text;
-namespace StrykerNet.UnitTest.Mutants.TestResources;
-class TestClass
-{" + actual + @"}
-";
+namespace StrykerNet.UnitTest.Mutants.TestResources;";
 
-        expected = @"using System;
-using System.Collections.Generic;
-using System.Text;
-namespace StrykerNet.UnitTest.Mutants.TestResources;
+
+        actual = string.Format(@"{0}
 class TestClass
-{" + expected + @"}
-";
+{{
+{1}
+}}
+", initBlock, actual);
+
+        expected = string.Format(@"{0}
+class TestClass
+{{
+{1}
+}}
+", initBlock, expected);
         ShouldMutateSourceToExpected(actual, expected);
     }
 }

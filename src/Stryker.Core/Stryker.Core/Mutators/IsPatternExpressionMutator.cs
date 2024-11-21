@@ -4,6 +4,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Mutators;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutators;
 
@@ -26,14 +27,14 @@ public class IsPatternExpressionMutator : MutatorBase<IsPatternExpressionSyntax>
         UnaryPatternSyntax notPattern => new Mutation
         {
             OriginalNode = node,
-            ReplacementNode = node.WithPattern(notPattern.Pattern),
+            ReplacementNode = node.WithCleanTrivia().WithPattern(notPattern.WithCleanTrivia().Pattern),
             Type = Mutator.Equality,
             DisplayName = "Equality mutation"
         },
         _ => new Mutation
         {
             OriginalNode = node,
-            ReplacementNode = node.WithPattern(SyntaxFactory.UnaryPattern(node.Pattern.WithLeadingTrivia(SyntaxFactory.Space))),
+            ReplacementNode = node.WithCleanTrivia().WithPattern(SyntaxFactory.UnaryPattern(node.Pattern.WithLeadingTrivia(SyntaxFactory.Space).WithoutTrailingTrivia())),
             Type = Mutator.Equality,
             DisplayName = "Equality mutation"
         }

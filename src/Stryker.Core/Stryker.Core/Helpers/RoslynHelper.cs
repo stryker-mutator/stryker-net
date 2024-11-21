@@ -10,13 +10,22 @@ namespace Stryker.Core.Helpers;
 internal static class RoslynHelper
 {
     /// <summary>
-    /// Check if an expression is a string.
+    /// Check if an expression is an explicit string expression.
     /// </summary>
     /// <param name="node">Expression to check</param>
     /// <returns>true if it is a string</returns>
     public static bool IsAStringExpression(this ExpressionSyntax node) =>
-        node.Kind() == SyntaxKind.StringLiteralExpression ||
-        node.Kind() == SyntaxKind.InterpolatedStringExpression;
+        node.Kind() is SyntaxKind.StringLiteralExpression or
+        SyntaxKind.InterpolatedStringExpression;
+
+    /// <summary>
+    /// Check if an expression is a string using the semantic model.
+    /// </summary>
+    /// <param name="node">Expression to check</param>
+    /// <param name="model">Semantic model</param>
+    /// <returns>true if it is a string</returns>
+    public static bool IsAStringExpression(this ExpressionSyntax node, SemanticModel model) =>
+        node.IsAStringExpression() || model.GetTypeInfo(node).Type?.SpecialType == SpecialType.System_String;
 
     /// <summary>
     /// Check if an expression contains a declaration
@@ -42,6 +51,39 @@ internal static class RoslynHelper
             OperatorDeclarationSyntax operatorSyntax => operatorSyntax.ReturnType,
             _ => null
         };
+
+    /// <summary>
+    /// Cleaned trivia from a node
+    /// </summary>
+    /// <typeparam name="T">Syntax node exact type</typeparam>
+    /// <param name="node">node on which to set the trivia</param>
+    /// <returns>a <paramref name="node"/> copy with some of the original trivia .</returns>
+    /// <remarks>uses <see cref="WithCleanTriviaFrom{T}(T, T)"/></remarks>
+    public static T WithCleanTrivia<T>(this T node) where T : SyntaxNode
+        => node.WithCleanTriviaFrom(node);
+
+    /// <summary>
+    /// Inject cleaned up trivia from another syntax node.
+    /// </summary>
+    /// <typeparam name="T">Syntax node exact type</typeparam>
+    /// <param name="node">node on which to set the trivia</param>
+    /// <param name="triviaSource">node from which extract the trivia</param>
+    /// <returns>a <paramref name="node"/> copy with some trivia from <paramref name="triviaSource"/>.</returns>
+    /// <remarks>Current implementation only applies whitespacetrivia (no comment, no attribute nor directives)</remarks>
+    public static T WithCleanTriviaFrom<T>(this T node, T triviaSource) where T: SyntaxNode
+        => node.WithLeadingTrivia(triviaSource.GetLeadingTrivia().Where(t=>t.IsKind(SyntaxKind.WhitespaceTrivia)))
+        .WithTrailingTrivia(triviaSource.GetTrailingTrivia().Where(t=>t.IsKind(SyntaxKind.WhitespaceTrivia)));
+
+    /// <summary>
+    /// Inject cleaned up trivia from another syntax node.
+    /// </summary>
+    /// <param name="token">token on which to set the trivia</param>
+    /// <param name="triviaSource">node from which extract the trivia</param>
+    /// <returns>a <paramref name="node"/> copy with some trivia from <paramref name="triviaSource"/>.</returns>
+    /// <remarks>Current implementation only applies whitespacetrivia (no comment, no attribute nor directives)</remarks>
+    public static SyntaxToken WithCleanTriviaFrom(this SyntaxToken token, SyntaxToken triviaSource)
+        => token.WithLeadingTrivia(triviaSource.LeadingTrivia.Where(t=>t.IsKind(SyntaxKind.WhitespaceTrivia)))
+        .WithTrailingTrivia(triviaSource.TrailingTrivia.Where(t=>t.IsKind(SyntaxKind.WhitespaceTrivia)));
 
     /// <summary>
     /// Gets the return 'type' of a (get/set) accessor
@@ -154,28 +196,19 @@ internal static class RoslynHelper
             return true;
         }
         // scan children with minor optimization for well known statement
-        switch (syntax)
+        return syntax switch
         {
-            case BlockSyntax block:
-                return !skipBlocks && block.Statements.Any(s => s.ScanChildStatements(predicate, false));
-            case LocalFunctionStatementSyntax:
-                return false;
-            case ForStatementSyntax forStatement:
-                return forStatement.Statement.ScanChildStatements(predicate, skipBlocks);
-            case WhileStatementSyntax whileStatement:
-                return whileStatement.Statement.ScanChildStatements(predicate, skipBlocks);
-            case DoStatementSyntax doStatement:
-                return doStatement.Statement.ScanChildStatements(predicate, skipBlocks);
-            case SwitchStatementSyntax switchStatement:
-                return switchStatement.Sections.SelectMany(s => s.Statements).Any(statement => statement.ScanChildStatements(predicate, skipBlocks));
-            case IfStatementSyntax ifStatement:
-                if (ifStatement.Statement.ScanChildStatements(predicate, skipBlocks))
-                    return true;
-                return ifStatement.Else?.Statement.ScanChildStatements(predicate, skipBlocks) == true;
-            default:
-                return syntax.ChildNodes().Where(n => n is StatementSyntax).Cast<StatementSyntax>()
-                    .Any(s => s.ScanChildStatements(predicate, skipBlocks));
-        }
+            BlockSyntax block => !skipBlocks && block.Statements.Any(s => s.ScanChildStatements(predicate, false)),
+            LocalFunctionStatementSyntax => false,
+            ForStatementSyntax forStatement => forStatement.Statement.ScanChildStatements(predicate, skipBlocks),
+            WhileStatementSyntax whileStatement => whileStatement.Statement.ScanChildStatements(predicate, skipBlocks),
+            DoStatementSyntax doStatement => doStatement.Statement.ScanChildStatements(predicate, skipBlocks),
+            SwitchStatementSyntax switchStatement => switchStatement.Sections.SelectMany(s => s.Statements).Any(statement => statement.ScanChildStatements(predicate, skipBlocks)),
+            IfStatementSyntax ifStatement => ifStatement.Statement.ScanChildStatements(predicate, skipBlocks)
+                                || ifStatement.Else?.Statement.ScanChildStatements(predicate, skipBlocks) == true,
+            _ => syntax.ChildNodes().Where(n => n is StatementSyntax).Cast<StatementSyntax>()
+                                .Any(s => s.ScanChildStatements(predicate, skipBlocks)),
+        };
     }
 
     /// <summary>

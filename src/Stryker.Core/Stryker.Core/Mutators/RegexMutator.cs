@@ -5,6 +5,7 @@ using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Mutators;
+using Stryker.Core.Helpers;
 using Stryker.RegexMutators;
 using System;
 using System.Collections.Generic;
@@ -37,7 +38,7 @@ public class RegexMutator : MutatorBase<ObjectCreationExpressionSyntax>
             var patternArgument = namedArgument ?? node.ArgumentList.Arguments.FirstOrDefault();
             var patternExpression = patternArgument?.Expression;
 
-            if (patternExpression?.Kind() == SyntaxKind.StringLiteralExpression)
+            if (patternExpression!= null && patternExpression.IsAStringExpression())
             {
                 var currentValue = ((LiteralExpressionSyntax)patternExpression).Token.ValueText;
                 var regexMutantOrchestrator = new RegexMutantOrchestrator(currentValue);
