@@ -45,15 +45,15 @@ namespace ExtraProject.XUnit
     [TestMethod]
     public void JsonMutantPositionLine_ThrowsArgumentExceptionWhenSetToLessThan1()
     {
-        _ = Should.Throw<ArgumentException>(() => new Position().Line = -1);
-        _ = Should.Throw<ArgumentException>(() => new Position().Line = 0);
+        Should.Throw<ArgumentException>(() => new Position().Line = -1);
+        Should.Throw<ArgumentException>(() => new Position().Line = 0);
     }
 
     [TestMethod]
     public void JsonMutantPositionColumn_ThrowsArgumentExceptionWhenSetToLessThan1()
     {
-        _ = Should.Throw<ArgumentException>(() => new Position().Column = -1);
-        _ = Should.Throw<ArgumentException>(() => new Position().Column = 0);
+        Should.Throw<ArgumentException>(() => new Position().Column = -1);
+        Should.Throw<ArgumentException>(() => new Position().Column = 0);
     }
 
     [TestMethod]
@@ -197,7 +197,7 @@ namespace ExtraProject.XUnit
 
         var report = JsonReportSerialization.DeserializeJsonReportAsync(fileContents).Result;
 
-        _ = report.ShouldNotBeNull();
+        report.ShouldNotBeNull();
         report.Thresholds.ShouldContainKeyAndValue("high", 80);
         report.Thresholds.ShouldContainKeyAndValue("low", 60);
 

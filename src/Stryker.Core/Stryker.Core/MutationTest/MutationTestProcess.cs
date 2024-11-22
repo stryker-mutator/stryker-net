@@ -42,14 +42,14 @@ public class MutationTestProcess : IMutationTestProcess
 
     public static void DeclareMutationProcessForLanguage<T>(Language language) where T : IMutationProcess
     {
-        var constructor = typeof(T).GetConstructor(new[] { typeof(IStrykerOptions) });
+        var constructor = typeof(T).GetConstructor([typeof(IStrykerOptions)]);
         if (constructor == null)
         {
             throw new NotSupportedException(
                 $"Failed to find a constructor with the appropriate signature for type {typeof(T)}");
         }
 
-        LanguageMap[language] = y => (IMutationProcess)constructor.Invoke(new object[] { y });
+        LanguageMap[language] = y => (IMutationProcess)constructor.Invoke([y]);
     }
 
     public MutationTestProcess(MutationTestInput input,
@@ -109,7 +109,7 @@ public class MutationTestProcess : IMutationTestProcess
 
         var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.Concurrency };
 
-        _ = Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
+        Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
         {
             var reportedMutants = new HashSet<IMutant>();
 
@@ -172,7 +172,7 @@ public class MutationTestProcess : IMutationTestProcess
         }
 
         _reporter?.OnMutantTested(mutant);
-        _ = reportedMutants.Add(mutant);
+        reportedMutants.Add(mutant);
     }
 
     private static bool MutantsToTest(IEnumerable<IMutant> mutantsToTest)
@@ -204,7 +204,7 @@ public class MutationTestProcess : IMutationTestProcess
         // we deal with mutants needing full testing first
         blocks.AddRange(mutantsToGroup.Where(m => m.AssessingTests.IsEveryTest)
             .Select(m => new List<IMutant> { m }));
-        _ = mutantsToGroup.RemoveAll(m => m.AssessingTests.IsEveryTest);
+        mutantsToGroup.RemoveAll(m => m.AssessingTests.IsEveryTest);
 
         mutantsToGroup = mutantsToGroup.Where(m => m.ResultStatus == MutantStatus.Pending).ToList();
 
