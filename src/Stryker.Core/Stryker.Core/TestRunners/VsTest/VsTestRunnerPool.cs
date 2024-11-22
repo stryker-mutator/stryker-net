@@ -141,9 +141,9 @@ public sealed class VsTestRunnerPool : ITestRunner
             }
 
             // ensure we returns only entry per test
-            if (!resultCache.TryAdd(coverageRunResult.TestId, coverageRunResult))
+            if (!resultCache.TryAdd(coverageRunResult.TestId.ToGuid(), coverageRunResult))
             {
-                resultCache[coverageRunResult.TestId].Merge(coverageRunResult);
+                resultCache[coverageRunResult.TestId.ToGuid()].Merge(coverageRunResult);
             }
         }
 
@@ -189,7 +189,7 @@ public sealed class VsTestRunnerPool : ITestRunner
             // ==> we need it to use this test against every mutation
             _logger.LogDebug("VsTestRunner: No coverage data for {TestCase}.", testResult.TestCase.DisplayName);
             seenTestCases.Add(testDescription.Id.ToGuid());
-            coverageRunResult = new CoverageRunResult(testCaseId, CoverageConfidence.Dubious, Enumerable.Empty<int>(),
+            coverageRunResult = new CoverageRunResult(testDescription.Id, CoverageConfidence.Dubious, Enumerable.Empty<int>(),
                 Enumerable.Empty<int>(), Enumerable.Empty<int>());
         }
         else
@@ -250,6 +250,6 @@ public sealed class VsTestRunnerPool : ITestRunner
             leakedMutants = Enumerable.Empty<int>();
         }
 
-        return new CoverageRunResult(testCaseId, level, coveredMutants, staticMutants, leakedMutants);
+        return new CoverageRunResult(Identifier.Create(testCaseId), level, coveredMutants, staticMutants, leakedMutants);
     }
 }
