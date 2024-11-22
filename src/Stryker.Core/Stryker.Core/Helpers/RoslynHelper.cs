@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
@@ -71,8 +72,8 @@ internal static class RoslynHelper
     /// <returns>a <paramref name="node"/> copy with some trivia from <paramref name="triviaSource"/>.</returns>
     /// <remarks>Current implementation only applies whitespacetrivia (no comment, no attribute nor directives)</remarks>
     public static T WithCleanTriviaFrom<T>(this T node, T triviaSource) where T: SyntaxNode
-        => node.WithLeadingTrivia(triviaSource.GetLeadingTrivia().Where(t=>t.IsKind(SyntaxKind.WhitespaceTrivia)))
-        .WithTrailingTrivia(triviaSource.GetTrailingTrivia().Where(t=>t.IsKind(SyntaxKind.WhitespaceTrivia)));
+        => node.WithLeadingTrivia(CleanupTrivia(triviaSource.GetLeadingTrivia()))
+        .WithTrailingTrivia(CleanupTrivia(triviaSource.GetTrailingTrivia()));
 
     /// <summary>
     /// Inject cleaned up trivia from another syntax node.
@@ -82,8 +83,11 @@ internal static class RoslynHelper
     /// <returns>a <paramref name="node"/> copy with some trivia from <paramref name="triviaSource"/>.</returns>
     /// <remarks>Current implementation only applies whitespacetrivia (no comment, no attribute nor directives)</remarks>
     public static SyntaxToken WithCleanTriviaFrom(this SyntaxToken token, SyntaxToken triviaSource)
-        => token.WithLeadingTrivia(triviaSource.LeadingTrivia.Where(t=>t.IsKind(SyntaxKind.WhitespaceTrivia)))
-        .WithTrailingTrivia(triviaSource.TrailingTrivia.Where(t=>t.IsKind(SyntaxKind.WhitespaceTrivia)));
+        => token.WithLeadingTrivia(CleanupTrivia(triviaSource.LeadingTrivia))
+        .WithTrailingTrivia(CleanupTrivia(triviaSource.TrailingTrivia));
+
+    private static IEnumerable<SyntaxTrivia> CleanupTrivia(SyntaxTriviaList list)
+        => list.Where(t=>t.IsKind(SyntaxKind.WhitespaceTrivia) || t.IsKind(SyntaxKind.EndOfLineTrivia));
 
     /// <summary>
     /// Gets the return 'type' of a (get/set) accessor
