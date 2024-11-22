@@ -39,23 +39,7 @@ public static class AssertionExtensions
             Console.WriteLine(string.Join(Environment.NewLine, diff));
 
         }
-
-        // find the different
-        var actualLines = actual.ToString().Split(Environment.NewLine);
-            var expectedLines = expected.ToString().Split(Environment.NewLine);
-            for (var i = 0; i < actualLines.Length; i++)
-            {
-                if (expectedLines.Length <= i)
-                {
-                    isSame.ShouldBeTrue($"AST's are not equivalent. Line[{i + 1}]{Environment.NewLine}actual:{actualLines[i]}{Environment.NewLine}expect: nothing{Environment.NewLine}Actual(full):{Environment.NewLine}{actual}{Environment.NewLine}, expected:{Environment.NewLine}{expected}");
-                    continue;
-                }
-                if (actualLines[i] != expectedLines[i])
-                {
-                    isSame.ShouldBeTrue($"AST's are not equivalent. Line[{i + 1}]{Environment.NewLine}actual:{actualLines[i]}{Environment.NewLine}expect:{expectedLines[i]}{Environment.NewLine}Actual(full):{Environment.NewLine}{actual}{Environment.NewLine}, expected:{Environment.NewLine}{expected}");
-                }
-            }
-        }
+    }
 
     private static List<string> ScanDiff(SyntaxNode actual, SyntaxNode expected)
     {

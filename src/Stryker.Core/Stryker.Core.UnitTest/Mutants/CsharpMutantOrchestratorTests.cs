@@ -1,9 +1,7 @@
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Mono.Cecil;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Mutators;
@@ -1269,9 +1267,11 @@ if(StrykerNamespace.MutantControl.IsActive(4)){;}else{		yield break;
 	;
 }";
         var expected = @"public async Task TestMethod()
-{if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+{if(StrykerNamespace.MutantControl.IsActive(0)){}
+else{
 	;
-}}";
+}
+}";
         ShouldMutateSourceInClassToExpected(source, expected);
     }
 
@@ -1283,9 +1283,11 @@ if(StrykerNamespace.MutantControl.IsActive(4)){;}else{		yield break;
 	;
 }";
         var expected = @"void TestMethod()
-{if(StrykerNamespace.MutantControl.IsActive(0)){}else{
+{if(StrykerNamespace.MutantControl.IsActive(0)){}else
+{
 	;
-}}";
+}
+}";
         ShouldMutateSourceInClassToExpected(source, expected);
     }
 
