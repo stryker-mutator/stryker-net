@@ -1953,11 +1953,13 @@ else        {
 }";
         var expected = @"public void SomeMethod() {if(StrykerNamespace.MutantControl.IsActive(0)){}else{
     var x = 0;
-if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.MutantControl.IsActive(2)){    #if !DEBUG
+#if !DEBUG
+if(StrykerNamespace.MutantControl.IsActive(1)){;}else{if(StrykerNamespace.MutantControl.IsActive(2)){
     x--;
-}else{    #if !DEBUG
+}else{
     x++;
-}}    #endif
+}}
+#endif
 }}";
 
         ShouldMutateSourceInClassToExpected(source, expected);

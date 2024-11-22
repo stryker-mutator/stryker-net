@@ -62,7 +62,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new MemberAccessExpressionOrchestrator<SimpleNameSyntax>(),
         new MemberAccessExpressionOrchestrator<PostfixUnaryExpressionSyntax>(t =>
             t.IsKind(SyntaxKind.SuppressNullableWarningExpression)),
-        // ensure patterhsyntax nodes are mutated (as they are neither expression nor statements, they are not mutated by default)
+        // ensure pattern syntax nodes are mutated (as they are neither expression nor statements, they are not mutated by default)
         new NodeSpecificOrchestrator<PatternSyntax, PatternSyntax>(),
         new NodeSpecificOrchestrator<SubpatternSyntax, SubpatternSyntax>(),
         new ConditionalExpressionOrchestrator(),
