@@ -12,10 +12,10 @@ public class StringMethodToConstantMutator : MutatorBase<InvocationExpressionSyn
 {
     public override MutationLevel MutationLevel => MutationLevel.Advanced;
 
-    public override IEnumerable<Mutation> ApplyMutations(InvocationExpressionSyntax node, SemanticModel model)
+    public override IEnumerable<Mutation> ApplyMutations(InvocationExpressionSyntax node, SemanticModel semanticModel)
     {
         if (node is not { Expression: MemberAccessExpressionSyntax member }
-        || (model != null && !member.Expression.IsAStringExpression(model)))
+        || (semanticModel != null && !member.Expression.IsAStringExpression(semanticModel)))
         {
             yield break;
         }

@@ -43,7 +43,7 @@ public class StringEmptyMutator : MutatorBase<ExpressionSyntax>
         }
     }
 
-    private IEnumerable<Mutation> ApplyMutations(InvocationExpressionSyntax node)
+    private static IEnumerable<Mutation> ApplyMutations(InvocationExpressionSyntax node)
     {
         if (node.Expression is MemberAccessExpressionSyntax memberAccessExpression &&
             IsAccessToStringPredefinedType(memberAccessExpression.Expression))

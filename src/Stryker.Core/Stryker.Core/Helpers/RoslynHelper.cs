@@ -54,42 +54,6 @@ internal static class RoslynHelper
         };
 
     /// <summary>
-    /// Cleaned trivia from a node
-    /// </summary>
-    /// <typeparam name="T">Syntax node exact type</typeparam>
-    /// <param name="node">node on which to set the trivia</param>
-    /// <returns>a <paramref name="node"/> copy with some of the original trivia .</returns>
-    /// <remarks>uses <see cref="WithCleanTriviaFrom{T}(T, T)"/></remarks>
-    public static T WithCleanTrivia<T>(this T node) where T : SyntaxNode
-        => node.WithCleanTriviaFrom(node);
-
-    /// <summary>
-    /// Inject cleaned up trivia from another syntax node.
-    /// </summary>
-    /// <typeparam name="T">Syntax node exact type</typeparam>
-    /// <param name="node">node on which to set the trivia</param>
-    /// <param name="triviaSource">node from which extract the trivia</param>
-    /// <returns>a <paramref name="node"/> copy with some trivia from <paramref name="triviaSource"/>.</returns>
-    /// <remarks>Current implementation only applies whitespacetrivia (no comment, no attribute nor directives)</remarks>
-    public static T WithCleanTriviaFrom<T>(this T node, T triviaSource) where T: SyntaxNode
-        => node.WithLeadingTrivia(CleanupTrivia(triviaSource.GetLeadingTrivia()))
-        .WithTrailingTrivia(CleanupTrivia(triviaSource.GetTrailingTrivia()));
-
-    /// <summary>
-    /// Inject cleaned up trivia from another syntax node.
-    /// </summary>
-    /// <param name="token">token on which to set the trivia</param>
-    /// <param name="triviaSource">node from which extract the trivia</param>
-    /// <returns>a <paramref name="node"/> copy with some trivia from <paramref name="triviaSource"/>.</returns>
-    /// <remarks>Current implementation only applies whitespacetrivia (no comment, no attribute nor directives)</remarks>
-    public static SyntaxToken WithCleanTriviaFrom(this SyntaxToken token, SyntaxToken triviaSource)
-        => token.WithLeadingTrivia(CleanupTrivia(triviaSource.LeadingTrivia))
-        .WithTrailingTrivia(CleanupTrivia(triviaSource.TrailingTrivia));
-
-    private static IEnumerable<SyntaxTrivia> CleanupTrivia(SyntaxTriviaList list)
-        => list.Where(t=>t.IsKind(SyntaxKind.WhitespaceTrivia) || t.IsKind(SyntaxKind.EndOfLineTrivia));
-
-    /// <summary>
     /// Gets the return 'type' of a (get/set) accessor
     /// </summary>
     /// <param name="accessor">accessor</param>
@@ -234,4 +198,41 @@ internal static class RoslynHelper
             return (child.Parent is not AnonymousFunctionExpressionSyntax function || function.ExpressionBody != child)
                    && (child.Parent is not LocalFunctionStatementSyntax localFunction || localFunction.ExpressionBody != child);
         } ).Any(predicate);
+
+        /// <summary>
+    /// Cleaned trivia from a node
+    /// </summary>
+    /// <typeparam name="T">Syntax node exact type</typeparam>
+    /// <param name="node">node on which to set the trivia</param>
+    /// <returns>a <paramref name="node"/> copy with some of the original trivia .</returns>
+    /// <remarks>uses <see cref="WithCleanTriviaFrom{T}(T, T)"/></remarks>
+    public static T WithCleanTrivia<T>(this T node) where T : SyntaxNode
+        => node.WithCleanTriviaFrom(node);
+
+    /// <summary>
+    /// Inject cleaned up trivia from another syntax node.
+    /// </summary>
+    /// <typeparam name="T">Syntax node exact type</typeparam>
+    /// <param name="node">node on which to set the trivia</param>
+    /// <param name="triviaSource">node from which extract the trivia</param>
+    /// <returns>a <paramref name="node"/> copy with some trivia from <paramref name="triviaSource"/>.</returns>
+    /// <remarks>Current implementation only applies whitespacetrivia (no comment, no attribute nor directives)</remarks>
+    public static T WithCleanTriviaFrom<T>(this T node, T triviaSource) where T: SyntaxNode
+        => node.WithLeadingTrivia(CleanupTrivia(triviaSource.GetLeadingTrivia()))
+        .WithTrailingTrivia(CleanupTrivia(triviaSource.GetTrailingTrivia()));
+
+    /// <summary>
+    /// Inject cleaned up trivia from another syntax node.
+    /// </summary>
+    /// <param name="token">token on which to set the trivia</param>
+    /// <param name="triviaSource">node from which extract the trivia</param>
+    /// <returns>a <paramref name="node"/> copy with some trivia from <paramref name="triviaSource"/>.</returns>
+    /// <remarks>Current implementation only applies whitespacetrivia (no comment, no attribute nor directives)</remarks>
+    public static SyntaxToken WithCleanTriviaFrom(this SyntaxToken token, SyntaxToken triviaSource)
+        => token.WithLeadingTrivia(CleanupTrivia(triviaSource.LeadingTrivia))
+        .WithTrailingTrivia(CleanupTrivia(triviaSource.TrailingTrivia));
+
+    private static IEnumerable<SyntaxTrivia> CleanupTrivia(SyntaxTriviaList list)
+        => list.Where(t=>t.IsKind(SyntaxKind.WhitespaceTrivia) || t.IsKind(SyntaxKind.EndOfLineTrivia));
+
 }

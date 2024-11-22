@@ -13,13 +13,13 @@ public class StringMethodMutator : MutatorBase<MemberAccessExpressionSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Advanced;
 
-    public override IEnumerable<Mutation> ApplyMutations(MemberAccessExpressionSyntax member, SemanticModel model)
+    public override IEnumerable<Mutation> ApplyMutations(MemberAccessExpressionSyntax member, SemanticModel semanticModel)
     {
 
         var identifier = member.Name.Identifier.ValueText;
         var replacement = GetReplacement(identifier);
 
-        if (replacement == null || !member.Expression.IsAStringExpression(model))
+        if (replacement == null || (semanticModel!= null && !member.Expression.IsAStringExpression(semanticModel)))
         {
             yield break;
         }
