@@ -181,7 +181,12 @@ public class StrykerRunner : IStrykerRunner
     {
         if (!projectComponents.Any())
         {
-            throw new NoTestProjectsException();
+            throw InvalidProjectsException.NoTestProjectsFound();
+        }
+
+        if (projectComponents.All(pc => pc is TestProject))
+        {
+            throw InvalidProjectsException.OnlyTestProjectsFound();
         }
 
         if (projectComponents.Count() > 1)
