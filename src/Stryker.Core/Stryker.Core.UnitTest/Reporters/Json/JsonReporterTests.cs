@@ -5,7 +5,6 @@ using System.IO.Abstractions;
 using System.IO.Abstractions.TestingHelpers;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -13,14 +12,12 @@ using Microsoft.CodeAnalysis.Text;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
-using Newtonsoft.Json;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters.Json;
 using Stryker.Core.Reporters.Json.SourceFiles;
-using static FSharp.Compiler.AbstractIL.IL.ILType;
 
 namespace Stryker.Core.UnitTest.Reporters.Json;
 
@@ -48,15 +45,15 @@ namespace ExtraProject.XUnit
     [TestMethod]
     public void JsonMutantPositionLine_ThrowsArgumentExceptionWhenSetToLessThan1()
     {
-        Should.Throw<ArgumentException>(() => new Position().Line = -1);
-        Should.Throw<ArgumentException>(() => new Position().Line = 0);
+        _ = Should.Throw<ArgumentException>(() => new Position().Line = -1);
+        _ = Should.Throw<ArgumentException>(() => new Position().Line = 0);
     }
 
     [TestMethod]
     public void JsonMutantPositionColumn_ThrowsArgumentExceptionWhenSetToLessThan1()
     {
-        Should.Throw<ArgumentException>(() => new Position().Column = -1);
-        Should.Throw<ArgumentException>(() => new Position().Column = 0);
+        _ = Should.Throw<ArgumentException>(() => new Position().Column = -1);
+        _ = Should.Throw<ArgumentException>(() => new Position().Column = 0);
     }
 
     [TestMethod]
@@ -200,7 +197,7 @@ namespace ExtraProject.XUnit
 
         var report = JsonReportSerialization.DeserializeJsonReportAsync(fileContents).Result;
 
-        report.ShouldNotBeNull();
+        _ = report.ShouldNotBeNull();
         report.Thresholds.ShouldContainKeyAndValue("high", 80);
         report.Thresholds.ShouldContainKeyAndValue("low", 60);
 

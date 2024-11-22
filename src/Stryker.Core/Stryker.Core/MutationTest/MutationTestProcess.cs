@@ -36,13 +36,9 @@ public class MutationTestProcess : IMutationTestProcess
     private readonly ICoverageAnalyser _coverageAnalyser;
     private readonly IStrykerOptions _options;
     private readonly IMutationProcess _mutationProcess;
-    private static readonly Dictionary<Language, Func<IStrykerOptions, IMutationProcess>> LanguageMap = new();
+    private static readonly Dictionary<Language, Func<IStrykerOptions, IMutationProcess>> LanguageMap = [];
 
-    static MutationTestProcess()
-    {
-        DeclareMutationProcessForLanguage<CsharpMutationProcess>(Language.Csharp);
-        DeclareMutationProcessForLanguage<FsharpMutationProcess>(Language.Fsharp);
-    }
+    static MutationTestProcess() => DeclareMutationProcessForLanguage<CsharpMutationProcess>(Language.Csharp);
 
     public static void DeclareMutationProcessForLanguage<T>(Language language) where T : IMutationProcess
     {
@@ -113,7 +109,7 @@ public class MutationTestProcess : IMutationTestProcess
 
         var parallelOptions = new ParallelOptions { MaxDegreeOfParallelism = _options.Concurrency };
 
-        Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
+        _ = Parallel.ForEach(mutantGroups, parallelOptions, mutants =>
         {
             var reportedMutants = new HashSet<IMutant>();
 
@@ -131,7 +127,7 @@ public class MutationTestProcess : IMutationTestProcess
     {
         var testsFailingInitially = Input.InitialTestRun.Result.FailingTests.GetGuids().ToHashSet();
         var continueTestRun = _options.OptimizationMode.HasFlag(OptimizationModes.DisableBail);
-        if (testsFailingInitially.Count > 0 && failedTests.GetGuids().Any(id => testsFailingInitially.Contains(id)))
+        if (testsFailingInitially.Count > 0 && failedTests.GetGuids().Any(testsFailingInitially.Contains))
         {
             // some of the failing tests where failing without any mutation
             // we discard those tests
@@ -176,7 +172,7 @@ public class MutationTestProcess : IMutationTestProcess
         }
 
         _reporter?.OnMutantTested(mutant);
-        reportedMutants.Add(mutant);
+        _ = reportedMutants.Add(mutant);
     }
 
     private static bool MutantsToTest(IEnumerable<IMutant> mutantsToTest)
@@ -208,7 +204,7 @@ public class MutationTestProcess : IMutationTestProcess
         // we deal with mutants needing full testing first
         blocks.AddRange(mutantsToGroup.Where(m => m.AssessingTests.IsEveryTest)
             .Select(m => new List<IMutant> { m }));
-        mutantsToGroup.RemoveAll(m => m.AssessingTests.IsEveryTest);
+        _ = mutantsToGroup.RemoveAll(m => m.AssessingTests.IsEveryTest);
 
         mutantsToGroup = mutantsToGroup.Where(m => m.ResultStatus == MutantStatus.Pending).ToList();
 

@@ -156,17 +156,17 @@ public class InputFileResolver : IInputFileResolver
             var normalizedProjectUnderTestNameFilter = !string.IsNullOrEmpty(options.SourceProjectName) ? options.SourceProjectName.Replace("\\", "/") : null;
             while (!list.Empty)
             {
-                Parallel.ForEach(list.Consume(),
+                _ = Parallel.ForEach(list.Consume(),
                     new ParallelOptions
-                        { MaxDegreeOfParallelism = options.DevMode ? 1 : Math.Max(options.Concurrency, 1) }, entry =>
-                    {
-                        var buildResult = GetProjectAndAddIt(options, manager, entry, normalizedProjectUnderTestNameFilter, mutableProjectsAnalyzerResults);
+                    { MaxDegreeOfParallelism = options.DevMode ? 1 : Math.Max(options.Concurrency, 1) }, entry =>
+                {
+                    var buildResult = GetProjectAndAddIt(options, manager, entry, normalizedProjectUnderTestNameFilter, mutableProjectsAnalyzerResults);
 
-                        foreach (var reference in ScanReferences(mode, buildResult))
-                        {
-                            list.Add((reference, null));
-                        }
-                    });
+                    foreach (var reference in ScanReferences(mode, buildResult))
+                    {
+                        list.Add((reference, null));
+                    }
+                });
             }
         }
         catch (AggregateException ex)
@@ -191,10 +191,10 @@ public class InputFileResolver : IInputFileResolver
         var isTestProject = buildResult.IsTestProject();
         if (isTestProject)
         {
-            buildResult = new List<IAnalyzerResult>
-            {
+            buildResult =
+            [
                 SelectAnalyzerResult(buildResult, entry.framework)
-            };
+            ];
         }
 
         if (isTestProject || normalizedProjectUnderTestNameFilter == null ||
@@ -228,7 +228,7 @@ public class InputFileResolver : IInputFileResolver
         foreach (var projectReference in buildResult.SelectMany(p => p.ProjectReferences))
         {
             // in single level mode we only want to find the projects referenced by test project
-            if (mode == ScanMode.ScanTestProjectReferences && !isTestProject || !FileSystem.File.Exists(projectReference))
+            if ((mode == ScanMode.ScanTestProjectReferences && !isTestProject) || !FileSystem.File.Exists(projectReference))
             {
                 continue;
             }
@@ -244,10 +244,10 @@ public class InputFileResolver : IInputFileResolver
         if (options.DevMode)
         {
             // clear the logs for the next project
-            _buildalyzerLog.GetStringBuilder().Clear();
+            _ = _buildalyzerLog.GetStringBuilder().Clear();
         }
         var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
-                    _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
+        _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
         var buildResult = project.Build();
 
         var buildResultOverallSuccess = buildResult.OverallSuccess || Array.
@@ -260,12 +260,12 @@ public class InputFileResolver : IInputFileResolver
             if (buildResult.Any(r => !IsValid(r) && r.TargetsFullFramework()))
             {
                 _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
-                
+
                 if (options.DevMode)
                 {
                     _logger.LogWarning("The MsBuild log is below.");
                     _logger.LogInformation(_buildalyzerLog.ToString());
-                    _buildalyzerLog.GetStringBuilder().Clear();
+                    _ = _buildalyzerLog.GetStringBuilder().Clear();
                 }
 
                 _nugetRestoreProcess.RestorePackages(options.SolutionPath, options.MsBuildPath ?? buildResult.First().MsBuildPath());
@@ -313,38 +313,41 @@ public class InputFileResolver : IInputFileResolver
         }
         var log = new StringBuilder();
         // dump all properties as it can help diagnosing build issues for user project.
-        log.AppendLine("**** Buildalyzer result ****");
+        _ = log.AppendLine("**** Buildalyzer result ****");
 
-        log.AppendLine($"Project: {analyzerResults.First().ProjectFilePath}");
+        _ = log.AppendLine($"Project: {analyzerResults.First().ProjectFilePath}");
         foreach (var analyzerResult in analyzerResults)
         {
-            log.AppendLine($"TargetFramework: {analyzerResult.TargetFramework}");
-            log.AppendLine($"Succeeded: {analyzerResult.Succeeded}");
+            _ = log.AppendLine($"TargetFramework: {analyzerResult.TargetFramework}");
+            _ = log.AppendLine($"Succeeded: {analyzerResult.Succeeded}");
 
             var properties = analyzerResult.Properties ?? new Dictionary<string, string>();
             foreach (var property in importantProperties)
             {
-                log.AppendLine($"Property {property}={properties.GetValueOrDefault(property) ?? "\"'undefined'\""}");
+                _ = log.AppendLine($"Property {property}={properties.GetValueOrDefault(property) ?? "\"'undefined'\""}");
             }
             foreach (var sourceFile in analyzerResult.SourceFiles)
             {
-                log.AppendLine($"SourceFile {sourceFile}");
+                _ = log.AppendLine($"SourceFile {sourceFile}");
             }
 
             foreach (var reference in analyzerResult.References)
             {
-                log.AppendLine($"References: {Path.GetFileName(reference)} (in {Path.GetDirectoryName(reference)})");
+                _ = log.AppendLine($"References: {Path.GetFileName(reference)} (in {Path.GetDirectoryName(reference)})");
             }
 
             foreach (var property in properties)
             {
                 if (importantProperties.Contains(property.Key))
+                {
                     continue; // already logged 
-                log.AppendLine($"Property {property.Key}={property.Value.Replace(Environment.NewLine, "\\n")}");
+                }
+
+                _ = log.AppendLine($"Property {property.Key}={property.Value.Replace(Environment.NewLine, "\\n")}");
             }
-            log.AppendLine();
+            _ = log.AppendLine();
         }
-        log.AppendLine("**** End Buildalyzer result ****");
+        _ = log.AppendLine("**** End Buildalyzer result ****");
         _logger.LogTrace(log.ToString());
     }
 
@@ -359,8 +362,8 @@ public class InputFileResolver : IInputFileResolver
 
         if (targetFramework is null)
         {
-             // we try to avoid desktop versions
-             return PickFrameworkVersion();
+            // we try to avoid desktop versions
+            return PickFrameworkVersion();
         }
 
         var resultForRequestedFramework = validResults.Find(a => a.TargetFramework == targetFramework);
@@ -461,12 +464,6 @@ public class InputFileResolver : IInputFileResolver
                 _logger,
                 FileSystem),
 
-            Language.Fsharp => new FsharpProjectComponentsBuilder(
-                targetProjectInfo,
-                options,
-                _foldersToExclude,
-                _logger,
-                FileSystem),
             _ => throw new NotSupportedException($"Language not supported: {language}")
         });
 
@@ -512,12 +509,12 @@ public class InputFileResolver : IInputFileResolver
             case > 1:
             {
                 var sb = new StringBuilder();
-                sb.AppendLine("Expected exactly one .csproj file, found more than one:");
+                _ = sb.AppendLine("Expected exactly one .csproj file, found more than one:");
                 foreach (var file in projectFiles)
                 {
-                    sb.AppendLine(file);
+                    _ = sb.AppendLine(file);
                 }
-                sb.AppendLine().AppendLine("Please specify a test project name filter that results in one project.");
+                _ = sb.AppendLine().AppendLine("Please specify a test project name filter that results in one project.");
                 throw new InputException(sb.ToString());
             }
             case 0:
@@ -531,11 +528,11 @@ public class InputFileResolver : IInputFileResolver
     private static StringBuilder BuildReferenceChoice(IEnumerable<string> projectReferences)
     {
         var builder = new StringBuilder();
-        builder.AppendLine("Choose one of the following references:").AppendLine("");
+        _ = builder.AppendLine("Choose one of the following references:").AppendLine("");
 
         foreach (var projectReference in projectReferences)
         {
-            builder.Append("  ").AppendLine(projectReference.Replace("\\", "/"));
+            _ = builder.Append("  ").AppendLine(projectReference.Replace("\\", "/"));
         }
         return builder;
     }
@@ -548,7 +545,7 @@ public class InputFileResolver : IInputFileResolver
         public DynamicEnumerableQueue(IEnumerable<T> init)
         {
             _cache = new(init.ToDictionary(x => x, x => true));
-            _queue = new (_cache.Keys);
+            _queue = new(_cache.Keys);
         }
 
         public bool Empty => _queue.IsEmpty;
