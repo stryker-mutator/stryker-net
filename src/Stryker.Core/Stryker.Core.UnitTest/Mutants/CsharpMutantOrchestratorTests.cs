@@ -3,6 +3,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using Mono.Cecil;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Mutators;
@@ -79,6 +80,27 @@ namespace StrykerNet.UnitTest.Mutants.TestResources
     }
 }";
         ShouldMutateSourceToExpected(source, expected);
+    }
+
+
+
+    [TestMethod]
+    public void ShouldMutatePatterns()
+    {
+        
+        var source = @"public void Test()
+    {
+           Console.WriteLine(new[] { 1, 2, 3, 4 } is [>= 0, .., 2 or 4]);
+    }
+    ";
+        var expected = @"public void Test()
+{    if(StrykerNamespace.MutantControl.IsActive(0))    {}else{
+           if(StrykerNamespace.MutantControl.IsActive(1)){;}else{Console.WriteLine((StrykerNamespace.MutantControl.IsActive(2)?new[] { 1, 2, 3, 4 } is not [>= 0, .., 2 or 4]:(StrykerNamespace.MutantControl.IsActive(5)?new[] { 1, 2, 3, 4 } is [>= 0, .., 2 and 4]:(StrykerNamespace.MutantControl.IsActive(4)?new[] { 1, 2, 3, 4 } is [< 0, .., 2 or 4]:(StrykerNamespace.MutantControl.IsActive(3)?new[] { 1, 2, 3, 4 } is [> 0, .., 2 or 4]:new[] { 1, 2, 3, 4 } is [>= 0, .., 2 or 4])))));}
+    }
+}    
+    ";
+       ShouldMutateSourceInClassToExpected(source, expected);
+        
     }
 
     [TestMethod]

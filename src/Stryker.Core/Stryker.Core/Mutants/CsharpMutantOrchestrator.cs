@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
-using Spectre.Console;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Mutants;
@@ -47,8 +46,6 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new DoNotMutateOrchestrator<ParameterListSyntax>(),
         // enum values
         new DoNotMutateOrchestrator<EnumMemberDeclarationSyntax>(),
-        // pattern marching
-        new DoNotMutateOrchestrator<RecursivePatternSyntax>(),
         new DoNotMutateOrchestrator<UsingDirectiveSyntax>(),
         // constants and constant fields
         new DoNotMutateOrchestrator<FieldDeclarationSyntax>(
@@ -65,6 +62,9 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new MemberAccessExpressionOrchestrator<SimpleNameSyntax>(),
         new MemberAccessExpressionOrchestrator<PostfixUnaryExpressionSyntax>(t =>
             t.IsKind(SyntaxKind.SuppressNullableWarningExpression)),
+        // ensure patterhsyntax nodes are mutated (as they are neither expression nor statements, they are not mutated by default)
+        new NodeSpecificOrchestrator<PatternSyntax, PatternSyntax>(),
+        new NodeSpecificOrchestrator<SubpatternSyntax, SubpatternSyntax>(),
         new ConditionalExpressionOrchestrator(),
         new ConstantPatternSyntaxOrchestrator(),
         // ensure static constructs are marked properly
