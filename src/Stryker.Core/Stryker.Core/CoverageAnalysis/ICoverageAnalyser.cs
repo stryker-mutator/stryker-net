@@ -1,8 +1,6 @@
 using System.Collections.Generic;
-using Stryker.Abstractions.Initialisation;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.TestRunners;
-using Stryker.Core.TestRunners;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Testing;
 
 namespace Stryker.Core.CoverageAnalysis;
 

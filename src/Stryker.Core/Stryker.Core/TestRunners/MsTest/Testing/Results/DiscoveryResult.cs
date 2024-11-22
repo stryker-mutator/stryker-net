@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Linq;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.TestRunners.MsTest.Testing.Tests;
 
 namespace Stryker.Core.TestRunners.MsTest.Testing.Results;

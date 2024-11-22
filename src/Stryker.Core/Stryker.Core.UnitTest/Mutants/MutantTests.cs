@@ -1,6 +1,7 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Mutants;
 using Stryker.Core.Mutants;
 

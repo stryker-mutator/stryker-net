@@ -6,10 +6,10 @@ using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.SourceProjects;
-using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.Initialisation;
 

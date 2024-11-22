@@ -4,7 +4,6 @@ using System.Linq;
 using System.Threading;
 using Moq;
 using Shouldly;
-using Stryker.Abstractions.Initialisation;
 using Stryker.Abstractions;
 using Stryker.Abstractions.TestRunners;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -13,6 +12,7 @@ using Stryker.Core.Mutants;
 using Stryker.Core.TestRunners.VsTest;
 using Stryker.Core.Initialisation;
 using Stryker.Core.UnitTest;
+using Stryker.Abstractions.Testing;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 

@@ -1,17 +1,18 @@
 using System;
+using Stryker.Abstractions.Testing;
 
 namespace Stryker.Core.Mutants;
 
-public sealed class TestDescription
+public sealed class TestDescription : ITestDescription
 {
-    public TestDescription(Guid id, string name, string testFilePath)
+    public TestDescription(Identifier id, string name, string testFilePath)
     {
         Id = id;
         Name = name;
         TestFilePath = testFilePath;
     }
 
-    public Guid Id { get; }
+    public Identifier Id { get; }
 
     public string Name { get; }
 
@@ -21,6 +22,7 @@ public sealed class TestDescription
     {
         return Id == other.Id;
     }
+
     public override bool Equals(object obj)
     {
         if (obj is null)

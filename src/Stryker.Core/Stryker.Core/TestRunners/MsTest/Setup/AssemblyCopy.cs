@@ -5,7 +5,6 @@ using System.Linq;
 using dnlib.DotNet;
 using dnlib.DotNet.Writer;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Shared.Exceptions;
 
 namespace Stryker.Core.TestRunners.MsTest.Setup;
 internal class AssemblyCopy

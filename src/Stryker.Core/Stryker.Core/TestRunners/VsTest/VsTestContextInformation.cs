@@ -11,10 +11,11 @@ using Serilog.Events;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
-using Stryker.Abstractions.TestRunners;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.Helpers;
 using Stryker.Core.Mutants;
 using Stryker.DataCollector;
+using Stryker.TestRunner.VSTest;
 
 namespace Stryker.Core.TestRunners.VsTest;
 
@@ -155,12 +156,12 @@ public sealed class VsTestContextInformation : IDisposable
         return determineConsoleParameters;
     }
 
-    public TestSet GetTestsForSources(IEnumerable<string> sources)
+    public ITestSet GetTestsForSources(IEnumerable<string> sources)
     {
         var result = new TestSet();
         foreach (var source in sources)
         {
-            result.RegisterTests(TestsPerSource[source].Select(id => Tests[id]));
+            result.RegisterTests(TestsPerSource[source].Select(id => Tests[Identifier.Create(id)]));
         }
 
         return result;
@@ -210,7 +211,7 @@ public sealed class VsTestContextInformation : IDisposable
         {
             if (!VsTests.ContainsKey(testCase.Id))
             {
-                VsTests[testCase.Id] = new VsTestDescription(testCase);
+                VsTests[testCase.Id] = new VsTestDescription(new VsTestCase(testCase));
             }
 
             VsTests[testCase.Id].AddSubCase();
@@ -273,7 +274,7 @@ public sealed class VsTestContextInformation : IDisposable
  </RunConfiguration>
 </RunSettings>";
 
-    public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestGuids> mutantTestsMap,
+    public string GenerateRunSettings(int? timeout, bool forCoverage, Dictionary<int, ITestIdentifiers> mutantTestsMap,
         string helperNameSpace, string frameworkVersion = null, string platform = null)
     {
         var settingsForCoverage = string.Empty;
@@ -281,7 +282,7 @@ public sealed class VsTestContextInformation : IDisposable
         var dataCollectorSettings = needDataCollector
             ? CoverageCollector.GetVsTestSettings(
                 forCoverage,
-                mutantTestsMap?.Select(e => (e.Key, e.Value.GetGuids())),
+                mutantTestsMap?.Select(e => (e.Key, e.Value.GetIdentifiers().Select(x => x.ToGuid()))),
                 helperNameSpace)
             : string.Empty;
         if (_testFramework.HasFlag(TestFrameworks.NUnit))

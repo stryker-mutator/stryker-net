@@ -2,14 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Initialisation;
 using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions;
-using Stryker.Abstractions.TestRunners;
 using Stryker.Core.TestRunners;
 using Stryker.Core.Mutants;
 using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Testing;
 
 namespace Stryker.Core.CoverageAnalysis;
 

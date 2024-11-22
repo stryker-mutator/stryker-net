@@ -1,10 +1,14 @@
+using System;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.Testing.Platform.Extensions.Messages;
 using Microsoft.Testing.Platform.Extensions.TestHost;
 using Stryker.Core.TestRunners.MsTest.Testing.Results;
-using Stryker.TestRunner.MSTest.Testing.Results;
-using Stryker.TestRunner.MSTest.Testing.Tests;
+using Stryker.Core.TestRunners.MsTest.Testing.Tests;
 
 namespace Stryker.Core.TestRunners.MSTest.Testing.Consumers;
+
 internal class DiscoveryConsumer : IDataConsumer
 {
     private readonly DiscoveryResult _discoveryResult;

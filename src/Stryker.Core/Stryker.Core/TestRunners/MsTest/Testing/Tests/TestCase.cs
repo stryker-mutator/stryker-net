@@ -1,6 +1,7 @@
 using System;
 using Microsoft.Testing.Extensions.TrxReport.Abstractions;
 using Microsoft.Testing.Platform.Extensions.Messages;
+using Stryker.Abstractions.Testing;
 
 namespace Stryker.Core.TestRunners.MsTest.Testing.Tests;
 internal class TestCase : ITestCase

@@ -1,8 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Abstractions.TestRunners;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.Mutants;
+using Stryker.Core.TestRunners.MsTest.Testing.Tests;
 using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.TestRunners;
@@ -11,24 +12,24 @@ public class TestRunResult : ITestRunResult
 {
     public TestRunResult(bool success, string message = null)
     {
-        VsTestDescriptions = new List<VsTestDescription>();
-        FailingTests = !success ? TestGuidsList.EveryTest() : TestGuidsList.NoTest();
-        ExecutedTests = TestGuidsList.EveryTest();
-        TimedOutTests = TestGuidsList.NoTest();
+        TestDescriptions = new List<IFrameworkTestDescription>();
+        FailingTests = !success ? TestIdentifierList.EveryTest() : TestIdentifierList.NoTest();
+        ExecutedTests = TestIdentifierList.EveryTest();
+        TimedOutTests = TestIdentifierList.NoTest();
         ResultMessage = message;
         Duration = TimeSpan.Zero;
     }
 
     public TestRunResult(
-        IEnumerable<VsTestDescription> vsTestDescriptions,
-        ITestGuids executedTests,
-        ITestGuids failedTests,
-        ITestGuids timedOutTest,
+        IEnumerable<IFrameworkTestDescription> testDescriptions,
+        ITestIdentifiers executedTests,
+        ITestIdentifiers failedTests,
+        ITestIdentifiers timedOutTest,
         string message,
         IEnumerable<string> messages,
         TimeSpan timeSpan)
     {
-        VsTestDescriptions = vsTestDescriptions.Where(p => executedTests.Contains(p.Id)).ToList();
+        TestDescriptions = testDescriptions.Where(p => executedTests.Contains(p.Id)).ToList();
         ExecutedTests = executedTests;
         FailingTests = failedTests;
         TimedOutTests = timedOutTest;
@@ -37,21 +38,33 @@ public class TestRunResult : ITestRunResult
         Duration = timeSpan;
     }
 
+    public static TestRunResult None(IEnumerable<IFrameworkTestDescription> testDescriptions, string message)
+        => new(testDescriptions, TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), TestIdentifierList.NoTest(), message, Array.Empty<string>(), TimeSpan.Zero);
+
     public static TestRunResult TimedOut(
-        IEnumerable<VsTestDescription> vsTestDescriptions,
-        ITestGuids ranTests,
-        ITestGuids failedTest,
-        ITestGuids timedOutTests,
+        IEnumerable<IFrameworkTestDescription> testDescriptions,
+        ITestIdentifiers ranTests,
+        ITestIdentifiers failedTest,
+        ITestIdentifiers timedOutTests,
         string message,
         IEnumerable<string> messages,
-        TimeSpan duration) => new(vsTestDescriptions, ranTests, failedTest, timedOutTests, message, messages, duration) { SessionTimedOut = true };
+        TimeSpan duration)
+        => new(testDescriptions, ranTests, failedTest, timedOutTests, message, messages, duration) { SessionTimedOut = true };
 
-    public ITestGuids FailingTests { get; }
-    public ITestGuids ExecutedTests { get; }
-    public ITestGuids TimedOutTests { get; }
+    public static TestRunResult Successful(IEnumerable<IFrameworkTestDescription> testDescriptions,
+        ITestIdentifiers executedTests,
+        ITestIdentifiers failedTests,
+        ITestIdentifiers timedOutTests,
+        IEnumerable<string> messages,
+        TimeSpan duration)
+        => new(testDescriptions, executedTests, failedTests, timedOutTests, "All tests passed", messages, duration);
+
+    public ITestIdentifiers FailingTests { get; }
+    public ITestIdentifiers ExecutedTests { get; }
+    public ITestIdentifiers TimedOutTests { get; }
     public bool SessionTimedOut { get; private init; }
     public string ResultMessage { get; }
     public IEnumerable<string> Messages { get; }
     public TimeSpan Duration { get; }
-    public IEnumerable<VsTestDescription> VsTestDescriptions { get; }
+    public IEnumerable<IFrameworkTestDescription> TestDescriptions { get; }
 }

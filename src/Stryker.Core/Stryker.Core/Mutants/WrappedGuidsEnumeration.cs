@@ -1,46 +1,45 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.TestRunners;
+using Stryker.Abstractions.Testing;
 
 namespace Stryker.Core.Mutants;
 
-public class WrappedGuidsEnumeration : ITestGuids
+public class WrappedGuidsEnumeration : ITestIdentifiers
 {
-    private readonly IEnumerable<Guid> _guids;
+    private readonly IEnumerable<Identifier> _identifiers;
 
-    public ICollection<TestDescription> Tests => throw new NotImplementedException();
+    public int Count => _identifiers.Count();
 
-    public int Count => _guids.Count();
-
-    public bool IsEmpty => _guids == null || !_guids.Any();
+    public bool IsEmpty => _identifiers is null || !_identifiers.Any();
 
     public bool IsEveryTest => false;
 
-    public ITestGuids Merge(ITestGuids other) => MergeList(this, other);
+    public ITestIdentifiers Merge(ITestIdentifiers other) => MergeList(this, other);
 
-    public bool Contains(Guid testId) => _guids.Any(g => g == testId);
+    public bool Contains(Identifier testId) => _identifiers.Any(g => g == testId);
 
-    public bool ContainsAny(ITestGuids other) => _guids.Any(other.Contains);
+    public bool ContainsAny(ITestIdentifiers other) => _identifiers.Any(other.Contains);
 
-    public bool IsIncludedIn(ITestGuids other) => _guids.All(other.Contains);
+    public bool IsIncludedIn(ITestIdentifiers other) => _identifiers.All(other.Contains);
 
-    public WrappedGuidsEnumeration(IEnumerable<Guid> guids) => _guids = guids;
+    public WrappedGuidsEnumeration(IEnumerable<Guid> guids) => _identifiers = guids.Select(Identifier.Create);
 
-    public ITestGuids Excluding(ISet<Guid> testsToSkip) => IsEveryTest || IsEmpty ? this : new TestGuidsList(_guids.Except(testsToSkip));
+    public WrappedGuidsEnumeration(IEnumerable<Identifier> identifiers) => _identifiers = identifiers;
 
-    public static ITestGuids MergeList(ITestGuids a, ITestGuids b)
+    public static ITestIdentifiers MergeList(ITestIdentifiers a, ITestIdentifiers b)
     {
-        if (a.GetGuids() == null)
+        if (a.GetIdentifiers() is null)
         {
             return b;
         }
 
-        return b.GetGuids() == null ? a : new WrappedGuidsEnumeration(a.GetGuids().Union(b.GetGuids()));
+        return b.GetIdentifiers() is null ? a : new WrappedGuidsEnumeration(a.GetIdentifiers().Union(b.GetIdentifiers()));
     }
 
-    public IEnumerable<Guid> GetGuids() => _guids;
+    public IEnumerable<Identifier> GetIdentifiers() => _identifiers;
 
-    public ITestGuids Intersect(ITestGuids other) => IsEveryTest ? new WrappedGuidsEnumeration(other.GetGuids()) : new WrappedGuidsEnumeration(_guids.Intersect(other.GetGuids()));
+    public ITestIdentifiers Intersect(ITestIdentifiers other) => IsEveryTest ? new WrappedGuidsEnumeration(other.GetIdentifiers()) : new WrappedGuidsEnumeration(_identifiers.Intersect(other.GetIdentifiers()));
+
+    public ITestIdentifiers Excluding(ITestIdentifiers testsToSkip) => throw new NotImplementedException();
 }

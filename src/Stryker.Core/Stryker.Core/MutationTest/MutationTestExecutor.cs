@@ -3,11 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Initialisation;
 using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.Mutants;
-using Stryker.Core.Mutants;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.TestRunners;
+using static Stryker.Abstractions.Testing.ITestRunner;
 
 namespace Stryker.Core.MutationTest;
 
@@ -90,7 +89,7 @@ public class MutationTestExecutor : IMutationTestExecutor
         }
     }
 
-    private TestRunResult RunTestSession(IProjectAndTests projectAndTests, ICollection<IMutant> mutantsToTest,
+    private ITestRunResult RunTestSession(IProjectAndTests projectAndTests, ICollection<IMutant> mutantsToTest,
         ITimeoutValueCalculator timeoutMs,
         TestUpdateHandler updateHandler, bool forceSingle)
     {

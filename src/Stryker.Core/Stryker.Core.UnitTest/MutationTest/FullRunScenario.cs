@@ -2,13 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Moq;
-using Stryker.Abstractions.Initialisation;
-using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Core.TestRunners;
 using Stryker.Core.Mutants;
 using Stryker.Core.TestRunners.VsTest;
+using Stryker.Abstractions.Testing;
 
 namespace Stryker.Core.UnitTest.MutationTest;
 

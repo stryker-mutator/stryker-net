@@ -1,80 +1,57 @@
 using System;
 using System.Collections.Generic;
+using Stryker.Abstractions.Testing;
 
 namespace Stryker.Core.TestRunners;
 
-public enum CoverageConfidence
+public class CoverageRunResult : ICoverageRunResult
 {
-    Exact,
-    Normal,
-    Dubious,
-    UnexpectedCase
-}
+    private readonly Dictionary<int, MutationTestingRequirements> MutationFlags = new();
 
-[Flags]
-public enum MutationTestingRequirements
-{
-    None = 0,
-    // mutation is static or executed inside à static context
-    Static = 1,
-    // mutation is covered outside test (before or after)
-    CoveredOutsideTest = 2,
-    // mutation needs to be activated ASAP when tested
-    NeedEarlyActivation = 4,
-    // mutation needs to be run in 'all tests' mode
-    AgainstAllTests = 8,
-    // not covered
-    NotCovered = 256
-}
+    public Identifier TestId { get; }
 
-public class CoverageRunResult
-{
-    private readonly Dictionary<int, MutationTestingRequirements> _mutationFlags = new();
+    public IReadOnlyCollection<int> MutationsCovered => MutationFlags.Keys;
 
-    public Guid TestId { get; }
-
-    public IReadOnlyCollection<int> MutationsCovered => _mutationFlags.Keys;
-
-    public MutationTestingRequirements this[int mutation] => _mutationFlags.ContainsKey(mutation)
-        ? _mutationFlags[mutation]
+    public MutationTestingRequirements this[int mutation] => MutationFlags.ContainsKey(mutation)
+        ? MutationFlags[mutation]
         : MutationTestingRequirements.NotCovered;
 
     public CoverageConfidence Confidence { get; private set; }
 
-    public CoverageRunResult(Guid testId, CoverageConfidence confidence, IEnumerable<int> coveredMutations,
+    public CoverageRunResult(Identifier testId, CoverageConfidence confidence, IEnumerable<int> coveredMutations,
         IEnumerable<int> detectedStaticMutations, IEnumerable<int> leakedMutations)
     {
         TestId = testId;
         foreach (var coveredMutation in coveredMutations)
         {
-            _mutationFlags[coveredMutation] = MutationTestingRequirements.None;
+            MutationFlags[coveredMutation] = MutationTestingRequirements.None;
         }
 
         foreach (var detectedStaticMutation in detectedStaticMutations)
         {
-            _mutationFlags[detectedStaticMutation] = MutationTestingRequirements.Static;
+            MutationFlags[detectedStaticMutation] = MutationTestingRequirements.Static;
         }
 
         foreach (var leakedMutation in leakedMutations)
         {
-            _mutationFlags[leakedMutation] = confidence == CoverageConfidence.Exact ? MutationTestingRequirements.NeedEarlyActivation : MutationTestingRequirements.CoveredOutsideTest;
+            MutationFlags[leakedMutation] = confidence == CoverageConfidence.Exact ? MutationTestingRequirements.NeedEarlyActivation : MutationTestingRequirements.CoveredOutsideTest;
         }
 
         Confidence = confidence;
     }
 
-    public void Merge(CoverageRunResult coverageRunResult)
+    public void Merge(ICoverageRunResult coverageRunResult)
     {
         Confidence = (CoverageConfidence)Math.Min((int)Confidence, (int)coverageRunResult.Confidence);
-        foreach (var mutationFlag in coverageRunResult._mutationFlags)
+        foreach (var mutationFlag in coverageRunResult.MutationFlags)
         {
-            if (_mutationFlags.ContainsKey(mutationFlag.Key))
+            if (MutationFlags.ContainsKey(mutationFlag.Key))
             {
-                _mutationFlags[mutationFlag.Key] |= mutationFlag.Value;
+                MutationFlags[mutationFlag.Key] |= mutationFlag.Value;
             }
             else
             {
-                _mutationFlags[mutationFlag.Key] = mutationFlag.Value;
+                MutationFlags[mutationFlag.Key] = mutationFlag.Value;
             }
         }
     }

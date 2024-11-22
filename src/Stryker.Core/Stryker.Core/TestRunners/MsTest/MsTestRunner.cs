@@ -5,12 +5,11 @@ using System.Linq;
 using Microsoft.Testing.Platform.Extensions.Messages;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Initialisation;
-using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.TestRunners.MsTest.Testing.Results;
+using Stryker.Core.TestRunners.MsTest.Testing.Tests;
 using Stryker.Core.TestRunners.MSTest.Setup;
-using Stryker.DataCollector;
 
 namespace Stryker.Core.TestRunners.MsTest;
 
@@ -35,7 +34,7 @@ public class MsTestRunner : ITestRunner
 
     public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project)
     {
-        var coverageCollector = CoverageCollector.Create(DiscoveryResult, project.HelperNamespace);
+        var coverageCollector = Testing.Tests.CoverageCollector.Create(DiscoveryResult, project.HelperNamespace);
 
         foreach (var assembly in project.GetTestAssemblies())
         {
@@ -89,6 +88,7 @@ public class MsTestRunner : ITestRunner
             new WrappedIdentifierEnumeration(executed),
             new WrappedIdentifierEnumeration(failed),
             new WrappedIdentifierEnumeration(timedOut),
+            Enumerable.Empty<string>(),
             duration);
     }
 
@@ -136,6 +136,7 @@ public class MsTestRunner : ITestRunner
             tests,
             new WrappedIdentifierEnumeration(failedTests),
             new WrappedIdentifierEnumeration(timedOutTests),
+            Enumerable.Empty<string>(),
             duration);
     }
 

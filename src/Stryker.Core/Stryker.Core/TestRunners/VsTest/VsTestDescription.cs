@@ -1,36 +1,35 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.Mutants;
-using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.TestRunners.VsTest;
 
-public sealed class VsTestDescription
+public sealed class VsTestDescription : IFrameworkTestDescription
 {
-    private readonly ICollection<TestResult> _initialResults = new List<TestResult>();
+    private readonly ICollection<ITestResult> _initialResults = new List<ITestResult>();
     private int _subCases;
 
-    public VsTestDescription(TestCase testCase)
+    public VsTestDescription(ITestCase testCase)
     {
         Case = testCase;
-        Description = new TestDescription(testCase.Id, testCase.DisplayName, testCase.CodeFilePath);
+        Description = new TestDescription(testCase.Id, testCase.Name, testCase.CodeFilePath);
     }
 
     public TestFrameworks Framework
     {
         get
         {
-            if (Case.ExecutorUri.AbsoluteUri.Contains("nunit"))
+            if (Case.Uri.AbsoluteUri.Contains("nunit"))
             {
                 return TestFrameworks.NUnit;
             }
-            return Case.ExecutorUri.AbsoluteUri.Contains("xunit") ? TestFrameworks.xUnit : TestFrameworks.MsTest;
+            return Case.Uri.AbsoluteUri.Contains("xunit") ? TestFrameworks.xUnit : TestFrameworks.MsTest;
         }
     }
 
-    public TestDescription Description { get; }
+    public ITestDescription Description { get; }
 
     public TimeSpan InitialRunTime
     {
@@ -46,13 +45,13 @@ public sealed class VsTestDescription
         }
     }
 
-    public Guid Id => Case.Id;
+    public Identifier Id => Case.Id;
 
-    public TestCase Case { get; }
+    public ITestCase Case { get; }
 
     public int NbSubCases => Math.Max(_subCases, _initialResults.Count);
 
-    public void RegisterInitialTestResult(TestResult result) => _initialResults.Add(result);
+    public void RegisterInitialTestResult(ITestResult result) => _initialResults.Add(result);
 
     public void AddSubCase() => _subCases++;
 

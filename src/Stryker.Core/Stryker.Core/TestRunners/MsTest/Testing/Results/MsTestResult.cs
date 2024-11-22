@@ -1,7 +1,8 @@
 using System;
-using Stryker.Shared.Tests;
+using Stryker.Abstractions.Testing;
 
 namespace Stryker.Core.TestRunners.MsTest.Testing.Results;
+
 internal class MsTestResult : ITestResult
 {
     public MsTestResult(TimeSpan duration)

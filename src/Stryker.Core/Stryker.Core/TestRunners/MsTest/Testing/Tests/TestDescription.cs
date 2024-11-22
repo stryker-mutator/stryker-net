@@ -1,3 +1,5 @@
+using Stryker.Abstractions.Testing;
+
 namespace Stryker.Core.TestRunners.MsTest.Testing.Tests;
 internal class TestDescription : ITestDescription
 {

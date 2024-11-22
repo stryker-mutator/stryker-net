@@ -9,12 +9,13 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Initialisation;
 using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.Mutants;
 using Stryker.DataCollector;
+using Stryker.TestRunner.VSTest;
+using static Stryker.Abstractions.Testing.ITestRunner;
 
 namespace Stryker.Core.TestRunners.VsTest;
 
@@ -54,15 +55,15 @@ public sealed class VsTestRunnerPool : ITestRunner
 
     public bool DiscoverTests(string assembly) => Context.AddTestSource(assembly);
 
-    public TestSet GetTests(IProjectAndTests project) => Context.GetTestsForSources(project.GetTestAssemblies());
+    public ITestSet GetTests(IProjectAndTests project) => Context.GetTestsForSources(project.GetTestAssemblies());
 
-    public TestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler update)
+    public ITestRunResult TestMultipleMutants(IProjectAndTests project, ITimeoutValueCalculator timeoutCalc, IReadOnlyList<IMutant> mutants, TestUpdateHandler update)
         => RunThis(runner => runner.TestMultipleMutants(project, timeoutCalc, mutants, update));
 
-    public TestRunResult InitialTest(IProjectAndTests project)
+    public ITestRunResult InitialTest(IProjectAndTests project)
         => RunThis(runner => runner.InitialTest(project));
 
-    public IEnumerable<CoverageRunResult> CaptureCoverage(IProjectAndTests project) => Context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest) ? CaptureCoverageTestByTest(project) : CaptureCoverageInOneGo(project);
+    public IEnumerable<ICoverageRunResult> CaptureCoverage(IProjectAndTests project) => Context.Options.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest) ? CaptureCoverageTestByTest(project) : CaptureCoverageInOneGo(project);
 
     private void Initialize(Func<VsTestContextInformation, int, VsTestRunner> runnerBuilder = null)
     {
@@ -75,9 +76,9 @@ public sealed class VsTestRunnerPool : ITestRunner
             }));
     }
 
-    private IEnumerable<CoverageRunResult> CaptureCoverageInOneGo(IProjectAndTests project) => ConvertCoverageResult(RunThis(runner => runner.RunCoverageSession(TestGuidsList.EveryTest(), project).TestResults), false);
+    private IEnumerable<ICoverageRunResult> CaptureCoverageInOneGo(IProjectAndTests project) => ConvertCoverageResult(RunThis(runner => runner.RunCoverageSession(TestGuidsList.EveryTest(), project).TestResults), false);
 
-    private IEnumerable<CoverageRunResult> CaptureCoverageTestByTest(IProjectAndTests project) => ConvertCoverageResult(CaptureCoveragePerIsolatedTests(project, Context.VsTests.Keys).TestResults, true);
+    private IEnumerable<ICoverageRunResult> CaptureCoverageTestByTest(IProjectAndTests project) => ConvertCoverageResult(CaptureCoveragePerIsolatedTests(project, Context.VsTests.Keys).TestResults, true);
 
     private IRunResults CaptureCoveragePerIsolatedTests(IProjectAndTests project, IEnumerable<Guid> tests)
     {
@@ -119,11 +120,11 @@ public sealed class VsTestRunnerPool : ITestRunner
         _runnerAvailableHandler.Dispose();
     }
 
-    private IEnumerable<CoverageRunResult> ConvertCoverageResult(IEnumerable<TestResult> testResults, bool perIsolatedTest)
+    private IEnumerable<ICoverageRunResult> ConvertCoverageResult(IEnumerable<TestResult> testResults, bool perIsolatedTest)
     {
         var seenTestCases = new HashSet<Guid>();
         var defaultConfidence = perIsolatedTest ? CoverageConfidence.Exact : CoverageConfidence.Normal;
-        var resultCache = new Dictionary<Guid, CoverageRunResult>();
+        var resultCache = new Dictionary<Guid, ICoverageRunResult>();
         // initialize the map
         foreach (var testResult in testResults)
         {
@@ -167,7 +168,7 @@ public sealed class VsTestRunnerPool : ITestRunner
                 "VsTestRunner: Coverage analysis run encountered a unexpected test case ({TestCase}), mutation tests may be inaccurate. Disable coverage analysis if you have doubts.",
                 testResult.TestCase.DisplayName);
             // add the test description to the referential
-            Context.VsTests.Add(testCaseId, new VsTestDescription(testResult.TestCase));
+            Context.VsTests.Add(testCaseId, new VsTestDescription(new VsTestCase(testResult.TestCase)));
             unexpected = true;
         }
 
@@ -187,14 +188,14 @@ public sealed class VsTestRunnerPool : ITestRunner
             // the coverage collector was not able to report anything ==> it has not been tracked by it, so we do not have coverage data
             // ==> we need it to use this test against every mutation
             _logger.LogDebug("VsTestRunner: No coverage data for {TestCase}.", testResult.TestCase.DisplayName);
-            seenTestCases.Add(testDescription.Id);
+            seenTestCases.Add(testDescription.Id.ToGuid());
             coverageRunResult = new CoverageRunResult(testCaseId, CoverageConfidence.Dubious, Enumerable.Empty<int>(),
                 Enumerable.Empty<int>(), Enumerable.Empty<int>());
         }
         else
         {
             // we have coverage data
-            seenTestCases.Add(testDescription.Id);
+            seenTestCases.Add(testDescription.Id.ToGuid());
             var propertyPairValue = value as string;
 
             coverageRunResult = BuildCoverageRunResultFromCoverageInfo(propertyPairValue, testResult, testCaseId,

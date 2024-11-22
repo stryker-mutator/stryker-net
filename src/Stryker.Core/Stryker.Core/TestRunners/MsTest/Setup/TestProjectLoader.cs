@@ -1,7 +1,10 @@
+using System;
+using System.Collections.Generic;
 using System.IO.Abstractions;
 using System.Reflection;
+using Stryker.Abstractions.Exceptions;
+using Stryker.Core.TestRunners.MsTest.Setup;
 using Stryker.Core.TestRunners.MsTest.Testing.TestProjects;
-using Stryker.Shared.Exceptions;
 
 namespace Stryker.Core.TestRunners.MSTest.Setup;
 internal class TestProjectLoader

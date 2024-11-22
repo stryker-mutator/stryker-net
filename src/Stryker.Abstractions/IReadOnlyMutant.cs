@@ -1,5 +1,4 @@
-using Stryker.Abstractions.TestRunners;
-using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Testing;
 
 namespace Stryker.Abstractions;
 

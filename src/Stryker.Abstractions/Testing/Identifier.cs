@@ -1,5 +1,8 @@
-namespace Stryker.Core.TestRunners;
-public sealed class Identifier : IEquatable<Identifier>
+using System;
+
+namespace Stryker.Abstractions.Testing;
+
+public class Identifier : IEquatable<Identifier>
 {
     private readonly string _identifier;
 

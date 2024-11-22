@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Mutators;
 
 namespace Stryker.Abstractions.Options.Inputs;
 

@@ -1,7 +1,6 @@
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
 using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions;
 using Stryker.Core.Mutants;
 using Stryker.Core.InjectedHelpers;

@@ -3,9 +3,8 @@ using System.Collections.ObjectModel;
 using FSharp.Compiler.Syntax;
 using Microsoft.Extensions.Logging;
 using Microsoft.FSharp.Collections;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions.Options;
 using Stryker.Core.Mutants.FsharpOrchestrators;
 

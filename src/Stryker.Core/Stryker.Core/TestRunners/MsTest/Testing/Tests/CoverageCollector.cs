@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Microsoft.Testing.Platform.Extensions.Messages;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.TestRunners.MsTest.Testing.Results;
 
 namespace Stryker.Core.TestRunners.MsTest.Testing.Tests;

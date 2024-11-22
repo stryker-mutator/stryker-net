@@ -1,6 +1,6 @@
 using System;
 
-namespace Stryker.Core.TestRunners;
+namespace Stryker.Abstractions.Testing;
 
 public interface ITestCase
 {
