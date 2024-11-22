@@ -1,5 +1,6 @@
 using Stryker.Abstractions.TestRunners;
 using Stryker.Abstractions.Mutants;
+using Microsoft.CodeAnalysis;
 
 namespace Stryker.Abstractions;
 
@@ -17,4 +18,6 @@ public interface IReadOnlyMutant
     ITestGuids AssessingTests { get; }
     bool CountForStats { get; }
     bool IsStaticValue { get; }
+    string ReplacementText => Mutation.ReplacementNode.ToString();
+    FileLinePositionSpan OriginalLocation => Mutation.OriginalNode.GetLocation().GetMappedLineSpan();
 }

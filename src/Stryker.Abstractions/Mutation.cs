@@ -1,3 +1,4 @@
+using System;
 using Microsoft.CodeAnalysis;
 using Stryker.Abstractions.Mutators;
 
@@ -13,4 +14,8 @@ public class Mutation
     public string DisplayName { get; set; }
     public Mutator Type { get; set; }
     public string Description { get; set; }
+
+    public string? ReplacementText { get; set; }
+
+    public FileLinePositionSpan? OriginalLocation { get; set; }
 }

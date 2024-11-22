@@ -12,7 +12,7 @@ using Stryker.Utilities;
 
 namespace Stryker.Core.Initialisation;
 
-public abstract class ProjectComponentsBuilder
+public abstract partial class ProjectComponentsBuilder
 {
     protected readonly IFileSystem FileSystem;
 
@@ -60,10 +60,9 @@ public abstract class ProjectComponentsBuilder
 
     private static string ReplaceMsbuildProperties(string projectReference, IAnalyzerResult projectAnalyzerResult)
     {
-        var propertyRegex = new Regex(@"\$\(([a-zA-Z_][a-zA-Z0-9_\-.]*)\)");
         var properties = projectAnalyzerResult.Properties;
 
-        return propertyRegex.Replace(projectReference,
+        return PropertyRegex().Replace(projectReference,
             m =>
             {
                 var property = m.Groups[1].Value;
@@ -79,4 +78,7 @@ public abstract class ProjectComponentsBuilder
 
     public abstract void InjectHelpers(IReadOnlyProjectComponent inputFiles);
     public abstract Action PostBuildAction();
+
+    [GeneratedRegex(@"\$\(([a-zA-Z_][a-zA-Z0-9_\-.]*)\)")]
+    private static partial Regex PropertyRegex();
 }

@@ -1,3 +1,4 @@
+using Microsoft.CodeAnalysis;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.TestRunners;
 
@@ -29,6 +30,10 @@ public class Mutant : IMutant
     public bool MustBeTestedInIsolation { get; set; }
 
     public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
+
+    public string ReplacementText { get; init; }
+
+    public FileLinePositionSpan OriginalLocation { get; init; }
 
     public void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests, bool sessionTimedOut)
     {

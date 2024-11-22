@@ -4,11 +4,9 @@ using System.Text.RegularExpressions;
 
 namespace Stryker.Core.UnitTest;
 
-internal static class StringExtensions
+internal static partial class StringExtensions
 {
     private const string Escape = "\u001b";
-
-    private static readonly Regex Ansi = new(Escape + "\\[[\\d;]+m", RegexOptions.ECMAScript);
 
     /// <summary>
     /// Removes ANSI escape sequences from the <paramref name="value"/>.
@@ -16,7 +14,7 @@ internal static class StringExtensions
     /// <returns>A basic string without ANSI escape sequences.</returns>
     public static string RemoveAnsi(this string value)
     {
-        return Ansi.Replace(value.ToString(), string.Empty);
+        return AnsiRegex().Replace(value, string.Empty);
     }
 
     /// <summary>
@@ -72,4 +70,7 @@ internal static class StringExtensions
     {
         return value.Split(Escape).Count(s => s.StartsWith("[3", StringComparison.Ordinal));
     }
+
+    [GeneratedRegex(@"\[[\d;]+m", RegexOptions.ECMAScript)]
+    private static partial Regex AnsiRegex();
 }
