@@ -291,10 +291,8 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         var libraryProject = FileSystem.Path.Combine(ProjectPath, "libraryproject.csproj");
 
         // The analyzer finds two projects
-        var libraryAnalyzer = SourceProjectAnalyzerMock(libraryProject,
-            [FileSystem.Path.Combine(ProjectPath, "mylib.cs")]).Object;
-        var projectAnalyzer = SourceProjectAnalyzerMock(csprojPathName, [FileSystem.Path.Combine(ProjectPath, "someFile.cs")]
-            , [libraryProject]).Object;
+        var libraryAnalyzer = SourceProjectAnalyzerMock(libraryProject, [FileSystem.Path.Combine(ProjectPath, "mylib.cs")]).Object;
+        var projectAnalyzer = SourceProjectAnalyzerMock(csprojPathName, [FileSystem.Path.Combine(ProjectPath, "someFile.cs")], [libraryProject]).Object;
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>
         {
             { "MyProject", projectAnalyzer },
