@@ -462,7 +462,7 @@ public class InputFileResolver : IInputFileResolver
                 _logger,
                 FileSystem),
 
-            > throw new NotSupportedException($"Language not supported: {language}")
+            _ => throw new NotSupportedException($"Language not supported: {language}")
         });
 
         var inputFiles = builder.Build();
