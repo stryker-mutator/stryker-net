@@ -93,19 +93,22 @@ public sealed class VsTestContextInformation : IDisposable
     }
 
     /// <summary>
-    ///     Starts a new VsTest instance and returns a wrapper to control it.
+    /// Starts a new VsTest instance and returns a wrapper to control it.
     /// </summary>
     /// <param name="runnerId">Name of the instance to create (used in log files)</param>
     /// <returns>a <see cref="IVsTestConsoleWrapper" /> controlling the created instance.</returns>
-    public IVsTestConsoleWrapper BuildVsTestWrapper(string runnerId)
+    public IVsTestConsoleWrapper BuildVsTestWrapper(string runnerId, string controlVariable)
     {
-        var vsTestConsole = _wrapperBuilder(DetermineConsoleParameters(runnerId));
+        var env = DetermineConsoleParameters(runnerId);
+        env.EnvironmentVariables["DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX"]="2";
+        // we define a per runner control variable to prevent conflict
+        env.EnvironmentVariables["STRYKER_CONTROL_VAR"] = controlVariable;
+        var vsTestConsole = _wrapperBuilder(env);
         try
         {
             // Set roll forward on no candidate fx so vstest console can start on incompatible dotnet core runtimes
-            Environment.SetEnvironmentVariable("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2");
             vsTestConsole.StartSession();
-            vsTestConsole.InitializeExtensions(Enumerable.Empty<string>());
+            vsTestConsole.InitializeExtensions([]);
         }
         catch (Exception e)
         {
@@ -188,7 +191,7 @@ public sealed class VsTestContextInformation : IDisposable
 
     private void DiscoverTestsInSources(string newSource, string frameworkVersion = null, string platform = null)
     {
-        var wrapper = BuildVsTestWrapper("TestDiscoverer");
+        var wrapper = BuildVsTestWrapper("TestDiscoverer", "NOT_NEEDED");
         var messages = new List<string>();
         var handler = new DiscoveryEventHandler(messages);
         var settings = GenerateRunSettingsForDiscovery(frameworkVersion, platform);
@@ -221,6 +224,13 @@ public sealed class VsTestContextInformation : IDisposable
 
         DetectTestFrameworks(VsTests.Values);
         Tests.RegisterTests(VsTests.Values.Select(t => t.Description));
+    }
+
+    internal void RegisterDiscoveredTest(VsTestDescription vsTestDescription)
+    {
+        VsTests[vsTestDescription.Id] = vsTestDescription;
+        Tests.RegisterTest(vsTestDescription.Description);
+        TestsPerSource[vsTestDescription.Case.Source].Add(vsTestDescription.Id);
     }
 
     private void DetectTestFrameworks(ICollection<VsTestDescription> tests)
@@ -262,7 +272,7 @@ public sealed class VsTestContextInformation : IDisposable
         return
             $@"
 <MaxCpuCount>{Math.Max(0, maxCpu)}</MaxCpuCount>
-{frameworkConfig}{platformConfig}{testCaseFilter}  <InIsolation>true</InIsolation>
+{frameworkConfig}{platformConfig}{testCaseFilter} 
 <DisableAppDomain>true</DisableAppDomain>";
     }
 
@@ -309,4 +319,5 @@ public sealed class VsTestContextInformation : IDisposable
 
         return runSettings;
     }
+
 }

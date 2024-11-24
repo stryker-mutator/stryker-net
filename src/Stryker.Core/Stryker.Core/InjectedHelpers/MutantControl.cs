@@ -48,7 +48,9 @@ namespace Stryker
             if (ActiveMutant == ActiveMutantNotInitValue)
             {
 #pragma warning disable CS8600
-                string environmentVariable = System.Environment.GetEnvironmentVariable("ActiveMutation");
+                // get the environment variable storign the mutation id
+                string environmentVariableName = System.Environment.GetEnvironmentVariable("STRYKER_CONTROL_VAR");
+                string environmentVariable = System.Environment.GetEnvironmentVariable(environmentVariableName);
                 if (string.IsNullOrEmpty(environmentVariable))
                 {
                     ActiveMutant = -1;
