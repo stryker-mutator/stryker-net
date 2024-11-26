@@ -1602,7 +1602,7 @@ int TestMethod()
     }
 
     [TestMethod]
-    public void ShouldMutatetringsInSwitchExpression()
+    public void ShouldMutateStringsInSwitchExpression()
     {
         var source = @"string TestMethod()
 {

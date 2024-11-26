@@ -111,7 +111,6 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new ObjectCreationMutator(),
         new ArrayCreationMutator(),
         new StatementMutator(),
-        new RegexMutator(),
         new NullCoalescingExpressionMutator(),
         new MathMutator(),
         new SwitchExpressionMutator(),
