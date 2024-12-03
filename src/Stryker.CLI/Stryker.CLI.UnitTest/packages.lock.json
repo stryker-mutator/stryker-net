@@ -41,13 +41,13 @@
       },
       "MSTest": {
         "type": "Direct",
-        "requested": "[3.6.3, )",
-        "resolved": "3.6.3",
-        "contentHash": "1W6UIJK6RJMIDHWVZ+TlEnzGG0TwhKgY6qlPIo1dc/qvHPKOL3XpN8lv1+VHspibv+7gq/76dYlT2y0S44aopg==",
+        "requested": "[3.6.4, )",
+        "resolved": "3.6.4",
+        "contentHash": "PDBqb7FT15DBD/LQtAr2Eq/UY9YVTgsY7CD7ZiDnamc/RI+/2VSak6qotTV+x2oyhcRJxE4USRgyqXIRlyU3kw==",
         "dependencies": {
-          "MSTest.Analyzers": "[3.6.3]",
-          "MSTest.TestAdapter": "[3.6.3]",
-          "MSTest.TestFramework": "[3.6.3]",
+          "MSTest.Analyzers": "[3.6.4]",
+          "MSTest.TestAdapter": "[3.6.4]",
+          "MSTest.TestFramework": "[3.6.4]",
           "Microsoft.NET.Test.Sdk": "17.11.1"
         }
       },
@@ -330,13 +330,13 @@
       },
       "MSTest.Analyzers": {
         "type": "Transitive",
-        "resolved": "3.6.3",
-        "contentHash": "TfM4wkpgJ9YKqQp3BjDGLCAckRwEuRvcE6Nw4Ge3r8dw6GOCpFKavyigTyD+IjV3SoMd0LvUDdjh5MGW0Oe8Wg=="
+        "resolved": "3.6.4",
+        "contentHash": "4gU/VdItLebmE2+UkOaqffVmVa/in0VeIF9fmN/fG0tj5AHAasjasJcZa9U2uXBNX03cKCWlgWenlhKLz343NQ=="
       },
       "MSTest.TestAdapter": {
         "type": "Transitive",
-        "resolved": "3.6.3",
-        "contentHash": "i3KbdAjLO0W9xlvbhZa9u0wh6X+VZ1yTBsUVlVKtx8B9CXa4rFXPcx3yPysB9gbALmhgAjFza4RRoNyXY9IoXQ==",
+        "resolved": "3.6.4",
+        "contentHash": "YdwseRA+nDhRqD2oPHjCE4KzLEN5B10A61lOslE3N3OvUwHJ6ezyZZjYWf7mrZ8jckCcx/UlBclTzgWUpMpPQw==",
         "dependencies": {
           "Microsoft.Testing.Extensions.VSTestBridge": "1.4.3",
           "Microsoft.Testing.Platform.MSBuild": "1.4.3"
@@ -1074,9 +1074,9 @@
       },
       "MSTest.TestFramework": {
         "type": "CentralTransitive",
-        "requested": "[3.6.3, )",
-        "resolved": "3.6.3",
-        "contentHash": "jockRcUoLJMeHzLqFcMnZBrWy7tS32JP7shlepDDJuf5A6HO2PwAefXzhvprcWNkfpEwmR0KihSO2HRXwNbTng=="
+        "requested": "[3.6.4, )",
+        "resolved": "3.6.4",
+        "contentHash": "3nV+2CJluKmiJpCSqQfXu5idCq35+vqFywjScyauTIz0Zk7KJw7Qpzv8gtwow0To7pxIlIvwkq9rbMB+V6eOow=="
       },
       "NuGet.Frameworks": {
         "type": "CentralTransitive",
