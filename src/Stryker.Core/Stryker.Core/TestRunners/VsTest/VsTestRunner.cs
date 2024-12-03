@@ -250,7 +250,7 @@ public sealed class VsTestRunner : IDisposable
                 projectAndTests.HelperNamespace, source.TargetFramework, source.TargetPlatform());
             _logger.LogTrace("{RunnerId}: testing assembly {source}.", RunnerId, source);
             var activeId = -1;
-            if (mutantTestsMap!=null && mutantTestsMap.Count==1)
+            if (mutantTestsMap is { Count: 1 })
             {
                 activeId = mutantTestsMap.Keys.First();
             }

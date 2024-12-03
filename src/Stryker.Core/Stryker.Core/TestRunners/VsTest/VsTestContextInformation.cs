@@ -33,7 +33,7 @@ public sealed class VsTestContextInformation : IDisposable
     private TestFrameworks _testFramework;
 
     /// <summary>
-    ///     Discovered tests (VsTest format)
+    /// Discovered tests (VsTest format)
     /// </summary>
     public IDictionary<Guid, VsTestDescription> VsTests { get; private set; }
 
@@ -43,7 +43,7 @@ public sealed class VsTestContextInformation : IDisposable
     public IDictionary<string, ISet<Guid>> TestsPerSource { get; } = new Dictionary<string, ISet<Guid>>();
 
     /// <summary>
-    ///     Tests (Stryker format)
+    /// Tests (Stryker format)
     /// </summary>
     public TestSet Tests { get; } = new();
 
@@ -96,13 +96,14 @@ public sealed class VsTestContextInformation : IDisposable
     /// Starts a new VsTest instance and returns a wrapper to control it.
     /// </summary>
     /// <param name="runnerId">Name of the instance to create (used in log files)</param>
+    /// <param name="controlVariable">name of the env variable storing the active mutation id</param>
     /// <returns>a <see cref="IVsTestConsoleWrapper" /> controlling the created instance.</returns>
     public IVsTestConsoleWrapper BuildVsTestWrapper(string runnerId, string controlVariable)
     {
         var env = DetermineConsoleParameters(runnerId);
         env.EnvironmentVariables["DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX"]="2";
         // we define a per runner control variable to prevent conflict
-        env.EnvironmentVariables["STRYKER_CONTROL_VAR"] = controlVariable;
+        env.EnvironmentVariables["STRYKER_MUTANT_ID_CONTROL_VAR"] = controlVariable;
         var vsTestConsole = _wrapperBuilder(env);
         try
         {
