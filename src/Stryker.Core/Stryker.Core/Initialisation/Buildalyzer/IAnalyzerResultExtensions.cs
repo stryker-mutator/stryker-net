@@ -107,28 +107,14 @@ public static class IAnalyzerResultExtensions
     {
         foreach (var reference in analyzerResult.References)
         {
-            var referenceFileNameWithoutExtension = Path.GetFileNameWithoutExtension(reference);
-            string packageWithAlias = null;
 
-            if (analyzerResult.PackageReferences is not null)
+            if (!analyzerResult.ReferenceAliases.TryGetValue(reference, out var aliases))
             {
-                // Check for any matching package reference with an alias using LINQ
-                packageWithAlias = analyzerResult.PackageReferences
-                    .Where(pr => pr.Key == referenceFileNameWithoutExtension && pr.Value.ContainsKey("Aliases"))
-                    .Select(pr => pr.Value["Aliases"])
-                    .FirstOrDefault();
+                aliases = [];
             }
-                
-            if (packageWithAlias is not null)
-            {
-                // Return the reference with the alias
-                yield return MetadataReference.CreateFromFile(reference).WithAliases(new[] { packageWithAlias });
-            }
-            else
-            {
-                // If no alias is found, return the reference without aliases
-                yield return MetadataReference.CreateFromFile(reference);
-            }
+
+            // If no alias is found, return the reference without aliases
+            yield return MetadataReference.CreateFromFile(reference).WithAliases(aliases);
         }
     }
 
