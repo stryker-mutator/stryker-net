@@ -40,7 +40,6 @@
     <PackageReference Include="Grynwald.MarkdownGenerator" />
     <PackageReference Include="LibGit2Sharp" />
     <PackageReference Include="Microsoft.CodeAnalysis.Common" />
-    <PackageReference Include="FSharp.Compiler.Service" />
     <PackageReference Include="DotNet.Glob" />
     <PackageReference Include="Buildalyzer" />
     <PackageReference Include="Microsoft.CodeAnalysis.CSharp" />

@@ -158,7 +158,7 @@ public class InputFileResolver : IInputFileResolver
             {
                 Parallel.ForEach(list.Consume(),
                     new ParallelOptions
-                        { MaxDegreeOfParallelism = options.DevMode ? 1 : Math.Max(options.Concurrency, 1) }, entry =>
+                    { MaxDegreeOfParallelism = options.DevMode ? 1 : Math.Max(options.Concurrency, 1) }, entry =>
                     {
                         var buildResult = GetProjectAndAddIt(options, manager, entry, normalizedProjectUnderTestNameFilter, mutableProjectsAnalyzerResults);
 
@@ -166,7 +166,8 @@ public class InputFileResolver : IInputFileResolver
                         {
                             list.Add((reference, null));
                         }
-                    });
+                    }
+                );
             }
         }
         catch (AggregateException ex)
@@ -191,10 +192,7 @@ public class InputFileResolver : IInputFileResolver
         var isTestProject = buildResult.IsTestProject();
         if (isTestProject)
         {
-            buildResult = new List<IAnalyzerResult>
-            {
-                SelectAnalyzerResult(buildResult, entry.framework)
-            };
+            buildResult = [SelectAnalyzerResult(buildResult, entry.framework)];
         }
 
         if (isTestProject || normalizedProjectUnderTestNameFilter == null ||
@@ -228,7 +226,7 @@ public class InputFileResolver : IInputFileResolver
         foreach (var projectReference in buildResult.SelectMany(p => p.ProjectReferences))
         {
             // in single level mode we only want to find the projects referenced by test project
-            if (mode == ScanMode.ScanTestProjectReferences && !isTestProject || !FileSystem.File.Exists(projectReference))
+            if ((mode == ScanMode.ScanTestProjectReferences && !isTestProject) || !FileSystem.File.Exists(projectReference))
             {
                 continue;
             }
@@ -247,7 +245,7 @@ public class InputFileResolver : IInputFileResolver
             _buildalyzerLog.GetStringBuilder().Clear();
         }
         var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
-                    _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
+        _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
         var buildResult = project.Build();
 
         var buildResultOverallSuccess = buildResult.OverallSuccess || Array.
@@ -260,7 +258,7 @@ public class InputFileResolver : IInputFileResolver
             if (buildResult.Any(r => !IsValid(r) && r.TargetsFullFramework()))
             {
                 _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
-                
+
                 if (options.DevMode)
                 {
                     _logger.LogWarning("The MsBuild log is below.");
@@ -339,7 +337,10 @@ public class InputFileResolver : IInputFileResolver
             foreach (var property in properties)
             {
                 if (importantProperties.Contains(property.Key))
+                {
                     continue; // already logged 
+                }
+
                 log.AppendLine($"Property {property.Key}={property.Value.Replace(Environment.NewLine, "\\n")}");
             }
             log.AppendLine();
@@ -359,8 +360,8 @@ public class InputFileResolver : IInputFileResolver
 
         if (targetFramework is null)
         {
-             // we try to avoid desktop versions
-             return PickFrameworkVersion();
+            // we try to avoid desktop versions
+            return PickFrameworkVersion();
         }
 
         var resultForRequestedFramework = validResults.Find(a => a.TargetFramework == targetFramework);
@@ -461,12 +462,6 @@ public class InputFileResolver : IInputFileResolver
                 _logger,
                 FileSystem),
 
-            Language.Fsharp => new FsharpProjectComponentsBuilder(
-                targetProjectInfo,
-                options,
-                _foldersToExclude,
-                _logger,
-                FileSystem),
             _ => throw new NotSupportedException($"Language not supported: {language}")
         });
 
@@ -548,7 +543,7 @@ public class InputFileResolver : IInputFileResolver
         public DynamicEnumerableQueue(IEnumerable<T> init)
         {
             _cache = new(init.ToDictionary(x => x, x => true));
-            _queue = new (_cache.Keys);
+            _queue = new(_cache.Keys);
         }
 
         public bool Empty => _queue.IsEmpty;
