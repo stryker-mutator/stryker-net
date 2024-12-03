@@ -180,7 +180,7 @@ public sealed class VsTestRunner : IDisposable
         // ranTests is the list of test that have been executed. We detect the special case where all (existing and found) tests have been executed.
         // this is needed when the tests list is not stable (mutations can generate variation for theories) and also helps for performance
         // so we assume that if executed at least as much test as have been detected, it means all tests have been executed
-        // EXCEPT when no test have been found. Otherwise, an empty test project would transform non covered mutants to survivors.
+        // EXCEPT when no test have been found. Otherwise, an empty test project would transform non-covered mutants to survivors.
         var ranTests = compressAll && totalCountOfTests > 0 && ranTestsCount >= totalCountOfTests
             ? (ITestGuids)TestGuidsList.EveryTest()
             : new WrappedGuidsEnumeration(testCases);
@@ -240,7 +240,7 @@ public sealed class VsTestRunner : IDisposable
         foreach (var source in projectAndTests.TestProjectsInfo.AnalyzerResults)
         {
             var testForSource = _context.TestsPerSource[source.GetAssemblyPath()];
-            var testsForAssembly = new TestGuidsList(tests.GetGuids()?.Where(testForSource.Contains));
+            var testsForAssembly = new TestGuidsList(tests.GetGuids().Where(testForSource.Contains));
             if (!tests.IsEveryTest && testsForAssembly.Count == 0)
             {
                 // skip empty assemblies
