@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Core.Mutants;
-using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.TestRunners.VsTest;
 
 public sealed class VsTestDescription
 {
-    private readonly ICollection<TestResult> _initialResults = new List<TestResult>();
+    private readonly ICollection<TestResult> _initialResults = [];
     private int _subCases;
 
     public VsTestDescription(TestCase testCase)
