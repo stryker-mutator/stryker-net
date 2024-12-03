@@ -2,8 +2,7 @@
   "stryker-config": {
     "mutate": [
       "!Testing/**",
-      "!Logging/**",
-      "!**/FSharp*.*"
+      "!Logging/**"
     ],
     "project-info": {
       "module": "core"
