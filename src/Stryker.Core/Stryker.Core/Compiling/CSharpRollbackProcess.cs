@@ -222,7 +222,7 @@ public class CSharpRollbackProcess : ICSharpRollbackProcess
             // find the mutated node in the new tree
             var nodeToRemove = trackedTree.GetCurrentNode(brokenMutation);
             // remove the mutated node using its MutantPlacer remove method and update the tree
-            trackedTree = trackedTree.ReplaceNode(nodeToRemove, MutantPlacer.RemoveMutant(nodeToRemove));
+            trackedTree = MutantPlacer.RemoveMutation(nodeToRemove);
         }
 
         return trackedTree.SyntaxTree;
