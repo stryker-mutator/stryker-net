@@ -6,5 +6,5 @@ namespace Stryker.Core.CoverageAnalysis;
 
 public interface ICoverageAnalyser
 {
-    void DetermineTestCoverage(IProjectAndTests project, ITestRunner runner, IEnumerable<IMutant> mutants, ITestGuids resultFailingTests);
+    void DetermineTestCoverage(IProjectAndTests project, ITestRunner runner, IEnumerable<IMutant> mutants, ITestIdentifiers resultFailingTests);
 }

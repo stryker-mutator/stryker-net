@@ -234,11 +234,6 @@
           "Microsoft.Testing.Platform": "1.4.2"
         }
       },
-      "Microsoft.Testing.Platform": {
-        "type": "Transitive",
-        "resolved": "1.4.2",
-        "contentHash": "rgBNwCe9AmCLyDSWzf20Mlh6wGT6XbJrFeSiCmDtQEIs+qxDf0BEomYOD91WISdkkQ9LLY2Tf4N+jmMEKnO+sg=="
-      },
       "Microsoft.Testing.Platform.MSBuild": {
         "type": "Transitive",
         "resolved": "1.4.2",
@@ -1455,6 +1450,7 @@
           "Microsoft.TestPlatform.Portable": "[17.11.1, )",
           "Microsoft.TestPlatform.TranslationLayer": "[17.11.1, )",
           "Microsoft.Testing.Extensions.TrxReport": "[1.4.2, )",
+          "Microsoft.Testing.Platform": "[1.4.3, )",
           "Microsoft.Web.LibraryManager.Build": "[2.1.175, )",
           "Mono.Cecil": "[0.11.6, )",
           "NuGet.Frameworks": "[6.11.1, )",
@@ -1668,6 +1664,12 @@
           "Microsoft.Testing.Extensions.TrxReport.Abstractions": "1.4.2",
           "Microsoft.Testing.Platform": "1.4.2"
         }
+      },
+      "Microsoft.Testing.Platform": {
+        "type": "CentralTransitive",
+        "requested": "[1.4.3, )",
+        "resolved": "1.4.3",
+        "contentHash": "NedIbwl1T7+ZMeg7gwk0Db8/RFLf0siyVpeTcRMMOle6Xl/ujaYOM4Aduo8rEfVqNj3kcQ7blegpyT3dHi+0PA=="
       },
       "Microsoft.TestPlatform": {
         "type": "CentralTransitive",

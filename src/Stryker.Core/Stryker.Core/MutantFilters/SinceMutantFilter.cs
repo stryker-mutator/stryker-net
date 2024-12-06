@@ -7,15 +7,15 @@ using Stryker.Abstractions;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.DiffProviders;
-using Stryker.Core.Mutants;
 
 namespace Stryker.Core.MutantFilters;
 
 public class SinceMutantFilter : IMutantFilter
 {
     private readonly DiffResult _diffResult;
-    private readonly TestSet _tests;
+    private readonly ITestSet _tests;
     private readonly ILogger<SinceMutantFilter> _logger;
 
     public MutantFilter Type => MutantFilter.Since;
@@ -125,7 +125,7 @@ public class SinceMutantFilter : IMutantFilter
             {
                 continue;
             }
-            var coveringTests = _tests.Extract(mutant.CoveringTests.GetGuids());
+            var coveringTests = _tests.Extract(mutant.CoveringTests.GetIdentifiers());
 
             if (coveringTests != null
                 && coveringTests.Any(coveringTest => _diffResult.ChangedTestFiles.Any(changedTestFile => coveringTest.TestFilePath == changedTestFile

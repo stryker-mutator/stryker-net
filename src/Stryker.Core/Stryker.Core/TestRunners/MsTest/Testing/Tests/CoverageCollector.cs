@@ -112,7 +112,7 @@ internal class CoverageCollector
         }
 
         seenTestCases.Add(testDescription.Id.ToString());
-        coverageRunResult = CoverageRunResult.Create(testCaseId, defaultConfidence, testCoverageInfo.CoveredMutations, testCoverageInfo.CoveredStaticMutations, testCoverageInfo.LeakedMutations);
+        coverageRunResult = new CoverageRunResult(Identifier.Create(testCaseId), defaultConfidence, testCoverageInfo.CoveredMutations, testCoverageInfo.CoveredStaticMutations, testCoverageInfo.LeakedMutations);
 
         return false;
     }

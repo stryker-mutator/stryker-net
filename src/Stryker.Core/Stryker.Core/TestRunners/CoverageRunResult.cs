@@ -6,7 +6,7 @@ namespace Stryker.Core.TestRunners;
 
 public class CoverageRunResult : ICoverageRunResult
 {
-    private readonly Dictionary<int, MutationTestingRequirements> MutationFlags = new();
+    public Dictionary<int, MutationTestingRequirements> MutationFlags { get; } = new();
 
     public Identifier TestId { get; }
 

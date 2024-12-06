@@ -9,6 +9,7 @@ using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using Stryker.TestRunner.VSTest;
 
 namespace Stryker.Core.TestRunners.VsTest;
 
@@ -102,7 +103,7 @@ public sealed class RunEventHandler : ITestRunEventsHandler
                 else
                 {
                     // unknown id. Probable cause: test name has changed due to some parameter having changed
-                    _runs[id] = new TestRun(new VsTestDescription(testResult.TestCase));
+                    _runs[id] = new TestRun(new VsTestDescription(new VsTestCase(testResult.TestCase)));
                 }
             }
 

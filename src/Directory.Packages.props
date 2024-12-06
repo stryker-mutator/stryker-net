@@ -6,6 +6,7 @@
     <PackageVersion Include="LaunchDarkly.EventSource" Version="5.1.0" />
     <PackageVersion Include="McMaster.Extensions.CommandLineUtils" Version="4.1.1" />
     <PackageVersion Include="Microsoft.Testing.Extensions.TrxReport" Version="1.4.2" />
+    <PackageVersion Include="Microsoft.Testing.Platform" Version="1.4.3" />
     <PackageVersion Include="MSTest" Version="3.6.2" />
     <PackageVersion Include="MSTest.TestAdapter" Version="3.6.2" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.6.2" />
