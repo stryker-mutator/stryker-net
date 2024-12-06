@@ -2,6 +2,7 @@ using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Instrumentation;
 
@@ -22,15 +23,16 @@ internal class ConditionalInstrumentationEngine : BaseEngine<ParenthesizedExpres
                 SyntaxFactory.ConditionalExpression(
                     condition: condition,
                     whenTrue: mutated,
-                    whenFalse: original))
-            // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later
-            .WithAdditionalAnnotations(Marker);
+                    whenFalse: original)).
+        WithTriviaFrom(original).
+        // Mark this node as a MutationConditional node. Store the MutantId in the annotation to retrace the mutant later
+        WithAdditionalAnnotations(Marker);
 
     protected override SyntaxNode Revert(ParenthesizedExpressionSyntax parenthesized)
     {
         if (parenthesized.Expression is ConditionalExpressionSyntax conditional)
         {
-            return conditional.WhenFalse;
+            return conditional.WhenFalse.WithTriviaFrom(parenthesized);
         }
         throw new InvalidOperationException($"Expected a block containing a conditional expression, found:\n{parenthesized.ToFullString()}.");
     }

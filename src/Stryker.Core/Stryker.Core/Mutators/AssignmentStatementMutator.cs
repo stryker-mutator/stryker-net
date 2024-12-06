@@ -45,8 +45,9 @@ public class AssignmentExpressionMutator : MutatorBase<AssignmentExpressionSynta
 
         foreach (var targetAssignmentKind in targetAssignmentKinds)
         {
-            var replacementNode = SyntaxFactory.AssignmentExpression(targetAssignmentKind, node.Left, node.Right);
-            replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithTriviaFrom(node.OperatorToken));
+            var replacementNode =
+                SyntaxFactory.AssignmentExpression(targetAssignmentKind, node.Left.WithCleanTrivia(), node.Right.WithCleanTrivia());
+            replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithCleanTriviaFrom(node.OperatorToken));
             yield return new Mutation
             {
                 OriginalNode = node,
