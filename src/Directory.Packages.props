@@ -7,9 +7,9 @@
     <PackageVersion Include="MSTest" Version="3.6.4" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.6.4" />
     <PackageVersion Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.11.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.11.0" />
-    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.11.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.12.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.VisualBasic" Version="4.12.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.12.0" />
     <PackageVersion Include="NuGet.Protocol" Version="6.12.1" />
     <PackageVersion Include="ResXResourceReader.NetStandard" Version="1.3.0" />
     <PackageVersion Include="YamlDotNet" Version="16.2.1" />
