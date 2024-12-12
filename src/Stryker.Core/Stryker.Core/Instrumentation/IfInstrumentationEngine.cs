@@ -2,6 +2,7 @@ using System;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Instrumentation;
 
@@ -20,10 +21,8 @@ internal class IfInstrumentationEngine : BaseEngine<IfStatementSyntax>
     /// <remarks>This method works with statement and block.</remarks>
     public IfStatementSyntax InjectIf(ExpressionSyntax condition, StatementSyntax originalNode, StatementSyntax mutatedNode) =>
         SyntaxFactory.IfStatement(condition,
-            AsBlock(mutatedNode),
-            SyntaxFactory.ElseClause(AsBlock(originalNode))).WithAdditionalAnnotations(Marker);
-
-    private static BlockSyntax AsBlock(StatementSyntax code) => code as BlockSyntax ?? SyntaxFactory.Block(code);
+            mutatedNode.AsBlock(),
+            SyntaxFactory.ElseClause(originalNode.AsBlock())).WithAdditionalAnnotations(Marker);
 
     /// <summary>
     /// Returns the original code.
