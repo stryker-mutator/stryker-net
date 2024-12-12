@@ -1,3 +1,5 @@
+extern alias TheLib;
+
 using System.Linq;
 
 namespace TargetProject.Constructs;
