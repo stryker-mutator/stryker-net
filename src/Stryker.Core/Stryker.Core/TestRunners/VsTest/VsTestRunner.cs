@@ -35,6 +35,7 @@ public sealed class VsTestRunner : IDisposable
     private const int MaxAttempts = 3;
 
     private string RunnerId => $"Runner {_id}";
+    private string ControlVariableName => $"ACTIVE_MUTATION_{_id}";
 
     public VsTestRunner(VsTestContextInformation context,
         int id,
@@ -43,7 +44,7 @@ public sealed class VsTestRunner : IDisposable
         _context = context;
         _id = id;
         _logger = logger ?? ApplicationLogging.LoggerFactory.CreateLogger<VsTestRunner>();
-        _vsTestConsole = _context.BuildVsTestWrapper(RunnerId);
+        _vsTestConsole = _context.BuildVsTestWrapper(RunnerId, ControlVariableName);
     }
 
     public TestRunResult InitialTest(IProjectAndTests project)
@@ -60,8 +61,7 @@ public sealed class VsTestRunner : IDisposable
             if (!_context.VsTests.ContainsKey(result.TestCase.Id))
             {
                 var vsTestDescription = new VsTestDescription(result.TestCase);
-                _context.VsTests[result.TestCase.Id] = vsTestDescription;
-                _context.Tests.RegisterTest(vsTestDescription.Description);
+                _context.RegisterDiscoveredTest(vsTestDescription);
                 _logger.LogWarning(
                     "{RunnerId}: Initial test run encounter an unexpected test case ({DisplayName}), mutation tests may be inaccurate. Disable coverage analysis if you have doubts.",
                 RunnerId, result.TestCase.DisplayName);
@@ -84,7 +84,7 @@ public sealed class VsTestRunner : IDisposable
         if (testCases?.Count == 0)
         {
             return new TestRunResult(_context.VsTests.Values, TestGuidsList.NoTest(), TestGuidsList.NoTest(),
-                TestGuidsList.NoTest(), "Mutants are not covered by any test!", Enumerable.Empty<string>(),
+                TestGuidsList.NoTest(), "Mutants are not covered by any test!", [],
                 TimeSpan.Zero);
         }
 
@@ -115,7 +115,7 @@ public sealed class VsTestRunner : IDisposable
                 : new WrappedGuidsEnumeration(handlerTestResults.Select(t => t.TestCase.Id));
             var failedTest = new WrappedGuidsEnumeration(handlerTestResults
                 .Where(tr => tr.Outcome == TestOutcome.Failed)
-            .Select(t => t.TestCase.Id));
+                .Select(t => t.TestCase.Id));
             var timedOutTest = new WrappedGuidsEnumeration(handler.TestsInTimeout?.Select(t => t.Id));
             var remainingMutants = update?.Invoke(mutants, failedTest, tests, timedOutTest);
 
@@ -180,7 +180,7 @@ public sealed class VsTestRunner : IDisposable
         // ranTests is the list of test that have been executed. We detect the special case where all (existing and found) tests have been executed.
         // this is needed when the tests list is not stable (mutations can generate variation for theories) and also helps for performance
         // so we assume that if executed at least as much test as have been detected, it means all tests have been executed
-        // EXCEPT when no test have been found. Otherwise, an empty test project would transform non covered mutants to survivors.
+        // EXCEPT when no test have been found. Otherwise, an empty test project would transform non-covered mutants to survivors.
         var ranTests = compressAll && totalCountOfTests > 0 && ranTestsCount >= totalCountOfTests
             ? (ITestGuids)TestGuidsList.EveryTest()
             : new WrappedGuidsEnumeration(testCases);
@@ -240,7 +240,7 @@ public sealed class VsTestRunner : IDisposable
         foreach (var source in projectAndTests.TestProjectsInfo.AnalyzerResults)
         {
             var testForSource = _context.TestsPerSource[source.GetAssemblyPath()];
-            var testsForAssembly = new TestGuidsList(tests.GetGuids()?.Where(testForSource.Contains));
+            var testsForAssembly = new TestGuidsList(tests.GetGuids().Where(testForSource.Contains));
             if (!tests.IsEveryTest && testsForAssembly.Count == 0)
             {
                 // skip empty assemblies
@@ -248,8 +248,13 @@ public sealed class VsTestRunner : IDisposable
             }
             var runSettings = _context.GenerateRunSettings(timeOut, forCoverage, mutantTestsMap,
                 projectAndTests.HelperNamespace, source.TargetFramework, source.TargetPlatform());
-
             _logger.LogTrace("{RunnerId}: testing assembly {source}.", RunnerId, source);
+            var activeId = -1;
+            if (mutantTestsMap is { Count: 1 })
+            {
+                activeId = mutantTestsMap.Keys.First();
+            }
+            Environment.SetEnvironmentVariable(ControlVariableName, activeId.ToString());
             RunVsTest(tests, source.GetAssemblyPath(), runSettings, options, timeOut, runEventHandler);
 
             if (_currentSessionCancelled)
@@ -281,13 +286,15 @@ public sealed class VsTestRunner : IDisposable
                 {
                     if (tests.IsEveryTest)
                     {
-                        _vsTestConsole.RunTestsWithCustomTestHost(new[] { source }, runSettings, options, eventHandler,
+                        _vsTestConsole.RunTestsWithCustomTestHost([source], runSettings, options, eventHandler,
                             strykerVsTestHostLauncher);
                     }
                     else
                     {
+                        var actualTestCases = tests.GetGuids().Select(t => _context.VsTests[t].Case).ToList();
+                        var testCases = actualTestCases;
                         _vsTestConsole.RunTestsWithCustomTestHost(
-                            tests.GetGuids().Select(t => _context.VsTests[t].Case),
+                            testCases,
                             runSettings, options, eventHandler, strykerVsTestHostLauncher);
                     }
                 });
@@ -371,7 +378,7 @@ public sealed class VsTestRunner : IDisposable
             }
         }
 
-        _vsTestConsole = _context.BuildVsTestWrapper($"{RunnerId}-{_instanceCount}");
+        _vsTestConsole = _context.BuildVsTestWrapper($"{RunnerId}-{_instanceCount}", ControlVariableName);
     }
 
     #region IDisposable Support
