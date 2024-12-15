@@ -36,8 +36,8 @@
       },
       "Microsoft.CodeAnalysis.Common": {
         "type": "Transitive",
-        "resolved": "4.11.0",
-        "contentHash": "djf8ujmqYImFgB04UGtcsEhHrzVqzHowS+EEl/Yunc5LdrYrZhGBWUTXoCF0NzYXJxtfuD+UVQarWpvrNc94Qg==",
+        "resolved": "4.12.0",
+        "contentHash": "c1kNYihL2gdcuU1dqm8R8YeA4YkB43TpU3pa2r66Uooh6AAhRtENzj9A4Kj0a+H8JDDyuTjNZql9XlVUzV+UjA==",
         "dependencies": {
           "Microsoft.CodeAnalysis.Analyzers": "3.3.4",
           "System.Collections.Immutable": "8.0.0",
@@ -130,8 +130,8 @@
       "targetproject": {
         "type": "Project",
         "dependencies": {
-          "Library": "[4.4.1, )",
-          "Microsoft.CodeAnalysis.Common": "[4.11.0, )"
+          "Library": "[1.0.0, )",
+          "Microsoft.CodeAnalysis.Common": "[4.12.0, )"
         }
       }
     }
