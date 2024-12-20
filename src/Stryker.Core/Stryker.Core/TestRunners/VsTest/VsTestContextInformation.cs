@@ -101,13 +101,13 @@ public sealed class VsTestContextInformation : IDisposable
     public IVsTestConsoleWrapper BuildVsTestWrapper(string runnerId, string controlVariable)
     {
         var env = DetermineConsoleParameters(runnerId);
+        // Set roll forward on no candidate fx so vstest console can start on incompatible dotnet core runtimes
         env.EnvironmentVariables["DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX"]="2";
         // we define a per runner control variable to prevent conflict
         env.EnvironmentVariables["STRYKER_MUTANT_ID_CONTROL_VAR"] = controlVariable;
         var vsTestConsole = _wrapperBuilder(env);
         try
         {
-            // Set roll forward on no candidate fx so vstest console can start on incompatible dotnet core runtimes
             vsTestConsole.StartSession();
             vsTestConsole.InitializeExtensions([]);
         }
