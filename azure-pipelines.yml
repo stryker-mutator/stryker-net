@@ -51,7 +51,7 @@ stages:
     - task: UseDotNet@2
       displayName: 'Use dotnet'
       inputs:
-        version: 8.x
+        version: 9.x
     - template: pipeline-templates/populate-cache-steps.yml
     - task: SonarCloudPrepare@3
       inputs:
