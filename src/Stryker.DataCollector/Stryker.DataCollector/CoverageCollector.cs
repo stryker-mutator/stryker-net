@@ -29,7 +29,6 @@ namespace Stryker.DataCollector
         private IDataCollectionSink _dataSink;
         private bool _coverageOn;
         private int _activeMutation = -1;
-        private bool _reportFailure;
 
         private Action<string> _logger;
         private readonly IDictionary<string, int> _mutantTestedBy = new Dictionary<string, int>();
@@ -94,7 +93,6 @@ namespace Stryker.DataCollector
         {
             _dataSink = dataCollectionSink;
             _throwingListener = new ThrowingListener();
-            SetLogger(Console.WriteLine);
         }
 
         public void SetLogger(Action<string> logger) => _logger = logger;
@@ -276,11 +274,7 @@ namespace Stryker.DataCollector
             {
                 // no test covered any mutations, so the controller was never properly initialized
                 _dataSink.SendData(dataCollectionContext, PropertyName, ";");
-                if (!_reportFailure)
-                {
-                    _dataSink.SendData(dataCollectionContext, CoverageLog, $"Did not find type {_controlClassName}. Mutated assembly may not be covered by any test.");
-                    _reportFailure = true;
-                }
+                _dataSink.SendData(dataCollectionContext, CoverageLog, $"Test {dataCollectionContext.TestCase.DisplayName} endend. No mutant covered so far.");
                 return;
             }
 

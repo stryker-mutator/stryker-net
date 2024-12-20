@@ -77,7 +77,7 @@ public class TestGuidsList : ITestGuids
 
     public static TestGuidsList NoTest() => NoTestAtAll;
 
-    public IEnumerable<Guid> GetGuids() => _testGuids;
+    public IEnumerable<Guid> GetGuids() => _testGuids ?? [];
 
     public bool ContainsAny(ITestGuids other)
     {
