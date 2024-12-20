@@ -1,7 +1,7 @@
 {
   "version": 1,
   "dependencies": {
-    "net8.0": {
+    "net9.0": {
       "coverlet.collector": {
         "type": "Direct",
         "requested": "[6.0.2, )",
@@ -150,7 +150,7 @@
       "targetproject": {
         "type": "Project",
         "dependencies": {
-          "Library": "[4.4.1, )",
+          "Library": "[1.0.0, )",
           "Microsoft.CodeAnalysis.Common": "[4.12.0, )"
         }
       }

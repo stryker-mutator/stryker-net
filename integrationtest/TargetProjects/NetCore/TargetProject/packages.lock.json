@@ -1,7 +1,7 @@
 {
   "version": 1,
   "dependencies": {
-    "net7.0": {
+    "net9.0": {
       "Microsoft.CodeAnalysis.Common": {
         "type": "Direct",
         "requested": "[4.12.0, )",
