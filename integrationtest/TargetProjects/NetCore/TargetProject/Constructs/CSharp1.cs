@@ -2,7 +2,7 @@ using System.Linq;
 
 namespace TargetProject.Constructs;
 
-public class Csharp1
+public class CSharp1
 {
     // string interpolation
     public static void StringInterpolation()
