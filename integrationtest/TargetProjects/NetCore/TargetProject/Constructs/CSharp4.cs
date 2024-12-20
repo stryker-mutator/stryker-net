@@ -1,6 +1,6 @@
 namespace TargetProject.Constructs;
 
-public class Csharp4
+public class CSharp4
 {
     // named parameters
     public static void NamedParameters()

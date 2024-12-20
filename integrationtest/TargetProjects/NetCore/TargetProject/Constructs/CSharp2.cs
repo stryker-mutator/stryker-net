@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace TargetProject.Constructs;
 
-public class Csharp2
+public class CSharp2
 {
     // delegate operator
     public static void DelegateOperator()

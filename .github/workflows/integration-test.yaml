@@ -17,6 +17,9 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.x
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.x
       - name: Pack integration test package
         run: dotnet pack ${{ github.workspace }}/src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj -p:PackageVersion=$VERSION --output ${{ github.workspace }}/publish
       - name: Publish integration test package

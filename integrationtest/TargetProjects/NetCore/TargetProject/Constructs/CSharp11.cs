@@ -3,7 +3,7 @@ using System.Numerics;
 
 namespace TargetProject.Constructs;
 
-public class Csharp11
+public class CSharp11
 {
     // genergic attributes
     public class GenericAttribute<T> : Attribute { }

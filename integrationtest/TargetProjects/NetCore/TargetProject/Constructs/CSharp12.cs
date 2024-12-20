@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace TargetProject.Constructs;
 
-public class Csharp12
+public class CSharp12
 {
     // collection expressions
     public static void CollectionExpressions()

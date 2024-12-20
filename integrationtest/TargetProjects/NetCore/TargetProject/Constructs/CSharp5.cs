@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace TargetProject.Constructs;
 
-public class Csharp5
+public class CSharp5
 {
     // caller information
     public static void ValidateArgument(string parameterName, bool condition, [CallerArgumentExpression("condition")] string? message = null)

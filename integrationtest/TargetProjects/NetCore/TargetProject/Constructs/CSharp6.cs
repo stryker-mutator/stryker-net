@@ -7,7 +7,7 @@ using static System.Math;
 
 namespace TargetProject.Constructs;
 
-public class Csharp6
+public class CSharp6
 {
     // nameof expressions
     public static void NameofExpressions()

@@ -3,7 +3,7 @@ using System.Drawing;
 
 namespace TargetProject.Constructs;
 
-public class Csharp9
+public class CSharp9
 {
     // patern matching
     public bool IsLetter(char c) => c is >= 'a' and <= 'z' or >= 'A' and <= 'Z';
