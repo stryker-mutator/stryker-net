@@ -8,6 +8,7 @@ using Stryker.Core.TestRunners;
 using Stryker.Core.Mutants;
 using Stryker.Core.TestRunners.VsTest;
 using Stryker.Abstractions.Testing;
+using static Stryker.Abstractions.Testing.ITestRunner;
 
 namespace Stryker.Core.UnitTest.MutationTest;
 
@@ -63,7 +64,7 @@ internal class FullRunScenario
         _coverageResult[mutantId] = GetGuidList(testIds);
         foreach (var testId in testIds.Length == 0 ? _tests.Keys.ToArray() : testIds)
         {
-            var id = _tests[testId].Id;
+            var id = _tests[testId].Id.ToGuid();
             if (!_testCoverage.ContainsKey(id))
             {
                 _testCoverage[id] = new List<int>();
@@ -102,7 +103,7 @@ internal class FullRunScenario
             id = _tests.Keys.Append(-1).Max() + 1;
         }
 
-        var test = new TestDescription(Guid.NewGuid(), name ?? $"test {id}", file);
+        var test = new TestDescription(Identifier.Create(Guid.NewGuid()), name ?? $"test {id}", file);
         _tests[id] = test;
         TestSet.RegisterTests(new[] { test });
         return test;
@@ -177,7 +178,7 @@ internal class FullRunScenario
                 var result = new List<CoverageRunResult>(_tests.Count);
                 foreach (var (guid, mutations) in _testCoverage)
                 {
-                    result.Add(new CoverageRunResult(guid, CoverageConfidence.Normal,
+                    result.Add(new CoverageRunResult(Identifier.Create(guid), CoverageConfidence.Normal,
                         mutations,
                         Enumerable.Empty<int>(),
                         Enumerable.Empty<int>()));

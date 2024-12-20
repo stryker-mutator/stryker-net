@@ -1,10 +1,8 @@
-using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis.CSharp;
-using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions;
-using Stryker.Core.Mutants;
-using Stryker.Core.InjectedHelpers;
 using Stryker.Abstractions.Options;
+using Stryker.Core.InjectedHelpers;
+using Stryker.Core.Mutants;
 
 namespace Stryker.Core.UnitTest.Mutants;
 

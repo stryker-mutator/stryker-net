@@ -7,7 +7,7 @@ using Microsoft.Testing.Platform.Extensions.TestHost;
 using Stryker.Core.TestRunners.MsTest.Testing.Results;
 using Stryker.Core.TestRunners.MsTest.Testing.Tests;
 
-namespace Stryker.Core.TestRunners.MSTest.Testing.Consumers;
+namespace Stryker.Core.TestRunners.MsTest.Testing.Consumers;
 
 internal class DiscoveryConsumer : IDataConsumer
 {

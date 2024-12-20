@@ -7,7 +7,6 @@ using Moq;
 using Shouldly;
 using Spectre.Console.Testing;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Mutants;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;

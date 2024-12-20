@@ -5,7 +5,8 @@ using Microsoft.Testing.Platform.Extensions.Messages;
 using Microsoft.Testing.Platform.Extensions.TestHost;
 using Stryker.Core.TestRunners.MsTest.Testing.Tests;
 
-namespace Stryker.Core.TestRunners.MSTest.Testing.Consumers;
+namespace Stryker.Core.TestRunners.MsTest.Testing.Consumers;
+
 internal class CoverageConsumer : IDataConsumer
 {
     private readonly CoverageCollector _coverageCollector;

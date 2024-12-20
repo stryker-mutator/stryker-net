@@ -2,17 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
-using Stryker.Abstractions.TestRunners;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Stryker.Core.TestRunners;
-using Stryker.Core.Mutants;
-using Stryker.Core.TestRunners.VsTest;
-using Stryker.Core.Initialisation;
-using Stryker.Core.UnitTest;
 using Stryker.Abstractions.Testing;
+using Stryker.Core.Initialisation;
+using Stryker.Core.Mutants;
+using Stryker.Core.TestRunners;
+using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 

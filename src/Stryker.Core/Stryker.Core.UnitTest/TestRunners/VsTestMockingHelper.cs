@@ -18,6 +18,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.Helpers;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;

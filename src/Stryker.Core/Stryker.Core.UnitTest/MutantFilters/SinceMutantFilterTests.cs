@@ -7,7 +7,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
@@ -107,7 +107,7 @@ public class SinceMutantFilterTests : TestBase
         var myTestPath = Path.Combine(testProjectPath, "myTest.cs");
         ;
         var tests = new TestSet();
-        var test = new TestDescription(Guid.NewGuid(), "name", myTestPath);
+        var test = new TestDescription(Identifier.Create(Guid.NewGuid()), "name", myTestPath);
         tests.RegisterTests(new[] { test });
         diffProvider.SetupGet(x => x.Tests).Returns(tests);
         diffProvider.Setup(x => x.ScanDiff()).Returns(new DiffResult
@@ -249,8 +249,8 @@ public class SinceMutantFilterTests : TestBase
         });
 
         var tests = new TestSet();
-        var test1 = new TestDescription(Guid.NewGuid(), "name1", "C:/testfile1.cs");
-        var test2 = new TestDescription(Guid.NewGuid(), "name2", "C:/testfile2.cs");
+        var test1 = new TestDescription(Identifier.Create(Guid.NewGuid()), "name1", "C:/testfile1.cs");
+        var test2 = new TestDescription(Identifier.Create(Guid.NewGuid()), "name2", "C:/testfile2.cs");
         tests.RegisterTests(new[] { test1, test2 });
         diffProvider.SetupGet(x => x.Tests).Returns(tests);
         var target = new SinceMutantFilter(diffProvider.Object);
