@@ -17,7 +17,7 @@ internal class TestIdentifierList : ITestIdentifiers
     public TestIdentifierList(IEnumerable<ITestDescription> testDescriptions) : this(testDescriptions.Select(t => t.Id.ToString()))
     { }
 
-    public TestIdentifierList(IEnumerable<Identifier> identifiers) => _identifiers = new HashSet<Identifier>(identifiers);
+    public TestIdentifierList(IEnumerable<Identifier> identifiers) => _identifiers = new HashSet<Identifier>(identifiers ?? Enumerable.Empty<Identifier>());
 
     public TestIdentifierList(HashSet<Identifier> identifiers) => _identifiers = identifiers;
 
