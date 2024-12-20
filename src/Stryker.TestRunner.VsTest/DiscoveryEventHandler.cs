@@ -1,10 +1,8 @@
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using System.Collections.Generic;
-using System.Threading;
 
-namespace Stryker.Core.TestRunners.VsTest;
+namespace Stryker.TestRunner.VsTest;
 
 public class DiscoveryEventHandler : ITestDiscoveryEventsHandler
 {

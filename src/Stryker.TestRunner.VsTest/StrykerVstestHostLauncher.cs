@@ -1,12 +1,11 @@
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
 using Stryker.Abstractions.Logging;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Threading;
 
-namespace Stryker.Core.TestRunners.VsTest;
+namespace Stryker.TestRunner.VsTest;
 
 public interface IStrykerTestHostLauncher : ITestHostLauncher
 {

@@ -17,7 +17,7 @@ using Stryker.DataCollector;
 using Stryker.TestRunner.VSTest;
 using static Stryker.Abstractions.Testing.ITestRunner;
 
-namespace Stryker.Core.TestRunners.VsTest;
+namespace Stryker.TestRunner.VsTest;
 
 public sealed class VsTestRunnerPool : ITestRunner
 {

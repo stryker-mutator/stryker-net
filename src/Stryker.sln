@@ -40,7 +40,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Abstractions", "Str
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Configuration", "Stryker.Options\Stryker.Configuration.csproj", "{E80FD63A-510D-49E2-B1FE-B6CDD5BA106D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stryker.Utilities", "Stryker.Utilities\Stryker.Utilities.csproj", "{BDD19501-B2E3-4EFE-ACCD-8D11C99CCCED}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Utilities", "Stryker.Utilities\Stryker.Utilities.csproj", "{BDD19501-B2E3-4EFE-ACCD-8D11C99CCCED}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stryker.TestRunner.VsTest", "Stryker.TestRunner.VsTest\Stryker.TestRunner.VsTest.csproj", "{20D3DADD-890F-4F78-8B2B-2335F2E8FEC2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -88,6 +90,10 @@ Global
 		{BDD19501-B2E3-4EFE-ACCD-8D11C99CCCED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{BDD19501-B2E3-4EFE-ACCD-8D11C99CCCED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{BDD19501-B2E3-4EFE-ACCD-8D11C99CCCED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{20D3DADD-890F-4F78-8B2B-2335F2E8FEC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{20D3DADD-890F-4F78-8B2B-2335F2E8FEC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{20D3DADD-890F-4F78-8B2B-2335F2E8FEC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{20D3DADD-890F-4F78-8B2B-2335F2E8FEC2}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

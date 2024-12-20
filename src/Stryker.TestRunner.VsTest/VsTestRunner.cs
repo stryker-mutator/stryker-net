@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
@@ -11,13 +7,9 @@ using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
-using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.Mutants;
-using Stryker.Core.TestRunners.MsTest.Testing.Tests;
-using Stryker.TestRunner.VSTest;
 using static Stryker.Abstractions.Testing.ITestRunner;
 
-namespace Stryker.Core.TestRunners.VsTest;
+namespace Stryker.TestRunner.VsTest;
 
 public sealed class VsTestRunner : IDisposable
 {
@@ -278,7 +270,7 @@ public sealed class VsTestRunner : IDisposable
             int? timeOut, RunEventHandler eventHandler)
     {
         var attempt = 0;
-        while (attempt<MaxAttempts)
+        while (attempt < MaxAttempts)
         {
             var strykerVsTestHostLauncher = _context.BuildHostLauncher(RunnerId);
 

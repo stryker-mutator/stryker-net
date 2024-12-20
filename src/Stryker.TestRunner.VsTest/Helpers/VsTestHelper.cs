@@ -1,18 +1,14 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.IO;
 using System.IO.Abstractions;
 using System.IO.Compression;
-using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Stryker.Abstractions.Logging;
 using Stryker.Utilities;
 
-namespace Stryker.Core.Helpers;
+namespace Stryker.TetsRunner.VsTest.Helpers;
 
 public interface IVsTestHelper
 {

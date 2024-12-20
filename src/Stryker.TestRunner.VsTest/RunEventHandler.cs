@@ -11,7 +11,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Stryker.TestRunner.VSTest;
 
-namespace Stryker.Core.TestRunners.VsTest;
+namespace Stryker.TestRunner.VsTest;
 
 public interface IRunResults
 {

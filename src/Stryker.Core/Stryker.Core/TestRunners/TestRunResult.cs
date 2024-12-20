@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Stryker.Abstractions.Testing;
-using Stryker.Core.Mutants;
 using Stryker.Core.TestRunners.MsTest.Testing.Tests;
-using Stryker.Core.TestRunners.VsTest;
 
 namespace Stryker.Core.TestRunners;
 

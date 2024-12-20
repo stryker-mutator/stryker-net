@@ -1,7 +1,4 @@
-using System;
-using Stryker.Abstractions.Testing;
-
-namespace Stryker.Core.Mutants;
+namespace Stryker.Abstractions.Testing;
 
 public sealed class TestDescription : ITestDescription
 {

@@ -2,7 +2,7 @@ using System;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Abstractions.Testing;
 
-namespace Stryker.Core.TestRunners.VsTest;
+namespace Stryker.TestRunner.VsTest;
 
 internal class VsTestResult : ITestResult
 {

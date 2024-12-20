@@ -1,8 +1,5 @@
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO.Abstractions;
-using System.Linq;
 using System.Security;
 using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
@@ -12,12 +9,10 @@ using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
-using Stryker.Core.Helpers;
-using Stryker.Core.Mutants;
 using Stryker.DataCollector;
-using Stryker.TestRunner.VSTest;
+using Stryker.TetsRunner.VsTest.Helpers;
 
-namespace Stryker.Core.TestRunners.VsTest;
+namespace Stryker.TestRunner.VsTest;
 
 /// <summary>
 ///     Handles VsTest setup and configuration.
@@ -103,7 +98,7 @@ public sealed class VsTestContextInformation : IDisposable
     {
         var env = DetermineConsoleParameters(runnerId);
         // Set roll forward on no candidate fx so vstest console can start on incompatible dotnet core runtimes
-        env.EnvironmentVariables["DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX"]="2";
+        env.EnvironmentVariables["DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX"] = "2";
         // we define a per runner control variable to prevent conflict
         env.EnvironmentVariables["STRYKER_MUTANT_ID_CONTROL_VAR"] = controlVariable;
         var vsTestConsole = _wrapperBuilder(env);

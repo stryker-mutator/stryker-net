@@ -1,8 +1,6 @@
-using System.Collections.Generic;
-using System.Linq;
 using Stryker.Abstractions.Testing;
 
-namespace Stryker.Core.Mutants;
+namespace Stryker.TestRunner.VsTest;
 
 public class TestSet : ITestSet
 {
