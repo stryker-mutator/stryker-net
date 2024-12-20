@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.IO;
 using Buildalyzer;
 using Moq;
@@ -15,7 +16,8 @@ public static class TestHelper
         IReadOnlyDictionary<string, IReadOnlyDictionary<string, string>> packageReferences = null,
         string[] references = null,
         string[] preprocessorSymbols = null,
-        string[] analyzers = null
+        string[] analyzers = null,
+        ImmutableDictionary<string,  ImmutableArray<string>> aliases = null
     )
     {
         var analyzerResultMock = new Mock<IAnalyzerResult>();
@@ -67,7 +69,9 @@ public static class TestHelper
         {
             analyzerResultMock.Setup(x => x.AnalyzerReferences).Returns(analyzers);
         }
+        aliases ??= ImmutableDictionary<string, ImmutableArray<string>>.Empty;
         analyzerResultMock.Setup(x => x.Items).Returns(new Dictionary<string, IProjectItem[]>());
+        analyzerResultMock.Setup(x => x.ReferenceAliases).Returns(aliases);
 
         return analyzerResultMock;
     }

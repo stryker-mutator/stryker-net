@@ -1,7 +1,7 @@
 {
   "version": 1,
   "dependencies": {
-    "net9.0": {
+    "net8.0": {
       "Microsoft.NET.Test.Sdk": {
         "type": "Direct",
         "requested": "[17.12.0, )",
@@ -66,6 +66,11 @@
         "resolved": "13.0.1",
         "contentHash": "ppPFpBcvxdsfUonNcvITKqLl3bqxWbDCZIzDWHzjpdAHRFfZe0Dw9HmA0+za13IdyrgJwpkDTDA9fHaxOrt20A=="
       },
+      "Serilog": {
+        "type": "Transitive",
+        "resolved": "4.2.0",
+        "contentHash": "gmoWVOvKgbME8TYR+gwMf7osROiWAURterc6Rt2dQyX7wtjZYpqFiA/pY6ztjGQKKV62GGCyOcmtP1UKMHgSmA=="
+      },
       "System.Collections.Immutable": {
         "type": "Transitive",
         "resolved": "8.0.0",
@@ -85,8 +90,9 @@
       "targetproject": {
         "type": "Project",
         "dependencies": {
-          "Library": "[1.0.0, )",
-          "Microsoft.CodeAnalysis.Common": "[4.12.0, )"
+          "Library": "[4.4.1, )",
+          "Microsoft.CodeAnalysis.Common": "[4.12.0, )",
+          "Serilog": "[4.2.0, )"
         }
       }
     }
