@@ -257,7 +257,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
     }
 
     [TestMethod]
-    public void WorksWhenAllMutantsAreIgnoredPool()
+    public void ShouldIgnoreCoverageAnalysisWhenEmpty()
     {
         var options = new StrykerOptions
         {
@@ -270,7 +270,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
 
         var analyzer = new CoverageAnalyser(options);
         analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
-        Mutant.CoveringTests.Count.ShouldBe(0);
+        Mutant.CoveringTests.IsEveryTest.ShouldBeTrue();
     }
 
     [TestMethod]
@@ -666,8 +666,9 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
 
         var mockVsTest = BuildVsTestRunnerPool(options, out var runner);
 
+        var testResult = BuildCoverageTestResult("T0", new[] { "0;", "" });
         var buildCase = BuildCase("unexpected", TestFrameworks.NUnit);
-        SetupMockCoverageRun(mockVsTest, new[] { new VsTest.TestResult(buildCase) { Outcome = VsTest.TestOutcome.Passed } });
+        SetupMockCoverageRun(mockVsTest, new[] { new VsTest.TestResult(buildCase) { Outcome = VsTest.TestOutcome.Passed }, testResult });
 
         var analyzer = new CoverageAnalyser(options);
         analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
