@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -16,34 +17,32 @@ namespace Validation;
 public class ValidateStrykerResults
 {
     private readonly ReadOnlyCollection<SyntaxKind> _blacklistedSyntaxKindsForMutating =
-        new(new[]
-        {
-            // Usings
-            SyntaxKind.UsingDirective,
-            SyntaxKind.UsingKeyword,
-            SyntaxKind.UsingStatement,
-            // Comments
-            SyntaxKind.DocumentationCommentExteriorTrivia,
-            SyntaxKind.EndOfDocumentationCommentToken,
-            SyntaxKind.MultiLineCommentTrivia,
-            SyntaxKind.MultiLineDocumentationCommentTrivia,
-            SyntaxKind.SingleLineCommentTrivia,
-            SyntaxKind.SingleLineDocumentationCommentTrivia,
-            SyntaxKind.XmlComment,
-            SyntaxKind.XmlCommentEndToken,
-            SyntaxKind.XmlCommentStartToken,
-        }
+        new([
+                // Usings
+                SyntaxKind.UsingDirective,
+                SyntaxKind.UsingKeyword,
+                SyntaxKind.UsingStatement,
+                // Comments
+                SyntaxKind.DocumentationCommentExteriorTrivia,
+                SyntaxKind.EndOfDocumentationCommentToken,
+                SyntaxKind.MultiLineCommentTrivia,
+                SyntaxKind.MultiLineDocumentationCommentTrivia,
+                SyntaxKind.SingleLineCommentTrivia,
+                SyntaxKind.SingleLineDocumentationCommentTrivia,
+                SyntaxKind.XmlComment,
+                SyntaxKind.XmlCommentEndToken,
+                SyntaxKind.XmlCommentStartToken,
+            ]
     );
     private readonly ReadOnlyCollection<SyntaxKind> _parentSyntaxKindsForMutating =
-        new(new[]
-        {
-            SyntaxKind.MethodDeclaration,
-            SyntaxKind.PropertyDeclaration,
-            SyntaxKind.ConstructorDeclaration,
-            SyntaxKind.FieldDeclaration,
-            SyntaxKind.OperatorDeclaration,
-            SyntaxKind.IndexerDeclaration,
-        }
+        new([
+                SyntaxKind.MethodDeclaration,
+                SyntaxKind.PropertyDeclaration,
+                SyntaxKind.ConstructorDeclaration,
+                SyntaxKind.FieldDeclaration,
+                SyntaxKind.OperatorDeclaration,
+                SyntaxKind.IndexerDeclaration,
+            ]
     );
     private const string MutationReportJson = "mutation-report.json";
 
@@ -102,7 +101,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 601, ignored: 105, survived: 5, killed: 11, timeout: 2, nocoverage: 447);
+        CheckReportMutants(report, total: 631, ignored: 105, survived: 5, killed: 11, timeout: 2, nocoverage: 447);
         CheckReportTestCounts(report, total: 21);
     }
 
@@ -121,7 +120,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 601, ignored: 247, survived: 4, killed: 9, timeout: 2, nocoverage: 308);
+        CheckReportMutants(report, total: 631, ignored: 256, survived: 4, killed: 9, timeout: 2, nocoverage: 323);
         CheckReportTestCounts(report, total: 23);
     }
 
@@ -140,7 +139,12 @@ public class ValidateStrykerResults
                 var nodeKind = node.Kind();
                 _blacklistedSyntaxKindsForMutating.ShouldNotContain(nodeKind);
 
-                node.AncestorsAndSelf().ShouldContain(pn => _parentSyntaxKindsForMutating.Contains(pn.Kind()));
+                node
+                    .AncestorsAndSelf()
+                    .ShouldContain(pn =>
+                        _parentSyntaxKindsForMutating.Contains(pn.Kind()),
+                        $"Mutation {mutation.MutatorName} in file {file.Key} does not have one of the known parent syntax kinds as it's parent. {Environment.NewLine}" +
+                        $"Instead it has: {Environment.NewLine} {string.Join($",{Environment.NewLine}", node.AncestorsAndSelf().Select(n => n.Kind()))}");
             }
         }
     }
