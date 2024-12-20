@@ -65,7 +65,7 @@ public class StringMethodMutatorTests : TestBase
     {
         var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(expression);
         var target = new StringMethodMutator();
-        var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
+        var result = target.ApplyMutations((MemberAccessExpressionSyntax)expressionSyntax.Expression, semanticModel).ToList();
 
         var mutation = result.ShouldHaveSingleItem();
 
@@ -83,7 +83,7 @@ public class StringMethodMutatorTests : TestBase
     {
         var expression = $"testString.{methodName}()";
         var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(expression);
-        var target = new StringMethodMutator();
+        var target = new StringMethodToConstantMutator();
         var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
 
         var mutation = result.ShouldHaveSingleItem();
@@ -101,7 +101,7 @@ public class StringMethodMutatorTests : TestBase
     {
         var expression = $"testString.{methodName}()";
         var (semanticModel, expressionSyntax) = CreateSemanticModelFromExpression(expression);
-        var target = new StringMethodMutator();
+        var target = new StringMethodToConstantMutator();
         var result = target.ApplyMutations(expressionSyntax, semanticModel).ToList();
 
         var mutation = result.ShouldHaveSingleItem();
@@ -118,7 +118,7 @@ public class StringMethodMutatorTests : TestBase
         var expression = (InvocationExpressionSyntax)
             SyntaxFactory.ParseExpression("Enumerable.Max(new[] { 1, 2, 3 })");
         var target = new StringMethodMutator();
-        var result = target.ApplyMutations(expression, null).ToList();
+        var result = target.ApplyMutations((MemberAccessExpressionSyntax)expression.Expression, null).ToList();
 
         result.ShouldBeEmpty();
     }

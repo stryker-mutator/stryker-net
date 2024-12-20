@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Mutators;
+using Stryker.Core.Helpers;
 using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators;
@@ -18,7 +19,7 @@ public class ObjectCreationMutator : MutatorBase<ObjectCreationExpressionSyntax>
             yield return new Mutation()
             {
                 OriginalNode = node,
-                ReplacementNode = node.ReplaceNode(node.Initializer, SyntaxFactory.InitializerExpression(SyntaxKind.CollectionInitializerExpression)),
+                ReplacementNode = node.ReplaceNode(node.Initializer, SyntaxFactory.InitializerExpression(SyntaxKind.CollectionInitializerExpression)).WithCleanTrivia(),
                 DisplayName = "Collection initializer mutation",
                 Type = Mutator.Initializer
             };
@@ -28,7 +29,7 @@ public class ObjectCreationMutator : MutatorBase<ObjectCreationExpressionSyntax>
             yield return new Mutation()
             {
                 OriginalNode = node,
-                ReplacementNode = node.ReplaceNode(node.Initializer, SyntaxFactory.InitializerExpression(SyntaxKind.ObjectInitializerExpression)),
+                ReplacementNode = node.ReplaceNode(node.Initializer, SyntaxFactory.InitializerExpression(SyntaxKind.ObjectInitializerExpression)).WithCleanTrivia(),
                 DisplayName = "Object initializer mutation",
                 Type = Mutator.Initializer,
             };
