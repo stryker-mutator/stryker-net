@@ -158,7 +158,7 @@ public class InputFileResolver : IInputFileResolver
             {
                 Parallel.ForEach(list.Consume(),
                     new ParallelOptions
-                        { MaxDegreeOfParallelism = options.DevMode ? 1 : Math.Max(options.Concurrency, 1) }, entry =>
+                    { MaxDegreeOfParallelism = options.DevMode ? 1 : Math.Max(options.Concurrency, 1) }, entry =>
                     {
                         var buildResult = GetProjectAndAddIt(options, manager, entry, normalizedProjectUnderTestNameFilter, mutableProjectsAnalyzerResults);
 
@@ -166,7 +166,8 @@ public class InputFileResolver : IInputFileResolver
                         {
                             list.Add((reference, null));
                         }
-                    });
+                    }
+                );
             }
         }
         catch (AggregateException ex)
@@ -191,10 +192,7 @@ public class InputFileResolver : IInputFileResolver
         var isTestProject = buildResult.IsTestProject();
         if (isTestProject)
         {
-            buildResult = new List<IAnalyzerResult>
-            {
-                SelectAnalyzerResult(buildResult, entry.framework)
-            };
+            buildResult = [SelectAnalyzerResult(buildResult, entry.framework)];
         }
 
         if (isTestProject || normalizedProjectUnderTestNameFilter == null ||
@@ -228,7 +226,7 @@ public class InputFileResolver : IInputFileResolver
         foreach (var projectReference in buildResult.SelectMany(p => p.ProjectReferences))
         {
             // in single level mode we only want to find the projects referenced by test project
-            if (mode == ScanMode.ScanTestProjectReferences && !isTestProject || !FileSystem.File.Exists(projectReference))
+            if ((mode == ScanMode.ScanTestProjectReferences && !isTestProject) || !FileSystem.File.Exists(projectReference))
             {
                 continue;
             }
@@ -247,7 +245,7 @@ public class InputFileResolver : IInputFileResolver
             _buildalyzerLog.GetStringBuilder().Clear();
         }
         var projectLogName = Path.GetRelativePath(options.WorkingDirectory, project.ProjectFile.Path);
-                    _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
+        _logger.LogDebug("Analyzing {ProjectFilePath}", projectLogName);
         var buildResult = project.Build();
 
         var buildResultOverallSuccess = buildResult.OverallSuccess || Array.
@@ -256,15 +254,18 @@ public class InputFileResolver : IInputFileResolver
 
         if (!buildResultOverallSuccess)
         {
-            if (options.DevMode)
-            {
-                // clear the logs to remove the noise
-                _buildalyzerLog.GetStringBuilder().Clear();
-            }
             // if this is a full framework project, we can retry after a nuget restore
             if (buildResult.Any(r => !IsValid(r) && r.TargetsFullFramework()))
             {
                 _logger.LogWarning("Project {projectFilePath} analysis failed. Stryker will retry after a nuget restore.", projectLogName);
+
+                if (options.DevMode)
+                {
+                    _logger.LogWarning("The MsBuild log is below.");
+                    _logger.LogInformation(_buildalyzerLog.ToString());
+                    _buildalyzerLog.GetStringBuilder().Clear();
+                }
+
                 _nugetRestoreProcess.RestorePackages(options.SolutionPath, options.MsBuildPath ?? buildResult.First().MsBuildPath());
             }
             var buildOptions = new EnvironmentOptions
@@ -279,10 +280,10 @@ public class InputFileResolver : IInputFileResolver
                 buildResult.Any(br => IsValid(br) && br.TargetFramework == tf));
         }
 
+        LogAnalyzerResult(buildResult, options);
         if (buildResultOverallSuccess)
         {
             _logger.LogDebug("Analysis of project {projectFilePath} succeeded.", projectLogName);
-            LogAnalyzerResult(buildResult, options);
             return buildResult;
         }
         var failedFrameworks = project.ProjectFile.TargetFrameworks.Where(tf =>
@@ -316,7 +317,7 @@ public class InputFileResolver : IInputFileResolver
         foreach (var analyzerResult in analyzerResults)
         {
             log.AppendLine($"TargetFramework: {analyzerResult.TargetFramework}");
-            log.AppendLine("Succeeded: {analyzerResult.Succeeded}");
+            log.AppendLine($"Succeeded: {analyzerResult.Succeeded}");
 
             var properties = analyzerResult.Properties ?? new Dictionary<string, string>();
             foreach (var property in importantProperties)
@@ -336,7 +337,10 @@ public class InputFileResolver : IInputFileResolver
             foreach (var property in properties)
             {
                 if (importantProperties.Contains(property.Key))
+                {
                     continue; // already logged 
+                }
+
                 log.AppendLine($"Property {property.Key}={property.Value.Replace(Environment.NewLine, "\\n")}");
             }
             log.AppendLine();
@@ -356,8 +360,8 @@ public class InputFileResolver : IInputFileResolver
 
         if (targetFramework is null)
         {
-             // we try to avoid desktop versions
-             return PickFrameworkVersion();
+            // we try to avoid desktop versions
+            return PickFrameworkVersion();
         }
 
         var resultForRequestedFramework = validResults.Find(a => a.TargetFramework == targetFramework);
@@ -458,12 +462,6 @@ public class InputFileResolver : IInputFileResolver
                 _logger,
                 FileSystem),
 
-            Language.Fsharp => new FsharpProjectComponentsBuilder(
-                targetProjectInfo,
-                options,
-                _foldersToExclude,
-                _logger,
-                FileSystem),
             _ => throw new NotSupportedException($"Language not supported: {language}")
         });
 
@@ -539,20 +537,20 @@ public class InputFileResolver : IInputFileResolver
 
     private sealed class DynamicEnumerableQueue<T>
     {
-        private readonly Queue<T> _queue;
-        private readonly HashSet<T> _cache;
+        private readonly ConcurrentQueue<T> _queue;
+        private readonly ConcurrentDictionary<T, bool> _cache;
 
         public DynamicEnumerableQueue(IEnumerable<T> init)
         {
-            _cache = [.. init];
-            _queue = new Queue<T>(_cache);
+            _cache = new(init.ToDictionary(x => x, x => true));
+            _queue = new(_cache.Keys);
         }
 
-        public bool Empty => _queue.Count == 0;
+        public bool Empty => _queue.IsEmpty;
 
         public void Add(T entry)
         {
-            if (!_cache.Add(entry))
+            if (!_cache.TryAdd(entry, true))
             {
                 return;
             }
@@ -563,7 +561,10 @@ public class InputFileResolver : IInputFileResolver
         {
             while (_queue.Count > 0)
             {
-                yield return _queue.Dequeue();
+                if (_queue.TryDequeue(out var entry))
+                {
+                    yield return entry;
+                }
             }
         }
     }

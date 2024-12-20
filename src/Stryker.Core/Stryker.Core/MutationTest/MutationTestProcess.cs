@@ -36,24 +36,20 @@ public class MutationTestProcess : IMutationTestProcess
     private readonly ICoverageAnalyser _coverageAnalyser;
     private readonly IStrykerOptions _options;
     private readonly IMutationProcess _mutationProcess;
-    private static readonly Dictionary<Language, Func<IStrykerOptions, IMutationProcess>> LanguageMap = new();
+    private static readonly Dictionary<Language, Func<IStrykerOptions, IMutationProcess>> LanguageMap = [];
 
-    static MutationTestProcess()
-    {
-        DeclareMutationProcessForLanguage<CsharpMutationProcess>(Language.Csharp);
-        DeclareMutationProcessForLanguage<FsharpMutationProcess>(Language.Fsharp);
-    }
+    static MutationTestProcess() => DeclareMutationProcessForLanguage<CsharpMutationProcess>(Language.Csharp);
 
     public static void DeclareMutationProcessForLanguage<T>(Language language) where T : IMutationProcess
     {
-        var constructor = typeof(T).GetConstructor(new[] { typeof(IStrykerOptions) });
+        var constructor = typeof(T).GetConstructor([typeof(IStrykerOptions)]);
         if (constructor == null)
         {
             throw new NotSupportedException(
                 $"Failed to find a constructor with the appropriate signature for type {typeof(T)}");
         }
 
-        LanguageMap[language] = y => (IMutationProcess)constructor.Invoke(new object[] { y });
+        LanguageMap[language] = y => (IMutationProcess)constructor.Invoke([y]);
     }
 
     public MutationTestProcess(MutationTestInput input,

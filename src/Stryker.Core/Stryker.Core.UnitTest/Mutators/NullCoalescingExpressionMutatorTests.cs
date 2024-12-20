@@ -104,4 +104,35 @@ public class NullCoalescingExpressionMutatorTests : TestBase
 
         result.Count.ShouldBe(3);
     }
+
+    [TestMethod]
+    public void ShouldMutateCollectionExpressions()
+    {
+        var syntaxTree = CSharpSyntaxTree.ParseText(
+                                                    """
+                                                    public void GetLocalDateTime(Stream s)
+                                                    {
+                                                        AddAll(Deserialize(s, Enumerable.Empty<string>()) ?? [])
+                                                    }
+                                                    public void AddAll(IEnumerable<int> list)
+                                                    {
+                                                        
+                                                    }
+                                                    public IEnumerable<int>? Deserialize(Stream s, IEnumerable<string> s2) {
+                                                        return [];
+                                                    }
+                                                    """);
+
+        var compilation = CSharpCompilation.Create("TestAssembly")
+                                        .WithOptions(new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary,
+                                                      nullableContextOptions: NullableContextOptions.Enable))
+                                        .AddReferences(MetadataReference.CreateFromFile(typeof(object).Assembly
+                                                       .Location))
+                                        .AddSyntaxTrees(syntaxTree);
+        var semanticModel = compilation.GetSemanticModel(syntaxTree);
+        var expression = syntaxTree.GetRoot().DescendantNodes().OfType<BinaryExpressionSyntax>().First();
+        var target = new NullCoalescingExpressionMutator();
+        var result = target.ApplyMutations(expression, semanticModel).ToList();
+        result.Count.ShouldBe(2);
+    }
 }

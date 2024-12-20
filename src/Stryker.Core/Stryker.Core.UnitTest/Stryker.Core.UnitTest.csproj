@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <IsPackable>false</IsPackable>
   </PropertyGroup>
@@ -11,9 +11,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="TestResources\StrongNameKeyFile.snk" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Remove="TestResources\FsharpExampleSourceFile.fs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="TestResources\ExampleTestFilePreprocessorSymbols.cs">
@@ -31,11 +28,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="TestResources\ExampleSourceFile.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="TestResources\FsharpExampleSourceFile.fs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
@@ -66,6 +58,8 @@
   </ItemGroup>
   
   <ItemGroup>
+    <ProjectReference Include="..\..\Stryker.Abstractions\Stryker.Abstractions.csproj" />
+    <ProjectReference Include="..\..\Stryker.Utilities\Stryker.Utilities.csproj" />
     <ProjectReference Include="..\Stryker.Core\Stryker.Core.csproj" />
   </ItemGroup>
   <ItemGroup>

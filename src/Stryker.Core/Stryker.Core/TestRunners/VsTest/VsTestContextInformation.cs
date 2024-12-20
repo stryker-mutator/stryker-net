@@ -34,7 +34,7 @@ public sealed class VsTestContextInformation : IDisposable
     private TestFrameworks _testFramework;
 
     /// <summary>
-    ///     Discovered tests (VsTest format)
+    /// Discovered tests (VsTest format)
     /// </summary>
     public IDictionary<Guid, VsTestDescription> VsTests { get; private set; }
 
@@ -44,7 +44,7 @@ public sealed class VsTestContextInformation : IDisposable
     public IDictionary<string, ISet<Guid>> TestsPerSource { get; } = new Dictionary<string, ISet<Guid>>();
 
     /// <summary>
-    ///     Tests (Stryker format)
+    /// Tests (Stryker format)
     /// </summary>
     public TestSet Tests { get; } = new();
 
@@ -94,19 +94,23 @@ public sealed class VsTestContextInformation : IDisposable
     }
 
     /// <summary>
-    ///     Starts a new VsTest instance and returns a wrapper to control it.
+    /// Starts a new VsTest instance and returns a wrapper to control it.
     /// </summary>
     /// <param name="runnerId">Name of the instance to create (used in log files)</param>
+    /// <param name="controlVariable">name of the env variable storing the active mutation id</param>
     /// <returns>a <see cref="IVsTestConsoleWrapper" /> controlling the created instance.</returns>
-    public IVsTestConsoleWrapper BuildVsTestWrapper(string runnerId)
+    public IVsTestConsoleWrapper BuildVsTestWrapper(string runnerId, string controlVariable)
     {
-        var vsTestConsole = _wrapperBuilder(DetermineConsoleParameters(runnerId));
+        var env = DetermineConsoleParameters(runnerId);
+        // Set roll forward on no candidate fx so vstest console can start on incompatible dotnet core runtimes
+        env.EnvironmentVariables["DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX"]="2";
+        // we define a per runner control variable to prevent conflict
+        env.EnvironmentVariables["STRYKER_MUTANT_ID_CONTROL_VAR"] = controlVariable;
+        var vsTestConsole = _wrapperBuilder(env);
         try
         {
-            // Set roll forward on no candidate fx so vstest console can start on incompatible dotnet core runtimes
-            Environment.SetEnvironmentVariable("DOTNET_ROLL_FORWARD_ON_NO_CANDIDATE_FX", "2");
             vsTestConsole.StartSession();
-            vsTestConsole.InitializeExtensions(Enumerable.Empty<string>());
+            vsTestConsole.InitializeExtensions([]);
         }
         catch (Exception e)
         {
@@ -189,7 +193,7 @@ public sealed class VsTestContextInformation : IDisposable
 
     private void DiscoverTestsInSources(string newSource, string frameworkVersion = null, string platform = null)
     {
-        var wrapper = BuildVsTestWrapper("TestDiscoverer");
+        var wrapper = BuildVsTestWrapper("TestDiscoverer", "NOT_NEEDED");
         var messages = new List<string>();
         var handler = new DiscoveryEventHandler(messages);
         var settings = GenerateRunSettingsForDiscovery(frameworkVersion, platform);
@@ -222,6 +226,13 @@ public sealed class VsTestContextInformation : IDisposable
 
         DetectTestFrameworks(VsTests.Values);
         Tests.RegisterTests(VsTests.Values.Select(t => t.Description));
+    }
+
+    internal void RegisterDiscoveredTest(VsTestDescription vsTestDescription)
+    {
+        VsTests[vsTestDescription.Id.ToGuid()] = vsTestDescription;
+        Tests.RegisterTest(vsTestDescription.Description);
+        TestsPerSource[vsTestDescription.Case.Source].Add(vsTestDescription.Id.ToGuid());
     }
 
     private void DetectTestFrameworks(ICollection<VsTestDescription> tests)
@@ -263,7 +274,7 @@ public sealed class VsTestContextInformation : IDisposable
         return
             $@"
 <MaxCpuCount>{Math.Max(0, maxCpu)}</MaxCpuCount>
-{frameworkConfig}{platformConfig}{testCaseFilter}  <InIsolation>true</InIsolation>
+{frameworkConfig}{platformConfig}{testCaseFilter} 
 <DisableAppDomain>true</DisableAppDomain>";
     }
 
@@ -310,4 +321,5 @@ public sealed class VsTestContextInformation : IDisposable
 
         return runSettings;
     }
+
 }

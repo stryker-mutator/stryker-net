@@ -14,7 +14,6 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.DataCollector.InProcDataCollector;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;

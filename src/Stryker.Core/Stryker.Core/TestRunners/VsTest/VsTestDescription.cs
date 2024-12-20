@@ -8,7 +8,7 @@ namespace Stryker.Core.TestRunners.VsTest;
 
 public sealed class VsTestDescription : IFrameworkTestDescription
 {
-    private readonly ICollection<ITestResult> _initialResults = new List<ITestResult>();
+    private readonly ICollection<ITestResult> _initialResults = [];
     private int _subCases;
 
     public VsTestDescription(ITestCase testCase)

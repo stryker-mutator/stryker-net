@@ -158,7 +158,7 @@ public class InitialisationProcess : IInitialisationProcess
         }
 
         throw new InputException(
-            "No test has been detected. Make sure your test project contains test and is compatible with VsTest." +
+            "No test result reported. Make sure your test project contains test and is compatible with VsTest." +
             string.Join(Environment.NewLine, projectInfo.Warnings));
     }
 

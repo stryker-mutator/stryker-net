@@ -23,8 +23,8 @@ pr:
     - '.github/*'
 
 variables:
-  PackageVersion: '4.3.0'
-  VersionBuildNumber: $[counter('4.3.0', 1)]
+  PackageVersion: '4.4.1'
+  VersionBuildNumber: $[counter('4.4.1', 1)]
   IntegrationTestVersion: $(PackageVersion)-alpha.$(VersionBuildNumber)
   ProjectsToPack: src/Stryker.CLI/Stryker.CLI/Stryker.CLI.csproj
   ForkIntegrationNugetFeedUri: https://f.feedz.io/stryker/stryker-net/nuget/index.json
@@ -134,13 +134,6 @@ stages:
             inputs:
               version: 8.x
           - task: DotNetCoreCLI@2
-            displayName: 'Restore vstest binaries'
-            inputs:
-              command: 'custom'
-              custom: 'restore'
-              arguments: '--packages ./.vstest/'
-              workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
-          - task: DotNetCoreCLI@2
             displayName: 'Pack integrationtest packages'
             inputs:
               command: pack
@@ -206,18 +199,7 @@ stages:
         command: test
         projects: '**/Validation.csproj'
         arguments: --filter Category=SingleTestProject
-
-    - template: pipeline-templates/run-integration-test-steps.yml
-      parameters:
-        testName: 'windows-fsharp'
-        workingDirectory: 'integrationtest/TargetProjects/NetCore/Library.FSharp.XUnit'
-    - task: DotNetCoreCLI@2
-      displayName: 'Assert integration test results'
-      inputs:
-        command: test
-        projects: '**/Validation.csproj'
-        arguments: --filter Category=FSharp
-
+        
   - job: LinuxTests
     displayName: Run tests on Linux
     pool:
@@ -287,13 +269,6 @@ stages:
       displayName: 'Use dotnet'
       inputs:
         version: 8.x
-    - task: DotNetCoreCLI@2
-      displayName: 'Restore vstest binaries'
-      inputs:
-        command: 'custom'
-        custom: 'restore'
-        arguments: '--packages ./.vstest/'
-        workingDirectory: 'src/Stryker.Core/Stryker.Core/ToolHelpers/'
     - task: DotNetCoreCLI@2
       displayName: 'Pack Stryker.CLI'
       inputs:
