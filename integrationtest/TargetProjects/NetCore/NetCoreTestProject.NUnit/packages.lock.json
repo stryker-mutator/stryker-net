@@ -14,9 +14,9 @@
       },
       "NUnit": {
         "type": "Direct",
-        "requested": "[4.3.0, )",
-        "resolved": "4.3.0",
-        "contentHash": "dPClyF8aAmN8w/a7csFXUUbj0sivFVmSfX9CplV+dVeVUqnzoNFsLf7TjAPaxlrwbqHsr+F/pLd7ZEV4Sw9YHg=="
+        "requested": "[4.3.1, )",
+        "resolved": "4.3.1",
+        "contentHash": "798HDjDWfo2/BVWAeqIny3hRP2z/uk2EVeTeFB69EGHQWxFZ1oVXRaobtOdkzBF4b/olUuWXDJzgtW63aBRDxg=="
       },
       "NUnit3TestAdapter": {
         "type": "Direct",
@@ -90,7 +90,7 @@
       "targetproject": {
         "type": "Project",
         "dependencies": {
-          "Library": "[4.4.1, )",
+          "Library": "[1.0.0, )",
           "Microsoft.CodeAnalysis.Common": "[4.11.0, )",
           "Serilog": "[4.2.0, )"
         }
