@@ -188,8 +188,7 @@ public sealed class VsTestRunnerPool : ITestRunner
             // ==> we need it to use this test against every mutation
             _logger.LogDebug("VsTestRunner: No coverage data for {TestCase}.", testResult.TestCase.DisplayName);
             seenTestCases.Add(testDescription.Id);
-            coverageRunResult = new CoverageRunResult(testCaseId, CoverageConfidence.Dubious, Enumerable.Empty<int>(),
-                Enumerable.Empty<int>(), Enumerable.Empty<int>());
+            coverageRunResult = new CoverageRunResult(testCaseId, CoverageConfidence.Dubious, [], [], []);
         }
         else
         {

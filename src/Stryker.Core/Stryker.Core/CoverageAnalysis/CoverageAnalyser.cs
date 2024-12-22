@@ -30,11 +30,7 @@ public class CoverageAnalyser : ICoverageAnalyser
         if (!_options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
             !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
         {
-            foreach (var mutant in mutants)
-            {
-                mutant.CoveringTests = TestGuidsList.EveryTest();
-                mutant.AssessingTests = TestGuidsList.EveryTest();
-            }
+            AssumeAllTestsAreNeeded(mutants);
 
             return;
         }
@@ -42,9 +38,25 @@ public class CoverageAnalyser : ICoverageAnalyser
         ParseCoverage(runner.CaptureCoverage(project), mutants, new TestGuidsList(resultFailingTests.GetGuids()));
     }
 
+    private static void AssumeAllTestsAreNeeded(IEnumerable<IMutant> mutants)
+    {
+        foreach (var mutant in mutants)
+        {
+            mutant.CoveringTests = TestGuidsList.EveryTest();
+            mutant.AssessingTests = TestGuidsList.EveryTest();
+        }
+    }
+
     private void ParseCoverage(IEnumerable<CoverageRunResult> coverage, IEnumerable<IMutant> mutantsToScan,
         TestGuidsList failedTests)
     {
+        if (coverage.Sum(c => c.MutationsCovered.Count) == 0)
+        {
+            _logger.LogError("It looks like the test coverage capture failed. Disable coverage based optimisation.");
+            AssumeAllTestsAreNeeded(mutantsToScan);
+            return;
+        }
+
         var dubiousTests = new HashSet<Guid>();
         var trustedTests = new HashSet<Guid>();
         var testIds = new HashSet<Guid>();
