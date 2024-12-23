@@ -186,14 +186,14 @@ public class AzureFileShareBaselineProviderTests : TestBase
         Mock.Get(shareClient)
             .Setup(s => s.GetDirectoryClient("StrykerOutput"))
             .Returns(directoryClient);
-        Mock.Get(directoryClient).Setup(d => d.CreateIfNotExists(default, default, default, default))
+        Mock.Get(directoryClient).Setup(d => d.CreateIfNotExists(default, default))
             .Callback(() => Mock.Get(directoryClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(true, Mock.Of<Response>(r => r.Status == 200))));
 
         // version directory
         var subdirectoryClient = Mock.Of<ShareDirectoryClient>();
         Mock.Get(directoryClient).Setup(d => d.GetSubdirectoryClient("v1")).Returns(subdirectoryClient);
         Mock.Get(subdirectoryClient)
-            .Setup(d => d.CreateIfNotExists(default, default, default, default))
+            .Setup(d => d.CreateIfNotExists(default, default))
             .Callback(() => Mock.Get(subdirectoryClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(true, Mock.Of<Response>(r => r.Status == 200))));
 
         // report file
@@ -207,7 +207,7 @@ public class AzureFileShareBaselineProviderTests : TestBase
 
         Mock.Get(subdirectoryClient).Setup(d => d.GetFileClient("stryker-report.json")).Returns(fileClient);
         Mock.Get(fileClient)
-            .Setup(f => f.CreateAsync(fileLength, default, default, default, default, default, default))
+            .Setup(f => f.CreateAsync(fileLength, default, default, default))
             .Returns(Task.FromResult(Response.FromValue(Mock.Of<ShareFileInfo>(), Mock.Of<Response>(r => r.Status == 200))));
 
         if (fullChunks > 0)
