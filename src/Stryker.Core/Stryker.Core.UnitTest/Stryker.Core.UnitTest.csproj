@@ -13,9 +13,6 @@
     <None Remove="TestResources\StrongNameKeyFile.snk" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="TestResources\FsharpExampleSourceFile.fs" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="TestResources\ExampleTestFilePreprocessorSymbols.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
@@ -31,11 +28,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="TestResources\ExampleSourceFile.cs">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="TestResources\FsharpExampleSourceFile.fs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

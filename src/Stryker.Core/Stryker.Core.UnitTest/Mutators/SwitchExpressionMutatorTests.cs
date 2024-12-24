@@ -7,75 +7,75 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Core.Mutators;
 
-namespace Stryker.Core.UnitTest.Mutators
+namespace Stryker.Core.UnitTest.Mutators;
+
+[TestClass]
+public class SwitchExpressionMutatorTests : TestBase
 {
-    [TestClass]
-    public class SwitchExpressionMutatorTests : TestBase
+    [TestMethod]
+    [DataRow(">", new[] { SyntaxKind.LessThanToken, SyntaxKind.GreaterThanEqualsToken })]
+    [DataRow("<", new[] { SyntaxKind.GreaterThanToken, SyntaxKind.LessThanEqualsToken })]
+    [DataRow(">=", new[] { SyntaxKind.GreaterThanToken, SyntaxKind.LessThanToken })]
+    [DataRow("<=", new[] { SyntaxKind.GreaterThanToken, SyntaxKind.LessThanToken })]
+    public void ShouldMutateRelationalPattern(string @operator, SyntaxKind[] mutated)
     {
-        [TestMethod]
-        [DataRow(">", new[] { SyntaxKind.LessThanToken, SyntaxKind.GreaterThanEqualsToken })]
-        [DataRow("<", new[] { SyntaxKind.GreaterThanToken, SyntaxKind.LessThanEqualsToken })]
-        [DataRow(">=", new[] { SyntaxKind.GreaterThanToken, SyntaxKind.LessThanToken })]
-        [DataRow("<=", new[] { SyntaxKind.GreaterThanToken, SyntaxKind.LessThanToken })]
-        public void ShouldMutateRelationalPattern(string @operator, SyntaxKind[] mutated)
+        var target = new SwitchExpressionMutator();
+
+        var expression = GenerateWithRelationalPattern(@operator);
+
+        var result = target.ApplyMutations(expression, null).ToList();
+
+        result.ForEach(mutation =>
         {
-            var target = new SwitchExpressionMutator();
+            mutation.OriginalNode.ShouldBeOfType<RelationalPatternSyntax>();
+            mutation.ReplacementNode.ShouldBeOfType<RelationalPatternSyntax>();
+            mutation.DisplayName.ShouldBe($"Equality mutation");
+        });
 
-            var expression = GenerateWithRelationalPattern(@operator);
+        result
+            .Select(mutation => (RelationalPatternSyntax)mutation.ReplacementNode)
+            .Select(pattern => pattern.OperatorToken.Kind())
+            .ShouldBe(mutated, true);
+    }
 
-            var result = target.ApplyMutations(expression, null).ToList();
+    [TestMethod]
+    [DataRow("and", new[] { SyntaxKind.OrPattern })]
+    [DataRow("or", new[] { SyntaxKind.AndPattern })]
+    public void ShouldMutateLogicalPattern(string @operator, SyntaxKind[] mutated)
+    {
+        var target = new SwitchExpressionMutator();
 
-            result.ForEach(mutation =>
-            {
-                mutation.OriginalNode.ShouldBeOfType<RelationalPatternSyntax>();
-                mutation.ReplacementNode.ShouldBeOfType<RelationalPatternSyntax>();
-                mutation.DisplayName.ShouldBe($"Equality mutation");
-            });
+        var expression = GenerateWithBinaryPattern(@operator);
 
-            result
-                .Select(mutation => (RelationalPatternSyntax)mutation.ReplacementNode)
-                .Select(pattern => pattern.OperatorToken.Kind())
-                .ShouldBe(mutated, true);
-        }
+        var result = target.ApplyMutations(expression, null).ToList();
 
-        [TestMethod]
-        [DataRow("and", new[] { SyntaxKind.OrPattern })]
-        [DataRow("or", new[] { SyntaxKind.AndPattern })]
-        public void ShouldMutateLogicalPattern(string @operator, SyntaxKind[] mutated)
+        result.ForEach(mutation =>
         {
-            var target = new SwitchExpressionMutator();
+            mutation.OriginalNode.ShouldBeOfType<BinaryPatternSyntax>();
+            mutation.ReplacementNode.ShouldBeOfType<BinaryPatternSyntax>();
+            mutation.DisplayName.ShouldBe($"Logical mutation");
+        });
 
-            var expression = GenerateWithBinaryPattern(@operator);
+        result
+            .Select(mutation => (BinaryPatternSyntax)mutation.ReplacementNode)
+            .Select(pattern => pattern.Kind())
+            .ShouldBe(mutated, true);
+    }
 
-            var result = target.ApplyMutations(expression, null).ToList();
+    [TestMethod]
+    [DynamicData(nameof(GenerateNotSupportedPatterns))]
+    public void ShouldNotMutateNotSupportedPatterns(SwitchExpressionSyntax expression)
+    {
+        var target = new SwitchExpressionMutator();
 
-            result.ForEach(mutation =>
-            {
-                mutation.OriginalNode.ShouldBeOfType<BinaryPatternSyntax>();
-                mutation.ReplacementNode.ShouldBeOfType<BinaryPatternSyntax>();
-                mutation.DisplayName.ShouldBe($"Logical mutation");
-            });
+        var result = target.ApplyMutations(expression, null).ToList();
 
-            result
-                .Select(mutation => (BinaryPatternSyntax)mutation.ReplacementNode)
-                .Select(pattern => pattern.Kind())
-                .ShouldBe(mutated, true);
-        }
+        result.ShouldBeEmpty();
+    }
 
-        [TestMethod]
-        [DynamicData(nameof(GenerateNotSupportedPatterns))]
-        public void ShouldNotMutateNotSupportedPatterns(SwitchExpressionSyntax expression)
-        {
-            var target = new SwitchExpressionMutator();
-
-            var result = target.ApplyMutations(expression, null).ToList();
-
-            result.ShouldBeEmpty();
-        }
-
-        private SwitchExpressionSyntax GenerateWithRelationalPattern(string @operator)
-        {
-            var tree = CSharpSyntaxTree.ParseText($@"
+    private SwitchExpressionSyntax GenerateWithRelationalPattern(string @operator)
+    {
+        var tree = CSharpSyntaxTree.ParseText($@"
 using System;
 
 namespace TestApplication
@@ -91,17 +91,17 @@ namespace TestApplication
         }}
     }}
 }}");
-            var switchExpression = tree.GetRoot()
-                .DescendantNodes()
-                .OfType<SwitchExpressionSyntax>()
-                .Single();
+        var switchExpression = tree.GetRoot()
+            .DescendantNodes()
+            .OfType<SwitchExpressionSyntax>()
+            .Single();
 
-            return switchExpression;
-        }
+        return switchExpression;
+    }
 
-        private SwitchExpressionSyntax GenerateWithBinaryPattern(string pattern)
-        {
-            var tree = CSharpSyntaxTree.ParseText($@"
+    private SwitchExpressionSyntax GenerateWithBinaryPattern(string pattern)
+    {
+        var tree = CSharpSyntaxTree.ParseText($@"
 using System;
 
 namespace TestApplication
@@ -117,29 +117,29 @@ namespace TestApplication
         }}
     }}
 }}");
-            var switchExpression = tree.GetRoot()
-                .DescendantNodes()
-                .OfType<SwitchExpressionSyntax>()
-                .Single();
+        var switchExpression = tree.GetRoot()
+            .DescendantNodes()
+            .OfType<SwitchExpressionSyntax>()
+            .Single();
 
-            return switchExpression;
-        }
+        return switchExpression;
+    }
 
-        public static IEnumerable<object[]> GenerateNotSupportedPatterns
+    public static IEnumerable<object[]> GenerateNotSupportedPatterns
+    {
+        get
         {
-            get
+            SwitchExpressionSyntax GetExpressionFromTree(SyntaxTree tree)
             {
-                SwitchExpressionSyntax GetExpressionFromTree(SyntaxTree tree)
-                {
-                    return tree.GetRoot()
-                        .DescendantNodes()
-                        .OfType<SwitchExpressionSyntax>()
-                        .Single();
-                }
+                return tree.GetRoot()
+                    .DescendantNodes()
+                    .OfType<SwitchExpressionSyntax>()
+                    .Single();
+            }
 
-                yield return new[]
-                {
-                    GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
+            yield return new[]
+            {
+                GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
                         using System;
 
                         namespace TestApplication
@@ -155,12 +155,12 @@ namespace TestApplication
                                 }}
                             }}
                         }}"
-                    ))
-                };
+                ))
+            };
 
-                yield return new[]
-                {
-                    GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
+            yield return new[]
+            {
+                GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
                         using System;
 
                         namespace TestApplication
@@ -176,12 +176,12 @@ namespace TestApplication
                                 }}
                             }}
                         }}"
-                    ))
-                };
+                ))
+            };
 
-                yield return new[]
-                {
-                    GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
+            yield return new[]
+            {
+                GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
                         using System;
 
                         namespace TestApplication
@@ -197,12 +197,12 @@ namespace TestApplication
                                 }}
                             }}
                         }}"
-                    ))
-                };
+                ))
+            };
 
-                yield return new[]
-                {
-                    GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
+            yield return new[]
+            {
+                GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
                         using System;
 
                         namespace TestApplication
@@ -218,12 +218,12 @@ namespace TestApplication
                                 }}
                             }}
                         }}"
-                    ))
-                };
+                ))
+            };
 
-                yield return new[]
-                {
-                    GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
+            yield return new[]
+            {
+                GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
                         using System;
 
                         namespace TestApplication
@@ -239,12 +239,12 @@ namespace TestApplication
                                 }}
                             }}
                         }}"
-                    ))
-                };
+                ))
+            };
 
-                yield return new[]
-                {
-                    GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
+            yield return new[]
+            {
+                GetExpressionFromTree(CSharpSyntaxTree.ParseText($@"
                         using System;
 
                         namespace TestApplication
@@ -260,9 +260,8 @@ namespace TestApplication
                                 }}
                             }}
                         }}"
-                    ))
-                };
-            }
+                ))
+            };
         }
     }
 }

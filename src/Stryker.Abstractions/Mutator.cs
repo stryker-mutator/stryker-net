@@ -41,5 +41,7 @@ public enum Mutator
     [MutatorDescription("String Method")]
     StringMethod,
     [MutatorDescription("Conditional operators")]
-    Conditional
+    Conditional,
+    [MutatorDescription("Collection expressions")]
+    CollectionExpression
 }

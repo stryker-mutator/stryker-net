@@ -278,37 +278,6 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
     }
 
     [TestMethod]
-    public void ShouldProvideMinimalSupportForFSharp()
-    {
-        var testCsprojPathName = FileSystem.Path.Combine(ProjectPath, "testproject.fsproj");
-        var csprojPathName = FileSystem.Path.Combine(ProjectPath, "sourceproject.fsproj");
-        var options = new StrykerOptions
-        {
-            ProjectPath = FileSystem.Path.GetFullPath(testCsprojPathName),
-            SolutionPath = FileSystem.Path.Combine(ProjectPath, "MySolution.sln")
-        };
-
-        var csPathName = FileSystem.Path.Combine(ProjectPath, "someFile.fs");
-        var properties = new Dictionary<string, string>
-            { { "IsTestProject", "False" }, { "ProjectTypeGuids", "not testproject" }, { "Language", "F#" } };
-        var properties1 = new Dictionary<string, string>
-            { { "IsTestProject", "True" }, { "Language", "F#" } };
-        var sourceProjectAnalyzer = BuildProjectAnalyzerMock(csprojPathName, new[] { csPathName }, properties, null).Object;
-        var target = BuildProjectOrchestratorForSimpleProject(
-            sourceProjectAnalyzer,
-            BuildProjectAnalyzerMock(testCsprojPathName, Array.Empty<string>(), properties1,
-                new List<string> { csprojPathName }).Object, out var mockRunner);
-
-        FileSystem.Directory.SetCurrentDirectory(FileSystem.Path.GetFullPath(testCsprojPathName));
-
-        // act
-        var result = target.MutateProjects(options, _reporterMock.Object, mockRunner.Object).ToList();
-
-        // assert
-        result.ShouldHaveSingleItem();
-    }
-
-    [TestMethod]
     public void ShouldDiscoverUpstreamProject()
     {
         // arrange
@@ -322,11 +291,8 @@ public class ProjectOrchestratorTests : BuildAnalyzerTestsBase
         var libraryProject = FileSystem.Path.Combine(ProjectPath, "libraryproject.csproj");
 
         // The analyzer finds two projects
-        var libraryAnalyzer = SourceProjectAnalyzerMock(libraryProject,
-            new[] { FileSystem.Path.Combine(ProjectPath, "mylib.cs") }).Object;
-        var projectAnalyzer = SourceProjectAnalyzerMock(csprojPathName, new[]
-                { FileSystem.Path.Combine(ProjectPath, "someFile.cs")}
-            , new[] { libraryProject }).Object;
+        var libraryAnalyzer = SourceProjectAnalyzerMock(libraryProject, [FileSystem.Path.Combine(ProjectPath, "mylib.cs")]).Object;
+        var projectAnalyzer = SourceProjectAnalyzerMock(csprojPathName, [FileSystem.Path.Combine(ProjectPath, "someFile.cs")], [libraryProject]).Object;
         var analyzerResults = new Dictionary<string, IProjectAnalyzer>
         {
             { "MyProject", projectAnalyzer },

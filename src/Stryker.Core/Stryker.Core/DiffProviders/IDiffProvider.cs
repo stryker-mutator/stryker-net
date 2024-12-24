@@ -1,11 +1,10 @@
 using Stryker.Core.Mutants;
 
-namespace Stryker.Core.DiffProviders
-{
-    public interface IDiffProvider
-    {
-        DiffResult ScanDiff();
+namespace Stryker.Core.DiffProviders;
 
-        TestSet Tests { get; }
-    }
+public interface IDiffProvider
+{
+    DiffResult ScanDiff();
+
+    TestSet Tests { get; }
 }

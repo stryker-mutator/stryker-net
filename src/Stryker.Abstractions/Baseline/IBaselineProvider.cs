@@ -1,11 +1,10 @@
 using System.Threading.Tasks;
 using Stryker.Abstractions.Reporting;
 
-namespace Stryker.Abstractions.Baseline
+namespace Stryker.Abstractions.Baseline;
+
+public interface IBaselineProvider
 {
-    public interface IBaselineProvider
-    {
-        Task<IJsonReport> Load(string version);
-        Task Save(IJsonReport report, string version);
-    }
+    Task<IJsonReport> Load(string version);
+    Task Save(IJsonReport report, string version);
 }

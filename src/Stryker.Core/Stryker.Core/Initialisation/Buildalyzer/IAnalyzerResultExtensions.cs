@@ -107,17 +107,14 @@ public static class IAnalyzerResultExtensions
     {
         foreach (var reference in analyzerResult.References)
         {
-            if (reference.Contains('='))
+
+            if (!analyzerResult.ReferenceAliases.TryGetValue(reference, out var aliases))
             {
-                // we have an alias
-                var split = reference.Split('=');
-                var aliases = split[0].Split(',');
-                yield return MetadataReference.CreateFromFile(split[1]).WithAliases(aliases);
+                aliases = [];
             }
-            else
-            {
-                yield return MetadataReference.CreateFromFile(reference);
-            }
+
+            // If no alias is found, return the reference without aliases
+            yield return MetadataReference.CreateFromFile(reference).WithAliases(aliases);
         }
     }
 

@@ -6,187 +6,186 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Abstractions.Baseline;
 using Stryker.Abstractions.Options;
 
-namespace Stryker.Core.UnitTest.Options
+namespace Stryker.Core.UnitTest.Options;
+
+[TestClass]
+public class StrykerInputsTests : TestBase
 {
-    [TestClass]
-    public class StrykerInputsTests : TestBase
+    private readonly StrykerInputs _target = new StrykerInputs()
     {
-        private readonly StrykerInputs _target = new StrykerInputs()
-        {
 
-            AdditionalTimeoutInput = new AdditionalTimeoutInput(),
-            AzureFileStorageSasInput = new AzureFileStorageSasInput(),
-            AzureFileStorageUrlInput = new AzureFileStorageUrlInput(),
-            BaselineProviderInput = new BaselineProviderInput(),
-            BasePathInput = new BasePathInput() { SuppliedInput = Directory.GetCurrentDirectory() },
-            ConcurrencyInput = new ConcurrencyInput(),
-            DashboardApiKeyInput = new DashboardApiKeyInput(),
-            DashboardUrlInput = new DashboardUrlInput(),
-            DevModeInput = new DevModeInput(),
-            DiffIgnoreChangesInput = new DiffIgnoreChangesInput(),
-            DisableBailInput = new DisableBailInput(),
-            DisableMixMutantsInput = new DisableMixMutantsInput(),
-            IgnoreMutationsInput = new IgnoreMutationsInput(),
-            FallbackVersionInput = new FallbackVersionInput(),
-            IgnoredMethodsInput = new IgnoreMethodsInput(),
-            LanguageVersionInput = new LanguageVersionInput(),
-            VerbosityInput = new VerbosityInput(),
-            LogToFileInput = new LogToFileInput(),
-            ModuleNameInput = new ModuleNameInput(),
-            MutateInput = new MutateInput(),
-            MutationLevelInput = new MutationLevelInput(),
-            CoverageAnalysisInput = new CoverageAnalysisInput(),
-            OutputPathInput = new OutputPathInput() { SuppliedInput = Directory.GetCurrentDirectory() },
-            ProjectNameInput = new ProjectNameInput(),
-            SourceProjectNameInput = new SourceProjectNameInput(),
-            ProjectVersionInput = new ProjectVersionInput(),
-            ReportersInput = new ReportersInput(),
-            SinceInput = new SinceInput(),
-            SinceTargetInput = new SinceTargetInput(),
-            SolutionInput = new SolutionInput(),
-            TestProjectsInput = new TestProjectsInput(),
-            ThresholdBreakInput = new ThresholdBreakInput(),
-            ThresholdHighInput = new ThresholdHighInput(),
-            ThresholdLowInput = new ThresholdLowInput(),
-            WithBaselineInput = new WithBaselineInput(),
-            BreakOnInitialTestFailureInput = new BreakOnInitialTestFailureInput(),
-        };
+        AdditionalTimeoutInput = new AdditionalTimeoutInput(),
+        AzureFileStorageSasInput = new AzureFileStorageSasInput(),
+        AzureFileStorageUrlInput = new AzureFileStorageUrlInput(),
+        BaselineProviderInput = new BaselineProviderInput(),
+        BasePathInput = new BasePathInput() { SuppliedInput = Directory.GetCurrentDirectory() },
+        ConcurrencyInput = new ConcurrencyInput(),
+        DashboardApiKeyInput = new DashboardApiKeyInput(),
+        DashboardUrlInput = new DashboardUrlInput(),
+        DevModeInput = new DevModeInput(),
+        DiffIgnoreChangesInput = new DiffIgnoreChangesInput(),
+        DisableBailInput = new DisableBailInput(),
+        DisableMixMutantsInput = new DisableMixMutantsInput(),
+        IgnoreMutationsInput = new IgnoreMutationsInput(),
+        FallbackVersionInput = new FallbackVersionInput(),
+        IgnoredMethodsInput = new IgnoreMethodsInput(),
+        LanguageVersionInput = new LanguageVersionInput(),
+        VerbosityInput = new VerbosityInput(),
+        LogToFileInput = new LogToFileInput(),
+        ModuleNameInput = new ModuleNameInput(),
+        MutateInput = new MutateInput(),
+        MutationLevelInput = new MutationLevelInput(),
+        CoverageAnalysisInput = new CoverageAnalysisInput(),
+        OutputPathInput = new OutputPathInput() { SuppliedInput = Directory.GetCurrentDirectory() },
+        ProjectNameInput = new ProjectNameInput(),
+        SourceProjectNameInput = new SourceProjectNameInput(),
+        ProjectVersionInput = new ProjectVersionInput(),
+        ReportersInput = new ReportersInput(),
+        SinceInput = new SinceInput(),
+        SinceTargetInput = new SinceTargetInput(),
+        SolutionInput = new SolutionInput(),
+        TestProjectsInput = new TestProjectsInput(),
+        ThresholdBreakInput = new ThresholdBreakInput(),
+        ThresholdHighInput = new ThresholdHighInput(),
+        ThresholdLowInput = new ThresholdLowInput(),
+        WithBaselineInput = new WithBaselineInput(),
+        BreakOnInitialTestFailureInput = new BreakOnInitialTestFailureInput(),
+    };
 
-        [TestMethod]
-        public void PerTestInIsolationShouldSetOptimizationFlags()
-        {
-            _target.CoverageAnalysisInput.SuppliedInput = "perTestInIsolation";
+    [TestMethod]
+    public void PerTestInIsolationShouldSetOptimizationFlags()
+    {
+        _target.CoverageAnalysisInput.SuppliedInput = "perTestInIsolation";
 
-            var result = _target.ValidateAll();
+        var result = _target.ValidateAll();
 
-            result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
-            result.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeTrue();
-        }
+        result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
+        result.OptimizationMode.HasFlag(OptimizationModes.CaptureCoveragePerTest).ShouldBeTrue();
+    }
 
-        [TestMethod]
-        public void DisableBailShouldSetOptimizationFlags()
-        {
-            _target.DisableMixMutantsInput.SuppliedInput = true;
+    [TestMethod]
+    public void DisableBailShouldSetOptimizationFlags()
+    {
+        _target.DisableMixMutantsInput.SuppliedInput = true;
 
-            var result = _target.ValidateAll();
+        var result = _target.ValidateAll();
 
-            result.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants).ShouldBeTrue();
-            result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
-        }
+        result.OptimizationMode.HasFlag(OptimizationModes.DisableMixMutants).ShouldBeTrue();
+        result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
+    }
 
-        [TestMethod]
-        public void DisableMixMutantsShouldSetOptimizationFlags()
-        {
-            _target.DisableBailInput.SuppliedInput = true;
+    [TestMethod]
+    public void DisableMixMutantsShouldSetOptimizationFlags()
+    {
+        _target.DisableBailInput.SuppliedInput = true;
 
-            var result = _target.ValidateAll();
+        var result = _target.ValidateAll();
 
-            result.OptimizationMode.HasFlag(OptimizationModes.DisableBail).ShouldBeTrue();
-            result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
-        }
+        result.OptimizationMode.HasFlag(OptimizationModes.DisableBail).ShouldBeTrue();
+        result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
+    }
 
-        [TestMethod]
-        public void AllShouldSetOptimizationFlags()
-        {
-            _target.CoverageAnalysisInput.SuppliedInput = "all";
+    [TestMethod]
+    public void AllShouldSetOptimizationFlags()
+    {
+        _target.CoverageAnalysisInput.SuppliedInput = "all";
 
-            var result = _target.ValidateAll();
+        var result = _target.ValidateAll();
 
-            result.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants).ShouldBeTrue();
-        }
+        result.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants).ShouldBeTrue();
+    }
 
-        [TestMethod]
-        public void OffShouldSetOptimizationFlags()
-        {
-            _target.CoverageAnalysisInput.SuppliedInput = "off";
+    [TestMethod]
+    public void OffShouldSetOptimizationFlags()
+    {
+        _target.CoverageAnalysisInput.SuppliedInput = "off";
 
-            var result = _target.ValidateAll();
+        var result = _target.ValidateAll();
 
-            result.OptimizationMode.HasFlag(OptimizationModes.None).ShouldBeTrue();
-        }
+        result.OptimizationMode.HasFlag(OptimizationModes.None).ShouldBeTrue();
+    }
 
-        [TestMethod]
-        public void OptimizationFlagsShouldHaveDefaultCoverageBasedTest()
-        {
-            _target.CoverageAnalysisInput.SuppliedInput = null;
+    [TestMethod]
+    public void OptimizationFlagsShouldHaveDefaultCoverageBasedTest()
+    {
+        _target.CoverageAnalysisInput.SuppliedInput = null;
 
-            var result = _target.ValidateAll();
+        var result = _target.ValidateAll();
 
-            result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
-        }
+        result.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest).ShouldBeTrue();
+    }
 
-        [TestMethod]
-        public void UsingDashboardReporterShouldEnableDashboardApiKey()
-        {
-            _target.DashboardApiKeyInput.SuppliedInput = "dashboard_api_key";
-            _target.ReportersInput.SuppliedInput = new[] { "dashboard" };
+    [TestMethod]
+    public void UsingDashboardReporterShouldEnableDashboardApiKey()
+    {
+        _target.DashboardApiKeyInput.SuppliedInput = "dashboard_api_key";
+        _target.ReportersInput.SuppliedInput = new[] { "dashboard" };
 
-            var result = _target.ValidateAll();
+        var result = _target.ValidateAll();
 
-            result.DashboardApiKey.ShouldBe("dashboard_api_key");
-        }
+        result.DashboardApiKey.ShouldBe("dashboard_api_key");
+    }
 
-        [TestMethod]
-        public void UsingDashboardBaselineStorageWithBaselineShouldEnableDashboardApiKey()
-        {
-            _target.DashboardApiKeyInput.SuppliedInput = "dashboard_api_key";
-            _target.ReportersInput.SuppliedInput = new[] { "html" };
-            _target.BaselineProviderInput.SuppliedInput = "dashboard";
-            _target.WithBaselineInput.SuppliedInput = true;
-            _target.ProjectVersionInput.SuppliedInput = "develop";
+    [TestMethod]
+    public void UsingDashboardBaselineStorageWithBaselineShouldEnableDashboardApiKey()
+    {
+        _target.DashboardApiKeyInput.SuppliedInput = "dashboard_api_key";
+        _target.ReportersInput.SuppliedInput = new[] { "html" };
+        _target.BaselineProviderInput.SuppliedInput = "dashboard";
+        _target.WithBaselineInput.SuppliedInput = true;
+        _target.ProjectVersionInput.SuppliedInput = "develop";
 
-            var result = _target.ValidateAll();
+        var result = _target.ValidateAll();
 
-            result.DashboardApiKey.ShouldBe("dashboard_api_key");
-        }
+        result.DashboardApiKey.ShouldBe("dashboard_api_key");
+    }
 
-        [TestMethod]
-        public void NotUsingDashboardBaselineStorageWithBaselineOrDashboardReporterShouldDisableDashboardApiKey()
-        {
-            _target.DashboardApiKeyInput.SuppliedInput = "dashboard_api_key";
-            _target.ReportersInput.SuppliedInput = new[] { "html" };
-            _target.BaselineProviderInput.SuppliedInput = "disk";
-            _target.WithBaselineInput.SuppliedInput = true;
-            _target.ProjectVersionInput.SuppliedInput = "develop";
+    [TestMethod]
+    public void NotUsingDashboardBaselineStorageWithBaselineOrDashboardReporterShouldDisableDashboardApiKey()
+    {
+        _target.DashboardApiKeyInput.SuppliedInput = "dashboard_api_key";
+        _target.ReportersInput.SuppliedInput = new[] { "html" };
+        _target.BaselineProviderInput.SuppliedInput = "disk";
+        _target.WithBaselineInput.SuppliedInput = true;
+        _target.ProjectVersionInput.SuppliedInput = "develop";
 
-            var result = _target.ValidateAll();
+        var result = _target.ValidateAll();
 
-            result.DashboardApiKey.ShouldBeNull();
-        }
+        result.DashboardApiKey.ShouldBeNull();
+    }
 
-        [TestMethod]
-        public void WithBaselineAndSinceShouldBeMutuallyExclusive()
-        {
-            _target.WithBaselineInput.SuppliedInput = true;
-            _target.SinceInput.SuppliedInput = true;
+    [TestMethod]
+    public void WithBaselineAndSinceShouldBeMutuallyExclusive()
+    {
+        _target.WithBaselineInput.SuppliedInput = true;
+        _target.SinceInput.SuppliedInput = true;
 
-            var exception = Should.Throw<InputException>(() => _target.ValidateAll());
-            exception.Message.ShouldBe("The since and baseline features are mutually exclusive.");
-        }
+        var exception = Should.Throw<InputException>(() => _target.ValidateAll());
+        exception.Message.ShouldBe("The since and baseline features are mutually exclusive.");
+    }
 
-        [TestMethod]
-        public void WithBaselineShouldNotThrow_2743() // https://github.com/stryker-mutator/stryker-net/issues/2743
-        {
-            _target.ProjectVersionInput.SuppliedInput = "1";
-            _target.WithBaselineInput.SuppliedInput = true;
+    [TestMethod]
+    public void WithBaselineShouldNotThrow_2743() // https://github.com/stryker-mutator/stryker-net/issues/2743
+    {
+        _target.ProjectVersionInput.SuppliedInput = "1";
+        _target.WithBaselineInput.SuppliedInput = true;
 
-            Should.NotThrow(() => _target.ValidateAll());
-        }
+        Should.NotThrow(() => _target.ValidateAll());
+    }
 
-        [TestMethod]
-        public void BaseLineOptionsShouldBeSetToDefaultWhenBaselineIsDisabled()
-        {
-            _target.WithBaselineInput.SuppliedInput = false;
-            _target.BaselineProviderInput.SuppliedInput = "azurefilestorage";
-            _target.AzureFileStorageSasInput.SuppliedInput = "sasCredential";
-            _target.AzureFileStorageUrlInput.SuppliedInput = "azureUrl";
+    [TestMethod]
+    public void BaseLineOptionsShouldBeSetToDefaultWhenBaselineIsDisabled()
+    {
+        _target.WithBaselineInput.SuppliedInput = false;
+        _target.BaselineProviderInput.SuppliedInput = "azurefilestorage";
+        _target.AzureFileStorageSasInput.SuppliedInput = "sasCredential";
+        _target.AzureFileStorageUrlInput.SuppliedInput = "azureUrl";
 
-            var result = _target.ValidateAll();
+        var result = _target.ValidateAll();
 
-            result.WithBaseline.ShouldBeFalse();
-            result.BaselineProvider.ShouldBe(BaselineProvider.Disk);
-            result.AzureFileStorageSas.ShouldBe(string.Empty);
-            result.AzureFileStorageUrl.ShouldBe(string.Empty);
-        }
+        result.WithBaseline.ShouldBeFalse();
+        result.BaselineProvider.ShouldBe(BaselineProvider.Disk);
+        result.AzureFileStorageSas.ShouldBe(string.Empty);
+        result.AzureFileStorageUrl.ShouldBe(string.Empty);
     }
 }

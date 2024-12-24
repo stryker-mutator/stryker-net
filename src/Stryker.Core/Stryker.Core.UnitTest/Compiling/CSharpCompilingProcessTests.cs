@@ -72,11 +72,11 @@ public class Calculator
     }
 
     [TestMethod]
-    public void CompilingProcessTests_ShouldSupportReferenceAliases()
+    public void CompilingProcessTests_ShouldSupportPackageReferenceAliases()
     {
         var syntaxTree = CSharpSyntaxTree.ParseText(@"
-extern alias Texte;
-using System;
+extern alias TheAlias;
+using TheAlias::System;
 
 namespace ExampleProject
 {
@@ -88,6 +88,10 @@ public class Calculator
     }
 }
 }");
+        var alias = new Dictionary<string, ImmutableArray<string>>();
+        var immutableArray = ImmutableArray.Create("TheAlias");
+        alias[typeof(object).Assembly.Location]=immutableArray;
+
         var input = new MutationTestInput()
         {
             SourceProjectInfo = new SourceProjectInfo
@@ -97,15 +101,17 @@ public class Calculator
                     properties: new Dictionary<string, string>()
                     {
                         { "TargetDir", "" },
-                        { "AssemblyName", "AssemblyName"},
-                        { "TargetFileName", "TargetFileName.dll"},
+                        { "AssemblyName", "AssemblyName" },
+                        { "TargetFileName", "TargetFileName.dll" },
                     },
                     // add a reference to system so the example code can compile
-                    references: new[] { typeof(object).Assembly.Location, $"Texte={typeof(StringBuilder).Assembly.Location}" }
+                    references: [typeof(object).Assembly.Location],
+                    aliases: alias.ToImmutableDictionary()
                 ).Object
             }
         };
         var rollbackProcessMock = new Mock<ICSharpRollbackProcess>(MockBehavior.Strict);
+
 
         var target = new CsharpCompilingProcess(input, rollbackProcessMock.Object);
 

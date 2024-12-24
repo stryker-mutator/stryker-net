@@ -1,33 +1,32 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 
-namespace Stryker.Core.Initialisation
+namespace Stryker.Core.Initialisation;
+
+public class FolderCompositeCache<T>
 {
-    public class FolderCompositeCache<T>
+    private FolderCompositeCache()
     {
-        private FolderCompositeCache()
+
+    }
+
+    private static FolderCompositeCache<T> _instance;
+    private static readonly object _lockObj = new object();
+
+    public static FolderCompositeCache<T> Instance
+    {
+        get
         {
-
-        }
-
-        private static FolderCompositeCache<T> _instance;
-        private static readonly object _lockObj = new object();
-
-        public static FolderCompositeCache<T> Instance
-        {
-            get
+            lock (_lockObj)
             {
-                lock (_lockObj)
+                if (_instance == null)
                 {
-                    if (_instance == null)
-                    {
-                        _instance = new FolderCompositeCache<T>();
-                    }
-
-                    return _instance;
+                    _instance = new FolderCompositeCache<T>();
                 }
+
+                return _instance;
             }
         }
-
-        public Dictionary<string, T> Cache { get; set; }
     }
+
+    public Dictionary<string, T> Cache { get; set; }
 }

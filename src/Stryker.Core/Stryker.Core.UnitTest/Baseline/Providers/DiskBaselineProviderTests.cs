@@ -11,67 +11,66 @@ using Stryker.Core.Reporters.Json;
 using Stryker.Core.UnitTest.Reporters;
 using Stryker.Utilities;
 
-namespace Stryker.Core.UnitTest.Baseline.Providers
+namespace Stryker.Core.UnitTest.Baseline.Providers;
+
+[TestClass]
+public class DiskBaselineProviderTests : TestBase
 {
-    [TestClass]
-    public class DiskBaselineProviderTests : TestBase
+    [TestMethod]
+    public async Task ShouldWriteToDiskAsync()
     {
-        [TestMethod]
-        public async Task ShouldWriteToDiskAsync()
+        // Arrange
+        var fileSystemMock = new MockFileSystem();
+        var options = new StrykerOptions()
         {
-            // Arrange
-            var fileSystemMock = new MockFileSystem();
-            var options = new StrykerOptions()
-            {
-                ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder"
-            };
-            var sut = new DiskBaselineProvider(options, fileSystemMock);
+            ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder"
+        };
+        var sut = new DiskBaselineProvider(options, fileSystemMock);
 
-            // Act
-            await sut.Save(JsonReport.Build(options, ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>()), "baseline/version");
+        // Act
+        await sut.Save(JsonReport.Build(options, ReportTestHelper.CreateProjectWith(), It.IsAny<TestProjectsInfo>()), "baseline/version");
 
-            // Assert
-            var path = FilePathUtils.NormalizePathSeparators(@"C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/baseline/version/stryker-report.json");
+        // Assert
+        var path = FilePathUtils.NormalizePathSeparators(@"C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/baseline/version/stryker-report.json");
 
-            var file = fileSystemMock.GetFile(path);
-            file.ShouldNotBeNull();
-        }
+        var file = fileSystemMock.GetFile(path);
+        file.ShouldNotBeNull();
+    }
 
-        [TestMethod]
-        public async Task ShouldHandleFileNotFoundExceptionOnLoadAsync()
+    [TestMethod]
+    public async Task ShouldHandleFileNotFoundExceptionOnLoadAsync()
+    {
+        // Arrange
+        var fileSystemMock = new MockFileSystem();
+        var options = new StrykerOptions { ProjectPath = "C:/Dev" };
+        var sut = new DiskBaselineProvider(options, fileSystemMock);
+
+        // Act
+        var result = await sut.Load("testversion");
+
+        result.ShouldBeNull();
+    }
+
+    [TestMethod]
+    public async Task ShouldLoadReportFromDiskAsync()
+    {
+        // Arrange
+        var fileSystemMock = new MockFileSystem();
+        var options = new StrykerOptions()
         {
-            // Arrange
-            var fileSystemMock = new MockFileSystem();
-            var options = new StrykerOptions { ProjectPath = "C:/Dev" };
-            var sut = new DiskBaselineProvider(options, fileSystemMock);
+            ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder"
+        };
+        var report = JsonReport.Build(options, ReportTestHelper.CreateProjectWith(), It.IsAny<ITestProjectsInfo>());
 
-            // Act
-            var result = await sut.Load("testversion");
+        fileSystemMock.AddFile("C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/baseline/version/stryker-report.json", report.ToJson());
 
-            result.ShouldBeNull();
-        }
+        var target = new DiskBaselineProvider(options, fileSystemMock);
 
-        [TestMethod]
-        public async Task ShouldLoadReportFromDiskAsync()
-        {
-            // Arrange
-            var fileSystemMock = new MockFileSystem();
-            var options = new StrykerOptions()
-            {
-                ProjectPath = @"C:/Users/JohnDoe/Project/TestFolder"
-            };
-            var report = JsonReport.Build(options, ReportTestHelper.CreateProjectWith(), It.IsAny<ITestProjectsInfo>());
+        // Act
+        var result = await target.Load("baseline/version");
 
-            fileSystemMock.AddFile("C:/Users/JohnDoe/Project/TestFolder/StrykerOutput/baseline/version/stryker-report.json", report.ToJson());
-
-            var target = new DiskBaselineProvider(options, fileSystemMock);
-
-            // Act
-            var result = await target.Load("baseline/version");
-
-            // Assert
-            result.ShouldNotBeNull();
-            result.ToJson().ShouldBe(report.ToJson());
-        }
+        // Assert
+        result.ShouldNotBeNull();
+        result.ToJson().ShouldBe(report.ToJson());
     }
 }

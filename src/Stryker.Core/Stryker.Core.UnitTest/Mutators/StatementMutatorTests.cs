@@ -7,53 +7,53 @@ using Shouldly;
 using Stryker.Abstractions.Mutators;
 using Stryker.Core.Mutators;
 
-namespace Stryker.Core.UnitTest.Mutators
-{
-    [TestClass]
-    public class StatementMutatorTests : TestBase
-    {
-        [TestMethod]
-        public void ShouldBeMutationlevelStandard()
-        {
-            var target = new StatementMutator();
-            target.MutationLevel.ShouldBe(MutationLevel.Standard);
-        }
+namespace Stryker.Core.UnitTest.Mutators;
 
-        [TestMethod]
-        [DataRow("return;")]
-        [DataRow("break;")]
-        [DataRow("continue;")]
-        [DataRow("goto test;")]
-        [DataRow("throw null;")]
-        [DataRow("yield break;")]
-        [DataRow("yield return 0;")]
-        [DataRow("await null;")]
-        public void ShouldMutate(string statementString)
-        {
-            var source = $@"class Test {{
+[TestClass]
+public class StatementMutatorTests : TestBase
+{
+    [TestMethod]
+    public void ShouldBeMutationlevelStandard()
+    {
+        var target = new StatementMutator();
+        target.MutationLevel.ShouldBe(MutationLevel.Standard);
+    }
+
+    [TestMethod]
+    [DataRow("return;")]
+    [DataRow("break;")]
+    [DataRow("continue;")]
+    [DataRow("goto test;")]
+    [DataRow("throw null;")]
+    [DataRow("yield break;")]
+    [DataRow("yield return 0;")]
+    [DataRow("await null;")]
+    public void ShouldMutate(string statementString)
+    {
+        var source = $@"class Test {{
                 void Method() {{
                     {statementString}
                 }}
             }}";
 
-            var tree = CSharpSyntaxTree.ParseText(source).GetRoot();
+        var tree = CSharpSyntaxTree.ParseText(source).GetRoot();
 
-            var statement = tree.DescendantNodes().OfType<StatementSyntax>().Where(s => s is not BlockSyntax).First();
+        var statement = tree.DescendantNodes().OfType<StatementSyntax>().Where(s => s is not BlockSyntax).First();
 
-            var target = new StatementMutator();
+        var target = new StatementMutator();
 
-            var result = target.ApplyMutations(statement, null).ToList();
+        var result = target.ApplyMutations(statement, null).ToList();
 
-            var mutation = result.ShouldHaveSingleItem();
+        var mutation = result.ShouldHaveSingleItem();
 
-            mutation.ReplacementNode.ShouldBeOfType(typeof(EmptyStatementSyntax));
-            mutation.DisplayName.ShouldBe("Statement mutation");
-        }
+        mutation.ReplacementNode.ShouldBeOfType(typeof(EmptyStatementSyntax));
+        mutation.DisplayName.ShouldBe("Statement mutation");
+    }
 
-        [TestMethod]
-        public void ShouldNotMutate()
-        {
-            var tree = CSharpSyntaxTree.ParseText($@"
+    [TestMethod]
+    public void ShouldNotMutate()
+    {
+        var tree = CSharpSyntaxTree.ParseText($@"
 namespace Test
 {{
     class Program
@@ -83,15 +83,14 @@ namespace Test
         }}
     }}
 }}");
-            var statements = tree.GetRoot()
-                .DescendantNodes()
-                .OfType<StatementSyntax>();
+        var statements = tree.GetRoot()
+            .DescendantNodes()
+            .OfType<StatementSyntax>();
 
-            var target = new StatementMutator();
+        var target = new StatementMutator();
 
-            var result = statements.SelectMany(statement => target.ApplyMutations(statement, null)).ToList();
+        var result = statements.SelectMany(statement => target.ApplyMutations(statement, null)).ToList();
 
-            result.ShouldBeEmpty();
-        }
+        result.ShouldBeEmpty();
     }
 }

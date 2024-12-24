@@ -209,15 +209,11 @@ internal class MutationContext
         if (mode)
         {
             result.FilteredMutators = filteredMutators;
+            result.FilterComment = comment;
         }
         else if (result.FilteredMutators is not null)
         {
             result.FilteredMutators = result.FilteredMutators.Where(t => !filteredMutators.Contains(t)).ToArray();
-        }
-
-        if (mode)
-        {
-            result.FilterComment = comment;
         }
 
         return result;

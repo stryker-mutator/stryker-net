@@ -44,15 +44,15 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
     replaceVersionNumber('./package.json', `"versionPrefix": "${oldVersionPrefix}",`, `"versionPrefix": "${versionPrefix}",`);
     replaceVersionNumber('./package.json', `"versionSuffix": "${oldVersionSuffix}",`, `"versionSuffix": "${versionSuffix}",`);
 
-    packages.forEach(package => {
-        console.log(`Updating version numbers in ${package.csproj}`);
-        replaceVersionNumber(package.csproj, `<VersionPrefix>${oldVersionPrefix}</VersionPrefix>`, `<VersionPrefix>${versionPrefix}</VersionPrefix>`);
-        replaceVersionNumber(package.csproj, `<VersionSuffix>${oldVersionSuffix}</VersionSuffix>`, `<VersionSuffix>${versionSuffix}</VersionSuffix>`);
+    packages.forEach(pckg => {
+        console.log(`Updating version numbers in ${pckg.csproj}`);
+        replaceVersionNumber(pckg.csproj, `<VersionPrefix>${oldVersionPrefix}</VersionPrefix>`, `<VersionPrefix>${versionPrefix}</VersionPrefix>`);
+        replaceVersionNumber(pckg.csproj, `<VersionSuffix>${oldVersionSuffix}</VersionSuffix>`, `<VersionSuffix>${versionSuffix}</VersionSuffix>`);
 
         if (!versionSuffix) {
-            console.log(`Updating changelog for ${package.name}`);
-            commitMessageLines.push(`- ${package.name}@${newVersionNumber}`);
-            exec(`npx conventional-changelog-cli -p angular --infile "${package.path}/CHANGELOG.md" --same-file --commit-path ${package.path} --tag-prefix "${package.name}@"`);
+            console.log(`Updating changelog for ${pckg.name}`);
+            commitMessageLines.push(`- ${pckg.name}@${newVersionNumber}`);
+            exec(`npx conventional-changelog-cli -p angular --infile "${pckg.path}/CHANGELOG.md" --same-file --commit-path ${pckg.path} --tag-prefix "${pckg.name}@"`);
         }
     });
 
@@ -62,15 +62,15 @@ rl.question('What should the new package version be? ', (newVersionNumber) => {
 
     if (!versionSuffix) {
         console.log('Tagging commit');
-        packages.forEach(package => exec(`git tag -a ${package.name}@${newVersionNumber} -m "${package.name}@${newVersionNumber}"`));
+        packages.forEach(pckg => exec(`git tag -a ${pckg.name}@${newVersionNumber} -m "${pckg.name}@${newVersionNumber}"`));
     }
 
     console.log(`Creating commit`);
     exec('git add .');
-    // exec(`git commit ${commitMessageLines.map(entry => `-m "${entry}"`).join(' ')}`);
+    exec(`git commit ${commitMessageLines.map(entry => `-m "${entry}"`).join(' ')}`);
 
     console.log(`Pushing commit ${versionSuffix?'':' and tags'}`);
-    // exec('git push --follow-tags');
+    exec('git push --follow-tags');
     rl.close();
 });
 
