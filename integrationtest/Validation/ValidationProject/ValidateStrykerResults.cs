@@ -143,7 +143,7 @@ public class ValidateStrykerResults
                     .AncestorsAndSelf()
                     .ShouldContain(pn =>
                         _parentSyntaxKindsForMutating.Contains(pn.Kind()),
-                        $"Mutation {mutation.MutatorName} in file {file.Key} does not have one of the known parent syntax kinds as it's parent. {Environment.NewLine}" +
+                        $"Mutation {mutation.MutatorName} on line {mutation.Location.Start.Line} in file {file.Key} does not have one of the known parent syntax kinds as it's parent.{Environment.NewLine}" +
                         $"Instead it has: {Environment.NewLine} {string.Join($",{Environment.NewLine}", node.AncestorsAndSelf().Select(n => n.Kind()))}");
             }
         }
