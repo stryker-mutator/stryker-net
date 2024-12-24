@@ -178,7 +178,7 @@ public class AzureFileShareBaselineProviderTests : TestBase
         var shareClient = Mock.Of<ShareClient>();
         var logger = Mock.Of<ILogger<AzureFileShareBaselineProvider>>();
 
-        Mock.Get(shareClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(true, default));
+        Mock.Get(shareClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(true, Mock.Of<Response>(r => r.Status == 200)));
         Mock.Get(shareClient).SetupGet(s => s.Uri).Returns(new Uri(_uri));
 
         // root directory
@@ -186,29 +186,29 @@ public class AzureFileShareBaselineProviderTests : TestBase
         Mock.Get(shareClient)
             .Setup(s => s.GetDirectoryClient("StrykerOutput"))
             .Returns(directoryClient);
-        Mock.Get(directoryClient).Setup(d => d.CreateIfNotExists(default, default, default, default))
-            .Callback(() => Mock.Get(directoryClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(true, default)));
+        Mock.Get(directoryClient).Setup(d => d.CreateIfNotExists(default, default))
+            .Callback(() => Mock.Get(directoryClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(true, Mock.Of<Response>(r => r.Status == 200))));
 
         // version directory
         var subdirectoryClient = Mock.Of<ShareDirectoryClient>();
         Mock.Get(directoryClient).Setup(d => d.GetSubdirectoryClient("v1")).Returns(subdirectoryClient);
         Mock.Get(subdirectoryClient)
-            .Setup(d => d.CreateIfNotExists(default, default, default, default))
-            .Callback(() => Mock.Get(subdirectoryClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(true, default)));
+            .Setup(d => d.CreateIfNotExists(default, default))
+            .Callback(() => Mock.Get(subdirectoryClient).Setup(d => d.Exists(default)).Returns(Response.FromValue(true, Mock.Of<Response>(r => r.Status == 200))));
 
         // report file
         var report = JsonReport.Build(new StrykerOptions(), ReportTestHelper.CreateProjectWith(folders: folders, files: files), It.IsAny<TestProjectsInfo>());
         var fileLength = Encoding.UTF8.GetBytes(report.ToJson()).Length;
 
         var fullChunks = (int)Math.Floor((double)fileLength / chunkSize);
-        var lastChunkSize = fileLength - fullChunks * chunkSize;
+        var lastChunkSize = fileLength - (fullChunks * chunkSize);
 
         var fileClient = Mock.Of<ShareFileClient>();
 
         Mock.Get(subdirectoryClient).Setup(d => d.GetFileClient("stryker-report.json")).Returns(fileClient);
         Mock.Get(fileClient)
-            .Setup(f => f.CreateAsync(fileLength, default, default, default, default, default, default))
-            .Returns(Task.FromResult(Response.FromValue(Mock.Of<ShareFileInfo>(), Mock.Of<Response>())));
+            .Setup(f => f.CreateAsync(fileLength, default, default, default))
+            .Returns(Task.FromResult(Response.FromValue(Mock.Of<ShareFileInfo>(), Mock.Of<Response>(r => r.Status == 200))));
 
         if (fullChunks > 0)
         {
@@ -220,7 +220,7 @@ public class AzureFileShareBaselineProviderTests : TestBase
                     .Setup(f => f.UploadRangeAsync(
                         It.Is<HttpRange>(r => r.Offset == offset && r.Length == chunkSize),
                         It.IsAny<Stream>(), null, default))
-                    .Returns(Task.FromResult(Response.FromValue(Mock.Of<ShareFileUploadInfo>(), Mock.Of<Response>())));
+                    .Returns(Task.FromResult(Response.FromValue(Mock.Of<ShareFileUploadInfo>(), Mock.Of<Response>(r => r.Status == 200))));
             }
 
             // setup last chunk upload
@@ -228,7 +228,7 @@ public class AzureFileShareBaselineProviderTests : TestBase
                 .Setup(f => f.UploadRangeAsync(
                     It.Is<HttpRange>(r => r.Offset == fullChunks * chunkSize && r.Length == lastChunkSize),
                     It.IsAny<Stream>(), null, default))
-                .Returns(Task.FromResult(Response.FromValue(Mock.Of<ShareFileUploadInfo>(), Mock.Of<Response>())));
+                .Returns(Task.FromResult(Response.FromValue(Mock.Of<ShareFileUploadInfo>(), Mock.Of<Response>(r => r.Status == 200))));
         }
         else // There's only 1 chunk
         {
@@ -236,7 +236,7 @@ public class AzureFileShareBaselineProviderTests : TestBase
                 .Setup(f => f.UploadRangeAsync(
                     It.Is<HttpRange>(r => r.Offset == 0 && r.Length == fileLength),
                     It.IsAny<Stream>(), null, default))
-                .Returns(Task.FromResult(Response.FromValue(Mock.Of<ShareFileUploadInfo>(), Mock.Of<Response>())));
+                .Returns(Task.FromResult(Response.FromValue(Mock.Of<ShareFileUploadInfo>(), Mock.Of<Response>(r => r.Status == 200))));
         }
 
         // Act
