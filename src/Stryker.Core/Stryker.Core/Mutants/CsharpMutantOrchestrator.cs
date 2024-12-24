@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
-
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
@@ -47,8 +46,6 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new DoNotMutateOrchestrator<ParameterListSyntax>(),
         // enum values
         new DoNotMutateOrchestrator<EnumMemberDeclarationSyntax>(),
-        // pattern marching
-        new DoNotMutateOrchestrator<RecursivePatternSyntax>(),
         new DoNotMutateOrchestrator<UsingDirectiveSyntax>(),
         // constants and constant fields
         new DoNotMutateOrchestrator<FieldDeclarationSyntax>(
@@ -65,6 +62,9 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new MemberAccessExpressionOrchestrator<SimpleNameSyntax>(),
         new MemberAccessExpressionOrchestrator<PostfixUnaryExpressionSyntax>(t =>
             t.IsKind(SyntaxKind.SuppressNullableWarningExpression)),
+        // ensure pattern syntax nodes are mutated (as they are neither expression nor statements, they are not mutated by default)
+        new NodeSpecificOrchestrator<PatternSyntax, PatternSyntax>(),
+        new NodeSpecificOrchestrator<SubpatternSyntax, SubpatternSyntax>(),
         new ConditionalExpressionOrchestrator(),
         new ConstantPatternSyntaxOrchestrator(),
         // ensure static constructs are marked properly
@@ -95,6 +95,10 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
     private static List<IMutator> DefaultMutatorList() =>
     [
         new BinaryExpressionMutator(),
+        new RelationalPatternMutator(),
+        new BinaryPatternMutator(),
+        new StringMethodMutator(),
+        new StringMethodToConstantMutator(),
         new BlockMutator(),
         new BooleanMutator(),
         new ConditionalExpressionMutator(),
@@ -114,10 +118,8 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         new RegexMutator(),
         new NullCoalescingExpressionMutator(),
         new MathMutator(),
-        new SwitchExpressionMutator(),
         new IsPatternExpressionMutator(),
-        new StringMethodMutator(),
-        new CollectionExpressionMutator()
+        new CollectionExpressionMutator(),
     ];
 
     private IEnumerable<IMutator> Mutators { get; }
@@ -143,6 +145,7 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
         {
             foreach (var mutation in mutator.Mutate(current, semanticModel, Options))
             {
+                mutation.OriginalNode = current;
                 var newMutant = CreateNewMutant(mutation, context);
                 // Skip if the mutant is a duplicate
                 if (IsMutantDuplicate(newMutant, mutation))
@@ -150,8 +153,8 @@ public class CsharpMutantOrchestrator : BaseMutantOrchestrator<SyntaxTree, Seman
                     continue;
                 }
                 newMutant.Id = GetNextId();
-                Logger.LogDebug("Mutant {MutantId} created {OriginalNode} -> {ReplacementNode} using {Mutator}", newMutant.Id, mutation.OriginalNode,
-                    mutation.ReplacementNode, mutator.GetType());
+                Logger.LogDebug("Mutant {MutantId} created {OriginalNode} -> {ReplacementNode} using {Mutator}",
+                    newMutant.Id, mutation.OriginalNode, mutation.ReplacementNode, mutator.GetType());
                 Mutants.Add(newMutant);
                 mutations.Add(newMutant);
             }

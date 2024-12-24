@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Mutators;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutators;
 
@@ -19,29 +19,29 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
 
     static MathMutator() => KindsToMutate = new()
     {
-        [MathExpression.Acos] = new[] { MathExpression.Acosh, MathExpression.Asin, MathExpression.Atan },
-        [MathExpression.Acosh] = new[] { MathExpression.Acos, MathExpression.Asinh, MathExpression.Atanh },
-        [MathExpression.Asin] = new[] { MathExpression.Asinh, MathExpression.Acos, MathExpression.Atan },
-        [MathExpression.Asinh] = new[] { MathExpression.Asin, MathExpression.Acosh, MathExpression.Atanh },
-        [MathExpression.Atan] = new[] { MathExpression.Atanh, MathExpression.Acos, MathExpression.Asin },
-        [MathExpression.Atanh] = new[] { MathExpression.Atan, MathExpression.Acosh, MathExpression.Asinh },
-        [MathExpression.BitDecrement] = new[] { MathExpression.BitIncrement },
-        [MathExpression.BitIncrement] = new[] { MathExpression.BitDecrement },
-        [MathExpression.Ceiling] = new[] { MathExpression.Floor },
-        [MathExpression.Cos] = new[] { MathExpression.Cosh, MathExpression.Sin, MathExpression.Tan },
-        [MathExpression.Cosh] = new[] { MathExpression.Cos, MathExpression.Sinh, MathExpression.Tanh },
-        [MathExpression.Exp] = new[] { MathExpression.Log },
-        [MathExpression.Floor] = new[] { MathExpression.Ceiling },
-        [MathExpression.Log] = new[] { MathExpression.Exp, MathExpression.Pow },
-        [MathExpression.MaxMagnitude] = new[] { MathExpression.MinMagnitude },
-        [MathExpression.MinMagnitude] = new[] { MathExpression.MaxMagnitude },
-        [MathExpression.Pow] = new[] { MathExpression.Log },
-        [MathExpression.ReciprocalEstimate] = new[] { MathExpression.ReciprocalSqrtEstimate },
-        [MathExpression.ReciprocalSqrtEstimate] = new[] { MathExpression.ReciprocalEstimate, MathExpression.Sqrt },
-        [MathExpression.Sin] = new[] { MathExpression.Sinh, MathExpression.Cos, MathExpression.Tan },
-        [MathExpression.Sinh] = new[] { MathExpression.Sin, MathExpression.Cosh, MathExpression.Tanh },
-        [MathExpression.Tan] = new[] { MathExpression.Tanh, MathExpression.Cos, MathExpression.Sin },
-        [MathExpression.Tanh] = new[] { MathExpression.Tan, MathExpression.Cosh, MathExpression.Sinh }
+        [MathExpression.Acos] = [MathExpression.Acosh, MathExpression.Asin, MathExpression.Atan],
+        [MathExpression.Acosh] = [MathExpression.Acos, MathExpression.Asinh, MathExpression.Atanh],
+        [MathExpression.Asin] = [MathExpression.Asinh, MathExpression.Acos, MathExpression.Atan],
+        [MathExpression.Asinh] = [MathExpression.Asin, MathExpression.Acosh, MathExpression.Atanh],
+        [MathExpression.Atan] = [MathExpression.Atanh, MathExpression.Acos, MathExpression.Asin],
+        [MathExpression.Atanh] = [MathExpression.Atan, MathExpression.Acosh, MathExpression.Asinh],
+        [MathExpression.BitDecrement] = [MathExpression.BitIncrement],
+        [MathExpression.BitIncrement] = [MathExpression.BitDecrement],
+        [MathExpression.Ceiling] = [MathExpression.Floor],
+        [MathExpression.Cos] = [MathExpression.Cosh, MathExpression.Sin, MathExpression.Tan],
+        [MathExpression.Cosh] = [MathExpression.Cos, MathExpression.Sinh, MathExpression.Tanh],
+        [MathExpression.Exp] = [MathExpression.Log],
+        [MathExpression.Floor] = [MathExpression.Ceiling],
+        [MathExpression.Log] = [MathExpression.Exp, MathExpression.Pow],
+        [MathExpression.MaxMagnitude] = [MathExpression.MinMagnitude],
+        [MathExpression.MinMagnitude] = [MathExpression.MaxMagnitude],
+        [MathExpression.Pow] = [MathExpression.Log],
+        [MathExpression.ReciprocalEstimate] = [MathExpression.ReciprocalSqrtEstimate],
+        [MathExpression.ReciprocalSqrtEstimate] = [MathExpression.ReciprocalEstimate, MathExpression.Sqrt],
+        [MathExpression.Sin] = [MathExpression.Sinh, MathExpression.Cos, MathExpression.Tan],
+        [MathExpression.Sinh] = [MathExpression.Sin, MathExpression.Cosh, MathExpression.Tanh],
+        [MathExpression.Tan] = [MathExpression.Tanh, MathExpression.Cos, MathExpression.Sin],
+        [MathExpression.Tanh] = [MathExpression.Tan, MathExpression.Cosh, MathExpression.Sinh]
     };
 
     /// <summary> Apply mutations to an <see cref="InvocationExpressionSyntax"/> </summary>
@@ -49,7 +49,7 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
     {
         MemberAccessExpressionSyntax memberAccess => ApplyMutationsToMemberCall(node, memberAccess),
         IdentifierNameSyntax methodName => ApplyMutationsToDirectCall(node, methodName),
-        _ => Enumerable.Empty<Mutation>()
+        _ => []
     };
 
     private static IEnumerable<Mutation> ApplyMutationsToMemberCall(InvocationExpressionSyntax node, MemberAccessExpressionSyntax memberAccessExpressionSyntax)
@@ -87,7 +87,7 @@ public class MathMutator : MutatorBase<InvocationExpressionSyntax>
                         $"Math method mutation ({method.Identifier.ValueText}() to {SyntaxFactory.IdentifierName(replacementExpression.ToString())}())",
                     OriginalNode = original,
                     ReplacementNode = original.ReplaceNode(method,
-                        SyntaxFactory.IdentifierName(replacementExpression.ToString())),
+                        SyntaxFactory.IdentifierName(replacementExpression.ToString())).WithCleanTrivia(),
                     Type = Mutator.Math
                 };
             }
