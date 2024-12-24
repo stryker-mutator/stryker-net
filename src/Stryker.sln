@@ -42,6 +42,16 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Configuration", "St
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stryker.Utilities", "Stryker.Utilities\Stryker.Utilities.csproj", "{BDD19501-B2E3-4EFE-ACCD-8D11C99CCCED}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{EB4DEFF1-7BA1-43E4-86ED-B8E6808CCD44}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\renovate.json = ..\.github\renovate.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{E67C4536-0300-47F5-828D-3D4F4451F1BD}"
+	ProjectSection(SolutionItems) = preProject
+		..\.github\workflows\integration-test.yaml = ..\.github\workflows\integration-test.yaml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -94,6 +104,8 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{A9BCC324-3DF8-493A-9792-A15C9797AD11} = {68DC3E8E-7CC2-4953-BAFC-08EFBF9F3307}
+		{EB4DEFF1-7BA1-43E4-86ED-B8E6808CCD44} = {68DC3E8E-7CC2-4953-BAFC-08EFBF9F3307}
+		{E67C4536-0300-47F5-828D-3D4F4451F1BD} = {EB4DEFF1-7BA1-43E4-86ED-B8E6808CCD44}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {41C3DC7A-5A90-418D-AC69-6B5A34E6A7AC}

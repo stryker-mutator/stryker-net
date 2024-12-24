@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace TargetProject.Constructs;
 
-public class Csharp10
+public class CSharp10
 {
     // record structs
     public record Person(string FirstName, string LastName);
