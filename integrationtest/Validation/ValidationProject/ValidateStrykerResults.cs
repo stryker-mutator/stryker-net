@@ -42,6 +42,7 @@ public class ValidateStrykerResults
                 SyntaxKind.FieldDeclaration,
                 SyntaxKind.OperatorDeclaration,
                 SyntaxKind.IndexerDeclaration,
+                SyntaxKind.GlobalStatement,
             ]
     );
     private const string MutationReportJson = "mutation-report.json";
@@ -101,7 +102,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
          
-        CheckReportMutants(report, total: 636, ignored: 112, survived: 5, killed: 11, timeout: 2, nocoverage: 469);
+        CheckReportMutants(report, total: 638, ignored: 112, survived: 5, killed: 11, timeout: 2, nocoverage: 471);
         CheckReportTestCounts(report, total: 21);
     }
 
