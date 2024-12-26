@@ -1,3 +1,4 @@
+using System;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
@@ -16,34 +17,32 @@ namespace Validation;
 public class ValidateStrykerResults
 {
     private readonly ReadOnlyCollection<SyntaxKind> _blacklistedSyntaxKindsForMutating =
-        new(new[]
-        {
-            // Usings
-            SyntaxKind.UsingDirective,
-            SyntaxKind.UsingKeyword,
-            SyntaxKind.UsingStatement,
-            // Comments
-            SyntaxKind.DocumentationCommentExteriorTrivia,
-            SyntaxKind.EndOfDocumentationCommentToken,
-            SyntaxKind.MultiLineCommentTrivia,
-            SyntaxKind.MultiLineDocumentationCommentTrivia,
-            SyntaxKind.SingleLineCommentTrivia,
-            SyntaxKind.SingleLineDocumentationCommentTrivia,
-            SyntaxKind.XmlComment,
-            SyntaxKind.XmlCommentEndToken,
-            SyntaxKind.XmlCommentStartToken,
-        }
+        new([
+                // Usings
+                SyntaxKind.UsingDirective,
+                SyntaxKind.UsingKeyword,
+                SyntaxKind.UsingStatement,
+                // Comments
+                SyntaxKind.DocumentationCommentExteriorTrivia,
+                SyntaxKind.EndOfDocumentationCommentToken,
+                SyntaxKind.MultiLineCommentTrivia,
+                SyntaxKind.MultiLineDocumentationCommentTrivia,
+                SyntaxKind.SingleLineCommentTrivia,
+                SyntaxKind.SingleLineDocumentationCommentTrivia,
+                SyntaxKind.XmlComment,
+                SyntaxKind.XmlCommentEndToken,
+                SyntaxKind.XmlCommentStartToken,
+            ]
     );
     private readonly ReadOnlyCollection<SyntaxKind> _parentSyntaxKindsForMutating =
-        new(new[]
-        {
-            SyntaxKind.MethodDeclaration,
-            SyntaxKind.PropertyDeclaration,
-            SyntaxKind.ConstructorDeclaration,
-            SyntaxKind.FieldDeclaration,
-            SyntaxKind.OperatorDeclaration,
-            SyntaxKind.IndexerDeclaration,
-        }
+        new([
+                SyntaxKind.MethodDeclaration,
+                SyntaxKind.PropertyDeclaration,
+                SyntaxKind.ConstructorDeclaration,
+                SyntaxKind.FieldDeclaration,
+                SyntaxKind.OperatorDeclaration,
+                SyntaxKind.IndexerDeclaration,
+            ]
     );
     private const string MutationReportJson = "mutation-report.json";
 
@@ -83,7 +82,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 606, ignored: 252, survived: 4, killed: 9, timeout: 2, nocoverage: 308);
+        CheckReportMutants(report, total: 638, ignored: 262, survived: 4, killed: 9, timeout: 2, nocoverage: 324);
         CheckReportTestCounts(report, total: 11);
     }
 
@@ -102,7 +101,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
          
-        CheckReportMutants(report, total: 606, ignored: 105, survived: 5, killed: 11, timeout: 2, nocoverage: 452);
+        CheckReportMutants(report, total: 636, ignored: 112, survived: 5, killed: 11, timeout: 2, nocoverage: 469);
         CheckReportTestCounts(report, total: 21);
     }
 
@@ -121,7 +120,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 606, ignored: 252, survived: 4, killed: 9, timeout: 2, nocoverage: 308);
+        CheckReportMutants(report, total: 638, ignored: 262, survived: 4, killed: 9, timeout: 2, nocoverage: 324);
         CheckReportTestCounts(report, total: 23);
     }
 
@@ -140,7 +139,12 @@ public class ValidateStrykerResults
                 var nodeKind = node.Kind();
                 _blacklistedSyntaxKindsForMutating.ShouldNotContain(nodeKind);
 
-                node.AncestorsAndSelf().ShouldContain(pn => _parentSyntaxKindsForMutating.Contains(pn.Kind()));
+                node
+                    .AncestorsAndSelf()
+                    .ShouldContain(pn =>
+                        _parentSyntaxKindsForMutating.Contains(pn.Kind()),
+                        $"Mutation {mutation.MutatorName} on line {mutation.Location.Start.Line} in file {file.Key} does not have one of the known parent syntax kinds as it's parent.{Environment.NewLine}" +
+                        $"Instead it has: {Environment.NewLine} {string.Join($",{Environment.NewLine}", node.AncestorsAndSelf().Select(n => n.Kind()))}");
             }
         }
     }
