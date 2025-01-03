@@ -11,6 +11,7 @@ using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.Reporters.Json;
+using Stryker.TestRunner.VsTest;
 
 namespace Stryker.Core.UnitTest.MutantFilters;
 

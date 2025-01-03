@@ -53,7 +53,7 @@ namespace ExtraProject.XUnit
                 TestProjects = new List<TestProject>
                 {
                     new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
-                        sourceFiles: [_testFilePath]).Object)
+                        sourceFiles: new [] { _testFilePath }).Object)
                 }
             }
         };
@@ -65,19 +65,21 @@ namespace ExtraProject.XUnit
         // arrange
         var options = new StrykerOptions();
         var target = new ProjectMutator(_mutationTestProcessMock.Object);
-        var testCase1 = new TestCase("mytestname", new Uri(_testFilePath), _testFileContents)
+        var testCase1 = new VsTestCase(new TestCase("mytestname", new Uri(_testFilePath), _testFileContents)
         {
+            Id = Guid.NewGuid(),
             CodeFilePath = _testFilePath,
             LineNumber = 7,
 
-        };
-        var failedTest = testCase1.Id;
-        var testCase2 = new TestCase("mytestname", new Uri(_testFilePath), _testFileContents)
+        });
+        var failedTest = testCase1.Id.ToGuid();
+        var testCase2 = new VsTestCase(new TestCase("mytestname", new Uri(_testFilePath), _testFileContents)
         {
+            Id = Guid.NewGuid(),
             CodeFilePath = _testFilePath,
             LineNumber = 7,
-        };
-        var successfulTest = testCase2.Id;
+        });
+        var successfulTest = testCase2.Id.ToGuid();
         var tests = new List<VsTestDescription> { new VsTestDescription(testCase1), new VsTestDescription(testCase2) };
         var initialTestRunResult = new TestRunResult(
             vsTestDescriptions: tests,
@@ -97,6 +99,6 @@ namespace ExtraProject.XUnit
         // assert
         result.ShouldNotBeNull();
         var testFile = _mutationTestInput.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
-        testFile.Tests.Count().ShouldBe(1);
+        testFile.Tests.ShouldHaveSingleItem();
     }
 }

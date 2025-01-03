@@ -184,7 +184,7 @@ public class VsTestHelper : IVsTestHelper
         }
     }
 
-    internal string DeployEmbeddedVsTestBinaries()
+    public string DeployEmbeddedVsTestBinaries()
     {
         var assembly = typeof(VsTestHelper).Assembly;
         var vsTestZips = assembly.GetManifestResourceNames().Where(r => r == "Microsoft.TestPlatform.Portable.nupkg").ToList();

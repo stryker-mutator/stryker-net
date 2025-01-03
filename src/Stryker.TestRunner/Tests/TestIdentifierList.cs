@@ -17,11 +17,11 @@ public class TestIdentifierList : ITestIdentifiers
     public TestIdentifierList(IEnumerable<ITestDescription> testDescriptions) : this(testDescriptions.Select(t => t.Id.ToString()))
     { }
 
-    public TestIdentifierList(IEnumerable<Identifier> identifiers) => _identifiers = new HashSet<Identifier>(identifiers ?? Enumerable.Empty<Identifier>());
+    public TestIdentifierList(IEnumerable<Identifier> identifiers) => _identifiers = identifiers != null ? new HashSet<Identifier>(identifiers) : null;
 
     public TestIdentifierList(HashSet<Identifier> identifiers) => _identifiers = identifiers;
 
-    public TestIdentifierList(HashSet<string> set) => _identifiers = set.Select(Identifier.Create).ToHashSet();
+    public TestIdentifierList(HashSet<string> set) => _identifiers = set?.Select(Identifier.Create).ToHashSet();
 
     public TestIdentifierList(IEnumerable<string>? ids) => _identifiers = ids is not null ? new HashSet<Identifier>(ids.Select(Identifier.Create)) : null;
 

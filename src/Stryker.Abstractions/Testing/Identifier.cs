@@ -12,6 +12,8 @@ public class Identifier : IEquatable<Identifier>
 
     public static Identifier Create(Guid guid) => new(guid.ToString());
 
+    public static Identifier Empty => new(Guid.Empty.ToString());
+
     public Guid ToGuid()
     {
         var isGuid = Guid.TryParse(_identifier, out var guid);

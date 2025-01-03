@@ -222,7 +222,7 @@ public class InitialisationProcessTests : TestBase
         inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(new FileSystem());
         initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), null));
         var testSet = new TestSet();
-        testSet.RegisterTest(new TestDescription(Identifier.Create(Guid.Empty), "test", "test.cs"));
+        testSet.RegisterTest(new TestDescription(Identifier.Empty, "test", "test.cs"));
         testRunnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(true);
         testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(testSet);
         initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>()))

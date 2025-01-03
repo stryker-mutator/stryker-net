@@ -24,6 +24,7 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.TestRunner.Results;
 using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.VsTest;
 using Stryker.TetsRunner.VsTest.Helpers;

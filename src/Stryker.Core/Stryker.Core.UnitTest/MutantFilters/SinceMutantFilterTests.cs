@@ -12,6 +12,7 @@ using Stryker.Core.DiffProviders;
 using Stryker.Core.MutantFilters;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents.Csharp;
+using Stryker.TestRunner.Tests;
 using Stryker.TestRunner.VsTest;
 
 namespace Stryker.Core.UnitTest.MutantFilters;

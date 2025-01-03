@@ -4,6 +4,7 @@ using Stryker.Abstractions.Testing;
 using ITestCase = Stryker.Abstractions.Testing.ITestCase;
 
 namespace Stryker.TestRunner.VsTest;
+
 public class VsTestCase : ITestCase
 {
     public VsTestCase(TestCase testCase)
