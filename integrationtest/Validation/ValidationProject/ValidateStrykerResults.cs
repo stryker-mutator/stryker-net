@@ -42,6 +42,7 @@ public class ValidateStrykerResults
                 SyntaxKind.FieldDeclaration,
                 SyntaxKind.OperatorDeclaration,
                 SyntaxKind.IndexerDeclaration,
+                SyntaxKind.GlobalStatement,
             ]
     );
     private const string MutationReportJson = "mutation-report.json";
@@ -82,7 +83,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 631, ignored: 256, survived: 4, killed: 9, timeout: 2, nocoverage: 323);
+        CheckReportMutants(report, total: 638, ignored: 262, survived: 4, killed: 9, timeout: 2, nocoverage: 324);
         CheckReportTestCounts(report, total: 11);
     }
 
@@ -100,8 +101,8 @@ public class ValidateStrykerResults
         using var strykerRunOutput = File.OpenRead(latestReport.FullName);
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
-
-        CheckReportMutants(report, total: 631, ignored: 112, survived: 5, killed: 11, timeout: 2, nocoverage: 464);
+         
+        CheckReportMutants(report, total: 638, ignored: 112, survived: 5, killed: 11, timeout: 2, nocoverage: 471);
         CheckReportTestCounts(report, total: 21);
     }
 
@@ -120,7 +121,7 @@ public class ValidateStrykerResults
 
         var report = await strykerRunOutput.DeserializeJsonReportAsync();
 
-        CheckReportMutants(report, total: 631, ignored: 256, survived: 4, killed: 9, timeout: 2, nocoverage: 323);
+        CheckReportMutants(report, total: 638, ignored: 262, survived: 4, killed: 9, timeout: 2, nocoverage: 324);
         CheckReportTestCounts(report, total: 23);
     }
 

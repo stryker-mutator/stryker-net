@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Mutators;
+using Stryker.Core.Helpers;
 using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators;
@@ -47,7 +48,7 @@ public class NegateConditionMutator : MutatorBase<ExpressionSyntax>
             yield return new Mutation()
             {
                 OriginalNode = node,
-                ReplacementNode = replacement,
+                ReplacementNode = replacement.WithCleanTriviaFrom(node),
                 DisplayName = "Negate expression",
                 Type = Mutator.Boolean
             };
@@ -72,7 +73,5 @@ public class NegateConditionMutator : MutatorBase<ExpressionSyntax>
     }
 
     private static PrefixUnaryExpressionSyntax NegateCondition(ExpressionSyntax expressionSyntax)
-    {
-        return SyntaxFactory.PrefixUnaryExpression(SyntaxKind.LogicalNotExpression, SyntaxFactory.ParenthesizedExpression(expressionSyntax));
-    }
+        => SyntaxFactory.PrefixUnaryExpression(SyntaxKind.LogicalNotExpression, SyntaxFactory.ParenthesizedExpression(expressionSyntax.WithCleanTrivia()));
 }

@@ -12,8 +12,8 @@ public class StatementMutator : MutatorBase<StatementSyntax>
 {
     public override MutationLevel MutationLevel => MutationLevel.Standard;
 
-    private static readonly HashSet<SyntaxKind> AllowedSyntaxes = new HashSet<SyntaxKind>()
-    {
+    private static readonly HashSet<SyntaxKind> _allowedSyntaxes =
+    [
         // SyntaxKind.EmptyStatement, // useless mutation
 
         // SyntaxKind.Block, // unitary mutation should prevail over blocks
@@ -46,11 +46,11 @@ public class StatementMutator : MutatorBase<StatementSyntax>
         SyntaxKind.YieldBreakStatement,
 
         SyntaxKind.ExpressionStatement,
-    };
+    ];
 
     public override IEnumerable<Mutation> ApplyMutations(StatementSyntax node, SemanticModel semanticModel)
     {
-        if (!AllowedSyntaxes.Contains(node.Kind()))
+        if (!_allowedSyntaxes.Contains(node.Kind()))
         {
             yield break;
         }
@@ -70,7 +70,7 @@ public class StatementMutator : MutatorBase<StatementSyntax>
             }
         }
 
-        // flux-control inside switch-case may cause a compile error
+        // flow-control inside switch-case may cause a compile error
         if ((node is ReturnStatementSyntax ||
              node is BreakStatementSyntax ||
              node is ContinueStatementSyntax ||
@@ -85,7 +85,7 @@ public class StatementMutator : MutatorBase<StatementSyntax>
         {
             // removing an assignment may cause a compile error
             if (expressionNode
-                .DescendantNodes(s => !(s is AnonymousFunctionExpressionSyntax))
+                .DescendantNodes(s => s is not AnonymousFunctionExpressionSyntax)
                 .OfType<AssignmentExpressionSyntax>().Any())
             {
                 yield break;
@@ -93,7 +93,7 @@ public class StatementMutator : MutatorBase<StatementSyntax>
 
             // removing an out variable may cause a compile error
             if (expressionNode
-                .DescendantTokens(s => !(s is AnonymousFunctionExpressionSyntax))
+                .DescendantTokens(s => s is not AnonymousFunctionExpressionSyntax)
                 .Any(t => t.IsKind(SyntaxKind.OutKeyword)))
             {
                 yield break;

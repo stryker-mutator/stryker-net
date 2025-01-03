@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Mutators;
+using Stryker.Core.Helpers;
 using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators;
@@ -33,7 +34,7 @@ public class PrefixUnaryMutator : MutatorBase<PrefixUnaryExpressionSyntax>
             yield return new Mutation
             {
                 OriginalNode = node,
-                ReplacementNode = SyntaxFactory.PrefixUnaryExpression(oppositeKind, node.Operand),
+                ReplacementNode = SyntaxFactory.PrefixUnaryExpression(oppositeKind, node.Operand.WithCleanTrivia()),
                 DisplayName = $"{unaryKind} to {oppositeKind} mutation",
                 Type = unaryKind.ToString().StartsWith("Unary") ? Mutator.Unary : Mutator.Update
             };
@@ -43,7 +44,7 @@ public class PrefixUnaryMutator : MutatorBase<PrefixUnaryExpressionSyntax>
             yield return new Mutation
             {
                 OriginalNode = node,
-                ReplacementNode = node.Operand,
+                ReplacementNode = node.Operand.WithCleanTrivia(),
                 DisplayName = $"{unaryKind} to un-{unaryKind} mutation",
                 Type = unaryKind.ToString().StartsWith("Logic") ? Mutator.Boolean : Mutator.Unary
             };

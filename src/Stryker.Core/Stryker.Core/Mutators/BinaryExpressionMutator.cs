@@ -22,7 +22,7 @@ public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>
         }
     }
 
-    private static readonly Dictionary<SyntaxKind, MutationData> _kindsToMutate = new Dictionary<SyntaxKind, MutationData>()
+    private static readonly Dictionary<SyntaxKind, MutationData> _kindsToMutate = new()
     {
         { SyntaxKind.SubtractExpression, new MutationData(Mutator.Arithmetic, SyntaxKind.AddExpression) },
         { SyntaxKind.AddExpression, new MutationData(Mutator.Arithmetic, SyntaxKind.SubtractExpression) },
@@ -57,9 +57,9 @@ public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>
         {
             foreach (var mutationKind in mutationData.KindsToMutate)
             {
-                var replacementNode = SyntaxFactory.BinaryExpression(mutationKind, node.Left, node.Right);
+                var replacementNode = SyntaxFactory.BinaryExpression(mutationKind, node.Left.WithCleanTrivia(), node.Right.WithCleanTrivia());
                 // make sure the trivia stays in place for displaying
-                replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithTriviaFrom(node.OperatorToken));
+                replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithCleanTriviaFrom(node.OperatorToken));
                 yield return new Mutation()
                 {
                     OriginalNode = node,
@@ -79,8 +79,8 @@ public class BinaryExpressionMutator : MutatorBase<BinaryExpressionSyntax>
 
     private static Mutation GetLogicalMutation(BinaryExpressionSyntax node)
     {
-        var replacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.EqualsExpression, node.Left, node.Right);
-        replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithTriviaFrom(node.OperatorToken));
+        var replacementNode = SyntaxFactory.BinaryExpression(SyntaxKind.EqualsExpression, node.Left.WithCleanTrivia(), node.Right.WithCleanTrivia());
+        replacementNode = replacementNode.WithOperatorToken(replacementNode.OperatorToken.WithCleanTriviaFrom(node.OperatorToken));
 
         return new Mutation
         {

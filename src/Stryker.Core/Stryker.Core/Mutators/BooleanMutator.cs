@@ -3,6 +3,7 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Mutators;
+using Stryker.Core.Helpers;
 using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators;
@@ -17,7 +18,7 @@ public class BooleanMutator : MutatorBase<LiteralExpressionSyntax>
             yield return new Mutation()
             {
                 OriginalNode = node,
-                ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.FalseLiteralExpression),
+                ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.FalseLiteralExpression).WithCleanTriviaFrom(node),
                 DisplayName = "Boolean mutation",
                 Type = Mutator.Boolean
             };
@@ -27,7 +28,7 @@ public class BooleanMutator : MutatorBase<LiteralExpressionSyntax>
             yield return new Mutation()
             {
                 OriginalNode = node,
-                ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression),
+                ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression).WithCleanTriviaFrom(node),
                 DisplayName = "Boolean mutation",
                 Type = Mutator.Boolean
             };
