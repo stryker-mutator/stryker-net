@@ -70,7 +70,7 @@ public class CoverageAnalyser : ICoverageAnalyser
                 mutationToResultMap[i].Add(coverageRunResult);
             }
 
-            if (failedTests.Contains(coverageRunResult.TestId))
+            if (failedTests.GetIdentifiers().Contains(coverageRunResult.TestId))
             {
                 // exclude failing tests from the list of all tests
                 continue;

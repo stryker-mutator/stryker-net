@@ -38,6 +38,12 @@ namespace ExtraProject.XUnit
         {
             // example test
         }
+
+        [TestMethod]
+        public void Test2()
+        {
+            // example test
+        }
     }
 }
 ";
@@ -65,7 +71,7 @@ namespace ExtraProject.XUnit
         // arrange
         var options = new StrykerOptions();
         var target = new ProjectMutator(_mutationTestProcessMock.Object);
-        var testCase1 = new VsTestCase(new TestCase("mytestname", new Uri(_testFilePath), _testFileContents)
+        var testCase1 = new VsTestCase(new TestCase("mytestname1", new Uri(_testFilePath), _testFileContents)
         {
             Id = Guid.NewGuid(),
             CodeFilePath = _testFilePath,
@@ -73,11 +79,11 @@ namespace ExtraProject.XUnit
 
         });
         var failedTest = testCase1.Id.ToGuid();
-        var testCase2 = new VsTestCase(new TestCase("mytestname", new Uri(_testFilePath), _testFileContents)
+        var testCase2 = new VsTestCase(new TestCase("mytestname2", new Uri(_testFilePath), _testFileContents)
         {
             Id = Guid.NewGuid(),
             CodeFilePath = _testFilePath,
-            LineNumber = 7,
+            LineNumber = 13,
         });
         var successfulTest = testCase2.Id.ToGuid();
         var tests = new List<VsTestDescription> { new VsTestDescription(testCase1), new VsTestDescription(testCase2) };
