@@ -18,17 +18,17 @@ using Moq;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Testing;
-using Stryker.Core.Helpers;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
-using Stryker.DataCollector;
+using Stryker.TestRunner.Tests;
+using Stryker.TestRunner.VsTest;
+using Stryker.TetsRunner.VsTest.Helpers;
 using Stryker.Utilities;
+using CoverageCollector = Stryker.DataCollector.CoverageCollector;
 using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace Stryker.Core.UnitTest.TestRunners;
@@ -89,8 +89,8 @@ public class VsTestMockingHelper : TestBase
                 { _testAssemblyPath!, new MockFileData("Bytecode") },
                 { Path.Combine(_filesystemRoot, "app", "bin", "Debug", "AppToTest.dll"), new MockFileData("Bytecode") },
             });
-        _coverageProperty = VsTest.TestProperty.Register(CoverageCollector.PropertyName, CoverageCollector.PropertyName, typeof(string), typeof(TestResult));
-        _unexpectedCoverageProperty = VsTest.TestProperty.Register(CoverageCollector.OutOfTestsPropertyName, CoverageCollector.OutOfTestsPropertyName, typeof(string), typeof(TestResult));
+        _coverageProperty = VsTest.TestProperty.Register(CoverageCollector.PropertyName, CoverageCollector.PropertyName, typeof(string), typeof(VsTest.TestResult));
+        _unexpectedCoverageProperty = VsTest.TestProperty.Register(CoverageCollector.OutOfTestsPropertyName, CoverageCollector.OutOfTestsPropertyName, typeof(string), typeof(VsTest.TestResult));
         Mutant = new Mutant { Id = 0 };
         OtherMutant = new Mutant { Id = 1 };
         _testProjectsInfo = BuildTestProjectsInfo();

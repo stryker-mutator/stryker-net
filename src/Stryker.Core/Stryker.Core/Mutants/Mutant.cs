@@ -1,6 +1,6 @@
 using Stryker.Abstractions;
 using Stryker.Abstractions.Testing;
-using Stryker.Core.TestRunners.MsTest.Testing.Tests;
+using Stryker.TestRunner.Tests;
 
 namespace Stryker.Core.Mutants;
 

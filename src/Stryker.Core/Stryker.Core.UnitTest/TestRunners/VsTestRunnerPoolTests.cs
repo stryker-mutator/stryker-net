@@ -11,9 +11,11 @@ using Stryker.Abstractions.Options;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
-using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
+using Stryker.TestRunner.Tests;
+using Stryker.TestRunner.VsTest;
 using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Stryker.Utilities.Buildalyzer;
+using Stryker.Abstractions.Testing;
 
 namespace Stryker.Core.UnitTest.TestRunners;
 
@@ -443,13 +445,13 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
         result.ExecutedTests.IsEveryTest.ShouldBeTrue();
         result.FailingTests.IsEmpty.ShouldBeFalse();
-        result.FailingTests.GetGuids().ShouldContain(TestCases[0].Id);
+        result.FailingTests.GetIdentifiers().Select(x => x.ToGuid()).ShouldContain(TestCases[0].Id);
         // test session will fail on the other test result
         SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T0", false), ("T1", true) });
         result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
         result.ExecutedTests.IsEveryTest.ShouldBeTrue();
         result.FailingTests.IsEmpty.ShouldBeFalse();
-        result.FailingTests.GetGuids().ShouldContain(TestCases[0].Id);
+        result.FailingTests.GetIdentifiers().Select(x => x.ToGuid()).ShouldContain(TestCases[0].Id);
     }
 
     [TestMethod]
@@ -468,7 +470,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
 
         result.FailingTests.IsEmpty.ShouldBeTrue();
         result.TimedOutTests.Count.ShouldBe(1);
-        result.TimedOutTests.GetGuids().ShouldContain(TestCases[0].Id);
+        result.TimedOutTests.GetIdentifiers().Select(x => x.ToGuid()).ShouldContain(TestCases[0].Id);
         result.ExecutedTests.IsEveryTest.ShouldBeFalse();
     }
 
@@ -487,7 +489,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
         result.ExecutedTests.IsEveryTest.ShouldBeTrue();
         result.FailingTests.IsEmpty.ShouldBeFalse();
-        result.FailingTests.GetGuids().ShouldContain(TestCases[0].Id);
+        result.FailingTests.GetIdentifiers().Select(x => x.ToGuid()).ShouldContain(TestCases[0].Id);
     }
 
     [TestMethod]
@@ -672,8 +674,8 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         var analyzer = new CoverageAnalyser(options);
         analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
         // the suspicious tests should be used for every mutant
-        OtherMutant.CoveringTests.GetGuids().ShouldContain(buildCase.Id);
-        Mutant.CoveringTests.GetGuids().ShouldContain(buildCase.Id);
+        OtherMutant.CoveringTests.GetIdentifiers().Select(x => x.ToGuid()).ShouldContain(buildCase.Id);
+        Mutant.CoveringTests.GetIdentifiers().Select(x => x.ToGuid()).ShouldContain(buildCase.Id);
     }
 
     // this verifies that Stryker disregard skipped tests

@@ -8,9 +8,9 @@ using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Testing;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Mutants;
-using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
+using Stryker.TestRunner.Results;
+using Stryker.TestRunner.Tests;
+using Stryker.TestRunner.VsTest;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 

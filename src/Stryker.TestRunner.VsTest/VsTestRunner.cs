@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
@@ -7,6 +11,9 @@ using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
+using Stryker.TestRunner.Results;
+using Stryker.TestRunner.Tests;
+using Stryker.Utilities.Buildalyzer;
 using static Stryker.Abstractions.Testing.ITestRunner;
 
 namespace Stryker.TestRunner.VsTest;

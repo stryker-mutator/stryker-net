@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Core.Mutants;
+using Stryker.TestRunner.Tests;
 
 namespace Stryker.Core.UnitTest.Mutants;
 

@@ -12,12 +12,12 @@ using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Testing;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
+using Stryker.TestRunner.Results;
+using Stryker.TestRunner.Tests;
+using Stryker.TestRunner.VsTest;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 
@@ -118,7 +118,7 @@ public class InitialisationProcessTests : TestBase
         var failedTest = Guid.NewGuid();
         var ranTests = new TestGuidsList(failedTest, Guid.NewGuid());
         var testSet = new TestSet();
-        foreach (var ranTest in ranTests.GetGuids())
+        foreach (var ranTest in ranTests.GetIdentifiers())
         {
             testSet.RegisterTest(new TestDescription(ranTest, "test", "test.cpp"));
         }
@@ -170,7 +170,7 @@ public class InitialisationProcessTests : TestBase
         var failedTest = Guid.NewGuid();
         var ranTests = new TestGuidsList(failedTest, Guid.NewGuid(), Guid.NewGuid());
         var testSet = new TestSet();
-        foreach (var ranTest in ranTests.GetGuids())
+        foreach (var ranTest in ranTests.GetIdentifiers())
         {
             testSet.RegisterTest(new TestDescription(ranTest, "test", "test.cpp"));
         }
@@ -222,7 +222,7 @@ public class InitialisationProcessTests : TestBase
         inputFileResolverMock.SetupGet(x => x.FileSystem).Returns(new FileSystem());
         initialBuildProcessMock.Setup(x => x.InitialBuild(It.IsAny<bool>(), It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(), null));
         var testSet = new TestSet();
-        testSet.RegisterTest(new TestDescription(Guid.Empty, "test", "test.cs"));
+        testSet.RegisterTest(new TestDescription(Identifier.Create(Guid.Empty), "test", "test.cs"));
         testRunnerMock.Setup(x => x.DiscoverTests(It.IsAny<string>())).Returns(true);
         testRunnerMock.Setup(x => x.GetTests(It.IsAny<IProjectAndTests>())).Returns(testSet);
         initialTestProcessMock.Setup(x => x.InitialTest(It.IsAny<StrykerOptions>(), It.IsAny<IProjectAndTests>(), It.IsAny<ITestRunner>()))

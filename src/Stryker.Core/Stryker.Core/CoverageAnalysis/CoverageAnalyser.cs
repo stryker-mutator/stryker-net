@@ -5,7 +5,7 @@ using Stryker.Abstractions;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
-using Stryker.Core.Mutants;
+using Stryker.TestRunner.Tests;
 
 namespace Stryker.Core.CoverageAnalysis;
 

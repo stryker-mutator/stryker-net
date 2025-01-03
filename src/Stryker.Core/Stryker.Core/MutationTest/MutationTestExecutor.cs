@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Testing;
-using Stryker.Core.TestRunners;
+using Stryker.TestRunner.Results;
 using static Stryker.Abstractions.Testing.ITestRunner;
 
 namespace Stryker.Core.MutationTest;

@@ -42,7 +42,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Configuration", "St
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.Utilities", "Stryker.Utilities\Stryker.Utilities.csproj", "{BDD19501-B2E3-4EFE-ACCD-8D11C99CCCED}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stryker.TestRunner.VsTest", "Stryker.TestRunner.VsTest\Stryker.TestRunner.VsTest.csproj", "{20D3DADD-890F-4F78-8B2B-2335F2E8FEC2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Stryker.TestRunner.VsTest", "Stryker.TestRunner.VsTest\Stryker.TestRunner.VsTest.csproj", "{20D3DADD-890F-4F78-8B2B-2335F2E8FEC2}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{EB4DEFF1-7BA1-43E4-86ED-B8E6808CCD44}"
 	ProjectSection(SolutionItems) = preProject
@@ -53,6 +53,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{
 	ProjectSection(SolutionItems) = preProject
 		..\.github\workflows\integration-test.yaml = ..\.github\workflows\integration-test.yaml
 	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Stryker.TestRunner", "Stryker.TestRunner\Stryker.TestRunner.csproj", "{A19D156E-844E-4C8F-8D82-6051CBFBF910}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -104,6 +106,10 @@ Global
 		{20D3DADD-890F-4F78-8B2B-2335F2E8FEC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{20D3DADD-890F-4F78-8B2B-2335F2E8FEC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{20D3DADD-890F-4F78-8B2B-2335F2E8FEC2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A19D156E-844E-4C8F-8D82-6051CBFBF910}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A19D156E-844E-4C8F-8D82-6051CBFBF910}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A19D156E-844E-4C8F-8D82-6051CBFBF910}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A19D156E-844E-4C8F-8D82-6051CBFBF910}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

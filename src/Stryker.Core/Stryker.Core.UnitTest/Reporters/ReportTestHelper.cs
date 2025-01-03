@@ -6,6 +6,7 @@ using Stryker.Abstractions;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents.Csharp;
+using Stryker.TestRunner.Tests;
 
 namespace Stryker.Core.UnitTest.Reporters;
 

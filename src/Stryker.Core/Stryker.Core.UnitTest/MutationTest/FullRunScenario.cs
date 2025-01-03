@@ -4,10 +4,11 @@ using System.Linq;
 using Moq;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
-using Stryker.Core.TestRunners;
-using Stryker.Core.Mutants;
-using Stryker.Core.TestRunners.VsTest;
 using Stryker.Abstractions.Testing;
+using Stryker.Core.Mutants;
+using Stryker.TestRunner.Results;
+using Stryker.TestRunner.Tests;
+using Stryker.TestRunner.VsTest;
 using static Stryker.Abstractions.Testing.ITestRunner;
 
 namespace Stryker.Core.UnitTest.MutationTest;
@@ -178,7 +179,7 @@ internal class FullRunScenario
                 var result = new List<CoverageRunResult>(_tests.Count);
                 foreach (var (guid, mutations) in _testCoverage)
                 {
-                    result.Add(new CoverageRunResult(Identifier.Create(guid), CoverageConfidence.Normal,
+                    result.Add(CoverageRunResult.Create(guid.ToString(), CoverageConfidence.Normal,
                         mutations,
                         Enumerable.Empty<int>(),
                         Enumerable.Empty<int>()));

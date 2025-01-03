@@ -9,13 +9,14 @@ using System.Threading.Tasks;
 using Buildalyzer;
 using Buildalyzer.Environment;
 using Microsoft.Extensions.Logging;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
-using Stryker.Core.Initialisation.Buildalyzer;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Testing;
+using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.Initialisation;
 

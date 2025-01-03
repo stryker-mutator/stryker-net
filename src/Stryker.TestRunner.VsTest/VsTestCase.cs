@@ -1,3 +1,4 @@
+using System;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Abstractions.Testing;
 using ITestCase = Stryker.Abstractions.Testing.ITestCase;

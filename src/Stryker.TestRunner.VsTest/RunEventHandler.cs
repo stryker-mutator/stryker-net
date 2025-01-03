@@ -9,7 +9,6 @@ using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using Stryker.TestRunner.VSTest;
 
 namespace Stryker.TestRunner.VsTest;
 

@@ -12,10 +12,10 @@ using Stryker.Abstractions;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
-using Stryker.Core.Mutants;
-using Stryker.DataCollector;
-using Stryker.TestRunner.VSTest;
+using Stryker.TestRunner.Results;
+using Stryker.TestRunner.Tests;
 using static Stryker.Abstractions.Testing.ITestRunner;
+using CoverageCollector = Stryker.DataCollector.CoverageCollector;
 
 namespace Stryker.TestRunner.VsTest;
 
@@ -189,7 +189,7 @@ public sealed class VsTestRunnerPool : ITestRunner
             // ==> we need it to use this test against every mutation
             _logger.LogDebug("VsTestRunner: No coverage data for {TestCase}.", testResult.TestCase.DisplayName);
             seenTestCases.Add(testDescription.Id.ToGuid());
-            coverageRunResult = new CoverageRunResult(testDescription.Id, CoverageConfidence.Dubious, [], [], []);
+            coverageRunResult = CoverageRunResult.Create(testDescription.Id.ToString(), CoverageConfidence.Dubious, [], [], []);
         }
         else
         {
@@ -249,6 +249,6 @@ public sealed class VsTestRunnerPool : ITestRunner
             leakedMutants = Enumerable.Empty<int>();
         }
 
-        return new CoverageRunResult(Identifier.Create(testCaseId), level, coveredMutants, staticMutants, leakedMutants);
+        return CoverageRunResult.Create(testCaseId.ToString(), level, coveredMutants, staticMutants, leakedMutants);
     }
 }

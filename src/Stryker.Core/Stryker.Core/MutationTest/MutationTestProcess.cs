@@ -11,9 +11,8 @@ using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;
 using Stryker.Abstractions.Testing;
 using Stryker.Core.CoverageAnalysis;
-using Stryker.Core.Initialisation;
-using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.Mutants;
+using Stryker.TestRunner.Tests;
+using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.MutationTest;
 
@@ -72,13 +71,12 @@ public class MutationTestProcess : IMutationTestProcess
 
     private IMutationProcess BuildMutationProcess()
     {
-        if (!LanguageMap.ContainsKey(Input.SourceProjectInfo.AnalyzerResult.GetLanguage()))
+        if (LanguageMap.ContainsKey(Input.SourceProjectInfo.AnalyzerResult.GetLanguage()))
         {
-            throw new GeneralStrykerException(
-                "no valid language detected || no valid csproj or fsproj was given.");
+            return LanguageMap[Input.SourceProjectInfo.AnalyzerResult.GetLanguage()](_options);
         }
 
-        return LanguageMap[Input.SourceProjectInfo.AnalyzerResult.GetLanguage()](_options);
+        throw new GeneralStrykerException("no valid language detected || no valid csproj or fsproj was given.");
     }
 
     public void Mutate()
