@@ -4,7 +4,7 @@ using System.Diagnostics.Metrics;
 
 namespace TargetProject.Constructs
 {
-    public class Csharp8
+    public class CSharp8
     {
         // switch expressions
         public static string RockPaperScissors(string first, string second) => (first, second) switch

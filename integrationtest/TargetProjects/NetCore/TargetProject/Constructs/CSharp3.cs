@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace TargetProject.Constructs;
 
-public class Csharp3
+public class CSharp3
 {
     // anonymous types
     public class Product

@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 namespace TargetProject.Constructs;
 
-public class Csharp12
+public class CSharp12
 {
     // collection expressions
     public static void CollectionExpressions()
@@ -72,7 +72,6 @@ public class Csharp12
         // The set (2, 3, 4) doubled: (4, 6, 8)
     }
 
-    #if NET8_0_OR_GREATER
     // inline array
     [System.Runtime.CompilerServices.InlineArray(10)]
     public struct Buffer
@@ -93,5 +92,4 @@ public class Csharp12
             Console.WriteLine(i);
         }
     }
-    #endif
 }
