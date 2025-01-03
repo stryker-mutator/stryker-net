@@ -2,12 +2,11 @@ using System.Collections.ObjectModel;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
+using Stryker.Abstractions;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Core.Mutants;
-using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
+using Stryker.TestRunner.Tests;
 
 namespace Stryker.Core.UnitTest.Reporters;
 

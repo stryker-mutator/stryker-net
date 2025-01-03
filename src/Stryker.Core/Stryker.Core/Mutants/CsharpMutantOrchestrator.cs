@@ -8,8 +8,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions.Options;
 using Stryker.Core.Mutants.CsharpNodeOrchestrators;
 using Stryker.Core.Mutators;

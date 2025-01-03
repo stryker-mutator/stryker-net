@@ -1,6 +1,6 @@
-using System;
 using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
+using Stryker.Abstractions.Testing;
 
 namespace Stryker.Abstractions.ProjectComponents;
 
@@ -11,7 +11,7 @@ public interface ITestFile
     SyntaxTree SyntaxTree { get; init; }
     IList<ITestCase> Tests { get; }
 
-    void AddTest(Guid id, string name, SyntaxNode node);
+    void AddTest(Identifier id, string name, SyntaxNode node);
     bool Equals(object obj);
     bool Equals(ITestFile other);
     int GetHashCode();

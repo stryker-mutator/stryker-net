@@ -283,8 +283,10 @@
       "stryker.utilities": {
         "type": "Project",
         "dependencies": {
+          "Buildalyzer": "[7.1.0, )",
           "Microsoft.CodeAnalysis.CSharp": "[4.12.0, )",
-          "Microsoft.Extensions.Logging.Abstractions": "[9.0.0, )"
+          "Microsoft.Extensions.Logging.Abstractions": "[9.0.0, )",
+          "Mono.Cecil": "[0.11.6, )"
         }
       },
       "Microsoft.CodeAnalysis.Analyzers": {
@@ -324,6 +326,12 @@
           "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.0",
           "System.Diagnostics.DiagnosticSource": "9.0.0"
         }
+      },
+      "Mono.Cecil": {
+        "type": "CentralTransitive",
+        "requested": "[0.11.6, )",
+        "resolved": "0.11.6",
+        "contentHash": "f33RkDtZO8VlGXCtmQIviOtxgnUdym9xx/b1p9h91CRGOsJFxCFOFK1FDbVt1OCf1aWwYejUFa2MOQyFWTFjbA=="
       },
       "NuGet.Frameworks": {
         "type": "CentralTransitive",

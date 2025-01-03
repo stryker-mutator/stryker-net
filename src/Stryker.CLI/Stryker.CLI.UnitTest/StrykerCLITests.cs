@@ -10,7 +10,6 @@ using Serilog.Events;
 using Shouldly;
 using Spectre.Console.Testing;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions.Options;
 using Stryker.CLI.Clients;
 using Stryker.CLI.Logging;

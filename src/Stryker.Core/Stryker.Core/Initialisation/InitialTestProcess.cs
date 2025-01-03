@@ -1,10 +1,9 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Initialisation;
 using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
-using Stryker.Core.TestRunners;
+using Stryker.Abstractions.Testing;
 
 namespace Stryker.Core.Initialisation;
 

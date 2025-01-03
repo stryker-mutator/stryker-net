@@ -9,12 +9,12 @@ using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Reporting;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Mutants;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
-using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Stryker.TestRunner.Results;
+using Stryker.TestRunner.Tests;
+using Stryker.TestRunner.VsTest;
+using TestCase = Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 
@@ -53,7 +53,7 @@ namespace ExtraProject.XUnit
                 TestProjects = new List<TestProject>
                 {
                     new(_fileSystemMock, TestHelper.SetupProjectAnalyzerResult(
-                        sourceFiles: new string[] { _testFilePath }).Object)
+                        sourceFiles: [_testFilePath]).Object)
                 }
             }
         };
@@ -65,14 +65,14 @@ namespace ExtraProject.XUnit
         // arrange
         var options = new StrykerOptions();
         var target = new ProjectMutator(_mutationTestProcessMock.Object);
-        var testCase1 = new VsTest.TestCase("mytestname", new Uri(_testFilePath), _testFileContents)
+        var testCase1 = new TestCase("mytestname", new Uri(_testFilePath), _testFileContents)
         {
             CodeFilePath = _testFilePath,
             LineNumber = 7,
 
         };
         var failedTest = testCase1.Id;
-        var testCase2 = new VsTest.TestCase("mytestname", new Uri(_testFilePath), _testFileContents)
+        var testCase2 = new TestCase("mytestname", new Uri(_testFilePath), _testFileContents)
         {
             CodeFilePath = _testFilePath,
             LineNumber = 7,

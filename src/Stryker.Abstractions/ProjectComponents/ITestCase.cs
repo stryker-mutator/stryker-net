@@ -1,11 +1,10 @@
-using System;
 using Microsoft.CodeAnalysis;
 
 namespace Stryker.Abstractions.ProjectComponents;
 
 public interface ITestCase
 {
-    Guid Id { get; init; }
+    Testing.Identifier Id { get; init; }
     string Name { get; init; }
     SyntaxNode Node { get; init; }
 

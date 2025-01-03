@@ -1,8 +1,9 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
 using Stryker.Core.Mutants;
+using Stryker.TestRunner.Tests;
 
 namespace Stryker.Core.UnitTest.Mutants;
 
@@ -58,8 +59,8 @@ public class MutantTests : TestBase
             false);
 
         mutant.ResultStatus.ShouldBe(MutantStatus.Killed);
-        var killingTest = mutant.KillingTests.GetGuids().ShouldHaveSingleItem();
-        killingTest.ShouldBe(failingTest);
+        var killingTest = mutant.KillingTests.GetIdentifiers().ShouldHaveSingleItem();
+        killingTest.ToGuid().ShouldBe(failingTest);
     }
 
     [TestMethod]
@@ -78,7 +79,7 @@ public class MutantTests : TestBase
             false);
 
         mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
-        mutant.KillingTests.GetGuids().ShouldBeEmpty();
+        mutant.KillingTests.GetIdentifiers().ShouldBeEmpty();
     }
 
     [TestMethod]
@@ -96,7 +97,7 @@ public class MutantTests : TestBase
             false);
 
         mutant.ResultStatus.ShouldBe(MutantStatus.Survived);
-        mutant.KillingTests.GetGuids().ShouldBeEmpty();
+        mutant.KillingTests.GetIdentifiers().ShouldBeEmpty();
     }
 
     [TestMethod]

@@ -3,7 +3,6 @@ using System.Linq;
 using Spectre.Console;
 using Spectre.Console.Rendering;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;

@@ -1,15 +1,11 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Initialisation;
-using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions;
-using Stryker.Abstractions.TestRunners;
-using Stryker.Core.TestRunners;
-using Stryker.Core.Mutants;
+using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
+using Stryker.Abstractions.Testing;
+using Stryker.TestRunner.Tests;
 
 namespace Stryker.Core.CoverageAnalysis;
 
@@ -25,7 +21,7 @@ public class CoverageAnalyser : ICoverageAnalyser
     }
 
     public void DetermineTestCoverage(IProjectAndTests project, ITestRunner runner, IEnumerable<IMutant> mutants,
-        ITestGuids resultFailingTests)
+        ITestIdentifiers resultFailingTests)
     {
         if (!_options.OptimizationMode.HasFlag(OptimizationModes.SkipUncoveredMutants) &&
             !_options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
@@ -35,7 +31,7 @@ public class CoverageAnalyser : ICoverageAnalyser
             return;
         }
 
-        ParseCoverage(runner.CaptureCoverage(project), mutants, new TestGuidsList(resultFailingTests.GetGuids()));
+        ParseCoverage(runner.CaptureCoverage(project), mutants, new TestGuidsList(resultFailingTests.GetIdentifiers()));
     }
 
     private static void AssumeAllTestsAreNeeded(IEnumerable<IMutant> mutants)
@@ -47,7 +43,7 @@ public class CoverageAnalyser : ICoverageAnalyser
         }
     }
 
-    private void ParseCoverage(IEnumerable<CoverageRunResult> coverage, IEnumerable<IMutant> mutantsToScan,
+    private void ParseCoverage(IEnumerable<ICoverageRunResult> coverage, IEnumerable<IMutant> mutantsToScan,
         TestGuidsList failedTests)
     {
         if (coverage.Sum(c => c.MutationsCovered.Count) == 0)
@@ -57,18 +53,18 @@ public class CoverageAnalyser : ICoverageAnalyser
             return;
         }
 
-        var dubiousTests = new HashSet<Guid>();
-        var trustedTests = new HashSet<Guid>();
-        var testIds = new HashSet<Guid>();
+        var dubiousTests = new HashSet<Identifier>();
+        var trustedTests = new HashSet<Identifier>();
+        var testIds = new HashSet<Identifier>();
 
-        var mutationToResultMap = new Dictionary<int, List<CoverageRunResult>>();
+        var mutationToResultMap = new Dictionary<int, List<ICoverageRunResult>>();
         foreach (var coverageRunResult in coverage)
         {
             foreach (var i in coverageRunResult.MutationsCovered)
             {
                 if (!mutationToResultMap.ContainsKey(i))
                 {
-                    mutationToResultMap[i] = new List<CoverageRunResult>();
+                    mutationToResultMap[i] = new List<ICoverageRunResult>();
                 }
 
                 mutationToResultMap[i].Add(coverageRunResult);
@@ -112,9 +108,9 @@ public class CoverageAnalyser : ICoverageAnalyser
     }
 
     private void CoverageForThisMutant(IMutant mutant,
-        IReadOnlyDictionary<int, List<CoverageRunResult>> mutationToResultMap,
+        IReadOnlyDictionary<int, List<ICoverageRunResult>> mutationToResultMap,
         TestGuidsList everytest,
-        TestGuidsList allTestsGuidsExceptTrusted,
+        ITestIdentifiers allTestsGuidsExceptTrusted,
         TestGuidsList dubiousTests,
         TestGuidsList failedTest)
     {
@@ -166,7 +162,7 @@ public class CoverageAnalyser : ICoverageAnalyser
     }
 
     private static (MutationTestingRequirements, TestGuidsList) ParseResultForThisMutant(
-        IReadOnlyDictionary<int, List<CoverageRunResult>> mutationToResultMap, int mutantId)
+        IReadOnlyDictionary<int, List<ICoverageRunResult>> mutationToResultMap, int mutantId)
     {
         var resultingRequirements = MutationTestingRequirements.None;
         if (!mutationToResultMap.ContainsKey(mutantId))
@@ -174,7 +170,7 @@ public class CoverageAnalyser : ICoverageAnalyser
             return (resultingRequirements, TestGuidsList.NoTest());
         }
 
-        var testGuids = new List<Guid>();
+        var testGuids = new List<Identifier>();
         foreach (var coverageRunResult in mutationToResultMap[mutantId])
         {
             testGuids.Add(coverageRunResult.TestId);
