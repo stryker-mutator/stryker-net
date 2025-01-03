@@ -70,7 +70,7 @@ public class NullCoalescingExpressionMutator : MutatorBase<BinaryExpressionSynta
 
         var typeInfo = semanticModel.GetTypeInfo(node);
         // assume nullability if type resolution failed for some reason
-        return (typeInfo.ConvertedType is { } && typeInfo.ConvertedType.TypeKind is TypeKind.Error or TypeKind.Unknown)
+        return (typeInfo.ConvertedType is not null && typeInfo.ConvertedType.TypeKind is TypeKind.Error or TypeKind.Unknown)
             || typeInfo.Nullability.FlowState == NullableFlowState.MaybeNull;
     }
 }
