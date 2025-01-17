@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 
-namespace Stryker.Core.Testing;
+namespace Stryker.Core.TestWrappers;
 
 [ExcludeFromCodeCoverage]
 public class ProcessResult

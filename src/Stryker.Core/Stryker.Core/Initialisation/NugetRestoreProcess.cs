@@ -6,7 +6,7 @@ using Stryker.Abstractions.Exceptions;
 using Stryker.Abstractions.Logging;
 using Stryker.Configuration;
 using Stryker.Core.Helpers;
-using Stryker.Core.Testing;
+using Stryker.Core.TestWrappers;
 
 namespace Stryker.Core.Initialisation;
 

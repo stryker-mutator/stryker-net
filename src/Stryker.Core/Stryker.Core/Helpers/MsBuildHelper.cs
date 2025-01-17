@@ -4,7 +4,7 @@ using System.IO.Abstractions;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Logging;
 using Stryker.Configuration;
-using Stryker.Core.Testing;
+using Stryker.Core.TestWrappers;
 
 namespace Stryker.Core.Helpers;
 

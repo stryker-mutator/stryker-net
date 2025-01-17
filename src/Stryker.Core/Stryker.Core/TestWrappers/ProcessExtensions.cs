@@ -10,7 +10,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Stryker.Configuration;
 
-namespace Stryker.Core.Testing;
+namespace Stryker.Core.TestWrappers;
 
 // integration with OS
 [ExcludeFromCodeCoverage]

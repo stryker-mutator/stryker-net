@@ -6,7 +6,7 @@ using System.Linq;
 using System.Text;
 using Stryker.Utilities;
 
-namespace Stryker.Core.Testing;
+namespace Stryker.Core.TestWrappers;
 
 /// <summary>
 /// Used for mocking System.Process 
