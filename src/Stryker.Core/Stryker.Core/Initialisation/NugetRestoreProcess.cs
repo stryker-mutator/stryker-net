@@ -6,7 +6,7 @@ using Stryker.Abstractions.Exceptions;
 using Stryker.Configuration;
 using Stryker.Core.Helpers;
 using Stryker.Utilities.Logging;
-using Stryker.Utilities.Process;
+using Stryker.Utilities.ProcessUtil;
 
 namespace Stryker.Core.Initialisation;
 

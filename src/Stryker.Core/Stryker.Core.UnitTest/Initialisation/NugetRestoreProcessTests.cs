@@ -7,6 +7,7 @@ using Stryker.Abstractions.Exceptions;
 using Stryker.Core.Initialisation;
 using Stryker.Core.TestWrappers;
 using Stryker.Utilities.Process;
+using Stryker.Utilities.ProcessUtil;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 

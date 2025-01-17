@@ -10,7 +10,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using Stryker.Configuration;
 
-namespace Stryker.Utilities.Process;
+namespace Stryker.Utilities.ProcessUtil;
 
 // integration with OS
 [ExcludeFromCodeCoverage]

@@ -4,10 +4,8 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
-using Stryker.Core.TestWrappers;
-using Stryker.Utilities;
 
-namespace Stryker.Utilities.Process;
+namespace Stryker.Utilities.ProcessUtil;
 
 /// <summary>
 /// Used for mocking System.Process 
