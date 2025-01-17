@@ -9,11 +9,11 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.Results;
 using Stryker.TestRunner.Tests;
+using Stryker.Utilities.Logging;
 using static Stryker.Abstractions.Testing.ITestRunner;
 using CoverageCollector = Stryker.DataCollector.CoverageCollector;
 

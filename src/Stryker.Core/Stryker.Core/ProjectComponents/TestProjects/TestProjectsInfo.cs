@@ -4,9 +4,9 @@ using System.IO.Abstractions;
 using System.Linq;
 using Buildalyzer;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Utilities.Buildalyzer;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.ProjectComponents.TestProjects;
 

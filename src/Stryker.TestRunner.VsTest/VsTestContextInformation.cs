@@ -9,11 +9,11 @@ using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Serilog.Events;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
 using Stryker.DataCollector;
 using Stryker.TetsRunner.VsTest.Helpers;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.TestRunner.VsTest;
 

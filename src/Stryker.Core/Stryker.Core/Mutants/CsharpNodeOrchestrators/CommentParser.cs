@@ -6,8 +6,8 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Logging;
 using Stryker.Core.Mutants;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Mutants.CsharpNodeOrchestrators;
 

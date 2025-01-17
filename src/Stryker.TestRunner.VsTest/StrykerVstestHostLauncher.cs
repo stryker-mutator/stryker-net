@@ -4,7 +4,7 @@ using System.Threading;
 using Microsoft.Extensions.Logging;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client.Interfaces;
-using Stryker.Abstractions.Logging;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.TestRunner.VsTest;
 

@@ -1,7 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using Buildalyzer;
 
-namespace Stryker.Core.TestWrappers;
+namespace Stryker.Utilities.Buildalyzer;
 
 /// <summary>
 /// This is an interface to mock buildalyzer classes

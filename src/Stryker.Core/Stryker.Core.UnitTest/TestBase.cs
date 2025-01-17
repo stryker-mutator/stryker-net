@@ -1,5 +1,5 @@
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Logging;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.UnitTest;
 public abstract class TestBase

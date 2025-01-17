@@ -13,11 +13,11 @@ using Microsoft.CodeAnalysis.Emit;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
 using Stryker.Core.MutationTest;
 using Stryker.Utilities.Buildalyzer;
 using Stryker.Utilities.EmbeddedResources;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Compiling;
 

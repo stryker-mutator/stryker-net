@@ -5,7 +5,6 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
 using Stryker.Core.Compiling;
 using Stryker.Core.MutantFilters;
@@ -14,6 +13,7 @@ using Stryker.Core.ProjectComponents;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Utilities.Buildalyzer;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.MutationTest;
 

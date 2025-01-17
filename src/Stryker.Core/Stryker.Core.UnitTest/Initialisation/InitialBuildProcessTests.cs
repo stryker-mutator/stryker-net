@@ -6,7 +6,7 @@ using Moq;
 using Shouldly;
 using Stryker.Abstractions.Exceptions;
 using Stryker.Core.Initialisation;
-using Stryker.Core.TestWrappers;
+using Stryker.Utilities.Process;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 

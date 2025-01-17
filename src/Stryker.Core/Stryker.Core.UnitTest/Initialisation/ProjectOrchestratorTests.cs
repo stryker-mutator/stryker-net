@@ -11,7 +11,6 @@ using Serilog.Events;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Reporting;
 using Stryker.Abstractions.Testing;
 using Stryker.Core.Initialisation;
@@ -19,6 +18,7 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents;
 using Stryker.TestRunner.Results;
 using Stryker.TestRunner.VsTest;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 

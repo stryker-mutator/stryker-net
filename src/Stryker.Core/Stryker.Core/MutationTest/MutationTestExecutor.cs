@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.Results;
+using Stryker.Utilities.Logging;
 using static Stryker.Abstractions.Testing.ITestRunner;
 
 namespace Stryker.Core.MutationTest;

@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.IO;
 using Moq;
 using Stryker.Core.TestWrappers;
+using Stryker.Utilities.Process;
 
 namespace Stryker.Core.UnitTest;
 

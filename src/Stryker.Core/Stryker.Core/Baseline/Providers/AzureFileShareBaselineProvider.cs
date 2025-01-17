@@ -5,12 +5,12 @@ using System.Threading.Tasks;
 using Azure;
 using Azure.Storage.Files.Shares;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Baseline;
 using Stryker.Abstractions.Reporting;
 using Stryker.Core.Reporters.Json;
 using Stryker.Abstractions.Options;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Baseline.Providers;
 

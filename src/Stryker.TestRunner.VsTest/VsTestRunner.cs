@@ -8,12 +8,12 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Testing;
 using Stryker.TestRunner.Results;
 using Stryker.TestRunner.Tests;
 using Stryker.Utilities.Buildalyzer;
+using Stryker.Utilities.Logging;
 using static Stryker.Abstractions.Testing.ITestRunner;
 
 namespace Stryker.TestRunner.VsTest;

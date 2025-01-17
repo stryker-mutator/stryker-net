@@ -9,8 +9,8 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
-using Stryker.Abstractions.Logging;
 using Stryker.Utilities;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.TetsRunner.VsTest.Helpers;
 
