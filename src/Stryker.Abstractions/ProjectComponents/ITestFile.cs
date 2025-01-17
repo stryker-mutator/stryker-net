@@ -11,7 +11,7 @@ public interface ITestFile
     SyntaxTree SyntaxTree { get; init; }
     IList<ITestCase> Tests { get; }
 
-    void AddTest(Identifier id, string name, SyntaxNode node);
+    void AddTest(string id, string name, SyntaxNode node);
     bool Equals(object obj);
     bool Equals(ITestFile other);
     int GetHashCode();

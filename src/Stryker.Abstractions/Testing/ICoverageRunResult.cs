@@ -4,7 +4,7 @@ namespace Stryker.Abstractions.Testing;
 
 public interface ICoverageRunResult
 {
-    Identifier TestId { get; }
+    string TestId { get; }
     Dictionary<int, MutationTestingRequirements> MutationFlags { get; }
     IReadOnlyCollection<int> MutationsCovered { get; }
     MutationTestingRequirements this[int mutation] { get; }

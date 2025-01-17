@@ -76,7 +76,7 @@ public sealed class VsTestRunnerPool : ITestRunner
             }));
     }
 
-    private IEnumerable<ICoverageRunResult> CaptureCoverageInOneGo(IProjectAndTests project) => ConvertCoverageResult(RunThis(runner => runner.RunCoverageSession(TestGuidsList.EveryTest(), project).TestResults), false);
+    private IEnumerable<ICoverageRunResult> CaptureCoverageInOneGo(IProjectAndTests project) => ConvertCoverageResult(RunThis(runner => runner.RunCoverageSession(TestIdentifierList.EveryTest(), project).TestResults), false);
 
     private IEnumerable<ICoverageRunResult> CaptureCoverageTestByTest(IProjectAndTests project) => ConvertCoverageResult(CaptureCoveragePerIsolatedTests(project, Context.VsTests.Keys).TestResults, true);
 
@@ -87,7 +87,7 @@ public sealed class VsTestRunnerPool : ITestRunner
         var results = new ConcurrentBag<IRunResults>();
         Parallel.ForEach(tests, options,
             testCase =>
-                results.Add(RunThis(runner => runner.RunCoverageSession(new TestGuidsList(testCase), project))));
+                results.Add(RunThis(runner => runner.RunCoverageSession(new TestIdentifierList(testCase.ToString()), project))));
 
         return results.Aggregate(result, (runResults, singleResult) => runResults.Merge(singleResult));
     }
@@ -141,9 +141,10 @@ public sealed class VsTestRunnerPool : ITestRunner
             }
 
             // ensure we returns only entry per test
-            if (!resultCache.TryAdd(coverageRunResult.TestId.ToGuid(), coverageRunResult))
+            var id = Guid.Parse(coverageRunResult.TestId);
+            if (!resultCache.TryAdd(id, coverageRunResult))
             {
-                resultCache[coverageRunResult.TestId.ToGuid()].Merge(coverageRunResult);
+                resultCache[id].Merge(coverageRunResult);
             }
         }
 
@@ -173,6 +174,7 @@ public sealed class VsTestRunnerPool : ITestRunner
         }
 
         var testDescription = Context.VsTests[testCaseId];
+
         // is this a suspect test ?
         if (key == null)
         {
@@ -188,13 +190,14 @@ public sealed class VsTestRunnerPool : ITestRunner
             // the coverage collector was not able to report anything ==> it has not been tracked by it, so we do not have coverage data
             // ==> we need it to use this test against every mutation
             _logger.LogDebug("VsTestRunner: No coverage data for {TestCase}.", testResult.TestCase.DisplayName);
-            seenTestCases.Add(testDescription.Id.ToGuid());
+
+            seenTestCases.Add(Guid.Parse(testDescription.Id));
             coverageRunResult = CoverageRunResult.Create(testDescription.Id.ToString(), CoverageConfidence.Dubious, [], [], []);
         }
         else
         {
             // we have coverage data
-            seenTestCases.Add(testDescription.Id.ToGuid());
+            seenTestCases.Add(Guid.Parse(testDescription.Id));
             var propertyPairValue = value as string;
 
             coverageRunResult = BuildCoverageRunResultFromCoverageInfo(propertyPairValue, testResult, testCaseId,

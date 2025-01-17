@@ -1,7 +1,6 @@
 using System;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Stryker.Abstractions.Testing;
-using ITestCase = Stryker.Abstractions.Testing.ITestCase;
 
 namespace Stryker.TestRunner.VsTest;
 
@@ -10,7 +9,8 @@ public class VsTestCase : ITestCase
     public VsTestCase(TestCase testCase)
     {
         OriginalTestCase = testCase;
-        Id = Identifier.Create(testCase.Id);
+        Id = testCase.Id.ToString();
+        Guid = testCase.Id;
         Name = testCase.DisplayName;
         FullyQualifiedName = testCase.FullyQualifiedName;
         Uri = testCase.ExecutorUri;
@@ -21,7 +21,9 @@ public class VsTestCase : ITestCase
 
     public TestCase OriginalTestCase { get; }
 
-    public Identifier Id { get; }
+    public string Id { get; }
+
+    public Guid Guid { get; }
 
     public string Name { get; }
 

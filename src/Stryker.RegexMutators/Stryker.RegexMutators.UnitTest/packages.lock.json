@@ -108,6 +108,11 @@
           "Microsoft.Testing.Platform": "1.5.1"
         }
       },
+      "Microsoft.Testing.Platform": {
+        "type": "Transitive",
+        "resolved": "1.5.1",
+        "contentHash": "R5Dl0/TYBop8RnOILe7hJiryGN9uPW7nDZvZlwAvN4Uk8F8LXNAt9+krrppmCLkmBLCnSwtPF7m423tMM4cbCw=="
+      },
       "Microsoft.Testing.Platform.MSBuild": {
         "type": "Transitive",
         "resolved": "1.5.1",
@@ -172,12 +177,6 @@
         "dependencies": {
           "Stryker.Regex.Parser": "[1.0.0, )"
         }
-      },
-      "Microsoft.Testing.Platform": {
-        "type": "CentralTransitive",
-        "requested": "[1.5.0, )",
-        "resolved": "1.5.1",
-        "contentHash": "R5Dl0/TYBop8RnOILe7hJiryGN9uPW7nDZvZlwAvN4Uk8F8LXNAt9+krrppmCLkmBLCnSwtPF7m423tMM4cbCw=="
       },
       "Microsoft.TestPlatform.ObjectModel": {
         "type": "CentralTransitive",

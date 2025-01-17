@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Moq;
+using Stryker.Core.Helpers.ProcessUtil;
 using Stryker.Core.TestWrappers;
 using Stryker.Utilities.Process;
 using Stryker.Utilities.ProcessUtil;

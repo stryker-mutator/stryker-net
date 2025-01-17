@@ -163,7 +163,7 @@ public sealed class VsTestContextInformation : IDisposable
         var result = new TestSet();
         foreach (var source in sources)
         {
-            result.RegisterTests(TestsPerSource[source].Select(id => Tests[Identifier.Create(id)]));
+            result.RegisterTests(TestsPerSource[source].Select(id => Tests[id.ToString()]));
         }
 
         return result;
@@ -228,9 +228,10 @@ public sealed class VsTestContextInformation : IDisposable
 
     internal void RegisterDiscoveredTest(VsTestDescription vsTestDescription)
     {
-        VsTests[vsTestDescription.Id.ToGuid()] = vsTestDescription;
+        var id = Guid.Parse(vsTestDescription.Id);
+        VsTests[id] = vsTestDescription;
         Tests.RegisterTest(vsTestDescription.Description);
-        TestsPerSource[vsTestDescription.Case.Source].Add(vsTestDescription.Id.ToGuid());
+        TestsPerSource[vsTestDescription.Case.Source].Add(id);
     }
 
     private void DetectTestFrameworks(ICollection<VsTestDescription> tests)
@@ -291,7 +292,7 @@ public sealed class VsTestContextInformation : IDisposable
         var dataCollectorSettings = needDataCollector
             ? CoverageCollector.GetVsTestSettings(
                 forCoverage,
-                mutantTestsMap?.Select(e => (e.Key, e.Value.GetIdentifiers().Select(x => x.ToGuid()))),
+                mutantTestsMap?.Select(e => (e.Key, e.Value.GetIdentifiers().Select(x => Guid.Parse(x)))),
                 helperNameSpace)
             : string.Empty;
         if (_testFramework.HasFlag(TestFrameworks.NUnit))

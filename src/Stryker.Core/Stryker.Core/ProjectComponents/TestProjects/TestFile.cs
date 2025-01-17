@@ -13,7 +13,7 @@ public sealed class TestFile : IEquatable<ITestFile>, ITestFile
     public string Source { get; init; }
     public IList<ITestCase> Tests { get; private set; } = new List<ITestCase>();
 
-    public void AddTest(Abstractions.Testing.Identifier id, string name, SyntaxNode node)
+    public void AddTest(string id, string name, SyntaxNode node)
     {
         if (Tests.Any(test => test.Id == id))
         {

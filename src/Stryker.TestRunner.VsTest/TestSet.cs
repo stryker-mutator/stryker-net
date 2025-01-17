@@ -6,9 +6,9 @@ namespace Stryker.TestRunner.VsTest;
 
 public class TestSet : ITestSet
 {
-    private readonly IDictionary<Identifier, ITestDescription> _tests = new Dictionary<Identifier, ITestDescription>();
+    private readonly IDictionary<string, ITestDescription> _tests = new Dictionary<string, ITestDescription>();
     public int Count => _tests.Count;
-    public ITestDescription this[Identifier guid] => _tests[guid];
+    public ITestDescription this[string id] => _tests[id];
 
     public void RegisterTests(IEnumerable<ITestDescription> tests)
     {
@@ -20,5 +20,5 @@ public class TestSet : ITestSet
 
     public void RegisterTest(ITestDescription test) => _tests[test.Id] = test;
 
-    public IEnumerable<ITestDescription> Extract(IEnumerable<Identifier> ids) => ids?.Select(i => _tests[i]) ?? Enumerable.Empty<ITestDescription>();
+    public IEnumerable<ITestDescription> Extract(IEnumerable<string> ids) => ids?.Select(i => _tests[i]) ?? Enumerable.Empty<ITestDescription>();
 }

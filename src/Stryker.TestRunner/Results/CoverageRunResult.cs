@@ -11,7 +11,7 @@ public class CoverageRunResult : ICoverageRunResult
     private CoverageRunResult(string testId, CoverageConfidence confidence, IEnumerable<int> coveredMutations,
         IEnumerable<int> detectedStaticMutations, IEnumerable<int> leakedMutations)
     {
-        TestId = Identifier.Create(testId);
+        TestId = testId;
 
         foreach (var coveredMutation in coveredMutations)
         {
@@ -44,7 +44,7 @@ public class CoverageRunResult : ICoverageRunResult
 
     public MutationTestingRequirements this[int mutation] => MutationFlags.TryGetValue(mutation, out var value) ? value : MutationTestingRequirements.NotCovered;
 
-    public Identifier TestId { get; }
+    public string TestId { get; }
 
     public IReadOnlyCollection<int> MutationsCovered => MutationFlags.Keys;
 

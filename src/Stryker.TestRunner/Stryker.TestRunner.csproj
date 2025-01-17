@@ -6,8 +6,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.Testing.Extensions.TrxReport" />
-    <PackageReference Include="Microsoft.Testing.Platform" />
     <PackageReference Include="Microsoft.TestPlatform.ObjectModel" />
   </ItemGroup>
 

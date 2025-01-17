@@ -6,7 +6,7 @@ namespace Stryker.Core.ProjectComponents.TestProjects;
 
 public sealed class TestCase : IEquatable<ITestCase>, ITestCase
 {
-    public Abstractions.Testing.Identifier Id { get; init; }
+    public string Id { get; init; }
     public string Name { get; init; }
     public SyntaxNode Node { get; init; }
 

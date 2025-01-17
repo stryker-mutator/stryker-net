@@ -44,7 +44,7 @@ public sealed class VsTestDescription : IFrameworkTestDescription
         }
     }
 
-    public Identifier Id => Case.Id;
+    public string Id => Case.Id;
 
     public ITestCase Case { get; }
 

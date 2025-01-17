@@ -96,7 +96,7 @@ public sealed class VsTestRunner : IDisposable
         if (timeoutCalc != null && testCases != null)
         {
             // compute time out
-            timeOutMs = timeoutCalc.CalculateTimeoutValue((int)testCases.Sum(id => _context.VsTests[id.ToGuid()].InitialRunTime.TotalMilliseconds));
+            timeOutMs = timeoutCalc.CalculateTimeoutValue((int)testCases.Sum(id => _context.VsTests[Guid.Parse(id)].InitialRunTime.TotalMilliseconds));
         }
 
         if (timeOutMs.HasValue)
@@ -113,11 +113,11 @@ public sealed class VsTestRunner : IDisposable
             var handlerTestResults = handler.TestResults;
             var tests = handlerTestResults.Select(p => p.TestCase.Id).Distinct().Count() >= totalCountOfTests
                 ? TestIdentifierList.EveryTest()
-                : new WrappedGuidsEnumeration(handlerTestResults.Select(t => t.TestCase.Id));
-            var failedTest = new WrappedGuidsEnumeration(handlerTestResults
+                : new WrappedIdentifierEnumeration(handlerTestResults.Select(t => t.TestCase.Id.ToString()));
+            var failedTest = new WrappedIdentifierEnumeration(handlerTestResults
                 .Where(tr => tr.Outcome == TestOutcome.Failed)
-                .Select(t => t.TestCase.Id));
-            var timedOutTest = new WrappedGuidsEnumeration(handler.TestsInTimeout?.Select(t => t.Id));
+                .Select(t => t.TestCase.Id.ToString()));
+            var timedOutTest = new WrappedIdentifierEnumeration(handler.TestsInTimeout?.Select(t => t.Id.ToString()));
             var remainingMutants = update?.Invoke(mutants, failedTest, tests, timedOutTest);
 
             if (remainingMutants != false
@@ -135,9 +135,9 @@ public sealed class VsTestRunner : IDisposable
         }
     }
 
-    private ICollection<Identifier> TestCases(IReadOnlyList<IMutant> mutants, Dictionary<int, ITestIdentifiers> mutantTestsMap)
+    private ICollection<string> TestCases(IReadOnlyList<IMutant> mutants, Dictionary<int, ITestIdentifiers> mutantTestsMap)
     {
-        ICollection<Identifier> testCases;
+        ICollection<string> testCases;
         // if we optimize the number of tests to run
         if (_context.Options.OptimizationMode.HasFlag(OptimizationModes.CoverageBasedTest))
         {
@@ -175,7 +175,7 @@ public sealed class VsTestRunner : IDisposable
             bool compressAll = true)
     {
         var resultAsArray = testResults.TestResults.ToArray();
-        var testCases = resultAsArray.Select(t => t.TestCase.Id).ToHashSet();
+        var testCases = resultAsArray.Select(t => t.TestCase.Id.ToString()).ToHashSet();
         var ranTestsCount = testCases.Count;
         var timeout = !_currentSessionCancelled && ranTestsCount < expectedTests;
         // ranTests is the list of test that have been executed. We detect the special case where all (existing and found) tests have been executed.
@@ -184,8 +184,8 @@ public sealed class VsTestRunner : IDisposable
         // EXCEPT when no test have been found. Otherwise, an empty test project would transform non-covered mutants to survivors.
         var ranTests = compressAll && totalCountOfTests > 0 && ranTestsCount >= totalCountOfTests
             ? TestIdentifierList.EveryTest()
-            : new WrappedGuidsEnumeration(testCases);
-        var failedTests = resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(t => t.TestCase.Id);
+            : new WrappedIdentifierEnumeration(testCases);
+        var failedTests = resultAsArray.Where(tr => tr.Outcome == TestOutcome.Failed).Select(t => t.TestCase.Id.ToString());
 
         if (ranTests.IsEmpty && (testResults.TestsInTimeout == null || testResults.TestsInTimeout.Count == 0))
         {
@@ -199,8 +199,8 @@ public sealed class VsTestRunner : IDisposable
                 .Select(tr => $"{tr.DisplayName}{Environment.NewLine}{Environment.NewLine}{tr.ErrorMessage}"));
         var messages = resultAsArray.Select(tr =>
                 $"{tr.DisplayName}{Environment.NewLine}{Environment.NewLine}{string.Join(Environment.NewLine, tr.Messages.Select(tm => tm.Text))}");
-        var failedTestsDescription = new WrappedGuidsEnumeration(failedTests);
-        var timedOutTests = new WrappedGuidsEnumeration(testResults.TestsInTimeout?.Select(t => t.Id));
+        var failedTestsDescription = new WrappedIdentifierEnumeration(failedTests);
+        var timedOutTests = new WrappedIdentifierEnumeration(testResults.TestsInTimeout?.Select(t => t.Id.ToString()));
         return timeout
                 ? TestRunResult.TimedOut(_context.VsTests.Values, ranTests, failedTestsDescription, timedOutTests,
                     errorMessages, messages, duration)
@@ -241,7 +241,7 @@ public sealed class VsTestRunner : IDisposable
         foreach (var source in projectAndTests.TestProjectsInfo.AnalyzerResults)
         {
             var testForSource = _context.TestsPerSource[source.GetAssemblyPath()];
-            var testsForAssembly = new TestGuidsList(tests.GetIdentifiers().Where(t => testForSource.Contains(t.ToGuid())));
+            var testsForAssembly = new TestIdentifierList(tests.GetIdentifiers().Where(id => testForSource.Contains(Guid.Parse(id))));
             if (!tests.IsEveryTest && testsForAssembly.Count == 0)
             {
                 // skip empty assemblies
@@ -292,9 +292,9 @@ public sealed class VsTestRunner : IDisposable
                     }
                     else
                     {
-                        var actualTestCases = tests.GetIdentifiers().Select(t =>
+                        var actualTestCases = tests.GetIdentifiers().Select(id =>
                         {
-                            var testCase = (VsTestCase)_context.VsTests[t.ToGuid()].Case;
+                            var testCase = (VsTestCase)_context.VsTests[Guid.Parse(id)].Case;
                             return testCase.OriginalTestCase;
                         });
                         var testCases = actualTestCases;

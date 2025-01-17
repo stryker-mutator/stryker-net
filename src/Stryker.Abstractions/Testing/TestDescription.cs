@@ -2,14 +2,14 @@ namespace Stryker.Abstractions.Testing;
 
 public sealed class TestDescription : ITestDescription
 {
-    public TestDescription(Identifier id, string name, string testFilePath)
+    public TestDescription(string id, string name, string testFilePath)
     {
         Id = id;
         Name = name;
         TestFilePath = testFilePath;
     }
 
-    public Identifier Id { get; }
+    public string Id { get; }
 
     public string Name { get; }
 

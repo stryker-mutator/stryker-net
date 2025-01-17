@@ -4,7 +4,9 @@ namespace Stryker.Abstractions.Testing;
 
 public interface ITestCase
 {
-    Identifier Id { get; }
+    string Id { get; }
+
+    Guid Guid { get; }
 
     string Name { get; }
 

@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using Stryker.Abstractions;
 
 namespace Stryker.Abstractions.Testing;
 

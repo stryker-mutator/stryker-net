@@ -129,7 +129,7 @@ public class MutationTestProcess : IMutationTestProcess
         {
             // some of the failing tests where failing without any mutation
             // we discard those tests
-            failedTests = new TestGuidsList(
+            failedTests = new TestIdentifierList(
                 failedTests.GetIdentifiers().Where(t => !testsFailingInitially.Contains(t)));
         }
 
