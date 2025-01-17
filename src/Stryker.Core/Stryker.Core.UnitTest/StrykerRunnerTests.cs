@@ -7,10 +7,10 @@ using Moq;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.Baseline.Providers;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
@@ -19,7 +19,6 @@ using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Core.Reporters;
-using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.UnitTest;
 

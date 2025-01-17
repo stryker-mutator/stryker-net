@@ -1,5 +1,4 @@
-using Stryker.Abstractions.TestRunners;
-using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions.Testing;
 
 namespace Stryker.Abstractions;
 
@@ -12,9 +11,9 @@ public interface IReadOnlyMutant
     Mutation Mutation { get; }
     MutantStatus ResultStatus { get; }
     string ResultStatusReason { get; }
-    ITestGuids CoveringTests { get; }
-    ITestGuids KillingTests { get; }
-    ITestGuids AssessingTests { get; }
+    ITestIdentifiers CoveringTests { get; }
+    ITestIdentifiers KillingTests { get; }
+    ITestIdentifiers AssessingTests { get; }
     bool CountForStats { get; }
     bool IsStaticValue { get; }
 }

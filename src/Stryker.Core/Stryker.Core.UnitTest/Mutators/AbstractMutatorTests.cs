@@ -2,8 +2,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Shouldly;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions;
 using System;
 using System.Collections.Generic;

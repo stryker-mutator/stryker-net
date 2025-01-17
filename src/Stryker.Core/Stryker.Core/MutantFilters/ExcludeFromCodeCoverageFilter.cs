@@ -3,7 +3,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 

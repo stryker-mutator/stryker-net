@@ -8,8 +8,6 @@ using Moq;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.Reporting;
 using Stryker.Core.Initialisation;

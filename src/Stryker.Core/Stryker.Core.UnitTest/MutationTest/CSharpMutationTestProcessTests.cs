@@ -13,7 +13,7 @@ using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Mutation = Stryker.Abstractions.Mutants.Mutation;
+using Mutation = Stryker.Abstractions.Mutation;
 
 namespace Stryker.Core.UnitTest.MutationTest;
 

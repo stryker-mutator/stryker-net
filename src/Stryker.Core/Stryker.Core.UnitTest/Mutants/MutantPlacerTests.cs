@@ -7,8 +7,6 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions.Options;
 using Stryker.Core.InjectedHelpers;
 using Stryker.Core.Mutants;

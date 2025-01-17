@@ -7,14 +7,15 @@ using Moq;
 using Shouldly;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Options;
 using Stryker.Core.CoverageAnalysis;
 using Stryker.Core.Initialisation;
 using Stryker.Core.Mutants;
-using Stryker.Core.TestRunners;
-using Stryker.Core.TestRunners.VsTest;
+using Stryker.TestRunner.Tests;
+using Stryker.TestRunner.VsTest;
 using VsTest = Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Stryker.Utilities.Buildalyzer;
+using Stryker.Abstractions.Testing;
 
 namespace Stryker.Core.UnitTest.TestRunners;
 
@@ -182,7 +183,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
 
         SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = "1;" });
         var analyzer = new CoverageAnalyser(options);
-        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
+        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestIdentifierList.NoTest());
         SetupMockTimeOutTestRun(mockVsTest, new Dictionary<string, string> { ["0"] = "T0=S;T1=S" }, "T0");
 
         var result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
@@ -249,7 +250,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = "0;" });
 
         var analyzer = new CoverageAnalyser(options);
-        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
+        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestIdentifierList.NoTest());
         // one mutant is covered by tests 0 and 1
         Mutant.CoveringTests.IsEmpty.ShouldBe(false);
         OtherMutant.CoveringTests.IsEmpty.ShouldBe(true);
@@ -269,7 +270,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = ";", ["T1"] = ";" });
 
         var analyzer = new CoverageAnalyser(options);
-        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
+        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestIdentifierList.NoTest());
         Mutant.CoveringTests.IsEveryTest.ShouldBeTrue();
     }
 
@@ -286,7 +287,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = ";" });
 
         var analyzer = new CoverageAnalyser(options);
-        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
+        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestIdentifierList.NoTest());
 
         SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string> { ["0"] = "T0=S" });
 
@@ -311,7 +312,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;0", ["T1"] = ";" });
 
         var analyzer = new CoverageAnalyser(options);
-        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
+        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestIdentifierList.NoTest());
 
         SetupMockTestRun(mockVsTest, false, TestCases);
         // mutant 0 is covered
@@ -385,7 +386,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         SetupMockCoveragePerTestRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0,1;1", ["T1"] = ";" });
 
         var analyzer = new CoverageAnalyser(options);
-        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
+        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestIdentifierList.NoTest());
 
         SetupMockPartialTestRun(mockVsTest, new Dictionary<string, string> { ["0"] = "T0=F", ["1"] = "T0=S" });
         var result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { OtherMutant }, null);
@@ -444,13 +445,13 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
         result.ExecutedTests.IsEveryTest.ShouldBeTrue();
         result.FailingTests.IsEmpty.ShouldBeFalse();
-        result.FailingTests.GetGuids().ShouldContain(TestCases[0].Id);
+        result.FailingTests.GetIdentifiers().Select(Guid.Parse).ShouldContain(TestCases[0].Id);
         // test session will fail on the other test result
         SetupMockTestRun(mockVsTest, new[] { ("T0", true), ("T0", false), ("T1", true) });
         result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
         result.ExecutedTests.IsEveryTest.ShouldBeTrue();
         result.FailingTests.IsEmpty.ShouldBeFalse();
-        result.FailingTests.GetGuids().ShouldContain(TestCases[0].Id);
+        result.FailingTests.GetIdentifiers().Select(Guid.Parse).ShouldContain(TestCases[0].Id);
     }
 
     [TestMethod]
@@ -469,7 +470,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
 
         result.FailingTests.IsEmpty.ShouldBeTrue();
         result.TimedOutTests.Count.ShouldBe(1);
-        result.TimedOutTests.GetGuids().ShouldContain(TestCases[0].Id);
+        result.TimedOutTests.GetIdentifiers().Select(Guid.Parse).ShouldContain(TestCases[0].Id);
         result.ExecutedTests.IsEveryTest.ShouldBeFalse();
     }
 
@@ -488,7 +489,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         result = runner.TestMultipleMutants(SourceProjectInfo, null, new[] { Mutant }, null);
         result.ExecutedTests.IsEveryTest.ShouldBeTrue();
         result.FailingTests.IsEmpty.ShouldBeFalse();
-        result.FailingTests.GetGuids().ShouldContain(TestCases[0].Id);
+        result.FailingTests.GetIdentifiers().Select(Guid.Parse).ShouldContain(TestCases[0].Id);
     }
 
     [TestMethod]
@@ -534,7 +535,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;|1", ["T1"] = ";" });
 
         var analyzer = new CoverageAnalyser(options);
-        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
+        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestIdentifierList.NoTest());
         // the suspicious mutant should be tested against all tests
         OtherMutant.CoveringTests.IsEveryTest.ShouldBe(true);
     }
@@ -553,7 +554,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;", ["T1"] = "1;" });
 
         var analyzer = new CoverageAnalyser(options);
-        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant, staticMutant }, TestGuidsList.NoTest());
+        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant, staticMutant }, TestIdentifierList.NoTest());
         // the suspicious mutant should be tested against all tests
         staticMutant.CoveringTests.IsEveryTest.ShouldBe(true);
     }
@@ -575,7 +576,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "0;|1", ["T1"] = ";" });
 
         var analyzer = new CoverageAnalyser(options);
-        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, new TestGuidsList(TestCases[1].Id));
+        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, new TestIdentifierList(TestCases[1].Id.ToString()));
         // the suspicious mutant should be tested against all tests except the failing one
         OtherMutant.AssessingTests.IsEveryTest.ShouldBe(false);
     }
@@ -595,7 +596,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         SetupMockCoverageRun(mockVsTest, new Dictionary<string, string> { ["T0"] = "1;", ["T1"] = null });
 
         var analyzer = new CoverageAnalyser(options);
-        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
+        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestIdentifierList.NoTest());
         // the suspicious mutant should be tested against all tests
         OtherMutant.CoveringTests.Count.ShouldBe(2);
         Mutant.CoveringTests.Count.ShouldBe(1);
@@ -619,7 +620,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
 
 
         var analyzer = new CoverageAnalyser(options);
-        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
+        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestIdentifierList.NoTest());
 
         OtherMutant.CoveringTests.Count.ShouldBe(0);
         Mutant.CoveringTests.Count.ShouldBe(1);
@@ -648,7 +649,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
 
 
         var analyzer = new CoverageAnalyser(options);
-        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
+        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestIdentifierList.NoTest());
 
         OtherMutant.CoveringTests.Count.ShouldBe(0);
         Mutant.CoveringTests.Count.ShouldBe(1);
@@ -671,10 +672,10 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         SetupMockCoverageRun(mockVsTest, new[] { new VsTest.TestResult(buildCase) { Outcome = VsTest.TestOutcome.Passed }, testResult });
 
         var analyzer = new CoverageAnalyser(options);
-        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
+        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestIdentifierList.NoTest());
         // the suspicious tests should be used for every mutant
-        OtherMutant.CoveringTests.GetGuids().ShouldContain(buildCase.Id);
-        Mutant.CoveringTests.GetGuids().ShouldContain(buildCase.Id);
+        OtherMutant.CoveringTests.GetIdentifiers().Select(Guid.Parse).ShouldContain(buildCase.Id);
+        Mutant.CoveringTests.GetIdentifiers().Select(Guid.Parse).ShouldContain(buildCase.Id);
     }
 
     // this verifies that Stryker disregard skipped tests
@@ -694,7 +695,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         SetupMockCoverageRun(mockVsTest, new[] { testResult, other });
 
         var analyzer = new CoverageAnalyser(options);
-        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
+        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestIdentifierList.NoTest());
         // the suspicious tests should be used for every mutant
         Mutant.CoveringTests.Count.ShouldBe(1);
     }
@@ -715,7 +716,7 @@ public class VsTestRunnerPoolTests : VsTestMockingHelper
         SetupMockCoverageRun(mockVsTest, new[] { testResult, other });
 
         var analyzer = new CoverageAnalyser(options);
-        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestGuidsList.NoTest());
+        analyzer.DetermineTestCoverage(SourceProjectInfo, runner, new[] { Mutant, OtherMutant }, TestIdentifierList.NoTest());
         // the suspicious tests should be used for every mutant
         Mutant.CoveringTests.IsEveryTest.ShouldBe(true);
         Mutant.IsStaticValue.ShouldBe(true);

@@ -2,6 +2,7 @@ using System;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.ProjectComponents.TestProjects;
 
 namespace Stryker.Core.UnitTest.ProjectComponents.TestProjects;
@@ -13,17 +14,17 @@ public class TestCaseTests
     public void TestCaseEqualsWhenAllPropertiesEqual()
     {
         // Arrange
-        var guid = Guid.NewGuid();
+        var id = Guid.NewGuid().ToString();
         var node = SyntaxFactory.Block();
         var testCaseA = new TestCase
         {
-            Id = guid,
+            Id = id,
             Name = "1",
             Node = node
         };
         var testCaseB = new TestCase
         {
-            Id = guid,
+            Id = id,
             Name = "1",
             Node = node
         };
@@ -36,19 +37,19 @@ public class TestCaseTests
     [TestMethod]
     [DataRow("fd4896a2-1bd9-4e83-9e81-308059525bc9", "node2")]
     [DataRow("00000000-0000-0000-0000-000000000000", "node1")]
-    public void TestCaseNotEqualsWhenNotAllPropertiesEqual(string id, string name)
+    public void TestCaseNotEqualsWhenNotAllPropertiesEqual(string guid, string name)
     {
         // Arrange
         var node = SyntaxFactory.Block();
         var testCaseA = new TestCase
         {
-            Id = new Guid(id),
+            Id = guid,
             Name = name,
             Node = node
         };
         var testCaseB = new TestCase
         {
-            Id = Guid.Empty,
+            Id = "00000000-0000-0000-0000-000000000000",
             Name = "node2",
             Node = node
         };

@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Options;
 
 namespace Stryker.Abstractions.ProjectComponents;

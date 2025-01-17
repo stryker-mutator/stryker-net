@@ -9,14 +9,13 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions;
-using Stryker.Abstractions.ProjectComponents;
-using Stryker.Core.ProjectComponents.Csharp;
-using Stryker.Core.ProjectComponents;
-using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.ProjectComponents.SourceProjects;
-using Stryker.Core.MutantFilters;
 using Stryker.Abstractions.Options;
+using Stryker.Abstractions.ProjectComponents;
+using Stryker.Core.MutantFilters;
+using Stryker.Core.ProjectComponents;
+using Stryker.Core.ProjectComponents.Csharp;
+using Stryker.Core.ProjectComponents.SourceProjects;
+using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.Initialisation;
 

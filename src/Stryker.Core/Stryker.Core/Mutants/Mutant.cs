@@ -1,5 +1,6 @@
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.TestRunners;
+using Stryker.Abstractions;
+using Stryker.Abstractions.Testing;
+using Stryker.TestRunner.Tests;
 
 namespace Stryker.Core.Mutants;
 
@@ -14,11 +15,11 @@ public class Mutant : IMutant
 
     public MutantStatus ResultStatus { get; set; }
 
-    public ITestGuids CoveringTests { get; set; } = TestGuidsList.NoTest();
+    public ITestIdentifiers CoveringTests { get; set; } = TestIdentifierList.NoTest();
 
-    public ITestGuids KillingTests { get; set; } = TestGuidsList.NoTest();
+    public ITestIdentifiers KillingTests { get; set; } = TestIdentifierList.NoTest();
 
-    public ITestGuids AssessingTests { get; set; } = TestGuidsList.EveryTest();
+    public ITestIdentifiers AssessingTests { get; set; } = TestIdentifierList.EveryTest();
 
     public string ResultStatusReason { get; set; }
 
@@ -30,7 +31,7 @@ public class Mutant : IMutant
 
     public string DisplayName => $"{Id}: {Mutation?.DisplayName}";
 
-    public void AnalyzeTestRun(ITestGuids failedTests, ITestGuids resultRanTests, ITestGuids timedOutTests, bool sessionTimedOut)
+    public void AnalyzeTestRun(ITestIdentifiers failedTests, ITestIdentifiers resultRanTests, ITestIdentifiers timedOutTests, bool sessionTimedOut)
     {
         if (AssessingTests.ContainsAny(failedTests))
         {
