@@ -105,6 +105,6 @@ namespace ExtraProject.XUnit
         // assert
         result.ShouldNotBeNull();
         var testFile = _mutationTestInput.TestProjectsInfo.TestFiles.ShouldHaveSingleItem();
-        testFile.Tests.ShouldHaveSingleItem();
+        testFile.Tests.Count.ShouldBe(2);
     }
 }
