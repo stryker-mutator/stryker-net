@@ -76,7 +76,6 @@ namespace ExtraProject.XUnit
             Id = Guid.NewGuid(),
             CodeFilePath = _testFilePath,
             LineNumber = 7,
-
         });
         var failedTest = testCase1.Id.ToGuid();
         var testCase2 = new VsTestCase(new TestCase("mytestname2", new Uri(_testFilePath), _testFileContents)
