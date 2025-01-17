@@ -2,6 +2,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions;
+using Stryker.Core.Helpers;
 using System;
 using System.Collections.Generic;
 
@@ -110,7 +111,7 @@ public class LinqMutator : MutatorBase<ExpressionSyntax>
                     $"Linq method mutation ({memberName}() to {SyntaxFactory.IdentifierName(replacementExpression.ToString())}())",
                 OriginalNode = node,
                 ReplacementNode = node.ReplaceNode(toReplace,
-                    SyntaxFactory.IdentifierName(replacementExpression.ToString())),
+                    SyntaxFactory.IdentifierName(replacementExpression.ToString())).WithCleanTrivia(),
                 Type = Mutator.Linq
             };
         }

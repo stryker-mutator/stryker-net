@@ -1,3 +1,12 @@
+# [4.5.0](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.4.1...dotnet-stryker@4.5.0) (2025-01-03)
+
+
+### Features
+
+* Support csharp 13 ([#3137](https://github.com/stryker-mutator/stryker-net/issues/3137)) ([e567ab3](https://github.com/stryker-mutator/stryker-net/commit/e567ab3f5255bc974624a999aa256f0cff1b90cd))
+
+
+
 ## [4.4.1](https://github.com/stryker-mutator/stryker-net/compare/dotnet-stryker@4.4.0...dotnet-stryker@4.4.1) (2024-11-11)
 
 

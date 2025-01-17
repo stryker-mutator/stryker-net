@@ -1,14 +1,15 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text.RegularExpressions;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Logging;
+using Stryker.Core.Helpers;
 using Stryker.RegexMutators;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace Stryker.Core.Mutators;
 
@@ -36,7 +37,7 @@ public class RegexMutator : MutatorBase<ObjectCreationExpressionSyntax>
             var patternArgument = namedArgument ?? node.ArgumentList.Arguments.FirstOrDefault();
             var patternExpression = patternArgument?.Expression;
 
-            if (patternExpression?.Kind() == SyntaxKind.StringLiteralExpression)
+            if (patternExpression!= null && patternExpression.IsAStringExpression())
             {
                 var currentValue = ((LiteralExpressionSyntax)patternExpression).Token.ValueText;
                 var regexMutantOrchestrator = new RegexMutantOrchestrator(currentValue);

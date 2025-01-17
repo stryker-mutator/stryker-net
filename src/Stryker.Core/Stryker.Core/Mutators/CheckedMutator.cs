@@ -2,6 +2,7 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions;
+using Stryker.Core.Helpers;
 using System.Collections.Generic;
 
 namespace Stryker.Core.Mutators;
@@ -17,7 +18,7 @@ public class CheckedMutator : MutatorBase<CheckedExpressionSyntax>
             yield return new Mutation()
             {
                 OriginalNode = node,
-                ReplacementNode = node.Expression,
+                ReplacementNode = node.Expression.WithCleanTrivia(),
                 DisplayName = "Remove checked expression",
                 Type = Mutator.Checked
             };

@@ -262,8 +262,7 @@ This class is used for several constructs:
 - `AttributeListSyntax`: Attributes must be defined at compile time.
 - `ParameterListSyntax`: Parameters and default values must be known at compile time.
 - `EnumMemberSyntax`: Enumeration value must be known at compile time
--  `RecursivePatternSyntax`: Pattern syntax must be known at compile time.
--  `UsingDirectiveSyntax`: using directives are fixed and critical for compilation
+- `UsingDirectiveSyntax`: using directives are fixed and critical for compilation
 - `FieldDeclarationSyntax`  (only const fields): cannot modify const fields at run time.
 - `LocalDeclarationStatementSyntax` (only const): cannot modify constants at run time.
 

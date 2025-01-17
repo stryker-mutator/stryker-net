@@ -1,8 +1,9 @@
+using System.Collections.Generic;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Stryker.Abstractions;
-using System.Collections.Generic;
+using Stryker.Core.Helpers;
 
 namespace Stryker.Core.Mutators;
 
@@ -16,7 +17,7 @@ public class BooleanMutator : MutatorBase<LiteralExpressionSyntax>
             yield return new Mutation()
             {
                 OriginalNode = node,
-                ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.FalseLiteralExpression),
+                ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.FalseLiteralExpression).WithCleanTriviaFrom(node),
                 DisplayName = "Boolean mutation",
                 Type = Mutator.Boolean
             };
@@ -26,7 +27,7 @@ public class BooleanMutator : MutatorBase<LiteralExpressionSyntax>
             yield return new Mutation()
             {
                 OriginalNode = node,
-                ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression),
+                ReplacementNode = SyntaxFactory.LiteralExpression(SyntaxKind.TrueLiteralExpression).WithCleanTriviaFrom(node),
                 DisplayName = "Boolean mutation",
                 Type = Mutator.Boolean
             };
