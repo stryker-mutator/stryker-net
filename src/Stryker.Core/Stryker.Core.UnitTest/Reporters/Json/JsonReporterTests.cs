@@ -184,7 +184,7 @@ namespace ExtraProject.XUnit
             }
         };
         var node = CSharpSyntaxTree.ParseText(_testFileContents).GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
-        testProjectsInfo.TestProjects.First().TestFiles.First().AddTest(Identifier.Empty, "myUnitTestName", node);
+        testProjectsInfo.TestProjects.First().TestFiles.First().AddTest(Guid.Empty.ToString(), "myUnitTestName", node);
 
         var reporter = new JsonReporter(options, mockFileSystem);
 
@@ -236,10 +236,10 @@ namespace ExtraProject.XUnit
             }
         };
         var node = CSharpSyntaxTree.ParseText(_testFileContents).GetRoot().DescendantNodes().OfType<MethodDeclarationSyntax>().Single();
-        testProjectsInfo.TestProjects.First().TestFiles.First().AddTest(Identifier.Empty, "myUnitTestName", node);
-        testProjectsInfo.TestProjects.First().TestFiles.First().AddTest(Identifier.Create(Guid.NewGuid()), "myOtherTestName", node);
-        testProjectsInfo.TestProjects.ElementAt(1).TestFiles.First().AddTest(Identifier.Empty, "myUnitTestName", node);
-        testProjectsInfo.TestProjects.ElementAt(1).TestFiles.First().AddTest(Identifier.Create(Guid.NewGuid()), "myLastTestName", node);
+        testProjectsInfo.TestProjects.First().TestFiles.First().AddTest("id", "myUnitTestName", node);
+        testProjectsInfo.TestProjects.First().TestFiles.First().AddTest(Guid.NewGuid().ToString(), "myOtherTestName", node);
+        testProjectsInfo.TestProjects.ElementAt(1).TestFiles.First().AddTest("id", "myUnitTestName", node);
+        testProjectsInfo.TestProjects.ElementAt(1).TestFiles.First().AddTest(Guid.NewGuid().ToString(), "myLastTestName", node);
 
         var reporter = new JsonReporter(options, mockFileSystem);
 

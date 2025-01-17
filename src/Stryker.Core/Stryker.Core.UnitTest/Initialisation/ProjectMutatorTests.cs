@@ -77,20 +77,20 @@ namespace ExtraProject.XUnit
             CodeFilePath = _testFilePath,
             LineNumber = 7,
         });
-        var failedTest = testCase1.Id.ToGuid();
+        var failedTest = testCase1.Id;
         var testCase2 = new VsTestCase(new TestCase("mytestname2", new Uri(_testFilePath), _testFileContents)
         {
             Id = Guid.NewGuid(),
             CodeFilePath = _testFilePath,
             LineNumber = 13,
         });
-        var successfulTest = testCase2.Id.ToGuid();
+        var successfulTest = testCase2.Id;
         var tests = new List<VsTestDescription> { new VsTestDescription(testCase1), new VsTestDescription(testCase2) };
         var initialTestRunResult = new TestRunResult(
             vsTestDescriptions: tests,
-            executedTests: new TestGuidsList(failedTest, successfulTest),
-            failedTests: new TestGuidsList(failedTest),
-            timedOutTest: TestGuidsList.NoTest(),
+            executedTests: new TestIdentifierList(failedTest, successfulTest),
+            failedTests: new TestIdentifierList(failedTest),
+            timedOutTest: TestIdentifierList.NoTest(),
             message: "testrun succesful",
             Enumerable.Empty<string>(),
             timeSpan: TimeSpan.FromSeconds(2));

@@ -14,7 +14,7 @@ public class TestCaseTests
     public void TestCaseEqualsWhenAllPropertiesEqual()
     {
         // Arrange
-        var id = Identifier.Create(Guid.NewGuid());
+        var id = Guid.NewGuid().ToString();
         var node = SyntaxFactory.Block();
         var testCaseA = new TestCase
         {
@@ -40,17 +40,16 @@ public class TestCaseTests
     public void TestCaseNotEqualsWhenNotAllPropertiesEqual(string guid, string name)
     {
         // Arrange
-        var id = Identifier.Create(Guid.Parse(guid));
         var node = SyntaxFactory.Block();
         var testCaseA = new TestCase
         {
-            Id = id,
+            Id = guid,
             Name = name,
             Node = node
         };
         var testCaseB = new TestCase
         {
-            Id = Identifier.Empty,
+            Id = "00000000-0000-0000-0000-000000000000",
             Name = "node2",
             Node = node
         };

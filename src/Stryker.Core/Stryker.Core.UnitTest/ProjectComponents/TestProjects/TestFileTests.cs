@@ -14,7 +14,7 @@ public class TestFileTests
     public void MergeTestFiles()
     {
         // Arrange
-        var testCase1Id = Identifier.Create(Guid.NewGuid());
+        var testCase1Id = Guid.NewGuid().ToString();
         var node = SyntaxFactory.Block();
         var fileA = new TestFile
         {
