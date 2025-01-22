@@ -3,17 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Logging;
-using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;
-using Stryker.Abstractions.TestRunners;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.CoverageAnalysis;
-using Stryker.Core.Initialisation;
-using Stryker.Core.Initialisation.Buildalyzer;
-using Stryker.Core.Mutants;
+using Stryker.TestRunner.Tests;
+using Stryker.Utilities.Buildalyzer;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.MutationTest;
 
@@ -72,13 +71,12 @@ public class MutationTestProcess : IMutationTestProcess
 
     private IMutationProcess BuildMutationProcess()
     {
-        if (!LanguageMap.ContainsKey(Input.SourceProjectInfo.AnalyzerResult.GetLanguage()))
+        if (LanguageMap.ContainsKey(Input.SourceProjectInfo.AnalyzerResult.GetLanguage()))
         {
-            throw new GeneralStrykerException(
-                "no valid language detected || no valid csproj or fsproj was given.");
+            return LanguageMap[Input.SourceProjectInfo.AnalyzerResult.GetLanguage()](_options);
         }
 
-        return LanguageMap[Input.SourceProjectInfo.AnalyzerResult.GetLanguage()](_options);
+        throw new GeneralStrykerException("no valid language detected || no valid csproj or fsproj was given.");
     }
 
     public void Mutate()
@@ -122,17 +120,17 @@ public class MutationTestProcess : IMutationTestProcess
         });
     }
 
-    private bool TestUpdateHandler(IEnumerable<IMutant> testedMutants, ITestGuids failedTests, ITestGuids ranTests,
-        ITestGuids timedOutTest, ISet<IMutant> reportedMutants)
+    private bool TestUpdateHandler(IEnumerable<IMutant> testedMutants, ITestIdentifiers failedTests, ITestIdentifiers ranTests,
+        ITestIdentifiers timedOutTest, ISet<IMutant> reportedMutants)
     {
-        var testsFailingInitially = Input.InitialTestRun.Result.FailingTests.GetGuids().ToHashSet();
+        var testsFailingInitially = Input.InitialTestRun.Result.FailingTests.GetIdentifiers().ToHashSet();
         var continueTestRun = _options.OptimizationMode.HasFlag(OptimizationModes.DisableBail);
-        if (testsFailingInitially.Count > 0 && failedTests.GetGuids().Any(testsFailingInitially.Contains))
+        if (testsFailingInitially.Count > 0 && failedTests.GetIdentifiers().Any(id => testsFailingInitially.Contains(id)))
         {
             // some of the failing tests where failing without any mutation
             // we discard those tests
-            failedTests = new TestGuidsList(
-                failedTests.GetGuids().Where(t => !testsFailingInitially.Contains(t)));
+            failedTests = new TestIdentifierList(
+                failedTests.GetIdentifiers().Where(t => !testsFailingInitially.Contains(t)));
         }
 
         foreach (var mutant in testedMutants)

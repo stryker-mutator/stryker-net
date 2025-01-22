@@ -3,7 +3,7 @@ using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Text;
-using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Reporting;
 
 namespace Stryker.Core.Baseline.Utils;

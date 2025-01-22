@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Logging;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Abstractions.Reporting;
 using System;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Reporters.Json.SourceFiles;
 

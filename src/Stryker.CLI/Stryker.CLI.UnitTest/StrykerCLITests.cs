@@ -10,7 +10,6 @@ using Serilog.Events;
 using Shouldly;
 using Spectre.Console.Testing;
 using Stryker.Abstractions;
-using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions.Options;
 using Stryker.CLI.Clients;
 using Stryker.CLI.Logging;
@@ -123,7 +122,7 @@ Options:";
         var strykerRunResult = new StrykerRunResult(options, 0.3);
 
             mock.Setup(x => x.RunMutationTest(It.IsAny<IStrykerInputs>(), It.IsAny<ILoggerFactory>(), It.IsAny<IProjectOrchestrator>()))
-                .Callback<IStrykerInputs, ILoggerFactory, IProjectOrchestrator>((c, l, p) => Abstractions.Logging.ApplicationLogging.LoggerFactory = l)
+                .Callback<IStrykerInputs, ILoggerFactory, IProjectOrchestrator>((c, l, p) => Utilities.Logging.ApplicationLogging.LoggerFactory = l)
                 .Returns(strykerRunResult)
                 .Verifiable();
 

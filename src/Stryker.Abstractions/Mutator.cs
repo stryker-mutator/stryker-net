@@ -1,6 +1,4 @@
-using Stryker.Utilities.Attributes;
-
-namespace Stryker.Abstractions.Mutators;
+namespace Stryker.Abstractions;
 
 public enum Mutator
 {

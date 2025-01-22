@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using Buildalyzer;
 using Microsoft.CodeAnalysis;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Stryker.Core.Initialisation.Buildalyzer;
+using Stryker.Utilities.Buildalyzer;
 
 namespace Stryker.Core.UnitTest.Initialisation.Buildalyzer;
 

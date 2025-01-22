@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Stryker.Abstractions.Mutants;
+using Stryker.Abstractions;
 using Stryker.Abstractions.Reporting;
 
 namespace Stryker.Core.Baseline.Utils;

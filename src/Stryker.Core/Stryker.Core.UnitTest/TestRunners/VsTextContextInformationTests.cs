@@ -10,19 +10,17 @@ using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer;
 using Microsoft.TestPlatform.VsTestConsole.TranslationLayer.Interfaces;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Client;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Serilog.Events;
 using Shouldly;
 using Stryker.Abstractions;
-using Stryker.Abstractions.ProjectComponents;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Stryker.Utilities;
-using Stryker.Core.TestRunners.VsTest;
-using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.Helpers;
-using Stryker.Core.ProjectComponents.Csharp;
 using Stryker.Abstractions.Options;
-using Stryker.Core.UnitTest;
+using Stryker.Core.ProjectComponents.Csharp;
+using Stryker.Core.ProjectComponents.TestProjects;
+using Stryker.TestRunner.VsTest;
+using Stryker.TetsRunner.VsTest.Helpers;
+using Stryker.Utilities;
 
 namespace Stryker.Core.UnitTest.TestRunners;
 

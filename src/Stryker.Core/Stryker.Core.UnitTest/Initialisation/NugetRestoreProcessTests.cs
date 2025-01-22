@@ -4,8 +4,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Shouldly;
 using Stryker.Abstractions.Exceptions;
+using Stryker.Core.Helpers.ProcessUtil;
 using Stryker.Core.Initialisation;
-using Stryker.Core.Testing;
 
 namespace Stryker.Core.UnitTest.Initialisation;
 
