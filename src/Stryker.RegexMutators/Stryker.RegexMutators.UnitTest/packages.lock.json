@@ -44,9 +44,9 @@
       },
       "Shouldly": {
         "type": "Direct",
-        "requested": "[4.2.1, )",
-        "resolved": "4.2.1",
-        "contentHash": "dKAKiSuhLKqD2TXwLKtqNg1nwzJcIKOOMncZjk9LYe4W+h+SCftpWdxwR79YZUIHMH+3Vu9s0s0UHNrgICLwRQ==",
+        "requested": "[4.3.0, )",
+        "resolved": "4.3.0",
+        "contentHash": "sDetrWXrl6YXZ4HeLsdBoNk3uIa7K+V4uvIJ+cqdRa5DrFxeTED7VkjoxCuU1kJWpUuBDZz2QXFzSxBtVXLwRQ==",
         "dependencies": {
           "DiffEngine": "11.3.0",
           "EmptyFiles": "4.4.0"
