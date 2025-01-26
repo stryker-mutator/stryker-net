@@ -839,8 +839,8 @@
       },
       "TestableIO.System.IO.Abstractions": {
         "type": "Transitive",
-        "resolved": "21.2.1",
-        "contentHash": "47NQXrfVUF+0b8W5EMnERR7FpgWE04wuYR1s9WvlNyh1hnRMGDPOvmewBLIZUG88Rhj9buzG3VVR8sAgH7TzjA=="
+        "resolved": "21.2.8",
+        "contentHash": "YCf4D/Jp9JDaCmrAvVOuQjNUc/vqE3jagvlkv1I4lX6fUZZMWjjuh2PXFBomLFvUbHCGXeC2RR8/7tGx7xDLYw=="
       },
       "dotnet-stryker": {
         "type": "Project",
@@ -876,12 +876,12 @@
           "Serilog.Sinks.Console": "[6.0.0, )",
           "ShellProgressBar": "[5.2.0, )",
           "Spectre.Console": "[0.49.1, )",
-          "Stryker.Abstractions": "[4.5.0, )",
-          "Stryker.Configuration": "[4.5.0, )",
-          "Stryker.DataCollector": "[4.5.0, )",
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.Configuration": "[1.0.0, )",
+          "Stryker.DataCollector": "[1.0.0, )",
           "Stryker.Regex.Parser": "[1.0.0, )",
-          "Stryker.RegexMutators": "[4.5.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[21.2.1, )"
+          "Stryker.RegexMutators": "[1.0.0, )",
+          "TestableIO.System.IO.Abstractions.Wrappers": "[21.2.8, )"
         }
       },
       "stryker.abstractions": {
@@ -893,8 +893,8 @@
           "Microsoft.CodeAnalysis.Common": "[4.12.0, )",
           "Microsoft.TestPlatform.ObjectModel": "[17.12.0, )",
           "Serilog": "[4.2.0, )",
-          "Stryker.Utilities": "[4.5.0, )",
-          "TestableIO.System.IO.Abstractions.Wrappers": "[21.2.1, )"
+          "Stryker.Utilities": "[1.0.0, )",
+          "TestableIO.System.IO.Abstractions.Wrappers": "[21.2.8, )"
         }
       },
       "stryker.configuration": {
@@ -904,8 +904,8 @@
           "Microsoft.CodeAnalysis.CSharp": "[4.12.0, )",
           "Microsoft.CodeAnalysis.Common": "[4.12.0, )",
           "Serilog": "[4.2.0, )",
-          "Stryker.Abstractions": "[4.5.0, )",
-          "Stryker.Utilities": "[4.5.0, )"
+          "Stryker.Abstractions": "[1.0.0, )",
+          "Stryker.Utilities": "[1.0.0, )"
         }
       },
       "stryker.datacollector": {
@@ -1177,11 +1177,11 @@
       },
       "TestableIO.System.IO.Abstractions.Wrappers": {
         "type": "CentralTransitive",
-        "requested": "[21.2.1, )",
-        "resolved": "21.2.1",
-        "contentHash": "a0jzTAZRIic40USnf8b59EbJ6+hh/kndLV3mTxgSGBkjei/H9qjULOtk/ZHQtRD8lLaUav7ZsMZn6JiwCgDmEw==",
+        "requested": "[21.2.8, )",
+        "resolved": "21.2.8",
+        "contentHash": "hvB1myOVVJVCWz2z3IthtJv3R48k3HHZKQqisy6ZNBNz6s8ziJS7JAzCeBFmTyzTQjamELprKk6R9TLFzsCZ5Q==",
         "dependencies": {
-          "TestableIO.System.IO.Abstractions": "21.2.1"
+          "TestableIO.System.IO.Abstractions": "21.2.8"
         }
       },
       "YamlDotNet": {
