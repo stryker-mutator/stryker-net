@@ -1,7 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Moq;
 using Shouldly;
-using Stryker.Abstractions.Mutants;
 using Stryker.Abstractions.ProjectComponents;
 using System;
 using System.Collections.Generic;
@@ -10,6 +9,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Stryker.Core.Reporters;
 using Stryker.Core.Mutants;
 using Stryker.Core.ProjectComponents.Csharp;
+using Stryker.Abstractions;
 
 namespace Stryker.Core.UnitTest.Reporters;
 

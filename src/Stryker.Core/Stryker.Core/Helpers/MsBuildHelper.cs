@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Abstractions;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Logging;
 using Stryker.Configuration;
-using Stryker.Core.Testing;
+using Stryker.Core.Helpers.ProcessUtil;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Helpers;
 

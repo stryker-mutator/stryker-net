@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Logging;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Reporters.WebBrowserOpener;
 

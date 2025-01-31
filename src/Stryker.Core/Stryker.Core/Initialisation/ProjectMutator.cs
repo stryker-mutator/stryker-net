@@ -2,13 +2,13 @@ using System.IO;
 using System.Linq;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.Extensions.Logging;
-using Stryker.Abstractions.Logging;
 using Stryker.Abstractions;
 using Stryker.Abstractions.Reporting;
 using Stryker.Core.MutationTest;
 using Stryker.Core.ProjectComponents.TestProjects;
 using Stryker.Abstractions.Options;
 using Stryker.Abstractions.ProjectComponents;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Initialisation;
 
@@ -45,7 +45,7 @@ public class ProjectMutator : IProjectMutator
     private void EnrichTestProjectsWithTestInfo(InitialTestRun initialTestRun, ITestProjectsInfo testProjectsInfo)
     {
         var unitTests =
-            initialTestRun.Result.VsTestDescriptions
+            initialTestRun.Result.TestDescriptions
             .Select(desc => desc.Case)
             // F# has a different syntax tree and would throw further down the line
             .Where(unitTest => Path.GetExtension(unitTest.CodeFilePath) == ".cs");

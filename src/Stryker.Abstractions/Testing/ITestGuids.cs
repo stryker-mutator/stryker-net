@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Stryker.Abstractions.TestRunners;
+namespace Stryker.Abstractions.Testing;
 
 // represents a simple list of test identifier with some properties
 public interface ITestGuids

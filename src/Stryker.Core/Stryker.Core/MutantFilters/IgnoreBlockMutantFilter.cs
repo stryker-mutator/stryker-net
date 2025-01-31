@@ -1,7 +1,5 @@
 using System.Collections.Generic;
 using System.Linq;
-using Stryker.Abstractions.Mutants;
-using Stryker.Abstractions.Mutators;
 using Stryker.Abstractions;
 using Stryker.Abstractions.ProjectComponents;
 using Stryker.Core.Mutants;

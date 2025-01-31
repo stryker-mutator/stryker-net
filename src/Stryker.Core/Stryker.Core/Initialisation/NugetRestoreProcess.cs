@@ -3,10 +3,10 @@ using System.IO;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using Stryker.Abstractions.Exceptions;
-using Stryker.Abstractions.Logging;
 using Stryker.Configuration;
 using Stryker.Core.Helpers;
-using Stryker.Core.Testing;
+using Stryker.Core.Helpers.ProcessUtil;
+using Stryker.Utilities.Logging;
 
 namespace Stryker.Core.Initialisation;
 

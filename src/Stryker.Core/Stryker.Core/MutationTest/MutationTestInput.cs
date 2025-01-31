@@ -1,8 +1,8 @@
 using Stryker.Abstractions.ProjectComponents;
+using Stryker.Abstractions.Testing;
 using Stryker.Core.Initialisation;
 using Stryker.Core.ProjectComponents.SourceProjects;
 using Stryker.Core.ProjectComponents.TestProjects;
-using Stryker.Core.TestRunners;
 
 namespace Stryker.Core.MutationTest;
 
