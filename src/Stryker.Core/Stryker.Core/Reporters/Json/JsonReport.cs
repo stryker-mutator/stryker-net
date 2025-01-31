@@ -26,7 +26,10 @@ public class JsonReport : IJsonReport
         ProjectRoot = mutationReport.FullPath;
 
         Merge(Files, GenerateReportComponents(mutationReport));
-        AddTestFiles(testProjectsInfo);
+        if (!options.ExcludeTestFilesInReport)
+        {
+            AddTestFiles(testProjectsInfo);
+        }
     }
 
     public static IJsonReport Build(IStrykerOptions options, IReadOnlyProjectComponent mutationReport, ITestProjectsInfo testProjectsInfo) => new JsonReport(options, mutationReport, testProjectsInfo);

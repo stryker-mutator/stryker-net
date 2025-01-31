@@ -283,6 +283,14 @@ Config file: `report-file-name`
 
 If HTML and/or JSON reporting is being used you can use this option to change the report file name.
 
+### `exclude-test-files-in-report` &lt;`flag`&gt;
+
+Default: `false`
+Command line: `exclude-test-files-in-report`
+Config file: `exclude-test-files-in-report`
+
+This flag excludes the test files from the json report.
+
 ### `additional-timeout` &lt;`number`&gt;
 
 Default: `5000`  

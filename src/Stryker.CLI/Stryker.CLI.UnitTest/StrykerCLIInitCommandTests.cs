@@ -58,6 +58,7 @@ public class StrykerCLIInitCommandTests
         config.TestProjects.ShouldBe(new TestProjectsInput().Default);
         config.DashboardUrl.ShouldBe(new DashboardUrlInput().Default);
         config.BreakOnInitialTestFailure.ShouldBe(new BreakOnInitialTestFailureInput().Default);
+        config.ExcludeTestFilesInReport.ShouldBe(new ExcludeTestFilesInReportInput().Default);
     }
 
     [TestMethod]
@@ -123,7 +124,8 @@ public class StrykerCLIInitCommandTests
             "--mutation-level", "advanced",
             "--disable-bail",
             "--test-project", "testProject",
-            "--break-on-initial-test-failure"
+            "--break-on-initial-test-failure",
+            "--exclude-test-files-in-report"
         });
 
         _strykerRunnerMock.VerifyAll();
@@ -144,5 +146,6 @@ public class StrykerCLIInitCommandTests
         config.DisableBail.ShouldBe(true);
         config.TestProjects.ShouldHaveSingleItem().ShouldBe("testProject");
         config.BreakOnInitialTestFailure.ShouldBe(true);
+        config.ExcludeTestFilesInReport.ShouldBe(true);
     }
 }
