@@ -123,14 +123,26 @@ public static class IAnalyzerResultExtensions
     {
         public static readonly IAnalyzerAssemblyLoader Instance = new AnalyzerAssemblyLoader();
 
+        private readonly Dictionary<string, Assembly> _cache = [];
+
         private AnalyzerAssemblyLoader() { }
 
         public void AddDependencyLocation(string fullPath)
         {
+            if (!_cache.ContainsKey(fullPath))
+            {
+                _cache[fullPath] = Assembly.LoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
+            }
         }
 
-        public Assembly LoadFromPath(string fullPath) =>
-            Assembly.LoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
+        public Assembly LoadFromPath(string fullPath)
+        {
+            if (!_cache.TryGetValue(fullPath, out var assembly))
+            {
+                _cache[fullPath] = assembly = Assembly.LoadFrom(fullPath); //NOSONAR we actually need to load a specified file, not a specific assembly
+            }
+            return assembly;
+        }
     }
 
     public static NuGetFramework GetNuGetFramework(this IAnalyzerResult analyzerResult)

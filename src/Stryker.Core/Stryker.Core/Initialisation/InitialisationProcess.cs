@@ -157,9 +157,8 @@ public class InitialisationProcess : IInitialisationProcess
             return result;
         }
 
-        throw new InputException(
-            "No test result reported. Make sure your test project contains test and is compatible with VsTest." +
-            string.Join(Environment.NewLine, projectInfo.Warnings));
+        const string Message = "No test result reported. Make sure your test project contains test and is compatible with VsTest.";
+        throw new InputException(string.Join(Environment.NewLine, projectInfo.Warnings.Prepend(Message)));
     }
 
     private static readonly Dictionary<string, (string assembly, string package)> TestFrameworks = new()
@@ -203,6 +202,15 @@ public class InitialisationProcess : IInitialisationProcess
                          $"Adding '{adapter}' to this project references may resolve the issue.";
                 }
 
+                projectInfo.LogError(message);
+                _logger.LogWarning(message);
+            }
+
+            if (!causeFound && testProject.References.Any(r => r.Contains("Microsoft.Testing.Platform")))
+            {
+                causeFound = true;
+                var message = $"Project '{testProject.ProjectFilePath}' is using Microsoft.Testing.Platform which is not yet supported by Stryker, " +
+                              $"see https://github.com/stryker-mutator/stryker-net/issues/3094";
                 projectInfo.LogError(message);
                 _logger.LogWarning(message);
             }

@@ -130,7 +130,16 @@ public sealed class VsTestRunner : IDisposable
 
             // all mutants status have been resolved, we can stop
             _logger.LogDebug("{RunnerId}: Each mutant's fate has been established, we can stop.", RunnerId);
-            _vsTestConsole.CancelTestRun();
+            try
+            {
+                _vsTestConsole.CancelTestRun();
+            }
+            catch(Exception ex)
+            {
+                _logger.LogWarning(ex, "Error while cancelling VsTest session.");
+                // recycle the session
+                PrepareVsTestConsole();
+            }
             _currentSessionCancelled = true;
         }
     }
